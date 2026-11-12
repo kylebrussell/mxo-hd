@@ -48,6 +48,9 @@ namespace hds
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
         public byte missionPhase = 0;
+        internal string MissionPersistenceId;
+        internal uint MissionRewardExperience;
+        internal bool MissionDeathSettled;
         public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction

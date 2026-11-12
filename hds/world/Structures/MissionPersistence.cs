@@ -30,6 +30,50 @@ namespace hds
                 return true;
             }
         }
+        [ThreadStatic] private static WorldClient deferredKill;
+        internal static void MutateKill(WorldClient client,Mob mob,Action action)
+        {
+            Mutate(client,()=>
+            {
+                var previous=deferredKill;deferredKill=client;
+                try {action();mob.MissionDeathSettled=true;}
+                finally {deferredKill=previous;}
+            });
+        }
+        internal static T Mutate<T>(WorldClient client,Func<T> action,bool beginMission=false)
+        {
+            lock(client.playerData.missionSync)
+            {
+                if(MissionOutput.Buffered(client.messageQueue)||client.playerData.missionProgress==null&&!beginMission)return action();
+                Mob[] previousActors;
+                lock(client.playerData.missionMobs)previousActors=client.playerData.missionMobs.ToArray();
+                using(var output=MissionOutput.Begin(client.messageQueue))
+                {
+                    try
+                    {
+                        T result=action();Save(client);
+                        output.Commit();client.FlushQueue();return result;
+                    }
+                    catch(Exception ex)
+                    {
+                        output.Dispose();
+                        // Never keep uncommitted goal/ownership state, or publish its queued goal/item messages.
+                        // The cached payload advances only after a successful SQL commit.
+                        MissionRuntime.Detach(client);
+                        foreach(var mob in previousActors)Store.world?.DeleteMobViews(mob);
+                        WorldEntry(client);
+                        if(ex is MySqlConnector.MySqlException || ex is MissionCheckpointException)
+                        {
+                            Output.WriteLine("[MISSION] Checkpoint action rolled back: "+ex.Message);
+                            new ServerPackets().sendSystemChatMessage(client,"Mission progress could not be saved. Please retry the action.","BROADCAST");
+                            client.FlushQueue();return default(T);
+                        }
+                        throw;
+                    }
+                }
+            }
+        }
+        internal static void Mutate(WorldClient client,Action action,bool beginMission=false)=>Mutate(client,()=>{action();return true;},beginMission);
         private static bool Available(WorldClient client) => client?.playerData!=null && Store.dbManager?.WorldDbHandler!=null;
         internal static void LoadCheckpoint(WorldClient client)
         {
@@ -39,20 +83,33 @@ namespace hds
         }
         public static void Save(WorldClient client, bool clear = false)
         {
-            if(!Available(client))return;
+            if(!Available(client)||deferredKill==client)return;
             lock(client.playerData.missionSync)
             {
                 var data=client.playerData;
                 if(data.missionProgress==null&&!clear)return;
+                // Death presentation precedes its reward callback. Never checkpoint that transient dead/unpaid gap.
+                if(data.missionProgress!=null)
+                    lock(data.missionMobs)if(data.missionMobs.Any(m=>m.getIsDead()&&!m.ScriptedCorpse&&!m.MissionDeathSettled))return;
                 LoadCheckpoint(client);
                 string next=null;
                 if(data.missionProgress!=null)
                 {
-                    lock(data.missionMobs) next=JsonSerializer.Serialize(data.missionProgress.Capture(data.missionInstanceCounter,data.missionMobs),MissionProgress.SaveJson);
+                    lock(data.missionMobs) next=JsonSerializer.Serialize(data.missionProgress.Capture(data.missionInstanceCounter,data.missionMobs,data.loot),MissionProgress.SaveJson);
                 }
                 if(next==data.missionCheckpoint)return;
-                Store.dbManager.WorldDbHandler.CommitActiveMission(data.getCharID(),data.missionCheckpoint,next);
+                var account=Store.dbManager.WorldDbHandler.CommitActiveMission(data.getCharID(),data.missionCheckpoint,next);
                 data.missionCheckpoint=next;
+                if(account!=null)
+                {
+                    data.setExperience(account.ExperienceTotal);data.setInfo(account.InfoTotal);
+                    if(account.ExperienceCredited>0)
+                    {
+                        new ServerPackets().SendEXPGain(client,account.ExperienceCredited);
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildEXPTotal((uint)account.ExperienceTotal,ServerPackets.ExpGainFighting));
+                        PlayerProgression.ApplyLevelUps(client);
+                    }
+                }
             }
         }
         internal static bool MoveItem(WorldClient client,ushort from,ushort to)
@@ -66,7 +123,7 @@ namespace hds
                 try
                 {
                     string next;
-                    lock(data.missionMobs)next=JsonSerializer.Serialize(progress.Capture(data.missionInstanceCounter,data.missionMobs),MissionProgress.SaveJson);
+                    lock(data.missionMobs)next=JsonSerializer.Serialize(progress.Capture(data.missionInstanceCounter,data.missionMobs,data.loot),MissionProgress.SaveJson);
                     Store.dbManager.WorldDbHandler.CommitActiveMission(data.getCharID(),data.missionCheckpoint,next,from,to);
                     data.missionCheckpoint=next;
                 }
@@ -107,7 +164,8 @@ namespace hds
                     var mob=new Mob();mob.setEntityId(WorldServer.entityIdCounter++);mob.setDistrict(mission.district);mob.setDistrictName(mission.districtName);
                     mob.setName(record.Name);mob.setRsiHex(record.Rsi);mob.setLevel(record.Level);mob.setHealthM(record.MaxHealth);mob.setHealthC(record.Health);
                     mob.setWeapon(record.Weapon);mob.setRotation(record.Rotation);mob.setXPos(record.X);mob.setYPos(record.Y);mob.setZPos(record.Z);
-                    mob.xBase=record.X;mob.yBase=record.Y;mob.zBase=record.Z;mob.setIsDead(record.Dead);mob.setIsLootable(false);
+                    mob.xBase=record.X;mob.yBase=record.Y;mob.zBase=record.Z;mob.setIsDead(record.Dead);mob.setIsLootable(record.Lootable);
+                    mob.MissionPersistenceId=record.Identity;mob.MissionRewardExperience=record.RewardExperience;mob.MissionDeathSettled=record.Dead;
                     mob.isFriendly=record.Friendly;mob.missionNpcId=record.Npc;mob.missionPhase=record.Phase;mob.missionInstance=saved.Instance;
                     mob.missionGiver=record.Giver;mob.missionTaker=record.Taker;
                     // Only the original definition grants attacks-on-sight. Generated hostile templates use their baseline.
@@ -118,9 +176,11 @@ namespace hds
                     lock(WorldServer.mobs.SyncRoot)WorldServer.mobs.Add(mob);
                     lock(WorldServer.gameServerEntities.SyncRoot)WorldServer.gameServerEntities.Add(mob);
                     MissionRuntime.AddMob(client,mob);
+                    if(record.Loot!=null)lock(data.loot)data.loot.Add(mob,record.Loot.Info,record.Loot.MissionItem,record.Loot.Items);
                     if(record.Hostile)progress.hostiles.Add(mob);
                     if(record.Wave.HasValue)progress.hostileWave[mob]=record.Wave.Value;
                 }
+                lock(data.loot)data.loot.Close();
                 MissionRuntime.Reannounce(client);
                 Output.WriteDebugLog("[MISSION] Restored "+mission.id+" phase "+progress.phaseIndex+" instance "+saved.Instance);
             }

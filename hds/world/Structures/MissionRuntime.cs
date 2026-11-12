@@ -38,7 +38,9 @@ namespace hds
         private static readonly object timerLock = new object();
         private static Timer timer;
 
-        public static void Start(WorldClient client, Mission mission)
+        public static void Start(WorldClient client, Mission mission) => MissionPersistence.Mutate(client,()=>StartCore(client,mission),true);
+
+        private static void StartCore(WorldClient client, Mission mission)
         {
             lock (client.playerData.missionSync)
             {
@@ -91,7 +93,9 @@ namespace hds
         }
 
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
-        public static void End(WorldClient client)
+        public static void End(WorldClient client) => MissionPersistence.Mutate(client,()=>EndCore(client));
+
+        private static void EndCore(WorldClient client)
         {
             lock (client.playerData.missionSync)
             {
@@ -182,11 +186,7 @@ namespace hds
         /// <summary>The player double-clicked a mission NPC (80 c7 ... 09). Returns false if it isn't one.</summary>
         public static bool OnTalk(WorldClient client, Mob npc)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnTalkCore(client, npc); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnTalkCore(client, npc));
         }
 
         private static bool OnTalkCore(WorldClient client, Mob npc)
@@ -229,11 +229,7 @@ namespace hds
         /// <summary>Right-click Get on an NPC (80 c7 ... 0d): it hands over the objective's item.</summary>
         public static bool OnGet(WorldClient client, Mob npc)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnGetCore(client, npc); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnGetCore(client, npc));
         }
 
         private static bool OnGetCore(WorldClient client, Mob npc)
@@ -257,11 +253,7 @@ namespace hds
         /// <summary>Right-click Give on an NPC (80 c7 ... 0e): the player hands over the objective's item.</summary>
         public static bool OnGive(WorldClient client, Mob npc)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnGiveCore(client, npc); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnGiveCore(client, npc));
         }
 
         private static bool OnGiveCore(WorldClient client, Mob npc)
@@ -285,11 +277,7 @@ namespace hds
         /// <summary>A mob the player fought died. Completes a Defeat objective for it.</summary>
         public static void OnMobDefeated(WorldClient client, Mob mob)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { OnMobDefeatedCore(client, mob); }
-                finally { MissionPersistence.Save(client); }
-            }
+            MissionPersistence.Mutate(client,()=>OnMobDefeatedCore(client, mob));
         }
 
         private static void OnMobDefeatedCore(WorldClient client, Mob mob)
@@ -399,11 +387,7 @@ namespace hds
         /// <summary>A protected NPC died: the mission is over.</summary>
         public static void Fail(WorldClient client, MissionProgress progress, string reason)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { FailCore(client, progress, reason); }
-                finally { MissionPersistence.Save(client); }
-            }
+            MissionPersistence.Mutate(client,()=>FailCore(client, progress, reason));
         }
 
         private static void FailCore(WorldClient client, MissionProgress progress, string reason)
@@ -424,11 +408,7 @@ namespace hds
         /// <summary>A mission object was used (80 c7 on its view). Returns true if it's one of the mission's.</summary>
         public static bool OnViewUse(WorldClient client, UInt64 entity)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnViewUseCore(client, entity); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnViewUseCore(client, entity));
         }
 
         private static bool OnViewUseCore(WorldClient client, UInt64 entity)
@@ -527,11 +507,7 @@ namespace hds
         /// <summary>81 21: only the mission item expected by the currently open, nearby Put container is accepted.</summary>
         public static bool OnPutItem(WorldClient client, byte slot)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnPutItemCore(client, slot); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnPutItemCore(client, slot));
         }
 
         private static bool OnPutItemCore(WorldClient client, byte slot)
@@ -559,11 +535,7 @@ namespace hds
         /// <summary>Take All (81 1f) on a mission object's loot window. Returns true if it was one.</summary>
         public static bool OnTakeAll(WorldClient client)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnTakeAllCore(client); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnTakeAllCore(client));
         }
 
         private static bool OnTakeAllCore(WorldClient client)
@@ -614,11 +586,7 @@ namespace hds
         /// <summary>The player used a hardline booth: Upload goals for what they carry, and NPCs escorted to a hardline.</summary>
         public static void OnHardline(WorldClient client, bool upload)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { OnHardlineCore(client, upload); }
-                finally { MissionPersistence.Save(client); }
-            }
+            MissionPersistence.Mutate(client,()=>OnHardlineCore(client, upload));
         }
 
         private static void OnHardlineCore(WorldClient client, bool upload)
@@ -707,11 +675,7 @@ namespace hds
         /// <summary>Returns false when the mission item needs more bag space, so the loot can be retried.</summary>
         public static bool OnMissionItemLooted(WorldClient client, UInt32 itemGoId)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { return OnMissionItemLootedCore(client, itemGoId); }
-                finally { MissionPersistence.Save(client); }
-            }
+            return MissionPersistence.Mutate(client,()=>OnMissionItemLootedCore(client, itemGoId));
         }
 
         private static bool OnMissionItemLootedCore(WorldClient client, UInt32 itemGoId)
@@ -799,11 +763,7 @@ namespace hds
 
         public static void OnInventoryItemMoved(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
         {
-            lock(client.playerData.missionSync)
-            {
-                try { OnInventoryItemMovedCore(client, fromSlot, toSlot); }
-                finally { MissionPersistence.Save(client); }
-            }
+            MissionPersistence.Mutate(client,()=>OnInventoryItemMovedCore(client, fromSlot, toSlot));
         }
 
         private static void OnInventoryItemMovedCore(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
@@ -1212,7 +1172,7 @@ namespace hds
 
             // Retail order: the mission-end message (status 00 = complete), then the rewards.
             UInt32 seconds = (UInt32)Math.Max(0, TimeUtils.getUnixTimeUint32() - progress.startedAt);
-            packets.SendMissionComplete(client, experience, info,
+            packets.SendMissionComplete(client, committed.ExperienceCredited, committed.InfoCredited,
                 (UInt16)Math.Min(progress.kills, UInt16.MaxValue), seconds);
             if(!committed.AlreadyCommitted)
             {
@@ -1220,7 +1180,7 @@ namespace hds
                 client.playerData.setExperience(committed.ExperienceTotal);client.playerData.setInfo(committed.InfoTotal);
                 if(experience>0)
                 {
-                    packets.SendEXPGain(client,experience,ServerPackets.ExpGainMission);
+                    packets.SendEXPGain(client,committed.ExperienceCredited,ServerPackets.ExpGainMission);
                     client.messageQueue.addRpcMessage(ServerPackets.BuildEXPTotal((uint)committed.ExperienceTotal,ServerPackets.ExpGainMission));
                     PlayerProgression.ApplyLevelUps(client);
                 }
@@ -1317,7 +1277,7 @@ namespace hds
             lock (client.playerData.missionSync)
             {
                 if(!client.Alive || !client.playerData.getOnWorld() || client.playerData.worldChangePending || client.playerData.getDistrictId()!=client.playerData.activeMission?.district)return;
-                try { TickMission(client); } finally { MissionPersistence.Save(client); }
+                MissionPersistence.Mutate(client,()=>TickMission(client));
             }
         }
 

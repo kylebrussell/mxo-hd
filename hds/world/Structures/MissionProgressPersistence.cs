@@ -52,8 +52,18 @@ namespace hds
             public bool Unlocked { get; set; }
             public uint State { get; set; }
         }
+        public sealed class SavedLoot
+        {
+            public uint Info {get;set;}
+            public uint MissionItem {get;set;}
+            public uint[] Items {get;set;}=Array.Empty<uint>();
+        }
         public sealed class SavedMob
         {
+            public string Identity {get;set;}
+            public uint RewardExperience {get;set;}
+            public bool Lootable {get;set;}
+            public SavedLoot Loot {get;set;}
             public ushort Npc { get; set; }
             public byte Phase { get; set; }
             public string Name { get; set; }
@@ -76,9 +86,10 @@ namespace hds
             public int? Wave { get; set; }
         }
         internal static readonly JsonSerializerOptions SaveJson = new JsonSerializerOptions() { IncludeFields = true };
-        public SavedState Capture(ushort instance, IEnumerable<Mob> mobs)
+        public SavedState Capture(ushort instance, IEnumerable<Mob> mobs, NpcLootCache loot = null)
         {
             double now = clock();
+            var actors=mobs.ToArray();
             var state = new SavedState { Identity=persistenceId, Mission=mission.id, Instance=instance, Started=startedAt, Phase=phaseIndex, Kills=kills,
                 Done=done.ToArray(), EverDone=everDone.ToArray(), Fired=Phase?.triggers.Select((t,i)=>(t,i)).Where(x=>fired.Contains(x.t)).Select(x=>x.i).ToArray() ?? Array.Empty<int>(),
                 Arrived=arrived.ToArray(), Killed=killed.ToArray(), Following=following.ToArray(), Waves=wavesArrived.ToArray(),
@@ -97,10 +108,21 @@ namespace hds
             state.Flags[nameof(entryItemExchanged)]= entryItemExchanged;
             state.Flags[nameof(goalsCompleteSent)]= goalsCompleteSent;
             state.Flags[nameof(leaveNotNeeded)]= leaveNotNeeded;
-            state.Mobs=mobs.Select(m=>new SavedMob { Npc=m.missionNpcId, Phase=m.missionPhase, Name=m.getName(), Rsi=m.getRsiHex(), Level=m.getLevel(),
+            state.Mobs=actors.Select(m=>new SavedMob { Identity=m.MissionPersistenceId??(m.MissionPersistenceId=Guid.NewGuid().ToString("N")), RewardExperience=m.MissionRewardExperience, Lootable=m.getIsLootable(), Npc=m.missionNpcId, Phase=m.missionPhase, Name=m.getName(), Rsi=m.getRsiHex(), Level=m.getLevel(),
                 Health=m.getHealthC(), MaxHealth=m.getHealthM(), Weapon=m.getWeapon(), Rotation=m.getRotation(), X=m.getXPos(),Y=m.getYPos(),Z=m.getZPos(),
                 Dead=m.getIsDead(), ScriptedCorpse=m.ScriptedCorpse, Aggro=m.aggroKind, Friendly=m.isFriendly, Hostile=hostiles.Contains(m), Giver=m.missionGiver, Taker=m.missionTaker,
                 Wave=hostileWave.TryGetValue(m,out int wave)?(int?)wave:null }).ToList();
+            if(loot!=null)
+            {
+                lock(loot)
+                {
+                    for(int i=0;i<actors.Length;i++)
+                    {
+                        var corpse=loot.Peek(actors[i].getEntityId());
+                        if(corpse!=null)state.Mobs[i].Loot=new SavedLoot {Info=corpse.Info,MissionItem=corpse.MissionItem,Items=corpse.Items.ToArray()};
+                    }
+                }
+            }
             return state;
         }
         internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door) =>

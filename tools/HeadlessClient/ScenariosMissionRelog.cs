@@ -21,7 +21,40 @@ public static partial class Scenarios
     private static async Task MissionRelogPersistence(ScenarioContext context)
     {
         HeadlessPlayer original=await StartRelogMission(context);
+        // Invoke the real checkpoint repository against this owned disposable DB, with an already occupied same-GOID slot.
+        // Config parsing opens no connection; replace and validate the DB name before constructing the repository.
+        var config=new ServerConfig(Path.Combine(context.RepositoryRoot,"hds","bin","Debug","net8.0","Config.xml.dist"));config.LoadDbParams();
+        Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned disposable collision fixture");
+        config.dbParams.DatabaseName=context.Database.Name;
+        var previousConfig=hds.shared.Store.config;hds.shared.Store.config=config;
+        try
+        {
+            var access=new hds.databases.MyWorldDbAccess();
+            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({original.CharId},30,6825,1)");
+            string expected=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={original.CharId}");
+            var candidate=JsonSerializer.Deserialize<MissionProgress.SavedState>(expected,new JsonSerializerOptions{IncludeFields=true})!;
+            candidate.Items[6825]=30;
+            bool refused=false;
+            try{access.CommitActiveMission(original.CharId,expected,JsonSerializer.Serialize(candidate,new JsonSerializerOptions{IncludeFields=true}));}
+            catch(MissionCheckpointException ex) when(ex.Message.Contains("slot occupied")){refused=true;}
+            Check.That(refused,"New grant cannot adopt unrelated same-GOID item");
+            Check.That(!(await MissionCheckpoint(context,original)).Items.ContainsKey(6825),"Failed grant preserves empty ownership");
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={original.CharId} AND slot=30 AND goid=6825"),"Foreign identical item untouched");
+            await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId={original.CharId} AND slot=30 AND goid=6825");
+        }
+        finally{hds.shared.Store.config=previousConfig;}
+
         ViewCreation herschel=await VisitMissionNpc(context,original,"Herschel");
+        await context.Database.InstallMissionRollbackTriggerAsync(false);
+        original.SendRpc($"80 c7 {MissionNpcId(herschel)} 0d 00");
+        await original.WaitForTextAsync("Mission progress could not be saved");
+        Check.Equal(0,original.Received("80 a0 01 06 00 01").Count,"Failed goal checkpoint never publishes done");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={original.CharId} AND goid=6825"),"Earlier committed grant retained");
+        Check.That(!(await MissionCheckpoint(context,original)).Done.Contains(1),"Cached durable phase restored before retry");
+        Check.Equal(1,original.Received("5e ?? ?? a9 1a 00 00").Count,"Discarded grant output resynchronized from durable ownership");
+        await context.Database.RemoveMissionRollbackTriggerAsync();
+        herschel=await original.WaitForViewNamedAsync("Herschel");
+
         original.SendRpc($"80 c7 {MissionNpcId(herschel)} 0d 00");
         await original.WaitForRpcAsync("80 a0 01 06 00 01");
         MissionProgress.SavedState before=await MissionCheckpoint(context,original);
@@ -59,7 +92,7 @@ public static partial class Scenarios
     }
     private static async Task MissionRelogObjectsAndRollback(ScenarioContext context)
     {
-        var original=await context.AddPlayerAsync(new CharacterSeed("Checkpoint"){Level=50,Experience=100,Info=1000,Items=new[]{(20,48125u,1),(21,4u,1)}});
+        var original=await context.AddPlayerAsync(new CharacterSeed("Checkpoint"){Level=50,Experience=int.MaxValue-10,Info=int.MaxValue-5,Items=new[]{(20,48125u,1),(21,4u,1)}});
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={original.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({original.CharId},300,{AbilityGoid(142)},10,1)");
         await original.EnterWorldAsync();
         original.SendRpc("59 14");
@@ -97,20 +130,20 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"Prior phase item not duplicated");
         Check.Equal("InnoDB",await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='characters'"),"Character engine migrated");
         Check.Equal("InnoDB",await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='char_missions'"),"Mission engine migrated");
-        await context.Database.ExecuteAsync("DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF NEW.payload IS NULL AND OLD.payload IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n");
+        await context.Database.InstallMissionRollbackTriggerAsync(true);
         int disk=after.Items[6786];p.SendRpc($"81 21 {disk:x2}");await p.WaitForRpcAsync("80 a0 02 06 00 01");
         await p.WaitUntilAsync(()=>server.OutputLines("[MISSION] Completion transaction deferred").Any(),"Deliberate completion rollback",TimeSpan.FromSeconds(10));
-        Check.Equal(100L,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Rolled back XP");
-        Check.Equal(1000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Rolled back info");
+        Check.Equal((long)int.MaxValue-10,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Rolled back XP");
+        Check.Equal((long)int.MaxValue-5,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Rolled back info");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId=399905"),"Rolled back completed record");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48125"),"Rolled back ticket consumption");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48134"),"Rolled back ticket reward");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"Rolled back owned-item cleanup");
         Check.That((await MissionCheckpoint(context,p)).Done.Contains(2),"Completed goal remains retryable active phase");
-        await context.Database.ExecuteAsync("DROP TRIGGER mission_test_rollback");
+        await context.Database.RemoveMissionRollbackTriggerAsync();
         await p.WaitForRpcAsync("80 a2 00");
-        Check.Equal(150L,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"XP paid once");
-        Check.Equal(1060L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Info paid once");
+        Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"XP paid once");
+        Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Info paid once");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId=399905"),"One completed record");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid IN(48125,6831,6786)"),"Owned cleanup and ticket commit");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48134"),"Exactly one ticket reward");
@@ -119,7 +152,7 @@ public static partial class Scenarios
         using var last=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence.xml");
         using var again=await HeadlessPlayer.LoginAsync(last.Address,username,original.Handle);await again.EnterWorldAsync();
         again.SendChat("?missionpersist status");await again.WaitForTextAsync("Mission persistence: none");
-        Check.Equal(150L,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={again.CharId}"),"Relog does not replay completed payout");
+        Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={again.CharId}"),"Relog does not replay completed payout");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={again.CharId} AND goid=48134"),"Relog does not repeat ticket reward");
         Check.Equal(0,again.World.Problems.Count,"Postcompletion records readable");
     }
