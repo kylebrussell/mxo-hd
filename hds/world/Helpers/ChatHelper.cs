@@ -154,6 +154,12 @@ namespace hds
                     ObjectStates.DevCommand(Store.currentClient, commands);
                 }
 
+                if (command.Equals("?trapobj") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?trapobj <goid> [hidden]: a trapped object at the player's feet, for Disarm Traps (UtilityAbilities)
+                    UtilityAbilities.DevTrapObject(Store.currentClient, commands);
+                }
+
                 if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: ?objtest <goid> [key element hex] [use count] [state hex], each "-" to leave it out. A mission-style
