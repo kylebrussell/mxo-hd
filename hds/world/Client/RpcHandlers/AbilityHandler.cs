@@ -383,7 +383,7 @@ namespace hds
         /// Damage of an attack ability. The data's ValueFrom/ValueTo are used when set; most combat abilities
         /// (Cheap Shot, Head Butt, ...) have none, so they hit for about twice a normal round (~30).
         /// </summary>
-        public static UInt16 AbilityDamage(AbilityItem ability, Random random)
+        public static UInt16 AbilityDamage(AbilityItem ability, Random random, bool allowTypedResistanceQa = false)
         {
             var source = AbilityCatalog.Find(ability.getAbilityID());
             if (source != null && !source.DirectDamage) return 0;
@@ -393,7 +393,8 @@ namespace hds
             {
                 return (UInt16)random.Next(from, to + 1);
             }
-            return (UInt16)random.Next(50, 81);
+            int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
+            return (UInt16)(fixture ?? random.Next(50, 81));
         }
 
         /// <summary>Inner Strength cost of abilities without a retail measurement; see AbilityCosts.</summary>

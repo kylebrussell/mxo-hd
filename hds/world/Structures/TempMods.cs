@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace hds
@@ -130,6 +131,7 @@ namespace hds
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 MinValue, MaxValue;
+            public int DamageType = -1;
             public float Seconds;
             public Proc Proc;
             public float Chance = 1;
@@ -346,7 +348,7 @@ namespace hds
                     Seconds = m.Seconds, Proc = m.Proc, Chance = rule?.Chance ?? m.Chance,
                     Break = rule?.Break ?? (m.Target == MezAbility ? BreakRule.Damage : m.Break),
                     BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
-                    Interval = m.Interval });
+                    Interval = m.Interval, DamageType = rule != null && source.Mods.Count(p=>p.Target==m.Target && p.Proc==m.Proc)==1 ? rule.DamageType : -1 });
             }
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;
