@@ -17,6 +17,7 @@ namespace hds
         public bool lootOpen;           // a Search window is showing
         public bool putOpen;            // the empty Put container window is showing
         public UInt32 shownState;       // a computer's CurrentState as the client last had it
+        public bool unlockedOnce;       // a locked object's lock was picked (it spawns again unlocked)
     }
 
     /// <summary>
@@ -471,6 +472,13 @@ namespace hds
                 // In its default state a computer can't be selected
                 state.shownState = ComputerStateFor(progress, state);
                 SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(state.shownState, 1));
+            }
+            else if (state.def.locked && UtilityAbilities.IsLockable(state.goid) &&
+                     !state.unlockedOnce)
+            {
+                // Its LockedState offers Pick Lock and Unlock, not Open (UtilityAbilities: rule 4000 needs Open Locks)
+                SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(UtilityAbilities.LockedState, 1));
+                UtilityAbilities.RegisterLocked(client, state.entity, state.goid, () => state.unlockedOnce = true);
             }
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
         }

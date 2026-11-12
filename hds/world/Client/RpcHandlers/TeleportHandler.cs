@@ -193,6 +193,10 @@ namespace hds
                         : HardlineBooths.BuildItemsUploaded(uploaded, abilityCodeUploaded));
                     break;
 
+                case 0x07: // Hack Construct (rule 10024 HardlineHackConstruct)
+                    UtilityAbilities.HackConstruct(client);
+                    break;
+
                 default:
                     Output.WriteDebugLog("[HARDLINE] Unknown booth action " + action);
                     return;
