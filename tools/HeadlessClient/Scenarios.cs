@@ -187,6 +187,7 @@ public static partial class Scenarios
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
+        new Scenario("login-reader-error-recovery", LoginReaderCleanup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
         new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
