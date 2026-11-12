@@ -18,14 +18,14 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 42 | 12 | 103 |
+| Handled | 49 | 42 | 13 | 104 |
 | Partial | 0 | 0 | 0 | 0 |
-| Ignored | 0 | 6 | 37 | 43 |
+| Ignored | 0 | 6 | 36 | 42 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 19 |
 | **Total** | 49 | 48 | 50 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat room requests (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) turned out never to be sent: the client doesn't register the room commands (see "Chat rooms"); the server handles them anyway. Handled since then: booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat room requests (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) turned out never to be sent: the client doesn't register the room commands (see "Chat rooms"); the server handles them anyway. Handled since then: booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item. Central storage (`62`, and `67`/`68`/`5d` on storage entries) followed: see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md).
 
 The biggest gaps left, by impact:
 
@@ -195,10 +195,10 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `63` | Equip (SrcSlot, DestSlot) | D, C 40 | handled | high |
 | `64` | Unequip (Slot, DestSlot) | D, C 18 | handled | high |
 | `65` | Move or swap bag slots (SlotA, SlotB, IsCentralStorageItem) | D, C 34 | handled | high |
-| `5d` | Recycle (Slot, PersonalInventoryItem, RecycleItem) | D, C 7 | handled | medium |
-| `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination | medium |
-| `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
-| `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
+| `5d` | Recycle (Slot, PersonalInventoryItem, RecycleItem). PersonalInventoryItem 0 is a central storage entry, from the Loading Area storage window's Recycle (0x621d4ae0) | D, C 7 | handled (storage entries new: [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)) | medium |
+| `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination; IsCentralStorageItem 1 splits a storage entry ([CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)) | medium |
+| `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source; IsCentralStorageItem 1 merges storage entries ([CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)) | medium |
+| `62` | SourceSlot u16, DestinationSlot u16, PersonalInventoryItem u8: between the bag and central storage, from the Loading Area's Central Storage window (laviewinventory.cpp): double-click, the Move buttons, or a drag. PersonalInventoryItem 1 stores a bag slot (0x621e2000), 0 takes a storage entry out (0x621d4c00); DestinationSlot 6b means any | D | handled (new): `5f`/`5e`/`69` for the bag and storage, and `81 18` for storing; see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md) | low |
 | `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | ignored: the server has no luggable objects | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | ignored; code compiling is Codex's area | medium |
@@ -352,9 +352,9 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 
 - `68 <SourceSlot u8> <DestSlot u8> <AmountToSplitOff u32> <IsCentralStorageItem u8>` (class 0x6209b8e0, size 8; DestSlot defaults to `6b`, none). The amount from the split dialog dropped on a slot (DestSlot is that slot) or on a bag page (DestSlot is the page's first free slot, `6b` when it has none).
 - `67 <Slot1 u16> <Slot2 u16> <IsCentralStorageItem u8>` (0x6209b7c0, size 6). A stack dropped on a stack of the same item (0x620a0504), or on a bag page that holds one with room (0x620a01e6: the client looks for one with fewer than 20).
-- `62` is sent for central-storage drags only.
+- `62` is sent for central-storage moves only; with IsCentralStorageItem set, `67` and `68` work on storage entries (see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)).
 
-**The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds, central storage) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+**The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
 
 ## Looting single items
 

@@ -55,6 +55,7 @@ public static partial class Scenarios
         new Scenario("subway-ride-by-car", SubwayRideByCar),
         new Scenario("subway-across-districts-and-refusals", SubwayAcrossDistrictsAndRefusals),
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
+        new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
