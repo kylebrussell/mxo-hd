@@ -75,6 +75,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             return AbilityBuffs.Retail.TryGetValue(id, out buff) ||
+                AbilityHealthCallbacks.Template(id) && AbilityHealthCallbacks.TryGet(id,caster.playerInstance.Level.getValue()[0],AbilityHealthCallbacks.Roll15(),out buff) ||
                 TryScriptedTimed(id, caster.playerInstance.Level.getValue()[0],out buff) ||
                 TryToggle(id, DeathPenalty.EffectiveLevel(caster, AbilityPassives.Level(caster, id)), out buff) ||
                 TryGet(id, caster.playerInstance.Level.getValue()[0], out buff) || AbilityBuffs.TryGet(id, out buff);
