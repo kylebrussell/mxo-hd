@@ -154,14 +154,14 @@ namespace hds
         public const double TargetDistance = 15800, DistanceBandLow = 14500, DistanceBandHigh = 17000;
 
         public static MissionSite Choose(IEnumerable<MissionSite> sites, string wanted, double x, double z, int npcs, int objects,
-            Random rng, ICollection<MissionSite> exclude = null, ICollection<string> neighbourhoods = null)
+            Random rng, ICollection<MissionSite> exclude = null, ICollection<string> neighbourhoods = null, int requiredFurniture = 0)
         {
             List<(MissionSite site, double distance)> fitting = new List<(MissionSite, double)>();
             foreach (MissionSite site in sites)
             {
                 if (site.elevatorDoor == null || site.npcSpots.Count < Math.Min(npcs, 3) || !Matches(wanted, site.style) ||
                     (exclude != null && exclude.Contains(site)) ||
-                    site.containers.Count + site.objectSpots.Count < objects)
+                    site.containers.Count + site.objectSpots.Count < objects || site.containers.Count < requiredFurniture)
                 {
                     continue;
                 }
