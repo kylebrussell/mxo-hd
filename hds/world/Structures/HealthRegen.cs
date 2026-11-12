@@ -30,7 +30,7 @@ namespace hds
         /// <summary>One timer tick for a player: raises their health and sends the own-view update.</summary>
         public static void Tick(WorldClient client, double seconds)
         {
-            if (client == null || !client.playerData.getOnWorld())
+            if (client == null || !client.playerData.getOnWorld() || AbilityDesperation.HoldQaHealth)
             {
                 return;
             }
