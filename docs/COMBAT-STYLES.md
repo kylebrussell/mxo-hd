@@ -41,7 +41,7 @@ Abilities that have a stance but aren't special moves are **not** gated yet. Tha
 
 | Ability | Server behaviour | Evidence / choice |
 |---|---|---|
-| Poison Knife 146 | ThrownDOT 17 over 25 s, tick int(17/25×2.5+.5) = 2, on NPC or player. | Stored DOT; tempmods.ThrownDOT. |
+| Poison Knife 146 | ThrownDOT 17 over 25 s, tick int(17/25×2.5+.5) = 2, on NPC or player. The three thrown DOTs are UDB0 catalog debuffs, so `AbilityHostile.Catalog` runs them (with their caster/target lines); `CombatSpecials` keeps their landing damage off the generic fallback. | Stored DOT; tempmods.ThrownDOT. |
 | Wounding Throw 281 | ThrownDOT 61 over 50 s. A special move that needs Spy Style. | Stored. |
 | Sever Artery 341 | ThrownDOT 68 over 30 s; MovementSpeed, Sneak and Invisibility movement −50 and ForceCombat −10 for 30 s. | Stored. **RandomCombatStateChance** (10% per 2.5 s Daze/OffBalance/Staggered) is not modelled. |
 | Berserker Attack 535 | When the special lands, the caster gets Melee Damage +11 and Melee and Ranged Damage Resistance +50 for 21 s. | Stored `WhenEnabled 1` modifiers. Applying them on landing, rather than on use, is a choice. |
