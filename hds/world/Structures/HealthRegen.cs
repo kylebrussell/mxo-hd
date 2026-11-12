@@ -48,10 +48,11 @@ namespace hds
 
             client.playerInstance.Health.setValue(next.Value);
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), current - next.Value, next.Value < max);
-            client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(next.Value), false);
+            UInt16 after = PvpCombat.HealthOf(client); // publish the completed callback transaction
+            client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(after), false);
             client.FlushQueue();
             // And on everyone's view of them: a player fighting this one sees what their hits leave (docs/PVP.md)
-            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next.Value))));
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(after))));
         }
     }
 }
