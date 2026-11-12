@@ -51,6 +51,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        conditional_stun = AbilityConditionalControls.Handles(e.Id),
         tactical_toggle = e.Id == 9 || e.Id == 15,
         buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
             e.Id == 1149 || AbilityHealthCallbacks.Template(e.Id) || AbilityBuffs.Scripted.ContainsKey(e.Id) || AbilityScaledBuffs.TryScriptedTimed(e.Id,50,out _) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
@@ -90,8 +91,10 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-// New inventory fields are optional so unrelated abilities retain stable review rows.
+// Emit optional execution evidence only on its actual producer rows.
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
-    JsonSerializer.SerializeToElement(row).EnumerateObject().Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
+    JsonSerializer.SerializeToElement(row).EnumerateObject().Where(p =>
+        (p.Name != "conditional_stun" || p.Value.GetBoolean()) &&
+        (p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0))
         .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);

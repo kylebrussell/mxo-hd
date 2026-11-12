@@ -22,6 +22,7 @@ namespace hds
                 PvpCombat.Damage(caller, hits);
                 return "Special defence 281 stat1011 total " + defence + "; seeded landed " + hits + "/1000; diagnostic HP " + before + "->" + PvpCombat.HealthOf(caller) + ".";
             }
+            if (command == "daze") return CombatDepthDaze.Run(caller, args);
             if (command == "empweakness" && args.Length == 3 && (args[1] == "on" || args[1] == "off") &&
                 ushort.TryParse(args[2],out ushort empHealth) && empHealth > 0)
                 return AbilityEmpBlast.Fixture(caller,args[1] == "on",empHealth);
@@ -97,7 +98,7 @@ namespace hds
                 TimedEffects.RemoveParent(TimedEffects.ForPlayer(caller),1102); DuelBot.Dismiss(caller);
                 return "Combat depth fixture removed.";
             }
-            return "?combatdepth determination <0..1000> | stun | cast <ability> | join | status | shieldstatus | specialdefense | sightgap | sightclear | off";
+            return "?combatdepth determination <0..1000> | stun | daze [1..60 seconds] | cast <ability> | join | status | shieldstatus | specialdefense | sightgap | sightclear | off";
         }
     }
 }
