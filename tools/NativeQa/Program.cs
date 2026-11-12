@@ -2,6 +2,23 @@ using HeadlessClient;
 using hds;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
+
+#if DEBUG
+const string configuration = "Debug";
+#else
+const string configuration = "Release";
+#endif
+// Read-only provenance inspection exits before fixture directories, client locks or database access.
+if (args.Length > 0 && args[0] == "--build-info")
+{
+    string inspectRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Directory.GetCurrentDirectory());
+    string assembly = Path.Combine(inspectRoot, "hds", "bin", configuration, "net8.0", "hds.dll");
+    Console.WriteLine(JsonSerializer.Serialize(new { Configuration=configuration, SourceAssembly=assembly,
+        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))) },
+        new JsonSerializerOptions { WriteIndented=true }));
+    return;
+}
 
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
@@ -11,6 +28,7 @@ bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
 bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
+bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
@@ -58,6 +76,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
+    if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
@@ -105,21 +124,28 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     if (passivesMode)
         await database.ExecuteAsync("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)");
     string snapshot = Path.Combine(qaRoot, "snapshot");
-    string sourceBin = Path.Combine(root, "hds", "bin", "Debug", "net8.0");
-    string targetBin = Path.Combine(snapshot, "hds", "bin", "Debug", "net8.0");
+    string sourceBin = Path.Combine(root, "hds", "bin", configuration, "net8.0");
+    string targetBin = Path.Combine(snapshot, "hds", "bin", configuration, "net8.0");
     foreach (string file in Directory.EnumerateFiles(sourceBin, "*", SearchOption.AllDirectories))
     {
         string target = Path.Combine(targetBin, Path.GetRelativePath(sourceBin, file));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         File.Copy(file, target, true);
     }
+    string sourceAssembly = Path.Combine(sourceBin, "hds.dll");
+    string sourceAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(sourceAssembly)));
+    string snapshotAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(targetBin, "hds.dll"))));
+    if (sourceAssemblySha256 != snapshotAssemblySha256)
+        throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
     {
         ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
         ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
     });
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
-    { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
+    { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
+        Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
+        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
