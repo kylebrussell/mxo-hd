@@ -8,7 +8,7 @@ Parent871 requires character level99, above retail50. Normal load prerequisite r
 
 The permanent listener derives from the owned loaded-ability snapshot. Loading/unloading increments its generation; pending callbacks validate that generation plus world/life. The existing256-callback/once-per-owner-parent synchronous transaction bound applies to nested health effects. Removed/dead/duel-dead listeners do not execute. Integer roll0..99<15 uses System.Random. This probability mapping and bounded delivery policy are ours; retail RNG sequence and fatal-event ordering remain unverified. IS is capped at maximum; the sourced line and FX accompany successful rolls.
 
-Validation: fresh `ability-zen-master` tests damage, external healing, sourced activation, capped IS, direct872 refusal, real80ae parent unload stopping procs, normal level50 load871 refusal (DB0/no load acknowledgement), stale inaccessible871 unload and death cleanup. Units additionally test14/15 chance boundaries, exact+5, zero delta, no parent, unloaded/world-reloaded parent, child-only ownership, nested healing once, dead and duel-dead. Natural health regeneration is a genuine external health event and may itself proc. Native acceptance remains pending Claude.
+Validation: fresh `ability-zen-master` tests damage, external healing, sourced activation, capped IS, direct872 refusal, real80ae parent unload stopping procs, normal level50 load871 refusal (DB0/no load acknowledgement), stale inaccessible871 unload and death cleanup. Units additionally test14/15 chance boundaries, exact+5, zero delta, no parent, unloaded/world-reloaded parent, child-only ownership, nested healing once, dead and duel-dead. Natural health regeneration is a genuine external health event and may itself proc. Claude marked PR127 native PASS at `808e03c2ffa26dafc5a2c7cb6106df4435d7281a`; this fixture-only integration preserves that runtime and prior acceptance without claiming a new native session.
 
 ## Claude-only pinned-head checklist
 
@@ -17,3 +17,9 @@ Validation: fresh `ability-zen-master` tests damage, external healing, sourced a
 3. Login. `?health 90` then `?health 120`: actual health changes produce sourced restore line/FX and5IS up to200; ordinary IS/HP regeneration continues separately. Exact delta is covered by units.
 4. Direct872 must refuse without cost or effect. Unload871 and change health again: no871->872 proc. Death/world transition must discard old-generation pending delivery.
 5. Separately normal-load871 as a level50 disposable actor: level99 prerequisite refusal, no loaded871/hidden872. Follow established Claude stop/reset/lock-release lifecycle. Record unavailable/skipped checks honestly.
+
+## Modular fixture integration
+
+`Modes/ZenMasterMode.cs` preserves the native-passed legacy fixture: loaded2/17/871 at Mara; copied110 forced99 with100/500HP and100/200IS before loadout; helper IS/Disguise615 setup, copied110 IS reset and helper6111 level20 retain their original SQL order. Fixed callback rolls0 are scoped to health-callbacks and zen-master. The generic immutable metadata extension emits integer `ZenMasterForcedLevel=99` alongside the existing HealthCallbackQa/callback-roll fields; reserved character/provenance fields cannot be overridden. The level99 production prerequisite and retail50 cap remain unchanged.
+
+The current generated table is the exact-head CI artifact under [the audit policy](ABILITY-AUDIT.md). The tracked historical Markdown snapshot is preserved from the141 parent; current CSV and executable coverage retain the Zen changes. No native setup or client action was performed for this merge.
