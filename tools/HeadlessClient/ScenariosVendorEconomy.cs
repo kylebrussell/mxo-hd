@@ -21,7 +21,7 @@ public static partial class Scenarios
         p.SendRpc("5d 0d 00 01 01");await p.WaitForRpcAsync("5f 0d 00 01");Check.Equal(2220L,await Cash(),"Leveled ability recycle uses base VendorPrice, not buyback premium");
         p.SendRpc("5d 0e 00 01 00");await p.WaitForTextAsync("Non-recycle removal is not supported");Check.Equal(1L,await Items(14),"Unproven flag0 is nondestructive");
         p.SendRpc("5d 0e 00 01 01");await p.WaitForRpcAsync("5f 0e 00 01");Check.Equal(2220L,await Cash(),"Explicit VendorPrice0 remains0");
-        await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT economy_reject_credit CHECK(charId<>{p.CharId} OR cash<2221)");
+        await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT economy_reject_credit CHECK(handle<>'Economy' OR cash<2221)");
         p.SendRpc("81 11 00 0f");await p.WaitForTextAsync("sale could not be completed");
         Check.Equal(1L,await Items(15),"Rejected account credit rolls inventory removal back");Check.Equal(2220L,await Cash(),"Rejected sale leaves cash");
         await context.Database.ExecuteAsync("ALTER TABLE characters DROP CONSTRAINT economy_reject_credit");
