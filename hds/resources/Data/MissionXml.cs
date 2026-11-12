@@ -106,7 +106,8 @@ namespace hds
 
             foreach (XmlNode child in Elements(node, "object"))
             {
-                phase.objects.Add(new MissionObjectDef { id = (ushort)Int(child, "id", 0), kind = Attr(child, "kind") ?? "Furniture" });
+                phase.objects.Add(new MissionObjectDef { id = (ushort)Int(child, "id", 0), kind = Attr(child, "kind") ?? "Furniture",
+                    locked = Int(child, "locked", 0) != 0 });
             }
 
             foreach (XmlNode child in Elements(node, "wave"))
