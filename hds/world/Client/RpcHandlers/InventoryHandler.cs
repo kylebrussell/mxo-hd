@@ -109,47 +109,34 @@ namespace hds
 
         public void processItemDelete(ref byte[] packet)
         {
-            if (packet.Length < 2)
+            WorldClient client=Store.currentClient;
+            if(!VendorTrading.TryRecycleRequest(packet,out UInt16 slot,out bool personal,out bool recycle))return;
+            // No current native UI producer of RecycleItem0 has been recovered. Refuse rather than guess destructive semantics.
+            if(!recycle){ClientActionsHandler.Notice(client,"Non-recycle removal is not supported.");return;}
+            lock(client.playerData.craftingSync)
             {
-                Output.WriteDebugLog("[INVENTORY] Item delete/recycle packet too short.");
-                return;
+                if(!personal){CentralStorageHandler.ProcessRecycle(client,slot);return;}
+                var db=Store.dbManager.WorldDbHandler;
+                Crafting.InventoryItem item=db.GetInventoryItems(client.playerData.getCharID()).Find(i=>i.Slot==slot);
+                if(item.Goid==0){ClientActionsHandler.Notice(client,"There is nothing to recycle in that slot.");return;}
+                UInt32 quote=VendorPricing.GetRecyclePrice(item.Goid,item.Count);
+                try
+                {
+                    InventoryPayout result=db.ExchangeInventoryForInfo(client.playerData.getCharID(),slot,item.Goid,item.Count,quote);
+                    if(result==null){ClientActionsHandler.Notice(client,"That inventory item changed; try again.");return;}
+                    client.playerData.setInfo(result.Cash);
+                    var packets=new ServerPackets();
+                    packets.SendInfoDelta(client,result.Credited,ServerPackets.InfoReasonRecycle);
+                    packets.SendInfoCurrent(client,result.Cash,ServerPackets.InfoReasonRecycle);
+                    packets.sendInventoryItemDelete(slot,client);
+                }
+                catch(Exception e)
+                {
+                    Output.WriteDebugLog("[INVENTORY] Recycle rolled back: "+e.Message);
+                    ClientActionsHandler.Notice(client,"The recycle could not be completed. Your item and information were kept.");
+                }
             }
-
-            // CLIENT_ITEM_RECYCLE (5d) body: slot u16 little-endian, then 01 01. Confirmed with the
-            // real client: recycling the item in slot 10 sent "0a 00 01 01"; retail "5d 04 00 01 01".
-            byte[] slotBytes = {packet[0], packet[1]};
-            UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
-
-            // 5d <slot u16> <PersonalInventoryItem u8> <RecycleItem u8>: 0 is a central storage entry (0x621d4ae0)
-            if (packet.Length >= 3 && packet[2] == 0)
-            {
-                CentralStorageHandler.ProcessRecycle(Store.currentClient, slot);
-                return;
-            }
-
-            UInt32 charId = Store.currentClient.playerData.getCharID();
-            UInt32 itemGoId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-            ServerPackets pak = new ServerPackets();
-            if (itemGoId == 0)
-            {
-                pak.sendSystemChatMessage(Store.currentClient, "There is nothing to recycle in that slot.", "MODAL");
-                return;
-            }
-
-            // Retail order: 80 e7 (+value, reason 0x0f) -> 80 e4 (new cash, 0x0f) -> 5f (remove slot).
-            long currentCash = Store.currentClient.playerData.getInfo();
-            UInt32 value = VendorPricing.GetRecyclePrice(itemGoId);
-            UInt32 newCash = (UInt32)Math.Min(Math.Max(currentCash, 0) + (long)value, UInt32.MaxValue);
-
-            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
-            Store.currentClient.playerData.setInfo(newCash);
-
-            pak.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonRecycle);
-            pak.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonRecycle);
-            pak.sendInventoryItemDelete(slot, Store.currentClient);
         }
-
 
         /// <summary>
         /// Uses the consumable in a bag slot, asked for with the item's ability in a 80 b9 request. Retail order
