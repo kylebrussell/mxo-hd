@@ -80,6 +80,10 @@ public class AbilityPassiveTests
     {
         var client = Client();
         AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (52, 50), (45, 50), (269, 1) });
+        client.playerData.deathPenalty = .85f;
+        client.playerData.deathPenaltyAt = DeathPenalty.Now;
+        AbilityPassives.Refresh(client);
+        Assert.Equal(168, AbilityStats.Player(client, 643)); // exact initial15% loss, independent of delivery timing
         client.playerData.deathPenalty = .5f;
         client.playerData.deathPenaltyAt = DeathPenalty.Now;
         AbilityPassives.Refresh(client);
