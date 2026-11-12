@@ -2,6 +2,7 @@ using HeadlessClient;
 using hds;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
@@ -107,21 +108,33 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     if (passivesMode)
         await database.ExecuteAsync("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)");
     string snapshot = Path.Combine(qaRoot, "snapshot");
-    string sourceBin = Path.Combine(root, "hds", "bin", "Debug", "net8.0");
-    string targetBin = Path.Combine(snapshot, "hds", "bin", "Debug", "net8.0");
+#if DEBUG
+    const string configuration = "Debug";
+#else
+    const string configuration = "Release";
+#endif
+    string sourceBin = Path.Combine(root, "hds", "bin", configuration, "net8.0");
+    string targetBin = Path.Combine(snapshot, "hds", "bin", configuration, "net8.0");
     foreach (string file in Directory.EnumerateFiles(sourceBin, "*", SearchOption.AllDirectories))
     {
         string target = Path.Combine(targetBin, Path.GetRelativePath(sourceBin, file));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         File.Copy(file, target, true);
     }
+    string sourceAssembly = Path.Combine(sourceBin, "hds.dll");
+    string sourceAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(sourceAssembly)));
+    string snapshotAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(targetBin, "hds.dll"))));
+    if (sourceAssemblySha256 != snapshotAssemblySha256)
+        throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
     {
         ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
         ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
     });
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
-    { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
+    { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
+        Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
+        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
