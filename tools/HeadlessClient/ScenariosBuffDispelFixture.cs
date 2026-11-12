@@ -14,13 +14,34 @@ public static partial class Scenarios
         Check.Equal(5,ready.Length,"Real bootstrap waited both upgrades, aura toggle and both child records");
         var view=await caster.WaitForViewNamedAsync(target.Handle);
         int off=target.Received(ModPattern(49,520,true)).Count;
-        int siblingOff=target.Received(ModPattern(327,172,true)).Count;
-        Cast(caster,261,view.ViewId);
-        await target.WaitUntilAsync(()=>context.Server.DebugLog().Contains("MachinegunFistComboAbility lands on DispelFixtureTarget"),"Normal261 landing",TimeSpan.FromSeconds(12));
-        await target.WaitUntilAsync(()=>OwnHealth(target)>0 && OwnHealth(target)<10000,"Both proc and non-proc still do ordinary damage",TimeSpan.FromSeconds(8));
+        int siblingOff=target.Received(ModPattern(489,172,true)).Count;
+        SelectStyle(caster,133);
+        await caster.WaitForRpcAsync(ModPattern(133,522));
+        caster.SendRpc($"40 {HandleOf(view)} 01 6b");
+        await caster.WaitForRpcAsync("45");
+        await WaitForCombatView(caster);
+        bool landed=false;
+        for(int attempt=0;attempt<8 && !landed;attempt++)
+        {
+            Cast(caster,261,view.ViewId);
+            // A failed normal contest consumes that queued move. Requeue only after the real10s recast,
+            // rather than treating later ordinary rounds as another attempt at the same special.
+            for(int tick=0;tick<25 && !landed;tick++)
+            {
+                await Task.Delay(500);
+                landed=context.Server.DebugLog().Contains("MachinegunFistComboAbility lands on DispelFixtureTarget");
+            }
+        }
+        Check.That(landed,"Queued261 executes through an ordinary interlock contest within eight paid attempts");
+        Check.That(context.Server.DebugLog().Contains("MachinegunFistComboAbility is DispelFixtureCaster's next move"),"80b9 queued the special in the active40 interlock");
+        Check.That(caster.Received("45").Any(r=>(RoundResult(r)&0x100)!=0),"Actual RPC45 contains executed-special result0x100");
+        Check.That(context.Server.DebugLog().Contains("Machinegun_First_Combo"),"Special execution presentation names Machinegun Fist Combo");
+        var damage=System.Text.RegularExpressions.Regex.Match(context.Server.DebugLog(),@"MachinegunFistComboAbility lands on DispelFixtureTarget for (\d+)");
+        Check.That(damage.Success && int.Parse(damage.Groups[1].Value)>0,"Executed261 deals its ordinary damage in both profiles");
+        await target.WaitUntilAsync(()=>OwnHealth(target)>0 && OwnHealth(target)<10000,"Executed261 produces a health update",TimeSpan.FromSeconds(8));
         if(proc)await target.WaitUntilAsync(()=>target.Received(ModPattern(49,520,true)).Count>off,"Forced0 removes Gaussian Blur",TimeSpan.FromSeconds(8));
         else {await Task.Delay(500);Check.Equal(off,target.Received(ModPattern(49,520,true)).Count,"Forced99 preserves upgrade on a landed hit");}
-        Check.Equal(siblingOff,target.Received(ModPattern(327,172,true)).Count,"261 leaves sibling upgrade intact");
+        Check.Equal(siblingOff,target.Received(ModPattern(489,172,true)).Count,"261 leaves sibling upgrade intact");
         Check.Equal(0,target.Received("80 bd 05 2a 00 00 00 00 00 00 00").Count,"261 leaves sibling aura on");
         if(proc)
         {
@@ -28,7 +49,7 @@ public static partial class Scenarios
             target.SkipReceived();await Task.Delay(600);Cast(caster,420,view.ViewId);
             await target.WaitForRpcAsync("80 bd 05 2a 00 00 00 00 00 00 00",TimeSpan.FromSeconds(12));
             Check.That(context.Server.DebugLog().Contains("[AURA] 42 off"),"Normal420 deactivates aura without cooldown retries");
-            Check.That(target.Received(ModPattern(327,172,true)).Count>siblingOff,"Guaranteed sweep removes remaining upgrade");
+            Check.That(target.Received(ModPattern(489,172,true)).Count>siblingOff,"Guaranteed sweep removes remaining upgrade");
             int after=target.Received(ModPattern(695,522)).Count;
             await Task.Delay(5600);
             Check.Equal(after,target.Received(ModPattern(695,522)).Count,"Stopped aura never re-adds child records");
