@@ -1,0 +1,42 @@
+# Loading Area hardline registration
+
+This is an explicit OURS registration extension, not a recovered retail assignment of construct numbers. Native Margin09 registers filenames in advertised order; the hardline loader uses their one-based ordinal to match real HDL/HID records. Previously09 advertised only three cities while cached hardlines incorrectly used internal map IDs12-17.
+
+| Logical | Internal map | Universe METR | World |
+|---|---|---|---|
+|1|1|12|Slums|
+|2|2|7|Downtown|
+|3|3|169|International|
+|4|12|379|large01|
+|5|13|384|large02|
+|6|14|377|medium01|
+|7|15|382|medium02|
+|8|16|383|medium03|
+|9|17|381|small03|
+
+The original09 opaque header and cities remain unchanged. At offset13 its u16 absolute array offset remains15; the u16 count is followed by Universeu16 IDs. Cached08 hardlines are five-byte logicalu8/HIDu32LE records.6c/6d,80ff and both818e construct fields use logical IDs, with full uint validation before conversion. Database rows and HardlineNetwork keep internal map IDs.06 world/instance fields, PvP11-18, tutorial800, LA901 and the existing city1 tutorial80fa packet are unchanged. No general activation packet was added.
+
+`HardlineUploadRequired=false` remains the existing OURS default. When true, cached/status/teleport destinations require uploaded, source-valid hardlines. No normal player receives new discovery rows. The discovery fixture inserts explicit QA-only rows after proving refusal. Its harness-only XML override copies the ordinary source configuration into a new GUID working directory and edits only that ordinary file, never source/output hardlinks. It verifies source configuration bytes remain unchanged.
+
+## Primary evidence
+
+Client SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a`. Shipped `resource/worlds/universe.btb` SHA256 `e4676c0a31178a4beb167c08ffa96cbacc62cb35b3af66d201ee9a41560116fa`,581 METR records parsed to exact EOF.
+
+* Native6253bf80 decodes09: opcode@0, statusu32@1, opaqueu32@5 and9, offsetu16@13; zero offset means absent array.
+* Successful09 calls6252ad20 at62542d17 to erase the filename vector, so relog does not append to the previous registration.62542d40 maps incoming Universe IDs through622a9e40 and appends via mediator+190/6252af10.
+*621c6d90 loads actual Hdln resources by filename ordinal and HID, setting physical eligibility at621c7085.620374a0 filters that byte;6d/621c42c0 changes the separate known byte.
+*621c3da0 serializes five-byte cache records;621c7a30 accepts logical IDs1-10.
+*12 tracked retail MS_ConnectReply packets independently decoded without errors all advertise `[12,7,169]`, including Trinity second_pc_010 vendor-selected packet180 and Rajko near-end Mara hardline packet165. They support the preserved cities only; the six additions are OURS policy.
+
+No primary evidence establishes06 as a hardline ordinal, so it remains unchanged. District data remains partial with its existing static/rotation/population omissions.
+
+## Validation and Claude-only native one-pass
+
+Units cover09 opaque bytes/order, bounds/non-aliasing, cache widths, discovery refusal, safe source heading192 and the separate PvP namespace. Headless `la-hardline-registration` and `la-hardline-discovery` independently decode actual09/cache and exercise ordinary source booth, Loading Area, logical8/HID2, exact shipped internal16 arrival, malformed/replayed refusals and direct818e logical9 to internal17. Wire success is not native UI proof.
+
+Discovered mode `la-hardline-registration` starts CSR110 at medium03/2 source arrival37700,495,31700 with byte heading192, no dev/GM/RNG override and no QA discovery grants (existing default policy).
+
+1. Rightclick the nearby actual592 booth and choose Exit to Loading Area; confirm modal and transition.
+2. Inspect native construct labels, Actions/menu intact; select medium03/HID2 and confirm exact booth/world reload.
+3. Travel from a city booth to a construct and back; check ordinary direct hardline-map travel.
+4. Check city, archive-book and tutorial routes retain their existing worlds. Record native label/HDL failures separately from headless wire results.
