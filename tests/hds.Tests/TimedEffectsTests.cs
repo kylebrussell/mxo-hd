@@ -139,7 +139,7 @@ public class TimedEffectsTests
         Assert.Equal(TempMods.KindPlain, subject.LastImmunity.Kind);
         Assert.True(subject.Effects.Has(TempMods.StunAbility));
 
-        List<TimedEffects.Active> second = TimedEffects.Apply(subject, TempMods.Retail[347], now + 1);
+        List<TimedEffects.Active> second = TimedEffects.Apply(subject, TempMods.Retail[333], now + 1);
         Assert.Empty(second);
 
         // Vector during the immunity: its Powerless is refused, its ViralDeflection lands

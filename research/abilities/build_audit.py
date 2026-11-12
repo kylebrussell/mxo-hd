@@ -220,6 +220,8 @@ def server(i):
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r.get('resurrection'):
         parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
+    if r.get('conditional_stun'):
+        parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
     if r.get('health_callback'):
         parts.append(r['health_callback'])
     if r['healing'] and not r.get('health_callback'):
