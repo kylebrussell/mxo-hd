@@ -36,6 +36,7 @@ namespace hds
 
             // Before the lock: ending a fight between players takes that fight's lock, and a fight starting takes this one
             PvpCombat.OnPlayerGone(client);
+            CoderPets.OwnerLeft(client); // logout: the simulacrum goes too
 
             lock (Handlers)
             {

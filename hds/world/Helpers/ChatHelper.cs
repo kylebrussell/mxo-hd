@@ -424,6 +424,16 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if (command.Equals("?pet"))
+                {
+                    // Dev command: coder simulacra (docs/CODER-PETS.md). ?pet cast <ability>, ?pet summon <ability>, ?pet dummy,
+                    // ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                            ? CoderPets.DevCommand(Store.currentClient, commands)
+                            : "?pet is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
                 if (command.Equals("?socialbot"))
                 {
                     // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
