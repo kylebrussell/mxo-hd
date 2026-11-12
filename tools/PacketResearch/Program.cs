@@ -22,6 +22,17 @@ List<string> externalSources = GetMany(options, "--external-source");
 string? json = GetSingle(options, "--json");
 string? markdown = GetSingle(options, "--markdown");
 
+string? familiesJson = GetSingle(options, "--families-json");
+if (familiesJson is not null)
+{
+    var headers = PacketResearcher.LoadLocalHeaders(fullRepo).ToArray();
+    var summaries = packetDumpRoots.SelectMany(root => PacketResearcher.LoadPacketDumpSummaries(root, headers, fullRepo));
+    File.WriteAllText(familiesJson, System.Text.Json.JsonSerializer.Serialize(
+        ProtocolFamilyAudit.Summarize(summaries), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine($"Wrote bounded family accounting to {familiesJson}");
+    return 0;
+}
+
 PacketResearchReport report = PacketResearcher.BuildReport(fullRepo, packetDumpRoots, rajko, externalSources);
 
 if (json is not null)
@@ -96,6 +107,7 @@ static void PrintUsage()
 
     Options:
       --repo <path>            Repository root. Defaults to current directory.
+      --families-json <path>  Bounded lossless 80bc / conservative 03 accounting; skips full report.
       --packet-dumps <path>    Packet dump root. Can be provided more than once.
                                Defaults to research/packet-dumps under --repo.
       --rajko <path>           Optional rajkosto/mxoemu clone root.

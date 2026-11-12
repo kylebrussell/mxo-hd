@@ -26,5 +26,5 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 
 mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
 
-`typed-resistance` compares normal330 and1135 against self8/5, with actual rawdraw65/SpyStyle29 influence distinguished from83 pre-resistance. Only1135 generic raw draw is scoped to65 under actual disposable DB/dev/mode guards; no global RNG. See docs/ABILITY-TYPED-RESISTANCE.md.
+`protocol-family` loads Consistent Technique6 for a normal20-second modifier and nearby helper creation diagnostic. No dev/GM/forced RNG. See [PROTOCOL-FAMILY-DECODERS.md](../../../docs/PROTOCOL-FAMILY-DECODERS.md).
 `machines-chain` seeds only the seven Tyndall intro receipts and exposes Agent Gray's ten Prima missions2201–2210 at level50. Site-only seed220110 is guarded by exact dev/disposable DB checks; no combat/callback RNG or selected completion grants. [Route and source limits](../../../docs/MACHINES-PRIMA-CHAIN.md).
