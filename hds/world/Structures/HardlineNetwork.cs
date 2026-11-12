@@ -39,7 +39,8 @@ namespace hds
             { (UInt16)MxOLocations.SLUMS, "slums" }, { (UInt16)MxOLocations.DOWNTOWN, "downtown" },
             { (UInt16)MxOLocations.INTERNATIONAL, "international" },
             { (UInt16)MxOLocations.SMALL03, "small03" },
-            { (UInt16)MxOLocations.LARGE01, "large01" }
+            { (UInt16)MxOLocations.LARGE01, "large01" },
+            { (UInt16)MxOLocations.MEDIUM02, "medium02" }
         };
 
         private static readonly object loadLock = new object();
@@ -135,7 +136,7 @@ namespace hds
         {
             Load();
             return byDistrict.TryGetValue(district, out List<Hardline> list)
-                ? list.Where(h => h.name.Length > 0 || h.metrId == (UInt16)MxOLocations.SMALL03 || h.metrId == (UInt16)MxOLocations.LARGE01).Select(h => h.hid).OrderBy(id => id).ToList()
+                ? list.Where(h => h.name.Length > 0 || h.metrId == (UInt16)MxOLocations.SMALL03 || h.metrId == (UInt16)MxOLocations.LARGE01 || h.metrId == (UInt16)MxOLocations.MEDIUM02).Select(h => h.hid).OrderBy(id => id).ToList()
                 : new List<UInt16>();
         }
 
@@ -153,7 +154,7 @@ namespace hds
             foreach (Hardline h in list)
             {
                 double dx = h.x - x, dz = h.z - z, d = dx * dx + dz * dz;
-                if ((h.name.Length > 0 || h.metrId == (UInt16)MxOLocations.SMALL03 || h.metrId == (UInt16)MxOLocations.LARGE01) && d < bestDistance)
+                if ((h.name.Length > 0 || h.metrId == (UInt16)MxOLocations.SMALL03 || h.metrId == (UInt16)MxOLocations.LARGE01 || h.metrId == (UInt16)MxOLocations.MEDIUM02) && d < bestDistance)
                 {
                     best = h;
                     bestDistance = d;
