@@ -10,9 +10,20 @@ public static partial class Scenarios
         p.SendRpc("81 48");
         await p.WaitForRpcAsync("81 49");
         Check.Equal(0,p.Received("81 07").Count,"A city tutorial request is ignored");
+        var witness = (await context.AddPlayersInWorldAsync(new CharacterSeed("DeathWitness")
+            { X=23928,Y=495,Z=13984,Level=30 }))[0];
+        var seen = await witness.WaitForViewNamedAsync(p.Handle);
         p.SendChat("?die");
         await p.WaitForViewUpdateAsync(2,"02 80 80 80 c1 01 00 00 80 80 01 00 00 00 00");
         await p.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60");
+        await p.WaitForViewUpdateAsync(2,"01 28 ?? 40 05 00 00 10");
+        await witness.WaitForViewUpdateAsync(seen.ViewId,"01 2a ?? 40 05 00 00 10 00");
+        await witness.WaitForViewUpdateAsync(seen.ViewId,"02 80 80 12 01 00 00");
+        var late = (await context.AddPlayersInWorldAsync(new CharacterSeed("LateDeathWitness")
+            { X=23728,Y=495,Z=13984,Level=30 }))[0];
+        var lateSeen = await late.WaitForViewNamedAsync(p.Handle);
+        await late.WaitForViewUpdateAsync(lateSeen.ViewId,"01 2a ?? 40 05 00 00 10 00");
+        await late.WaitForViewUpdateAsync(lateSeen.ViewId,"02 80 80 12 01 00 00");
         p.SendRpc("81 4c");
         await p.WaitForRpcAsync("80 fd 00 00 00 00 01 01");
         p.SendRpc("80 fe 01");
@@ -38,6 +49,9 @@ public static partial class Scenarios
         await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Count(v=>v.ViewId==2)>selfViews,"post-reset tutorial self spawn",TimeSpan.FromSeconds(15));
         await p.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[TUTORIAL] Begins"),"tutorial runtime starts",TimeSpan.FromSeconds(15));
         Check.Equal(0L,await context.Database.LongAsync($"SELECT districtId FROM characters WHERE charId={p.CharId}"),"Tutorial map index saved separately");
+        await Task.Delay(500); // old death reassertions cannot survive the reset/new-world spawn
+        Check.That(!p.World.ViewSnapshot().Skip(viewsAtLa).Any(v=>BytePattern.Parse("02 00 01 28 ?? 40 05 00 00 10").Occurs(v)),
+            "No stale corpse movement after reconstruction");
         Check.Equal(0, p.World.Problems.Count,"Native reconstruction sequence has ordered, readable packets");
     }
 }
