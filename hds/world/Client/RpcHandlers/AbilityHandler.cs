@@ -212,6 +212,7 @@ namespace hds
                 return;
             }
 
+            bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
             if (!stealth) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
@@ -258,10 +259,10 @@ namespace hds
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
                 if (ability.getCastingTime() > 0 ||
-                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView))
+                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
                     DelayedActions.AfterFor(client, ability.getCastingTime(),
-                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView); });
+                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener); });
                 }
             }
         }

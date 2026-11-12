@@ -42,6 +42,7 @@ namespace hds
             /// <summary>The move the next round decides.</summary>
             public CombatInterlock.Move Move;
             public AbilityItem QueuedAbility;
+            public bool SneakOpener;
             public bool Withdrawing;
             public UInt16 RoundRecord;
             public UInt16 CombatEffectRecordId;
@@ -419,7 +420,7 @@ namespace hds
         }
 
         /// <summary>An instant ability on the opponent becomes the player's next move. False when the target isn't the opponent.</summary>
-        public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             if (!ControlActions.CanUseAbilities(client)) return false;
             lock (sync)
@@ -430,6 +431,7 @@ namespace hds
                     return false;
                 }
                 side.QueuedAbility = ability;
+                side.SneakOpener = sneakOpener;
                 SendMoveChanged(side);
                 Output.WriteDebugLog("[PVP] " + ability.getAbilityName() + " is " + PvpFlag.Name(client) + "'s next move");
                 return true;
@@ -475,6 +477,7 @@ namespace hds
             WorldClient dead = null, killer = null;
             AbilityItem landed = null;
             Side landedBy = null;
+            bool sneakOpener = false;
             Side withdrew = null;
             lock (sync)
             {
@@ -564,7 +567,8 @@ namespace hds
                 SendRound(n, nDecided, pDecided, !outcome.PlayerWins, outcome.Flags, outcome.DamageToNpc, outcome.NpcAbsorbed,
                     outcome.DamageToPlayer, outcome.PlayerAbsorbed, opening && counter, 0, PvpCombat.HandleOf(n.Client,p.Client));
                 presentation.RoundPair(p.Slot, n.Slot, outcome.PlayerWins, outcome.Flags,
-                    pTactic, nTactic, pAttack, nAttack, opening);
+                    pTactic, nTactic, pAttack, nAttack, opening,
+                    (outcome.PlayerWins ? pAbility : nAbility)?.getAbilityID() ?? 0, (outcome.Flags & CombatRules.SpecialMove) != 0);
 
                 bool special = (outcome.Flags & CombatRules.SpecialMove) != 0;
                 Output.WriteDebugLog($"[PVP] Round {Rounds}{(opening ? " (opening)" : "")}: {PvpFlag.Name(p.Client)} {pTactic} ({pAttack}/{pDefense}) vs " +
@@ -579,6 +583,7 @@ namespace hds
                 {
                     landedBy = outcome.PlayerWins ? p : n;
                     landed = outcome.PlayerWins ? pAbility : nAbility;
+                    sneakOpener = landedBy.SneakOpener;
                 }
                 else
                 {
@@ -617,7 +622,7 @@ namespace hds
             }
             else if (landed != null)
             {
-                PvpCombat.LandAbilityOn(landedBy.Client, landed, (landedBy == first ? second : first).Client);
+                PvpCombat.LandAbilityOn(landedBy.Client, landed, (landedBy == first ? second : first).Client, sneakOpener);
             }
             else if (dead != null)
             {

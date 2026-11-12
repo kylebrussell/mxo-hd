@@ -118,6 +118,19 @@ public class NavMeshTests
     }
 
     [Fact]
+    public void SightApproximationRejectsMappedGapsAndDifferentFloors()
+    {
+        Load();
+        Assert.True(NavMesh.HasSightPath(3,-48349.6,95,-31817.8,-48349.6,95,-31817.8));
+        Assert.False(NavMesh.HasSightPath(1,23828.3,1295,13984.9,23828.3,495,13984.9));
+        Assert.False(NavMesh.SampleSightPath(0,95,0,200,95,0,(x,y,z)=>x<75 || x>125));
+        Assert.True(NavMesh.SampleSightPath(0,95,0,200,95,0,(x,y,z)=>true));
+        Assert.False(NavMesh.HasSightPath(1,23540.7,1295,15548.3,23828.3,1295,13984.9));
+        // Missing endpoint coverage remains explicitly unknown, preserving existing detection in unexported areas.
+        Assert.True(NavMesh.HasSightPath(65535,0,95,0,100,95,100));
+    }
+
+    [Fact]
     public void RecordBytesAreSectorRegionPolygonLast()
     {
         NavLocation at = new NavLocation { sector = 0x193, region = 7, polygon = 0x0c };

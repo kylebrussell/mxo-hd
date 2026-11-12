@@ -219,6 +219,29 @@ namespace hds
             }
         }
 
+        /// <summary>Conservative floor-mesh visibility approximation: a straight segment must stay on mapped
+        /// floor within 100 units of the interpolated feet height. This is not a collision/eye raycast.
+        /// Unknown endpoint coverage preserves legacy detection; mapped gaps obstruct it.</summary>
+        public static bool HasSightPath(ushort district, double x, double y, double z, double tx, double ty, double tz)
+        {
+            if (Math.Abs(y - ty) > 150) return false;
+            if (!Locate(district, x, y, z, out _) || !Locate(district, tx, ty, tz, out _)) return true;
+            return SampleSightPath(x,y,z,tx,ty,tz,(sx,sy,sz) =>
+                Locate(district,sx,sy,sz,out var loc) && Math.Abs(loc.floorY-(sy-95)) <= 100);
+        }
+
+        internal static bool SampleSightPath(double x,double y,double z,double tx,double ty,double tz,Func<double,double,double,bool> covered)
+        {
+            int steps = Math.Max(1, (int)Math.Ceiling(Math.Sqrt((tx-x)*(tx-x)+(tz-z)*(tz-z)) / 25));
+            for (int i = 1; i < steps; i++)
+            {
+                double f = (double)i / steps;
+                if (!covered(x+(tx-x)*f,y+(ty-y)*f,z+(tz-z)*f)) return false;
+            }
+            return true;
+        }
+
+
         /// <summary>
         /// The polygon under a world position, outdoors or in a building: of the polygons containing (x, z), the one whose
         /// floor is nearest to y - 95 (retail's positions stand 95 above the floor), within MaxFloorDistance. False where

@@ -268,6 +268,32 @@ namespace hds
         }
 
         private readonly object deathLock = new object();
+        private readonly object combatSync = new object();
+        private readonly object hitSync = new object();
+        private readonly System.Collections.Generic.HashSet<WorldClient> combatants = new System.Collections.Generic.HashSet<WorldClient>();
+        private double nextRetaliation;
+        public int CombatantCount { get { lock (combatSync) return combatants.Count; } }
+        /// <summary>One NPC action clock shared by every player's session (including movement).
+        /// Pairwise presentation remains separate; adding attackers must not multiply retaliation.</summary>
+        public bool TryRetaliate(double now, double interval)
+        {
+            lock (combatSync)
+            {
+                if (is_dead || healthC == 0 || now < nextRetaliation) return false;
+                nextRetaliation = now + interval;
+                Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
+                return true;
+            }
+        }
+        public void RemoveCombatant(WorldClient player)
+        {
+            lock (combatSync)
+            {
+                combatants.Remove(player);
+                if (combatTarget == player) combatTarget = System.Linq.Enumerable.FirstOrDefault(combatants);
+                if (combatants.Count == 0) { nextRetaliation = 0; if (!is_dead) currentState = (int)statusList.STANDING; }
+            }
+        }
 
         /// <summary>
         /// Marks the NPC dead for whoever got there first; false when it already was. Each player's fight runs on its own
@@ -303,7 +329,7 @@ namespace hds
             healthC = healthM;
             is_dead = false;
             is_lootable = false;
-            combatTarget = null;
+            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
             mobHitCounter = 0;
             hitCounter = 0;
             xPos = xBase;
@@ -629,19 +655,23 @@ namespace hds
 
         public void HitEnemyWithDamage(ushort hitValue, uint hitFxId)
         {
-            ushort before = healthC;
-            // Change to combat so that he isnt moving anymore
-            currentState = (int) statusList.COMBAT;
-            if (healthC - hitValue <= 0)
-                healthC = 0;
-            else
-                healthC -= hitValue;
-            hitCounter++;
-            if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
+            lock (hitSync)
+            {
+                if (is_dead || healthC == 0) return;
+                ushort before = healthC;
+                // Change to combat so that he isnt moving anymore
+                currentState = (int) statusList.COMBAT;
+                if (healthC - hitValue <= 0)
+                    healthC = 0;
+                else
+                    healthC -= hitValue;
+                hitCounter++;
+                if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
 
-            var hitPacket = new PacketContent();
-            hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
-            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(hitPacket, this);
+                var hitPacket = new PacketContent();
+                hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
+                Store.world.SendViewUpdateToClientsWhoHasMobSpawned(hitPacket, this);
+            }
         }
 
         /// <summary>
@@ -691,7 +721,7 @@ namespace hds
         /// </summary>
         public void setCombatTarget(WorldClient target)
         {
-            combatTarget = target;
+            lock (combatSync) { combatants.Add(target); combatTarget = target; }
         }
 
         /// <summary>
@@ -707,7 +737,7 @@ namespace hds
         /// </summary>
         public void clearCombatTarget()
         {
-            combatTarget = null;
+            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
             if (!is_dead)
             {
                 currentState = (int)statusList.STANDING;

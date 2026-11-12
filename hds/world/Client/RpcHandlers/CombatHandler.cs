@@ -90,8 +90,9 @@ namespace hds
             session.OnCombatEnd -= HandleCombatEnd;
             session.OnCombatTick -= HandleCombatTick;
             session.Stop(CombatSession.CombatEndReason.AttackerFled);
-            defender?.clearCombatTarget();
-            defender?.SetInCombat(false);
+            session.Presentation?.End();
+            defender?.RemoveCombatant(client);
+            if (defender?.CombatantCount == 0) defender.SetInCombat(false);
             RemoveCombatHandlerEntity(session);
             isCombatRunning = false;
             currentSession = null;
@@ -228,11 +229,11 @@ namespace hds
             return mob != null && session != null && session.IsActive && session.DefenderMob == mob;
         }
 
-        public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId)
+        public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             if (pvpFight != null)
             {
-                return pvpFight.QueueAbility(client, ability, targetViewId);
+                return pvpFight.QueueAbility(client, ability, targetViewId, sneakOpener);
             }
             CombatSession session = currentSession;
             if (session == null || !session.IsActive || session.Type != CombatSession.CombatType.Melee ||
@@ -242,6 +243,7 @@ namespace hds
             }
 
             session.QueuedAbility = ability;
+            session.QueuedSneakOpener = sneakOpener;
             session.QueuedAbilityTarget = targetViewId;
             SendNextMove(session, CombatInterlock.KindNextMoveChanged);
             client.FlushQueue();
@@ -265,6 +267,7 @@ namespace hds
 
             AbilityItem ability = opening ? null : session.QueuedAbility;
             UInt16 abilityTarget = session.QueuedAbilityTarget;
+            bool sneakOpener = session.QueuedSneakOpener;
             if (!opening)
             {
                 session.QueuedAbility = null;
@@ -287,6 +290,7 @@ namespace hds
             UInt16 playerDamage, npcDamage;
             Int16 absorbedByNpc, absorbedByPlayer;
             CombatTactic npcTactic;
+            bool npcTurn = !stunned && !CombatSpecials.TurnedAway(mob, player) && mob.TryRetaliate(now, CombatInterlock.RoundMs / 1000.0);
             lock (roundRng)
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
@@ -294,7 +298,7 @@ namespace hds
                     AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
-                    !CombatSpecials.TurnedAway(mob, player);
+                    npcTurn;
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
                 playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
                     AbilityStats.Player(player, 1142), AbilityStats.Toughness(mob, false));
@@ -344,7 +348,7 @@ namespace hds
                 withdrawing && !opening ? playerAttack - npcAttack : 0));
             session.RoundRecord++;
             session.Presentation?.Round(outcome.PlayerWins, outcome.Flags, playerTactic, npcTactic,
-                playerAttack, npcAttack, opening);
+                playerAttack, npcAttack, opening, ability?.getAbilityID() ?? 0, abilityLands);
 
             if (outcome.Withdrew)
             {
@@ -374,7 +378,7 @@ namespace hds
             if (abilityLands)
             {
                 player.FlushQueue();
-                AbilityTargets.Land(player, ability, abilityTarget);
+                AbilityTargets.Land(player, ability, abilityTarget, sneakOpener);
                 if (!session.IsActive)
                 {
                     return; // the ability killed the NPC; ApplyAbilityToTarget ended the fight
@@ -469,7 +473,7 @@ namespace hds
             new ServerPackets().SendEnterCombatMode(client);
             SendCombatEffectOn(session);
 
-            bool died = NpcReturnFire(session);
+            bool died = mob.TryRetaliate(TimeUtils.GetSimTimeSeconds(), RangedWeapons.FireIntervalMs(mob.getWeapon()) / 1000.0) && NpcReturnFire(session);
             client.FlushQueue();
             session.Start(RangedWeapons.FireIntervalMs(mob.getWeapon()));
             if (died)
@@ -819,7 +823,9 @@ namespace hds
                 // Phase 3: Mob attacks the player back (with player's defensive tactic applied). An NPC with a gun
                 // shoots back in a gunfight; others keep the close-combat counterattack.
                 bool playerDied;
-                if (CombatSpecials.TurnedAway(session.DefenderMob, session.Attacker))
+                if (CombatSpecials.TurnedAway(session.DefenderMob, session.Attacker) ||
+                    !session.DefenderMob.TryRetaliate(TimeUtils.GetSimTimeSeconds(), RangedWeapons.IsGun(session.DefenderMob.getWeapon())
+                        ? RangedWeapons.FireIntervalMs(session.DefenderMob.getWeapon()) / 1000.0 : CombatInterlock.RoundMs / 1000.0))
                 {
                     playerDied = false; // a Taunt turned the NPC on another player
                 }
@@ -891,7 +897,7 @@ namespace hds
             // Clear the mob's combat target
             if (session.DefenderMob != null)
             {
-                session.DefenderMob.clearCombatTarget();
+                session.DefenderMob.RemoveCombatant(session.Attacker);
             }
 
             ServerPackets packets = new ServerPackets();
@@ -907,7 +913,7 @@ namespace hds
                 Output.WriteDebugLog($"[COMBAT] Sending death for mob view {mobViewId}");
                 packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
             }
-            session.DefenderMob?.SetInCombat(false); // after the death, so a dead NPC gets no update
+            if (session.DefenderMob?.CombatantCount == 0) session.DefenderMob.SetInCombat(false); // after the death, so a dead NPC gets no update
             SendCombatEffectOff(session);
 
             if (session.Type == CombatSession.CombatType.Ranged)

@@ -27,7 +27,7 @@ The native health-modifier path `625ec512..625ec58a` looks up a damage-type infl
 - Passive accuracy, defence and resistance bonuses feed the existing NPC/PvP combat bases. Regeneration bonuses change health/IS ticks. Crafting uses the shared totals rather than its previous separate guessed formula.
 - Melee/ballistic/viral influence changes ability hits in NPC and PvP paths and DOT totals once at application. Existing captured/generic damage bases remain approximations. Healing influence belongs to the caster, independently of the recipient's maximum health.
 
-The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including stealth/detection consumers), Determination mitigation, passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
+The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including stealth/detection consumers), complete Determination bases, passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
 
 ## Control-duration follow-up
 
@@ -44,7 +44,7 @@ The native evaluator and packet layouts are direct binary evidence. Applying new
 
 `AbilityControlDurations` applies these links at cast application, for player and NPC targets. It does not invent an Enrage link where the shipped template has none. The state's expiry and record carry the same fractional duration. Explicit immunity timers remain separate, and root/pacify health-change rules are preserved. A fully reduced timed state is refused rather than accidentally becoming an indefinite state. Already applied states retain their original application duration when the caster changes loadout.
 
-The script's `GetAbilityMitigationDuration` and complete target Determination values are a separate unresolved step. The duration bonus implementation does not claim that reduction is present.
+Target Determination mitigation now executes for eligible landed UDB0 debuffs; see [combat-depth evidence and limits](COMBAT-DEPTH.md). Complete attribute/template target bases remain unknown. Immunity retains its independent unmitigated timer.
 
 ## Native checklist (pending)
 
