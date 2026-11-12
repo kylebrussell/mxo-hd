@@ -60,3 +60,7 @@ Use the NativeQa harness's `passives` mode, `CSR_AbilityQA`, and **CSR_Tester110
 For the control-duration follow-up, use NativeQa `controls` mode. It adds Disrupt Connection384 and Wicked Aim278, plus Stun315, Code Freeze40 and Freeze System48. At50, expect Stun315 to show8.05s while its explicit immunity stays14s; Code Freeze40 should show27.5s and still break on damage; Freeze System48 should show6.66s. Check that actions remain blocked until the stun ends, then resume. Unload the duration passives and repeat with their unboosted7/25/6s durations. Verify presentation on the NPC and the hostile QA helper/DuelBot; use only CSR_Tester110 natively. These native checks are pending.
 
 Headless coverage exercises owned loadouts, forged slot/level claims, upgrades, unload/removal, death scaling, a fresh server login, direct/group heal source values, HOT ticks and NPC/PvP paths. Native acceptance remains separate.
+
+## Combined validation for PR102
+
+Runtime `48fb975`, integrated parent `744469f`, test fixture correction `adec3c2`: **3,567/3,567 Debug and Release unit tests pass; 86/86 fresh-server scenarios pass in614.9s**, six servers at peak. The group-interlock endurance fixture now gives its20,000 currentHP a matching maximum, so legitimate vital clamping does not shorten the endurance test. NativeQa Release builds. CI `43133174615` passes; the workflow also covers stacked `codex/**` PR bases. Native checks remain pending.
