@@ -58,6 +58,8 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("81 30 5f 09 00 00 01");
         Check.That(player.Received("5f 05 00 01").Count > 0, "Decompiled source left the bag");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_recipes WHERE charId={player.CharId} AND goid=2399"), "Learned recipe persists");
+        CompilerTool(player,3,true);
+        await player.WaitForRpcAsync(ModPattern(969,968));
         string compile = $"81 2e {Le(7458u << 7)} 09 00 03 01 00 {Le(2u)} {Le(7336u)}";
         player.SendRpc(compile);
         await player.WaitForRpcAsync($"81 2f 01 ?? {Le(7458u)}");
