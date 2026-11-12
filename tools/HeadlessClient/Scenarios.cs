@@ -23,7 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
-        new Scenario("large01-partial-world", Large01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
+        new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
@@ -175,6 +175,7 @@ public static partial class Scenarios
         new Scenario("marketplace-purchase", MarketplacePurchase),
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
         new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),
+        new Scenario("large01-partial-world", Large01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),

@@ -613,7 +613,10 @@ public sealed record ManageBonusPayloadSample(
     int Field1Value,
     string Field2,
     int Field2Value,
-    string PayloadHex);
+    string PayloadHex)
+{
+    public ManageBonusRecord? NativeFields { get; init; }
+}
 
 public sealed record ManageBonusTradeStatePayloadSample(
     int Line,
