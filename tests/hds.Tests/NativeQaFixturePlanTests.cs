@@ -19,23 +19,15 @@ public class NativeQaFixturePlanTests
         Assert.False(hds.CodeStorage.IsCode(NativeQaFixturePlan.CompileArchiveValue));
     }
 
+    public static IEnumerable<object[]> LegacyModes()
+    {
+        using var baseline=JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"NativeQaLegacyPlans.json")));
+        return baseline.RootElement.EnumerateObject().Select(p=>new object[]{p.Name}).ToArray();
+    }
+
     [Theory]
-    [InlineData("ignored-actions", "1", "110")]
-    [InlineData("typed-defense", "1", "")]
-    [InlineData("remaining", "1", "")]
-    [InlineData("stealth-shields", "1", "")]
-    [InlineData("coder-pets", "1", "")]
-    [InlineData("styles", "1", "")]
-    [InlineData("data-mining", "1", "")]
-    [InlineData("death-presentation", "1", "")]
-    [InlineData("actions", "1", "")]
-    [InlineData("health-callbacks", "1", "")]
-    [InlineData("desperation", "1", "")]
-    [InlineData("emp-blast", "1", "")]
-    [InlineData("compile-items", "1", "")]
-    [InlineData("", "0", "")]
-    [InlineData("unknown-mode", "0", "")]
-    public async Task ReadOnlyCliReportsActualServerEnvironmentWithoutSetup(string mode, string dev, string gm)
+    [MemberData(nameof(LegacyModes))]
+    public async Task ReadOnlyCliReportsActualServerEnvironmentWithoutSetup(string mode)
     {
         string empty = Path.Combine(Path.GetTempPath(), "mxo-fixture-plan-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(empty);
@@ -53,15 +45,45 @@ public class NativeQaFixturePlanTests
             catch { process.Kill(true); throw; }
             Assert.True(process.ExitCode==0,await errors);
             using var json = JsonDocument.Parse(await output);
-            var environment = json.RootElement.GetProperty("Environment");
-            Assert.Equal(dev, environment.GetProperty("MXO_DEV_COMMANDS").GetString());
-            Assert.Equal(mode=="desperation"?"1":"",environment.GetProperty("MXO_DESPERATION_QA_HOLD_HEALTH").GetString());
-            Assert.Equal(gm, environment.GetProperty("MXO_GM_CHARACTER_IDS").GetString());
-            Assert.Equal("11000", environment.GetProperty("MXO_AUTH_PORT").GetString());
-            Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL15").GetString());
-            Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL100").GetString());
+            using var baseline=JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"NativeQaLegacyPlans.json")));
+            var expected=baseline.RootElement.GetProperty(mode);
+            Compare(expected.GetProperty("Environment"),json.RootElement.GetProperty("Environment"));
+            Compare(expected.GetProperty("Plan"),json.RootElement.GetProperty("Plan"));
+            Compare(expected.GetProperty("SeedDisguiseTool"),json.RootElement.GetProperty("SeedDisguiseTool"));
+            Compare(expected.GetProperty("CompileArchiveValue"),json.RootElement.GetProperty("CompileArchiveValue"));
             Assert.Empty(Directory.EnumerateFileSystemEntries(empty));
         }
         finally { Directory.Delete(empty); }
+    }
+
+    private static void Compare(JsonElement expected,JsonElement actual)
+    {
+        if(expected.ValueKind==JsonValueKind.Object)
+            foreach(var p in expected.EnumerateObject()) Compare(p.Value,actual.GetProperty(p.Name));
+        else if(expected.ValueKind==JsonValueKind.Array)
+        {
+            Assert.Equal(expected.GetArrayLength(),actual.GetArrayLength());
+            for(int i=0;i<expected.GetArrayLength();i++) Compare(expected[i],actual[i]);
+        }
+        // C# multiline SQL literals use the checkout's line endings on Windows/Linux.
+        else Assert.Equal(expected.ToString().Replace("\r\n","\n"),actual.ToString().Replace("\r\n","\n"));
+    }
+
+    [Fact]
+    public void DiscoveredModesKeepPrivilegesScopedAndPlansImmutable()
+    {
+        // Future mode files need no shared registration or baseline-test list edit.
+        foreach(string mode in LegacyModes().Select(row=>(string)row[0]).Where(name=>name!="unknown-mode"))
+        {
+            Assert.Contains(mode,NativeQaModes.Names);
+            var plan=NativeQaModes.Find(mode).Plan;
+            Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
+            Assert.Equal(mode=="desperation"?"1":"",NativeQaFixturePlan.EnvironmentFor(mode)["MXO_DESPERATION_QA_HOLD_HEALTH"]);
+            Assert.Throws<NotSupportedException>(()=>((IDictionary<string,string>)plan.EnvironmentOverrides).Add("qa","1"));
+            Assert.Equal(mode=="health-callbacks",plan.FixedCallbackRolls);
+            Assert.Equal(mode=="stealth-shields",plan.Bootstrap=="stealth-shield-217");
+            Assert.Throws<NotSupportedException>(()=>((IList<ushort>)plan.Abilities)[0]=999);
+        }
+        Assert.Same(NativeQaModes.Find("").Plan,NativeQaModes.Find("unknown-mode").Plan);
     }
 }
