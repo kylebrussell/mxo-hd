@@ -7,6 +7,19 @@ namespace hds.Tests;
 public class NativeQaFixturePlanTests
 {
     [Theory]
+    [InlineData("remaining", true)]
+    [InlineData("health-callbacks", true)]
+    [InlineData("compile-items", false)]
+    [InlineData("actions", false)]
+    [InlineData("write-code", false)]
+    public void CompilerFixturesKeepTheirActionTools(string mode, bool disguise)
+    {
+        Assert.Equal(disguise, NativeQaFixturePlan.SeedDisguiseTool(mode));
+        Assert.Equal(2399u, hds.CraftingRequests.SourceItem(NativeQaFixturePlan.CompileArchiveValue | 1));
+        Assert.False(hds.CodeStorage.IsCode(NativeQaFixturePlan.CompileArchiveValue));
+    }
+
+    [Theory]
     [InlineData("ignored-actions", "1", "110")]
     [InlineData("typed-defense", "1", "")]
     [InlineData("remaining", "1", "")]
@@ -17,6 +30,7 @@ public class NativeQaFixturePlanTests
     [InlineData("death-presentation", "1", "")]
     [InlineData("actions", "1", "")]
     [InlineData("health-callbacks", "1", "")]
+    [InlineData("desperation", "1", "")]
     [InlineData("emp-blast", "1", "")]
     [InlineData("compile-items", "1", "")]
     [InlineData("", "0", "")]
@@ -41,6 +55,7 @@ public class NativeQaFixturePlanTests
             using var json = JsonDocument.Parse(await output);
             var environment = json.RootElement.GetProperty("Environment");
             Assert.Equal(dev, environment.GetProperty("MXO_DEV_COMMANDS").GetString());
+            Assert.Equal(mode=="desperation"?"1":"",environment.GetProperty("MXO_DESPERATION_QA_HOLD_HEALTH").GetString());
             Assert.Equal(gm, environment.GetProperty("MXO_GM_CHARACTER_IDS").GetString());
             Assert.Equal("11000", environment.GetProperty("MXO_AUTH_PORT").GetString());
             Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL15").GetString());

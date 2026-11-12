@@ -16,11 +16,29 @@ public static partial class Scenarios
     private static async Task CompileSessionAuthority(ScenarioContext context)
     {
         var p = await context.AddPlayerAsync(new CharacterSeed("CompilerSession") { Level=50, Info=100000,
-            InnerStrength=0, Items=new[] {(3,1271u,1),(4,1271u,1),(5,7336u,20)} });
+            InnerStrength=0, Items=new[] {(3,1271u,1),(4,1271u,1),(5,7336u,20),(8,2565u,1),(9,38538u,1)} });
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES" +
-            $"({p.CharId},30,{AbilityGoid(277)},50,1),({p.CharId},400,{CodeStorage.BaseValue(7332)},1,0)");
+            $"({p.CharId},30,{AbilityGoid(277)},50,1),({p.CharId},400,{CodeStorage.BaseValue(7332)},1,0)," +
+            $"({p.CharId},401,{2399u << 7},1,0)");
         await p.EnterWorldAsync(); p.SkipReceived();
         string recipe = $"81 2e {Le(7458u << 7)} 09 00 03 01 00 {Le(2u)} {Le(7336u)}";
+        // Native double-click is equip 63, not tool activation. A refusal must unlock inventory without a move.
+        foreach (string request in new[] { "63 03 6b", "63 03 69", "63 03 6a", "63 03", "63 03 6b 00", "63 ff 6b", "63", "64" })
+        {
+            p.SkipReceived();
+            p.SendRpc(request);
+            await p.WaitForRpcAsync(request.StartsWith("63 03") ? "65 03 00 03 00 00" : "65 00 00 00 00 00");
+            await p.WaitForTextAsync("That item cannot be equipped there");
+            Check.Equal(1271L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={p.CharId} AND slot=3"), "Refused tool equip preserves original bag slot");
+        }
+        p.SendChat("?compilesession"); await p.WaitForTextAsync("inactive");
+        // The ordinary weapon double-click still resolves its equipment slot through the normal equip path.
+        p.SendRpc("63 08 6b"); await p.WaitForRpcAsync("65 08 00 69 00 00");
+        p.SendRpc("64 69 08"); await p.WaitForRpcAsync("65 69 00 08 00 00");
+        p.SendRpc("63 09 6a"); await p.WaitForRpcAsync("65 09 00 6a 00 00");
+        p.SendRpc("64 6a 09"); await p.WaitForRpcAsync("65 6a 00 09 00 00");
+        Check.Equal(38538L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={p.CharId} AND slot=9"), "Archive book normal equipment routing preserved");
+        p.SkipReceived();
         // Merely carrying a tool and loading the parent grant no longer permits either executor.
         p.SendRpc(recipe); await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
         p.SendRpc($"60 {Le(7332u)} 90 01 00 03 01"); await p.WaitForRpcAsync("61 01");
@@ -30,6 +48,13 @@ public static partial class Scenarios
         CompilerTool(p,3,true); await p.WaitForRpcAsync("80 bd 05 c9 03 00 00 00 00 00 01");
         await p.WaitForRpcAsync(ModPattern(969,968));
         p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
+        // This is the real native CompileUI 60 request for its ordinary item-code row, not an injected bit row.
+        p.SendRpc($"60 {Le(2399u)} 91 01 00 03 01"); await p.WaitForRpcAsync("61 01");
+        await p.WaitForTextAsync("compilation is not reconstructed");
+        Check.Equal((long)(2399u << 7), await context.Database.LongAsync($"SELECT ability_id FROM char_abilities WHERE char_id={p.CharId} AND slot=401"), "Unsupported native item code preserved");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={p.CharId} AND slot=401"), "Native item code charge preserved");
+        Check.Equal(100000L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"), "Native refusal has no cash cost");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=2399"), "No unsupported native item materialized");
         CompilerTool(p,3,true); // idempotent start, not a toggle-off
         p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
         Check.Equal(1,p.Received(ModPattern(969,968)).Count,"One session record despite duplicate tool activation");
