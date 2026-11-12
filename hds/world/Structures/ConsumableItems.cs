@@ -18,7 +18,7 @@ namespace hds
             Heal,
             /// <summary>Removes negative states; this server has none to remove, so using it only spends it.</summary>
             Cure,
-            /// <summary>Raises maximum health for a while (needs the buff system; not usable yet).</summary>
+            /// <summary>Raises maximum health for the stored duration through the owned-item path.</summary>
             MaxHealthBoost,
             /// <summary>Chance to remove negative states (not usable yet).</summary>
             ConditionSweep,
@@ -62,11 +62,11 @@ namespace hds
             { 39408, new Consumable(676, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 3.0
             { 39409, new Consumable(677, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 4.0
             { 39410, new Consumable(678, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 5.0 (retail capture)
-            { 2407, new Consumable(187, Effect.MaxHealthBoost, HealPill, 10) },   // Health Boost 1.0 -> PillBolsterHealthAbility
-            { 39411, new Consumable(672, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 1.0 -> PillBolsterHealth1Ability
-            { 39412, new Consumable(188, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 2.0 -> PillBolsterHealth2Ability
-            { 39413, new Consumable(189, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 3.0 -> PillBolsterHealth3Ability
-            { 39414, new Consumable(673, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 4.0 -> PillBolsterHealth4Ability
+            { 2407, new Consumable(187, Effect.MaxHealthBoost, 0, 30) },   // Legacy Boost Health -> PillBolsterHealthAbility (raw GOB pair)
+            { 39411, new Consumable(672, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 1.0 -> PillBolsterHealth1Ability
+            { 39412, new Consumable(188, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 2.0 -> PillBolsterHealth2Ability
+            { 39413, new Consumable(189, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 3.0 -> PillBolsterHealth3Ability
+            { 39414, new Consumable(673, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 4.0 -> PillBolsterHealth4Ability
             { 38539, new Consumable(659, Effect.ConditionSweep, HealPill, 10) },  // ConditionSweepGrant -> PillConditionSweep1Ability
         };
 
@@ -75,10 +75,10 @@ namespace hds
             return Items.TryGetValue(goid, out consumable);
         }
 
-        /// <summary>Heal pills and antibiotics can be used; the rest need systems this server lacks.</summary>
+        /// <summary>Heal, antibiotic and owned health boost pills have executable use paths.</summary>
         public static bool IsUsable(Consumable consumable)
         {
-            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure;
+            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure || consumable.Effect == Effect.MaxHealthBoost;
         }
 
         /// <summary>

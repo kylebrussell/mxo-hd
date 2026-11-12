@@ -1,0 +1,569 @@
+{
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "items": [
+    {
+      "id": 2407,
+      "name": "MaxHealthBoostPill",
+      "schema": 56,
+      "components": [
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "Info/CodeIconID": 3321889031,
+        "Info/IconID": 671091571,
+        "Info/InfoID": 1577058314,
+        "Info/MoreInfoID": 1577058375,
+        "InvItem/CameraOffset": "00000000000020c100002041",
+        "InvItem/Complexity": 19,
+        "InvItem/DefaultCodeCharges": 10,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 10000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091729,
+        "Model/HalfExtents": "cde872400262ac3f0262ac3f",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2147675136,
+        "TriggeredAbility/ReqAbilityLevel": 10,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 1577058314
+      }
+    },
+    {
+      "id": 39411,
+      "name": "MaxHealthBoostPill1",
+      "schema": 58,
+      "components": [
+        {
+          "name": "CharStatsPrerequisite",
+          "type": 86
+        },
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 10,
+        "Info/CodeIconID": 3321888998,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058314,
+        "Info/MoreInfoID": 1577058375,
+        "InvItem/CameraOffset": "00000000000020c100000c42",
+        "InvItem/Complexity": 13,
+        "InvItem/DefaultCodeCharges": 10,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 28000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091775,
+        "Model/HalfExtents": "9f903140d057334144707d41",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2148171776,
+        "TriggeredAbility/ReqAbilityLevel": 10,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 1577058314
+      }
+    },
+    {
+      "id": 39412,
+      "name": "MaxHealthBoostPill2",
+      "schema": 58,
+      "components": [
+        {
+          "name": "CharStatsPrerequisite",
+          "type": 86
+        },
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 20,
+        "Info/CodeIconID": 3321888998,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058313,
+        "Info/MoreInfoID": 1577058375,
+        "InvItem/CameraOffset": "00000000000020c100000c42",
+        "InvItem/Complexity": 23,
+        "InvItem/DefaultCodeCharges": 20,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 50000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091775,
+        "Model/HalfExtents": "9f903140d057334144707d41",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2147676160,
+        "TriggeredAbility/ReqAbilityLevel": 10,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 1577058313
+      }
+    },
+    {
+      "id": 39413,
+      "name": "MaxHealthBoostPill3",
+      "schema": 58,
+      "components": [
+        {
+          "name": "CharStatsPrerequisite",
+          "type": 86
+        },
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 30,
+        "Info/CodeIconID": 3321888998,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058315,
+        "Info/MoreInfoID": 1577058375,
+        "InvItem/CameraOffset": "00000000000020c100000c42",
+        "InvItem/Complexity": 33,
+        "InvItem/DefaultCodeCharges": 20,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 137000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091775,
+        "Model/HalfExtents": "9f903140d057334144707d41",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2147677184,
+        "TriggeredAbility/ReqAbilityLevel": 10,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 1577058315
+      }
+    },
+    {
+      "id": 39414,
+      "name": "MaxHealthBoostPill4",
+      "schema": 58,
+      "components": [
+        {
+          "name": "CharStatsPrerequisite",
+          "type": 86
+        },
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 40,
+        "Info/CodeIconID": 3321888998,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 3321895571,
+        "Info/MoreInfoID": 1577058375,
+        "InvItem/CameraOffset": "00000000000020c100000c42",
+        "InvItem/Complexity": 43,
+        "InvItem/DefaultCodeCharges": 20,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 275000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091775,
+        "Model/HalfExtents": "9f903140d057334144707d41",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2148172800,
+        "TriggeredAbility/ReqAbilityLevel": 10,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 3321895571
+      }
+    }
+  ],
+  "abilities": [
+    {
+      "id": 2147675136,
+      "name": "PillBolsterHealthAbility",
+      "schema": 3974,
+      "components": [
+        {
+          "name": "StatModifier",
+          "type": 41
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2147675136,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 2,
+        "Ability/CastingScript": 112,
+        "Ability/CastingTime": 1.0,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RecastTime": 30.0,
+        "Ability/StackingPriority": 15,
+        "Ability/StackingType": 3,
+        "Ability/StatusCategory": 809910869,
+        "Ability/StringTerm": 2046820731,
+        "Info/IconID": 671091571,
+        "Info/InfoID": 2080375364,
+        "Info/MoreInfoID": 2046820397,
+        "StatModifier/ActivationFX": 671091189,
+        "StatModifier/ActivationStringOnSelf": 2080374821,
+        "StatModifier/ActivationStringSubject": 2046820781,
+        "StatModifier/ActivationStringTarget": 2046820787,
+        "StatModifier/Duration": 600.0,
+        "StatModifier/DurationType": 0,
+        "StatModifier/MaxValue": 100,
+        "StatModifier/MinValue": 100,
+        "StatModifier/TargetAttribute": 2147592192,
+        "StatModifier/WhenEnabled": 2
+      }
+    },
+    {
+      "id": 2147676160,
+      "name": "PillBolsterHealth2Ability",
+      "schema": 3974,
+      "components": [
+        {
+          "name": "StatModifier",
+          "type": 41
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2147676160,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 2,
+        "Ability/CastingScript": 114,
+        "Ability/CastingTime": 1.0,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RecastTime": 30.0,
+        "Ability/StackingPriority": 20,
+        "Ability/StackingType": 3,
+        "Ability/StatusCategory": 809910869,
+        "Ability/StringTerm": 2046820731,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058313,
+        "Info/MoreInfoID": 2046820397,
+        "StatModifier/ActivationFX": 671091189,
+        "StatModifier/ActivationStringOnSelf": 2080374821,
+        "StatModifier/ActivationStringSubject": 2046820781,
+        "StatModifier/ActivationStringTarget": 2046820787,
+        "StatModifier/Duration": 600.0,
+        "StatModifier/DurationType": 0,
+        "StatModifier/MaxValue": 200,
+        "StatModifier/MinValue": 200,
+        "StatModifier/TargetAttribute": 2147592192,
+        "StatModifier/WhenEnabled": 2
+      }
+    },
+    {
+      "id": 2147677184,
+      "name": "PillBolsterHealth3Ability",
+      "schema": 3975,
+      "components": [
+        {
+          "name": "StatModifier",
+          "type": 41
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2147677184,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 2,
+        "Ability/CastingScript": 114,
+        "Ability/CastingTime": 1.0,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RecastTime": 30.0,
+        "Ability/StackingPriority": 30,
+        "Ability/StackingType": 3,
+        "Ability/StatusCategory": 809910869,
+        "Ability/StringTerm": 2046820731,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058315,
+        "Info/MoreInfoID": 2046820397,
+        "StatModifier/ActivationFX": 671091189,
+        "StatModifier/ActivationStringOnSelf": 2080374821,
+        "StatModifier/ActivationStringSubject": 2046820781,
+        "StatModifier/ActivationStringTarget": 2046820787,
+        "StatModifier/DamageType": 6,
+        "StatModifier/Duration": 600.0,
+        "StatModifier/DurationType": 0,
+        "StatModifier/MaxValue": 300,
+        "StatModifier/MinValue": 300,
+        "StatModifier/TargetAttribute": 2147592192,
+        "StatModifier/WhenEnabled": 2
+      }
+    },
+    {
+      "id": 2148171776,
+      "name": "PillBolsterHealth1Ability",
+      "schema": 3974,
+      "components": [
+        {
+          "name": "StatModifier",
+          "type": 41
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2148171776,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 2,
+        "Ability/CastingScript": 114,
+        "Ability/CastingTime": 1.0,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RecastTime": 30.0,
+        "Ability/StackingPriority": 10,
+        "Ability/StackingType": 3,
+        "Ability/StatusCategory": 809910869,
+        "Ability/StringTerm": 2046820731,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 1577058314,
+        "Info/MoreInfoID": 2046820397,
+        "StatModifier/ActivationFX": 671091189,
+        "StatModifier/ActivationStringOnSelf": 2080374821,
+        "StatModifier/ActivationStringSubject": 2046820781,
+        "StatModifier/ActivationStringTarget": 2046820787,
+        "StatModifier/Duration": 600.0,
+        "StatModifier/DurationType": 0,
+        "StatModifier/MaxValue": 100,
+        "StatModifier/MinValue": 100,
+        "StatModifier/TargetAttribute": 2147592192,
+        "StatModifier/WhenEnabled": 2
+      }
+    },
+    {
+      "id": 2148172800,
+      "name": "PillBolsterHealth4Ability",
+      "schema": 3975,
+      "components": [
+        {
+          "name": "StatModifier",
+          "type": 41
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2148172800,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 2,
+        "Ability/CastingScript": 114,
+        "Ability/CastingTime": 1.0,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RecastTime": 30.0,
+        "Ability/StackingPriority": 40,
+        "Ability/StackingType": 3,
+        "Ability/StatusCategory": 809910869,
+        "Ability/StringTerm": 2046820731,
+        "Info/IconID": 671091786,
+        "Info/InfoID": 3321895571,
+        "Info/MoreInfoID": 2046820397,
+        "StatModifier/ActivationFX": 671091189,
+        "StatModifier/ActivationStringOnSelf": 2080374821,
+        "StatModifier/ActivationStringSubject": 2046820781,
+        "StatModifier/ActivationStringTarget": 2046820787,
+        "StatModifier/DamageType": 6,
+        "StatModifier/Duration": 600.0,
+        "StatModifier/DurationType": 0,
+        "StatModifier/MaxValue": 400,
+        "StatModifier/MinValue": 400,
+        "StatModifier/TargetAttribute": 2147592192,
+        "StatModifier/WhenEnabled": 2
+      }
+    }
+  ]
+}
