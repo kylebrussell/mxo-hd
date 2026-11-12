@@ -376,7 +376,7 @@ namespace hds
             PvpFlag.ToWatchers(client, BuildOther(bits, all));
         }
 
-        /// <summary>Own view: DissemblingType (36) and ConditionStateFlags (42): <c>02 00 02 80 80 80 80 80 82 &lt;u16&gt; 04 &lt;u32&gt;</c>.</summary>
+        /// <summary>Own view: DissemblingType (36) and ConditionStateFlags (42): <c>02 00 02 80 80 80 80 80 82 &lt;u16&gt; 01 &lt;u32&gt;</c>.</summary>
         public static byte[] BuildSelf(UInt16 bits, UInt32 flags) => PlayerViewAttributes.BuildSelf(
             (36, PlayerViewAttributes.U16(bits)), (PlayerViewAttributes.SelfConditionStateFlags, PlayerViewAttributes.U32(flags)));
 

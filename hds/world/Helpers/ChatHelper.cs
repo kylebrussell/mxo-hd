@@ -424,6 +424,14 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if ((command.Equals("?stealthbot") || command.Equals("?stealth")) && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev commands (docs/STEALTH.md): ?stealth <sneak|conceal|evasion|invis|imparted|shadow|off> puts a stealth
+                    // state on the caller; ?stealthbot <state> [pvp] | off puts it on a DuelBot next to them (pvp: an enemy).
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        StealthDev.Run(Store.currentClient, command.Equals("?stealthbot"), commands.Skip(1).ToArray()), "BROADCAST");
+                }
+
                 if (command.Equals("?socialbot"))
                 {
                     // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
