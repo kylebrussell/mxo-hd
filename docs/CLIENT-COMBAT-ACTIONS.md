@@ -6,8 +6,8 @@ This extends the audit in [CLIENT-ACTIONS.md](CLIENT-ACTIONS.md). The request la
 
 | Request | Layout after opcode | Implemented behavior | Limits |
 |---|---|---|---|
-| `3e` | slot u8, ability u32, IsSlot u8, IgnoreStyleUpdate u8 | Validates ownership/loadout, retains combat selection and style, updates own attribute 39 | Selection does not cast a special move. Style-specific stats and animation sets remain incomplete. |
-| `43` | MartialArt u16 | Retains the opaque selection separately | **Partial:** no producer, value mapping or server response found in the available captures. No invented mapping to a style ability. |
+| `3e` | slot u8, ability u32, IsSlot u8, IgnoreStyleUpdate u8 | Validates ownership/loadout, retains combat selection, updates own attribute 39; a style becomes active with its stats, special-move set and interlock exchanges ([COMBAT-STYLES.md](COMBAT-STYLES.md)) | Selection does not cast a special move. Special-move choreography remains Self-Defense/style exchanges. |
+| `43` | MartialArt u16 | Retained for logging only | Never sent by 7.6005: producer `6219f0a0` and constructor `6219e890` are unreferenced; `81 6e`'s ForcedMartialArt (+0xb6) is never read. No reply. |
 | `80 bb` | ability u16 | Removes the caller's removable beneficial parent buff and linked timed effects; emits native off records | UBF0 category and CanNOTRemoveBuff gate protect viruses, stuns, styles and Death Effect. |
 | `81 21` | bag slot u8 | Deposits the expected mission item into the currently open nearby Put container; replies `81 22` | Generic container storage is not implemented. Corpse loot is read-only. |
 | `81 2e` | SourceCode u32, array offset u16, tool slot u8; array count u16 + `(amount u32, goid u32)` | Validates owned compiler, loaded Compile grant, known recipe, exact ingredients, space, information and skill contest; consumes ingredients and grants result | Code Writer/Analyzer path, charges/purity, signal boosts and XP remain incomplete. |

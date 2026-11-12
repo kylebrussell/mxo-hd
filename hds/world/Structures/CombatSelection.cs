@@ -58,15 +58,20 @@ namespace hds
                 Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID()))) return;
 
             client.playerData.combatSelection = value.Value;
+            // The selection is the client's own style toolbar: a style becomes the active one (stats, special-move set and
+            // interlock exchanges, CombatStyles). Retail's producers set IgnoreStyleUpdate when only a bag slot moved.
             if (!request.IgnoreStyleUpdate && IsStyle((ushort)value.Value))
-                client.playerData.combatStyle = (ushort)value.Value;
+                CombatStyles.Select(client, (ushort)value.Value);
             client.playerInstance.CurCombatExclusiveAbility.setValue(value.Value);
             client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((39, PlayerViewAttributes.U32(value.Value))), false);
             client.FlushQueue();
         }
 
-        /// <summary>43's u16 MartialArt. No producer or retail exchange survives in the available captures;
-        /// retain it separately rather than inventing an ability ID mapping or a reply opcode.</summary>
+        /// <summary>43's u16 MartialArt. The 7.6005 client never sends it: its only producer (client.dll 6219f0a0, which
+        /// also stores the value at this+0x88) has no call or data reference, and its constructor 6219e890 none either.
+        /// The matching server message 81 6e (Flags, ForcedTacticalSetting, ForcedMartialArt, ForcedTacticalValue; handler
+        /// 6219e240) stores ForcedMartialArt at +0xb6 and nothing reads it. Styles are chosen with 3e instead. The value is
+        /// retained for logging only; it neither changes the style nor gets an answer.</summary>
         public static void ProcessMartialArt(WorldClient client, byte[] body)
         {
             if (body?.Length == 2 && !client.playerData.isDead && !client.playerData.duelDeath)

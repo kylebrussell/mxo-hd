@@ -10,7 +10,8 @@ string commit = args.Length > 2 ? args[2] : "local";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection";
 bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
-bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode;
+bool stylesMode = args.Length > 3 && args[3] == "styles";
+bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
 bool actionsMode = args.Length > 3 && args[3] == "actions";
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
@@ -53,10 +54,13 @@ DELETE FROM char_missions WHERE charId=110;
 INSERT INTO char_missions (charId,missionId) VALUES (110,986);
 DELETE FROM char_abilities WHERE char_id=110;
 ");
-    ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133 };
+    // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
+    ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
+    // Combat styles and their specials (docs/COMBAT-STYLES.md); Aikido is left out so Tomo Nage's refusal can be seen
+    if (stylesMode) abilities = new ushort[] { 2,17,132,133,1006,1008,1112,146,281,341,535,647,121,207,208,547,1022,1023,1024,267,412,198 };
     using var catalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "data", "ability_catalog.json")));
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
     var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),

@@ -113,6 +113,13 @@ namespace hds
                 return;
             }
 
+            // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
+            if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
+            {
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
             if (itemSlot.HasValue && new InventoryHandler().UseItem(itemSlot.Value, AbilityID))
@@ -127,6 +134,16 @@ namespace hds
             }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
+            // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
+            // style is switched to (a server choice; docs/COMBAT-STYLES.md)
+            if (!CombatStyles.EnsureStyleFor(Store.currentClient, AbilityID))
+            {
+                // The client shows ID_ABILITY_NOT_IN_CORRECT_STYLE for this 80 ba code
+                Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(AbilityID, CombatStyles.DeniedWrongStyle));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": needs the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style");
+                return;
+            }
             // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.
             bool stealth = Stealth.Handles(AbilityID);
             if (stealth && Stealth.IsOn(Store.currentClient, AbilityID))
@@ -214,6 +231,7 @@ namespace hds
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
+                if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
@@ -231,8 +249,10 @@ namespace hds
             }
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
-                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) || AbilityHostile.Lands(AbilityID)))
+            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+                (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
+                 AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,

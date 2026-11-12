@@ -253,7 +253,7 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff);
+            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
         }
 
         public static int Total(WorldClient client, UInt16 stat)
