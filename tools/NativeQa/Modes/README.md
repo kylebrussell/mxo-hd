@@ -21,3 +21,5 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 `resist-damage` loads74/371 and owns deterministic6/8/9m helper boundaries through the shared disposable SQL builder. It enables existing health-reset dev commands, with no GM, forced roll or health hold. Team invites/native acceptance and health resets before each case are explicit in [ABILITY-RESIST-DAMAGE.md](../../../docs/ABILITY-RESIST-DAMAGE.md).
 
 mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
+
+`client-actions-research` is diagnostic-only at Mara, no dev/GM/RNG/gameplay overrides. It records `/targetdamage` and the conditional local `/stuck` gate; no ignored action gains a handler. See docs/CLIENT-ACTIONS-FOLLOWTHROUGH.md.
