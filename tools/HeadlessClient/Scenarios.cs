@@ -202,6 +202,8 @@ public static partial class Scenarios
         new Scenario("mission-arrivals-and-escort-to-object", MissionArrivalsAndEscortToObject, StillNpcs),
         new Scenario("mission-waves-sides-and-timers", MissionWavesSidesAndTimers, StillNpcs, "encounter-runtime.xml"),
         new Scenario("mission-arrival-navmesh", MissionArrivalNavmesh, StillNpcs, "arrival-navmesh.xml"),
+        new Scenario("medium01-partial-world", Medium01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
+        new Scenario("persisted-heading-login", PersistedHeadingLogin, StillNpcs),
         new Scenario("mission-waves-and-side-switch", MissionWavesAndSideSwitch, StillNpcs),
         new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
