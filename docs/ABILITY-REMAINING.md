@@ -53,7 +53,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 | 872 Zen Master | Sourced internal child of permanent while-loaded871 health callback;15% chance restores5IS capped at max. Direct casts refused; parent871 requires character99 and is retail-inaccessible. Native RNG sequence remains unknown. |
 | 969 Compile Items;970 Write Code | Their scripts only select stand/idle presentation and restore idle on deactivation. Actual crafting is81 2e/81 31; ability-use packets must not compile an item. A native activation/UI-state path remains unverified; storage112 does not establish these two ability toggles. |
 | 1025 EMCP Blast | `EMPBlast_DirectObject` does0 normally/5000 for NPCEMPWeakness; NPC weakness ownership/templates are unavailable. Do not infer it from the ability name or make it unconditional damage. |
-| 1110 Bull Dog;1125 Disable Evasion | Stealth opening/shield interaction and callbacks belong to P5; its package owns the combat/stealth consumer. |
+| 1110 Bull Dog;1125 Disable Evasion | P5 follow-up implements terminal throw, builtin motion, target state suppression and caster restealth. Explicitly partial: missing1110 interval/retail damage and217 shield-health/520 contest. See [STEALTH-SHIELDS.md](STEALTH-SHIELDS.md). |
 | 1124 Disrupt Connection | Legacy old template requires a tool but has no decoded stored modifier or surviving specific script. No supported effect is guessed. |
 | 1149 Desperation | `DesperationFunction` computes health-dependent Initiative with InitiativeBonus. No initiative combat consumer is reconstructed; a countdown/number alone would remain cosmetic. |
 

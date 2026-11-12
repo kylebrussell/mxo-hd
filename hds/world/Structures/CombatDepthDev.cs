@@ -45,6 +45,15 @@ namespace hds
                 byte[] bytes = packet.ReturnFinalPacket(); new AbilityHandler().ProcessAbility(ref bytes);
                 return "Combat depth cast requested " + ability + ".";
             }
+            if(command=="shieldstatus")
+            {
+                var target=PvpCombat.PlayerInView(caller,caller.playerData.currentSelectedTargetViewId);
+                var self=PvpCombat.SubjectOf(caller);
+                string report="Stealth shield casterOrg="+self.Organization+" casterFlag="+self.PvpFlag+
+                    (target==null?" target missing":" target="+TimedEffects.PlayerName(target)+" targetOrg="+PvpCombat.SubjectOf(target).Organization+
+                    " targetFlag="+target.playerData.pvpFlag+" PvP="+PvpCombat.Check(caller,target)+" evasion="+EvasionShield.HasState(target));
+                Output.WriteDebugLog("[STEALTH-FREE] "+report);return report;
+            }
             if (command == "status")
             {
                 Mob selected=AbilityTargets.FindMob(caller,caller.playerData.currentSelectedTargetViewId,out _);
@@ -69,7 +78,7 @@ namespace hds
                 TimedEffects.RemoveParent(TimedEffects.ForPlayer(caller),1102); DuelBot.Dismiss(caller);
                 return "Combat depth fixture removed.";
             }
-            return "?combatdepth determination <0..1000> | stun | cast <ability> | join | status | sightgap | sightclear | off";
+            return "?combatdepth determination <0..1000> | stun | cast <ability> | join | status | shieldstatus | sightgap | sightclear | off";
         }
     }
 }
