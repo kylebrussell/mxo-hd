@@ -44,7 +44,7 @@ jobs:
       - name: Test
         run: dotnet test hds.sln --configuration Release --no-build --nologo
 
-      - name: Check historical Markdown snapshot policy
+      - name: Check historical audit snapshot policy
         if: github.event_name == 'pull_request'
         env:
           AUDIT_BASE_SHA: ${{ github.event.pull_request.base.sha }}

@@ -15,7 +15,9 @@ LINKS=re.compile(r'\]\(([^)]+)\)')
 
 class AuditLinkTests(unittest.TestCase):
     def generate(self,output,pinned=False):
-        command=[sys.executable,str(ROOT/'research/abilities/build_audit.py'),'--output-dir',str(output)]
+        # Link tests deliberately use the historical inventory as a fixed input fixture.
+        command=[sys.executable,str(ROOT/'research/abilities/build_audit.py'),'--output-dir',str(output),
+                 '--coverage',str(ROOT/'research/abilities/server_coverage.json')]
         if pinned: command += ['--source-base-url',BASE]
         subprocess.run(command,cwd=ROOT,check=True,stdout=subprocess.PIPE,text=True)
         return (output/'ABILITY-PARITY.md').read_text(encoding='utf-8')
@@ -38,9 +40,9 @@ class AuditLinkTests(unittest.TestCase):
         self.assertTrue(any('tempmods.py#L' in target for target in targets))
         self.assertTrue(any(target.endswith('docs/ABILITY-AUDIT.md') for target in targets))
 
-    def test_real_default_artifact_location_and_nested_local_output_resolve_every_link(self):
+    def test_artifact_depth_and_nested_local_output_resolve_every_link(self):
         snapshot=(ROOT/'docs/ABILITY-PARITY.md').read_bytes()
-        output=ROOT/'artifacts/ability-audit'
+        output=ROOT/'artifacts/ability-audit'/'link-fixture'
         self.check_links(self.generate(output),output,False)
         with tempfile.TemporaryDirectory(prefix='mxo-audit-links-') as temp:
             nested=Path(temp)/'review'/'nested'
