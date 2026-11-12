@@ -815,7 +815,7 @@ namespace hds
             // Update player's health attribute
             victim.playerInstance.Health.setValue(newHealth);
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
-                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
+                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1), damageEvent:true);
 
             newHealth = PvpCombat.HealthOf(victim); // callbacks may heal or cause another health change
 

@@ -15,6 +15,7 @@ static string Consumer(ushort stat) => stat switch
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
+    564 => "Concentration cast-through for explicit interruptible templates (partial)",
     575 => "Determination duration mitigation (known target totals)",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",

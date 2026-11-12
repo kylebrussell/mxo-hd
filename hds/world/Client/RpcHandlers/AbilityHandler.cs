@@ -275,6 +275,7 @@ namespace hds
             else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
+            var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -284,7 +285,7 @@ namespace hds
             AbilityItem ability = currentAbility;
             WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
             int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
-            DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
+            AbilityCastInterrupts.After(normalCast, () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
@@ -303,27 +304,23 @@ namespace hds
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
-            });
 
             if (stealth)
             {
                 UInt16 stealthTarget = currentTargetViewId;
-                DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
-                {
-                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
-                });
+                if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
                 return;
             }
 
             if(freeStealth!=null)
             {
                 ushort target=currentTargetViewId;
-                DelayedActions.AfterFor(client,ability.getCastingTime(),()=>StealthShieldAbilities.Execute(client,ability,target,freeStealth));
+                StealthShieldAbilities.Execute(client,ability,target,freeStealth);
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
-                (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
@@ -336,10 +333,10 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    DelayedActions.AfterFor(client, ability.getCastingTime(),
-                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener); });
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener);
                 }
             }
+            });
         }
 
         public const double DuplicateAbilityWindowSeconds = 0.5;

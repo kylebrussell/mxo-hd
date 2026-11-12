@@ -508,11 +508,12 @@ namespace hds
             return removed.Count > 0;
         }
 
-        public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum)
+        public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum, bool damageEvent = false)
         {
             if (subject is PlayerEffects player)
             {
                 if (damageTaken > 0) CraftingSession.End(player.Context);
+                if (damageEvent && damageTaken > 0) AbilityCastInterrupts.OnDamage(player.Context,damageTaken);
                 Stealth.HealthChanged(player.Context, damageTaken, belowMaximum);
             }
             List<Active> removed;
@@ -778,7 +779,7 @@ namespace hds
             UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
             UInt16 next = (UInt16)Math.Max(0, health - damage);
             client.playerInstance.Health.setValue(next);
-            TimedEffects.HealthChanged(this, health - next, next < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
+            TimedEffects.HealthChanged(this, health - next, next < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1), damageEvent:true);
             next = PvpCombat.HealthOf(client); // callbacks complete before presentation/death decisions
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next))));
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
