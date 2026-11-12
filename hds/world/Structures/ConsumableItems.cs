@@ -79,6 +79,10 @@ namespace hds
                 consumable.Effect == Effect.ConditionSweep;
         }
 
+        // A death/revival or leave/re-entry into the same district invalidates the original cast too.
+        internal static bool CastMatches(ClientData data, int world, int life, double castEnd) =>
+            data.worldGeneration == world && data.lifeGeneration == life && data.castEndsAt == castEnd;
+
         /// <summary>Stored CharStatsPrerequisite/ReqCharLevel on the antibiotic item records.</summary>
         public static int RequiredLevel(UInt32 goid) => goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;
 

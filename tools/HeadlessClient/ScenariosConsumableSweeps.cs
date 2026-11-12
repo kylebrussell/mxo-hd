@@ -71,4 +71,57 @@ public static partial class Scenarios
         Check.Equal(0,caster.World.Problems.Count+victim.World.Problems.Count,"Consumable control cancellation protocol");
     }
 
+    private static async Task ConsumableSweepCastContract(ScenarioContext context)
+    {
+        var p=await context.AddPlayerAsync(new CharacterSeed("PillCastContract") {
+            Level=50,Health=100,Items=new[] { (3,39410u,2),(4,2399u,2),(5,1271u,1) }
+        });
+        await LoadAbilitiesAsync(context,p,277,1064);
+        await p.EnterWorldAsync();
+        CompilerTool(p,5,true);
+        await p.WaitForRpcAsync(ModPattern(969,968));
+        p.SendRpc("80 c6 03 00");
+        var cast=await p.WaitForRpcAsync("80 ac a6 02");
+        var off=p.Received(ModPattern(969,968,true)).Single();
+        var records=p.World.RpcSnapshot().ToList();
+        Check.That(records.IndexOf(off)<records.IndexOf(cast),"80c6 ends compiler before pill cast bar");
+        // Different family and ordinary ability both use the same global cast exclusion.
+        p.SendRpc("80 c6 04 00");
+        Cast(p,1064);
+        await p.WaitForRpcAsync("80 ba be 00 00 00 6b 06");
+        await p.WaitForRpcAsync("80 ba 28 04 00 00 6b 06");
+        await p.WaitForRpcAsync(ModPattern(678,678));
+        Check.Equal(0,p.Received("80 ac be 00").Count,"Heal family cannot overlap antibiotic cast");
+        Check.Equal(0,p.Received(ModPattern(1064,106)).Count,"Ordinary ability cannot overlap pill cast");
+        Check.Equal(2L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={p.CharId} AND slot=4"),"Concurrent heal request preserves stack");
+        p.SendChat("?compilesession");await p.WaitForTextAsync("inactive");
+        // The same generic path still permits an ordinary heal when the global cast finishes.
+        p.SendRpc("80 c6 04 00");
+        await p.WaitForRpcAsync("80 ac be 00");
+        await p.WaitForRpcAsync("69 01 04 00 00 00 00 00 00 00");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={p.CharId} AND slot=4"),"Legal heal consumes one unit");
+        Check.Equal(0,p.World.Problems.Count,"Global pill cast and compiler protocol");
+    }
+
+    private static async Task ConsumableSweepCastCancellation(ScenarioContext context)
+    {
+        var moved=(await context.AddPlayersInWorldAsync(new CharacterSeed("MovedAntibiotic") {
+            Level=50,Items=new[] { (3,39410u,2) }
+        }))[0];
+        moved.SendRpc("80 c6 03 00");await moved.WaitForRpcAsync("80 ac a6 02");
+        moved.SendRpc("65 03 00 04 00");await moved.WaitForRpcAsync("65 03 00 04 00");
+        await moved.WaitUntilAsync(()=>context.Server.DebugLog().Contains("cast cancelled"),"Moved item cancels pending pill",TimeSpan.FromSeconds(5));
+        Check.Equal(2L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={moved.CharId} AND slot=4"),"Moved stack remains whole");
+        Check.Equal(0,moved.Received(ModPattern(678,678)).Count,"Moved pill adds no sweep");
+        moved.SendRpc("80 c6 04 00");await moved.WaitForRpcAsync(ModPattern(678,678));
+        var zone=(await context.AddPlayersInWorldAsync(new CharacterSeed("ZoningAntibiotic") {
+            Level=50,Items=new[] { (3,39410u,2) }
+        }))[0];
+        zone.SendRpc("80 c6 03 00");await zone.WaitForRpcAsync("80 ac a6 02");
+        await GoToLoadingAreaAsync(zone);await Task.Delay(1200);
+        Check.Equal(2L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={zone.CharId} AND slot=3"),"World exit cancels without consumption");
+        Check.Equal(0,zone.Received(ModPattern(678,678)).Count,"World exit adds no sweep");
+        Check.Equal(0,moved.World.Problems.Count+zone.World.Problems.Count,"Pill item/world cancellation protocol");
+    }
+
 }

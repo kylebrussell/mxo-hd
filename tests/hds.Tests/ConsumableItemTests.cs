@@ -45,6 +45,34 @@ public class ConsumableItemTests
     }
 
     [Fact]
+    public void LeavingAndReenteringTheSameDistrictInvalidatesThePillCast()
+    {
+        var data = new ClientData();
+        data.setDistrictId(1); data.setOnWorld(true);
+        AbilityCooldowns.StartCast(data, 10, 1);
+        int world = data.worldGeneration, life = data.lifeGeneration;
+        double stamp = data.castEndsAt;
+        Assert.True(ConsumableItems.CastMatches(data, world, life, stamp));
+        data.setOnWorld(false); data.setOnWorld(true);
+        Assert.Equal(1u, data.getDistrictId());
+        Assert.False(ConsumableItems.CastMatches(data, world, life, stamp));
+    }
+
+    [Fact]
+    public void RevivalAndAReplacementCastInvalidateTheOriginalPillCast()
+    {
+        var data = new ClientData();
+        AbilityCooldowns.StartCast(data, 10, 1);
+        int world = data.worldGeneration, life = data.lifeGeneration;
+        double stamp = data.castEndsAt;
+        data.lifeGeneration++; // death/revival may finish before the pending callback runs
+        Assert.False(data.isDead);
+        Assert.False(ConsumableItems.CastMatches(data, world, life, stamp));
+        AbilityCooldowns.StartCast(data, 11, 1);
+        Assert.False(ConsumableItems.CastMatches(data, world, data.lifeGeneration, stamp));
+    }
+
+    [Fact]
     public void ItemSlotComesFromTheAbilityRequest()
     {
         // Retail Antibiotic 5.0 from bag slot 0x1e (body after the 80 b9 header).
