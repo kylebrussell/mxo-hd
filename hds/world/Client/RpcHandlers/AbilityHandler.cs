@@ -88,6 +88,7 @@ namespace hds
 
 
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
+            if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
@@ -282,6 +283,7 @@ namespace hds
                     if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
                     else CoderPets.Land(client, AbilityID, currentTargetViewId);
                 }
+                if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
