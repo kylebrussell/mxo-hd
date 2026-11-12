@@ -95,6 +95,15 @@ namespace hds
             var definition = AbilityCatalog.Find(AbilityID);
             if (definition?.Has("Ability/CastingTime") == true) currentAbility.setCastingTime(definition.CastSeconds);
 
+            // Old1124 still requires an exact matching inventory tool. Tool470 names1125, not1124.
+            // Refuse before duplicate/cast/cost/cooldown state; never route this template to passive384.
+            if (AbilityID == DisruptConnectionEligibility.Ability && DisruptConnectionEligibility.Refused(AbilityID,
+                Store.dbManager.WorldDbHandler.GetInventoryItems(Store.currentClient.playerData.getCharID())))
+            {
+                Deny(AbilityID, "A matching tool is required to activate this ability.");
+                return;
+            }
+
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
                                  currentTargetViewId);
 
