@@ -648,8 +648,11 @@ namespace hds
 
         private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site)
         {
+            Output.WriteDebugLog("[MISSION] Elevator callback for " + progress.mission.id + "; current " +
+                (client.playerData.missionProgress?.mission.id.ToString() ?? "none"));
             if (client.playerData.missionProgress != progress)
             {
+                Output.WriteDebugLog("[MISSION] Elevator ride cancelled: mission changed");
                 return;
             }
 

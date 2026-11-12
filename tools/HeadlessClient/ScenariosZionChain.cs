@@ -43,7 +43,23 @@ public static partial class Scenarios
                         {
                             int objectId=(int)goal.Attribute("object")!;var view=await ZionObject(context,p,objectId);
                             int loot=p.Received("81 19").Count;
-                            p.SendRpc($"80 c7 {MissionNpcId(view)} {(type=="Use"?"04":"03")} 00");
+                            bool computer=hds.MissionStaging.IsComputer(view.Goid);
+                            string label=type=="Use"?"Hack":computer?"Take":"Open";
+                            byte action=hds.ObjectStates.UseNumber(view.Goid,label)
+                                ?? throw new Exception($"No native {label} usable for object {view.Goid}");
+                            if(computer)
+                            {
+                                Check.That(view.Attributes.TryGetValue("CurrentState",out var initialState),"computer state is visible");
+                                await p.WaitUntilAsync(()=>
+                                {
+                                    // Creation snapshots are immutable: goal gates and Hack/Take transitions arrive as updates.
+                                    var updates=ViewUpdateValues(p,view.ViewId,"01 08");
+                                    uint current=updates.Count>0?updates[^1]:BitConverter.ToUInt32(initialState!);
+                                    return hds.ObjectStates.Offered(view.Goid,current).Contains(action);
+                                },$"native {label} usable is enabled by current computer state",TimeSpan.FromSeconds(10));
+                            }
+                            Console.WriteLine($"    native {label} use {action} on {view.Goid}");
+                            p.SendRpc($"80 c7 {MissionNpcId(view)} {action:x2} 00");
                             await p.WaitUntilAsync(()=>Done() || p.Received("81 19").Count>loot,"object action or container loot",TimeSpan.FromSeconds(10));
                             if(!Done())p.SendRpc("81 1f");
                             break;
