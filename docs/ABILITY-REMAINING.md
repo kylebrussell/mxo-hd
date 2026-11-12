@@ -43,7 +43,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 
 | IDs | Finding / why still missing |
 |---|---|
-| 7 Detect Vulnerability | No stored modifier or decoded vulnerability-display action. Combat vulnerability generation/exploitation and its UI are not reconstructed. |
+| 7 Detect Vulnerability | Shipped character prerequisite 99 blocks loading at retail levels 1–50. Ownership/purchase does not prove loadability; server now enforces this stored load gate. No vulnerability effect is claimed. [Primary evidence](DETECT-VULNERABILITY.md). |
 | 25 Power Boost1 | Pet-target damage/ForceCombat; P6 owns the pet executor. |
 | 196 Ignore Pain | `OnHealthReduceHealProc` uses a random10..20 heal callback; deterministic numeric fallback must not discard it. Random-value distribution/health callback lifecycle remains absent. |
 | 378,380,693 Deflect Virus/Bullets | Parent aura effects include callback-only and sweep components beyond simple numeric buffs. The numeric692 child alone is not parent380 parity. Full parent scheduling/cleansing/termination remains missing. |
