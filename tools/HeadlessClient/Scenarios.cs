@@ -23,6 +23,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
+        new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
         new Scenario("stealth-shields-lifecycle", StealthShieldLifecycle, StillNpcs),
         new Scenario("stealth-shields-terminal-cancel", StealthBullDogDeathCancels, StillNpcs),
         new Scenario("stealth-shields-suppression", StealthShieldSuppression, StillNpcs),

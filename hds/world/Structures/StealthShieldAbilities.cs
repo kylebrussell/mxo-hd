@@ -34,7 +34,7 @@ namespace hds
         public static string Describe(ushort id)=>AbilityCatalog.Canonical(id) switch
         {
             BullDog=>"NeutralDOT terminal at .5s: raw10 once (OURS absent-interval fallback, not retail-exact); builtin Aggro12/KnifeThrow64 per-view target; native damage/clip timing unresolved",
-            DisableEvasion=>"normal hostile cast: active EvasionState624 target + ITOt tool; suppress only217 child for8s; caster681 marker1.5s then guarded invis/sneak reapply; shield-health/520/throw contest unresolved",
+            DisableEvasion=>"normal hostile cast retains original stealth until validated4s landing: active EvasionState624 target + ITOt tool; suppress only217 child for8s; caster681 marker1.5s then guarded invis/sneak reapply; shield-health/520/throw contest unresolved",
             EvasionShield.Parent=>"parent217 and record IDs retained while1125 suppresses624; own/observer/late-view shield/state updates; shield damage/resistance/520 consumer not reconstructed",
             _=>null
         };

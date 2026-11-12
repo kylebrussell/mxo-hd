@@ -175,7 +175,7 @@ namespace hds
                 return;
             }
             if (StealthShieldAbilities.Refusal(Store.currentClient,AbilityID,currentTargetViewId) is string freeRefusal)
-            { Deny(AbilityID,freeRefusal);return; }
+            { Output.WriteDebugLog("[STEALTH-FREE]"+AbilityID+" cast refused: "+freeRefusal);Deny(AbilityID,freeRefusal);return; }
             // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
             bool pet = CoderPets.Handles(AbilityID);
             if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))

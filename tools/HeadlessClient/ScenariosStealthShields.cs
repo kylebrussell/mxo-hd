@@ -1,6 +1,52 @@
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    private static async Task StealthShieldNativeFixture(ScenarioContext context)
+    {
+        var caster=await context.AddPlayerAsync(StealthShieldFixture.Seed("CSR_Tester"));
+        var victim=await context.AddPlayerAsync(StealthShieldFixture.Seed("QAEnemy",true));
+        foreach(var p in new[]{caster,victim})
+        {
+            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");
+            await LoadAbilitiesAsync(context,p,StealthShieldFixture.Abilities);await context.Database.ExecuteAsync($"UPDATE characters SET pvpflag=1 WHERE charId={p.CharId}");await p.EnterWorldAsync();
+        }
+        await StealthShieldFixture.PrepareCasterAsync(caster);
+        var original=await StealthShieldFixture.ActivateTargetAsync(victim);
+        Check.Equal("1",await context.Database.ScalarAsync($"SELECT alignment FROM characters WHERE charId={caster.CharId}"),"Fixture caster organization saved");
+        Check.Equal("2",await context.Database.ScalarAsync($"SELECT alignment FROM characters WHERE charId={victim.CharId}"),"Fixture target organization saved");
+        var target=await caster.WaitForViewNamedAsync(victim.Handle);
+        caster.SendChat("?stealth invis");await caster.WaitForRpcAsync(ModPattern(1116,115));
+        Cast(caster,1125,target.ViewId); // actual80b9, same handler used by native selected-target helper
+        await Task.Delay(3000);
+        Check.Equal(0,caster.Received(ModPattern(1116,115,true)).Count,"Original invisibility survives first3s of4s cast");
+        Check.Equal(0,victim.Received(ModPattern(217,624,true)).Count,"No early shield suppression before landing");
+        await caster.WaitForRpcAsync(ModPattern(1125,681));
+        Check.Equal(1,caster.Received(ModPattern(1116,115,true)).Count,"Only successful landing ends original invisibility");
+        await victim.WaitForRpcAsync(ModPattern(217,624,true));
+        await caster.WaitForRpcAsync(ModPattern(1125,681,true));
+        await caster.WaitUntilAsync(()=>caster.Received(ModPattern(1116,115)).Count==2,"Restealth follows natural681expiry",TimeSpan.FromSeconds(4));
+        await victim.WaitUntilAsync(()=>victim.Received(ModPattern(217,624)).Count==2,"Target624 returns under retained217",TimeSpan.FromSeconds(10));
+        var restored=victim.Received(ModPattern(217,624)).Last();
+        Check.Equal(BitConverter.ToUInt16(original,4),BitConverter.ToUInt16(restored.Bytes,4),"Same parent modifier record ID");
+        Check.Equal(0,victim.Received("80 bd 05 d9 00 00 00 00 00 00 00").Count,"Parent217 never toggled off");
+        Check.That(context.Server.DebugLog().Contains("1125 landed; target suppression8s"),"Actual landing logged");
+        Check.That(!context.Server.DebugLog().Contains("off (used ability 1125)"),"No generic stealth break");
+        Check.Equal(0,caster.World.Problems.Count+victim.World.Problems.Count,"Native-equivalent protocol");
+    }
+    private static async Task StealthShieldNativeRefusal(ScenarioContext context)
+    {
+        var caster=await context.AddPlayerAsync(StealthShieldFixture.Seed("UnalignedSpy") with{Organization=0});
+        var victim=await context.AddPlayerAsync(StealthShieldFixture.Seed("ShieldEnemy",true));
+        foreach(var p in new[]{caster,victim})
+        {await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");await LoadAbilitiesAsync(context,p,StealthShieldFixture.Abilities);await context.Database.ExecuteAsync($"UPDATE characters SET pvpflag=1 WHERE charId={p.CharId}");await p.EnterWorldAsync();}
+        await StealthShieldFixture.ActivateTargetAsync(victim);
+        var target=await caster.WaitForViewNamedAsync(victim.Handle);caster.SendChat("?stealth invis");await caster.WaitForRpcAsync(ModPattern(1116,115));
+        Cast(caster,1125,target.ViewId);
+        await caster.WaitUntilAsync(()=>context.Server.DebugLog().Contains("1125 landing refused: PvP NotOpponent casterOrg=0"),"Illegal disposablefixture accurately refused",TimeSpan.FromSeconds(7));
+        Check.Equal(0,caster.Received(ModPattern(1125,681)).Count,"No false-success marker");
+        Check.Equal(0,caster.Received(ModPattern(1116,115,true)).Count,"Failed landing preserves original stealth");
+        Check.Equal(0,victim.Received(ModPattern(217,624,true)).Count,"Illegal PvP cannot suppress shield");
+    }
     private static async Task StealthShieldSuppression(ScenarioContext context)
     {
         var caster=await context.AddPlayerAsync(new CharacterSeed("ShieldSpy"){Level=50,Organization=1,InnerStrength=1000,MaxInnerStrength=1000,Items=new[]{(1,531u,1)}});

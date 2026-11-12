@@ -91,6 +91,19 @@ public class StealthShieldTests
         }
     }
     [Fact]
+    public void SneakFreeCastActionRetainsOriginalHiddenStateAndSnapshotUntilLanding()
+    {
+        var caster=Client();var original=Stealth.Begin(caster,Stealth.Defs[1116],50,durationOverride:20);
+        var cast=StealthShieldAbilities.Capture(caster);int version=Stealth.Version(caster);
+        StealthShieldAbilities.ActionTaken(caster);StealthShieldAbilities.Arm(caster,cast);
+        Assert.Same(original,Stealth.Current(caster));Assert.True(Stealth.IsHidden(caster));
+        Assert.Equal(version,Stealth.Version(caster));Assert.Equal(original.Expires,cast.InvisibleExpires);
+        Assert.True(StealthShieldAbilities.CanRestore(caster,cast));
+        Stealth.BreakForAction(caster,"landed ability1125");StealthShieldAbilities.Arm(caster,cast);
+        Assert.False(Stealth.IsHidden(caster));Assert.True(StealthShieldAbilities.CanRestore(caster,cast));
+        StealthShieldAbilities.ActionTaken(caster);Assert.False(StealthShieldAbilities.CanRestore(caster,cast));
+    }
+    [Fact]
     public void RestoreGuardsRejectJumpStanceNewActionsNewStealthAndNewLifeOrWorld()
     {
         var c=Client();Stealth.Begin(c,Stealth.Defs[1116],10);
