@@ -244,19 +244,24 @@ namespace hds
                 return;
             }
 
-            long currentCash = client.playerData.getInfo();
-            UInt32 value = VendorPricing.GetRecyclePrice(entry.Goid);
-            UInt32 newCash = (UInt32)Math.Min(Math.Max(currentCash, 0) + (long)value, UInt32.MaxValue);
-            Db.RemoveCodeStorage(charId, slot);
-            Db.SaveInfo(client, newCash);
-            client.playerData.setInfo(newCash);
-
-            ServerPackets pak = new ServerPackets();
-            pak.SendInfoDelta(client, (long)newCash - currentCash, ServerPackets.InfoReasonRecycle);
-            pak.SendInfoCurrent(client, newCash, ServerPackets.InfoReasonRecycle);
-            client.messageQueue.addRpcMessage(CentralStorage.BuildRemove(slot));
-            client.FlushQueue();
-            Output.WriteDebugLog("[CENTRAL STORAGE] Recycled storage slot " + slot + " (" + entry.Goid + " x" + entry.Count + ") for " + value);
+            UInt32 quote=VendorPricing.GetRecyclePrice(entry.Goid);
+            try
+            {
+                InventoryPayout result=Db.ExchangeInventoryForInfo(charId,slot,entry.Goid,entry.Count,quote,storage:true);
+                if(result==null){ClientActionsHandler.Notice(client,"That storage item changed; try again.");return;}
+                client.playerData.setInfo(result.Cash);
+                ServerPackets pak=new ServerPackets();
+                pak.SendInfoDelta(client,result.Credited,ServerPackets.InfoReasonRecycle);
+                pak.SendInfoCurrent(client,result.Cash,ServerPackets.InfoReasonRecycle);
+                client.messageQueue.addRpcMessage(CentralStorage.BuildRemove(slot));
+                client.FlushQueue();
+                Output.WriteDebugLog("[CENTRAL STORAGE] Recycled storage slot "+slot+" for "+result.Credited);
+            }
+            catch(Exception e)
+            {
+                Output.WriteDebugLog("[CENTRAL STORAGE] Recycle rolled back: "+e.Message);
+                ClientActionsHandler.Notice(client,"The recycle could not be completed. Your item and information were kept.");
+            }
         }
     }
 }

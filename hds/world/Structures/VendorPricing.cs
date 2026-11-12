@@ -52,14 +52,17 @@ namespace hds
         /// </summary>
         public static UInt32 GetRecyclePrice(UInt32 itemGoId)
         {
-            UInt32 price = GetBuyPrice(itemGoId);
-            if (price == DefaultBuyPrice && (itemGoId & AbilityCodeFlag) != 0)
-            {
-                // Leveled ability codes aren't in the price table; fall back to the base code.
-                price = GetBuyPrice(itemGoId & AbilityCodeMask);
-            }
+            if(itemGoId==0)return 0;
+            // Native621db720 normalizes an ability descriptor to its base before calling clhooks.RecycleInfo.
+            UInt32 key=(itemGoId & AbilityCodeFlag)!=0?itemGoId & AbilityCodeMask:itemGoId;
+            return PriceData.Value.TryGetValue(key,out VendorPriceEntry entry)
+                ? entry.VendorPrice/20 : DefaultVendorPrice/20;
+        }
 
-            return price / 20;
+        /// <summary>Native621db7e0 multiplies the per-item recycle quote by the represented stack count.</summary>
+        public static UInt32 GetRecyclePrice(UInt32 itemGoId,int count)
+        {
+            return ClampPrice((UInt64)GetRecyclePrice(itemGoId)*(UInt64)Math.Max(1,count));
         }
 
         public static UInt32 GetSellPrice(UInt32 itemGoId)
@@ -93,11 +96,8 @@ namespace hds
 
             if (PriceData.Value.TryGetValue(abilityCodeData, out VendorPriceEntry entry))
             {
-                if (entry.VendorPrice > 0)
-                {
-                    buyback = entry.VendorPrice;
-                    hasDecodedPrice = true;
-                }
+                buyback = entry.VendorPrice;
+                hasDecodedPrice = true;
             }
 
             if (hasDecodedPrice)
@@ -144,7 +144,7 @@ namespace hds
         // sell (return false) and leave cash unchanged. NoBuyBackPrice (1) is only produced for an
         // empty/zero itemGoId; that is treated as a normal (if trivial) sale for 1, mirroring how
         // TryApplyBuy still proceeds on its DefaultBuyPrice fallback path. newCash is clamped to
-        // UInt32.MaxValue so a huge buyback can never overflow the cash field.
+        // Int32.MaxValue so a huge buyback can never overflow the cash field.
         public static bool TryApplySell(long currentCash, UInt32 itemGoId, out UInt32 newCash, out UInt32 price)
         {
             price = GetSellPrice(itemGoId);
@@ -157,7 +157,7 @@ namespace hds
             }
 
             long baseCash = currentCash < 0 ? 0 : currentCash;
-            newCash = (UInt32)Math.Min(baseCash + (long)price, (long)UInt32.MaxValue);
+            newCash = VendorTrading.Credit(baseCash,price,out _);
             return true;
         }
 
