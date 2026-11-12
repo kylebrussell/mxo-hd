@@ -280,7 +280,7 @@ namespace hds
             int playerHealth = healthBytes != null && healthBytes.Length >= 2 ? NumericalUtils.ByteArrayToUint16(healthBytes, 1) : 1;
 
             CombatTactic playerTactic = session.AttackerTactic;
-            CombatTacticType playerType = player.playerData.combatTacticType;
+            CombatTacticType playerType = CombatTactics.Type(player);
             bool stunned = mob.IsStunned(now);
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
@@ -1112,7 +1112,7 @@ namespace hds
             // Retail's free attack (FreeAttacks): tactic rolls, then the gun's damage less the absorbed share
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-            FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, player.playerData.combatTacticType,
+            FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, CombatTactics.Type(player),
                 target != null ? target.getLevel() : 1, session.DefenderTactic, weapon,
                 AbilityStats.Attack(player, true), target != null ? AbilityStats.Defense(target, true) : 0,
                 AbilityStats.Player(player, 1139), AbilityStats.Player(player, 171) / 100.0,

@@ -27,8 +27,7 @@ namespace hds
         public const ushort SelfDefense = 17, Aikido = 101, Karate = 132, KungFu = 133, HackerStyle = 1006,
             CoderStyle = 1008, SpyStyle = 1112;
 
-        /// <summary>Handguns, Rifles and Submachine Guns are combat-exclusive too, but their numeric modifiers belong to the
-        /// weapon-proficiency work (not this module): they can be the active style without contributing here.</summary>
+        /// <summary>Handguns, Rifles and Submachine Guns use the same shipped learned-level modifier schema as martial styles.</summary>
         public static readonly HashSet<ushort> WeaponStyles = new HashSet<ushort> { 129, 147, 158 };
 
         public static bool IsStyle(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsCombatExclusive") == 1;
@@ -37,7 +36,7 @@ namespace hds
         public static IEnumerable<AbilityCatalog.Modifier> Modifiers(ushort style)
         {
             var entry = AbilityCatalog.Find(style);
-            if (entry == null || entry.Number("Ability/IsCombatExclusive") != 1 || WeaponStyles.Contains(AbilityCatalog.Canonical(style)))
+            if (entry == null || entry.Number("Ability/IsCombatExclusive") != 1)
                 return Enumerable.Empty<AbilityCatalog.Modifier>();
             return entry.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 2 &&
                 m.Target != 0 && m.State == 0 && m.Number("TargetAbilityGrant") == 0);

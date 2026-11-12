@@ -1,0 +1,31 @@
+# Character-level timed buffs
+
+The prior catalog fallback accepted fixed min/max constants only. It rejected deterministic level-scaled beneficial buffs even after the native value evaluator had been decoded. This change adds thirteen timed numeric templates, resolving character-level function3 from the **caster** when the buff lands. Existing captured overrides remain authoritative.
+
+New templates: Adrenaline Booster1; Calm Mind, Calm Body5; Empty Mind8; Find Weakness123; Firearms Skill124; Stealth Awareness156; Passive Code170; Combat Enhancement173; Combat Training373; Weapons Boost374; Upgrade Health417; Bolster Health419; Enhanced Dodge421.
+
+Ten now have gameplay consumers: melee/ballistic accuracy, ballistic damage/resistance, healing, defence, maximum health and stealth detection (through the merged stealth executor). Thrown resistance, viral resistance and thrown damage still lack consumers. Those three templates gain numeric records/totals but remain **cosmetic** in the audit. Neither storing a value nor showing a countdown establishes gameplay parity.
+
+## Evidence and implementation
+
+The shipped GOB's `ValueFunction=3`, `ValueScale`, optional min/cap, `TargetAttribute`, duration and target fields provide each numeric template. The evaluator is the same native `62517ff0` / truncation helper`626a92d8` established in [modifier evidence](ABILITY-MODIFIERS.md). Stored binary32 scales multiply with x87 precision before truncation: character20 with scale1.3 produces25; Enhanced Dodge at50 with scale0.96 produces47. Positive template caps still apply.
+
+Only self/friendly numeric modifiers with positive, matching timed durations are eligible. Each must use deterministic fixed/function3 values and have no init/update/term/health callback or target state. Function2 learned-level styles, indefinite combat styles, auras, procs, random values and script callbacks are excluded. This does not guess missing viral-resistance or thrown-combat systems.
+
+An active buff now retains its resolved definition. The stat and vital consumers read that snapshot, and expiry/dismissal/replacement use its original record values. Later caster/recipient level changes cannot silently change an already applied buff or cause an off record with different values. Friendly buffs use the source player's level; a level20 caster's Upgrade Health adds200 to a level50 recipient, not500. Replacing it with a level50 caster's Bolster Health adds500 over the recipient's original baseline, avoiding compounding. Removing it also clamps current health when necessary. Hostile maximum-vital reductions remain additive with the saved friendly values; either effect can be removed first without losing the other or corrupting the baseline.
+
+The existing nonzero StackingType-to-family replacement policy is reused; full native priority/stacking semantics remain unverified. Existing captured buffs retain their captured values even where the raw template differs. This deliberately leaves full scaling of those overrides and Death Effect's impact on them open. Generic support still supplies existing range, cast, cooldown, IS and live-friendly gates.
+
+## Validation and pending native checks
+
+On integrated c9551d6 (master through Hacker PR106), all3659 Debug and Release unit tests pass (65s each), and CI43153164721 passes. Eleven new cases cover source level, native precision/caps, active snapshots, captured overrides, health replacement and friendly/hostile maximum-health effects removed in either order. NativeQa `scaled` mode builds in Release; QAFriend is20 and CSR_Tester/QAOther50 for the unequal-source checks.
+
+The full92-case baseline passes1179.4s with six servers at peak, including every new scaled-buff case. That baseline predates the native resurrection reply correction. After integrating the corrected parser and master through PR106, all22 affected fresh-server scenarios pass:13 ability (134.4s),2 hostile-field (53.2s),3 utility (52.1s),3 stealth (78.1s) and1 Coder-pet lifecycle (32.4s). The ability cases include captured short replies, all four resurrection callbacks and their refusal/reconstruction guards, scaled self/friendly buffs, passive lifecycle, healing, damage, controls, area and costs. The exact initial15% Death Effect reduction remains a unit assertion; live/reconnect tests allow valid recovery during slow database/delivery work instead of assuming the first168 modifier remains current.
+
+No native check is claimed. With the normal CSR_Tester110 disposable harness and client lock, verify Firearms Skill124's20-second countdown and expiry, Passive Code170's healing change, Upgrade Health417 and Bolster Health419 cast by unequal-level sources, family replacement, buff dismissal, max/current-health updates and reconnect/death cleanup. Compare against a known retail caster build before asserting exact final magnitudes. Reset110 at Mara `(23828,495,13984)`, full health, flag0 and mission986 only before releasing the lock. TheNeo is never a native test character.
+
+NativeQa also accepts an optional fifth argument with comma-separated canonical player ability IDs, overriding the preset loadout (for example `npc "2,17,350,476"` after the root, QA directory and commit arguments). Known class-0 templates are checked and catalog level caps still apply. This prepares a small Actions list when the legacy client's scrolling blocks a focused checklist; it changes only the disposable fixture. A separate client launch is still required under the existing lock policy.
+
+## Remaining ability sweep
+
+P4 extends this baseline with group auras, sourced term callbacks, tactical/drain buffs, weapon proficiencies, disguise tools, buff-buffer reservations, Renew RSI438 and Purity868. See [ABILITY-REMAINING.md](ABILITY-REMAINING.md) for source evidence, explicitly chosen policies, every reviewed residual row and the exact focused native checklist. The historical validation above belongs to its named baseline, not these new effects.
