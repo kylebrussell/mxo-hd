@@ -28,6 +28,7 @@ public static partial class Scenarios
         door.SendRpc("81 48");await door.WaitForRpcAsync("81 49");
         Check.Equal(excludedViews,door.ViewsOfGoid(417).Count,"Unproven rotated key cannot spawn");
         Check.Equal(0,p.World.Problems.Count,"Medium03 hardline wire");Check.Equal(0,door.World.Problems.Count,"Medium03 door wire");
+        await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-medium03-success-debug.log"),context.Server.FullOutput()+"\n--- DebugLog ---\n"+context.Server.DebugLog());
         Console.WriteLine("  medium03 PARTIAL:592/HDL16/2;6d16/2;radialLA exit/direct80ff return/newself;safe365door;rotated417 absent. No NPC/elevator/subway/LA return UI claim.");
     }
 }
