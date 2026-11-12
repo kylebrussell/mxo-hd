@@ -803,6 +803,7 @@ namespace hds
             client.viewMan.removeViewByViewId(side.HandlerViewId);
             client.FlushQueue();
             DuelHandler.AfterInterlockTeardown(client);
+            DeathPresentation.AfterInterlockTeardown(client);
         }
 
         /// <summary>

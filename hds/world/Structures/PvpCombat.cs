@@ -275,9 +275,6 @@ namespace hds
             {
                 return; // the tutorial's immortality
             }
-            PvpFlag.ToWatchers(victim, PlayerViewAttributes.Build(
-                (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(1)),
-                (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(0))));
             if (killer != null)
             {
                 SendKillNotice(victim, killer);
