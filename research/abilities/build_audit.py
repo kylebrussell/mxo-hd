@@ -157,7 +157,8 @@ def server(i):
     elif r['direct_damage']:
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
-        parts.append('captured DOT executor' if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
+        parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
+                     if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r['healing']:
         if not r.get('player_healing'):
             parts.append('pet/special healing target executor missing; player cast refused')
@@ -174,7 +175,14 @@ def server(i):
         if states:
             parts.append(', '.join(states))
         if any(m['stat'] for m in r['timed']):
-            parts.append('captured debuffs; selected combat stats consumed')
+            parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
+    if r.get('aura'):
+        a = r['aura']
+        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on hostile NPC/PvP targets in its radius")
+    if r.get('sweep'):
+        parts.append('pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
+    if r.get('instant_hostile'):
+        parts.append('instant script: removable buffs (UBF0) / current IS on landing')
     if r['grants']:
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     if 'HyperJump' in abilities[i]['name']:
@@ -187,7 +195,7 @@ def server(i):
 def status(i):
     r = coverage[i]
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
