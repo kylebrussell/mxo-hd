@@ -34,25 +34,38 @@ public static partial class Scenarios
             context.AcknowledgeExpectedServerDiagnostic(line, group.Count());
         }
 
+        Console.WriteLine($"  reader-provider: owned char{badId}, exact UInt16 overflow count{failures.Length}; bad row remains-1/offline, failed-login sockets disposed");
         var healthy = (await context.AddPlayersInWorldAsync(new CharacterSeed("ReaderHealthy")
             { X = 23828, Y = 495, Z = 13984, Rotation = 64, Health = 300, MaxHealth = 300 }))[0];
         Check.Equal((byte)64, healthy.World.CreationSnapshot().Last(v => v.ViewId == 2).Attributes["Yaw Interval"][0], "valid yaw remains native-equivalent");
         Check.Equal(300L, await context.Database.LongAsync($"SELECT healthC FROM characters WHERE charId={healthy.CharId}"), "healthy row loads normally");
+        ProbeHealthy("before-quit");
         healthy.SendRpc("80 fe 00"); await healthy.WaitForRpcAsync("80 fd");
         Check.Equal(0L, await context.Database.LongAsync($"SELECT is_online FROM characters WHERE charId={healthy.CharId}"), "normal quit releases healthy actor");
+        ProbeHealthy("after-quit");
+        ProbeHealthy("before-dispose");
         healthy.Dispose();
+        ProbeHealthy("after-dispose");
         await Task.Delay(TimeSpan.FromSeconds(33)); // ordinary >30s world/margin reservation cleanup
         using (var relog = await HeadlessPlayer.LoginAsync(context.Server.Address, "user" + healthy.CharId, healthy.Handle))
         {
             await relog.EnterWorldAsync();
             Check.Equal((byte)64, relog.World.CreationSnapshot().Last(v => v.ViewId == 2).Attributes["Yaw Interval"][0], "ordinary same-server relog");
-            Check.Equal(0, relog.World.Problems.Count, "relog wire parser");
+            Console.WriteLine("  reader-probe relog " + System.Text.Json.JsonSerializer.Serialize(relog.World.Problems));
+            Check.That(relog.World.Problems.Count == 0, "relog wire parser: " + string.Join("; ", relog.World.Problems));
         }
         Check.That(!context.Server.FullOutput().Contains("already in use", StringComparison.OrdinalIgnoreCase), "no poisoned connection or character reservation");
         Check.That(!context.ServerProblems().Any(), "no additional or repeated unacknowledged server failure");
-        Check.Equal(0, healthy.World.Problems.Count, "healthy login wire parser");
+        ProbeHealthy("after-relog");
+        Check.That(healthy.World.Problems.Count == 0, "healthy login wire parser: " + string.Join("; ", healthy.World.Problems));
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), "mxo-login-reader-cleanup-success-debug.log"),
             context.Server.FullOutput() + "\n--- DebugLog ---\n" + context.Server.DebugLog());
+        void ProbeHealthy(string stage)
+        {
+            string proof = System.Text.Json.JsonSerializer.Serialize(new { Stage=stage, Problems=healthy.World.Problems, RpcCount=healthy.World.RpcSnapshot().Count });
+            File.AppendAllText(Path.Combine(Path.GetTempPath(),"mxo-login-reader-stage-problems.jsonl"), proof + "\n");
+            Console.WriteLine("  reader-probe " + proof);
+        }
         Console.WriteLine($"  login reader: real signed health-1 row, valid yaw192, exact initial-UDP UInt16 overflow ({failures.Length} acknowledged occurrence(s)); failed sockets disposed; healthy login/logout/relog on same server; no already-in-use error, no health repair.");
     }
 }

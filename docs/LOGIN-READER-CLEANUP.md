@@ -19,3 +19,5 @@ Discovered mode `login-reader-cleanup` seeds normal valid CSR110 at Mara `(23828
 3. Confirm normal self/world entry and absence of connection-already-in-use errors. This is a valid-login native regression; only the disposable headless case exercises the malformed row.
 
 Focused23 and full4328 unit tests pass. Debug/Release builds and actual read-only plans/provenance pass; Python12 audit tests pass. Provider-backed fresh verification is pending. Native QA is pending. No main database, char2, client lock, native setup, settings or cleanup operations are part of this package.
+
+The initial fresh attempt (80.1s) verified the expected mapping stack and healthy login/logout/relog but failed on one healthy-session wire diagnostic whose text was absent from the old count-only assertion. Its raw failure is retained. Stage-specific exact problem capture and joined assertion messages were added without suppressing client problems or changing production behavior; verification is pending the coordinator-authorized diagnostic retry.
