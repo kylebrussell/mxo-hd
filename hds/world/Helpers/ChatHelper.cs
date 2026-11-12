@@ -567,11 +567,17 @@ namespace hds
                     packets.sendAppeareanceUpdate(Store.currentClient, rsiData);
                 }
 
-                if (command.StartsWith("?spawndatanode"))
+                if (command.Equals("?utilitylocator") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    DataMining.DevLocator(Store.currentClient,commands);
+                if (command.Equals("?utilitystatus") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    DataMining.DevStatus(Store.currentClient);
+                if (command.Equals("?utilitymap") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    UtilityAbilities.DevMissionMap(Store.currentClient,commands);
+
+                if ((command.Equals("?utilityobject") || command.Equals("?spawndatanode")) &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
-                    ServerPackets pak = new ServerPackets();
-                    pak.sendSystemChatMessage(Store.currentClient, "Spawn Datanode!", "BROADCAST");
-                    pak.spawnDataNodeView(Store.currentClient);
+                    DataMining.Dev(Store.currentClient, commands);
                 }
 
                 if (command.StartsWith("?message"))

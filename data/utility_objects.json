@@ -1,0 +1,786 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "objects": [
+    {
+      "goid": 556,
+      "name": "Luggable_Faction_Light_1",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000f0410000d2420000f041",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 557,
+      "name": "Luggable_Crew_Light_1",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 1,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000f041000070420000c841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 558,
+      "name": "Luggable_Crew_Light_2",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 1,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "000020420000484200000c42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 559,
+      "name": "Luggable_Crew_Light_3",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 1,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000f0410000f0410000f041",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 561,
+      "name": "Luggable_Personal_Light_2",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 25,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "00981f41ac97fe4176072642",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 562,
+      "name": "Luggable_Personal_Light_3",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 40,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0662d641708e0742ac8f6a41",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 565,
+      "name": "Luggable_Faction_Light_4",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "000048420000b4420000f041",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 595,
+      "name": "Luggable_Faction_Light",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000e040000060410000b841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 596,
+      "name": "Luggable_Personal_Light_1",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 10,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000484200004c4200004842",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 597,
+      "name": "Luggable_Faction_Light_2",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "000048420000024300004842",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 598,
+      "name": "Luggable_Faction_Light_3",
+      "pickup_use": 2,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 0,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "0000a0410000984100002842",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 606,
+      "name": "DataNode",
+      "pickup_use": -1,
+      "fields": {
+        "DataNode/AccessLevel": 0,
+        "DataNode/InfoAmount": 1100,
+        "DataNode/Purity": 50,
+        "FX/FXID": 671089762,
+        "Normal/HalfExtents": "000048420000484200004842"
+      }
+    },
+    {
+      "goid": 2562,
+      "name": "Luggable_Faction_Heavy",
+      "pickup_use": 2,
+      "fields": {
+        "Luggable/AttachedModel": 0,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 1,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "68dac940c8186141d567b341",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10003,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 2563,
+      "name": "Luggable_Faction_Heavy_1",
+      "pickup_use": 2,
+      "fields": {
+        "Luggable/AttachedModel": 973079295,
+        "Luggable/LuggableType": 2,
+        "Luggable/Size": 1,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "342f2a42254c394200001c42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10003,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777348
+      }
+    },
+    {
+      "goid": 46655,
+      "name": "Luggable_Personal_Holiday_1",
+      "pickup_use": 5,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "401287427960b34240128742",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 46656,
+      "name": "Luggable_Personal_Holiday_2",
+      "pickup_use": 5,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "401287427960b34240128742",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 46657,
+      "name": "Luggable_Personal_Holiday_3",
+      "pickup_use": 5,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "401287427960b34240128742",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47000,
+      "name": "Luggable_Smith_Virus_1",
+      "pickup_use": 7,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47001,
+      "name": "Luggable_Smith_Virus_2",
+      "pickup_use": 7,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47002,
+      "name": "Luggable_Smith_Virus_3",
+      "pickup_use": 7,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47014,
+      "name": "Luggable_BombCodeSB",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47015,
+      "name": "Luggable_LEDBoxSB",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47016,
+      "name": "Luggable_N30FragSB",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "101585410b3316413b0d0341",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47017,
+      "name": "Luggable_BombCodeINT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47018,
+      "name": "Luggable_BombCodeDT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47019,
+      "name": "Luggable_LEDBoxINT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47020,
+      "name": "Luggable_LEDBoxDT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "412ffa41344d824103c39841",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47021,
+      "name": "Luggable_N30FragINT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "101585410b3316413b0d0341",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47022,
+      "name": "Luggable_N30FragDT",
+      "pickup_use": 6,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "101585410b3316413b0d0341",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47096,
+      "name": "Luggable_SignalBooster",
+      "pickup_use": 7,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 30,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "ea17204216a40a4296d13a42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47100,
+      "name": "Luggable_Quicksilver",
+      "pickup_use": 11,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 40,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "ea17204216a40a4296d13a42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47102,
+      "name": "Luggable_CodeOptimizer",
+      "pickup_use": 8,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 40,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "ea17204216a40a4296d13a42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47103,
+      "name": "Luggable_Overdrive",
+      "pickup_use": 12,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 40,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "ea17204216a40a4296d13a42",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47110,
+      "name": "Luggable_Quicksilver_Compile",
+      "pickup_use": 11,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 30,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "00007041000040400000a041",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47116,
+      "name": "Luggable_Overdrive_Decompile",
+      "pickup_use": 11,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 30,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 0,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "4cca0441e48c2a411d030f40",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243
+      }
+    },
+    {
+      "goid": 47276,
+      "name": "DatamineTap1",
+      "pickup_use": 4,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243,
+        "Usable/PickupExclusive1": 47277,
+        "Usable/PickupExclusive2": 47278,
+        "Usable/PickupExclusive3": 47279
+      }
+    },
+    {
+      "goid": 47277,
+      "name": "DatamineTap2",
+      "pickup_use": 4,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243,
+        "Usable/PickupExclusive1": 47276,
+        "Usable/PickupExclusive2": 47278,
+        "Usable/PickupExclusive3": 47279
+      }
+    },
+    {
+      "goid": 47278,
+      "name": "DatamineTap3",
+      "pickup_use": 4,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243,
+        "Usable/PickupExclusive1": 47276,
+        "Usable/PickupExclusive2": 47277,
+        "Usable/PickupExclusive3": 47279
+      }
+    },
+    {
+      "goid": 47279,
+      "name": "DatamineTap4",
+      "pickup_use": 4,
+      "fields": {
+        "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/Singleton": 1,
+        "Luggable/DropOnInterConstructTeleport": 1,
+        "Luggable/LuggableType": 0,
+        "Luggable/Size": 0,
+        "Luggable/UniqueID": 0,
+        "Model/HalfExtents": "d57acf40a79bed41a07c8641",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 10004,
+        "Usable/MaxDistance": 100.0,
+        "Usable/NameID": 16777243,
+        "Usable/PickupExclusive1": 47276,
+        "Usable/PickupExclusive2": 47277,
+        "Usable/PickupExclusive3": 47278
+      }
+    }
+  ],
+  "locators": [
+    {
+      "goid": 422,
+      "name": "DataNodeLocator_HandHeld",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 30.0,
+        "DataNodeLocator/Type": 0
+      }
+    },
+    {
+      "goid": 423,
+      "name": "DataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 5.0,
+        "DataNodeLocator/Type": 1
+      }
+    },
+    {
+      "goid": 38208,
+      "name": "AdvancedDataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2148120576,
+        "DataNodeLocator/Range": 15.0,
+        "DataNodeLocator/Type": 1
+      }
+    },
+    {
+      "goid": 38209,
+      "name": "BasicDataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 5.0,
+        "DataNodeLocator/Type": 1
+      }
+    }
+  ]
+}

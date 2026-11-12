@@ -60,6 +60,7 @@ bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
+bool dataMiningMode = args.Length > 3 && args[3] == "data-mining";
 bool actionsMode = args.Length > 3 && args[3] == "actions";
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
@@ -104,6 +105,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
+    if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
@@ -139,6 +141,8 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
 ");
+    if (dataMiningMode)
+        await database.ExecuteAsync("DELETE FROM inventory WHERE charId=110 AND slot<97; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,422,1,1,0)");
     // The native client's login level is derived from XP, independently of the server's stored Level.
     await database.ExecuteAsync($"UPDATE characters SET exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId=110");
     await database.ExecuteAsync($"UPDATE characters SET x={nativeX},z={nativeZ} WHERE charId=110");

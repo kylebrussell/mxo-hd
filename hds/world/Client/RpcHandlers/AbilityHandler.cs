@@ -114,6 +114,11 @@ namespace hds
                 Deny(AbilityID, "You cannot act while stunned or pacified.");
                 return;
             }
+            if (UtilityAbilities.IsDataNodeSearch(AbilityID) && UtilityAbilities.Level(Store.currentClient,AbilityID)<=0)
+            {
+                Deny(AbilityID,"Load this data-node search ability before activating it.");
+                return;
+            }
 
             // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
             if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
