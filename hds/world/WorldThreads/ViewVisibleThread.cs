@@ -691,6 +691,12 @@ namespace hds
                             continue;
                         }
 
+                        // A sneaking or invisible enemy stays out of this player's sight (docs/STEALTH.md)
+                        if (Stealth.HiddenFrom(currentClient, otherClient))
+                        {
+                            continue;
+                        }
+
                         nearbyPlayerEntities.Add(otherClient.playerData.getEntityId());
 
                         ClientView clientView = currentClient.viewMan.GetViewForEntityAndGo(
@@ -712,6 +718,7 @@ namespace hds
                             // client names this player by (combat, duels, trade). This used to store the next counter value.
                             clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
+                            Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
                         }
                     }
                 }

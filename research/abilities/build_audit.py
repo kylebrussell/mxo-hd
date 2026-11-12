@@ -161,21 +161,32 @@ PETS = {
 }
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
-# Utility abilities: hand-written server text and status (hds/world/Structures/UtilityAbilities.cs, docs/UTILITY-ABILITIES.md).
-# These executors are rules/object interactions the runtime inventory cannot see, so their rows are kept here.
+# Hand-written server text and status for rule/object/state executors the runtime inventory cannot see:
+# utility abilities (UtilityAbilities.cs, docs/UTILITY-ABILITIES.md) and stealth (Stealth.cs, docs/STEALTH.md).
 MANUAL = {
     44: ('rshooks.py roll on mission accept, access flags stored, success FX; the client record that shows the map is not identified; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
     119: ('Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
     142: ('Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked="1"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    156: ('reuse 15s; total feeds stealth detection (STEALTH.md); record is scaled-buff scope', 'missing'),
     166: ('Hardline Hack Construct (rule 10024) ability/faction gate lines only; construct hacking itself absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    186: ('STEALTH.md: Sneak behaviour under its own id (no stored modifier; our choice); LOS/noise/stance incomplete', 'partial'),
     218: ('Disable Security Devices use (rule 1012 SecurityPBXDisable): ability + DisableDeviceTool, Security Systems vs Difficulty contest, ACCESS GRANTED/ALARM chat, Disabled/Alarming state; no XP, alarm has no effect; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    366: ('STEALTH.md: imparts 629 on a friendly player; refused on self, target in combat or already invisible', 'partial'),
+    368: ('STEALTH.md: Invisibility 2 s later without the proximity test, ends the fight (our choice); smoke-bomb item 460 not enforced', 'partial'),
     382: ('Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
     486: ('Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    507: ('STEALTH.md: kSneak + ST_STEALTHED; Sneak Movement 25 + Stealth (char level) records; 5 s sneakTest; damage/attack break; LOS/noise/stance incomplete', 'partial'),
     538: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
     539: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
     540: ('presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
     541: ('presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
     621: ('Find Data Node toggle: locator tool gate (ID_ABILITY_TOOL_FAIL), start/stop lines; 80 ca-80 cf locate records not sent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    629: ('STEALTH.md: kInvisible for 120 s on the target; refused when already invisible', 'partial'),
+    1111: ('STEALTH.md: kSneak + ST_STEALTHED to own/other views; Stealth/Noise/MoveSpeed/StealthState records; native sneakTest every 5 s vs facing enemies and NPCs; hidden from enemies; damage/attack/ability break; LOS/noise/stance incomplete', 'partial'),
+    1114: ('presentation only; no effect executor; STEALTH.md: needs tool ModelOverride/setModel, not done', 'missing'),
+    1116: ('STEALTH.md: kInvisible + ST_STEALTHED for 30+2/level s; MoveSpeed -300 record; refused with an enemy facing within 800; hidden from enemies, ignored by NPCs; no damage break; Detection counter missing', 'partial'),
+    1118: ('STEALTH.md: kShadowObject for 180 s, 25 IS every 5 s with deactivation, recast on end, NPCs ignore; evade/timed-usable and interaction breaks incomplete', 'partial'),
+    1137: ('STEALTH.md: kSneak + ST_STEALTHED + ST_CONCEALMENT; Concealed/StealthState records; 5 s sneakTest; damage break; stance/panic-end incomplete', 'partial'),
 }
 
 
