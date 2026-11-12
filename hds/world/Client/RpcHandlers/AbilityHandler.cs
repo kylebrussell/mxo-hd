@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -125,6 +125,8 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            // A toggled aura used while it is on switches off (no cost, cooldown or cast)
+            if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.
             bool stealth = Stealth.Handles(AbilityID);
             if (stealth && Stealth.IsOn(Store.currentClient, AbilityID))
@@ -156,7 +158,7 @@ namespace hds
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Cost(AbilityID))
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "You do not have enough Inner Strength.");
                 return;
@@ -209,6 +211,7 @@ namespace hds
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
@@ -229,7 +232,7 @@ namespace hds
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
-                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID)))
+                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) || AbilityHostile.Lands(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
@@ -366,7 +369,7 @@ namespace hds
             // The cost is paid when the ability is used: the retail cost (AbilityCosts), 20 when unknown. This used
             // to set Inner Strength to 50 after every ability (and Hyper-Speed and the cast animation sent their
             // own fixed values, 50 and 237), then cost a flat 20.
-            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Cost(abilityItem.getAbilityID()));
+            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Effective(Store.currentClient, abilityItem.getAbilityID()));
 
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();

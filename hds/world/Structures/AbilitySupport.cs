@@ -8,7 +8,7 @@ namespace hds
     /// <summary>Friendly abilities resolve to players, never to the hostile damage fallback.</summary>
     public static class AbilitySupport
     {
-        public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) || AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id);
+        public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) || AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id);
         public static WorldClient PlayerInView(WorldClient caster, UInt16 view)
         {
             if (view <= 2) return caster;
@@ -76,6 +76,7 @@ namespace hds
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
                 ServerPackets.SendPlayerAbilityEffect(target, fx);
                 AbilityBuffs.Apply(target, id);
+                AbilityHostile.ApplySweep(caster, target, id);
                 target.FlushQueue();
             }
         }

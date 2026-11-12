@@ -57,7 +57,11 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             consumer = Consumer(m.Target),
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
-        grants = AbilityProgression.GrantsOf(e.Id)
+        grants = AbilityProgression.GrantsOf(e.Id),
+        aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
+        sweep = AbilityHostile.IsSweep(e.Id),
+        instant_hostile = AbilityHostile.Lands(e.Id),
+        catalog_debuff = AbilityHostile.Catalog(e.Id) != null
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
