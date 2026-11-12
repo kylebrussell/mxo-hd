@@ -123,4 +123,50 @@ public class CoderPetTests
         Assert.True(CoderPets.TargetsOwnPet(34));
         Assert.False(CoderPets.TargetsOwnPet(27));
     }
+    private static CoderPets.Pet ResourcePet()
+    {
+        var mob = new Mob(); mob.setName("Nuker Simulacrum"); mob.setLevel(50);
+        mob.setHealthC(337); mob.setHealthM(1950);
+        return new CoderPets.Pet { Mob = mob, SimulacraId = 2, Order = CoderPets.Command.Attack, Stance = CoderPets.Stance.Passive };
+    }
+
+    [Fact]
+    public void WindowLayoutMatchesNativeConstructorAndConsumer()
+    {
+        var pet = ResourcePet();
+        var registration = CoderPets.BuildWindow(pet, true);
+        Assert.Equal(46, registration.Length);
+        Assert.Equal("81760002", Hex(registration[..4]));
+        Assert.Equal("Nuker Simulacrum", System.Text.Encoding.ASCII.GetString(registration,4,16));
+        Assert.Equal("0051019e070202320000", Hex(registration[36..]));
+        var update = CoderPets.BuildWindow(pet, false);
+        Assert.Equal("8178020051019e070202320000", Hex(update));
+    }
+
+    [Fact]
+    public void ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration()
+    {
+        var pet = ResourcePet(); pet.InnerStrength = 8; pet.LastResourceTick = 10;
+        Assert.False(CoderPets.SpendAction(pet, 10));
+        pet.ChargeUntil = 12;
+        Assert.True(CoderPets.SpendAction(pet, 10));
+        Assert.Equal(0, pet.InnerStrength);
+        CoderPets.Regenerate(pet, 13); // 2 charged seconds at3/s, one ordinary second at2/s
+        Assert.Equal(8, pet.InnerStrength);
+        Assert.False(CoderPets.SpendAction(pet, 13));
+        CoderPets.Regenerate(pet, 1000);
+        Assert.Equal(100, pet.InnerStrength);
+    }
+
+    [Fact]
+    public void FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime()
+    {
+        var pet = ResourcePet(); pet.FortifyResistance = 100; pet.FortifyUntil = 20;
+        Assert.Equal(50, CoderPets.Mitigate(pet, 100, 19));
+        Assert.Equal(100, CoderPets.Mitigate(pet, 100, 20));
+        Assert.Equal(75, CoderPets.HitChance(pet, 50, 10));
+        pet.BoostUntil = 15; pet.BoostAccuracy = 65;
+        Assert.Equal(95, CoderPets.HitChance(pet, 50, 14));
+        Assert.Equal(75, CoderPets.HitChance(pet, 50, 15));
+    }
 }
