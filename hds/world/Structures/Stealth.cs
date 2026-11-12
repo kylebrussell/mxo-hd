@@ -166,6 +166,8 @@ namespace hds
             lock (h) return h.Current;
         }
 
+        internal static int Version(WorldClient client) { var h=HolderOf(client);lock(h)return h.Generation; }
+
         public static UInt16 BitsOf(WorldClient client) => Current(client)?.Def.Bits ?? 0;
         public static bool IsOn(WorldClient client, UInt16 ability) => Current(client)?.Def.Ability == ability;
         /// <summary>Sneaking or invisible: kept out of enemies' sight and ignored by NPCs.</summary>
@@ -242,6 +244,7 @@ namespace hds
         /// <summary>Why the ability can't be used now (the script's _Test), or null.</summary>
         public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView)
         {
+            if(id==SneakGrantAbility && StealthShieldAbilities.PendingRestealth(client))return "Sneak is waiting for Disable Evasion's restealth callback.";
             if (id == ImpartInvisibilityAbility)
             {
                 // ImpartInvisibility_Test and ImpartInvisibilityInit
@@ -300,12 +303,12 @@ namespace hds
         }
 
         /// <summary>Puts a stealth state on the player (replacing any other: every one of them is AbilityIsExclusive).</summary>
-        public static State Begin(WorldClient client, Def def, int abilityLevel, uint disguiseModel = 0)
+        public static State Begin(WorldClient client, Def def, int abilityLevel, uint disguiseModel = 0, float? durationOverride = null)
         {
-            lock(client.playerData.upgradeSync) return BeginCore(client,def,abilityLevel,disguiseModel);
+            lock(client.playerData.upgradeSync) return BeginCore(client,def,abilityLevel,disguiseModel,durationOverride);
         }
 
-        private static State BeginCore(WorldClient client, Def def, int abilityLevel, uint disguiseModel)
+        private static State BeginCore(WorldClient client, Def def, int abilityLevel, uint disguiseModel,float? durationOverride)
         {
             if (!AbilityBuffBuffer.CanApply(client,def.Ability)) return null;
             End(client, "replaced", false);
@@ -318,6 +321,7 @@ namespace hds
                     def.Kind == Kind.Imparted ? (float)ImpartedSeconds : def.Kind == Kind.Shadow ? (float)ShadowSeconds :
                     def.Kind == Kind.Disguise ? (float)AbilityDisguise.Seconds(abilityLevel, AbilityStats.Player(client,639)) : 0f,
             };
+            if(durationOverride.HasValue)state.Seconds=Math.Max(.001f,durationOverride.Value);
             if (def.Kind == Kind.Disguise)
             {
                 state.OriginalDescription = (byte[])client.playerInstance.Description.getValue().Clone();
@@ -475,11 +479,12 @@ namespace hds
         /// </summary>
         public static void BreakForAction(WorldClient client, string why)
         {
+            StealthShieldAbilities.ActionTaken(client);
             if (Current(client) != null) End(client, why);
         }
 
         /// <summary>Death takes every state off (as AbilityBuffs.RemoveAll does buffs).</summary>
-        public static void Cleared(WorldClient client) => End(client, "cleared", false);
+        public static void Cleared(WorldClient client) { StealthShieldAbilities.ActionTaken(client); EvasionShield.Cleared(client); End(client, "cleared", false); }
 
         // ---- detection ----
 
