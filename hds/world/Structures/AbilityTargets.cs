@@ -142,7 +142,7 @@ namespace hds
                     damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus ||
                         source != null && !source.DirectDamage && (source.DamageOverTime || TempMods.Has(abilityId))
                         ? (UInt16)0
-                        : AbilityHandler.AbilityDamage(ability, random);
+                        : AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
                     fx = ability.getActivationFX();
                 }
             }
@@ -164,6 +164,7 @@ namespace hds
             CombatHandler handler = CombatManager.GetHandler(client);
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
+            damage = TypedAbilityResistance.Npc(client, mob, abilityId, damage);
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
             AbilityHostile.LandedOnMob(client, mob, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
