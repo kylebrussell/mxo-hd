@@ -23,7 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
-        new Scenario("client-actions-research", ClientActionsResearchCanary, StillNpcs),
+        new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
@@ -62,6 +62,7 @@ public static partial class Scenarios
         new Scenario("ability-health-presentation-heal-regen", HealthPresentationHealRegen, HealthCallbackNpcs),
         new Scenario("ability-health-presentation-damage", HealthPresentationDamage, HealthCallbackNpcs),
         new Scenario("ignored-actions-window-close", IgnoredActionsWindowClose, StillNpcs),
+        new Scenario("client-actions-research", ClientActionsResearchCanary, StillNpcs),
         new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),

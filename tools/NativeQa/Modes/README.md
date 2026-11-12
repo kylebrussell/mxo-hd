@@ -25,6 +25,5 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 `merv-chain`: Flood Prima2101â€“2110 (25 phases), prerequisite-only grants and strict site-only seed210110; see docs/MERV-PRIMA-CHAIN.md.
 
 mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
-
-`client-actions-research` is diagnostic-only at Mara, no dev/GM/RNG/gameplay overrides. It records `/targetdamage` and the conditional local `/stuck` gate; no ignored action gains a handler. See docs/CLIENT-ACTIONS-FOLLOWTHROUGH.md.
+`protocol-family` loads Consistent Technique6 for a normal20-second modifier and nearby helper creation diagnostic. No dev/GM/forced RNG. See [PROTOCOL-FAMILY-DECODERS.md](../../../docs/PROTOCOL-FAMILY-DECODERS.md).
 `machines-chain` seeds only the seven Tyndall intro receipts and exposes Agent Gray's ten Prima missions2201–2210 at level50. Site-only seed220110 is guarded by exact dev/disposable DB checks; no combat/callback RNG or selected completion grants. [Route and source limits](../../../docs/MACHINES-PRIMA-CHAIN.md).
