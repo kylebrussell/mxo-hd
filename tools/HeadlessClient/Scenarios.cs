@@ -24,6 +24,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("mission-presentation", MissionPresentation, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
+        new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("proxy-technician-control", ProxyTechnicianControlRefusal, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("proxy-technician-friendly-attacks", ProxyTechnicianFriendlyAttacks, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1",["MXO_PROXY_TECHNICIAN_QA_ROLL"]="80" }),
         new Scenario("proxy-technician-lifecycle", ProxyTechnicianLifecycle, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
@@ -165,6 +166,8 @@ public static partial class Scenarios
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
+        new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
+        new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),

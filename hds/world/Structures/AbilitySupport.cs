@@ -49,7 +49,7 @@ namespace hds
             if (group)
             {
                 var team = SocialGroups.Instance.FindTeamOf(caster.playerData.getCharID());
-                double radius = entry.Number("Ability/RadiusOfEffect");
+                double radius = AbilityRadius.Metres(caster, id);
                 return SocialHandler.OnlineWhere(c => (c == caster || team?.HasMember(c.playerData.getCharID()) == true) &&
                     InRange(caster, c, radius)).ToList();
             }

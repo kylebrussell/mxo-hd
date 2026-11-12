@@ -27,6 +27,25 @@ public class AbilityPassiveTests
     private static AbilityCatalog.Modifier Modifier(ushort id, ushort stat) => AbilityPassives.Modifiers(id).Single(m => m.Target == stat);
 
     [Fact]
+    public void ResistDamageRadiusUsesLoadedCasterPercentAndExactFriendlyStatusCategory()
+    {
+        var caster=Client();
+        Assert.Equal(14,AbilityRadius.Metres(caster,72));
+        double hostile=AbilityRadius.Metres(caster,942);
+        AbilityPassives.SetLoaded(caster,new (ushort,ushort)[]{(74,50)});
+        Assert.Equal(24,AbilityStats.Player(caster,127));
+        Assert.Equal(17.36,AbilityRadius.Metres(caster,72),6);
+        Assert.Equal(AbilityRadius.Metres(caster,72),AbilityRadius.Metres(caster,4168));
+        Assert.False(AbilityTargets.WithinArea(0,495,0,1600,495,0,14));
+        Assert.True(AbilityTargets.WithinArea(0,495,0,1600,495,0,AbilityRadius.Metres(caster,72)));
+        Assert.False(AbilityTargets.WithinArea(0,495,0,1800,495,0,AbilityRadius.Metres(caster,72)));
+        Assert.Equal(hostile,AbilityRadius.Metres(caster,942));
+        Assert.Equal(AbilityCatalog.Find(944).Number("Ability/RadiusOfEffect")*1.24,AbilityRadius.Metres(caster,944),6);
+        AbilityPassives.SetLoaded(caster,Array.Empty<(ushort,ushort)>());
+        Assert.Equal(14,AbilityRadius.Metres(caster,72));
+    }
+
+    [Fact]
     public void NativeLevelFunctionsTruncateScaleThenApplyTheCap()
     {
         Assert.Equal((ushort)0x45, AbilityPassives.Kind);
