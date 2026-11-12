@@ -27,6 +27,8 @@ public static partial class Scenarios
         Check.Equal(0, player.Received("5f 04 00 00").Count, "A nonempty archive entry stays visible");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={player.CharId} AND slot=4"), "Two stored bits remain");
 
+        CompilerTool(player, 3, true);
+        await player.WaitForRpcAsync(ModPattern(969,968));
         // Genuine compile request consumes the repeated ingredient from storage twice: 2 -> 1 -> removed.
         player.SkipReceived();
         player.SendRpc($"81 2e {Le(7458u << 7)} 09 00 03 01 00 {Le(2u)} {Le(7336u)}");
@@ -56,6 +58,8 @@ public static partial class Scenarios
         relogged.SendChat("?codeupload"); // Disabled helper cannot move the fragment results.
         relogged.SendChat("?compile 7458");
         await relogged.WaitForTextAsync("?compile is a dev command");
+        relogged.SendChat("?compilesession off");
+        await relogged.WaitForTextAsync("?compilesession is a dev command");
         Check.Equal(2L, await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={player.CharId} AND goid=7458"), "Disabled QA command cannot grant anything");
         Check.Equal(0, relogged.World.Problems.Count, "Fresh server packets decode and stay ordered");
 

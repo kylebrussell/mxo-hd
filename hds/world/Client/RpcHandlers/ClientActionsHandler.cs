@@ -142,7 +142,7 @@ namespace hds
                 byte result = 1;
                 var db = Store.dbManager.WorldDbHandler;
                 if (r != null && !client.playerData.isDead && !client.playerData.duelDeath && !client.playerData.worldChangePending &&
-                    (r.FromCrafting ? !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client) &&
+                    (r.FromCrafting ? CompileSession.Authorized(client, r.Tool) && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client) &&
                         !CombatManager.GetHandler(client).isCombatRunning &&
                         CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) &&
                         db.GetInventoryItems(client.playerData.getCharID()).Any(i => i.Slot == r.Tool && i.Goid == 1271)

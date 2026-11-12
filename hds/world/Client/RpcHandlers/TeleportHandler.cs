@@ -96,6 +96,7 @@ namespace hds
             UInt16 destDIS = NumericalUtils.ByteArrayToUint16(destDistrict, 1);
 
             // This should do the magic - we just catch
+            CompileSession.End(Store.currentClient);
             MoveToHardline(Store.currentClient, destDIS, destHL);
             Store.dbManager.WorldDbHandler.updateSourceHlForObjectTracking(sourceDIS, sourceHL,
                 Store.currentClient.playerData.lastClickedObjectId);
@@ -291,6 +292,7 @@ namespace hds
         public static void GoToLoadingArea(WorldClient client)
         {
             SaveNearestHardlineAsLocation(client);
+            CompileSession.End(client);
             client.playerData.setOnWorld(false);
             client.playerData.worldChangePending = true;
 
@@ -312,6 +314,7 @@ namespace hds
         public static void EnterTutorial(WorldClient client, byte[] payload)
         {
             if (payload.Length != 0 || !client.playerData.DistrictIsLA() || client.playerData.worldChangePending) return;
+            CompileSession.End(client);
             client.playerData.setOnWorld(false);
             client.playerData.worldChangePending = true;
             client.playerData.tutorialConstructId = 800; // fixed local instance; retail allocated800..899
