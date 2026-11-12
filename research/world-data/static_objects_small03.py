@@ -1,8 +1,14 @@
-"""Export only validated small03 native static placements. See docs/WORLD-SMALL03.md."""
+"""Export validated native construct statics. Defaults preserve small03; see WORLD-SMALL03/WORLD-LARGE01."""
 import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
-parser=argparse.ArgumentParser(description='Bounded read-only small03 static decoder; rejects unsupported placement rotations.')
-parser.add_argument('tools');parser.add_argument('--output',default='data/staticObjects_small03.csv');parser.add_argument('--audit',default='research/world-data/small03-static-audit.json');args=parser.parse_args()
+parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
+parser.add_argument('tools')
+parser.add_argument('--world',type=int,choices=(12,17),default=17)
+parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
+parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
+world_name={12:'large01',17:'small03'}[args.world]
+args.output=args.output or f'data/staticObjects_{world_name}.csv'
+args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
 import rezmap_ltb as R
 def mod(n):
@@ -33,7 +39,7 @@ def decode(s):
   for g in gos(d[r.p-4:]):out.append((g[1],g[0],(x0+g[2],g[3]+145,z0+g[4]),g[5:9],0,'designer'))
  if name+'.sidi' in byname:
   d=read(byname[name+'.sidi']);b=buffers(d);q=b[0]
-  ps=N.placements(q,idx);assert all(rot==0 for _,_,rot in ps),'Only proven unrotated small03 placements supported';count=struct.unpack_from('<I',q)[0];assert count==len(ps),(name,count,len(ps))
+  ps=N.placements(q,idx);assert args.omit_unproven_rotations or all(rot==0 for _,_,rot in ps),'Unproven placement rotations: strict default refuses export';count=struct.unpack_from('<I',q)[0];assert count==len(ps),(name,count,len(ps))
   positions=[]
   for rid,box,rot in ps:
    h=struct.pack('<I9hHH',rid,*box,rot,0);p=q.find(h);assert p>=0 and q.find(h,p+1)<0;assert not positions or p>positions[-1];positions.append(p)
@@ -47,21 +53,30 @@ def decode(s):
 
 raw=[]
 for row in rows:
- if row['metr_id']=='17': raw.extend((int(row['sector']),*o) for o in decode(row))
+ if row['metr_id']==str(args.world): raw.extend((int(row['sector']),*o) for o in decode(row))
 groups=collections.defaultdict(list)
 for o in raw:groups[o[:2]].append(o)
 conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in v})>1}
-assert set(conflicts)=={(13,13),(13,15),(13,16)}
-objects=[v[0] for k,v in sorted(groups.items()) if k not in conflicts]
-assert len(raw)==370 and len(objects)==358
+unproven={k:v for k,v in groups.items() if any(z[-2]!=0 for z in v)}
+excluded=set(conflicts)|set(unproven)
+objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
+if args.world==17:
+ assert set(conflicts)=={(13,13),(13,15),(13,16)}
+ assert len(raw)==370 and len(objects)==358
+else:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 with open(args.output,'w',newline='') as f:
  w=csv.writer(f);w.writerow(['metr_id','sector_id','mxoId','staticId','type','exterior','pos_x','pos_y','pos_z','rotation','quat'])
  for sector,ident,go,pos,quat,rot,kind in objects:
   le=lambda n:struct.pack('<I',n).hex()
   x,y,z,wq=quat;yaw=math.degrees(math.atan2(2*(wq*y+x*z),1-2*(y*y+z*z)))
-  w.writerow([17,sector,le((sector<<20)|ident),le(ident),le(go),kind!='int',*pos,yaw,struct.pack('<4f',*quat).hex()])
-audit=dict(world=17,rawReferences=len(raw),uniqueKeys=len(groups),exportedKeys=len(objects),excludedKeys=[list(k) for k in sorted(conflicts)],
+  w.writerow([args.world,sector,le((sector<<20)|ident),le(ident),le(go),kind!='int',*pos,yaw,struct.pack('<4f',*quat).hex()])
+audit=dict(world=args.world,rawReferences=len(raw),uniqueKeys=len(groups),exportedKeys=len(objects),excludedKeys=[list(k) for k in sorted(excluded)],
  convention='METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.',
  sourceSha256=sources,raw=raw,conflicts={str(k):v for k,v in conflicts.items()})
+if args.omit_unproven_rotations:
+ audit.update(unprovenRotationKeys=[list(k) for k in sorted(unproven)],
+  rotationAmbiguityOverlap=len(set(unproven)&set(conflicts)),
+  omissionPolicy='Every variant of any nonzero-placement or conflicting native key is excluded. Raw nonzero transformed positions are UNPROVEN diagnostics, not exported placements.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
-print(f'{len(objects)} statics; {len(conflicts)} ambiguous keys excluded; {len(raw)} raw references retained')
+print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
