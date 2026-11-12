@@ -166,6 +166,7 @@ namespace hds
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
                 if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
+                if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
                 if (!ConsumableItems.IsUsable(consumable))
                 {
                     pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");

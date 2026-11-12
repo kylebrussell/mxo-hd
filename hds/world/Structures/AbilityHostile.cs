@@ -271,7 +271,7 @@ namespace hds
         public static Random PulseRandom = random;
 
         /// <summary>tempmods.NegativeConditionSweepPulse on one subject.</summary>
-        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null)
+        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null, Action<string> removedLog=null)
         {
             var parents = subject.Effects.Snapshot().Select(a => a.Parent).Distinct().Where(Cleansable).ToList();
             WorldClient client = subject is PlayerEffects ? subject.Context : null;
@@ -279,8 +279,9 @@ namespace hds
             foreach (ushort parent in parents)
             {
                 if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
-                TimedEffects.RemoveParent(subject, parent);
-                Output.WriteDebugLog("[HOSTILE] sweep " + pulse.Parent + " removes debuff " + parent + (client != null ? " from " + name : ""));
+                if (!TimedEffects.RemoveParent(subject, parent)) continue;
+                string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
+                (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
                 if (client == null) continue;
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(RemoveDebuffTarget, false, pulse.Parent, name, name,
                     unchecked((int)AbilityMessages.AbilityGameObject(parent))));

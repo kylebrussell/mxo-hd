@@ -230,6 +230,41 @@ public class AbilityHostileTests
         finally { AbilityHostile.PulseRandom = previous; }
     }
 
+    private sealed class SweepRoll : Random
+    {
+        private readonly int value;
+        private readonly Action? before;
+        public SweepRoll(int value, Action? before=null) { this.value=value; this.before=before; }
+        public override int Next(int maxValue) { before?.Invoke(); return value; }
+    }
+
+    [Fact]
+    public void SweepLogsOneLinePerActuallyRemovedParentAndNoMissExpiryOrStaleSuccess()
+    {
+        var victim=Client(); victim.playerInstance.CharacterName.setValue("SweepProof");
+        var subject=TimedEffects.ForPlayer(victim); var lines=new List<string>();
+        var pulse=new TimedEffects.Active { Parent=678,Value=25 };
+        var mods=Land(victim,97); Assert.Equal(4,mods.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(99),lines.Add);
+        Assert.True(subject.Effects.HasParent(97)); Assert.Empty(lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97));
+        Assert.Equal(new[]{"[SWEEP] 678 removed 97 from SweepProof"},lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Single(lines); // no duplicate after all four sibling mods were removed
+
+        Land(victim,97);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0,()=>TimedEffects.RemoveParent(subject,97)),lines.Add);
+        Assert.Single(lines); // another remover wins after the candidate snapshot
+        var expiredMods=Land(victim,97); var expired=new List<TimedEffects.Active>();
+        subject.Effects.Advance(expiredMods.Max(m=>m.Expires)+1,new List<TimedEffects.Active>(),expired);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Equal(4,expired.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add); Assert.Single(lines);
+
+        Land(victim,97); AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Equal(2,lines.Count); // an actual reapplication can be removed and logged again
+    }
+
     [Fact]
     public void ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily()
     {
