@@ -14,7 +14,7 @@ python research/world-data/static_objects_small03.py <client-data-tools> --world
 
 The existing compressed NAV reproduces exactly: 86 sectors, zero prefabs,1172937 decompressed bytes, SHA256 `91228b8c4861511b4baba19b93a57067423801deeee305b8fee3b61b6516de42`.
 
-All captured population sources were inspected. Instance.csv has17 map10 rows:16 within the 2D footprint and1 outside. Every row fails NAV lookup at its exact recorded coordinates. The rows remain untouched; there is no NPC relocation, visibility, grounded combat or level-normalization claim. Native mode disables ambient fixture mobs so inspection does not imply those captures were repaired.
+All captured population sources were inspected. Instance.csv has17 map10 rows:16 within the 2D footprint and1 outside. Every row fails NAV lookup at its exact recorded coordinates. The rows remain untouched; there is no NPC relocation, visibility, grounded combat or level-normalization claim. Native mode retains the normal captured population; these rows are not NAV-grounded so inspection does not imply those captures were repaired.
 
 ## Normal book and return route
 

@@ -3,10 +3,10 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,10,12,13,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,10,12,13,15,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={4:'archive01',10:'widowsmoor',12:'large01',13:'large02',17:'small03'}[args.world]
+world_name={4:'archive01',10:'widowsmoor',12:'large01',13:'large02',15:'medium02',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -69,9 +69,11 @@ elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
-else:
+elif args.world==10:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(70,70,0,0,70)
  assert len(sources)==258
+else:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1061,1023,584,26,426)
 with open(args.output,'w',newline='') as f:
  w=csv.writer(f);w.writerow(['metr_id','sector_id','mxoId','staticId','type','exterior','pos_x','pos_y','pos_z','rotation','quat'])
  for sector,ident,go,pos,quat,rot,kind in objects:
@@ -93,6 +95,9 @@ if args.world==13:
  audit.update(missingNavigationResources=missing,
   navigationBoundary='225 available sectors; sector47 declares EnableNavigationMesh1 but has no packed nav resource. Unavailable, not proven NoNav; no fabricated polygon.',
   capturedPopulationBoundary='No ambient map13 captured rows. One Special Agent in Encounter.csv remains encounter-scoped, not made ambient.')
+if args.world==15:
+ audit.update(capturedPopulationValidated=False,
+  capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
 if args.world==10:
  usables=list(csv.DictReader(open('data/object_usables.csv')))
  states=list(csv.DictReader(open('data/object_states.csv')))
