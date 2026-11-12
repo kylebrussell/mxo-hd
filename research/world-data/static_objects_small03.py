@@ -1,12 +1,12 @@
-"""Export validated native construct statics. Defaults preserve small03; see WORLD-SMALL03/WORLD-LARGE01/WORLD-MEDIUM03."""
+"""Export validated native construct statics. Defaults preserve small03; see WORLD-SMALL03/WORLD-LARGE01."""
 import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(12,16,17),default=17)
+parser.add_argument('--world',type=int,choices=(12,13,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={12:'large01',16:'medium03',17:'small03'}[args.world]
+world_name={12:'large01',13:'large02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -65,8 +65,10 @@ if args.world==17:
  assert len(raw)==370 and len(objects)==358
 elif args.world==16:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(4762,4625,3321,134,1282)
-else:
+elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
+else:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
 with open(args.output,'w',newline='') as f:
  w=csv.writer(f);w.writerow(['metr_id','sector_id','mxoId','staticId','type','exterior','pos_x','pos_y','pos_z','rotation','quat'])
  for sector,ident,go,pos,quat,rot,kind in objects:
@@ -80,5 +82,13 @@ if args.omit_unproven_rotations:
  audit.update(unprovenRotationKeys=[list(k) for k in sorted(unproven)],
   rotationAmbiguityOverlap=len(set(unproven)&set(conflicts)),
   omissionPolicy='Every variant of any nonzero-placement or conflicting native key is excluded. Raw nonzero transformed positions are UNPROVEN diagnostics, not exported placements.')
+if args.world==13:
+ nav_names={Path(p).stem for p in bp if p.endswith('.nav')}
+ missing=[dict(sector=int(r['sector']),file=r['file'],enableNavigationMesh=r['enable_navigation_mesh'])
+  for r in rows if r['metr_id']=='13' and r['file'].lower() not in nav_names]
+ assert missing==[dict(sector=47,file='large02_137',enableNavigationMesh='1')]
+ audit.update(missingNavigationResources=missing,
+  navigationBoundary='225 available sectors; sector47 declares EnableNavigationMesh1 but has no packed nav resource. Unavailable, not proven NoNav; no fabricated polygon.',
+  capturedPopulationBoundary='No ambient map13 captured rows. One Special Agent in Encounter.csv remains encounter-scoped, not made ambient.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
 print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
