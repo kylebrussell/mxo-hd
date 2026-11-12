@@ -150,6 +150,7 @@ namespace hds
     {
         public ushort id;
         public string kind = "Furniture"; // Computer, Safe, Mainframe, Box, Phone or Furniture
+        public bool locked;               // a container spawned in its LockedState: Pick Lock (Open Locks) first
     }
 
     /// <summary>Lines the player sets off by walking near a place, once each.</summary>

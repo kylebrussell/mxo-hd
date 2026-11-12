@@ -132,7 +132,20 @@ namespace hds
                 Deny(AbilityID, "That move requires the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style.");
                 return;
             }
-            bool support = AbilitySupport.Handles(AbilityID);
+            // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
+            bool pet = CoderPets.Handles(AbilityID);
+            if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                CoderPets.ToggleOff(Store.currentClient);
+                return;
+            }
+            string petRefusal = pet ? CoderPets.Refusal(Store.currentClient, AbilityID, currentTargetViewId) : null;
+            if (petRefusal != null)
+            {
+                Deny(AbilityID, petRefusal);
+                return;
+            }
+            bool support = !pet && AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
                 Deny(AbilityID, "Choose a living friendly target within range.");
@@ -185,6 +198,8 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
+                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
@@ -193,7 +208,7 @@ namespace hds
             });
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true &&
+            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
                 (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  CombatSpecials.TargetsEnemy(AbilityID)))
