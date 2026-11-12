@@ -1335,7 +1335,8 @@ namespace hds
             player.playerInstance.Health.setValue((UInt16)0);
             player.playerData.isDead = true;
             player.playerData.respawnPending = false;
-            player.playerData.conditionStateFlags &= ~PvpFlag.InCombatBit;
+            // Daze/OffBalance/Stagger and combat are temporary. Death retains only the independently stored PvP flag.
+            lock (player.playerData.conditionTokens) player.playerData.conditionStateFlags = 0;
             player.playerInstance.ConditionStateFlags.setValue(PvpFlag.FlagsOf(player));
 
             // Retail death: own view IsDead/Health/ConditionStateFlags, then the death system message. The client
