@@ -507,7 +507,7 @@ namespace hds
 
                 int pLevel = PvpFlag.LevelOf(p.Client), nLevel = PvpFlag.LevelOf(n.Client);
                 CombatTactic pTactic = p.Client.playerData.combatTactic, nTactic = n.Client.playerData.combatTactic;
-                CombatTacticType pType = p.Client.playerData.combatTacticType, nType = n.Client.playerData.combatTacticType;
+                CombatTacticType pType = CombatTactics.Type(p.Client), nType = CombatTactics.Type(n.Client);
                 AbilityItem pAbility = opening ? null : p.QueuedAbility, nAbility = opening ? null : n.QueuedAbility;
                 if (!counter) nAbility = null;
                 if (!ControlActions.CanUseAbilities(p.Client)) pAbility = null;

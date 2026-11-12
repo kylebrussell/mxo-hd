@@ -99,7 +99,7 @@ namespace hds
 
         // ---- definitions ----
 
-        public enum Kind { Sneak, Invisibility, Imparted, Shadow }
+        public enum Kind { Sneak, Invisibility, Imparted, Shadow, Disguise }
 
         public sealed class Def
         {
@@ -116,6 +116,8 @@ namespace hds
 
         public static readonly Dictionary<UInt16, Def> Defs = new Dictionary<UInt16, Def>
         {
+            { AbilityDisguise.Ability, new Def { Ability = AbilityDisguise.Ability, Kind = Kind.Disguise,
+                Bits = Disguised, Flags = StealthedFlag, Toggle = true } },
             // Sneak: Stealth (fn 2), Noise +10, StealthState, Movement Speed -200; SneakInit activateSneak (kSneak)
             { SneakGrantAbility, new Def { Ability = SneakGrantAbility, Kind = Kind.Sneak, Bits = Sneak, Flags = StealthedFlag, BreaksOnDamage = true, Periodic = true, Toggle = true } },
             // Improved Sneak: a toggle with no stored modifier; our choice is Sneak's behaviour under its own id
@@ -144,6 +146,8 @@ namespace hds
             public int Generation;
             public double Started, Expires;
             public List<AbilityBuffs.Modifier> Mods = new List<AbilityBuffs.Modifier>();
+            public byte[] OriginalDescription, OriginalUseRsi, OriginalTitle;
+            public uint DisguiseModel;
             public UInt16[] RecordIds = new UInt16[0];
             public float Seconds;
             public double NextNpcCheck;
@@ -209,6 +213,9 @@ namespace hds
             var mods = new List<AbilityBuffs.Modifier>();
             switch (def.Ability)
             {
+                case AbilityDisguise.Ability:
+                    mods.Add(new AbilityBuffs.Modifier(AbilityBuffs.KindState, StealthStateAbility, 0));
+                    return mods;
                 case InvisibilityGrantAbility:
                     // misc.py: addTempMod(.., MovementSpeedAbility, -300, duration), addStateMod(.., StealthStateAbility)
                     mods.Add(new AbilityBuffs.Modifier(AbilityBuffs.KindStat, MovementSpeedAbility, -300));
@@ -247,10 +254,13 @@ namespace hds
                 if ((BitsOf(target) & Invisible) != 0) return "Your target is already invisible.";
                 return null;
             }
+            if (!AbilityBuffBuffer.CanApply(client,id)) return "Your upgrade buffer is full.";
             if (id == VanishAbility) return null; // "Vanish Prox Override": no enemy test
             if (!Defs.TryGetValue(id, out Def def)) return null;
             if (def.Kind == Kind.Sneak && EnemyWatching(client, DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility))))
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
+            if (def.Kind == Kind.Disguise && EnemyWatching(client, InvisibilityProximityUnits))
+                return "You cannot disguise while an enemy is watching.";
             if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits))
                 return "You cannot become invisible near enemies."; // InvisibilityGrant_Test
             if (def.Kind == Kind.Imparted && (BitsOf(client) & Invisible) != 0) return "You are already invisible.";
@@ -258,8 +268,18 @@ namespace hds
         }
 
         /// <summary>The cast finished: the state goes on (or, for Impart and Vanish, the state they give).</summary>
-        public static void Land(WorldClient client, UInt16 id, UInt16 targetView)
+        public static void Land(WorldClient client, UInt16 id, UInt16 targetView, ushort? toolSlot = null)
         {
+            if (id == AbilityDisguise.Ability)
+            {
+                uint model = AbilityDisguise.ModelFor(client, toolSlot);
+                if (model != 0 && Refusal(client,id,targetView) == null)
+                {
+                    foreach (ushort aura in AbilityAuras.Active(client)) AbilityAuras.Stop(client,aura);
+                    Begin(client, Defs[id], AbilityLevel(client,id), model);
+                }
+                return;
+            }
             if (id == ImpartInvisibilityAbility)
             {
                 WorldClient target = AbilitySupport.PlayerInView(client, targetView);
@@ -283,8 +303,14 @@ namespace hds
         }
 
         /// <summary>Puts a stealth state on the player (replacing any other: every one of them is AbilityIsExclusive).</summary>
-        public static State Begin(WorldClient client, Def def, int abilityLevel, float? durationOverride = null)
+        public static State Begin(WorldClient client, Def def, int abilityLevel, uint disguiseModel = 0, float? durationOverride = null)
         {
+            lock(client.playerData.upgradeSync) return BeginCore(client,def,abilityLevel,disguiseModel,durationOverride);
+        }
+
+        private static State BeginCore(WorldClient client, Def def, int abilityLevel, uint disguiseModel,float? durationOverride)
+        {
+            if (!AbilityBuffBuffer.CanApply(client,def.Ability)) return null;
             End(client, "replaced", false);
             int characterLevel = client.playerInstance.Level.getValue()[0];
             var state = new State
@@ -292,9 +318,20 @@ namespace hds
                 Def = def, Level = abilityLevel, Started = TimeUtils.GetSimTimeSeconds(),
                 Mods = ModifiersFor(def, abilityLevel, characterLevel),
                 Seconds = def.Kind == Kind.Invisibility ? (float)InvisibilitySeconds(abilityLevel) :
-                    def.Kind == Kind.Imparted ? (float)ImpartedSeconds : def.Kind == Kind.Shadow ? (float)ShadowSeconds : 0f,
+                    def.Kind == Kind.Imparted ? (float)ImpartedSeconds : def.Kind == Kind.Shadow ? (float)ShadowSeconds :
+                    def.Kind == Kind.Disguise ? (float)AbilityDisguise.Seconds(abilityLevel, AbilityStats.Player(client,639)) : 0f,
             };
             if(durationOverride.HasValue)state.Seconds=Math.Max(.001f,durationOverride.Value);
+            if (def.Kind == Kind.Disguise)
+            {
+                state.OriginalDescription = (byte[])client.playerInstance.Description.getValue().Clone();
+                // PlayerCharacter's shipped CharMvt/UseRSIDescription default is1; inactive server fields hold zero.
+                state.OriginalUseRsi = client.playerInstance.UseRSIDescription.isActive() ?
+                    (byte[])client.playerInstance.UseRSIDescription.getValue().Clone() : new byte[]{1};
+                state.OriginalTitle = (byte[])client.playerInstance.TitleAbility.getValue().Clone();
+                state.DisguiseModel = disguiseModel;
+                PresentModel(client, PlayerViewAttributes.U32(disguiseModel), new byte[]{0}, PlayerViewAttributes.U32(0));
+            }
             state.Expires = state.Seconds > 0 ? state.Started + state.Seconds : double.PositiveInfinity;
             state.RecordIds = state.Mods.Select(_ => AbilityBuffs.NextRecordId(client.playerData)).ToArray();
             Holder h = HolderOf(client);
@@ -370,6 +407,8 @@ namespace hds
                 client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(state.Mods[i].Kind, state.RecordIds[i], state.Def.Ability,
                     state.Mods[i].Stat, state.Mods[i].Value, true, state.Seconds));
             if (state.Def.Toggle) client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(state.Def.Ability, false));
+            if (state.Def.Kind == Kind.Disguise)
+                PresentModel(client, state.OriginalDescription, state.OriginalUseRsi, state.OriginalTitle);
             Present(client, 0, state.Def.Flags, false);
             if (state.Def.Kind == Kind.Shadow)
                 AbilityCooldowns.Start(client, state.Def.Ability, TimeUtils.GetSimTimeSeconds()); // AddRecastTimer on term
@@ -378,9 +417,22 @@ namespace hds
             return true;
         }
 
+        private static void PresentModel(WorldClient client, byte[] description, byte[] useRsi, byte[] title)
+        {
+            description = description?.Length == 4 ? description : PlayerViewAttributes.U32(0);
+            useRsi = useRsi?.Length == 1 ? useRsi : new byte[]{1};
+            title = title?.Length == 4 ? title : PlayerViewAttributes.U32(0);
+            client.playerInstance.Description.setValue(description);
+            client.playerInstance.UseRSIDescription.setValue(useRsi);
+            client.playerInstance.TitleAbility.setValue(title);
+            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((0,useRsi),(1,title),(37,description)),false);
+            PvpFlag.ToWatchers(client,PlayerViewAttributes.Build((0,useRsi),(1,title),(28,description)));
+        }
+
         /// <summary>DissemblingType and ConditionStateFlags to the own view and to everyone who has a view of the player.</summary>
         private static void Present(WorldClient client, UInt16 bits, UInt32 flags, bool on)
         {
+            bits |= AbilityBuffs.DissemblingBits(client);
             client.playerInstance.DissemblingType.setValue(bits);
             lock (client.playerData.conditionTokens)
             {
@@ -405,7 +457,7 @@ namespace hds
         /// <summary>A view of the player was just created: give it the stealth state the creation record doesn't carry.</summary>
         public static void AfterSpawn(WorldClient observer, WorldClient target, UInt16 viewId)
         {
-            UInt16 bits = BitsOf(target);
+            UInt16 bits = (ushort)(BitsOf(target) | AbilityBuffs.DissemblingBits(target));
             if (bits == 0) return;
             observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId, BuildOther(bits, PvpFlag.FlagsOf(target))), false);
             observer.FlushQueue();

@@ -106,7 +106,7 @@ namespace hds
             if(!CanRestore(caster,cast))return;
             ushort ability=markerValue>0?Stealth.InvisibilityGrantAbility:Stealth.SneakGrantAbility;
             // misc.py303 consumes GhostStrike's signed integer value as the override duration.
-            Stealth.Begin(caster,Stealth.Defs[ability],cast.Level,markerValue>0?(float?)markerValue:null);
+            Stealth.Begin(caster,Stealth.Defs[ability],cast.Level,durationOverride:markerValue>0?(float?)markerValue:null);
             caster.FlushQueue();
             Output.WriteDebugLog("[STEALTH-FREE]1125 restored "+ability);
         }

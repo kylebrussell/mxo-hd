@@ -10,7 +10,7 @@ namespace hds
     public static class AbilityResurrection
     {
         public const UInt32 RestoreEffect = 0x280006af;
-        public static bool Handles(UInt16 id) => id == 325 || id == 326 || id == 375 || id == 416;
+        public static bool Handles(UInt16 id) => id == 325 || id == 326 || id == 375 || id == 416 || id == 438;
         private static int nextOffer;
 
         /// <summary>Native displays this offer, then rebuilds a fixed54-byte reply with ability/flags/locators only.</summary>

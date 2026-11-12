@@ -1,0 +1,371 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "tools": [
+    {
+      "goid": 615,
+      "name": "Disguise_Tool",
+      "model": 1073743155
+    },
+    {
+      "goid": 1268,
+      "name": "Disguise_Tool_SWAT",
+      "model": 1308623188
+    },
+    {
+      "goid": 1269,
+      "name": "Disguise_Tool_Vampire",
+      "model": 1073743138
+    },
+    {
+      "goid": 1270,
+      "name": "Disguise_Tool_Agent",
+      "model": 1308622902
+    },
+    {
+      "goid": 7925,
+      "name": "Disguise_Tool_Lieutenant",
+      "model": 3019899142
+    },
+    {
+      "goid": 7926,
+      "name": "Disguise_Tool_OfficeWorker",
+      "model": 1073743155
+    },
+    {
+      "goid": 7927,
+      "name": "Disguise_Tool_ConstructionWorker",
+      "model": 1073742387
+    },
+    {
+      "goid": 7928,
+      "name": "Disguise_Tool_LabWorker",
+      "model": 1308622916
+    },
+    {
+      "goid": 7929,
+      "name": "Disguise_Tool_Waiter",
+      "model": 1073742386
+    },
+    {
+      "goid": 7930,
+      "name": "Disguise_Tool_Clerk",
+      "model": 603981286
+    },
+    {
+      "goid": 7931,
+      "name": "Disguise_Tool_SecurityGuard",
+      "model": 1308623171
+    },
+    {
+      "goid": 7932,
+      "name": "Disguise_Tool_Mechanic",
+      "model": 1308623221
+    },
+    {
+      "goid": 7933,
+      "name": "Disguise_Tool_Enforcer",
+      "model": 1308623199
+    },
+    {
+      "goid": 7934,
+      "name": "Disguise_Tool_HellClub",
+      "model": 603982797
+    },
+    {
+      "goid": 7935,
+      "name": "Disguise_Tool_ChatGuard",
+      "model": 1476395325
+    },
+    {
+      "goid": 7936,
+      "name": "Disguise_Tool_Lupine",
+      "model": 1308623039
+    },
+    {
+      "goid": 7937,
+      "name": "Disguise_Tool_Recruit",
+      "model": 3019899010
+    },
+    {
+      "goid": 7938,
+      "name": "Disguise_Tool_Ensign",
+      "model": 3019899064
+    },
+    {
+      "goid": 7939,
+      "name": "Disguise_Tool_Commander",
+      "model": 1476395750
+    },
+    {
+      "goid": 39214,
+      "name": "Disguise_Tool_Morpheus",
+      "model": 2415919681
+    },
+    {
+      "goid": 39215,
+      "name": "Disguise_Tool_Merovingian",
+      "model": 1308623426
+    },
+    {
+      "goid": 39361,
+      "name": "Disguise_Tool_Oracle",
+      "model": 2617246259
+    },
+    {
+      "goid": 39362,
+      "name": "Disguise_Tool_Persephone",
+      "model": 2415919794
+    },
+    {
+      "goid": 39363,
+      "name": "Disguise_Tool_Niobe",
+      "model": 1073743793
+    },
+    {
+      "goid": 39364,
+      "name": "Disguise_Tool_Seraph",
+      "model": 1476395410
+    },
+    {
+      "goid": 39365,
+      "name": "Disguise_Tool_Flood",
+      "model": 2415919828
+    },
+    {
+      "goid": 39366,
+      "name": "Disguise_Tool_Agent_Gray",
+      "model": 2415919259
+    },
+    {
+      "goid": 39555,
+      "name": "Disguise_Tool_Assassin",
+      "model": 1308623275
+    },
+    {
+      "goid": 39787,
+      "name": "Disguise_Tool_LED_Agent",
+      "model": 2415919798
+    },
+    {
+      "goid": 39828,
+      "name": "Disguise_Tool_Archivist",
+      "model": 1476398051
+    },
+    {
+      "goid": 40368,
+      "name": "Disguise_Tool_Agent_Anderson",
+      "model": 2415921477
+    },
+    {
+      "goid": 40381,
+      "name": "Disguise_Tool_Female_Blood_Drinker",
+      "model": 1073743123
+    },
+    {
+      "goid": 40382,
+      "name": "Disguise_Tool_Male_Werewolf",
+      "model": 1308623039
+    },
+    {
+      "goid": 40383,
+      "name": "Disguise_Tool_Commando",
+      "model": 3154118070
+    },
+    {
+      "goid": 40387,
+      "name": "Disguise_Tool_Female_Werewolf",
+      "model": 1073743239
+    },
+    {
+      "goid": 40388,
+      "name": "Disguise_Tool_Male_Blood_Drinker",
+      "model": 1308622974
+    },
+    {
+      "goid": 40402,
+      "name": "Disguise_Tool_Agent_Pleasant1",
+      "model": 1308623415
+    },
+    {
+      "goid": 40488,
+      "name": "Disguise_Tool_Agent_Pleasant2",
+      "model": 1308623644
+    },
+    {
+      "goid": 40549,
+      "name": "Disguise_Tool_Agent_Ookami",
+      "model": 3154119215
+    },
+    {
+      "goid": 40555,
+      "name": "Disguise_Tool_Ghost",
+      "model": 1476395489
+    },
+    {
+      "goid": 42683,
+      "name": "Disguise_Tool_Malphas",
+      "model": 2415921607
+    },
+    {
+      "goid": 42858,
+      "name": "Disguise_Tool_Glitch",
+      "model": 671091538
+    },
+    {
+      "goid": 42859,
+      "name": "Disguise_Tool_Pumpkin",
+      "model": 2952790233
+    },
+    {
+      "goid": 42959,
+      "name": "Disguise_Tool_Veil",
+      "model": 134218688
+    },
+    {
+      "goid": 42985,
+      "name": "Disguise_Tool_Effectuator",
+      "model": 134218592
+    },
+    {
+      "goid": 43041,
+      "name": "Disguise_Tool_Anome",
+      "model": 1476396765
+    },
+    {
+      "goid": 43042,
+      "name": "Disguise_Tool_Cryptos",
+      "model": 1308623599
+    },
+    {
+      "goid": 43043,
+      "name": "Disguise_Tool_CryptoB",
+      "model": 1308624548
+    },
+    {
+      "goid": 43044,
+      "name": "Disguise_Tool_General",
+      "model": 1308622996
+    },
+    {
+      "goid": 43047,
+      "name": "Disguise_Tool_Shimada",
+      "model": 1073744367
+    },
+    {
+      "goid": 43048,
+      "name": "Disguise_Tool_TheKid",
+      "model": 134218799
+    },
+    {
+      "goid": 43051,
+      "name": "Disguise_Tool_GhosShades",
+      "model": 134218824
+    },
+    {
+      "goid": 43052,
+      "name": "Disguise_Tool_Architect",
+      "model": 134218828
+    },
+    {
+      "goid": 43071,
+      "name": "Disguise_Tool_SleepwalkerHM",
+      "model": 134218835
+    },
+    {
+      "goid": 43072,
+      "name": "Disguise_Tool_SleepwalkerLM",
+      "model": 134218843
+    },
+    {
+      "goid": 43073,
+      "name": "Disguise_Tool_SleepwalkerLF",
+      "model": 134218850
+    },
+    {
+      "goid": 43074,
+      "name": "Disguise_Tool_SleepwalkerHF",
+      "model": 134218846
+    },
+    {
+      "goid": 45887,
+      "name": "Disguise_Tool_BlueSkyM1a",
+      "model": 134218879
+    },
+    {
+      "goid": 45888,
+      "name": "Disguise_Tool_BlueSkyM1b",
+      "model": 134218880
+    },
+    {
+      "goid": 45889,
+      "name": "Disguise_Tool_BlueSkyM2a",
+      "model": 134218881
+    },
+    {
+      "goid": 45890,
+      "name": "Disguise_Tool_BlueSkyM2b",
+      "model": 134218882
+    },
+    {
+      "goid": 45891,
+      "name": "Disguise_Tool_BlueSkyM3a",
+      "model": 134218883
+    },
+    {
+      "goid": 45892,
+      "name": "Disguise_Tool_BlueSkyM3b",
+      "model": 134218884
+    },
+    {
+      "goid": 45893,
+      "name": "Disguise_Tool_BlueSkyM4a",
+      "model": 134218885
+    },
+    {
+      "goid": 45894,
+      "name": "Disguise_Tool_BlueSkyM4b",
+      "model": 134218886
+    },
+    {
+      "goid": 45895,
+      "name": "Disguise_Tool_BlueSkyF1a",
+      "model": 134218871
+    },
+    {
+      "goid": 45896,
+      "name": "Disguise_Tool_BlueSkyF1b",
+      "model": 134218872
+    },
+    {
+      "goid": 45897,
+      "name": "Disguise_Tool_BlueSkyF2a",
+      "model": 134218873
+    },
+    {
+      "goid": 45898,
+      "name": "Disguise_Tool_BlueSkyF2b",
+      "model": 134218874
+    },
+    {
+      "goid": 45899,
+      "name": "Disguise_Tool_BlueSkyF3a",
+      "model": 134218875
+    },
+    {
+      "goid": 45900,
+      "name": "Disguise_Tool_BlueSkyF3b",
+      "model": 134218876
+    },
+    {
+      "goid": 45901,
+      "name": "Disguise_Tool_BlueSkyF4a",
+      "model": 134218877
+    },
+    {
+      "goid": 45902,
+      "name": "Disguise_Tool_BlueSkyF4b",
+      "model": 134218878
+    }
+  ]
+}

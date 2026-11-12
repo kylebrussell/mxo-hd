@@ -32,9 +32,10 @@ public static partial class Scenarios
         spy.SendChat("?stealth invis"); await spy.WaitForRpcAsync(ModPattern(1116,115));
         Cast(spy,152,view.ViewId);
         await victim.WaitUntilAsync(()=>context.Server.DebugLog().Contains("SneakAttackSpinBackAbility lands on DepthVictim"),"Sneak opener lands",TimeSpan.FromSeconds(12));
-        // Packet health must include the sourced75 bonus on the existing50..80 base.
+        // Spy Style learned at50 now supplies29% thrown influence (P4): (base50..80 + sneak75)*1.29.
+        // This independent range excludes both a missing75 snapshot and adding the bonus twice.
         await victim.WaitUntilAsync(()=>OwnHealth(victim)>0 && OwnHealth(victim)<4900,"Bonus damage exceeded ordinary base",TimeSpan.FromSeconds(10));
-        Check.That(OwnHealth(victim)>=4845 && OwnHealth(victim)<=4875,"Stealth opener damage125..155");
+        Check.That(OwnHealth(victim)>=4801 && OwnHealth(victim)<=4839,"Stealth opener damage161..199 includes learned Spy Style");
         Check.That(spy.Received(ModPattern(1116,115,true)).Count>0,"Stealth breaks before the delayed hit without losing snapshot");
         Check.Equal(0,spy.World.Problems.Count+victim.World.Problems.Count,"Sneak protocol");
     }
