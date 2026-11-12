@@ -2,7 +2,7 @@ using System.Text.Json;
 using hds;
 
 // Inventory the actual executable support, rather than matching source comments or CSV flags.
-string output = args.Length > 0 ? args[0] : "research/abilities/server_coverage.json";
+string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
     204 => "stealth detection",
