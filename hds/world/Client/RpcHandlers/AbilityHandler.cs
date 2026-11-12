@@ -125,6 +125,18 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.
+            bool stealth = Stealth.Handles(AbilityID);
+            if (stealth && Stealth.IsOn(Store.currentClient, AbilityID))
+            {
+                Stealth.End(Store.currentClient, "switched off");
+                return;
+            }
+            if (stealth && Stealth.Refusal(Store.currentClient, AbilityID, currentTargetViewId) is string refusal)
+            {
+                Deny(AbilityID, refusal);
+                return;
+            }
             // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
             bool pet = CoderPets.Handles(AbilityID);
             if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
@@ -138,7 +150,7 @@ namespace hds
                 Deny(AbilityID, petRefusal);
                 return;
             }
-            bool support = !pet && AbilitySupport.Handles(AbilityID);
+            bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
                 Deny(AbilityID, "Choose a living friendly target within range.");
@@ -181,6 +193,9 @@ namespace hds
                 return;
             }
 
+            // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
+            if (!stealth) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -198,6 +213,16 @@ namespace hds
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
             });
+
+            if (stealth)
+            {
+                UInt16 stealthTarget = currentTargetViewId;
+                DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
+                {
+                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget);
+                });
+                return;
+            }
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
