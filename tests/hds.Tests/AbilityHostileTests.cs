@@ -222,6 +222,83 @@ public class AbilityHostileTests
         Assert.Equal(0, AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7)));
     }
 
+    private sealed class ProcRoll(double value) : Random
+    {
+        public int Rolls;
+        public override double NextDouble() { Rolls++; return value; }
+    }
+
+    [Theory]
+    [InlineData(0.199999, true)]
+    [InlineData(0.2, false)]
+    [InlineData(0.999, false)]
+    public void MachinegunFistDispelUsesItsStoredTwentyPercentProc(double roll, bool removes)
+    {
+        var caster = Client(); var victim = Client();
+        Assert.Equal(0.2, AbilityCatalog.Find(261)!.Modifiers.Single(m => m.Text("StatModInitFunc") == "RemoveRandomBuff").Number("ProcTriggerChance"));
+        Assert.True(AbilityBuffs.Apply(victim, 327));
+        Assert.True(AbilityBuffs.Apply(victim, 344));
+        Land(victim, 343);
+        var rng = new ProcRoll(roll);
+        AbilityHostile.LandedOnPlayer(caster, victim, 261, rng);
+        Assert.Equal(1, rng.Rolls);
+        Assert.Equal(!removes, AbilityBuffs.IsActive(victim, 327));
+        Assert.True(AbilityBuffs.IsActive(victim, 344));
+        Assert.True(TimedEffects.ForPlayer(victim).Effects.HasParent(343));
+    }
+
+    [Theory]
+    [InlineData(0.199999, true)]
+    [InlineData(0.2, false)]
+    public void MachinegunFistNpcFailureOutputAlsoRequiresTheProc(double roll, bool triggered)
+    {
+        var caster=Client(); var mob=new Mob(); mob.setName("ProcMob");
+        var rng=new ProcRoll(roll);
+        AbilityHostile.LandedOnMob(caster,mob,261,rng);
+        Assert.Equal(1,rng.Rolls);
+        Assert.Equal(triggered?1:0,caster.messageQueue.RPCMessagesQueue.Count);
+    }
+
+    [Fact]
+    public void TriggeredDispelDeactivatesAnAuraAndAllowsLaterBuff()
+    {
+        var caster=Client(); var target=Client();
+        var previousClients=WorldServer.Clients;
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        try
+        {
+            AbilityAuras.Start(target,42);
+            Assert.True(AbilityAuras.IsOn(target,42));
+            // Remove any child pulses: leave the toggled parent as the only candidate.
+            foreach(ushort id in AbilityHostile.RemovableBuffs(target).Where(id=>id!=42).ToList())
+                AbilityHostile.RemoveBuff(target,id);
+            Assert.Equal(new ushort[]{42},AbilityHostile.RemovableBuffs(target));
+            AbilityHostile.LandedOnPlayer(caster,target,261,new ProcRoll(0));
+            Assert.False(AbilityAuras.IsOn(target,42));
+            Assert.Empty(AbilityHostile.RemovableBuffs(target));
+            Assert.True(AbilityBuffs.Apply(target,327));
+            Assert.True(AbilityBuffs.IsActive(target,327));
+        }
+        finally
+        {
+            AbilityAuras.Stop(target,42);
+            WorldServer.Clients=previousClients;
+        }
+    }
+
+    [Theory]
+    [InlineData(324)]
+    [InlineData(377)]
+    public void DispelWithoutStoredChanceDoesNotConsumeAProcRoll(ushort ability)
+    {
+        var caster = Client(); var victim = Client();
+        Assert.True(AbilityBuffs.Apply(victim, 327));
+        var rng = new ProcRoll(0.999);
+        AbilityHostile.LandedOnPlayer(caster, victim, ability, rng);
+        Assert.False(AbilityBuffs.IsActive(victim, 327));
+        Assert.Equal(0, rng.Rolls);
+    }
+
     [Fact]
     public void DeleteUpgradeCanRemoveAnActiveSweep()
     {
