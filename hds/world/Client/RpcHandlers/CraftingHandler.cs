@@ -42,7 +42,7 @@ namespace hds
             if (!CraftingRules.HasResultSpace(resultGoid, inventory, slots)) return "Your inventory is full.";
 
             // One item per ingredient: a stack shrinks (69 01), a single item leaves its slot (5f), a storage entry
-            // shrinks (69 00).
+            // shrinks (69 00) or leaves the archive (5f with PersonalInventoryItem 0).
             foreach (UInt16 slot in slots)
             {
                 if ((slot & Crafting.StorageSlotFlag) != 0)

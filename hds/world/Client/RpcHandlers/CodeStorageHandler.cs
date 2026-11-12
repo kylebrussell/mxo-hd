@@ -101,7 +101,7 @@ namespace hds
             client.FlushQueue();
         }
 
-        /// <summary>Takes one item from a storage entry: 69 00 with the new count, or the row goes when the last one is used.</summary>
+        /// <summary>Takes one item from storage: 69 00 with the new count, or 5f with PersonalInventoryItem 0 for the last one.</summary>
         public static void TakeOne(WorldClient client, UInt16 storageSlot)
         {
             UInt32 charId = client.playerData.getCharID();
@@ -120,9 +120,9 @@ namespace hds
                 }
                 else
                 {
-                    // No capture shows an entry running out; the row goes and the client keeps showing it until the
-                    // next login.
+                    // client.dll 0x621e1b20 clears the known-abilities entry and the storage window.
                     db.RemoveCodeStorage(charId, storageSlot);
+                    client.messageQueue.addRpcMessage(CodeStorage.BuildRemove(storageSlot));
                     Output.WriteDebugLog("[CODE STORAGE] Last " + entry.Goid + " used from storage slot " + storageSlot);
                 }
                 return;
