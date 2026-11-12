@@ -723,7 +723,7 @@ namespace hds{
             SendMarginCharData(loadEquippedAbilities(), 0x06, client,0, false);          // Loaded Abilitys
             //sendMarginCharData(empty, 0x06, client);                          // Loaded Abilitys CR1
             SendMarginCharData(loadKnownAbilities(), 0x07, client,0, false);             // Known Abilities
-            SendMarginCharData(knownHardlines, 0x08, client,0, false, emptyDataBlock: true);                   // Hardlines
+            SendMarginCharData(knownHardlines, 0x08, client,0, false);                   // Hardlines
             SendMarginCharData(empty, 0x09, client,0, false);                            // Access Nodes?
             //sendMarginCharData(codeArchiveTest, 0x0a, client);                // Code Storage
             SendMarginCharData(Crafting.BuildKnownRecipesBlock(KnownRecipesBaseBlock,

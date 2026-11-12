@@ -14,7 +14,7 @@ public static partial class Scenarios
         Check.Equal((byte)9,login[0],"Margin09");int off=BitConverter.ToUInt16(login,13),count=BitConverter.ToUInt16(login,off);
         Check.Equal(15,off,"Native absolute array offset");Check.Equal(9,count,"Advertised filenames");
         Check.That(new ushort[]{12,7,169,379,384,377,382,383,381}.SequenceEqual(Enumerable.Range(0,count).Select(i=>BitConverter.ToUInt16(login,off+2+2*i))),"Ordered Universe IDs");
-        var cache=p.CharacterData[8];Check.Equal(0,cache.Length%5,"Known cache five-byte records");
+        var cache=p.CharacterData.TryGetValue(8,out byte[]? block)?block:Array.Empty<byte>();Check.Equal(0,cache.Length%5,"Known cache five-byte records");
         var keys=Enumerable.Range(0,cache.Length/5).Select(i=>(logical:cache[5*i],hid:BitConverter.ToUInt32(cache,5*i+1))).ToArray();
         Check.That(keys.All(k=>k.logical>=1 && k.logical<=9),"No internal map IDs in cache");
         Check.Equal(!discovery,keys.Contains(((byte)8,2u)),"Cache respects existing discovery policy");
