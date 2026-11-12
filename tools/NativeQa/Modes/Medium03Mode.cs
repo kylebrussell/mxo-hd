@@ -3,7 +3,7 @@ public sealed class Medium03Mode : NativeQaMode
 {
     public override string Name=>"medium03";
     public override NativeQaModePlan Plan{get;}=new(new ushort[]{2,17},37700,31700,Array.Empty<string>(),
-        new[]{"UPDATE characters SET district='medium03',districtId=16,y=495,rotation=-1.5708 WHERE charId=110"},Array.Empty<string>(),
+        new[]{"UPDATE characters SET district='medium03',districtId=16,y=495,rotation=192 WHERE charId=110"},Array.Empty<string>(),
         environmentOverrides:new(){["MXO_MOBS"]=""},
         extraQaMetadata:new(){["Medium03Partial"]=true,["WorldMap"]=16,["Hardline"]=2,["ExcludedStaticKeyCount"]=3343,
             ["LoadingAreaUiReturnUnresolved"]=true,["CapturedNpcsOutsideFootprint"]=58},

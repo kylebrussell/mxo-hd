@@ -47,6 +47,24 @@ public class Medium03Tests
         Assert.All(npcs,r=>Assert.Null(SectorProperties.At(16,double.Parse(r[x],System.Globalization.CultureInfo.InvariantCulture),double.Parse(r[z],System.Globalization.CultureInfo.InvariantCulture))));
     }
     [Fact]
+    public void FixtureUsesSourceDerivedByteYawRatherThanRadianDatabaseSeed()
+    {
+        HardlineNetwork.Load(Path.Combine(Root,"data","hardline_network.csv"));
+        double yaw=HardlineNetwork.Get(16,2).yaw;
+        int sourceByte=(int)Math.Round(yaw*128/Math.PI)&255;
+        Assert.Equal(192,sourceByte);
+        Assert.Equal(0d,new HeadlessClient.CharacterSeed("DefaultHeading").Rotation);
+        string sql=Assert.Single(new NativeQa.Modes.Medium03Mode().Plan.AfterLoadout);
+        var value=System.Text.RegularExpressions.Regex.Match(sql,@"rotation\s*=\s*(-?\d+(?:\.\d+)?)").Groups[1].Value;
+        decimal stored=decimal.Parse(value,System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal(sourceByte,stored);Assert.InRange(stored,0m,255m);Assert.Equal((byte)192,(byte)stored);
+        // Audit every discovered seed literal: SQL character rotation stores a byte, never raw HDL radians.
+        foreach(string name in NativeQa.NativeQaModes.Names)
+            foreach(string statement in NativeQa.NativeQaModes.Find(name).Plan.BeforeLoadout.Concat(NativeQa.NativeQaModes.Find(name).Plan.AfterLoadout).Concat(NativeQa.NativeQaModes.Find(name).Plan.AfterHelpers))
+                foreach(System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(statement,@"(?<![A-Za-z])rotation\s*=\s*(-?\d+(?:\.\d+)?)"))
+                {decimal v=decimal.Parse(m.Groups[1].Value,System.Globalization.CultureInfo.InvariantCulture);Assert.InRange(v,0m,255m);Assert.Equal(decimal.Truncate(v),v);}
+    }
+    [Fact]
     public void ModeHasNoDevelopmentOrRandomAuthority()
     {
         var p=new NativeQa.Modes.Medium03Mode().Plan;

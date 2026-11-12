@@ -4,8 +4,9 @@ public static partial class Scenarios
 {
     private static async Task Medium03PartialWorld(ScenarioContext context)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed("Medium03Traveller"){District="medium03",DistrictId=16,X=37700,Y=495,Z=31700});
+        var p=await context.AddPlayerAsync(new CharacterSeed("Medium03Traveller"){District="medium03",DistrictId=16,X=37700,Y=495,Z=31700,Rotation=192});
         await p.EnterWorldAsync();
+        Check.Equal((byte)192,p.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes["YawInterval"].Single(),"Exact native fixture byte heading survives initial UDP login");
         Check.That(p.Received("06").Any(r=>Encoding.Latin1.GetString(r.Bytes).Contains("medium03/medium03.metr")),"Shipped medium03 resource");
         await p.WaitUntilAsync(()=>p.ViewsOfGoid(592).Count>0,"native sector52/static1 hardline592",TimeSpan.FromSeconds(20));
         var booth=p.ViewsOfGoid(592).Last();
@@ -29,6 +30,6 @@ public static partial class Scenarios
         Check.Equal(excludedViews,door.ViewsOfGoid(417).Count,"Unproven rotated key cannot spawn");
         Check.Equal(0,p.World.Problems.Count,"Medium03 hardline wire");Check.Equal(0,door.World.Problems.Count,"Medium03 door wire");
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-medium03-success-debug.log"),context.Server.FullOutput()+"\n--- DebugLog ---\n"+context.Server.DebugLog());
-        Console.WriteLine("  medium03 PARTIAL:592/HDL16/2;6d16/2;radialLA exit/direct80ff return/newself;safe365door;rotated417 absent. No NPC/elevator/subway/LA return UI claim.");
+        Console.WriteLine("  medium03 PARTIAL:fixtureYaw192/592/HDL16/2;6d16/2;radialLA exit/direct80ff return/newself;safe365door;rotated417 absent. No NPC/elevator/subway/LA return UI claim.");
     }
 }
