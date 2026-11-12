@@ -128,6 +128,8 @@ namespace hds
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
         public StaticWorldObject activeCollector;
+        public Vendor activeVendor;
+        public int activeVendorGeneration;
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();

@@ -13,7 +13,8 @@ bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
-bool actionsMode = args.Length > 3 && args[3] == "actions";
+bool clientActionsMode = args.Length > 3 && args[3] == "ignored-actions";
+bool actionsMode = args.Length > 3 && args[3] == "actions" || clientActionsMode;
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -76,6 +77,12 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
 ");
+    if (clientActionsMode)
+        await database.ExecuteAsync($@"
+UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
+INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
+ VALUES(110,400,{CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
+");
     // The native client's login level is derived from XP, independently of the server's stored Level.
     await database.ExecuteAsync($"UPDATE characters SET exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId=110");
     await database.ExecuteAsync($"UPDATE characters SET x={nativeX},z={nativeZ} WHERE charId=110");
@@ -115,6 +122,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     {
         ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
         ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
+        , ["MXO_GM_CHARACTER_IDS"]=clientActionsMode ? "110" : ""
     });
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));

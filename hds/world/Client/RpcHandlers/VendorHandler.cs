@@ -6,6 +6,15 @@ using hds.shared;
 namespace hds{
 
     class VendorHandler{
+        private static bool HasSession(WorldClient client)
+        {
+            var data = client.playerData;
+            if (data.activeVendor != null && data.activeVendor.metrId == data.getDistrictId() &&
+                data.activeVendorGeneration == data.worldGeneration && data.getOnWorld() && !data.worldChangePending) return true;
+            data.activeVendor = null;
+            ClientActionsHandler.Notice(client, "Open a vendor before trading.");
+            return false;
+        }
 
         /// <summary>
         /// Inventory slot addressed by a CLIENT_VENDOR_SELL (81 11) request: the first two bytes,
@@ -20,6 +29,7 @@ namespace hds{
         }
 
         public void processBuyItem(ref byte[] packet){
+            if (!HasSession(Store.currentClient)) return;
             if (packet.Length < 4)
             {
                 Output.WriteDebugLog("[VENDOR] Buy packet too short.");
@@ -28,6 +38,11 @@ namespace hds{
 
             byte[] goByteID = {packet[0],packet[1],packet[2],packet[3]};
             UInt32 itemGoID = NumericalUtils.ByteArrayToUint32(goByteID,1);
+            if (Array.IndexOf(Store.currentClient.playerData.activeVendor.items, itemGoID) < 0)
+            {
+                ClientActionsHandler.Notice(Store.currentClient, "This vendor does not sell that item.");
+                return;
+            }
 
             long currentCash = Store.currentClient.playerData.getInfo();
             ServerPackets packets = new ServerPackets();
@@ -73,6 +88,7 @@ namespace hds{
         }
 
         public void processSellItem(ref byte[] packet){
+            if (!HasSession(Store.currentClient)) return;
             ServerPackets packets = new ServerPackets();
 
             if (packet.Length < 2)

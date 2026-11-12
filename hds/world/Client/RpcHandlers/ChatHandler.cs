@@ -74,6 +74,8 @@ namespace hds
             {
                 string sender = ChatAddress.Of(SocialHandler.HandleOf(Store.currentClient));
                 SocialHandler.Send(receiver, SocialPackets.ChatMessage(SocialPackets.ChatTell, 0, sender, receiverMessage));
+                if (receiver.playerInstance.AFK.getValue()[0] != 0)
+                    ClientActionsHandler.Notice(Store.currentClient, SocialHandler.HandleOf(receiver) + " is away.");
             }
 
             // Retail answered every tell with 2c: delivered, or 41 when nobody had that handle.
