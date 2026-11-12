@@ -236,7 +236,7 @@ namespace hds
             PvpFlag.ToWatchers(victim, OtherHealthUpdate(victim, health, fx));
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), before - health,
                 health < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
-            return health == 0;
+            return HealthOf(victim) == 0; // callbacks can synchronously change authoritative health
         }
 
         /// <summary>

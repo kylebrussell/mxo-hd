@@ -23,6 +23,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-health-presentation-heal-regen", HealthPresentationHealRegen, HealthCallbackNpcs),
+        new Scenario("ability-health-presentation-damage", HealthPresentationDamage, HealthCallbackNpcs),
         new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
         new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),

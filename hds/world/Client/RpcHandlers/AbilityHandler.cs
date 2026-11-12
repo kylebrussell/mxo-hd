@@ -326,6 +326,7 @@ namespace hds
             UInt16 healed = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.Health.setValue(healed);
             if (healed != current) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), current - healed, healed < max);
+            healed = PvpCombat.HealthOf(client); // synchronous health procs may change the result
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
             client.FlushQueue();
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(healed))));

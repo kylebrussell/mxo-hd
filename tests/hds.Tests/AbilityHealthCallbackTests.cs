@@ -17,6 +17,35 @@ public class AbilityHealthCallbackTests
     }
     private sealed class ZeroRandom:Random { public override int Next(int maxValue)=>0; }
 
+    private static ushort LastOwnHealth(WorldClient c)
+    {
+        var bytes=c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>().Last().content;
+        Assert.Equal(new byte[]{2,0,2,128,128,128},bytes.Take(6));
+        return BitConverter.ToUInt16(bytes,7);
+    }
+
+    [Fact]
+    public void HealthWritersPresentAndReturnTheCompletedCallbackResult()
+    {
+        var c=Client();var original=AbilityHealthCallbacks.Random15;
+        try
+        {
+            AbilityHealthCallbacks.Random15=()=>0;AbilityBuffs.Apply(c,196);
+            Assert.Equal(120,AbilityHandler.HealSelf(c,10));
+            Assert.Equal(PvpCombat.HealthOf(c),LastOwnHealth(c));
+            c.playerData.setOnWorld(true);HealthRegen.Tick(c,1);
+            Assert.Equal(135,PvpCombat.HealthOf(c)); //5 regen +10 proc
+            Assert.Equal(PvpCombat.HealthOf(c),LastOwnHealth(c));
+            var mob=new Mob();Assert.False(mob.HitCombatTarget(20,target:c));
+            Assert.Equal(125,PvpCombat.HealthOf(c));Assert.Equal(PvpCombat.HealthOf(c),LastOwnHealth(c));
+            Assert.True(TimedEffects.ForPlayer(c).Ticked(new TimedEffects.Active {Parent=97},20));
+            Assert.Equal(115,PvpCombat.HealthOf(c));Assert.Equal(PvpCombat.HealthOf(c),LastOwnHealth(c));
+            Assert.True(mob.HitCombatTarget(200,target:c));
+            Assert.Equal(0,PvpCombat.HealthOf(c));Assert.Equal(PvpCombat.HealthOf(c),LastOwnHealth(c));
+        }
+        finally {AbilityHealthCallbacks.Random15=original;AbilityBuffs.RemoveAll(c);}
+    }
+
     [Fact]
     public void NativeFunctionZeroUsesFifteenBitMultiplyAndExcludesUpperEndpoint()
     {
