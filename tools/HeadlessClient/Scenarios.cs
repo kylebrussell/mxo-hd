@@ -23,6 +23,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
+        new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
         new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
         new Scenario("stealth-shields-lifecycle", StealthShieldLifecycle, StillNpcs),
