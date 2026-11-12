@@ -113,7 +113,7 @@ public class AbilityScaledBuffTests
         Assert.Equal(695,AbilityAuras.EffectOf(42)); Assert.Equal(12,AbilityAuras.DrainOf(42));
         Assert.Equal(696,AbilityAuras.EffectOf(485)); Assert.Equal(15,AbilityAuras.DrainOf(485));
         Assert.True(AbilityScaledBuffs.TryScriptedTimed(63,20,out _));
-        Assert.False(AbilityAuras.Handles(378)); // sweep callback not silently dropped
+        Assert.True(AbilityAuras.Handles(378)); // explicit child term sweep executor
     }
 
     [Fact]

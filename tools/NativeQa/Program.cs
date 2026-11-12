@@ -3,12 +3,21 @@ using hds;
 using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
+using NativeQa;
 
 #if DEBUG
 const string configuration = "Debug";
 #else
 const string configuration = "Release";
 #endif
+// This is the same plan passed to StartAsync, and exits before any path, lock or database setup.
+if (args.Length > 0 && args[0] == "--fixture-plan")
+{
+    string mode = args.Length > 1 ? args[1] : "";
+    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode) },
+        new JsonSerializerOptions { WriteIndented=true }));
+    return;
+}
 // Actions groups learned abilities by their catalog discipline. Own missing folders without loading their stats.
 static ushort[] DisciplineAncestors(JsonElement catalog, IEnumerable<ushort> requested)
 {
@@ -50,7 +59,8 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 bool stealthShieldsMode = args.Length > 3 && args[3] == "stealth-shields";
-bool remainingMode = args.Length > 3 && args[3] == "remaining";
+bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
+bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
@@ -60,8 +70,9 @@ bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode || stealthShieldsMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
+bool clientActionsMode = args.Length > 3 && args[3] == "ignored-actions";
 bool dataMiningMode = args.Length > 3 && args[3] == "data-mining";
-bool actionsMode = args.Length > 3 && args[3] == "actions";
+bool actionsMode = args.Length > 3 && args[3] == "actions" || clientActionsMode;
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -108,6 +119,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (stealthShieldsMode) abilities = new ushort[] {2,17,1110,1125,217,1111,1116,1112,49};
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
@@ -140,6 +152,12 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,1271,1,1,0),(110,531,2,1,0),(110,2399,3,1,0),
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
+");
+    if (clientActionsMode)
+        await database.ExecuteAsync($@"
+UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
+INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
+ VALUES(110,400,{CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
 ");
     if (dataMiningMode)
         await database.ExecuteAsync("DELETE FROM inventory WHERE charId=110 AND slot<97; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,422,1,1,0)");
@@ -190,17 +208,15 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     string snapshotAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(targetBin, "hds.dll"))));
     if (sourceAssemblySha256 != snapshotAssemblySha256)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
-    server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
-    {
-        ["MXO_DEV_COMMANDS"]=remainingMode||stealthShieldsMode?"1":"0",
-        ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
-        ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
-    });
+    server = await ServerInstance.StartAsync(snapshot, database.Name,
+        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors }, new JsonSerializerOptions { WriteIndented=true }));
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode,
+        CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
+    if(healthCallbacksMode) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
@@ -263,7 +279,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
         }
         string[] lines = server.DebugLog().Split('\n');
-        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[HOSTILE]","[RESURRECTION]"}.Any(l.Contains)))
+        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[HOSTILE]","[RESURRECTION]","[HEALTH-CALLBACK]","[HEALTH-EFFECT]"}.Any(l.Contains)))
             await File.AppendAllTextAsync(Path.Combine(qaRoot,"events.jsonl"), JsonSerializer.Serialize(new { At=DateTime.UtcNow, Line=line.Trim() })+"\n");
         seen = Math.Max(0,lines.Length-1);
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());

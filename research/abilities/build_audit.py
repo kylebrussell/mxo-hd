@@ -193,14 +193,16 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     if r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
-    elif r['direct_damage']:
+    elif r['direct_damage'] and not r.get('health_callback'):
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
         parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r.get('resurrection'):
         parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
-    if r['healing']:
+    if r.get('health_callback'):
+        parts.append(r['health_callback'])
+    if r['healing'] and not r.get('health_callback'):
         if i in PET_REPAIRS:
             parts.append('heals own simulacrum: stored base; caster healing influence; player cast refused')
         elif not r.get('player_healing'):
@@ -276,7 +278,7 @@ def status(i):
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i == 49 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
-    if r.get('stealth_shield') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
+    if r.get('stealth_shield') or r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
