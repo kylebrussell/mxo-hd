@@ -1,7 +1,9 @@
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task MissionTeamRelog(ScenarioContext context)
+    private static Task MissionTeamRelog(ScenarioContext context) => MissionRelogReplay(context, false);
+    private static Task MissionObjectivesRelog(ScenarioContext context) => MissionRelogReplay(context, true);
+    private static async Task MissionRelogReplay(ScenarioContext context, bool checkObjectiveRows)
     {
         var original=await StartRelogMission(context);
         var npc=await VisitMissionNpc(context,original,"Herschel");
@@ -15,6 +17,16 @@ public static partial class Scenarios
         using var p=await HeadlessPlayer.LoginAsync(context.Server.Address,username,original.Handle);
         await p.EnterWorldAsync(); await p.WaitForRpcAsync("80 9c");
         await p.WaitUntilAsync(()=>p.Received("80 8e").Count>0,"restored native team information",TimeSpan.FromSeconds(6));
+        if (checkObjectiveRows)
+        {
+            await p.WaitForRpcAsync("80 a0 01 06 00 01");
+            var objectives = p.World.RpcSnapshot().Where(r => r.Bytes.Length >= 6 && r.Bytes[0] == 0x80 && r.Bytes[1] == 0xa0).Select(r => r.Bytes).ToList();
+            int created = objectives.FindIndex(r => r[2] == 1 && r[5] == 0);
+            int completed = objectives.FindIndex(r => r[2] == 1 && r[5] == 1);
+            Check.That(created >= 0 && completed > created, "Completed objective row is created before its restored tick");
+            Check.Equal(1, objectives.Count(r => r[2] == 2 && r[5] == 0), "Second identical-text Get remains a distinct unfinished row");
+            Check.Equal(0, objectives.Count(r => r[2] == 2 && r[5] == 1), "Replay never completes the second Get");
+        }
         var records=p.World.RpcSnapshot();
         int teamAt=records.FindIndex(r=>r.Opcode==0x8e),missionAt=records.FindIndex(r=>r.Opcode==0x9c);
         Check.That(teamAt>=0 && teamAt<missionAt,"Native team state precedes restored mission HUD");
@@ -30,12 +42,22 @@ public static partial class Scenarios
         Check.Equal(saved.Identity,restored.Identity,"Team bootstrap preserves mission identity");
         Check.That(restored.Done.Contains(1),"First Get remains complete");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6825"),"No duplicate grant");
+        if (checkObjectiveRows)
+        {
+            var giver = await VisitMissionNpc(context,p,"Herschel");
+            p.SendRpc($"80 c7 {MissionNpcId(giver)} 0d 00"); await p.WaitForRpcAsync("80 a0 02 06 00 01");
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6825"),"Completed Get never grants again");
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6820"),"Remaining Get grants its own second device once");
+            Check.That((await MissionCheckpoint(context,p)).Done.Contains(2),"Only the normal second Get completes its objective");
+        }
         // This proves the server path only; Claude must verify the actual UI now emits its Abort request.
         p.SendRpc("80 a6"); await p.WaitForRpcAsync("80 a2 08");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={p.CharId} AND payload IS NOT NULL"),"Abort clears durable mission");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6825"),"Abort removes mission ownership once");
+        if(checkObjectiveRows) Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6820"),"Abort also cleans the second device");
         Check.Equal(0,p.World.Problems.Count,"Team replay and Abort protocol problems");
-        string proof=Path.Combine(context.Server.WorkingDirectory,"MissionTeamRelog-Proof.txt");
+        string proof=checkObjectiveRows ? Path.Combine(Path.GetTempPath(),"mxo-mission-objectives-success-"+Guid.NewGuid().ToString("N")+".log")
+            : Path.Combine(context.Server.WorkingDirectory,"MissionTeamRelog-Proof.txt");
         File.WriteAllText(proof,context.Server.DebugLog()); Console.WriteLine("Team relog debug proof: "+proof);
     }
 }

@@ -148,9 +148,7 @@ namespace hds
             if(client.playerData.getDistrictId()!=progress.mission.district)return;
             new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
             MissionStaging.RestoreObjects(client,progress);
-            SendPhase(client,progress,false);
-            foreach(var goal in progress.Phase.missionObjectives.Where(o=>progress.IsDone(o.goal)))
-                new ServerPackets().SendSetMissionObjective((ushort)goal.goal,ObjectiveDone,Fill(client,goal.description),client);
+            SendPhase(client,progress,false,true);
             foreach(var item in progress.itemSlots)
                 client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value,item.Key,ItemElement(progress,item.Key),client.playerData.missionInstanceCounter));
         }
@@ -1076,7 +1074,7 @@ namespace hds
             }
         }
 
-        private static void SendPhase(WorldClient client, MissionProgress progress, bool provideItems = true)
+        private static void SendPhase(WorldClient client, MissionProgress progress, bool provideItems = true, bool restoring = false)
         {
             MissionPhase phase = progress.Phase;
             ServerPackets packets = new ServerPackets();
@@ -1106,13 +1104,23 @@ namespace hds
                 client.messageQueue.addRpcMessage(ServerPackets.BuildMissionWaypoint(door.x, door.y, door.z, (byte)i, door.doorHex));
             }
 
-            foreach (MissionObjective objective in progress.OpenObjectives())
-            {
-                packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
-            }
+            SendObjectives(client, progress, restoring);
 
             if(provideItems) GiveProvidedItems(client, progress);
             client.FlushQueue();
+        }
+
+        /// <summary>A new native HUD needs each row created before its completed-state update.
+        /// Replay only this phase's completed or currently open goals; a locked goal stays hidden.</summary>
+        internal static void SendObjectives(WorldClient client, MissionProgress progress, bool restoring)
+        {
+            ServerPackets packets = new ServerPackets();
+            foreach (MissionObjective objective in progress.Phase.missionObjectives)
+                if (progress.IsOpen(objective) || restoring && progress.IsDone(objective.goal))
+                    packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
+            if (restoring)
+                foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
+                    packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
         }
 
         // Items the briefing provides, including a retry when the bag was full at the start of this phase.
