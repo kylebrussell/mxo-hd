@@ -43,6 +43,7 @@ public static partial class Scenarios
     {
         var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("Penalty") {Level=50}))[0];
         p.SendChat("?die");
+        await p.WaitForViewUpdateAsync(2,"02 80 80 80 c1 01 00 00 80 80 01 00 00 00 00");
         await p.WaitForRpcAsync("80 bc");
         await p.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[COMBAT] Player died"),"death path",TimeSpan.FromSeconds(10));
         double saved=double.Parse(await context.Database.ScalarAsync($"SELECT factor FROM char_death_penalty WHERE charId={p.CharId}"),System.Globalization.CultureInfo.InvariantCulture);

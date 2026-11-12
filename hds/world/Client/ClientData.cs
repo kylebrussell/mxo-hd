@@ -130,6 +130,8 @@ namespace hds
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
 
         public bool waitForRPCShutDown;
+        public bool worldChangePending;
+        public UInt16 tutorialConstructId;
         internal ushort selfSpawnIdCounter;
         /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>
         public UInt32 freeFireWeaponGoid;

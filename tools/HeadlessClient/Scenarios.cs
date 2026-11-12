@@ -22,6 +22,7 @@ public static partial class Scenarios
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
+        new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),

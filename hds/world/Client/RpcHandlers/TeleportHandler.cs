@@ -283,6 +283,8 @@ namespace hds
         public static void GoToLoadingArea(WorldClient client)
         {
             SaveNearestHardlineAsLocation(client);
+            client.playerData.setOnWorld(false);
+            client.playerData.worldChangePending = true;
 
             client.playerData.respawnPending = false;
             client.playerData.isDead = false;
@@ -295,6 +297,23 @@ namespace hds
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
             client.FlushQueue();
             Output.WriteDebugLog("[LA] Loading the Loading Area");
+        }
+
+        /// <summary>81 00 selects a tutorial in the LA picker. client.dll62171620..61755 uses it for800..899;
+        /// normal selections use80ff. Retail answers8107, then loads tutorial_v2 on a private construct.</summary>
+        public static void EnterTutorial(WorldClient client, byte[] payload)
+        {
+            if (payload.Length != 0 || !client.playerData.DistrictIsLA() || client.playerData.worldChangePending) return;
+            client.playerData.setOnWorld(false);
+            client.playerData.worldChangePending = true;
+            client.playerData.tutorialConstructId = 800; // fixed local instance; retail allocated800..899
+            client.playerData.setDistrictId((uint)MxOLocations.TUTORIAL);
+            client.playerData.setDistrict("tutorial");
+            client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(7600,3995,-16150));
+            Store.dbManager.WorldDbHandler.SavePlayer(client);
+            client.messageQueue.addRpcMessage(new byte[] { 0x81,0x07 });
+            client.FlushQueue();
+            Output.WriteDebugLog("[LA] Tutorial selection: loading tutorial_v2, construct800");
         }
 
         /// <summary>80 ff &lt;district u32&gt; &lt;hardline u32&gt;: the player picked a hardline in the Loading Area.</summary>

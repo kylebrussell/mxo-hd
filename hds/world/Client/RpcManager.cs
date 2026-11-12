@@ -28,9 +28,13 @@ namespace hds{
 		    {
 
 		        case (int) RPCRequestHeader.CLIENT_SPAWN_READY:
+                    if (Store.currentClient.playerData.worldChangePending) break;
 		            new PlayerHandler().processSpawn();
 		            new PlayerHandler().processAttributes();
 		            break;
+                case (int)RPCRequestHeader.CLIENT_ENTER_TUTORIAL:
+                    TeleportHandler.EnterTutorial(Store.currentClient, rpcData);
+                    break;
 			        
 		        case (int) RPCRequestHeader.CLIENT_CLOSE_COMBAT:
 					#if DEBUG

@@ -43,7 +43,7 @@ public class PvpTests
             (PlayerViewAttributes.SelfIsDead, PlayerViewAttributes.U8(1)),
             (PlayerViewAttributes.SelfHealth, PlayerViewAttributes.U16(0)));
         Assert.Equal("02 00 02 80 80 80 c1 01 00 00 80 80 01 00 00 00 01", H(update));
-        Assert.Equal(H(ServerPackets.BuildSelfDeathUpdate()), H(update));
+        Assert.Equal(H(ServerPackets.BuildSelfDeathUpdate(PvpFlag.PvpBit)), H(update));
     }
 
     [Fact]

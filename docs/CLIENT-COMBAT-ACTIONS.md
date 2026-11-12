@@ -107,3 +107,32 @@ Release the lock with CSR110 at Mara, full health, pvpflag0 and mission986 only.
 - Native client A/B failed before gameplay; corrected native retry remains unverified; no QA server is left listening. CSR110 was reset/verified at Mara, health250/250, flag0, mission986; NativeD stopped and released the lock at18:01ET.
 
 Runtime commit `f8c387d` passes GitHub CI [43118168743](https://github.com/kylebrussell/mxo-hd/actions/runs/43118168743). PR100 remains draft for the explicit parity limits and native checklist above; PR99 isolates the startup fix.
+
+
+## Death/reconstruction follow-up (2026-11-11)
+
+Claude's native check of38fb11f confirms world entry with PR99 and reports false PvP susceptibility on `?die`,
+then a Negotiating with Servers stall after Reconstruct. Logs: `pr100-death-debuglog.txt` and
+`pr100-death-packetlog.txt` in the shared Temp directory.
+
+The death builder copied a flagged PvP capture's01000000 unconditionally. It now emits the character's actual
+condition flags, with the combat bit cleared on death. Focused wire coverage distinguishes unflagged and flagged
+deaths; neither invents a PvP flag.
+
+The stalled trace acknowledges all initialization RPCs. At18:46:41 it sends a compound `81 00`, `6c0200000000000000`,
+`05`. `81 00` was ignored. Client.dll62171620..62171755 uses it when the LA picker selects a tutorial construct800..899;
+normal selections instead send80ff. Retail's create/tutorial captures answer with8107, reset, then tutorial_v2
+(e.g. the complete MxOemu tutorial capture at13:23:24..26, construct802). The server now implements that selection
+only in the Loading Area, using tutorial map0 and local construct800. A pending-world guard suppresses a following
+old-world05 until the communication reset, preventing premature self creation. This fixes the unanswered request;
+it does not establish why this particular native run selected the tutorial instead of remaining in the LA picker.
+Native UI confirmation remains required before merging PR100.
+
+Death Effect updates are also suppressed for the Loading Area, a pending reconstruction or a communication reset,
+where there is no live self view. Entering the Loading Area marks the old world inactive immediately.
+The exact captured compound request, unflagged death, LA reset, tutorial reset and delayed self creation pass in a
+fresh-server headless scenario. Ordinary penalty persistence and flagged PvP death pass separately.
+
+Master PR101 and PR99 are incorporated. The launch broker was not triggered: its stated purpose is to perform the
+same launch outside the shell after automatic approval review rejected it. Native QA remains pending a permitted
+manual launch or an independently opened client; no client lock was taken during these fixes.

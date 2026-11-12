@@ -44,7 +44,7 @@ The biggest gaps left, by impact:
 | `81 48` | No fields, from `viewplayer.cpp`. Retail answered `81 49` (FeatureArray, CharacterID, SubscriptionFeatures), mid-session too (luizoe_margins_Syntax packets 1296/1298) | D, C 184, U 237 | handled: structured bounded `81 49` (PR99 fixes native crash) | low |
 | `81 08` | Ready for the world change (Status) | C 209 | handled | high |
 | `80 c9` | Region loaded (ObjID, ObjPos) | C 10438 | handled | high |
-| `81 00` | No fields, from `clientshell.cpp` near `tutorial.flg`. Retail answered `80 b3` and `3a` | D, C 8, U 3 | ignored | low (purpose unknown) |
+| `81 00` | LA picker selects tutorial construct800..899 (client.dll62171620); normal picks use80ff. Retail resets and loads tutorial_v2 | D, C 8, U 3 | handled only in LA; pending-reset spawn guard; [evidence](CLIENT-COMBAT-ACTIONS.md#deathreconstruction-follow-up-2026-11-11) | high |
 | `81 01` | No fields. Retail answered `80 fa` (ConstructID, HardlineID, MakeActive) then `81 07`: a world change. Guess: jack in from the Loading Area by another route | C 8 | ignored | low (guess) |
 | `81 56` | No fields; 13 send sites in `viewmgr.cpp` | D, C 1 | ignored | low (purpose unknown) |
 | `81 4d` | ElapsedTime u32; retail echoed `81 4d` | C 1 | ignored | low |

@@ -5,6 +5,27 @@ namespace hds.Tests;
 public class DeathPenaltyTests
 {
     [Fact]
+    public void PenaltyPresentationRequiresALiveWorldView()
+    {
+        var data = new ClientData();
+        data.setDistrictId(1);
+        Assert.False(DeathPenalty.CanPresent(data));
+        data.setOnWorld(true);
+        Assert.True(DeathPenalty.CanPresent(data));
+        data.respawnPending = true;
+        Assert.False(DeathPenalty.CanPresent(data));
+        data.respawnPending = false;
+        data.worldChangePending = true;
+        Assert.False(DeathPenalty.CanPresent(data));
+        data.worldChangePending = false;
+        data.waitForRPCShutDown = true;
+        Assert.False(DeathPenalty.CanPresent(data));
+        data.waitForRPCShutDown = false;
+        data.setDistrictId((uint)MxOLocations.LA);
+        Assert.False(DeathPenalty.CanPresent(data));
+    }
+
+    [Fact]
     public void ADeathLosesFifteenPercentAndRecoversOverFiveMinutes()
     {
         float factor = DeathPenalty.AfterDeath(1);

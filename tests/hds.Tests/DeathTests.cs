@@ -11,7 +11,8 @@ public class DeathTests
     [Fact]
     public void DeathSetsIsDeadHealthAndConditionFlags()
     {
-        Assert.Equal("020002808080c1010000808001" + "00000001", Hex(ServerPackets.BuildSelfDeathUpdate()));
+        Assert.Equal("020002808080c1010000808001" + "00000000", Hex(ServerPackets.BuildSelfDeathUpdate()));
+        Assert.Equal("020002808080c1010000808001" + "00000001", Hex(ServerPackets.BuildSelfDeathUpdate(PvpFlag.PvpBit)));
     }
 
     [Fact]

@@ -42,7 +42,9 @@ namespace hds
             pak.AddUShort((ushort)RPCResponseHeaders.SERVER_LOAD_WORLD_CMD);
             pak.AddUShort(0x0e); // dunno if header or not - just part of this
             pak.AddUShort(0);
-            pak.AddUint32(PvpArchives.ConstructId(districtId), 1); // retail construct ID, distinct from our map index
+            uint instance = districtId == 0 && client.playerData.tutorialConstructId != 0
+                ? client.playerData.tutorialConstructId : PvpArchives.ConstructId(districtId);
+            pak.AddUint32(instance, 1); // retail construct ID, distinct from our map index
             pak.AddByteArray(TimeUtils.getCurrentSimTime());
             pak.AddByte(0x01); // SimeTime + 01 
             pak.AddUint16(offsetWeatherEvent, 1);

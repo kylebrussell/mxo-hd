@@ -42,6 +42,7 @@ namespace hds
 
         public static void Send(WorldClient client)
         {
+            if (!CanPresent(client.playerData)) return;
             float factor = Current(client);
             client.playerInstance.DeathPenalty.setValue(factor);
             client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDeathPenalty,
@@ -63,12 +64,15 @@ namespace hds
 
         public static void Tick(WorldClient client)
         {
-            if (client.playerData.deathPenaltyLoaded && client.Alive && client.playerData.getOnWorld() &&
+            if (client.playerData.deathPenaltyLoaded && client.Alive && CanPresent(client.playerData) &&
                 client.playerData.deathPenalty < 1 && Now - client.playerData.deathPenaltySentAt >= TickSeconds)
             {
                 Send(client);
                 if (Current(client) >= 1) { client.playerData.deathPenalty = 1; client.playerData.deathPenaltyAt = Now; }
             }
         }
+
+        public static bool CanPresent(ClientData data) => data.getOnWorld() && !data.DistrictIsLA() &&
+            !data.waitForRPCShutDown && !data.worldChangePending && !data.respawnPending;
     }
 }

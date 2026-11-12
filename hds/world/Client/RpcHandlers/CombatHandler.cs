@@ -1335,10 +1335,12 @@ namespace hds
             player.playerInstance.Health.setValue((UInt16)0);
             player.playerData.isDead = true;
             player.playerData.respawnPending = false;
+            player.playerData.conditionStateFlags &= ~PvpFlag.InCombatBit;
+            player.playerInstance.ConditionStateFlags.setValue(PvpFlag.FlagsOf(player));
 
             // Retail death: own view IsDead/Health/ConditionStateFlags, then the death system message. The client
             // shows its own death UI and asks to respawn with 81 4c (TeleportHandler.ProcessRespawnRequest).
-            player.messageQueue.addObjectMessage(ServerPackets.BuildSelfDeathUpdate(), false);
+            player.messageQueue.addObjectMessage(ServerPackets.BuildSelfDeathUpdate(PvpFlag.FlagsOf(player)), false);
             AbilityBuffs.RemoveAll(player);
             DeathPenalty.Apply(player);
             player.messageQueue.addRpcMessage(ServerPackets.BuildDeathMessage());
