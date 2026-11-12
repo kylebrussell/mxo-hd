@@ -144,9 +144,16 @@ def expected(i):
     return '; '.join(dict.fromkeys(result)) or 'Native action / passive metadata; no decoded stored modifier'
 
 
+UTILITY_NOTES = {538: 'presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 539: 'presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 540: 'presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 541: 'presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)'}
+
+
 def server(i):
     r, f = coverage[i], fields(i)
     parts = []
+    if r.get('utility'):
+        parts.append(r['utility'])
+    if i in UTILITY_NOTES:
+        parts.append(UTILITY_NOTES[i])
     if r['cost_source'] != 'fallback':
         parts.append(f"IS {r['cost']} ({r['cost_source']})")
     if r['cooldown']:
@@ -195,7 +202,7 @@ def status(i):
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if r['buff_source'] == 'stored character level' and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
-    if r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
