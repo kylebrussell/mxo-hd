@@ -71,6 +71,10 @@ namespace hds.databases.interfaces{
         UInt16 GetFirstNewSlot();
         System.Collections.Generic.HashSet<int> GetCompletedMissions(UInt32 charId);
         void SaveMissionCompleted(UInt32 charId, int missionId);
+        void EnsureMissionPersistence();
+        string LoadActiveMission(UInt32 charId);
+        MissionCompletion CompleteActiveMission(UInt32 charId, string expected, UInt32 experience, UInt32 info);
+        void CommitActiveMission(UInt32 charId, string expected, string next, UInt16 fromSlot = 0, UInt16 toSlot = 0);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID);
         void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId);
         void setBackground(string backgroundText);

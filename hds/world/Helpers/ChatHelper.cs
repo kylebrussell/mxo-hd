@@ -159,6 +159,11 @@ namespace hds
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
                 }
 
+                if (command.Equals("?missionpersist"))
+                {
+                    MissionPersistence.Dev(Store.currentClient,commands);
+                }
+
                 if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: ?missionobject <id>: the current phase's object, spawned again at the player's feet

@@ -23,6 +23,9 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("mission-relog-disconnect-move", MissionRelogDisconnectAndMove, StillNpcs),
+        new Scenario("mission-relog-object-rollback", MissionRelogObjectsAndRollback, StillNpcs, "mission-persistence.xml"),
+        new Scenario("mission-relog-persistence", MissionRelogPersistence, StillNpcs),
         new Scenario("consumable-sweep-removal-log", ConsumableSweepRemovalLog, StillNpcs),
         new Scenario("consumable-sweep-cast-contract", ConsumableSweepCastContract, StillNpcs),
         new Scenario("consumable-sweep-cast-cancellation", ConsumableSweepCastCancellation, StillNpcs),

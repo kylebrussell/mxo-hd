@@ -23,8 +23,11 @@ namespace hds
 
             UInt16 fromSlot =  NumericalUtils.ByteArrayToUint16(sourceSlot,1);
             UInt16 toSlot   = NumericalUtils.ByteArrayToUint16(destSlot,1);
-            Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
-            MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+            if(!MissionPersistence.MoveItem(Store.currentClient,fromSlot,toSlot))
+            {
+                Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
+                MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+            }
             TutorialMission.Of(Store.currentClient)?.OnInventoryItemMoved(fromSlot, toSlot);
 
             ServerPackets pak = new ServerPackets();
