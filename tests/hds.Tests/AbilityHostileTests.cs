@@ -193,6 +193,97 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.IsActive(victim, 327));
     }
 
+    private sealed class ZeroRoll : Random
+    {
+        public override int Next(int maxValue) => 0;
+    }
+
+    [Theory]
+    [InlineData(674, 5)]
+    [InlineData(675, 10)]
+    [InlineData(676, 15)]
+    [InlineData(677, 20)]
+    [InlineData(678, 25)]
+    public void AntibioticsExecuteTheInitialCureAndKeepTheirPeriodicModifier(ushort ability, int chance)
+    {
+        var victim = Client();
+        Land(victim, 315);
+        var subject = TimedEffects.ForPlayer(victim);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new ZeroRoll();
+            Assert.True(AbilityHostile.ApplySweep(victim, victim, ability));
+            Assert.False(subject.Effects.HasParent(315));
+            Assert.True(subject.Effects.HasParent(734));
+            var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == ability);
+            Assert.Equal(chance, pulse.Value);
+            Assert.Equal(90, pulse.Seconds);
+            Assert.Equal(5, pulse.Interval);
+            Land(victim, 343);
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.False(subject.Effects.HasParent(343));
+            Assert.True(subject.Effects.HasParent(ability));
+            TimedEffects.RunDue(pulse.Start + 90.01);
+            Assert.False(subject.Effects.HasParent(ability));
+        }
+        finally { AbilityHostile.PulseRandom = previous; }
+    }
+
+    private sealed class SweepRoll : Random
+    {
+        private readonly int value;
+        private readonly Action? before;
+        public SweepRoll(int value, Action? before=null) { this.value=value; this.before=before; }
+        public override int Next(int maxValue) { before?.Invoke(); return value; }
+    }
+
+    [Fact]
+    public void SweepLogsOneLinePerActuallyRemovedParentAndNoMissExpiryOrStaleSuccess()
+    {
+        var victim=Client(); victim.playerInstance.CharacterName.setValue("SweepProof");
+        var subject=TimedEffects.ForPlayer(victim); var lines=new List<string>();
+        var pulse=new TimedEffects.Active { Parent=678,Value=25 };
+        var mods=Land(victim,97); Assert.Equal(4,mods.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(99),lines.Add);
+        Assert.True(subject.Effects.HasParent(97)); Assert.Empty(lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97));
+        Assert.Equal(new[]{"[SWEEP] 678 removed 97 from SweepProof"},lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Single(lines); // no duplicate after all four sibling mods were removed
+
+        Land(victim,97);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0,()=>TimedEffects.RemoveParent(subject,97)),lines.Add);
+        Assert.Single(lines); // another remover wins after the candidate snapshot
+        var overdue=Land(victim,97); foreach(var mod in overdue) mod.Expires=TimeUtils.GetSimTimeSeconds()-1;
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Single(lines); // pending natural cleanup is not a live sweep success
+        var expiredMods=Land(victim,97); var expired=new List<TimedEffects.Active>();
+        subject.Effects.Advance(expiredMods.Max(m=>m.Expires)+1,new List<TimedEffects.Active>(),expired);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Equal(4,expired.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add); Assert.Single(lines);
+
+        Land(victim,97); AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Equal(2,lines.Count); // an actual reapplication can be removed and logged again
+    }
+
+    [Fact]
+    public void ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily()
+    {
+        var victim = Client();
+        Land(victim, 343);
+        AbilityHostile.ApplySweep(victim, victim, 320);
+        Assert.True(AbilityHostile.ApplySweep(victim, victim, 659));
+        var subject = TimedEffects.ForPlayer(victim);
+        Assert.True(subject.Effects.HasParent(343)); // no init callback in the stored template
+        Assert.False(subject.Effects.HasParent(320));
+        var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == 659);
+        Assert.Equal(25, pulse.Value);
+        Assert.Equal(20, pulse.Seconds);
+        Assert.Equal(5, pulse.Interval);
+    }
+
     [Fact]
     public void SweepsOfOneStackingTypeReplaceEachOther()
     {
@@ -220,6 +311,83 @@ public class AbilityHostileTests
         AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7));
         Assert.Empty(AbilityHostile.RemovableBuffs(victim));
         Assert.Equal(0, AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7)));
+    }
+
+    private sealed class ProcRoll(double value) : Random
+    {
+        public int Rolls;
+        public override double NextDouble() { Rolls++; return value; }
+    }
+
+    [Theory]
+    [InlineData(0.199999, true)]
+    [InlineData(0.2, false)]
+    [InlineData(0.999, false)]
+    public void MachinegunFistDispelUsesItsStoredTwentyPercentProc(double roll, bool removes)
+    {
+        var caster = Client(); var victim = Client();
+        Assert.Equal(0.2, AbilityCatalog.Find(261)!.Modifiers.Single(m => m.Text("StatModInitFunc") == "RemoveRandomBuff").Number("ProcTriggerChance"));
+        Assert.True(AbilityBuffs.Apply(victim, 327));
+        Assert.True(AbilityBuffs.Apply(victim, 344));
+        Land(victim, 343);
+        var rng = new ProcRoll(roll);
+        AbilityHostile.LandedOnPlayer(caster, victim, 261, rng);
+        Assert.Equal(1, rng.Rolls);
+        Assert.Equal(!removes, AbilityBuffs.IsActive(victim, 327));
+        Assert.True(AbilityBuffs.IsActive(victim, 344));
+        Assert.True(TimedEffects.ForPlayer(victim).Effects.HasParent(343));
+    }
+
+    [Theory]
+    [InlineData(0.199999, true)]
+    [InlineData(0.2, false)]
+    public void MachinegunFistNpcFailureOutputAlsoRequiresTheProc(double roll, bool triggered)
+    {
+        var caster=Client(); var mob=new Mob(); mob.setName("ProcMob");
+        var rng=new ProcRoll(roll);
+        AbilityHostile.LandedOnMob(caster,mob,261,rng);
+        Assert.Equal(1,rng.Rolls);
+        Assert.Equal(triggered?1:0,caster.messageQueue.RPCMessagesQueue.Count);
+    }
+
+    [Fact]
+    public void TriggeredDispelDeactivatesAnAuraAndAllowsLaterBuff()
+    {
+        var caster=Client(); var target=Client();
+        var previousClients=WorldServer.Clients;
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        try
+        {
+            AbilityAuras.Start(target,42);
+            Assert.True(AbilityAuras.IsOn(target,42));
+            // Remove any child pulses: leave the toggled parent as the only candidate.
+            foreach(ushort id in AbilityHostile.RemovableBuffs(target).Where(id=>id!=42).ToList())
+                AbilityHostile.RemoveBuff(target,id);
+            Assert.Equal(new ushort[]{42},AbilityHostile.RemovableBuffs(target));
+            AbilityHostile.LandedOnPlayer(caster,target,261,new ProcRoll(0));
+            Assert.False(AbilityAuras.IsOn(target,42));
+            Assert.Empty(AbilityHostile.RemovableBuffs(target));
+            Assert.True(AbilityBuffs.Apply(target,327));
+            Assert.True(AbilityBuffs.IsActive(target,327));
+        }
+        finally
+        {
+            AbilityAuras.Stop(target,42);
+            WorldServer.Clients=previousClients;
+        }
+    }
+
+    [Theory]
+    [InlineData(324)]
+    [InlineData(377)]
+    public void DispelWithoutStoredChanceDoesNotConsumeAProcRoll(ushort ability)
+    {
+        var caster = Client(); var victim = Client();
+        Assert.True(AbilityBuffs.Apply(victim, 327));
+        var rng = new ProcRoll(0.999);
+        AbilityHostile.LandedOnPlayer(caster, victim, ability, rng);
+        Assert.False(AbilityBuffs.IsActive(victim, 327));
+        Assert.Equal(0, rng.Rolls);
     }
 
     [Fact]

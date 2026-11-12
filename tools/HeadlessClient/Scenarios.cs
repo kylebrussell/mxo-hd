@@ -23,6 +23,12 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("consumable-sweep-removal-log", ConsumableSweepRemovalLog, StillNpcs),
+        new Scenario("consumable-sweep-cast-contract", ConsumableSweepCastContract, StillNpcs),
+        new Scenario("consumable-sweep-cast-cancellation", ConsumableSweepCastCancellation, StillNpcs),
+        new Scenario("consumable-sweep-control", ConsumableSweepControlCancellation, StillNpcs),
+        new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
+        new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
@@ -73,6 +79,10 @@ public static partial class Scenarios
         new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
         new Scenario("ability-control-duration-npc", AbilityControlDurationNpc, StillNpcs),
+        new Scenario("buff-dispel-fixture-hit", BuffDispelFixtureHit, StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_BUFF_DISPEL_QA_ROLL100"]="0"}).ToDictionary(p=>p.Key,p=>p.Value)),
+        new Scenario("buff-dispel-fixture-miss", BuffDispelFixtureMiss, StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_BUFF_DISPEL_QA_ROLL100"]="99"}).ToDictionary(p=>p.Key,p=>p.Value)),
+        new Scenario("buff-dispel-proc-npc", BuffDispelProcNpc, StillNpcs),
+        new Scenario("buff-dispel-proc-pvp", BuffDispelProcPvp, StillNpcs),
         new Scenario("hostile-fields-pvp", HostileFieldsPvp, StillNpcs),
         new Scenario("hostile-fields-npc", HostileFieldsNpc, StillNpcs),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),

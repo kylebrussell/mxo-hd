@@ -144,7 +144,8 @@ namespace hds
         /// <summary>The hostile ability has landed on another player (after its tempmods).</summary>
         public static void LandedOnPlayer(WorldClient caster, WorldClient target, ushort id, Random rng = null)
         {
-            rng ??= random;
+            // Existing disposable dev-fixture guard only; ordinary servers retain this exact random object/path.
+            rng = DispelCallbackRandom(rng);
             foreach (var m in Enabled(id))
             {
                 // Destroy Resolve: Current Inner Strength -58, DurationType 1 (instant)
@@ -157,15 +158,48 @@ namespace hds
                     Output.WriteDebugLog("[HOSTILE] " + id + " IS " + current + " -> " + next + " on " + TimedEffects.PlayerName(target));
                 }
             }
-            if (HasInit(id, "RemoveRandomBuff")) RemoveRandomBuff(caster, target, id, rng);
-            var sweep = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "UpgradeSweepPulse");
-            if (sweep != null) UpgradeSweep(caster, target, id, (int)sweep.Number("MinValue"), rng);
+            foreach (var m in Enabled(id))
+            {
+                string callback = m.Text("StatModInitFunc");
+                if (callback != "RemoveRandomBuff" && callback != "UpgradeSweepPulse") continue;
+                // Machinegun Fist Combo 261 explicitly stores 0.2. Use the same probability convention
+                // as TimedEffects.Apply; omitted ProcTriggerChance retains the existing always-on policy.
+                if (!DispelProcs(m, rng)) continue;
+                if (callback == "RemoveRandomBuff") RemoveRandomBuff(caster, target, id, rng);
+                else UpgradeSweep(caster, target, id, (int)m.Number("MinValue"), rng);
+            }
         }
 
-        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so the removal scripts fail.</summary>
-        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id)
+        // This override belongs only to positive dispel callbacks. It never reaches combat rolls,
+        // special-move contests, health callbacks or negative-condition term sweeps.
+        internal static Random DispelCallbackRandom(Random supplied = null)
         {
-            if (!HasInit(id, "RemoveRandomBuff") || caster?.messageQueue == null) return;
+            if (supplied != null) return supplied;
+            if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                (Environment.GetEnvironmentVariable("MXO_DB_NAME") ?? "").StartsWith("mxotest_",StringComparison.Ordinal) &&
+                int.TryParse(Environment.GetEnvironmentVariable("MXO_BUFF_DISPEL_QA_ROLL100"),out int roll) && roll >= 0 && roll <= 99)
+                return new DispelQaRandom(roll);
+            return random;
+        }
+        private sealed class DispelQaRandom : Random
+        {
+            private readonly int roll;
+            public DispelQaRandom(int roll) { this.roll=roll; }
+            public override double NextDouble()=>roll/100.0;
+            public override int Next(int maximum)=>Math.Min(roll,Math.Max(0,maximum-1));
+        }
+
+        private static bool DispelProcs(AbilityCatalog.Modifier modifier, Random rng)
+        {
+            double chance = modifier.Number("ProcTriggerChance", 1);
+            lock (rng) return chance >= 1 || rng.NextDouble() < chance;
+        }
+
+        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so a triggered removal script fails.</summary>
+        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id, Random rng = null)
+        {
+            var modifier = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "RemoveRandomBuff");
+            if (modifier == null || caster?.messageQueue == null || !DispelProcs(modifier, DispelCallbackRandom(rng))) return;
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(CancelUpgradeFailCaster, true, id, TimedEffects.PlayerName(caster), mob.getName() ?? "", 0));
             caster.FlushQueue();
         }
@@ -263,13 +297,15 @@ namespace hds
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
             TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
+            if (m.Text("StatModInitFunc") == "NegativeConditionSweepPulse")
+                Pulse(subject, new TimedEffects.Active { Parent = id, Value = value });
             return true;
         }
 
         public static Random PulseRandom = random;
 
         /// <summary>tempmods.NegativeConditionSweepPulse on one subject.</summary>
-        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null)
+        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null, Action<string> removedLog=null)
         {
             var parents = subject.Effects.Snapshot().Select(a => a.Parent).Distinct().Where(Cleansable).ToList();
             WorldClient client = subject is PlayerEffects ? subject.Context : null;
@@ -277,8 +313,10 @@ namespace hds
             foreach (ushort parent in parents)
             {
                 if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
-                TimedEffects.RemoveParent(subject, parent);
-                Output.WriteDebugLog("[HOSTILE] sweep " + pulse.Parent + " removes debuff " + parent + (client != null ? " from " + name : ""));
+                bool live = subject.Effects.Snapshot().Any(m => m.Parent == parent && m.Expires > TimeUtils.GetSimTimeSeconds());
+                if (!TimedEffects.RemoveParent(subject, parent)) continue;
+                string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
+                if (live) (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
                 if (client == null) continue;
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(RemoveDebuffTarget, false, pulse.Parent, name, name,
                     unchecked((int)AbilityMessages.AbilityGameObject(parent))));

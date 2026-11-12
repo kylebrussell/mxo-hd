@@ -9,6 +9,13 @@ namespace hds
 {
     class InventoryHandler
     {
+        private sealed class ItemCast { }
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<WorldClient, ItemCast> itemCasts =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<WorldClient, ItemCast>();
+
+        private static bool ItemReady(WorldClient client) => client.Alive && client.playerData.getOnWorld() &&
+            !client.playerData.worldChangePending && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client);
+
         public void processItemMove(ref byte[] packet)
         {
             byte[] sourceSlot = {packet[0], packet[1]};
@@ -152,75 +159,89 @@ namespace hds
         {
             WorldClient client = Store.currentClient;
             ClientData data = client.playerData;
-            ServerPackets pak = new ServerPackets();
-            UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-
-            if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
-                consumable.AbilityId != abilityId)
+            lock (data.craftingSync)
             {
-                return false;
-            }
-
-            if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
-            if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
-
-            if (!ConsumableItems.IsUsable(consumable))
-            {
-                pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
-                return true;
-            }
-
-            double now = TimeUtils.GetSimTimeSeconds();
-            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
-                (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
-            {
-                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");
-                // Answered like retail's refused uses, so the client doesn't wait on it
-                client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(abilityId, AbilityCooldowns.DeniedTimerRunning));
-                client.FlushQueue();
-                return true;
-            }
-
-            AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
-            float castTime = ability != null ? ability.getCastingTime() : 0;
-            UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
-
-            // Block a second use while this one is still casting.
-            lock (data.cooldownEndsAt)
-            {
-                data.cooldownEndsAt[(UInt16)goid] = now + castTime + consumable.Seconds;
-            }
-
-            if (castTime > 0)
-            {
-                pak.SendCastAbilityBar(abilityId, castTime);
-                client.FlushQueue();
-            }
-
-            DelayedActions.AfterFor(client, castTime, () =>
-            {
-                // The item may have been moved or listed during the cast: then nothing is used up and nothing happens
-                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                ServerPackets pak = new ServerPackets();
+                UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+                if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
+                    return false;
+                if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
+                if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
+                if (!ConsumableItems.IsUsable(consumable))
                 {
-                    lock (data.cooldownEndsAt)
+                    pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
+                    return true;
+                }
+                if (client.playerInstance.Level.getValue()[0] < ConsumableItems.RequiredLevel(goid))
+                {
+                    pak.sendSystemChatMessage(client, "Your character level is too low to use this item.", "MODAL");
+                    return true;
+                }
+                double now = TimeUtils.GetSimTimeSeconds();
+                bool busy = !ItemReady(client) || itemCasts.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now);
+                if (busy || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+                    (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
+                {
+                    client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(abilityId,
+                        busy ? AbilityCooldowns.DeniedBusy : AbilityCooldowns.DeniedTimerRunning));
+                    client.FlushQueue();
+                    return true;
+                }
+
+                // Both inventory paths interrupt compiling only after the pill passes its eligibility checks.
+                CraftingSession.End(client);
+                AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
+                float castTime = ability != null ? ability.getCastingTime() : 0;
+                UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
+                int world = data.worldGeneration, life = data.lifeGeneration;
+                var token = new ItemCast();
+                itemCasts.Add(client, token);
+                AbilityCooldowns.StartCast(data, now, castTime);
+                double castEnd = data.castEndsAt;
+                double reservedUntil = now + castTime + consumable.Seconds;
+                lock (data.cooldownEndsAt)
+                {
+                    data.cooldownEndsAt[(UInt16)goid] = reservedUntil;
+                    if (consumable.Group != 0) data.cooldownEndsAt[consumable.Group] = reservedUntil;
+                }
+                if (castTime > 0)
+                {
+                    pak.SendCastAbilityBar(abilityId, castTime);
+                    client.FlushQueue();
+                }
+                DelayedActions.AfterFor(client, castTime, () =>
+                {
+                    lock (data.craftingSync)
                     {
-                        data.cooldownEndsAt.Remove((UInt16)goid);
+                        if (!itemCasts.TryGetValue(client, out var current) || current != token) return;
+                        itemCasts.Remove(client);
+                        if (client.playerData != data || !ItemReady(client) ||
+                            !ConsumableItems.CastMatches(data, world, life, castEnd) ||
+                            Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                        {
+                            lock (data.cooldownEndsAt)
+                            {
+                                if (data.cooldownEndsAt.TryGetValue((UInt16)goid, out double itemEnd) && itemEnd == reservedUntil)
+                                    data.cooldownEndsAt.Remove((UInt16)goid);
+                                if (consumable.Group != 0 && data.cooldownEndsAt.TryGetValue(consumable.Group, out double groupEnd) && groupEnd == reservedUntil)
+                                    data.cooldownEndsAt.Remove(consumable.Group);
+                            }
+                            Output.WriteDebugLog("[INVENTORY] Item " + goid + " cast cancelled (slot, life, control, cast or world changed); not used");
+                            return;
+                        }
+                        AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
+                        RemoveOne(client, slot);
+                        client.FlushQueue();
+                        if (consumable.Effect == ConsumableItems.Effect.Heal)
+                            AbilityHandler.HealSelf(client, amount);
+                        else if (consumable.Effect == ConsumableItems.Effect.Cure || consumable.Effect == ConsumableItems.Effect.ConditionSweep)
+                            // The item grants a canonical ability; its modifier is ability-owned, not an equipped item modifier.
+                            AbilityHostile.ApplySweep(client, client, abilityId);
+                        Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
                     }
-                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " left slot " + slot + " during the cast; not used");
-                    return;
-                }
-
-                AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
-                    TimeUtils.GetSimTimeSeconds());
-                RemoveOne(client, slot);
-                client.FlushQueue();
-                if (consumable.Effect == ConsumableItems.Effect.Heal)
-                {
-                    AbilityHandler.HealSelf(client, amount);
-                }
-                Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
-            });
-            return true;
+                });
+                return true;
+            }
         }
 
         private static void RefuseEquipment(byte[] request)
@@ -454,7 +475,7 @@ namespace hds
                     toRealSlotId = 0x64;
                     partModel = "gloves";
                     break;
-                    
+
                 case "2001682761":
                 case "FEMALE COAT":
                 case "MALE COAT":
