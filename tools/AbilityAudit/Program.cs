@@ -16,6 +16,7 @@ static string Consumer(ushort stat) => stat switch
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
     564 => "Concentration cast-through for explicit interruptible templates (partial)",
+    127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
@@ -24,6 +25,7 @@ static string Consumer(ushort stat) => stat switch
 static string UtilityCoverage(ushort id) => id switch
 {
     971 or 972 => "owned AntiStun pill only: exact42763/42764, CanUseWhileStunned;1s cast, stored own900/600s and shared973600s; removes Stun/Mez tuples, halves actual remaining immunity when half>=1s; item/life/world/cast revalidation; [docs/ANTI-STUN-PILLS.md](ANTI-STUN-PILLS.md)",
+    74 => "UBF0 caster area radius percent via stat127; group support and friendly944 only; SweepBonus1052 consumer unresolved; [evidence](ABILITY-RESIST-DAMAGE.md)",
     CraftingSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
     CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; code synthesis outputs/economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
