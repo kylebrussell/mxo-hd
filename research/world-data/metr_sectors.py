@@ -106,7 +106,7 @@ def read_values(r, items, types):
     return vals, r.d[r.p:end]
 
 
-def read_metr(path):
+def read_metr(path, include_resource_refs=False):
     d = open(path, 'rb').read()
     p = d.find(b'SINS')
     count = struct.unpack_from('<I', d, p + 8)[0]
@@ -122,6 +122,11 @@ def read_metr(path):
         grid = struct.unpack_from('<6h', d, r.p); r.p += 12
         box = struct.unpack_from('<9f', d, r.p); r.p += 36
         dshd = d.find(b'DSHD', r.p, end)
+        # Optional diagnostic view of the existing resource-reference prefix, before the schema.
+        refs = None
+        if include_resource_refs:
+            assert dshd-r.p >= 24
+            refs = dict(zip(('SSR','SID','SIDI','SIDG','NAV','COD'), struct.unpack_from('<6I', d, r.p)))
         r.p = dshd
         items, types = read_schema(r)
         vals, rest = read_values(r, items, types)
@@ -129,6 +134,7 @@ def read_metr(path):
                         min=[round(v, 1) for v in box[0:3]], max=[round(v, 1) for v in box[3:6]],
                         props=vals, types={items[i & 0xffff][i >> 16]: t for i, t in types.items()},
                         tail=rest.hex() if rest else ''))
+        if include_resource_refs: out[-1]['resource_refs'] = refs
         p = end
     return out
 

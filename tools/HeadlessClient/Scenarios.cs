@@ -119,6 +119,7 @@ public static partial class Scenarios
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
         new Scenario("utility-security-and-traps", SecurityAndTraps, StillNpcs),
+        new Scenario("yuki-partial-world", YukiPartialWorld, StillNpcs),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
