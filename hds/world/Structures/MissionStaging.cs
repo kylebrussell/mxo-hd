@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -397,10 +397,10 @@ namespace hds
         /// </summary>
         /// <summary>
         /// A computer's states, from its record in the client's gameobjects.gob (0x960 to 0x965, default 0x960). Tried in the
-        /// client: in 0x960 and 0x962 it can't be selected; 0x961 offers Take (80 c7 use 5); 0x963 to 0x965 offer Hack (use
-        /// 4). No state offered Put. Containers (Wall Safe, Filing Cabinet) default to 0x835, which offers Open (use 3).
+        /// client: 0x960 is idle; 0x961 offers Take (80 c7 use 5); 0x962 offers Put (use 8) with a matching mission key; 0x963 to 0x965 offer Hack (use
+        /// 4). The earlier no-item probe did not satisfy the Put key rule. Containers (Wall Safe, Filing Cabinet) default to 0x835, which offers Open (use 3).
         /// </summary>
-        public const UInt32 ComputerIdle = 0x960, ComputerTake = 0x961, ComputerHack = 0x963;
+        public const UInt32 ComputerIdle = 0x960, ComputerTake = 0x961, ComputerPut = 0x962, ComputerHack = 0x963;
 
         /// <summary>Computer and MainFrame_Computer (AttributeClass20): the client's state machine decides what they offer.</summary>
         public static bool IsComputer(UInt16 goid)
@@ -425,7 +425,8 @@ namespace hds
             {
                 if (objective.objectId == state.def.id)
                 {
-                    return objective.type == MissionGoalType.Search && objective.item != 0 ? ComputerTake : ComputerHack;
+                    return objective.type == MissionGoalType.Put ? ComputerPut :
+                        objective.type == MissionGoalType.Search && objective.item != 0 ? ComputerTake : ComputerHack;
                 }
             }
 
@@ -657,7 +658,12 @@ namespace hds
                 current ? ElevatorUpLine : ElevatorDownLine));
             client.FlushQueue();
             Output.WriteDebugLog("[MISSION] Elevator: to " + target.pos_y);
-            DelayedActions.AfterFor(client, 2, () => Ride(client, progress, target, site));
+            var rideRequested = System.Diagnostics.Stopwatch.StartNew();
+            DelayedActions.AfterFor(client, 2, () =>
+            {
+                Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
+                Ride(client, progress, target, site);
+            });
             return true;
         }
 
@@ -680,12 +686,14 @@ namespace hds
             double x = target.pos_x + dx / length * 200, y = target.pos_y - 50, z = target.pos_z + dz / length * 200;
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
+            Output.WriteDebugLog("[MISSION] Elevator navigation start");
             if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), target.pos_x, y, target.pos_z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
                 x = NearestOnMesh(client, target.pos_x, y, target.pos_z, out z);
             }
 
+            Output.WriteDebugLog("[MISSION] Elevator navigation finished");
             Teleport(client, x, y, z);
             foreach (ushort id in progress.following)
             {

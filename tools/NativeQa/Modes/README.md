@@ -22,6 +22,9 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 
 `resist-damage` loads74/371 and owns deterministic6/8/9m helper boundaries through the shared disposable SQL builder. It enables existing health-reset dev commands, with no GM, forced roll or health hold. Team invites/native acceptance and health resets before each case are explicit in [ABILITY-RESIST-DAMAGE.md](../../../docs/ABILITY-RESIST-DAMAGE.md).
 
+`merv-chain`: Flood Prima2101â€“2110 (25 phases), prerequisite-only grants and strict site-only seed210110; see docs/MERV-PRIMA-CHAIN.md.
+
 mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
 
 `mission-team-relog` repeats ordinary mission Get/relog and tests the native Abort confirmation after the full team bootstrap. It uses no RNG override; see [MISSION-TEAM-RELOG.md](../../../docs/MISSION-TEAM-RELOG.md).
+`machines-chain` seeds only the seven Tyndall intro receipts and exposes Agent Gray's ten Prima missions2201–2210 at level50. Site-only seed220110 is guarded by exact dev/disposable DB checks; no combat/callback RNG or selected completion grants. [Route and source limits](../../../docs/MACHINES-PRIMA-CHAIN.md).
