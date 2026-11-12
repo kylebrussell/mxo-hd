@@ -330,6 +330,8 @@ namespace hds
             // A hardline booth view (80 c7 <view> <spawn> 03|04|05 00 in retail)
             UInt16 interactedViewId = (UInt16)(packet[0] | (packet[1] << 8));
             ClientView interactedView = Store.currentClient.viewMan.getViewById(interactedViewId);
+            Output.WriteDebugLog("[OBJECT-USE] char="+Store.currentClient.playerData.getCharID()+" view="+interactedViewId+
+                " receivedSpawn="+(numericObjectId>>16)+" expectedSpawn="+interactedView?.spawnId+" goid="+interactedView?.GoID+" use="+objectTypeID);
             if (interactedView != null && TutorialMission.Of(Store.currentClient)?.OnViewUse(interactedView.entityId, (byte)objectTypeID) == true)
             {
                 return;
@@ -337,6 +339,8 @@ namespace hds
 
             if (interactedView != null && interactedView.spawnId == (numericObjectId >> 16) &&
                 PvpArchives.OnUse(Store.currentClient, interactedView, (byte)objectTypeID)) return;
+
+            if (interactedView != null && DataMining.Use(Store.currentClient, interactedView, (byte)objectTypeID,(ushort)(numericObjectId>>16))) return;
 
             // Pick Lock, Disable Security Devices and locked mission objects run their retail rule first (UtilityAbilities)
             if (interactedView != null && UtilityAbilities.OnObjectUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID))

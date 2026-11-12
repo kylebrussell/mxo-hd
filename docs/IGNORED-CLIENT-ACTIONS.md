@@ -41,7 +41,7 @@ All three require the authenticated character ID to be an exact member of the se
 
 ## Every remaining ignored row
 
-The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity.
+The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity. P3 PR113 is now integrated: `5c` is partial for light luggables with pickup/drop persistence; heavy attachments remain absent. Actual combined counts are 118 handled / 14 partial / 15 ignored / 19 not sent (166 rows).
 
 | Request | Evidence and remaining reason |
 |---|---|
@@ -59,7 +59,6 @@ The following rows remain ignored; adding a switch that accepts and does nothing
 | `80 f6` | Two u32 fields proven by `620b4a70`. Hack Construct's server rule10024 requires loaded166, real faction, no existing faction hack (FactionFlags bit16), and HackConstructInfoCost. `rshooks.ComputeHackConstructOutcome` returns four times loaded level. The instance/key lifecycle, cost default and capture/ownership rules remain missing. We neither charge nor grant access based on a supplied faction ID. Existing hardline ability166 feedback now correctly distinguishes no ability/no faction from an actual member encountering this unavailable backend; no successful hack is claimed. |
 | `80 ef` | `62083ae0`/`62083b00`: four-byte frame with firewall/defence bytes. No ranges, target faction-instance identity, authority model or defence consumer is established. Saving cosmetic bytes without affecting a construct would be a stub, so no faction mutation is added. |
 | `62` | Central-storage bag movement is Claude PR110's separate ownership. P7 leaves its implementation untouched. |
-| `5c` | Luggables are P3 PR113's ownership. That PR changes this row to partial; counts must be recomputed when integrating it. |
 | `81 aa` | UserData u32 plus Interrupted byte, sender in the elevator/FX UI (`620ae450`). No proof equates it to `81 91` callback tokens or authoritative ability completion, so it cannot complete arbitrary casts/reward callbacks. |
 
 ## Validation and one-pass native checklist (Claude only)
