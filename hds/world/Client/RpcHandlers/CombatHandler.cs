@@ -26,6 +26,9 @@ namespace hds
         /// </summary>
         private CombatSession currentSession;
 
+        /// <summary>The NPC this player is in close combat with, if any (simulacra assist it).</summary>
+        public Mob CurrentNpcTarget => currentSession != null && currentSession.IsActive ? currentSession.DefenderMob : null;
+
         /// <summary>
         /// Legacy fields - kept for backwards compatibility during transition.
         /// TODO: Remove once CombatSession is fully integrated.
@@ -75,6 +78,7 @@ namespace hds
         public void AbandonCombat()
         {
             PvpCombat.OnPlayerGone(client);
+            CoderPets.OwnerLeft(client); // world reload (zoning): the simulacrum stays behind and is removed
             CombatSession session = currentSession;
             if (session == null)
             {
@@ -559,6 +563,7 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Close combat requested against target: {targetViewWithSpawnId}");
+            if (!npcStarted) Stealth.BreakForAction(client, "attacked");
 
             // Another player: PvpCombat decides whether they can be fought, and PvpFight runs the interlock
             if (!npcStarted && PvpCombat.TryCloseCombat(client, packet, targetViewWithSpawnId))
@@ -578,9 +583,9 @@ namespace hds
             // For now, create session without mob reference
             Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
 
-            if (targetMob == null)
+            if (targetMob == null || targetMob.pet != null)
             {
-                Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found");
+                Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found (or a simulacrum)");
                 return;
             }
             if (pvpFight != null)
@@ -988,6 +993,7 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
+            Stealth.BreakForAction(client, "fired");
 
             // Another player: PvpGunfire fires for this one
             if (PvpCombat.TryRangedCombat(client, targetViewWithSpawnId))
