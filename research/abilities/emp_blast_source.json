@@ -1,0 +1,148 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "scan": "Every byte offset in every indexed ordinary and class record; raw hits are references, not grant proof.",
+  "templates": [
+    {
+      "id": 43046,
+      "name": "EMPDevice",
+      "schema": 1860,
+      "components": [
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "Info/IconID": 671090655,
+        "Info/InfoID": 3690987709,
+        "Info/MoreInfoID": 3690987711,
+        "InvItem/CameraOffset": "00000000000020c100009841",
+        "InvItem/CantBeCrafted": 1,
+        "InvItem/CantBeDecompiled": 1,
+        "InvItem/Complexity": 35,
+        "InvItem/GOCategoryID": 810828617,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 0,
+        "InvItem/VendorPrice": 500,
+        "Model/AnimationID0": 1979711617,
+        "Model/DescriptionID": 671090474,
+        "Model/HalfExtents": "3ebec840ffe51441bf2c2740",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2148533248,
+        "TriggeredAbility/ReqAbilityLevel": 1,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 3690987709
+      }
+    },
+    {
+      "id": 2148533248,
+      "name": "EMPBlastAbility",
+      "schema": 1859,
+      "components": [
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2148533248,
+        "Ability/AbilityRank": 2,
+        "Ability/CastDirectObjects": 4,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 1,
+        "Ability/CastingTime": 1.0,
+        "Ability/DisciplineBelongsTo": 0,
+        "Ability/ExecutionFX": 671091267,
+        "Ability/InventoryMemCost": 1,
+        "Ability/MinValueScaleLevel": 0,
+        "Ability/RadiusOfEffect": 10,
+        "Ability/RecastTime": 30.0,
+        "Ability/TestFunction": 2,
+        "Info/IconID": 2046820373,
+        "Info/InfoID": 3690987703,
+        "Info/MoreInfoID": 3690987708,
+        "InvItem/Complexity": 10,
+        "InvItem/GOCategoryID": 2958055233
+      }
+    },
+    {
+      "id": 2148534272,
+      "name": "NPCEMPWeaknessAbility",
+      "schema": 3850,
+      "components": [
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2148534272,
+        "Ability/AbilityRank": 2,
+        "Info/IconID": 1375731752,
+        "Info/InfoID": 3690987710,
+        "Info/MoreInfoID": 3690987710
+      }
+    }
+  ],
+  "references": {
+    "1025": [
+      {
+        "key": 2148533248,
+        "name": "EMPBlastAbility",
+        "record_offset": 67
+      },
+      {
+        "key": 43046,
+        "name": "EMPDevice",
+        "record_offset": 172
+      }
+    ],
+    "1026": [
+      {
+        "key": 2148534272,
+        "name": "NPCEMPWeaknessAbility",
+        "record_offset": 73
+      }
+    ]
+  },
+  "boundary": "1026 appears only as its own AbilityID. No production NPC grant owner is established. EMPDevice43046 references1025 via TriggeredAbility/ReqAbilityID; this does not prove skill1025 is item-only."
+}

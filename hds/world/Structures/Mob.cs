@@ -31,6 +31,14 @@ namespace hds
         private bool is_dead;
         private bool is_lootable;
         private bool is_spawned = true;
+        // Explicit server-owned NPC grants; never inferred from a name or accepted in an ability request.
+        private readonly System.Collections.Generic.HashSet<ushort> abilityGrants = new System.Collections.Generic.HashSet<ushort>();
+        public bool HasAbility(ushort ability) { lock (abilityGrants) return abilityGrants.Contains(ability); }
+        public void SetAbilityGrant(ushort ability, bool granted)
+        {
+            lock (abilityGrants) { if (granted) abilityGrants.Add(ability); else abilityGrants.Remove(ability); }
+        }
+
         public int DeathGeneration { get; private set; }
         public bool isUpdateable = false;
 
