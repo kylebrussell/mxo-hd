@@ -93,8 +93,13 @@ namespace hds
                 var current = new Dictionary<string, Active>();
                 var totals = new Dictionary<ushort, int>();
                 int characterLevel = client.playerInstance.Level.getValue()[0];
-                foreach (var row in state.Loaded.OrderBy(r => r.Key))
-                foreach (var modifier in Modifiers(row.Key))
+                // The active combat style's while-enabled modifiers join the loaded passives (CombatStyles).
+                ushort style = state.Loaded.ContainsKey(client.playerData.combatStyle) ? client.playerData.combatStyle :
+                    state.Loaded.ContainsKey(CombatStyles.SelfDefense) ? CombatStyles.SelfDefense : (ushort)0;
+                var sources = state.Loaded.OrderBy(r => r.Key).SelectMany(r => Modifiers(r.Key).Select(m => (Row: r, Modifier: m)));
+                if (style != 0)
+                    sources = sources.Concat(CombatStyles.Modifiers(style).Select(m => (Row: new KeyValuePair<ushort, ushort>(style, state.Loaded[style]), Modifier: m)));
+                foreach (var (row, modifier) in sources)
                 {
                     if (!AbilityValues.TryValue(modifier, DeathPenalty.EffectiveLevel(client, row.Value), characterLevel, out int value)) continue;
                     string key = row.Key + ":" + modifier.Component;
