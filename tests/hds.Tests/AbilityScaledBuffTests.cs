@@ -68,4 +68,34 @@ public class AbilityScaledBuffTests
         Assert.Equal(500,NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(),1));
         Assert.Equal(500,PvpCombat.HealthOf(target));
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FriendlyHealthSnapshotAndHostileMaximumReductionSurviveEitherRemovalOrder(bool removeFriendlyFirst)
+    {
+        var caster=Client(20);var target=Client(50);
+        target.playerInstance.MaxHealth.setValue((ushort)1000);
+        target.playerInstance.Health.setValue((ushort)1000);
+        Assert.True(AbilityBuffs.Apply(target,417,caster));
+        Assert.True(TempMods.TryGet(476,out var hostile));
+        TimedEffects.Apply(TimedEffects.ForPlayer(target),hostile,TimeUtils.GetSimTimeSeconds(),caster,"Caster");
+        Assert.Equal(680,NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(),1));
+        caster.playerInstance.Level.setValue((byte)50);
+        if (removeFriendlyFirst)
+        {
+            Assert.True(AbilityBuffs.Remove(target,417));
+            Assert.Equal(480,NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(),1));
+            Assert.True(TimedEffects.RemoveParent(TimedEffects.ForPlayer(target),476));
+        }
+        else
+        {
+            Assert.True(TimedEffects.RemoveParent(TimedEffects.ForPlayer(target),476));
+            Assert.Equal(1200,NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(),1));
+            Assert.True(AbilityBuffs.Remove(target,417));
+        }
+        Assert.Equal(1000,NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(),1));
+        Assert.Equal(0,AbilityBuffs.VitalTotal(target,106));
+    }
+
 }

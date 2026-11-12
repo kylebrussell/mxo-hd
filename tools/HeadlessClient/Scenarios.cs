@@ -25,6 +25,8 @@ public static partial class Scenarios
         new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
         new Scenario("ability-control-duration-npc", AbilityControlDurationNpc, StillNpcs),
+        new Scenario("hostile-fields-pvp", HostileFieldsPvp, StillNpcs),
+        new Scenario("hostile-fields-npc", HostileFieldsNpc, StillNpcs),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, StillNpcs),
