@@ -6,7 +6,7 @@ public static partial class Scenarios
     {
         var p=await context.AddPlayerAsync(new CharacterSeed("Medium03Traveller"){District="medium03",DistrictId=16,X=37700,Y=495,Z=31700,Rotation=192});
         await p.EnterWorldAsync();
-        Check.Equal((byte)192,p.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes["YawInterval"].Single(),"Exact native fixture byte heading survives initial UDP login");
+        Check.Equal((byte)192,p.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes["Yaw Interval"].Single(),"Exact native fixture byte heading survives initial UDP login");
         Check.That(p.Received("06").Any(r=>Encoding.Latin1.GetString(r.Bytes).Contains("medium03/medium03.metr")),"Shipped medium03 resource");
         await p.WaitUntilAsync(()=>p.ViewsOfGoid(592).Count>0,"native sector52/static1 hardline592",TimeSpan.FromSeconds(20));
         var booth=p.ViewsOfGoid(592).Last();

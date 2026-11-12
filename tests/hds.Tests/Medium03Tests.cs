@@ -54,6 +54,7 @@ public class Medium03Tests
         int sourceByte=(int)Math.Round(yaw*128/Math.PI)&255;
         Assert.Equal(192,sourceByte);
         Assert.Equal(0d,new HeadlessClient.CharacterSeed("DefaultHeading").Rotation);
+        Assert.Contains(HeadlessClient.ObjectDefinitions.CreationAttributes(12)!,a=>a.getName()=="Yaw Interval" && a.getSize()==1);
         string sql=Assert.Single(new NativeQa.Modes.Medium03Mode().Plan.AfterLoadout);
         var value=System.Text.RegularExpressions.Regex.Match(sql,@"rotation\s*=\s*(-?\d+(?:\.\d+)?)").Groups[1].Value;
         decimal stored=decimal.Parse(value,System.Globalization.CultureInfo.InvariantCulture);
