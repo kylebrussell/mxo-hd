@@ -5,6 +5,8 @@ using hds;
 string output = args.Length > 0 ? args[0] : "research/abilities/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    204 => "stealth detection",
+    209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",
     112 or 114 or 1058 or 1059 => "regeneration",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
@@ -15,6 +17,20 @@ static string Consumer(ushort stat) => stat switch
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     _ => "total only"
+};
+static string UtilityCoverage(ushort id) => id switch
+{
+    UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.DisarmTraps => "Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.OpenLocks => "Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked=\"1\"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.HackConstructKey => "Hardline Hack Construct (rule 10024) ability/faction gate lines only; construct hacking itself absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.DisableSecurityDevices => "Disable Security Devices use (rule 1012 SecurityPBXDisable): ability + DisableDeviceTool, Security Systems vs Difficulty contest, ACCESS GRANTED/ALARM chat, Disabled/Alarming state; no XP, alarm has no effect; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.RecallTeamMember => "Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.RecallMissionTeam => "Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
+    UtilityAbilities.SeeLuggables => "goggles search flag highlights same-floor light luggables/carriers within 5 m through shipped luggable-aura FX; exact native white-glow path unverified; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 every 10 s; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.FindDataNode => "locator-tool toggle searches shared persisted DataNode 606 positions, native 80 cd/cb/ce FX markers and 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
+    _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
 {
@@ -33,6 +49,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             stat = m.Proc == TempMods.Proc.Stat ? m.Target : 0, proc = m.Proc.ToString(), seconds = m.Seconds,
             chance = m.Chance, breaks = m.Break.ToString(), break_chance = m.BreakChance, protect_first_health_change = m.ProtectFirstHealthChange }).ToArray() : null,
         damage = hit ? new { min = damage!.MinDamage, max = damage.MaxDamage } : null,
+        resurrection = AbilityResurrection.Handles(e.Id), utility = UtilityCoverage(e.Id), stealth = Stealth.Handles(e.Id),
         healing = e.Healing, direct_damage = e.DirectDamage, dot = e.DamageOverTime,
         player_healing = AbilityHealing.PlayerTarget(e),
         heal_base = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&

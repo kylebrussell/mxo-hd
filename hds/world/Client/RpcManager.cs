@@ -199,7 +199,10 @@ namespace hds{
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
 			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
-		        case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
+		        case (int) RPCRequestHeader.CLIENT_ABILITY_APPROVAL:
+                    AbilityResurrection.Reply(Store.currentClient, rpcData);
+                    break;
+                case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);
 		            break;
 		        // 81 7a / 81 7b / 81 7c: simulacrum orders (/ordersimulacra and the Simulacra window)

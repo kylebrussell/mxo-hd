@@ -8,7 +8,7 @@ namespace hds
     /// <summary>Friendly abilities resolve to players, never to the hostile damage fallback.</summary>
     public static class AbilitySupport
     {
-        public static bool Handles(UInt16 id) => (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) &&
+        public static bool Handles(UInt16 id) => (AbilityResurrection.Handles(id) || AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) &&
             !CombatSpecials.Handles(id);
         public static WorldClient PlayerInView(WorldClient caster, UInt16 view)
         {
@@ -28,6 +28,11 @@ namespace hds
         public static List<WorldClient> Targets(WorldClient caster, UInt16 id, UInt16 view)
         {
             var entry = AbilityCatalog.Find(id);
+            if (AbilityResurrection.Handles(id))
+            {
+                var corpse = PlayerInView(caster, view);
+                return AbilityResurrection.CanTarget(caster, corpse, id) ? new List<WorldClient> { corpse } : new List<WorldClient>();
+            }
             // Simulacra repairs require an owned pet, not a player selected through the generic heal fallback.
             if (entry?.Healing == true && !AbilityHealing.PlayerTarget(entry)) return new List<WorldClient>();
             bool group = entry?.Number("Ability/CastDirectObjects") == 9;

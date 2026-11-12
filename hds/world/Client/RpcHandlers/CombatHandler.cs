@@ -1349,10 +1349,14 @@ namespace hds
 
             TradeHandler.Abort(player);
 
-            player.playerInstance.IsDead.setValue(true);
-            player.playerInstance.Health.setValue((UInt16)0);
-            player.playerData.isDead = true;
-            player.playerData.respawnPending = false;
+            lock (player.playerData.lifeSync)
+            {
+                player.playerInstance.IsDead.setValue(true);
+                player.playerInstance.Health.setValue((UInt16)0);
+                player.playerData.lifeGeneration++;
+                player.playerData.isDead = true;
+                player.playerData.respawnPending = false;
+            }
             // Daze/OffBalance/Stagger and combat are temporary. Death retains only the independently stored PvP flag.
             lock (player.playerData.conditionTokens) player.playerData.conditionStateFlags = 0;
             player.playerInstance.ConditionStateFlags.setValue(PvpFlag.FlagsOf(player));
