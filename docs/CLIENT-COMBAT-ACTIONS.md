@@ -136,3 +136,9 @@ fresh-server headless scenario. Ordinary penalty persistence and flagged PvP dea
 Master PR101 and PR99 are incorporated. The launch broker was not triggered: its stated purpose is to perform the
 same launch outside the shell after automatic approval review rejected it. Native QA remains pending a permitted
 manual launch or an independently opened client; no client lock was taken during these fixes.
+
+### Combined validation after the reconstruction fix
+
+PR100 now includes master through PR101/99 and death/reconstruction fix `d83441b`. All 3,555 Debug and Release unit tests pass. The complete fresh-server suite passes **83/83 in 527.0 s**, with six servers at peak. Test-only commit `46c5906` corrects travel helpers for randomly assigned ground-floor sites and approaches the moved-item NPC from its actual mission placement. No native gameplay pass is inferred from these results.
+
+Claude verified world entry and reported the two death/reconstruction failures on the earlier head. The new death flags and captured tutorial-selection/reset path pass headlessly, but the corrected native flow and remaining checklist still need verification before merge. No client lock was taken for this follow-up; CSR_Tester remains at the reset recorded by the previous lock owner.
