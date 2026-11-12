@@ -80,6 +80,8 @@ namespace hds
                 }
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
+            if (newWorld) CompileSession.End(client, false);
+            else CompileSession.Check(client);
             Refresh(client, !newWorld);
             EvasionShield.LoadoutChanged(client);
         }

@@ -76,7 +76,7 @@ namespace hds
                 var request = CraftingRequests.ParseCompile(body);
                 var db = Store.dbManager.WorldDbHandler;
                 var bag = db.GetInventoryItems(client.playerData.getCharID());
-                if (request == null || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
+                if (request == null || !CompileSession.Authorized(client, request.ToolSlot) || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
                     !CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) ||
                     !Crafting.Recipes.TryGetValue(request.Item, out var recipe) || CraftingRules.Find(request.Item)?.CantCraft != false ||
                     !CraftingRequests.Matches(request, recipe) ||

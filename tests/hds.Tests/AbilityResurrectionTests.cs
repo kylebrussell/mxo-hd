@@ -101,6 +101,40 @@ public class AbilityResurrectionTests
         target.playerData.setOnWorld(false);Assert.False(AbilityResurrection.CanTarget(caster,target,416));
     }
 
+    [Theory]
+    [InlineData(null, "mxotest_qa", false)]
+    [InlineData("true", "mxotest_qa", false)]
+    [InlineData("1", "reality_hd", false)]
+    [InlineData("1", "MXOTEST_qa", false)]
+    [InlineData("1", "mxotest_", false)]
+    [InlineData("1", "mxotest_qa", true)]
+    public void QaReviveRequiresExactDevAndConfiguredThrowawayDatabase(string? dev, string database, bool allowed)
+    {
+        var caller=Client(110); var target=Client(111,true);
+        Assert.Equal(allowed,AbilityResurrection.QaReviveAllowed(caller,target,dev!,database));
+        Assert.True(target.playerData.isDead);
+        Assert.Equal(0,PvpCombat.HealthOf(target));
+    }
+
+    [Fact]
+    public void QaReviveAllowsDeadSelfAndRejectsProtectedCharactersAndWorldTransitions()
+    {
+        var c=Client(110,true);
+        bool Allowed()=>AbilityResurrection.QaReviveAllowed(c,c,"1","mxotest_qa");
+        Assert.True(Allowed());
+        c.playerData.respawnPending=true; Assert.False(Allowed()); c.playerData.respawnPending=false;
+        c.playerData.worldChangePending=true; Assert.False(Allowed()); c.playerData.worldChangePending=false;
+        c.playerData.waitForRPCShutDown=true; Assert.False(Allowed()); c.playerData.waitForRPCShutDown=false;
+        c.playerData.duelDeath=true; Assert.False(Allowed()); c.playerData.duelDeath=false;
+        c.playerData.isDead=false; Assert.False(Allowed()); c.playerData.isDead=true;
+        c.playerData.setDistrictId((uint)MxOLocations.LA); Assert.False(Allowed());
+        c.playerData.setDistrictId(2); // Different district from another caller.
+        Assert.False(AbilityResurrection.QaReviveAllowed(Client(111),c,"1","mxotest_qa"));
+        foreach(uint id in new uint[]{0,2}) {
+            c.playerData.setCharID(id); Assert.False(Allowed());
+        }
+    }
+
     [Fact]
     public void LeavingTheWorldChangesItsGenerationEvenWhenTheNextWorldHasTheSameDistrict()
     {
