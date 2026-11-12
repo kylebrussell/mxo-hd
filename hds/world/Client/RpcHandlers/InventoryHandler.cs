@@ -187,7 +187,7 @@ namespace hds
                 }
 
                 // Both inventory paths interrupt compiling only after the pill passes its eligibility checks.
-                CompileSession.End(client);
+                CraftingSession.End(client);
                 AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
                 float castTime = ability != null ? ability.getCastingTime() : 0;
                 UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
