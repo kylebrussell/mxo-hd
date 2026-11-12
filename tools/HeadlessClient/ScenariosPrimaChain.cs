@@ -26,7 +26,7 @@ public static partial class Scenarios
             int phase=0;
             foreach(var area in mission.Elements("phase"))
             {
-                int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count;
+                int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
                 bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
                 await EnterMissionArea(context,p);
@@ -72,6 +72,20 @@ public static partial class Scenarios
                             bool computer=MissionStaging.IsComputer(view.Goid);
                             string label=computer ? type=="Put"?"Put":type=="Use" || item==0?"Hack":"Take" : "Open";
                             byte use=ObjectStates.UseNumber(view.Goid,label) ?? throw new Exception($"No sourced {label} use for{view.Goid}");
+                            if(computer)
+                            {
+                                uint CurrentState()
+                                {
+                                    uint state=BitConverter.ToUInt32(view.Attributes["CurrentState"]);
+                                    byte[] prefix=WireFormat.FromHex($"{Le(view.ViewId)} 01 08");
+                                    foreach(byte[] section in p.World.ViewSnapshot().Skip(sectionsStart))
+                                        for(int at=BytePattern.IndexOf(section,prefix,0);at>=0;at=BytePattern.IndexOf(section,prefix,at+1))
+                                            if(at+prefix.Length+4<=section.Length)state=BitConverter.ToUInt32(section,at+prefix.Length);
+                                    return state;
+                                }
+                                await p.WaitUntilAsync(()=>ObjectStates.Offered(view.Goid,CurrentState()).Contains(use),
+                                    $"actual enabled computer {label} use{use}",TimeSpan.FromSeconds(10));
+                            }
                             int loot=p.Received("81 19").Count;
                             Console.WriteLine($"    object{objectId} goid{view.Goid} {label} use{use}");
                             p.SendRpc($"80 c7 {MissionNpcId(view)} {use:x2} 00");
