@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
