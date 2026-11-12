@@ -82,8 +82,8 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | `34` | Enter a stance (Stance): `/sit` `0a`, `/dance` `11`..`15` | D, C 21 | handled (new): the stance to the own view and everyone else's, sitting with ConditionStateFlags 0x00200000 | medium |
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
 | `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | handled: own/observer/late-view AFK and tell feedback; session presence | low |
-| `3b` | No fields; two senders, one in the slash command handler (0x62256760). Purpose not determined | D | ignored | low |
-| `81 55` | No fields, from the slash command handler. Purpose not determined | D | ignored | low |
+| `3b` | No fields; `/targetdamage` string600000d3 dispatches62259838. Response/effect unknown; see CLIENT-ACTIONS-FOLLOWTHROUGH.md | D | ignored | low |
+| `81 55` | No fields; `/stuck` string3a000052 dispatches62246b40 after a local stuck gate. Server recovery contract unknown | D | ignored | low |
 | `81 47`, `81 4a` | No fields; no sender found | D | ignored | low |
 
 ## Chat rooms (custom channels)
@@ -325,7 +325,7 @@ No retail capture has a subway ride, so the records are client.dll's and the res
 
 | Record | Layout and what the client does |
 |---|---|
-| `81 3a` (S) | `<Position: 3 × f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
+| `81 3a` (S) | `<Position: 3 Ã— f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
 | `81 3d` (C) | No body, sent as the map opens (0x620fc150) |
 | `81 3e` (S) | `<Seconds u8>` (0x620fccd0): the departure countdown, shown as m:ss. The client starts at 60 and only takes a lower value. At 0 it shows "The subway is now leaving the station... sorry, but you missed it!" and sends `81 3b` |
 | `81 3b` (C) | No body: Cancel, or the countdown ran out (0x620fc490). The map closes |
@@ -638,7 +638,7 @@ The rules are retail's flow; the checks are ours:
 
 **`34 <stance>` enters a stance.**
 - /sit sends `34 0a`.
-- /dance and /dance1–5 send `34 11`–`34 15`.
+- /dance and /dance1â€“5 send `34 11`â€“`34 15`.
 
 **`33 <current stance>` leaves one.** The client sends it for /stand, for /sit while sitting, and once when the player moves out of a locked stance. It keeps resending `33` until it sees stance 0: in the shutdown capture (ProxyM2_m2_packets6) the server imposed stance `19` and never released it, and the client sent `33 19` 1,906 times.
 
