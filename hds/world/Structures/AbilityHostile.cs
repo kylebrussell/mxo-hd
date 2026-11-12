@@ -157,15 +157,29 @@ namespace hds
                     Output.WriteDebugLog("[HOSTILE] " + id + " IS " + current + " -> " + next + " on " + TimedEffects.PlayerName(target));
                 }
             }
-            if (HasInit(id, "RemoveRandomBuff")) RemoveRandomBuff(caster, target, id, rng);
-            var sweep = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "UpgradeSweepPulse");
-            if (sweep != null) UpgradeSweep(caster, target, id, (int)sweep.Number("MinValue"), rng);
+            foreach (var m in Enabled(id))
+            {
+                string callback = m.Text("StatModInitFunc");
+                if (callback != "RemoveRandomBuff" && callback != "UpgradeSweepPulse") continue;
+                // Machinegun Fist Combo 261 explicitly stores 0.2. Use the same probability convention
+                // as TimedEffects.Apply; omitted ProcTriggerChance retains the existing always-on policy.
+                if (!DispelProcs(m, rng)) continue;
+                if (callback == "RemoveRandomBuff") RemoveRandomBuff(caster, target, id, rng);
+                else UpgradeSweep(caster, target, id, (int)m.Number("MinValue"), rng);
+            }
         }
 
-        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so the removal scripts fail.</summary>
-        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id)
+        private static bool DispelProcs(AbilityCatalog.Modifier modifier, Random rng)
         {
-            if (!HasInit(id, "RemoveRandomBuff") || caster?.messageQueue == null) return;
+            double chance = modifier.Number("ProcTriggerChance", 1);
+            lock (rng) return chance >= 1 || rng.NextDouble() < chance;
+        }
+
+        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so a triggered removal script fails.</summary>
+        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id, Random rng = null)
+        {
+            var modifier = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "RemoveRandomBuff");
+            if (modifier == null || caster?.messageQueue == null || !DispelProcs(modifier, rng ?? random)) return;
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(CancelUpgradeFailCaster, true, id, TimedEffects.PlayerName(caster), mob.getName() ?? "", 0));
             caster.FlushQueue();
         }

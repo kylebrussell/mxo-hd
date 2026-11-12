@@ -2,6 +2,60 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static async Task BuffDispelProcNpc(ScenarioContext context)
+    {
+        var caster=await context.AddPlayerAsync(NearNpc("NpcProcCaster") with {InnerStrength=2000,MaxInnerStrength=2000});
+        await LoadAbilitiesAsync(context,caster,133);
+        await caster.EnterWorldAsync();
+        var view=await caster.WaitForViewNamedAsync("WinterFrost");
+        bool skipped=false;
+        for(int attempt=0;attempt<8;attempt++)
+        {
+            int before=context.Server.DebugLog().Split("261 lands on view").Length;
+            int failures=caster.Received("81 67 ?? ?? ?? ?? 97 01 00 c6").Count;
+            Cast(caster,261,view.ViewId);
+            await caster.WaitUntilAsync(()=>context.Server.DebugLog().Split("261 lands on view").Length>before,
+                "Normal261 lands on NPC",TimeSpan.FromSeconds(12));
+            await Task.Delay(500);
+            if(caster.Received("81 67 ?? ?? ?? ?? 97 01 00 c6").Count==failures) {skipped=true;break;}
+            await Task.Delay(10500);
+        }
+        Check.That(skipped,"NPC no-upgrade failure output is skipped when261 does not proc");
+        Check.Equal(0,caster.World.Problems.Count,"NPC dispel proc protocol");
+    }
+
+    // Real 80 b9 dispatch, outside interlock: a landed 261 may leave an upgrade intact.
+    // Deterministic unit tests cover both sides and the exact 0.2 boundary; this bounded
+    // smoke test never changes production RNG or adds a dev chance override.
+    private static async Task BuffDispelProcPvp(ScenarioContext context)
+    {
+        var caster = await context.AddPlayerAsync(new CharacterSeed("ProcCaster") { Level=50, Organization=1, InnerStrength=2000, MaxInnerStrength=2000 });
+        var target = await context.AddPlayerAsync(new CharacterSeed("ProcTarget") { X=17120, Level=50, Organization=2, Health=10000, MaxHealth=10000 });
+        await LoadAbilitiesAsync(context,caster,133);
+        await caster.EnterWorldAsync(); await target.EnterWorldAsync();
+        target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
+        var view = await caster.WaitForViewNamedAsync(target.Handle);
+        Cast(target,327); await target.WaitForRpcAsync(ModPattern(327,172));
+        bool skipped=false;
+        for(int attempt=0;attempt<8;attempt++)
+        {
+            int before=context.Server.DebugLog().Split("MachinegunFistComboAbility lands on ProcTarget").Length;
+            int off=target.Received(ModPattern(327,172,true)).Count;
+            Cast(caster,261,view.ViewId);
+            await target.WaitUntilAsync(()=>context.Server.DebugLog().Split("MachinegunFistComboAbility lands on ProcTarget").Length>before,
+                "Normal Machinegun Fist Combo lands",TimeSpan.FromSeconds(12));
+            await Task.Delay(500);
+            if(target.Received(ModPattern(327,172,true)).Count==off) { skipped=true; break; }
+            await Task.Delay(10500);
+            Cast(target,327); await Task.Delay(1000);
+        }
+        Check.That(skipped,"A landed261 skips its20% dispel proc within eight attempts");
+        Cast(caster,324,view.ViewId);
+        await target.WaitForRpcAsync(ModPattern(327,172,true),TimeSpan.FromSeconds(10));
+        Check.That(context.Server.DebugLog().Contains("324 removes buff 327 from ProcTarget"),"Unqualified Delete Upgrade still removes the surviving upgrade");
+        Check.Equal(0,caster.World.Problems.Count+target.World.Problems.Count,"Proc-qualified dispel protocol");
+    }
+
     /// <summary>Hostile fields, viruses and effect removal between players under PvP rules.</summary>
     private static async Task HostileFieldsPvp(ScenarioContext context)
     {

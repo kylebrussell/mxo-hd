@@ -74,6 +74,9 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
         instant_hostile = AbilityHostile.Lands(e.Id),
+        buff_dispel = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&
+            (m.Text("StatModInitFunc") == "RemoveRandomBuff" || m.Text("StatModInitFunc") == "UpgradeSweepPulse"))
+            .Select(m => new { callback=m.Text("StatModInitFunc"), chance=m.Number("ProcTriggerChance",1) }).ToArray(),
         catalog_debuff = AbilityHostile.Catalog(e.Id) != null,
         // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
