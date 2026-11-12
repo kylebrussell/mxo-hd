@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\hds\Hardline Dreams MxO server.csproj" />
     <ProjectReference Include="..\..\tools\PacketResearch\PacketResearch.csproj" />
     <ProjectReference Include="..\..\tools\HeadlessClient\HeadlessClient.csproj" />
+    <ProjectReference Include="..\..\tools\NativeQa\NativeQa.csproj" />
   </ItemGroup>
 
 </Project>
