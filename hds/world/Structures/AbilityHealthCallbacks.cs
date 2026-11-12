@@ -52,12 +52,14 @@ namespace hds
             return true;
         }
 
-        public static bool InternalEffect(ushort id) => id==692 || id==693 || id==862 || id==942 || id==944;
+        public static bool InternalEffect(ushort id) => id==692 || id==693 || id==862 || id==872 || id==942 || id==944;
         public static string Describe(ushort id) => id switch
         {
             196 => "health callback: one native function0 sample10..19 per application; external damage/healing triggers stored self heal; nested-parent/HP0 guards are ours",
             506 => "Line Up:20s ballistic accuracy/12s damage; damage-only parent removal while12s component lives; Subject preserves prior concealment; init reapply1137",
             693 => "Deflect Virus child:5s caster-level defences; term4% negative-condition cleanse, including refresh/dispel",
+            871 => "while-loaded permanent health listener reapplies872; stored level99 prerequisite makes retail50 parent inaccessible",
+            872 => "internal871 health-change child:15% integer-percent roll, IS+5 capped at maximum; native RNG sequence unknown",
             861 => "Balance:30s health-change listener reapplies862; no damage-only filter",
             862 => "internal Balance effect: native function0 NeutralHeal6 sample50..99 to self, no healing influence",
             941 => "Reactive Code:7IS/s toggle; health changes reapply942, including external healing",
@@ -72,7 +74,8 @@ namespace hds
             public WorldClient Client;
             public AbilityBuffs.Active Active;
             public int Damage,World,Life;
-            public bool BelowMaximum;
+            public bool BelowMaximum, Passive;
+            public int PassiveGeneration;
         }
         [ThreadStatic] private static Queue<Pending> pending;
         [ThreadStatic] private static HashSet<(WorldClient,ushort)> fired;
@@ -89,6 +92,12 @@ namespace hds
                 snapshot.AddRange(client.playerData.activeBuffs.Values.Where(a=>!string.IsNullOrEmpty(a.Definition?.HealthChangedProc)));
             bool outer=pending==null;
             if(outer) { pending=new Queue<Pending>(); fired=new HashSet<(WorldClient,ushort)>(); dropped=false; }
+            // 871 is a permanent while-enabled listener, not a cast buff or an implicit grant of872.
+            var passives=client.playerData.passives;
+            lock(passives)
+                if(passives.Loaded.ContainsKey(871) && !fired.Contains((client,(ushort)871)) && pending.Count<MaxCallbacksPerTransaction)
+                    pending.Enqueue(new Pending {Client=client,Passive=true,PassiveGeneration=passives.Generation,
+                        Damage=damage,World=client.playerData.worldGeneration,Life=client.playerData.lifeGeneration});
             foreach(var active in snapshot)
             {
                 if(fired.Contains((client,active.AbilityId))) continue;
@@ -104,6 +113,13 @@ namespace hds
                 {
                     var p=pending.Dequeue(); var c=p.Client;
                     if(p.World!=c.playerData.worldGeneration || p.Life!=c.playerData.lifeGeneration || c.playerData.isDead || c.playerData.duelDeath) continue;
+                    if(p.Passive)
+                    {
+                        lock(c.playerData.passives)
+                            if(p.PassiveGeneration!=c.playerData.passives.Generation || !c.playerData.passives.Loaded.ContainsKey(871)) continue;
+                        if(fired.Add((c,(ushort)871))) ZenMaster(c,p.PassiveGeneration,p.World,p.Life);
+                        continue;
+                    }
                     lock(c.playerData.activeBuffs)
                         if(!c.playerData.activeBuffs.TryGetValue(p.Active.AbilityId,out var current) || current.Generation!=p.Active.Generation) continue;
                     if(p.Active.Definition.Seconds>0 && TimeUtils.GetSimTimeSeconds()>=p.Active.Started+p.Active.Definition.Seconds) continue;
@@ -133,8 +149,31 @@ namespace hds
             return modifier!=null && AbilityValues.TryRandomValue(modifier,roll15,out int value)?Math.Max(0,value):0;
         }
 
+        private static void ZenMaster(WorldClient source,int generation,int world,int life)
+        {
+            var modifier=AbilityCatalog.Find(872).Modifiers.Single();
+            // OURS: integer-percent mapping with System.Random entropy; native RNG sequence is unknown.
+            if(Roll100()>=modifier.Number("ProcTriggerChance")*100) return;
+            ushort before,inner;
+            lock(source.playerData.passives)
+            {
+                if(generation!=source.playerData.passives.Generation || !source.playerData.passives.Loaded.ContainsKey(871) ||
+                    world!=source.playerData.worldGeneration || life!=source.playerData.lifeGeneration || source.playerData.isDead || source.playerData.duelDeath) return;
+                before=AbilityHandler.CurrentInnerStrength(source);
+                inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(source),before+(int)modifier.Number("MinValue"));
+                source.playerInstance.InnerStrengthAvailable.setValue(inner);
+            }
+            new ServerPackets().sendISCurrent(source,inner);
+            uint line=(uint)modifier.Number("ActivationStringOnSelf");
+            string name=TimedEffects.PlayerName(source);
+            source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line,true,872,name,name,inner-before));
+            ServerPackets.SendPlayerAbilityEffect(source,(uint)modifier.Number("ActivationFX"));
+            Output.WriteDebugLog("[HEALTH-EFFECT] 871->872 restores IS to "+inner);
+        }
+
         public static void Reapply(WorldClient source,ushort effect)
         {
+            if(effect==872) return; // Only the validated permanent-parent health transaction can execute this child.
             if(effect!=862 && effect!=942 && effect!=944) return;
             if(effect==862) { Heal(source,source,effect); return; }
             double x=0,y=0,z=0;

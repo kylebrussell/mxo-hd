@@ -11,6 +11,49 @@ public static partial class Scenarios
             "New health update after callback: "+expected,TimeSpan.FromSeconds(8));
     }
 
+    private static async Task ZenMaster(ScenarioContext context)
+    {
+        // Explicit forced level99 disposable actor: shipped parent871 is inaccessible at retail level50.
+        var p=await context.AddPlayerAsync(new CharacterSeed("ZenMaster") {Level=99,Health=500,MaxHealth=500,InnerStrength=198,MaxInnerStrength=200});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");
+        await LoadAbilitiesAsync(context,p,871);
+        await p.EnterWorldAsync();
+        const string activation="81 67 ?? ?? ?? ?? 20 21 00 c6";
+        await SetProcHealth(p,400,400);
+        var restored=await p.WaitForRpcAsync(activation);
+        int values=BitConverter.ToUInt16(restored.Bytes,19);
+        Check.Equal((ushort)1,BitConverter.ToUInt16(restored.Bytes,values),"Restore line has its required numeric substitution");
+        Check.That(BitConverter.ToInt32(restored.Bytes,values+2) is >=0 and <=5,"Restore line reports capped IS delta");
+        await p.WaitForViewUpdateAsync(2,"02 80 80 80 10 c8 00");
+        int previous=p.Received(activation).Count;
+        await SetProcHealth(p,450,450); // external healing invokes the same sourced callback
+        await p.WaitUntilAsync(()=>p.Received(activation).Count>previous,"Zen external-heal activation",TimeSpan.FromSeconds(5));
+        await SetProcHealth(p,500,500);
+        previous=p.Received(activation).Count;
+        Cast(p,872);await Task.Delay(400);
+        Check.Equal(previous,p.Received(activation).Count,"Direct872 refused without executing internal effect");
+        SetAbilityLoaded(p,400,871,50,false);
+        await p.WaitForRpcAsync("80 b3 67 03");
+        previous=p.Received(activation).Count;
+        await SetProcHealth(p,400,400);
+        Check.Equal(previous,p.Received(activation).Count,"Unloaded permanent parent stops health procs");
+        var normal=await context.AddPlayerAsync(new CharacterSeed("ZenRetail") {Level=50,Health=500,MaxHealth=500});
+        int goid=unchecked((int)(0x80000000u | (871u<<10)));
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={normal.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({normal.CharId},400,{goid},30,0)");
+        await normal.EnterWorldAsync();
+        SetAbilityLoaded(normal,400,871,30,true);
+        normal.SendRpc("81 48");await normal.WaitForRpcAsync("81 49");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={normal.CharId} AND slot=400"),"Retail50 normal80ae load rejects parent871 requirement99");
+        Check.Equal(0,normal.Received("80 b2 67 03").Count,"Rejected parent never acknowledged loaded");
+        await context.Database.ExecuteAsync($"UPDATE char_abilities SET is_loaded=1 WHERE char_id={normal.CharId} AND slot=400");
+        SetAbilityLoaded(normal,400,871,30,false);
+        await normal.WaitForRpcAsync("80 b3 67 03");
+        normal.SendRpc("81 48");await normal.WaitForRpcAsync("81 49");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={normal.CharId} AND slot=400"),"Inaccessible legacy871 can still unload");
+        await KillForResurrection(p);
+        Check.Equal(0,p.World.Problems.Count+normal.World.Problems.Count,"Zen Master source health proc protocol");
+    }
+
     private static async Task HealthProcLifecycle(ScenarioContext context)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed("HealthProc") {Level=20,Health=100,MaxHealth=1000,InnerStrength=1000,MaxInnerStrength=1000});

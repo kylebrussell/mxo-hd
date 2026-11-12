@@ -84,7 +84,7 @@ namespace hds
         public UInt16 combatStyle = AbilityProgression.SelfDefenseAbility;
         public UInt16 martialArt;
         public readonly object craftingSync = new object();
-        public CompileSession.State compileSession;
+        public CraftingSession.State craftingSession;
         public float deathPenalty = 1;
         public double deathPenaltyAt, deathPenaltySentAt;
         public bool deathPenaltyLoaded;

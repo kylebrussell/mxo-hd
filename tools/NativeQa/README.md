@@ -29,3 +29,5 @@ Close the real client and create an empty `stop` file for orderly shutdown. The 
 ## EMCP Blast partial fixture
 
 Claude-only mode `emp-blast` owns2,17,1025 and starts at the NPC fixture with exact dev commands enabled. Read-only preflight: `dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --fixture-plan emp-blast`. `?combatdepth empweakness on 6000` sets only the selected NPC marker and explicit fixture HP in a disposable `mxotest_` database; `off` removes it. This does not establish production marker owners. See [EMP evidence](../../docs/ABILITY-EMP-BLAST.md) and the pinned PR checklist.
+
+Mode configuration and safe pending-branch ports are documented in [Modes/README.md](Modes/README.md). Read-only `--fixture-plan` now also reports the exact immutable loadout, spawn and ordered SQL stages without executing them.
