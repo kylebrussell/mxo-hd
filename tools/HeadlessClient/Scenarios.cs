@@ -149,6 +149,7 @@ public static partial class Scenarios
         new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
+        new Scenario("vendor-sell-recycle-economy", VendorSellRecycleEconomy, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
         new Scenario("email-send-read-delete", EmailSendReadDelete),

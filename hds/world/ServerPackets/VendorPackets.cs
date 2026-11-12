@@ -76,19 +76,28 @@ namespace hds
         }
 
         /// <summary>
-        /// 81 12 "sell complete": status 00, item GoID (u32 LE), 4-byte item descriptor, sell price
+        /// 81 12 "sell complete": Appraise byte (00 for a sale,01 for a quote), item GoID (u32 LE), 4-byte item descriptor, sell price
         /// (u32 LE). Retail FM-13SK sell (GoID 43060, 5000):
         /// "81 12 00 34 a8 00 00 00 00 00 34 88 13 00 00".
         /// </summary>
-        internal static byte[] BuildVendorSellAck(UInt32 goId, byte[] descriptor, UInt32 price)
+        internal static byte[] BuildVendorSellAck(UInt32 goId, byte[] descriptor, UInt32 price, bool appraise = false)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(0x8112, 0);
-            pak.AddByte(0x00);
+            pak.AddByte(appraise ? (byte)1 : (byte)0);
             pak.AddUint32(goId, 1);
             pak.AddByteArray(descriptor);
             pak.AddUint32(price, 1);
             return pak.ReturnFinalPacket();
+        }
+
+        internal static byte[] BuildVendorItemSellAck(UInt32 goid,int count,UInt32 price,bool appraise)
+        {
+            if(AbilityProgression.IsAbilityCode(goid))
+                return BuildVendorSellAck(AbilityProgression.AbilityCodeItem,
+                    NumericalUtils.uint32ToByteArray(AbilityProgression.AbilityCodeValue(goid),1),price,appraise);
+            byte[] descriptor=(byte[])DefaultItemDescriptor.Clone();descriptor[2]=ItemStacks.AmountByte(count);
+            return BuildVendorSellAck(goid,descriptor,price,appraise);
         }
 
     }
