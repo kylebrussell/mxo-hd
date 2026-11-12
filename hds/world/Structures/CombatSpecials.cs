@@ -45,6 +45,23 @@ namespace hds
             return thrownDots.Contains(id) || casterBuffs.Contains(id) || exileWeakness.ContainsKey(id) || id == Taunt;
         }
 
+        /// <summary>What the server does for the special (the ability audit's text).</summary>
+        public static string Describe(ushort id)
+        {
+            id = AbilityCatalog.Canonical(id);
+            if (thrownDots.Contains(id)) return id == SeverArtery
+                ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; RandomCombatStateChance missing"
+                : "stored ThrownDOT on the target (script tick)";
+            if (id == BerserkerAttack) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
+            if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
+            if (id == Taunt) return "TauntAggro: NPCs in radius hate caster most and turn on them; humans unaffected";
+            if (exileWeakness.ContainsKey(id)) return "general.py damage 10, x" +
+                (id >= WoodenStakePlus ? EnhancedExileDamageMultiplier : ExileDamageMultiplier) + " vs NPCKilledOnlyBy" +
+                (exileWeakness[id] == KilledOnlyByWood ? "Wood" : exileWeakness[id] == KilledOnlyBySilver ? "Silver" : "HolyWater") +
+                " (NPC weakness by name: server policy)";
+            return null;
+        }
+
         /// <summary>Moves used on an enemy target (they go through the round queue or land on the target when cast).</summary>
         public static bool TargetsEnemy(ushort id) => Handles(id) && AbilityCatalog.Canonical(id) != Taunt;
 

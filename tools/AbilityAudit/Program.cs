@@ -42,7 +42,12 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             consumer = Consumer(m.Target),
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
-        grants = AbilityProgression.GrantsOf(e.Id)
+        grants = AbilityProgression.GrantsOf(e.Id),
+        // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
+        style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
+            level50 = AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null }).ToArray(),
+        special_move_style = CombatStyles.IsSpecialMove(e.Id) ? CombatStyles.RequiredStyle(e.Id) : 0,
+        special = CombatSpecials.Describe(e.Id)
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
