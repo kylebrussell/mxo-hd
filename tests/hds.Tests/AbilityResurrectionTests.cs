@@ -21,39 +21,49 @@ public class AbilityResurrectionTests
         return c;
     }
 
-    [Fact]
-    public void ApprovalHasNativeFixedPrefixRelativeStringAndEchoedCorrelation()
+    // Real7.6005 capture, built independently of the server offer serializer:54 bytes, no name,
+    // ability at2, flags6/7 and uninitialised padding (ca at11).
+    private static byte[] NativeBody(uint ability)
     {
-        byte[] b = AbilityResurrection.BuildApproval(416,0x12345678,"Medic");
+        byte[] body=new byte[52];BitConverter.GetBytes(ability).CopyTo(body,0);body[9]=0xca;
+        return body;
+    }
+
+    [Fact]
+    public void OfferHasNativePrefixAndRelativeCasterNameWithoutInventedCorrelation()
+    {
+        byte[] b = AbilityResurrection.BuildApproval(416,"Medic");
         Assert.Equal(62,b.Length); Assert.Equal(new byte[]{0x81,0x88},b[..2]);
-        Assert.Equal(416u,BitConverter.ToUInt32(b,2)); Assert.Equal(0x12345678u,BitConverter.ToUInt32(b,8));
+        Assert.Equal(416u,BitConverter.ToUInt32(b,2)); Assert.Equal(0u,BitConverter.ToUInt32(b,8));
         Assert.Equal(54,BitConverter.ToUInt16(b,52)); Assert.Equal(6,BitConverter.ToUInt16(b,54));
         Assert.Equal("Medic\0",System.Text.Encoding.ASCII.GetString(b,56,6));
     }
 
     [Theory]
     [InlineData(0,0,true)] [InlineData(0,1,false)] [InlineData(1,0,false)]
-    public void NativeYesNoAndTimeoutConsumeExactlyOneMatchingOffer(byte timeout,byte refusal,bool yes)
+    public void CapturedShortYesNoAndTimeoutConsumeOneOfferDespiteUninitialisedPadding(byte timeout,byte refusal,bool yes)
     {
-        byte[] b=AbilityResurrection.BuildApproval(325,42,"Medic");
-        var approval=new AbilityResurrection.Approval(b,60); var payload=b[2..];
-        payload[4]=timeout;payload[5]=refusal;
+        byte[] b=AbilityResurrection.BuildApproval(325,"Medic");
+        var approval=new AbilityResurrection.Approval(b,60);var payload=NativeBody(325);
+        payload[4]=timeout;payload[5]=refusal;payload[6]=0x7b;payload[28]=0x42;
         Assert.True(approval.TryComplete(payload,59,out bool accepted)); Assert.Equal(yes,accepted);
         Assert.False(approval.TryComplete(payload,59,out _)); Assert.False(approval.Pending(59));
     }
 
     [Fact]
-    public void ForgedStaleTruncatedAndMalformedRepliesCannotApproveAnOffer()
+    public void WrongAbilityExpiredTruncatedAndInvalidFlagRepliesDoNotApprove()
     {
-        byte[] b=AbilityResurrection.BuildApproval(416,99,"Medic"); var p=b[2..];
+        byte[] b=AbilityResurrection.BuildApproval(416,"Medic");var p=NativeBody(416);
         var a=new AbilityResurrection.Approval(b,60);
         Assert.False(a.TryComplete(p[..^1],1,out _));
-        p[6]^=1; Assert.False(a.TryComplete(p,1,out _)); p[6]^=1;
-        p[4]=2; Assert.False(a.TryComplete(p,1,out _)); p[4]=0;
-        p[^2]^=1; Assert.False(a.TryComplete(p,1,out _)); p[^2]^=1;
+        Assert.False(a.TryComplete(b[2..],1,out _)); // offer-name echo is not the native reply format
+        Assert.False(a.TryComplete(NativeBody(375),1,out _));
+        p[4]=2; Assert.False(a.TryComplete(p,1,out _));p[4]=0;
+        p[5]=2; Assert.False(a.TryComplete(p,1,out _));p[5]=0;
         Assert.True(a.TryComplete(p,2,out bool yes)); Assert.True(yes);
+        Assert.False(a.TryComplete(p,3,out _));
         Assert.False(new AbilityResurrection.Approval(b,60).TryComplete(p,60,out _));
-        Assert.False(new AbilityResurrection.Approval(AbilityResurrection.BuildApproval(416,100,"Medic"),60).TryComplete(p,1,out _));
+        Assert.False(new AbilityResurrection.Approval(AbilityResurrection.BuildApproval(325,"Medic"),60).TryComplete(p,1,out _));
     }
 
     [Theory]

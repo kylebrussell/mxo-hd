@@ -2,6 +2,14 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    // Captured7.6005 native reply: fixed0x36 bytes, no name/correlation echo; byte11 was ca.
+    private static byte[] NativeResurrectionReply(ushort ability)
+    {
+        byte[] reply=new byte[54];reply[0]=0x81;reply[1]=0x88;
+        BitConverter.GetBytes((uint)ability).CopyTo(reply,2);reply[11]=0xca;
+        return reply;
+    }
+
     private const string ResurrectionLine = "81 67 ?? ?? ?? ?? 3e 28 00 c6";
 
     private static async Task KillForResurrection(HeadlessPlayer target)
@@ -29,13 +37,13 @@ public static partial class Scenarios
             Check.That(System.Text.Encoding.ASCII.GetString(request.Bytes,56,request.Bytes.Length-56)=="RezMedic\0","Approval names its caster");
             Check.Equal(restored,corpse.Received(ResurrectionLine).Count,"Corpse remains dead before consent");
             int viewsBefore=corpse.World.ViewSnapshot().Count;
-            corpse.SendRpc(request.Bytes); // Yes: native copies original, bytes6/7 both zero.
+            corpse.SendRpc(NativeResurrectionReply(ability)); // Native Yes: rebuilt fixed prefix, flags6/7 zero.
             await corpse.WaitForRpcAsync(ResurrectionLine+" 00 "+Le(ability)+" 00 00");
             var own=BytePattern.Parse("02 00 02 80 80 80 d1 00 "+(ability==325?"01 00 01 00":"4d 01 09 03")+" 80 80 01 00 00 00 00");
             await corpse.WaitUntilAsync(()=>corpse.World.ViewSnapshot().Skip(viewsBefore).Any(own.Occurs),
                 "New own-view IsDead0, script HP/IS and unflagged conditions",TimeSpan.FromSeconds(10));
             await observer.WaitForViewUpdateAsync(watched.ViewId,ability==325?"02 80 80 92 00 01 00 80 04 00 00 00 00":"02 80 80 92 00 09 03 80 04 00 00 00 00");
-            corpse.SendRpc(request.Bytes); // Replaying a completed Yes must not apply it again.
+            corpse.SendRpc(NativeResurrectionReply(ability)); // No outstanding offer remains for this duplicate Yes.
             corpse.SendRpc("81 48"); await corpse.WaitForRpcAsync("81 49");
             Check.Equal(restored+1,corpse.Received(ResurrectionLine).Count,"Consent is single-use");
         }
@@ -54,14 +62,14 @@ public static partial class Scenarios
             var healer=medics[i];var view=await healer.WaitForViewNamedAsync(corpse.Handle);
             Cast(healer,416,view.ViewId);
             var request=await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
-            byte[] reply=(byte[])request.Bytes.Clone();
+            byte[] reply=NativeResurrectionReply(416);
             if(i==0) reply[7]=1; // No
             if(i==1) reply[6]=1; // native dialog timeout
             if(i==2)
             {
-                byte[] forged=(byte[])reply.Clone(); forged[8]^=1;corpse.SendRpc(forged);
+                byte[] forged=NativeResurrectionReply(375);corpse.SendRpc(forged);
                 corpse.SendRpc("81 48");await corpse.WaitForRpcAsync("81 49");
-                Check.That(corpse.Received(ResurrectionLine).Count==0,"Foreign correlation cannot approve a corpse");
+                Check.That(corpse.Received(ResurrectionLine).Count==0,"A different ability cannot approve the pending offer");
                 reply[7]=1;
             }
             if(i==3)

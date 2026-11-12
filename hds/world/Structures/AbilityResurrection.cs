@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 
 namespace hds
 {
@@ -11,19 +10,16 @@ namespace hds
     {
         public const UInt32 RestoreEffect = 0x280006af;
         public static bool Handles(UInt16 id) => id == 325 || id == 326 || id == 375 || id == 416;
-        private static int nextOffer;
 
-        /// <summary>Native copies this entire request back, changing only bytes 6 (timeout) and 7 (refusal).</summary>
-        public static byte[] BuildApproval(UInt16 ability, UInt32 correlation, string caster)
+        /// <summary>Native displays this offer, then rebuilds a fixed54-byte reply with ability/flags/locators only.</summary>
+        public static byte[] BuildApproval(UInt16 ability, string caster)
         {
             byte[] name = Encoding.ASCII.GetBytes(caster ?? "");
             if (name.Length > 255) throw new ArgumentOutOfRangeException(nameof(caster));
             byte[] bytes = new byte[57 + name.Length];
             bytes[0] = 0x81; bytes[1] = 0x88;
             Array.Copy(BitConverter.GetBytes((UInt32)ability), 0, bytes, 2, 4);
-            // Opaque echoed field: our correlation token, not a claimed retail field meaning.
-            Array.Copy(BitConverter.GetBytes(correlation), 0, bytes, 8, 4);
-            // Unused opaque fields and the two default locators stay zero.
+            // Opaque padding and the two default locators stay zero. Native does not echo the padding or name.
             bytes[52] = 54;
             bytes[54] = (byte)(name.Length + 1); bytes[55] = (byte)((name.Length + 1) >> 8);
             Array.Copy(name, 0, bytes, 56, name.Length);
@@ -32,20 +28,21 @@ namespace hds
 
         public sealed class Approval
         {
-            private readonly byte[] request;
+            private readonly UInt32 ability;
             private readonly double expires;
             private bool completed;
-            public Approval(byte[] request, double expires) { this.request = (byte[])request.Clone(); this.expires = expires; }
-            /// <summary>Payload excludes 81 88, as RpcManager supplies it. Malformed/foreign replies do not consume an offer.</summary>
+            public Approval(byte[] request, double expires) { ability = BitConverter.ToUInt32(request, 2); this.expires = expires; }
+            /// <summary>Payload excludes81 88. Native621d51d0 allocates54 bytes and621d0330 copies only ability, flags and locators.</summary>
             public bool TryComplete(byte[] payload, double now, out bool accepted)
             {
                 accepted = false;
                 lock (this)
                 {
                     if (completed || now >= expires) { completed = true; return false; }
-                    if (payload == null || payload.Length != request.Length - 2 || payload[4] > 1 || payload[5] > 1) return false;
-                    for (int i = 0; i < payload.Length; i++)
-                        if (i != 4 && i != 5 && payload[i] != request[i + 2]) return false;
+                    if (payload == null || payload.Length != 52 || payload[4] > 1 || payload[5] > 1 ||
+                        BitConverter.ToUInt32(payload, 0) != ability) return false;
+                    // The padding is uninitialised in native replies (observed ca at raw11); neither it nor
+                    // a caster name is a correlation token. The authenticated recipient + live offer + ability match.
                     completed = true;
                     accepted = payload[4] == 0 && payload[5] == 0;
                     return true;
@@ -87,8 +84,13 @@ namespace hds
             double now = TimeUtils.GetSimTimeSeconds();
             lock (state.Sync)
             {
-                if (state.Pending?.Approval.Pending(now) == true) return false;
-                byte[] request = BuildApproval(ability, unchecked((UInt32)Interlocked.Increment(ref nextOffer)), TimedEffects.PlayerName(caster));
+                if (state.Pending?.Approval.Pending(now) == true)
+                {
+                    new ServerPackets().sendSystemChatMessage(caster, "That player already has a resurrection request pending.", "BROADCAST");
+                    caster.FlushQueue();
+                    return false;
+                }
+                byte[] request = BuildApproval(ability, TimedEffects.PlayerName(caster));
                 state.Pending = new Offer { Caster = caster, Ability = ability, CasterWorld = casterWorld, CasterLife = casterLife,
                     TargetWorld = targetWorld, TargetLife = targetLife,
                     Approval = new Approval(request, now + AbilityCatalog.Find(ability).Number("Ability/TargetAbilityApprovalTime", 60)) };
