@@ -40,3 +40,13 @@ Discovered mode `la-hardline-registration` starts CSR110 at medium03/2 source ar
 2. Inspect native construct labels, Actions/menu intact; select medium03/HID2 and confirm exact booth/world reload.
 3. Travel from a city booth to a construct and back; check ordinary direct hardline-map travel.
 4. Check city, archive-book and tutorial routes retain their existing worlds. Record native label/HDL failures separately from headless wire results.
+
+## Local validation
+
+Frozen runtime/fixture pin `0323bc31ee99b3e7c417966976e3f8c3b3e6ef65` (master `05bccebff0a2888907aeee98dc488e7590b4f8b7` imported; own protocol code byte-identical to `480927b16817eb80cff57d6034a7ac88d0503c9d`). Release hds SHA256 `434E2E3EC7954748A281B25B65443B3672B5D50AD81579A8175976F5A3F1B11E`; Debug `CBD812E97F694F1CE95EF80ED5D455DCC14D2792836265F64864666143BDE1DF`.
+
+Both actual headless scenarios passed18.3s each,36.6s total, exit0, peakone server; both disposable servers/databases disposed. Success raw logs were saved before teardown as Temp/mxo-la-registration-success.log (28081 bytes) and mxo-la-discovery-success.log (30463 bytes); runner mxo-la-fresh.log. Source WorldConfig.xml.dist SHA256 stayed `5975b584fe57fce10b730aae3aec3fb2efec161bd14e7f1979acbec3d3da3b24`.
+
+Full4328 unit tests passed; after pure upstream172/173 imports,20 focused registration/world-fixture tests passed. Both configurations built and actual read-only fixture plans/provenance passed;12 Python audit/link/policy tests passed. Historical parity Markdown, coverage JSON and current CSV remain unchanged. No ability source changed. Original production empty08 omission is preserved; the independent wire decoder treats an absent08 block as empty. No native empty-versus-absent reset semantics are claimed.
+
+Native UI/rendering remains pending Claude's one-pass. No client, native setup, main database or settings were changed.
