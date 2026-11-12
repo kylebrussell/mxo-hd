@@ -19,6 +19,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-disguise-tools", AbilityDisguiseTools, StillNpcs),
+        new Scenario("ability-buff-buffer-death", AbilityBuffBufferDeath, StillNpcs),
         new Scenario("ability-beneficial-groups", AbilityBeneficialGroups, StillNpcs),
         new Scenario("ability-tactical-blur", AbilityTacticalBlur, StillNpcs),
         new Scenario("ability-scaled-buffs", AbilityScaledBuffs, StillNpcs),

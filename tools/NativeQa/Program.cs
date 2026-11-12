@@ -13,6 +13,7 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
     : Array.Empty<ushort>();
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
+bool remainingMode = args.Length > 3 && args[3] == "remaining";
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection";
 bool controlsMode = args.Length > 3 && args[3] == "controls";
@@ -62,6 +63,7 @@ DELETE FROM char_abilities WHERE char_id=110;
 ");
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
+    if (remainingMode) abilities = new ushort[] { 2,17,9,15,49,1114,42,485,489,481,488,327 };
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
@@ -113,7 +115,10 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
  SELECT {id},slot,ability_id,level,is_loaded,ability_name FROM char_abilities WHERE char_id=110;
 ");
     }
-    if (scaledMode)
+    if (remainingMode)
+        await database.ExecuteAsync("DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
+            "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");
+    if (scaledMode || remainingMode)
         await database.ExecuteAsync($"UPDATE characters SET level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111");
     if (passivesMode)
         await database.ExecuteAsync("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)");

@@ -168,4 +168,65 @@ public class AbilityScaledBuffTests
         AbilityBuffs.Remove(c,123);
         Assert.Equal(100,AbilityStats.ScaleAbilityDamage(c,279,100));
     }
+
+    [Fact]
+    public void DisguiseUsesOwnedToolModelsAndRestoresItsOriginalAppearance()
+    {
+        Assert.True(AbilityDisguise.TryModel(615,out uint model));
+        Assert.Equal(0x40000533u,model);
+        Assert.Equal(0u,AbilityDisguise.ModelFor(new[]{new Crafting.InventoryItem(1,615)},2));
+        Assert.Equal(model,AbilityDisguise.ModelFor(new[]{new Crafting.InventoryItem(1,615)},1));
+        Assert.Equal(0u,AbilityDisguise.ModelFor(new[]{new Crafting.InventoryItem(97,615)}));
+        var c=Client(50);
+        c.playerInstance.Description.setValue(123u);
+        c.playerInstance.UseRSIDescription.setValue((byte)1);
+        c.playerInstance.TitleAbility.setValue(42u);
+        Assert.True(AbilityBuffs.Apply(c,49));
+        var state=Stealth.Begin(c,Stealth.Defs[1114],20,model);
+        Assert.Equal(41,state.Seconds);
+        Assert.Equal(model,BitConverter.ToUInt32(c.playerInstance.Description.getValue()));
+        Assert.Equal(0,c.playerInstance.UseRSIDescription.getValue()[0]);
+        Assert.Equal(0u,BitConverter.ToUInt32(c.playerInstance.TitleAbility.getValue()));
+        Assert.False(Stealth.IsHidden(c)); // disguise is a visible model, not invisibility
+        Assert.Equal(0x48,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));
+        Assert.True(Stealth.End(c,"test",false));
+        Assert.Equal(123u,BitConverter.ToUInt32(c.playerInstance.Description.getValue()));
+        Assert.Equal(1,c.playerInstance.UseRSIDescription.getValue()[0]);
+        Assert.Equal(42u,BitConverter.ToUInt32(c.playerInstance.TitleAbility.getValue()));
+        Assert.Equal(0x40,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));
+        AbilityBuffs.Remove(c,49);
+    }
+
+    [Fact]
+    public void OverflowReservesFreeCapacityAndKeepsExistingFamilyReplacements()
+    {
+        var c=Client(20);
+        Assert.Equal(180,AbilityBuffBuffer.Maximum(c)); // chosen baseline, not recovered native getter
+        Assert.True(AbilityBuffs.Apply(c,327));
+        int used=AbilityBuffBuffer.Used(c);
+        Assert.True(TempMods.TryGet(481,out var overflow));
+        TimedEffects.Apply(TimedEffects.ForPlayer(c),overflow,TimeUtils.GetSimTimeSeconds(),c,"Source");
+        Assert.Equal(Math.Min(150,180-used),AbilityBuffBuffer.Reserved(c));
+        Assert.False(AbilityBuffs.Apply(c,489));
+        Assert.True(AbilityBuffs.Apply(c,327)); // replacement keeps already-held buffer credit
+        Assert.True(AbilityBuffs.Remove(c,327));
+        Assert.Equal(150,AbilityBuffBuffer.Reserved(c));
+        Assert.False(AbilityBuffs.Apply(c,489));
+        Assert.True(TimedEffects.RemoveParent(TimedEffects.ForPlayer(c),481));
+        Assert.Equal(0,AbilityBuffBuffer.Reserved(c));
+        Assert.True(AbilityBuffs.Apply(c,489));
+        AbilityBuffs.Remove(c,489);
+    }
+
+    [Theory]
+    [InlineData(395,80)] [InlineData(481,150)] [InlineData(488,150)]
+    public void AllBufferOverflowParentsReleaseTheirReservationOnExpiry(ushort id,int reserve)
+    {
+        var c=Client(50);
+        Assert.True(TempMods.TryGet(id,out var overflow));
+        var active=TimedEffects.Apply(TimedEffects.ForPlayer(c),overflow,TimeUtils.GetSimTimeSeconds(),c,"Source");
+        Assert.Equal(reserve,AbilityBuffBuffer.Reserved(c));
+        TimedEffects.RunDue(active.Max(a=>a.Expires)+0.01);
+        Assert.Equal(0,AbilityBuffBuffer.Reserved(c));
+    }
 }

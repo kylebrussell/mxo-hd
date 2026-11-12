@@ -64,7 +64,7 @@ namespace hds
         public static void Start(WorldClient client, ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            if (!Handles(id)) return;
+            if (!Handles(id) || !AbilityBuffBuffer.CanApply(client,id)) return;
             var state = states.GetOrCreateValue(client);
             int generation;
             lock (state) { generation = ++state.Generation; state.On[id] = generation; }

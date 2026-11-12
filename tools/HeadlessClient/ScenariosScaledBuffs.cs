@@ -111,4 +111,48 @@ public static partial class Scenarios
         await observer.WaitForViewUpdateAsync(view.ViewId,"02 80 80 80 40 00 00");
         Check.Equal(0,actor.World.Problems.Count+observer.World.Problems.Count,"Tactical and blur protocol");
     }
+
+    private static async Task AbilityDisguiseTools(ScenarioContext context)
+    {
+        var actor=await context.AddPlayerAsync(new CharacterSeed("DisguiseActor") {Level=20,Items=new[]{(1,615u,1)}});
+        var observer=await context.AddPlayerAsync(new CharacterSeed("DisguiseObserver") {X=17120,Level=20});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({actor.CharId},{observer.CharId}); " +
+            $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({actor.CharId},1,{AbilityGoid(1114)},20,1)");
+        await actor.EnterWorldAsync(); await observer.EnterWorldAsync();
+        var view=await observer.WaitForViewNamedAsync(actor.Handle);
+        Cast(observer,1114);
+        await observer.WaitForRpcAsync("80 ba");
+        Cast(actor,1114);
+        var state=await actor.WaitForRpcAsync(ModPattern(1114,881),TimeSpan.FromSeconds(8));
+        Check.Equal(41f,BitConverter.ToSingle(state.Bytes,18),"Disguise duration31+learned20/2");
+        await actor.WaitForViewUpdateAsync(2,"02 83 00 00 00 00 00 80 80 80 80 04 33 05 00 40");
+        await observer.WaitForViewUpdateAsync(view.ViewId,"02 83 00 00 00 00 00 80 80 80 01 33 05 00 40");
+        await observer.WaitForViewUpdateAsync(view.ViewId,"02 80 80 80 c0 08 00 04 00 00 00 02");
+        Cast(actor,1114);
+        await actor.WaitForRpcAsync(ModPattern(1114,881,true));
+        await observer.WaitForViewUpdateAsync(view.ViewId,"02 83 01 ?? ?? ?? ?? 80 80 80 01 ?? ?? ?? ??");
+        Check.Equal(0,actor.World.Problems.Count+observer.World.Problems.Count,"Disguise tool model protocol");
+    }
+
+    private static async Task AbilityBuffBufferDeath(ScenarioContext context)
+    {
+        var hacker=await context.AddPlayerAsync(new CharacterSeed("BufferHacker") {Level=50,InnerStrength=2000,MaxInnerStrength=2000,Organization=1});
+        var medic=await context.AddPlayerAsync(new CharacterSeed("BufferMedic") {X=17220,Level=50,InnerStrength=1000,MaxInnerStrength=1000,Organization=2});
+        var target=await context.AddPlayerAsync(new CharacterSeed("BufferVictim") {X=17120,Level=20,InnerStrength=1000,MaxInnerStrength=1000,Organization=2});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({hacker.CharId},{target.CharId})");
+        await hacker.EnterWorldAsync(); await target.EnterWorldAsync(); await medic.EnterWorldAsync();
+        var corpseView=await medic.WaitForViewNamedAsync(target.Handle);
+        target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
+        var view=await hacker.WaitForViewNamedAsync(target.Handle);
+        Cast(target,327); await target.WaitForRpcAsync(ModPattern(327,172));
+        Cast(hacker,481,view.ViewId); await target.WaitForRpcAsync("80 bc 09 00",TimeSpan.FromSeconds(8));
+        target.SkipReceived(); Cast(target,489); await target.WaitForRpcAsync("80 ba");
+        Check.Equal(0,target.Received(ModPattern(489,172)).Count,"Overflow blocks a new47-unit group upgrade");
+        await KillForResurrection(target);
+        Cast(medic,416,corpseView.ViewId); await target.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(8));
+        target.SendRpc(NativeResurrectionReply(416)); await target.WaitForRpcAsync(ResurrectionLine);
+        target.SkipReceived(); Cast(target,489);
+        await target.WaitForRpcAsync(ModPattern(489,172),TimeSpan.FromSeconds(15));
+        Check.Equal(0,hacker.World.Problems.Count+target.World.Problems.Count,"Buffer death release and resurrection protocol");
+    }
 }

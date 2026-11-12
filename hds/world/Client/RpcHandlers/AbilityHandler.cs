@@ -130,6 +130,12 @@ namespace hds
                 Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");
                 return;
             }
+            if (AbilityID == AbilityDisguise.Ability && !Stealth.IsOn(Store.currentClient, AbilityID) &&
+                AbilityDisguise.ModelFor(Store.currentClient, itemSlot) == 0)
+            {
+                Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
+                return;
+            }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.
@@ -158,6 +164,12 @@ namespace hds
                 return;
             }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
+            if (support && AbilityBuffs.TryGet(AbilityID,out var capacityBuff) &&
+                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilityBuffBuffer.CanApply(t,AbilityID,capacityBuff)))
+            {
+                Deny(AbilityID,"The upgrade buffer is full.");
+                return;
+            }
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
@@ -230,7 +242,7 @@ namespace hds
                 UInt16 stealthTarget = currentTargetViewId;
                 DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
                 {
-                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget);
+                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
                 });
                 return;
             }

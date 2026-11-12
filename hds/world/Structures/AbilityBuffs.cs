@@ -399,6 +399,11 @@ namespace hds
                 return false;
             }
 
+            if (!AbilityBuffBuffer.CanApply(client, abilityId, buff))
+            {
+                Output.WriteDebugLog("[BUFF] " + abilityId + " refused: upgrade buffer full");
+                return false;
+            }
             ClientData data = client.playerData;
             List<UInt16> replaced = new List<UInt16>();
             lock (data.activeBuffs)
