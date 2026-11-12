@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\tools\PacketResearch\PacketResearch.csproj" />
     <ProjectReference Include="..\..\tools\HeadlessClient\HeadlessClient.csproj" />
     <ProjectReference Include="..\..\tools\NativeQa\NativeQa.csproj" />
+    <ProjectReference Include="..\..\tools\LoadTest\LoadTest.csproj" />
   </ItemGroup>
 
 </Project>
