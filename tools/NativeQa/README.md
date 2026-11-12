@@ -25,3 +25,7 @@ Close the real client and create an empty `stop` file for orderly shutdown. The 
 ## Read-only fixture environment check
 
 `dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --fixture-plan ignored-actions` prints the actual environment used by the server launch and exits before paths, locks or database setup. The ignored-actions mode must report `MXO_DEV_COMMANDS=1` and `MXO_GM_CHARACTER_IDS=110`. Explicit QA modes `remaining`, `ignored-actions`, `coder-pets`, `styles`, `data-mining`, `death-presentation`, `actions` and `health-callbacks` enable dev commands; default and unknown modes disable them. Only ignored-actions grants GM to copied110. This repairs a fixture configuration regression and does not change any reported native observations. Configuration comes from one shared plan; CLI regression tests inspect that plan without running a fixture.
+
+## EMCP Blast partial fixture
+
+Claude-only mode `emp-blast` owns2,17,1025 and starts at the NPC fixture with exact dev commands enabled. Read-only preflight: `dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --fixture-plan emp-blast`. `?combatdepth empweakness on 6000` sets only the selected NPC marker and explicit fixture HP in a disposable `mxotest_` database; `off` removes it. This does not establish production marker owners. See [EMP evidence](../../docs/ABILITY-EMP-BLAST.md) and the pinned PR checklist.
