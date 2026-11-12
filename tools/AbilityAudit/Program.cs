@@ -22,6 +22,7 @@ static string Consumer(ushort stat) => stat switch
 };
 static string UtilityCoverage(ushort id) => id switch
 {
+    971 or 972 => "owned AntiStun pill only: exact42763/42764, CanUseWhileStunned;1s cast, stored own900/600s and shared973600s; removes Stun/Mez tuples, halves actual remaining immunity when half>=1s; item/life/world/cast revalidation; [docs/ANTI-STUN-PILLS.md](ANTI-STUN-PILLS.md)",
     CraftingSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
     CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; code synthesis outputs/economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
@@ -51,6 +52,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        conditional_stun = AbilityConditionalControls.Handles(e.Id),
         tactical_toggle = e.Id == 9 || e.Id == 15,
         buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
             e.Id == 1149 || AbilityHealthCallbacks.Template(e.Id) || AbilityBuffs.Scripted.ContainsKey(e.Id) || AbilityScaledBuffs.TryScriptedTimed(e.Id,50,out _) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
@@ -91,6 +93,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
 // Optional execution inventory fields are emitted only for their actual producers.
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
-    JsonSerializer.SerializeToElement(row).EnumerateObject().Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
+    JsonSerializer.SerializeToElement(row).EnumerateObject()
+        .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
         .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);

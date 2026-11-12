@@ -70,6 +70,14 @@ namespace hds
                 if (m.Number("WhenEnabled", -1) != 2) continue;
                 if (m.Text("StatModTermFunc") == "AddControlImmunityTimerVal") immunity = (float)m.Number("MinValue");
                 else if (m.Text("StatModInitFunc") == "AddControlImmunityTimer") immunity = (float)m.Number("Duration");
+                if (m.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" &&
+                    m.Number("DurationType", -1) == 0 && m.Number("Duration") > 0 &&
+                    AbilityValues.TryValue(m, 0, 0, out int stunSeconds))
+                {
+                    mods.Add(new TempMods.Mod { Kind = TempMods.KindFx, Target = id,
+                        Proc = TempMods.Proc.Terminal, Seconds = (float)m.Number("Duration"),
+                        MinValue = stunSeconds, MaxValue = stunSeconds });
+                }
                 UInt16 state = m.State;
                 bool rootChance = m.Text("StatModInitFunc") == "EnableRootWithChance";
                 if (rootChance) state = TempMods.RootedAbility;

@@ -119,6 +119,15 @@ namespace hds
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
 
+            // CanUseWhileStunned belongs to the owned AntiStun item, never a free971/972 request.
+            if (AntiStunPills.Handles(AbilityID))
+            {
+                var antiSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
+                if (!antiSlot.HasValue || !new InventoryHandler().UseItem(antiSlot.Value, AbilityID))
+                    AntiStunPills.Deny(Store.currentClient, AbilityID);
+                return;
+            }
+
             if (data.isDead || data.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(Store.currentClient).Effects))
             {
                 Deny(AbilityID, "You cannot act while stunned or pacified.");

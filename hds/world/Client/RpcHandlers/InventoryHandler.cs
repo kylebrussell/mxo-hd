@@ -165,6 +165,7 @@ namespace hds
                 UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
+                if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
                 if (!ConsumableItems.IsUsable(consumable))
                 {
                     pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");

@@ -1,0 +1,115 @@
+{
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "items": [
+    {
+      "id": 42763,
+      "name": "AntiStunPill1",
+      "schema": 66,
+      "components": [
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "Info/CodeIconID": 3321889027,
+        "Info/IconID": 671091568,
+        "Info/InfoID": 3321898041,
+        "Info/MoreInfoID": 3321898044,
+        "InvItem/CameraOffset": "00000000000020c100002041",
+        "InvItem/CanUseWhileStunned": 1,
+        "InvItem/CantBeCrafted": 1,
+        "InvItem/CantBeDecompiled": 1,
+        "InvItem/Complexity": 43,
+        "InvItem/DefaultCodeCharges": 20,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 100000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091724,
+        "Model/HalfExtents": "cde872400262ac3f0262ac3f",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2148477952,
+        "TriggeredAbility/ReqAbilityLevel": 1,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 3321898041
+      }
+    },
+    {
+      "id": 42764,
+      "name": "AntiStunPill2",
+      "schema": 66,
+      "components": [
+        {
+          "name": "TriggeredAbility",
+          "type": 39
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Usable",
+          "type": 5
+        },
+        {
+          "name": "Model",
+          "type": 6
+        }
+      ],
+      "fields": {
+        "Info/CodeIconID": 3321889027,
+        "Info/IconID": 671091568,
+        "Info/InfoID": 3321898042,
+        "Info/MoreInfoID": 3321898044,
+        "InvItem/CameraOffset": "00000000000020c100002041",
+        "InvItem/CanUseWhileStunned": 1,
+        "InvItem/CantBeCrafted": 1,
+        "InvItem/CantBeDecompiled": 1,
+        "InvItem/Complexity": 43,
+        "InvItem/DefaultCodeCharges": 20,
+        "InvItem/GOCategoryID": 810566473,
+        "InvItem/IsAConsumable": 1,
+        "InvItem/LearnedByDecompile": 1,
+        "InvItem/VendorPrice": 500000,
+        "Model/AmbientFX": 671090274,
+        "Model/AnimationID0": 973079304,
+        "Model/DescriptionID": 671091724,
+        "Model/HalfExtents": "cde872400262ac3f0262ac3f",
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "TriggeredAbility/ReqAbilityID": 2148478976,
+        "TriggeredAbility/ReqAbilityLevel": 1,
+        "Usable/Defaultable": 1,
+        "Usable/Difficulty": 0,
+        "Usable/ExecuteRuleID": 10001,
+        "Usable/NameID": 3321898042
+      }
+    }
+  ]
+}

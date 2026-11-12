@@ -80,6 +80,7 @@ namespace hds
 
         // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
         private UInt32 conditionFlags = 0;
+        internal uint ConditionFlags { get { lock (conditionTokens) return conditionFlags; } }
         private readonly System.Collections.Generic.Dictionary<UInt32, int> conditionTokens =
             new System.Collections.Generic.Dictionary<UInt32, int>();
 

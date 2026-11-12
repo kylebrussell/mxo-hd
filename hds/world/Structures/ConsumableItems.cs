@@ -22,7 +22,8 @@ namespace hds
             /// <summary>Raises maximum health for a while (needs the buff system; not usable yet).</summary>
             MaxHealthBoost,
             /// <summary>Periodic chance to remove negative conditions.</summary>
-            ConditionSweep
+            ConditionSweep,
+            AntiStun
         }
 
         public struct Consumable
@@ -49,6 +50,9 @@ namespace hds
         /// <summary>Item goid to the consumable's ability and timers.</summary>
         public static readonly Dictionary<UInt32, Consumable> Items = new Dictionary<UInt32, Consumable>
         {
+            // Raw GOB TriggeredAbility and CanUseWhileStunned=1; timers handled by AntiStunPills.
+            { 42763, new Consumable(971, Effect.AntiStun, 973, 900) },
+            { 42764, new Consumable(972, Effect.AntiStun, 973, 600) },
             { 2399, new Consumable(190, Effect.Heal, HealPill, 10) },             // Health Pill 1.0 -> PillHealthReplenish1Ability
             { 6897, new Consumable(191, Effect.Heal, HealPill, 10) },             // Health Pill 2.0 -> PillHealthReplenish2Ability
             { 6924, new Consumable(192, Effect.Heal, HealPill, 10) },             // Health Pill 3.0 -> PillHealthReplenish3Ability
