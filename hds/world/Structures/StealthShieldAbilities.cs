@@ -72,13 +72,16 @@ namespace hds
             if(session.Motion!=null){var motion=session.Motion;session.Motion=null;
                 if(caster.playerData.getOnWorld()&&!caster.playerData.isDead&&!caster.playerData.duelDeath)ResetMotion(caster,motion.PreviousStance);}
         }
+        internal static bool TargetCurrent(Cast cast,WorldClient target,Mob mob)=>ReferenceEquals(cast.Target,(object)target??mob)&&
+            (target==null||target.playerData.worldGeneration==cast.TargetWorld&&target.playerData.lifeGeneration==cast.TargetLife)&&
+            (mob==null||mob.DeathGeneration==cast.TargetDeath);
         public static void Execute(WorldClient caster,AbilityItem ability,ushort targetView,Cast cast)
         {
             if(!Live(caster,cast)||!ControlActions.CanUseAbilities(caster)||Of(caster).Action!=cast.Action)return;
             ushort id=ability.getAbilityID();
             Mob mob=AbilityTargets.FindMob(caster,targetView,out var mobView);
             WorldClient target=mob==null?PvpCombat.PlayerInView(caster,targetView):null;
-            if(!ReferenceEquals(cast.Target,(object)target??mob)||target!=null&&(target.playerData.worldGeneration!=cast.TargetWorld||target.playerData.lifeGeneration!=cast.TargetLife)||mob!=null&&mob.DeathGeneration!=cast.TargetDeath)return;
+            if(!TargetCurrent(cast,target,mob))return;
             if(mob==null && (target==null || PvpCombat.Check(caster,target)!=PvpRules.Verdict.Allowed))return;
             if(mob!=null && (mob.getIsDead()||mob.isFriendly))return;
             if(target!=null && (target.playerData.isDead||target.playerData.duelDeath))return;

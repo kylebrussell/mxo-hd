@@ -104,6 +104,15 @@ public class StealthShieldTests
         Stealth.Cleared(c);
     }
     [Fact]
+    public void CastStartTargetIdentityAndLifePreventViewReuseAndResurrectionRetargeting()
+    {
+        var target=Client();var cast=new StealthShieldAbilities.Cast{Target=target,TargetWorld=target.playerData.worldGeneration,TargetLife=target.playerData.lifeGeneration};
+        Assert.True(StealthShieldAbilities.TargetCurrent(cast,target,null));
+        Assert.False(StealthShieldAbilities.TargetCurrent(cast,Client(),null));
+        target.playerData.lifeGeneration++;Assert.False(StealthShieldAbilities.TargetCurrent(cast,target,null));target.playerData.lifeGeneration--;
+        target.playerData.worldGeneration++;Assert.False(StealthShieldAbilities.TargetCurrent(cast,target,null));
+    }
+    [Fact]
     public void RestoredInvisibilityUsesItsOverrideForPacketsAndExpiryWithoutLosingBlurBits()
     {
         var c=Client();Assert.True(AbilityBuffs.Apply(c,49));
