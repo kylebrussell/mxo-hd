@@ -60,6 +60,7 @@ namespace hds
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CombatPresentation.CheckObservers();
+                StealthShieldAbilities.CheckObservers();
                 foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
                 foreach (WorldClient client in aliveClients) DataMining.Check(client);
                 MobAggro.Check(aliveClients, mobGrids);
@@ -720,6 +721,8 @@ namespace hds
                             clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
                             Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                            EvasionShield.AfterSpawn(currentClient,otherClient,clientView.ViewID);
+                            StealthShieldAbilities.AfterSpawn(currentClient,otherClient,clientView.ViewID);
                         }
                     }
                 }
