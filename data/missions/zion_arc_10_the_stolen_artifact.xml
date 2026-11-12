@@ -6,13 +6,14 @@
      documents" is a Search of furniture for Documents (6794). "Steal the artifact" is a Search of a safe for the
      Statue (1266), which is given to Lalande. "Kill Captain" in phase 5: Castor has to be talked to, led and kept
      alive in phases 1 to 4, which a hostile NPC can't be, so npc 1 stays friendly and npc 4 is a second, hostile
-     Castor placed in phase 5 for the kill; he waits for the player to start the fight (attacksOnSight="0"). -->
+     Castor placed in phase 5 for the kill; he waits for the player to start the fight (attacksOnSight="0"). The final handoff/kill ordering and
+     arrival after that handoff are OURS pacing gates; they do not establish retail betrayal timing. -->
 <mission id="2310" title="The Stolen Artifact" description="Carry out assignment with first Redpill you extracted." plot="1" order="20"
          org="1" contact="Tyndall" exp="110000" info="73500">
   <npc id="1" handle="Castor" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
   <npc id="2" handle="Ludovica" type="HOSTILE" at="4" rsi="a8060090" weapon="2564" />
   <npc id="3" handle="Lalande" type="FRIENDLY" at="5" rsi="000100b4" weapon="2564" />
-  <npc id="4" handle="Castor" type="HOSTILE" at="5" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Castor" type="HOSTILE" at="5" rsi="d8040058" weapon="2568" attacksOnSight="0" spawnAfter="3" />
   <phase site="RedPillExtraction" enemy="Merovingian" enemies="3">
     <briefing>I come to you with a matter of utmost importance, Warrior. Several groups of Exiles attacked one of our bases last week. The Frenchman denies responsibility, claiming it's the work of renegades who operate outside of his control. You will be working with the crew of the Proditio on this assignment.
 
@@ -56,8 +57,8 @@ I'm sending you the second set of coordinates which is the artifact's location. 
     <enter><say>This is where you can find Lalande.</say></enter>
     <objective goal="1" text="Speak with Lalande" type="Talk" npc="3" />
     <objective goal="2" text="Lead Castor to Lalande" type="Escort" npc="1" to="npc:3" after="1" />
-    <objective goal="3" text="Give the artifact to Lalande" type="Give" npc="3" item="1266" />
+    <objective goal="3" text="Give the artifact to Lalande" type="Give" npc="3" item="1266" after="2" />
     <!-- The turned Castor: npc 4, hostile, standing in for npc 1. -->
-    <objective goal="4" text="Kill Castor" type="Defeat" npc="4" />
+    <objective goal="4" text="Kill Castor" type="Defeat" npc="4" after="3" />
   </phase>
 </mission>

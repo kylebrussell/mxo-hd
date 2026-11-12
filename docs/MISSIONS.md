@@ -512,3 +512,7 @@ What differs from retail:
 ## Sources
 
 `research/missions/` holds the findings: `README.md` lists each file and what it covers. The 4 GB of screenshot logs (`hdneo/mxo-missions`) aren't in the repo.
+
+### Tyndall Prima missions4–10
+
+[The2304–2310 chain](ZION-PRIMA-CHAIN.md) has a full21-phase normal-protocol regression and a discovered `zion-chain` native fixture. The work repairs a concrete furniture-capacity softlock and adds authored goal-order gates; placements/pacing remain OURS and native QA is pending. It does not add persistence or a reward formula.
