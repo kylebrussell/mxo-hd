@@ -11,5 +11,5 @@ public sealed class HealthCallbacksMode : NativeQaMode
         new string[] { @"UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114)",
             $@"UPDATE characters SET level=20,exp={hds.PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111" },
         DevCommands: true, GmCharacter110: false, FixedCallbackRolls: true, SeedDisguiseTool: true,
-        Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: true, CompileItemsQa: false);
+        Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: true, CompileItemsQa: false, readyMessages:new[]{"Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample."});
 }

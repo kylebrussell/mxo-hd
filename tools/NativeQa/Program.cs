@@ -163,14 +163,14 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
     byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers));
-    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
+    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
         StealthShieldQa=fixturePlan.StealthShieldQa,ShieldReady=shieldAck.Length>0,CasterOrganization=fixturePlan.StealthShieldQa?1:(int?)null,CasterPvpFlag=fixturePlan.StealthShieldQa,
         OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
-        CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
-    if(fixturePlan.HealthCallbackQa) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
+        CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }), new JsonSerializerOptions { WriteIndented=true }));
+    foreach(string message in fixturePlan.ReadyMessages) Console.WriteLine(message);
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
