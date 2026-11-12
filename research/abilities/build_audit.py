@@ -177,6 +177,8 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 
 def server(i):
+    if i == 7:
+        return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
     r, f = coverage[i], fields(i)
@@ -273,6 +275,8 @@ def server(i):
 
 
 def status(i):
+    if i == 7:
+        return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
@@ -317,6 +321,7 @@ Read alongside [`abilities.py`](../research/client-scripts/abilities.py), [`temp
 - **done**: all identified behavior and relevant gameplay paths validated. None assigned yet.
 - **partial**: some real effects execute; a listed behavior, scaling, target rule, condition or native presentation remains incomplete.
 - **missing**: intended effect lacks an executor; an animation, cost or generic damage fallback does not count.
+- **inaccessible**: primary client load prerequisite exceeds the retail character cap; no effect parity is claimed.
 - **cosmetic**: discipline/passive loads or displays, but its native passive/stat behavior is not fully applied.
 
 The new catalog fallback supplies explicit costs, cast times, recast/family timers and timed controls, preserving retail overrides. Insufficient IS and incapacitated/powerless casts are rejected. Root blocks movement and jumps; stun/mez blocks actions; powerless blocks abilities; disarm blocks weapon fire; enrage blocks withdrawal. Pacify and scripted roots break as their health callbacks specify. A negative chance-root proc protects its first health change (including healing), then flips positive for later damage checks, as in the script. A control state cannot stack through its immunity timer.

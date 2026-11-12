@@ -1,6 +1,6 @@
 # Player ability parity audit
 
-This is a conservative audit of the shipped 7.6005 templates against the executable server on this branch. **No ability is declared retail-complete merely because it sends an animation or a modifier record.** Counts: 561 player-loadable candidates and their granted abilities (536 memory/discipline candidates, 25 additional grants); 36 cosmetic, 7 missing, 518 partial. No full-parity `done` claims yet.
+This is a conservative audit of the shipped 7.6005 templates against the executable server on this branch. **No ability is declared retail-complete merely because it sends an animation or a modifier record.** Counts: 561 player-loadable candidates and their granted abilities (536 memory/discipline candidates, 25 additional grants); 36 cosmetic, 1 inaccessible, 6 missing, 518 partial. No full-parity `done` claims yet.
 
 ## Inventory and evidence
 
@@ -17,6 +17,7 @@ Read alongside [`abilities.py`](../research/client-scripts/abilities.py), [`temp
 - **done**: all identified behavior and relevant gameplay paths validated. None assigned yet.
 - **partial**: some real effects execute; a listed behavior, scaling, target rule, condition or native presentation remains incomplete.
 - **missing**: intended effect lacks an executor; an animation, cost or generic damage fallback does not count.
+- **inaccessible**: primary client load prerequisite exceeds the retail character cap; no effect parity is claimed.
 - **cosmetic**: discipline/passive loads or displays, but its native passive/stat behavior is not fully applied.
 
 The new catalog fallback supplies explicit costs, cast times, recast/family timers and timed controls, preserving retail overrides. Insufficient IS and incapacitated/powerless casts are rejected. Root blocks movement and jumps; stun/mez blocks actions; powerless blocks abilities; disarm blocks weapon fire; enrage blocks withdrawal. Pacify and scripted roots break as their health callbacks specify. A negative chance-root proc protects its first health change (including healing), then flips positive for later damage checks, as in the script. A control state cannot stack through its immunity timer.
@@ -41,7 +42,7 @@ Access `memory` means the stored memory cost is positive; `discipline` means its
 | 2 Awakened | discipline | Awakened / Awakened | grant Self Defense [17]; Stealth Detection raw ? × native function 2 / scale 0.25 (while enabled); [UpdateCombatStyle](../research/client-scripts/tempmods.py#L65) | loaded passive totals + records (@50: Stealth Detection +12 [stealth detection]); load/unload/startup grants 17 | partial |
 | 5 Calm Mind, Calm Body | memory | Awakened / Awakened | Thrown Resistance raw ? × native function 3 / scale 1.5 (20.0s) | IS 20 (stored); reuse 60s; buff records + caster-level stat snapshot; numeric totals only; gameplay consumer missing | cosmetic |
 | 6 Consistent Technique | memory | Awakened / Awakened | Melee Damage Resistance raw ? × native function 3 / scale 1.5 (20.0s) | IS 20 (capture); reuse 60s; buff records + selected combat/vital stats (capture) | partial |
-| 7 Detect Vulnerability | memory | Awakened / Awakened | Native action / passive metadata; no decoded stored modifier | presentation only; no effect executor | missing |
+| 7 Detect Vulnerability | memory | Awakened / Awakened | Native action / passive metadata; no decoded stored modifier | stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md) | inaccessible |
 | 8 Empty Mind | memory | Awakened / Awakened | Viral Resistance raw ? × native function 3 / scale 1.5 (20.0s) | IS 20 (stored); reuse 60s; buff records + caster-level stat snapshot; numeric totals only; gameplay consumer missing | cosmetic |
 | 9 Energized Attacks | memory | Awakened / Awakened | [EnergizedAttacksInit](../research/client-scripts/tempmods.py#L1202), [EnergizedAttacksTerm](../research/client-scripts/tempmods.py#L1208), [EnergizedAttacks_Test](../research/client-scripts/ability/general.py#L180), [PlayEnergizedFX](../research/client-scripts/tempmods.py#L760) | script tactical toggle; precise/energized combat attack and damage multipliers; mutual refusal | partial |
 | 10 Hyper-Dodge | memory | Awakened / Awakened | Ballistic Defense raw ? × native function 2 / scale 0.96 (while enabled) | IS 20 (capture); buff records + selected combat/vital stats (capture) | partial |
