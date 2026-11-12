@@ -394,6 +394,9 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_ITEM_MERGE_STACKS:
 		            StackHandler.ProcessMerge(Store.currentClient, rpcData);
 		            break;
+		        case (int) RPCRequestHeader.CLIENT_ITEM_CENTRAL_STORAGE_MOVE:
+		            CentralStorageHandler.ProcessMove(Store.currentClient, rpcData);
+		            break;
 
 		        // Subway map
 		        case (int) RPCRequestHeader.CLIENT_SUBWAY_MAP_OPEN:

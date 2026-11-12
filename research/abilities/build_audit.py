@@ -185,6 +185,8 @@ def server(i):
         return DATA_MINING[i][0]
     r, f = coverage[i], fields(i)
     parts = []
+    if i == 1124:
+        parts.append('exact native tool prerequisite enforced before cost/cast; none of869 shipped component10 tools names1124 (470 names1125); effect remains unresolved, no alias to384; [evidence](ABILITY-1124.md)')
     if r.get('stealth'):
         parts.append('stealth state, visibility and detection executor; script tests/drains; [details and limits](STEALTH.md)')
     if r.get('utility'):

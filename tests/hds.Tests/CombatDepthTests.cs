@@ -21,6 +21,16 @@ public class CombatDepthTests
         finally { Environment.SetEnvironmentVariable("MXO_DEV_COMMANDS",previous); }
     }
     [Theory]
+    [InlineData(null)]
+    [InlineData("true")]
+    [InlineData("01")]
+    public void OldDisruptDevCastRequiresExactFlag(string? value)
+    {
+        string? previous=Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS");
+        try { Environment.SetEnvironmentVariable("MXO_DEV_COMMANDS",value); Assert.Contains("requires MXO_DEV_COMMANDS=1",CombatDepthDev.Run(null!,new[]{"cast","1124"})); }
+        finally { Environment.SetEnvironmentVariable("MXO_DEV_COMMANDS",previous); }
+    }
+    [Theory]
     [InlineData(10.14f, 10, 50, 10.14f)]
     [InlineData(10.14f, 10, 75, 6.7938f)]
     [InlineData(10.14f, 10, 500, 3.3462f)]

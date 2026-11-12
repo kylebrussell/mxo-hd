@@ -21,6 +21,7 @@ static string Consumer(ushort stat) => stat switch
 };
 static string UtilityCoverage(ushort id) => id switch
 {
+    CompileSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.DisarmTraps => "Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
     UtilityAbilities.OpenLocks => "Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked=\"1\"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
@@ -32,6 +33,7 @@ static string UtilityCoverage(ushort id) => id switch
     UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.FindDataNode => "distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.LocateDataNode => "base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)",
+    AbilityEmpBlast.Ability => "script neutral0/5000 gated by explicit NPC1026 grant; caster-radius10, cast1s, reuse30s, NPC HP/death; production grant owners, item consumption, exact eligibility/TestFunction2 and cost default unresolved; [evidence](ABILITY-EMP-BLAST.md)",
     _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
@@ -42,7 +44,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     bool hit = AbilityTargets.Retail.TryGetValue(e.Id, out var damage);
     return new
     {
-        id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
+        id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = e.Id == CompileSession.Ability ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
             e.Has("Ability/AbilityInnerStrengthCost") ? "stored" : "fallback",
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),

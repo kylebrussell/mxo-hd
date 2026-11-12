@@ -6,7 +6,7 @@ public static class NativeQaFixturePlan
     public static Dictionary<string, string> EnvironmentFor(string mode) => new()
     {
         ["MXO_DEV_COMMANDS"] = mode is "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or
-            "data-mining" or "death-presentation" or "actions" or "health-callbacks" or "desperation" ? "1" : "0",
+            "data-mining" or "death-presentation" or "actions" or "health-callbacks" or "desperation" or "emp-blast" or "compile-items" ? "1" : "0",
         ["MXO_DESPERATION_QA_HOLD_HEALTH"] = mode == "desperation" ? "1" : "",
         ["MXO_AUTH_PORT"] = "11000", ["MXO_MARGIN_PORT"] = "10000", ["MXO_WORLD_PORT"] = "10000",
         ["MXO_CONSOLE_PORT"] = "55557", ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0",

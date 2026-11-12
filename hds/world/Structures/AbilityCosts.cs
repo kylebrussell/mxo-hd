@@ -83,6 +83,8 @@ namespace hds
         public static UInt16 Cost(UInt16 abilityId)
         {
             UInt16 canonical = AbilityCatalog.Canonical(abilityId);
+            // CompileActivate is a tool/UI session with no stored IS-cost field, not a generic cast.
+            if (canonical == CompileSession.Ability) return 0;
             if (Retail.TryGetValue(canonical, out UInt16 cost)) return cost;
             var entry = AbilityCatalog.Find(canonical);
             return entry != null && entry.Has("Ability/AbilityInnerStrengthCost")
