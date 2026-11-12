@@ -23,6 +23,8 @@ namespace hds
             pak.AddByte(0x00);
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            if (thismob.ScriptedCorpse && thismob.getIsDead())
+                SendNpcUpdateData(mobView.ViewID, client, DeathPresentation.NpcCorpse(thismob));
             client.FlushQueue();
         }
 
