@@ -267,6 +267,8 @@ def server(i):
         parts.append('native script buffer reservation min(Value,free); baseline100+4level is OURS; refuses new upgrades until removal/expiry')
     if r.get('instant_hostile'):
         parts.append('instant script: removable buffs (UBF0) / current IS on landing')
+    if r.get('buff_dispel'):
+        parts.append('buff dispel on landing: ' + ', '.join(f"{m['callback']} {m['chance'] * 100:g}% proc" for m in r['buff_dispel']) + ' (existing server RNG policy; native sequence unverified)')
     if r['grants']:
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     style = [m for m in r.get('style', []) if m['level50'] is not None]
