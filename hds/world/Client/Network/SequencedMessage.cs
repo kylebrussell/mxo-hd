@@ -7,6 +7,14 @@ namespace hds
 {
     public class SequencedMessage
     {
+        // Created with the queue entry; delayed/timed entries remain included in first-send latency.
+        private readonly long scaleEnqueued=ScaleDiagnostics.Start;
+        private int scaleFirstSent;
+        public void RecordScaleFirstSend(bool objectMessage)
+        {
+            if(scaleEnqueued!=0 && System.Threading.Interlocked.Exchange(ref scaleFirstSent,1)==0)
+                ScaleDiagnostics.FirstSend(scaleEnqueued,objectMessage);
+        }
         public byte[] content;
         public UInt16 sendCounter;
         private int resendTime;

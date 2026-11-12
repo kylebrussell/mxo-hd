@@ -2,12 +2,14 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
+if(args.Contains("--authenticated")) return await AuthenticatedScale.RunAsync(args);
+
 Options options = Options.Parse(args);
 byte[] payload = new byte[Math.Max(1, options.PayloadBytes)];
 payload[0] = 0x00;
 
 Console.WriteLine(
-    $"Sending UDP load to {options.Host}:{options.Port} with {options.Clients} clients, " +
+    $"Sending UDP load to {options.Host}:{options.Port} with {options.Clients} unauthenticated UDP sockets (not logged-in players), " +
     $"{options.MessagesPerClient} messages/client, {payload.Length} bytes/message.");
 
 IPEndPoint target = new IPEndPoint(IPAddress.Parse(options.Host), options.Port);
@@ -49,6 +51,8 @@ finally
         client.Dispose();
     }
 }
+
+return 0;
 
 internal sealed class Options
 {

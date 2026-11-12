@@ -210,6 +210,8 @@ public sealed class ServerInstance : IDisposable
         }
     }
 
+    public string SourceAssembly => process.StartInfo.ArgumentList[0];
+    public int ProcessId => process.Id; // Read-only metrics for this harness-owned process.
     public bool HasExited => process.HasExited;
 
     public string OutputTail(int lines)
