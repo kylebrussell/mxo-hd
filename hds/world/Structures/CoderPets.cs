@@ -243,7 +243,7 @@ namespace hds
 
         // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
         public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
-            75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0), 5, 95);
+            75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0) + ProxyTechnician.Accuracy(pet,now,Ranged(pet)), 5, 95);
 
         public sealed class PowerBoostCast
         {
@@ -478,6 +478,7 @@ namespace hds
         /// <summary>Logout or zoning: no simulacrum survives its owner leaving the district.</summary>
         public static void OwnerLeft(WorldClient owner)
         {
+            AbilityAuras.Stop(owner,ProxyTechnician.Ability);
             Dismiss(owner, false);
             lock (boosts) { boosts.Remove(owner.playerData.getCharID()); nextBoostPulse.Remove(owner.playerData.getCharID()); }
         }
@@ -704,6 +705,8 @@ namespace hds
 
         // ---- Health ----------------------------------------------------------------------------------------------
 
+        internal static void ShowAuraEffect(Pet pet, UInt32 fx) => SendHit(pet,fx);
+
         private static void SendHit(Pet pet, UInt32 fx)
         {
             var pak = new PacketContent();
@@ -821,6 +824,7 @@ namespace hds
 
         private static void TickLocked(Pet pet, double now)
         {
+            ProxyTechnician.Prune(pet,now);
             if (pet.Gone) return;
             if (!OwnerPresent(pet) || OwnerDistanceMetres(pet) > LeashMetres * 4)
             {
@@ -875,7 +879,11 @@ namespace hds
         private static void Attack(Pet pet, Mob target, double now)
         {
             if (!SpendAction(pet, now)) return;
-            if (Random.Shared.NextDouble() * 100 >= HitChance(pet, target.getLevel(), now)) return;
+            double roll=ProxyTechnician.AttackRoll(pet,out bool forced);
+            double chance=HitChance(pet,target.getLevel(),now);
+            int technician=ProxyTechnician.Accuracy(pet,now,Ranged(pet));
+            if(forced || technician!=0) Output.WriteDebugLog("[PROXYTECH] attack owner="+TimedEffects.PlayerName(pet.Owner)+" bonus="+technician+" roll="+roll+" chance="+chance+" hit="+(roll<chance));
+            if (roll >= chance) return;
             UInt16 rawDamage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
             UInt16 damage = DaemonBoostDamage(pet, PowerBoostDamage(pet, rawDamage, now), now);
             if (damage != rawDamage) Output.WriteDebugLog("[PET] typed influence " + pet.Kind + " base " + rawDamage + " final " + damage);
@@ -948,6 +956,8 @@ namespace hds
             SendHit(pet, FirstFx(entry));
         }
 
+        internal static Pet[] SnapshotPets() { lock(pets) return pets.Values.ToArray(); }
+
         // ---- Dev command (MXO_DEV_COMMANDS=1) ------------------------------------------------------------------
 
         public static readonly UInt16[] DevAbilities = { 27, 28, 29, 586, 594, 22, 601, 611, 616, 602, 612, 617, 30, 31, 587, 596, 615,
@@ -995,7 +1005,7 @@ namespace hds
                     return current == null
                         ? "No simulacrum. ?pet cast|summon <ability>, ?pet dummy [level], ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities"
                         : current.Mob.getName() + " L" + current.Mob.getLevel() + " " + current.Mob.getHealthC() + "/" + current.Mob.getHealthM() + " HP, " + Math.Round(current.InnerStrength, 1) + "/" + current.MaxInnerStrength + " IS" +
-                          ", " + current.Order + ", " + current.Stance + ", cost " + (TimeUtils.GetSimTimeSeconds() < current.ChargeUntil ? 8 : 10) + ", resistance " + (TimeUtils.GetSimTimeSeconds() < current.FortifyUntil ? current.FortifyResistance : 0) + ", aura viral/heal " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostViralDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostHealing : 0) + ", power melee/ballistic " + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerMeleeDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerBallisticDamage : 0) + ", accuracy " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostAccuracy : 0) + (current.Target != null ? ", fighting " + current.Target.getName() : "");
+                          ", " + current.Order + ", " + current.Stance + ", cost " + (TimeUtils.GetSimTimeSeconds() < current.ChargeUntil ? 8 : 10) + ", resistance " + (TimeUtils.GetSimTimeSeconds() < current.FortifyUntil ? current.FortifyResistance : 0) + ", aura viral/heal " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostViralDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostHealing : 0) + ", power melee/ballistic " + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerMeleeDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerBallisticDamage : 0) + ", accuracy " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostAccuracy : 0) + (current.Target != null ? ", fighting " + current.Target.getName() : "") + ", technician melee/ballistic " + ProxyTechnician.Accuracy(current,TimeUtils.GetSimTimeSeconds(),false) + "/" + ProxyTechnician.Accuracy(current,TimeUtils.GetSimTimeSeconds(),true);
             }
         }
 
