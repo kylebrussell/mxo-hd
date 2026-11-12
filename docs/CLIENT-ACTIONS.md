@@ -19,8 +19,8 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
 | Handled | 49 | 42 | 12 | 103 |
-| Partial | 0 | 0 | 0 | 0 |
-| Ignored | 0 | 6 | 37 | 43 |
+| Partial | 0 | 0 | 1 | 1 |
+| Ignored | 0 | 6 | 36 | 42 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 19 |
 | **Total** | 49 | 48 | 50 | 166 |
@@ -200,7 +200,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
 | `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
 | `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
-| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | ignored: the server has no luggable objects | low |
+| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | ignored; code compiling is Codex's area | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
 | `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | ignored (pills work through `80 b9`) | low |
@@ -695,7 +695,7 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 **`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
 - It is sent when a dragged bag item is released over the world.
 - The client refuses anything that isn't luggable before sending: "You can only drop luggable objects in the world."
-- Offline, the client spawns the object itself. Online, it waits for the server, which has no luggable objects.
+- Offline, the client spawns the object itself. Online, it waits for the server. Shared light-luggable pickup/drop and persistence now execute; see [DATA-MINING.md](DATA-MINING.md). Heavy carrying remains absent.
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
 

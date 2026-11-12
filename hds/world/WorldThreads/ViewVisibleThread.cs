@@ -61,6 +61,7 @@ namespace hds
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CombatPresentation.CheckObservers();
                 foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
+                foreach (WorldClient client in aliveClients) DataMining.Check(client);
                 MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);

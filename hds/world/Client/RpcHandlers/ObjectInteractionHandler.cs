@@ -338,6 +338,9 @@ namespace hds
             if (interactedView != null && interactedView.spawnId == (numericObjectId >> 16) &&
                 PvpArchives.OnUse(Store.currentClient, interactedView, (byte)objectTypeID)) return;
 
+            if (interactedView != null && interactedView.spawnId == (numericObjectId >> 16) &&
+                DataMining.Use(Store.currentClient, interactedView, (byte)objectTypeID)) return;
+
             // Pick Lock, Disable Security Devices and locked mission objects run their retail rule first (UtilityAbilities)
             if (interactedView != null && UtilityAbilities.OnObjectUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID))
             {

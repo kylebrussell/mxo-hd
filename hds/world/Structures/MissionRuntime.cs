@@ -1183,6 +1183,7 @@ namespace hds
                 return;
             }
 
+            DataMining.RevealMission(client, progress);
             MissionSite site = progress.site;
             if (site != null && !progress.entered && x >= site.minX && x <= site.maxX && z >= site.minZ && z <= site.maxZ &&
                 Math.Abs(y - site.floorY) < 250)

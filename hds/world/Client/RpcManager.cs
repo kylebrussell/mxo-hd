@@ -66,6 +66,9 @@ namespace hds{
                 case (int)RPCRequestHeader.CLIENT_COMPILE_CODE:
                     new CraftingHandler().HandleCompileRequest(rpcData);
                     break;
+                case 0x5c:
+                    DataMining.Drop(Store.currentClient, rpcData);
+                    break;
                 case (int)RPCRequestHeader.CLIENT_INVENTORY_ABILITY:
                     CraftingHandler.ProcessInventoryAbility(Store.currentClient, rpcData);
                     break;

@@ -187,7 +187,7 @@ namespace hds
             if (!Tools.TryGetValue(ability, out UInt32[] tools)) return 0;
             foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()))
             {
-                if (tools.Contains(item.Goid)) return item.Goid;
+                if (item.Slot >= 1 && item.Slot <= 96 && tools.Contains(item.Goid)) return item.Goid;
             }
             return 0;
         }
@@ -420,24 +420,19 @@ namespace hds
         }
 
         // Find Data Node is a toggle (IsAToggleAbility)
-        private static readonly ConditionalWeakTable<WorldClient, StrongBox<bool>> searching =
-            new ConditionalWeakTable<WorldClient, StrongBox<bool>>();
-
-        public static bool IsSearchingForDataNodes(WorldClient client) =>
-            searching.TryGetValue(client, out StrongBox<bool> on) && on.Value;
+        public static bool IsSearchingForDataNodes(WorldClient client) => DataMining.Searching(client);
 
         /// <summary>
         /// Find Data Node (the mastery of Locate Data Node): needs a locator tool (Ability/RequiresTool), then searches until
         /// used again. LocateDataNode_DirectObject reads the tool's Range and Type; with goggles See Luggables is passed to
         /// the visual search, with the handheld Detect Luggables asks for the nearest luggable. Those searches are the
-        /// client's 80 ca to 80 cf records, whose layouts aren't read yet, so only the gate and the lines are sent.
+        /// client's 80 cb/cd/ce records, sent by DataMining.Check (docs/DATA-MINING.md).
         /// </summary>
         private static void ToggleFindDataNode(WorldClient client)
         {
-            StrongBox<bool> on = searching.GetOrCreateValue(client);
-            if (on.Value)
+            if (DataMining.Searching(client))
             {
-                on.Value = false;
+                DataMining.Stop(client);
                 ToCaster(client, LocateDataNodeOff, FindDataNode);
                 return;
             }
@@ -449,7 +444,7 @@ namespace hds
                 return;
             }
 
-            on.Value = true;
+            DataMining.Start(client, tool);
             ToCaster(client, LocateDataNodeOn, FindDataNode);
             (float range, byte type) = Locators[tool];
             Output.WriteDebugLog("[UTILITY] Find Data Node with tool " + tool + ": range " + range + " m, " +
