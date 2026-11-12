@@ -86,14 +86,18 @@ namespace hds
             public double FortifyUntil;
             public UInt16 FortifyHealth;
             public double ChargeUntil;
+            // OURS: retail pet sheet IS/cost/regen values are not established. A real bounded pool makes 603 meaningful.
+            public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
+            public int FortifyResistance, BoostAccuracy;
             public double BoostUntil;
             public int BoostDamage;
-            public bool Gone;
+            public bool Gone, WindowRemoved;
             public byte Counter;
         }
 
         private static readonly Dictionary<UInt32, Pet> pets = new Dictionary<UInt32, Pet>();
         private static readonly Dictionary<UInt32, byte> simulacraCounters = new Dictionary<UInt32, byte>();
+        private static readonly Dictionary<UInt32, double> nextBoostPulse = new Dictionary<UInt32, double>();
         private static readonly Dictionary<UInt32, UInt16> boosts = new Dictionary<UInt32, UInt16>();
         private static readonly Random random = new Random();
         private static Timer timer;
@@ -176,6 +180,68 @@ namespace hds
             return Math.Max(val, maxHealth / 10);
         }
 
+        // Native 62144ed0/62125940, consumer 625de800: reserved byte, ID, name[32], status[10].
+        public static byte[] BuildWindow(Pet pet, bool register)
+        {
+            var bytes = new byte[register ? 46 : 13];
+            bytes[0] = 0x81; bytes[1] = register ? (byte)0x76 : (byte)0x78;
+            int status = register ? 36 : 3;
+            if (register)
+            {
+                bytes[3] = pet.SimulacraId;
+                var name = System.Text.Encoding.ASCII.GetBytes(pet.Mob.getName());
+                Array.Copy(name, 0, bytes, 4, Math.Min(30, name.Length));
+            }
+            else bytes[2] = pet.SimulacraId;
+            BitConverter.GetBytes(pet.Mob.getHealthC()).CopyTo(bytes, status + 1);
+            BitConverter.GetBytes(pet.Mob.getHealthM()).CopyTo(bytes, status + 3);
+            bytes[status + 5] = (byte)pet.Order;
+            bytes[status + 6] = (byte)pet.Stance;
+            bytes[status + 7] = (byte)pet.Mob.getLevel();
+            return bytes;
+        }
+
+        private static void SendWindow(Pet pet, bool register)
+        {
+            if (pet.WindowRemoved) return;
+            pet.Owner.messageQueue?.addRpcMessage(BuildWindow(pet, register));
+            pet.Owner.FlushQueue();
+        }
+
+        private static void RemoveWindow(Pet pet)
+        {
+            if (pet.WindowRemoved) return;
+            pet.WindowRemoved = true;
+            pet.Owner.messageQueue?.addRpcMessage(new byte[] { 0x81, 0x77, pet.SimulacraId });
+            pet.Owner.FlushQueue();
+        }
+
+        // OURS baseline: 10 IS per action, 2 IS/s, 100 maximum. Catalog 603's percentages are sourced.
+        public static void Regenerate(Pet pet, double now)
+        {
+            double elapsed = Math.Max(0, now - pet.LastResourceTick);
+            double charged = Math.Max(0, Math.Min(now, pet.ChargeUntil) - pet.LastResourceTick);
+            pet.InnerStrength = Math.Min(pet.MaxInnerStrength, pet.InnerStrength + elapsed * 2 + charged);
+            pet.LastResourceTick = Math.Max(now, pet.LastResourceTick);
+        }
+
+        public static bool SpendAction(Pet pet, double now)
+        {
+            Regenerate(pet, now);
+            double cost = now < pet.ChargeUntil ? 8 : 10;
+            if (pet.InnerStrength < cost) return false;
+            pet.InnerStrength -= cost;
+            return true;
+        }
+
+        // OURS combat conversion; all four sourced Fortify resistance scores use the same rating curve.
+        public static int Mitigate(Pet pet, int damage, double now) => now < pet.FortifyUntil
+            ? (int)Math.Ceiling(damage * 100.0 / (100 + pet.FortifyResistance)) : damage;
+
+        // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
+        public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
+            75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0), 5, 95);
+
         // ---- Spawning --------------------------------------------------------------------------------------------
 
         public static Pet SpawnFor(WorldClient owner, UInt16 ability)
@@ -228,12 +294,13 @@ namespace hds
             var pet = new Pet
             {
                 Owner = owner, Mob = mob, Ability = ability, Kind = summon.Kind, Sheet = sheet, SimulacraId = simId,
-                BaseMaxHealth = max
+                BaseMaxHealth = max, LastResourceTick = TimeUtils.GetSimTimeSeconds()
             };
             mob.pet = pet;
             lock (pets) pets[charId] = pet;
             lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Add(mob);
             lock (WorldServer.gameServerEntities.SyncRoot) WorldServer.gameServerEntities.Add(mob);
+            SendWindow(pet, true);
             EnsureTimer();
             Output.WriteDebugLog("[PET] " + TimedEffects.PlayerName(owner) + " summoned " + mob.getName() + " L" + level +
                                  " (ability " + ability + ", simulacrum " + simId + ")");
@@ -289,8 +356,14 @@ namespace hds
 
         private static void Remove(Pet pet, UInt32 fx)
         {
+            lock (pet) RemoveLocked(pet, fx);
+        }
+
+        private static void RemoveLocked(Pet pet, UInt32 fx)
+        {
             if (pet.Gone) return;
             pet.Gone = true;
+            RemoveWindow(pet);
             if (fx != 0 && !pet.Mob.getIsDead()) SendHit(pet, fx);
             lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Remove(pet.Mob);
             lock (WorldServer.gameServerEntities.SyncRoot) WorldServer.gameServerEntities.Remove(pet.Mob);
@@ -301,8 +374,15 @@ namespace hds
         /// <summary>The simulacrum dies: retail's death update and FX_HACKER_SIMULACRA_DEATH_BASE, then its view goes.</summary>
         public static void Kill(Pet pet)
         {
+            if (pet == null) return;
+            lock (pet) KillLocked(pet);
+        }
+
+        private static void KillLocked(Pet pet)
+        {
             if (pet.Gone || !pet.Mob.TryClaimDeath()) return;
             pet.Mob.setHealthC(0);
+            RemoveWindow(pet);
             SendHit(pet, DeathFx);
             var death = new PacketContent();
             death.AddByteArray(ServerPackets.BuildNpcDeathUpdate(pet.Mob.NextAnimationSeq(), (byte)pet.Mob.getRotation(),
@@ -322,7 +402,7 @@ namespace hds
         public static void OwnerLeft(WorldClient owner)
         {
             Dismiss(owner, false);
-            lock (boosts) boosts.Remove(owner.playerData.getCharID());
+            lock (boosts) { boosts.Remove(owner.playerData.getCharID()); nextBoostPulse.Remove(owner.playerData.getCharID()); }
         }
 
         // ---- Orders ----------------------------------------------------------------------------------------------
@@ -367,19 +447,19 @@ namespace hds
             switch (command)
             {
                 case Command.Stay:
-                    pet.Order = Command.Stay; pet.Target = null; SetStanding(pet); return null;
+                    pet.Order = Command.Stay; pet.Target = null; SetStanding(pet); SendWindow(pet, false); return null;
                 case Command.Follow:
-                    pet.Order = Command.Follow; pet.Target = null; return null;
+                    pet.Order = Command.Follow; pet.Target = null; SendWindow(pet, false); return null;
                 case Command.Deactivate:
                     Dismiss(client); return null;
                 case Command.Attack:
                     Mob target = targetView > 2 ? AbilityTargets.FindMob(client, targetView, out _) : null;
                     if (target == null) target = DefaultTarget(client, pet);
                     if (target == null || target.getIsDead() || target.isFriendly || target.pet != null) return "Choose a hostile target.";
-                    pet.Order = Command.Attack; pet.Target = target; return null;
+                    pet.Order = Command.Attack; pet.Target = target; SendWindow(pet, false); return null;
                 case Command.Mode:
                     if (value > 2) return "Unknown mode.";
-                    pet.Stance = (Stance)value; return null;
+                    pet.Stance = (Stance)value; SendWindow(pet, false); return null;
                 default:
                     return "Unknown order.";
             }
@@ -441,7 +521,7 @@ namespace hds
         /// <summary>Daemon Boost used while on switches it off.</summary>
         public static void ToggleOff(WorldClient caster)
         {
-            lock (boosts) boosts.Remove(caster.playerData.getCharID());
+            lock (boosts) { boosts.Remove(caster.playerData.getCharID()); nextBoostPulse.Remove(caster.playerData.getCharID()); }
             Pet pet = Of(caster);
             if (pet != null) pet.BoostUntil = 0;
         }
@@ -463,6 +543,12 @@ namespace hds
             }
             Pet pet = Of(caster);
             if (pet == null || pet.Mob.getIsDead()) return;
+            lock (pet) LandOnPet(caster, pet, id);
+        }
+
+        private static void LandOnPet(WorldClient caster, Pet pet, UInt16 id)
+        {
+            if (pet.Gone || pet.Mob.getIsDead()) return;
             double now = TimeUtils.GetSimTimeSeconds();
             int casterLevel = caster.playerInstance.Level.getValue()[0];
             var entry = AbilityCatalog.Find(id);
@@ -474,15 +560,17 @@ namespace hds
             }
             else if (id == FortifySimulacra)
             {
-                // Max Health: native function 3 = character level x 15 for 600 s (resistances x 2 are recorded only)
+                // Native function 3: Max Health level*15 and four resistance scores level*2 for600s.
                 pet.FortifyHealth = (UInt16)(casterLevel * 15);
+                pet.FortifyResistance = casterLevel * 2;
                 pet.FortifyUntil = now + 600;
                 ApplyMaxHealth(pet);
                 SendHit(pet, FirstFx(entry));
             }
             else if (id == ChargeSimulacra)
             {
-                // Inner Strength Cost Reduction 20 / Inner Strength Regen Rate 50 for 600 s. Simulacra spend no Inner Strength here.
+                // Sourced 20% cost reduction / 50% regen bonus for 600 s; see explicit OURS baseline below.
+                Regenerate(pet, now);
                 pet.ChargeUntil = now + 600;
             }
             else if (id == DetonateProxy)
@@ -542,6 +630,7 @@ namespace hds
             var pak = new PacketContent();
             pak.AddByteArray(Mob.BuildHitUpdate(pet.Mob.getHealthC(), fx, ++pet.Counter));
             Store.world?.SendViewUpdateToClientsWhoHasMobSpawned(pak, pet.Mob);
+            if (!pet.Mob.getIsDead()) SendWindow(pet, false);
         }
 
         /// <summary>NPC view MaxHealth (update attribute 16) and Health (27): 04 80 80 84 &lt;max u16&gt; 40 &lt;health u16&gt;.</summary>
@@ -565,9 +654,16 @@ namespace hds
             var pak = new PacketContent();
             pak.AddByteArray(BuildHealthUpdate(pet.Mob.getHealthC(), max));
             Store.world?.SendViewUpdateToClientsWhoHasMobSpawned(pak, pet.Mob);
+            SendWindow(pet, false);
         }
 
         public static void HealPet(Pet pet, int amount, UInt32 fx)
+        {
+            if (pet == null) return;
+            lock (pet) HealPetLocked(pet, amount, fx);
+        }
+
+        private static void HealPetLocked(Pet pet, int amount, UInt32 fx)
         {
             if (pet.Gone || pet.Mob.getIsDead() || amount <= 0) return;
             pet.Mob.setHealthC((UInt16)Math.Min(pet.Mob.getHealthM(), pet.Mob.getHealthC() + amount));
@@ -575,6 +671,12 @@ namespace hds
         }
 
         public static void DamagePet(Pet pet, int amount, UInt32 fx)
+        {
+            if (pet == null) return;
+            lock (pet) DamagePetLocked(pet, amount, fx);
+        }
+
+        private static void DamagePetLocked(Pet pet, int amount, UInt32 fx)
         {
             if (pet.Gone || pet.Mob.getIsDead()) return;
             int left = Math.Max(0, pet.Mob.getHealthC() - amount);
@@ -634,6 +736,12 @@ namespace hds
 
         public static void Tick(Pet pet, double now)
         {
+            if (pet == null) return;
+            lock (pet) TickLocked(pet, now);
+        }
+
+        private static void TickLocked(Pet pet, double now)
+        {
             if (pet.Gone) return;
             if (!OwnerPresent(pet) || OwnerDistanceMetres(pet) > LeashMetres * 4)
             {
@@ -641,6 +749,7 @@ namespace hds
                 return;
             }
             if (pet.Mob.getIsDead()) return;
+            Regenerate(pet, now);
             if (pet.FortifyUntil > 0 && now >= pet.FortifyUntil) { pet.FortifyUntil = 0; ApplyMaxHealth(pet); }
 
             if (pet.Target != null && (pet.Target.getIsDead() || !pet.Target.getIsSpawned() || pet.Target.getDistrict() != pet.Mob.getDistrict() ||
@@ -686,6 +795,8 @@ namespace hds
         /// </summary>
         private static void Attack(Pet pet, Mob target, double now)
         {
+            if (!SpendAction(pet, now)) return;
+            if (Random.Shared.NextDouble() * 100 >= HitChance(pet, target.getLevel(), now)) return;
             UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
             if (now < pet.BoostUntil) damage = (UInt16)Math.Min(UInt16.MaxValue, damage + pet.BoostDamage);
             UInt32 fx = Ranged(pet) ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
@@ -701,7 +812,7 @@ namespace hds
             if (OwnerDistanceTo(pet, target) > LeashMetres || Distance(pet.Mob, target.getXPos(), target.getYPos(), target.getZPos()) > RangedRangeMetres * 100) return;
             pet.NextRetaliation = now + AttackPeriodSeconds;
             UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), pet.Mob.getLevel());
-            DamagePet(pet, damage, CombatCalculator.GetRandomMeleeHitFx());
+            DamagePet(pet, Mitigate(pet, damage, now), CombatCalculator.GetRandomMeleeHitFx());
         }
 
         /// <summary>Patch Daemon heals its owner when hurt. No retail value is known: it heals the NPC round amount at its level (our choice).</summary>
@@ -714,6 +825,7 @@ namespace hds
             UInt16 current = NumericalUtils.ByteArrayToUint16(owner.playerInstance.Health.getValue(), 1);
             if (current >= max || OwnerDistanceMetres(pet) > 20) return;
             pet.NextAttack = now + AttackPeriodSeconds;
+            if (!SpendAction(pet, now)) return;
             int amount = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), owner.playerInstance.Level.getValue()[0]);
             if (now < pet.BoostUntil) amount += pet.BoostDamage;
             AbilityHandler.HealSelf(owner, (UInt16)amount);
@@ -722,14 +834,18 @@ namespace hds
         /// <summary>
         /// Daemon Boost: ISDrainWithAbilityDeactivation takes 5 Inner Strength every 5 s (switching off when there isn't enough),
         /// and ApplyAuraEffect reapplies 699/700 every 5 s: 5 s of Viral Damage/Healing (699, character level x 0.5) or accuracy
-        /// (700) within its radius (20/10 m). Simulacra have no accuracy roll here, so 700's buffs change nothing.
+        /// (700) within its radius (20/10 m). 700 modifies the actual attack roll.
         /// </summary>
         private static void BoostTick(WorldClient owner, double now)
         {
             UInt16 on;
             lock (boosts) if (!boosts.TryGetValue(owner.playerData.getCharID(), out on)) return;
             Pet pet = Of(owner);
-            if (pet != null && pet.BoostUntil - now > 0.5) return; // every 5 s
+            lock (boosts)
+            {
+                if (nextBoostPulse.TryGetValue(owner.playerData.getCharID(), out double next) && now < next) return;
+                nextBoostPulse[owner.playerData.getCharID()] = now + 5;
+            }
             UInt16 current = AbilityHandler.CurrentInnerStrength(owner);
             if (current < 5)
             {
@@ -745,9 +861,10 @@ namespace hds
             UInt16 effect = on == DaemonBoost1 ? DaemonBoostEffect1 : DaemonBoostEffect2;
             var entry = AbilityCatalog.Find(effect);
             double radius = entry?.Number("Ability/RadiusOfEffect", 20) ?? 20;
-            if (OwnerDistanceMetres(pet) > radius) { pet.BoostUntil = now + 5; pet.BoostDamage = 0; return; }
+            if (OwnerDistanceMetres(pet) > radius) { pet.BoostUntil = now + 5; pet.BoostDamage = 0; pet.BoostAccuracy = 0; return; }
             pet.BoostUntil = now + 5;
             pet.BoostDamage = effect == DaemonBoostEffect1 ? (int)(owner.playerInstance.Level.getValue()[0] * 0.5) : 0;
+            pet.BoostAccuracy = effect == DaemonBoostEffect2 ? (int)(owner.playerInstance.Level.getValue()[0] * 1.3) : 0;
             SendHit(pet, FirstFx(entry));
         }
 
@@ -786,14 +903,19 @@ namespace hds
                 case "defensive": return Order(client, CurrentSimulacrum, Command.Mode, 0, (byte)Stance.Defensive) ?? "Defensive.";
                 case "aggressive": return Order(client, CurrentSimulacrum, Command.Mode, 0, (byte)Stance.Aggressive) ?? "Aggressive.";
                 case "passive": return Order(client, CurrentSimulacrum, Command.Mode, 0, (byte)Stance.Passive) ?? "Passive.";
+                case "exhaust":
+                    Pet exhausted = Of(client);
+                    if (exhausted == null) return "No simulacrum.";
+                    lock (exhausted) { exhausted.InnerStrength = 0; exhausted.LastResourceTick = TimeUtils.GetSimTimeSeconds(); }
+                    return "Simulacrum IS exhausted (dev fixture).";
                 case "abilities":
                     return "Simulacrum abilities: " + string.Join(", ", DevAbilities.Select(a => a + " " + (DataLoader.getInstance().getAbilityByID(a)?.getAbilityName() ?? "?")));
                 default:
                     Pet current = Of(client);
                     return current == null
                         ? "No simulacrum. ?pet cast|summon <ability>, ?pet dummy [level], ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities"
-                        : current.Mob.getName() + " L" + current.Mob.getLevel() + " " + current.Mob.getHealthC() + "/" + current.Mob.getHealthM() +
-                          ", " + current.Order + ", " + current.Stance + (current.Target != null ? ", fighting " + current.Target.getName() : "");
+                        : current.Mob.getName() + " L" + current.Mob.getLevel() + " " + current.Mob.getHealthC() + "/" + current.Mob.getHealthM() + " HP, " + Math.Round(current.InnerStrength, 1) + "/" + current.MaxInnerStrength + " IS" +
+                          ", " + current.Order + ", " + current.Stance + ", cost " + (TimeUtils.GetSimTimeSeconds() < current.ChargeUntil ? 8 : 10) + ", resistance " + (TimeUtils.GetSimTimeSeconds() < current.FortifyUntil ? current.FortifyResistance : 0) + ", accuracy " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostAccuracy : 0) + (current.Target != null ? ", fighting " + current.Target.getName() : "");
             }
         }
 
