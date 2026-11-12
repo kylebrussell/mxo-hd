@@ -16,17 +16,19 @@ ROOT = Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output-dir', type=Path, help='Write the current Markdown, CSV and coverage review bundle here')
 parser.add_argument('--source-base-url', help='Pinned HTTPS repository blob URL for portable artifact evidence links')
-parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: tracked inventory)')
+parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: ignored artifacts/ability-audit/server_coverage.json)')
 parser.add_argument('--update-markdown-snapshot', action='store_true', help='Explicit docs-only historical snapshot refresh')
 args=parser.parse_args()
 if args.output_dir and args.update_markdown_snapshot:
     parser.error('--output-dir and --update-markdown-snapshot are separate workflows')
 artifact_dir=args.output_dir or ROOT / 'artifacts/ability-audit'
+coverage_path = args.coverage or ROOT / 'artifacts/ability-audit/server_coverage.json'
+if not coverage_path.is_file():
+    parser.error(f'Executable coverage not found: {coverage_path}. Run dotnet run --project tools/AbilityAudit first, or pass --coverage with a freshly generated inventory. The tracked historical inventory is not a current fallback.')
 artifact_dir.mkdir(parents=True,exist_ok=True)
 
 catalog = json.loads((ROOT / 'data/ability_catalog.json').read_text())
 abilities = {r['id']: r for r in catalog['abilities']}
-coverage_path = args.coverage or ROOT / 'research/abilities/server_coverage.json'
 coverage = {r['id']: r for r in json.loads(coverage_path.read_text())}
 assert set(coverage) == set(abilities)
 
