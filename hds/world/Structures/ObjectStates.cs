@@ -541,6 +541,13 @@ namespace hds
                 "BROADCAST");
         }
 
+        /// <summary>A followed object's goid and the state last sent, or (0, 0).</summary>
+        public static (UInt16 goid, UInt32 state) TrackedObject(WorldClient client, UInt64 entity) => TrackedGoid(client, entity);
+
+        /// <summary>The entity of the last ?objstate object, or 0.</summary>
+        public static UInt64 LastDevObject(WorldClient client) =>
+            devObject.TryGetValue(client, out StrongBox<UInt64> last) ? last.Value : 0;
+
         private static (UInt16, UInt32) TrackedGoid(WorldClient client, UInt64 entity)
         {
             if (!tracked.TryGetValue(client, out Dictionary<UInt64, (UInt16, UInt32)> map))
