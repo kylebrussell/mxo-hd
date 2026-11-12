@@ -15,9 +15,20 @@ public static partial class Scenarios
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={player.CharId}; " +
             $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
             $"({player.CharId},300,{Goid(45)},50,1),({player.CharId},301,{Goid(269)},50,1)," +
-            $"({player.CharId},302,{Goid(52)},49,1),({player.CharId},303,{Goid(37)},15,0)");
+            $"({player.CharId},302,{Goid(52)},49,1),({player.CharId},303,{Goid(37)},15,0),({player.CharId},304,{Goid(7)},5,0)");
         await player.EnterWorldAsync();
         await player.WaitForRpcAsync(PassiveRecord(52, 643, 196));
+        SetAbilityLoaded(player, 304, 7, 5, true);
+        player.SendRpc("81 48"); await player.WaitForRpcAsync("81 49");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={player.CharId} AND slot=304"),
+            "Owned Detect Vulnerability cannot load at retail cap50 (stored requirement99)");
+        Check.Equal(0, player.Received("80 b2 07 00").Count, "Denied load emits no ability-load acknowledgement");
+        await context.Database.ExecuteAsync($"UPDATE char_abilities SET is_loaded=1 WHERE char_id={player.CharId} AND slot=304");
+        SetAbilityLoaded(player, 304, 7, 5, false);
+        await player.WaitForRpcAsync("80 b3 07 00");
+        player.SendRpc("81 48"); await player.WaitForRpcAsync("81 49");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={player.CharId} AND slot=304"),
+            "Legacy inaccessible ability can still be unloaded");
         var self = player.World.CreationSnapshot().Last(v => v.ViewId == 2);
         Check.Equal((ushort)575, BitConverter.ToUInt16(self.Attributes["MaxHealth"]), "Character-level Aikido passive changes the live maximum");
         Check.Equal((ushort)220, BitConverter.ToUInt16(self.Attributes["InnerStrengthMax"]), "Execute Program changes the live IS maximum");
