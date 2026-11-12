@@ -1,0 +1,1147 @@
+{
+  "world": 14,
+  "rawReferences": 39,
+  "uniqueKeys": 39,
+  "exportedKeys": 39,
+  "excludedKeys": [],
+  "convention": "METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.",
+  "sourceSha256": {
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_52.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_52.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_52.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_36.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_36.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_36.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_0.sid": "5afb56fd50ef9eb1db088b1cabe4b18a313926303265f950fa4dcbe037d7cbb8",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_0.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_0.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_104.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_104.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_104.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_124.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_124.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_124.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_136.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_136.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_136.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_17.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_17.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_17.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_15.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_15.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_15.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_63.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_63.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_63.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_137.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_137.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_137.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_109.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_109.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_109.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_62.sid": "fac3deb18fc0b0a1d0f631e5d0916cfdef3aed1aa60efc0a5214d1741cd49872",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_62.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_62.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_84.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_84.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_84.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_1.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_1.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_1.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_113.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_113.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_113.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_68.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_68.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_68.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_67.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_67.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_67.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_19.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_19.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_19.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_119.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_119.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_119.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_8.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_8.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_8.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_7.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_7.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_7.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_41.sid": "2e0aa23d07aaf20194894a32772d08930797cc86e5c5a82e28f6e25f2cf3bd52",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_41.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_41.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_121.sid": "e040802f2ab0ba26a937e733f664b70a1bea73a3cafe93f379c534bd6dc02ece",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_121.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_121.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_78.sid": "4a2beacc942c647938c00062b77fe9869c010ea1428e9065e1219b84b6f34a74",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_78.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_78.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_65.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_65.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_65.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_116.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_116.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_116.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_13.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_13.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_13.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_103.sid": "6709ace6d5e462d47bc8954adbacfeece413fd1c815b4ef4eed5375a20fd62c0",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_103.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_103.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_95.sid": "c86732166e0e2fb9afbdb059c7ab486711d0114cd997e913d680fb73f45d12df",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_95.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_95.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_91.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_91.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_91.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_92.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_92.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_92.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_3.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_3.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_3.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_6.sid": "2bed36b865487dcf6cbf0876430277f3336c82361bc96f950fc4fdf301157cd0",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_6.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_6.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_132.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_132.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_132.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_110.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_110.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_110.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_49.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_49.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_49.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_35.sid": "30d00d4bacf1d00cb0ff9dc61505d9cb90a88cee6c19fb0dff8510170880e40c",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_35.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_35.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_123.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_123.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_123.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_24.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_24.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_24.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_55.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_55.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_55.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_81.sid": "f027b80fb008a5af1301dd13b526ea4601d0baad508e55b14340d6836a0e4f75",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_81.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_81.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_14.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_14.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_14.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_141.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_141.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_141.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_21.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_21.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_21.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_26.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_26.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_26.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_89.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_89.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_89.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_47.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_47.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_47.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_77.sid": "3e8af5510e77d88a685328a9e7774e3f8f30d45de111b0c912bb034889f5a06d",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_77.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_77.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_76.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_76.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_76.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_143.sid": "9f71ffddcddafa57530bf626a5df4ec809433cfcc49646402d3f257f99598b90",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_143.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_143.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_10.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_10.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_10.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_28.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_28.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_28.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_69.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_69.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_69.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_48.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_48.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_48.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_2.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_2.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_2.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_96.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_96.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_96.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_94.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_94.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_94.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_128.sid": "1535742cc70d7998ea01cecf7195ef8befad31684dd98199e48ecaf03eae3732",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_128.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_128.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_58.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_58.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_58.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_61.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_61.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_61.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_98.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_98.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_98.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_100.sid": "7659aeb47ab522073e162ab0c9eb6963d4b1a9fadee660768152d4adfdf19845",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_100.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_100.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_87.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_87.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_87.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_30.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_30.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_30.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_70.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_70.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_70.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_107.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_107.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_107.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_53.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_53.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_53.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_108.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_108.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_108.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_90.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_90.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_90.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_57.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_57.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_57.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_112.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_112.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_112.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_60.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_60.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_60.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_120.sid": "25eaad8eac6bde63c806460b0a65fc93e54d760de7230b9f5d0f2e4a46c3fb4a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_120.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_120.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_88.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_88.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_88.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_73.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_73.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_73.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_9.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_9.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_9.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_105.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_105.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_105.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_46.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_46.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_46.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_33.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_33.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_33.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_56.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_56.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_56.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_138.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_138.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_138.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_140.sid": "a9491b33810fbcc9c62f7158dbc3c3c9ed144292e0ad71d2eae393639e918407",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_140.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_140.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_37.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_37.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_37.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_32.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_32.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_32.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_54.sid": "d819f4fe549ef74b99904127a69ef186f7a7e99c6f86c1586e98f08f2cf37908",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_54.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_54.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_18.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_18.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_18.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_27.sid": "843d240bb92e243bb44e0c40cef23b3abb10272926bb8396ebdbe99cdd62ae19",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_27.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_27.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_102.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_102.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_102.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_111.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_111.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_111.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_39.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_39.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_39.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_29.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_29.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_29.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_74.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_74.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_74.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_135.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_135.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_135.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_97.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_97.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_97.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_80.sid": "cb5b480e473251b3f39880f4ff14ebb6a1eeeba9778741491fbf64a032a06a41",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_80.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_80.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_142.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_142.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_142.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_75.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_75.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_75.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_64.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_64.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_64.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_131.sid": "f10d7896b30456a3d13a4a937f32b5817a7747fa9490b0ace3fd1a2cba56cc6e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_131.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_131.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_101.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_101.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_101.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_85.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_85.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_85.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_126.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_126.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_126.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_82.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_82.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_82.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_129.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_129.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_129.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_40.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_40.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_40.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_72.sid": "aba6ea3e077cd77904eec9f0b58603c9c6580f51c8cbf43c483665452bc84f47",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_72.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_72.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_59.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_59.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_59.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_5.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_5.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_5.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_115.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_115.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_115.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_11.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_11.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_11.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_86.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_86.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_86.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_71.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_71.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_71.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_139.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_139.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_139.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_45.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_45.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_45.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_134.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_134.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_134.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_106.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_106.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_106.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_114.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_114.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_114.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_43.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_43.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_43.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_12.sid": "0a78e3db3593a185a208dd5bf866fd6fcb152cf2dbd7ad88d5157c0336e14891",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_12.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_12.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_79.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_79.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_79.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_66.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_66.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_66.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_22.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_22.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_22.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_133.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_133.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_133.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_130.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_130.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_130.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_34.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_34.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_34.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_25.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_25.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_25.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_31.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_31.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_31.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_42.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_42.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_42.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_127.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_127.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_127.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_83.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_83.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_83.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_20.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_20.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_20.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_50.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_50.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_50.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_44.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_44.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_44.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_99.sid": "28866e14114d6d0c135f4f5e5a70d09bfd3f4a4cf3effce77816e06eb27c98b9",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_99.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_99.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_93.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_93.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_93.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_122.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_122.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_122.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_51.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_51.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_51.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_125.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_125.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_125.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_118.sid": "f3093d7e67ff3eaecb326488ecf7ce25fac617c5e421d27f6a1268f55a48aeb5",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_118.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_118.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_16.sid": "e0099e4381ba2415179858007dc136ab1fc243ab695946f99bf2c0d3776cdca5",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_16.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_16.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_117.sid": "308e2f19142aa40ac6e54af85847b7caa122107191f90620ba8a457f72514ecb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_117.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_117.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_38.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_38.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_38.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_23.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_23.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_23.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_4.sid": "6c950820ba89d61b0d2ce359c2fb7d007bdfb05354274586c1a1e16192898fcb",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_4.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
+    "resource/worlds/final_world/constructs/medium/medium01/medium01_4.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a"
+  },
+  "raw": [
+    [
+      21,
+      1,
+      38339,
+      [
+        8800.0,
+        645.0,
+        14900.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      21,
+      2,
+      38339,
+      [
+        8200.0,
+        645.0,
+        16100.0
+      ],
+      [
+        0.0,
+        -0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      32,
+      1,
+      38339,
+      [
+        16800.0,
+        145.0,
+        9600.0
+      ],
+      [
+        0.0,
+        -0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      32,
+      2,
+      38339,
+      [
+        16200.0,
+        745.0,
+        8400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      32,
+      3,
+      38339,
+      [
+        14800.0,
+        745.0,
+        8600.0
+      ],
+      [
+        0.0,
+        -0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      32,
+      4,
+      38339,
+      [
+        14200.0,
+        145.0,
+        9400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      32,
+      5,
+      38339,
+      [
+        12200.0,
+        745.0,
+        8400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      1,
+      38339,
+      [
+        25100.0,
+        145.0,
+        17800.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      2,
+      38339,
+      [
+        25100.0,
+        145.0,
+        11800.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      3,
+      38339,
+      [
+        24700.0,
+        145.0,
+        17600.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      4,
+      38339,
+      [
+        23200.0,
+        145.0,
+        11400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      5,
+      38339,
+      [
+        23100.0,
+        745.0,
+        14800.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      6,
+      38339,
+      [
+        21400.0,
+        345.0,
+        17700.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      7,
+      38339,
+      [
+        21200.0,
+        745.0,
+        14400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      8,
+      38339,
+      [
+        20900.0,
+        145.0,
+        12200.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      61,
+      9,
+      38339,
+      [
+        20700.0,
+        345.0,
+        18600.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      1,
+      38339,
+      [
+        19600.0,
+        745.0,
+        16200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      2,
+      38339,
+      [
+        19600.0,
+        745.0,
+        12200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      3,
+      38339,
+      [
+        19400.0,
+        745.0,
+        10800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      4,
+      38339,
+      [
+        18600.0,
+        145.0,
+        15200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      5,
+      38339,
+      [
+        18600.0,
+        145.0,
+        11200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      6,
+      38339,
+      [
+        18400.0,
+        145.0,
+        13800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      7,
+      38339,
+      [
+        17900.0,
+        745.0,
+        19200.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      8,
+      38339,
+      [
+        16800.0,
+        145.0,
+        17600.0
+      ],
+      [
+        0.0,
+        -0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      9,
+      38339,
+      [
+        16600.0,
+        745.0,
+        14200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      10,
+      38339,
+      [
+        16400.0,
+        745.0,
+        12800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      11,
+      38339,
+      [
+        14600.0,
+        745.0,
+        14200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      12,
+      38339,
+      [
+        14400.0,
+        745.0,
+        12800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      13,
+      38339,
+      [
+        14200.0,
+        145.0,
+        17400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      14,
+      38339,
+      [
+        14100.0,
+        745.0,
+        19800.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      15,
+      38339,
+      [
+        12200.0,
+        745.0,
+        19400.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      16,
+      38339,
+      [
+        12200.0,
+        145.0,
+        14100.0
+      ],
+      [
+        0.0,
+        -0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      17,
+      38339,
+      [
+        11700.0,
+        145.0,
+        16600.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      18,
+      38339,
+      [
+        11700.0,
+        145.0,
+        11600.0
+      ],
+      [
+        0.0,
+        0.9238793849945068,
+        0.0,
+        0.38268348574638367
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      19,
+      38339,
+      [
+        10600.0,
+        745.0,
+        17200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      20,
+      38339,
+      [
+        10600.0,
+        745.0,
+        13200.0
+      ],
+      [
+        0.0,
+        0.3826834559440613,
+        0.0,
+        0.9238795042037964
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      21,
+      38339,
+      [
+        10400.0,
+        745.0,
+        15800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      72,
+      22,
+      38339,
+      [
+        10400.0,
+        745.0,
+        11800.0
+      ],
+      [
+        0.0,
+        -0.9238796234130859,
+        0.0,
+        0.38268333673477173
+      ],
+      0,
+      "ext"
+    ],
+    [
+      140,
+      1,
+      592,
+      [
+        39350.0,
+        -903.0,
+        27000.0
+      ],
+      [
+        0.0,
+        -0.7071067094802856,
+        0.0,
+        0.7071067690849304
+      ],
+      0,
+      "ext"
+    ]
+  ],
+  "conflicts": {}
+}

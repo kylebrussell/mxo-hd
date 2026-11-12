@@ -69,7 +69,7 @@ namespace hds
             int value = (int)m.Number("MinValue");
             if (m.Text("StatModUpdateFunc").EndsWith("DOT", StringComparison.Ordinal) && !Scripted(m, true) && Fixed(m))
                 return new TempMods.Mod { Kind = TempMods.KindLinked, Target = TempMods.DOTPlaceHolderAbility, MinValue = value, MaxValue = value,
-                    Seconds = seconds, Proc = TempMods.Proc.Dot, Interval = m.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds) };
+                    Seconds = seconds, Proc = TempMods.Proc.Dot, Interval = m.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds), DamageType = TypedAbilityResistance.ModifierType(m,true) };
             // BufferOverflowInit/Update/Term fill the target's native buff buffer; the tempmod and its record are kept here
             if (m.Text("StatModInitFunc") == "BufferOverflowInit" && Fixed(m))
                 return new TempMods.Mod { Kind = TempMods.KindFx, Target = ability, MinValue = value, MaxValue = value, Seconds = seconds,

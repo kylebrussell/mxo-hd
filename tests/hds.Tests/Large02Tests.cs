@@ -28,7 +28,7 @@ public class Large02Tests
     {
         HardlineNetwork.Load(Path.Combine(Root,"data","hardline_network.csv"));SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));
-        Assert.True(HardlineNetwork.Covers(13));Assert.False(HardlineNetwork.Covers(14));
+        Assert.True(HardlineNetwork.Covers(13));Assert.True(HardlineNetwork.Covers(14)); Assert.False(HardlineNetwork.Covers(99));
         Assert.Equal(new ushort[]{1},HardlineNetwork.Ids(13));var h=HardlineNetwork.Get(13,1);
         Assert.Equal(-7500,h.spotX);Assert.Equal(95,h.spotY);Assert.Equal(-2000,h.spotZ);
         Assert.True(NavMesh.Locate(13,h.spotX,h.spotY,h.spotZ,out var arrival));Assert.Equal(207,arrival.sector);
