@@ -78,6 +78,8 @@ public class NativeQaFixturePlanTests
             Assert.Contains(mode,NativeQaModes.Names);
             var plan=NativeQaModes.Find(mode).Plan;
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
+            Assert.Equal(mode=="desperation"?"1":"",NativeQaFixturePlan.EnvironmentFor(mode)["MXO_DESPERATION_QA_HOLD_HEALTH"]);
+            Assert.Throws<NotSupportedException>(()=>((IDictionary<string,string>)plan.EnvironmentOverrides).Add("qa","1"));
             Assert.Equal(mode=="health-callbacks",plan.FixedCallbackRolls);
             Assert.Equal(mode=="stealth-shields",plan.Bootstrap=="stealth-shield-217");
             Assert.Throws<NotSupportedException>(()=>((IList<ushort>)plan.Abilities)[0]=999);

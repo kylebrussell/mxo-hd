@@ -63,14 +63,14 @@ namespace hds
                         target.playerData.getOnWorld(), target.playerData.isDead, TimedEffects.PlayerName(target)))
                     return "Daze fixture target must be a live visible QA player other than 2/TheNeo.";
                 Apply(TimedEffects.ForPlayer(target), seconds, caller, view);
-                return "Daze fixture applied884/199 to " + TimedEffects.PlayerName(target) + " for " + seconds.ToString(CultureInfo.InvariantCulture) + " seconds; immunity unchanged.";
+                return "Daze fixture applied 884/199 to " + TimedEffects.PlayerName(target) + " for " + seconds.ToString(CultureInfo.InvariantCulture) + " seconds; immunity unchanged.";
             }
             var mob = AbilityTargets.FindMob(caller, view, out var visible);
             if (mob == null || visible == null || !visible.viewCreated || mob.getIsDead() ||
                 mob.getDistrict() != caller.playerData.getDistrictId() || string.Equals(mob.getName(), "TheNeo", StringComparison.OrdinalIgnoreCase))
                 return "Select a live visible NPC or QA player for the daze fixture.";
             Apply(TimedEffects.ForMob(mob), seconds, caller, view);
-            return "Daze fixture applied884/199 to " + mob.getName() + " for " + seconds.ToString(CultureInfo.InvariantCulture) + " seconds; immunity unchanged.";
+            return "Daze fixture applied 884/199 to " + mob.getName() + " for " + seconds.ToString(CultureInfo.InvariantCulture) + " seconds; immunity unchanged.";
         }
     }
 }

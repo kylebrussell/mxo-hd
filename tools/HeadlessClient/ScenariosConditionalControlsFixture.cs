@@ -14,7 +14,7 @@ public static partial class Scenarios
         caster.SendRpc($"81 51 {Le(npc.ViewId)} {(byte)(npc.SpawnId+1):x2}");
         caster.SendChat("?combatdepth daze");await caster.WaitForTextAsync("Select a live visible");
         caster.SendRpc($"81 51 {Le(npc.ViewId)} {npc.SpawnId:x2}");
-        caster.SendChat("?combatdepth daze");await caster.WaitForTextAsync("applied884/199 to WinterFrost for 30 seconds");
+        caster.SendChat("?combatdepth daze");await caster.WaitForTextAsync("applied 884/199 to WinterFrost for 30 seconds");
         await caster.WaitUntilAsync(()=>context.Server.DebugLog().Contains("884 on WinterFrost: State 199"),"Real NPC Dazed state",TimeSpan.FromSeconds(5));
         Cast(caster,347,npc.ViewId);
         await caster.WaitUntilAsync(()=>context.Server.DebugLog().Contains("347 on WinterFrost: State 102"),"Prepared NPC receives conditional4s stun",TimeSpan.FromSeconds(8));
@@ -22,7 +22,7 @@ public static partial class Scenarios
         target.SendChat("?pvpflag on");await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var view=await caster.WaitForViewNamedAsync(target.Handle);
         caster.SendRpc($"81 51 {Le(view.ViewId)} {view.SpawnId:x2}");
-        caster.SendChat("?combatdepth daze 20");await caster.WaitForTextAsync("applied884/199 to DazeFixtureHelper for 20 seconds");
+        caster.SendChat("?combatdepth daze 20");await caster.WaitForTextAsync("applied 884/199 to DazeFixtureHelper for 20 seconds");
         var daze=await target.WaitForRpcAsync(ModPattern(884,199));
         Check.Equal(20f,BitConverter.ToSingle(daze.Bytes,18),"QA duration affects real player Daze state");
         Check.Equal(0,target.Received(ModPattern(734,681)).Count,"Daze preparation creates no stun immunity");
