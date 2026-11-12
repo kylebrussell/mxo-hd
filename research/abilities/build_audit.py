@@ -223,6 +223,13 @@ def server(i):
         parts.append('instant script: removable buffs (UBF0) / current IS on landing')
     if r['grants']:
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
+    style = [m for m in r.get('style', []) if m['level50'] is not None]
+    if style:
+        parts.append('active-style modifiers via 3e (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); style interlock exchanges')
+    if r.get('special_move_style'):
+        parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
+    if r.get('special'):
+        parts.append(r['special'])
     if 'HyperJump' in abilities[i]['name']:
         parts.append('jump trajectory + control gate; rank/limits incomplete')
     if not r.get('stealth') and ('Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']):
@@ -239,7 +246,7 @@ def status(i):
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i == 49 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
-    if r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
@@ -284,6 +291,8 @@ Hacker area damage and controls reach visible NPCs on the same floor. DOTs on se
 Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, damage influence, control durations and crafting use these totals. Control duration bonuses follow the stored class-4 state links (stun, root, pacify, blind, powerless, confuse) and keep fractional seconds. Immunity timers and break rules retain their separate definitions. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, complete stealth/detection attributes, Determination mitigation and special callbacks are still incomplete. Stealth state/visibility/detection now has an executor; see [STEALTH.md](STEALTH.md) for sourced behavior and choices. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
 
 Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs heal only the caster's own simulacrum; player targets are refused. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Deterministic numeric timed buffs using character-level function3 resolve from the caster at application, with active snapshots shared by stat/vital consumers and exact removal records. Script/aura/state/random effects and indefinite style scaling stay excluded; [scaled-buff evidence](ABILITY-SCALED-BUFFS.md) lists native comparison points. Restore RSI325, Revitalize326, Revive375 and Rejuvenate416 now use dead-friendly targets, the native81 88 consent exchange and their script-defined resource restoration. Refusal, timeout, wrong-ability replies, replies without a live offer and reconstruction are rejected; the native short reply carries no per-offer nonce. Exact script-specific resurrection motion and native dialog acceptance remain unverified; see [resurrection evidence](ABILITY-RESURRECTION.md). Coder simulacra (Remote Proxy, Logic/Patch Daemon) spawn as owned NPC_BASE_SIMULACRA views with follow/assist AI, the client's orders, death and lifetime, plus the own-simulacrum abilities and Daemon Boost; see [CODER-PETS.md](CODER-PETS.md) for what is retail evidence and what is chosen.
+
+Combat styles (Self Defense, Aikido, Karate, Kung-Fu, Hacker/Coder/Spy Style) become active through `3e`. The active style's while-enabled modifiers join the passive totals, and its ILDB exchange set drives the interlock moves all viewers see. `CombatSpecialMove` abilities need their stored stance: a loaded style is switched to, an unloaded one refuses the move. Thrown DOTs, Berserker/Side Roll caster buffs, Taunt aggro and the Exile weapons have executors. Their inferences and gaps (RandomCombatStateChance, weakness by NPC name, special-move choreography) are in [COMBAT-STYLES.md](COMBAT-STYLES.md). `43` MartialArt is unreachable in 7.6005.
 
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 

@@ -40,6 +40,28 @@ public class CodeStorageTests
         Assert.Equal("6900e4018f530e840000", Hex(CodeStorage.BuildUpdate(0x1e4, 7335, 16)));
     }
 
+    [Theory]
+    [InlineData(0, "5f000000")]
+    [InlineData(4, "5f040000")]
+    [InlineData(0x1c3, "5fc30100")]
+    [InlineData(0x207, "5f070200")]
+    public void RemoveTargetsStorageRatherThanTheSameBagSlot(int slot, string expected)
+    {
+        Assert.Equal(expected, Hex(CodeStorage.BuildRemove((ushort)slot)));
+        Assert.Equal((byte)1, ServerPackets.BuildInventoryItemDelete((ushort)slot)[3]);
+    }
+
+    [Fact]
+    public void MatchConsumesExactStorageCountAndThenReportsMissing()
+    {
+        var recipe = new Crafting.Recipe { ResultGoid = 7458, Ingredients = new uint[] { 7336, 7336 } };
+        var exact = CodeStorageHandler.AsIngredients(new[] { Stored(0x1c3, 7336, 2) });
+        Assert.Equal(new ushort[] { 0x81c3, 0x81c3 }, Crafting.MatchIngredients(recipe, exact)!.ToArray());
+        Assert.Null(Crafting.MatchIngredients(recipe,
+            CodeStorageHandler.AsIngredients(new[] { Stored(0x1c3, 7336, 1) })));
+        Assert.Null(Crafting.MatchIngredients(recipe, CodeStorageHandler.AsIngredients(Array.Empty<CodeStorage.Entry>())));
+    }
+
     [Fact]
     public void AddMatchesRetailNewKind()
     {

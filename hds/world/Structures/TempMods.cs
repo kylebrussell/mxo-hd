@@ -332,6 +332,8 @@ namespace hds
         public static bool TryGet(UInt16 id, out Effect effect)
         {
             id = AbilityCatalog.Canonical(id);
+            // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
+            // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
             if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
             var mods = new List<Mod>();

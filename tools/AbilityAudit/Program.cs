@@ -63,7 +63,12 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
         instant_hostile = AbilityHostile.Lands(e.Id),
-        catalog_debuff = AbilityHostile.Catalog(e.Id) != null
+        catalog_debuff = AbilityHostile.Catalog(e.Id) != null,
+        // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
+        style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
+            level50 = AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null }).ToArray(),
+        special_move_style = CombatStyles.IsSpecialMove(e.Id) ? CombatStyles.RequiredStyle(e.Id) : 0,
+        special = CombatSpecials.Describe(e.Id)
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
