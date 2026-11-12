@@ -14,7 +14,7 @@
 
 The Machines have deleted over a dozen of our clients in the last week. Because of this we need you to bodyguard two of the Merovingian's Exiles and move them to a new location before the Machines can trace them.</briefing>
     <enter><say>We have a bit of problem ... A group of Machines just descended on Ugolino a few moments ago. You'll need to defeat the Machines that are on site before we can transport Ugolino.</say></enter>
-    <objective goal="1" text="Lead Ugolino out of the building" type="Escort" npc="1" to="exit" />
+    <objective goal="1" text="Lead Ugolino out of the building" type="Escort" npc="1" to="exit" after="2" />
     <objective goal="2" text="Kill the Machine programs" type="DefeatAll" />
     <objective goal="3" text="Do not let Ugolino die" type="Protect" npc="1" />
   </phase>
