@@ -41,3 +41,7 @@ Use the NativeQa harness's `passives` mode, `CSR_AbilityQA`, and **CSR_Tester110
 6. Stop the harness and verify `stopped.json`: Mara `(23828,495,13984)`, full health, flag0, mission986 only. Do not select TheNeo or change security settings.
 
 Headless coverage exercises owned loadouts, forged slot/level claims, upgrades, unload/removal, death scaling, a fresh server login, direct/group heal source values, HOT ticks and NPC/PvP paths. Native acceptance remains separate.
+
+## Combined validation for PR102
+
+Runtime `48fb975`, integrated parent `744469f`, test fixture correction `adec3c2`: **3,567/3,567 Debug and Release unit tests pass; 86/86 fresh-server scenarios pass in614.9s**, six servers at peak. The group-interlock endurance fixture now gives its20,000 currentHP a matching maximum, so legitimate vital clamping does not shorten the endurance test. NativeQa Release builds. CI `43133174615` passes; the workflow also covers stacked `codex/**` PR bases. Native checks remain pending.
