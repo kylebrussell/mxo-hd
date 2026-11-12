@@ -282,8 +282,8 @@ namespace hds
             { 340, E(340, State(OffBalanceAbility, 8)) },
             // Staggering Throw, old_world Vector 16171
             { 348, E(348, State(StaggeredAbility, 12)) },
-            // Subduing Throw, old_world Vector 33209: stunned 4 s, immunity 4 s
-            { 347, E(347, State(StunAbility, 4)) },
+            // Subduing Throw's captured4s stun is conditional on Dazed at the .01s marker's term.
+            // AbilityCatalog.Controls retains that script gate instead of treating the captured outcome as unconditional.
 
             // ---- Soldier ----
             // Crippling Shot, trinity proxy_011 1787 (ten captures: -103 .. -113, MovementSpeed -75 .. -124), 8 s
