@@ -26,6 +26,7 @@ namespace hds
                 var cast=new Cast {Client=client,Data=data,Ability=ability,Seconds=seconds,
                     End=data.castEndsAt,World=data.worldGeneration,Life=data.lifeGeneration,Generation=++state.Generation};
                 state.Current=cast;
+                ConcentrationDamageQa.Bind(cast);
                 return cast;
             }
         }
@@ -34,6 +35,11 @@ namespace hds
             !cast.Data.isDead && !cast.Data.duelDeath && PvpCombat.HealthOf(cast.Client)>0 &&
             cast.Data.worldGeneration==cast.World && cast.Data.lifeGeneration==cast.Life &&
             cast.Data.castEndsAt==cast.End && ControlActions.CanUseAbilities(cast.Client);
+        internal static bool IsCurrent(Cast cast)
+        {
+            lock(cast.Data.craftingSync)return states.TryGetValue(cast.Client,out var state) && state.Current==cast &&
+                state.Generation==cast.Generation && !cast.Completed && Ready(cast) && TimeUtils.GetSimTimeSeconds()<cast.End;
+        }
         internal static bool Complete(Cast cast,Action action)
         {
             lock(cast.Data.craftingSync)
