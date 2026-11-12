@@ -53,8 +53,8 @@ public static partial class Scenarios
                             {await DefeatMissionNpc(p,view);killed.Add(key);}
                             if(type=="Loot")
                             {
-                                if(view.Attributes.TryGetValue("IsDead",out var corpse) && corpse[0]!=0)
-                                {p.SendRpc($"80 c7 {MissionNpcId(view)} 05 00");await p.WaitForRpcAsync("81 19");}
+                                // Select THIS corpse even when an earlier DefeatAll left another corpse window open.
+                                p.SendRpc($"80 c7 {MissionNpcId(view)} 05 00");await p.WaitForRpcAsync("81 19");
                                 p.SendRpc("81 1f");
                             }
                             else if(type!="Defeat" && !(type=="Talk" && hostile))
