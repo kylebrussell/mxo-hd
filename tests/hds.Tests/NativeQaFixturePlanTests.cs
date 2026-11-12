@@ -30,6 +30,7 @@ public class NativeQaFixturePlanTests
     [InlineData("death-presentation", "1", "")]
     [InlineData("actions", "1", "")]
     [InlineData("health-callbacks", "1", "")]
+    [InlineData("desperation", "1", "")]
     [InlineData("emp-blast", "1", "")]
     [InlineData("compile-items", "1", "")]
     [InlineData("", "0", "")]
@@ -54,6 +55,7 @@ public class NativeQaFixturePlanTests
             using var json = JsonDocument.Parse(await output);
             var environment = json.RootElement.GetProperty("Environment");
             Assert.Equal(dev, environment.GetProperty("MXO_DEV_COMMANDS").GetString());
+            Assert.Equal(mode=="desperation"?"1":"",environment.GetProperty("MXO_DESPERATION_QA_HOLD_HEALTH").GetString());
             Assert.Equal(gm, environment.GetProperty("MXO_GM_CHARACTER_IDS").GetString());
             Assert.Equal("11000", environment.GetProperty("MXO_AUTH_PORT").GetString());
             Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL15").GetString());

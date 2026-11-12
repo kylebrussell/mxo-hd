@@ -61,6 +61,7 @@ if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any
 bool empBlastMode = args.Length > 3 && args[3] == "emp-blast";
 bool compileItemsMode = args.Length > 3 && args[3] == "compile-items";
 bool stealthShieldsMode = args.Length > 3 && args[3] == "stealth-shields";
+bool desperationMode = args.Length > 3 && args[3] == "desperation";
 bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
 bool typedDefenseMode = args.Length > 3 && args[3] == "typed-defense";
 bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode || typedDefenseMode || compileItemsMode;
@@ -122,6 +123,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (stealthShieldsMode) abilities = StealthShieldFixture.Abilities;
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (desperationMode) abilities = new ushort[] {1149};
     if (typedDefenseMode) abilities = new ushort[] {2,17,1112,134,1101};
     if (empBlastMode) abilities = new ushort[] {2,17,1025};
     if (compileItemsMode) abilities = new ushort[] {2,17,277};
