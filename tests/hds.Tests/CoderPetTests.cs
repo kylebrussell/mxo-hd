@@ -80,7 +80,7 @@ public class CoderPetTests
         mob.setLevel(7);
         mob.setHealthM(337);
         mob.setHealthC(337);
-        mob.setRsiHex("d2040058");
+        mob.setRsiHex(CoderPets.WireHex(CoderPets.DescriptionOf(CoderPets.Kind.Nuker, 7, false)));
         mob.setWeapon(0x0a06);
         mob.setXPos(17057.809936523438);
         mob.setYPos(495.0);
@@ -89,6 +89,22 @@ public class CoderPetTests
         byte[] creation = mob.getCreationData().GetCreationAttributes();
         Assert.Equal(retail, Hex(creation));
         Assert.Equal(new byte[] { 0xb8, 0x9d }, mob.getCreationData().GetGoid());
+    }
+
+    [Fact]
+    public void DescriptionGoesOutInRetailByteOrder()
+    {
+        // Retail L50 Nuker spawn (Syntax capture line 515): Description bytes 13 05 00 58. The first native test sent
+        // 58 00 05 13 and the client rendered nothing.
+        Assert.Equal("13050058", CoderPets.WireHex(CoderPets.DescriptionOf(CoderPets.Kind.Nuker, 50, false)));
+        Assert.Equal("b90100b4", CoderPets.WireHex(CoderPets.DescriptionOf(CoderPets.Kind.Proxy, 50, false)));
+        var mob = new Mob();
+        mob.setName("Nuker Simulacrum");
+        mob.setLevel(35);
+        mob.setRsiHex(CoderPets.WireHex(CoderPets.DescriptionOf(CoderPets.Kind.Nuker, 35, false)));
+        mob.pet = new CoderPets.Pet { Owner = Owner(110), Mob = mob, SimulacraId = 1, Kind = CoderPets.Kind.Nuker };
+        var go = (AttributeClass3828)mob.getCreationData();
+        Assert.Equal("13050058", Hex(go.Description.getValue()));
     }
 
     [Fact]

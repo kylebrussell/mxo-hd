@@ -93,6 +93,8 @@ There is no IsEnemy, IsFriendly or RSIDescription.
 
 `CoderPetTests.CreationMatchesRetailFreshSummon` checks that our creation reproduces line 78483 byte for byte.
 
+Description, like every id here, goes out little-endian: `0x58000513` is the bytes `13 05 00 58`. The first native test sent `58 00 05 13`, which names no template, and the client rendered no simulacrum. `DescriptionGoesOutInRetailByteOrder` and the headless scenario now check the byte order.
+
 ### Values that come from retail
 
 | What | Value |

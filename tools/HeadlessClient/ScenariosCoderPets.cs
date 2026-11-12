@@ -18,9 +18,12 @@ public static partial class Scenarios
         Check.Equal(owner.CharId, BitConverter.ToUInt32(pet.Attributes["MasterCharacterID"]), "Master is the caster");
         Check.Equal((byte)50, pet.Attributes["Level"][0], "Logic Daemon 4.0 clamps level 50 to 35-50");
         Check.Equal((ushort)1950, BitConverter.ToUInt16(pet.Attributes["MaxHealth"]), "Retail level 50 simulacrum health");
+        Check.Equal("13-05-00-58", BitConverter.ToString(pet.Attributes["Description"]), "Retail L50 Nuker Description, in wire byte order");
         var seen = await watcher.WaitForViewNamedAsync("Nuker Simulacrum", TimeSpan.FromSeconds(10));
         Check.Equal(owner.CharId, BitConverter.ToUInt32(seen.Attributes["OwnerCharacterID"]), "Others see whose simulacrum it is");
 
+        owner.SendChat("?pet follow");
+        await owner.WaitForTextAsync("Following");
         owner.SendRpc("81 7c fe 05 02"); // Simulacra window: Passive
         owner.SendChat("?pet");
         await owner.WaitForTextAsync("Passive");

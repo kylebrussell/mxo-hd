@@ -145,6 +145,13 @@ namespace hds
             return 0x58000513;
         }
 
+        /// <summary>
+        /// The id as the hex of its wire bytes (little-endian), the form Mob's rsi hex and Description take: 0x58000513 is
+        /// "13050058". Writing the id's own digits instead sent 58 00 05 13, a template the client doesn't have, and the
+        /// simulacrum spawned invisible (native QA of PR 107).
+        /// </summary>
+        public static string WireHex(UInt32 id) => StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray(id, 1)).ToLowerInvariant();
+
         /// <summary>Retail EquippedItemID: Nuker 0x0a06, Aikido 0xb917, SMG 0xba5b. Other proxies borrow the closest one.</summary>
         public static UInt32 WeaponOf(Kind kind, string sheet)
         {
@@ -208,7 +215,7 @@ namespace hds
             UInt16 max = MaxHealthAt(level);
             mob.setHealthM(max);
             mob.setHealthC(max);
-            mob.setRsiHex(DescriptionOf(summon.Kind, level, female).ToString("x8"));
+            mob.setRsiHex(WireHex(DescriptionOf(summon.Kind, level, female)));
             mob.setWeapon(WeaponOf(summon.Kind, sheet));
             mob.setXPos(x); mob.setYPos(y); mob.setZPos(z);
             mob.xBase = x; mob.yBase = y; mob.zBase = z;
@@ -806,7 +813,7 @@ namespace hds
             mob.setHealthM(hp);
             mob.setHealthC(hp);
             mob.setMobId(0x0556);
-            mob.setRsiHex("56050004");
+            mob.setRsiHex(WireHex(0x56050004)); // the "HD Protector" model ?spawnmob uses
             z += 800;
             mob.setXPos(x); mob.setYPos(y); mob.setZPos(z);
             mob.xBase = x; mob.yBase = y; mob.zBase = z;
