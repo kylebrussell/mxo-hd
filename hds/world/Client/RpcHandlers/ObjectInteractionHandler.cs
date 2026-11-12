@@ -93,7 +93,7 @@ namespace hds
         {
             // ToDo: Dynamic Shop Vendors
             Vendor vendor = DataLoader.getInstance()
-                .getVendorByGoIDandMetrId(NumericalUtils.ByteArrayToUint32(objectID, 1), 1);
+                .getVendorByGoIDandMetrId(NumericalUtils.ByteArrayToUint32(objectID, 1), (UInt16)Store.currentClient.playerData.getDistrictId());
 
             if (vendor != null)
             {

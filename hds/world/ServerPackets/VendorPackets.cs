@@ -11,6 +11,8 @@ namespace hds
 
         public void SendVendorWindow(WorldClient client, Vendor vendor)
         {
+            client.playerData.activeVendor = vendor;
+            client.playerData.activeVendorGeneration = client.playerData.worldGeneration;
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_VENDOR_OPEN,0);
             pak.AddByteArray(new byte[]{0x7c, 0xad, 0xd9, 0x43});
