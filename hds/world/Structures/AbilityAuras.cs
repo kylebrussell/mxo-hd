@@ -163,6 +163,7 @@ namespace hds
             var state = states.GetOrCreateValue(client);
             lock (state) if (!state.On.Remove(id)) return false;
             client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(id, false));
+            if (Friendly(id)) AbilityCooldowns.Start(client,id,TimeUtils.GetSimTimeSeconds());
             client.FlushQueue();
             Output.WriteDebugLog("[AURA] " + id + " off for " + TimedEffects.PlayerName(client));
             return true;

@@ -302,6 +302,12 @@ namespace hds
         /// <summary>Puts a stealth state on the player (replacing any other: every one of them is AbilityIsExclusive).</summary>
         public static State Begin(WorldClient client, Def def, int abilityLevel, uint disguiseModel = 0)
         {
+            lock(client.playerData.upgradeSync) return BeginCore(client,def,abilityLevel,disguiseModel);
+        }
+
+        private static State BeginCore(WorldClient client, Def def, int abilityLevel, uint disguiseModel)
+        {
+            if (!AbilityBuffBuffer.CanApply(client,def.Ability)) return null;
             End(client, "replaced", false);
             int characterLevel = client.playerInstance.Level.getValue()[0];
             var state = new State

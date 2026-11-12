@@ -65,7 +65,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
-    if (remainingMode) abilities = new ushort[] { 2,17,9,15,49,1114,42,485,489,481,488,327 };
+    if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
@@ -120,7 +120,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
 ");
     }
     if (remainingMode)
-        await database.ExecuteAsync("DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
+        await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
             "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");
     if (scaledMode || remainingMode)
         await database.ExecuteAsync($"UPDATE characters SET level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111");
@@ -137,6 +137,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     }
     server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
     {
+        ["MXO_DEV_COMMANDS"]=remainingMode?"1":"0",
         ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
         ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
     });

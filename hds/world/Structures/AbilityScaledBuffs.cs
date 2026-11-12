@@ -37,16 +37,36 @@ namespace hds
             return true;
         }
 
-        // Hyper-Sense is a clean, indefinite learned-level defence toggle (not character-level function3).
+        // Indefinite learned-level self modifiers; the stored toggle flag remains authoritative.
         public static bool TryToggle(ushort id, int learnedLevel, out AbilityBuffs.Buff buff)
         {
             buff = null;
-            if (id != 1101) return false;
+            if (id != 1101 && id != 1102 && id != 13 && id != 16 && id != 442) return false;
             var entry = AbilityCatalog.Find(id);
-            var mod = entry.Modifiers.Single(m => m.Number("WhenEnabled", -1) == 2);
+            var mod = entry.Modifiers.Single(m => m.Number("WhenEnabled", -1) == 2 && m.Target != 0 &&
+                m.Text("StatModUpdateFunc") != "ISDrainWithAbilityDeactivation");
+            var drain = entry.Modifiers.FirstOrDefault(m => m.Text("StatModUpdateFunc") == "ISDrainWithAbilityDeactivation");
             if (!AbilityValues.TryValue(mod, Math.Min(50, Math.Max(0, learnedLevel)), 0, out int value)) return false;
-            buff = new AbilityBuffs.Buff { Exclusive = true, Toggle = true, Family = 1040,
+            buff = new AbilityBuffs.Buff { Exclusive = true, Toggle = entry.Number("Ability/IsAToggleAbility") == 1, Family = id == 1101 ? 1040 : 0,
+                DrainAmount = (int)(drain?.Number("MinValue") ?? 0), DrainSeconds = drain?.Number("UpdateFuncInterval") ?? 0,
                 Modifiers = new[] { new AbilityBuffs.Modifier(AbilityBuffs.KindStat, mod.Target, value) } };
+            return true;
+        }
+
+        public static bool TryScriptedTimed(ushort id, int casterLevel, out AbilityBuffs.Buff buff)
+        {
+            buff = null;
+            if (id != 63 && id != 436 && id != 68 && id != 319) return false;
+            var entry = AbilityCatalog.Find(id);
+            var modifiers = entry.Modifiers.Where(m => m.Number("WhenEnabled",-1)==2).ToList();
+            var stats = modifiers.Where(m=>m.Target!=0 && m.Target!=710).ToList();
+            if(stats.Any(m=>!AbilityValues.TryValue(m,0,casterLevel,out _))) return false;
+            buff = new AbilityBuffs.Buff { Seconds = 300, Family = 1000+(int)entry.Number("Ability/StackingType"),
+                RefundIS = (int)(modifiers.FirstOrDefault(m=>m.Text("StatModTermFunc")=="RefundIS")?.Number("MinValue") ?? 0),
+                TermHeal = (int)(modifiers.FirstOrDefault(m=>m.Text("StatModTermFunc")=="GenericConstHealthRegenEvent")?.Number("MinValue") ?? 0),
+                DissemblingType = id==68 || id==319 ? (ushort)0x100 : (ushort)0,
+                Modifiers = stats.Select(m=> { AbilityValues.TryValue(m,0,casterLevel,out int value);
+                    return new AbilityBuffs.Modifier(AbilityBuffs.KindStat,m.Target,value); }).ToArray() };
             return true;
         }
 
@@ -55,6 +75,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             return AbilityBuffs.Retail.TryGetValue(id, out buff) ||
+                TryScriptedTimed(id, caster.playerInstance.Level.getValue()[0],out buff) ||
                 TryToggle(id, DeathPenalty.EffectiveLevel(caster, AbilityPassives.Level(caster, id)), out buff) ||
                 TryGet(id, caster.playerInstance.Level.getValue()[0], out buff) || AbilityBuffs.TryGet(id, out buff);
         }

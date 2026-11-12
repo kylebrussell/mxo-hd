@@ -208,6 +208,13 @@ def server(i):
             parts.append('buff records + ' + ('learned-level' if r['buff_source'] == 'stored learned level' else 'caster-level') + ' stat snapshot; ' + (', '.join(consumers) if consumers else 'numeric totals only; gameplay consumer missing'))
         else:
             parts.append(f"buff records + selected combat/vital stats ({r['buff_source']})")
+    if r.get('buff_drain'):
+        parts.append(f"IS drain {r['buff_drain']['amount']}/{r['buff_drain']['interval']:g}s; shortfall deactivates")
+    if r.get('buff_term'):
+        if r['buff_term']['refund_is']:
+            parts.append(f"term refunds {r['buff_term']['refund_is']} IS to recipient")
+        if r['buff_term']['heal']:
+            parts.append(f"armor bit0x100; term heals {r['buff_term']['heal']} (death cleanup guarded)")
     if r['timed']:
         states = [f"{name(m['state'])} {m['seconds']:g}s" + (f" / break {m['breaks']}" if m['breaks'] != 'None' else '') for m in r['timed'] if m['state']]
         if states:
@@ -218,7 +225,9 @@ def server(i):
         a = r['aura']
         parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
     if r.get('sweep'):
-        parts.append('pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
+        parts.append('instant25% cleanse of debuff parents (UDB0, not exempt)' if i == 868 else 'pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
+    if r.get('buff_buffer'):
+        parts.append('native script buffer reservation min(Value,free); baseline100+4level is OURS; refuses new upgrades until removal/expiry')
     if r.get('instant_hostile'):
         parts.append('instant script: removable buffs (UBF0) / current IS on landing')
     if r['grants']:

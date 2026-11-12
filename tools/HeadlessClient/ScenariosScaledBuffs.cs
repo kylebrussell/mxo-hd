@@ -155,4 +155,54 @@ public static partial class Scenarios
         await target.WaitForRpcAsync(ModPattern(489,172),TimeSpan.FromSeconds(15));
         Check.Equal(0,hacker.World.Problems.Count+target.World.Problems.Count,"Buffer death release and resurrection protocol");
     }
+
+    private static async Task AbilityDrainFirewalls(ScenarioContext context)
+    {
+        var strong=await context.AddPlayerAsync(new CharacterSeed("StrengthDrainer") {Level=20,InnerStrength=25,MaxInnerStrength=25});
+        var aim=await context.AddPlayerAsync(new CharacterSeed("AimDrainer") {X=17120,Level=20,InnerStrength=30,MaxInnerStrength=30});
+        var caster=await context.AddPlayerAsync(new CharacterSeed("FirewallCaster") {X=17220,Level=20,InnerStrength=2000,MaxInnerStrength=2000});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({strong.CharId},{aim.CharId},{caster.CharId}); " +
+            $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({strong.CharId},1,{AbilityGoid(13)},20,1)");
+        foreach(var p in new[]{strong,aim,caster}) await p.EnterWorldAsync();
+        Cast(strong,13); var boost=await strong.WaitForRpcAsync(ModPattern(13,159));
+        Check.Equal(40,BitConverter.ToInt32(boost.Bytes,13),"Hyper-Strength uses learned20 x2");
+        Cast(aim,442); await aim.WaitForRpcAsync(ModPattern(442,524));
+        await strong.WaitForRpcAsync(ModPattern(13,159,true),TimeSpan.FromSeconds(8));
+        await aim.WaitForRpcAsync(ModPattern(442,524,true),TimeSpan.FromSeconds(8));
+        await aim.WaitForRpcAsync("80 bd 01 ba 01 04"); // AddRecastTimer15 begins on deactivation
+        foreach(ushort id in new ushort[]{68,319,63,436})
+        {
+            Cast(caster,id);
+            ushort stat=(ushort)(id==68 || id==319 ? 157 : 183);
+            await caster.WaitForRpcAsync(ModPattern(id,stat),TimeSpan.FromSeconds(12));
+            caster.SendRpc($"80 bb {Le(id)}");
+            await caster.WaitForRpcAsync(ModPattern(id,stat,true));
+        }
+        Cast(caster,16); await caster.WaitForRpcAsync(ModPattern(16,212));
+        await Task.Delay(1200); Cast(caster,16);
+        await caster.WaitForRpcAsync(ModPattern(16,212,true));
+        Check.Equal(0,strong.World.Problems.Count+aim.World.Problems.Count+caster.World.Problems.Count,"Drain and firewall protocol");
+    }
+
+    private static async Task AbilityWeaponProficiencies(ScenarioContext context)
+    {
+        var p=await context.AddPlayerAsync(new CharacterSeed("WeaponStylist") {Level=50});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");
+        await LoadAbilitiesAsync(context,p,2,129,147,158);
+        await context.Database.ExecuteAsync($"UPDATE char_abilities SET level=20 WHERE char_id={p.CharId}");
+        await p.EnterWorldAsync();
+        ushort previous=0;
+        foreach(ushort id in new ushort[]{129,147,158})
+        {
+            Cast(p,id);
+            var accuracy=await p.WaitForRpcAsync(ModPattern(id,524));
+            Check.Equal(25,BitConverter.ToInt32(accuracy.Bytes,13),"Weapon style uses learned20, not character50");
+            var damage=await p.WaitForRpcAsync(ModPattern(id,171));
+            Check.Equal(6,BitConverter.ToInt32(damage.Bytes,13),"Stored min2 + native20*.235");
+            if(previous!=0) Check.That(p.Received(ModPattern(previous,524,true)).Count>0,"Previous weapon style records removed before new style");
+            previous=id;
+        }
+        Cast(p,17); await p.WaitForRpcAsync(ModPattern(158,524,true));
+        Check.Equal(0,p.World.Problems.Count,"Weapon proficiency style protocol");
+    }
 }

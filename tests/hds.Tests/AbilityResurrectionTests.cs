@@ -69,7 +69,7 @@ public class AbilityResurrectionTests
     }
 
     [Theory]
-    [InlineData(325,1,1)] [InlineData(326,777,333)] [InlineData(375,777,333)] [InlineData(416,777,333)]
+    [InlineData(325,1,1)] [InlineData(326,777,333)] [InlineData(375,777,333)] [InlineData(416,777,333)] [InlineData(438,777,333)]
     public void CallbacksRestoreScriptResourcesAndPreserveTheActualPvpChoice(ushort ability,ushort hp,ushort inner)
     {
         foreach(bool flagged in new[]{false,true})
@@ -89,7 +89,8 @@ public class AbilityResurrectionTests
     {
         var caster=Client(1);var target=Client(2,true);
         Assert.True(AbilityResurrection.CanTarget(caster,target,325));
-        target.playerData.isDead=false;Assert.False(AbilityResurrection.CanTarget(caster,target,325));target.playerData.isDead=true;
+        Assert.True(AbilityResurrection.Handles(438)); Assert.True(AbilityResurrection.CanTarget(caster,target,438));
+        target.playerData.isDead=false;Assert.False(AbilityResurrection.CanTarget(caster,target,438));Assert.False(AbilityResurrection.CanTarget(caster,target,325));target.playerData.isDead=true;
         target.playerData.duelDeath=true;Assert.False(AbilityResurrection.CanTarget(caster,target,325));target.playerData.duelDeath=false;
         target.playerData.respawnPending=true;Assert.False(AbilityResurrection.CanTarget(caster,target,325));target.playerData.respawnPending=false;
         target.playerData.worldChangePending=true;Assert.False(AbilityResurrection.CanTarget(caster,target,325));target.playerData.worldChangePending=false;

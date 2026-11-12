@@ -181,8 +181,8 @@ namespace hds
                 return;
             }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
-            if (support && AbilityBuffs.TryGet(AbilityID,out var capacityBuff) &&
-                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilityBuffBuffer.CanApply(t,AbilityID,capacityBuff)))
+            if (support && AbilitySupport.RequiresBuffer(AbilityID) &&
+                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilitySupport.BufferFits(t,AbilityID)))
             {
                 Deny(AbilityID,"The upgrade buffer is full.");
                 return;

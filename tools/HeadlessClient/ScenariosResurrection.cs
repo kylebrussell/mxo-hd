@@ -27,7 +27,7 @@ public static partial class Scenarios
         var view=await healer.WaitForViewNamedAsync(corpse.Handle);
         var watched=await observer.WaitForViewNamedAsync(corpse.Handle);
         var offerIds=new HashSet<uint>();
-        foreach(ushort ability in new ushort[]{325,326,375,416})
+        foreach(ushort ability in new ushort[]{325,326,375,416,438})
         {
             await KillForResurrection(corpse);
             int restored=corpse.Received(ResurrectionLine).Count;

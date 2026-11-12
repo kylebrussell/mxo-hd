@@ -53,6 +53,9 @@ namespace hds
             /// <summary>Countdown the client shows; 0 = no time limit (exclusive buffs).</summary>
             public float Seconds;
             public bool Exclusive;
+            public int RefundIS, TermHeal;
+            public int DrainAmount;
+            public double DrainSeconds;
             /// <summary>Buffs of the same non-zero family replace each other.</summary>
             public int Family;
             public Modifier[] Modifiers;
@@ -264,7 +267,7 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
+            return AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
         }
 
         public static ushort DissemblingBits(WorldClient client)
@@ -370,7 +373,7 @@ namespace hds
         /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
-            return !(TryGet(abilityId, out Buff buff) && buff.Toggle);
+            return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
 
         /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
@@ -392,6 +395,11 @@ namespace hds
             ability == 9 && IsActive(client, 15) || ability == 15 && IsActive(client, 9);
 
         public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
+        {
+            lock (client.playerData.upgradeSync) return ApplyCore(client,abilityId,caster);
+        }
+
+        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster)
         {
             if (TacticalConflict(client, abilityId)) return false;
             if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
@@ -451,6 +459,7 @@ namespace hds
             if (buff.DissemblingType != 0) PresentDissembling(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
+            if (buff.DrainAmount > 0 && buff.DrainSeconds > 0) ScheduleDrain(client, active);
             if (buff.Seconds > 0)
             {
                 // Comes off on the timed-effects server tick (TimedEffects.RunDue)
@@ -458,6 +467,36 @@ namespace hds
                     TimeUtils.GetSimTimeSeconds() + buff.Seconds);
             }
             return true;
+        }
+
+        private static void ScheduleDrain(WorldClient client, Active active)
+        {
+            int world = client.playerData.worldGeneration;
+            DelayedActions.AfterFor(client, active.Definition.DrainSeconds, () =>
+            {
+                if (client.playerData.worldGeneration == world) TickDrain(client,active.AbilityId,active.Generation);
+            });
+        }
+
+        public static void TickDrain(WorldClient client, ushort id, int generation)
+        {
+            Active active;
+            lock(client.playerData.activeBuffs)
+                if(!client.playerData.activeBuffs.TryGetValue(id,out active) || active.Generation != generation) return;
+            Buff buff=active.Definition;
+            if(buff == null || buff.DrainAmount <= 0) return;
+            if(client.playerData.isDead || client.playerData.duelDeath || AbilityHandler.CurrentInnerStrength(client) < buff.DrainAmount)
+            {
+                int shortfall=Math.Max(0,buff.DrainAmount-AbilityHandler.CurrentInnerStrength(client));
+                if(shortfall>0)
+                {
+                    string name=TimedEffects.PlayerName(client);
+                    client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,id,name,name,shortfall));
+                }
+                Remove(client,id,generation:generation); client.FlushQueue(); return;
+            }
+            new ServerPackets().sendISCurrent(client,AbilityHandler.SpendInnerStrength(client,(ushort)buff.DrainAmount));
+            ScheduleDrain(client,active);
         }
 
         /// <summary>
@@ -489,6 +528,14 @@ namespace hds
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
             if (buff.DissemblingType != 0) PresentDissembling(client);
             if (!keepVitals) RefreshVitals(client);
+            if (buff.RefundIS > 0)
+            {
+                ushort inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(client),AbilityHandler.CurrentInnerStrength(client)+buff.RefundIS);
+                client.playerInstance.InnerStrengthAvailable.setValue(inner);
+                new ServerPackets().sendISCurrent(client,inner);
+            }
+            // Do not allow a term heal during death cleanup to leave positive HP on a dead character.
+            if(buff.TermHeal>0 && !data.isDead && !data.duelDeath) AbilityHandler.HealSelf(client,(ushort)buff.TermHeal);
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {

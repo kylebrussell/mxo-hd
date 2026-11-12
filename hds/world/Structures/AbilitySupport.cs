@@ -10,6 +10,13 @@ namespace hds
     {
         public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) ||
             (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) && !CombatSpecials.Handles(id);
+        public static bool RequiresBuffer(ushort id) => AbilityBuffs.IsBuff(id) ||
+            (id != 868 && AbilityHostile.IsSweep(id)) || AbilityCatalog.Find(id)?.Modifiers.Any(m=>
+                m.Text("StatModUpdateFunc")=="HOT" && m.Number("Duration")>0) == true;
+
+        public static bool BufferFits(WorldClient target, ushort id) => !RequiresBuffer(id) ||
+            AbilityBuffBuffer.CanApply(target,id,AbilityBuffs.TryGet(id,out var buff) ? buff : null);
+
         public static WorldClient PlayerInView(WorldClient caster, UInt16 view)
         {
             if (view <= 2) return caster;
@@ -57,6 +64,7 @@ namespace hds
             var entry = AbilityCatalog.Find(id);
             foreach (WorldClient target in Targets(caster, id, view))
             {
+                if (!BufferFits(target,id)) continue;
                 if (entry?.Healing == true)
                 {
                     UInt16 amount = AbilityHealing.Amount(caster, target, id);
