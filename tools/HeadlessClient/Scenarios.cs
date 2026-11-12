@@ -23,7 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
-        new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
+        new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
@@ -181,6 +181,7 @@ public static partial class Scenarios
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
+        new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),

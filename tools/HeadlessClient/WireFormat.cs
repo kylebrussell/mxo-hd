@@ -193,7 +193,7 @@ public static class WireFormat
             }
             byte spawnId = section[offset];
             offset += 3;
-            if (TryReadAttributes(section, goid, ref offset, out Dictionary<string, byte[]> attributes) &&
+            if (TryReadCreationAttributes(section, goid, ref offset, out Dictionary<string, byte[]> attributes) &&
                 offset + 3 <= section.Length && section[offset + 2] == 0x00)
             {
                 ushort viewId = (ushort)(section[offset] | (section[offset + 1] << 8));
@@ -205,18 +205,30 @@ public static class WireFormat
     }
 
     /// <summary>Inverse of GameObject.GetCreationAttributes: count, then per group a flag byte and the group's values.</summary>
+    public static bool TryReadCreationAttributes(byte[] section, ushort goid, ref int offset, out Dictionary<string, byte[]> attributes)
+    {
+        int cursor = offset;
+        if (!TryReadAttributes(section, goid, ref cursor, out attributes))
+        {
+            attributes.Clear();
+            return false;
+        }
+        offset = cursor;
+        return true;
+    }
+
     private static bool TryReadAttributes(byte[] section, ushort goid, ref int offset, out Dictionary<string, byte[]> attributes)
     {
         attributes = new Dictionary<string, byte[]>();
         IReadOnlyList<HdsAttribute>? definition = ObjectDefinitions.CreationAttributes(goid);
-        if (definition == null || offset >= section.Length)
+        if (definition == null || offset < 0 || offset >= section.Length)
         {
             return false;
         }
         int remaining = section[offset++];
         for (int group = 0; remaining > 0; group++)
         {
-            if (offset >= section.Length)
+            if (offset >= section.Length || group * 7 >= definition.Count)
             {
                 return false;
             }
@@ -241,7 +253,7 @@ public static class WireFormat
                 offset += size;
                 remaining--;
             }
-            if ((header & 0x80) == 0 && remaining > 0)
+            if (((header & 0x80) != 0) != (remaining > 0))
             {
                 return false;
             }
