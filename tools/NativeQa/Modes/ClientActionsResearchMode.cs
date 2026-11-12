@@ -3,6 +3,6 @@ namespace NativeQa.Modes;
 public sealed class ClientActionsResearchMode : NativeQaMode
 {
     public override string Name=>"client-actions-research";
-    public override NativeQaModePlan Plan {get;}=new(new ushort[]{2,17},23828,13984,
+    public override NativeQaModePlan Plan {get;}=new(new ushort[]{2,17},17000,2300,
         Array.Empty<string>(),Array.Empty<string>(),Array.Empty<string>());
 }

@@ -27,7 +27,7 @@ A bounded retail corpus probe covered280files/packet headers and counted raw two
 
 ## Diagnostic fixture and Claude-only native one-pass
 
-Discovered mode `client-actions-research` starts at Mara23828/13984 with abilities2/17. It has no SQL loadout mutations, dev/GM authority, forced rolls, health hold or environment override. This fixture is for recording current UI and packet behavior, not claiming newly implemented parity.
+Discovered mode `client-actions-research` starts at the known Mara street hardline17000/2300 with abilities2/17. It has no SQL loadout mutations, dev/GM authority, forced rolls, health hold or environment override. This fixture is for recording current UI and packet behavior, not claiming newly implemented parity.
 
 1. Verify exact PR head, read-only build-info and fixture-plan. Start the diagnostic mode through Claude's normal exclusive native workflow.
 2. Open Chat and type `/targetdamage` once. Record whether native sends3b and any visible feedback; this server currently ignores it. Do not describe absent feedback as successful target-damage support.
