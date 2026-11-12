@@ -10,7 +10,7 @@ public static class NativeQaFixturePlan
     public static Dictionary<string, string> EnvironmentFor(string mode)
     {
         var plan=NativeQaModes.Find(mode).Plan;
-        return new()
+        var environment=new Dictionary<string,string>()
     {
         ["MXO_DEV_COMMANDS"] = plan.DevCommands ? "1" : "0",
         ["MXO_AUTH_PORT"] = "11000", ["MXO_MARGIN_PORT"] = "10000", ["MXO_WORLD_PORT"] = "10000",
@@ -20,5 +20,8 @@ public static class NativeQaFixturePlan
         , ["MXO_CALLBACK_QA_ROLL15"] = plan.FixedCallbackRolls ? "0" : ""
         , ["MXO_CALLBACK_QA_ROLL100"] = plan.FixedCallbackRolls ? "0" : ""
     };
+        foreach(string key in NativeQaModes.EnvironmentKeys) environment.TryAdd(key,"");
+        foreach(var pair in plan.EnvironmentOverrides) environment[pair.Key]=pair.Value;
+        return environment;
     }
 }
