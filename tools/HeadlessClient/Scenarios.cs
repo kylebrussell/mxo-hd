@@ -121,6 +121,7 @@ public static partial class Scenarios
         new Scenario("utility-security-and-traps", SecurityAndTraps, StillNpcs),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
+        new Scenario("medium02-partial-world", Medium02PartialWorld, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
         new Scenario("archive01-partial-world", Archive01PartialWorld, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
