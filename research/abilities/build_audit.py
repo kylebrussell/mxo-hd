@@ -158,6 +158,8 @@ def server(i):
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
         parts.append('captured DOT executor' if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
+    if r.get('resurrection'):
+        parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
     if r['healing']:
         if not r.get('player_healing'):
             parts.append('pet/special healing target executor missing; player cast refused')
@@ -187,7 +189,7 @@ def server(i):
 def status(i):
     r = coverage[i]
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
@@ -231,7 +233,7 @@ Hacker area damage and controls reach visible NPCs on the same floor. DOTs on se
 
 Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, damage influence, control durations and crafting use these totals. Control duration bonuses follow the stored class-4 state links (stun, root, pacify, blind, powerless, confuse) and keep fractional seconds. Immunity timers and break rules retain their separate definitions. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, stealth/detection, Determination mitigation and special callbacks are still incomplete. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
 
-Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs reject player targets while pet ownership/AI is missing. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Coder pet/daemon ownership, AI, commands and lifetime remain **missing**.
+Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs reject player targets while pet ownership/AI is missing. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Restore RSI325, Revitalize326, Revive375 and Rejuvenate416 now use dead-friendly targets, the native81 88 consent exchange and their script-defined resource restoration. Refusal, timeout, stale/replayed replies and reconstruction are rejected. Exact script-specific resurrection motion and native dialog acceptance remain unverified; see [resurrection evidence](ABILITY-RESURRECTION.md). Coder pet/daemon ownership, AI, commands and lifetime remain **missing**.
 
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 

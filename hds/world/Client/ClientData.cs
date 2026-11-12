@@ -98,6 +98,8 @@ namespace hds
 
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
+        public int worldGeneration, lifeGeneration;
+        public readonly object lifeSync = new object();
 
 		// PvP (docs/PVP.md): the flag is ConditionStateFlags bit 0x01000000; conditionStateFlags holds the other bits
 		// last sent (in combat, tactic conditions). duelId pairs two duelists (even and odd); duelDeath is the loser
@@ -207,7 +209,11 @@ namespace hds
 		}
 		
 		public void setOnWorld(bool newValue){
-			onWorld = newValue;
+			lock (lifeSync)
+            {
+                if (!newValue) worldGeneration++;
+                onWorld = newValue;
+            }
 		}		
 		
 		public bool getOnWorld(){

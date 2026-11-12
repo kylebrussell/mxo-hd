@@ -196,7 +196,10 @@ namespace hds{
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
 			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
-		        case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
+		        case (int) RPCRequestHeader.CLIENT_ABILITY_APPROVAL:
+                    AbilityResurrection.Reply(Store.currentClient, rpcData);
+                    break;
+                case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_CHANGE_CT:

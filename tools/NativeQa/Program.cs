@@ -7,6 +7,7 @@ using System.Text.Json;
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
+bool resurrectionMode = args.Length > 3 && args[3] == "resurrection";
 bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode;
@@ -54,6 +55,7 @@ DELETE FROM char_abilities WHERE char_id=110;
 ");
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
+    if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
     using var catalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "data", "ability_catalog.json")));
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
@@ -143,6 +145,14 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                     if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
                     else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
+                }
+                else if (action == "approve")
+                {
+                    var pending = await actor.WaitForRpcAsync("81 88");
+                    byte[] reply = (byte[])pending.Bytes.Clone();
+                    reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
+                    reply[7] = q.GetProperty("accept").GetBoolean() ? (byte)0 : (byte)1;
+                    actor.SendRpc(reply);
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));

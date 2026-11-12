@@ -128,7 +128,7 @@ namespace hds
             bool support = AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
-                Deny(AbilityID, "Choose a living friendly target within range.");
+                Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
                 return;
             }
             if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Cost(AbilityID))
@@ -174,10 +174,13 @@ namespace hds
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
             AbilityItem ability = currentAbility;
+            WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
+            int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
             DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
-                if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
+                else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
