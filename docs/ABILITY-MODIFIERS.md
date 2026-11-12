@@ -64,3 +64,7 @@ Headless coverage exercises owned loadouts, forged slot/level claims, upgrades, 
 ## Combined validation for PR102
 
 Runtime `48fb975`, integrated parent `744469f`, test fixture correction `adec3c2`: **3,567/3,567 Debug and Release unit tests pass; 86/86 fresh-server scenarios pass in614.9s**, six servers at peak. The group-interlock endurance fixture now gives its20,000 currentHP a matching maximum, so legitimate vital clamping does not shorten the endurance test. NativeQa Release builds. CI `43133174615` passes; the workflow also covers stacked `codex/**` PR bases. Native checks remain pending.
+
+## Partial native confirmation after merge
+
+[Claude's independent client check of88e95b4](https://github.com/kylebrussell/mxo-hd/pull/103#issuecomment-6812841733) confirmed maxHP575, Restore Health54 healing400→442 with the loaded15% influence, stun/immunity messages and icons, cast denial during stun and successful casting after expiry, and the player's stun FX. PR102 merged as175d18f and PR103 ase9e4849. Exact8.05/27.5-second measurements, Code Freeze damage break, HOT ticks and group heal were not checked natively; those checklist items remain open. These observations came from Claude; Codex did not operate that native session.
