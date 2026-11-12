@@ -1,0 +1,4 @@
+# Preserve captured byte streams, including Windows console CR terminators.
+*.json -text
+*.ndjson -text whitespace=-blank-at-eol
+*.txt -text
