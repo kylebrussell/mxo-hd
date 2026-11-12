@@ -17,12 +17,20 @@ public static partial class Scenarios
         ["MXO_AGGRO"] = "0",
     };
 
+    private static readonly IReadOnlyDictionary<string,string> HealthCallbackNpcs = StillNpcs.Concat(new Dictionary<string,string> {
+        ["MXO_DEV_COMMANDS"]="1",["MXO_CALLBACK_QA_ROLL15"]="0",["MXO_CALLBACK_QA_ROLL100"]="0"
+    }).ToDictionary(p=>p.Key,p=>p.Value);
+
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("ignored-actions-window-close", IgnoredActionsWindowClose, StillNpcs),
         new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
+        new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
+        new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
+        new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),
+        new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),

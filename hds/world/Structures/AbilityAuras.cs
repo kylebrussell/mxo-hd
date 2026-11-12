@@ -34,14 +34,14 @@ namespace hds
         private static AbilityCatalog.Modifier Callback(ushort id, string func) => AbilityCatalog.Find(id)?.Modifiers
             .FirstOrDefault(m => m.Number("WhenEnabled", -1) == 2 && m.Text("StatModUpdateFunc") == func);
 
-        /// <summary>Hostile auras only: the pulsed effect is a debuff (UDB0). Friendly auras (Combat Aura, Deflect Virus,
-        /// Daemon Boost, Code Shaper) pulse UBF0 effects and belong to the buff and pet executors.</summary>
+        /// <summary>Supported hostile pulses and the explicitly implemented Combat Aura / Deflect parents.
+        /// Pet auras and health-triggered parents have separate executors.</summary>
         public static bool Handles(ushort id) => AbilityCatalog.Find(id)?.Number("Ability/IsAToggleAbility") == 1 && EffectOf(id) != 0 &&
             (AbilityHostile.IsDebuff(EffectOf(id)) || Friendly(id));
 
-        // The two Combat Aura parents are deterministic beneficial pulses. Other friendly aura callbacks
-        // (Deflect Virus sweeps, Daemon Boost, health-change triggers) need their own executors.
-        public static bool Friendly(ushort id) => id == 42 || id == 485;
+        // Explicit beneficial parents only. Deflect Virus's child term sweep is executed by its saved buff definition.
+        // Beneficial parents retain the existing off-time cooldown policy; default native timing remains unverified.
+        public static bool Friendly(ushort id) => id == 42 || id == 485 || id == 378 || id == 380;
 
         public static ushort EffectOf(ushort id) => (ushort)(Callback(id, "ApplyAuraEffect")?.Number("MinValue") ?? 0);
 
@@ -125,6 +125,18 @@ namespace hds
             {
                 // Use the effect's radius, exactly as ApplyAuraEffect invokes the effect ability.
                 AbilitySupport.Land(client, effectId, 2);
+                if(id==378 || id==380)
+                {
+                    foreach(var target in AbilitySupport.Targets(client,effectId,2))
+                    {
+                        int world=target.playerData.worldGeneration, life=target.playerData.lifeGeneration;
+                        DelayedActions.AfterFor(target,0.2,()=>
+                        {
+                            if(target.playerData.worldGeneration==world && target.playerData.lifeGeneration==life && !target.playerData.isDead)
+                                ServerPackets.SendPlayerAbilityEffect(target,id==378?0x28000820u:0x28000824u);
+                        });
+                    }
+                }
                 Output.WriteDebugLog("[AURA] " + id + " friendly pulse " + effectId);
                 return;
             }

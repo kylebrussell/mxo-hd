@@ -11,5 +11,7 @@ public static class NativeQaFixturePlan
         ["MXO_CONSOLE_PORT"] = "55557", ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0",
         ["MXO_AGGRO"] = "0", ["MXO_PACKET_LOG"] = "1",
         ["MXO_GM_CHARACTER_IDS"] = mode == "ignored-actions" ? "110" : ""
+        , ["MXO_CALLBACK_QA_ROLL15"] = mode == "health-callbacks" ? "0" : ""
+        , ["MXO_CALLBACK_QA_ROLL100"] = mode == "health-callbacks" ? "0" : ""
     };
 }

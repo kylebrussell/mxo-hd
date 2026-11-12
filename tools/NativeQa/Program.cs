@@ -58,7 +58,8 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
     : Array.Empty<ushort>();
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
-bool remainingMode = args.Length > 3 && args[3] == "remaining";
+bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
+bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
@@ -116,6 +117,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
@@ -208,7 +210,9 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors }, new JsonSerializerOptions { WriteIndented=true }));
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode,
+        CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
+    if(healthCallbacksMode) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
@@ -271,7 +275,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
         }
         string[] lines = server.DebugLog().Split('\n');
-        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[HOSTILE]","[RESURRECTION]"}.Any(l.Contains)))
+        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[HOSTILE]","[RESURRECTION]","[HEALTH-CALLBACK]","[HEALTH-EFFECT]"}.Any(l.Contains)))
             await File.AppendAllTextAsync(Path.Combine(qaRoot,"events.jsonl"), JsonSerializer.Serialize(new { At=DateTime.UtcNow, Line=line.Trim() })+"\n");
         seen = Math.Max(0,lines.Length-1);
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());
