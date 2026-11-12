@@ -18,7 +18,7 @@ public class ConsumableItemTests
         Assert.Equal(AbilityCooldowns.HealPill, pill1.Group);
         Assert.Equal(511, ConsumableItems.Items[7913].AbilityId); // Health Pill 5.0
         Assert.False(ConsumableItems.TryGet(7332, out _));       // Code Bit 1 is not usable
-        Assert.False(ConsumableItems.IsUsable(ConsumableItems.Items[2407])); // Health Boost needs buffs
+        Assert.True(ConsumableItems.IsUsable(ConsumableItems.Items[2407])); // Owned health boost path
     }
 
     [Fact]

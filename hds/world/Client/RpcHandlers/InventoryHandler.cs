@@ -162,6 +162,7 @@ namespace hds
             }
 
             if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
+            if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
 
             if (!ConsumableItems.IsUsable(consumable))
             {
