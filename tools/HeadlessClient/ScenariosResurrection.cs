@@ -2,6 +2,8 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private const string ResurrectionLine = "81 67 ?? ?? ?? ?? 3e 28 00 c6";
+
     private static async Task KillForResurrection(HeadlessPlayer target)
     {
         target.SendChat("?die");
@@ -19,21 +21,23 @@ public static partial class Scenarios
         foreach(ushort ability in new ushort[]{325,326,375,416})
         {
             await KillForResurrection(corpse);
-            int restored=context.Server.DebugLog().Split("[RESURRECTION] Restored").Length-1;
+            int restored=corpse.Received(ResurrectionLine).Count;
             Cast(healer,ability,view.ViewId);
             var request=await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
             Check.Equal((uint)ability,BitConverter.ToUInt32(request.Bytes,2),"Native approval names the cast ability");
             Check.Equal((ushort)54,BitConverter.ToUInt16(request.Bytes,52),"Relative name offset");
             Check.That(System.Text.Encoding.ASCII.GetString(request.Bytes,56,request.Bytes.Length-56)=="RezMedic\0","Approval names its caster");
-            Check.Equal(restored,context.Server.DebugLog().Split("[RESURRECTION] Restored").Length-1,"Corpse remains dead before consent");
+            Check.Equal(restored,corpse.Received(ResurrectionLine).Count,"Corpse remains dead before consent");
+            int viewsBefore=corpse.World.ViewSnapshot().Count;
             corpse.SendRpc(request.Bytes); // Yes: native copies original, bytes6/7 both zero.
-            string expected=ability==325?"HP=1 IS=1":"HP=777 IS=333";
-            await corpse.WaitUntilAsync(()=>context.Server.DebugLog().Contains("Restored RezFriend with "+ability+" "+expected),
-                "Script resurrection resources",TimeSpan.FromSeconds(10));
+            await corpse.WaitForRpcAsync(ResurrectionLine+" 00 "+Le(ability)+" 00 00");
+            var own=BytePattern.Parse("02 00 02 80 80 80 d1 00 "+(ability==325?"01 00 01 00":"4d 01 09 03")+" 80 80 01 00 00 00 00");
+            await corpse.WaitUntilAsync(()=>corpse.World.ViewSnapshot().Skip(viewsBefore).Any(own.Occurs),
+                "New own-view IsDead0, script HP/IS and unflagged conditions",TimeSpan.FromSeconds(10));
             await observer.WaitForViewUpdateAsync(watched.ViewId,ability==325?"02 80 80 92 00 01 00 80 04 00 00 00 00":"02 80 80 92 00 09 03 80 04 00 00 00 00");
             corpse.SendRpc(request.Bytes); // Replaying a completed Yes must not apply it again.
             corpse.SendRpc("81 48"); await corpse.WaitForRpcAsync("81 49");
-            Check.Equal(restored+1,context.Server.DebugLog().Split("[RESURRECTION] Restored").Length-1,"Consent is single-use");
+            Check.Equal(restored+1,corpse.Received(ResurrectionLine).Count,"Consent is single-use");
         }
         Check.Equal(0,healer.World.Problems.Count+corpse.World.Problems.Count+observer.World.Problems.Count,"Resurrection protocol");
     }
@@ -57,7 +61,7 @@ public static partial class Scenarios
             {
                 byte[] forged=(byte[])reply.Clone(); forged[8]^=1;corpse.SendRpc(forged);
                 corpse.SendRpc("81 48");await corpse.WaitForRpcAsync("81 49");
-                Check.That(!context.Server.DebugLog().Contains("[RESURRECTION] Restored"),"Foreign correlation cannot approve a corpse");
+                Check.That(corpse.Received(ResurrectionLine).Count==0,"Foreign correlation cannot approve a corpse");
                 reply[7]=1;
             }
             if(i==3)
@@ -72,7 +76,7 @@ public static partial class Scenarios
             }
             corpse.SendRpc(reply);
             corpse.SendRpc("81 48");await corpse.WaitForRpcAsync("81 49");
-            Check.That(!context.Server.DebugLog().Contains("[RESURRECTION] Restored"),"Refusal, timeout and Reconstruct cannot revive");
+            Check.That(corpse.Received(ResurrectionLine).Count==0,"Refusal, timeout and Reconstruct cannot revive");
         }
         Check.Equal(0,corpse.World.Problems.Count+medics.Sum(p=>p.World.Problems.Count),"Approval rejection protocol");
     }
