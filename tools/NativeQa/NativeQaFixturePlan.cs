@@ -3,9 +3,14 @@ namespace NativeQa;
 /// <summary>The actual environment passed to the disposable native-QA server, also available without setup.</summary>
 public static class NativeQaFixturePlan
 {
+    // CompileUI 620827d0 excludes 0x84 bit/fragment entries; ordinary item code is GOID << 7 | charges.
+    // level stores the low seven charges bits; setup inserts level 1 separately.
+    public const uint CompileArchiveValue = 2399u << 7;
+    public static bool SeedDisguiseTool(string mode) => mode is "remaining" or "health-callbacks";
+
     public static Dictionary<string, string> EnvironmentFor(string mode) => new()
     {
-        ["MXO_DEV_COMMANDS"] = mode is "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or
+        ["MXO_DEV_COMMANDS"] = mode is "typed-defense" or "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or
             "data-mining" or "death-presentation" or "actions" or "health-callbacks" or "desperation" or "emp-blast" or "compile-items" ? "1" : "0",
         ["MXO_DESPERATION_QA_HOLD_HEALTH"] = mode == "desperation" ? "1" : "",
         ["MXO_AUTH_PORT"] = "11000", ["MXO_MARGIN_PORT"] = "10000", ["MXO_WORLD_PORT"] = "10000",

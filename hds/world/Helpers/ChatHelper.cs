@@ -16,6 +16,7 @@ namespace hds
 
             string command = commands[0].ToLower();
             if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
+            if (QaLoadout.Dev(Store.currentClient, commands)) return;
 
             try
             {
