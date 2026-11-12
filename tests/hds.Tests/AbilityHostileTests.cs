@@ -242,6 +242,8 @@ public class AbilityHostileTests
         Assert.Equal(694, AbilityAuras.EffectOf(89));
         Assert.Equal(12, AbilityAuras.DrainOf(89));
         Assert.False(AbilityAuras.Handles(343));
+        Assert.False(AbilityAuras.Handles(42));  // Combat Aura pulses a friendly UBF0 effect
+        Assert.False(AbilityAuras.Handles(609)); // Daemon Boost belongs to CoderPets
         Assert.Equal(1, AbilityHostile.InstantDamage(Client(), 694)); // stored raw viral 1, no influence
     }
 

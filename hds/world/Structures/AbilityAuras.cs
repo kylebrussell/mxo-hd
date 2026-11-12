@@ -34,7 +34,10 @@ namespace hds
         private static AbilityCatalog.Modifier Callback(ushort id, string func) => AbilityCatalog.Find(id)?.Modifiers
             .FirstOrDefault(m => m.Number("WhenEnabled", -1) == 2 && m.Text("StatModUpdateFunc") == func);
 
-        public static bool Handles(ushort id) => AbilityCatalog.Find(id)?.Number("Ability/IsAToggleAbility") == 1 && EffectOf(id) != 0;
+        /// <summary>Hostile auras only: the pulsed effect is a debuff (UDB0). Friendly auras (Combat Aura, Deflect Virus,
+        /// Daemon Boost, Code Shaper) pulse UBF0 effects and belong to the buff and pet executors.</summary>
+        public static bool Handles(ushort id) => AbilityCatalog.Find(id)?.Number("Ability/IsAToggleAbility") == 1 && EffectOf(id) != 0 &&
+            AbilityHostile.IsDebuff(EffectOf(id));
 
         public static ushort EffectOf(ushort id) => (ushort)(Callback(id, "ApplyAuraEffect")?.Number("MinValue") ?? 0);
 
