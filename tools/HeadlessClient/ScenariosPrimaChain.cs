@@ -144,9 +144,9 @@ public static partial class Scenarios
         await VisitMissionNpc(context,p,name);
         var match=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Spawned (friendly|hostile) NPC "+Regex.Escape(name)+@" at ([^,\r\n]+),([^,\r\n]+),([^\r\n]+)").Last();
         bool friendly=match.Groups[1].Value=="friendly";
-        double x=double.Parse(match.Groups[2].Value,CultureInfo.InvariantCulture),z=double.Parse(match.Groups[4].Value,CultureInfo.InvariantCulture);
+        double x=double.Parse(match.Groups[2].Value,CultureInfo.InvariantCulture),y=double.Parse(match.Groups[3].Value,CultureInfo.InvariantCulture),z=double.Parse(match.Groups[4].Value,CultureInfo.InvariantCulture);
         bool Matches(ViewCreation v)=>v.Name==name && v.Attributes.ContainsKey("TalkDefaultable")==friendly &&
-            v.Attributes.TryGetValue("Position",out var pos) && Math.Abs(BitConverter.ToDouble(pos)-x)<1 && Math.Abs(BitConverter.ToDouble(pos,16)-z)<1;
+            v.Attributes.TryGetValue("Position",out var pos) && Math.Abs(BitConverter.ToDouble(pos)-x)<1 && Math.Abs(BitConverter.ToDouble(pos,8)-y)<1 && Math.Abs(BitConverter.ToDouble(pos,16)-z)<1;
         List<ViewCreation> Candidates()=>p.World.CreationSnapshot().Skip(introducedThisPhase?viewsStart:0).Where(Matches).ToList();
         await p.WaitUntilAsync(()=>Candidates().Count>0,name+" current source-side view",TimeSpan.FromSeconds(15));
         return Candidates().Last();
