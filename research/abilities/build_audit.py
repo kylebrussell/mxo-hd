@@ -144,6 +144,24 @@ def expected(i):
     return '; '.join(dict.fromkeys(result)) or 'Native action / passive metadata; no decoded stored modifier'
 
 
+# Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)
+_summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
+PETS = {
+    **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (28, 4, 7), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
+    **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
+    **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
+    20: 'own simulacrum only; Max Health +level x15 for 600s; resistances recorded only',
+    603: 'own simulacrum only; IS cost/regen buff has no consumer (simulacra spend no IS)',
+    34: 'own simulacrum only; DetonateProxyProc blast clamp(health, max/10, max/4) to NPCs within 8m, then 13000 to the simulacrum',
+    19: 'own simulacrum only; 8000 to the simulacrum, +50 caster IS; DecoyDuration 60s unexplained',
+    609: 'toggle; 5 IS/5s drain with deactivation; 699 Viral Damage/Healing +level x0.5 to simulacrum within 20m',
+    619: 'toggle; 5 IS/5s drain with deactivation; 700 accuracy has no simulacrum consumer',
+    699: 'Daemon Boost 1.0 pulse: simulacrum damage/heal +level x0.5 for 5s',
+    700: 'Daemon Boost 2.0 pulse: recorded; simulacra have no accuracy roll',
+}
+PET_REPAIRS = {30, 31, 587, 596, 615}
+
+
 def server(i):
     r, f = coverage[i], fields(i)
     parts = []
@@ -159,7 +177,9 @@ def server(i):
     if r['dot']:
         parts.append('captured DOT executor' if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r['healing']:
-        if not r.get('player_healing'):
+        if i in PET_REPAIRS:
+            parts.append('heals own simulacrum: stored base; caster healing influence; player cast refused')
+        elif not r.get('player_healing'):
             parts.append('pet/special healing target executor missing; player cast refused')
         else:
             amount = '10% target max HP' if i == 967 else 'stored base ' + '+'.join(str(v) if v is not None else '?' for v in r.get('heal_base', [])) + '; caster healing influence'
@@ -181,11 +201,15 @@ def server(i):
         parts.append('jump trajectory + control gate; rank/limits incomplete')
     if 'Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']:
         parts.append('stealth detection/AI incomplete')
+    if i in PETS:
+        parts.append(PETS[i])
     return '; '.join(parts) or 'presentation only; no effect executor'
 
 
 def status(i):
     r = coverage[i]
+    if i in PETS:
+        return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
@@ -231,7 +255,7 @@ Hacker area damage and controls reach visible NPCs on the same floor. DOTs on se
 
 Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, damage influence, control durations and crafting use these totals. Control duration bonuses follow the stored class-4 state links (stun, root, pacify, blind, powerless, confuse) and keep fractional seconds. Immunity timers and break rules retain their separate definitions. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, stealth/detection, Determination mitigation and special callbacks are still incomplete. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
 
-Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs reject player targets while pet ownership/AI is missing. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Coder pet/daemon ownership, AI, commands and lifetime remain **missing**.
+Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs heal only the caster's own simulacrum. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Coder simulacra (Remote Proxy, Logic/Patch Daemon) spawn as owned NPC_BASE_SIMULACRA views with follow/assist AI, the client's orders, death and lifetime, plus the own-simulacrum abilities and Daemon Boost; see [CODER-PETS.md](CODER-PETS.md) for what is retail evidence and what is chosen.
 
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 
