@@ -179,6 +179,8 @@ namespace hds
                 Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
                 return;
             }
+            if (AbilityID == ProxyTechnician.Ability && ProxyTechnician.Refusal(Store.currentClient) is string proxyRefusal)
+            { Deny(AbilityID,proxyRefusal); return; }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded

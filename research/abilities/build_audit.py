@@ -260,7 +260,9 @@ def server(i):
             parts.append(', '.join(states))
         if any(m['stat'] for m in r['timed']):
             parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
-    if r.get('aura'):
+    if r.get('proxy_technician'):
+        parts.append(r['proxy_technician'])
+    if r.get('aura') and not r.get('proxy_technician'):
         a = r['aura']
         parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
     if r.get('sweep'):
@@ -301,7 +303,7 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
-    if i in PETS:
+    if i in PETS or r.get('proxy_technician'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i in (49, 1149) or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
