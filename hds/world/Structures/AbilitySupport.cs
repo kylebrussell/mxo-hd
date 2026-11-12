@@ -24,6 +24,9 @@ namespace hds
             return target == null || !target.viewCreated ? null : SocialHandler.OnlineWhere(c => c.playerData.getEntityId() == target.entityId).FirstOrDefault();
         }
 
+        public static bool FriendlyRecipient(WorldClient caster, WorldClient target) =>
+            target == caster || PvpCombat.Check(caster,target) != PvpRules.Verdict.Allowed;
+
         private static bool InRange(WorldClient a, WorldClient b, double metres)
         {
             if (a.playerData.getDistrictId() != b.playerData.getDistrictId() || b.playerData.isDead || b.playerData.duelDeath) return false;
@@ -54,7 +57,7 @@ namespace hds
             bool selfOnly = entry?.Number("Ability/CastDirectObjects") == 1;
             WorldClient target = !selfOnly && (entry?.FriendlyTarget == true || entry?.Healing == true)
                 ? PlayerInView(caster, view) : caster;
-            return target != null && (target == caster || PvpCombat.Check(caster, target) != PvpRules.Verdict.Allowed) &&
+            return target != null && FriendlyRecipient(caster,target) &&
                 InRange(caster, target, entry?.Number("Ability/SelectionRange", 20) ?? 20)
                 ? new List<WorldClient> { target } : new List<WorldClient>();
         }

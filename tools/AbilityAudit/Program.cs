@@ -93,6 +93,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         sneak_bonus = SneakAttacks.Bonus(e.Id,true),
         special_animation = CombatAnimations.Special(e.Id,true,CombatTactic.Speed)?.Id,
         stealth_shield = StealthShieldAbilities.Describe(e.Id),
+        proxy_technician = ProxyTechnician.Describe(e.Id),
         special = CombatSpecials.Describe(e.Id)
     };
 });
@@ -103,5 +104,6 @@ File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + J
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
         .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
+        .Where(p => p.Name != "proxy_technician" || p.Value.GetString() != "")
         .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);
