@@ -6,8 +6,9 @@ using System.Text.Json;
 
 namespace hds
 {
-    /// <summary>Sourced static Self-Defense animations. Other styles and special-move choreography currently
-    /// fall back to these unarmed exchanges; selecting the full ILDB rule language remains separate.</summary>
+    /// <summary>Sourced static tactic exchanges for the styles with their own ILDB sets: Self-Defense (S), Aikido (A),
+    /// Karate (K) and Kung-Fu (W); see <see cref="CombatStyles.Letter"/>. A pair the ILDB lacks falls back to
+    /// Self-Defense. Special-move choreography and the full ILDB rule language remain separate.</summary>
     public static class CombatAnimations
     {
         public sealed class Move
@@ -30,16 +31,27 @@ namespace hds
         public static IReadOnlyList<Move> All => moves.Value;
         public static char Suffix(CombatTactic tactic) => tactic == CombatTactic.Power ? 'P' :
             tactic == CombatTactic.Grab ? 'D' : tactic == CombatTactic.Block ? 'B' : 'S';
-        public static uint Transition(CombatTactic tactic) => (uint)(21012 + (tactic == CombatTactic.Power ? 1 :
-            tactic == CombatTactic.Grab ? 2 : tactic == CombatTactic.Block ? 3 : 0));
-        public static Move Choose(CombatTactic first, CombatTactic second, uint flags, uint variant)
+        /// <summary>The style's "Stand Transitions:To ..." move for the tactic (e.g. Trans Stand-WP for Kung-Fu Power).</summary>
+        public static uint Transition(CombatTactic tactic, char style = 'S')
+        {
+            string name = "Trans Stand-" + style + Suffix(tactic);
+            return All.FirstOrDefault(m => m.Name == name)?.Id ?? (uint)(21012 + (tactic == CombatTactic.Power ? 1 :
+                tactic == CombatTactic.Grab ? 2 : tactic == CombatTactic.Block ? 3 : 0));
+        }
+        public static Move Choose(CombatTactic first, CombatTactic second, uint flags, uint variant,
+            char firstStyle = 'S', char secondStyle = 'S')
         {
             if ((flags & CombatRules.OpportunityAttack) != 0)
                 return All.First(m => m.Id == ((flags & CombatRules.Draw) != 0 ? 8198u : 9062u));
             uint result = flags & (CombatRules.AttackerHits | CombatRules.NoHits | CombatRules.BothHit | CombatRules.FinishingMove);
             if ((result & (CombatRules.AttackerHits | CombatRules.BothHit)) == 0) result = CombatRules.NoHits;
-            string prefix = $"S{Suffix(first)} vs S{Suffix(second)}:";
+            string prefix = $"{firstStyle}{Suffix(first)} vs {secondStyle}{Suffix(second)}:";
             Move[] candidates = All.Where(m => m.Group.StartsWith(prefix, StringComparison.Ordinal) && m.Flags == result).ToArray();
+            if (candidates.Length == 0)
+            {
+                prefix = $"S{Suffix(first)} vs S{Suffix(second)}:";
+                candidates = All.Where(m => m.Group.StartsWith(prefix, StringComparison.Ordinal) && m.Flags == result).ToArray();
+            }
             if (candidates.Length == 0) candidates = All.Where(m => m.Group.StartsWith("SS vs SS:", StringComparison.Ordinal) && m.Flags == result).ToArray();
             if (candidates.Length == 0) candidates = All.Where(m => m.Group.StartsWith("SS vs SS:", StringComparison.Ordinal) && m.Flags == CombatRules.NoHits).ToArray();
             return candidates[variant % candidates.Length];

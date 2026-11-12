@@ -78,11 +78,14 @@ public static partial class Scenarios
 
     private static async Task AbilityParityControls(ScenarioContext context)
     {
+        // Paralyzing Throw is a Spy Style special move (CastRequiredCombatStance): the caster needs Spy Style loaded
+        var caster = await context.AddPlayerAsync(new CharacterSeed("Controller") { Level = 50, Organization = 1 });
+        await LoadAbilitiesAsync(context, caster, 1112);
         var players = await context.AddPlayersInWorldAsync(
-            new CharacterSeed("Controller") { Level = 50, Organization = 1 },
             new CharacterSeed("Victim") { X = 17120, Level = 50, Organization = 2 },
             new CharacterSeed("Rooted") { X = 17220, Level = 50, Organization = 2 });
-        var caster = players[0]; var victim = players[1]; var rooted = players[2];
+        await caster.EnterWorldAsync();
+        var victim = players[0]; var rooted = players[1];
         var victimView = await caster.WaitForViewNamedAsync("Victim");
         var rootView = await caster.WaitForViewNamedAsync("Rooted");
         foreach (var target in new[] { victim, rooted })

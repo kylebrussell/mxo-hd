@@ -93,6 +93,16 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary><c>5f &lt;slot u16&gt; 00</c>: remove a storage entry (client.dll 0x621e1b20), not the bag slot.</summary>
+        public static byte[] BuildRemove(UInt16 slot)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x5f);
+            pak.AddUint16(slot, 1);
+            pak.AddByte(0x00);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary><c>5e &lt;slot u16&gt; 00 00 00 00 &lt;value u32&gt; 00</c>: a new kind in storage.</summary>
         public static byte[] BuildAdd(UInt16 slot, UInt32 goid, int count)
         {
