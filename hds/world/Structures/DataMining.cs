@@ -83,6 +83,7 @@ namespace hds
             lock (sync)
             {
                 Stop(c); var s = searches.GetOrCreateValue(c); s.Tool = tool; s.District = (ushort)c.playerData.getDistrictId();
+                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, true));
             }
         }
         public static void Stop(WorldClient c)
@@ -92,6 +93,7 @@ namespace hds
                 if (!searches.TryGetValue(c, out var s)) return;
                 foreach (ushort id in s.Markers) c.messageQueue.addRpcMessage(DataMiningPackets.Remove(id));
                 searches.Remove(c);
+                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, false));
             }
         }
         public static bool Searching(WorldClient c) { lock (sync) return searches.TryGetValue(c, out _); }
@@ -193,8 +195,13 @@ namespace hds
                 new ServerPackets().sendInventoryItemAdd(slot,g.Goid,0,0,c);
                 foreach (WorldClient other in SocialHandler.OnlineWhere(p => p.playerData.getOnWorld()))
                 { ClientView view = other.viewMan.FindViewForEntity(g.Entity); if (view != null) Delete(other,view); }
-                c.FlushQueue(); return true;
+                c.FlushQueue();
             }
+            // serverrules.py TestLightLuggablePickup -> BreakExclusiveAbility. Keep callbacks outside
+            // the shared ground-item lock: ending stealth may update views and acquire other state locks.
+            Stealth.BreakForAction(c, "picked up a luggable");
+            if (Searching(c)) UtilityAbilities.Land(c, UtilityAbilities.FindDataNode, 2);
+            return true;
         }
         /// <summary>5c slot u16 + personal-inventory flag. Reject equipment/storage, stacks, arbitrary items and bad floor.</summary>
         public static void Drop(WorldClient c, byte[] body)

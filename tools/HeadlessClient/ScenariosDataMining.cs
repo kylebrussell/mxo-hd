@@ -17,12 +17,16 @@ public static partial class Scenarios
         await p.EnterWorldAsync(); await watcher.EnterWorldAsync();
         var item = await UtilityFixture(p,596);
         await watcher.WaitUntilAsync(() => watcher.ViewsOfGoid(596).Count>0,"shared luggable view",TimeSpan.FromSeconds(10));
-        // A forged spawn identifier must not pick it up.
+        Cast(p, 1111);
+        await p.WaitForRpcAsync("80 bd 05 57 04 00 00 00 00 00 01");
+        // A forged spawn identifier must not pick it up or break an exclusive ability.
         p.SendRpc($"80 c7 {Le(item.ViewId)} {(byte)(item.SpawnId+1):x2} 00 02 00");
         p.SendRpc("81 48"); await p.WaitForRpcAsync("81 49");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=596"),"forged handle ignored");
+        Check.Equal(0, p.Received("80 bd 05 57 04 00 00 00 00 00 00").Count, "Forged pickup preserves the exclusive Sneak");
         p.SendRpc($"80 c7 {MissionNpcId(item)} 02 00");
         var added=await p.WaitForRpcAsync("5e ?? ?? 54 02 00 00");
+        await p.WaitForRpcAsync("80 bd 05 57 04 00 00 00 00 00 00"); // successful pickup breaks the exclusive Sneak
         ushort slot=BitConverter.ToUInt16(added.Bytes,1);
         Check.Equal(0L,await context.Database.LongAsync("SELECT COUNT(*) FROM world_luggables WHERE goid=596"),"picked ground row removed");
         var contested=await UtilityFixture(p,562);
@@ -77,16 +81,26 @@ public static partial class Scenarios
         await p.EnterWorldAsync();
         p.SendChat("?utilityobject 606"); await p.WaitForTextAsync("Utility fixture 606 placed.");
         var item=await UtilityFixture(p,596);
-        Cast(p,621); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
+        Cast(p,621); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01"); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
         await p.WaitForRpcAsync("80 cd 00 00 62 04 00 28");
         await p.WaitForRpcAsync("80 cb"); await p.WaitForRpcAsync("80 c5 01 00 0a");
-        Cast(p,621); await p.WaitForRpcAsync("80 ce 00 00"); await p.WaitForRpcAsync(AbilityLine(0x7c000012));
+        Cast(p,621); await p.WaitForRpcAsync("80 ce 00 00"); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00"); await p.WaitForRpcAsync(AbilityLine(0x7c000012));
         await context.Database.ExecuteAsync($"UPDATE inventory SET goid=423 WHERE charId={p.CharId} AND slot=30");
-        Cast(p,621); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
+        Cast(p,621); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01"); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
         await p.WaitForRpcAsync("80 cd 00 00 62 04 00 28");
         await p.WaitForRpcAsync("80 cd 80 00 f9 04 00 28"); // See Luggables world aura
+        p.SendRpc($"80 c7 {MissionNpcId(item)} 02 00");
+        await p.WaitForRpcAsync("5e ?? ?? 54 02 00 00");
+        await p.WaitForRpcAsync("80 ce 80 00");
+        await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00");
+        await p.WaitForRpcAsync(AbilityLine(0x7c000012)); // pickup also ends the exclusive Find Data Node
+        await UtilityFixture(p, 562);
+        Cast(p, 621);
+        await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01");
+        await p.WaitForRpcAsync("80 cd 80 00 f9 04 00 28");
         await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId={p.CharId} AND slot=30");
         await p.WaitForRpcAsync("80 ce 80 00"); // Removing the tool cleans up the goggles
+        await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00");
         Cast(p,621); await p.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 2e 00 00 60");
         Check.Equal(0,p.World.Problems.Count,"locator protocol");
     }
