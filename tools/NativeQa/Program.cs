@@ -76,7 +76,8 @@ DELETE FROM char_abilities WHERE char_id=110;
     // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
-    if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
+    if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,25,603,31,34,19,609,619 };
+    if (petsMode) await database.ExecuteAsync("UPDATE characters SET innerStrC=1000,innerStrM=1000 WHERE charId=110");
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();

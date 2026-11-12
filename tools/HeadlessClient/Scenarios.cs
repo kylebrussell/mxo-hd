@@ -31,6 +31,8 @@ public static partial class Scenarios
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
+        new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),
+        new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
