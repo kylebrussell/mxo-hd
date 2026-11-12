@@ -30,11 +30,12 @@ public class AbilityResurrectionTests
     }
 
     [Fact]
-    public void OfferHasNativePrefixAndRelativeCasterNameWithoutInventedCorrelation()
+    public void OfferHasNativePrefixNonzeroOfferIdAndRelativeCasterName()
     {
         byte[] b = AbilityResurrection.BuildApproval(416,"Medic");
         Assert.Equal(62,b.Length); Assert.Equal(new byte[]{0x81,0x88},b[..2]);
-        Assert.Equal(416u,BitConverter.ToUInt32(b,2)); Assert.Equal(0u,BitConverter.ToUInt32(b,8));
+        Assert.Equal(416u,BitConverter.ToUInt32(b,2)); Assert.NotEqual(0u,BitConverter.ToUInt32(b,8));
+        Assert.NotEqual(BitConverter.ToUInt32(b,8),BitConverter.ToUInt32(AbilityResurrection.BuildApproval(416,"Medic"),8));
         Assert.Equal(54,BitConverter.ToUInt16(b,52)); Assert.Equal(6,BitConverter.ToUInt16(b,54));
         Assert.Equal("Medic\0",System.Text.Encoding.ASCII.GetString(b,56,6));
     }
@@ -46,6 +47,7 @@ public class AbilityResurrectionTests
         byte[] b=AbilityResurrection.BuildApproval(325,"Medic");
         var approval=new AbilityResurrection.Approval(b,60);var payload=NativeBody(325);
         payload[4]=timeout;payload[5]=refusal;payload[6]=0x7b;payload[28]=0x42;
+        Assert.NotEqual(BitConverter.ToUInt32(b,8),BitConverter.ToUInt32(payload,6));
         Assert.True(approval.TryComplete(payload,59,out bool accepted)); Assert.Equal(yes,accepted);
         Assert.False(approval.TryComplete(payload,59,out _)); Assert.False(approval.Pending(59));
     }
