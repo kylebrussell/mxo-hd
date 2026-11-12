@@ -3,12 +3,12 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,5,11,12,13,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,11,12,13,15,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={4:'archive01',5:'archive02',11:'yuki',12:'large01',13:'large02',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',11:'yuki',12:'large01',13:'large02',15:'medium02',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -94,6 +94,8 @@ elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
+elif args.world==15:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1061,1023,584,26,426)
 elif args.world==5:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
  assert len(sources)==326
@@ -134,5 +136,8 @@ if args.world==11:
   omissionPolicy='Every known variant in missing-SIDI sector5 is omitted; its unseen interior contents and prefab extent are unquantified. Raw references cover available layers only.',
   capturedPopulationBoundary='179 Instance map11 rows are all outside the native 2D world footprint; no relocation, NPC visibility or gameplay claim.',
   nativeGoidContracts={str(goid):dict(placements=count,usables=[u for u in usables if int(u["goid"])==goid],states=[u for u in states if int(u["goid"])==goid]) for goid,count in sorted(goids.items())})
+if args.world==15:
+ audit.update(capturedPopulationValidated=False,
+  capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
 print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
