@@ -45,5 +45,9 @@ public class Medium01Tests
         var p=new NativeQa.Modes.Medium01Mode().Plan;Assert.False(p.DevCommands);Assert.False(p.GmCharacter110);Assert.False(p.FixedCallbackRolls);
         Assert.Contains("districtId=14",Assert.Single(p.AfterLoadout));Assert.Equal(39250,p.X);Assert.Equal(27000,p.Z);
         Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("medium01")["MXO_MOBS"]);
+        HardlineNetwork.Load(Path.Combine(Root,"data","hardline_network.csv"));
+        var source=HardlineNetwork.Get(14,1);int steps=(int)Math.Round(source.yaw*256/(2*Math.PI));
+        byte yaw=(byte)((steps%256+256)%256);Assert.Equal((byte)192,yaw);
+        Assert.Contains("rotation="+yaw,Assert.Single(p.AfterLoadout));
     }
 }
