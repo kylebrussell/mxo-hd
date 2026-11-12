@@ -65,7 +65,7 @@ namespace hds
                 if(captured==null || !contexts.TryGetValue(owner,out var current) || !ReferenceEquals(current,captured) ||
                     !MatchesLocked(owner,captured) || !Eligible(owner,pet))return null;
                 var value=Values(owner.playerInstance.Level.getValue()[0],now);
-                value.Source=owner;value.World=owner.playerData.worldGeneration;value.Life=owner.playerData.lifeGeneration;
+                value.Source=owner;value.World=captured.World;value.Life=captured.Life;
                 value.RecipientWorld=pet.Owner.playerData.worldGeneration;value.RecipientLife=pet.Owner.playerData.lifeGeneration;
                 // Begin/End cannot intervene between validation and installation. No I/O occurs while holding this gate.
                 lock(pet) { snapshots.Remove(pet);snapshots.Add(pet,value); }

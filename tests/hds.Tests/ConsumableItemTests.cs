@@ -31,6 +31,47 @@ public class ConsumableItemTests
         Assert.Equal(8f, antibiotic.Seconds);
     }
 
+    [Theory]
+    [InlineData(39406u, 0)]
+    [InlineData(39407u, 10)]
+    [InlineData(39408u, 20)]
+    [InlineData(39409u, 30)]
+    [InlineData(39410u, 40)]
+    [InlineData(38539u, 0)]
+    public void SweepConsumablesAreUsableWithTheirStoredCharacterRequirements(uint item, int level)
+    {
+        Assert.True(ConsumableItems.IsUsable(ConsumableItems.Items[item]));
+        Assert.Equal(level, ConsumableItems.RequiredLevel(item));
+    }
+
+    [Fact]
+    public void LeavingAndReenteringTheSameDistrictInvalidatesThePillCast()
+    {
+        var data = new ClientData();
+        data.setDistrictId(1); data.setOnWorld(true);
+        AbilityCooldowns.StartCast(data, 10, 1);
+        int world = data.worldGeneration, life = data.lifeGeneration;
+        double stamp = data.castEndsAt;
+        Assert.True(ConsumableItems.CastMatches(data, world, life, stamp));
+        data.setOnWorld(false); data.setOnWorld(true);
+        Assert.Equal(1u, data.getDistrictId());
+        Assert.False(ConsumableItems.CastMatches(data, world, life, stamp));
+    }
+
+    [Fact]
+    public void RevivalAndAReplacementCastInvalidateTheOriginalPillCast()
+    {
+        var data = new ClientData();
+        AbilityCooldowns.StartCast(data, 10, 1);
+        int world = data.worldGeneration, life = data.lifeGeneration;
+        double stamp = data.castEndsAt;
+        data.lifeGeneration++; // death/revival may finish before the pending callback runs
+        Assert.False(data.isDead);
+        Assert.False(ConsumableItems.CastMatches(data, world, life, stamp));
+        AbilityCooldowns.StartCast(data, 11, 1);
+        Assert.False(ConsumableItems.CastMatches(data, world, data.lifeGeneration, stamp));
+    }
+
     [Fact]
     public void ItemSlotComesFromTheAbilityRequest()
     {

@@ -2,7 +2,7 @@ using System.Text.Json;
 using hds;
 
 // Inventory the actual executable support, rather than matching source comments or CSV flags.
-string output = args.Length > 0 ? args[0] : "research/abilities/server_coverage.json";
+string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
     204 => "stealth detection",
@@ -77,6 +77,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         grants = AbilityProgression.GrantsOf(e.Id),
         aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
+        consumable_sweep = ConsumableItems.Items.Any(p => p.Value.AbilityId == e.Id && ConsumableItems.IsUsable(p.Value) &&
+            (p.Value.Effect == ConsumableItems.Effect.Cure || p.Value.Effect == ConsumableItems.Effect.ConditionSweep)),
         instant_hostile = AbilityHostile.Lands(e.Id),
         buff_dispel = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&
             (m.Text("StatModInitFunc") == "RemoveRandomBuff" || m.Text("StatModInitFunc") == "UpgradeSweepPulse"))
@@ -94,11 +96,12 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-// Emit optional execution evidence only on its actual producer rows.
+// Optional inventory evidence is emitted only for its actual producers.
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
-    JsonSerializer.SerializeToElement(row).EnumerateObject().Where(p =>
-        (p.Name != "conditional_stun" || p.Value.GetBoolean()) &&
-        (p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0) &&
-        (p.Name != "proxy_technician" || p.Value.GetString() != ""))
+    JsonSerializer.SerializeToElement(row).EnumerateObject()
+        .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
+        .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
+        .Where(p => p.Name != "proxy_technician" || p.Value.GetString() != "")
         .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);
