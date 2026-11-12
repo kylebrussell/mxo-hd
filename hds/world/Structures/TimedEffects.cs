@@ -241,6 +241,8 @@ namespace hds
             internal abstract void Ended(List<Active> ended);
             internal virtual void Due(double now) { }
             internal virtual bool Idle => Effects.IsEmpty;
+            internal virtual uint ConditionFlags => 0;
+            internal virtual bool Alive => true;
             internal virtual int Determination => Math.Max(0, Effects.Total(575));
         }
 
@@ -345,7 +347,11 @@ namespace hds
                     }
                 }
             }
-            foreach (Active mod in expired) mod.OnExpired?.Invoke(subject, mod);
+            foreach (Active mod in expired)
+            {
+                mod.OnExpired?.Invoke(subject, mod);
+                AbilityConditionalControls.Term(subject, mod, now);
+            }
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
@@ -472,6 +478,7 @@ namespace hds
                 subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);
             }
             Register(subject);
+            foreach (Active old in replaced) AbilityConditionalControls.Term(subject, old, now);
             subject.Applied(effect, mods, immunity, replaced);
             if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
                 EvasionShield.Refresh(shieldTarget.Context);
@@ -493,7 +500,10 @@ namespace hds
         public static bool RemoveParent(Subject subject, UInt16 parent)
         {
             List<Active> removed = subject.Effects.RemoveParent(parent);
-            if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+            if (removed.Count > 0) WithClient(subject.Context, () => {
+                foreach (Active mod in removed) AbilityConditionalControls.Term(subject, mod, TimeUtils.GetSimTimeSeconds());
+                subject.Ended(removed);
+            });
 
             return removed.Count > 0;
         }
@@ -507,7 +517,10 @@ namespace hds
             }
             List<Active> removed;
             lock (random) removed = subject.Effects.HealthChanged(damageTaken, belowMaximum, random);
-            if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+            if (removed.Count > 0) WithClient(subject.Context, () => {
+                foreach (Active mod in removed) AbilityConditionalControls.Term(subject, mod, TimeUtils.GetSimTimeSeconds());
+                subject.Ended(removed);
+            });
             if(subject is PlayerEffects callbackPlayer)
                 WithClient(subject.Context,()=>AbilityHealthCallbacks.HealthChanged(callbackPlayer.Context,damageTaken,belowMaximum));
         }
@@ -571,6 +584,8 @@ namespace hds
     /// </summary>
     public sealed class PlayerEffects : TimedEffects.Subject
     {
+        internal override uint ConditionFlags => client.playerData.conditionStateFlags;
+        internal override bool Alive => !client.playerData.isDead && !client.playerData.duelDeath;
         internal override int Determination => AbilityControlDurations.Determination(client);
         private readonly WorldClient client;
         private readonly Dictionary<UInt16, KeyValuePair<int, double>> buffEnds = new Dictionary<UInt16, KeyValuePair<int, double>>();
@@ -821,6 +836,8 @@ namespace hds
         internal override WorldClient Context => lastCaster;
 
         public Mob Mob => mob;
+        internal override uint ConditionFlags => mob.ConditionFlags;
+        internal override bool Alive => !mob.getIsDead();
 
         private static void Tell(WorldClient caster, byte[] line)
         {
