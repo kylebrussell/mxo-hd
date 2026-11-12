@@ -27,7 +27,7 @@ namespace hds
         public sealed class Cast
         {
             internal int World,Life,Action,StealthVersion,Level;
-            internal float InvisibleRemaining;
+            internal float InvisibleRemaining; internal double InvisibleExpires;
             internal bool Invisible;
             internal object Target; internal int TargetWorld,TargetLife,TargetDeath;
         }
@@ -60,7 +60,7 @@ namespace hds
             var target=targetView>2?PvpCombat.PlayerInView(caster,targetView):null;
             var mob=targetView>2&&target==null?AbilityTargets.FindMob(caster,targetView,out _):null;
             return new Cast {Target=(object)target??mob,TargetWorld=target?.playerData.worldGeneration??0,TargetLife=target?.playerData.lifeGeneration??0,TargetDeath=mob?.DeathGeneration??0,World=caster.playerData.worldGeneration,Life=caster.playerData.lifeGeneration,Level=state?.Level??1,
-                Invisible=invis,InvisibleRemaining=invis?(float)Math.Max(0,state.Expires-TimeUtils.GetSimTimeSeconds()):0};
+                Invisible=invis,InvisibleExpires=state?.Expires??0,InvisibleRemaining=invis?(float)Math.Max(0,state.Expires-TimeUtils.GetSimTimeSeconds()):0};
         }
         public static void Arm(WorldClient caster,Cast cast)
         { cast.Action=Of(caster).Action;cast.StealthVersion=Stealth.Version(caster); }
@@ -77,18 +77,24 @@ namespace hds
             (mob==null||mob.DeathGeneration==cast.TargetDeath);
         public static void Execute(WorldClient caster,AbilityItem ability,ushort targetView,Cast cast)
         {
-            if(!Live(caster,cast)||!ControlActions.CanUseAbilities(caster)||Of(caster).Action!=cast.Action)return;
             ushort id=ability.getAbilityID();
+            void Refused(string reason)=>Output.WriteDebugLog("[STEALTH-FREE]"+id+" landing refused: "+reason+"; caster="+TimedEffects.PlayerName(caster)+" view="+targetView);
+            if(!Live(caster,cast)){Refused("caster lifecycle changed");return;}
+            if(!ControlActions.CanUseAbilities(caster)){Refused("caster controls prevent abilities");return;}
+            if(Of(caster).Action!=cast.Action){Refused("caster action changed");return;}
+            if(id==DisableEvasion&&(!Stealth.IsHidden(caster)||Stealth.Version(caster)!=cast.StealthVersion)){Refused("original hidden state ended or changed");return;}
             Mob mob=AbilityTargets.FindMob(caster,targetView,out var mobView);
             WorldClient target=mob==null?PvpCombat.PlayerInView(caster,targetView):null;
-            if(!TargetCurrent(cast,target,mob))return;
-            if(mob==null && (target==null || PvpCombat.Check(caster,target)!=PvpRules.Verdict.Allowed))return;
-            if(mob!=null && (mob.getIsDead()||mob.isFriendly))return;
-            if(target!=null && (target.playerData.isDead||target.playerData.duelDeath))return;
+            if(!TargetCurrent(cast,target,mob)){Refused("target identity/world/life changed");return;}
+            if(mob==null && (target==null || PvpCombat.Check(caster,target)!=PvpRules.Verdict.Allowed))
+            {Refused("PvP "+(target==null?"target missing":PvpCombat.Check(caster,target)+" casterOrg="+PvpCombat.SubjectOf(caster).Organization+" targetOrg="+PvpCombat.SubjectOf(target).Organization+" targetFlag="+target.playerData.pvpFlag));return;}
+            if(mob!=null && (mob.getIsDead()||mob.isFriendly)){Refused("NPC dead or friendly");return;}
+            if(target!=null && (target.playerData.isDead||target.playerData.duelDeath)){Refused("target dead");return;}
             double range=AbilityCatalog.Find(id)?.Number("Ability/SelectionRange")??0;
             double distance=target!=null?PvpCombat.MetresBetween(caster,target):CombatCalculator.CalculateDistanceMetres(caster.playerInstance.Position.getValue(),mob.getXPos(),mob.getYPos(),mob.getZPos());
-            if(range>0 && distance>range)return;
-            if(id==DisableEvasion && (target==null||!EvasionShield.HasState(target)||!Store.dbManager.WorldDbHandler.GetInventoryItems(caster.playerData.getCharID()).Any(i=>i.Slot<97&&IsTool(i.Goid))))return;
+            if(range>0 && distance>range){Refused("range "+distance+" > "+range);return;}
+            if(id==DisableEvasion && (target==null||!EvasionShield.HasState(target)||!Store.dbManager.WorldDbHandler.GetInventoryItems(caster.playerData.getCharID()).Any(i=>i.Slot<97&&IsTool(i.Goid))))
+            {Refused("target217/624 state or carried ITOt tool missing");return;}
             var subject=target!=null?(TimedEffects.Subject)TimedEffects.ForPlayer(target):TimedEffects.ForMob(mob);
             int targetWorld=target?.playerData.worldGeneration??0,targetLife=target?.playerData.lifeGeneration??0;
             int death=mob?.DeathGeneration??0;
@@ -111,6 +117,9 @@ namespace hds
             }
             else if(id==DisableEvasion)
             {
+                // Sneak-free cast retains its original stealth until successful landing, not the generic used-ability break.
+                cast.InvisibleRemaining=cast.Invisible?(float)Math.Max(0,cast.InvisibleExpires-now):0;
+                Stealth.BreakForAction(caster,"landed ability1125");Arm(caster,cast);
                 var effect=new TempMods.Effect{Ability=id,Mods=new[]{new TempMods.Mod{Kind=TempMods.KindStat,Target=NullTarget,
                     Seconds=8,Proc=TempMods.Proc.Terminal}}};
                 TimedEffects.Apply(subject,effect,now,caster,TimedEffects.PlayerName(caster),targetView);
@@ -129,7 +138,7 @@ namespace hds
             m.Parent==DisableEvasion&&m.Target==Stealth.ISDrainTargetAbility&&m.Expires>TimeUtils.GetSimTimeSeconds());
         private static void Restore(WorldClient caster,Cast cast,int markerValue)
         {
-            if(!CanRestore(caster,cast))return;
+            if(!CanRestore(caster,cast)){Output.WriteDebugLog("[STEALTH-FREE]1125 restealth cancelled: lifecycle/action/stealth/stance guard; caster="+TimedEffects.PlayerName(caster));return;}
             ushort ability=markerValue>0?Stealth.InvisibilityGrantAbility:Stealth.SneakGrantAbility;
             // misc.py303 consumes GhostStrike's signed integer value as the override duration.
             Stealth.Begin(caster,Stealth.Defs[ability],cast.Level,durationOverride:markerValue>0?(float?)markerValue:null);

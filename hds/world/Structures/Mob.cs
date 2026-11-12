@@ -808,11 +808,14 @@ namespace hds
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
                 newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
 
+            newHealth = PvpCombat.HealthOf(victim); // callbacks may heal or cause another health change
+
             // Increment hit counter for animation sequencing
             mobHitCounter++;
 
             // Send health update packet to the player (view ID 2 is self-view)
             SendPlayerDamagePacket(victim, newHealth, fxId, mobHitCounter);
+            PvpFlag.ToWatchers(victim, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(newHealth))));
 
             Output.WriteDebugLog($"[COMBAT] Player health: {playerHealth} -> {newHealth}");
 

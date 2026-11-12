@@ -505,6 +505,9 @@ namespace hds
                         nearest == null ? "No NPC within 20 m." : nearest.getName() + " now has Exile weakness " + weakness.Value + ".", "BROADCAST");
                 }
 
+                if (command.Equals("?health") && commands.Length == 1 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, "Current health: " + PvpCombat.HealthOf(Store.currentClient), "BROADCAST");
+
                 if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
                 {

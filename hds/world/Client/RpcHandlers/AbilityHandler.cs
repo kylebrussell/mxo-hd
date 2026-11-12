@@ -242,7 +242,8 @@ namespace hds
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
-            if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+            if (AbilityID==StealthShieldAbilities.DisableEvasion) StealthShieldAbilities.ActionTaken(Store.currentClient);
+            else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             ProcessAbilityScript(this.currentAbility);
@@ -341,6 +342,7 @@ namespace hds
             UInt16 healed = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.Health.setValue(healed);
             if (healed != current) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), current - healed, healed < max);
+            healed = PvpCombat.HealthOf(client); // synchronous health procs may change the result
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
             client.FlushQueue();
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(healed))));

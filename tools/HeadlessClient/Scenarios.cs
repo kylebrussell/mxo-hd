@@ -28,6 +28,8 @@ public static partial class Scenarios
         new Scenario("stealth-shields-suppression", StealthShieldSuppression, StillNpcs),
         new Scenario("stealth-shields-bulldog-pvp", StealthBullDogPvpAndViews, StillNpcs),
         new Scenario("stealth-shields-bulldog-npc", StealthBullDogNpc, StillNpcs),
+        new Scenario("ability-health-presentation-heal-regen", HealthPresentationHealRegen, HealthCallbackNpcs),
+        new Scenario("ability-health-presentation-damage", HealthPresentationDamage, HealthCallbackNpcs),
         new Scenario("ignored-actions-window-close", IgnoredActionsWindowClose, StillNpcs),
         new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
