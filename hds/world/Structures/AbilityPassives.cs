@@ -81,7 +81,10 @@ namespace hds
             Refresh(client, !newWorld);
         }
 
-        public static void Refresh(WorldClient client, bool present = true)
+        /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker
+        /// Style replaced Self Defense (actions_combat_marketplace_abilitychangecoder 10:36:05): the old style's records
+        /// off, its 80 bd 05 toggle off, the new style's records on, its toggle on.</summary>
+        public static void Refresh(WorldClient client, bool present = true, (ushort From, ushort To)? styleSwitch = null)
         {
             State state = client.playerData.passives;
             bool send = present && DeathPenalty.CanPresent(client.playerData);
@@ -118,8 +121,16 @@ namespace hds
                 }
                 if (send)
                 {
-                    foreach (var old in state.Records)
-                        if (!current.ContainsKey(old.Key)) messages.Add(Record(old.Value, true));
+                    var removed = state.Records.Where(old => !current.ContainsKey(old.Key)).Select(old => old.Value).ToList();
+                    if (styleSwitch.HasValue)
+                    {
+                        var first = removed.Where(r => r.Ability == styleSwitch.Value.From).Select(r => Record(r, true)).ToList();
+                        first.Add(AbilityBuffs.BuildExclusive(styleSwitch.Value.From, false));
+                        messages.InsertRange(0, first);
+                        removed.RemoveAll(r => r.Ability == styleSwitch.Value.From);
+                    }
+                    foreach (var old in removed) messages.Add(Record(old, true));
+                    if (styleSwitch.HasValue) messages.Add(AbilityBuffs.BuildExclusive(styleSwitch.Value.To, true));
                     state.Records.Clear();
                     foreach (var active in current) state.Records[active.Key] = active.Value;
                 }
@@ -129,7 +140,8 @@ namespace hds
             AbilityBuffs.RefreshVitals(client, send);
         }
 
-        private static byte[] Record(Active active, bool off) => AbilityBuffs.BuildModifier(Kind, active.Record,
-            active.Ability, active.Stat, active.Value, off, 0);
+        // Style records are kind 0x15 in the same capture; loaded passives keep 0x45
+        private static byte[] Record(Active active, bool off) => AbilityBuffs.BuildModifier(
+            CombatStyles.IsStyle(active.Ability) ? AbilityBuffs.KindStat : Kind, active.Record, active.Ability, active.Stat, active.Value, off, 0);
     }
 }

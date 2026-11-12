@@ -14,8 +14,8 @@ namespace hds
     /// ValueFunction 2 of the style's level). An inactive loaded style contributes nothing.</item>
     /// <item>A special move's (<c>Ability/CombatSpecialMove</c>) <c>Ability/CastRequiredCombatStance</c> names the style
     /// it needs: Berserker Attack 535 and Sky High Sidekick 267 need Karate 132, Wounding Throw 281 Spy Style 1112. The
-    /// client's special-move picker sends 3e to switch to that style itself (client.dll 6210677b); the server does the
-    /// same for a loaded style and refuses the move when the style isn't loaded. Other abilities with a stance
+    /// client shows 80 ba code 13 as ID_ABILITY_NOT_IN_CORRECT_STYLE; the server sends it for an unloaded style and, as
+    /// a choice (no client 3e for special moves was found), switches to a loaded style and refuses the move when the style isn't loaded. Other abilities with a stance
     /// (viruses need Hacker Style, Poison Knife Spy Style) are not gated until the native client's auto-switch for them
     /// is checked.</item>
     /// <item>The interlock shows the style to everyone in the fight: the ILDB's exchange groups are lettered by style,
@@ -67,18 +67,59 @@ namespace hds
             return required == 0 || Active(client) == required;
         }
 
-        /// <summary>Before a special move: switches to its style when that style is loaded, as the client's picker does.
+        /// <summary>Before a special move: switches to its style when that style is loaded (a server choice; see COMBAT-STYLES.md).
         /// False when the move needs a style the player doesn't have loaded.</summary>
         public static bool EnsureStyleFor(WorldClient client, ushort ability)
         {
             if (CanUse(client, ability)) return true;
             ushort required = RequiredStyle(ability);
             if (AbilityPassives.Level(client, required) <= 0) return false;
-            Select(client, required);
-            client.playerData.combatSelection = required;
-            client.playerInstance.CurCombatExclusiveAbility.setValue((uint)required);
-            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((39, PlayerViewAttributes.U32(required))), false);
+            Switch(client, required);
             return true;
+        }
+
+        /// <summary>The selection a 3e would make: own attribute 39, then the style switch.</summary>
+        public static void Switch(WorldClient client, ushort style)
+        {
+            client.playerData.combatSelection = style;
+            client.playerInstance.CurCombatExclusiveAbility.setValue((uint)style);
+            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((39, PlayerViewAttributes.U32(style))), false);
+            Select(client, style);
+        }
+
+        /// <summary>A style used from the Actions window arrives as <c>80 b9 &lt;style&gt;</c>, not 3e: the client changes
+        /// nothing itself and retail's server switched the style (Hacker Style: 80 b9 ee 03, answered with attribute 39
+        /// ee 03, Self Defense's records and toggle off, Hacker Style's on and "You are now using the %1z martial arts
+        /// style."). Returns false when the ability isn't a style; refuses a style that isn't loaded.</summary>
+        public static bool UseStyle(WorldClient client, ushort ability)
+        {
+            ability = AbilityCatalog.Canonical(ability);
+            if (!IsStyle(ability)) return false;
+            if (AbilityPassives.Level(client, ability) <= 0)
+            {
+                client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(ability, AbilityCooldowns.DeniedBusy));
+                Output.WriteDebugLog("[STYLE] " + ability + " is not loaded; not switched");
+                return true;
+            }
+            Switch(client, ability);
+            return true;
+        }
+
+        /// <summary>80 ba code the client shows as ID_ABILITY_NOT_IN_CORRECT_STYLE "You are not in the correct combat style
+        /// to use this ability." (client.dll 621e52cd: string index = code - 2, table 621e5698 entry 11).</summary>
+        public const byte DeniedWrongStyle = 0x0d;
+
+        /// <summary>The style's activation line: its first modifier with ActivationStringOnSelf (0xc600221c "You are now
+        /// using the %1z martial arts style."), values [that modifier's value, 0] as in the capture ([108, 0]).</summary>
+        public static byte[] ActivationLine(WorldClient client, ushort style)
+        {
+            var modifier = Modifiers(style).FirstOrDefault(m => m.Number("ActivationStringOnSelf") != 0);
+            if (modifier == null) return null;
+            int level = Math.Max(1, AbilityPassives.Level(client, style));
+            AbilityValues.TryValue(modifier, DeathPenalty.EffectiveLevel(client, (ushort)level), client.playerInstance.Level.getValue()[0], out int value);
+            string name = TimedEffects.PlayerName(client);
+            return AbilityMessages.Build((uint)modifier.Number("ActivationStringOnSelf"), true, style, 0, AbilityMessages.TypeAbility,
+                name, name, value, 0);
         }
 
         public static string Name(ushort style) => style switch
@@ -101,8 +142,12 @@ namespace hds
         public static void Select(WorldClient client, ushort style)
         {
             if (client.playerData.combatStyle == style) return;
+            ushort before = Active(client);
             client.playerData.combatStyle = style;
-            AbilityPassives.Refresh(client);
+            ushort after = Active(client);
+            AbilityPassives.Refresh(client, true, before != after ? (before, after) : ((ushort, ushort)?)null);
+            byte[] line = before != after && DeathPenalty.CanPresent(client.playerData) ? ActivationLine(client, after) : null;
+            if (line != null) client.messageQueue.addRpcMessage(line);
             Output.WriteDebugLog("[STYLE] " + client.playerData.getCharID() + " now fights with " + Name(Active(client)));
         }
     }

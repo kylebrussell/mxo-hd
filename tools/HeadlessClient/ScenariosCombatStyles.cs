@@ -27,21 +27,32 @@ public static partial class Scenarios
         await player.WaitForRpcAsync(ModPattern(133, 522)); // Kung-Fu MeleeAcc
         await player.WaitForRpcAsync(ModPattern(133, 1009));
         SelectStyle(player, 132);
+        await player.WaitForRpcAsync(ModPattern(133, 522, true)); // the previous style's records come off first
+        await player.WaitForRpcAsync("80 bd 05 85 00 00 00 00 00 00 00"); // and its toggle
         await player.WaitForRpcAsync(ModPattern(132, 522));
-        await player.WaitForRpcAsync(ModPattern(133, 522, true)); // the previous style's records come off after
+        await player.WaitForRpcAsync("80 bd 05 84 00 00 00 00 00 00 01");
+        await player.WaitForRpcAsync("81 67 ?? ?? ?? ?? 1c 22 00 c6 01 84 00 00 00"); // "You are now using the %1z martial arts style."
         Check.Equal(0, player.Received(ModPattern(1112, 522)).Count, "A loaded but inactive style contributes nothing");
 
         // Special moves need their stored stance: Tomo Nage needs Aikido, which isn't loaded
         Cast(player, 412, mob.ViewId);
-        await player.WaitForTextAsync("requires the Aikido combat style");
+        await player.WaitForRpcAsync("80 ba 9c 01 00 00 6b 0d"); // the client's ID_ABILITY_NOT_IN_CORRECT_STYLE
         Check.That(!context.Server.DebugLog().Contains("TomoNageAbility is the next move"), "A refused special does nothing");
         // Wounding Throw needs Spy Style, which is loaded: the server switches to it as the client's picker does
         Cast(player, 281, mob.ViewId);
         await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 58 04 00 00");
         await player.WaitForRpcAsync(ModPattern(1112, 1032)); // Spy Style ThrowAccuracy
-        SelectStyle(player, 133);
-        await player.WaitForRpcAsync(ModPattern(133, 522));
+        // Using Kung-Fu from the Actions window sends 80 b9 85 00, not 3e: it switches the style too
+        player.SendRpc("80 b9 85 00 00 00");
+        await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 85 00 00 00");
         await player.WaitForRpcAsync(ModPattern(1112, 1032, true));
+        await player.WaitForRpcAsync("80 bd 05 58 04 00 00 00 00 00 00");
+        await player.WaitForRpcAsync(ModPattern(133, 522));
+        await player.WaitForRpcAsync("80 bd 05 85 00 00 00 00 00 00 01");
+        await player.WaitForRpcAsync("81 67 ?? ?? ?? ?? 1c 22 00 c6 01 85 00 00 00");
+        Check.Equal(0, player.Received("80 ac 85 00").Count, "A style switch is no cast: no 80 ac echo");
+        await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("now fights with Kung-Fu"), "80 b9 style switch logged",
+            TimeSpan.FromSeconds(10));
 
         // A Kung-Fu fight uses the W exchange set against the NPC's Self-Defense set
         player.SendRpc("3d 01");

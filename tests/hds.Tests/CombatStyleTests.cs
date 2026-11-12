@@ -215,6 +215,59 @@ public class CombatStyleTests
         Assert.Null(CombatSpecials.Damage(198, null));
     }
 
+    private static List<string> Rpcs(WorldClient client)
+    {
+        var list = new List<string>();
+        foreach (SequencedMessage m in client.messageQueue.RPCMessagesQueue)
+            list.Add(BitConverter.ToString(m.content).Replace("-", "").ToLowerInvariant().Substring(2)); // length byte first
+        client.messageQueue.RPCMessagesQueue.Clear();
+        client.messageQueue.ObjectMessagesQueue.Clear();
+        return list;
+    }
+
+    [Fact]
+    public void UsingALoadedStyleFromTheActionsWindowSwitchesLikeRetail()
+    {
+        var client = Client();
+        client.playerInstance.CharacterName.setValue("Stylist");
+        client.playerData.setOnWorld(true);
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (2, 50), (CombatStyles.KungFu, 50), (CombatStyles.HackerStyle, 50) });
+        Rpcs(client);
+
+        // 80 b9 85 00: Kung-Fu used like an ability
+        Assert.True(CombatStyles.UseStyle(client, CombatStyles.KungFu));
+        Assert.Equal(CombatStyles.KungFu, CombatStyles.Active(client));
+        Assert.Equal(133u, client.playerData.combatSelection);
+        var rpcs = Rpcs(client);
+        // Retail's order (Hacker Style replacing Self Defense, abilitychangecoder 10:36:05): Self Defense's kind-15 records
+        // off, its 80 bd 05 toggle off, the new style's kind-15 records on, its toggle on, then the activation line
+        int sdToggle = rpcs.IndexOf("80bd051100000000000000");
+        int kfToggle = rpcs.IndexOf("80bd058500000000000001");
+        Assert.True(sdToggle > 0, string.Join(" | ", rpcs));
+        Assert.True(kfToggle > sdToggle);
+        Assert.All(rpcs.Take(sdToggle), r => Assert.StartsWith("80bc1500", r));
+        Assert.All(rpcs.Take(sdToggle), r => Assert.Contains("0011000000", r));
+        Assert.Contains(rpcs.Skip(sdToggle + 1).Take(kfToggle - sdToggle - 1), r => r.StartsWith("80bc1500") && r.Contains("0085000000" + "0a02"));
+        // "You are now using the %1z martial arts style." with MeleeAcc's value: 10 + trunc(50 x 1.3f) = 74
+        Assert.StartsWith("81671700" + "2100" + "1c2200c6" + "01" + "85000000" + "00000000", rpcs[kfToggle + 1]);
+        Assert.EndsWith("02004a00000000000000", rpcs[kfToggle + 1]);
+
+        // The same style again changes nothing but the selection echo; an unloaded style is refused, not switched
+        Assert.True(CombatStyles.UseStyle(client, CombatStyles.KungFu));
+        Assert.Empty(Rpcs(client));
+        Assert.True(CombatStyles.UseStyle(client, CombatStyles.Karate));
+        Assert.Equal(CombatStyles.KungFu, CombatStyles.Active(client));
+        Assert.StartsWith("80ba8400", Assert.Single(Rpcs(client)));
+        Assert.False(CombatStyles.UseStyle(client, CombatSpecials.BerserkerAttack));
+    }
+
+    [Fact]
+    public void TheWrongStyleRefusalIsTheClientsOwnString()
+    {
+        // client.dll 621e52cd: 80 ba code 13 -> table index 11 -> ID_ABILITY_NOT_IN_CORRECT_STYLE (0x7a0002ba)
+        Assert.Equal((byte)0x0d, CombatStyles.DeniedWrongStyle);
+    }
+
     [Fact]
     public void MartialArtIsRetainedWithoutChangingTheStyle()
     {

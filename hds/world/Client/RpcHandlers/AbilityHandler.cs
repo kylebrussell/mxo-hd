@@ -113,6 +113,13 @@ namespace hds
                 return;
             }
 
+            // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
+            if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
+            {
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
             if (itemSlot.HasValue && new InventoryHandler().UseItem(itemSlot.Value, AbilityID))
@@ -128,10 +135,13 @@ namespace hds
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
-            // style is switched to, as the client's special-move picker does with 3e
+            // style is switched to (a server choice; docs/COMBAT-STYLES.md)
             if (!CombatStyles.EnsureStyleFor(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "That move requires the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style.");
+                // The client shows ID_ABILITY_NOT_IN_CORRECT_STYLE for this 80 ba code
+                Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(AbilityID, CombatStyles.DeniedWrongStyle));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": needs the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style");
                 return;
             }
             // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.

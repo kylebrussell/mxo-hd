@@ -6,15 +6,28 @@ Combat styles are the `IsCombatExclusive` toggles: Self Defense 17, Aikido 101, 
 
 ### `3e` selection: what produces it
 
-Layout after the opcode: slot u8, ability u32, IsSlot u8, IgnoreStyleUpdate u8. The sender `6219f460(ability, slot, ignore)` first calls the local selection setter `625dd5f0`, so the client has already switched its own toolbar. It then writes the slot when it isn't `6b`, otherwise the ability. IsSlot is never written. It has four callers:
+Layout after the opcode: slot u8, ability u32, IsSlot u8, IgnoreStyleUpdate u8. The sender `6219f460(ability, slot, ignore)` first calls the local selection setter `625dd5f0`, which nothing else calls, so the client has already switched its own toolbar. It then writes the slot when it isn't `6b`, otherwise the ability. IsSlot is never written. `3f` (Free Attack: slot, ability, IsSlot) is its ranged twin, sent by `6219f340`. The callers:
 
 | Caller | When | Values |
 |---|---|---|
-| `62076a91`, `62076b71` | World entry (`OnEnterWorld`, with `0c 01`, `80 be`, `81 48`). They re-send the current selection read through `625dd550`. | A base ability (e.g. `6b 85 00 00 00 00 00`, Kung-Fu, 37 captures), or `6b 00 10 ..` (none, 147 captures). IgnoreStyleUpdate is 0. |
-| `6210677b` | The style/special-move picker. | The selected style or special move. A bag slot is sent as `80000000\|slot`. IgnoreStyleUpdate is the caller's flag. |
+| `62076a91`, `62076b71` | The toolbar's **dropdown slot** list. Its event handler `62077ac0` routes the combo events `CPPA` to `62076a00` and `CPPB` to `62076ae0`. Each reads the chosen list entry (`[list+0x6c]` vfuncs `0x178`/`0x150`, entry `+0x40`) and sends `3e` when the slot's mode `[+0x84]` is 0 (Close Combat) or `3f` when it is 1 (Free Attack). The tooltips are "Use this dropdown slot to select your Close Combat style." (`8800006c`) and "... Free Attack style." (`8800006d`). | The chosen style. A bag slot is sent as `80000000\|slot`. IgnoreStyleUpdate 0. |
+| `6210677b` | The combat toolbar window's constructor `62104a10`, created by the UI factory at `62021272`. It re-sends both current selections (`3f` then `3e`) when the toolbar is built. This is the world-entry `3e`. | E.g. `6b 85 00 00 00 00 00` (Kung-Fu, 37 captures) or `6b 00 10 ..` (none, 147 captures). |
 | `621e00a0` | An inventory move of the selected item between slots (types 4/5). | The new slot, with IgnoreStyleUpdate 1. |
 
-What the server answers: the client needs no reply to apply its own selection. The server validates ownership (an owned bag slot, or a loaded ability or grant) and retains the selection. It echoes own-view attribute 39 `CurCombatExclusiveAbility`. When the value is a style and IgnoreStyleUpdate is 0, that style becomes active. Its `80 bc 45 00` while-enabled records go on, and the previous style's records go off. No retail capture shows the server's own records after a switch. The record kind matches the loaded-passive records, which also come from while-enabled modifiers. That is a choice.
+The client needs no reply to apply its own selection. The server validates ownership (an owned bag slot, or a loaded ability or grant) and retains the selection. It echoes own-view attribute 39 `CurCombatExclusiveAbility`. When the value is a style and IgnoreStyleUpdate is 0, that style becomes active, and the server sends the same records as for `80 b9` below. The style icon on the toolbar is not the dropdown. Clicking it sends `80 b9 <style> <view>` and, without a target, the client shows `ID_TOOLBAR_IL_NOTARGET` "You do not have a valid target selected." itself.
+
+### `80 b9 <style>`: using a style from the Actions window
+
+Double-clicking a style in the Actions window sends an ordinary ability use. The client changes nothing locally: native QA saw no `3e` and the toolbar stayed on Self Defense. Retail's server switched the style. In `actions_combat_marketplace_abilitychangecoder` at 10:36:05, the client sends `80 b9 ee 03 0f 00` (Hacker Style, with a target selected), and one server packet answers:
+
+1. Own view: `02 00 02 80 80 80 80 80 10 ee 03 00 00` (attribute 39 = 1006).
+2. Self Defense's nine `80 bc 15 00 <record> 00 11 00 00 00 <stat> <value> 01` records off, then `80 bd 05 11 00 00 00 00 00 00 00` (its toggle off).
+3. Hacker Style's eight `80 bc 15 00 <record> 00 ee 03 00 00 <stat> <value> 00` records on, then `80 bd 05 ee 03 00 00 00 00 00 01`.
+4. `81 67` with string `c600221c` "You are now using the %1z martial arts style.", flag 1, ability 1006, values [108, 0]. `c600221c` is the ActivationStringOnSelf of the style's first modifier (ViralAcc for Hacker Style, MeleeAcc for the martial styles), and 108 is that modifier's value.
+
+No `80 ac` cast echo, IS cost or cooldown follows. The server now does exactly this, in this order, for a loaded style used through `80 b9` and for a `3e` style switch (`CombatStyles.UseStyle`/`Switch`/`Select`). Style records therefore use kind `0x15`, as in the capture; loaded passives keep `0x45`. Using the active style again only re-echoes the selection. Using a style that isn't loaded gets an `80 ba` refusal and does not switch.
+
+**Values.** The capture's record values don't fit the plain native function 2 with one ability level per style. Self Defense's MeleeDam 25 = 4 + trunc(50 × .42) fits level 50, but its MeleeAcc 77 and viral defence 76, and Hacker Style's ViralAcc 108 and ViralDam 46, need different levels (or other contributions) per stat. The character's build is unknown. The server keeps the stored function; exact per-stat parity is an open gap.
 
 ### `43` MartialArt is never sent by 7.6005
 
@@ -29,7 +42,7 @@ The only producer is `6219f0a0(u16)`. It builds `43 <u16>`, sends it and stores 
 
 ## Special-move set
 
-A `CombatSpecialMove` ability's `CastRequiredCombatStance` names its style: Karate (Berserker Attack 535, Sky High Sidekick 267), Aikido (Tomo Nage 412), Spy Style (Wounding Throw 281), Self Defense (Cheap Shot 198, Head Butt 197), Handguns, Rifles and so on. The client's picker switches to that style with `3e` (`6210677b`). The server does the same when the required style is loaded, echoing attribute 39. It refuses the move with "That move requires the X combat style." when the style isn't loaded.
+A `CombatSpecialMove` ability's `CastRequiredCombatStance` names its style: Karate (Berserker Attack 535, Sky High Sidekick 267), Aikido (Tomo Nage 412), Spy Style (Wounding Throw 281), Self Defense (Cheap Shot 198, Head Butt 197), Handguns, Rifles and so on. The client's `80 ba` handler (`621e5280`, string table `621e5698`, index = code − 2) shows code 13 as `ID_ABILITY_NOT_IN_CORRECT_STYLE` "You are not in the correct combat style to use this ability." That suggests retail refused wrong-style moves rather than switching. The server sends that code when the required style isn't loaded. When the required style **is** loaded, it still switches to it (the same records as above) and lets the move through. No client code was found that sends `3e` for a special move, so this switch is a server choice. Strict retail behaviour would refuse with code 13 here too; changing to that would also need the Paralyzing Throw parity scenario and the NativeQa root checks to select the style first.
 
 Abilities that have a stance but aren't special moves are **not** gated yet. That covers viruses (Hacker Style), Enrage (Coder Style), Poison Knife and Sever Artery (Spy Style), and they work in any style. Whether the native client auto-switches for them still needs native QA.
 
@@ -57,8 +70,8 @@ Precise Blow 15 and Punishing Blows 16 are toggles (`IsAToggleAbility`, not `IsC
 
 ## Validation
 
-- Unit: `CombatStyleTests` (17 tests): active-only modifiers and native truncation, fallback, all seven styles, stance gate and auto-switch, weapon styles, ILDB letters and transitions, thrown DOTs, caster buffs, Exile damage, MartialArt.
-- Headless (fresh servers): `combat-style-switching` covers 3e records on/off, attribute 39, the Aikido refusal, the Spy auto-switch and Kung-Fu W exchanges against an NPC. `combat-specials-npc` covers Taunt turning WinterFrost from another player, Poison Knife's DOT ticks, and Silver Bullet 10 / Wooden Stake 100 on a wood-weak NPC. `combat-specials-pvp` covers the Sever Artery records on a flagged player, the Berserker buff on the caster only, and Taunt ignoring players.
+- Unit: `CombatStyleTests` (19 tests): active-only modifiers and native truncation, fallback, all seven styles, stance gate and auto-switch, the `80 b9` style switch in retail's record order and format, the wrong-style refusal code, weapon styles, ILDB letters and transitions, thrown DOTs, caster buffs, Exile damage, MartialArt.
+- Headless (fresh servers): `combat-style-switching` covers 3e records and toggles off/on with the activation line, attribute 39, the Aikido refusal (`80 ba` code 13), the Spy auto-switch, `80 b9 85 00` switching to Kung-Fu with no cast echo, and Kung-Fu W exchanges against an NPC. `combat-specials-npc` covers Taunt turning WinterFrost from another player, Poison Knife's DOT ticks, and Silver Bullet 10 / Wooden Stake 100 on a wood-weak NPC. `combat-specials-pvp` covers the Sever Artery records on a flagged player, the Berserker buff on the caster only, and Taunt ignoring players.
 - No native pass is claimed. See the native QA steps below.
 
 ## Native QA (NativeQa fixture, `styles` mode)
@@ -69,7 +82,12 @@ dotnet tools/NativeQa/bin/Debug/net8.0/NativeQa.dll <checkout> <new-output-dir> 
 
 CSR_Tester starts beside the test NPC cluster with Karate, Kung-Fu, Hacker/Coder/Spy Style, the specials above, Sky High Sidekick, Tomo Nage (Aikido deliberately absent) and Cheap Shot. The server runs with dev commands.
 
-1. Enter the world. Pick Kung-Fu on the style toolbar. Check that the toolbar stays on Kung-Fu, the character sheet's melee accuracy/defence change, and the packet log shows `3e`, attribute 39 `85 00 00 00` and `80 bc 45 00` records for 133. Switch to Karate and check that the Kung-Fu records go off. Relog and confirm the world-entry `3e` re-applies the style.
+1. Enter the world.
+   - Open the Actions window, find Kung-Fu under Martial Arts Initiate and double-click it. The client sends `80 b9 85 00`. Check that the toolbar style icon changes to Kung-Fu, the chat shows "You are now using the Kung-Fu martial arts style.", and the server log has `[STYLE] ... now fights with Kung-Fu`. The packet log should show attribute 39 `85 00 00 00`, Self Defense's `80 bc 15 00` records off, `80 bd 05 11 .. 00`, Kung-Fu's records on and `80 bd 05 85 .. 01`. Check the character sheet's melee accuracy/defence.
+   - Double-click Karate: the Kung-Fu records and toggle go off.
+   - Then try the toolbar's Close Combat **dropdown slot** (tooltip "Use this dropdown slot to select your Close Combat style."). Open its list, likely with a left click on the slot's arrow or edge rather than the icon itself; right-click menus don't open in this client. Choose Kung-Fu. The client should send `3e 6b 85 00 00 00 00 00` with the same server answer. Record how the list opens.
+   - Clicking the style icon itself is the interlock/attack button. Without a target it shows "You do not have a valid target selected."
+   - Relog and confirm the world-entry `3e` re-applies the selected style.
 2. Engage WinterFrost in Kung-Fu, and later Karate. Watch the stance and exchanges: Kung-Fu/Karate moves instead of Self-Defense. `events.jsonl` names each round's animation group (`WS vs SP`, `KP vs SS`...). Create `helpers`, then let QAOther watch from outside: the bystander sees the same style moves.
 3. In Kung-Fu, click Berserker Attack. The client should switch to Karate itself (a `3e` before `80 b9`); otherwise the server switches it. Check the Berserker buff icon (21 s). Click Tomo Nage and check the refusal message. Note whether the client greys it out.
 4. Pick Spy Style and throw Poison Knife and Sever Artery at an NPC: DOT numbers every 2.5 s; Sever Artery slows the NPC. Use Side Roll Escape in a fight: Combat Evasion icon, and the character leaves the interlock.
