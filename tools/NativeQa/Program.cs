@@ -7,6 +7,12 @@ using System.Text.Json;
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
+// Optional fifth argument keeps a focused native checklist small enough to avoid legacy UI scrolling.
+ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOptions.RemoveEmptyEntries)
+    .Select(s => ushort.Parse(s.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture)).Distinct().ToArray()
+    : Array.Empty<ushort>();
+if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
+    throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection";
 bool controlsMode = args.Length > 3 && args[3] == "controls";
@@ -63,6 +69,15 @@ DELETE FROM char_abilities WHERE char_id=110;
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
     var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),
         e => e.GetProperty("fields").TryGetProperty("Ability/AbilityLevelCap", out var cap) ? Math.Min(50, cap.GetInt32()) : 50);
+    if (requestedAbilities.Length > 0)
+    {
+        var playerAbilities = catalog.RootElement.GetProperty("abilities").EnumerateArray().Where(e =>
+            !e.GetProperty("fields").TryGetProperty("Ability/AbilityClass", out var kind) || kind.GetInt32() == 0)
+            .Select(e => e.GetProperty("id").GetUInt16()).ToHashSet();
+        if (requestedAbilities.Any(id => !playerAbilities.Contains(id) || names[id].StartsWith("NPC", StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Custom native loadouts require known player-ability templates.");
+        abilities = requestedAbilities;
+    }
     string loadout = string.Join("\n", abilities.Distinct().Select((id, slot) =>
         $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
