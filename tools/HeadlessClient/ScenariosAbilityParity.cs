@@ -29,8 +29,9 @@ public static partial class Scenarios
         var npc = await healer.WaitForViewNamedAsync("WinterFrost");
 
         Cast(healer, 77, allyView.ViewId);
-        await ally.WaitUntilAsync(() => ViewUpdateValues(ally, 2, "02 80 80 80 40").Any(v => v >= 225),
-            "Repair RSI heals the selected player", TimeSpan.FromSeconds(10));
+        await ally.WaitUntilAsync(() => context.Server.DebugLog().Contains("Heal 77 -> Ally for 9"),
+            "Repair RSI heals the selected player for its stored base", TimeSpan.FromSeconds(10));
+        Check.That(ViewUpdateValues(ally, 2, "02 80 80 80 40").Any(v => v >= 109), "Selected ally receives the health update");
         Check.That(!context.Server.DebugLog().Contains("Heal 77 -> Healer"), "A targeted heal does not heal its caster instead");
 
         // An NPC selection must be rejected before IS or cooldown is consumed.

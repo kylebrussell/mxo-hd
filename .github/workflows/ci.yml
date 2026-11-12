@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'codex/**'
 
 jobs:
   build-and-test:

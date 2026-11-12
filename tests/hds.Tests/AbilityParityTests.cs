@@ -139,13 +139,13 @@ public class AbilityParityTests
         AbilitySupport.Land(client, 169, 2);
         var hot = Assert.Single(TimedEffects.ForPlayer(client).Effects.Snapshot());
         Assert.Equal(TempMods.Proc.Hot, hot.Proc);
-        Assert.Equal(100, Value(client.playerInstance.Health)); // no immediate quarter-max heal
+        Assert.Equal(100, Value(client.playerInstance.Health)); // no immediate heal; the stored 14 is the HOT's total
         Assert.Equal(15f, hot.Seconds);
         Assert.Equal(2.5, hot.Interval);
         TimedEffects.RunDue(hot.Start + 2.51);
-        Assert.Equal(121, Value(client.playerInstance.Health));
+        Assert.Equal(102, Value(client.playerInstance.Health));
         TimedEffects.RunDue(hot.Start + 15.1);
-        Assert.Equal(205, Value(client.playerInstance.Health)); // five rounded 21-point ticks
+        Assert.Equal(110, Value(client.playerInstance.Health)); // five script-rounded two-point ticks before expiry
         Assert.True(TimedEffects.ForPlayer(client).Effects.IsEmpty);
     }
 

@@ -27,6 +27,8 @@ namespace hds
         public static List<WorldClient> Targets(WorldClient caster, UInt16 id, UInt16 view)
         {
             var entry = AbilityCatalog.Find(id);
+            // Simulacra repairs require an owned pet, not a player selected through the generic heal fallback.
+            if (entry?.Healing == true && !AbilityHealing.PlayerTarget(entry)) return new List<WorldClient>();
             bool group = entry?.Number("Ability/CastDirectObjects") == 9;
             if (group)
             {
@@ -51,9 +53,7 @@ namespace hds
             {
                 if (entry?.Healing == true)
                 {
-                    UInt16 max = NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(), 1);
-                    // MobiusCodeEffect is explicit; other heal scaling is native and remains audited as partial.
-                    UInt16 amount = id == 967 ? (UInt16)(max / 10) : AbilityHandler.HealAmount(target);
+                    UInt16 amount = AbilityHealing.Amount(caster, target, id);
                     var hot = entry.Modifiers.FirstOrDefault(m => m.Text("StatModUpdateFunc") == "HOT");
                     if (hot != null && hot.Number("Duration") > 0)
                     {

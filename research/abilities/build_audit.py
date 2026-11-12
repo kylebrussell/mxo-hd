@@ -159,7 +159,14 @@ def server(i):
     if r['dot']:
         parts.append('captured DOT executor' if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r['healing']:
-        parts.append('target/team heal' + (' over time' if any(m.get('StatModUpdateFunc') == 'HOT' for m in mods(i)) else '') + (' 10% max HP' if i == 967 else '; amount placeholder'))
+        if not r.get('player_healing'):
+            parts.append('pet/special healing target executor missing; player cast refused')
+        else:
+            amount = '10% target max HP' if i == 967 else 'stored base ' + '+'.join(str(v) if v is not None else '?' for v in r.get('heal_base', [])) + '; caster healing influence'
+            parts.append('target/team heal' + (' over time' if any(m.get('StatModUpdateFunc') == 'HOT' for m in mods(i)) else '') + '; ' + amount)
+    passive = [m for m in r.get('passives', []) if m['level50'] is not None]
+    if passive:
+        parts.append('loaded passive totals + records (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d} [{m['consumer']}]" for m in passive) + ')')
     if r['buff_source'] != 'none':
         parts.append(f"buff records + selected combat/vital stats ({r['buff_source']})")
     if r['timed']:
@@ -180,7 +187,7 @@ def server(i):
 def status(i):
     r = coverage[i]
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or 'HyperJump' in abilities[i]['name']:
+    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
@@ -222,7 +229,9 @@ The new catalog fallback supplies explicit costs, cast times, recast/family time
 
 Hacker area damage and controls reach visible NPCs on the same floor. DOTs on secondary targets keep ticking without replacing the current fight; kills share death claiming, XP, mission and loot handling. The merged PvP paths also use action gates, combat-stat bonuses and health-triggered control breaks. LOS, full hit/deflection tests, cone shapes, multi-NPC combat AI, resistance-derived ability damage and some PvP target rules remain incomplete.
 
-Friendly direct/group heals and HOTs no longer damage an NPC or heal only the caster. Most healing magnitude is still the pre-existing quarter-max-health placeholder; HOT uses that placeholder as its total and the script tick formula. Mobius Code uses its explicit 10% heal; its 1% immunity proc is still missing. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Active accuracy, defence, toughness, ballistic influence/bonus, melee bonus and vital modifiers now feed server mechanics. Native passive scaling, many stat families and other callbacks remain gaps. Coder pet/daemon ownership, AI, commands and lifetime are **missing**; they are not disguised as generic damage. Stealth/detection and several special conditions remain incomplete.
+Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, existing damage-bonus consumers and crafting use these totals. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, stealth/detection, control-duration bonuses and special callbacks are still incomplete. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
+
+Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs reject player targets while pet ownership/AI is missing. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Coder pet/daemon ownership, AI, commands and lifetime remain **missing**.
 
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 

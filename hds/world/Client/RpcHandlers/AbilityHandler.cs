@@ -62,6 +62,7 @@ namespace hds
             Store.dbManager.WorldDbHandler.SaveInfo(client, newCash);
             client.playerData.setInfo(newCash);
             Store.dbManager.WorldDbHandler.SetAbilityLevel(charId, request.Slot, newLevel);
+            AbilityPassives.Load(client);
 
             // Retail order: 80 e7 (-cost), 80 e4 (new cash), the hidden ability again at its new level, 80 b8.
             packets.SendInfoDelta(client, -(long)cost, ServerPackets.InfoReasonAbilityUpgrade);
@@ -219,18 +220,6 @@ namespace hds
             return AbilityCatalog.Find(ability.getAbilityID())?.Healing == true || name.StartsWith("RestoreHealth") || name.StartsWith("EmergencyRepairs");
         }
 
-        /// <summary>
-        /// How much a heal restores. The data files have no amounts for these abilities, so it is a quarter of
-        /// the caster's maximum health (a placeholder until a retail capture shows real numbers).
-        /// </summary>
-        public const double HealFraction = 0.25;
-
-        public static UInt16 HealAmount(WorldClient client)
-        {
-            UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
-            return (UInt16)Math.Max(1, Math.Round(max * HealFraction));
-        }
-
         /// <summary>Raises the player's health (never above the maximum) and sends the own-view health update.</summary>
         public static UInt16 HealSelf(WorldClient client, UInt16 amount)
         {
@@ -297,9 +286,10 @@ namespace hds
         /// Whole points to grant this tick. In a fight the rate is <see cref="CombatCalculator.FIGHT_REGEN_FACTOR"/> of normal
         /// (1.6 a tick), so the fraction is carried over to the next tick.
         /// </summary>
-        public static int RegenAmount(bool inFight, ref double carry)
+        public static int RegenAmount(bool inFight, ref double carry, int rateBonus = 0)
         {
-            double total = carry + (inFight ? InnerStrengthRegenPerTick * CombatCalculator.FIGHT_REGEN_FACTOR : InnerStrengthRegenPerTick);
+            double total = carry + (inFight ? InnerStrengthRegenPerTick * CombatCalculator.FIGHT_REGEN_FACTOR : InnerStrengthRegenPerTick) *
+                Math.Max(0, 1 + rateBonus / 100.0);
             int whole = (int)(total + 1e-9);
             carry = total - whole;
             return whole;
@@ -317,7 +307,8 @@ namespace hds
                 client.playerData.innerStrengthRegenCarry = 0;
                 return null;
             }
-            int amount = RegenAmount(CombatManager.GetHandler(client).isCombatRunning, ref client.playerData.innerStrengthRegenCarry);
+            int amount = RegenAmount(CombatManager.GetHandler(client).isCombatRunning, ref client.playerData.innerStrengthRegenCarry,
+                AbilityStats.Influence(client, 114));
             if (amount == 0)
             {
                 return null;

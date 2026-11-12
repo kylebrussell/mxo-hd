@@ -14,7 +14,7 @@ namespace hds
         public const double FractionPerSecond = 0.01;
 
         /// <summary>Health after <paramref name="seconds"/> of regeneration, or null when nothing changes.</summary>
-        public static UInt16? Next(UInt16 current, UInt16 max, bool inCombat, bool dead, double seconds)
+        public static UInt16? Next(UInt16 current, UInt16 max, bool inCombat, bool dead, double seconds, int rateBonus = 0)
         {
             if (dead || max == 0 || current >= max || current == 0)
             {
@@ -22,7 +22,8 @@ namespace hds
             }
 
             double fraction = inCombat ? FractionPerSecond * CombatCalculator.FIGHT_REGEN_FACTOR : FractionPerSecond;
-            int step = Math.Max(1, (int)Math.Round(max * fraction * seconds));
+            double rate = Math.Max(0, 1 + rateBonus / 100.0);
+            int step = rate == 0 ? 0 : Math.Max(1, (int)Math.Round(max * fraction * seconds * rate));
             return (UInt16)Math.Min(max, current + step);
         }
 
@@ -38,7 +39,8 @@ namespace hds
             UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
             bool inCombat = CombatManager.GetHandler(client).isCombatRunning;
             // A duel's loser lies at 0 health until they stand up
-            UInt16? next = Next(current, max, inCombat, client.playerData.isDead || client.playerData.duelDeath, seconds);
+            UInt16? next = Next(current, max, inCombat, client.playerData.isDead || client.playerData.duelDeath, seconds,
+                AbilityStats.Influence(client, 112));
             if (!next.HasValue)
             {
                 return;

@@ -7,7 +7,8 @@ using System.Text.Json;
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
-bool npcStart = args.Length > 3 && args[3] == "npc";
+bool passivesMode = args.Length > 3 && args[3] == "passives";
+bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
 bool actionsMode = args.Length > 3 && args[3] == "actions";
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
@@ -51,6 +52,7 @@ INSERT INTO char_missions (charId,missionId) VALUES (110,986);
 DELETE FROM char_abilities WHERE char_id=110;
 ");
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133 };
+    if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
     using var catalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "data", "ability_catalog.json")));
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
     var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),
@@ -90,6 +92,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
  SELECT {id},slot,ability_id,level,is_loaded,ability_name FROM char_abilities WHERE char_id=110;
 ");
     }
+    if (passivesMode)
+        await database.ExecuteAsync("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)");
     string snapshot = Path.Combine(qaRoot, "snapshot");
     string sourceBin = Path.Combine(root, "hds", "bin", "Debug", "net8.0");
     string targetBin = Path.Combine(snapshot, "hds", "bin", "Debug", "net8.0");

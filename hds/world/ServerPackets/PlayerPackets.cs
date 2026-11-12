@@ -427,32 +427,7 @@ namespace hds
 
         public void sendPlayerAttributes(WorldClient client)
         {
-            // ToDo: Load dynamic if we know what to load
-            
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc15002f0000f70300000802000000000000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc15002f0000f70300000802000000000000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500300000f70300000702ecffffff0000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500310000f70300005004000000000000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500320000f7030000f403000000000000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500330000f70300005104f6ffffff0000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc56002a0000b3a900000904090000000100000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b23a0400000802"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2110011000802"));
-            
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("81A500000700052300687474703A2F2F6D786F656D752E696E666F2F666F72756D2F696E6465782E70687000")); // Has forum url - but is not flash traffic - or ? 
-            // TODO: lead-only family (80 bc 55 00 super-jump), not yet modeled byte-exact.
-            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc55005100000b0000003702330000000000000000")); // this adds super jump points dude
-            // Code Write bonuses
-            // Was: 80b225000f001900  (80 b2 attribute form with a non-default 00 19 00 tail)
-            client.messageQueue.addRpcMessage(AttributeBundle.Build80b2Attribute(0x25, 0x000f, new byte[] { 0x00, 0x19, 0x00 }));
-            // Was: 80b2ca0300000802  (80 b2 short-tail attribute form)
-            client.messageQueue.addRpcMessage(AttributeBundle.Build80b2Attribute(0xca, 0x0300));
-            // Was: 80bc4503ca030025000000ca03000000000000000000  (45 03 family, byte-9 field1 repeat)
-            client.messageQueue.addRpcMessage(AttributeBundle.Build80bc4503(0x03ca, 0x25));
-            // TODO: lead-only family (80 bc 45 00, no byte-9 self-repeat), not yet modeled byte-exact.
-            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45004d0000250000008902300000000000000000"));
-            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("2E070000000000000000002400000000000000000000000000000000000000000000000011005768617427732075702062726F736B6900"));
-            
+            // Loaded ability passives and grants are sent by PlayerHandler after the live self is created.
             createFlashTraffic(client, "http://mxo.hardlinedreams.com");
         }
 

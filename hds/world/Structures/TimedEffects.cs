@@ -412,6 +412,8 @@ namespace hds
             foreach (Active m in mods)
             {
                 m.Caster = caster;
+                if (caster != null && m.Proc == TempMods.Proc.Dot)
+                    m.Value = AbilityStats.ScaleAbilityDamage(caster, effect.Ability, m.Value);
                 m.CasterName = casterName;
                 m.TargetView = targetView;
             }

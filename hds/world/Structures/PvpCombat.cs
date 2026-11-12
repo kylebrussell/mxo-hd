@@ -404,6 +404,7 @@ namespace hds
             {
                 fx = CombatHandler.DefaultAbilityHitFx;
             }
+            damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);

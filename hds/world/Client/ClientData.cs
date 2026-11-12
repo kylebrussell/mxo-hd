@@ -75,6 +75,7 @@ namespace hds
 		public int buffGeneration = 0;
         // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
         public int buffHealthMaximumDelta, buffISMaximumDelta;
+        public readonly AbilityPassives.State passives = new AbilityPassives.State();
 
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;

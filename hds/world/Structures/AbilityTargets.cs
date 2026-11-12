@@ -130,6 +130,7 @@ namespace hds
                 }
             }
 
+            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, damage);
             Mob mob = FindMob(client, targetViewId, out ClientView view);
             if (mob == null)
             {
