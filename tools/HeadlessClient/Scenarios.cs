@@ -187,6 +187,7 @@ public static partial class Scenarios
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
         new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
+        new Scenario("mission-objectives-relog", MissionObjectivesRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
