@@ -180,6 +180,8 @@ namespace hds
                 Deny(AbilityID, refusal);
                 return;
             }
+            if (StealthShieldAbilities.Refusal(Store.currentClient,AbilityID,currentTargetViewId) is string freeRefusal)
+            { Output.WriteDebugLog("[STEALTH-FREE]"+AbilityID+" cast refused: "+freeRefusal);Deny(AbilityID,freeRefusal);return; }
             // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
             bool pet = CoderPets.Handles(AbilityID);
             if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
@@ -242,11 +244,14 @@ namespace hds
                 return;
             }
 
+            var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
-            if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+            if (AbilityID==StealthShieldAbilities.DisableEvasion) StealthShieldAbilities.ActionTaken(Store.currentClient);
+            else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
+            if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -286,6 +291,12 @@ namespace hds
                 return;
             }
 
+            if(freeStealth!=null)
+            {
+                ushort target=currentTargetViewId;
+                DelayedActions.AfterFor(client,ability.getCastingTime(),()=>StealthShieldAbilities.Execute(client,ability,target,freeStealth));
+                return;
+            }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
                 (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&

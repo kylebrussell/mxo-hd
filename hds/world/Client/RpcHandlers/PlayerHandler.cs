@@ -385,6 +385,14 @@ namespace hds
                 var owned = ownedAbilities.FirstOrDefault(row => row.getSlot() == entry.Slot &&
                     AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())) == AbilityCatalog.Canonical(entry.Ability));
                 if (owned == null) continue;
+                // Ownership/uploading does not bypass the shipped character prerequisite.
+                if (!unload && !AbilityProgression.MeetsCharacterLevel(entry.Ability,
+                    Store.currentClient.playerInstance.Level.getValue()[0]))
+                {
+                    var reply = new ServerPackets();
+                    reply.sendSystemChatMessage(Store.currentClient, "Your character level is too low to load that ability.", "MODAL");
+                    continue;
+                }
                 List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
                 if (unload)
                 {

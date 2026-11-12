@@ -177,6 +177,8 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 
 def server(i):
+    if i == 7:
+        return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
     r, f = coverage[i], fields(i)
@@ -257,6 +259,8 @@ def server(i):
         parts.append(f"stealth-started opener +{r['sneak_bonus']} scripted bonus (trigger/addition policy; COMBAT-DEPTH.md)")
     if r.get('special_animation'):
         parts.append(f"named ILDB special choreography {r['special_animation']} (name mapping policy)")
+    if r.get('stealth_shield'):
+        parts.append(r['stealth_shield'])
     if r.get('special'):
         parts.append(r['special'])
     if 'HyperJump' in abilities[i]['name']:
@@ -269,6 +273,8 @@ def server(i):
 
 
 def status(i):
+    if i == 7:
+        return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
@@ -277,7 +283,7 @@ def status(i):
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i == 49 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
-    if r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
+    if r.get('stealth_shield') or r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
@@ -313,6 +319,7 @@ Read alongside [`abilities.py`](../research/client-scripts/abilities.py), [`temp
 - **done**: all identified behavior and relevant gameplay paths validated. None assigned yet.
 - **partial**: some real effects execute; a listed behavior, scaling, target rule, condition or native presentation remains incomplete.
 - **missing**: intended effect lacks an executor; an animation, cost or generic damage fallback does not count.
+- **inaccessible**: primary client load prerequisite exceeds the retail character cap; no effect parity is claimed.
 - **cosmetic**: discipline/passive loads or displays, but its native passive/stat behavior is not fully applied.
 
 The new catalog fallback supplies explicit costs, cast times, recast/family timers and timed controls, preserving retail overrides. Insufficient IS and incapacitated/powerless casts are rejected. Root blocks movement and jumps; stun/mez blocks actions; powerless blocks abilities; disarm blocks weapon fire; enrage blocks withdrawal. Pacify and scripted roots break as their health callbacks specify. A negative chance-root proc protects its first health change (including healing), then flips positive for later damage checks, as in the script. A control state cannot stack through its immunity timer.

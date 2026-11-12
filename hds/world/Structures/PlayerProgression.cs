@@ -170,6 +170,13 @@ namespace hds
     /// </summary>
     public static class AbilityProgression
     {
+        /// <summary>Stored character prerequisite, checked by client.dll 0x621debc7 before a load.</summary>
+        public static bool MeetsCharacterLevel(ushort ability, int characterLevel)
+        {
+            var entry = AbilityCatalog.Find(ability);
+            return entry != null && characterLevel >= entry.Number("CharStatsPrerequisite/ReqCharLevel");
+        }
+
         public const UInt16 AwakenedAbility = 2;
         public const UInt16 SelfDefenseAbility = 17;
 

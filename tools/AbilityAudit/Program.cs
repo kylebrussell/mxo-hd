@@ -80,6 +80,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         special_move_style = CombatStyles.IsSpecialMove(e.Id) ? CombatStyles.RequiredStyle(e.Id) : 0,
         sneak_bonus = SneakAttacks.Bonus(e.Id,true),
         special_animation = CombatAnimations.Special(e.Id,true,CombatTactic.Speed)?.Id,
+        stealth_shield = StealthShieldAbilities.Describe(e.Id),
         special = CombatSpecials.Describe(e.Id)
     };
 });
