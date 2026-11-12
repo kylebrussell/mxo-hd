@@ -44,7 +44,8 @@ public static partial class Scenarios
                     {
                         case "Talk":case "Get":case "Give":case "Defeat":case "Loot":
                         {
-                            var npc=Npc((string)goal.Attribute("npc")!);
+                            string reference=(string)goal.Attribute("npc")!;
+                            var npc=Npc(type=="Loot"?reference.Split(',')[0]:reference);
                             var view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1);
                             bool hostile=view.Attributes.TryGetValue("IsEnemy",out var enemy) && enemy[0]!=0;
                             var key=(view.ViewId,view.SpawnId);
