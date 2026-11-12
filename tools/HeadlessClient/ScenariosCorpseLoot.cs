@@ -27,6 +27,12 @@ public static partial class Scenarios
 
         player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
         await player.WaitForRpcAsync("81 19");
+        player.SendRpc("81 1a");
+        player.SendRpc("81 1f");
+        await player.WaitForRpcAsync("81 20");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6799"), "Closed mission loot selection cannot grant its item");
+        player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
+        await player.WaitForRpcAsync("81 19");
         player.SendRpc("81 1f");
         await player.WaitForRpcAsync("5e 60 00 8f 1a 00 00");
         await player.WaitForRpcAsync("80 a0 01 06 00 01");
