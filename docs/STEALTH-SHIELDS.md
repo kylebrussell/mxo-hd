@@ -24,7 +24,10 @@ $root='C:/Users/russe/Developer/mxo-wt/codex-package-p5-stealth-shields'
 $qa=Join-Path $env:TEMP ('mxo-p5-shields-native-'+[guid]::NewGuid().ToString('N'))
 $head=(git -C $root rev-parse HEAD).Trim()
 dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Release
-# Start only after exit0. Record the printed path and actual head:
+# Read-only preflight; no DB, lock or server setup:
+$plan=dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" --fixture-plan stealth-shields | ConvertFrom-Json
+if($plan.Environment.MXO_DEV_COMMANDS -ne '1') { throw 'Fixture dev commands are disabled' }
+# Start only after build/preflight exit0. Record the printed path and actual head:
 Write-Output $qa
 dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" $root $qa $head stealth-shields
 ```
