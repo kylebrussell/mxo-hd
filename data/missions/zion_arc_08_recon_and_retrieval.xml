@@ -28,14 +28,14 @@ Go to this address and pick up the code fragments that Hadar has on hand. Be car
     <enter><say>This is the place ... It looks like there are a few Exiles here with Adhara. Take her out and get those frags back.</say></enter>
     <object id="1" kind="Computer" />
     <objective goal="1" text="Kill Adhara" type="Defeat" npc="2" />
-    <objective goal="2" text="Take the fragments from Adhara's computer" type="Search" object="1" item="6787" />
+    <objective goal="2" text="Take the fragments from Adhara's computer" type="Search" object="1" item="6787" after="1" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>I'm sending you the address of the next location now.</briefing>
     <enter><say>We have a problem. It appears that before you killed Adhara they gave up the location of this base and the Exiles that she was siding with hit us -- hard! I'm glad you're here because we need you to kill the remaining Exiles and rescue two survivors. After you've done that, get the survivors and the frags to a hardline and upload them. Good luck!</say></enter>
     <objective goal="1" text="Lead the Zion Operatives out of the building" type="Escort" npc="3,4" to="exit" />
     <objective goal="2" text="Lead the Zion Operatives to a hardline" type="Escort" npc="3,4" to="hardline" after="1" />
-    <objective goal="3" text="Upload the data fragments through a hardline" type="Upload" item="6787" />
+    <objective goal="3" text="Upload the data fragments through a hardline" type="Upload" item="6787" after="1" />
     <objective goal="4" text="Do not let either hostage die" type="Protect" npc="3,4" />
   </phase>
 </mission>
