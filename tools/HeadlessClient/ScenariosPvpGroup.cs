@@ -6,7 +6,7 @@ public static partial class Scenarios
     {
         string[] names = { "GroupA", "GroupB", "GroupC", "GroupD", "GroupE", "GroupF", "GroupG", "Onlooker" };
         var players = await context.AddPlayersInWorldAsync(names.Select((name, i) => new CharacterSeed(name)
-            { X = 17020 + 35 * i, Level = i == 1 ? 1 : 50, Organization = i == 1 ? 2 : 1, Health = 20000 }).ToArray());
+            { X = 17020 + 35 * i, Level = i == 1 ? 1 : 50, Organization = i == 1 ? 2 : 1, Health = 20000, MaxHealth = 20000 }).ToArray());
         var a = players[0]; var b = players[1]; var c = players[2]; var observer = players[7];
         foreach (var player in players.Take(7))
         {
