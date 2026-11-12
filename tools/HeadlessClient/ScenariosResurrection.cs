@@ -30,6 +30,8 @@ public static partial class Scenarios
         foreach(ushort ability in new ushort[]{325,326,375,416,438})
         {
             await KillForResurrection(corpse);
+            await corpse.WaitForViewUpdateAsync(2, "01 28 ?? 40 05 00 00 10");
+            await observer.WaitForViewUpdateAsync(watched.ViewId, "01 2a ?? 40 05 00 00 10 00");
             int restored=corpse.Received(ResurrectionLine).Count;
             Cast(healer,ability,view.ViewId);
             var request=await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
@@ -41,6 +43,8 @@ public static partial class Scenarios
             Check.Equal(restored,corpse.Received(ResurrectionLine).Count,"Corpse remains dead before consent");
             int viewsBefore=corpse.World.ViewSnapshot().Count;
             corpse.SendRpc(NativeResurrectionReply(ability)); // Native Yes: rebuilt fixed prefix, flags6/7 zero.
+            await corpse.WaitForViewUpdateAsync(2, "01 28 ?? 40 00 3f " + Le(ability));
+            await observer.WaitForViewUpdateAsync(watched.ViewId, "01 2a ?? 40 00 3f " + Le(ability) + " 00");
             await corpse.WaitForRpcAsync(ResurrectionLine+" 00 "+Le(ability)+" 00 00");
             var own=BytePattern.Parse("02 00 02 80 80 80 d1 00 "+(ability==325?"01 00 01 00":"4d 01 09 03")+" 80 80 01 00 00 00 00");
             await corpse.WaitUntilAsync(()=>corpse.World.ViewSnapshot().Skip(viewsBefore).Any(own.Occurs),

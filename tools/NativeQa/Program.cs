@@ -15,7 +15,8 @@ if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 bool remainingMode = args.Length > 3 && args[3] == "remaining";
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
-bool resurrectionMode = args.Length > 3 && args[3] == "resurrection";
+bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
+bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
 bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
 bool stylesMode = args.Length > 3 && args[3] == "styles";
@@ -68,6 +69,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
+    if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
     // Combat styles and their specials (docs/COMBAT-STYLES.md); Aikido is left out so Tomo Nage's refusal can be seen
     if (stylesMode) abilities = new ushort[] { 2,17,132,133,1006,1008,1112,146,281,341,535,647,121,207,208,547,1022,1023,1024,267,412,198 };

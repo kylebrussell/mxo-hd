@@ -247,6 +247,8 @@ public static partial class Scenarios
         TimeSpan toFall = TimeSpan.FromSeconds(120);
         ushort bobCombatView = CombatViewOf(bob), aliceCombatView = CombatViewOf(alice);
         await bob.WaitForViewUpdateAsync(2, UnflaggedDuelDeath, toFall);
+        await bob.WaitForViewUpdateAsync(2, "01 28 ?? 40 05 00 00 10");
+        await carol.WaitForViewUpdateAsync(bobForCarol.ViewId, "01 2a ?? 40 05 00 00 10 00");
         await bob.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 de 00 00 3a");
         await bob.WaitForRpcAsync($"56 01 00 {aliceForBob} 00 00");
         RpcRecord bobBroadcast = bob.Received($"81 9d {SelfHandle(bob)} {aliceForBob} 0c 00").Single();
@@ -283,10 +285,17 @@ public static partial class Scenarios
         alice.SendRpc($"40 {bobForAlice} 01 6b");
         await alice.WaitForRpcAsync(r => r.Opcode == 0x4d && r.Bytes[1] != 0x0e, "a refusal");
 
+        var lateDuel = await context.AddPlayerAsync(new CharacterSeed("LateDuelWitness") { Level=50 });
+        await lateDuel.EnterWorldAsync();
+        var lateDuelView = await lateDuel.WaitForViewNamedAsync(bob.Handle);
+        await lateDuel.WaitForViewUpdateAsync(lateDuelView.ViewId, "01 2a ?? 40 05 00 00 10 00");
+        await lateDuel.WaitForViewUpdateAsync(lateDuelView.ViewId, "02 80 80 12 01 00 00");
         // 81 4c stands the loser up where they are with 1 health: no Loading Area
         bob.SendRpc("81 4c");
         await bob.WaitForViewUpdateAsync(2, "03 28 ?? 40 00 00 00 10 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 80 80 80 41 00 01 00");
         await alice.WaitForViewUpdateAsync(bobView.ViewId, "02 80 80 12 00 01 00");
+        await carol.WaitForViewUpdateAsync(bobForCarol.ViewId, "01 2a ?? 40 00 00 00 10 00");
+        await lateDuel.WaitForViewUpdateAsync(lateDuelView.ViewId, "01 2a ?? 40 00 00 00 10 00");
         await Task.Delay(500);
         Check.Equal(0, bob.Received("80 fd").Count, "Loading Area trips after a duel");
         Check.Equal(0, bob.World.Problems.Count + alice.World.Problems.Count, "Protocol problems");

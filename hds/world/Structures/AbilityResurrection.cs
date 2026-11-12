@@ -146,11 +146,7 @@ namespace hds
         {
             PvpCombat.OnPlayerGone(target, true);
             CombatManager.GetHandler(target).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
-            double x = 0, y = 0, z = 0;
-            NumericalUtils.LtVector3dToDoubles(target.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            // Existing verified stand transition; script-specific Action_Resurrect still needs a native capture.
-            target.messageQueue.addObjectMessage(DuelHandler.BuildStandUp(++target.playerData.emoteCounter,
-                (float)x, (float)y, (float)z, CombatHandler.CombatStartTime()), false);
+            DeathPresentation.Resuscitate(target, ability);
             UInt16 health = PvpCombat.HealthOf(target);
             target.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf(
                 (PlayerViewAttributes.SelfIsDead, PlayerViewAttributes.U8(0)),
