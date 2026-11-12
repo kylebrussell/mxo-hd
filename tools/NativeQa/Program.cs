@@ -9,13 +9,32 @@ const string configuration = "Debug";
 #else
 const string configuration = "Release";
 #endif
+// Actions groups learned abilities by their catalog discipline. Own missing folders without loading their stats.
+static ushort[] DisciplineAncestors(JsonElement catalog, IEnumerable<ushort> requested)
+{
+    var rows = catalog.GetProperty("abilities").EnumerateArray().ToDictionary(r => r.GetProperty("id").GetUInt16());
+    var selected = requested.ToHashSet(); var known = new HashSet<ushort>(selected); var pending = new Queue<ushort>(selected);
+    while (pending.Count > 0)
+    {
+        if (!rows.TryGetValue(pending.Dequeue(), out var row) ||
+            !row.GetProperty("fields").TryGetProperty("Ability/DisciplineBelongsTo", out var belongs)) continue;
+        ushort parent = AbilityCatalog.IdOf(belongs.GetUInt32());
+        if (parent == 0 || !rows.TryGetValue(parent, out var p) ||
+            !p.GetProperty("fields").TryGetProperty("Ability/IsDiscipline", out var discipline) || discipline.GetInt32() == 0) continue;
+        if (known.Add(parent)) pending.Enqueue(parent);
+    }
+    return known.Except(selected).Order().ToArray();
+}
 // Read-only provenance inspection exits before fixture directories, client locks or database access.
 if (args.Length > 0 && args[0] == "--build-info")
 {
     string inspectRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Directory.GetCurrentDirectory());
     string assembly = Path.Combine(inspectRoot, "hds", "bin", configuration, "net8.0", "hds.dll");
+    ushort[] requested = args.Length > 2 ? args[2].Split(',').Select(ushort.Parse).Distinct().ToArray() : Array.Empty<ushort>();
+    using var planCatalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(inspectRoot,"data","ability_catalog.json")));
     Console.WriteLine(JsonSerializer.Serialize(new { Configuration=configuration, SourceAssembly=assembly,
-        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))) },
+        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))),
+        RequestedAbilities=requested, OwnedUnloadedDisciplineAncestors=DisciplineAncestors(planCatalog.RootElement,requested) },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
@@ -24,6 +43,14 @@ if (args.Length > 0 && args[0] == "--build-info")
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
+// Optional fifth argument keeps a focused native checklist small enough to avoid legacy UI scrolling.
+ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOptions.RemoveEmptyEntries)
+    .Select(s => ushort.Parse(s.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture)).Distinct().ToArray()
+    : Array.Empty<ushort>();
+if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
+    throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
+bool remainingMode = args.Length > 3 && args[3] == "remaining";
+bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
 bool controlsMode = args.Length > 3 && args[3] == "controls";
@@ -76,6 +103,8 @@ DELETE FROM char_abilities WHERE char_id=110;
     // Spy Style 1112 and Rifles 147: Paralyzing Throw and Immobilizing Shot are special moves of those styles
     ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133,1112,147 };
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
+    if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
@@ -86,8 +115,19 @@ DELETE FROM char_abilities WHERE char_id=110;
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
     var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),
         e => e.GetProperty("fields").TryGetProperty("Ability/AbilityLevelCap", out var cap) ? Math.Min(50, cap.GetInt32()) : 50);
-    string loadout = string.Join("\n", abilities.Distinct().Select((id, slot) =>
-        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
+    if (requestedAbilities.Length > 0)
+    {
+        var playerAbilities = catalog.RootElement.GetProperty("abilities").EnumerateArray().Where(e =>
+            !e.GetProperty("fields").TryGetProperty("Ability/AbilityClass", out var kind) || kind.GetInt32() == 0)
+            .Select(e => e.GetProperty("id").GetUInt16()).ToHashSet();
+        if (requestedAbilities.Any(id => !playerAbilities.Contains(id) || names[id].StartsWith("NPC", StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Custom native loadouts require known player-ability templates.");
+        abilities = requestedAbilities;
+    }
+    var disciplineAncestors = DisciplineAncestors(catalog.RootElement,abilities);
+    var loadedIds = abilities.ToHashSet();
+    string loadout = string.Join("\n", abilities.Distinct().Concat(disciplineAncestors).Select((id, slot) =>
+        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},{(loadedIds.Contains(id)?1:0)},'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
     if (actionsMode)
         await database.ExecuteAsync(@"
@@ -121,6 +161,11 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
  SELECT {id},slot,ability_id,level,is_loaded,ability_name FROM char_abilities WHERE char_id=110;
 ");
     }
+    if (remainingMode)
+        await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
+            "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");
+    if (scaledMode || remainingMode)
+        await database.ExecuteAsync($"UPDATE characters SET level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111");
     if (passivesMode)
         await database.ExecuteAsync("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)");
     string snapshot = Path.Combine(qaRoot, "snapshot");
@@ -139,13 +184,15 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
     {
+        ["MXO_DEV_COMMANDS"]=remainingMode?"1":"0",
         ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
         ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
     });
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
-        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
+        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors }, new JsonSerializerOptions { WriteIndented=true }));
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
@@ -208,7 +255,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
         }
         string[] lines = server.DebugLog().Split('\n');
-        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]"}.Any(l.Contains)))
+        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[HOSTILE]","[RESURRECTION]"}.Any(l.Contains)))
             await File.AppendAllTextAsync(Path.Combine(qaRoot,"events.jsonl"), JsonSerializer.Serialize(new { At=DateTime.UtcNow, Line=line.Trim() })+"\n");
         seen = Math.Max(0,lines.Length-1);
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());

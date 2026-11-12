@@ -112,7 +112,7 @@ public class StealthTests
     [Fact]
     public void OnlyTheStealthAbilitiesAreHandled()
     {
-        foreach (ushort id in new ushort[] { 1111, 186, 507, 1137, 1116, 629, 366, 368, 1118 }) Assert.True(Stealth.Handles(id), id.ToString());
-        foreach (ushort id in new ushort[] { 12, 184, 217, 123, 156, 1101, 1112, 1114 }) Assert.False(Stealth.Handles(id), id.ToString());
+        foreach (ushort id in new ushort[] { 1111, 186, 507, 1137, 1116, 629, 366, 368, 1118, 1114 }) Assert.True(Stealth.Handles(id), id.ToString());
+        foreach (ushort id in new ushort[] { 12, 184, 217, 123, 156, 1101, 1112 }) Assert.False(Stealth.Handles(id), id.ToString());
     }
 }

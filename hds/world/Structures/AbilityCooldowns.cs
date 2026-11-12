@@ -255,6 +255,8 @@ namespace hds
         public static bool TryGet(UInt16 id, out Cooldown cooldown)
         {
             id = AbilityCatalog.Canonical(id);
+            // Supported toggle term callbacks AddRecastTimer use their stored Value15, not an absent RecastTime.
+            if (id == 42 || id == 442) { cooldown = new Cooldown(15); return true; }
             if (Retail.TryGetValue(id, out cooldown)) return true;
             var entry = AbilityCatalog.Find(id);
             if (entry == null || entry.Number("Ability/RecastTime") <= 0) return false;
