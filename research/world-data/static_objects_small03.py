@@ -3,10 +3,10 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(12,13,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,12,13,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={12:'large01',13:'large02',17:'small03'}[args.world]
+world_name={4:'archive01',12:'large01',13:'large02',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -60,7 +60,9 @@ conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in 
 unproven={k:v for k,v in groups.items() if any(z[-2]!=0 for z in v)}
 excluded=set(conflicts)|set(unproven)
 objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
-if args.world==17:
+if args.world==4:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(156,156,0,0,156)
+elif args.world==17:
  assert set(conflicts)=={(13,13),(13,15),(13,16)}
  assert len(raw)==370 and len(objects)==358
 elif args.world==12:
