@@ -237,6 +237,7 @@ namespace hds
             internal abstract void Ended(List<Active> ended);
             internal virtual void Due(double now) { }
             internal virtual bool Idle => Effects.IsEmpty;
+            internal virtual int Determination => Math.Max(0, Effects.Total(575));
         }
 
         // ---- the server tick ----
@@ -425,6 +426,14 @@ namespace hds
                 m.TargetView = targetView;
             }
 
+            // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
+            // Snapshot immunity from the unmitigated control; its timer is a separate script effect.
+            Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
+            Active unmitigatedImmunity = originalControl == null ? null : ImmunityFor(effect, originalControl);
+            if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
+                foreach (Active m in mods)
+                    m.Seconds = AbilityControlDurations.Mitigate(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination);
+
             Active immunity = null;
             if (subject.Effects.Has(TempMods.ISDrainTargetAbility))
             {
@@ -439,7 +448,7 @@ namespace hds
                 Active control = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
                 if (control != null)
                 {
-                    immunity = ImmunityFor(effect, control);
+                    immunity = unmitigatedImmunity;
                     immunity.Caster = caster;
                     immunity.CasterName = casterName;
                     immunity.TargetView = targetView;
@@ -550,6 +559,7 @@ namespace hds
     /// </summary>
     public sealed class PlayerEffects : TimedEffects.Subject
     {
+        internal override int Determination => AbilityControlDurations.Determination(client);
         private readonly WorldClient client;
         private readonly Dictionary<UInt16, KeyValuePair<int, double>> buffEnds = new Dictionary<UInt16, KeyValuePair<int, double>>();
 

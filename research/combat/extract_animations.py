@@ -49,7 +49,7 @@ def extract(client):
                         if tag == b'DATA':
                             row['name'] = text(e)
                             row['flags'], row['duration_ms'] = struct.unpack_from('<IH', data, f - 6)
-                    if (re.match(r'^[SAKW][SPDB] vs [SAKW][SPDB]:', group) and 'static' in row['name'] and
+                    if row['flags'] == 0x100 or (re.match(r'^[SAKW][SPDB] vs [SAKW][SPDB]:', group) and 'static' in row['name'] and
                             row['flags'] in (1, 4, 8, 0x41, 0x48)) or row['id'] in (
                                 748, 8198, 9062, 23965, 23966, 23967) or re.match(
                                 r'^Stand Transitions:To (Self-Defense|AikidoAbility|KarateAbility|KungFuAbility)$', group):

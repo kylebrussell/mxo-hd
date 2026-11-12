@@ -59,12 +59,12 @@ SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detec
 
 ## Not done
 
-- **Line of sight:** `physics.clearLine` is not checked.
+- **Line of sight:** initial watching and periodic player/NPC detection now use a floor-mesh sight approximation. This blocks mapped gaps; it is not `physics.clearLine` collision parity. See [combat-depth evidence](COMBAT-DEPTH.md).
 - **Noise:** the noise level is passed as 0. Sneak's +10 Noise modifier feeds the native CharMvt.NoiseLevel, whose computation is not decoded.
 - **Movement:** sneak and invisible movement speeds rely on the client applying the stat records. Stance_Sneak / Stance_Invis animations (activateSneak, ConcealUpdate) are not sent. Concealment's "panic end" when not exclusive and its stand-still behaviour are missing.
 - **Vanish item:** Vanish's smoke-bomb requirement (`Inventory.hasItem(460)`, "SMOKE_BOMB_MISSING_ITEM") is not enforced.
 - **Detection ability:** the Detection ability (`general.py` Detection_DirectObject: random(100) + level against 50 + 4/8 per level, breaking invisibility or disguise) is not wired.
-- **Stealth attacks:** the sneak-attack damage constants in `ability/spy/sneaks.py` (75-1200) are defined but no decompiled function reads them. SneakAttackDetection is native, so stealth openers have no stealth bonus here.
+- **Stealth attacks:** the script constants75-1200 now add damage when the cast began hidden, with the snapshot retained through the stealth break. The trigger/addition is explicit server policy because the decompiled tests are stubs; see [combat depth](COMBAT-DEPTH.md).
 - **Disguise (1114):** missing. It needs the tool's ModelOverride and setModel, and kDisguised alone would only fake it.
 - **Out of scope:** Hyper-Sense (1101), Spy Style (1112), Find Weakness (123) and Stealth Awareness's record (156) are numeric beneficial buffs, which belong to the scaled-buffs work. Stealth Awareness's total already feeds detection through `AbilityStats`.
 

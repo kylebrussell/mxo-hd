@@ -71,10 +71,10 @@ namespace hds
         /// with the NPC (as when the client asks for close combat) if there isn't one, so the NPC fights back and
         /// its death, experience and loot go the usual way. Returns false when the view isn't a live NPC.
         /// </summary>
-        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             Mob primary = FindMob(client, targetViewId, out _);
-            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId);
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener);
             if (primary.getIsDead() || primary.isFriendly) return false;
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
@@ -93,7 +93,7 @@ namespace hds
                             mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
                     }
             }
-            foreach (var target in targets) LandOne(client, ability, target.View);
+            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener);
             // Area hostile abilities also reach players around the target that PvP rules allow
             if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
                 foreach (WorldClient player in AbilityHostile.PlayersInArea(client, primary.getXPos(), primary.getYPos(), primary.getZPos(), radius))
@@ -121,7 +121,7 @@ namespace hds
             return Math.Abs(dy) < 150 && dx * dx + dy * dy + dz * dz <= radius * radius;
         }
 
-        private static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        private static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             UInt16 abilityId = ability.getAbilityID();
             Effect effect;
@@ -150,11 +150,11 @@ namespace hds
             Mob mob = FindMob(client, targetViewId, out ClientView view);
             // Combat-style specials and Exile weapons have their own damage, never the generic fallback (CombatSpecials)
             damage = CombatSpecials.Damage(abilityId, mob) ?? damage;
-            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, damage);
+            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             if (mob == null)
             {
                 // Another player: PvpCombat decides whether they can be hit
-                return PvpCombat.LandAbility(client, ability, targetViewId);
+                return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener);
             }
             if (mob.getIsDead())
             {
