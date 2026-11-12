@@ -3,6 +3,11 @@ namespace NativeQa;
 /// <summary>The actual environment passed to the disposable native-QA server, also available without setup.</summary>
 public static class NativeQaFixturePlan
 {
+    // CompileUI 620827d0 excludes 0x84 bit/fragment entries; ordinary item code is GOID << 7 | charges.
+    // level stores the low seven charges bits; setup inserts level 1 separately.
+    public const uint CompileArchiveValue = 2399u << 7;
+    public static bool SeedDisguiseTool(string mode) => mode is "remaining" or "health-callbacks";
+
     public static Dictionary<string, string> EnvironmentFor(string mode) => new()
     {
         ["MXO_DEV_COMMANDS"] = mode is "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or

@@ -14,7 +14,7 @@ const string configuration = "Release";
 if (args.Length > 0 && args[0] == "--fixture-plan")
 {
     string mode = args.Length > 1 ? args[1] : "";
-    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode) },
+    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode), SeedDisguiseTool=NativeQaFixturePlan.SeedDisguiseTool(mode), CompileArchiveValue=NativeQaFixturePlan.CompileArchiveValue },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
@@ -158,11 +158,17 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
 ");
-    if (clientActionsMode || compileItemsMode || writeCodeMode)
+    if (clientActionsMode)
         await database.ExecuteAsync($@"
 UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
 INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
  VALUES(110,400,{CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
+");
+    if (compileItemsMode || writeCodeMode)
+        await database.ExecuteAsync($@"
+UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
+INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
+ VALUES(110,400,{NativeQaFixturePlan.CompileArchiveValue},1,0,'Antibiotic item code: native Compile UI refusal fixture');
 ");
     if (dataMiningMode)
         await database.ExecuteAsync("DELETE FROM inventory WHERE charId=110 AND slot<97; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,422,1,1,0)");
@@ -193,7 +199,9 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     if (stealthShieldsMode)
         await database.ExecuteAsync("UPDATE characters SET alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,pvpflag=1,innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,531,1,1,0),(6111,531,1,1,0),(6112,531,1,1,0),(6113,531,1,1,0),(6114,531,1,1,0)");
     if (remainingMode)
-        await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
+        await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114)");
+    if (NativeQaFixturePlan.SeedDisguiseTool(args.Length > 3 ? args[3] : ""))
+        await database.ExecuteAsync("DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
             "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");
     if (scaledMode || remainingMode)
         await database.ExecuteAsync($"UPDATE characters SET level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111");
