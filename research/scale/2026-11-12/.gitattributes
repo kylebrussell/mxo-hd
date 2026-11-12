@@ -1,0 +1,3 @@
+*.json -text
+*.ndjson -text
+*.txt -text
