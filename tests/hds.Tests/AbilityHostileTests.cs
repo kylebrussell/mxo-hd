@@ -193,6 +193,97 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.IsActive(victim, 327));
     }
 
+    private sealed class ZeroRoll : Random
+    {
+        public override int Next(int maxValue) => 0;
+    }
+
+    [Theory]
+    [InlineData(674, 5)]
+    [InlineData(675, 10)]
+    [InlineData(676, 15)]
+    [InlineData(677, 20)]
+    [InlineData(678, 25)]
+    public void AntibioticsExecuteTheInitialCureAndKeepTheirPeriodicModifier(ushort ability, int chance)
+    {
+        var victim = Client();
+        Land(victim, 315);
+        var subject = TimedEffects.ForPlayer(victim);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new ZeroRoll();
+            Assert.True(AbilityHostile.ApplySweep(victim, victim, ability));
+            Assert.False(subject.Effects.HasParent(315));
+            Assert.True(subject.Effects.HasParent(734));
+            var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == ability);
+            Assert.Equal(chance, pulse.Value);
+            Assert.Equal(90, pulse.Seconds);
+            Assert.Equal(5, pulse.Interval);
+            Land(victim, 343);
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.False(subject.Effects.HasParent(343));
+            Assert.True(subject.Effects.HasParent(ability));
+            TimedEffects.RunDue(pulse.Start + 90.01);
+            Assert.False(subject.Effects.HasParent(ability));
+        }
+        finally { AbilityHostile.PulseRandom = previous; }
+    }
+
+    private sealed class SweepRoll : Random
+    {
+        private readonly int value;
+        private readonly Action? before;
+        public SweepRoll(int value, Action? before=null) { this.value=value; this.before=before; }
+        public override int Next(int maxValue) { before?.Invoke(); return value; }
+    }
+
+    [Fact]
+    public void SweepLogsOneLinePerActuallyRemovedParentAndNoMissExpiryOrStaleSuccess()
+    {
+        var victim=Client(); victim.playerInstance.CharacterName.setValue("SweepProof");
+        var subject=TimedEffects.ForPlayer(victim); var lines=new List<string>();
+        var pulse=new TimedEffects.Active { Parent=678,Value=25 };
+        var mods=Land(victim,97); Assert.Equal(4,mods.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(99),lines.Add);
+        Assert.True(subject.Effects.HasParent(97)); Assert.Empty(lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97));
+        Assert.Equal(new[]{"[SWEEP] 678 removed 97 from SweepProof"},lines);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Single(lines); // no duplicate after all four sibling mods were removed
+
+        Land(victim,97);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0,()=>TimedEffects.RemoveParent(subject,97)),lines.Add);
+        Assert.Single(lines); // another remover wins after the candidate snapshot
+        var overdue=Land(victim,97); foreach(var mod in overdue) mod.Expires=TimeUtils.GetSimTimeSeconds()-1;
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Single(lines); // pending natural cleanup is not a live sweep success
+        var expiredMods=Land(victim,97); var expired=new List<TimedEffects.Active>();
+        subject.Effects.Advance(expiredMods.Max(m=>m.Expires)+1,new List<TimedEffects.Active>(),expired);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Equal(4,expired.Count);
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add); Assert.Single(lines);
+
+        Land(victim,97); AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.Equal(2,lines.Count); // an actual reapplication can be removed and logged again
+    }
+
+    [Fact]
+    public void ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily()
+    {
+        var victim = Client();
+        Land(victim, 343);
+        AbilityHostile.ApplySweep(victim, victim, 320);
+        Assert.True(AbilityHostile.ApplySweep(victim, victim, 659));
+        var subject = TimedEffects.ForPlayer(victim);
+        Assert.True(subject.Effects.HasParent(343)); // no init callback in the stored template
+        Assert.False(subject.Effects.HasParent(320));
+        var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == 659);
+        Assert.Equal(25, pulse.Value);
+        Assert.Equal(20, pulse.Seconds);
+        Assert.Equal(5, pulse.Interval);
+    }
+
     [Fact]
     public void SweepsOfOneStackingTypeReplaceEachOther()
     {

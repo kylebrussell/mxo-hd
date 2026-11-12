@@ -380,6 +380,8 @@ classes = {1: 'core attribute', 2: 'engine stat', 4: 'engine state', 5: 'persona
 for i, ability in abilities.items():
     if i not in player:
         scope = 'NPC' if ability['name'].startswith('NPC') else classes.get(fields(i).get('Ability/AbilityClass'), 'item / event / internal / unproven loadability')
+        if coverage[i].get('consumable_sweep'):
+            scope = 'item-triggered ability; cast/stack/shared timer/level checks; ' + ('initial + periodic' if i != 659 else 'periodic') + ' negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md)'
         appendix += f"| {i} | {ability['name']} | {scope} |\n"
 footer = '''
 ## Reproduction and checks

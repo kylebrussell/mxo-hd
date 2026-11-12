@@ -23,6 +23,12 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("consumable-sweep-removal-log", ConsumableSweepRemovalLog, StillNpcs),
+        new Scenario("consumable-sweep-cast-contract", ConsumableSweepCastContract, StillNpcs),
+        new Scenario("consumable-sweep-cast-cancellation", ConsumableSweepCastCancellation, StillNpcs),
+        new Scenario("consumable-sweep-control", ConsumableSweepControlCancellation, StillNpcs),
+        new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
+        new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
