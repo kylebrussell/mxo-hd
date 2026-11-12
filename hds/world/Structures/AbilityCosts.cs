@@ -68,6 +68,18 @@ namespace hds
             { 1237, 15 },  // Zombie Virus 3 Bite
         };
 
+        /// <summary>
+        /// The cost after InnerstrengthCostModifier (117, "Inner Strength Cost Reduction", ValueType 1 percent): positive
+        /// lowers it ("Efficiency ... decrease the Inner Strength cost"), Inefficiency Field's negative raises it. The
+        /// native cost path is not reconstructed; truncating the percent delta like the vital bonuses is this server's choice.
+        /// </summary>
+        public static UInt16 Effective(WorldClient client, UInt16 abilityId)
+        {
+            int cost = Cost(abilityId);
+            if (client?.playerInstance == null || client.playerData == null) return (UInt16)cost;
+            return (UInt16)Math.Clamp(cost - AbilityStats.PercentDelta(cost, AbilityStats.Player(client, 117)), 0, UInt16.MaxValue);
+        }
+
         public static UInt16 Cost(UInt16 abilityId)
         {
             UInt16 canonical = AbilityCatalog.Canonical(abilityId);

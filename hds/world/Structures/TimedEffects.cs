@@ -63,7 +63,7 @@ namespace hds
                 get
                 {
                     double at = (Ticks + 1) * Interval;
-                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
+                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot || Proc == TempMods.Proc.Pulse) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
             }
         }
@@ -694,6 +694,12 @@ namespace hds
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.InfectsTarget, false,
                     effect.Ability, caster, Name, added[added.Count - 1].Value, 0));
             }
+            else if (effect.TargetLine != 0 && added.Count > 0)
+            {
+                client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(effect.TargetLine, false, effect.Ability, caster, Name, 0, 0));
+            }
+            AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
+            if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);
             client.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + Name + ": " + added.Count + " tempmods");
         }
@@ -720,6 +726,7 @@ namespace hds
             {
                 return false;
             }
+            if (mod.Proc == TempMods.Proc.Pulse) return AbilityHostile.Pulse(this, mod);
             if (mod.Proc == TempMods.Proc.Hot)
             {
                 AbilityHandler.HealSelf(client, (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue));
@@ -754,6 +761,7 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             SendOff(ended);
+            if (AbilityHostile.ChangesVitals(ended)) AbilityBuffs.RefreshVitals(client);
             foreach (TimedEffects.Active m in ended)
             {
                 if (m.Kind == TempMods.KindState && TempMods.StateNameId(m.Target) != 0)
@@ -838,6 +846,10 @@ namespace hds
                 Tell(caster, AbilityMessages.AboutAbility(AbilityMessages.InfectsCaster, true, effect.Ability, casterName,
                     name, added[added.Count - 1].Value, 0));
             }
+            else if (effect.CasterLine != 0 && added.Count > 0)
+            {
+                Tell(caster, AbilityMessages.AboutAbility(effect.CasterLine, true, effect.Ability, casterName, name, 0, 0));
+            }
             caster?.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + name + ": " +
                                  string.Join(", ", added.ConvertAll(a => a.Proc + " " + a.Target + " " + a.Value + " " + a.Seconds + " s")));
@@ -846,6 +858,7 @@ namespace hds
         internal override bool Ticked(TimedEffects.Active mod, int damage)
         {
             WorldClient caster = mod.Caster;
+            if (mod.Proc == TempMods.Proc.Pulse) return !mob.getIsDead() && AbilityHostile.Pulse(this, mod);
             if (caster == null || mob.getIsDead())
             {
                 return false;
