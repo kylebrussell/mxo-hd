@@ -226,7 +226,7 @@ namespace hds
 
         /// <summary>
         /// Client <c>5d &lt;slot u16&gt; 00 &lt;RecycleItem&gt;</c>: the window's Recycle button on a storage entry (0x621d4ae0 takes slots
-        /// below 0x208 when PersonalInventoryItem is 0). Paid as a bag recycle is (one item's price), answered as retail
+        /// below 0x208 when PersonalInventoryItem is 0). Native type0x2e quote retains one item's price, answered as retail
         /// answered a bag recycle (<c>80 e7</c>, <c>80 e4</c>) with the storage removal <c>5f &lt;slot&gt; 00</c>.
         /// </summary>
         public static void ProcessRecycle(WorldClient client, UInt16 slot)

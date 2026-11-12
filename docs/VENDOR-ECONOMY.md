@@ -16,7 +16,7 @@ Client7.6005 DLL SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c
 |Ability recycle|621db74b..6a: class0x2e descriptor is normalized to base ability ID for non-code values before script lookup.|Uses base VendorPrice without vendor buyback upgrade premiums.|
 |Storage recycle|620403bc invokes the same helper with class0x2e and packed stored-code value.621db762..6a extracts GOID; multiplier stays1.|Preserves one-unit quote policy for a storage entry, not the ordinary bag multiplier. Whole-entry consumption is existing behavior; no claim that this settles retail storage stack economics.|
 
-Source`rshooks.VendorBuyback` already provides normal VendorPrice/10 and the ability upgrade premium sum(i+1)^2*200; existing full-price ability exceptions remain. Vendor selling of an ordinary stack still uses the existing per-entry quote; no unsourced vendor quantity formula is added. Existing NonSellable vendor refusals remain. The native CantBeRecycled fallback625d9ca0 is a component-membership check, not a proven generic NonSellable gate; no such ban is invented. Raw GOB has28 stored VendorPrice0 rows and only one stored CantBeRecycled (47096=false); absent defaults are not reconstructed here.
+Source`rshooks.VendorBuyback` already provides normal VendorPrice/10 and the ability upgrade premium sum(i+1)^2*200; existing full-price ability exceptions remain. Vendor selling of an ordinary stack still uses the existing per-entry quote; no unsourced vendor quantity formula is added. Existing NonSellable vendor refusals remain. The native CantBeRecycled fallback625d9ca0 is a component-membership check, not a proven generic NonSellable gate; no such ban is invented. All41,788 stored GOB VendorPrice rows exactly match the current vendor_prices.csv (zero mismatches or missing entries). Raw GOB has28 stored VendorPrice0 rows and only one stored CantBeRecycled (47096=false); absent defaults are not reconstructed here.
 
 ## Transactions and account limit
 
@@ -25,6 +25,8 @@ A compare-and-delete of the selected GOID/count and authoritative account credit
 **OURS:** legacy characters.cash is signed INT, so credits saturate at2147483647 with64-bit arithmetic. The reported cash delta and sale acknowledgement use the amount actually credited, not an unpaid full quote. The DB balance is authoritative even when the live cache is stale. Replay of a consumed slot cannot pay again. Vendor session/world-generation policy is reused; no retail trading radius or global commerce lock is invented.
 
 ## Validation and one-pass native checklist
+
+Local validation:82 focused vendor/request/pricing/reply tests and the full Release4178-test suite passed. The final actual-wire case passed31.4s with one server at peak, including SQL credit-failure rollback/retry and exact credited5 at the signed cap. Earlier fixture-only CHECK failures (22.4s global constraint against richer preseeded rows;21.9s MySQL disallowing auto-increment identity in CHECK) are retained; the final constraint selects the disposable test handle instead. Runtime remained unchanged throughout these fixture corrections.
 
 `vendor-sell-recycle-economy` uses an isolated database and the existing data-loaded vendor82837505 (static0x04f00001) near(19155,495,5313). It covers no-session refusal, Appraise/no mutation, normal sale and replay, stack8 recycle40, leveled ability base recycle500, explicit zero price, unsupported flag0, SQLCHECK credit failure rollback/retry, signed cap with actual5 credit despite stale cache, and storage-entry one-unit payout.
 
