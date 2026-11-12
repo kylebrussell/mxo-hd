@@ -1062,10 +1062,12 @@ namespace hds
 
             // Retail order: the mission-end message (status 00 = complete), then the rewards.
             UInt32 seconds = (UInt32)Math.Max(0, TimeUtils.getUnixTimeUint32() - progress.startedAt);
-            packets.SendMissionComplete(client, (UInt32)Math.Max(0, mission.exp), (UInt32)Math.Max(0, mission.info),
+            // Capture both rewards before XP can level the player up. Receipt/persistence consumes this same pair.
+            var payout = MissionRewards.Calculate(mission,client.playerInstance.Level.getValue()[0]);
+            packets.SendMissionComplete(client, payout.Experience, payout.Info,
                 (UInt16)Math.Min(progress.kills, UInt16.MaxValue), seconds);
-            PlayerRewards.GrantExperience(client, (UInt32)Math.Max(0, mission.exp), ServerPackets.ExpGainMission);
-            PlayerRewards.GrantInfo(client, (UInt32)Math.Max(0, mission.info), MissionRewardInfoReason);
+            PlayerRewards.GrantExperience(client, payout.Experience, ServerPackets.ExpGainMission);
+            PlayerRewards.GrantInfo(client, payout.Info, MissionRewardInfoReason);
             Store.dbManager.WorldDbHandler.SaveMissionCompleted(client.playerData.getCharID(), mission.id);
             client.playerData.completedMissions?.Add(mission.id);
             Output.WriteDebugLog("[MISSION] Completed '" + mission.title + "'");

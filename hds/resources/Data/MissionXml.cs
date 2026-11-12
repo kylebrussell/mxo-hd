@@ -29,6 +29,7 @@ namespace hds
                 districtName = Attr(node, "districtName") ?? "slums",
                 exp = Int(node, "exp", 0),
                 info = Int(node, "info", 0),
+                rewardLevel = Int(node, "rewardLevel", 0),
                 finishLine = Plain(node.SelectSingleNode("finish")?.InnerText),
                 org = (byte)Int(node, "org", 0),
                 contact = Attr(node, "contact") ?? "Tyndall",
