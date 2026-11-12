@@ -15,6 +15,7 @@ namespace hds
         public string districtName = "slums";
         public int exp = 500;
         public int info = 1000;
+        public int rewardLevel; // OURS scaling reference;0 uses explicit default archive reference50
         public string finishLine; // what the contact says when the mission ends
         public byte org;          // 0: offered to everyone; 1 Zion, 2 Machines, 3 Merovingian (the mission list request's org)
         public string contact = "Tyndall"; // who gives it: MissionContacts has their ids

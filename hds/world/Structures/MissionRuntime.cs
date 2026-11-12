@@ -1139,7 +1139,9 @@ namespace hds
         private static void Finish(WorldClient client, MissionProgress progress)
         {
             MissionPersistence.Save(client);
-            uint experience=(uint)Math.Max(0,progress.mission.exp), info=(uint)Math.Max(0,progress.mission.info);
+            // Quote both rewards once, before transactional XP can change the level.
+            var payout=MissionRewards.Calculate(progress.mission,client.playerInstance.Level.getValue()[0]);
+            uint experience=payout.Experience, info=payout.Info;
             MissionCompletion committed;
             try
             {

@@ -15,14 +15,15 @@ public static partial class Scenarios
     }
 
     private static async Task<HeadlessPlayer> StartMerovingianStoryMission(ScenarioContext context, XElement mission,
-        XElement[] definitions)
+        XElement[] definitions, int fixtureLevel = 50)
     {
         int order = (int)mission.Attribute("order")!;
         uint ticket = (uint?)mission.Attribute("entryItem") ?? 0;
         int district = (int?)mission.Attribute("district") ?? 1;
-        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")!)
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")! + (fixtureLevel == 50 ? "" : "L" + fixtureLevel))
         {
-            X = 58800, Y = 2495, Z = 31900, Level = 50,
+            X = 58800, Y = 2495, Z = 31900, Level = fixtureLevel,
+            Experience = fixtureLevel == 50 ? 0 : (int)hds.PlayerProgression.ExperienceForLevel(fixtureLevel),
             DistrictId = district, District = district == 2 ? "dt" : "slums",
             Items = ticket == 0 ? Array.Empty<(int, uint, int)>() : new[] { (1, ticket, 1) }
         });
