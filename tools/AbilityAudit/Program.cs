@@ -28,8 +28,9 @@ static string UtilityCoverage(ushort id) => id switch
     UtilityAbilities.RecallTeamMember => "Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
     UtilityAbilities.RecallMissionTeam => "Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
     UtilityAbilities.SeeLuggables => "goggles search flag highlights same-floor light luggables/carriers within 5 m through shipped luggable-aura FX; exact native white-glow path unverified; [docs/DATA-MINING.md](DATA-MINING.md)",
-    UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 every 10 s; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
-    UtilityAbilities.FindDataNode => "locator-tool toggle searches shared persisted DataNode 606 positions, native 80 cd/cb/ce FX markers and 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.FindDataNode => "distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
+    UtilityAbilities.LocateDataNode => "base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)",
     _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>

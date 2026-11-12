@@ -148,12 +148,13 @@ UTILITY_NOTES = {538: 'presentation only; no effect executor; prerequisite tier 
 
 # Data-mining overrides; all other executors retain their runtime inventory and sourced notes.
 DATA_MINING = {
+    215: ('base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     44: ('retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     538: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
     539: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; tapping economy absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
     540: ('goggles search flag highlights same-floor light luggables/carriers within 5 m through shipped luggable-aura FX; exact native white-glow path unverified; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
-    541: ('handheld search pings nearest same-floor ground luggable through 80 c5 every 10 s; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
-    621: ('locator-tool toggle searches shared persisted DataNode 606 positions, native 80 cd/cb/ce FX markers and 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
+    541: ('handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
+    621: ('distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
 }
 
 # Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)

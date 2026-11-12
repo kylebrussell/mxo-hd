@@ -570,6 +570,8 @@ namespace hds
                     DataMining.DevLocator(Store.currentClient,commands);
                 if (command.Equals("?utilitystatus") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                     DataMining.DevStatus(Store.currentClient);
+                if (command.Equals("?utilitymap") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    UtilityAbilities.DevMissionMap(Store.currentClient,commands);
 
                 if ((command.Equals("?utilityobject") || command.Equals("?spawndatanode")) &&
                     Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")

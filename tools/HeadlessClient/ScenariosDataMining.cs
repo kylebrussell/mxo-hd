@@ -147,6 +147,7 @@ public static partial class Scenarios
         p.SendRpc("80 9b 07 00 01"); await p.WaitForRpcAsync("80 9e 00");
         await EnterMissionArea(context,p);
         p.SendChat("?missionobject 1"); await p.WaitForTextAsync("Object moved");
+        p.SendChat("?utilitymap 7"); await p.WaitForTextAsync("Utility map fixture flags=7"); // deterministic presentation; pure retail roll has separate boundary tests
         var reveal=await p.WaitForRpcAsync("80 c5 01 00 03");
         Check.Equal(9,reveal.Bytes.Length,"native map header plus one nested four-byte position");
         Check.Equal((byte)0,reveal.Bytes[8],"objective uses yellow relationship");
