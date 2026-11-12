@@ -65,10 +65,14 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             if (!Handles(id) || !AbilityBuffBuffer.CanApply(client,id)) return;
-            if (id == ProxyTechnician.Ability && !ProxyTechnician.Begin(client)) return;
             var state = states.GetOrCreateValue(client);
             int generation;
-            lock (state) { generation = ++state.Generation; state.On[id] = generation; }
+            lock (state)
+            {
+                generation = state.Generation+1;
+                if (id == ProxyTechnician.Ability && !ProxyTechnician.Begin(client,generation)) return;
+                state.Generation=generation;state.On[id] = generation;
+            }
             client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(id, true));
             var aura = Callback(id, "ApplyAuraEffect");
             uint onSelf = (uint)(aura?.Number("ActivationStringOnSelf") ?? 0);
@@ -77,7 +81,7 @@ namespace hds
             if (onSelf != 0) client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(onSelf, true, id, name, name));
             client.FlushQueue();
             Output.WriteDebugLog("[AURA] " + id + " on for " + name);
-            if (aura?.Text("StatModInitFunc") == "ApplyAuraEffect") Pulse(client, id);
+            if (aura?.Text("StatModInitFunc") == "ApplyAuraEffect") Pulse(client, id,generation);
             Schedule(client, id, generation);
         }
 
@@ -93,14 +97,14 @@ namespace hds
         internal static void Tick(WorldClient client, ushort id, int generation)
         {
             if (!Current(client, id, generation)) return;
-            if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client)) { Stop(client,id); return; }
+            if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client,generation)) { Stop(client,id,generation); return; }
             if (client.playerData.isDead || client.playerData.duelDeath || !SocialHandler.OnlineWhere(c => c == client).Any())
             {
                 Stop(client, id);
                 return;
             }
             if (!PayDrain(client,id)) return;
-            Pulse(client, id);
+            Pulse(client, id,generation);
             Schedule(client, id, generation);
         }
 
@@ -124,10 +128,10 @@ namespace hds
         }
 
         /// <summary>One ApplyAuraEffect: the effect ability on hostile NPCs and PvP-legal players around the caster.</summary>
-        public static void Pulse(WorldClient client, ushort id)
+        public static void Pulse(WorldClient client, ushort id,int? generation=null)
         {
             if (PvpCombat.HealthOf(client) == 0) return;
-            if (id == ProxyTechnician.Ability) { ProxyTechnician.Pulse(client); return; }
+            if (id == ProxyTechnician.Ability) { ProxyTechnician.Pulse(client,generation); return; }
             ushort effectId = EffectOf(id);
             var effect = AbilityCatalog.Find(effectId);
             if (effect == null) return;
@@ -179,12 +183,16 @@ namespace hds
         }
 
         /// <summary>Switches the aura off (toggled again, IS shortfall, death, a Delete Upgrade). Returns whether it was on.</summary>
-        public static bool Stop(WorldClient client, ushort id)
+        public static bool Stop(WorldClient client, ushort id,int? generation=null)
         {
             id = AbilityCatalog.Canonical(id);
             var state = states.GetOrCreateValue(client);
-            lock (state) if (!state.On.Remove(id)) return false;
-            if (id == ProxyTechnician.Ability) ProxyTechnician.End(client);
+            lock (state)
+            {
+                if (!state.On.TryGetValue(id,out int current) || generation.HasValue && current!=generation.Value) return false;
+                state.On.Remove(id);
+                if (id == ProxyTechnician.Ability) ProxyTechnician.End(client);
+            }
             client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(id, false));
             if (Friendly(id)) AbilityCooldowns.Start(client,id,TimeUtils.GetSimTimeSeconds());
             client.FlushQueue();

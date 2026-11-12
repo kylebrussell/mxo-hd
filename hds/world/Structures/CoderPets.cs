@@ -478,7 +478,6 @@ namespace hds
         /// <summary>Logout or zoning: no simulacrum survives its owner leaving the district.</summary>
         public static void OwnerLeft(WorldClient owner)
         {
-            AbilityAuras.Stop(owner,ProxyTechnician.Ability);
             Dismiss(owner, false);
             lock (boosts) { boosts.Remove(owner.playerData.getCharID()); nextBoostPulse.Remove(owner.playerData.getCharID()); }
         }

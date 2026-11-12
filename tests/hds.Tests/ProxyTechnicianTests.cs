@@ -42,6 +42,7 @@ public class ProxyTechnicianTests
         internal readonly WorldClient Owner;
         internal readonly CoderPets.Pet Pet;
         private static Dictionary<uint,CoderPets.Pet> Registry => (Dictionary<uint,CoderPets.Pet>)typeof(CoderPets).GetField("pets",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+        internal void RemoveOwnPet() { Pet.Gone=true;lock(Registry)Registry.Remove(Owner.playerData.getCharID()); }
         internal Fixture()
         {
             Owner=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
@@ -106,7 +107,7 @@ public class ProxyTechnicianTests
     {
         using var sourceA=new Fixture();using var sourceB=new Fixture();using var recipient=new Fixture();double now=TimeUtils.GetSimTimeSeconds();
         var a=ProxyTechnician.Project(sourceA.Owner,recipient.Pet,now);Assert.NotNull(a);
-        var b=ProxyTechnician.Project(sourceB.Owner,recipient.Pet,now+1);Assert.NotNull(b);Assert.NotSame(a.SourceToken,b.SourceToken);
+        var b=ProxyTechnician.Project(sourceB.Owner,recipient.Pet,now+1);Assert.NotNull(b);Assert.NotSame(a,b);
         ProxyTechnician.End(sourceA.Owner);sourceA.Owner.playerData.lifeGeneration++;
         Assert.Equal(64,ProxyTechnician.Accuracy(recipient.Pet,now+2,false));
         sourceB.Owner.playerData.setOnWorld(false);sourceB.Owner.playerData.setOnWorld(true);
@@ -114,6 +115,34 @@ public class ProxyTechnicianTests
         Assert.Null(ProxyTechnician.Project(sourceB.Owner,recipient.Pet,now+3));
         Assert.True(ProxyTechnician.Begin(sourceB.Owner));Assert.NotNull(ProxyTechnician.Project(sourceB.Owner,recipient.Pet,now+3));
         recipient.Owner.playerData.lifeGeneration++;Assert.Equal(0,ProxyTechnician.Accuracy(recipient.Pet,now+4,false));
+    }
+
+    [Fact]
+    public void CapturedOldActivationCannotOverwriteARestartOrAnotherCastersCurrentReplacement()
+    {
+        using var sourceA=new Fixture();using var sourceB=new Fixture();using var recipient=new Fixture();double now=TimeUtils.GetSimTimeSeconds();
+        var old=ProxyTechnician.Capture(sourceA.Owner);Assert.NotNull(old);
+        ProxyTechnician.End(sourceA.Owner);Assert.True(ProxyTechnician.Begin(sourceA.Owner,7));
+        var restarted=ProxyTechnician.Capture(sourceA.Owner,7);Assert.NotNull(restarted);Assert.NotSame(old,restarted);
+        Assert.Null(ProxyTechnician.Capture(sourceA.Owner,6));
+        var replacement=ProxyTechnician.Project(sourceB.Owner,recipient.Pet,now);Assert.NotNull(replacement);replacement.Melee=9;
+        Assert.Null(ProxyTechnician.ProjectCaptured(sourceA.Owner,recipient.Pet,old,now+1));
+        Assert.Equal(9,ProxyTechnician.Accuracy(recipient.Pet,now+1,false));
+        ProxyTechnician.End(sourceA.Owner);Assert.Null(ProxyTechnician.ProjectCaptured(sourceA.Owner,recipient.Pet,restarted,now+2));
+        Assert.Equal(9,ProxyTechnician.Accuracy(recipient.Pet,now+2,false));
+    }
+
+    [Fact]
+    public void ASourceWithNoLiveOwnPetStillReachesAFriendlyRecipientsPet()
+    {
+        using var source=new Fixture();using var recipient=new Fixture();source.RemoveOwnPet();
+        Assert.Null(CoderPets.Of(source.Owner));Assert.True(ProxyTechnician.Matches(source.Owner));
+        double now=TimeUtils.GetSimTimeSeconds();Assert.NotNull(ProxyTechnician.Project(source.Owner,recipient.Pet,now));
+        source.Owner.playerInstance.InnerStrengthAvailable.setValue((ushort)10);
+        Assert.True(AbilityAuras.PayDrain(source.Owner,589));Assert.Equal(5,AbilityHandler.CurrentInnerStrength(source.Owner));
+        Assert.NotNull(ProxyTechnician.Project(source.Owner,recipient.Pet,now+6));
+        Assert.Equal(64,ProxyTechnician.Accuracy(recipient.Pet,now+7,false));
+        Assert.Null(ProxyTechnician.Project(source.Owner,source.Pet,TimeUtils.GetSimTimeSeconds()));
     }
 
     [Fact]

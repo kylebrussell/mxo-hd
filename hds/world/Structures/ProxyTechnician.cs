@@ -11,8 +11,9 @@ namespace hds
     {
         public const ushort Ability = 589, Effect = 698;
         public const string QaRollVariable = "MXO_PROXY_TECHNICIAN_QA_ROLL";
-        private sealed class Context { public int World, Life; }
-        internal sealed class Snapshot { public int Melee, Ballistic, World, Life, RecipientWorld, RecipientLife; public WorldClient Source; public object SourceToken; public double Until; }
+        internal sealed class Context { public int World, Life, Generation; }
+        private static readonly object contextsGate=new object();
+        internal sealed class Snapshot { public int Melee, Ballistic, World, Life, RecipientWorld, RecipientLife; public WorldClient Source; public double Until; }
         private static readonly ConditionalWeakTable<WorldClient,Context> contexts = new ConditionalWeakTable<WorldClient,Context>();
         private static readonly ConditionalWeakTable<CoderPets.Pet,Snapshot> snapshots = new ConditionalWeakTable<CoderPets.Pet,Snapshot>();
 
@@ -20,15 +21,23 @@ namespace hds
             !owner.playerData.worldChangePending && !owner.playerData.DistrictIsLA() && !owner.playerData.isDead && !owner.playerData.duelDeath;
         public static bool Loaded(WorldClient owner) => AbilityPassives.Level(owner,Ability) > 0;
         public static string Refusal(WorldClient owner) => Loaded(owner) && OwnerReady(owner) ? null : "Load Proxy Technician on a live in-world character first.";
-        public static bool Begin(WorldClient owner)
+        public static bool Begin(WorldClient owner,int generation=0)
         {
-            if (Refusal(owner) != null) return false;
-            contexts.Remove(owner); contexts.Add(owner,new Context {World=owner.playerData.worldGeneration,Life=owner.playerData.lifeGeneration});
-            return true;
+            lock(contextsGate)
+            {
+                if (Refusal(owner) != null) return false;
+                contexts.Remove(owner);contexts.Add(owner,new Context {World=owner.playerData.worldGeneration,Life=owner.playerData.lifeGeneration,Generation=generation});
+                return true;
+            }
         }
-        public static bool Matches(WorldClient owner) => OwnerReady(owner) && Loaded(owner) && contexts.TryGetValue(owner,out var c) &&
-            c.World == owner.playerData.worldGeneration && c.Life == owner.playerData.lifeGeneration;
-        public static void End(WorldClient owner) => contexts.Remove(owner);
+        private static bool MatchesLocked(WorldClient owner,Context c,int? generation=null) => c!=null && OwnerReady(owner) && Loaded(owner) &&
+            c.World==owner.playerData.worldGeneration && c.Life==owner.playerData.lifeGeneration && (!generation.HasValue || c.Generation==generation.Value);
+        internal static Context Capture(WorldClient owner,int? generation=null)
+        {
+            lock(contextsGate) return contexts.TryGetValue(owner,out var c) && MatchesLocked(owner,c,generation)?c:null;
+        }
+        public static bool Matches(WorldClient owner,int? generation=null) => Capture(owner,generation)!=null;
+        public static void End(WorldClient owner) { lock(contextsGate) contexts.Remove(owner); }
         public static void LoadoutChanged(WorldClient owner) { if (!Loaded(owner)) AbilityAuras.Stop(owner,Ability); }
 
         internal static Snapshot Values(int casterLevel,double now)
@@ -48,22 +57,29 @@ namespace hds
             pet.Mob.getDistrict()==owner.playerData.getDistrictId() && pet.Owner.playerData.getDistrictId()==owner.playerData.getDistrictId() &&
             AbilitySupport.FriendlyRecipient(owner,pet.Owner) &&
             CombatCalculator.CalculateDistanceMetres(owner.playerInstance.Position.getValue(),pet.Mob.getXPos(),pet.Mob.getYPos(),pet.Mob.getZPos())<=AbilityCatalog.Find(Effect).Number("Ability/RadiusOfEffect");
-        internal static Snapshot Project(WorldClient owner,CoderPets.Pet pet,double now)
+        internal static Snapshot Project(WorldClient owner,CoderPets.Pet pet,double now) => ProjectCaptured(owner,pet,Capture(owner),now);
+        internal static Snapshot ProjectCaptured(WorldClient owner,CoderPets.Pet pet,Context captured,double now)
         {
-            if(!Matches(owner) || !Eligible(owner,pet))return null;
-            var value=Values(owner.playerInstance.Level.getValue()[0],now);
-            value.Source=owner;value.World=owner.playerData.worldGeneration;value.Life=owner.playerData.lifeGeneration;
-            value.RecipientWorld=pet.Owner.playerData.worldGeneration;value.RecipientLife=pet.Owner.playerData.lifeGeneration;
-            contexts.TryGetValue(owner,out var token);value.SourceToken=token;
-            lock(pet) { snapshots.Remove(pet);snapshots.Add(pet,value); }
-            return value;
+            lock(contextsGate)
+            {
+                if(captured==null || !contexts.TryGetValue(owner,out var current) || !ReferenceEquals(current,captured) ||
+                    !MatchesLocked(owner,captured) || !Eligible(owner,pet))return null;
+                var value=Values(owner.playerInstance.Level.getValue()[0],now);
+                value.Source=owner;value.World=owner.playerData.worldGeneration;value.Life=owner.playerData.lifeGeneration;
+                value.RecipientWorld=pet.Owner.playerData.worldGeneration;value.RecipientLife=pet.Owner.playerData.lifeGeneration;
+                // Begin/End cannot intervene between validation and installation. No I/O occurs while holding this gate.
+                lock(pet) { snapshots.Remove(pet);snapshots.Add(pet,value); }
+                return value;
+            }
         }
-        public static void Pulse(WorldClient owner)
+        public static void Pulse(WorldClient owner,int? generation=null)
         {
+            var captured=Capture(owner,generation);
+            if(captured==null)return;
             foreach(var pet in CoderPets.SnapshotPets())
             {
-                var value=Project(owner,pet,TimeUtils.GetSimTimeSeconds());
-                if(value==null)continue; // Leaving range lets the last5s child expire naturally.
+                var value=ProjectCaptured(owner,pet,captured,TimeUtils.GetSimTimeSeconds());
+                if(value==null)continue;
                 uint fx=(uint)AbilityCatalog.Find(Effect).Modifiers.Select(m=>m.Number("ActivationFX")).FirstOrDefault(n=>n>0);
                 CoderPets.ShowAuraEffect(pet,fx);
                 Output.WriteDebugLog("[PROXYTECH] pulse source="+TimedEffects.PlayerName(owner)+" recipient="+TimedEffects.PlayerName(pet.Owner)+" pet="+pet.Mob.getEntityId()+" melee="+value.Melee+" ballistic="+value.Ballistic);
