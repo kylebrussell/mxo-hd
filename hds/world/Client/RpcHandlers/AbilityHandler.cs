@@ -125,8 +125,9 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
-            // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles)
-            if (!CombatStyles.CanUse(Store.currentClient, AbilityID))
+            // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
+            // style is switched to, as the client's special-move picker does with 3e
+            if (!CombatStyles.EnsureStyleFor(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "That move requires the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style.");
                 return;

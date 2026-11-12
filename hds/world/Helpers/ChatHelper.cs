@@ -453,6 +453,29 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?exileweakness") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: the nearest live NPC (within 20 m, optionally of that name) gets an Exile weakness
+                    // (CombatSpecials: wood, silver, holywater or none), so the Wooden Stake / Silver Bullet / Holy Water
+                    // attacks can be checked on test NPCs. ?exileweakness wood [NPC name]
+                    ushort? weakness = CombatSpecials.WeaknessNamed(commands[1]);
+                    string wanted = commands.Length > 2 ? string.Join(" ", commands.Skip(2)) : null;
+                    Mob nearest = null;
+                    double best = 20;
+                    lock (WorldServer.mobs.SyncRoot)
+                        foreach (Mob mob in WorldServer.mobs)
+                        {
+                            if (mob.getIsDead() || mob.getDistrict() != Store.currentClient.playerData.getDistrictId() ||
+                                wanted != null && !string.Equals(mob.getName(), wanted, StringComparison.OrdinalIgnoreCase)) continue;
+                            double metres = CombatCalculator.CalculateDistanceMetres(Store.currentClient.playerInstance.Position.getValue(),
+                                mob.getXPos(), mob.getYPos(), mob.getZPos());
+                            if (metres < best) { best = metres; nearest = mob; }
+                        }
+                    if (weakness.HasValue && nearest != null) CombatSpecials.SetWeakness(nearest, weakness.Value);
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, !weakness.HasValue ? "Use wood, silver, holywater or none." :
+                        nearest == null ? "No NPC within 20 m." : nearest.getName() + " now has Exile weakness " + weakness.Value + ".", "BROADCAST");
+                }
+
                 if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
                 {

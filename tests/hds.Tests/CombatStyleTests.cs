@@ -103,15 +103,38 @@ public class CombatStyleTests
         Assert.Equal(0, CombatStyles.RequiredStyle(CombatSpecials.WoodenStake));
         Assert.Equal(0, CombatStyles.RequiredStyle(15)); // Precise Blow is a toggle, not a style special
 
+        Assert.True(CombatStyles.IsSpecialMove(CombatSpecials.BerserkerAttack));
+        Assert.True(CombatStyles.IsSpecialMove(CombatSpecials.WoundingThrow));
+        Assert.False(CombatStyles.IsSpecialMove(CombatSpecials.PoisonKnife));
+
         var client = Client();
         AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (2, 50), (CombatStyles.Karate, 50), (CombatStyles.SpyStyle, 50) });
         Assert.False(CombatStyles.CanUse(client, CombatSpecials.BerserkerAttack));
         Assert.True(CombatStyles.CanUse(client, CombatSpecials.Taunt));
+        Assert.True(CombatStyles.CanUse(client, CombatSpecials.PoisonKnife)); // a stance but not a special move: not gated
         CombatStyles.Select(client, CombatStyles.Karate);
         Assert.True(CombatStyles.CanUse(client, CombatSpecials.BerserkerAttack));
-        Assert.False(CombatStyles.CanUse(client, CombatSpecials.PoisonKnife));
-        CombatStyles.Select(client, CombatStyles.SpyStyle);
-        Assert.True(CombatStyles.CanUse(client, CombatSpecials.PoisonKnife));
+        Assert.False(CombatStyles.CanUse(client, CombatSpecials.WoundingThrow));
+        // The client's special-move picker switches to a loaded style; so does the server
+        Assert.True(CombatStyles.EnsureStyleFor(client, CombatSpecials.WoundingThrow));
+        Assert.Equal(CombatStyles.SpyStyle, CombatStyles.Active(client));
+        Assert.Equal(CombatStyles.SpyStyle, (ushort)client.playerData.combatSelection);
+        // Tomo Nage needs Aikido, which isn't loaded
+        Assert.False(CombatStyles.EnsureStyleFor(client, 412));
+        Assert.Equal(CombatStyles.SpyStyle, CombatStyles.Active(client));
+        // Cheap Shot needs Self Defense, which Awakened grants
+        Assert.True(CombatStyles.EnsureStyleFor(client, 198));
+        Assert.Equal(CombatStyles.SelfDefense, CombatStyles.Active(client));
+    }
+
+    [Fact]
+    public void WeaponStylesAreSelectableButTheirNumbersBelongElsewhere()
+    {
+        foreach (ushort weapon in new ushort[] { 129, 147, 158 })
+        {
+            Assert.True(CombatStyles.IsStyle(weapon));
+            Assert.Empty(CombatStyles.Modifiers(weapon));
+        }
     }
 
     [Fact]

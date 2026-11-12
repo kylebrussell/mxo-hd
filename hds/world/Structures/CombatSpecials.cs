@@ -114,6 +114,25 @@ namespace hds
             return 0;
         }
 
+        private sealed class WeaknessOverride { public ushort Ability; }
+        private static readonly ConditionalWeakTable<Mob, WeaknessOverride> weaknessOverrides = new ConditionalWeakTable<Mob, WeaknessOverride>();
+
+        /// <summary>The NPC's weakness: a dev override (?exileweakness, MXO_DEV_COMMANDS=1) or the name policy.</summary>
+        public static ushort Weakness(Mob mob)
+        {
+            if (mob == null) return 0;
+            return weaknessOverrides.TryGetValue(mob, out WeaknessOverride o) ? o.Ability : Weakness(mob.getName());
+        }
+
+        public static void SetWeakness(Mob mob, ushort ability) => weaknessOverrides.AddOrUpdate(mob, new WeaknessOverride { Ability = ability });
+
+        /// <summary>?exileweakness wood|silver|holywater|none: the NPCKilledOnlyBy* id, or null for an unknown word.</summary>
+        public static ushort? WeaknessNamed(string word) => (word ?? "").ToLowerInvariant() switch
+        {
+            "wood" => KilledOnlyByWood, "silver" => KilledOnlyBySilver, "holywater" => KilledOnlyByHolyWater, "none" => 0,
+            _ => (ushort?)null
+        };
+
         public static bool IsExileWeapon(ushort id) => exileWeakness.ContainsKey(AbilityCatalog.Canonical(id));
 
         /// <summary>general.py's damage: 10, times 10 (75 for the Enhanced versions) against the matching weakness.</summary>
@@ -131,7 +150,7 @@ namespace hds
         /// <summary>The damage a landed special does instead of the generic attack-ability fallback, or null.</summary>
         public static ushort? Damage(ushort id, Mob mob)
         {
-            if (IsExileWeapon(id)) return ExileDamage(id, mob == null ? (ushort)0 : Weakness(mob.getName()));
+            if (IsExileWeapon(id)) return ExileDamage(id, Weakness(mob));
             return Handles(id) ? (ushort)0 : (ushort?)null;
         }
 
