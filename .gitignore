@@ -90,3 +90,6 @@ DebugLog.txt
 data/experiment_artifacts/packet-captures/
 data/experiment_artifacts/packet-corpora/
 Config*.xml
+
+# Current generated ability review bundle; tracked snapshot updates are explicit.
+/artifacts/ability-audit/

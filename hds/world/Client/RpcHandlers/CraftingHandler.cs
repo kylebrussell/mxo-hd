@@ -76,7 +76,7 @@ namespace hds
                 var request = CraftingRequests.ParseCompile(body);
                 var db = Store.dbManager.WorldDbHandler;
                 var bag = db.GetInventoryItems(client.playerData.getCharID());
-                if (request == null || !CompileSession.Authorized(client, request.ToolSlot) || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
+                if (request == null || !CraftingSession.Authorized(client, request.ToolSlot) || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
                     !CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) ||
                     !Crafting.Recipes.TryGetValue(request.Item, out var recipe) || CraftingRules.Find(request.Item)?.CantCraft != false ||
                     !CraftingRequests.Matches(request, recipe) ||
@@ -135,7 +135,8 @@ namespace hds
             lock (client.playerData.craftingSync)
             {
                 var request = CraftingRequests.ParseInventoryAbility(body);
-                if (request == null || request.Ability != 276 || request.Slot == 0 || request.Slot >= 97 || !Ready(client) ||
+                if (request == null || !CraftingRequests.IsInventoryTargetAbility(request.Ability) ||
+                    request.Ability != 276 || request.Slot == 0 || request.Slot >= 97 || !Ready(client) ||
                     !CombatSelection.IsLoaded(276, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())))
                 { Finish(client, 0, 0, 0, "That inventory ability is not available."); return; }
                 var db = Store.dbManager.WorldDbHandler;
