@@ -394,7 +394,7 @@ namespace hds
                 {
                     damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus
                         ? (UInt16)0
-                        : AbilityHandler.AbilityDamage(ability, random);
+                        : AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
                     fx = ability.getActivationFX();
                 }
             }
@@ -404,6 +404,8 @@ namespace hds
             }
             damage = CombatSpecials.Damage(abilityId, null) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
+            int rawDamage = damage;
+            damage = TypedAbilityResistance.Player(caster, target, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);
@@ -414,9 +416,9 @@ namespace hds
             {
                 // Retail's lines: "Your %1z does %4I damage to %3s." and "%2s's %1z does %4I damage to you."
                 caster.messageQueue.addRpcMessage(AbilityMessages.Build(AbilityMessages.DamageCaster, true, AbilityMessages.ByGameObject,
-                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, 0));
+                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, rawDamage - damage));
                 target.messageQueue.addRpcMessage(AbilityMessages.Build(AbilityMessages.DamageTarget, false, AbilityMessages.ByGameObject,
-                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, 0));
+                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, rawDamage - damage));
                 caster.FlushQueue();
             }
             // A non-damaging control still has an activation effect on its victim. Send that effect to the

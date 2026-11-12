@@ -39,6 +39,7 @@ namespace hds
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
+            public int DamageType = -1;
             public float Seconds;
             public TempMods.Proc Proc;
             public TempMods.BreakRule Break;
@@ -392,7 +393,7 @@ namespace hds
                     value = m.MaxValue > m.MinValue ? random.Next(m.MinValue, m.MaxValue + 1) : m.MinValue;
                 }
                 mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc,
-                    Break = m.Break, BreakChance = m.BreakChance, ProtectFirstHealthChange = m.ProtectFirstHealthChange, Interval = m.Interval });
+                    Break = m.Break, BreakChance = m.BreakChance, ProtectFirstHealthChange = m.ProtectFirstHealthChange, Interval = m.Interval, DamageType = m.Proc == TempMods.Proc.Dot ? m.DamageType : -1 });
             }
             return mods;
         }
@@ -776,6 +777,8 @@ namespace hds
                 Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " heals " + Name + " for " + damage);
                 return true;
             }
+            int rawDamage = damage;
+            damage = TypedAbilityResistance.Player(mod.Caster, client, mod.Parent, damage, mod.DamageType);
             UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
             UInt16 next = (UInt16)Math.Max(0, health - damage);
             client.playerInstance.Health.setValue(next);
@@ -784,7 +787,7 @@ namespace hds
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next))));
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
             client.messageQueue.addObjectMessage(BuildSelfTickUpdate(next, TempMods.VirusCrashFx, counter), false);
-            client.messageQueue.addRpcMessage(AbilityMessages.Damage(false, mod.Parent, mod.CasterName ?? "", Name, damage, 0));
+            client.messageQueue.addRpcMessage(AbilityMessages.Damage(false, mod.Parent, mod.CasterName ?? "", Name, damage, rawDamage - damage));
             client.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " ticks on " + Name + " for " + damage + ": " + health + " -> " + next);
             if (next == 0)
@@ -910,6 +913,8 @@ namespace hds
             {
                 return false;
             }
+            int rawDamage = damage;
+            damage = TypedAbilityResistance.Npc(caster, mob, mod.Parent, damage, mod.DamageType);
             // Each target keeps its DOT even when the caster's current fight changes. Death claiming and rewards
             // use the same path as a direct ability, so a secondary target cannot award its kill twice.
             if (!CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob, mod.TargetView, (UInt16)Math.Min(damage, UInt16.MaxValue),
@@ -917,7 +922,7 @@ namespace hds
             {
                 return false;
             }
-            Tell(caster, AbilityMessages.Damage(true, mod.Parent, mod.CasterName ?? "", mob.getName() ?? "", damage, 0));
+            Tell(caster, AbilityMessages.Damage(true, mod.Parent, mod.CasterName ?? "", mob.getName() ?? "", damage, rawDamage - damage));
             caster.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " ticks on " + mob.getName() + " for " + damage);
             return !mob.getIsDead();
