@@ -279,9 +279,10 @@ namespace hds
             foreach (ushort parent in parents)
             {
                 if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
+                bool live = subject.Effects.Snapshot().Any(m => m.Parent == parent && m.Expires > TimeUtils.GetSimTimeSeconds());
                 if (!TimedEffects.RemoveParent(subject, parent)) continue;
                 string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
-                (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
+                if (live) (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
                 if (client == null) continue;
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(RemoveDebuffTarget, false, pulse.Parent, name, name,
                     unchecked((int)AbilityMessages.AbilityGameObject(parent))));

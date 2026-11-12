@@ -256,6 +256,9 @@ public class AbilityHostileTests
         Land(victim,97);
         AbilityHostile.Pulse(subject,pulse,new SweepRoll(0,()=>TimedEffects.RemoveParent(subject,97)),lines.Add);
         Assert.Single(lines); // another remover wins after the candidate snapshot
+        var overdue=Land(victim,97); foreach(var mod in overdue) mod.Expires=TimeUtils.GetSimTimeSeconds()-1;
+        AbilityHostile.Pulse(subject,pulse,new SweepRoll(0),lines.Add);
+        Assert.False(subject.Effects.HasParent(97)); Assert.Single(lines); // pending natural cleanup is not a live sweep success
         var expiredMods=Land(victim,97); var expired=new List<TimedEffects.Active>();
         subject.Effects.Advance(expiredMods.Max(m=>m.Expires)+1,new List<TimedEffects.Active>(),expired);
         Assert.False(subject.Effects.HasParent(97)); Assert.Equal(4,expired.Count);
