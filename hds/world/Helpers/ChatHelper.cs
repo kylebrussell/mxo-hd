@@ -464,8 +464,12 @@ namespace hds
                 if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
                 {
-                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes
+                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes. It is a
+                    // health change like any other for the health callbacks (Sneak's OnHealthReduceDeactivateAbility, pacify).
+                    UInt16 devBefore = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.Health.getValue(), 1);
+                    UInt16 devMax = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.MaxHealth.getValue(), 1);
                     Store.currentClient.playerInstance.Health.setValue(devHealth);
+                    if (devBefore != devHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(Store.currentClient), devBefore - devHealth, devHealth < devMax);
                     Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
                     PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
                     Store.currentClient.FlushQueue();

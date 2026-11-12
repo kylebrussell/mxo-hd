@@ -123,6 +123,8 @@ public static partial class Scenarios
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
+        new Scenario("stealth-sneak-observer", StealthSneakObserver, StillNpcs),
+        new Scenario("stealth-breaks", StealthBreaks, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)
