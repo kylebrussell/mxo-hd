@@ -24,6 +24,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
+        new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
         new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
         new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),

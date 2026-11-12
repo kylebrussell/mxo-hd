@@ -10,6 +10,25 @@ public static partial class Scenarios
         player.SendRpc(WireFormat.ToHex(body));
     }
 
+    private static async Task AntiStunWriterInterruption(ScenarioContext context)
+    {
+        var p=await context.AddPlayerAsync(new CharacterSeed("WriterPill") {Level=50,Items=new[]{(2,531u,1),(3,42763u,1)}});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},30,{AbilityGoid(37)},15,1)");
+        await p.EnterWorldAsync();WriterTool(p,2,true);await p.WaitForRpcAsync(ModPattern(970,968));
+        int start=p.World.RpcSnapshot().Count;AntiStunItemUse(p,971,3);
+        await p.WaitUntilAsync(()=>p.Received("80 ac cb 03").Count>0 && p.Received(ModPattern(970,968,true)).Count>0,
+            "Legal unstunned pill interrupts writer before cast",TimeSpan.FromSeconds(4));
+        var r=p.World.RpcSnapshot().Skip(start).ToList();
+        int off=r.FindIndex(x=>BytePattern.Parse(ModPattern(970,968,true)).IsMatch(x.Bytes));
+        int cast=r.FindIndex(x=>BytePattern.Parse("80 ac cb 03").IsMatch(x.Bytes));
+        Check.That(off>=0 && cast>off,"Writer linked off precedes anti-stun cast bar");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={p.CharId} AND slot=3"),"Pill retained at cast start");
+        await p.WaitForRpcAsync("80 bd 01 cb 03");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT count(*) FROM inventory WHERE charId={p.CharId} AND slot=3"),"Pill consumed at landing");
+        p.SendChat("?writersession");await p.WaitForTextAsync("Writer session inactive");
+        Check.Equal(0,p.World.Problems.Count,"Combined writer/pill protocol");
+    }
+
     private static async Task AntiStunPillUse(ScenarioContext context)
     {
         foreach (var pair in new[] { (Ability: (ushort)971, Item: 42763u), (Ability: (ushort)972, Item: 42764u) })
