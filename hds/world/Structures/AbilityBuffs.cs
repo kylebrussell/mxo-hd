@@ -284,7 +284,7 @@ namespace hds
             }
         }
 
-        public static void RefreshVitals(WorldClient client)
+        public static void RefreshVitals(WorldClient client, bool present = true)
         {
             var changed = new List<Attribute>();
             UInt16 previousHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
@@ -296,7 +296,9 @@ namespace hds
             })
             {
                 int baseline = UnbuffedMaximum(client, stat);
-                UInt16 max = (UInt16)Math.Clamp(baseline + VitalTotal(client, stat), 1, UInt16.MaxValue);
+                ushort bonus = stat == 106 ? (ushort)1057 : (ushort)1056;
+                UInt16 max = (UInt16)Math.Clamp(baseline + AbilityStats.PercentDelta(baseline, AbilityStats.Player(client, bonus)) +
+                    VitalTotal(client, stat) + AbilityPassives.Total(client, stat), 1, UInt16.MaxValue);
                 if (stat == 106) client.playerData.buffHealthMaximumDelta = max - baseline;
                 else client.playerData.buffISMaximumDelta = max - baseline;
                 if (NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) != max) { maximum.setValue(max); changed.Add(maximum); }
@@ -307,9 +309,12 @@ namespace hds
                 UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
                 if (health != previousHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), previousHealth - health,
                     health < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
-                client.messageQueue.addObjectMessage(SocialPackets.SelfViewUpdate(client.playerInstance.GetSelfUpdateAttributes(changed, false)), false);
-                byte[] other = client.playerInstance.GetUpdateAttributes(changed);
-                if (other[0] > 0) PvpFlag.ToWatchers(client, SocialPackets.OtherViewUpdate(other));
+                if (present)
+                {
+                    client.messageQueue.addObjectMessage(SocialPackets.SelfViewUpdate(client.playerInstance.GetSelfUpdateAttributes(changed, false)), false);
+                    byte[] other = client.playerInstance.GetUpdateAttributes(changed);
+                    if (other[0] > 0) PvpFlag.ToWatchers(client, SocialPackets.OtherViewUpdate(other));
+                }
             }
         }
 

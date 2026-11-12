@@ -89,7 +89,7 @@ namespace hds
             client.playerInstance.EffectID.setValue(LevelUpEffect);
             client.playerInstance.EffectCounter.setValue(effectCounter);
 
-            AbilityBuffs.RefreshVitals(client);
+            AbilityPassives.Refresh(client);
             maxHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
             maxInnerStrength = NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthMax.getValue(), 1);
             health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);

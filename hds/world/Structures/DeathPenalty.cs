@@ -42,6 +42,7 @@ namespace hds
 
         public static void Send(WorldClient client)
         {
+            AbilityPassives.Refresh(client);
             if (!CanPresent(client.playerData)) return;
             float factor = Current(client);
             client.playerInstance.DeathPenalty.setValue(factor);

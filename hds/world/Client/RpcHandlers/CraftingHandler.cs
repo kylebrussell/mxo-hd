@@ -120,20 +120,7 @@ namespace hds
             return true;
         }
 
-        internal static int Skill(WorldClient client, ushort stat)
-        {
-            if (stat == 0) return 0;
-            int value = AbilityStats.Player(client, stat);
-            foreach (var row in Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID()))
-            {
-                if (!row.getLoaded()) continue;
-                var entry = AbilityCatalog.Find(AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())));
-                if (entry == null) continue;
-                foreach (var mod in entry.Modifiers.Where(m => m.Target == stat && m.Number("WhenEnabled", -1) == 0))
-                    value += (int)(mod.Number("MinValue") + DeathPenalty.EffectiveLevel(client, row.getLevel()) * mod.Number("ValueScale", 1));
-            }
-            return value;
-        }
+        internal static int Skill(WorldClient client, ushort stat) => AbilityStats.Player(client, stat);
 
         private static ushort Specialization(uint category)
         {

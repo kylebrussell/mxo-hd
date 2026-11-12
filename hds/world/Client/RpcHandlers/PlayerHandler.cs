@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Drawing.Printing;
 using System.Text;
 
@@ -78,6 +79,7 @@ namespace hds
             PvpFlag.OnEnterWorld(Store.currentClient);
             Store.currentClient.playerData.deathPenaltyRecord = 0; // the new world discarded the old modifier records
             DeathPenalty.OnEnter(Store.currentClient);
+            AbilityPassives.Load(Store.currentClient, newWorld: true);
 
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
@@ -85,6 +87,7 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            AbilityPassives.Refresh(Store.currentClient);
             if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);
             if (Store.currentClient.playerData.pvpFlag)
             {
@@ -375,8 +378,12 @@ namespace hds
             }
 
             List<UInt16> abilitySlots = new List<UInt16>();
+            var ownedAbilities = Store.dbManager.MarginDbHandler.LoadAbilities((int)Store.currentClient.playerData.getCharID());
             foreach (AbilityProgression.LoadoutEntry entry in entries)
             {
+                var owned = ownedAbilities.FirstOrDefault(row => row.getSlot() == entry.Slot &&
+                    AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())) == AbilityCatalog.Canonical(entry.Ability));
+                if (owned == null) continue;
                 List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
                 if (unload)
                 {
@@ -385,17 +392,19 @@ namespace hds
                 }
                 else
                 {
-                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, entry.Level, entry.Slot));
+                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, owned.getLevel(), entry.Slot));
                     foreach (UInt16 grant in grants)
                     {
                         Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
-                            AbilityProgression.GrantLevel(entry.Ability, entry.Level), AbilityProgression.HiddenSlot));
+                            AbilityProgression.GrantLevel(entry.Ability, owned.getLevel()), AbilityProgression.HiddenSlot));
                     }
                 }
                 abilitySlots.Add(entry.Slot);
             }
 
+            if (abilitySlots.Count == 0) return;
             Store.dbManager.WorldDbHandler.UpdateAbilityLoadOut(abilitySlots, unload ? 0u : 1u);
+            AbilityPassives.Load(Store.currentClient);
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[ABILITY] " + (unload ? "Unloaded " : "Loaded ") + entries.Count + " abilities");
         }
