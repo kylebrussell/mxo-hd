@@ -3,6 +3,10 @@ namespace NativeQa;
 /// <summary>The actual environment passed to the disposable native-QA server, also available without setup.</summary>
 public static class NativeQaFixturePlan
 {
+    // CompileUI 620827d0 excludes0x84 bit/fragment entries; low seven bits store charges.
+    public const uint CompileArchiveValue=2399u << 7;
+    public static bool SeedDisguiseTool(string mode) => NativeQaModes.Find(mode).Plan.SeedDisguiseTool;
+
     public static Dictionary<string, string> EnvironmentFor(string mode)
     {
         var plan=NativeQaModes.Find(mode).Plan;

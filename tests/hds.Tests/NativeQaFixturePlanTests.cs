@@ -6,6 +6,19 @@ namespace hds.Tests;
 
 public class NativeQaFixturePlanTests
 {
+    [Theory]
+    [InlineData("remaining", true)]
+    [InlineData("health-callbacks", true)]
+    [InlineData("compile-items", false)]
+    [InlineData("actions", false)]
+    [InlineData("write-code", false)]
+    public void CompilerFixturesKeepTheirActionTools(string mode, bool disguise)
+    {
+        Assert.Equal(disguise, NativeQaFixturePlan.SeedDisguiseTool(mode));
+        Assert.Equal(2399u, hds.CraftingRequests.SourceItem(NativeQaFixturePlan.CompileArchiveValue | 1));
+        Assert.False(hds.CodeStorage.IsCode(NativeQaFixturePlan.CompileArchiveValue));
+    }
+
     public static IEnumerable<object[]> LegacyModes()
     {
         using var baseline=JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"NativeQaLegacyPlans.json")));
@@ -36,6 +49,8 @@ public class NativeQaFixturePlanTests
             var expected=baseline.RootElement.GetProperty(mode);
             Compare(expected.GetProperty("Environment"),json.RootElement.GetProperty("Environment"));
             Compare(expected.GetProperty("Plan"),json.RootElement.GetProperty("Plan"));
+            Compare(expected.GetProperty("SeedDisguiseTool"),json.RootElement.GetProperty("SeedDisguiseTool"));
+            Compare(expected.GetProperty("CompileArchiveValue"),json.RootElement.GetProperty("CompileArchiveValue"));
             Assert.Empty(Directory.EnumerateFileSystemEntries(empty));
         }
         finally { Directory.Delete(empty); }

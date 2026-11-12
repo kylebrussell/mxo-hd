@@ -14,7 +14,7 @@ const string configuration = "Release";
 if (args.Length > 0 && args[0] == "--fixture-plan")
 {
     string mode = args.Length > 1 ? args[1] : "";
-    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode), Plan=NativeQaModes.Find(mode).Plan },
+    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode), Plan=NativeQaModes.Find(mode).Plan, SeedDisguiseTool=NativeQaFixturePlan.SeedDisguiseTool(mode), CompileArchiveValue=NativeQaFixturePlan.CompileArchiveValue },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
