@@ -53,7 +53,9 @@ namespace hds
             /// <summary>Countdown the client shows; 0 = no time limit (exclusive buffs).</summary>
             public float Seconds;
             public bool Exclusive;
-            public int RefundIS, TermHeal;
+            public int RefundIS, TermHeal, TermSweepChance;
+            public string HealthChangedProc;
+            public int HealthChangedValue;
             public int DrainAmount;
             public double DrainSeconds;
             /// <summary>Buffs of the same non-zero family replace each other.</summary>
@@ -148,6 +150,7 @@ namespace hds
             public UInt16 AbilityId;
             public UInt16[] RecordIds;
             public int Generation;
+            public double Started;
             public Buff Definition;
         }
 
@@ -267,7 +270,7 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
+            return AbilityHealthCallbacks.TryGet(id,50,0,out buff) || AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
         }
 
         public static ushort DissemblingBits(WorldClient client)
@@ -431,6 +434,7 @@ namespace hds
                 Remove(client, other, false, other == abilityId, keepVitals: true);
             }
 
+            RemoveTimedFamilyConflicts(client,abilityId);
             Active active;
             lock (data.activeBuffs)
             {
@@ -439,7 +443,7 @@ namespace hds
                 {
                     ids[i] = NextRecordId(data);
                 }
-                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Definition = buff };
+                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Started=TimeUtils.GetSimTimeSeconds(), Definition = buff };
                 data.activeBuffs[abilityId] = active;
             }
 
@@ -467,6 +471,15 @@ namespace hds
                     TimeUtils.GetSimTimeSeconds() + buff.Seconds);
             }
             return true;
+        }
+
+        internal static void RemoveTimedFamilyConflicts(WorldClient client,ushort id)
+        {
+            double stacking=AbilityCatalog.Find(id)?.Number("Ability/StackingType")??0;
+            if(stacking<=0) return;
+            var subject=TimedEffects.ForPlayer(client);
+            foreach(var other in subject.Effects.Snapshot().Select(a=>a.Parent).Distinct().Where(other=>other!=id &&
+                AbilityCatalog.Find(other)?.Number("Ability/StackingType")==stacking).ToList()) TimedEffects.RemoveParent(subject,other);
         }
 
         private static void ScheduleDrain(WorldClient client, Active active)
@@ -536,6 +549,8 @@ namespace hds
             }
             // Do not allow a term heal during death cleanup to leave positive HP on a dead character.
             if(buff.TermHeal>0 && !data.isDead && !data.duelDeath) AbilityHandler.HealSelf(client,(ushort)buff.TermHeal);
+            if(buff.TermSweepChance>0 && !data.isDead && !data.duelDeath)
+                AbilityHostile.Pulse(TimedEffects.ForPlayer(client),new TimedEffects.Active {Parent=abilityId,Value=buff.TermSweepChance},AbilityHealthCallbacks.TermRandom());
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {

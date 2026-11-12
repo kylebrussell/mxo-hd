@@ -33,7 +33,11 @@ python -X utf8 research/abilities/extract_disguises.py --client C:/Users/russe/D
 
 Regenerate the audit, including all existing utility/stealth/pet/hostile/resurrection/style modules, with `dotnet run --project tools/AbilityAudit` then `python -X utf8 research/abilities/build_audit.py`. Do not edit the generated CSV/Markdown. Policy choices and limits above are separate authored evidence.
 
-## Every still-missing row reviewed after111
+## Follow-up callback execution
+
+The isolated health-callback continuation implements196,378/380 with693,506,861/941/943 and their internal effect paths. See [ABILITY-HEALTH-CALLBACKS.md](ABILITY-HEALTH-CALLBACKS.md) for native random mapping, explicit event policies, current source gaps and the focused fixture. The residual table below records PR105's original scope; the generated audit reflects the additional continuation code.872/1149 remain uncompleted for the reasons in the follow-up evidence.
+
+## Historical PR105 missing-row review after111
 
 The following are deliberate remaining gaps, not completed by a numeric record or an audit label. IDs handled by other active packages are called out explicitly.
 

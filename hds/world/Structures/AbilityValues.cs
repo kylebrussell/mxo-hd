@@ -6,6 +6,20 @@ namespace hds
     /// 626a92d8 truncates toward zero; the min is added after scaling, then a positive max caps level functions.</summary>
     public static class AbilityValues
     {
+        /// <summary>ValueFunction0,6251802e..4e: rand15*(short)(max-min), logical>>15,
+        /// add min and narrow to signed16, then scale/truncate. The runtime RNG sequence is not MSVCR71's global state.</summary>
+        public static bool TryRandomValue(AbilityCatalog.Modifier modifier, int roll15, out int value)
+        {
+            value=0;
+            if(roll15<0 || roll15>32767 || modifier.Number("ValueFunction")!=0) return false;
+            short min=(short)modifier.Number("MinValue"), max=(short)modifier.Number("MaxValue");
+            int delta=unchecked((short)(max-min));
+            int offset=unchecked((int)((uint)(roll15*delta)>>15));
+            int raw=unchecked((short)(min+Math.Abs(offset)));
+            value=(int)(raw*(double)(float)modifier.Number("ValueScale",1));
+            return true;
+        }
+
         public static bool TryValue(AbilityCatalog.Modifier modifier, int abilityLevel, int characterLevel, out int value)
         {
             int function = (int)modifier.Number("ValueFunction", 0);
