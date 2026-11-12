@@ -29,7 +29,7 @@ namespace hds
             var entry = AbilityCatalog.Find(ability);
             var modifier = entry?.Modifiers.FirstOrDefault(m => m.Has("DamageType") && m.Number("DamageType") != 3);
             int type = modifier == null ? (TempMods.TryGet(ability, out var effect) && effect.Virus ? 2 : -1) : (int)modifier.Number("DamageType");
-            ushort stat = type == 0 ? (ushort)159 : type == 1 ? (ushort)171 : type == 2 ? (ushort)172 : (ushort)0;
+            ushort stat = type == 0 ? (ushort)159 : type == 1 ? (ushort)171 : type == 2 ? (ushort)172 : type == 7 ? (ushort)1034 : (ushort)0;
             float factor = stat == 0 ? 1 : (float)Math.Max(0, 1 + Influence(caster, stat) / 100.0);
             return (ushort)Math.Clamp((int)(amount * (double)factor), 0, ushort.MaxValue);
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -34,6 +35,7 @@ namespace hds
         public sealed class Active
         {
             public UInt16 Parent;
+            internal Action<Subject, Active> OnExpired;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -63,7 +65,7 @@ namespace hds
                 get
                 {
                     double at = (Ticks + 1) * Interval;
-                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
+                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot || Proc == TempMods.Proc.Pulse) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
             }
         }
@@ -90,12 +92,14 @@ namespace hds
             /// Puts the tempmods on for <paramref name="parent"/>, replacing everything that ability put on before
             /// (retail's refresh). Returns the replaced ones.
             /// </summary>
-            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now)
+            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now, bool preserveOtherTargets = false)
             {
                 lock (active)
                 {
-                    List<Active> replaced = active.FindAll(a => a.Parent == parent);
-                    active.RemoveAll(a => a.Parent == parent);
+                    //1125 has an independent caster681 marker and target710 modifier. Refresh its tuple, not both.
+                    bool Replaced(Active a)=>a.Parent==parent && (!preserveOtherTargets || mods.Any(m=>m.Target==a.Target));
+                    List<Active> replaced = active.FindAll(Replaced);
+                    active.RemoveAll(Replaced);
                     foreach (Active m in mods)
                     {
                         m.Parent = parent;
@@ -237,6 +241,7 @@ namespace hds
             internal abstract void Ended(List<Active> ended);
             internal virtual void Due(double now) { }
             internal virtual bool Idle => Effects.IsEmpty;
+            internal virtual int Determination => Math.Max(0, Effects.Total(575));
         }
 
         // ---- the server tick ----
@@ -340,6 +345,7 @@ namespace hds
                     }
                 }
             }
+            foreach (Active mod in expired) mod.OnExpired?.Invoke(subject, mod);
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
@@ -406,7 +412,7 @@ namespace hds
         /// tempmods that went on (none when only control states were refused).
         /// </summary>
         public static List<Active> Apply(Subject subject, TempMods.Effect effect, double now, WorldClient caster = null,
-            string casterName = null, UInt16 targetView = 0, Random rng = null)
+            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
         {
             List<Active> mods = Instantiate(effect, rng ?? random);
             for (int i = mods.Count - 1; i >= 0; i--)
@@ -423,7 +429,16 @@ namespace hds
                 }
                 m.CasterName = casterName;
                 m.TargetView = targetView;
+                configure?.Invoke(m);
             }
+
+            // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
+            // Snapshot immunity from the unmitigated control; its timer is a separate script effect.
+            Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
+            Active unmitigatedImmunity = originalControl == null ? null : ImmunityFor(effect, originalControl);
+            if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
+                foreach (Active m in mods)
+                    m.Seconds = AbilityControlDurations.Mitigate(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination);
 
             Active immunity = null;
             if (subject.Effects.Has(TempMods.ISDrainTargetAbility))
@@ -439,7 +454,7 @@ namespace hds
                 Active control = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
                 if (control != null)
                 {
-                    immunity = ImmunityFor(effect, control);
+                    immunity = unmitigatedImmunity;
                     immunity.Caster = caster;
                     immunity.CasterName = casterName;
                     immunity.TargetView = targetView;
@@ -451,19 +466,22 @@ namespace hds
                 return mods;
             }
 
-            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now);
+            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion);
             if (immunity != null)
             {
                 subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);
             }
             Register(subject);
             subject.Applied(effect, mods, immunity, replaced);
+            if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
+                EvasionShield.Refresh(shieldTarget.Context);
             return mods;
         }
 
         /// <summary>Takes everything off a subject (death), with its packets.</summary>
         public static void Clear(Subject subject)
         {
+            if (subject is PlayerEffects player) Stealth.Cleared(player.Context);
             List<Active> removed = subject.Effects.RemoveAll();
             if (removed.Count > 0)
             {
@@ -476,14 +494,18 @@ namespace hds
         {
             List<Active> removed = subject.Effects.RemoveParent(parent);
             if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+
             return removed.Count > 0;
         }
 
         public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum)
         {
+            if (subject is PlayerEffects player) Stealth.HealthChanged(player.Context, damageTaken, belowMaximum);
             List<Active> removed;
             lock (random) removed = subject.Effects.HealthChanged(damageTaken, belowMaximum, random);
             if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+            if(subject is PlayerEffects callbackPlayer)
+                WithClient(subject.Context,()=>AbilityHealthCallbacks.HealthChanged(callbackPlayer.Context,damageTaken,belowMaximum));
         }
 
         // ---- subjects ----
@@ -545,6 +567,7 @@ namespace hds
     /// </summary>
     public sealed class PlayerEffects : TimedEffects.Subject
     {
+        internal override int Determination => AbilityControlDurations.Determination(client);
         private readonly WorldClient client;
         private readonly Dictionary<UInt16, KeyValuePair<int, double>> buffEnds = new Dictionary<UInt16, KeyValuePair<int, double>>();
 
@@ -694,6 +717,12 @@ namespace hds
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.InfectsTarget, false,
                     effect.Ability, caster, Name, added[added.Count - 1].Value, 0));
             }
+            else if (effect.TargetLine != 0 && added.Count > 0)
+            {
+                client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(effect.TargetLine, false, effect.Ability, caster, Name, 0, 0));
+            }
+            AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
+            if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);
             client.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + Name + ": " + added.Count + " tempmods");
         }
@@ -720,6 +749,7 @@ namespace hds
             {
                 return false;
             }
+            if (mod.Proc == TempMods.Proc.Pulse) return AbilityHostile.Pulse(this, mod);
             if (mod.Proc == TempMods.Proc.Hot)
             {
                 AbilityHandler.HealSelf(client, (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue));
@@ -730,6 +760,7 @@ namespace hds
             UInt16 next = (UInt16)Math.Max(0, health - damage);
             client.playerInstance.Health.setValue(next);
             TimedEffects.HealthChanged(this, health - next, next < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
+            next = PvpCombat.HealthOf(client); // callbacks complete before presentation/death decisions
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next))));
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
             client.messageQueue.addObjectMessage(BuildSelfTickUpdate(next, TempMods.VirusCrashFx, counter), false);
@@ -754,6 +785,8 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             SendOff(ended);
+            if (ended.Exists(m => m.Parent == StealthShieldAbilities.DisableEvasion)) EvasionShield.Refresh(client);
+            if (AbilityHostile.ChangesVitals(ended)) AbilityBuffs.RefreshVitals(client);
             foreach (TimedEffects.Active m in ended)
             {
                 if (m.Kind == TempMods.KindState && TempMods.StateNameId(m.Target) != 0)
@@ -838,6 +871,10 @@ namespace hds
                 Tell(caster, AbilityMessages.AboutAbility(AbilityMessages.InfectsCaster, true, effect.Ability, casterName,
                     name, added[added.Count - 1].Value, 0));
             }
+            else if (effect.CasterLine != 0 && added.Count > 0)
+            {
+                Tell(caster, AbilityMessages.AboutAbility(effect.CasterLine, true, effect.Ability, casterName, name, 0, 0));
+            }
             caster?.FlushQueue();
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + name + ": " +
                                  string.Join(", ", added.ConvertAll(a => a.Proc + " " + a.Target + " " + a.Value + " " + a.Seconds + " s")));
@@ -846,6 +883,7 @@ namespace hds
         internal override bool Ticked(TimedEffects.Active mod, int damage)
         {
             WorldClient caster = mod.Caster;
+            if (mod.Proc == TempMods.Proc.Pulse) return !mob.getIsDead() && AbilityHostile.Pulse(this, mod);
             if (caster == null || mob.getIsDead())
             {
                 return false;

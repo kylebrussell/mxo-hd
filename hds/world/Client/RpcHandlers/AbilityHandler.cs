@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -87,6 +87,8 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
 
+            // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
+            if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
@@ -112,6 +114,18 @@ namespace hds
                 Deny(AbilityID, "You cannot act while stunned or pacified.");
                 return;
             }
+            if (UtilityAbilities.IsDataNodeSearch(AbilityID) && UtilityAbilities.Level(Store.currentClient,AbilityID)<=0)
+            {
+                Deny(AbilityID,"Load this data-node search ability before activating it.");
+                return;
+            }
+
+            // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
+            if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
+            {
+                Store.currentClient.FlushQueue();
+                return;
+            }
 
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
@@ -125,13 +139,69 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
-            bool support = AbilitySupport.Handles(AbilityID);
-            if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
+            if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "Choose a living friendly target within range.");
+                Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Cost(AbilityID))
+            if (AbilityID == AbilityDisguise.Ability && !Stealth.IsOn(Store.currentClient, AbilityID) &&
+                AbilityDisguise.ModelFor(Store.currentClient, itemSlot) == 0)
+            {
+                Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
+                return;
+            }
+            // A toggled aura used while it is on switches off (no cost, cooldown or cast)
+            if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
+            // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
+            // style is switched to (a server choice; docs/COMBAT-STYLES.md)
+            if (!CombatStyles.EnsureStyleFor(Store.currentClient, AbilityID))
+            {
+                // The client shows ID_ABILITY_NOT_IN_CORRECT_STYLE for this 80 ba code
+                Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(AbilityID, CombatStyles.DeniedWrongStyle));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": needs the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style");
+                return;
+            }
+            // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.
+            bool stealth = Stealth.Handles(AbilityID);
+            if (stealth && Stealth.IsOn(Store.currentClient, AbilityID))
+            {
+                Stealth.End(Store.currentClient, "switched off");
+                return;
+            }
+            if (stealth && Stealth.Refusal(Store.currentClient, AbilityID, currentTargetViewId) is string refusal)
+            {
+                Deny(AbilityID, refusal);
+                return;
+            }
+            if (StealthShieldAbilities.Refusal(Store.currentClient,AbilityID,currentTargetViewId) is string freeRefusal)
+            { Output.WriteDebugLog("[STEALTH-FREE]"+AbilityID+" cast refused: "+freeRefusal);Deny(AbilityID,freeRefusal);return; }
+            // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
+            bool pet = CoderPets.Handles(AbilityID);
+            if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                CoderPets.ToggleOff(Store.currentClient);
+                return;
+            }
+            string petRefusal = pet ? CoderPets.Refusal(Store.currentClient, AbilityID, currentTargetViewId) : null;
+            if (petRefusal != null)
+            {
+                Deny(AbilityID, petRefusal);
+                return;
+            }
+            bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
+            if (support && AbilitySupport.RequiresBuffer(AbilityID) &&
+                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilitySupport.BufferFits(t,AbilityID)))
+            {
+                Deny(AbilityID,"The upgrade buffer is full.");
+                return;
+            }
+            if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
+            {
+                Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
+                return;
+            }
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "You do not have enough Inner Strength.");
                 return;
@@ -168,25 +238,64 @@ namespace hds
                 return;
             }
 
+            var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
+            bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
+            bool sneakOpener = Stealth.IsHidden(Store.currentClient);
+            // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
+            if (AbilityID==StealthShieldAbilities.DisableEvasion) StealthShieldAbilities.ActionTaken(Store.currentClient);
+            else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+
+            if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
+            CoderPets.PowerBoostCast powerBoost = AbilityID == CoderPets.PowerBoost ? CoderPets.CapturePowerBoost(client) : null;
             AbilityItem ability = currentAbility;
+            WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
+            int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
             DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
-                if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
+                else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
+                else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
+                if (pet)
+                {
+                    if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
+                    else CoderPets.Land(client, AbilityID, currentTargetViewId);
+                }
+                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
+                if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
             });
 
+            if (stealth)
+            {
+                UInt16 stealthTarget = currentTargetViewId;
+                DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
+                {
+                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
+                });
+                return;
+            }
+
+            if(freeStealth!=null)
+            {
+                ushort target=currentTargetViewId;
+                DelayedActions.AfterFor(client,ability.getCastingTime(),()=>StealthShieldAbilities.Execute(client,ability,target,freeStealth));
+                return;
+            }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
-                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID)))
+            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+                (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
+                 AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
@@ -195,10 +304,10 @@ namespace hds
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
                 if (ability.getCastingTime() > 0 ||
-                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView))
+                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
                     DelayedActions.AfterFor(client, ability.getCastingTime(),
-                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView); });
+                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener); });
                 }
             }
         }
@@ -233,6 +342,7 @@ namespace hds
             UInt16 healed = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.Health.setValue(healed);
             if (healed != current) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), current - healed, healed < max);
+            healed = PvpCombat.HealthOf(client); // synchronous health procs may change the result
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
             client.FlushQueue();
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(healed))));
@@ -323,7 +433,7 @@ namespace hds
             // The cost is paid when the ability is used: the retail cost (AbilityCosts), 20 when unknown. This used
             // to set Inner Strength to 50 after every ability (and Hyper-Speed and the cast animation sent their
             // own fixed values, 50 and 237), then cost a flat 20.
-            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Cost(abilityItem.getAbilityID()));
+            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Effective(Store.currentClient, abilityItem.getAbilityID()));
 
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();

@@ -60,7 +60,9 @@ namespace hds
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CombatPresentation.CheckObservers();
+                StealthShieldAbilities.CheckObservers();
                 foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
+                foreach (WorldClient client in aliveClients) DataMining.Check(client);
                 MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
@@ -691,6 +693,12 @@ namespace hds
                             continue;
                         }
 
+                        // A sneaking or invisible enemy stays out of this player's sight (docs/STEALTH.md)
+                        if (Stealth.HiddenFrom(currentClient, otherClient))
+                        {
+                            continue;
+                        }
+
                         nearbyPlayerEntities.Add(otherClient.playerData.getEntityId());
 
                         ClientView clientView = currentClient.viewMan.GetViewForEntityAndGo(
@@ -712,6 +720,9 @@ namespace hds
                             // client names this player by (combat, duels, trade). This used to store the next counter value.
                             clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
+                            Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                            EvasionShield.AfterSpawn(currentClient,otherClient,clientView.ViewID);
+                            StealthShieldAbilities.AfterSpawn(currentClient,otherClient,clientView.ViewID);
                         }
                     }
                 }

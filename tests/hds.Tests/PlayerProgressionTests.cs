@@ -11,6 +11,28 @@ public class PlayerProgressionTests
 
     private static byte[] Bytes(string hex) => StringUtils.hexStringToBytes(hex.Replace(" ", ""));
 
+    [Theory]
+    [InlineData(7, 1, false)]
+    [InlineData(7, 50, false)]
+    [InlineData(4103, 50, false)]
+    [InlineData(8199, 98, false)]
+    [InlineData(7, 99, true)]
+    [InlineData(2, 1, true)]
+    [InlineData(4095, 50, false)]
+    public void StoredCharacterPrerequisiteGatesLoad(ushort ability, int level, bool expected)
+    {
+        Assert.Equal(expected, AbilityProgression.MeetsCharacterLevel(ability, level));
+    }
+
+    [Fact]
+    public void DetectVulnerabilityIsInaccessibleAtEveryRetailLevel()
+    {
+        Assert.Equal(99, AbilityCatalog.Find(7).Number("CharStatsPrerequisite/ReqCharLevel"));
+        for (int level = 1; level <= PlayerProgression.MaxLevel; level++)
+            Assert.False(AbilityProgression.MeetsCharacterLevel(7, level));
+        Assert.Empty(AbilityCatalog.Find(7).Modifiers);
+    }
+
     // ---- experience and levels ---------------------------------------------------------------------------------
 
     [Theory]

@@ -236,7 +236,7 @@ namespace hds
             PvpFlag.ToWatchers(victim, OtherHealthUpdate(victim, health, fx));
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), before - health,
                 health < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
-            return health == 0;
+            return HealthOf(victim) == 0; // callbacks can synchronously change authoritative health
         }
 
         /// <summary>
@@ -275,9 +275,6 @@ namespace hds
             {
                 return; // the tutorial's immortality
             }
-            PvpFlag.ToWatchers(victim, PlayerViewAttributes.Build(
-                (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(1)),
-                (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(0))));
             if (killer != null)
             {
                 SendKillNotice(victim, killer);
@@ -354,7 +351,7 @@ namespace hds
         /// known (<see cref="AbilityTargets.Retail"/>), its timed effects (<see cref="TimedEffects.ApplyToPlayer"/>) and
         /// the flag abilities. Returns false when the view isn't a player's.
         /// </summary>
-        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId)
+        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             WorldClient target = PlayerInView(caster, targetViewId);
             if (target == null)
@@ -375,11 +372,12 @@ namespace hds
                 Refuse(caster, verdict, handle);
                 return true;
             }
-            LandAbilityOn(caster, ability, target);
+            LandAbilityOn(caster, ability, target, sneakOpener);
+            AbilityTargets.LandAround(caster, ability, target);
             return true;
         }
 
-        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target)
+        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false)
         {
             if (!ControlActions.CanUseAbilities(caster)) return;
             UInt16 abilityId = ability.getAbilityID();
@@ -404,12 +402,14 @@ namespace hds
             {
                 fx = CombatHandler.DefaultAbilityHitFx;
             }
-            damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, damage);
+            damage = CombatSpecials.Damage(abilityId, null) ?? damage;
+            damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);
             PvpFlag.ApplyAbility(target, abilityId);
             TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster);
+            AbilityHostile.LandedOnPlayer(caster, target, abilityId);
             if (damage > 0)
             {
                 // Retail's lines: "Your %1z does %4I damage to %3s." and "%2s's %1z does %4I damage to you."
@@ -422,6 +422,7 @@ namespace hds
             // A non-damaging control still has an activation effect on its victim. Send that effect to the
             // victim and their watchers; the caster's execution animation is a separate view update.
             ServerPackets.SendPlayerAbilityEffect(target, fx);
+            CombatSpecials.Landed(caster, abilityId);
             if (Damage(target, damage))
             {
                 Defeated(target, caster);

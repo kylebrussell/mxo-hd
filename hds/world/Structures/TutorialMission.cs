@@ -843,6 +843,12 @@ namespace hds
             }
         }
 
+        /// <summary>Closing the native container invalidates its selection without granting or discarding loot.</summary>
+        public void CloseContainer()
+        {
+            lock (sync) wardrobeOpen = false;
+        }
+
         /// <summary>Take All (81 1f). Returns true if this was the wardrobe's loot.</summary>
         public bool OnTakeAll()
         {

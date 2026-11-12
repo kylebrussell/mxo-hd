@@ -26,6 +26,19 @@ namespace hds{
             }
 		    switch (header)
 		    {
+                case 0x60: ClientActionsHandler.StoredCompile(Store.currentClient, rpcData); break;
+                case 0x110: ClientActionsHandler.CloseVendor(Store.currentClient, rpcData); break;
+                case 0x11a: ClientActionsHandler.CloseContainer(Store.currentClient, rpcData); break;
+                case 0x2a: ClientActionsHandler.Afk(Store.currentClient, rpcData); break;
+                case 0x14d: ClientActionsHandler.Echo(Store.currentClient, rpcData); break;
+                case 0xc6: ClientActionsHandler.Pill(Store.currentClient, rpcData); break;
+                case 0x117: ClientActionsHandler.CloseCollector(Store.currentClient, rpcData); break;
+                case 0x141: ClientActionsHandler.CloseElevator(Store.currentClient, rpcData); break;
+                case 0x157: case 0x159: case 0x15b:
+                    ClientActionsHandler.Snoop(Store.currentClient, header, rpcData); break;
+                case 0x1b0: case 0x1b7: case 0x1b2: case 0x1b4: case 0x1b9: case 0x1bb: case 0x1bd:
+                    ClientActionsHandler.Support(Store.currentClient, header, rpcData); break;
+
 
 		        case (int) RPCRequestHeader.CLIENT_SPAWN_READY:
                     if (Store.currentClient.playerData.worldChangePending) break;
@@ -65,6 +78,9 @@ namespace hds{
                     break;
                 case (int)RPCRequestHeader.CLIENT_COMPILE_CODE:
                     new CraftingHandler().HandleCompileRequest(rpcData);
+                    break;
+                case 0x5c:
+                    DataMining.Drop(Store.currentClient, rpcData);
                     break;
                 case (int)RPCRequestHeader.CLIENT_INVENTORY_ABILITY:
                     CraftingHandler.ProcessInventoryAbility(Store.currentClient, rpcData);
@@ -196,8 +212,17 @@ namespace hds{
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
 			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
-		        case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
+		        case (int) RPCRequestHeader.CLIENT_ABILITY_APPROVAL:
+                    AbilityResurrection.Reply(Store.currentClient, rpcData);
+                    break;
+                case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);
+		            break;
+		        // 81 7a / 81 7b / 81 7c: simulacrum orders (/ordersimulacra and the Simulacra window)
+		        case 0x17a:
+		        case 0x17b:
+		        case 0x17c:
+		            CoderPets.HandleOrderRpc(Store.currentClient, header, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_CHANGE_CT:
 			        // ToDo: Implement Change of CT

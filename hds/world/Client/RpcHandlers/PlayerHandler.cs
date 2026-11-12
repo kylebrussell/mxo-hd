@@ -87,6 +87,7 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            if (DeathPresentation.IsCorpse(Store.currentClient)) DeathPresentation.Corpse(Store.currentClient);
             AbilityPassives.Refresh(Store.currentClient);
             if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);
             if (Store.currentClient.playerData.pvpFlag)
@@ -384,6 +385,14 @@ namespace hds
                 var owned = ownedAbilities.FirstOrDefault(row => row.getSlot() == entry.Slot &&
                     AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())) == AbilityCatalog.Canonical(entry.Ability));
                 if (owned == null) continue;
+                // Ownership/uploading does not bypass the shipped character prerequisite.
+                if (!unload && !AbilityProgression.MeetsCharacterLevel(entry.Ability,
+                    Store.currentClient.playerInstance.Level.getValue()[0]))
+                {
+                    var reply = new ServerPackets();
+                    reply.sendSystemChatMessage(Store.currentClient, "Your character level is too low to load that ability.", "MODAL");
+                    continue;
+                }
                 List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
                 if (unload)
                 {

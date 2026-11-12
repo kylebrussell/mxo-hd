@@ -53,6 +53,11 @@ namespace hds
             /// <summary>Countdown the client shows; 0 = no time limit (exclusive buffs).</summary>
             public float Seconds;
             public bool Exclusive;
+            public int RefundIS, TermHeal, TermSweepChance;
+            public string HealthChangedProc;
+            public int HealthChangedValue;
+            public int DrainAmount;
+            public double DrainSeconds;
             /// <summary>Buffs of the same non-zero family replace each other.</summary>
             public int Family;
             public Modifier[] Modifiers;
@@ -72,6 +77,16 @@ namespace hds
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
+
+        public static readonly Dictionary<UInt16, Buff> Scripted = new Dictionary<UInt16, Buff>
+        {
+            // tempmods.py EnergizedAttacksInit / PerciseBlowInit set TT_ENERGIZED / TT_PRECISE.
+            // These have no numeric modifier; the exclusive switch and combat consumer carry the toggle.
+            { 9, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
+            { 15, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
+            // Stored Gaussian Blur numeric effect + ImpartBlurInit/Term's kBlur (client62521e2f).
+            { 49, new Buff { Seconds = 600, Family = 1013, DissemblingType = 0x40, Modifiers = new[] { Stat(520, 25) } } },
+        };
 
         /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
         public static readonly Dictionary<UInt16, Buff> Retail = new Dictionary<UInt16, Buff>
@@ -135,6 +150,8 @@ namespace hds
             public UInt16 AbilityId;
             public UInt16[] RecordIds;
             public int Generation;
+            public double Started;
+            public Buff Definition;
         }
 
         public static byte[] BuildModifier(UInt16 kind, UInt16 recordId, UInt32 ability, UInt16 stat, Int32 value,
@@ -253,26 +270,50 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff);
+            return AbilityHealthCallbacks.TryGet(id,50,0,out buff) || AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
+        }
+
+        public static ushort DissemblingBits(WorldClient client)
+        {
+            ushort bits = 0;
+            lock (client.playerData.activeBuffs)
+                foreach (Active active in client.playerData.activeBuffs.Values)
+                    if (ActiveDefinition(active, out Buff buff)) bits |= buff.DissemblingType;
+            return bits;
+        }
+
+        private static void PresentDissembling(WorldClient client)
+        {
+            ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
+            client.playerInstance.DissemblingType.setValue(bits);
+            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((36, PlayerViewAttributes.U16(bits))), false);
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((27, PlayerViewAttributes.U16(bits))));
         }
 
         public static int Total(WorldClient client, UInt16 stat)
         {
             int total = 0;
             lock (client.playerData.activeBuffs)
-                foreach (UInt16 id in client.playerData.activeBuffs.Keys)
-                    if (TryGet(id, out Buff buff))
+                foreach (Active active in client.playerData.activeBuffs.Values)
+                    if (ActiveDefinition(active, out Buff buff))
                         foreach (Modifier m in buff.Modifiers)
                             if (m.Kind == KindStat && m.Stat == stat) total += m.Value;
             return total + TimedEffects.ForPlayer(client).Effects.Total(stat);
+        }
+
+        private static bool ActiveDefinition(Active active, out Buff buff)
+        {
+            buff = active.Definition;
+            return buff != null || TryGet(active.AbilityId, out buff);
         }
 
         private static int VitalValue(Buff buff, UInt16 stat) => buff.Modifiers.Where(m => m.Kind == KindStat && m.Stat == stat).Sum(m => m.Value);
 
         public static int VitalTotal(WorldClient client, UInt16 stat)
         {
+            int timed = TimedEffects.ForPlayer(client).Effects.Total(stat); // hostile max-vital tempmods (Destroy Health / Resolve)
             lock (client.playerData.activeBuffs)
-                return client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
+                return timed + client.playerData.activeBuffs.Values.Sum(active => ActiveDefinition(active, out Buff buff) ? VitalValue(buff, stat) : 0);
         }
 
         public static UInt16 UnbuffedMaximum(WorldClient client, UInt16 stat)
@@ -335,7 +376,7 @@ namespace hds
         /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
-            return !(TryGet(abilityId, out Buff buff) && buff.Toggle);
+            return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
 
         /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
@@ -353,13 +394,27 @@ namespace hds
         /// buff comes off by itself when its time is up. Returns false for abilities that are not buffs.
         /// The caller flushes the queue.
         /// </summary>
-        public static bool Apply(WorldClient client, UInt16 abilityId)
+        public static bool TacticalConflict(WorldClient client, ushort ability) =>
+            ability == 9 && IsActive(client, 15) || ability == 15 && IsActive(client, 9);
+
+        public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
         {
-            if (!TryGet(abilityId, out Buff buff))
+            lock (client.playerData.upgradeSync) return ApplyCore(client,abilityId,caster);
+        }
+
+        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster)
+        {
+            if (TacticalConflict(client, abilityId)) return false;
+            if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
             {
                 return false;
             }
 
+            if (!AbilityBuffBuffer.CanApply(client, abilityId, buff))
+            {
+                Output.WriteDebugLog("[BUFF] " + abilityId + " refused: upgrade buffer full");
+                return false;
+            }
             ClientData data = client.playerData;
             List<UInt16> replaced = new List<UInt16>();
             lock (data.activeBuffs)
@@ -379,6 +434,7 @@ namespace hds
                 Remove(client, other, false, other == abilityId, keepVitals: true);
             }
 
+            RemoveTimedFamilyConflicts(client,abilityId);
             Active active;
             lock (data.activeBuffs)
             {
@@ -387,7 +443,7 @@ namespace hds
                 {
                     ids[i] = NextRecordId(data);
                 }
-                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration };
+                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Started=TimeUtils.GetSimTimeSeconds(), Definition = buff };
                 data.activeBuffs[abilityId] = active;
             }
 
@@ -397,15 +453,17 @@ namespace hds
             }
             if (buff.EvadeShield)
             {
-                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0xff), false);
+                EvasionShield.Applied(client,active.Generation);
             }
-            foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, false))
+            foreach (byte[] record in buff.EvadeShield && !EvasionShield.HasState(client) ? new List<byte[]>() : BuildRecords(abilityId, buff, active.RecordIds, false))
             {
                 client.messageQueue.addRpcMessage(record);
             }
             RefreshVitals(client);
+            if (buff.DissemblingType != 0) PresentDissembling(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
+            if (buff.DrainAmount > 0 && buff.DrainSeconds > 0) ScheduleDrain(client, active);
             if (buff.Seconds > 0)
             {
                 // Comes off on the timed-effects server tick (TimedEffects.RunDue)
@@ -413,6 +471,45 @@ namespace hds
                     TimeUtils.GetSimTimeSeconds() + buff.Seconds);
             }
             return true;
+        }
+
+        internal static void RemoveTimedFamilyConflicts(WorldClient client,ushort id)
+        {
+            double stacking=AbilityCatalog.Find(id)?.Number("Ability/StackingType")??0;
+            if(stacking<=0) return;
+            var subject=TimedEffects.ForPlayer(client);
+            foreach(var other in subject.Effects.Snapshot().Select(a=>a.Parent).Distinct().Where(other=>other!=id &&
+                AbilityCatalog.Find(other)?.Number("Ability/StackingType")==stacking).ToList()) TimedEffects.RemoveParent(subject,other);
+        }
+
+        private static void ScheduleDrain(WorldClient client, Active active)
+        {
+            int world = client.playerData.worldGeneration;
+            DelayedActions.AfterFor(client, active.Definition.DrainSeconds, () =>
+            {
+                if (client.playerData.worldGeneration == world) TickDrain(client,active.AbilityId,active.Generation);
+            });
+        }
+
+        public static void TickDrain(WorldClient client, ushort id, int generation)
+        {
+            Active active;
+            lock(client.playerData.activeBuffs)
+                if(!client.playerData.activeBuffs.TryGetValue(id,out active) || active.Generation != generation) return;
+            Buff buff=active.Definition;
+            if(buff == null || buff.DrainAmount <= 0) return;
+            if(client.playerData.isDead || client.playerData.duelDeath || AbilityHandler.CurrentInnerStrength(client) < buff.DrainAmount)
+            {
+                int shortfall=Math.Max(0,buff.DrainAmount-AbilityHandler.CurrentInnerStrength(client));
+                if(shortfall>0)
+                {
+                    string name=TimedEffects.PlayerName(client);
+                    client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,id,name,name,shortfall));
+                }
+                Remove(client,id,generation:generation); client.FlushQueue(); return;
+            }
+            new ServerPackets().sendISCurrent(client,AbilityHandler.SpendInnerStrength(client,(ushort)buff.DrainAmount));
+            ScheduleDrain(client,active);
         }
 
         /// <summary>
@@ -437,10 +534,23 @@ namespace hds
                 {
                     return false;
                 }
+                buff = active.Definition ?? buff;
                 data.activeBuffs.Remove(abilityId);
             }
+            if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
+            if (buff.DissemblingType != 0) PresentDissembling(client);
             if (!keepVitals) RefreshVitals(client);
+            if (buff.RefundIS > 0)
+            {
+                ushort inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(client),AbilityHandler.CurrentInnerStrength(client)+buff.RefundIS);
+                client.playerInstance.InnerStrengthAvailable.setValue(inner);
+                new ServerPackets().sendISCurrent(client,inner);
+            }
+            // Do not allow a term heal during death cleanup to leave positive HP on a dead character.
+            if(buff.TermHeal>0 && !data.isDead && !data.duelDeath) AbilityHandler.HealSelf(client,(ushort)buff.TermHeal);
+            if(buff.TermSweepChance>0 && !data.isDead && !data.duelDeath)
+                AbilityHostile.Pulse(TimedEffects.ForPlayer(client),new TimedEffects.Active {Parent=abilityId,Value=buff.TermSweepChance},AbilityHealthCallbacks.TermRandom());
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {
@@ -452,11 +562,11 @@ namespace hds
             }
             if (buff.MovementScale > 0 && !keepMovement)
             {
-                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, 0), false);
+                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             }
             if (buff.EvadeShield)
             {
-                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0x00), false);
+                EvasionShield.Removed(client);
             }
             if (buff.Toggle)
             {

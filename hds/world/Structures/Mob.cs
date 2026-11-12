@@ -43,6 +43,7 @@ namespace hds
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
+        public CoderPets.Pet pet; // set on a coder simulacrum (NPC_BASE_SIMULACRA); null on every other NPC
 
         // Per-object counter carried by animation blocks in movement updates (retail increments it per use)
         private byte animationSeq = 0;
@@ -267,6 +268,32 @@ namespace hds
         }
 
         private readonly object deathLock = new object();
+        private readonly object combatSync = new object();
+        private readonly object hitSync = new object();
+        private readonly System.Collections.Generic.HashSet<WorldClient> combatants = new System.Collections.Generic.HashSet<WorldClient>();
+        private double nextRetaliation;
+        public int CombatantCount { get { lock (combatSync) return combatants.Count; } }
+        /// <summary>One NPC action clock shared by every player's session (including movement).
+        /// Pairwise presentation remains separate; adding attackers must not multiply retaliation.</summary>
+        public bool TryRetaliate(double now, double interval)
+        {
+            lock (combatSync)
+            {
+                if (is_dead || healthC == 0 || now < nextRetaliation) return false;
+                nextRetaliation = now + interval;
+                Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
+                return true;
+            }
+        }
+        public void RemoveCombatant(WorldClient player)
+        {
+            lock (combatSync)
+            {
+                combatants.Remove(player);
+                if (combatTarget == player) combatTarget = System.Linq.Enumerable.FirstOrDefault(combatants);
+                if (combatants.Count == 0) { nextRetaliation = 0; if (!is_dead) currentState = (int)statusList.STANDING; }
+            }
+        }
 
         /// <summary>
         /// Marks the NPC dead for whoever got there first; false when it already was. Each player's fight runs on its own
@@ -302,7 +329,7 @@ namespace hds
             healthC = healthM;
             is_dead = false;
             is_lootable = false;
-            combatTarget = null;
+            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
             mobHitCounter = 0;
             hitCounter = 0;
             xPos = xBase;
@@ -409,6 +436,7 @@ namespace hds
 
         public GameObject getCreationData()
         {
+            if (pet != null) return CoderPets.BuildCreation(this);
             var themob = new GameObjectDefinitions().Object599;
             themob.DisableAllAttributes();
 
@@ -580,6 +608,7 @@ namespace hds
 
         public void DoMobUpdate(object e)
         {
+            if (pet != null) return; // simulacra move with CoderPets, not the wander timer
             if (!ControlActions.CanMove(TimedEffects.ForMob(this).Effects))
             {
                 mobUpdateTimer = new Timer(DoMobUpdate, this, 1000, 0);
@@ -626,19 +655,23 @@ namespace hds
 
         public void HitEnemyWithDamage(ushort hitValue, uint hitFxId)
         {
-            ushort before = healthC;
-            // Change to combat so that he isnt moving anymore
-            currentState = (int) statusList.COMBAT;
-            if (healthC - hitValue <= 0)
-                healthC = 0;
-            else
-                healthC -= hitValue;
-            hitCounter++;
-            if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
+            lock (hitSync)
+            {
+                if (is_dead || healthC == 0) return;
+                ushort before = healthC;
+                // Change to combat so that he isnt moving anymore
+                currentState = (int) statusList.COMBAT;
+                if (healthC - hitValue <= 0)
+                    healthC = 0;
+                else
+                    healthC -= hitValue;
+                hitCounter++;
+                if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
 
-            var hitPacket = new PacketContent();
-            hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
-            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(hitPacket, this);
+                var hitPacket = new PacketContent();
+                hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
+                Store.world.SendViewUpdateToClientsWhoHasMobSpawned(hitPacket, this);
+            }
         }
 
         /// <summary>
@@ -688,7 +721,7 @@ namespace hds
         /// </summary>
         public void setCombatTarget(WorldClient target)
         {
-            combatTarget = target;
+            lock (combatSync) { combatants.Add(target); combatTarget = target; }
         }
 
         /// <summary>
@@ -704,7 +737,7 @@ namespace hds
         /// </summary>
         public void clearCombatTarget()
         {
-            combatTarget = null;
+            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
             if (!is_dead)
             {
                 currentState = (int)statusList.STANDING;
@@ -775,11 +808,14 @@ namespace hds
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
                 newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
 
+            newHealth = PvpCombat.HealthOf(victim); // callbacks may heal or cause another health change
+
             // Increment hit counter for animation sequencing
             mobHitCounter++;
 
             // Send health update packet to the player (view ID 2 is self-view)
             SendPlayerDamagePacket(victim, newHealth, fxId, mobHitCounter);
+            PvpFlag.ToWatchers(victim, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(newHealth))));
 
             Output.WriteDebugLog($"[COMBAT] Player health: {playerHealth} -> {newHealth}");
 

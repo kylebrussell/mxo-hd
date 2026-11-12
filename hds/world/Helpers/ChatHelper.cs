@@ -15,6 +15,7 @@ namespace hds
             string[] commands = data.Split(' ');
 
             string command = commands[0].ToLower();
+            if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
 
             try
             {
@@ -152,6 +153,12 @@ namespace hds
                 {
                     // Dev: an object in a state from the client's data, and what the data says it offers (docs/OBJECT-STATES.md)
                     ObjectStates.DevCommand(Store.currentClient, commands);
+                }
+
+                if (command.Equals("?trapobj") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?trapobj <goid> [hidden]: a trapped object at the player's feet, for Disarm Traps (UtilityAbilities)
+                    UtilityAbilities.DevTrapObject(Store.currentClient, commands);
                 }
 
                 if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
@@ -424,6 +431,28 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if (command.Equals("?combatdepth"))
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        CombatDepthDev.Run(Store.currentClient, commands.Skip(1).ToArray()), "BROADCAST");
+
+                if ((command.Equals("?stealthbot") || command.Equals("?stealth")) && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev commands (docs/STEALTH.md): ?stealth <sneak|conceal|evasion|invis|imparted|shadow|off> puts a stealth
+                    // state on the caller; ?stealthbot <state> [pvp] | off puts it on a DuelBot next to them (pvp: an enemy).
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        StealthDev.Run(Store.currentClient, command.Equals("?stealthbot"), commands.Skip(1).ToArray()), "BROADCAST");
+                }
+
+                if (command.Equals("?pet"))
+                {
+                    // Dev command: coder simulacra (docs/CODER-PETS.md). ?pet cast <ability>, ?pet summon <ability>, ?pet dummy,
+                    // ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                            ? CoderPets.DevCommand(Store.currentClient, commands)
+                            : "?pet is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
                 if (command.Equals("?socialbot"))
                 {
                     // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
@@ -453,14 +482,56 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?exileweakness") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: the nearest live NPC (within 20 m, optionally of that name) gets an Exile weakness
+                    // (CombatSpecials: wood, silver, holywater or none), so the Wooden Stake / Silver Bullet / Holy Water
+                    // attacks can be checked on test NPCs. ?exileweakness wood [NPC name]
+                    ushort? weakness = CombatSpecials.WeaknessNamed(commands[1]);
+                    string wanted = commands.Length > 2 ? string.Join(" ", commands.Skip(2)) : null;
+                    Mob nearest = null;
+                    double best = 20;
+                    lock (WorldServer.mobs.SyncRoot)
+                        foreach (Mob mob in WorldServer.mobs)
+                        {
+                            if (mob.getIsDead() || mob.getDistrict() != Store.currentClient.playerData.getDistrictId() ||
+                                wanted != null && !string.Equals(mob.getName(), wanted, StringComparison.OrdinalIgnoreCase)) continue;
+                            double metres = CombatCalculator.CalculateDistanceMetres(Store.currentClient.playerInstance.Position.getValue(),
+                                mob.getXPos(), mob.getYPos(), mob.getZPos());
+                            if (metres < best) { best = metres; nearest = mob; }
+                        }
+                    if (weakness.HasValue && nearest != null) CombatSpecials.SetWeakness(nearest, weakness.Value);
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, !weakness.HasValue ? "Use wood, silver, holywater or none." :
+                        nearest == null ? "No NPC within 20 m." : nearest.getName() + " now has Exile weakness " + weakness.Value + ".", "BROADCAST");
+                }
+
+                if (command.Equals("?health") && commands.Length == 1 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, "Current health: " + PvpCombat.HealthOf(Store.currentClient), "BROADCAST");
+
                 if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
                 {
-                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes
+                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes. It is a
+                    // health change like any other for the health callbacks (Sneak's OnHealthReduceDeactivateAbility, pacify).
+                    UInt16 devBefore = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.Health.getValue(), 1);
+                    UInt16 devMax = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.MaxHealth.getValue(), 1);
                     Store.currentClient.playerInstance.Health.setValue(devHealth);
-                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
-                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
+                    if (devBefore != devHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(Store.currentClient), devBefore - devHealth, devHealth < devMax);
+                    UInt16 devAfter=PvpCombat.HealthOf(Store.currentClient); // a proc may have changed health during the callback
+                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devAfter), false);
+                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devAfter))));
                     Store.currentClient.FlushQueue();
+                }
+
+                if (command.Equals("?dismissbuff") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    ushort.TryParse(commands[1], out ushort dismissAbility))
+                {
+                    // Exercise the same parser, category/prohibition gates and removal path as native80bb.
+                    AbilityCancellation.Process(Store.currentClient, BitConverter.GetBytes(dismissAbility));
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        AbilityCancellation.CanDismiss(dismissAbility) ? "Buff dismissal requested: " + dismissAbility :
+                        "Buff dismissal refused: " + dismissAbility, "BROADCAST");
                 }
 
                 if (command.Equals("?die"))
@@ -469,10 +540,19 @@ namespace hds
                     CombatHandler.HandlePlayerDeath(Store.currentClient);
                 }
 
+                if (command.Equals("?codeupload") && commands.Length == 1 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Same upload as the hardline, available to native QA without a right-click menu.
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
+                }
+
                 if (command.Equals("?compile") && commands.Length == 2)
                 {
-                    // Dev command: compile an item from its cookbook recipe with what is in the inventory.
-                    string result = new CraftingHandler().Compile(UInt32.Parse(commands[1]));
+                    // Dev-only deterministic compile path, including code storage; native 81 2e keeps its checks.
+                    string result = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                        ? new CraftingHandler().Compile(UInt32.Parse(commands[1]))
+                        : "?compile is a dev command (start the server with MXO_DEV_COMMANDS=1).";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, result, "BROADCAST");
                 }
 
@@ -495,11 +575,17 @@ namespace hds
                     packets.sendAppeareanceUpdate(Store.currentClient, rsiData);
                 }
 
-                if (command.StartsWith("?spawndatanode"))
+                if (command.Equals("?utilitylocator") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    DataMining.DevLocator(Store.currentClient,commands);
+                if (command.Equals("?utilitystatus") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    DataMining.DevStatus(Store.currentClient);
+                if (command.Equals("?utilitymap") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    UtilityAbilities.DevMissionMap(Store.currentClient,commands);
+
+                if ((command.Equals("?utilityobject") || command.Equals("?spawndatanode")) &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
-                    ServerPackets pak = new ServerPackets();
-                    pak.sendSystemChatMessage(Store.currentClient, "Spawn Datanode!", "BROADCAST");
-                    pak.spawnDataNodeView(Store.currentClient);
+                    DataMining.Dev(Store.currentClient, commands);
                 }
 
                 if (command.StartsWith("?message"))

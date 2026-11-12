@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using hds;
 
 namespace HeadlessClient;
@@ -17,20 +17,76 @@ public static partial class Scenarios
         ["MXO_AGGRO"] = "0",
     };
 
+    private static readonly IReadOnlyDictionary<string,string> HealthCallbackNpcs = StillNpcs.Concat(new Dictionary<string,string> {
+        ["MXO_DEV_COMMANDS"]="1",["MXO_CALLBACK_QA_ROLL15"]="0",["MXO_CALLBACK_QA_ROLL100"]="0"
+    }).ToDictionary(p=>p.Key,p=>p.Value);
+
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
+        new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
+        new Scenario("stealth-shields-lifecycle", StealthShieldLifecycle, StillNpcs),
+        new Scenario("stealth-shields-terminal-cancel", StealthBullDogDeathCancels, StillNpcs),
+        new Scenario("stealth-shields-suppression", StealthShieldSuppression, StillNpcs),
+        new Scenario("stealth-shields-bulldog-pvp", StealthBullDogPvpAndViews, StillNpcs),
+        new Scenario("stealth-shields-bulldog-npc", StealthBullDogNpc, StillNpcs),
+        new Scenario("ability-health-presentation-heal-regen", HealthPresentationHealRegen, HealthCallbackNpcs),
+        new Scenario("ability-health-presentation-damage", HealthPresentationDamage, HealthCallbackNpcs),
+        new Scenario("ignored-actions-window-close", IgnoredActionsWindowClose, StillNpcs),
+        new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
+        new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
+        new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
+        new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
+        new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
+        new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),
+        new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
+        new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
+        new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
+        new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
+        new Scenario("combat-depth-mitigation", CombatDepthMitigation, StillNpcs),
+        new Scenario("combat-depth-sneak-opener", CombatDepthSneakOpener, StillNpcs),
+        new Scenario("ability-drain-firewalls", AbilityDrainFirewalls, StillNpcs),
+        new Scenario("ability-weapon-proficiencies", AbilityWeaponProficiencies, StillNpcs),
+        new Scenario("ability-disguise-tools", AbilityDisguiseTools, StillNpcs),
+        new Scenario("ability-buff-buffer-death", AbilityBuffBufferDeath, StillNpcs),
+        new Scenario("ability-beneficial-groups", AbilityBeneficialGroups, StillNpcs),
+        new Scenario("ability-tactical-blur", AbilityTacticalBlur, StillNpcs),
+        new Scenario("ability-scaled-buffs", AbilityScaledBuffs, StillNpcs),
+        new Scenario("ability-scaled-buff-vitals", AbilityScaledBuffVitals, StillNpcs),
+        new Scenario("ability-resurrection-resources", AbilityResurrectionResources, StillNpcs),
+        new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
         new Scenario("ability-control-duration-npc", AbilityControlDurationNpc, StillNpcs),
+        new Scenario("hostile-fields-pvp", HostileFieldsPvp, StillNpcs),
+        new Scenario("hostile-fields-npc", HostileFieldsNpc, StillNpcs),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, StillNpcs),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
+        new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
+        new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),
+        new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
+        new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
+        new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
+        new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
+        new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
+        new Scenario("data-mining-mission-map", DataMiningMissionMap, StillNpcs, "locked-safe.xml"),
+        new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
+        new Scenario("utility-recall-team", RecallTeam, StillNpcs),
+        new Scenario("utility-security-and-traps", SecurityAndTraps, StillNpcs),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
+        new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,
+            new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
+        new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
+        new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
+        new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
+        new Scenario("compile-storage-depletion", CompileStorageDepletion, StillNpcs),
         new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
@@ -124,6 +180,9 @@ public static partial class Scenarios
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
+        new Scenario("stealth-sneak-observer", StealthSneakObserver, StillNpcs),
+        new Scenario("stealth-breaks", StealthBreaks, StillNpcs),
+        new Scenario("stealth-bot-hostile-observer", StealthBotHostileObserver, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)
@@ -608,6 +667,15 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         {
             player.SendRpc("81 16 " + payload);
         }
+        // A native close invalidates the owned selection; a replay cannot spend its tokens.
+        player.SendRpc("81 17 00 00 00 00 00");
+        player.SendRpc("81 16 00 00 00");
+        player.SendRpc("81 48"); // dispatch barrier; no active collector sends no exchange reply
+        await player.WaitForRpcAsync("81 49");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"), "Closed collector replay preserves tokens");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+
         player.SendChat("?tp -145195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),

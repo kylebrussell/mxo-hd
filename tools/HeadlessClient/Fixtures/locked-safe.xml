@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mission id="399905" title="Locked Safe Fixture" description="Pick a mission safe's lock with Open Locks."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <phase site="Normal" leave="0">
+    <briefing>Pick the safe's lock and take the disk.</briefing>
+    <object id="1" kind="Safe" locked="1" />
+    <objective goal="1" text="Take the disk from the locked safe" type="Search" object="1" item="6786" />
+  </phase>
+</mission>

@@ -100,6 +100,7 @@ namespace hds
 
         /// <summary>The ability the current move carries and the view it targets; see CombatHandler.QueueRoundAbility.</summary>
         public AbilityItem QueuedAbility { get; set; }
+        public bool QueuedSneakOpener { get; set; }
         public UInt16 QueuedAbilityTarget { get; set; }
 
         /// <summary>First record id of the CombatEffectAbility records, 0 if they weren't sent.</summary>
@@ -211,7 +212,7 @@ namespace hds
             combatTimer = null;
 
             // Reset mob state if applicable
-            if (DefenderMob != null && !DefenderMob.getIsDead())
+            if (DefenderMob != null && !DefenderMob.getIsDead() && DefenderMob.CombatantCount <= 1)
             {
                 DefenderMob.currentState = (int)Mob.statusList.STANDING;
             }

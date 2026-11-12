@@ -71,10 +71,10 @@ namespace hds
         /// with the NPC (as when the client asks for close combat) if there isn't one, so the NPC fights back and
         /// its death, experience and loot go the usual way. Returns false when the view isn't a live NPC.
         /// </summary>
-        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             Mob primary = FindMob(client, targetViewId, out _);
-            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId);
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener);
             if (primary.getIsDead() || primary.isFriendly) return false;
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
@@ -93,9 +93,26 @@ namespace hds
                             mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
                     }
             }
-            foreach (var target in targets) LandOne(client, ability, target.View);
+            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener);
+            // Area hostile abilities also reach players around the target that PvP rules allow
+            if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
+                foreach (WorldClient player in AbilityHostile.PlayersInArea(client, primary.getXPos(), primary.getYPos(), primary.getZPos(), radius))
+                    PvpCombat.LandAbilityOn(client, ability, player);
             if (!primary.getIsDead() && primary.getHealthC() < primary.getHealthM()) MobAggro.Retaliate(client, primary);
             return true;
+        }
+
+        /// <summary>An area ability that landed on a player also reaches the NPCs and PvP-legal players around them.</summary>
+        public static void LandAround(WorldClient client, AbilityItem ability, WorldClient primary)
+        {
+            var definition = AbilityCatalog.Find(ability.getAbilityID());
+            double radius = definition?.Number("Ability/RadiusOfEffect") ?? 0;
+            if (definition?.Number("Ability/CastDirectObjects") != 3 || radius <= 0) return;
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(primary.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            foreach (WorldClient player in AbilityHostile.PlayersInArea(client, x, y, z, radius, primary))
+                PvpCombat.LandAbilityOn(client, ability, player);
+            foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius)) LandOne(client, ability, view);
         }
 
         public static bool WithinArea(double x, double y, double z, double tx, double ty, double tz, double radiusMetres)
@@ -104,7 +121,7 @@ namespace hds
             return Math.Abs(dy) < 150 && dx * dx + dy * dy + dz * dz <= radius * radius;
         }
 
-        private static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        private static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             UInt16 abilityId = ability.getAbilityID();
             Effect effect;
@@ -130,12 +147,14 @@ namespace hds
                 }
             }
 
-            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, damage);
             Mob mob = FindMob(client, targetViewId, out ClientView view);
+            // Combat-style specials and Exile weapons have their own damage, never the generic fallback (CombatSpecials)
+            damage = CombatSpecials.Damage(abilityId, mob) ?? damage;
+            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             if (mob == null)
             {
                 // Another player: PvpCombat decides whether they can be hit
-                return PvpCombat.LandAbility(client, ability, targetViewId);
+                return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener);
             }
             if (mob.getIsDead())
             {
@@ -146,7 +165,9 @@ namespace hds
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
+            AbilityHostile.LandedOnMob(client, mob, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
+            CombatSpecials.Landed(client, abilityId);
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }

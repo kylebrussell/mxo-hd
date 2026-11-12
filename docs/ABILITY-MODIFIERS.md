@@ -27,7 +27,7 @@ The native health-modifier path `625ec512..625ec58a` looks up a damage-type infl
 - Passive accuracy, defence and resistance bonuses feed the existing NPC/PvP combat bases. Regeneration bonuses change health/IS ticks. Crafting uses the shared totals rather than its previous separate guessed formula.
 - Melee/ballistic/viral influence changes ability hits in NPC and PvP paths and DOT totals once at application. Existing captured/generic damage bases remain approximations. Healing influence belongs to the caster, independently of the recipient's maximum health.
 
-The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including stealth/detection consumers), Determination mitigation, passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
+The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including stealth/detection consumers), complete Determination bases, passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
 
 ## Control-duration follow-up
 
@@ -44,7 +44,7 @@ The native evaluator and packet layouts are direct binary evidence. Applying new
 
 `AbilityControlDurations` applies these links at cast application, for player and NPC targets. It does not invent an Enrage link where the shipped template has none. The state's expiry and record carry the same fractional duration. Explicit immunity timers remain separate, and root/pacify health-change rules are preserved. A fully reduced timed state is refused rather than accidentally becoming an indefinite state. Already applied states retain their original application duration when the caster changes loadout.
 
-The script's `GetAbilityMitigationDuration` and complete target Determination values are a separate unresolved step. The duration bonus implementation does not claim that reduction is present.
+Target Determination mitigation now executes for eligible landed UDB0 debuffs; see [combat-depth evidence and limits](COMBAT-DEPTH.md). Complete attribute/template target bases remain unknown. Immunity retains its independent unmitigated timer.
 
 ## Native checklist (pending)
 
@@ -64,3 +64,7 @@ Headless coverage exercises owned loadouts, forged slot/level claims, upgrades, 
 ## Combined validation for PR102
 
 Runtime `48fb975`, integrated parent `744469f`, test fixture correction `adec3c2`: **3,567/3,567 Debug and Release unit tests pass; 86/86 fresh-server scenarios pass in614.9s**, six servers at peak. The group-interlock endurance fixture now gives its20,000 currentHP a matching maximum, so legitimate vital clamping does not shorten the endurance test. NativeQa Release builds. CI `43133174615` passes; the workflow also covers stacked `codex/**` PR bases. Native checks remain pending.
+
+## Partial native confirmation after merge
+
+[Claude's independent client check of88e95b4](https://github.com/kylebrussell/mxo-hd/pull/103#issuecomment-6812841733) confirmed maxHP575, Restore Health54 healing400→442 with the loaded15% influence, stun/immunity messages and icons, cast denial during stun and successful casting after expiry, and the player's stun FX. PR102 merged as175d18f and PR103 ase9e4849. Exact8.05/27.5-second measurements, Code Freeze damage break, HOT ticks and group heal were not checked natively; those checklist items remain open. These observations came from Claude; Codex did not operate that native session.

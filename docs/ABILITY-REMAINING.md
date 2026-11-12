@@ -1,0 +1,83 @@
+# Remaining beneficial abilities: P4 evidence and limits
+
+This extends PR105's original thirteen character-level numeric buffs. It integrates master through combat styles111/storage112 and the corrected nonzero resurrection offers from104. It does not establish complete retail parity. The generated audit inventories executable paths and distinguishes cosmetic values from consumed values; its counts are not a parity score.
+
+## Added execution
+
+| IDs | Implemented effect and evidence | Remaining limits |
+|---|---|---|
+| 489 | Improved Hacking: UBF0 group selector9, radius6, 300s, caster-level function3 viral damage/healing. Team members and caster only; numeric snapshots retained. | Full native stacking priority is not reconstructed. |
+| 42,485 / 695,696 | Actual Combat Aura parent toggles schedule their effect ability on init/every5s, drain12/15 IS per5s, stop on shortage/death/dispel; recipient effects last5s and use the effect radius3/6. `tempmods.ApplyAuraEffect` and stored callbacks. | Stopping the parent allows its last recipient pulse to expire naturally. No Deflect/health-trigger aura is claimed. |
+| 9,15 | Energized Attacks/Precise Blow: `EnergizedAttacksInit`/`PerciseBlowInit` select the existing energized/precise combat multipliers in NPC/PvP melee/free fire. The two script tests refuse activation while the other is active. | Existing direct tactic-type RPC behavior remains; periodic cosmetic FX are not reconstructed. |
+| 13,16,442 | Hyper-Strength learned-level melee damage; Punishing Blows vulnerability-damage stat15; Steady Aim ballistic accuracy20. Exact stored drains25/5s,1/1s,30/5s, equality pays and the next short tick deactivates. Generation/world guards stop stale timers. AddRecastTimer15 begins on Steady Aim termination. | Punishing Blows' vulnerability stat212 still has no exploit consumer; it remains cosmetic in the audit. Hyper-Strength's periodic FX remain absent. Weapon/category and nonspecial stance gates remain incomplete. |
+| 49 | Gaussian Blur: stored Combat Evasion25/600s plus `ImpartBlurInit/Term`'s kBlur0x40. Own/observer/late-spawn views receive the bit; removing blur preserves other active movement/stealth/armor bits. | Combat Evasion520 has no engagement/withdrawal consumer. This remains cosmetic, not gameplay evasion parity. |
+| 1101,1102 | Hyper-Sense thrown defence and Determination575 use learned-level function2 snapshots with scales.96/3. Determination's template has no toggle flag, so it refreshes after its30s reuse rather than inventing a toggle. | Thrown defence has no hit-contest consumer. Determination's mitigation consumer belongs to P5; it is not claimed before that code is merged. No base575 formula is guessed. |
+| 123 | Find Weakness feeds thrown DamageType7 into common NPC/PvP/DOT damage influence1034 (including its linked bonus1028). | Generic/captured base damage and missing thrown hit contests remain approximate. |
+| 129,147,158 | Handguns/Rifles/SMG now use111's active-style learned-level records/totals; switching removes old numbers. Learned20 gives accuracy25 and ballistic damage6, independent of character50. | Weapon/category gates and weapon-specific interlock presentation remain incomplete. No invented gun style letter. |
+| 63,436 | Network Firewall/Viral Shielding retain their numeric caster snapshot and explicitly execute `RefundIS` on term:10/25 IS to the recipient, capped at their max. | Viral defence183 is still an unconsumed stat. All termination paths call the same term once; replacement/dismissal/dispel/death are not silently treated as expiry-only. |
+| 68,319 | Personal Firewall1/2: stored resistances, `PersonalFirewallInit/Term` armor0x100, and `GenericConstHealthRegenEvent` heals75/250 on term. Other active presentation bits survive. | Viral/thrown resistance is unconsumed. The server guards term healing during death cleanup, avoiding positive HP on a dead character; this ordering guard is ours. |
+| 395,481,488 | Buffer Overflow1/2 and Cancel Upgrade2 retain their hostile records and now reserve `min(Value,max-current)` buffer units. Per-parent BufferSize is counted once across active buffs, stealth, effects and auras. Reservations refill dynamically on queries and disappear on expiry/sweep/death; existing family replacements retain their held units. | Native getBuffBufferMax baseline is not recovered. **OURS: maximum=100+4*characterLevel+stat162 bonuses.** The catalog's BuffBonusCapScale4 is a bonus cap, not proof of that baseline. Admission is serialized for buff applications/stealth begins; accounting does not mutate callbacks or recursively remove effects. No native buffer-capacity UI update is claimed. |
+| 1114 | Disguise uses an owned carried tool's shipped Tool/Disguise model;73 tools exported reproducibly. It switches Description/UseRSIDescription, suppresses title, adds kDisguised/ST_STEALTHED and lasts31+learnedLevel/2+DisguiseDuration639. It stops active auras and restores cloned appearance/title snapshots on term/replacement/death/action. | Explicit indirect slot is honored; otherwise first carried matching tool is our deterministic selection. Enemy watching uses existing stealth evidence/rules. Holiday/zombie/Smith model systems are absent; their special restoration branches are not claimed. |
+| 438 | Renew RSI joins the shared corpse-friendly approval executor: CastValidTarget9, approval60s, full HP/IS, callback `health.RenewRSI_DirectObject`. Existing offer/reply/world/life guards remain. | Native approval and Action_Resurrect remain Claude-only QA; no native pass is claimed. |
+| 868 | Purity executes its one init `NegativeConditionSweepPulse`,25% per cleansable debuff parent. It creates no invented persistent sweep timer. | Probabilistic removal needs multiple native attempts; unit coverage fixes the roll at24. |
+
+## Source provenance and reproducibility
+
+Numeric fields/callback names come from `data/ability_catalog.json` (shipped7.6005 GOB). Disguise models come from the same raw templates, GOB SHA256 `3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103`; regenerate with:
+
+```powershell
+python -X utf8 research/abilities/extract_disguises.py --client C:/Users/russe/Developer/mxo-client/MxO
+```
+
+`PlayerCharacter` stores CharMvt/UseRSIDescription default1. Inactive server Attribute buffers contain zero, so disguise's restoration uses the actual template default rather than treating that uninitialized zero as a live model selection. Transport indices are Object12 self0/37/36/1 and other0/28/27/1 for UseRSIDescription/Description/DissemblingType/TitleAbility. Client.dll's registered kBlur/kArmor values are0x40/0x100 (`62521e2f`, documented in STEALTH.md). Learned/character evaluation retains native float/truncation behavior from62517ff0/626a92d8. Damage-type influence multiplication is the existing625ec512..58a path.
+
+Regenerate the audit, including all existing utility/stealth/pet/hostile/resurrection/style modules, with `dotnet run --project tools/AbilityAudit` then `python -X utf8 research/abilities/build_audit.py`. Do not edit the generated CSV/Markdown. Policy choices and limits above are separate authored evidence.
+
+## Follow-up callback execution
+
+The isolated health-callback continuation implements196,378/380 with693,506,861/941/943 and their internal effect paths. See [ABILITY-HEALTH-CALLBACKS.md](ABILITY-HEALTH-CALLBACKS.md) for native random mapping, explicit event policies, current source gaps and the focused fixture. The residual table below records PR105's original scope; the generated audit reflects the additional continuation code.872/1149 remain uncompleted for the reasons in the follow-up evidence.
+
+## Historical PR105 missing-row review after111
+
+The following are deliberate remaining gaps, not completed by a numeric record or an audit label. IDs handled by other active packages are called out explicitly.
+
+| IDs | Finding / why still missing |
+|---|---|
+| 7 Detect Vulnerability | Shipped character prerequisite 99 blocks loading at retail levels 1–50. Ownership/purchase does not prove loadability; server now enforces this stored load gate. No vulnerability effect is claimed. [Primary evidence](DETECT-VULNERABILITY.md). |
+| 25 Power Boost1 | Pet-target damage/ForceCombat; P6 owns the pet executor. |
+| 196 Ignore Pain | `OnHealthReduceHealProc` uses a random10..20 heal callback; deterministic numeric fallback must not discard it. Random-value distribution/health callback lifecycle remains absent. |
+| 378,380,693 Deflect Virus/Bullets | Parent aura effects include callback-only and sweep components beyond simple numeric buffs. The numeric692 child alone is not parent380 parity. Full parent scheduling/cleansing/termination remains missing. |
+| 506 Line Up The Shot | Subject/test scripts, health-change deactivation and effect1137/aura semantics must be executed together; the12/20s numeric components alone are insufficient. |
+| 538,539,540,541 | Data-node prerequisite/locate/luggable flags and records: P3 owns these. |
+| 861 Balance;941 Reactive Code;943 Code Conversion | Health-change aura reapplication, and for943 a30% roll to parent+1. A correct executor needs the damage-event source/target semantics and child effect lifecycle, not merely a toggle/drain. |
+| 872 Zen Master | Stored instant Current IS+5 is visible, but automatic discipline/activation timing is not established; exposing a generic cast with unknown/default cost would be misleading. |
+| 969 Compile Items;970 Write Code | Their scripts only select stand/idle presentation and restore idle on deactivation. Actual crafting is81 2e/81 31; ability-use packets must not compile an item. A native activation/UI-state path remains unverified; storage112 does not establish these two ability toggles. |
+| 1025 EMCP Blast | `EMPBlast_DirectObject` does0 normally/5000 for NPCEMPWeakness; NPC weakness ownership/templates are unavailable. Do not infer it from the ability name or make it unconditional damage. |
+| 1110 Bull Dog;1125 Disable Evasion | P5 follow-up implements terminal throw, builtin motion, target state suppression and caster restealth. Explicitly partial: missing1110 interval/retail damage and217 shield-health/520 contest. See [STEALTH-SHIELDS.md](STEALTH-SHIELDS.md). |
+| 1124 Disrupt Connection | Legacy old template requires a tool but has no decoded stored modifier or surviving specific script. No supported effect is guessed. |
+| 1149 Desperation | `DesperationFunction` computes health-dependent Initiative with InitiativeBonus. No initiative combat consumer is reconstructed; a countdown/number alone would remain cosmetic. |
+
+Legacy stake/silver/holy-water abilities207/208/547/1022/1023/1024 are already handled by111's CombatSpecials, including its explicitly chosen NPC weakness-by-name policy; this package preserves that work. Original5/8 thrown/viral resistance remain cosmetic. Firearms Skill124 and all original numeric snapshots remain intact.
+
+## Native fixture and one-pass checklist (Claude only)
+
+No agent native launch/input, broker edit, client lock or main-DB operation was performed. Build the fixture; never execute it while another native session owns its lock. Use a fresh qaRoot for each small loadout. The fixture independently owns/relinquishes its normal lock and reset lifecycle; do not pre-create or delete someone else's lock. Only copied CSR_Tester110 is exposed to the native account; never use TheNeo.
+
+```powershell
+$root='C:/Users/russe/Developer/mxo-wt/codex-ability-scaled-buffs'
+$qa=Join-Path $env:TEMP ('mxo-p4-native-'+[guid]::NewGuid().ToString('N'))
+$head='<exact READY FOR NATIVE commit>'
+dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Debug
+# Run only after build success; save qaRoot for the helper requests.
+dotnet "$root/tools/NativeQa/bin/Debug/net8.0/NativeQa.dll" $root $qa $head remaining '2,17,9,15,13,16,442,49,1114'
+```
+
+`remaining` gives the disposable actors2000 IS/max IS and adds tool615 at bag slot1 to copied native/helper inventories and makes QAFriend character20, preserving native/QAOther50. The optional fifth comma-separated list keeps Actions scrolling manageable. Native actor's learned loadout levels are50. Wait for Ready and `Im'running :D`, then launch/login separately as in the established NativeQa procedure. Helpers start after the `$qa/helpers` marker; the existing JSON requests support actor/action/ability/target, invite/accept/move/chat. `?dismissbuff <decimal id>` is supplied by P2 after that PR is merged and requires MXO_DEV_COMMANDS=1; acknowledgement alone is not an off-record/effect pass. For this check, remaining mode enables the gate. Do not claim native dismissal until P2 is present or use an independently verified native gesture.
+
+1. **Tactical/blur/disguise:** double-click Precise Blow15 in Actions; observe its switch. Energized9 must be refused while15 is on. Turn15 off, enable9, observe a fight's energized behavior. Use Hyper-Strength13 and Steady Aim442; observe IS drains at5s intervals and deactivation on shortage (unit/fresh checks cover exact amounts). Punishing16 drains1/s but vulnerability damage is not claimed. With49 only, verify blur appearance on native and helper observer, then `?dismissbuff 49` and confirm appearance clears. Use1114 with tool615: office-worker model, suppressed title, visible to helper; use1114 again to restore the original RSI/title. Repeat after49 to ensure coexistence bits survive. Die/reconstruct once while disguised and confirm original appearance returns.
+2. Close the client and stop the fixture normally (`New-Item -ItemType File -Path "$qa/stop"`); inspect stopped.json reset/full vitals/flag0/mission986 and lock release. Restart fresh with small loadout `'2,17,42,485,489,63,436,68,319,327'`. Join QAFriend to the native actor's team using the helper invite/accept requests and the native team dialog. Place friend within3m and QAOther as a nearby nonmember. Use42/485; verify repeat5s recipient effects, IS drain and no effect on the nonmember, then parent toggle off and recipient expiry within5s. Use489 through QAFriend on the team: recipient viral/healing values must use character20 (+10), not native50 (+25).
+3. **Refund/armor:** cast63 then dismiss it; recipient regains10 IS capped at max. Cast436 then dismiss;25 IS refund. Cast68/319 on a damaged live recipient, then dismiss; verify armor clears and75/250 HP heals capped at max. Replacement/dispel should terminate once; death cleanup must not heal the corpse. Keep49 active in a separate focused loadout if checking armor/blur coexistence.
+4. Restart fresh `'2,17,417,489,13,442,15,481,438,868'`. Flag the native actor for PvP and have a legal enemy helper apply481 or488 while the native actor carries upgrades. First activate417(buffer47),489(47),13(35),442(36): total165 in distinct families, with enough fixture IS to sustain drains. A legal enemy helper casts481 on the native actor: it reserves the remaining135 of chosen character50 maximum300. Attempt15(buffer8): it must be refused without paying its cast cost. Use868 once: it has a25% cleanse chance and must not create a persistent sweep timer. If it cleanses481,15 must then succeed; otherwise wait60s for481 expiry and retry15. No existing upgrade was deleted. Death also clears reservations. This baseline is OURS, so compare behavior without reporting it as a retail recovered capacity. Unit/fresh death-resurrection coverage exercises the exact180-capacity case at character20.
+5. **Renew RSI438:** native actor enters `?die`; a same-organization friendly helper casts438. Verify the named approval dialog, click Yes once, full HP/IS and movement restored. Reject one offer and leave another unanswered60s; neither revives. This extends104; the native dialog/resources remain unverified until Claude runs it. Do not inject an approval for the native actor.
+6. Restart fresh `'2,17,129,147,158,124,123,1101,1102'`: use each gun proficiency through Actions80 b9. Verify only the selected style contributes, old records/toggle clear, and native50/learned50 values follow the catalog. Firearms124 must still affect ballistic damage; Find Weakness123 must change thrown damage, not ballistic/viral. Hyper-Sense remains a numeric/visual check; Determination575's mitigation requires P5 to be merged. Native damage comparisons need identical target/build and repeated samples; do not infer full formula parity from one hit.
+7. Close/stop normally, verify stopped.json and lock release, and record the full commit, exact loadout, observed native results and any unavailable UI interaction in PR105/handoff before merge. Claude alone merges.

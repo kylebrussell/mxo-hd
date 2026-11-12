@@ -79,9 +79,13 @@ namespace hds
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
             Refresh(client, !newWorld);
+            EvasionShield.LoadoutChanged(client);
         }
 
-        public static void Refresh(WorldClient client, bool present = true)
+        /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker
+        /// Style replaced Self Defense (actions_combat_marketplace_abilitychangecoder 10:36:05): the old style's records
+        /// off, its 80 bd 05 toggle off, the new style's records on, its toggle on.</summary>
+        public static void Refresh(WorldClient client, bool present = true, (ushort From, ushort To)? styleSwitch = null)
         {
             State state = client.playerData.passives;
             bool send = present && DeathPenalty.CanPresent(client.playerData);
@@ -93,8 +97,13 @@ namespace hds
                 var current = new Dictionary<string, Active>();
                 var totals = new Dictionary<ushort, int>();
                 int characterLevel = client.playerInstance.Level.getValue()[0];
-                foreach (var row in state.Loaded.OrderBy(r => r.Key))
-                foreach (var modifier in Modifiers(row.Key))
+                // The active combat style's while-enabled modifiers join the loaded passives (CombatStyles).
+                ushort style = state.Loaded.ContainsKey(client.playerData.combatStyle) ? client.playerData.combatStyle :
+                    state.Loaded.ContainsKey(CombatStyles.SelfDefense) ? CombatStyles.SelfDefense : (ushort)0;
+                var sources = state.Loaded.OrderBy(r => r.Key).SelectMany(r => Modifiers(r.Key).Select(m => (Row: r, Modifier: m)));
+                if (style != 0)
+                    sources = sources.Concat(CombatStyles.Modifiers(style).Select(m => (Row: new KeyValuePair<ushort, ushort>(style, state.Loaded[style]), Modifier: m)));
+                foreach (var (row, modifier) in sources)
                 {
                     if (!AbilityValues.TryValue(modifier, DeathPenalty.EffectiveLevel(client, row.Value), characterLevel, out int value)) continue;
                     string key = row.Key + ":" + modifier.Component;
@@ -113,8 +122,16 @@ namespace hds
                 }
                 if (send)
                 {
-                    foreach (var old in state.Records)
-                        if (!current.ContainsKey(old.Key)) messages.Add(Record(old.Value, true));
+                    var removed = state.Records.Where(old => !current.ContainsKey(old.Key)).Select(old => old.Value).ToList();
+                    if (styleSwitch.HasValue)
+                    {
+                        var first = removed.Where(r => r.Ability == styleSwitch.Value.From).Select(r => Record(r, true)).ToList();
+                        first.Add(AbilityBuffs.BuildExclusive(styleSwitch.Value.From, false));
+                        messages.InsertRange(0, first);
+                        removed.RemoveAll(r => r.Ability == styleSwitch.Value.From);
+                    }
+                    foreach (var old in removed) messages.Add(Record(old, true));
+                    if (styleSwitch.HasValue) messages.Add(AbilityBuffs.BuildExclusive(styleSwitch.Value.To, true));
                     state.Records.Clear();
                     foreach (var active in current) state.Records[active.Key] = active.Value;
                 }
@@ -124,7 +141,8 @@ namespace hds
             AbilityBuffs.RefreshVitals(client, send);
         }
 
-        private static byte[] Record(Active active, bool off) => AbilityBuffs.BuildModifier(Kind, active.Record,
-            active.Ability, active.Stat, active.Value, off, 0);
+        // Style records are kind 0x15 in the same capture; loaded passives keep 0x45
+        private static byte[] Record(Active active, bool off) => AbilityBuffs.BuildModifier(
+            CombatStyles.IsStyle(active.Ability) ? AbilityBuffs.KindStat : Kind, active.Record, active.Ability, active.Stat, active.Value, off, 0);
     }
 }

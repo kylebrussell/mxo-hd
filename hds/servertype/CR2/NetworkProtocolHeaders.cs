@@ -38,6 +38,7 @@ namespace hds
         CLIENT_MISSION_EVENT = 0x191,   // 81 91 <event u32>: an FX token coming back
         CLIENT_LEAVE_GROUP = 0x71,
         CLIENT_ABILITY_HANDLER = 0xB9,
+        CLIENT_ABILITY_APPROVAL = 0x188, // 81 88: echo application request with timeout/refusal bytes
         CLIENT_CHANGE_CT = 0x42,
 
         // Hardline

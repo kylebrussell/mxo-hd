@@ -73,6 +73,7 @@ namespace hds
 		public readonly Dictionary<UInt16, AbilityBuffs.Active> activeBuffs = new Dictionary<UInt16, AbilityBuffs.Active>();
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
+        public readonly object upgradeSync = new object();
         // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
         public int buffHealthMaximumDelta, buffISMaximumDelta;
         public readonly AbilityPassives.State passives = new AbilityPassives.State();
@@ -98,6 +99,8 @@ namespace hds
 
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
+        public int worldGeneration, lifeGeneration;
+        public readonly object lifeSync = new object();
 
 		// PvP (docs/PVP.md): the flag is ConditionStateFlags bit 0x01000000; conditionStateFlags holds the other bits
 		// last sent (in combat, tactic conditions). duelId pairs two duelists (even and odd); duelDeath is the loser
@@ -126,6 +129,8 @@ namespace hds
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
         public StaticWorldObject activeCollector;
+        public Vendor activeVendor;
+        public int activeVendorGeneration;
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
@@ -207,7 +212,11 @@ namespace hds
 		}
 		
 		public void setOnWorld(bool newValue){
-			onWorld = newValue;
+			lock (lifeSync)
+            {
+                if (!newValue) worldGeneration++;
+                onWorld = newValue;
+            }
 		}		
 		
 		public bool getOnWorld(){

@@ -6,6 +6,12 @@ namespace hds
     /// 625ec545..574 multiplies the float duration instead of truncating an integer modifier value.</summary>
     public static class AbilityControlDurations
     {
+        /// <summary>combat_calculations.py GetAbilityMitigationDuration; no integer rounding.</summary>
+        public static float Mitigate(float seconds, int casterLevel, int determination) =>
+            seconds <= 0 ? seconds : (float)(seconds * Math.Clamp(1 - Math.Max(0, determination / 5.0 - casterLevel) * .066, .33, 1));
+
+        public static int Determination(WorldClient target) => Math.Max(0, AbilityStats.Player(target, 575));
+
         public static ushort BonusStat(ushort state)
         {
             var entry = AbilityCatalog.Find(state);

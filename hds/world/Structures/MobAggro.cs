@@ -138,6 +138,19 @@ namespace hds
             byte[] levelBytes = client.playerInstance.Level.getValue();
             int playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : 1;
 
+            // Stealth (docs/STEALTH.md): invisible players are ignored; a sneaker is tested by the NPCs that would attack
+            if (Stealth.Current(client) != null)
+            {
+                var willing = new List<(Mob, double)>();
+                foreach (List<Mob> cell in grid.GetNeighborCells((float)px, (float)pz, (float)RangeUnits))
+                    foreach (Mob mob in cell)
+                    {
+                        double d = Math.Sqrt((mob.getXPos() - px) * (mob.getXPos() - px) + (mob.getZPos() - pz) * (mob.getZPos() - pz));
+                        if (SameFloor(mob.getYPos(), py) && WouldAttack(mob, d, playerLevel)) willing.Add((mob, d));
+                    }
+                if (Stealth.IgnoredByNpcs(client, willing, now)) return;
+            }
+
             Mob attacker = null;
             ClientView attackerView = null;
             double best = double.MaxValue;

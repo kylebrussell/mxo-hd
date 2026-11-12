@@ -14,24 +14,22 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 **Evidence:** `D` = client.dll (class, sender or handler), `C n` = sent n times by clients in the retail captures, `U n` = n times in today's UnknownRPC.txt, `S` = client string. **Server today:** *handled* (does what retail did, as far as the evidence goes), *partial* (handled for some cases only), *stub* (accepted, nothing useful done), *ignored* (falls to `default:`), *wrong* (does something else). **Impact** is a judgement of how much a player misses. Anything marked "guess" is not established.
 
+P7 audits every remaining ignored row in [IGNORED-CLIENT-ACTIONS.md](IGNORED-CLIENT-ACTIONS.md), including explicit unresolved evidence and the local support/GM/compilation policies. Unknown-purpose no-ops are not classified as parity. P3 PR113's partial luggable implementation is included; Claude PR110 owns central storage independently.
+
 ## Summary
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 42 | 13 | 104 |
-| Partial | 0 | 0 | 0 | 0 |
-| Ignored | 0 | 6 | 36 | 42 |
-| Wrong | 0 | 0 | 1 | 1 |
+| Handled | 52 | 47 | 20 | 119 |
+| Partial | 0 | 2 | 12 | 14 |
+| Ignored | 0 | 0 | 14 | 14 |
+| Wrong | 0 | 0 | 0 | 0 |
 | Not sent by this client | | | | 19 |
-| **Total** | 49 | 48 | 50 | 166 |
+| **Total** | 52 | 49 | 46 | 166 |
 
 Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat room requests (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) turned out never to be sent: the client doesn't register the room commands (see "Chat rooms"); the server handles them anyway. Handled since then: booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item. Central storage (`62`, and `67`/`68`/`5d` on storage entries) followed: see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md).
 
-The biggest gaps left, by impact:
-
-1. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
-2. **Compiling code** (`60`, `81 2e`, `81 31`): Codex's area (crafting).
-3. **Stance sites** (stance 1, benches): entered through `80 c8`; not done.
+Remaining ignored requests now depend on unrecovered protocol purpose or backend contracts, particularly faction constructs, hovercraft, clock/range requests and FX completion. The exact evidence/reason for every remaining row, plus the partial archive compilation and local support/GM policies, is in [the P7 audit](IGNORED-CLIENT-ACTIONS.md). Combat-style selection and `81 2e` crafting are already served; direct `60` archive materialization is partial.
 
 ## Login and world entry
 
@@ -40,14 +38,14 @@ The biggest gaps left, by impact:
 | `05` | Spawn ready: the client is ready for its own view | C 274 | handled | high |
 | `0c 01` | LoadingComplete, sent from `OnEnterWorld` with `80 be`, `3e` and `81 48` | D, C 181, U 212 | handled: retail answered nothing, now so does the server | low |
 | `80 be` | No fields. Sent at world entry by the inventory/ability manager (0x629ea4e8, 0x621e2cf0) after it re-sends its slots. Retail answered nothing directly; the `80 bc` effect list followed in 102 of 181 cases, which is also sent at every world entry anyway. Guess: asks for the active effects | D, C 181, U 212 | ignored | low (guess) |
-| `3e` | Slot, Ability, IsSlot, IgnoreStyleUpdate. At world entry `6b 00 10 00 00 00 00` (147 times), `6b 85 00 ..` (37); also sent when picking a special move (caller has `CombatSpecialMove`). Guess: the combat style / special move in use | D, C 187, U 232 | handled: validated selection / own attribute39; see [evidence](CLIENT-COMBAT-ACTIONS.md) | medium |
+| `3e` | Slot, Ability, IsSlot, IgnoreStyleUpdate. At world entry `6b 00 10 00 00 00 00` (147 times), `6b 85 00 ..` (37); also sent when picking a special move (caller has `CombatSpecialMove`). Guess: the combat style / special move in use | D, C 187, U 232 | handled: validated selection / own attribute39; a style becomes the active one (stats, special-move set, interlock exchanges). Producers: the toolbar dropdown slot's list, the toolbar window's construction (world entry), bag-slot moves. Using a style from the Actions window arrives as `80 b9 <style>` and switches the same way; see [COMBAT-STYLES.md](COMBAT-STYLES.md) | high |
 | `81 48` | No fields, from `viewplayer.cpp`. Retail answered `81 49` (FeatureArray, CharacterID, SubscriptionFeatures), mid-session too (luizoe_margins_Syntax packets 1296/1298) | D, C 184, U 237 | handled: structured bounded `81 49` (PR99 fixes native crash) | low |
 | `81 08` | Ready for the world change (Status) | C 209 | handled | high |
 | `80 c9` | Region loaded (ObjID, ObjPos) | C 10438 | handled | high |
 | `81 00` | LA picker selects tutorial construct800..899 (client.dll62171620); normal picks use80ff. Retail resets and loads tutorial_v2 | D, C 8, U 3 | handled only in LA; pending-reset spawn guard; [evidence](CLIENT-COMBAT-ACTIONS.md#deathreconstruction-follow-up-2026-11-11) | high |
 | `81 01` | No fields. Retail answered `80 fa` (ConstructID, HardlineID, MakeActive) then `81 07`: a world change. Guess: jack in from the Loading Area by another route | C 8 | ignored | low (guess) |
 | `81 56` | No fields; 13 send sites in `viewmgr.cpp` | D, C 1 | ignored | low (purpose unknown) |
-| `81 4d` | ElapsedTime u32; retail echoed `81 4d` | C 1 | ignored | low |
+| `81 4d` | ElapsedTime u32; retail echoed `81 4d` | C 1 | handled: exact bounded elapsed-time echo; [P7 evidence](IGNORED-CLIENT-ACTIONS.md) | low |
 
 ## Movement, travel and the world
 
@@ -64,7 +62,7 @@ The biggest gaps left, by impact:
 | `80 ff` | Leave the Loading Area by a hardline | D, C 48 | handled | high |
 | `81 4c` | Respawn after death | D, C 23 | handled | high |
 | `81 40` | Elevator floor | D, C 29 | handled | medium |
-| `81 41` | Elevator CurrentFloor: the client closes the panel when it decides the player left it (docs/MISSIONS.md) | D, U 7 | ignored; harmless, the client closes the panel itself | low |
+| `81 41` | Elevator CurrentFloor: the client closes the panel when it decides the player left it (docs/MISSIONS.md) | D, U 7 | handled: clear active elevator selection; no teleport | low |
 | `81 3b` | No fields: the subway map's Cancel, or its countdown reached 0 (0x620fc490; the map closes) | D | handled (new): ends the ride | medium |
 | `81 3c` | WorldID, NetworkID, ConnectorID: the station picked on the subway map (0x620fc520) | D | handled (new): the player moves to the station and the world reloads (`81 07`) | high |
 | `81 3d` | No fields: the map is open (0x620fc150, sent from its set-up) | D | handled (new): the `81 3e` countdown starts | medium |
@@ -83,7 +81,7 @@ The biggest gaps left, by impact:
 | `33` | Leave a stance (the current Stance): `/stand`, or moving out of one. Retail's `19` (249 times) was a stance the server imposed and never released | D, C 302 | handled (new): stance 0 to the own view and everyone else's | medium |
 | `34` | Enter a stance (Stance): `/sit` `0a`, `/dance` `11`..`15` | D, C 21 | handled (new): the stance to the own view and everyone else's, sitting with ConditionStateFlags 0x00200000 | medium |
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
-| `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | ignored | low |
+| `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | handled: own/observer/late-view AFK and tell feedback; session presence | low |
 | `3b` | No fields; two senders, one in the slash command handler (0x62256760). Purpose not determined | D | ignored | low |
 | `81 55` | No fields, from the slash command handler. Purpose not determined | D | ignored | low |
 | `81 47`, `81 4a` | No fields; no sender found | D | ignored | low |
@@ -126,9 +124,9 @@ The server keeps its room code (the records are client.dll's, the rules ours: se
 | `81 92` | Player details (CharacterID, CharacterName) | D, C 7 | handled | medium |
 | `81 94` | Get background (`vieweditbackground.cpp`) | D, C 1 | handled | low |
 | `81 96` | Set background (ChunkString, IsChunked) | D | handled | low |
-| `81 57` | Inspect a target (TargetHandle, GetAbilities, GetInventory, GetTempMods). Guess: the GM `/snooploadout` | D, S | ignored | low |
-| `81 59` | Snoop a crew (SnoopManager, CrewName): GM `/snoopcrew` | D, S | ignored | low |
-| `81 5b` | Snoop a faction: GM `/snoopfaction` | D, S | ignored | low |
+| `81 57` | Inspect a target (TargetHandle, GetAbilities, GetInventory, GetTempMods). Guess: the GM `/snooploadout` | D, S | partial: server-allowlisted GM current-view loadout text report; native chunk viewer unimplemented | low |
+| `81 59` | Snoop a crew (SnoopManager, CrewName): GM `/snoopcrew` | D, S | partial: server-allowlisted GM crew text report; native chunk viewer unimplemented | low |
+| `81 5b` | Snoop a faction: GM `/snoopfaction` | D, S | partial: server-allowlisted GM faction text report; native chunk viewer unimplemented | low |
 
 ## Email
 
@@ -200,19 +198,19 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source; IsCentralStorageItem 1 merges storage entries ([CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)) | medium |
 | `62` | SourceSlot u16, DestinationSlot u16, PersonalInventoryItem u8: between the bag and central storage, from the Loading Area's Central Storage window (laviewinventory.cpp): double-click, the Move buttons, or a drag. PersonalInventoryItem 1 stores a bag slot (0x621e2000), 0 takes a storage entry out (0x621d4c00); DestinationSlot 6b means any | D | handled (new): `5f`/`5e`/`69` for the bag and storage, and `81 18` for storing; see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md) | low |
 | `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
-| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | ignored: the server has no luggable objects | low |
-| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | ignored; code compiling is Codex's area | medium |
+| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
+| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | partial: atomic owned stored-bit/fragment materialization in LA or valid Compile session; explicit local policy, equipment/ability archive economy unresolved | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | ignored (pills work through `80 b9`) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path; other consumables remain unsupported | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
-| `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | ignored | low |
+| `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
 | `81 16` | Collector exchange (ItemSetIndex, Prizes) | D | handled | medium |
-| `81 17` | `00 00 00 00 00`. Guess: closing the collector | C 1 | ignored | low |
+| `81 17` | `00 00 00 00 00`. Guess: closing the collector | C 1 | handled: exact native close clears active collector | low |
 | `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
 | `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
 | `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
-| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | ignored; nothing to do | low |
+| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
 | `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
@@ -233,7 +231,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `40` | Close combat (TargetID, ForcedInterlock, WeaponToUseSlot) | D, C 75 | handled | high |
 | `41` | Ranged attack (TargetID) | D, C 21 | handled | high |
 | `42` | Tactic (TacticalValue, TacticalTotalValue, TacticType) | D, C 98 | handled | high |
-| `43` | Martial art (MartialArt) | D | partial: retained u16; producer/value mapping unknown | medium |
+| `43` | Martial art (MartialArt) | D | handled: never sent by 7.6005 (producer `6219f0a0` and constructor unreferenced; `81 6e` ForcedMartialArt unread); retained for logging, no reply. See [COMBAT-STYLES.md](COMBAT-STYLES.md) | high |
 | `44` | Withdraw (WantToWithdraw) | D, C 18 | handled | high |
 | `3d` | Draw / stand down (IsAutoAttacking) | D, C 39 | handled | high |
 | `3f` | Free Fire weapon | D, C 206 | handled | high |
@@ -251,21 +249,21 @@ None of these are in the captures and the server has no help desk.
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 b0` | Petition: create or cancel (TicketID, ChunkString, IsChunked, CancelTicket) | D | ignored | low |
-| `81 b2` | No fields. Guess: list my petitions | D | ignored | low |
-| `81 b4` | TicketID. Guess: get one petition | D | ignored | low |
-| `81 b7` | No fields | D | ignored | low |
-| `81 b9` | Knowledge base search (SearchString) | D | ignored | low |
-| `81 bb` | Knowledge base article (Idstring) | D | ignored | low |
-| `81 bd` | No fields | D | ignored | low |
+| `81 b0` | Petition: create or cancel (TicketID, ChunkString, IsChunked, CancelTicket) | D | partial: persistent owner-bound local create/edit/cancel, bounded nonchunked UTF-8; no retail support backend | low |
+| `81 b2` | No fields. Guess: list my petitions | D | partial: native owner-only local ticket headers, newest100; no retail support backend | low |
+| `81 b4` | TicketID. Guess: get one petition | D | partial: owner-only local ticket detail; no retail staff comments | low |
+| `81 b7` | No fields | D | partial: native local category/subcategory records; local taxonomy | low |
+| `81 b9` | Knowledge base search (SearchString) | D | partial: native search of bundled local knowledge articles; no retail knowledge service | low |
+| `81 bb` | Knowledge base article (Idstring) | D | partial: native local article detail | low |
+| `81 bd` | No fields | D | partial: native local support policy text | low |
 
 ## GM and developer
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 7a` | Simulacrum order (ID, Command): `/ordersimulacra` | D, S | ignored | low |
-| `81 7b` | Simulacrum order with a target (ID, Command, TargetObject) | D | ignored | low |
-| `81 7c` | Simulacrum order with a value (ID, Command, Value) | D | ignored | low |
+| `81 7a` | Simulacrum order (ID u8, Command u8): Stay 0, Deactivate 1, Follow 3; window ID 0xfe; `/ordersimulacra` ([CODER-PETS](CODER-PETS.md)) | D, S | handled | medium |
+| `81 7b` | Simulacrum order with a target (ID u8, Command u8, TargetObject u32): Attack 2 | D | handled | medium |
+| `81 7c` | Simulacrum order with a value (ID u8, Command u8, Value u8): command 5 mode Defensive 0 / Aggressive 1 / Passive 2 | D | handled | medium |
 
 ## Email in detail
 
@@ -676,7 +674,7 @@ None of `5b`, `5c`, `60`, `61`, `66` or `80 c6` appears in the 339 captures, so 
 
 If no Give goal wants the item from that NPC, the server says "They don't want that." That text is ours: the client has already said it handed the item over, and the item is still in the bag.
 
-**`60`: compile.**
+**`60`: compile.** P7 now serves owned uploaded bits/fragments with atomic source/bag/cash changes; other archive economies remain unresolved. See [the exact policy and gates](IGNORED-CLIENT-ACTIONS.md).
 - Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
 - It comes from the Compile window's button, which an `80 bc` for ability 969 opens, and from the Loading Area storage window's compile. PersonalInventoryItem 0 means the slot is a code storage slot.
 - The answer is `61 <ResultCode u8>`. The client acts on it only while the Compile window is open:
@@ -690,12 +688,12 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 | 4 | not enough information |
 | 5 | singleton |
 
-- This is code compiling, Codex's area, so it is left alone here.
+- P7 implements the bounded stored-bit/fragment subset; `81 2e` remains recipe assembly.
 
 **`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
 - It is sent when a dragged bag item is released over the world.
 - The client refuses anything that isn't luggable before sending: "You can only drop luggable objects in the world."
-- Offline, the client spawns the object itself. Online, it waits for the server, which has no luggable objects.
+- Offline, the client spawns the object itself. Online, it waits for the server. Shared light-luggable pickup/drop and persistence now execute; see [DATA-MINING.md](DATA-MINING.md). Heavy carrying remains absent.
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
 

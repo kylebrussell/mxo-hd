@@ -1,6 +1,8 @@
 """Read the shipped 7.6005 ILDB without modifying the client.
 
-Export static Self-Defense tactic pairs and the referenced opening/transition moves.
+Export static tactic pairs for the melee styles with their own exchange sets (Self-Defense S, Aikido A,
+Karate K, Kung-Fu W) and their stand-to-tactic opening transitions. The letters come from the ILDB's own
+group names: 'Stand Transitions:To KungFuAbility' holds 'Trans Stand-WS'..'Trans Stand-WB', and so on.
 IDs are assigned in file order starting at 255 (client.dll 62649920/62649a4a).
 The bounds identify interlock_master.ilmb in interface_interlock_materials.pkb;
 rezmap.ltb resource 0x24000b8b independently records these same bounds.
@@ -47,9 +49,10 @@ def extract(client):
                         if tag == b'DATA':
                             row['name'] = text(e)
                             row['flags'], row['duration_ms'] = struct.unpack_from('<IH', data, f - 6)
-                    if (re.match(r'^S[SPDB] vs S[SPDB]:', group) and 'static' in row['name'] and
+                    if row['flags'] == 0x100 or (re.match(r'^[SAKW][SPDB] vs [SAKW][SPDB]:', group) and 'static' in row['name'] and
                             row['flags'] in (1, 4, 8, 0x41, 0x48)) or row['id'] in (
-                                748, 8198, 9062, 21012, 21013, 21014, 21015, 23965, 23966, 23967):
+                                748, 8198, 9062, 23965, 23966, 23967) or re.match(
+                                r'^Stand Transitions:To (Self-Defense|AikidoAbility|KarateAbility|KungFuAbility)$', group):
                         rows.append(row)
     assert next_id - 255 == 25695
     return dict(schema_version=1, resource_id=0x24000b8b,
