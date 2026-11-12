@@ -80,6 +80,9 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         consumable_sweep = ConsumableItems.Items.Any(p => p.Value.AbilityId == e.Id && ConsumableItems.IsUsable(p.Value) &&
             (p.Value.Effect == ConsumableItems.Effect.Cure || p.Value.Effect == ConsumableItems.Effect.ConditionSweep)),
         instant_hostile = AbilityHostile.Lands(e.Id),
+        buff_dispel = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&
+            (m.Text("StatModInitFunc") == "RemoveRandomBuff" || m.Text("StatModInitFunc") == "UpgradeSweepPulse"))
+            .Select(m => new { callback=m.Text("StatModInitFunc"), chance=m.Number("ProcTriggerChance",1) }).ToArray(),
         catalog_debuff = AbilityHostile.Catalog(e.Id) != null,
         // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
@@ -92,10 +95,11 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-// Optional execution inventory fields are emitted only for their actual producers.
+// Optional inventory evidence is emitted only for its actual producers.
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
     JsonSerializer.SerializeToElement(row).EnumerateObject()
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
+        .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
         .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);
