@@ -263,17 +263,27 @@ public class AbilityHostileTests
     public void TriggeredDispelDeactivatesAnAuraAndAllowsLaterBuff()
     {
         var caster=Client(); var target=Client();
-        AbilityAuras.Start(target,42);
-        Assert.True(AbilityAuras.IsOn(target,42));
-        // Remove any child pulses: leave the toggled parent as the only candidate.
-        foreach(ushort id in AbilityHostile.RemovableBuffs(target).Where(id=>id!=42).ToList())
-            AbilityHostile.RemoveBuff(target,id);
-        Assert.Equal(new ushort[]{42},AbilityHostile.RemovableBuffs(target));
-        AbilityHostile.LandedOnPlayer(caster,target,261,new ProcRoll(0));
-        Assert.False(AbilityAuras.IsOn(target,42));
-        Assert.Empty(AbilityHostile.RemovableBuffs(target));
-        Assert.True(AbilityBuffs.Apply(target,327));
-        Assert.True(AbilityBuffs.IsActive(target,327));
+        var previousClients=WorldServer.Clients;
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        try
+        {
+            AbilityAuras.Start(target,42);
+            Assert.True(AbilityAuras.IsOn(target,42));
+            // Remove any child pulses: leave the toggled parent as the only candidate.
+            foreach(ushort id in AbilityHostile.RemovableBuffs(target).Where(id=>id!=42).ToList())
+                AbilityHostile.RemoveBuff(target,id);
+            Assert.Equal(new ushort[]{42},AbilityHostile.RemovableBuffs(target));
+            AbilityHostile.LandedOnPlayer(caster,target,261,new ProcRoll(0));
+            Assert.False(AbilityAuras.IsOn(target,42));
+            Assert.Empty(AbilityHostile.RemovableBuffs(target));
+            Assert.True(AbilityBuffs.Apply(target,327));
+            Assert.True(AbilityBuffs.IsActive(target,327));
+        }
+        finally
+        {
+            AbilityAuras.Stop(target,42);
+            WorldServer.Clients=previousClients;
+        }
     }
 
     [Theory]
