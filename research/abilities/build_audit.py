@@ -234,7 +234,7 @@ def server(i):
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     style = [m for m in r.get('style', []) if m['level50'] is not None]
     if style:
-        parts.append('active-style modifiers via 3e (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); style interlock exchanges')
+        parts.append('active-style modifiers via 3e/80 b9 (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); ' + ('weapon-specific interlock mapping unverified' if i in (129,147,158) else 'style interlock exchanges'))
     if r.get('special_move_style'):
         parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
     if r.get('special'):
