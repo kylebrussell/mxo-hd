@@ -164,6 +164,7 @@ namespace hds
                 if(data.missionProgress!=null)
                 {
                     // World changes rebuild client-local object views, but never reroll placements or replay item grants.
+                    SocialHandler.RestoreMissionTeam(client);
                     MissionRuntime.Reannounce(client);
                     return;
                 }
@@ -196,6 +197,7 @@ namespace hds
                     if(record.Wave.HasValue)progress.hostileWave[mob]=record.Wave.Value;
                 }
                 lock(data.loot)data.loot.Close();
+                SocialHandler.RestoreMissionTeam(client);
                 MissionRuntime.Reannounce(client);
                 Output.WriteDebugLog("[MISSION] Restored "+mission.id+" phase "+progress.phaseIndex+" instance "+saved.Instance);
             }
