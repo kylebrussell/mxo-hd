@@ -8,6 +8,8 @@ public sealed record CharacterSeed(string Handle)
     public double X { get; init; } = 17020;
     public double Y { get; init; } = 495;
     public double Z { get; init; } = 2693;
+    /// <summary>Persisted protocol yaw interval; double permits legacy malformed-row login regressions.</summary>
+    public double Rotation { get; init; }
     public int DistrictId { get; init; } = 1;
     public string District { get; init; } = "slums";
     public int Info { get; init; } = 1000;
@@ -75,7 +77,7 @@ INSERT INTO users (userId, username, publicExponent, publicModulus, privateExpon
 INSERT INTO characters (charId, userId, worldId, status, handle, firstName, lastName, background, x, y, z, rotation,
     healthC, healthM, innerStrC, innerStrM, level, profession, alignment, pvpflag, conquest_points, exp, cash,
     district, districtId, factionId, crewId, is_deleted, is_online, created)
-  VALUES ({id}, {id}, 1, 0, '{seed.Handle}', 'First', 'Last', '', {seed.X}, {seed.Y}, {seed.Z}, 0,
+  VALUES ({id}, {id}, 1, 0, '{seed.Handle}', 'First', 'Last', '', {seed.X}, {seed.Y}, {seed.Z}, {seed.Rotation},
     {seed.Health}, {seed.MaxHealth}, {seed.InnerStrength}, {seed.MaxInnerStrength}, {seed.Level}, 2, {seed.Organization}, 0, 0, {seed.Experience}, {seed.Info},
     '{seed.District}', {seed.DistrictId}, 0, {seed.CrewId}, 0, 0, NOW());
 CREATE TEMPORARY TABLE rsi_copy AS SELECT * FROM rsivalues WHERE charid = {TemplateCharacter};

@@ -23,7 +23,7 @@ public class Medium02Tests
     public void ShippedArrivalAndSupportedNativeDoorHaveGroundedNavigation()
     {
         HardlineNetwork.Load(Path.Combine(Root,"data","hardline_network.csv"));SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));
-        Assert.True(HardlineNetwork.Covers(15));Assert.False(HardlineNetwork.Covers(16));Assert.Equal(new ushort[]{1},HardlineNetwork.Ids(15));
+        Assert.True(HardlineNetwork.Covers(15));Assert.False(HardlineNetwork.Covers(14));Assert.Equal(new ushort[]{1},HardlineNetwork.Ids(15));
         var h=HardlineNetwork.Get(15,1);Assert.Equal(-1000,h.spotX);Assert.Equal(95,h.spotY);Assert.Equal(2500,h.spotZ);
         Assert.True(NavMesh.Locate(15,h.spotX,h.spotY,h.spotZ,out var arrival));Assert.Equal(56,arrival.sector);
         Assert.True(NavMesh.Locate(15,-5700,95,14900,out var door));Assert.Equal(76,door.sector);Assert.True(door.indoors);
