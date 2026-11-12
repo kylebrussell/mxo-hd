@@ -41,6 +41,35 @@ namespace hds
         public static int Defense(WorldClient client, bool ranged) => Player(client, 959) + Player(client, ranged ? (UInt16)1010 : (UInt16)1009) +
             PercentDelta(client.playerInstance.Level.getValue()[0], Player(client, ranged ? (ushort)1027 : (ushort)1143));
         public static int Defense(Mob mob, bool ranged) => Npc(mob, 959) + Npc(mob, ranged ? (UInt16)1010 : (UInt16)1009);
+        /// <summary>Native getDefenseTacticBonusType (6251ffd0): TestFunction chooses the opposing special's defence.
+        /// Unknown/non-contested test functions return no defence; an ordinary round retains its existing melee base.</summary>
+        public static ushort SpecialDefenseStat(int testFunction) => testFunction switch
+        {
+            1 => 1010, 2 => 183, 3 => 1009, 4 => 1011, 6 => 1011, _ => 0
+        };
+        public static int SpecialDefense(WorldClient defender, AbilityItem opposingAbility)
+        {
+            if (opposingAbility == null) return Defense(defender, false);
+            int test = (int)(AbilityCatalog.Find(opposingAbility.getAbilityID())?.Number("Ability/TestFunction", -1) ?? -1);
+            // combat_utility.isSpecialMove excludes isEscapeAbility: native 62516a66 compares TestFunction with6.
+            if (test == 6) return Defense(defender, false);
+            ushort stat = SpecialDefenseStat(test);
+            Output.WriteDebugLog("[COMBAT-DEFENCE] PvP special " + opposingAbility.getAbilityID() + " stat " + stat);
+            if (stat == 0) return 0;
+            ushort bonus = stat == 1010 ? (ushort)1027 : stat == 1009 ? (ushort)1143 : stat == 1011 ? (ushort)1029 : (ushort)1030;
+            // Preserve this server's ordinary defence/level baseline and percent-delta policy, now selecting its proper type.
+            return Player(defender, 959) + Player(defender, stat) + PercentDelta(defender.playerInstance.Level.getValue()[0], Player(defender, bonus));
+        }
+        public static int SpecialDefense(Mob defender, AbilityItem opposingAbility)
+        {
+            if (opposingAbility == null) return Defense(defender, false);
+            int test = (int)(AbilityCatalog.Find(opposingAbility.getAbilityID())?.Number("Ability/TestFunction", -1) ?? -1);
+            // combat_utility.isSpecialMove excludes isEscapeAbility: native 62516a66 compares TestFunction with6.
+            if (test == 6) return Defense(defender, false);
+            ushort stat = SpecialDefenseStat(test);
+            Output.WriteDebugLog("[COMBAT-DEFENCE] NPC special " + opposingAbility.getAbilityID() + " stat " + stat);
+            return stat == 0 ? 0 : Npc(defender, 959) + Npc(defender, stat);
+        }
         public static int Toughness(WorldClient client, bool ranged) => Player(client, 144) + Player(client, ranged ? (UInt16)181 : (UInt16)180) +
             PercentDelta(client.playerInstance.Level.getValue()[0] * 4 + 20, Player(client, ranged ? (ushort)1140 : (ushort)1144));
         public static int Toughness(Mob mob, bool ranged) => Npc(mob, 144) + Npc(mob, ranged ? (UInt16)181 : (UInt16)180);
