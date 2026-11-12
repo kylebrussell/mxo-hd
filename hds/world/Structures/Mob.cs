@@ -29,6 +29,7 @@ namespace hds
         private uint weapon;
         private int state; // 0= nothing, 1=rotating (just an example - must check this near from the npc class)
         private bool is_dead;
+        public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
         private bool is_lootable;
         private bool is_spawned = true;
         // Explicit server-owned NPC grants; never inferred from a name or accepted in an ability request.
@@ -487,7 +488,7 @@ namespace hds
             themob.CombatantMode.setValue(0x22);
             themob.Position.setValue(NumericalUtils.doublesToLtVector3d(getXPos(), getYPos(), getZPos()));
             themob.YawInterval.setValue((byte) getRotation());
-            themob.IsDead.setValue(false);
+            themob.IsDead.setValue(getIsDead());
             themob.IsEnemy.setValue(true);
             themob.IsFriendly.setValue(false);
 
@@ -534,7 +535,7 @@ namespace hds
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
-            themob.CurrentState.setValue(StringUtils.hexStringToBytes("06080000"));
+            themob.CurrentState.setValue(StringUtils.hexStringToBytes(getIsDead() ? "fd070000" : "06080000"));
 
             if (RangedWeapons.IsGun(getWeapon()))
             {

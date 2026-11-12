@@ -257,9 +257,9 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 
 - Only Zion's first three missions were captured: the rest are the guide's text, placed and paced by us.
 - Rewards are fixed at one capture's values; retail's rose with level (Welcome paid 3,000 to 5,500 XP).
-- `dead="1"` NPCs aren't spawned, so the bodies in The Internuncio don't appear.
+- `dead="1"` NPCs now introduce sourced dead attributes and an NPC corpse pose, including late views; native rendering remains pending ([presentation evidence](MISSION-PRESENTATION.md)).
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
-- Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
+- Hostile portrait visibility remains unresolved. Automatic hostile speech now also uses an explicit OURS system-chat fallback, preserving original80a1 flags; friendly/interactive speech is unchanged ([presentation evidence](MISSION-PRESENTATION.md)).
 - A mission doesn't survive a relog: the NPCs go, and its items are taken back.
 
 ### Full bags and loot replies
