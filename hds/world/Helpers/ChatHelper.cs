@@ -547,6 +547,9 @@ namespace hds
                     CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
                 }
 
+                if (command.Equals("?compilesession"))
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, CompileSession.Dev(Store.currentClient, commands), "SYSTEM");
+
                 if (command.Equals("?compile") && commands.Length == 2)
                 {
                     // Dev-only deterministic compile path, including code storage; native 81 2e keeps its checks.

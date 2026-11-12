@@ -58,9 +58,10 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
     : Array.Empty<ushort>();
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
+bool compileItemsMode = args.Length > 3 && args[3] == "compile-items";
 bool stealthShieldsMode = args.Length > 3 && args[3] == "stealth-shields";
 bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
-bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
+bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode || compileItemsMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
@@ -72,7 +73,7 @@ bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMod
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
 bool clientActionsMode = args.Length > 3 && args[3] == "ignored-actions";
 bool dataMiningMode = args.Length > 3 && args[3] == "data-mining";
-bool actionsMode = args.Length > 3 && args[3] == "actions" || clientActionsMode;
+bool actionsMode = args.Length > 3 && args[3] == "actions" || clientActionsMode || compileItemsMode;
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -119,6 +120,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (stealthShieldsMode) abilities = StealthShieldFixture.Abilities;
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (compileItemsMode) abilities = new ushort[] {2,17,277};
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,25,603,31,34,19,609,619 };
@@ -154,7 +156,7 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
 ");
-    if (clientActionsMode)
+    if (clientActionsMode || compileItemsMode)
         await database.ExecuteAsync($@"
 UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
 INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
@@ -228,7 +230,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
         StealthShieldQa=stealthShieldsMode,ShieldReady=shieldAck.Length>0,CasterOrganization=stealthShieldsMode?1:(int?)null,CasterPvpFlag=stealthShieldsMode,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode, CompileItemsQa=compileItemsMode,
         CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
     if(healthCallbacksMode) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");

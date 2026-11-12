@@ -86,6 +86,7 @@ public static partial class Scenarios
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
+        new Scenario("compile-session-authority", CompileSessionAuthority, StillNpcs),
         new Scenario("compile-storage-depletion", CompileStorageDepletion, StillNpcs),
         new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),

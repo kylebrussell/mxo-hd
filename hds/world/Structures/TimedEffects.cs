@@ -481,7 +481,7 @@ namespace hds
         /// <summary>Takes everything off a subject (death), with its packets.</summary>
         public static void Clear(Subject subject)
         {
-            if (subject is PlayerEffects player) Stealth.Cleared(player.Context);
+            if (subject is PlayerEffects player) { CompileSession.End(player.Context); Stealth.Cleared(player.Context); }
             List<Active> removed = subject.Effects.RemoveAll();
             if (removed.Count > 0)
             {
@@ -500,7 +500,11 @@ namespace hds
 
         public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum)
         {
-            if (subject is PlayerEffects player) Stealth.HealthChanged(player.Context, damageTaken, belowMaximum);
+            if (subject is PlayerEffects player)
+            {
+                if (damageTaken > 0) CompileSession.End(player.Context);
+                Stealth.HealthChanged(player.Context, damageTaken, belowMaximum);
+            }
             List<Active> removed;
             lock (random) removed = subject.Effects.HealthChanged(damageTaken, belowMaximum, random);
             if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
