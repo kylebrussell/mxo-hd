@@ -160,6 +160,22 @@ MANUAL = {
     541: ('presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
     621: ('Find Data Node toggle: locator tool gate (ID_ABILITY_TOOL_FAIL), start/stop lines; 80 ca-80 cf locate records not sent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
 }
+# Stealth executors (hds/world/Structures/Stealth.cs; docs/STEALTH.md, PR 109): rows kept verbatim from that PR's audit.
+STEALTH = {
+    156: ('reuse 15s; total feeds stealth detection (STEALTH.md); record is scaled-buff scope', 'missing'),
+    186: ('STEALTH.md: Sneak behaviour under its own id (no stored modifier; our choice); LOS/noise/stance incomplete', 'partial'),
+    366: ('STEALTH.md: imparts 629 on a friendly player; refused on self, target in combat or already invisible', 'partial'),
+    368: ('STEALTH.md: Invisibility 2 s later without the proximity test, ends the fight (our choice); smoke-bomb item 460 not enforced', 'partial'),
+    507: ('STEALTH.md: kSneak + ST_STEALTHED; Sneak Movement 25 + Stealth (char level) records; 5 s sneakTest; damage/attack break; LOS/noise/stance incomplete', 'partial'),
+    629: ('STEALTH.md: kInvisible for 120 s on the target; refused when already invisible', 'partial'),
+    1111: ('STEALTH.md: kSneak + ST_STEALTHED to own/other views; Stealth/Noise/MoveSpeed/StealthState records; native sneakTest every 5 s vs facing enemies and NPCs; hidden from enemies; damage/attack/ability break; LOS/noise/stance incomplete', 'partial'),
+    1114: ('presentation only; no effect executor; STEALTH.md: needs tool ModelOverride/setModel, not done', 'missing'),
+    1116: ('STEALTH.md: kInvisible + ST_STEALTHED for 30+2/level s; MoveSpeed -300 record; refused with an enemy facing within 800; hidden from enemies, ignored by NPCs; no damage break; Detection counter missing', 'partial'),
+    1118: ('STEALTH.md: kShadowObject for 180 s, 25 IS every 5 s with deactivation, recast on end, NPCs ignore; evade/timed-usable and interaction breaks incomplete', 'partial'),
+    1137: ('STEALTH.md: kSneak + ST_STEALTHED + ST_CONCEALMENT; Concealed/StealthState records; 5 s sneakTest; damage break; stance/panic-end incomplete', 'partial'),
+}
+MANUAL.update(STEALTH)
+
 # Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
 PETS = {
