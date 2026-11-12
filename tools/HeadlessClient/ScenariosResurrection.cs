@@ -26,6 +26,7 @@ public static partial class Scenarios
         foreach(var p in new[]{healer,corpse,observer}) await p.EnterWorldAsync();
         var view=await healer.WaitForViewNamedAsync(corpse.Handle);
         var watched=await observer.WaitForViewNamedAsync(corpse.Handle);
+        var offerIds=new HashSet<uint>();
         foreach(ushort ability in new ushort[]{325,326,375,416})
         {
             await KillForResurrection(corpse);
@@ -33,6 +34,8 @@ public static partial class Scenarios
             Cast(healer,ability,view.ViewId);
             var request=await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
             Check.Equal((uint)ability,BitConverter.ToUInt32(request.Bytes,2),"Native approval names the cast ability");
+            uint offerId=BitConverter.ToUInt32(request.Bytes,8);
+            Check.That(offerId!=0 && offerIds.Add(offerId),"Each native offer has a new nonzero offer field");
             Check.Equal((ushort)54,BitConverter.ToUInt16(request.Bytes,52),"Relative name offset");
             Check.That(System.Text.Encoding.ASCII.GetString(request.Bytes,56,request.Bytes.Length-56)=="RezMedic\0","Approval names its caster");
             Check.Equal(restored,corpse.Received(ResurrectionLine).Count,"Corpse remains dead before consent");
@@ -62,6 +65,7 @@ public static partial class Scenarios
             var healer=medics[i];var view=await healer.WaitForViewNamedAsync(corpse.Handle);
             Cast(healer,416,view.ViewId);
             var request=await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
+            Check.That(BitConverter.ToUInt32(request.Bytes,8)!=0,"Rejected/expired offers also retain the nonzero dialog field");
             byte[] reply=NativeResurrectionReply(416);
             if(i==0) reply[7]=1; // No
             if(i==1) reply[6]=1; // native dialog timeout

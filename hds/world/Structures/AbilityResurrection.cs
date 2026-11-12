@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace hds
 {
@@ -10,6 +11,7 @@ namespace hds
     {
         public const UInt32 RestoreEffect = 0x280006af;
         public static bool Handles(UInt16 id) => id == 325 || id == 326 || id == 375 || id == 416;
+        private static int nextOffer;
 
         /// <summary>Native displays this offer, then rebuilds a fixed54-byte reply with ability/flags/locators only.</summary>
         public static byte[] BuildApproval(UInt16 ability, string caster)
@@ -19,7 +21,12 @@ namespace hds
             byte[] bytes = new byte[57 + name.Length];
             bytes[0] = 0x81; bytes[1] = 0x88;
             Array.Copy(BitConverter.GetBytes((UInt32)ability), 0, bytes, 2, 4);
-            // Opaque padding and the two default locators stay zero. Native does not echo the padding or name.
+            // Nonzero offer field restores the natively working dialog frame. Its full semantics are
+            // unknown and native replies do not echo it: never use it to authenticate a reply.
+            UInt32 offerId;
+            do { offerId = unchecked((UInt32)Interlocked.Increment(ref nextOffer)); } while (offerId == 0);
+            Array.Copy(BitConverter.GetBytes(offerId), 0, bytes, 8, 4);
+            // Remaining opaque padding and the two default locators stay zero.
             bytes[52] = 54;
             bytes[54] = (byte)(name.Length + 1); bytes[55] = (byte)((name.Length + 1) >> 8);
             Array.Copy(name, 0, bytes, 56, name.Length);
