@@ -132,6 +132,17 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");
+                return;
+            }
+            if (AbilityID == AbilityDisguise.Ability && !Stealth.IsOn(Store.currentClient, AbilityID) &&
+                AbilityDisguise.ModelFor(Store.currentClient, itemSlot) == 0)
+            {
+                Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
+                return;
+            }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
@@ -170,6 +181,12 @@ namespace hds
                 return;
             }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
+            if (support && AbilitySupport.RequiresBuffer(AbilityID) &&
+                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilitySupport.BufferFits(t,AbilityID)))
+            {
+                Deny(AbilityID,"The upgrade buffer is full.");
+                return;
+            }
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
@@ -243,7 +260,7 @@ namespace hds
                 UInt16 stealthTarget = currentTargetViewId;
                 DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
                 {
-                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget);
+                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
                 });
                 return;
             }

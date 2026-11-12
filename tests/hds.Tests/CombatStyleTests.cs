@@ -128,12 +128,22 @@ public class CombatStyleTests
     }
 
     [Fact]
-    public void WeaponStylesAreSelectableButTheirNumbersBelongElsewhere()
+    public void WeaponStylesUseOnlyTheSelectedLearnedLevelNumbers()
     {
         foreach (ushort weapon in new ushort[] { 129, 147, 158 })
         {
             Assert.True(CombatStyles.IsStyle(weapon));
-            Assert.Empty(CombatStyles.Modifiers(weapon));
+            Assert.Equal(7,CombatStyles.Modifiers(weapon).Count());
+            var client=Client();
+            AbilityPassives.SetLoaded(client,new[]{(weapon,(ushort)20)},true);
+            Assert.Equal(0,AbilityStats.Player(client,524));
+            CombatStyles.Select(client,weapon);
+            Assert.Equal(25,AbilityStats.Player(client,524));
+            Assert.Equal(6,AbilityStats.Player(client,171));
+            Assert.Equal(weapon==129?27:weapon==147?21:23,AbilityStats.Player(client,1009));
+            CombatStyles.Select(client,17);
+            Assert.Equal(0,AbilityStats.Player(client,524));
+            Assert.Equal(0,AbilityStats.Player(client,171));
         }
     }
 
