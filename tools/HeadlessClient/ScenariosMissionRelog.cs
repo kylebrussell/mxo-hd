@@ -13,7 +13,7 @@ public static partial class Scenarios
             await context.Database.InstallMissionRollbackTriggerAsync(false,true);
             player.SendChat("?missionpersist start");await player.WaitForTextAsync("Mission progress could not be saved");
             Check.Equal(0,player.Received("80 9c").Count,"Failed acceptance does not publish a mission name");
-            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT COALESCE(payload,'NULL') FROM char_active_missions WHERE charId={player.CharId}"),"Failed acceptance leaves no active checkpoint");
+            Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={player.CharId} AND payload IS NOT NULL"),"Failed acceptance leaves no active checkpoint");
             await context.Database.RemoveMissionRollbackTriggerAsync();
         }
         player.SendChat("?missionpersist start");
@@ -154,7 +154,9 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"Rolled back owned-item cleanup");
         Check.That((await MissionCheckpoint(context,p)).Done.Contains(2),"Completed goal remains retryable active phase");
         await context.Database.RemoveMissionRollbackTriggerAsync();
-        await p.WaitForRpcAsync("80 a2 00");
+        var completion=await p.WaitForRpcAsync("80 a2 00");
+        Check.Equal(5u,BitConverter.ToUInt32(completion.Bytes,11),"Summary reports actual capped info delta");
+        Check.Equal(10u,BitConverter.ToUInt32(completion.Bytes,15),"Summary reports actual capped XP delta");
         Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"XP paid once");
         Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Info paid once");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId=399905"),"One completed record");
