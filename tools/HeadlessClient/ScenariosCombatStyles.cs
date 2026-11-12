@@ -97,11 +97,15 @@ public static partial class Scenarios
         // Poison Knife (Spy Style): its ThrownDOT goes on the NPC when the 2 s cast ends
         SelectStyle(knifer, 1112);
         await knifer.WaitForRpcAsync(ModPattern(1112, 1032)); // Spy Style ThrowAccuracy
+        Cast(knifer,123);
+        var weakness=await knifer.WaitForRpcAsync(ModPattern(123,1034));
+        Check.Equal(25,BitConverter.ToInt32(weakness.Bytes,13),"Find Weakness uses source character50");
         Cast(knifer, 146, mob.ViewId);
-        await knifer.WaitUntilAsync(() => context.Server.DebugLog().Contains("[EFFECTS] 146 on WinterFrost: Dot 1157 17 25 s"),
-            "Poison Knife's ThrownDOT on the NPC", TimeSpan.FromSeconds(10));
-        await knifer.WaitUntilAsync(() => context.Server.DebugLog().Contains("146 ticks on WinterFrost for 2"),
-            "ThrownDOT ticks int(17 / 25 x 2.5 + .5)", TimeSpan.FromSeconds(10));
+        // Stored17, Spy Style29% + Find Weakness25%: trunc(17 * binary32(1.54))=26.
+        await knifer.WaitUntilAsync(() => context.Server.DebugLog().Contains("[EFFECTS] 146 on WinterFrost: Dot 1157 26 25 s"),
+            "ThrownDOT snapshots Spy Style plus Find Weakness influence", TimeSpan.FromSeconds(10));
+        await knifer.WaitUntilAsync(() => context.Server.DebugLog().Contains("146 ticks on WinterFrost for 3"),
+            "ThrownDOT ticks int(26 / 25 x 2.5 + .5)", TimeSpan.FromSeconds(10));
 
         // Exile weapons on another NPC (not the fight's target, so they land at once): 10, x10 against the weakness
         knifer.SendChat("?exileweakness wood Trainman");
