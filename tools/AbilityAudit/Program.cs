@@ -11,6 +11,7 @@ static string Consumer(ushort stat) => stat switch
     112 or 114 or 1058 or 1059 => "regeneration",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",
+    1011 or 183 or 1029 or 1030 => "typed combat-special defence in interlock",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",

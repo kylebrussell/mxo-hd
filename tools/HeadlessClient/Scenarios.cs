@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using hds;
 
 namespace HeadlessClient;
@@ -23,7 +23,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("conditional-daze-fixture", ConditionalDazeFixtureCommand, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
+        new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
+        new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
+        new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
         new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
         new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
@@ -42,6 +46,8 @@ public static partial class Scenarios
         new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),
         new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
+        new Scenario("typed-special-queued", TypedSpecialQueued, StillNpcs),
+        new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
