@@ -351,7 +351,7 @@ namespace hds
         /// known (<see cref="AbilityTargets.Retail"/>), its timed effects (<see cref="TimedEffects.ApplyToPlayer"/>) and
         /// the flag abilities. Returns false when the view isn't a player's.
         /// </summary>
-        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId)
+        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
         {
             WorldClient target = PlayerInView(caster, targetViewId);
             if (target == null)
@@ -372,12 +372,12 @@ namespace hds
                 Refuse(caster, verdict, handle);
                 return true;
             }
-            LandAbilityOn(caster, ability, target);
+            LandAbilityOn(caster, ability, target, sneakOpener);
             AbilityTargets.LandAround(caster, ability, target);
             return true;
         }
 
-        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target)
+        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false)
         {
             if (!ControlActions.CanUseAbilities(caster)) return;
             UInt16 abilityId = ability.getAbilityID();
@@ -403,7 +403,7 @@ namespace hds
                 fx = CombatHandler.DefaultAbilityHitFx;
             }
             damage = CombatSpecials.Damage(abilityId, null) ?? damage;
-            damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, damage);
+            damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);

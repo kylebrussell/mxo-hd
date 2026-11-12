@@ -126,11 +126,12 @@ namespace hds
             }
         }
         public void Round(bool attackerWins, uint flags, CombatTactic attackerTactic, CombatTactic defenderTactic,
-            ushort attackerRoll, ushort defenderRoll, bool opening)
-            => RoundPair(1, 2, attackerWins, flags, attackerTactic, defenderTactic, attackerRoll, defenderRoll, opening);
+            ushort attackerRoll, ushort defenderRoll, bool opening, ushort specialAbility = 0, bool specialLanded = false)
+            => RoundPair(1, 2, attackerWins, flags, attackerTactic, defenderTactic, attackerRoll, defenderRoll, opening, specialAbility, specialLanded);
 
         public void RoundPair(byte attackerSlot, byte defenderSlot, bool attackerWins, uint flags,
-            CombatTactic attackerTactic, CombatTactic defenderTactic, ushort attackerRoll, ushort defenderRoll, bool opening)
+            CombatTactic attackerTactic, CombatTactic defenderTactic, ushort attackerRoll, ushort defenderRoll, bool opening,
+            ushort specialAbility = 0, bool specialLanded = false)
         {
             RefreshObservers();
             lock (sync)
@@ -143,7 +144,8 @@ namespace hds
                 // Each player fights in their active style's exchange set; NPCs use Self-Defense's (CombatStyles.Letter)
                 char firstStyle = CombatStyles.Letter(fighters.TryGetValue(firstSlot, out var f1) ? f1 : null);
                 char secondStyle = CombatStyles.Letter(fighters.TryGetValue(secondSlot, out var f2) ? f2 : null);
-                var animation = CombatAnimations.Choose(firstTactic, secondTactic, flags, sequence, firstStyle, secondStyle);
+                var animation = CombatAnimations.Special(specialAbility, specialLanded, attackerWins ? defenderTactic : attackerTactic, secondStyle) ??
+                    CombatAnimations.Choose(firstTactic, secondTactic, flags, sequence, firstStyle, secondStyle);
                 ushort approach = opening ? (ushort)300 : (ushort)0;
                 ushort duration = (ushort)(animation.DurationMs + (opening ? 1300 : 0));
                 var entry = new CombatRoundEntry

@@ -506,11 +506,12 @@ namespace hds
                 double d = Math.Sqrt((ox - x) * (ox - x) + (oz - z) * (oz - z));
                 if (d > range || !MobAggro.SameFloor(oy, y) || !Enemy(client, other)) continue;
                 if (!InFrustum(ox, oz, other.playerInstance.YawInterval.getValue()[0], x, z)) continue;
+                if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), ox, oy, oz, x, y, z)) continue;
                 yield return (other, d);
             }
         }
 
-        /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (line of sight is not checked).</summary>
+        /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (floor-mesh sight approximation; see NavMesh.HasSightPath).</summary>
         public static bool EnemyWatching(WorldClient client, double range) => EnemiesFacing(client, range).Any();
 
         /// <summary>Degrees between the observer's facing (its yaw byte) and the direction to the target, 0..180.</summary>
@@ -547,6 +548,8 @@ namespace hds
                     (range / 100).ToString("0") + "), " + off.ToString("0") + " deg off facing (yaw " + yaw + ")";
                 if (distance > range || !MobAggro.SameFloor(oy, y)) { Output.WriteDebugLog("[STEALTH] detect " + seen + ": out of range"); continue; }
                 if (!InFrustum(ox, oz, yaw, x, z)) { Output.WriteDebugLog("[STEALTH] detect " + seen + ": not facing (needs < 60)"); continue; }
+                if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), ox, oy, oz, x, y, z))
+                { Output.WriteDebugLog("[STEALTH] detect " + seen + ": floor-mesh sight blocked"); continue; }
                 int roll = Roll(random), sa = AwarenessOf(other);
                 if (SneakTest(sa, sl, 0, (float)distance, roll))
                 {
@@ -571,12 +574,13 @@ namespace hds
             if (!s.Def.Periodic) return true;
             if (now < s.NextNpcCheck) return true;
             s.NextNpcCheck = now + UpdateSeconds;
-            Position(client, out double x, out _, out double z);
+            Position(client, out double x, out double y, out double z);
             double range = DetectionRangeUnits(s.Level);
             int sl = StealthLevelOf(client);
             foreach (var (mob, distance) in willing)
             {
                 if (distance > range || !InFrustum(mob.getXPos(), mob.getZPos(), (byte)mob.getRotation(), x, z)) continue;
+                if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), mob.getXPos(), mob.getYPos(), mob.getZPos(), x, y, z)) continue;
                 if (SneakTest(AwarenessOf(mob), sl, 0, (float)distance, Roll(random)))
                 {
                     End(client, mob.getName() + " sees through the sneak");
