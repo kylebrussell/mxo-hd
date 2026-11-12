@@ -43,6 +43,7 @@ namespace hds
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
+        public CoderPets.Pet pet; // set on a coder simulacrum (NPC_BASE_SIMULACRA); null on every other NPC
 
         // Per-object counter carried by animation blocks in movement updates (retail increments it per use)
         private byte animationSeq = 0;
@@ -409,6 +410,7 @@ namespace hds
 
         public GameObject getCreationData()
         {
+            if (pet != null) return CoderPets.BuildCreation(this);
             var themob = new GameObjectDefinitions().Object599;
             themob.DisableAllAttributes();
 
@@ -580,6 +582,7 @@ namespace hds
 
         public void DoMobUpdate(object e)
         {
+            if (pet != null) return; // simulacra move with CoderPets, not the wander timer
             if (!ControlActions.CanMove(TimedEffects.ForMob(this).Effects))
             {
                 mobUpdateTimer = new Timer(DoMobUpdate, this, 1000, 0);

@@ -25,6 +25,7 @@ public static partial class Scenarios
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, StillNpcs),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
