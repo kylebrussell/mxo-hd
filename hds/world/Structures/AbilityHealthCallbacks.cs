@@ -178,7 +178,7 @@ namespace hds
             if(effect==862) { Heal(source,source,effect); return; }
             double x=0,y=0,z=0;
             NumericalUtils.LtVector3dToDoubles(source.playerInstance.Position.getValue(),ref x,ref y,ref z);
-            double radius=AbilityCatalog.Find(effect).Number("Ability/RadiusOfEffect");
+            double radius=AbilityRadius.Metres(source,effect);
             if(effect==944)
             {
                 // CastDirectObjects7: nearby friendlies, not the team-only selector9. Player friendliness reuses
