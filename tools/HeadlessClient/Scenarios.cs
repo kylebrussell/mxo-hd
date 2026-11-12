@@ -19,6 +19,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
+        new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
+        new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
+        new Scenario("combat-depth-mitigation", CombatDepthMitigation, StillNpcs),
+        new Scenario("combat-depth-sneak-opener", CombatDepthSneakOpener, StillNpcs),
         new Scenario("ability-drain-firewalls", AbilityDrainFirewalls, StillNpcs),
         new Scenario("ability-weapon-proficiencies", AbilityWeaponProficiencies, StillNpcs),
         new Scenario("ability-disguise-tools", AbilityDisguiseTools, StillNpcs),

@@ -8,7 +8,7 @@ namespace hds
 {
     /// <summary>Sourced static tactic exchanges for the styles with their own ILDB sets: Self-Defense (S), Aikido (A),
     /// Karate (K) and Kung-Fu (W); see <see cref="CombatStyles.Letter"/>. A pair the ILDB lacks falls back to
-    /// Self-Defense. Special-move choreography and the full ILDB rule language remain separate.</summary>
+    /// Self-Defense. Named special choreography uses the extracted ILDB; the full rule language remains separate.</summary>
     public static class CombatAnimations
     {
         public sealed class Move
@@ -29,6 +29,48 @@ namespace hds
             }).ToArray();
         });
         public static IReadOnlyList<Move> All => moves.Value;
+        // Name matches/aliases between the GOB ability and ILDB choreography. Aliases are server policy;
+        // IDs/durations are extracted, never inferred from ability IDs. Unmapped moves retain tactic fallback.
+        private static readonly Dictionary<ushort, string> specialNames = new Dictionary<ushort, string>
+        {
+            {134,"LegSweep"},{138,"KarateAbility GuardBreaker"},{139,"AikidoAbility IronGuard"},
+            {145,"DoubleOverheadSmash"},{197,"HeadButt"},{198,"CheapShot"},{605,"LowBlow"},{618,"Bash"},
+            {152,"Backsweep"},{153,"Drop Kick"},{286,"Twist Throw"},{287,"Suplex"},{288,"Topsy Turvy"},
+            {289,"Punt"},{385,"Diving Frankensteiner"},{386,"Freedom to Joints"},{387,"Running Bulldog"},{388,"Reverse Pulldown"},
+            {241,"Pistol Slide"},{242,"Pistol Evasive MR"},{243,"Pistol Aerial"},{244,"Pistol Barrage MR"},
+            {126,"Pistol Disarming Shot"},{501,"Pistol Whip"},{502,"Pistol Execution MR"},
+            {105,"Rifle Body Shot MR"},{253,"Rifle WoundingShot"},{254,"Rifle ImmobilizingShot"},
+            {255,"Rifle DisablingShot"},{256,"Rifle 3RoundBurst"},{453,"Rifle RifleButt"},{454,"Rifle DeadlyShot"},
+            {176,"SubM CoveringFire"},{248,"SubM SupressionFire"},{249,"SubM SlidingVolley"},
+            {494,"SubM FullAuto"},{496,"SubM FullAutoRedux"},
+            {259,"Dim_Mak"},{260,"Misdirect_Finger_Rake"},{261,"Machinegun_First_Combo"},{262,"Piston_Kicks"},
+            {265,"Ki-Charged Reverse Punch"},{266,"Jump Sidekick Spin Kick Combo"},{267,"Sky High Sidekick"},
+            {268,"Swirling Ki-summon"},{273,"AikidoAbility CntrThrowVsSMPunch"},{274,"AikidoAbility MakiOfootsweep"},
+            {296,"AikidoAbility SpinClayPigeon"},{407,"AikidoAbility KickRevBlowout"},{411,"AikidoAbility AerialTakedown"},
+            {412,"AikidoAbility TomoNage"},{427,"Triple_Front_Kick"},{428,"Suicidal_Butterfly"},
+            {429,"Extrteme_Falling_Kick"},{430,"Wooden_Dummy_Drill"},{532,"Karate MachGunKick"},
+            {534,"AikidoAbility ArmBarToKotoG"},{535,"Beserker Attack"},{536,"Foot Sweep Ki Punch"},
+            {282,"Blinding Throw SR"},{1135,"Paralyzing Throw SR"}
+        };
+        public static IEnumerable<ushort> MappedSpecials => specialNames.Keys;
+        public static Move Special(ushort ability, bool landed, CombatTactic targetTactic, char targetStyle = 'S')
+        {
+            if (!specialNames.TryGetValue(AbilityCatalog.Canonical(ability), out string name)) return null;
+            if (!landed)
+            {
+                if (SneakAttacks.Bonus(ability, true) > 0)
+                {
+                    string style = targetStyle == 'W' ? "KungFu" : targetStyle == 'K' ? "Karate" : targetStyle == 'A' ? "Aikido" : "Self-Defense";
+                    return All.FirstOrDefault(m => m.Group == "Sneak Attacks" && m.Name == "Failed Sneak v " + style);
+                }
+                // Failed choreography is only selected where the ILDB actually names it.
+                return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name + "_Failed");
+            }
+            string versus = name + " vs " + targetStyle + Suffix(targetTactic);
+            return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == versus) ??
+                All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name) ??
+                All.FirstOrDefault(m => m.Flags == 0x100 && m.Name.StartsWith(name + " vs S", StringComparison.Ordinal));
+        }
         public static char Suffix(CombatTactic tactic) => tactic == CombatTactic.Power ? 'P' :
             tactic == CombatTactic.Grab ? 'D' : tactic == CombatTactic.Block ? 'B' : 'S';
         /// <summary>The style's "Stand Transitions:To ..." move for the tactic (e.g. Trans Stand-WP for Kung-Fu Power).</summary>

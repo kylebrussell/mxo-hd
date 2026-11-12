@@ -39,7 +39,7 @@ This follow-up gives the hostile Hacker templates an executor on the existing `T
 - **Gaussian Blur 49** is a self buff with an `ImpartBlurInit` dissembling callback. The kBlur value is unknown, and its numeric evade part belongs to the beneficial-buff work, so it remains missing.
 - **Static Field's 694** applies its stored raw viral 1 × the caster's influence. The native value function is not applied.
 - **NPC-side consumers.** NPCs have no IS, no max-health debuff and no movement debuff, and debuff-only aura pulses do not aggro an NPC.
-- **Mitigation.** Determination mitigation, hit/deflection rolls and resistance-derived DOT reduction remain missing, as elsewhere.
+- **Mitigation.** Eligible UDB0 on-use debuff durations now consume known target Determination575 with the script formula, excluding self effects and immunity timers; complete target bases remain unknown. Hit/deflection rolls and resistance-derived DOT reduction remain gaps. See [combat depth](COMBAT-DEPTH.md).
 
 ## Tests
 
