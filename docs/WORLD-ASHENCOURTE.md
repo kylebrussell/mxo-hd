@@ -38,7 +38,7 @@ Every reference and source SHA256 is retained in `research/world-data/archive_as
 
 ## Claude-only native one-pass
 
-Discovered mode `ashencourte`: copied CSR110, **actual SQL level25**, Zion, abilities2/17, owned Ashencourte book38538 bag3. No dev, GM, random overrides or fake session. Start at real Richland Zion sender38282 `111600/695/-6130` (grounded standing695, not static CSV745). Book GOB fields are organization1, PvPID1, inclusive level20–30. Machine/Merovingian book counterparts38546/38552 retain their own organization gates.
+Discovered mode `ashencourte`: copied CSR110, **actual SQL level25 plus matching XP25 in final AfterHelpers**, Zion, abilities2/17, owned Ashencourte book38538 bag3. No dev, GM, random overrides or fake session. Start at real Richland Zion sender38282 `111600/695/-6130` (grounded standing695, not static CSV745). Book GOB fields are organization1, PvPID1, inclusive level20–30. Machine/Merovingian book counterparts38546/38552 retain their own organization gates.
 
 1. Open inventory and equip the owned book into program-launcher slot106 using normal UI. Stand on the rendered Zion sender pad; the sender has no manual Use action.
 2. **Wait up to three real minutes** for the ordinary180-second cycle. Confirm Ashencourte terrain/world load, standing floor and existing Zion return teleporter38271 near the source arrival. Unit validation confirms the actual NavMesh.Project arrival remains `(-18500,95,-7500)` on sector77/region2/polygon0; it needs no inset adjustment.
@@ -48,3 +48,5 @@ Discovered mode `ashencourte`: copied CSR110, **actual SQL level25**, Zion, abil
 Native UI and geometry remain pending until Claude records the actual one-pass. Headless wire success is not native UI proof. Partial limits include missing/unsupported captured NPC floors, authored server population behavior, FX rendering and untested loading-area access.
 
 Fresh validation: **PASS64.8s, EXIT0, parallel1**, real sender timing, retail11/map6, exact grounded arrival, returner Use2, exact session origin, book retained, natural captured Goof view and zero parser problems. Raw success log saved before teardown SHA256 `0d09b443eb9f2292bf28e53fd6ce25f10beaf778c4a1f7afb285a74aae8b010b`. No NPC actor/rendering or native UI claim follows from the wire test.47 focused tests pass; full/native status is reported in the PR/handoff.
+
+Native fixture correction: final AfterHelpers sets copied actor/helpers to level25+ExperienceForLevel(25) and caps their learned ability levels at25, after generic fixture XP50. This prevents the client deriving level50 and refusing the level20–30 book. World/book/executor/source data and original64.8s normal headless route are unchanged; this NativeQa profile changed and requires a new Claude native check. Pure master165/162 integration retains exact original mixed DataLoader bytes plus one own load line, with exporter4/6/12/13/15/17 union.

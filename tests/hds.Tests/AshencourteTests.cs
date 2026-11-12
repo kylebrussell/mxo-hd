@@ -33,7 +33,8 @@ public class AshencourteTests
     {
         var plan=new NativeQa.Modes.AshencourteMode().Plan;Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
         Assert.Equal(111600,plan.X);Assert.Equal(-6130,plan.Z);var sql=Assert.Single(plan.AfterLoadout);
-        Assert.Contains("level=25",sql);Assert.Contains("districtId=1",sql);Assert.Contains("y=695",sql);Assert.Contains("38538,3,1,0",sql);Assert.DoesNotContain("38538,106",sql);
+        Assert.DoesNotContain("level=25",sql);Assert.Contains("districtId=1",sql);Assert.Contains("y=695",sql);Assert.Contains("38538,3,1,0",sql);Assert.DoesNotContain("38538,106",sql);
+        Assert.Equal($"UPDATE characters SET level=25,exp={PlayerProgression.ExperienceForLevel(25)} WHERE charId IN (110,6111,6112,6113,6114); UPDATE char_abilities SET level=LEAST(level,25) WHERE char_id IN (110,6111,6112,6113,6114)",Assert.Single(plan.AfterHelpers));
         var e=NativeQa.NativeQaFixturePlan.EnvironmentFor("ashencourte");Assert.Equal("",e["MXO_MOBS"]);Assert.Equal("",e["MXO_CALLBACK_QA_ROLL100"]);
     }
 }
