@@ -4,10 +4,17 @@ public static partial class Scenarios
 {
     private static async Task VendorSellRecycleEconomy(ScenarioContext context)
     {
-        var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("Economy") {X=19155,Y=495,Z=5313,Info=1000,
+        var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("Economy") {X=17000,Y=495,Z=2300,Info=1000,
             Items=new[]{(11,11666u,1),(12,7332u,8),(13,0x80001c03u,1),(14,42709u,1),(15,11666u,1)}}))[0];
         Task<long> Cash()=>context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
         Task<long> Items(int slot)=>context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot={slot}");
+        p.SendRpc("81 11 01 0b");await p.WaitForTextAsync("Open a vendor");
+        // Native mode uses this exact existing opener; it does not rely on a rendered vendor NPC.
+        p.SendChat("?clientactions vendor");await p.WaitForRpcAsync("81 0d");
+        p.SendRpc("81 11 01 0b");await p.WaitForRpcAsync("81 12 01 92 2d 00 00 00 00 00 10 a8 02 00 00");
+        Check.Equal(1000L,await Cash(),"Tools-vendor shortcut appraisal keeps cash");
+        Check.Equal(1L,await Items(11),"Tools-vendor shortcut appraisal keeps shirt");
+        p.SendRpc("81 10 00 00 00 00 01");
         p.SendRpc("81 11 01 0b");await p.WaitForTextAsync("Open a vendor");
         p.SendRpc("80 c8 01 00 f0 04 02 00");await p.WaitForRpcAsync("81 0d"); // actual data-loaded vendor82837505
         p.SendRpc("81 11 01 0b");await p.WaitForRpcAsync("81 12 01 92 2d 00 00 00 00 00 10 a8 02 00 00");

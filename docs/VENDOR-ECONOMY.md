@@ -30,11 +30,13 @@ Local validation:82 focused vendor/request/pricing/reply tests and the full Rele
 
 `vendor-sell-recycle-economy` uses an isolated database and the existing data-loaded vendor82837505 (static0x04f00001) near(19155,495,5313). It covers no-session refusal, Appraise/no mutation, normal sale and replay, stack8 recycle40, leveled ability base recycle500, explicit zero price, unsupported flag0, SQLCHECK credit failure rollback/retry, signed cap with actual5 credit despite stale cache, and storage-entry one-unit payout.
 
-Discovered NativeQa mode`vendor-economy` prepares only the disposable CSR110 fixture at that vendor. It seeds shirt11666 in slot11, Code Bit1x8 in12, Detect Vulnerability ability code level3 in13, Antibiotic1x4 in14, and10000 information. No dev/GM/random control is needed or enabled.
+The first native run at91a16a2 passed Recycle cancel/confirm, the40-information Code Bit stack, the500-information ability code and Antibiotic Activate Item. Appraise/Sell was blocked: vendor82837505 has stock data but no rendered static NPC at its catalog coordinates. Those native actions are still untested.
+
+Discovered NativeQa mode`vendor-economy` now prepares only disposable CSR110 at the known Mara street position(17000,495,2300). It seeds shirt11666 in slot11, Code Bit1x8 in12, Detect Vulnerability ability code level3 in13, Antibiotic1x4 in14, and10000 information. Dev commands are enabled for this mode so the existing `?clientactions vendor` command opens Mara tools-vendor fixture98 through the normal stock/session handler. No rendered NPC, GM permission or random override is required. Appraise and Sell are then ordinary native window actions; the shortcut does not execute either transaction.
 
 Claude alone runs native QA and merge:
 
-1. Right-click the nearby vendor, use the actual vendor interaction, select shirt slot11 and choose Appraise. Expect680 information; item and balance remain. Then Sell once: shirt disappears and balance increases680.
+1. In chat type `?clientactions vendor` and press Enter. The existing Mara tools-vendor window should open. Select the seeded shirt in slot11 and click Appraise in that window. Expect680 information; item and balance remain. Then click Sell once: shirt disappears and balance increases680. If the window does not open, stop and retain the server log; do not search for an NPC at the old catalog position.
 2. Appraise the leveled Detect Vulnerability code in slot13: expect12600 vendor buyback. Do not sell it yet. Close the vendor through its actual Close control.
 3. In inventory use the observed Recycle button/action on Code Bitsx8; cancel once, confirm again. Cancel changes nothing; confirmed ordinary stack quote/payment is40 and removes that row. No invented Delete menu or flag0 UI test is required.
 4. Recycle the leveled ability code: client quote/payment should500, not the12600 buyback premium. Check item removal and information messages through the actual UI.
