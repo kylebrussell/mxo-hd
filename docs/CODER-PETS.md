@@ -11,10 +11,11 @@ Code: `hds/world/Structures/CoderPets.cs`. Tests: `tests/hds.Tests/CoderPetTests
 | Patch Daemon 1.0-3.0 (602, 612, 617) | Summons a Healer simulacrum at level 12-22 / 23-43 / 44-50. It heals its owner when the owner is hurt and within 20 m. |
 | Repair Simulacra 1.0-4.0 (30, 31, 587, 596), Fix Simulacra (615) | Heals the caster's own simulacrum by the stored fixed amount (20, 34, 117, 174, 83) times the caster's healing influence. A player target is still refused. |
 | Fortify Simulacra 1.0 (20) | Own simulacrum only. Adds character level × 15 to its MaxHealth for 600 s (native value function 3, scale 15). Adds level ×2 to melee, ballistic, viral and thrown resistance scores. The actual hostile-NPC retaliation consumer uses the resistance curve below. Scripted Drain Code/Detonate self-damage bypasses resistance. |
+| Power Boost (25) | Own pet, out of combat;50 IS, 4 s cast,10 m range, 8 s recast. Snapshots caster level × 0.5 melee159/ballistic171 damage influence for 300 s; only Proxy melee/firearm attacks use these stats. ForceCombat 40 remains unimplemented: no pet forced-interlock/shield consumer. |
 | Charge Simulacra (603) | Own simulacrum only. For 600 s lowers action IS cost 20% and increases regeneration 50%. Attack and healer actions spend the actual bounded pet IS pool; insufficient IS skips the action. |
 | Detonate Proxy (34) | Own simulacrum only. Deals `min(health, max/4)`, at least `max/10`, to every hostile NPC within 8 m of the simulacrum (StopProxy1Effect 1109 RadiusOfEffect 8). After 0.5 s the simulacrum takes 13000 and dies. |
 | Drain Code (19) | Own simulacrum only. The simulacrum takes 8000 (and dies) and the caster gains 50 Inner Strength. |
-| Daemon Boost 1.0 / 2.0 (609 / 619) | A toggle. While on it drains 5 Inner Strength every 5 s, and switches off when there isn't enough. Every 5 s it pulses 699 or 700 at the simulacrum, if the simulacrum is within 20 m (699) or 10 m (700). 699 adds character level × 0.5 to the simulacrum's damage or healing for 5 s. 700 adds level × 1.3 accuracy for 5 s to the real attack roll. Using the ability again switches it off. |
+| Daemon Boost 1.0 / 2.0 (609 / 619) | A toggle. While on it drains 5 Inner Strength every 5 s, and switches off when there isn't enough. Every 5 s it pulses 699 or 700 at the simulacrum, if the simulacrum is within 20 m (699) or 10 m (700). 699 snapshots character level ×0.5 Viral Damage 172 / Healing 174 influence for 5 s: percentage scaling on Nuker viral hits and Patch Daemon heals only; Proxy melee/firearms receive neither stat. 700 adds level × 1.3 accuracy for 5 s to the real attack roll. Using the ability again switches it off. |
 
 ### Lifetime
 
@@ -162,6 +163,38 @@ The fixture exposes only copied CSR_Tester 110 under CSR_AbilityQA, gives the pe
 
 1. Log into CSR_AbilityQA / CSR_Tester. `?pet summon 616`: visible Nuker and automatic Simulacra window, correct name, level and HP. `?pet` reports 100/100 IS. Click Stay, Follow and Passive/Defensive/Aggressive: check corresponding server `?pet` state and window state; native orders must send `81 7a/b/c fe`. Run `?pet dummy`, select the spawned dummy, then click Attack; HP changes in window and world.
 2. `?pet cast 20`: after 2 s MaxHealth rises 750 and `?pet` reports resistance 100 at level 50; dummy retaliation loses less pet HP (our resistance curve; raw attacks vary). `?pet exhaust` then `?pet`: IS begins at 0, action waits for budget and resumes after regeneration. `?pet cast 603`: after 4 s `?pet` reports cost 8; regeneration rises from 2/s to 3/s. These baseline resource amounts are OURS, not retail parity claims.
-3. `?pet cast 619`: while pet within 10 m, after the pulse `?pet` reports accuracy 65; owner spends 5 IS per 5 s; actual pet attacks use the hit roll (95% cap vs same-level). Cast 619 again: accuracy reports 0 and owner drain stops. 609 instead adds damage/heal level × 0.5, with its 20 m radius. Do not infer a statistically exact hit rate from a few hits.
+3. `?pet cast 619`: while pet within 10 m, after the pulse `?pet` reports accuracy 64; owner spends 5 IS per 5 s; actual pet attacks use the hit roll (95% cap vs same-level). Cast 619 again: accuracy reports 0 and owner drain stops. 609 instead adds Viral Damage/Healing influence level ×0.5 for 5 s within 20 m; only Nuker hits and healer heals use it, with percentage scaling. Do not infer a statistically exact hit rate from a few hits.
 4. `?pet cast 34`: corpse falls using NPC death movement and death FX after 0.5 s; window closes immediately; corpse disappears after 5 s for existing observers. `?pet summon 27`, `?pet cast 19`: death/window removal, owner +50 IS; immediately resummon before old corpse teardown and verify replacement window survives. Deactivate button removes the current pet/window; summon again and zone/reconnect: no stale pet/window.
 5. Close native client. In terminal 2: `New-Item -ItemType File -Path "$qa/stop"`; allow fixture normal exit. Inspect stopped.json for CSR_Tester 110 reset to Mara (23828,495,13984), full HP/IS, flag 0 and mission 986 only, and normal release of fixture lock. Record native results against full PR head. Claude owns QA/merge; no native pass is claimed by headless tests.
+
+## Power Boost 25 / typed 699 continuation
+
+The shipped `PowerBoost1Ability` (25) stores own-simulacrum target 11, noncombat-only use, 50 IS, a 4 s cast, 8 s recast, 10 m range, and 300 s of melee 159 / ballistic 171 influence at caster level ×0.5. `AbilityValues.TryValue` applies the native value function and truncation. The level is captured when casting starts. Completion requires the original pet, owner life/world generations, a live connected owner/pet, and 10 m reach. Replacing, killing or zoning the original pet during the cast cannot transfer the buff to a replacement. Explicit foreign-player, foreign-pet and invalid views are refused; no selection/self remains the existing own-pet shorthand. Recasting replaces rather than stacks 25.
+
+159/171 are percentage damage influence, following the existing combat pipeline's `1 + influence/100`. Only reconstructed Proxy melee/firearm attacks consume them. A level 50 caster supplies 25 influence: an 80 baseline hit becomes 100. Nuker viral attacks and healer healing remain 80. Base pet sheets, damage types and damage formulas remain server approximations.
+
+699 now uses its actual catalog targets, Viral Damage 172 and Healing 174, both caster level ×0.5 for 5 s. At level 50, a Nuker 80 baseline viral hit or Patch Daemon 80 baseline heal becomes 100; a Proxy hit stays 80 under 699 alone. This replaces the prototype's flat generic bonus. The existing damage/healing influence convention supplies the percentage conversion. The shared native value evaluator also corrects 700's level-50 accuracy from the prototype's 65 to **64**: its binary32 scale 1.3 multiplied by 50 is 64.999997..., truncated toward zero.
+
+25's 300 s timer is independent of the 699/700 aura timer. Switching or expiring one cannot erase the other. The existing single selected Daemon Boost toggle remains. 25 and 699 share stored stacking type 38; retaining independent typed channels is a server policy, not a proven retail stacking-group interpretation.
+
+**Partial gap:** 25 also stores Force Combat 519 = 40 for 300 s. Friendly pets have no forced-interlock/shield consumer. No inert Force Combat record is emitted or counted as implementation. The audit therefore keeps 25 partial.
+
+### Native follow-up checklist (Claude only)
+
+Use the exact reviewed follow-up head. Commands below are instructions for Claude; no Codex agent runs the fixture. `--build-info` is a read-only exit before lock/database setup.
+
+```powershell
+$root='C:/Users/russe/Developer/mxo-wt/codex-package-p6-power-boost'
+$head=(git -C $root rev-parse HEAD)
+$qa=Join-Path $env:TEMP ('mxo-native-p6-power-'+(Get-Date -Format yyyyMMdd-HHmmss))
+dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Release
+dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" --build-info $root
+dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" $root $qa $head coder-pets
+```
+
+The mode exposes copied CSR_Tester 110 only under CSR_AbilityQA. This continuation adds 25 to its loadout and gives the disposable fixture 1000/1000 IS for repeated checks. Keep the fixture terminal running. Use only CSR_Tester 110 in the real client.
+
+1. Before fighting, `?pet summon 594`, then `?pet cast 25`; immediately summon again during the 4 s cast. After completion, `?pet` must report `power melee/ballistic 0/0` on the replacement. Wait the 8 s recast, order Stay and start 25 within 10 m, then walk outside 10 m before it lands: no buff. Starting beyond 10 m refuses before cost. Selecting a helper player or its pet must refuse. The foreign-pet and owner lifecycle gates are also covered headlessly.
+2. Return within 10 m and cast 25 on a fresh Proxy. After 4 s, `?pet` reports `power melee/ballistic 25/25`. Cast 609: `aura viral/heal 25/25` may coexist. Spawn a dummy, select it, and click the Simulacra window's Attack button. Server lines `[PET] typed influence Proxy base X final Y` must show `Y=truncate(X*1.25)`; 699 adds no Proxy damage. Toggle 609 off: 25 remains. A pet fighting alone does not put its owner in combat.
+3. Turn 609 on, summon a Nuker with `?pet summon 616`, and cast 25 before the owner enters combat. 25 may be present but supplies no viral influence. After the next 609 pulse, a selected dummy takes 25% increased viral damage, visible in `[PET] typed influence Nuker ...`. Summon a Patch Daemon with `?pet summon 617`, use `?health 100`, and observe a 609 pulse followed by `[PET] typed healing base X final Y`, again `Y=truncate(X*1.25)`, plus actual owner HP recovery. 25 adds no healing. For 619, `?pet` reports accuracy 64 at level 50 and its independent resource drain still works.
+4. Finally start an ordinary owner fight against a dummy, then attempt 25: noncombat-only refusal. A new pet after dismiss, death or reconnect has no inherited 25. Unit tests cover 300 s expiry and percentage boundaries, so native QA need not wait five minutes. Close the real client. In another terminal: `New-Item -ItemType File -Path "$qa/stop"`. Let the fixture exit normally; inspect stopped.json for CSR_Tester 110 at Mara (23828,495,13984), full HP/IS, flag 0, mission 986 only, and normal lock release. Record only observed native results against the exact follow-up SHA.
