@@ -572,15 +572,15 @@ namespace hds.databases{
 
 				Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x,y,z));
 				Store.currentClient.playerInstance.YawInterval.setValue(PersistedYawInterval(reader.GetValue(4)));
-				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(reader.GetValue(5)));	
-				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(reader.GetValue(6)));	
+				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(reader.GetValue(5)));
+				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(reader.GetValue(6)));
 				
-				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(reader.GetValue(7)));	
-				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(reader.GetValue(8)));	
+				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(reader.GetValue(7)));
+				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(reader.GetValue(8)));
 				
 				Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(reader.GetValue(9)));
 				
-   				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(reader.GetValue(10)));
+				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(reader.GetValue(10)));
 				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(reader.GetValue(11)));
 
 				// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
