@@ -36,7 +36,7 @@ namespace hds
                     AbilityCooldowns.IsCoolingDown(data, ability, now) || !AbilityBuffs.TryGet(ability, out var buff) ||
                     !AbilityBuffBuffer.CanApply(client, ability, buff))
                 { Deny(client, ability); return true; }
-                CompileSession.End(client);
+                CraftingSession.End(client);
                 var token = new Pending();
                 pending.Add(client, token);
                 int world = data.worldGeneration, life = data.lifeGeneration;
