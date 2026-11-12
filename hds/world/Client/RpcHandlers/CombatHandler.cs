@@ -559,6 +559,7 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Close combat requested against target: {targetViewWithSpawnId}");
+            if (!npcStarted) Stealth.BreakForAction(client, "attacked");
 
             // Another player: PvpCombat decides whether they can be fought, and PvpFight runs the interlock
             if (!npcStarted && PvpCombat.TryCloseCombat(client, packet, targetViewWithSpawnId))
@@ -988,6 +989,7 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
+            Stealth.BreakForAction(client, "fired");
 
             // Another player: PvpGunfire fires for this one
             if (PvpCombat.TryRangedCombat(client, targetViewWithSpawnId))
