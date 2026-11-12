@@ -46,3 +46,11 @@ Bounded primary reading: client laviewhardlineselection.cpp tree builder620374a0
 Use discovered large01 profile: no dev/GM/forced rolls. It enables the existing captured NPC scope without modifying spawns. Enter at shipped12/1 and check terrain, booth, ground/nav movement and world geometry. Walk to sector136 near(12900,15500), test the actual darkwood door radial and report missing interior interactions separately. Inspect existing captured NPC presentation where reachable; record elevation problems rather than moving them.
 
 Use the actual booth radial Exit to Loading Area and accept. Inspect whether large01 is offered by the native hardline tree, and attempt normal UI return only if offered. If absent, record the unresolved gate; do not label a direct injected80ff as a UI PASS. Native geometry and overall UI acceptance remain Claude-only.
+
+## Recorded automated validation
+
+The final master148 combined base passed4,174 unit tests;21 focused world/hardline tests and12 audit policy/link tests also passed. Small03 original CSV/audit and the large01 safe CSV/audit reproduce byte-for-byte; repeated navigation matches after decompression, and strict large01 export without the explicit omission option refuses before writing output.
+
+The normal-protocol partial-world fixture passed26.4seconds/exit0/peak one disposable server. It observed the shipped592 booth, booth-to-LA transition,6d12/1 list, direct80ff return, a new06 world load and new self-spawn at exact HDL coordinates, native365 door creation and existing captured Chopper Runner wire visibility from a grounded actor. Native UI selection and NPC elevation are not proved.
+
+The initial fixture failed28.9seconds because it wrongly expected8109 on the normal-world return. The source emits8109 only for LA; the corrected fixture waits for06/new self. No server reset/ACK behavior was changed. Both runs are retained. Upstream148 was subsequently merged; it changes missions/fixtures, not this tested world runtime. Native geometry/UI acceptance remains pending.
