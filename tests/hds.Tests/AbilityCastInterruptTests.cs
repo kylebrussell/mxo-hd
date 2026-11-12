@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 namespace hds.Tests;
 
 [CollectionDefinition("ConcentrationEnvironment",DisableParallelization=true)]
@@ -148,6 +149,33 @@ public class AbilityCastInterruptTests : IDisposable
         var c=Client();var cast=Begin(c);
         TimedEffects.ForPlayer(c).Effects.Apply(999,new[]{new TimedEffects.Active{Proc=TempMods.Proc.State,Target=TempMods.PowerlessAbility,Seconds=30}},TimeUtils.GetSimTimeSeconds());
         Assert.False(AbilityCastInterrupts.Complete(cast,()=>throw new Exception("powerless landing")));
+    }
+
+    [Fact]
+    public void RejectedSecondRequestCannotRedirectOrReplacePendingHeal()
+    {
+        var singleton=typeof(DataLoader).GetField("Instance",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
+        var previousLoader=singleton.GetValue(null);var previousClient=Store.currentClient;
+        var loader=(DataLoader)RuntimeHelpers.GetUninitializedObject(typeof(DataLoader));
+        AbilityItem Item(ushort id){var a=new AbilityItem();a.setAbilityID(id);a.setAbilityName("fixture"+id);a.setCastAnimStart(new byte[4]);return a;}
+        loader.AbilityDB=new(){Item(77),Item(360)};singleton.SetValue(null,loader);
+        try
+        {
+            var c=Client();c.viewMan=new ViewManager();c.playerInstance.Health.setValue((ushort)100);Store.currentClient=c;
+            var handler=new AbilityHandler();byte[] original={77,0,2,0};handler.ProcessAbility(ref original);
+            double originalEnd=c.playerData.castEndsAt;ushort paid=AbilityHandler.CurrentInnerStrength(c);
+            Assert.True(originalEnd>TimeUtils.GetSimTimeSeconds());
+            byte[] rejected={0x68,1,0xe7,3};handler.ProcessAbility(ref rejected);
+            Assert.Equal((ushort)360,handler.currentAbility.getAbilityID());
+            Assert.Equal(originalEnd,c.playerData.castEndsAt);Assert.Equal(paid,AbilityHandler.CurrentInnerStrength(c));
+            // Mutating the public legacy field also cannot affect the method-local target captured by the callback.
+            handler.currentTargetViewId=999;
+            DelayedActions.RunDue(originalEnd+1);
+            Assert.True(PvpCombat.HealthOf(c)>100);
+            Assert.True(AbilityCooldowns.IsCoolingDown(c.playerData,77,TimeUtils.GetSimTimeSeconds()));
+            Assert.False(AbilityCooldowns.IsCoolingDown(c.playerData,360,TimeUtils.GetSimTimeSeconds()));
+        }
+        finally{singleton.SetValue(null,previousLoader);Store.currentClient=previousClient;}
     }
 
     [Theory]
