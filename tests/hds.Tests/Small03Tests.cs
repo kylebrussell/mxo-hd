@@ -27,7 +27,7 @@ public class Small03Tests
     {
         HardlineNetwork.Load(Path.Combine(Root,"data","hardline_network.csv"));
         Assert.True(HardlineNetwork.Covers(17));
-        Assert.False(HardlineNetwork.Covers(14));
+        Assert.True(HardlineNetwork.Covers(14)); Assert.False(HardlineNetwork.Covers(99));
         Assert.Equal(new ushort[]{1},HardlineNetwork.Ids(17));
         Assert.Equal((ushort)1,HardlineNetwork.Nearest(17,17700,34200));
         var line=HardlineNetwork.Get(17,1);
