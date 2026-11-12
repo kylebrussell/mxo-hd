@@ -17,6 +17,6 @@ We have the address of a base that has one of their lead operatives. Kill him an
     <enter><say>I will let you know when you've opened the targeted desk for the dossier. Just be careful of traps!</say></enter>
     <object id="1" kind="Furniture" />
     <objective goal="1" text="Kill the Zion Operatives" type="DefeatAll" />
-    <objective goal="2" text="Put the secret plans inside the desk" type="Put" object="1" item="6799" />
+    <objective goal="2" text="Put the secret plans inside the desk" type="Put" object="1" item="6799" after="1" />
   </phase>
 </mission>

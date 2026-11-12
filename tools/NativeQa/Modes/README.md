@@ -18,3 +18,5 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 
 `resist-damage` loads74/371 and owns deterministic6/8/9m helper boundaries through the shared disposable SQL builder. It enables existing health-reset dev commands, with no GM, forced roll or health hold. Team invites/native acceptance and health resets before each case are explicit in [ABILITY-RESIST-DAMAGE.md](../../../docs/ABILITY-RESIST-DAMAGE.md).
 `zion-chain` seeds only the ten Tyndall prerequisites before2304, starts at Mara for the remote contact and uses strict disposable site/layout-only seed230410. No combat/callback RNG override or health hold. Existing `?weaken 1` plus normal combat/UI actions are explicit in [ZION-PRIMA-CHAIN.md](../../../docs/ZION-PRIMA-CHAIN.md).
+
+`merv-chain`: Flood Prima2101–2110 (25 phases), prerequisite-only grants and strict site-only seed210110; see docs/MERV-PRIMA-CHAIN.md.
