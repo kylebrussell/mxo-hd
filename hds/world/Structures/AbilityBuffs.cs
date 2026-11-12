@@ -271,8 +271,9 @@ namespace hds
 
         public static int VitalTotal(WorldClient client, UInt16 stat)
         {
+            int timed = TimedEffects.ForPlayer(client).Effects.Total(stat); // hostile max-vital tempmods (Destroy Health / Resolve)
             lock (client.playerData.activeBuffs)
-                return client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
+                return timed + client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
         }
 
         public static UInt16 UnbuffedMaximum(WorldClient client, UInt16 stat)

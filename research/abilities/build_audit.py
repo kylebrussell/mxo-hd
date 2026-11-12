@@ -144,6 +144,38 @@ def expected(i):
     return '; '.join(dict.fromkeys(result)) or 'Native action / passive metadata; no decoded stored modifier'
 
 
+# Hand-documented executors outside the runtime inventory (docs/UTILITY-ABILITIES.md, PR 108):
+# their server column and status are kept verbatim from that PR's audit rows.
+MANUAL = {
+    44: ('rshooks.py roll on mission accept, access flags stored, success FX; the client record that shows the map is not identified; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    119: ('Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    142: ('Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked="1"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    166: ('Hardline Hack Construct (rule 10024) ability/faction gate lines only; construct hacking itself absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    218: ('Disable Security Devices use (rule 1012 SecurityPBXDisable): ability + DisableDeviceTool, Security Systems vs Difficulty contest, ACCESS GRANTED/ALARM chat, Disabled/Alarming state; no XP, alarm has no effect; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    382: ('Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    486: ('Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+    538: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
+    539: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
+    540: ('presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
+    541: ('presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
+    621: ('Find Data Node toggle: locator tool gate (ID_ABILITY_TOOL_FAIL), start/stop lines; 80 ca-80 cf locate records not sent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
+}
+# Stealth executors (hds/world/Structures/Stealth.cs; docs/STEALTH.md, PR 109): rows kept verbatim from that PR's audit.
+STEALTH = {
+    156: ('reuse 15s; total feeds stealth detection (STEALTH.md); record is scaled-buff scope', 'missing'),
+    186: ('STEALTH.md: Sneak behaviour under its own id (no stored modifier; our choice); LOS/noise/stance incomplete', 'partial'),
+    366: ('STEALTH.md: imparts 629 on a friendly player; refused on self, target in combat or already invisible', 'partial'),
+    368: ('STEALTH.md: Invisibility 2 s later without the proximity test, ends the fight (our choice); smoke-bomb item 460 not enforced', 'partial'),
+    507: ('STEALTH.md: kSneak + ST_STEALTHED; Sneak Movement 25 + Stealth (char level) records; 5 s sneakTest; damage/attack break; LOS/noise/stance incomplete', 'partial'),
+    629: ('STEALTH.md: kInvisible for 120 s on the target; refused when already invisible', 'partial'),
+    1111: ('STEALTH.md: kSneak + ST_STEALTHED to own/other views; Stealth/Noise/MoveSpeed/StealthState records; native sneakTest every 5 s vs facing enemies and NPCs; hidden from enemies; damage/attack/ability break; LOS/noise/stance incomplete', 'partial'),
+    1114: ('presentation only; no effect executor; STEALTH.md: needs tool ModelOverride/setModel, not done', 'missing'),
+    1116: ('STEALTH.md: kInvisible + ST_STEALTHED for 30+2/level s; MoveSpeed -300 record; refused with an enemy facing within 800; hidden from enemies, ignored by NPCs; no damage break; Detection counter missing', 'partial'),
+    1118: ('STEALTH.md: kShadowObject for 180 s, 25 IS every 5 s with deactivation, recast on end, NPCs ignore; evade/timed-usable and interaction breaks incomplete', 'partial'),
+    1137: ('STEALTH.md: kSneak + ST_STEALTHED + ST_CONCEALMENT; Concealed/StealthState records; 5 s sneakTest; damage break; stance/panic-end incomplete', 'partial'),
+}
+MANUAL.update(STEALTH)
+
 # Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
 PETS = {
@@ -161,35 +193,6 @@ PETS = {
 }
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
-# Hand-written server text and status for rule/object/state executors the runtime inventory cannot see:
-# utility abilities (UtilityAbilities.cs, docs/UTILITY-ABILITIES.md) and stealth (Stealth.cs, docs/STEALTH.md).
-MANUAL = {
-    44: ('rshooks.py roll on mission accept, access flags stored, success FX; the client record that shows the map is not identified; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    119: ('Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    142: ('Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked="1"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    156: ('reuse 15s; total feeds stealth detection (STEALTH.md); record is scaled-buff scope', 'missing'),
-    166: ('Hardline Hack Construct (rule 10024) ability/faction gate lines only; construct hacking itself absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    186: ('STEALTH.md: Sneak behaviour under its own id (no stored modifier; our choice); LOS/noise/stance incomplete', 'partial'),
-    218: ('Disable Security Devices use (rule 1012 SecurityPBXDisable): ability + DisableDeviceTool, Security Systems vs Difficulty contest, ACCESS GRANTED/ALARM chat, Disabled/Alarming state; no XP, alarm has no effect; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    366: ('STEALTH.md: imparts 629 on a friendly player; refused on self, target in combat or already invisible', 'partial'),
-    368: ('STEALTH.md: Invisibility 2 s later without the proximity test, ends the fight (our choice); smoke-bomb item 460 not enforced', 'partial'),
-    382: ('Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    486: ('Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    507: ('STEALTH.md: kSneak + ST_STEALTHED; Sneak Movement 25 + Stealth (char level) records; 5 s sneakTest; damage/attack break; LOS/noise/stance incomplete', 'partial'),
-    538: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    539: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    540: ('presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    541: ('presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    621: ('Find Data Node toggle: locator tool gate (ID_ABILITY_TOOL_FAIL), start/stop lines; 80 ca-80 cf locate records not sent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    629: ('STEALTH.md: kInvisible for 120 s on the target; refused when already invisible', 'partial'),
-    1111: ('STEALTH.md: kSneak + ST_STEALTHED to own/other views; Stealth/Noise/MoveSpeed/StealthState records; native sneakTest every 5 s vs facing enemies and NPCs; hidden from enemies; damage/attack/ability break; LOS/noise/stance incomplete', 'partial'),
-    1114: ('presentation only; no effect executor; STEALTH.md: needs tool ModelOverride/setModel, not done', 'missing'),
-    1116: ('STEALTH.md: kInvisible + ST_STEALTHED for 30+2/level s; MoveSpeed -300 record; refused with an enemy facing within 800; hidden from enemies, ignored by NPCs; no damage break; Detection counter missing', 'partial'),
-    1118: ('STEALTH.md: kShadowObject for 180 s, 25 IS every 5 s with deactivation, recast on end, NPCs ignore; evade/timed-usable and interaction breaks incomplete', 'partial'),
-    1137: ('STEALTH.md: kSneak + ST_STEALTHED + ST_CONCEALMENT; Concealed/StealthState records; 5 s sneakTest; damage break; stance/panic-end incomplete', 'partial'),
-}
-
-
 
 def server(i):
     if i in MANUAL:
@@ -206,7 +209,7 @@ def server(i):
     elif r['direct_damage']:
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
-        parts.append(('stored DOT executor' if r.get('special') else 'captured DOT executor')
+        parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r['healing']:
         if i in PET_REPAIRS:
@@ -226,7 +229,14 @@ def server(i):
         if states:
             parts.append(', '.join(states))
         if any(m['stat'] for m in r['timed']):
-            parts.append(('stored' if r.get('special') else 'captured') + ' debuffs; selected combat stats consumed')
+            parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
+    if r.get('aura'):
+        a = r['aura']
+        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on hostile NPC/PvP targets in its radius")
+    if r.get('sweep'):
+        parts.append('pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
+    if r.get('instant_hostile'):
+        parts.append('instant script: removable buffs (UBF0) / current IS on landing')
     if r['grants']:
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     style = [m for m in r.get('style', []) if m['level50'] is not None]
@@ -252,7 +262,7 @@ def status(i):
     if i in PETS:
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('style') or r.get('special') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or r.get('style') or r.get('special') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'

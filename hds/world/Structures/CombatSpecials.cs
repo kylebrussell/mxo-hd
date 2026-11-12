@@ -10,7 +10,8 @@ namespace hds
     /// GOB fields (data/ability_catalog.json) and the client's own scripts:
     /// <list type="bullet">
     /// <item>Poison Knife 146, Wounding Throw 281, Sever Artery 341: their ThrownDOT (tempmods.py 935: the shared
-    /// <see cref="TempMods.DotTick"/> formula) and Sever Artery's fixed 30 s debuffs, as timed effects on the target.</item>
+    /// <see cref="TempMods.DotTick"/> formula) and Sever Artery's fixed 30 s debuffs, as timed effects on the target
+    /// (executed by AbilityHostile's catalog debuffs; this class keeps their damage off the generic fallback).</item>
     /// <item>Berserker Attack 535 and Side Roll Escape 121: WhenEnabled 1 modifiers, put on the caster when the move lands.
     /// Side Roll Escape (TestFunction 6, the ILDB's "Withdraw Sideroll" moves) then leaves the fight.</item>
     /// <item>Taunt 647: TauntAggro (tempmods.py 1281) on the NPCs within RadiusOfEffect: AI.setMostHated(caster).</item>
@@ -69,34 +70,8 @@ namespace hds
         public static bool ActsOnCast(ushort id) => AbilityCatalog.Canonical(id) == Taunt;
 
         // ---- timed effects on the target ----
-
-        /// <summary>The target's tempmods: the ThrownDOT and the fixed timed stat debuffs (RandomCombatStateChance's
-        /// periodic random state is not modelled).</summary>
-        public static bool TryTimed(ushort id, out TempMods.Effect effect)
-        {
-            effect = null;
-            id = AbilityCatalog.Canonical(id);
-            if (!thrownDots.Contains(id)) return false;
-            var entry = AbilityCatalog.Find(id);
-            if (entry == null) return false;
-            var mods = new List<TempMods.Mod>();
-            foreach (var m in entry.Modifiers)
-            {
-                if (m.Number("WhenEnabled", -1) != 2 || m.Number("DurationType", -1) != 0) continue;
-                float seconds = (float)m.Number("Duration");
-                int min = (int)m.Number("MinValue"), max = (int)m.Number("MaxValue", min);
-                if (m.Text("StatModUpdateFunc").EndsWith("DOT", StringComparison.Ordinal))
-                    mods.Add(new TempMods.Mod { Kind = TempMods.KindLinked, Target = TempMods.DOTPlaceHolderAbility, MinValue = min,
-                        MaxValue = max, Seconds = seconds, Proc = TempMods.Proc.Dot,
-                        Interval = m.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds) });
-                else if (m.Target != 0 && m.State == 0 && min == max && string.IsNullOrEmpty(m.Text("StatModInitFunc")))
-                    mods.Add(new TempMods.Mod { Kind = TempMods.KindStat, Target = m.Target, MinValue = min, MaxValue = max,
-                        Seconds = seconds, Proc = TempMods.Proc.Stat });
-            }
-            if (mods.Count == 0) return false;
-            effect = new TempMods.Effect { Ability = id, Mods = mods.ToArray() };
-            return true;
-        }
+        // The thrown DOTs' stored ThrownDOT and fixed debuffs are UDB0 catalog debuffs: AbilityHostile.Catalog executes
+        // them through TempMods.TryGet (RandomCombatStateChance's periodic random state is not modelled).
 
         // ---- buffs on the caster ----
 

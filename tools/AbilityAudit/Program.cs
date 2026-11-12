@@ -43,6 +43,10 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
         grants = AbilityProgression.GrantsOf(e.Id),
+        aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
+        sweep = AbilityHostile.IsSweep(e.Id),
+        instant_hostile = AbilityHostile.Lands(e.Id),
+        catalog_debuff = AbilityHostile.Catalog(e.Id) != null,
         // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
             level50 = AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null }).ToArray(),

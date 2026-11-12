@@ -376,6 +376,7 @@ namespace hds
                 return true;
             }
             LandAbilityOn(caster, ability, target);
+            AbilityTargets.LandAround(caster, ability, target);
             return true;
         }
 
@@ -411,6 +412,7 @@ namespace hds
             PvpFlag.OnFightStarts(caster, true);
             PvpFlag.ApplyAbility(target, abilityId);
             TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster);
+            AbilityHostile.LandedOnPlayer(caster, target, abilityId);
             if (damage > 0)
             {
                 // Retail's lines: "Your %1z does %4I damage to %3s." and "%2s's %1z does %4I damage to you."

@@ -125,6 +125,8 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            // A toggled aura used while it is on switches off (no cost, cooldown or cast)
+            if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
             // style is switched to, as the client's special-move picker does with 3e
             if (!CombatStyles.EnsureStyleFor(Store.currentClient, AbilityID))
@@ -163,7 +165,7 @@ namespace hds
                 Deny(AbilityID, "Choose a living friendly target within range.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Cost(AbilityID))
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "You do not have enough Inner Strength.");
                 return;
@@ -213,6 +215,7 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
@@ -236,7 +239,7 @@ namespace hds
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
                 (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
-                 CombatSpecials.TargetsEnemy(AbilityID)))
+                 AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
@@ -373,7 +376,7 @@ namespace hds
             // The cost is paid when the ability is used: the retail cost (AbilityCosts), 20 when unknown. This used
             // to set Inner Strength to 50 after every ability (and Hyper-Speed and the cast animation sent their
             // own fixed values, 50 and 237), then cost a flat 20.
-            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Cost(abilityItem.getAbilityID()));
+            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Effective(Store.currentClient, abilityItem.getAbilityID()));
 
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();

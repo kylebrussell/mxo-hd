@@ -119,6 +119,8 @@ namespace hds
             /// <summary>Damage over time on DOTPlaceHolderAbility, <see cref="DotTick"/> every <see cref="DotIntervalSeconds"/>.</summary>
             Dot,
             Hot,
+            /// <summary>A periodic script callback (NegativeConditionSweepPulse) every Interval while it lasts (<see cref="AbilityHostile.Pulse"/>).</summary>
+            Pulse,
         }
 
         public sealed class Mod
@@ -155,6 +157,8 @@ namespace hds
             public float ImmunitySeconds;
             /// <summary>The ability is a virus: the caster is told "Your %1z infects %3s!".</summary>
             public bool Virus;
+            /// <summary>Non-virus catalog effects: the template's ActivationStringSubject / ActivationStringTarget lines (0: none).</summary>
+            public UInt32 CasterLine, TargetLine;
 
             public bool HasControl
             {
@@ -328,8 +332,9 @@ namespace hds
         public static bool TryGet(UInt16 id, out Effect effect)
         {
             id = AbilityCatalog.Canonical(id);
-            if (CombatSpecials.TryTimed(id, out effect)) return true;
-            Effect source = AbilityCatalog.Controls(id);
+            // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
+            // CombatSpecials) their stored ThrownDOT and timed debuffs
+            Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
             if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
             var mods = new List<Mod>();
             foreach (Mod m in captured.Mods)
