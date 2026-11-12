@@ -20,7 +20,7 @@ There are no shipped HDL/NETS rows, no supported door fixture in the safe subset
 
 ## Existing normal archive route
 
-Server map5 corresponds to retail ConstructID16 / PvP archive6. The native book definition admits Zion book38533 at levels26–35 (Machines38541, Merv38547). This package changes neither `PvpArchives` nor its timing/return rules. Zion source sender38282 is approached at grounded city position `(111600,695,-6130)`. Equip the owned book from bag slot3 to program-launcher slot106 through normal `63` / `65` traffic; wait the ordinary 180-second sender cycle. The arrival source is `(-3000,-105,12000)` before existing NAV projection. Native returner38271 is spawned by the existing archive system and returns to the exact saved origin; the book remains owned and equipped.
+Server map5 corresponds to retail ConstructID16 / PvP archive6. The native book definition admits Zion book38533 at levels26–35 (Machines38541, Merv38547). This package changes neither `PvpArchives` nor its timing/return rules. Zion source sender38282 is approached at grounded city position `(111600,695,-6130)`. Equip the owned book from bag slot3 to program-launcher slot106 through normal `63` / `65` traffic; wait the ordinary 180-second sender cycle. The arrival source is `(-3000,-105,12000)` before existing NAV projection; the fresh wire canary observed projected arrival `(-3000,-105,11980)`. Native returner38271 is spawned by the existing archive system and returns to the exact saved origin; the book remains owned and equipped.
 
 The `archive02-partial-world` headless scenario observes normal equip acknowledgement, sender cycle, world handshakes, ConstructID16/resource path, map5 database state, actual returner use2, city reload, exact origin and retained book. This proves server wire behavior, **not** native geometry, menus, or LA dropdown availability. There is no hardline/LA route claim and no `80fa5` proposal.
 
@@ -32,5 +32,7 @@ Use discovered NativeQa mode `archive02`. It starts level30 Zion at the grounded
 2. Stand on sender38282 and wait its normal cycle without changing its clock.
 3. Confirm Archive02 loads. Inspect the arrival geometry and nearby walkability explicitly: the exterior SID for this sector is unavailable. Record missing geometry as a source gap rather than accepting a headless pass as native proof.
 4. Use actual Zion returner38271; confirm city load and exact source position. Confirm the reusable book remains equipped.
+
+Validation: source exports and audit round-trip exactly; default/missing-rotation-only requests refuse missing SID before creating outputs; 109-sector navigation reproduces exactly. The fresh normal-wire scenario passed in172.9s (runner exit0, peak1), including the full city return handshake and retained book. Its success server/debug log was saved before the disposable server was torn down.
 
 Native QA is pending. No client setup, lock, main database or security changes are part of this package.
