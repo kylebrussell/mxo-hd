@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -38,3 +40,24 @@ jobs:
 
       - name: Test
         run: dotnet test hds.sln --configuration Release --no-build --nologo
+
+      - name: Check historical Markdown snapshot policy
+        if: github.event_name == 'pull_request'
+        env:
+          AUDIT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 research/abilities/check_snapshot_policy.py --base "$AUDIT_BASE_SHA"
+
+      - name: Test audit snapshot policy
+        run: python3 -m unittest research.abilities.test_snapshot_policy
+
+      - name: Generate current ability audit review bundle
+        run: |
+          mkdir -p artifacts/ability-audit
+          dotnet run --project tools/AbilityAudit --configuration Release -- artifacts/ability-audit/server_coverage.json
+          python3 research/abilities/build_audit.py --coverage artifacts/ability-audit/server_coverage.json --output-dir artifacts/ability-audit
+
+      - name: Upload current ability audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ability-audit-${{ github.sha }}
+          path: artifacts/ability-audit/

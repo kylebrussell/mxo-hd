@@ -3,6 +3,8 @@
 dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 """
+import argparse
+import shutil
 import collections
 import csv
 import hashlib
@@ -11,9 +13,19 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output-dir', type=Path, help='Write the current Markdown, CSV and coverage review bundle here')
+parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: tracked inventory)')
+parser.add_argument('--update-markdown-snapshot', action='store_true', help='Explicit docs-only historical snapshot refresh')
+args=parser.parse_args()
+if args.output_dir and args.update_markdown_snapshot:
+    parser.error('--output-dir and --update-markdown-snapshot are separate workflows')
+artifact_dir=args.output_dir or ROOT / 'artifacts/ability-audit'
+artifact_dir.mkdir(parents=True,exist_ok=True)
+
 catalog = json.loads((ROOT / 'data/ability_catalog.json').read_text())
 abilities = {r['id']: r for r in catalog['abilities']}
-coverage_path = ROOT / 'research/abilities/server_coverage.json'
+coverage_path = args.coverage or ROOT / 'research/abilities/server_coverage.json'
 coverage = {r['id']: r for r in json.loads(coverage_path.read_text())}
 assert set(coverage) == set(abilities)
 
@@ -367,13 +379,17 @@ footer = '''
 
 1. `python research/abilities/extract_catalog.py --client <read-only MxO folder>`
 2. `dotnet run --project tools/AbilityAudit`
-3. `python research/abilities/build_audit.py`
+3. `python research/abilities/build_audit.py` (current Markdown in `artifacts/ability-audit`; see [audit policy](ABILITY-AUDIT.md))
 
 The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `AbilityBuffs`, `TempMods`, `AbilityTargets` and grant lookup, rather than searching comments. The generated [CSV](ABILITY-PARITY.csv) is filterable by archetype, tree and status. Ability changes have unit coverage in `AbilityParityTests.cs` and four fresh-server `ability-parity-*` scenarios for support, controls, area effects and IS denial. Native ability checks are in [ABILITY-PARITY-QA.md](ABILITY-PARITY-QA.md) and the handoff file; this ability task does not acquire the client lock. The earlier PR94 native validation is separately recorded in `PVP.md`.
 '''
-(ROOT / 'docs/ABILITY-PARITY.md').write_text(header + table + appendix + footer, encoding='utf-8')
-with (ROOT / 'docs/ABILITY-PARITY.csv').open('w', newline='', encoding='utf-8') as stream:
-    writer = csv.writer(stream, lineterminator='\n')
+markdown_path=ROOT / 'docs/ABILITY-PARITY.md' if args.update_markdown_snapshot else artifact_dir / 'ABILITY-PARITY.md'
+markdown_path.write_text(header + table + appendix + footer, encoding='utf-8', newline='\r\n')
+if args.output_dir:
+    shutil.copyfile(coverage_path,artifact_dir / 'server_coverage.json') if coverage_path.resolve() != (artifact_dir / 'server_coverage.json').resolve() else None
+csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv' 
+with csv_path.open('w', newline='', encoding='utf-8') as stream:
+    writer = csv.writer(stream, lineterminator='\r\n')
     writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status'])
     writer.writerows(rows)
 print(f'{len(player)} player candidates/grants, {len(abilities) - len(player)} other templates; {dict(counts)}')
