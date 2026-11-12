@@ -3,12 +3,12 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,5,11,12,13,15,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,11,12,13,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={4:'archive01',5:'archive02',11:'yuki',12:'large01',13:'large02',15:'medium02',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',11:'yuki',12:'large01',13:'large02',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -90,6 +90,8 @@ if args.world==4:
 elif args.world==17:
  assert set(conflicts)=={(13,13),(13,15),(13,16)}
  assert len(raw)==370 and len(objects)==358
+elif args.world==16:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(4762,4625,3321,134,1282)
 elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
