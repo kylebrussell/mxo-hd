@@ -5,7 +5,7 @@ public static class NativeQaFixturePlan
 {
     public static Dictionary<string, string> EnvironmentFor(string mode) => new()
     {
-        ["MXO_DEV_COMMANDS"] = mode is "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or
+        ["MXO_DEV_COMMANDS"] = mode is "typed-defense" or "stealth-shields" or "remaining" or "ignored-actions" or "coder-pets" or "styles" or
             "data-mining" or "death-presentation" or "actions" or "health-callbacks" ? "1" : "0",
         ["MXO_AUTH_PORT"] = "11000", ["MXO_MARGIN_PORT"] = "10000", ["MXO_WORLD_PORT"] = "10000",
         ["MXO_CONSOLE_PORT"] = "55557", ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0",

@@ -60,7 +60,8 @@ if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 bool stealthShieldsMode = args.Length > 3 && args[3] == "stealth-shields";
 bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
-bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
+bool typedDefenseMode = args.Length > 3 && args[3] == "typed-defense";
+bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode || typedDefenseMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
@@ -68,7 +69,7 @@ bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
 bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
-bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode || stealthShieldsMode;
+bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode || stealthShieldsMode || typedDefenseMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
 bool clientActionsMode = args.Length > 3 && args[3] == "ignored-actions";
 bool dataMiningMode = args.Length > 3 && args[3] == "data-mining";
@@ -119,6 +120,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (stealthShieldsMode) abilities = StealthShieldFixture.Abilities;
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (typedDefenseMode) abilities = new ushort[] {2,17,1112,134,1101};
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,25,603,31,34,19,609,619 };
@@ -188,6 +190,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     }
     if (stealthShieldsMode)
         await database.ExecuteAsync("UPDATE characters SET alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,pvpflag=1,innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,531,1,1,0),(6111,531,1,1,0),(6112,531,1,1,0),(6113,531,1,1,0),(6114,531,1,1,0)");
+    if (typedDefenseMode)
+        await database.ExecuteAsync("UPDATE characters SET healthC=5000,healthM=5000 WHERE charId=110");
     if (remainingMode)
         await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
             "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");

@@ -8,6 +8,7 @@ public class NativeQaFixturePlanTests
 {
     [Theory]
     [InlineData("ignored-actions", "1", "110")]
+    [InlineData("typed-defense", "1", "")]
     [InlineData("remaining", "1", "")]
     [InlineData("stealth-shields", "1", "")]
     [InlineData("coder-pets", "1", "")]

@@ -295,7 +295,7 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
+                    AbilityStats.Attack(player, false), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
