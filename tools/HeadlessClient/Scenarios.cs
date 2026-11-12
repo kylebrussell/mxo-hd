@@ -23,6 +23,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
+        new Scenario("mission-relog-disconnect-move", MissionRelogDisconnectAndMove, StillNpcs),
+        new Scenario("mission-relog-object-rollback", MissionRelogObjectsAndRollback, StillNpcs, "mission-persistence.xml"),
+        new Scenario("mission-relog-persistence", MissionRelogPersistence, StillNpcs),
+        new Scenario("mission-presentation", MissionPresentation, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("merv-prima-chain", MervPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="210110"}),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
