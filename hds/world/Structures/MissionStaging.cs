@@ -658,7 +658,12 @@ namespace hds
                 current ? ElevatorUpLine : ElevatorDownLine));
             client.FlushQueue();
             Output.WriteDebugLog("[MISSION] Elevator: to " + target.pos_y);
-            DelayedActions.AfterFor(client, 2, () => Ride(client, progress, target, site));
+            var rideRequested = System.Diagnostics.Stopwatch.StartNew();
+            DelayedActions.AfterFor(client, 2, () =>
+            {
+                Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
+                Ride(client, progress, target, site);
+            });
             return true;
         }
 
@@ -667,8 +672,11 @@ namespace hds
 
         private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site)
         {
+            Output.WriteDebugLog("[MISSION] Elevator callback for " + progress.mission.id + "; current " +
+                (client.playerData.missionProgress?.mission.id.ToString() ?? "none"));
             if (client.playerData.missionProgress != progress)
             {
+                Output.WriteDebugLog("[MISSION] Elevator ride cancelled: mission changed");
                 return;
             }
 
@@ -678,12 +686,14 @@ namespace hds
             double x = target.pos_x + dx / length * 200, y = target.pos_y - 50, z = target.pos_z + dz / length * 200;
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
+            Output.WriteDebugLog("[MISSION] Elevator navigation start");
             if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), target.pos_x, y, target.pos_z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
                 x = NearestOnMesh(client, target.pos_x, y, target.pos_z, out z);
             }
 
+            Output.WriteDebugLog("[MISSION] Elevator navigation finished");
             Teleport(client, x, y, z);
             foreach (ushort id in progress.following)
             {
