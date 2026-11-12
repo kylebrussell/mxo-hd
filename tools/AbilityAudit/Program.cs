@@ -22,6 +22,7 @@ static string Consumer(ushort stat) => stat switch
 };
 static string UtilityCoverage(ushort id) => id switch
 {
+    971 or 972 => "owned AntiStun pill only: exact42763/42764, CanUseWhileStunned;1s cast, stored own900/600s and shared973600s; removes Stun/Mez tuples, halves actual remaining immunity when half>=1s; item/life/world/cast revalidation; [docs/ANTI-STUN-PILLS.md](ANTI-STUN-PILLS.md)",
     CraftingSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
     CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; code synthesis outputs/economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
