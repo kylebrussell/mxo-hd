@@ -15,6 +15,6 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
 " },
         new string[] {  },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

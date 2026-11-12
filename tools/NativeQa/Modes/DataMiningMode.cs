@@ -9,6 +9,6 @@ public sealed class DataMiningMode : NativeQaMode
         new string[] {  },
         new string[] { @"DELETE FROM inventory WHERE charId=110 AND slot<97; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,422,1,1,0)" },
         new string[] {  },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

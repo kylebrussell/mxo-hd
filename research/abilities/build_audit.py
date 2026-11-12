@@ -4,7 +4,6 @@ dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 """
 import argparse
-import shutil
 import collections
 import csv
 import hashlib
@@ -386,8 +385,8 @@ The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `Abilit
 markdown_path=ROOT / 'docs/ABILITY-PARITY.md' if args.update_markdown_snapshot else artifact_dir / 'ABILITY-PARITY.md'
 markdown_path.write_text(header + table + appendix + footer, encoding='utf-8', newline='\r\n')
 if args.output_dir:
-    shutil.copyfile(coverage_path,artifact_dir / 'server_coverage.json') if coverage_path.resolve() != (artifact_dir / 'server_coverage.json').resolve() else None
-csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv' 
+    (artifact_dir / 'server_coverage.json').write_text(coverage_path.read_text(encoding='utf-8'), encoding='utf-8', newline='\r\n')
+csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv'
 with csv_path.open('w', newline='', encoding='utf-8') as stream:
     writer = csv.writer(stream, lineterminator='\r\n')
     writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status'])

@@ -9,6 +9,6 @@ public sealed class ControlsMode : NativeQaMode
         new string[] {  },
         new string[] {  },
         new string[] { @"DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)" },
-        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

@@ -17,10 +17,10 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
             $@"
 UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
 INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
- VALUES(110,400,{hds.CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
+ VALUES(110,400,{NativeQaFixturePlan.CompileArchiveValue},1,0,'Antibiotic item code: native Compile UI refusal fixture');
 " },
-        new string[] { @"UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)",
+        new string[] { @"UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114)",
             $@"UPDATE characters SET level=20,exp={hds.PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111" },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: true);
 }

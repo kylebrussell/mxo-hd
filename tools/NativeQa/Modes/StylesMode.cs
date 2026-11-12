@@ -9,6 +9,6 @@ public sealed class StylesMode : NativeQaMode
         new string[] {  },
         new string[] {  },
         new string[] {  },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

@@ -9,6 +9,6 @@ public sealed class CoderPetsMode : NativeQaMode
         new string[] { @"UPDATE characters SET innerStrC=1000,innerStrM=1000 WHERE charId=110" },
         new string[] {  },
         new string[] {  },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

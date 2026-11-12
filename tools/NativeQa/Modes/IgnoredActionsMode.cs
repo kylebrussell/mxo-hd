@@ -20,6 +20,6 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
  VALUES(110,400,{hds.CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
 " },
         new string[] {  },
-        DevCommands: true, GmCharacter110: true, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: true, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

@@ -12,7 +12,7 @@ public sealed class StealthShieldsMode : NativeQaMode
         new string[] {  },
         new string[] {  },
         new string[] { @"UPDATE characters SET alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,pvpflag=1,innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,531,1,1,0),(6111,531,1,1,0),(6112,531,1,1,0),(6113,531,1,1,0),(6114,531,1,1,0)" },
-        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: true, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "stealth-shield-217", StealthShieldQa: true, HealthCallbackQa: false, CompileItemsQa: false);
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {

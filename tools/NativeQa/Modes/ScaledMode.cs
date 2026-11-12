@@ -9,6 +9,6 @@ public sealed class ScaledMode : NativeQaMode
         new string[] {  },
         new string[] {  },
         new string[] { $@"UPDATE characters SET level=20,exp={hds.PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111" },
-        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }

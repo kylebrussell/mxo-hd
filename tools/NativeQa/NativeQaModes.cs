@@ -12,6 +12,7 @@ public sealed class NativeQaModePlan
     public IReadOnlyList<string> BeforeLoadout { get; }
     public IReadOnlyList<string> AfterLoadout { get; }
     public IReadOnlyList<string> AfterHelpers { get; }
+    public bool SeedDisguiseTool { get; }
     public bool DevCommands { get; }
     public bool GmCharacter110 { get; }
     public bool FixedCallbackRolls { get; }
@@ -21,12 +22,13 @@ public sealed class NativeQaModePlan
     public bool CompileItemsQa { get; }
     public NativeQaModePlan(ushort[] abilities, int x, int z, string[] beforeLoadout, string[] afterLoadout,
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
-        string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false)
+        bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
         AfterLoadout=Array.AsReadOnly((string[])afterLoadout.Clone());
         AfterHelpers=Array.AsReadOnly((string[])afterHelpers.Clone());
+        this.SeedDisguiseTool=SeedDisguiseTool;
         this.DevCommands=DevCommands; this.GmCharacter110=GmCharacter110; this.FixedCallbackRolls=FixedCallbackRolls;
         this.Bootstrap=Bootstrap; this.StealthShieldQa=StealthShieldQa; this.HealthCallbackQa=HealthCallbackQa; this.CompileItemsQa=CompileItemsQa;
     }

@@ -9,6 +9,6 @@ public sealed class ResurrectionMode : NativeQaMode
         new string[] {  },
         new string[] {  },
         new string[] {  },
-        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false,
+        DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false, SeedDisguiseTool: false,
         Bootstrap: "", StealthShieldQa: false, HealthCallbackQa: false, CompileItemsQa: false);
 }
