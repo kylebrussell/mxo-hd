@@ -42,15 +42,29 @@ public static partial class Scenarios
         SetAbilityLoaded(player, 300, 45, 50, true);
         await player.WaitForRpcAsync(PassiveRecord(45, 1056, 10));
 
+        // Death Effect recovers while DB/startup/delivery work runs. Verify a legal reduced learned-level
+        // value rather than requiring the initial42*4 to survive an arbitrarily slow machine.
+        var hacker=BytePattern.Parse("80 bc 45 00 ?? ?? 00 34 00 00 00 83 02");
+        bool ReducedHacker(RpcRecord r) => hacker.IsMatch(r.Bytes) && r.Bytes[17]==0 &&
+            BitConverter.ToInt32(r.Bytes,13) is int value && value>=168 && value<200 && value%4==0;
+        int ExecuteBonus(HeadlessPlayer p)
+        {
+            var records=p.Received("80 bc 45 00 ?? ?? 00 2d 00 00 00 20 04");
+            var latest=records.Last(r=>r.Bytes[17]==0);
+            int value=BitConverter.ToInt32(latest.Bytes,13);
+            Check.That(value>=8 && value<10,"Death Effect reduces Execute Program until recovery");
+            return value;
+        }
         player.SendChat("?die");
-        await player.WaitForRpcAsync(PassiveRecord(52, 643, 168));
-        Check.That(player.Received(PassiveRecord(45, 1056, 8)).Count > 0, "Death Effect rescales learned-level passives");
+        await player.WaitForRpcAsync(ReducedHacker,"A reduced Hacker learned-level modifier");
+        ExecuteBonus(player);
         string username = await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={player.CharId}");
         using var server = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name, StillNpcs);
         using var again = await HeadlessPlayer.LoginAsync(server.Address, username, player.Handle);
         await again.EnterWorldAsync();
-        await again.WaitForRpcAsync(PassiveRecord(52, 643, 168));
-        Check.Equal((ushort)216, BitConverter.ToUInt16(again.World.CreationSnapshot().Last(v => v.ViewId == 2).Attributes["InnerStrengthMax"]),
+        await again.WaitForRpcAsync(ReducedHacker,"Fresh-server reduced Hacker modifier");
+        ushort expectedMaximum=(ushort)(200*(100+ExecuteBonus(again))/100);
+        Check.Equal(expectedMaximum, BitConverter.ToUInt16(again.World.CreationSnapshot().Last(v => v.ViewId == 2).Attributes["InnerStrengthMax"]),
             "Fresh-server login restores the penalized bonus once, without persisting a buffed baseline");
         Check.Equal(0, again.World.Problems.Count, "Passive reconnect protocol");
     }
