@@ -236,7 +236,7 @@ namespace hds
                 return;
             }
 
-            var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient):null;
+            var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
             if (!stealth) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);

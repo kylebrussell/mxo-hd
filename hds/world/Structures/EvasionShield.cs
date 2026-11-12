@@ -38,6 +38,10 @@ namespace hds
         }
         public static void Refresh(WorldClient target)
         {
+            lock(target.playerData.upgradeSync) RefreshCore(target);
+        }
+        private static void RefreshCore(WorldClient target)
+        {
             if (!states.TryGetValue(target,out var state)) return;
             bool on=HasState(target);
             lock (target.playerData.activeBuffs)

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -91,12 +92,14 @@ namespace hds
             /// Puts the tempmods on for <paramref name="parent"/>, replacing everything that ability put on before
             /// (retail's refresh). Returns the replaced ones.
             /// </summary>
-            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now)
+            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now, bool preserveOtherTargets = false)
             {
                 lock (active)
                 {
-                    List<Active> replaced = active.FindAll(a => a.Parent == parent);
-                    active.RemoveAll(a => a.Parent == parent);
+                    //1125 has an independent caster681 marker and target710 modifier. Refresh its tuple, not both.
+                    bool Replaced(Active a)=>a.Parent==parent && (!preserveOtherTargets || mods.Any(m=>m.Target==a.Target));
+                    List<Active> replaced = active.FindAll(Replaced);
+                    active.RemoveAll(Replaced);
                     foreach (Active m in mods)
                     {
                         m.Parent = parent;
@@ -463,7 +466,7 @@ namespace hds
                 return mods;
             }
 
-            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now);
+            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion);
             if (immunity != null)
             {
                 subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);

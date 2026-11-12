@@ -60,6 +60,7 @@ namespace hds
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CombatPresentation.CheckObservers();
+                StealthShieldAbilities.CheckObservers();
                 foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
                 foreach (WorldClient client in aliveClients) DataMining.Check(client);
                 MobAggro.Check(aliveClients, mobGrids);

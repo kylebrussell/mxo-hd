@@ -19,6 +19,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("stealth-shields-lifecycle", StealthShieldLifecycle, StillNpcs),
+        new Scenario("stealth-shields-terminal-cancel", StealthBullDogDeathCancels, StillNpcs),
+        new Scenario("stealth-shields-suppression", StealthShieldSuppression, StillNpcs),
+        new Scenario("stealth-shields-bulldog-pvp", StealthBullDogPvpAndViews, StillNpcs),
+        new Scenario("stealth-shields-bulldog-npc", StealthBullDogNpc, StillNpcs),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
