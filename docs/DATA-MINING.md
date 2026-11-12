@@ -69,7 +69,7 @@ dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Release
 dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" $root $qa $head data-mining
 ```
 
-Wait for `state.json` Ready and `Im'running :D` before logging in as CSR_AbilityQA / CSR_Tester. Use the current full PR head in the test report.
+Wait for `state.json` Ready and `Im'running :D` before logging in as CSR_AbilityQA / CSR_Tester. Verify `Configuration` is `Release`, `SourceAssembly` points at this checkout's Release server, and `SourceAssemblySha256` equals `SnapshotAssemblySha256`. The harness snapshots the server configuration it was built with. Use the current full PR head in the test report.
 
 1. `?utilitylocator none`, double-click **Find Data Node** in Actions: expect "A tool is required to activate this ability." Do not cast prerequisite-only tiers 538/539.
 2. `?utilitylocator 422`, `?utilityobject 606`, `?utilityobject 596`. Double-click Find Data Node; expect the searching line and node FX at the fixture. Inspect the minimap for a yellow luggable ping. Move several metres, wait 10 s, and verify the updated attenuation/position. Double-click again and verify node FX disappears.

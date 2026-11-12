@@ -422,6 +422,14 @@ namespace hds
         // Find Data Node is a toggle (IsAToggleAbility)
         public static bool IsSearchingForDataNodes(WorldClient client) => DataMining.Searching(client);
 
+        /// <summary>Idempotent deactivation: a concurrent tool/death cleanup must never turn a pickup into a new search.</summary>
+        public static bool StopFindDataNode(WorldClient client)
+        {
+            if (!DataMining.Stop(client)) return false;
+            ToCaster(client, LocateDataNodeOff, FindDataNode);
+            return true;
+        }
+
         /// <summary>
         /// Find Data Node (the mastery of Locate Data Node): needs a locator tool (Ability/RequiresTool), then searches until
         /// used again. LocateDataNode_DirectObject reads the tool's Range and Type; with goggles See Luggables is passed to
@@ -430,12 +438,7 @@ namespace hds
         /// </summary>
         private static void ToggleFindDataNode(WorldClient client)
         {
-            if (DataMining.Searching(client))
-            {
-                DataMining.Stop(client);
-                ToCaster(client, LocateDataNodeOff, FindDataNode);
-                return;
-            }
+            if (StopFindDataNode(client)) return;
 
             UInt32 tool = ToolFor(client, FindDataNode);
             if (tool == 0)

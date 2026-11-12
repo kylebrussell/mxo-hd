@@ -5,6 +5,28 @@ namespace hds.Tests;
 public class DataMiningTests
 {
     [Fact]
+    public void RepeatedExternalStopsNeverReactivateOrDuplicateLocatorOffRecords()
+    {
+        var c = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.playerData = new ClientData(); c.playerData.setDistrictId(1);
+        c.messageQueue = new MessageQueue();
+        Assert.False(UtilityAbilities.StopFindDataNode(c));
+        Assert.Empty(c.messageQueue.RPCMessagesQueue);
+        DataMining.Start(c,422);
+        Assert.True(UtilityAbilities.StopFindDataNode(c));
+        int records = c.messageQueue.RPCMessagesQueue.Count;
+        Assert.False(UtilityAbilities.StopFindDataNode(c));
+        Assert.False(DataMining.Searching(c));
+        Assert.Equal(records,c.messageQueue.RPCMessagesQueue.Count);
+        // Simulate visibility cleanup winning the race before the pickup's independent stop callback.
+        DataMining.Start(c,423);
+        Assert.True(DataMining.Stop(c));
+        records = c.messageQueue.RPCMessagesQueue.Count;
+        Assert.False(UtilityAbilities.StopFindDataNode(c));
+        Assert.False(DataMining.Searching(c));
+        Assert.Equal(records,c.messageQueue.RPCMessagesQueue.Count);
+    }
+    [Fact]
     public void StoredGobDefinitionsRetainRealPickupComponentsAndLevels()
     {
         Assert.Equal(2,DataMining.Find(596).PickupUse);

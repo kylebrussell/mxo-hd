@@ -86,14 +86,15 @@ namespace hds
                 c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, true));
             }
         }
-        public static void Stop(WorldClient c)
+        public static bool Stop(WorldClient c)
         {
             lock (sync)
             {
-                if (!searches.TryGetValue(c, out var s)) return;
+                if (!searches.TryGetValue(c, out var s)) return false;
                 foreach (ushort id in s.Markers) c.messageQueue.addRpcMessage(DataMiningPackets.Remove(id));
                 searches.Remove(c);
                 c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, false));
+                return true;
             }
         }
         public static bool Searching(WorldClient c) { lock (sync) return searches.TryGetValue(c, out _); }
@@ -200,7 +201,7 @@ namespace hds
             // serverrules.py TestLightLuggablePickup -> BreakExclusiveAbility. Keep callbacks outside
             // the shared ground-item lock: ending stealth may update views and acquire other state locks.
             Stealth.BreakForAction(c, "picked up a luggable");
-            if (Searching(c)) UtilityAbilities.Land(c, UtilityAbilities.FindDataNode, 2);
+            UtilityAbilities.StopFindDataNode(c);
             return true;
         }
         /// <summary>5c slot u16 + personal-inventory flag. Reject equipment/storage, stacks, arbitrary items and bad floor.</summary>
