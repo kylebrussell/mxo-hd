@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
         new Scenario("mission-relog-disconnect-move", MissionRelogDisconnectAndMove, StillNpcs),
         new Scenario("mission-relog-object-rollback", MissionRelogObjectsAndRollback, StillNpcs, "mission-persistence.xml"),
