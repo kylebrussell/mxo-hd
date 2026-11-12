@@ -144,37 +144,7 @@ def expected(i):
     return '; '.join(dict.fromkeys(result)) or 'Native action / passive metadata; no decoded stored modifier'
 
 
-# Hand-documented executors outside the runtime inventory (docs/UTILITY-ABILITIES.md, PR 108):
-# their server column and status are kept verbatim from that PR's audit rows.
-MANUAL = {
-    44: ('rshooks.py roll on mission accept, access flags stored, success FX; the client record that shows the map is not identified; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    119: ('Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    142: ('Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked="1"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    166: ('Hardline Hack Construct (rule 10024) ability/faction gate lines only; construct hacking itself absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    218: ('Disable Security Devices use (rule 1012 SecurityPBXDisable): ability + DisableDeviceTool, Security Systems vs Difficulty contest, ACCESS GRANTED/ALARM chat, Disabled/Alarming state; no XP, alarm has no effect; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    382: ('Recall Team Member: team member, same district, not fighting/dead; caster/target lines 0x7a00015b/15a, phase-out FX, teleport to caster; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    486: ('Recall Mission Team: every online team member as Recall Team Member; caster line 0x7a000164; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-    538: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    539: ('presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    540: ('presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    541: ('presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'missing'),
-    621: ('Find Data Node toggle: locator tool gate (ID_ABILITY_TOOL_FAIL), start/stop lines; 80 ca-80 cf locate records not sent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 'partial'),
-}
-# Stealth executors (hds/world/Structures/Stealth.cs; docs/STEALTH.md, PR 109): rows kept verbatim from that PR's audit.
-STEALTH = {
-    156: ('reuse 15s; total feeds stealth detection (STEALTH.md); record is scaled-buff scope', 'missing'),
-    186: ('STEALTH.md: Sneak behaviour under its own id (no stored modifier; our choice); LOS/noise/stance incomplete', 'partial'),
-    366: ('STEALTH.md: imparts 629 on a friendly player; refused on self, target in combat or already invisible', 'partial'),
-    368: ('STEALTH.md: Invisibility 2 s later without the proximity test, ends the fight (our choice); smoke-bomb item 460 not enforced', 'partial'),
-    507: ('STEALTH.md: kSneak + ST_STEALTHED; Sneak Movement 25 + Stealth (char level) records; 5 s sneakTest; damage/attack break; LOS/noise/stance incomplete', 'partial'),
-    629: ('STEALTH.md: kInvisible for 120 s on the target; refused when already invisible', 'partial'),
-    1111: ('STEALTH.md: kSneak + ST_STEALTHED to own/other views; Stealth/Noise/MoveSpeed/StealthState records; native sneakTest every 5 s vs facing enemies and NPCs; hidden from enemies; damage/attack/ability break; LOS/noise/stance incomplete', 'partial'),
-    1114: ('presentation only; no effect executor; STEALTH.md: needs tool ModelOverride/setModel, not done', 'missing'),
-    1116: ('STEALTH.md: kInvisible + ST_STEALTHED for 30+2/level s; MoveSpeed -300 record; refused with an enemy facing within 800; hidden from enemies, ignored by NPCs; no damage break; Detection counter missing', 'partial'),
-    1118: ('STEALTH.md: kShadowObject for 180 s, 25 IS every 5 s with deactivation, recast on end, NPCs ignore; evade/timed-usable and interaction breaks incomplete', 'partial'),
-    1137: ('STEALTH.md: kSneak + ST_STEALTHED + ST_CONCEALMENT; Concealed/StealthState records; 5 s sneakTest; damage break; stance/panic-end incomplete', 'partial'),
-}
-MANUAL.update(STEALTH)
+UTILITY_NOTES = {538: 'presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 539: 'presentation only; no effect executor; prerequisite tier only (no script references it); see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 540: 'presentation only; no effect executor; flag read by Find Data Node goggles (luggable glow); needs the visual locate record; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)', 541: 'presentation only; no effect executor; flag read by Find Data Node handheld (nearest luggable); needs requestLuggableLocation; see [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)'}
 
 # Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
@@ -195,10 +165,14 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 
 def server(i):
-    if i in MANUAL:
-        return MANUAL[i][0]
     r, f = coverage[i], fields(i)
     parts = []
+    if r.get('stealth'):
+        parts.append('stealth state, visibility and detection executor; script tests/drains; [details and limits](STEALTH.md)')
+    if r.get('utility'):
+        parts.append(r['utility'])
+    if i in UTILITY_NOTES:
+        parts.append(UTILITY_NOTES[i])
     if r['cost_source'] != 'fallback':
         parts.append(f"IS {r['cost']} ({r['cost_source']})")
     if r['cooldown']:
@@ -211,6 +185,8 @@ def server(i):
     if r['dot']:
         parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
+    if r.get('resurrection'):
+        parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
     if r['healing']:
         if i in PET_REPAIRS:
             parts.append('heals own simulacrum: stored base; caster healing influence; player cast refused')
@@ -248,7 +224,7 @@ def server(i):
         parts.append(r['special'])
     if 'HyperJump' in abilities[i]['name']:
         parts.append('jump trajectory + control gate; rank/limits incomplete')
-    if 'Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']:
+    if not r.get('stealth') and ('Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']):
         parts.append('stealth detection/AI incomplete')
     if i in PETS:
         parts.append(PETS[i])
@@ -256,13 +232,11 @@ def server(i):
 
 
 def status(i):
-    if i in MANUAL:
-        return MANUAL[i][1]
     r = coverage[i]
     if i in PETS:
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or r.get('style') or r.get('special') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
+    if r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or r.get('style') or r.get('special') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
     if fields(i).get('Ability/IsDiscipline') or any(m.get('WhenEnabled') == 0 for m in mods(i)):
         return 'cosmetic'
@@ -304,9 +278,9 @@ The new catalog fallback supplies explicit costs, cast times, recast/family time
 
 Hacker area damage and controls reach visible NPCs on the same floor. DOTs on secondary targets keep ticking without replacing the current fight; kills share death claiming, XP, mission and loot handling. The merged PvP paths also use action gates, combat-stat bonuses and health-triggered control breaks. LOS, full hit/deflection tests, cone shapes, multi-NPC combat AI, resistance-derived ability damage and some PvP target rules remain incomplete.
 
-Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, damage influence, control durations and crafting use these totals. Control duration bonuses follow the stored class-4 state links (stun, root, pacify, blind, powerless, confuse) and keep fractional seconds. Immunity timers and break rules retain their separate definitions. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, stealth/detection, Determination mitigation and special callbacks are still incomplete. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
+Loaded passives now evaluate the deterministic native value functions: learned ability level (2), character level (3), and fixed ranges. Scale uses the stored binary32 value, x87 multiplication/truncation, min offset and positive max cap. Owned loadouts, upgrades, new-world entry and Death Effect updates rebuild totals and retail-style `80 bc 45 00` records; obsolete unconditional Hyper-Jump/Write Code records are removed. Shared grants contribute once. Vitals, regeneration, combat accuracy/defence/resistance bonuses, damage influence, control durations and crafting use these totals. Control duration bonuses follow the stored class-4 state links (stun, root, pacify, blind, powerless, confuse) and keep fractional seconds. Immunity timers and break rules retain their separate definitions. Percent bonuses apply to the server's existing base formulas; those bases, character-attribute links, several stat families, complete stealth/detection attributes, Determination mitigation and special callbacks are still incomplete. Stealth state/visibility/detection now has an executor; see [STEALTH.md](STEALTH.md) for sourced behavior and choices. A passive record is not proof that every consuming system is implemented. See [native modifier evidence and remaining limits](ABILITY-MODIFIERS.md).
 
-Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs heal only the caster's own simulacrum. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Coder simulacra (Remote Proxy, Logic/Patch Daemon) spawn as owned NPC_BASE_SIMULACRA views with follow/assist AI, the client's orders, death and lifetime, plus the own-simulacrum abilities and Daemon Boost; see [CODER-PETS.md](CODER-PETS.md) for what is retail evidence and what is chosen.
+Friendly direct/group heals and HOTs use each shipped template's deterministic base and the caster's healing influence, replacing the target-quarter-max-health placeholder. HOT uses its stored total and the script tick formula. Simulacra repairs heal only the caster's own simulacrum; player targets are refused. Mobius Code retains its explicit 10% target-max heal; its 1% immunity proc is still missing. These are sourced base values, with native influence multiplication/truncation; exact final retail amounts still require native comparison with a known caster build and complete attribute contributions. Fixed stored self/friendly buffs gain records/family expiry; captured values win. Restore RSI325, Revitalize326, Revive375 and Rejuvenate416 now use dead-friendly targets, the native81 88 consent exchange and their script-defined resource restoration. Refusal, timeout, wrong-ability replies, replies without a live offer and reconstruction are rejected; the native short reply carries no per-offer nonce. Exact script-specific resurrection motion and native dialog acceptance remain unverified; see [resurrection evidence](ABILITY-RESURRECTION.md). Coder simulacra (Remote Proxy, Logic/Patch Daemon) spawn as owned NPC_BASE_SIMULACRA views with follow/assist AI, the client's orders, death and lifetime, plus the own-simulacrum abilities and Daemon Boost; see [CODER-PETS.md](CODER-PETS.md) for what is retail evidence and what is chosen.
 
 Combat styles (Self Defense, Aikido, Karate, Kung-Fu, Hacker/Coder/Spy Style) become active through `3e`. The active style's while-enabled modifiers join the passive totals, and its ILDB exchange set drives the interlock moves all viewers see. `CombatSpecialMove` abilities need their stored stance: a loaded style is switched to, an unloaded one refuses the move. Thrown DOTs, Berserker/Side Roll caster buffs, Taunt aggro and the Exile weapons have executors. Their inferences and gaps (RandomCombatStateChance, weakness by NPC name, special-move choreography) are in [COMBAT-STYLES.md](COMBAT-STYLES.md). `43` MartialArt is unreachable in 7.6005.
 
