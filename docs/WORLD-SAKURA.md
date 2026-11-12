@@ -42,3 +42,5 @@ Discovered mode `sakura`: copied CSR110 is Zion, **actual level35 plus Experienc
 4. Record missing rendering, menu or transitions explicitly. Do not travel to unsupported NPC captures or infer65 actors from GangMaster data. Native geometry outside observed points, ambient population and Loading Area UI remain unverified.
 
 Native UI and source-height presentation are pending until Claude records the one-pass. Tests/fresh/provenance results are reported in the PR and append-only handoff; partial resource availability does not imply full retail world parity.
+
+Validation: full Release4255 PASS before the upstream-only mission replay merge; final47 focused PASS afterward, both NativeQa builds/read-only named+unknown plans/provenance,12 Python tests and exact source/current-artifact roundtrips PASS. Fresh **PASS199.9s, EXIT0, parallel1**, server disposed: actual owned-book equip, ordinary timed sender, retail12/map8, grounded exact arrival, Use2 returner, exact origin and book retained, zero parser problems. Raw success copied before teardown SHA256 `2ecd8e2b7ffb6450f083613cb9d89d35308139a71c6005972666f694c7f6612e`. Native UI/terrain presentation remain pending.
