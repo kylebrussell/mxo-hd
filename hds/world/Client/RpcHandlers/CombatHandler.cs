@@ -466,7 +466,7 @@ namespace hds
             session.OnCombatEnd += HandleCombatEnd;
             client.playerData.combatGeneration++;
             rangedOutOfRangeTicks = 0;
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             FaceThePlayer(session);
@@ -688,7 +688,7 @@ namespace hds
 
             // Start combat session
             currentSession.Start(CombatInterlock.RoundMs);
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             // Retail resolved the opening move as the starter's opportunity attack straight away (tutorial 13:28:32: the
@@ -1074,7 +1074,7 @@ namespace hds
             rangedOutOfRangeTicks = 0;
 
             // First shot now, then one per tick.
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
             bool killed = ResolveRangedShot(currentSession, true);
             client.FlushQueue();

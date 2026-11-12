@@ -240,7 +240,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 9e` | `/pvp` | D | handled | medium |
 | `81 51` | Target | D, C 972 | handled | high |
 | `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | handled: validated compiler request and script contest; [limits](CLIENT-COMBAT-ACTIONS.md) | medium |
-| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; fragment recovery and other inventory abilities remain | medium |
+| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; native producer requires CastValidTarget7, so this cannot activate Write Code970 (target0); fragment recovery and other inventory abilities remain | medium |
 | `81 aa` | UserData, Interrupted: an FX or cast ending (guess) | D | ignored | low |
 
 ## Help and petitions
