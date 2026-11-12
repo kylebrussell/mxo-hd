@@ -9,13 +9,32 @@ const string configuration = "Debug";
 #else
 const string configuration = "Release";
 #endif
+// Actions groups learned abilities by their catalog discipline. Own missing folders without loading their stats.
+static ushort[] DisciplineAncestors(JsonElement catalog, IEnumerable<ushort> requested)
+{
+    var rows = catalog.GetProperty("abilities").EnumerateArray().ToDictionary(r => r.GetProperty("id").GetUInt16());
+    var selected = requested.ToHashSet(); var known = new HashSet<ushort>(selected); var pending = new Queue<ushort>(selected);
+    while (pending.Count > 0)
+    {
+        if (!rows.TryGetValue(pending.Dequeue(), out var row) ||
+            !row.GetProperty("fields").TryGetProperty("Ability/DisciplineBelongsTo", out var belongs)) continue;
+        ushort parent = AbilityCatalog.IdOf(belongs.GetUInt32());
+        if (parent == 0 || !rows.TryGetValue(parent, out var p) ||
+            !p.GetProperty("fields").TryGetProperty("Ability/IsDiscipline", out var discipline) || discipline.GetInt32() == 0) continue;
+        if (known.Add(parent)) pending.Enqueue(parent);
+    }
+    return known.Except(selected).Order().ToArray();
+}
 // Read-only provenance inspection exits before fixture directories, client locks or database access.
 if (args.Length > 0 && args[0] == "--build-info")
 {
     string inspectRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Directory.GetCurrentDirectory());
     string assembly = Path.Combine(inspectRoot, "hds", "bin", configuration, "net8.0", "hds.dll");
+    ushort[] requested = args.Length > 2 ? args[2].Split(',').Select(ushort.Parse).Distinct().ToArray() : Array.Empty<ushort>();
+    using var planCatalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(inspectRoot,"data","ability_catalog.json")));
     Console.WriteLine(JsonSerializer.Serialize(new { Configuration=configuration, SourceAssembly=assembly,
-        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))) },
+        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))),
+        RequestedAbilities=requested, OwnedUnloadedDisciplineAncestors=DisciplineAncestors(planCatalog.RootElement,requested) },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
@@ -37,6 +56,7 @@ bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
 bool controlsMode = args.Length > 3 && args[3] == "controls";
 bool passivesMode = args.Length > 3 && args[3] == "passives" || controlsMode;
+bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
@@ -87,6 +107,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
+    if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,603,31,34,19,609,619 };
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
@@ -105,8 +126,10 @@ DELETE FROM char_abilities WHERE char_id=110;
             throw new ArgumentException("Custom native loadouts require known player-ability templates.");
         abilities = requestedAbilities;
     }
-    string loadout = string.Join("\n", abilities.Distinct().Select((id, slot) =>
-        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
+    var disciplineAncestors = DisciplineAncestors(catalog.RootElement,abilities);
+    var loadedIds = abilities.ToHashSet();
+    string loadout = string.Join("\n", abilities.Distinct().Concat(disciplineAncestors).Select((id, slot) =>
+        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},{(loadedIds.Contains(id)?1:0)},'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
     if (actionsMode)
         await database.ExecuteAsync(@"
@@ -172,7 +195,9 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
-        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities, HealthCallbackQa=healthCallbacksMode, CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
+        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode,
+        CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
     if(healthCallbacksMode) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;

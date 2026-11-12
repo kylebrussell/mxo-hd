@@ -1,6 +1,6 @@
 # P4 continuation: health callbacks and Deflect / Line Up
 
-This follow-up is based on PR105 `bc6cb4a5efb49e318fed2bdff5593fe8c0ff5069` in its own worktree. It leaves105's native-QA branch untouched. It closes executable callback gaps, not all retail parity. Generated inventory uses deterministic previews; runtime random samples are explicit and retained in active definitions/off records.
+This follow-up began on PR105 `bc6cb4a5efb49e318fed2bdff5593fe8c0ff5069` in its own worktree and integrates master `3b7ac60` after105 merged. It leaves105's native-QA branch untouched. It closes executable callback gaps, not all retail parity. Generated inventory uses deterministic previews; runtime random samples are explicit and retained in active definitions/off records.
 
 ## Source and effect table
 
@@ -84,3 +84,7 @@ Unit tests cover sampled snapshots, exhaustive range mapping, external healing, 
 ## Validation at the follow-up head
 
 Debug and Release each pass all3,727 unit tests. Ten unique fresh-headless scenarios pass: `ability-health-proc-lifecycle`, `ability-health-deflect-lineup`, `ability-health-lineup-timings`, `ability-health-reactive-area`, `ability-buff-buffer-death`, `ability-heal-magnitudes`, `ability-control-duration-bonuses`, `ability-beneficial-groups`, `stealth-breaks`, and `hostile-fields-pvp`. The final reactive case includes two opposing listeners and non-team friendly conversion. NativeQa builds and read-only configuration-matching `--build-info` probes pass in Debug and Release. Re-running ToolAbilityAudit and build_audit.py reproduces all three generated artifacts byte for byte. The inventory on this inherited branch is511partial/36cosmetic/14missing; that is classification, not retail-completeness proof. Native execution of this follow-up checklist remains pending Claude.
+
+The master integration preserves all shared NativeQa modes and unloaded discipline-folder ownership. Its only conflict was state.json metadata, resolved by retaining both ancestor IDs and callback-QA fields. Both configuration-matching build-info probes resolve the complete callback loadout to unloaded ancestors236/383/483/508/871/945 without lock or database access. Callback runtime merged without conflicts, so the ten prior fresh cases remain applicable.
+
+After merging master3b7ac60, the integrated full Release suite passes all3,730 tests (0failed/0skipped,1m13s). Debug/Release NativeQa build and read-only loadout probes pass at this integration head.
