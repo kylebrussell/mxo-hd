@@ -32,3 +32,9 @@ Use discovered NativeQa mode `widowsmoor`. Its final generic SQL stage sets stor
 4. Use the existing dynamic Zion returner38271 at arrival. Confirm full city reload, exact saved origin and retained book. Record the separate source-static returner discrepancy without treating it as fixed.
 
 No NPC, door, subway, hardline or LA UI acceptance claim is part of this checklist. Native QA is pending.
+
+## Validation
+
+Full4255 units passed on the master160 base; after importing master163,34 focused Widow/mode/mission-replay tests passed. Both configurations build and their actual read-only NativeQa plans agree. Python12 audit-policy tests passed; source70/map12/map13/map17 CSV+audit exports round-trip exactly, and NAV10 reproduces exactly.
+
+The fresh normal-wire scenario passed in144.2s, exit0, peak1, disposed. It observed book38536 equip106, the ordinary sender cycle, retail13/map10 load, arrival `(-18500,95,-7500)`, dynamic38271 selected by that exact Position, Use2, full city reload, exact origin `(111600,695,-6130)` and retained book. The success server/debug log was saved before teardown. This is server wire proof; native geometry and source-static returner usability remain pending/unresolved.
