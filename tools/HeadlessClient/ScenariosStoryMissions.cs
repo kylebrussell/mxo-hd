@@ -308,10 +308,13 @@ public static partial class Scenarios
             @"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
         double Coordinate(int group) => double.Parse(site.Groups[group].Value, System.Globalization.CultureInfo.InvariantCulture);
         await MoveForMissionTest(player, Coordinate(4), Coordinate(5), Coordinate(6));
-        int rides = Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
-        player.SendChat("?missionfloor");
-        await player.WaitUntilAsync(() => Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
-            "elevator ride completes before entering the mission area", TimeSpan.FromSeconds(10));
+        if (Math.Abs(Coordinate(2) - Coordinate(5)) > 150)
+        {
+            int rides = Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
+            player.SendChat("?missionfloor");
+            await player.WaitUntilAsync(() => Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
+                "elevator ride completes before entering the mission area", TimeSpan.FromSeconds(10));
+        }
         await MoveForMissionTest(player, Coordinate(1), Coordinate(2), Coordinate(3));
     }
 
