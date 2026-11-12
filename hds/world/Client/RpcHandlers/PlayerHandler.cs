@@ -87,6 +87,7 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            MissionPersistence.WorldEntry(Store.currentClient);
             if (DeathPresentation.IsCorpse(Store.currentClient)) DeathPresentation.Corpse(Store.currentClient);
             AbilityPassives.Refresh(Store.currentClient);
             if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);

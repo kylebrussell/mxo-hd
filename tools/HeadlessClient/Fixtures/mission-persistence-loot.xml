@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OURS test-only corpse/checkpoint fixture. No retail reward or placement claim. -->
+<mission id="399906" title="Mission Corpse Persistence Fixture" description="Keep an unlooted mission corpse across restart."
+ plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+ <npc id="1" handle="Pending Carrier" type="HOSTILE" at="1" rsi="c9020058" weapon="2568"/>
+ <npc id="2" handle="Custodian" type="FRIENDLY" at="1" rsi="a8060090"/>
+ <phase site="Normal" leave="1">
+  <briefing>Retrieve the carrier's access card, then report to the custodian.</briefing>
+  <objective goal="1" text="Loot the access card" type="Loot" npc="1" item="6791"/>
+  <objective goal="2" text="Report to the custodian" type="Talk" npc="2" after="1"/>
+ </phase>
+</mission>

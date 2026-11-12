@@ -200,6 +200,7 @@ namespace hds
 
         public void FlushQueue(bool sent = false, bool force = false)
         {
+            if(MissionOutput.Buffered(messageQueue))return;
             if (IsBot)
             {
                 DropQueuedMessages();

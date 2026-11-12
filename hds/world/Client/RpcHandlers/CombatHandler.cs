@@ -949,6 +949,12 @@ namespace hds
 
         private static void RewardNpcDefeat(WorldClient attacker, Mob mob)
         {
+            if(attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob))
+                MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob));
+            else RewardNpcDefeatCore(attacker,mob);
+        }
+        private static void RewardNpcDefeatCore(WorldClient attacker, Mob mob)
+        {
             // Award experience
             // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
             UInt16 mobLevel = mob.getLevel();
@@ -956,12 +962,14 @@ namespace hds
             UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
             // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
             bool inTutorial = TutorialMission.Of(attacker) != null;
+            bool ownedMission=attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob);
             if (!inTutorial)
             {
-                PlayerRewards.GrantExperience(attacker, expGained);
+                if(ownedMission)mob.MissionRewardExperience=expGained;
+                else PlayerRewards.GrantExperience(attacker, expGained);
             }
 
-            Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
+            Output.WriteDebugLog(ownedMission?$"[COMBAT] Mission kill quoted {expGained} experience (checkpoint applies signed INT cap)":$"[COMBAT] Awarded {expGained} experience");
 
             MissionRuntime.OnMobDefeated(attacker, mob);
             UInt32 missionItem = MissionRuntime.LootItemFor(attacker.playerData, mob);

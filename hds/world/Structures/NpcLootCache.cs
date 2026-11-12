@@ -49,6 +49,8 @@ namespace hds
             return current;
         }
 
+        internal Corpse Peek(UInt64 entity) => corpses.TryGetValue(entity,out Corpse corpse)&&corpse.Available?corpse:null;
+
         public Corpse Select(UInt64 entity)
         {
             corpses.TryGetValue(entity, out current);
