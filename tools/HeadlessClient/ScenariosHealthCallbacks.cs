@@ -32,8 +32,26 @@ public static partial class Scenarios
         previous=p.Received(activation).Count;
         Cast(p,872);await Task.Delay(400);
         Check.Equal(previous,p.Received(activation).Count,"Direct872 refused without executing internal effect");
+        SetAbilityLoaded(p,400,871,50,false);
+        await p.WaitForRpcAsync("80 b3 67 03");
+        previous=p.Received(activation).Count;
+        await SetProcHealth(p,400,400);
+        Check.Equal(previous,p.Received(activation).Count,"Unloaded permanent parent stops health procs");
+        var normal=await context.AddPlayerAsync(new CharacterSeed("ZenRetail") {Level=50,Health=500,MaxHealth=500});
+        int goid=unchecked((int)(0x80000000u | (871u<<10)));
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={normal.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({normal.CharId},400,{goid},30,0)");
+        await normal.EnterWorldAsync();
+        SetAbilityLoaded(normal,400,871,30,true);
+        normal.SendRpc("81 48");await normal.WaitForRpcAsync("81 49");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={normal.CharId} AND slot=400"),"Retail50 normal80ae load rejects parent871 requirement99");
+        Check.Equal(0,normal.Received("80 b2 67 03").Count,"Rejected parent never acknowledged loaded");
+        await context.Database.ExecuteAsync($"UPDATE char_abilities SET is_loaded=1 WHERE char_id={normal.CharId} AND slot=400");
+        SetAbilityLoaded(normal,400,871,30,false);
+        await normal.WaitForRpcAsync("80 b3 67 03");
+        normal.SendRpc("81 48");await normal.WaitForRpcAsync("81 49");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={normal.CharId} AND slot=400"),"Inaccessible legacy871 can still unload");
         await KillForResurrection(p);
-        Check.Equal(0,p.World.Problems.Count,"Zen Master source health proc protocol");
+        Check.Equal(0,p.World.Problems.Count+normal.World.Problems.Count,"Zen Master source health proc protocol");
     }
 
     private static async Task HealthProcLifecycle(ScenarioContext context)

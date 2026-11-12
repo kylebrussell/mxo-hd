@@ -8,7 +8,7 @@ Parent871 requires character level99, above retail50. Normal load prerequisite r
 
 The permanent listener derives from the owned loaded-ability snapshot. Loading/unloading increments its generation; pending callbacks validate that generation plus world/life. The existing256-callback/once-per-owner-parent synchronous transaction bound applies to nested health effects. Removed/dead/duel-dead listeners do not execute. Integer roll0..99<15 uses System.Random. This probability mapping and bounded delivery policy are ours; retail RNG sequence and fatal-event ordering remain unverified. IS is capped at maximum; the sourced line and FX accompany successful rolls.
 
-Validation: fresh `ability-zen-master` tests damage, external healing, sourced activation, capped IS, direct872 refusal and death cleanup. Units additionally test14/15 chance boundaries, exact+5, zero delta, no parent, unloaded/world-reloaded parent, child-only ownership, nested healing once, dead and duel-dead. Natural health regeneration is a genuine external health event and may itself proc. Native acceptance remains pending Claude.
+Validation: fresh `ability-zen-master` tests damage, external healing, sourced activation, capped IS, direct872 refusal, real80ae parent unload stopping procs, normal level50 load871 refusal (DB0/no load acknowledgement), stale inaccessible871 unload and death cleanup. Units additionally test14/15 chance boundaries, exact+5, zero delta, no parent, unloaded/world-reloaded parent, child-only ownership, nested healing once, dead and duel-dead. Natural health regeneration is a genuine external health event and may itself proc. Native acceptance remains pending Claude.
 
 ## Claude-only pinned-head checklist
 
