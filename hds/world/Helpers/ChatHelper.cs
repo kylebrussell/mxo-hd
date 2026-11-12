@@ -19,6 +19,22 @@ namespace hds
 
             try
             {
+                if (command.Equals("?qarevive"))
+                {
+                    WorldClient caller = Store.currentClient, target = caller;
+                    if (commands.Length == 2)
+                    {
+                        lock (WorldServer.Clients)
+                            target = WorldServer.Clients.Values.FirstOrDefault(c =>
+                                string.Equals(TimedEffects.PlayerName(c), commands[1], StringComparison.OrdinalIgnoreCase));
+                    }
+                    bool restored = commands.Length <= 2 && AbilityResurrection.QaRevive(caller, target);
+                    new ServerPackets().sendSystemChatMessage(caller, restored ? "QA revive completed in place." :
+                        "QA revive refused: requires MXO_DEV_COMMANDS=1, mxotest_ database and a dead online fixture in this world; no pending reconstruction. Usage: ?qarevive [handle]", "BROADCAST");
+                    caller.FlushQueue();
+                    return;
+                }
+
                 if (command.Equals("?fix") && commands.Length > 1)
                 {
                     int maxRPC = int.Parse(commands[1]);
