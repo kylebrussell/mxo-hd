@@ -23,8 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
-        new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
-        new Scenario("large01-partial-world", Large01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
+        new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
@@ -161,6 +160,7 @@ public static partial class Scenarios
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
+        new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("team-new-leader-and-boot", TeamNewLeaderAndBoot),
@@ -176,6 +176,7 @@ public static partial class Scenarios
         new Scenario("marketplace-purchase", MarketplacePurchase),
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
         new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),
+        new Scenario("large01-partial-world", Large01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
