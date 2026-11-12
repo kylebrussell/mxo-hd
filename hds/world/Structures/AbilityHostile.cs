@@ -144,7 +144,8 @@ namespace hds
         /// <summary>The hostile ability has landed on another player (after its tempmods).</summary>
         public static void LandedOnPlayer(WorldClient caster, WorldClient target, ushort id, Random rng = null)
         {
-            rng ??= random;
+            // Existing disposable dev-fixture guard only; ordinary servers retain this exact random object/path.
+            rng ??= AbilityHealthCallbacks.TermRandom() ?? random;
             foreach (var m in Enabled(id))
             {
                 // Destroy Resolve: Current Inner Strength -58, DurationType 1 (instant)
@@ -179,7 +180,7 @@ namespace hds
         public static void LandedOnMob(WorldClient caster, Mob mob, ushort id, Random rng = null)
         {
             var modifier = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "RemoveRandomBuff");
-            if (modifier == null || caster?.messageQueue == null || !DispelProcs(modifier, rng ?? random)) return;
+            if (modifier == null || caster?.messageQueue == null || !DispelProcs(modifier, rng ?? AbilityHealthCallbacks.TermRandom() ?? random)) return;
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(CancelUpgradeFailCaster, true, id, TimedEffects.PlayerName(caster), mob.getName() ?? "", 0));
             caster.FlushQueue();
         }

@@ -20,6 +20,7 @@ namespace hds
             private readonly int value;
             public FixedRollRandom(int value) { this.value=value; }
             public override int Next(int maximum)=>Math.Min(value,Math.Max(0,maximum-1));
+            public override double NextDouble()=>value/100.0;
         }
         public static Random TermRandom() => QaRoll("MXO_CALLBACK_QA_ROLL100",99) is int roll ? new FixedRollRandom(roll) : null;
         public static int Roll100() => QaRoll("MXO_CALLBACK_QA_ROLL100",99) ?? Math.Clamp(Random100(),0,99);
