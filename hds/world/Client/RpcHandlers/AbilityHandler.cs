@@ -150,6 +150,10 @@ namespace hds
                 return;
             }
 
+            // Internal pill abilities require their owned bag item, even if an ability was loaded.
+            if (HealthBoostPills.Handles(AbilityID))
+            { HealthBoostPills.Deny(Store.currentClient, AbilityID); return; }
+
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
                 Deny(AbilityID, "You cannot use abilities while powerless.");

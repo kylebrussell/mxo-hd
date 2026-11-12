@@ -161,6 +161,8 @@ namespace hds
                 return false;
             }
 
+            if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
+
             if (!ConsumableItems.IsUsable(consumable))
             {
                 pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");

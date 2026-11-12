@@ -35,6 +35,7 @@ static string UtilityCoverage(ushort id) => id switch
     UtilityAbilities.FindDataNode => "distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.LocateDataNode => "base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)",
     AbilityEmpBlast.Ability => "script neutral0/5000 gated by explicit NPC1026 grant; caster-radius10, cast1s, reuse30s, NPC HP/death; production grant owners, item consumption, exact eligibility/TestFunction2 and cost default unresolved; [evidence](ABILITY-EMP-BLAST.md)",
+    187 or 188 or 189 or 672 or 673 => "owned bag health boost, stored level gate, cast/life/world authority, stat106 timed600s +100/200/300/400 and expiry/currentHP cap; own30s cooldown, no stored shared family; exact casting animation/stack priority remain unverified; [evidence](HEALTH-BOOST-PILLS.md)",
     _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
@@ -45,7 +46,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     bool hit = AbilityTargets.Retail.TryGetValue(e.Id, out var damage);
     return new
     {
-        id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = e.Id == CompileSession.Ability ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
+        id = e.Id, cost = HealthBoostPills.Handles(e.Id) ? 0 : AbilityCosts.Cost(e.Id), cost_source = HealthBoostPills.Handles(e.Id) ? "owned item path" : e.Id == CompileSession.Ability ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
             e.Has("Ability/AbilityInnerStrengthCost") ? "stored" : "fallback",
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
