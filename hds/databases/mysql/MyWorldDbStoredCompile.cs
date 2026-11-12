@@ -20,9 +20,15 @@ namespace hds.databases
             c.CommandText = "SELECT cash FROM characters WHERE charId=@char FOR UPDATE";
             object cash = c.ExecuteScalar(); if (cash == null) return result;
             result.Cash = Convert.ToInt64(cash);
-            c.CommandText = "SELECT level FROM char_abilities WHERE char_id=@char AND slot=@source AND ability_id=@code FOR UPDATE";
-            object source = c.ExecuteScalar(); if (source == null) return result;
-            int count = Convert.ToInt32(source) + 1; if (count < 1 || count > 128) return result;
+            c.CommandText = "SELECT ability_id,level FROM char_abilities WHERE char_id=@char AND slot=@source FOR UPDATE";
+            int count;
+            using (var r = c.ExecuteReader())
+            {
+                if (!r.Read() || Convert.ToInt64(r[0]) != CodeStorage.BaseValue(goid)) return result;
+                count = Convert.ToInt32(r[1]) + 1;
+                if (r.Read()) return result; // an ambiguous archive/known-ability slot must not clear another entry
+            }
+            if (count < 1 || count > 128) return result;
             if (result.Cash < cost) { result.Result = 4; return result; }
             c.CommandText = "SELECT slot,goid,count FROM inventory WHERE charId=@char AND slot BETWEEN 1 AND 96 FOR UPDATE";
             var bag = new List<Crafting.InventoryItem>();

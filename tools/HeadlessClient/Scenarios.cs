@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using hds;
 
 namespace HeadlessClient;
@@ -19,6 +19,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ignored-actions-window-close", IgnoredActionsWindowClose, StillNpcs),
         new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
@@ -625,6 +626,15 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         {
             player.SendRpc("81 16 " + payload);
         }
+        // A native close invalidates the owned selection; a replay cannot spend its tokens.
+        player.SendRpc("81 17 00 00 00 00 00");
+        player.SendRpc("81 16 00 00 00");
+        player.SendRpc("81 48"); // dispatch barrier; no active collector sends no exchange reply
+        await player.WaitForRpcAsync("81 49");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"), "Closed collector replay preserves tokens");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+
         player.SendChat("?tp -145195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),

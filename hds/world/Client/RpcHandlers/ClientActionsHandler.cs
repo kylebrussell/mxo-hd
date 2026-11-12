@@ -47,7 +47,15 @@ namespace hds
         }
         public static void CloseContainer(WorldClient client, byte[] body)
         {
-            if (body?.Length == 0) lock (client.playerData.loot) client.playerData.loot.Close();
+            if (body?.Length != 0) return;
+            TutorialMission.Of(client)?.CloseContainer();
+            lock (client.playerData.missionSync)
+            {
+                lock (client.playerData.loot) client.playerData.loot.Close();
+                if (client.playerData.missionProgress != null)
+                    foreach (var container in client.playerData.missionProgress.objects.Values)
+                        container.lootOpen = container.putOpen = false;
+            }
         }
         public static bool Dev(WorldClient client, string[] words)
         {
@@ -74,12 +82,15 @@ namespace hds
                     break;
                 case "kb": Support(client, 0x1b9, ClientActionRequests.String(ClientActionRequests.Packet(0xb9, 4), 2, text).Skip(2).ToArray()); break;
                 case "pill": if (ushort.TryParse(text, out ushort slot)) Pill(client, BitConverter.GetBytes(slot)); break;
+                case "vendor":
+                    var vendorId = BitConverter.GetBytes(98u); // existing Mara tools-vendor fixture, same stock/session path
+                    new ObjectInteractionHandler().processVendorOpen(ref vendorId); break;
                 case "snoop": Snoop(client, 0x157, BitConverter.GetBytes(PvpCombat.HandleOf(client,client)).Concat(new byte[]{1,1,1}).ToArray()); break;
                 case "snoopcrew": case "snoopfaction":
                     byte op = verb == "snoopcrew" ? (byte)0x59 : (byte)0x5b;
                     var group = ClientActionRequests.Packet(op, 5);
                     Snoop(client, op == 0x59 ? 0x159 : 0x15b, ClientActionRequests.String(group, 3, text).Skip(2).ToArray()); break;
-                default: Notice(client, "?clientactions afk 0|1; petition <text>; list; read <ticket>; cancel <ticket>; kb <search>; pill <slot>; snoop; snoopcrew <name>; snoopfaction <name>. Snoop still requires server-granted GM privileges."); break;
+                default: Notice(client, "?clientactions afk 0|1; petition <text>; list; read <ticket>; cancel <ticket>; kb <search>; pill <slot>; vendor; snoop; snoopcrew <name>; snoopfaction <name>. Snoop still requires server-granted GM privileges."); break;
             }
             client.FlushQueue(); return true;
         }

@@ -4,6 +4,22 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static async Task IgnoredActionsWindowClose(ScenarioContext context)
+    {
+        var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("CloseElevator"){X=60300,Y=273,Z=33390}))[0];
+        p.SendRpc("80 c8 b8 03 50 19 00 00");await p.WaitForRpcAsync("81 3f");
+        p.SendRpc("81 41 01 00");p.SendRpc("81 40 02 00");p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
+        Check.Equal(0,p.Received("81 42 2a 06 00 22").Count,"Closed elevator cannot teleport from stale floor choice");
+        p.SendRpc("80 c8 b8 03 50 19 00 00");await p.WaitForRpcAsync("81 3f");
+        p.SendRpc("81 40 02 00");await p.WaitForRpcAsync("81 42 2a 06 00 22");
+        var tutorial=(await context.AddPlayersInWorldAsync(new CharacterSeed("CloseWardrobe"){District="tutorial",DistrictId=0,X=5800,Y=-1105,Z=-10400}))[0];
+        tutorial.SendRpc("80 c8 6a 00 00 00 03 00");await tutorial.WaitForRpcAsync("81 19");
+        tutorial.SendRpc("81 1a");tutorial.SendRpc("81 1f");await tutorial.WaitForRpcAsync("81 20");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={tutorial.CharId}"),"Closed wardrobe cannot grant its contents");
+        tutorial.SendRpc("80 c8 6a 00 00 00 03 00");await tutorial.WaitForRpcAsync("81 19");
+        tutorial.SendRpc("81 1f");await tutorial.WaitForRpcAsync("81 20");
+        Check.That(await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={tutorial.CharId}")>0,"Wardrobe contents remain available after reopen");
+    }
     private static async Task IgnoredActionsGm(ScenarioContext context)
     {
         var players=await context.AddPlayersInWorldAsync(new CharacterSeed("TrustedInspector"){Items=new[]{(3,7332u,2)}},new CharacterSeed("OrdinaryInspector"){X=17120});
@@ -77,26 +93,30 @@ public static partial class Scenarios
         p.SendRpc("80 c8 ff ff ff 7f 02 00");p.SendRpc($"81 0e {Le(4u)}");await p.WaitForTextAsync("Open a vendor");
         Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=4"),"Only two listed purchases succeeded");
         // Native60: city request without a compile session cannot touch the archive.
-        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},40,{CodeStorage.BaseValue(7332)},0,0)");
-        p.SendRpc($"60 {Le(7332u)} 28 00 00 00 00");await p.WaitForRpcAsync("61 01");
+        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},400,{CodeStorage.BaseValue(7332)},0,0)");
+        p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
         p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");
         p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");await Task.Delay(300);
-        p.SendRpc($"60 {Le(7333u)} 28 00 00 00 00");await p.WaitForRpcAsync("61 01");
-        p.SendRpc($"60 {Le(7332u)} 28 00 00 00 00");await p.WaitForRpcAsync("5f 28 00 00");await p.WaitForRpcAsync("61 00");
+        p.SendRpc($"60 {Le(7333u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
+        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},400,{AbilityGoid(17)},1,0)");
+        p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
+        Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=400"),"Ambiguous archive/ability slot is refused without deleting either row");
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId} AND slot=400 AND ability_id={AbilityGoid(17)}");
+        p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("5f 90 01 00");await p.WaitForRpcAsync("61 00");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={p.CharId} AND goid=7332"),"Owned code materialized once");
-        p.SendRpc($"60 {Le(7332u)} 28 00 00 00 00");await p.WaitForRpcAsync("61 01");
-        Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=40 AND ability_id={CodeStorage.BaseValue(7332)}"),"Source charge depleted");
-        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},41,{CodeStorage.BaseValue(7458)},0,0);"+
+        p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=400 AND ability_id={CodeStorage.BaseValue(7332)}"),"Source charge depleted");
+        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},401,{CodeStorage.BaseValue(7458)},0,0);"+
             $"UPDATE characters SET cash=0 WHERE charId={p.CharId}");
-        p.SendRpc($"60 {Le(7458u)} 29 00 00 00 00");await p.WaitForRpcAsync("61 04");
-        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=41 AND ability_id={CodeStorage.BaseValue(7458)}"),"Insufficient information preserves source");
+        p.SendRpc($"60 {Le(7458u)} 91 01 00 00 00");await p.WaitForRpcAsync("61 04");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=401 AND ability_id={CodeStorage.BaseValue(7458)}"),"Insufficient information preserves source");
         await context.Database.ExecuteAsync($"UPDATE characters SET cash=100000 WHERE charId={p.CharId};DELETE FROM inventory WHERE charId={p.CharId} AND slot<97;"+
             "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES "+string.Join(",",Enumerable.Range(1,96).Select(i=>$"({p.CharId},2399,{i},1,0)")));
-        p.SendRpc($"60 {Le(7458u)} 29 00 00 00 00");await p.WaitForRpcAsync("61 03");
+        p.SendRpc($"60 {Le(7458u)} 91 01 00 00 00");await p.WaitForRpcAsync("61 03");
         Check.Equal(100000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Full bag rolls back cash/source/result together");
         await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId={p.CharId} AND slot=96");
-        p.SendRpc($"60 {Le(7458u)} 29 00 01 00 00");await p.WaitForRpcAsync("61 01");
-        p.SendRpc($"60 {Le(7458u)} 29 00 00 00 00");await p.WaitForRpcAsync("5f 29 00 00");await p.WaitForRpcAsync("61 00");
+        p.SendRpc($"60 {Le(7458u)} 91 01 01 00 00");await p.WaitForRpcAsync("61 01");
+        p.SendRpc($"60 {Le(7458u)} 91 01 00 00 00");await p.WaitForRpcAsync("5f 91 01 00");await p.WaitForRpcAsync("61 00");
         Check.Equal(99880L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Known fragment compile charges script twelve-percent cost");
     }
 }
