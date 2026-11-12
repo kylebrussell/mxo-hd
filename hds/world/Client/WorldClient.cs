@@ -106,7 +106,7 @@ namespace hds
         }
 
         // This method sends one packet at a time to the game client 
-        private void sendPacket(byte[] data)
+        private bool sendPacket(byte[] data)
         {
             if (this.deadSignals == 0)
             {
@@ -114,6 +114,7 @@ namespace hds
                 try
                 {
                     socket.BeginSendTo(data, 0, data.Length, SocketFlags.None, Remote, new AsyncCallback(FinalSendTo), Remote);
+                    return true;
                 }
                 catch (Exception ex)
                 {
@@ -121,6 +122,7 @@ namespace hds
                     alive = false;
                 }
             }
+            return false;
         }
 
         private void FinalSendTo(IAsyncResult asyncResult)
@@ -225,6 +227,8 @@ namespace hds
                 }
                 flushingQueueInProgress = true;
             }
+
+            long scaleFlushStart=ScaleDiagnostics.Start;
 
             // This resend the MessageQueue - should be called after parsing or after sending something out
             // or in a timed interval (keep alive for example)
@@ -362,7 +366,12 @@ namespace hds
                     }
                     else
                     {
-                        sendPacket(encryptedData);
+                        bool dispatched=sendPacket(encryptedData);
+                        if(dispatched && ScaleDiagnostics.Enabled)
+                        {
+                            foreach(var message in thePacket.RPCMessages)message.RecordScaleFirstSend(false);
+                            foreach(var message in thePacket.ObjectMessages)message.RecordScaleFirstSend(true);
+                        }
                     }
 
                     stopWatch.Stop();
@@ -375,6 +384,7 @@ namespace hds
                 }
             }
 
+            ScaleDiagnostics.FlushCompleted(scaleFlushStart);
             flushingQueueInProgress = false;
             lastFlushTick = Environment.TickCount64;
             flushPending = false;

@@ -1,0 +1,533 @@
+[
+  {
+    "Utc": "2026-11-12T21:04:10.1900875Z",
+    "ElapsedSeconds": 1.0121009,
+    "ServerCpuCorePercent": 1.5438184078287054,
+    "ServerCpuHostPercent": 0.09648865048929409,
+    "GeneratorCpuCorePercent": 1.5438184078287054,
+    "ServerWorkingSetBytes": 2183553024,
+    "GeneratorWorkingSetBytes": 180748288
+  },
+  {
+    "Utc": "2026-11-12T21:04:11.2140144Z",
+    "ElapsedSeconds": 2.0360652,
+    "ServerCpuCorePercent": 3.051864210500308,
+    "ServerCpuHostPercent": 0.19074151315626925,
+    "GeneratorCpuCorePercent": 3.051864210500308,
+    "ServerWorkingSetBytes": 2183585792,
+    "GeneratorWorkingSetBytes": 181489664
+  },
+  {
+    "Utc": "2026-11-12T21:04:12.2412372Z",
+    "ElapsedSeconds": 3.0633076,
+    "ServerCpuCorePercent": 4.56318781234108,
+    "ServerCpuHostPercent": 0.2851992382713175,
+    "GeneratorCpuCorePercent": 4.56318781234108,
+    "ServerWorkingSetBytes": 2183790592,
+    "GeneratorWorkingSetBytes": 182243328
+  },
+  {
+    "Utc": "2026-11-12T21:04:13.2660074Z",
+    "ElapsedSeconds": 4.0880602,
+    "ServerCpuCorePercent": 3.0495165369670683,
+    "ServerCpuHostPercent": 0.19059478356044177,
+    "GeneratorCpuCorePercent": 1.5247582684835341,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 182263808
+  },
+  {
+    "Utc": "2026-11-12T21:04:14.2909414Z",
+    "ElapsedSeconds": 5.1130384,
+    "ServerCpuCorePercent": 3.0488453315397352,
+    "ServerCpuHostPercent": 0.19055283322123345,
+    "GeneratorCpuCorePercent": 0,
+    "ServerWorkingSetBytes": 2183852032,
+    "GeneratorWorkingSetBytes": 182255616
+  },
+  {
+    "Utc": "2026-11-12T21:04:15.3060247Z",
+    "ElapsedSeconds": 6.1281427,
+    "ServerCpuCorePercent": 3.078501391433373,
+    "ServerCpuHostPercent": 0.1924063369645858,
+    "GeneratorCpuCorePercent": 1.5392506957166865,
+    "ServerWorkingSetBytes": 2183921664,
+    "GeneratorWorkingSetBytes": 182259712
+  },
+  {
+    "Utc": "2026-11-12T21:04:16.3325534Z",
+    "ElapsedSeconds": 7.154666,
+    "ServerCpuCorePercent": 3.0442562774756303,
+    "ServerCpuHostPercent": 0.1902660173422269,
+    "GeneratorCpuCorePercent": 1.5221281387378152,
+    "ServerWorkingSetBytes": 2183921664,
+    "GeneratorWorkingSetBytes": 182259712
+  },
+  {
+    "Utc": "2026-11-12T21:04:17.3487829Z",
+    "ElapsedSeconds": 8.1709166,
+    "ServerCpuCorePercent": 3.075028934792264,
+    "ServerCpuHostPercent": 0.1921893084245165,
+    "GeneratorCpuCorePercent": 1.537514467396132,
+    "ServerWorkingSetBytes": 2183938048,
+    "GeneratorWorkingSetBytes": 182263808
+  },
+  {
+    "Utc": "2026-11-12T21:04:18.3758995Z",
+    "ElapsedSeconds": 9.1980579,
+    "ServerCpuCorePercent": 3.0424246401152395,
+    "ServerCpuHostPercent": 0.19015154000720247,
+    "GeneratorCpuCorePercent": 1.5212123200576197,
+    "ServerWorkingSetBytes": 2183938048,
+    "GeneratorWorkingSetBytes": 180891648
+  },
+  {
+    "Utc": "2026-11-12T21:04:19.4002062Z",
+    "ElapsedSeconds": 10.2223521,
+    "ServerCpuCorePercent": 3.050881280007248,
+    "ServerCpuHostPercent": 0.190680080000453,
+    "GeneratorCpuCorePercent": 7.627203200018121,
+    "ServerWorkingSetBytes": 2183962624,
+    "GeneratorWorkingSetBytes": 181157888
+  },
+  {
+    "Utc": "2026-11-12T21:04:20.4227628Z",
+    "ElapsedSeconds": 11.2449276,
+    "ServerCpuCorePercent": 4.584013600951713,
+    "ServerCpuHostPercent": 0.28650085005948206,
+    "GeneratorCpuCorePercent": 1.5280045336505712,
+    "ServerWorkingSetBytes": 2184114176,
+    "GeneratorWorkingSetBytes": 181157888
+  },
+  {
+    "Utc": "2026-11-12T21:04:21.4410966Z",
+    "ElapsedSeconds": 12.263269,
+    "ServerCpuCorePercent": 9.206146386663658,
+    "ServerCpuHostPercent": 0.5753841491664786,
+    "GeneratorCpuCorePercent": 4.603073193331829,
+    "ServerWorkingSetBytes": 2184130560,
+    "GeneratorWorkingSetBytes": 181153792
+  },
+  {
+    "Utc": "2026-11-12T21:04:22.4642345Z",
+    "ElapsedSeconds": 13.2864371,
+    "ServerCpuCorePercent": 4.581358625234695,
+    "ServerCpuHostPercent": 0.28633491407716843,
+    "GeneratorCpuCorePercent": 1.5271195417448982,
+    "ServerWorkingSetBytes": 2184142848,
+    "GeneratorWorkingSetBytes": 181157888
+  },
+  {
+    "Utc": "2026-11-12T21:04:23.4846559Z",
+    "ElapsedSeconds": 14.3068614,
+    "ServerCpuCorePercent": 3.062451570390865,
+    "ServerCpuHostPercent": 0.19140322314942906,
+    "GeneratorCpuCorePercent": 1.5312257851954325,
+    "ServerWorkingSetBytes": 2184146944,
+    "GeneratorWorkingSetBytes": 181215232
+  },
+  {
+    "Utc": "2026-11-12T21:04:24.5130252Z",
+    "ElapsedSeconds": 15.3352369,
+    "ServerCpuCorePercent": 1.5193866442753656,
+    "ServerCpuHostPercent": 0.09496166526721035,
+    "GeneratorCpuCorePercent": 3.0387732885507313,
+    "ServerWorkingSetBytes": 2184151040,
+    "GeneratorWorkingSetBytes": 181297152
+  },
+  {
+    "Utc": "2026-11-12T21:04:25.5267418Z",
+    "ElapsedSeconds": 16.3489758,
+    "ServerCpuCorePercent": 12.330591240012572,
+    "ServerCpuHostPercent": 0.7706619525007857,
+    "GeneratorCpuCorePercent": 18.495886860018857,
+    "ServerWorkingSetBytes": 2184151040,
+    "GeneratorWorkingSetBytes": 181673984
+  },
+  {
+    "Utc": "2026-11-12T21:04:26.5531777Z",
+    "ElapsedSeconds": 17.3754552,
+    "ServerCpuCorePercent": 3.044386472831312,
+    "ServerCpuHostPercent": 0.190274154551957,
+    "GeneratorCpuCorePercent": 3.044386472831312,
+    "ServerWorkingSetBytes": 2184167424,
+    "GeneratorWorkingSetBytes": 181993472
+  },
+  {
+    "Utc": "2026-11-12T21:04:27.5759574Z",
+    "ElapsedSeconds": 18.3982338,
+    "ServerCpuCorePercent": 3.0554022151030575,
+    "ServerCpuHostPercent": 0.1909626384439411,
+    "GeneratorCpuCorePercent": 1.5277011075515288,
+    "ServerWorkingSetBytes": 2184167424,
+    "GeneratorWorkingSetBytes": 181993472
+  },
+  {
+    "Utc": "2026-11-12T21:04:28.601055Z",
+    "ElapsedSeconds": 19.4233291,
+    "ServerCpuCorePercent": 27.436473467393707,
+    "ServerCpuHostPercent": 1.7147795917121067,
+    "GeneratorCpuCorePercent": 6.096994103865269,
+    "ServerWorkingSetBytes": 2182705152,
+    "GeneratorWorkingSetBytes": 181993472
+  },
+  {
+    "Utc": "2026-11-12T21:04:29.6248925Z",
+    "ElapsedSeconds": 20.4471941,
+    "ServerCpuCorePercent": 1.5260800984504783,
+    "ServerCpuHostPercent": 0.0953800061531549,
+    "GeneratorCpuCorePercent": 1.5260800984504783,
+    "ServerWorkingSetBytes": 2182709248,
+    "GeneratorWorkingSetBytes": 181174272
+  },
+  {
+    "Utc": "2026-11-12T21:04:30.6428121Z",
+    "ElapsedSeconds": 21.4651221,
+    "ServerCpuCorePercent": 4.604942589259761,
+    "ServerCpuHostPercent": 0.2878089118287351,
+    "GeneratorCpuCorePercent": 0,
+    "ServerWorkingSetBytes": 2182725632,
+    "GeneratorWorkingSetBytes": 180584448
+  },
+  {
+    "Utc": "2026-11-12T21:04:31.6672759Z",
+    "ElapsedSeconds": 22.489604,
+    "ServerCpuCorePercent": 3.0503223141375124,
+    "ServerCpuHostPercent": 0.19064514463359453,
+    "GeneratorCpuCorePercent": 1.5251611570687562,
+    "ServerWorkingSetBytes": 2182725632,
+    "GeneratorWorkingSetBytes": 180580352
+  },
+  {
+    "Utc": "2026-11-12T21:04:32.6924157Z",
+    "ElapsedSeconds": 23.5147487,
+    "ServerCpuCorePercent": 3.048350149983709,
+    "ServerCpuHostPercent": 0.19052188437398182,
+    "GeneratorCpuCorePercent": 1.5241750749918546,
+    "ServerWorkingSetBytes": 2182725632,
+    "GeneratorWorkingSetBytes": 180580352
+  },
+  {
+    "Utc": "2026-11-12T21:04:33.7188919Z",
+    "ElapsedSeconds": 24.5412194,
+    "ServerCpuCorePercent": 1.5222061379832845,
+    "ServerCpuHostPercent": 0.09513788362395528,
+    "GeneratorCpuCorePercent": 1.5222061379832845,
+    "ServerWorkingSetBytes": 2182729728,
+    "GeneratorWorkingSetBytes": 180580352
+  },
+  {
+    "Utc": "2026-11-12T21:04:34.7315236Z",
+    "ElapsedSeconds": 25.5538587,
+    "ServerCpuCorePercent": 16.97297349609086,
+    "ServerCpuHostPercent": 1.0608108435056787,
+    "GeneratorCpuCorePercent": 21.601966267752,
+    "ServerWorkingSetBytes": 2182889472,
+    "GeneratorWorkingSetBytes": 180523008
+  },
+  {
+    "Utc": "2026-11-12T21:04:35.7729276Z",
+    "ElapsedSeconds": 26.59532,
+    "ServerCpuCorePercent": 6.001183145259445,
+    "ServerCpuHostPercent": 0.3750739465787153,
+    "GeneratorCpuCorePercent": 7.501478931574305,
+    "ServerWorkingSetBytes": 2183057408,
+    "GeneratorWorkingSetBytes": 180523008
+  },
+  {
+    "Utc": "2026-11-12T21:04:36.7971312Z",
+    "ElapsedSeconds": 27.6195336,
+    "ServerCpuCorePercent": 1.5255606838261089,
+    "ServerCpuHostPercent": 0.0953475427391318,
+    "GeneratorCpuCorePercent": 1.5255606838261089,
+    "ServerWorkingSetBytes": 2183061504,
+    "GeneratorWorkingSetBytes": 182996992
+  },
+  {
+    "Utc": "2026-11-12T21:04:37.8247216Z",
+    "ElapsedSeconds": 28.6471224,
+    "ServerCpuCorePercent": 6.082199416731672,
+    "ServerCpuHostPercent": 0.3801374635457295,
+    "GeneratorCpuCorePercent": 22.80824781274377,
+    "ServerWorkingSetBytes": 2183065600,
+    "GeneratorWorkingSetBytes": 184029184
+  },
+  {
+    "Utc": "2026-11-12T21:04:38.8461573Z",
+    "ElapsedSeconds": 29.6685631,
+    "ServerCpuCorePercent": 3.0594042316896144,
+    "ServerCpuHostPercent": 0.1912127644806009,
+    "GeneratorCpuCorePercent": 1.5297021158448072,
+    "ServerWorkingSetBytes": 2183069696,
+    "GeneratorWorkingSetBytes": 184037376
+  },
+  {
+    "Utc": "2026-11-12T21:04:39.8705506Z",
+    "ElapsedSeconds": 30.6929382,
+    "ServerCpuCorePercent": 25.930442862189828,
+    "ServerCpuHostPercent": 1.6206526788868643,
+    "GeneratorCpuCorePercent": 9.151921010184646,
+    "ServerWorkingSetBytes": 2183069696,
+    "GeneratorWorkingSetBytes": 183107584
+  },
+  {
+    "Utc": "2026-11-12T21:04:40.914165Z",
+    "ElapsedSeconds": 31.7366172,
+    "ServerCpuCorePercent": 2.994215654430143,
+    "ServerCpuHostPercent": 0.18713847840188394,
+    "GeneratorCpuCorePercent": 4.491323481645215,
+    "ServerWorkingSetBytes": 2183069696,
+    "GeneratorWorkingSetBytes": 183062528
+  },
+  {
+    "Utc": "2026-11-12T21:04:41.9343909Z",
+    "ElapsedSeconds": 32.7568326,
+    "ServerCpuCorePercent": 6.126157280119464,
+    "ServerCpuHostPercent": 0.3828848300074665,
+    "GeneratorCpuCorePercent": 1.531539320029866,
+    "ServerWorkingSetBytes": 2183069696,
+    "GeneratorWorkingSetBytes": 183074816
+  },
+  {
+    "Utc": "2026-11-12T21:04:42.9541363Z",
+    "ElapsedSeconds": 33.7765865,
+    "ServerCpuCorePercent": 6.128929734909583,
+    "ServerCpuHostPercent": 0.38305810843184895,
+    "GeneratorCpuCorePercent": 1.5322324337273958,
+    "ServerWorkingSetBytes": 2183069696,
+    "GeneratorWorkingSetBytes": 181596160
+  },
+  {
+    "Utc": "2026-11-12T21:04:43.9776888Z",
+    "ElapsedSeconds": 34.800121,
+    "ServerCpuCorePercent": 6.10629148309121,
+    "ServerCpuHostPercent": 0.38164321769320064,
+    "GeneratorCpuCorePercent": 6.10629148309121,
+    "ServerWorkingSetBytes": 2183589888,
+    "GeneratorWorkingSetBytes": 181596160
+  },
+  {
+    "Utc": "2026-11-12T21:04:45.0004853Z",
+    "ElapsedSeconds": 35.8229754,
+    "ServerCpuCorePercent": 4.582763685623291,
+    "ServerCpuHostPercent": 0.2864227303514557,
+    "GeneratorCpuCorePercent": 1.5275878952077637,
+    "ServerWorkingSetBytes": 2183589888,
+    "GeneratorWorkingSetBytes": 181596160
+  },
+  {
+    "Utc": "2026-11-12T21:04:46.0244982Z",
+    "ElapsedSeconds": 36.8470174,
+    "ServerCpuCorePercent": 9.154897943639018,
+    "ServerCpuHostPercent": 0.5721811214774386,
+    "GeneratorCpuCorePercent": 10.680714267578855,
+    "ServerWorkingSetBytes": 2183655424,
+    "GeneratorWorkingSetBytes": 181600256
+  },
+  {
+    "Utc": "2026-11-12T21:04:47.0385564Z",
+    "ElapsedSeconds": 37.8610643,
+    "ServerCpuCorePercent": 4.622567259956105,
+    "ServerCpuHostPercent": 0.28891045374725655,
+    "GeneratorCpuCorePercent": 1.5408557533187015,
+    "ServerWorkingSetBytes": 2183774208,
+    "GeneratorWorkingSetBytes": 180699136
+  },
+  {
+    "Utc": "2026-11-12T21:04:48.0612884Z",
+    "ElapsedSeconds": 38.8838219,
+    "ServerCpuCorePercent": 1.5277324754174422,
+    "ServerCpuHostPercent": 0.09548327971359014,
+    "GeneratorCpuCorePercent": 1.5277324754174422,
+    "ServerWorkingSetBytes": 2183794688,
+    "GeneratorWorkingSetBytes": 180690944
+  },
+  {
+    "Utc": "2026-11-12T21:04:49.0870092Z",
+    "ElapsedSeconds": 39.9095553,
+    "ServerCpuCorePercent": 1.5233003039581239,
+    "ServerCpuHostPercent": 0.09520626899738274,
+    "GeneratorCpuCorePercent": 3.0466006079162478,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 180662272
+  },
+  {
+    "Utc": "2026-11-12T21:04:50.1078825Z",
+    "ElapsedSeconds": 40.9304541,
+    "ServerCpuCorePercent": 7.652570460460936,
+    "ServerCpuHostPercent": 0.4782856537788085,
+    "GeneratorCpuCorePercent": 1.5305140920921874,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 180658176
+  },
+  {
+    "Utc": "2026-11-12T21:04:51.1282298Z",
+    "ElapsedSeconds": 41.9508011,
+    "ServerCpuCorePercent": 4.594025365880426,
+    "ServerCpuHostPercent": 0.2871265853675266,
+    "GeneratorCpuCorePercent": 3.0626835772536176,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 180867072
+  },
+  {
+    "Utc": "2026-11-12T21:04:52.1529541Z",
+    "ElapsedSeconds": 42.9755431,
+    "ServerCpuCorePercent": 3.0495480813707156,
+    "ServerCpuHostPercent": 0.19059675508566973,
+    "GeneratorCpuCorePercent": 1.5247740406853578,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 182284288
+  },
+  {
+    "Utc": "2026-11-12T21:04:53.1793172Z",
+    "ElapsedSeconds": 44.0019018,
+    "ServerCpuCorePercent": 3.0447444933238375,
+    "ServerCpuHostPercent": 0.19029653083273984,
+    "GeneratorCpuCorePercent": 1.5223722466619187,
+    "ServerWorkingSetBytes": 2183798784,
+    "GeneratorWorkingSetBytes": 183738368
+  },
+  {
+    "Utc": "2026-11-12T21:04:54.2058587Z",
+    "ElapsedSeconds": 45.0284668,
+    "ServerCpuCorePercent": 3.0441326170286405,
+    "ServerCpuHostPercent": 0.19025828856429003,
+    "GeneratorCpuCorePercent": 1.5220663085143202,
+    "ServerWorkingSetBytes": 2183802880,
+    "GeneratorWorkingSetBytes": 184295424
+  },
+  {
+    "Utc": "2026-11-12T21:04:55.2293823Z",
+    "ElapsedSeconds": 46.0520166,
+    "ServerCpuCorePercent": 7.632750257974709,
+    "ServerCpuHostPercent": 0.4770468911234193,
+    "GeneratorCpuCorePercent": 6.106200206379767,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 184295424
+  },
+  {
+    "Utc": "2026-11-12T21:04:56.2405472Z",
+    "ElapsedSeconds": 47.0631873,
+    "ServerCpuCorePercent": 3.0904772062718955,
+    "ServerCpuHostPercent": 0.19315482539199347,
+    "GeneratorCpuCorePercent": 1.5452386031359477,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 184295424
+  },
+  {
+    "Utc": "2026-11-12T21:04:57.2547514Z",
+    "ElapsedSeconds": 48.0774138,
+    "ServerCpuCorePercent": 3.0811657948199946,
+    "ServerCpuHostPercent": 0.19257286217624967,
+    "GeneratorCpuCorePercent": 1.5405828974099973,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 184295424
+  },
+  {
+    "Utc": "2026-11-12T21:04:58.2693543Z",
+    "ElapsedSeconds": 49.092016,
+    "ServerCpuCorePercent": 3.0800248609750733,
+    "ServerCpuHostPercent": 0.19250155381094208,
+    "GeneratorCpuCorePercent": 1.5400124304875367,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 184299520
+  },
+  {
+    "Utc": "2026-11-12T21:04:59.2927572Z",
+    "ElapsedSeconds": 50.115449,
+    "ServerCpuCorePercent": 9.160345621061687,
+    "ServerCpuHostPercent": 0.5725216013163554,
+    "GeneratorCpuCorePercent": 7.63362135088474,
+    "ServerWorkingSetBytes": 2183806976,
+    "GeneratorWorkingSetBytes": 184295424
+  },
+  {
+    "Utc": "2026-11-12T21:05:00.3092055Z",
+    "ElapsedSeconds": 51.131853,
+    "ServerCpuCorePercent": 15.372824191955145,
+    "ServerCpuHostPercent": 0.9608015119971965,
+    "GeneratorCpuCorePercent": 15.372824191955145,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 184381440
+  },
+  {
+    "Utc": "2026-11-12T21:05:01.3295133Z",
+    "ElapsedSeconds": 52.1522046,
+    "ServerCpuCorePercent": 1.531334884955346,
+    "ServerCpuHostPercent": 0.09570843030970913,
+    "GeneratorCpuCorePercent": 1.531334884955346,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 184381440
+  },
+  {
+    "Utc": "2026-11-12T21:05:02.3442808Z",
+    "ElapsedSeconds": 53.1669919,
+    "ServerCpuCorePercent": 1.5397315279763524,
+    "ServerCpuHostPercent": 0.09623322049852202,
+    "GeneratorCpuCorePercent": 1.5397315279763524,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 184381440
+  },
+  {
+    "Utc": "2026-11-12T21:05:03.3655185Z",
+    "ElapsedSeconds": 54.1882574,
+    "ServerCpuCorePercent": 6.119858156375605,
+    "ServerCpuHostPercent": 0.3824911347734753,
+    "GeneratorCpuCorePercent": 1.5299645390939012,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 184381440
+  },
+  {
+    "Utc": "2026-11-12T21:05:04.3889943Z",
+    "ElapsedSeconds": 55.2117445,
+    "ServerCpuCorePercent": 4.579930709434424,
+    "ServerCpuHostPercent": 0.2862456693396515,
+    "GeneratorCpuCorePercent": 7.633217849057374,
+    "ServerWorkingSetBytes": 2183827456,
+    "GeneratorWorkingSetBytes": 185344000
+  },
+  {
+    "Utc": "2026-11-12T21:05:05.4144089Z",
+    "ElapsedSeconds": 56.2371655,
+    "ServerCpuCorePercent": 9.142586313328854,
+    "ServerCpuHostPercent": 0.5714116445830534,
+    "GeneratorCpuCorePercent": 3.0475287711096177,
+    "ServerWorkingSetBytes": 2183843840,
+    "GeneratorWorkingSetBytes": 185344000
+  },
+  {
+    "Utc": "2026-11-12T21:05:06.4297291Z",
+    "ElapsedSeconds": 57.2525005,
+    "ServerCpuCorePercent": 3.0778019077447554,
+    "ServerCpuHostPercent": 0.1923626192340472,
+    "GeneratorCpuCorePercent": 1.5389009538723777,
+    "ServerWorkingSetBytes": 2183843840,
+    "GeneratorWorkingSetBytes": 185344000
+  },
+  {
+    "Utc": "2026-11-12T21:05:07.4516515Z",
+    "ElapsedSeconds": 58.2744503,
+    "ServerCpuCorePercent": 6.115760284898525,
+    "ServerCpuHostPercent": 0.3822350178061578,
+    "GeneratorCpuCorePercent": 6.115760284898525,
+    "ServerWorkingSetBytes": 2183766016,
+    "GeneratorWorkingSetBytes": 190357504
+  },
+  {
+    "Utc": "2026-11-12T21:05:08.4771777Z",
+    "ElapsedSeconds": 59.2999584,
+    "ServerCpuCorePercent": 7.618174834503964,
+    "ServerCpuHostPercent": 0.4761359271564978,
+    "GeneratorCpuCorePercent": 19.80725456971031,
+    "ServerWorkingSetBytes": 2183766016,
+    "GeneratorWorkingSetBytes": 190857216
+  },
+  {
+    "Utc": "2026-11-12T21:05:09.5044715Z",
+    "ElapsedSeconds": 60.3272735,
+    "ServerCpuCorePercent": 4.562864889263304,
+    "ServerCpuHostPercent": 0.2851790555789565,
+    "GeneratorCpuCorePercent": 1.520954963087768,
+    "ServerWorkingSetBytes": 2183766016,
+    "GeneratorWorkingSetBytes": 192073728
+  }
+]
