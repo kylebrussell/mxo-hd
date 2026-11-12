@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -34,6 +35,7 @@ namespace hds
         public sealed class Active
         {
             public UInt16 Parent;
+            internal Action<Subject, Active> OnExpired;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -90,12 +92,14 @@ namespace hds
             /// Puts the tempmods on for <paramref name="parent"/>, replacing everything that ability put on before
             /// (retail's refresh). Returns the replaced ones.
             /// </summary>
-            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now)
+            public List<Active> Apply(UInt16 parent, IList<Active> mods, double now, bool preserveOtherTargets = false)
             {
                 lock (active)
                 {
-                    List<Active> replaced = active.FindAll(a => a.Parent == parent);
-                    active.RemoveAll(a => a.Parent == parent);
+                    //1125 has an independent caster681 marker and target710 modifier. Refresh its tuple, not both.
+                    bool Replaced(Active a)=>a.Parent==parent && (!preserveOtherTargets || mods.Any(m=>m.Target==a.Target));
+                    List<Active> replaced = active.FindAll(Replaced);
+                    active.RemoveAll(Replaced);
                     foreach (Active m in mods)
                     {
                         m.Parent = parent;
@@ -341,6 +345,7 @@ namespace hds
                     }
                 }
             }
+            foreach (Active mod in expired) mod.OnExpired?.Invoke(subject, mod);
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
@@ -407,7 +412,7 @@ namespace hds
         /// tempmods that went on (none when only control states were refused).
         /// </summary>
         public static List<Active> Apply(Subject subject, TempMods.Effect effect, double now, WorldClient caster = null,
-            string casterName = null, UInt16 targetView = 0, Random rng = null)
+            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
         {
             List<Active> mods = Instantiate(effect, rng ?? random);
             for (int i = mods.Count - 1; i >= 0; i--)
@@ -424,6 +429,7 @@ namespace hds
                 }
                 m.CasterName = casterName;
                 m.TargetView = targetView;
+                configure?.Invoke(m);
             }
 
             // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
@@ -460,13 +466,15 @@ namespace hds
                 return mods;
             }
 
-            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now);
+            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion);
             if (immunity != null)
             {
                 subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);
             }
             Register(subject);
             subject.Applied(effect, mods, immunity, replaced);
+            if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
+                EvasionShield.Refresh(shieldTarget.Context);
             return mods;
         }
 
@@ -777,6 +785,7 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             SendOff(ended);
+            if (ended.Exists(m => m.Parent == StealthShieldAbilities.DisableEvasion)) EvasionShield.Refresh(client);
             if (AbilityHostile.ChangesVitals(ended)) AbilityBuffs.RefreshVitals(client);
             foreach (TimedEffects.Active m in ended)
             {
