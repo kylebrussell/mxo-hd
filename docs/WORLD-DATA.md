@@ -2,6 +2,8 @@
 
 What the client's world files say about each district, how to read them, and what the server takes from them. Everything here comes from the 7.6005 client's own files; no retail capture adds to it unless it says so.
 
+See [Small03 partial support and remaining-world inventory](WORLD-SMALL03.md) for the bounded map17 static/nav export, source omissions, and native checklist. Westview is already part of the Slums world.
+
 ## Sector properties (`.metr`)
 
 `data/sector_properties.csv` has one row per sector of every district the server can load: 4,288 sectors in 19 worlds (Slums 1,493, Downtown 792, International 391, the tutorial, the archive and combat constructs, and the loading area). It is made by `research/world-data/metr_sectors.py` from the `.metr` files under `resource/worlds/` (loose files, not packed):
