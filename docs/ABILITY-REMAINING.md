@@ -55,7 +55,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 | 1025 EMCP Blast | `EMPBlast_DirectObject` does0 normally/5000 for NPCEMPWeakness; NPC weakness ownership/templates are unavailable. Do not infer it from the ability name or make it unconditional damage. |
 | 1110 Bull Dog;1125 Disable Evasion | P5 follow-up implements terminal throw, builtin motion, target state suppression and caster restealth. Explicitly partial: missing1110 interval/retail damage and217 shield-health/520 contest. See [STEALTH-SHIELDS.md](STEALTH-SHIELDS.md). |
 | 1124 Disrupt Connection | Legacy old template requires a tool but has no decoded stored modifier or surviving specific script. No supported effect is guessed. |
-| 1149 Desperation | `DesperationFunction` computes health-dependent Initiative with InitiativeBonus. No initiative combat consumer is reconstructed; a countdown/number alone would remain cosmetic. |
+| 1149 Desperation | COSMETIC snapshot foundation:20s Initiative1044 value, cost10/reuse90/buffer10 and cleanup. No initiative combat consumer is reconstructed; retail gameplay remains unresolved. [Evidence](DESPERATION.md). |
 
 Legacy stake/silver/holy-water abilities207/208/547/1022/1023/1024 are already handled by111's CombatSpecials, including its explicitly chosen NPC weakness-by-name policy; this package preserves that work. Original5/8 thrown/viral resistance remain cosmetic. Firearms Skill124 and all original numeric snapshots remain intact.
 

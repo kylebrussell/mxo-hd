@@ -59,6 +59,7 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 bool stealthShieldsMode = args.Length > 3 && args[3] == "stealth-shields";
+bool desperationMode = args.Length > 3 && args[3] == "desperation";
 bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
 bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
@@ -119,6 +120,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (stealthShieldsMode) abilities = StealthShieldFixture.Abilities;
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (desperationMode) abilities = new ushort[] {1149};
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,25,603,31,34,19,609,619 };
