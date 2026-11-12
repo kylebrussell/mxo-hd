@@ -5,6 +5,20 @@ namespace hds.Tests;
 
 public class EquipPacketTests
 {
+    [Theory]
+    [InlineData("016b", "650100010000")]
+    [InlineData("0169", "650100010000")]
+    [InlineData("ff6b", "650000000000")]
+    [InlineData("", "650000000000")]
+    public void RefusalAcknowledgesWithoutSwappingAnotherSlot(string request, string expected)
+    {
+        Assert.Equal(expected, Convert.ToHexString(ServerPackets.BuildEquipmentRefusal(Convert.FromHexString(request))).ToLowerInvariant());
+    }
+
+    [Fact]
+    public void MissingEquipmentBodyStillReceivesSafeAcknowledgement() =>
+        Assert.Equal("650000000000", Convert.ToHexString(ServerPackets.BuildEquipmentRefusal(null)).ToLowerInvariant());
+
     [Fact]
     public void EquippedItemUpdateMatchesRetail()
     {

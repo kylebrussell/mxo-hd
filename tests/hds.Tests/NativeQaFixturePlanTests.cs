@@ -7,6 +7,19 @@ namespace hds.Tests;
 public class NativeQaFixturePlanTests
 {
     [Theory]
+    [InlineData("remaining", true)]
+    [InlineData("health-callbacks", true)]
+    [InlineData("compile-items", false)]
+    [InlineData("actions", false)]
+    [InlineData("write-code", false)]
+    public void CompilerFixturesKeepTheirActionTools(string mode, bool disguise)
+    {
+        Assert.Equal(disguise, NativeQaFixturePlan.SeedDisguiseTool(mode));
+        Assert.Equal(2399u, hds.CraftingRequests.SourceItem(NativeQaFixturePlan.CompileArchiveValue | 1));
+        Assert.False(hds.CodeStorage.IsCode(NativeQaFixturePlan.CompileArchiveValue));
+    }
+
+    [Theory]
     [InlineData("ignored-actions", "1", "110")]
     [InlineData("typed-defense", "1", "")]
     [InlineData("remaining", "1", "")]
