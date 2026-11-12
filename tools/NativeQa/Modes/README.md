@@ -24,3 +24,5 @@ Optional `extraQaMetadata` is an immutable primitive dictionary for additional s
 
 mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
 `large01` is PARTIAL:953safe native statics/153nav sectors at shipped12/1,48rotated/ambiguouskeys omitted. Existing captured NPCs retain documented height gaps. No dev/GM/forced RNG; native LA UI return unresolved. See [WORLD-LARGE01.md](../../../docs/WORLD-LARGE01.md).
+
+`medium01` is partial map14/1:39validated marker/booth keys,144nav sectors, unchanged12captured NPC rows with no exact-XZ nav containment. No dev/GM/forced rolls. Native LA UI return remains unresolved; see docs/WORLD-MEDIUM01.md.
