@@ -263,6 +263,8 @@ namespace hds
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
             TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
+            if (m.Text("StatModInitFunc") == "NegativeConditionSweepPulse")
+                Pulse(subject, new TimedEffects.Active { Parent = id, Value = value });
             return true;
         }
 

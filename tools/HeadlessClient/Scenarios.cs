@@ -23,6 +23,9 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("consumable-sweep-control", ConsumableSweepControlCancellation, StillNpcs),
+        new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
+        new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
         new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
         new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),

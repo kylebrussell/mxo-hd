@@ -7,7 +7,8 @@ namespace hds
     /// Consumable inventory items (pills) and the ability each one applies when used.
     /// The item names come from research/community-data/invitems.txt and the abilities from
     /// data/abilityIDs.csv; the pairing is by name (HealthReplenishPill2 -> PillHealthReplenish2Ability).
-    /// Retail use of Antibiotic 5.0 (PacketsZombiesPortingEtc line 77036) confirms the pairing pattern:
+    /// Antibiotic and condition sweep pairings are verified by raw GOB TriggeredAbility/ReqAbilityID; see
+    /// docs/ABILITY-CONSUMABLE-SWEEPS.md. Retail Antibiotic 5.0 (PacketsZombiesPortingEtc line 77036) confirms:
     /// the client asked for Antibiotic5Ability (678) with the item's bag slot.
     /// </summary>
     public static class ConsumableItems
@@ -16,11 +17,11 @@ namespace hds
         {
             /// <summary>Restores health: the ability's ValueFrom in data/abilityIDs.csv.</summary>
             Heal,
-            /// <summary>Removes negative states; this server has none to remove, so using it only spends it.</summary>
+            /// <summary>Applies the antibiotic ability's initial and periodic negative-condition sweeps.</summary>
             Cure,
             /// <summary>Raises maximum health for a while (needs the buff system; not usable yet).</summary>
             MaxHealthBoost,
-            /// <summary>Chance to remove negative states (not usable yet).</summary>
+            /// <summary>Periodic chance to remove negative conditions.</summary>
             ConditionSweep
         }
 
@@ -71,11 +72,15 @@ namespace hds
             return Items.TryGetValue(goid, out consumable);
         }
 
-        /// <summary>Heal pills and antibiotics can be used; the rest need systems this server lacks.</summary>
+        /// <summary>Heal pills, antibiotics and the condition sweep grant can be used.</summary>
         public static bool IsUsable(Consumable consumable)
         {
-            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure;
+            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure ||
+                consumable.Effect == Effect.ConditionSweep;
         }
+
+        /// <summary>Stored CharStatsPrerequisite/ReqCharLevel on the antibiotic item records.</summary>
+        public static int RequiredLevel(UInt32 goid) => goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;
 
         /// <summary>
         /// The bag slot a 80 b9 ability request uses an item from, or null. The request body (after the header)

@@ -167,8 +167,15 @@ namespace hds
                 return true;
             }
 
+            if (client.playerInstance.Level.getValue()[0] < ConsumableItems.RequiredLevel(goid))
+            {
+                pak.sendSystemChatMessage(client, "Your character level is too low to use this item.", "MODAL");
+                return true;
+            }
+
+            uint district = data.getDistrictId();
             double now = TimeUtils.GetSimTimeSeconds();
-            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+            if (data.isDead || data.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
                 (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
             {
                 Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");
@@ -182,10 +189,12 @@ namespace hds
             float castTime = ability != null ? ability.getCastingTime() : 0;
             UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
 
-            // Block a second use while this one is still casting.
+            double reservedUntil = now + castTime + consumable.Seconds;
+            // Reserve both timers while casting, including another item in the same family.
             lock (data.cooldownEndsAt)
             {
-                data.cooldownEndsAt[(UInt16)goid] = now + castTime + consumable.Seconds;
+                data.cooldownEndsAt[(UInt16)goid] = reservedUntil;
+                if (consumable.Group != 0) data.cooldownEndsAt[consumable.Group] = reservedUntil;
             }
 
             if (castTime > 0)
@@ -197,13 +206,18 @@ namespace hds
             DelayedActions.AfterFor(client, castTime, () =>
             {
                 // The item may have been moved or listed during the cast: then nothing is used up and nothing happens
-                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid || !client.Alive ||
+                    client.playerData != data || data.getDistrictId() != district || data.isDead || data.duelDeath ||
+                    ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects))
                 {
                     lock (data.cooldownEndsAt)
                     {
-                        data.cooldownEndsAt.Remove((UInt16)goid);
+                        if (data.cooldownEndsAt.TryGetValue((UInt16)goid, out double itemEnd) && itemEnd == reservedUntil)
+                            data.cooldownEndsAt.Remove((UInt16)goid);
+                        if (consumable.Group != 0 && data.cooldownEndsAt.TryGetValue(consumable.Group, out double groupEnd) && groupEnd == reservedUntil)
+                            data.cooldownEndsAt.Remove(consumable.Group);
                     }
-                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " left slot " + slot + " during the cast; not used");
+                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " cast cancelled (slot, life, control or world changed); not used");
                     return;
                 }
 
@@ -214,6 +228,11 @@ namespace hds
                 if (consumable.Effect == ConsumableItems.Effect.Heal)
                 {
                     AbilityHandler.HealSelf(client, amount);
+                }
+                else if (consumable.Effect == ConsumableItems.Effect.Cure || consumable.Effect == ConsumableItems.Effect.ConditionSweep)
+                {
+                    // The item grants a canonical ability; its StatModifier is ability-owned, not an equipped item modifier.
+                    AbilityHostile.ApplySweep(client, client, abilityId);
                 }
                 Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
             });

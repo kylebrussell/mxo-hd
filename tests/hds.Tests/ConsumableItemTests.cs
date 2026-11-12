@@ -31,6 +31,19 @@ public class ConsumableItemTests
         Assert.Equal(8f, antibiotic.Seconds);
     }
 
+    [Theory]
+    [InlineData(39406u, 0)]
+    [InlineData(39407u, 10)]
+    [InlineData(39408u, 20)]
+    [InlineData(39409u, 30)]
+    [InlineData(39410u, 40)]
+    [InlineData(38539u, 0)]
+    public void SweepConsumablesAreUsableWithTheirStoredCharacterRequirements(uint item, int level)
+    {
+        Assert.True(ConsumableItems.IsUsable(ConsumableItems.Items[item]));
+        Assert.Equal(level, ConsumableItems.RequiredLevel(item));
+    }
+
     [Fact]
     public void ItemSlotComesFromTheAbilityRequest()
     {

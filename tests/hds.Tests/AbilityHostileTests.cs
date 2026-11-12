@@ -193,6 +193,59 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.IsActive(victim, 327));
     }
 
+    private sealed class ZeroRoll : Random
+    {
+        public override int Next(int maxValue) => 0;
+    }
+
+    [Theory]
+    [InlineData(674, 5)]
+    [InlineData(675, 10)]
+    [InlineData(676, 15)]
+    [InlineData(677, 20)]
+    [InlineData(678, 25)]
+    public void AntibioticsExecuteTheInitialCureAndKeepTheirPeriodicModifier(ushort ability, int chance)
+    {
+        var victim = Client();
+        Land(victim, 315);
+        var subject = TimedEffects.ForPlayer(victim);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new ZeroRoll();
+            Assert.True(AbilityHostile.ApplySweep(victim, victim, ability));
+            Assert.False(subject.Effects.HasParent(315));
+            Assert.True(subject.Effects.HasParent(734));
+            var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == ability);
+            Assert.Equal(chance, pulse.Value);
+            Assert.Equal(90, pulse.Seconds);
+            Assert.Equal(5, pulse.Interval);
+            Land(victim, 343);
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.False(subject.Effects.HasParent(343));
+            Assert.True(subject.Effects.HasParent(ability));
+            TimedEffects.RunDue(pulse.Start + 90.01);
+            Assert.False(subject.Effects.HasParent(ability));
+        }
+        finally { AbilityHostile.PulseRandom = previous; }
+    }
+
+    [Fact]
+    public void ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily()
+    {
+        var victim = Client();
+        Land(victim, 343);
+        AbilityHostile.ApplySweep(victim, victim, 320);
+        Assert.True(AbilityHostile.ApplySweep(victim, victim, 659));
+        var subject = TimedEffects.ForPlayer(victim);
+        Assert.True(subject.Effects.HasParent(343)); // no init callback in the stored template
+        Assert.False(subject.Effects.HasParent(320));
+        var pulse = Assert.Single(subject.Effects.Snapshot(), a => a.Parent == 659);
+        Assert.Equal(25, pulse.Value);
+        Assert.Equal(20, pulse.Seconds);
+        Assert.Equal(5, pulse.Interval);
+    }
+
     [Fact]
     public void SweepsOfOneStackingTypeReplaceEachOther()
     {
