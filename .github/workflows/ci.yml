@@ -53,6 +53,9 @@ jobs:
       - name: Test audit snapshot policy
         run: python3 -m unittest research.abilities.test_snapshot_policy research.abilities.test_audit_links
 
+      - name: Test missing static layer export permissions
+        run: python3 -m unittest discover -s research/world-data -p 'test_*.py'
+
       - name: Generate current ability audit review bundle
         run: |
           mkdir -p artifacts/ability-audit
