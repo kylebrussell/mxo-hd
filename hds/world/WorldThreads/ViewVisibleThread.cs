@@ -22,6 +22,7 @@ namespace hds
             Output.WriteLine("[WORLD SERVER]View Visible Thread started");
             while (true)
             {
+              long scaleStart=ScaleDiagnostics.Start;
               // An exception escaping this loop ends the thread and the server; log it and try again next pass.
               try
               {
@@ -74,6 +75,7 @@ namespace hds
               {
                 Output.WriteLine("[VIEWS] Visibility pass failed: " + ex);
               }
+                finally {if(scaleStart!=0)ScaleDiagnostics.VisibilityCompleted(scaleStart,SnapshotClients());}
                 Thread.Sleep(500);
             }
         }
