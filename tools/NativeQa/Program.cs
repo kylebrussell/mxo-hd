@@ -153,7 +153,9 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                 else if (action == "approve")
                 {
                     var pending = await actor.WaitForRpcAsync("81 88");
-                    byte[] reply = (byte[])pending.Bytes.Clone();
+                    byte[] reply = new byte[54];
+                    reply[0] = 0x81; reply[1] = 0x88;
+                    Array.Copy(pending.Bytes, 2, reply, 2, 4);
                     reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
                     reply[7] = q.GetProperty("accept").GetBoolean() ? (byte)0 : (byte)1;
                     actor.SendRpc(reply);
