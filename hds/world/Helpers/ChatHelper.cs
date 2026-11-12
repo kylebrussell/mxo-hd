@@ -431,6 +431,10 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if (command.Equals("?combatdepth"))
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        CombatDepthDev.Run(Store.currentClient, commands.Skip(1).ToArray()), "BROADCAST");
+
                 if ((command.Equals("?stealthbot") || command.Equals("?stealth")) && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev commands (docs/STEALTH.md): ?stealth <sneak|conceal|evasion|invis|imparted|shadow|off> puts a stealth

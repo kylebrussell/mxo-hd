@@ -14,6 +14,7 @@ static string Consumer(ushort stat) => stat switch
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
+    575 => "Determination duration mitigation (known target totals)",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     _ => "total only"
@@ -74,6 +75,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
             level50 = AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null }).ToArray(),
         special_move_style = CombatStyles.IsSpecialMove(e.Id) ? CombatStyles.RequiredStyle(e.Id) : 0,
+        sneak_bonus = SneakAttacks.Bonus(e.Id,true),
+        special_animation = CombatAnimations.Special(e.Id,true,CombatTactic.Speed)?.Id,
         special = CombatSpecials.Describe(e.Id)
     };
 });
