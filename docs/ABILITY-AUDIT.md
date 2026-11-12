@@ -11,7 +11,7 @@ dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 ```
 
-This updates the tracked CSV from the executable inventory and writes current Markdown to ignored `artifacts/ability-audit/ABILITY-PARITY.md`; it leaves the tracked Markdown snapshot unchanged. For a self-contained review bundle without changing tracked evidence:
+This updates the tracked CSV from the executable inventory and writes current Markdown plus local CSV/coverage companions to ignored `artifacts/ability-audit/`; it leaves the tracked Markdown snapshot unchanged. For a self-contained review bundle without changing tracked evidence:
 
 ```powershell
 New-Item -ItemType Directory -Force artifacts/ability-audit
@@ -19,7 +19,7 @@ dotnet run --project tools/AbilityAudit -- artifacts/ability-audit/server_covera
 python research/abilities/build_audit.py --coverage artifacts/ability-audit/server_coverage.json --output-dir artifacts/ability-audit
 ```
 
-CI runs the same bundle workflow and uploads all three outputs with read-only repository access. It does not push generated commits. The optional `--update-markdown-snapshot` flag explicitly refreshes the tracked snapshot; submit that file alone in a separate docs-only PR based on current master. CI rejects a snapshot change mixed with any other path, including gameplay or manual changes.
+Local report links resolve from the actual output directory. CI adds `--source-base-url "https://github.com/kylebrussell/mxo-hd/blob/$GITHUB_SHA/"`, so source and manual links are pinned to the reviewed commit even after downloading the bundle; CSV/coverage links stay local. External URLs and line anchors are preserved. CI uploads all three outputs with read-only repository access. It does not push generated commits. The optional `--update-markdown-snapshot` flag explicitly refreshes the tracked snapshot; submit that file alone in a separate docs-only PR based on current master. CI rejects a snapshot change mixed with any other path, including gameplay or manual changes.
 
 ## Port pending feature branches
 

@@ -3,6 +3,7 @@
 dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 """
+from audit_links import rebase_links
 import argparse
 import collections
 import csv
@@ -14,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output-dir', type=Path, help='Write the current Markdown, CSV and coverage review bundle here')
+parser.add_argument('--source-base-url', help='Pinned HTTPS repository blob URL for portable artifact evidence links')
 parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: tracked inventory)')
 parser.add_argument('--update-markdown-snapshot', action='store_true', help='Explicit docs-only historical snapshot refresh')
 args=parser.parse_args()
@@ -380,15 +382,19 @@ footer = '''
 2. `dotnet run --project tools/AbilityAudit`
 3. `python research/abilities/build_audit.py` (current Markdown in `artifacts/ability-audit`; see [audit policy](ABILITY-AUDIT.md))
 
-The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `AbilityBuffs`, `TempMods`, `AbilityTargets` and grant lookup, rather than searching comments. The generated [CSV](ABILITY-PARITY.csv) is filterable by archetype, tree and status. Ability changes have unit coverage in `AbilityParityTests.cs` and four fresh-server `ability-parity-*` scenarios for support, controls, area effects and IS denial. Native ability checks are in [ABILITY-PARITY-QA.md](ABILITY-PARITY-QA.md) and the handoff file; this ability task does not acquire the client lock. The earlier PR94 native validation is separately recorded in `PVP.md`.
+The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `AbilityBuffs`, `TempMods`, `AbilityTargets` and grant lookup, rather than searching comments. The [runtime inventory](../research/abilities/server_coverage.json) records the executable coverage. The generated [CSV](ABILITY-PARITY.csv) is filterable by archetype, tree and status. Ability changes have unit coverage in `AbilityParityTests.cs` and four fresh-server `ability-parity-*` scenarios for support, controls, area effects and IS denial. Native ability checks are in [ABILITY-PARITY-QA.md](ABILITY-PARITY-QA.md) and the handoff file; this ability task does not acquire the client lock. The earlier PR94 native validation is separately recorded in `PVP.md`.
 '''
 markdown_path=ROOT / 'docs/ABILITY-PARITY.md' if args.update_markdown_snapshot else artifact_dir / 'ABILITY-PARITY.md'
-markdown_path.write_text(header + table + appendix + footer, encoding='utf-8', newline='\r\n')
-if args.output_dir:
-    (artifact_dir / 'server_coverage.json').write_text(coverage_path.read_text(encoding='utf-8'), encoding='utf-8', newline='\r\n')
+markdown=rebase_links(header + table + appendix + footer,ROOT,markdown_path.parent,
+    args.source_base_url,bundled=not args.update_markdown_snapshot)
+markdown_path.write_text(markdown, encoding='utf-8', newline='\r\n')
 csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv'
 with csv_path.open('w', newline='', encoding='utf-8') as stream:
     writer = csv.writer(stream, lineterminator='\r\n')
     writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status'])
     writer.writerows(rows)
+if not args.update_markdown_snapshot:
+    if csv_path.resolve() != (artifact_dir / 'ABILITY-PARITY.csv').resolve():
+        (artifact_dir / 'ABILITY-PARITY.csv').write_text(csv_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
+    (artifact_dir / 'server_coverage.json').write_text(coverage_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
 print(f'{len(player)} player candidates/grants, {len(abilities) - len(player)} other templates; {dict(counts)}')

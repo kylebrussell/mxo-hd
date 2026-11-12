@@ -51,13 +51,13 @@ jobs:
         run: python3 research/abilities/check_snapshot_policy.py --base "$AUDIT_BASE_SHA"
 
       - name: Test audit snapshot policy
-        run: python3 -m unittest research.abilities.test_snapshot_policy
+        run: python3 -m unittest research.abilities.test_snapshot_policy research.abilities.test_audit_links
 
       - name: Generate current ability audit review bundle
         run: |
           mkdir -p artifacts/ability-audit
           dotnet run --project tools/AbilityAudit --configuration Release -- artifacts/ability-audit/server_coverage.json
-          python3 research/abilities/build_audit.py --coverage artifacts/ability-audit/server_coverage.json --output-dir artifacts/ability-audit
+          python3 research/abilities/build_audit.py --coverage artifacts/ability-audit/server_coverage.json --output-dir artifacts/ability-audit --source-base-url "https://github.com/kylebrussell/mxo-hd/blob/$GITHUB_SHA/"
 
       - name: Upload current ability audit
         uses: actions/upload-artifact@v4
