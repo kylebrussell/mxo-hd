@@ -59,12 +59,24 @@ Download Mission Map preserves the `rshooks.py ComputeDownloadMissionMapOutcome`
 
 Unit tests pin byte layouts, signed-offset boundaries, payload limits, floor/district/range, level, singleton, exclusive-item and heavy rejection. Fresh-server cases: `data-mining-luggable-persistence`, `data-mining-full-bag`, `data-mining-locator`, `data-mining-mission-map` (`locked-safe.xml`). Headless validation proves these server contracts, not client rendering.
 
-**Claude only:** build `tools/NativeQa/NativeQa.csproj` and the server, then use the fixture's `data-mining` fourth argument. This preset offers 44, 538, 539, 540, 541 and 621, with handheld 422 in the disposable bag. Do not run it outside the existing native lock/cleanup workflow. `?utilityobject` and `?spawndatanode` require `MXO_DEV_COMMANDS=1`. `?utilitylocator` additionally refuses a database whose name does not start `mxotest_`.
+**Claude only:** the `data-mining` preset offers 44, 538, 539, 540, 541 and 621, with handheld 422 in the disposable bag. Use CSR_Tester110 as the only native character, within the existing native lock/cleanup workflow. The fixture itself acquires its lock; agents do not invoke it. The existing QA credential is cloned. `?utilityobject` and `?spawndatanode` require `MXO_DEV_COMMANDS=1`; `?utilitylocator` additionally requires an `mxotest_` database.
+
+```powershell
+$root = 'C:/Users/russe/Developer/mxo-wt/codex-package-p3-data-nodes'
+$qa = Join-Path $env:TEMP ('mxo-pr113-' + [guid]::NewGuid().ToString('N'))
+$head = (git -C $root rev-parse HEAD).Trim()
+dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Release
+dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" $root $qa $head data-mining
+```
+
+Wait for `state.json` Ready and `Im'running :D` before logging in as CSR_AbilityQA / CSR_Tester. Use the current full PR head in the test report.
 
 1. `?utilitylocator none`, double-click **Find Data Node** in Actions: expect "A tool is required to activate this ability." Do not cast prerequisite-only tiers 538/539.
 2. `?utilitylocator 422`, `?utilityobject 606`, `?utilityobject 596`. Double-click Find Data Node; expect the searching line and node FX at the fixture. Inspect the minimap for a yellow luggable ping. Move several metres, wait 10 s, and verify the updated attenuation/position. Double-click again and verify node FX disappears.
 3. `?utilitylocator 423`. Activate again: node FX within 5 m and luggable aura. Walk >5 m away and back, allowing 1 s each; FX must disappear/reappear. `?utilitylocator none` must clear the FX. Record whether the effect resembles retail goggles; do not mark the guessed white-glow presentation retail-complete.
 4. Equip the locator with `?utilitylocator 423` and activate Find Data Node. Walk within 1 m of fixture 596 and **double-click it** (usable defaultable in GOB). Expect the object to disappear, one item to enter the bag, and the exclusive search/FX to turn off on successful pickup. Drag that bag item onto the world: expect it to leave the bag and respawn at the player's floor. Pick it up again. Repeat with a full bag; object must remain until space is freed. Check another observer if available.
-5. Restart the disposable server/database through the harness after a drop; the dropped object must reappear and be pickable once. Headless already covers this restart and database ownership check.
+5. After a drop, log out and reconnect while the same fixture stays running. The ground object must remain and be pickable once. Fresh-server restart persistence is covered headlessly; the NativeQa fixture disposes its database when stopped.
 6. With Download Mission Map loaded, obtain a mission normally (use the phone Missions/Contacts list to select Flood), accept it, reach the objective floor, then `?missionobject 1` for a mission with object 1. Inspect yellow object pings; inspect red enemy pings in a combat mission. Log the access flags and note that the floorplan itself is not unlocked. Abort or finish the mission: pings should age out within 3 s.
 7. Record build SHA, node/goggles appearance, luggable pickup/drop/menu behavior, minimap colors/timing and any missing/incorrect native input or rendering. No native pass is assumed from headless records.
+
+8. Close the native client and create the fixture's stop file (`New-Item -ItemType File -Path (Join-Path $qa 'stop')`). Wait for normal exit. Inspect `stopped.json` for CSR_Tester110 at Mara `(23828,495,13984)`, full health, pvpflag0 and mission986 only, and confirm the lock was released.
