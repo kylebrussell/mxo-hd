@@ -1,6 +1,6 @@
-# Flood Prima chain 2101–2110
+# Flood Prima chain 2101â€“2110
 
-The ten org-3 Flood missions (orders 11–20) retain the Prima 2005 story text in `exile_*.xml`: 25 phases and 49 goals. Role names, item IDs, floor placements, wave counts and pacing are authored OURS. These are not the archived Merovingian critical chapters. This slice adds the briefing-supported kill-before-transport gate in 2102 and kill-before-plant gate in 2103. The remaining Merovingian chain is a separate queue.
+The ten org-3 Flood missions (orders 11â€“20) retain the Prima 2005 story text in `exile_*.xml`: 25 phases and 49 goals. Role names, item IDs, floor placements, wave counts and pacing are authored OURS. These are not the archived Merovingian critical chapters. This slice adds the briefing-supported kill-before-transport gate in 2102 and kill-before-plant gate in 2103. The remaining Merovingian chain is a separate queue.
 
 The first mission represents the guide's dead Exile searches with four searchable furnishings, as already documented in its XML; this is an explicit representation limitation. Hostile proximity Talk does not claim a visible portrait. Mission persistence, rewards and hostile speech fallback use the existing shared runtime.
 
@@ -8,7 +8,7 @@ Computer Put now uses metadata state 0x962 and use 8, with the native rule4006 G
 
 ## Claude one-pass native check
 
-Use discovered NativeQa mode `merv-chain` on the exact reviewed head. It grants only common introductory prerequisites 1201/1204/1203/1205–1208; none of 2101–2110 is precompleted. CSR110 is level50, org3, HP5000/IS2000 at Mara 17000/495/2300 with abilities2/17/1006/77. Flood is the remote mission contact. Dev commands are enabled, no GM, fixed combat rolls or health hold. Layout-only seed210110 is scoped to this fixture. Use existing `?weaken 1` before actual hostile combat if needed; combat still uses normal actions and rolls. Accept and finish each mission through normal UI and elevators/hardlines. Do not mark missions complete through diagnostics.
+Use discovered NativeQa mode `merv-chain` on the exact reviewed head. It grants only common introductory prerequisites 1201/1204/1203/1205â€“1208; none of 2101â€“2110 is precompleted. CSR110 is level50, org3, HP5000/IS2000 at Mara 17000/495/2300 with abilities2/17/1006/77. Flood is the remote mission contact. Dev commands are enabled, no GM, fixed combat rolls or health hold. Layout-only seed210110 is scoped to this fixture. Use existing `?weaken 1` before actual hostile combat if needed; combat still uses normal actions and rolls. Accept and finish each mission through normal UI and elevators/hardlines. Do not mark missions complete through diagnostics.
 
 | Mission | Check each phase in order |
 | --- | --- |
@@ -28,3 +28,5 @@ Verify each objective updates visibly, all 25 phases stage safely, escort follow
 ## Validation
 
 Fresh actual-protocol full chain PASS173.4s, exit0, parallel1. The driver accepts through mission RPCs, uses enabled computer metadata and actual native giver/taker trackers, deposits actual owned bag slots, selects the exact corpse cache, and earns all ten completion rows once. It never calls server Complete helpers. Permanent run evidence: `C:/Users/russe/AppData/Local/Temp/mxo-merv-prima-run1-20261112.txt`. This is server/wire evidence; native UI remains Claude-only pending.
+
+Release unit suite: 4103 passed. Python policy/generator suite: 12 passed. Debug and Release NativeQa builds, read-only mode/default/unknown leak checks and provenance passed. All-module current audit was generated under ignored artifacts with an exact three-artifact CRLF roundtrip; tracked historical snapshots are unchanged.
