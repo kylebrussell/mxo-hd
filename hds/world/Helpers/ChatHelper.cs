@@ -497,10 +497,19 @@ namespace hds
                     CombatHandler.HandlePlayerDeath(Store.currentClient);
                 }
 
+                if (command.Equals("?codeupload") && commands.Length == 1 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Same upload as the hardline, available to native QA without a right-click menu.
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
+                }
+
                 if (command.Equals("?compile") && commands.Length == 2)
                 {
-                    // Dev command: compile an item from its cookbook recipe with what is in the inventory.
-                    string result = new CraftingHandler().Compile(UInt32.Parse(commands[1]));
+                    // Dev-only deterministic compile path, including code storage; native 81 2e keeps its checks.
+                    string result = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                        ? new CraftingHandler().Compile(UInt32.Parse(commands[1]))
+                        : "?compile is a dev command (start the server with MXO_DEV_COMMANDS=1).";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, result, "BROADCAST");
                 }
 
