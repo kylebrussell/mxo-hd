@@ -83,4 +83,49 @@ public static partial class Scenarios
         await spy.WaitForRpcAsync("80 bd 05 5c 04 00 00 00 00 00 00");
         await onlooker.WaitUntilAsync(() => CreationsNamed(onlooker, "Spy") > spawns, "the spy spawning again", TimeSpan.FromSeconds(10));
     }
+
+    private static ViewCreation LastNamed(HeadlessPlayer player, string name) => player.World.CreationSnapshot().Last(c => c.Name == name);
+
+    /// <summary>
+    /// The native QA run of PR 109, in order: a friendly stealthed bot, the observer flags themselves with the bot
+    /// already there, then <c>?stealthbot off</c> and <c>?stealthbot sneak pvp</c>. With no organisation the observer can't
+    /// attack the bot (PvpRules.IsOpponent), so it stays in view and the command says why. With one, the bot goes, and
+    /// the observer facing it (it stands in front) sees through its level-5 sneak on a later five-second pass.
+    /// </summary>
+    private static async Task StealthBotHostileObserver(ScenarioContext context)
+    {
+        HeadlessPlayer observer = (await context.AddPlayersInWorldAsync(new CharacterSeed("Observer") { Level = 50 }))[0];
+
+        observer.SendChat("?stealthbot sneak");
+        ViewCreation friendly = await observer.WaitForViewNamedAsync("DuelBot");
+        await observer.WaitForViewUpdateAsync(friendly.ViewId, "02 80 80 80 c0 02 00 04 00 00 00 02", TimeSpan.FromSeconds(10));
+
+        observer.SendChat("?pvpflag on");
+        await observer.WaitForViewUpdateAsync(2, OwnPvpFlagOn);
+        observer.SendChat("?stealthbot off");
+        await observer.WaitForTextAsync("StealthBot left.");
+        observer.SendChat("?stealthbot sneak pvp");
+        RpcRecord refusal = await observer.WaitForTextAsync("NOT your enemy");
+        Check.That(Contains(refusal.Bytes, "no organisation"), "The reply says why: no organisation");
+        await observer.WaitUntilAsync(() => CreationsNamed(observer, "DuelBot") == 2, "the pvp bot", TimeSpan.FromSeconds(10));
+        ViewCreation notEnemy = LastNamed(observer, "DuelBot");
+        await observer.WaitForViewUpdateAsync(notEnemy.ViewId, "02 80 80 80 c0 02 00 04 00 00 00 03", TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        Check.Equal(0, CountViewUpdate(observer, 1, $"010100{Le(notEnemy.ViewId).Replace(" ", "")}"), "A bot that isn't an enemy stays in view");
+
+        // With an organisation the flagged bot (of the other one) is an enemy: it disappears once it sneaks
+        observer.SendChat("?org 1");
+        await observer.WaitForViewUpdateAsync(2, "02 80 02 01");
+        observer.SendChat("?stealthbot off");
+        await observer.WaitForTextAsync("StealthBot left.");
+        observer.SendChat("?stealthbot sneak pvp");
+        await observer.WaitForTextAsync("should disappear for you");
+        await observer.WaitUntilAsync(() => CreationsNamed(observer, "DuelBot") == 3, "the hostile bot", TimeSpan.FromSeconds(10));
+        ViewCreation hostile = LastNamed(observer, "DuelBot");
+        await observer.WaitForViewUpdateAsync(1, $"01 01 00 {Le(hostile.ViewId)}", TimeSpan.FromSeconds(10));
+
+        // Facing it within range: each pass sees through SL 5 about 40% of the time; the sneak ends and it comes back
+        await observer.WaitUntilAsync(() => CreationsNamed(observer, "DuelBot") == 4, "detection revealing the bot", TimeSpan.FromSeconds(90));
+        Check.Equal(0, observer.World.Problems.Count, "Protocol problems");
+    }
 }

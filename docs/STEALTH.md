@@ -71,7 +71,7 @@ SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detec
 ## Dev commands (MXO_DEV_COMMANDS=1)
 
 - `?stealth <sneak|improved|evasion|conceal|invis|imparted|shadow|off>` puts the state on yourself (own view; no refusal test).
-- `?stealthbot <state> [pvp]` summons a DuelBot 3 m away and puts the state on it 3 s later. With `pvp` the bot is PvP-flagged and of another organisation, so it is your enemy. `?stealthbot off` dismisses it.
+- `?stealthbot <state> [pvp]` replies whether the bot is really your enemy (and why not) and summons a DuelBot 3 m away and puts the state on it 3 s later. With `pvp` the bot is PvP-flagged and of another organisation, so it is your enemy. `?stealthbot off` dismisses it.
 
 ### Native QA steps (one client)
 
@@ -79,6 +79,6 @@ SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detec
 2. `?stealthbot sneak`: DuelBot appears, and 3 s later it shimmers with the invisibility effect. It stays targetable and visible.
 3. `?stealthbot invis`: same effect, through kInvisible.
 4. `?stealthbot shadow`: shadow-object effect.
-5. `?stealthbot sneak pvp`: DuelBot appears, then vanishes from your screen when it goes stealthed. Keep your back to it: it stays gone. Turn to face it (the bot sneaks at level 5: SL 5, a 21 m range, about a 40% chance per 5 s pass against StealthAwareness 1): within a few passes it should reappear, as the sneak ends for everyone. The server log shows `[STEALTH] ... sees DuelBot`.
+5. Your character needs an organisation: PvP rules (`PvpRules.IsOpponent`) make nobody an opponent of a character with organisation 0, so the flagged bot is not your enemy and stays visible. `?stealthbot sneak pvp` says so (and logs `[STEALTH] ?stealthbot pvp for ...: you have no organisation`); use `?org 1` (or 2, 3) first. Then `?stealthbot sneak pvp`: DuelBot appears, then vanishes from your screen when it goes stealthed. Keep your back to it: it stays gone. Turn to face it (the bot sneaks at level 5: SL 5, a 21 m range, about a 40% chance per 5 s pass against StealthAwareness 1): within a few passes it should reappear, as the sneak ends for everyone. The server log shows `[STEALTH] ... sees DuelBot`.
 6. `?stealth sneak` on yourself: check that your own character shows the invisibility effect, the Sneak icon is toggled on, and movement is slowed. `?health 300` (from full) should end it. `?stealth invis` and then any attack should end it.
 7. `?stealthbot off`, then `?stealth off`.

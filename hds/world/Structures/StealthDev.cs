@@ -27,6 +27,20 @@ namespace hds
         /// <summary>The bot's ability level: low, so a player facing it within 21 m detects it on a 5 s pass about 40% of the time.</summary>
         public const int BotLevel = 5;
 
+        /// <summary>Why <paramref name="observer"/> could not attack <paramref name="bot"/>, or null when they could.</summary>
+        public static string EnemyProblem(WorldClient observer, WorldClient bot)
+        {
+            PvpRules.Verdict verdict = PvpCombat.Check(observer, bot);
+            if (verdict == PvpRules.Verdict.Allowed) return null;
+            var self = PvpCombat.SubjectOf(observer);
+            var target = PvpCombat.SubjectOf(bot);
+            if (self.Organization == 0)
+                return "you have no organisation (0); set one with ?org 1, 2 or 3 and summon it again.";
+            if (self.DuelId != 0) return "you are in a duel.";
+            return verdict + " (mode " + PvpFlag.ModeFor(observer) + ", organisations " + self.Organization + "/" + target.Organization +
+                ", bot flagged " + target.PvpFlag + ").";
+        }
+
         public const string Usage = "<sneak|improved|evasion|conceal|invis|imparted|shadow|off>";
 
         public static string Run(WorldClient caller, bool bot, string[] args)
@@ -46,7 +60,14 @@ namespace hds
                 subject = DuelBot.Summon(caller, pvp ? DuelBot.Mode.Pvp : DuelBot.Mode.Wait);
                 // Let the visibility pass spawn the bot first, so the caller sees it go stealthed (or vanish)
                 DelayedActions.After(3, () => Stealth.Begin(subject, Stealth.Defs[ability.Value], BotLevel));
-                return "DuelBot goes " + what + (pvp ? " as your enemy" : "") + " in 3 s.";
+                if (!pvp) return "DuelBot goes " + what + " in 3 s.";
+                // Only an observer who could attack the bot loses its view. A flagged bot of another organisation is
+                // not enough when the caller has no organisation of their own (PvpRules.IsOpponent), so say so.
+                string why = EnemyProblem(caller, subject);
+                Output.WriteDebugLog("[STEALTH] ?stealthbot pvp for " + TimedEffects.PlayerName(caller) + ": " + (why ?? "the bot is their enemy"));
+                return why == null
+                    ? "DuelBot goes " + what + " in 3 s as your enemy: it should disappear for you."
+                    : "DuelBot goes " + what + " in 3 s but is NOT your enemy, so you keep seeing it: " + why;
             }
             Stealth.Begin(subject, Stealth.Defs[ability.Value], Stealth.AbilityLevel(subject, ability.Value));
             return "Stealth " + what + " on.";

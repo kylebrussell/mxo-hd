@@ -302,7 +302,7 @@ namespace hds
                     state.Mods[i].Stat, state.Mods[i].Value, false, state.Seconds));
             Present(client, def.Bits, def.Flags, true);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
-                ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")");
+                ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
 
             int generation = state.Generation;
             if (state.Seconds > 0)
@@ -310,6 +310,20 @@ namespace hds
             if (def.Periodic) Schedule(client, generation, UpdateSeconds, Update);
             if (def.Kind == Kind.Shadow) Schedule(client, generation, ShadowDrainSeconds, Drain);
             return state;
+        }
+
+        /// <summary>For the log: who in the district loses sight of the player (enemies), so a QA run shows it.</summary>
+        private static string HiddenFromList(WorldClient client)
+        {
+            if ((client.playerInstance.DissemblingType.getValue() is byte[] b && b.Length > 0 ? b[0] : 0) == 0) return "";
+            try
+            {
+                var names = SocialHandler.OnlineWhere(c => c != client && !c.playerData.isBot &&
+                        c.playerData.getDistrictId() == client.playerData.getDistrictId())
+                    .Select(c => TimedEffects.PlayerName(c) + (HiddenFrom(c, client) ? " hidden" : " sees (not an enemy)")).ToList();
+                return names.Count == 0 ? "" : "; " + string.Join(", ", names);
+            }
+            catch (Exception) { return ""; }
         }
 
         private static void Schedule(WorldClient client, int generation, double seconds, Action<WorldClient, State> step)
