@@ -49,6 +49,7 @@ namespace hds
 
                 // Spawns the mission's NPCs, then the first phase's briefing, waypoints and objectives (retail's order).
                 MissionRuntime.Start(client, mission);
+                UtilityAbilities.OnMissionAccepted(client);
                 client.FlushQueue();
                 Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");
                 return true;

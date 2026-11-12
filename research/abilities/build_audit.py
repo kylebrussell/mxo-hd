@@ -16,6 +16,10 @@ abilities = {r['id']: r for r in catalog['abilities']}
 coverage_path = ROOT / 'research/abilities/server_coverage.json'
 coverage = {r['id']: r for r in json.loads(coverage_path.read_text())}
 assert set(coverage) == set(abilities)
+# Hand-written server behaviour for abilities whose executors the coverage inventory can't describe (stealth,
+# utility tools): id -> (server_behavior, status). Keep each note in step with the system's own doc.
+notes = {int(r['id']): (r['server_behavior'], r['status'])
+         for r in csv.DictReader((ROOT / 'research/abilities/server_notes.csv').open(encoding='utf-8'))}
 
 
 def goid(value):
@@ -145,6 +149,8 @@ def expected(i):
 
 
 def server(i):
+    if i in notes:
+        return notes[i][0]
     r, f = coverage[i], fields(i)
     parts = []
     if r['cost_source'] != 'fallback':
@@ -185,6 +191,8 @@ def server(i):
 
 
 def status(i):
+    if i in notes:
+        return notes[i][1]
     r = coverage[i]
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
