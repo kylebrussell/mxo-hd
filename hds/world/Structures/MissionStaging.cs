@@ -87,11 +87,12 @@ namespace hds
             MissionPhase phase = mission.phases[0];
             int npcs = mission.npcs.Count(n => n.at == 1) + SpotsForWaves(phase);
             int objects = PlacesNeeded(phase);
-            Random rng = new Random(unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
+            int furniture = FurnitureNeeded(phase);
+            Random rng = LayoutRandom(mission.id,0,unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods) ??
-                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods);
+            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture) ??
+                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture);
             data.missionPreviewFor = mission;
             return data.missionPreview;
         }
@@ -102,6 +103,20 @@ namespace hds
         /// picked, and its safe was never placed ("Nowhere to put object"), so the mission couldn't finish.
         /// </summary>
         public static int PlacesNeeded(MissionPhase phase) => phase.objects.Count;
+
+        // EXACT PlaceObjects classifier: these kinds have no spawnable replacement and require actual furniture.
+        public static int FurnitureNeeded(MissionPhase phase) => phase.objects.Count(d=>!ObjectGoids.ContainsKey(d.kind));
+
+        public static int? QaSiteSeed(string dev,string database,string raw,int mission,int phase)
+        {
+            if(dev!="1" || database==null || !database.StartsWith("mxotest_",StringComparison.Ordinal) || database.Length<=8 ||
+                !database.All(c=>char.IsAsciiLetterOrDigit(c)||c=='_') || !int.TryParse(raw,out int seed) || seed<0) return null;
+            return unchecked(seed ^ mission*31 ^ phase*104729);
+        }
+        private static Random LayoutRandom(int mission,int phase,int legacySeed) => new Random(
+            QaSiteSeed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
+                Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED"),mission,phase) ?? legacySeed);
+
 
         /// <summary>How many of the site's NPC spots a phase's hostiles take: those that don't appear beside the player or an object.</summary>
         public static int SpotsForWaves(MissionPhase phase) => phase.Waves().Where(w => w.arrival.at == null).Sum(w => w.count);
@@ -122,15 +137,16 @@ namespace hds
             int at = progress.phaseIndex + 1;
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
-            Random rng = new Random(unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
+            int furniture = FurnitureNeeded(phase);
+            Random rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
             List<MissionSite> sites = MissionSites.For(mission.district);
             MissionSite site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
             client.playerData.missionPreview = null;
             client.playerData.missionPreviewFor = null;
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
             int npcs = placed.Count + SpotsForWaves(phase);
-            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods)
-                        ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods);
+            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture)
+                        ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture);
             if (site == null)
             {
                 Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
