@@ -257,10 +257,10 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 
 - Only Zion's first three missions were captured: the rest are the guide's text, placed and paced by us.
 - Rewards now use an explicit OURS level curve with `rewardLevel` metadata; unknown archive reference levels use the documented default50 tuning baseline. Retail team/difficulty/input formulas remain unproven. Welcome's3,000 and5,500 samples were both level2 at different difficulties; see [source, policy and native checks](MISSION-REWARDS.md).
-- `dead="1"` NPCs aren't spawned, so the bodies in The Internuncio don't appear.
+- `dead="1"` NPCs now introduce sourced dead attributes and an NPC corpse pose, including late views; native rendering remains pending ([presentation evidence](MISSION-PRESENTATION.md)).
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
-- Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
-- A mission doesn't survive a relog: the NPCs go, and its items are taken back.
+- Hostile portrait visibility remains unresolved. Automatic hostile speech now also uses an explicit OURS system-chat fallback, preserving original80a1 flags; friendly/interactive speech is unchanged ([presentation evidence](MISSION-PRESENTATION.md)).
+- Active phases, placements, owned items and pending mission loot now survive relog through transactional checkpoints; the persistence format/timer policy are OURS and native QA remains pending ([details](MISSION-PERSISTENCE.md)).
 
 ### Full bags and loot replies
 

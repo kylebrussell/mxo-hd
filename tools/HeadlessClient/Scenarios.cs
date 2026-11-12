@@ -23,6 +23,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
+        new Scenario("mission-relog-disconnect-move", MissionRelogDisconnectAndMove, StillNpcs),
+        new Scenario("mission-relog-object-rollback", MissionRelogObjectsAndRollback, StillNpcs, "mission-persistence.xml"),
+        new Scenario("mission-relog-persistence", MissionRelogPersistence, StillNpcs),
+        new Scenario("mission-presentation", MissionPresentation, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("proxy-technician-control", ProxyTechnicianControlRefusal, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
@@ -58,6 +63,10 @@ public static partial class Scenarios
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
         new Scenario("ability-zen-master", ZenMaster, HealthCallbackNpcs),
         new Scenario("ability-desperation-snapshot", DesperationSnapshot, HealthCallbackNpcs.Concat(new Dictionary<string,string> { ["MXO_DESPERATION_QA_HOLD_HEALTH"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
+        new Scenario("ability-concentration-armed-fixture", ConcentrationArmedFixture,
+            new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_CAST_INTERRUPT_QA_ROLL"]="85",["MXO_CONCENTRATION_QA_DAMAGE"]="1"}),
+        new Scenario("ability-concentration-control",ConcentrationControl,StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_CAST_INTERRUPT_QA_ROLL"]="85"}).ToDictionary(p=>p.Key,p=>p.Value)),
+        new Scenario("ability-concentration-loaded",ConcentrationLoaded,StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_CAST_INTERRUPT_QA_ROLL"]="85"}).ToDictionary(p=>p.Key,p=>p.Value)),
         new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
         new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),

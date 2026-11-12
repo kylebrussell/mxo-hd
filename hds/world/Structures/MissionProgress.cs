@@ -10,13 +10,14 @@ namespace hds
     /// order (Welcome to the Matrix opens three talks together), some open only after another completes, and once all are
     /// done the phase waits for the player to leave through a mission door.
     /// </summary>
-    public class MissionProgress
+    public partial class MissionProgress
     {
         public readonly Mission mission;
         public int phaseIndex;
         public bool waitingForExit;
         public int kills;
-        public readonly long startedAt = TimeUtils.getUnixTimeUint32();
+        public string persistenceId = Guid.NewGuid().ToString("N");
+        public long startedAt = TimeUtils.getUnixTimeUint32();
 
         private readonly HashSet<int> done = new HashSet<int>();
         private readonly HashSet<MissionTrigger> fired = new HashSet<MissionTrigger>();

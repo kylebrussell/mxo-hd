@@ -17,6 +17,7 @@ namespace hds
             string command = commands[0].ToLower();
             if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
             if (QaLoadout.Dev(Store.currentClient, commands)) return;
+            if (MissionRuntime.DevPresentation(Store.currentClient, commands)) return;
 
             try
             {
@@ -157,6 +158,11 @@ namespace hds
                         Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)at.x, (float)at.y, (float)at.z), false);
                     }
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                }
+
+                if (command.Equals("?missionpersist"))
+                {
+                    MissionPersistence.Dev(Store.currentClient,commands);
                 }
 
                 if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")

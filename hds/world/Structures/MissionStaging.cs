@@ -456,6 +456,16 @@ namespace hds
             }
         }
 
+        internal static void RestoreObjects(WorldClient client, MissionProgress progress)
+        {
+            foreach(var state in progress.objects.Values)
+            {
+                state.entity=EntityBase+(ulong)client.playerData.missionInstanceCounter*1000UL+(ulong)(progress.phaseIndex*50+state.def.id);
+                state.lootOpen=false;state.putOpen=false;
+                if(client.viewMan.FindViewForEntity(state.entity)==null)SpawnObject(client,progress,state);
+            }
+        }
+
         private static void SpawnObject(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
             FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
@@ -495,7 +505,15 @@ namespace hds
             {
                 // Its LockedState offers Pick Lock and Unlock, not Open (UtilityAbilities: rule 4000 needs Open Locks)
                 SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(UtilityAbilities.LockedState, 1));
-                UtilityAbilities.RegisterLocked(client, state.entity, state.goid, () => state.unlockedOnce = true);
+                UtilityAbilities.RegisterLocked(client, state.entity, state.goid, () =>
+                {
+                    lock(client.playerData.missionSync)
+                    {
+                        if(client.playerData.missionProgress!=progress)return;
+                        state.unlockedOnce=true;
+                        MissionPersistence.Save(client);
+                    }
+                });
             }
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
         }

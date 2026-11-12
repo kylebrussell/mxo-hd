@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OURS test-only persistence/rollback fixture; no retail mission or reward claim. -->
+<mission id="399905" title="Mission Persistence Fixture" description="Checkpoint two phases and rollback a ticket completion."
+ plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="50" info="60" entryItem="48125" completionItem="48134">
+ <npc id="1" handle="Checkpoint Courier" type="FRIENDLY" at="1" rsi="a8060090"/>
+ <phase site="Normal" leave="0">
+  <briefing>Get the durable disk, then continue to the safe.</briefing>
+  <objective goal="1" text="Get the durable disk" type="Get" npc="1" item="6831"/>
+ </phase>
+ <phase site="Normal" leave="0">
+  <briefing>Unlock the safe, take the test disk and put it back.</briefing>
+  <object id="1" kind="Safe" locked="1"/>
+  <objective goal="1" text="Take the test disk" type="Search" object="1" item="6786"/>
+  <objective goal="2" text="Put the test disk back" type="Put" object="1" item="6786" after="1"/>
+ </phase>
+ <finish>Persistence fixture completed.</finish>
+</mission>
