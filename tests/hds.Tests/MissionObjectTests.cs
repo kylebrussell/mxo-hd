@@ -64,8 +64,8 @@ public class MissionObjectTests
         progress.Complete(goals[0]);
         Assert.Equal(MissionStaging.ComputerIdle, MissionStaging.ComputerStateFor(progress, Object(progress, 1, 3)));
 
-        // The mainframe's Put opens after the disk is taken: still Hack, the only state that lets it be used
+        // The mainframe's Put opens after the disk is taken, exposing native Put with the matching key.
         progress.Complete(goals[1]);
-        Assert.Equal(MissionStaging.ComputerHack, MissionStaging.ComputerStateFor(progress, Object(progress, 2, 357)));
+        Assert.Equal(MissionStaging.ComputerPut, MissionStaging.ComputerStateFor(progress, Object(progress, 2, 357)));
     }
 }
