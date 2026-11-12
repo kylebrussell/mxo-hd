@@ -250,6 +250,7 @@ namespace hds
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
+            CoderPets.PowerBoostCast powerBoost = AbilityID == CoderPets.PowerBoost ? CoderPets.CapturePowerBoost(client) : null;
             AbilityItem ability = currentAbility;
             WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
             int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
@@ -260,7 +261,11 @@ namespace hds
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
-                if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
+                if (pet)
+                {
+                    if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
+                    else CoderPets.Land(client, AbilityID, currentTargetViewId);
+                }
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
