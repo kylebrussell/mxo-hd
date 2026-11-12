@@ -263,9 +263,9 @@ None of these are in the captures and the server has no help desk.
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 7a` | Simulacrum order (ID, Command): `/ordersimulacra` | D, S | ignored | low |
-| `81 7b` | Simulacrum order with a target (ID, Command, TargetObject) | D | ignored | low |
-| `81 7c` | Simulacrum order with a value (ID, Command, Value) | D | ignored | low |
+| `81 7a` | Simulacrum order (ID u8, Command u8): Stay 0, Deactivate 1, Follow 3; window ID 0xfe; `/ordersimulacra` ([CODER-PETS](CODER-PETS.md)) | D, S | handled | medium |
+| `81 7b` | Simulacrum order with a target (ID u8, Command u8, TargetObject u32): Attack 2 | D | handled | medium |
+| `81 7c` | Simulacrum order with a value (ID u8, Command u8, Value u8): command 5 mode Defensive 0 / Aggressive 1 / Passive 2 | D | handled | medium |
 
 ## Email in detail
 

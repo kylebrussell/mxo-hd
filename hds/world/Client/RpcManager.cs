@@ -202,6 +202,12 @@ namespace hds{
                 case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);
 		            break;
+		        // 81 7a / 81 7b / 81 7c: simulacrum orders (/ordersimulacra and the Simulacra window)
+		        case 0x17a:
+		        case 0x17b:
+		        case 0x17c:
+		            CoderPets.HandleOrderRpc(Store.currentClient, header, rpcData);
+		            break;
 		        case (int) RPCRequestHeader.CLIENT_CHANGE_CT:
 			        // ToDo: Implement Change of CT
 			        CombatManager.GetHandler(Store.currentClient).ProcessChangeTactic(ref rpcData);

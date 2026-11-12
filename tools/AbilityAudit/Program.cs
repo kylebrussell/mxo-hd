@@ -5,6 +5,8 @@ using hds;
 string output = args.Length > 0 ? args[0] : "research/abilities/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    204 => "stealth detection",
+    209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",
     112 or 114 or 1058 or 1059 => "regeneration",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
@@ -45,7 +47,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             stat = m.Proc == TempMods.Proc.Stat ? m.Target : 0, proc = m.Proc.ToString(), seconds = m.Seconds,
             chance = m.Chance, breaks = m.Break.ToString(), break_chance = m.BreakChance, protect_first_health_change = m.ProtectFirstHealthChange }).ToArray() : null,
         damage = hit ? new { min = damage!.MinDamage, max = damage.MaxDamage } : null,
-        resurrection = AbilityResurrection.Handles(e.Id), utility = UtilityCoverage(e.Id),
+        resurrection = AbilityResurrection.Handles(e.Id), utility = UtilityCoverage(e.Id), stealth = Stealth.Handles(e.Id),
         healing = e.Healing, direct_damage = e.DirectDamage, dot = e.DamageOverTime,
         player_healing = AbilityHealing.PlayerTarget(e),
         heal_base = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&

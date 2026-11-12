@@ -430,6 +430,24 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if ((command.Equals("?stealthbot") || command.Equals("?stealth")) && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev commands (docs/STEALTH.md): ?stealth <sneak|conceal|evasion|invis|imparted|shadow|off> puts a stealth
+                    // state on the caller; ?stealthbot <state> [pvp] | off puts it on a DuelBot next to them (pvp: an enemy).
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        StealthDev.Run(Store.currentClient, command.Equals("?stealthbot"), commands.Skip(1).ToArray()), "BROADCAST");
+                }
+
+                if (command.Equals("?pet"))
+                {
+                    // Dev command: coder simulacra (docs/CODER-PETS.md). ?pet cast <ability>, ?pet summon <ability>, ?pet dummy,
+                    // ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                            ? CoderPets.DevCommand(Store.currentClient, commands)
+                            : "?pet is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
                 if (command.Equals("?socialbot"))
                 {
                     // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
@@ -462,8 +480,12 @@ namespace hds
                 if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
                 {
-                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes
+                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes. It is a
+                    // health change like any other for the health callbacks (Sneak's OnHealthReduceDeactivateAbility, pacify).
+                    UInt16 devBefore = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.Health.getValue(), 1);
+                    UInt16 devMax = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.MaxHealth.getValue(), 1);
                     Store.currentClient.playerInstance.Health.setValue(devHealth);
+                    if (devBefore != devHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(Store.currentClient), devBefore - devHealth, devHealth < devMax);
                     Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
                     PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
                     Store.currentClient.FlushQueue();

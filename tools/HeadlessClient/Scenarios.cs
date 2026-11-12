@@ -27,6 +27,7 @@ public static partial class Scenarios
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, StillNpcs),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
@@ -128,6 +129,9 @@ public static partial class Scenarios
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
+        new Scenario("stealth-sneak-observer", StealthSneakObserver, StillNpcs),
+        new Scenario("stealth-breaks", StealthBreaks, StillNpcs),
+        new Scenario("stealth-bot-hostile-observer", StealthBotHostileObserver, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)
