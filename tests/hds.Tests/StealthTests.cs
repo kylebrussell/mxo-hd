@@ -54,6 +54,12 @@ public class StealthTests
         Assert.True(Stealth.InFrustum(0, 0, 128, 0, -100));    // turned round
         Assert.True(Stealth.InFrustum(0, 0, 64, 100, 0));      // a quarter turn faces +x
         Assert.Equal((byte)64, MobAggro.YawTowards(0, 0, 100, 0));
+        // The QA spot: DuelBot placed 48 yaw steps round from the owner's facing (owner 23828,13984 yaw 126, bot
+        // 23602,13877) is about 63 degrees off, just outside the frustum until the owner turns towards it
+        Assert.InRange(Stealth.DegreesOff(23828, 13984, 126, 23602, 13877), 60, 70);
+        Assert.False(Stealth.InFrustum(23828, 13984, 126, 23602, 13877));
+        Assert.True(Stealth.InFrustum(23828, 13984, 174, 23602, 13877));
+        Assert.Equal(90, Stealth.DegreesOff(0, 0, 0, 100, 0), 3);
     }
 
     [Fact]

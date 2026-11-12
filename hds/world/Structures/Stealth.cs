@@ -461,19 +461,48 @@ namespace hds
         /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (line of sight is not checked).</summary>
         public static bool EnemyWatching(WorldClient client, double range) => EnemiesFacing(client, range).Any();
 
+        /// <summary>Degrees between the observer's facing (its yaw byte) and the direction to the target, 0..180.</summary>
+        public static double DegreesOff(double ox, double oz, byte yaw, double tx, double tz)
+        {
+            double dx = tx - ox, dz = tz - oz, len = Math.Sqrt(dx * dx + dz * dz);
+            if (len < 1e-6) return 0;
+            double angle = yaw / 256.0 * 2 * Math.PI;
+            double dot = (dx * Math.Sin(angle) + dz * Math.Cos(angle)) / len;
+            return Math.Acos(Math.Max(-1, Math.Min(1, dot))) * 180 / Math.PI;
+        }
+
+        /// <summary>
+        /// One SneakUpdate pass against enemy players. Each enemy in the district gets a debug line saying why it did or
+        /// didn't see the sneaker (range, facing with the yaw the server has for it, or the roll), so a native check can
+        /// tell a missed roll from a facing the server never heard about: the yaw only changes when the client's own
+        /// view update carries it (PlayerCharacter, SelfViewUpdate flag 0x04).
+        /// </summary>
         public static bool DetectedByPlayer(WorldClient client, State state)
         {
             double range = DetectionRangeUnits(state.Level);
             int sl = StealthLevelOf(client);
-            foreach (var (other, distance) in EnemiesFacing(client, range))
+            Position(client, out double x, out double y, out double z);
+            string who = TimedEffects.PlayerName(client);
+            foreach (WorldClient other in SocialHandler.OnlineWhere(c => c != client && c.playerData.getDistrictId() == client.playerData.getDistrictId()
+                && !c.playerData.isDead && c.playerData.getOnWorld()))
             {
-                int roll = Roll(random);
-                if (SneakTest(AwarenessOf(other), sl, 0, (float)distance, roll))
+                if (!Enemy(client, other)) continue;
+                Position(other, out double ox, out double oy, out double oz);
+                double distance = Math.Sqrt((ox - x) * (ox - x) + (oz - z) * (oz - z));
+                byte yaw = other.playerInstance.YawInterval.getValue()[0];
+                double off = DegreesOff(ox, oz, yaw, x, z);
+                string seen = TimedEffects.PlayerName(other) + " vs " + who + ": " + (distance / 100).ToString("0.0") + " m (range " +
+                    (range / 100).ToString("0") + "), " + off.ToString("0") + " deg off facing (yaw " + yaw + ")";
+                if (distance > range || !MobAggro.SameFloor(oy, y)) { Output.WriteDebugLog("[STEALTH] detect " + seen + ": out of range"); continue; }
+                if (!InFrustum(ox, oz, yaw, x, z)) { Output.WriteDebugLog("[STEALTH] detect " + seen + ": not facing (needs < 60)"); continue; }
+                int roll = Roll(random), sa = AwarenessOf(other);
+                if (SneakTest(sa, sl, 0, (float)distance, roll))
                 {
-                    Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(other) + " sees " + TimedEffects.PlayerName(client) +
-                        " (SA " + AwarenessOf(other) + " SL " + sl + " d " + (int)distance + " roll " + roll + ")");
+                    Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(other) + " sees " + who +
+                        " (SA " + sa + " SL " + sl + " d " + (int)distance + " roll " + roll + ")");
                     return true;
                 }
+                Output.WriteDebugLog("[STEALTH] detect " + seen + ": roll " + roll + " missed (SA " + sa + " SL " + sl + ")");
             }
             return false;
         }
