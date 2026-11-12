@@ -17,7 +17,7 @@ namespace hds
             uint dazed = CombatInterlock.ConditionBit(CombatTactic.Speed);
             if (!subject.Effects.HasAt(TempMods.DazeAbility, now) && (subject.ConditionFlags & dazed) == 0) return;
             if (subject.Effects.Snapshot().Any(m => m.Parent == TempMods.ControlImmunityTimerAbility &&
-                m.Target == TempMods.ISDrainTargetAbility)) return;
+                m.Target == TempMods.ISDrainTargetAbility && now < m.Expires)) return;
 
             var stun = new TimedEffects.Active { Kind = TempMods.KindState, Target = TempMods.StunAbility,
                 Seconds = marker.Value, Proc = TempMods.Proc.State, Caster = marker.Caster,
@@ -28,7 +28,9 @@ namespace hds
             // addStateMod appends the stun. It must not replace this throw's root/debuff siblings.
             var added = new List<TimedEffects.Active> { stun };
             var replaced = subject.Effects.Apply(marker.Parent, added, now, preserveOtherTargets: true);
-            subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new[] { immunity }, now);
+            // An expired timer may still be in the holder until the next server sweep.
+            // Its old record must go off before the new timer is presented.
+            replaced.AddRange(subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new[] { immunity }, now));
             TimedEffects.Track(subject);
             subject.Applied(new TempMods.Effect { Ability = marker.Parent }, added, immunity, replaced);
         }

@@ -81,6 +81,30 @@ public class ConditionalControlTests
     }
 
     [Fact]
+    public void ExplicitTermIgnoresExpiredUnsweptTimerAndSendsItsOffBeforeFreshOn()
+    {
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData=new ClientData();client.playerInstance=new PlayerCharacter();client.messageQueue=new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!
+            .SetValue(client,long.MaxValue);
+        client.playerData.conditionStateFlags=CombatInterlock.ConditionBit(CombatTactic.Speed);
+        var subject=TimedEffects.ForPlayer(client);double now=TimeUtils.GetSimTimeSeconds();
+        var stale=new TimedEffects.Active {Kind=TempMods.KindPlain,Target=681,Proc=TempMods.Proc.State,Seconds=1,RecordId=500};
+        subject.Effects.Apply(734,new[]{stale},now-2); // expired, deliberately not swept by RunDue
+        Assert.True(TempMods.TryGet(1135,out var effect));
+        TimedEffects.Apply(subject,effect,now);client.messageQueue.RPCMessagesQueue.Clear();
+        // Explicit removal runs its term immediately while the stale734 is still in the holder.
+        TimedEffects.RemoveParent(subject,1135);
+        var stun=Assert.Single(subject.Effects.Snapshot(),m=>m.Target==102);Assert.Equal(8,stun.Seconds);
+        var fresh=Assert.Single(subject.Effects.Snapshot(),m=>m.Parent==734);Assert.NotSame(stale,fresh);
+        var packets=client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(m=>m.content).ToList();
+        int oldOff=packets.FindIndex(p=>p.AsSpan(1).SequenceEqual(PlayerEffects.Record(stale,true)));
+        int newOn=packets.FindIndex(p=>p.AsSpan(1).SequenceEqual(PlayerEffects.Record(fresh,false)));
+        Assert.True(oldOff>=0);Assert.True(newOn>oldOff);
+        TimedEffects.Clear(subject);
+    }
+
+    [Fact]
     public void ExplicitMarkerRemovalRunsTermButDeathClearCancelsIt()
     {
         double now=TimeUtils.GetSimTimeSeconds();var s=new Subject();Daze(s,now);
