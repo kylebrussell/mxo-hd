@@ -256,7 +256,7 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 ### Known gaps
 
 - Only Zion's first three missions were captured: the rest are the guide's text, placed and paced by us.
-- Rewards are fixed at one capture's values; retail's rose with level (Welcome paid 3,000 to 5,500 XP).
+- Rewards now use an explicit OURS level curve with `rewardLevel` metadata; unknown archive reference levels use the documented default50 tuning baseline. Retail team/difficulty/input formulas remain unproven. Welcome's3,000 and5,500 samples were both level2 at different difficulties; see [source, policy and native checks](MISSION-REWARDS.md).
 - `dead="1"` NPCs aren't spawned, so the bodies in The Internuncio don't appear.
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
 - Hostile NPCs' talk lines reach the client but didn't show on screen when tested.

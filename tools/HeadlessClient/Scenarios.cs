@@ -165,6 +165,8 @@ public static partial class Scenarios
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
+        new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
+        new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
