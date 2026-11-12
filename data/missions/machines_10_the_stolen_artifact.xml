@@ -5,11 +5,13 @@
      furniture for the Documents (6794). Marsh ("Potential") is only the subject of a dossier, so has no NPC. Boss and
      Extra have no lines, so no NPCs. "Search Lindqvist's computer" is a Use, then the dossier is a Search of the same
      computer. "Find Antares" is a Talk; he waits to be attacked (attacksOnSight="0") so the artifact can be taken
-     first. "Kill Antares and the crew of the Prodito" is DefeatAll. The artifact is the Statue (1266). -->
+     first. The authored pacing keeps Antares friendly until Get goal 2, then turns him hostile: ordinary client
+     Talk/Get menus are offered on friendly NPCs. This is our glue for the printed find/take/kill order.
+     "Kill Antares and the crew of the Prodito" is DefeatAll. The artifact is the Statue (1266). -->
 <mission id="2210" title="The Stolen Artifact" description="Intercept an artifact that was stolen from the Merovingian." plot="1" order="20"
          org="2" contact="Agent Gray" exp="66000" info="63000">
   <npc id="1" handle="Lindqvist" type="FRIENDLY" at="2" rsi="9a010040" weapon="0" />
-  <npc id="2" handle="Antares" type="HOSTILE" at="3" rsi="000100b4" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Antares" type="FRIENDLY" at="3" hostileAfter="2" rsi="000100b4" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Agent Corwin" type="FRIENDLY" at="4" rsi="9b000090" weapon="2564" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>As you may have heard, the Merovingian recently had an artifact stolen from him that we would like to ... intercept. The artifact was lifted by a small band of Exiles that operate outside of the Merovingian's rule.
