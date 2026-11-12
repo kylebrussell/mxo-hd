@@ -24,6 +24,26 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("81 22 00 00 00 00 00 00 00 00 01 00 00 00");
         Check.Equal(0, player.Received("81 2a").Count, "Container puts never open the marketplace");
         Check.Equal(0, player.Received("80 bd 05 28 04 00 00 00 00 00 00").Count, "Unrelated buff remains on");
+        player.SendChat("?dismissbuff 17");
+        await player.WaitForTextAsync("Buff dismissal refused: 17");
+        player.SendChat("?dismissbuff 1064");
+        await player.WaitForRpcAsync("80 bd 05 28 04 00 00 00 00 00 00");
+        await player.WaitForTextAsync("Buff dismissal requested: 1064");
+    }
+
+    private static async Task BuffDismissDevDisabled(ScenarioContext context)
+    {
+        var player = (await context.AddPlayersInWorldAsync(new CharacterSeed("NoDismissDev") { Level=50 }))[0];
+        Cast(player, 1064);
+        await player.WaitForRpcAsync("80 bd 05 28 04 00 00 00 00 00 01");
+        player.SendChat("?dismissbuff 1064");
+        player.SendRpc("81 48");
+        await player.WaitForRpcAsync("81 49");
+        Check.Equal(0, player.Received("80 bd 05 28 04 00 00 00 00 00 00").Count,
+            "MXO_DEV_COMMANDS=0 blocks the QA shortcut");
+        player.SendRpc("80 bb 28 04");
+        await player.WaitForRpcAsync("80 bd 05 28 04 00 00 00 00 00 00");
+        Check.Equal(0, player.World.Problems.Count, "Native80bb remains available with QA commands disabled");
     }
 
     private static async Task NativeCraftingRequests(ScenarioContext context)

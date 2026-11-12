@@ -39,6 +39,8 @@ public static partial class Scenarios
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
+        new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,
+            new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
         new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
