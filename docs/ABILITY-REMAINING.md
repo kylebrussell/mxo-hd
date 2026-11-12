@@ -43,7 +43,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 
 | IDs | Finding / why still missing |
 |---|---|
-| 7 Detect Vulnerability | No stored modifier or decoded vulnerability-display action. Combat vulnerability generation/exploitation and its UI are not reconstructed. |
+| 7 Detect Vulnerability | Shipped character prerequisite 99 blocks loading at retail levels 1–50. Ownership/purchase does not prove loadability; server now enforces this stored load gate. No vulnerability effect is claimed. [Primary evidence](DETECT-VULNERABILITY.md). |
 | 25 Power Boost1 | Pet-target damage/ForceCombat; P6 owns the pet executor. |
 | 196 Ignore Pain | `OnHealthReduceHealProc` uses a random10..20 heal callback; deterministic numeric fallback must not discard it. Random-value distribution/health callback lifecycle remains absent. |
 | 378,380,693 Deflect Virus/Bullets | Parent aura effects include callback-only and sweep components beyond simple numeric buffs. The numeric692 child alone is not parent380 parity. Full parent scheduling/cleansing/termination remains missing. |
@@ -53,7 +53,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 | 872 Zen Master | Stored instant Current IS+5 is visible, but automatic discipline/activation timing is not established; exposing a generic cast with unknown/default cost would be misleading. |
 | 969 Compile Items;970 Write Code | Their scripts only select stand/idle presentation and restore idle on deactivation. Actual crafting is81 2e/81 31; ability-use packets must not compile an item. A native activation/UI-state path remains unverified; storage112 does not establish these two ability toggles. |
 | 1025 EMCP Blast | `EMPBlast_DirectObject` does0 normally/5000 for NPCEMPWeakness; NPC weakness ownership/templates are unavailable. Do not infer it from the ability name or make it unconditional damage. |
-| 1110 Bull Dog;1125 Disable Evasion | Stealth opening/shield interaction and callbacks belong to P5; its package owns the combat/stealth consumer. |
+| 1110 Bull Dog;1125 Disable Evasion | P5 follow-up implements terminal throw, builtin motion, target state suppression and caster restealth. Explicitly partial: missing1110 interval/retail damage and217 shield-health/520 contest. See [STEALTH-SHIELDS.md](STEALTH-SHIELDS.md). |
 | 1124 Disrupt Connection | Legacy old template requires a tool but has no decoded stored modifier or surviving specific script. No supported effect is guessed. |
 | 1149 Desperation | `DesperationFunction` computes health-dependent Initiative with InitiativeBonus. No initiative combat consumer is reconstructed; a countdown/number alone would remain cosmetic. |
 

@@ -119,6 +119,8 @@ namespace hds
             /// <summary>Damage over time on DOTPlaceHolderAbility, <see cref="DotTick"/> every <see cref="DotIntervalSeconds"/>.</summary>
             Dot,
             Hot,
+            /// <summary>A sourced end callback, run only on natural expiry (not cleanse/death/replacement).</summary>
+            Terminal,
             /// <summary>A periodic script callback (NegativeConditionSweepPulse) every Interval while it lasts (<see cref="AbilityHostile.Pulse"/>).</summary>
             Pulse,
         }

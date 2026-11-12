@@ -81,6 +81,7 @@ namespace hds
             if (newWorld) CompileSession.End(client, false);
             else CompileSession.Check(client);
             Refresh(client, !newWorld);
+            EvasionShield.LoadoutChanged(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker
