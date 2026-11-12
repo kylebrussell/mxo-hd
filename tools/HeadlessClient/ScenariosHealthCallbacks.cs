@@ -11,6 +11,27 @@ public static partial class Scenarios
             "New health update after callback: "+expected,TimeSpan.FromSeconds(8));
     }
 
+    private static async Task ZenMaster(ScenarioContext context)
+    {
+        // Explicit forced level99 disposable actor: shipped parent871 is inaccessible at retail level50.
+        var p=await context.AddPlayerAsync(new CharacterSeed("ZenMaster") {Level=99,Health=500,MaxHealth=500,InnerStrength=198,MaxInnerStrength=200});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");
+        await LoadAbilitiesAsync(context,p,871);
+        await p.EnterWorldAsync();
+        const string activation="81 67 ?? ?? ?? ?? 20 21 00 c6";
+        await SetProcHealth(p,490,490);
+        await p.WaitForRpcAsync(activation);
+        await p.WaitForViewUpdateAsync(2,"02 80 80 80 10 c8 00");
+        int previous=p.Received(activation).Count;
+        await SetProcHealth(p,500,500); // external healing invokes the same sourced callback
+        await p.WaitUntilAsync(()=>p.Received(activation).Count>previous,"Zen external-heal activation",TimeSpan.FromSeconds(5));
+        previous=p.Received(activation).Count;
+        Cast(p,872);await Task.Delay(400);
+        Check.Equal(previous,p.Received(activation).Count,"Direct872 refused without executing internal effect");
+        await KillForResurrection(p);
+        Check.Equal(0,p.World.Problems.Count,"Zen Master source health proc protocol");
+    }
+
     private static async Task HealthProcLifecycle(ScenarioContext context)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed("HealthProc") {Level=20,Health=100,MaxHealth=1000,InnerStrength=1000,MaxInnerStrength=1000});

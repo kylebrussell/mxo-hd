@@ -11,6 +11,7 @@ namespace hds
         public const ushort Kind = 0x45; // retail's while-enabled stat records: 80 bc 45 00 (active buffs use 0x15)
         public sealed class State
         {
+            internal int Generation;
             internal readonly Dictionary<ushort, ushort> Loaded = new Dictionary<ushort, ushort>();
             internal readonly Dictionary<string, Active> Records = new Dictionary<string, Active>();
             internal Dictionary<ushort, int> Totals = new Dictionary<ushort, int>();
@@ -54,6 +55,7 @@ namespace hds
             State state = client.playerData.passives;
             lock (state)
             {
+                state.Generation++;
                 state.Loaded.Clear();
                 foreach (var row in loaded)
                 {

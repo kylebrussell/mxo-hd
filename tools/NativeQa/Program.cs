@@ -58,8 +58,9 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
     : Array.Empty<ushort>();
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
+bool zenMasterMode = args.Length > 3 && args[3] == "zen-master";
 bool healthCallbacksMode = args.Length > 3 && args[3] == "health-callbacks";
-bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode;
+bool remainingMode = args.Length > 3 && args[3] == "remaining" || healthCallbacksMode || zenMasterMode;
 bool scaledMode = args.Length > 3 && args[3] == "scaled";
 bool deathPresentationMode = args.Length > 3 && args[3] == "death-presentation";
 bool resurrectionMode = args.Length > 3 && args[3] == "resurrection" || deathPresentationMode;
@@ -117,6 +118,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (passivesMode) abilities = new ushort[] { 2,17,45,269,71,233,370,95,52,77,54,169,1098,359,474,327,1064 };
     if (dataMiningMode) abilities = new ushort[] { 2,17,44,215,538,539,540,541,621 };
     if (remainingMode) abilities = new ushort[] { 2,17,9,15,13,16,442,49,1114,42,485,489,63,436,68,319,481,488,327,438,129,147,158,123,1101,1102,868 };
+    if (zenMasterMode) abilities = new ushort[] {2,17,871};
     if (healthCallbacksMode) abilities = new ushort[] {2,17,196,861,941,943,378,380,506,1137,54,481};
     if (scaledMode) abilities = new ushort[] { 2,17,54,124,170,173,417,419,421,373,374 };
     if (petsMode) abilities = new ushort[] { 2,17,27,594,616,617,20,25,603,31,34,19,609,619 };
@@ -124,6 +126,7 @@ DELETE FROM char_abilities WHERE char_id=110;
     if (resurrectionMode) abilities = new ushort[] { 2,17,325,326,375,416,967 };
     if (deathPresentationMode) abilities = abilities.Concat(new ushort[] { 10,1064,133 }).ToArray();
     if (controlsMode) abilities = abilities.Concat(new ushort[] { 384,278,315,40,48 }).ToArray();
+    if (zenMasterMode) await database.ExecuteAsync("UPDATE characters SET level=99,healthC=100,healthM=500,innerStrC=100,innerStrM=200 WHERE charId=110");
     // Combat styles and their specials (docs/COMBAT-STYLES.md); Aikido is left out so Tomo Nage's refusal can be seen
     if (stylesMode) abilities = new ushort[] { 2,17,132,133,1006,1008,1112,146,281,341,535,647,121,207,208,547,1022,1023,1024,267,412,198 };
     using var catalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "data", "ability_catalog.json")));
@@ -187,6 +190,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     if (remainingMode)
         await database.ExecuteAsync("UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; " +
             "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)");
+    if (zenMasterMode) await database.ExecuteAsync("UPDATE characters SET innerStrC=100,innerStrM=200 WHERE charId=110");
     if (scaledMode || remainingMode)
         await database.ExecuteAsync($"UPDATE characters SET level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6111");
     if (passivesMode)
@@ -211,8 +215,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode,
-        CallbackRoll15=healthCallbacksMode?0:(int?)null, CallbackRoll100=healthCallbacksMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=healthCallbacksMode || zenMasterMode, ZenMasterForcedLevel=zenMasterMode?99:(int?)null,
+        CallbackRoll15=healthCallbacksMode || zenMasterMode?0:(int?)null, CallbackRoll100=healthCallbacksMode || zenMasterMode?0:(int?)null }, new JsonSerializerOptions { WriteIndented=true }));
     if(healthCallbacksMode) Console.WriteLine("Health-callback QA uses fixed15-bit roll0 and chance roll0 in this disposable DB; this is not a retail distribution sample.");
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;

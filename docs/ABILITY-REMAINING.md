@@ -35,7 +35,7 @@ Regenerate the audit, including all existing utility/stealth/pet/hostile/resurre
 
 ## Follow-up callback execution
 
-The isolated health-callback continuation implements196,378/380 with693,506,861/941/943 and their internal effect paths. See [ABILITY-HEALTH-CALLBACKS.md](ABILITY-HEALTH-CALLBACKS.md) for native random mapping, explicit event policies, current source gaps and the focused fixture. The residual table below records PR105's original scope; the generated audit reflects the additional continuation code.872/1149 remain uncompleted for the reasons in the follow-up evidence.
+The isolated health-callback continuation implements196,378/380 with693,506,861/941/943 and their internal effect paths. See [ABILITY-HEALTH-CALLBACKS.md](ABILITY-HEALTH-CALLBACKS.md) for native random mapping, explicit event policies, current source gaps and the focused fixture. The residual table below records PR105's original scope; the generated audit reflects the additional continuation code.1149 remains uncompleted;871->872 now has a sourced health callback but the parent requires character99.
 
 ## Historical PR105 missing-row review after111
 
@@ -50,7 +50,7 @@ The following are deliberate remaining gaps, not completed by a numeric record o
 | 506 Line Up The Shot | Subject/test scripts, health-change deactivation and effect1137/aura semantics must be executed together; the12/20s numeric components alone are insufficient. |
 | 538,539,540,541 | Data-node prerequisite/locate/luggable flags and records: P3 owns these. |
 | 861 Balance;941 Reactive Code;943 Code Conversion | Health-change aura reapplication, and for943 a30% roll to parent+1. A correct executor needs the damage-event source/target semantics and child effect lifecycle, not merely a toggle/drain. |
-| 872 Zen Master | Stored instant Current IS+5 is visible, but automatic discipline/activation timing is not established; exposing a generic cast with unknown/default cost would be misleading. |
+| 872 Zen Master | Sourced internal child of permanent while-loaded871 health callback;15% chance restores5IS capped at max. Direct casts refused; parent871 requires character99 and is retail-inaccessible. Native RNG sequence remains unknown. |
 | 969 Compile Items;970 Write Code | Their scripts only select stand/idle presentation and restore idle on deactivation. Actual crafting is81 2e/81 31; ability-use packets must not compile an item. A native activation/UI-state path remains unverified; storage112 does not establish these two ability toggles. |
 | 1025 EMCP Blast | `EMPBlast_DirectObject` does0 normally/5000 for NPCEMPWeakness; NPC weakness ownership/templates are unavailable. Do not infer it from the ability name or make it unconditional damage. |
 | 1110 Bull Dog;1125 Disable Evasion | Stealth opening/shield interaction and callbacks belong to P5; its package owns the combat/stealth consumer. |
