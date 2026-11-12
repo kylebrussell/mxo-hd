@@ -19,7 +19,7 @@ Binary evidence:
 
 - `3e`: constructor `6219e500`, printer `6219fd10`, setter `625dd5f0`. Ability `1000` and slot `6b` mean no change. Slots are stored as `80000000|slot`, including the producer which leaves IsSlot zero.
 - `43`: constructor `6219e890`, printer `6219fea0`; two payload bytes.
-- `80 bb`: constructor `6205e190`, sender `6205e290`; `62517780` negates CanNOTRemoveBuff; `62515ef0` checks UBF0, whereas `62515f30` checks UDB0.
+- `80 bb`: constructor `6205e190`, sender `6205e290`; `62517780` negates CanNOTRemoveBuff; `62515ef0` checks UBF0, whereas `62515f30` checks UDB0. The UI handler `6205e350` requires eventFourCC `0x6c43524d` (`MRCl`, right click) and virtual key`0x10` (Shift). Helper `6235f9e0` calls USER32.GetAsyncKeyState at IAT`628685f0` and checks its high bit. Thus the producer gesture is **Shift + right click** on the selected buff control; the exact row/icon location still needs native confirmation.
 - `81 21/22`: drop handler `620a045b`, reply `6214176c/621549a0`. Reply fields are ObjectID u32, InstanceData u32, Status u32.
 - `81 2e`: constructor `62087ae0`, array setter `62087c80`. Offset includes the two opcode bytes. `6208c13d..c169` decodes SourceCode as ability GOID `80000000|(source&003ffc00)` or item `(source>>7)&7ffff`.
 - `81 31`: constructor `621d3b00`, producer `621ed223`. Its first field is a base **ability ID**, not an item recipe GOID.
@@ -87,7 +87,7 @@ Use the NativeQa actions fixture, lock and CSR_Tester110 only. Check:
 
 1. World entry with FeatureList enabled, then repeated `81 48` queries without a crash.
 2. Switch a loaded martial style/special selection; inspect own selection, toolbar and ability behavior. Record any `43` producer/value evidence.
-3. Dismiss Hyper-Dodge from its buff icon. Verify other buffs remain and hostile effects/styles cannot be dismissed.
+3. Dismiss Hyper-Dodge using **Shift + right click** on its selected buff row/icon (native handler6205e350; ordinary right click and Shift-left-click do not take this path). Verify other buffs remain and hostile effects/styles cannot be dismissed.
 4. Search a mission container, open a Put goal, drag its expected item into the window. Verify the container reply and goal completion; try a wrong item and a distant drop.
 5. Open the compiler/Code Writer through the actual UI, compile a known fragment, decompile an owned item, relog to verify recipe learning. Capture requests and tool slots before expanding the incomplete branches.
 6. Group interlock: three through six players, switch targets, observe from outside, individual withdrawal/rejoin and death. Verify other fighters keep their combat view; stun one fighter and verify no hits while it is active.
@@ -142,3 +142,9 @@ manual launch or an independently opened client; no client lock was taken during
 PR100 now includes master through PR101/99 and death/reconstruction fix `d83441b`. All 3,555 Debug and Release unit tests pass. The complete fresh-server suite passes **83/83 in 527.0 s**, with six servers at peak. Test-only commit `46c5906` corrects travel helpers for randomly assigned ground-floor sites and approaches the moved-item NPC from its actual mission placement. No native gameplay pass is inferred from these results.
 
 Claude verified world entry and reported the two death/reconstruction failures on the earlier head. The new death flags and captured tutorial-selection/reset path pass headlessly, but the corrected native flow and remaining checklist still need verification before merge. No client lock was taken for this follow-up; CSR_Tester remains at the reset recorded by the previous lock owner.
+
+## Native recheck reported by Claude
+
+[Claude's816fff1 recheck](https://github.com/kylebrussell/mxo-hd/pull/100#issuecomment-6812743113) confirms the false PvP death line is gone and reconstruction no longer hangs. The client selected Tutorial through81 00; Skip Tutorial/Yes returned through LA to Richland hardline153. Hyper-Speed's icon/tooltip also worked. PR100 merged asf2259ccd22783c035288b4c6943bf73f4e03c123. These are Claude's independent native observations, not Codex-operated native checks.
+
+Container deposit, compiler UI, archives and the group-interlock native observer view remain unchecked. Helpers exercised the group fight server path, but the camera did not reach it. Buff dismissal was not triggered with the gestures tried; the subsequently decoded Shift+right-click path above remains to be checked. The full native checklist remains open even though the two blocking death failures were corrected.
