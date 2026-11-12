@@ -35,7 +35,7 @@ Use discovered NativeQa mode `yuki`. The final generic SQL stage sets actualleve
 3. Inspect arrival geometry and a short local walk. Missing sector5 interiors remain a separate source gap even if arrival renders.
 4. Use the dynamic Zion returner38271 at arrival. Confirm full city reload, exact saved origin and retained book. Record source-static returner usability as unresolved.
 
-Native QA is pending. Both configurations build and their actual read-only fixture plans agree; the full4266 unit suite and15 Python policy tests pass. Fresh normal-wire verification is pending. Builds used temporary command-line MSBuild hardlink options with verified output links to avoid duplicate data copies; no project/user/OS settings changed. No native setup/client/lock/mainDB/settings/cleanup actions are part of this package.
+Native QA is pending. Both configurations build and their actual read-only fixture plans agree; the full4266 unit suite and15 Python policy tests pass. The fresh normal-wire scenario passed in102.8s, exit0, peak1, and disposed normally: owned38535/equip106/ordinarycycle, retail14/map11 load, actualarrival `(15500,295,15500)`, dynamic38271 selected by exact Position, Use2, fullcityreload, exactorigin `(111600,695,-6130)` and retained book. Success server/debug output was saved before teardown. This proves server wire behavior, not native geometry. Builds used temporary command-line MSBuild hardlink options with verified output links to avoid duplicate data copies; no project/user/OS settings changed. No native setup/client/lock/mainDB/settings/cleanup actions are part of this package.
 
 ## Existing Archive01 gap exposed by the stricter exporter
 
