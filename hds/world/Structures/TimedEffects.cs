@@ -34,6 +34,7 @@ namespace hds
         public sealed class Active
         {
             public UInt16 Parent;
+            internal Action<Subject, Active> OnExpired;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -341,6 +342,7 @@ namespace hds
                     }
                 }
             }
+            foreach (Active mod in expired) mod.OnExpired?.Invoke(subject, mod);
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
@@ -407,7 +409,7 @@ namespace hds
         /// tempmods that went on (none when only control states were refused).
         /// </summary>
         public static List<Active> Apply(Subject subject, TempMods.Effect effect, double now, WorldClient caster = null,
-            string casterName = null, UInt16 targetView = 0, Random rng = null)
+            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
         {
             List<Active> mods = Instantiate(effect, rng ?? random);
             for (int i = mods.Count - 1; i >= 0; i--)
@@ -424,6 +426,7 @@ namespace hds
                 }
                 m.CasterName = casterName;
                 m.TargetView = targetView;
+                configure?.Invoke(m);
             }
 
             // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
@@ -467,6 +470,8 @@ namespace hds
             }
             Register(subject);
             subject.Applied(effect, mods, immunity, replaced);
+            if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
+                EvasionShield.Refresh(shieldTarget.Context);
             return mods;
         }
 
@@ -773,6 +778,7 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             SendOff(ended);
+            if (ended.Exists(m => m.Parent == StealthShieldAbilities.DisableEvasion)) EvasionShield.Refresh(client);
             if (AbilityHostile.ChangesVitals(ended)) AbilityBuffs.RefreshVitals(client);
             foreach (TimedEffects.Active m in ended)
             {

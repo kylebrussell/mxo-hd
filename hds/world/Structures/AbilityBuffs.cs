@@ -398,9 +398,9 @@ namespace hds
             }
             if (buff.EvadeShield)
             {
-                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0xff), false);
+                EvasionShield.Applied(client,active.Generation);
             }
-            foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, false))
+            foreach (byte[] record in buff.EvadeShield && !EvasionShield.HasState(client) ? new List<byte[]>() : BuildRecords(abilityId, buff, active.RecordIds, false))
             {
                 client.messageQueue.addRpcMessage(record);
             }
@@ -457,7 +457,7 @@ namespace hds
             }
             if (buff.EvadeShield)
             {
-                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0x00), false);
+                EvasionShield.Removed(client);
             }
             if (buff.Toggle)
             {

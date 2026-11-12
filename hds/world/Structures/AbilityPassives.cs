@@ -79,6 +79,7 @@ namespace hds
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
             Refresh(client, !newWorld);
+            EvasionShield.LoadoutChanged(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker

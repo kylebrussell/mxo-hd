@@ -719,6 +719,8 @@ namespace hds
                             clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
                             Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                            EvasionShield.AfterSpawn(currentClient,otherClient,clientView.ViewID);
+                            StealthShieldAbilities.AfterSpawn(currentClient,otherClient,clientView.ViewID);
                         }
                     }
                 }
