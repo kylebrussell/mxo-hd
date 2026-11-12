@@ -1,5 +1,7 @@
 # Utility abilities
 
+Data-node search, light luggable pickup/drop and visible Download Mission Map pings now execute; see [DATA-MINING.md](DATA-MINING.md) for decoded records, evidence, deliberate choices, remaining gaps and the current native checklist. Its P3 implementation supersedes the historical locator/reveal gaps below.
+
 Open Locks, Disarm Traps, Disable Security Devices, Recall Team Member, Recall Mission Team, Download Mission Map, Hack Construct Key and Find Data Node, and what they do to world and mission objects. The code is `hds/world/Structures/UtilityAbilities.cs`.
 
 No capture shows any of these, so every rule comes from the client's own server-side Python in `research/client-scripts`. Item and object numbers come from the 7.6005 `gameobjects.gob`, and lines from `stringtable_client`. Anything marked **ours** is a choice we made.
