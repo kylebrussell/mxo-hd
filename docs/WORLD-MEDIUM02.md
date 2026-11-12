@@ -56,6 +56,8 @@ Return to the booth, use the actual Exit to Loading Area radial and accept. Insp
 
 ## Recorded automated validation
 
-Full4,204 tests passed, including25 focused world/hardline tests and the exact414 schema/use/state contract. Twelve Python audit policy/link tests passed. Debug/Release builds and actual read-only named/unknown mode plans plus provenance passed. Exports reproduce as above, and strict default refuses unproven rotations.
+Full4,234 tests passed on the final master155/158 combined base, including25 focused world/hardline tests and the exact414 schema/use/state contract. Twelve Python audit policy/link tests passed. Debug/Release builds and actual read-only named/unknown mode plans plus provenance passed. Exports reproduce as above, and strict default refuses unproven rotations.
 
 The fresh normal-protocol fixture passed38.2seconds, exit0, peak one disposable server: shipped592 booth radial toLA,6d15/1, direct80ff return with new06/new self at exact HDL coordinates, normal414 Open/state834 and natural timedClosed835. Successful raw diagnostics were saved before teardown. Native LA menu selection, geometry and NPC validation remain explicitly unclaimed.
+
+Master155/158 was merged after the fresh run; only upstream economy/team-mission code changed. This tested world loader/hardline/door path is unchanged. The full suite, both builds and read-only provenance were refreshed on that final base.
