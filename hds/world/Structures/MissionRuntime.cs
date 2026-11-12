@@ -165,7 +165,7 @@ namespace hds
             MissionObjective objective = progress.FindOpenFor(npc.missionNpcId);
             if (objective != null && objective.talkLines.Count > 0)
             {
-                Say(client, objective.talkLines);
+                Say(client, objective.talkLines, interactive:true);
             }
 
             if (objective != null && objective.type == MissionGoalType.Talk)
@@ -183,7 +183,7 @@ namespace hds
                 MissionLine line = LatestLine(progress, npc.missionNpcId);
                 if (line != null)
                 {
-                    Say(client, new List<MissionLine> { line });
+                    Say(client, new List<MissionLine> { line }, interactive:true);
                 }
             }
 
@@ -1075,7 +1075,28 @@ namespace hds
             client.FlushQueue();
         }
 
-        private static void Say(WorldClient client, List<MissionLine> lines)
+        /// <summary>Strict disposable native fixture: no arbitrary NPC, text or mission mutation.</summary>
+        public static bool DevPresentation(WorldClient client,string[] words)
+        {
+            if(words.Length==0 || words[0]!="?missionpresentation") return false;
+            bool allowed=ReferenceEquals(client,Store.currentClient) && client.Alive &&
+                MissionPresentation.QaAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                    Store.config?.dbParams?.DatabaseName,client.playerData.getCharID(),client.playerData.getOnWorld(),
+                    client.playerData.isDead || client.playerData.duelDeath || client.playerData.worldChangePending || client.playerData.DistrictIsLA());
+            lock(client.playerData.missionSync)
+            {
+                var data=client.playerData;
+                Mob source=allowed && words.Length==2 && words[1]=="speech" && data.activeMission?.id==1203 && data.missionProgress!=null
+                    ? data.missionMobs.FirstOrDefault(m=>m.ScriptedCorpse && m.getIsDead() && !m.isFriendly &&
+                        m.missionInstance==data.missionInstanceCounter && client.viewMan.FindViewForEntity(m.getEntityId())?.viewCreated==true) : null;
+                if(source==null) new ServerPackets().sendSystemChatMessage(client,"Mission presentation QA refused: requires CSR110, dev1, mxotest_, live Internuncio and a visible owned hostile body.","SYSTEM");
+                else Say(client,new List<MissionLine>{new MissionLine {speaker=MissionSpeaker.Npc,npcId=source.missionNpcId,
+                    display=5,text="[QA] Hostile mission presentation diagnostic."}});
+            }
+            client.FlushQueue();return true;
+        }
+
+        private static void Say(WorldClient client, List<MissionLine> lines, bool interactive=false)
         {
             foreach (MissionLine line in lines)
             {
@@ -1088,6 +1109,8 @@ namespace hds
                         client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(
                             npc != null && !friendly ? HostileNpcImage : FriendlyNpcImage, 0, 0, line.display, 0,
                             npc?.handle ?? "", text));
+                        string echo=MissionPresentation.ChatFallback(!friendly,interactive,npc?.handle ?? "",text);
+                        if(echo!=null) new ServerPackets().sendSystemChatMessage(client,echo,"SYSTEM");
                         break;
                     case MissionSpeaker.Contact:
                         var contact = MissionContacts.For(client.playerData.activeMission?.contact);
@@ -1530,6 +1553,7 @@ namespace hds
             mob.zBase = npc.z;
             mob.setRotation(0);
             mob.setIsDead(npc.dead);
+            mob.ScriptedCorpse = npc.dead;
             mob.setIsLootable(false);
             mob.setWeapon(npc.weapon);
             mob.isFriendly = npc.friendly;
