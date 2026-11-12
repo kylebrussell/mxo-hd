@@ -2,7 +2,7 @@
 
 What the client's world files say about each district, how to read them, and what the server takes from them. Everything here comes from the 7.6005 client's own files; no retail capture adds to it unless it says so.
 
-See [Small03 partial support and remaining-world inventory](WORLD-SMALL03.md) for the bounded map17 static/nav export, source omissions, and native checklist. Westview is already part of the Slums world. [Large01 partial support](WORLD-LARGE01.md) adds map12 safe statics/nav while retaining explicit rotated-key, captured-NPC-elevation and Loading Area UI omissions. [Medium01 partial support](WORLD-MEDIUM01.md) adds map14's39 validated marker/booth keys and144nav sectors, with captured NPC placement and native LA selection still unproven.
+See [Small03 partial support and remaining-world inventory](WORLD-SMALL03.md) for the bounded map17 static/nav export, source omissions, and native checklist. Westview is already part of the Slums world. [Large01 partial support](WORLD-LARGE01.md) adds map12 safe statics/nav while retaining explicit rotated-key, captured-NPC-elevation and Loading Area UI omissions. [Large02 partial support](WORLD-LARGE02.md) adds map13 safe keys and225 available nav sectors, with sector47 explicitly unavailable and native LA return unresolved. [Medium01 partial support](WORLD-MEDIUM01.md) adds map14's39 validated marker/booth keys and144nav sectors, with captured NPC placement and native LA selection still unproven.
 
 ## Sector properties (`.metr`)
 
@@ -115,7 +115,7 @@ After the sectors (and `WdID`, `RDMP`, `AcNo`, `Hdln`): `NETS`. A chunk is a tag
 ## What the server uses
 
 - **`SectorProperties`** (`hds/world/Structures/SectorProperties.cs`) loads `sector_properties.csv` on first use. `At(district, x, z)` and `Get(district, sector)` give a sector's row; `LevelAt`, `IsPvpZone`, `MissionAreasEnabled(district, sector)` and `SectorsOfContact(contactId)` are the lookups other code calls. Nothing in mission choice calls them yet.
-- **`HardlineNetwork`** (`hds/world/Structures/HardlineNetwork.cs`) loads `hardline_network.csv`. For the three cities and the validated partial small03/large01/medium01 constructs it replaces `data_hardlines`: the 6c list (the named hardlines), the hardline a booth belongs to, and where a player lands after 81 8e, 80 ff, the tutorial and a Loading Area fallback (`TeleportHandler.MoveToHardline`). Other constructs still use `data_hardlines`.
+- **`HardlineNetwork`** (`hds/world/Structures/HardlineNetwork.cs`) loads `hardline_network.csv`. For the three cities and the validated partial small03/large01/large02/medium01 constructs it replaces `data_hardlines`: the 6c list (the named hardlines), the hardline a booth belongs to, and where a player lands after 81 8e, 80 ff, the tutorial and a Loading Area fallback (`TeleportHandler.MoveToHardline`). Other constructs still use `data_hardlines`.
 - **`SubwayNetwork`** (`hds/world/Structures/SubwayNetwork.cs`) loads `subway_network.csv`: which station a subway car belongs to, and where a ride picked on the map ends (`SubwayHandler`).
 - **World NPC levels** come from `data/mob_parsed.csv` (retail spawns, with their own levels), which already agree with the sector levels, so nothing is overridden.
 - **PvP:** `IsPvpZone` is part of who may attack whom: two players of different organisations who both stand in a PvP sector are opponents whatever their flags (`PvpRules`, `docs/PVP.md`).
