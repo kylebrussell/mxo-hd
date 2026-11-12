@@ -3,12 +3,21 @@ using hds;
 using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
+using NativeQa;
 
 #if DEBUG
 const string configuration = "Debug";
 #else
 const string configuration = "Release";
 #endif
+// This is the same plan passed to StartAsync, and exits before any path, lock or database setup.
+if (args.Length > 0 && args[0] == "--fixture-plan")
+{
+    string mode = args.Length > 1 ? args[1] : "";
+    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode) },
+        new JsonSerializerOptions { WriteIndented=true }));
+    return;
+}
 // Actions groups learned abilities by their catalog discipline. Own missing folders without loading their stats.
 static ushort[] DisciplineAncestors(JsonElement catalog, IEnumerable<ushort> requested)
 {
@@ -193,13 +202,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     string snapshotAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(targetBin, "hds.dll"))));
     if (sourceAssemblySha256 != snapshotAssemblySha256)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
-    server = await ServerInstance.StartAsync(snapshot, database.Name, new Dictionary<string,string>
-    {
-        ["MXO_DEV_COMMANDS"]=remainingMode?"1":"0",
-        ["MXO_AUTH_PORT"]="11000", ["MXO_MARGIN_PORT"]="10000", ["MXO_WORLD_PORT"]="10000",
-        ["MXO_CONSOLE_PORT"]="55557", ["MXO_MOBS"]="test", ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0", ["MXO_PACKET_LOG"]="1"
-        , ["MXO_GM_CHARACTER_IDS"]=clientActionsMode ? "110" : ""
-    });
+    server = await ServerInstance.StartAsync(snapshot, database.Name,
+        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,

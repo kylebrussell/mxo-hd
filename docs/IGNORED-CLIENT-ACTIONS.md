@@ -73,8 +73,12 @@ $head=(git -C $root rev-parse HEAD).Trim() # compare with the PR's full SHA befo
 $qaRoot=Join-Path $env:TEMP ('mxo-p7-native-'+[guid]::NewGuid().ToString('N'))
 dotnet build "$root/tools/NativeQa/NativeQa.csproj" -c Release
 dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" --build-info $root
+$plan = dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" --fixture-plan ignored-actions | ConvertFrom-Json
+if ($plan.Environment.MXO_DEV_COMMANDS -ne '1' -or $plan.Environment.MXO_GM_CHARACTER_IDS -ne '110') { throw 'Wrong ignored-actions fixture environment' }
 dotnet "$root/tools/NativeQa/bin/Release/net8.0/NativeQa.dll" $root $qaRoot $head ignored-actions
 ```
+
+The ignored-actions fixture uses the same `NativeQaFixturePlan.EnvironmentFor(mode)` for the read-only plan and actual server launch. The plan exits before directory, client-lock or database work; its CLI regression runs from an empty test directory. This fixes the ce534a5 native fixture failure: `/afk` displayed its native AFK tag, but every helper was correctly blocked because dev commands had been configured off. No support/compilation native pass is claimed from that run.
 
 The ignored-actions mode keeps Mara start, provides full500HP, 100000 information, compiler1, pill3, bits4..11 and a single archived Code Bit1 in slot400. Only the copied native110 gets the fixture GM allowlist; this is a server-side fixture grant. `?clientactions` requires **exactly** `MXO_DEV_COMMANDS=1`, and snoop additionally requires that separate allowlist. Do not infer a native pass from helper packets or displayed text alone.
 
