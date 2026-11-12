@@ -27,7 +27,8 @@ This checklist tracks the current modernization push from "builds locally" to "f
 ## 4. Validation Harness
 - [x] Add a smoke script for config, database, build, and launch readiness.
 - [x] Add a load-test harness for 50/100/200 simulated clients.
-- [ ] Record CPU, tick duration, queue depth, and packet flush latency.
+- [x] Record CPU, visibility-pass duration, queue depth, and packet flush/dispatch latency.
+  - [Authenticated 50/100/200 idle baseline](SCALE-BASELINE.md), with raw evidence and explicit workload limits.
 - [ ] Verify player, mob, static object, and subway view spawn/despawn behavior.
   - The current harness sends lightweight UDP client load; full view validation still needs a running server and client/protocol fixtures.
 
