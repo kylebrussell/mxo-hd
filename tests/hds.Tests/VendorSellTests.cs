@@ -40,14 +40,14 @@ public class VendorSellTests
     }
 
     [Fact]
-    public void TryApplySellClampsCashAtUInt32Max()
+    public void TryApplySellClampsCashAtSignedAccountMax()
     {
-        // currentCash already at the max; adding any buyback must clamp, not overflow.
+        // currentCash already at the old unsigned max; adding any buyback must clamp to the actual signed column, not overflow.
         bool result = VendorPricing.TryApplySell(UInt32.MaxValue, 11666, out uint newCash, out uint price);
 
         Assert.True(result);
         Assert.Equal((uint)680, price);
-        Assert.Equal(UInt32.MaxValue, newCash);
+        Assert.Equal((uint)Int32.MaxValue, newCash);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class VendorSellTests
     [InlineData(new byte[] {0x00, 0x45}, 69)]
     [InlineData(new byte[] {0x00, 0x55}, 85)]
     [InlineData(new byte[] {0x00, 0x58}, 88)]
-    public void ParseSellSlotReadsTheSlotBigEndian(byte[] request, int expectedSlot)
+    public void ParseSellSlotReadsNativeSlotByte(byte[] request, int expectedSlot)
     {
         Assert.Equal((ushort)expectedSlot, VendorHandler.ParseSellSlot(request));
     }

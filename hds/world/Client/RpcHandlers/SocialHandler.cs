@@ -131,6 +131,18 @@ namespace hds
             return team;
         }
 
+        /// <summary>Restore the native team state before a saved mission HUD is replayed.
+        /// client.dll requires a populated leader and joined state to send Abort/Leave Team.
+        /// Existing teams keep their leader and members; a disconnected solo player uses normal team creation.</summary>
+        internal static void RestoreMissionTeam(WorldClient client)
+        {
+            if (client.playerData.activeMission == null) return;
+            LiveTeam team = EnsureTeam(client);
+            Send(client, SocialPackets.TeamInfo(client.playerData.getCharID(), team.Id, team.LeaderCharId,
+                team.Name, team.Members.ToList()));
+            SetOwnGroupIds(client, null, null, team.Id);
+        }
+
         private static void LeaveTeam(WorldClient client, bool tellLeaver)
         {
             UInt32 charId = client.playerData.getCharID();
