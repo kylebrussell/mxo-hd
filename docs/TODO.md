@@ -30,7 +30,7 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [x] Record CPU, visibility-pass duration, queue depth, and packet flush/dispatch latency.
   - [Authenticated 50/100/200 idle baseline](SCALE-BASELINE.md), with raw evidence and explicit workload limits.
 - [ ] Verify player, mob, static object, and subway view spawn/despawn behavior.
-  - The current harness sends lightweight UDP client load; full view validation still needs a running server and client/protocol fixtures.
+  - The original UDP mode is unauthenticated. The authenticated baseline exercises real login/world traffic; complete view lifecycle and native presentation validation remain separate.
 
 ## 5. First Gameplay Economy Loop
 - [x] Make vendor buys deduct cash.
