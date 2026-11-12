@@ -180,7 +180,7 @@ namespace hds
         }
         public static bool OnUse(WorldClient c, ClientView view, byte action)
         {
-            if (view?.GoID == DataMineReturners.GoId)
+            if (c.playerData.getDistrictId() == 7 && view?.GoID == DataMineReturners.GoId)
             {
                 double[] genericAt = Position(c);
                 if (action == 2 && Available(c) && !c.playerData.waitForRPCShutDown &&
