@@ -163,6 +163,7 @@ public static partial class Scenarios
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
+        new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("team-new-leader-and-boot", TeamNewLeaderAndBoot),
