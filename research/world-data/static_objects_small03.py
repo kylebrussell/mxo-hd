@@ -3,10 +3,11 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(12,13,17),default=17)
+parser.add_argument('--world',type=int,choices=(7,12,13,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
+parser.add_argument('--omit-missing-sectors',action='store_true',help='Explicitly omit the WHOLE sector if its required exterior SID is absent; unknown exterior counts remain unknown.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={12:'large01',13:'large02',17:'small03'}[args.world]
+world_name={7:'datamine',12:'large01',13:'large02',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -51,9 +52,27 @@ def decode(s):
     out.append((g[1],g[0],(x0+box[0]*10+x,y+box[1]*10+145,z0+box[2]*10+z),g[5:9],rot,'int'))
  return out
 
+missing=[]
+selected=[r for r in rows if r['metr_id']==str(args.world)]
+for row in selected:
+ if row['file'].lower()+'.sid' not in byname:
+  assert args.world==7 and row['sector']=='34' and row['file']=='dataminene_3','Unreviewed missing static sector'
+  metr_path='resource/worlds/final_world/constructs/archive/archive_datamine/datamine.metr'
+  d=(Path(R.D)/metr_path).read_bytes();sources[metr_path]=hashlib.sha256(d).hexdigest();q=d.find(b'SINS')+12;rid=None
+  for _ in range(struct.unpack_from('<I',d,q-4)[0]):
+   end=q+12+struct.unpack_from('<I',d,q+4)[0];r=M.Reader(d,q+12);r.s16();sector=r.u16();r.p+=48
+   if sector==34:
+    rid=struct.unpack_from('<I',d,r.p+4)[0]
+    assert struct.unpack_from('<I',d,r.p+8)[0]==bp[byname['dataminene_3.sidi']]['rid']
+   q=end
+  assert rid==0x04000800 and rid not in idx
+  path=metr_path.rsplit('/',1)[0]+'/'+row['file']+'.sid';assert path not in bp and not (Path(R.D)/path).exists()
+  missing.append(dict(sector=34,file=row['file'],missingPath=path,declaredSidRid=rid,packedAbsent=True,looseAbsent=True,unknownExteriorCount=None,policy='Whole sector omitted, including available companions; unknown exterior object count.'))
+  for ext in ('.sidi','.sidgo'):read(byname[row['file']+ext])
+assert args.omit_missing_sectors or not missing,'Missing required SID: strict default refuses export; explicit --omit-missing-sectors required'
 raw=[]
-for row in rows:
- if row['metr_id']==str(args.world): raw.extend((int(row['sector']),*o) for o in decode(row))
+for row in selected:
+ if int(row['sector']) not in {m['sector'] for m in missing}:raw.extend((int(row['sector']),*o) for o in decode(row))
 groups=collections.defaultdict(list)
 for o in raw:groups[o[:2]].append(o)
 conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in v})>1}
@@ -63,6 +82,8 @@ objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
 if args.world==17:
  assert set(conflicts)=={(13,13),(13,15),(13,16)}
  assert len(raw)==370 and len(objects)==358
+elif args.world==7:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(13219,12960,6821,175,6105)
 elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 else:
@@ -76,6 +97,7 @@ with open(args.output,'w',newline='') as f:
 audit=dict(world=args.world,rawReferences=len(raw),uniqueKeys=len(groups),exportedKeys=len(objects),excludedKeys=[list(k) for k in sorted(excluded)],
  convention='METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.',
  sourceSha256=sources,raw=raw,conflicts={str(k):v for k,v in conflicts.items()})
+if missing:audit.update(missingSectors=missing,knownInputScope='Available resources only; missing whole sector excluded; no total-world completeness claim.')
 if args.omit_unproven_rotations:
  audit.update(unprovenRotationKeys=[list(k) for k in sorted(unproven)],
   rotationAmbiguityOverlap=len(set(unproven)&set(conflicts)),

@@ -115,6 +115,7 @@ public static partial class Scenarios
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
         new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
         new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
+        new Scenario("datamine-partial-world", DataMinePartialWorld, StillNpcs),
         new Scenario("data-mining-mission-map", DataMiningMissionMap, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),

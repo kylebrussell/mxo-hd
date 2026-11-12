@@ -180,6 +180,14 @@ namespace hds
         }
         public static bool OnUse(WorldClient c, ClientView view, byte action)
         {
+            if (view?.GoID == DataMineReturners.GoId)
+            {
+                double[] genericAt = Position(c);
+                if (action == 2 && Available(c) && !c.playerData.waitForRPCShutDown &&
+                    DataMineReturners.CanUseView(view,c.viewMan.getViewById(view.ViewID),DataMineReturners.Bindings,
+                        c.playerData.getDistrictId(),c.playerData.getOnWorld(),genericAt[0],genericAt[1],genericAt[2])) ReturnToOrigin(c);
+                return true;
+            }
             int org = Array.IndexOf(returners, view?.GoID ?? 0, 1);
             if (org < 1 || !IsArchive(c.playerData.getDistrictId())) return false;
             if (action != 2 || !Available(c)) return true;
@@ -187,11 +195,15 @@ namespace hds
             if (!Arrival((ushort)c.playerData.getDistrictId(), (uint)org, out NavPoint p)) return true;
             double[] at = Position(c);
             if (Math.Sqrt(Math.Pow(at[0]-p.x,2)+Math.Pow(at[1]-p.y,2)+Math.Pow(at[2]-p.z,2)) > 1000) return true;
+            ReturnToOrigin(c);
+            return true;
+        }
+        private static void ReturnToOrigin(WorldClient c)
+        {
             Session s = sessions.GetOrCreateValue(c);
             // A reconnect has no in-memory origin. Mara is the safe server fallback, rather than tutorial world 0.
             Move(c, s.OriginMap == 0 ? 1u : s.OriginMap, s.OriginKey ?? "slums",
                 s.OriginPosition ?? NumericalUtils.doublesToLtVector3d(23828,495,13984));
-            return true;
         }
         private static double[] Position(WorldClient c)
         {
@@ -249,6 +261,11 @@ namespace hds
                     for (uint org = 1; org <= 6; org++)
                         if ((map != 7 && map != 9 || org == Organization(c)) && Arrival((ushort)map, org, out NavPoint p))
                             View(0xa200000000000000UL | map << 8 | org, (ushort)returners[org], p.x,p.y,p.z,null,0);
+                // These actual statics are NPC/model views, not automatically visible merely because CSV exists.
+                // Keep the existing generated map7 fallback ALWAYS: exact retail arrival/route remains unknown.
+                if (map == 7)
+                    foreach (var spot in DataMineReturners.Bindings)
+                        View(DataMineReturners.Entity(spot),DataMineReturners.GoId,spot.pos_x,spot.pos_y,spot.pos_z,spot,0);
                 foreach (ulong entity in s.Views.Keys.Where(e => !wanted.Contains(e)).ToArray())
                 {
                     var v = c.viewMan.FindViewForEntity(entity);
