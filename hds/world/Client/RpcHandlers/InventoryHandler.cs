@@ -161,6 +161,8 @@ namespace hds
                 return false;
             }
 
+            if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
+
             if (!ConsumableItems.IsUsable(consumable))
             {
                 pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");

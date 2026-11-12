@@ -26,11 +26,15 @@ namespace hds
         public static void Pill(WorldClient client, byte[] body)
         {
             if (body?.Length != 2) return;
-            if (client.playerData.isDead || client.playerData.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects)) return;
             ushort slot = BitConverter.ToUInt16(body, 0);
             if (slot < 1 || slot > 96) return;
             uint goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-            if (ConsumableItems.TryGet(goid, out var pill)) new InventoryHandler().UseItem(slot, pill.AbilityId);
+            if (ConsumableItems.TryGet(goid, out var pill))
+            {
+                if (pill.Effect != ConsumableItems.Effect.AntiStun && (client.playerData.isDead || client.playerData.duelDeath ||
+                    ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects))) return;
+                new InventoryHandler().UseItem(slot, pill.AbilityId);
+            }
             else Notice(client, "That slot does not contain a usable pill.");
         }
         public static void CloseCollector(WorldClient client, byte[] body)
