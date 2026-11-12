@@ -790,7 +790,7 @@ These records are not silently dropped. Scope is the stored class or an explicit
 | 656 | UpgradeCraftingAbility | engine stat |
 | 657 | NPCMinorTacticBoostAbility | NPC |
 | 658 | NPCMediumTacticBoostAbility | NPC |
-| 659 | PillConditionSweep1Ability | item-triggered ability; cast/stack/shared timer/level checks; periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
+| 659 | PillConditionSweep1Ability | item / event / internal / unproven loadability |
 | 660 | StableMezAbility | engine state |
 | 661 | NPCPenaltyBaseAbility | NPC |
 | 662 | NPCDisguiseAbility | NPC |
@@ -801,11 +801,11 @@ These records are not silently dropped. Scope is the stored class or an explicit
 | 671 | SittingEffectAbility | engine state |
 | 672 | PillBolsterHealth1Ability | item / event / internal / unproven loadability |
 | 673 | PillBolsterHealth4Ability | item / event / internal / unproven loadability |
-| 674 | Antibiotic1Ability | item-triggered ability; cast/stack/shared timer/level checks; initial + periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
-| 675 | Antibiotic2Ability | item-triggered ability; cast/stack/shared timer/level checks; initial + periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
-| 676 | Antibiotic3Ability | item-triggered ability; cast/stack/shared timer/level checks; initial + periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
-| 677 | Antibiotic4Ability | item-triggered ability; cast/stack/shared timer/level checks; initial + periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
-| 678 | Antibiotic5Ability | item-triggered ability; cast/stack/shared timer/level checks; initial + periodic negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md) |
+| 674 | Antibiotic1Ability | item / event / internal / unproven loadability |
+| 675 | Antibiotic2Ability | item / event / internal / unproven loadability |
+| 676 | Antibiotic3Ability | item / event / internal / unproven loadability |
+| 677 | Antibiotic4Ability | item / event / internal / unproven loadability |
+| 678 | Antibiotic5Ability | item / event / internal / unproven loadability |
 | 681 | ISDrainTargetAbility | engine stat |
 | 682 | aaVirusDamage1Ability | item / event / internal / unproven loadability |
 | 683 | aaVirusEnhacedDamageAbility | item / event / internal / unproven loadability |
