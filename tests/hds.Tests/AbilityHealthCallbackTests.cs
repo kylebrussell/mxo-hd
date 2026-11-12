@@ -24,6 +24,30 @@ public class AbilityHealthCallbackTests
         return BitConverter.ToUInt16(bytes,7);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void ZenDropsQueuedListenerIfWorldLifeOrLoadGenerationChanges(int change)
+    {
+        var c=Client();var random=AbilityHealthCallbacks.Random100;
+        try
+        {
+            AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityHealthCallbacks.Random100=()=>
+            {
+                if(change==0)c.playerData.worldGeneration++;
+                else if(change==1)c.playerData.lifeGeneration++;
+                else AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+                return 0;
+            };
+            AbilityHealthCallbacks.HealthChanged(c,1,true);
+            Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
+        }
+        finally {AbilityHealthCallbacks.Random100=random;}
+    }
+
     [Fact]
     public void ZenParentRunsOnceAcrossNestedHealingAndStopsAfterWorldReload()
     {
@@ -54,6 +78,7 @@ public class AbilityHealthCallbackTests
             AbilityHealthCallbacks.Random100=()=>0;
             PvpCombat.Damage(c,1);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
             AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            AbilityHealthCallbacks.Reapply(c,872);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
             AbilityHealthCallbacks.Random100=()=>15;
             PvpCombat.Damage(c,1);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
             AbilityHealthCallbacks.Random100=()=>14;

@@ -19,12 +19,16 @@ public static partial class Scenarios
         await LoadAbilitiesAsync(context,p,871);
         await p.EnterWorldAsync();
         const string activation="81 67 ?? ?? ?? ?? 20 21 00 c6";
-        await SetProcHealth(p,490,490);
-        await p.WaitForRpcAsync(activation);
+        await SetProcHealth(p,400,400);
+        var restored=await p.WaitForRpcAsync(activation);
+        int values=BitConverter.ToUInt16(restored.Bytes,19);
+        Check.Equal((ushort)1,BitConverter.ToUInt16(restored.Bytes,values),"Restore line has its required numeric substitution");
+        Check.That(BitConverter.ToInt32(restored.Bytes,values+2) is >=0 and <=5,"Restore line reports capped IS delta");
         await p.WaitForViewUpdateAsync(2,"02 80 80 80 10 c8 00");
         int previous=p.Received(activation).Count;
-        await SetProcHealth(p,500,500); // external healing invokes the same sourced callback
+        await SetProcHealth(p,450,450); // external healing invokes the same sourced callback
         await p.WaitUntilAsync(()=>p.Received(activation).Count>previous,"Zen external-heal activation",TimeSpan.FromSeconds(5));
+        await SetProcHealth(p,500,500);
         previous=p.Received(activation).Count;
         Cast(p,872);await Task.Delay(400);
         Check.Equal(previous,p.Received(activation).Count,"Direct872 refused without executing internal effect");

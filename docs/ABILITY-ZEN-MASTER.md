@@ -12,7 +12,7 @@ Validation: fresh `ability-zen-master` tests damage, external healing, sourced a
 
 ## Claude-only pinned-head checklist
 
-1. At the exact PR fullSHA, build matching Debug/Release. Read-only `NativeQa --fixture-plan zen-master` must report MXO_DEV_COMMANDS=1 and both callback rolls0. `--build-info <root> <head> zen-master 2,17,871` must match source/snapshot hashes and list owned unloaded ancestors.
+1. At the exact PR fullSHA, build matching Debug/Release. Read-only `NativeQa --fixture-plan zen-master` must report MXO_DEV_COMMANDS=1 and both callback rolls0. `--build-info <root> 2,17,871` must match source/snapshot hashes and list owned unloaded ancestors.
 2. Only Claude starts a fresh disposable `zen-master` fixture and native client. Confirm copied CSR110 level99,871 loaded,100/200IS. This forced state tests an inaccessible parent, not retail progression. Main data remain unchanged.
 3. Login. `?health 90` then `?health 120`: actual health changes produce sourced restore line/FX and5IS up to200; ordinary IS/HP regeneration continues separately. Exact delta is covered by units.
 4. Direct872 must refuse without cost or effect. Unload871 and change health again: no871->872 proc. Death/world transition must discard old-generation pending delivery.

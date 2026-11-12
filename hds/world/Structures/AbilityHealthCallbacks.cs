@@ -117,7 +117,7 @@ namespace hds
                     {
                         lock(c.playerData.passives)
                             if(p.PassiveGeneration!=c.playerData.passives.Generation || !c.playerData.passives.Loaded.ContainsKey(871)) continue;
-                        if(fired.Add((c,(ushort)871))) Reapply(c,872);
+                        if(fired.Add((c,(ushort)871))) ZenMaster(c,p.PassiveGeneration,p.World,p.Life);
                         continue;
                     }
                     lock(c.playerData.activeBuffs)
@@ -149,24 +149,31 @@ namespace hds
             return modifier!=null && AbilityValues.TryRandomValue(modifier,roll15,out int value)?Math.Max(0,value):0;
         }
 
+        private static void ZenMaster(WorldClient source,int generation,int world,int life)
+        {
+            var modifier=AbilityCatalog.Find(872).Modifiers.Single();
+            // OURS: integer-percent mapping with System.Random entropy; native RNG sequence is unknown.
+            if(Roll100()>=modifier.Number("ProcTriggerChance")*100) return;
+            ushort before,inner;
+            lock(source.playerData.passives)
+            {
+                if(generation!=source.playerData.passives.Generation || !source.playerData.passives.Loaded.ContainsKey(871) ||
+                    world!=source.playerData.worldGeneration || life!=source.playerData.lifeGeneration || source.playerData.isDead || source.playerData.duelDeath) return;
+                before=AbilityHandler.CurrentInnerStrength(source);
+                inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(source),before+(int)modifier.Number("MinValue"));
+                source.playerInstance.InnerStrengthAvailable.setValue(inner);
+            }
+            new ServerPackets().sendISCurrent(source,inner);
+            uint line=(uint)modifier.Number("ActivationStringOnSelf");
+            string name=TimedEffects.PlayerName(source);
+            source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line,true,872,name,name,inner-before));
+            ServerPackets.SendPlayerAbilityEffect(source,(uint)modifier.Number("ActivationFX"));
+            Output.WriteDebugLog("[HEALTH-EFFECT] 871->872 restores IS to "+inner);
+        }
+
         public static void Reapply(WorldClient source,ushort effect)
         {
-            if(effect==872)
-            {
-                if(source.playerData.isDead || source.playerData.duelDeath || AbilityPassives.Level(source,871)==0) return;
-                var modifier=AbilityCatalog.Find(872).Modifiers.Single();
-                // OURS: integer-percent mapping with System.Random entropy; native RNG sequence is unknown.
-                if(Roll100()>=modifier.Number("ProcTriggerChance")*100) return;
-                ushort inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(source),AbilityHandler.CurrentInnerStrength(source)+(int)modifier.Number("MinValue"));
-                source.playerInstance.InnerStrengthAvailable.setValue(inner);
-                new ServerPackets().sendISCurrent(source,inner);
-                uint line=(uint)modifier.Number("ActivationStringOnSelf");
-                string name=TimedEffects.PlayerName(source);
-                source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line,true,872,name,name));
-                ServerPackets.SendPlayerAbilityEffect(source,(uint)modifier.Number("ActivationFX"));
-                Output.WriteDebugLog("[HEALTH-EFFECT] 871->872 restores IS to "+inner);
-                return;
-            }
+            if(effect==872) return; // Only the validated permanent-parent health transaction can execute this child.
             if(effect!=862 && effect!=942 && effect!=944) return;
             if(effect==862) { Heal(source,source,effect); return; }
             double x=0,y=0,z=0;
