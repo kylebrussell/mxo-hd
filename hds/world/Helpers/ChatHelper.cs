@@ -509,8 +509,9 @@ namespace hds
                     UInt16 devMax = NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.MaxHealth.getValue(), 1);
                     Store.currentClient.playerInstance.Health.setValue(devHealth);
                     if (devBefore != devHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(Store.currentClient), devBefore - devHealth, devHealth < devMax);
-                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
-                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
+                    UInt16 devAfter=PvpCombat.HealthOf(Store.currentClient); // a proc may have changed health during the callback
+                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devAfter), false);
+                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devAfter))));
                     Store.currentClient.FlushQueue();
                 }
 

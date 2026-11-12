@@ -8,9 +8,9 @@ namespace hds
     /// <summary>Friendly abilities resolve to players, never to the hostile damage fallback.</summary>
     public static class AbilitySupport
     {
-        public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) ||
+        public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) || id==506 ||
             (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) && !CombatSpecials.Handles(id);
-        public static bool RequiresBuffer(ushort id) => AbilityBuffs.IsBuff(id) ||
+        public static bool RequiresBuffer(ushort id) => id==506 || AbilityBuffs.IsBuff(id) ||
             (id != 868 && AbilityHostile.IsSweep(id)) || AbilityCatalog.Find(id)?.Modifiers.Any(m=>
                 m.Text("StatModUpdateFunc")=="HOT" && m.Number("Duration")>0) == true;
 

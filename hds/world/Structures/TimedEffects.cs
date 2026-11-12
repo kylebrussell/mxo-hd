@@ -477,6 +477,7 @@ namespace hds
         {
             List<Active> removed = subject.Effects.RemoveParent(parent);
             if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+
             return removed.Count > 0;
         }
 
@@ -486,6 +487,8 @@ namespace hds
             List<Active> removed;
             lock (random) removed = subject.Effects.HealthChanged(damageTaken, belowMaximum, random);
             if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+            if(subject is PlayerEffects callbackPlayer)
+                WithClient(subject.Context,()=>AbilityHealthCallbacks.HealthChanged(callbackPlayer.Context,damageTaken,belowMaximum));
         }
 
         // ---- subjects ----
