@@ -15,6 +15,7 @@ public class NativeQaFixturePlanTests
     [InlineData("death-presentation", "1", "")]
     [InlineData("actions", "1", "")]
     [InlineData("health-callbacks", "1", "")]
+    [InlineData("emp-blast", "1", "")]
     [InlineData("", "0", "")]
     [InlineData("unknown-mode", "0", "")]
     public async Task ReadOnlyCliReportsActualServerEnvironmentWithoutSetup(string mode, string dev, string gm)
