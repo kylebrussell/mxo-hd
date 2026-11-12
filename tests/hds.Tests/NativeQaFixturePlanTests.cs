@@ -9,7 +9,14 @@ public class NativeQaFixturePlanTests
     [Theory]
     [InlineData("ignored-actions", "1", "110")]
     [InlineData("remaining", "1", "")]
+    [InlineData("coder-pets", "1", "")]
+    [InlineData("styles", "1", "")]
+    [InlineData("data-mining", "1", "")]
+    [InlineData("death-presentation", "1", "")]
+    [InlineData("actions", "1", "")]
+    [InlineData("health-callbacks", "1", "")]
     [InlineData("", "0", "")]
+    [InlineData("unknown-mode", "0", "")]
     public async Task ReadOnlyCliReportsActualServerEnvironmentWithoutSetup(string mode, string dev, string gm)
     {
         string empty = Path.Combine(Path.GetTempPath(), "mxo-fixture-plan-test-" + Guid.NewGuid().ToString("N"));
