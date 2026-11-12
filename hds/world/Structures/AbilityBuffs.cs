@@ -135,6 +135,7 @@ namespace hds
             public UInt16 AbilityId;
             public UInt16[] RecordIds;
             public int Generation;
+            public Buff Definition;
         }
 
         public static byte[] BuildModifier(UInt16 kind, UInt16 recordId, UInt32 ability, UInt16 stat, Int32 value,
@@ -253,18 +254,24 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff);
+            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff);
         }
 
         public static int Total(WorldClient client, UInt16 stat)
         {
             int total = 0;
             lock (client.playerData.activeBuffs)
-                foreach (UInt16 id in client.playerData.activeBuffs.Keys)
-                    if (TryGet(id, out Buff buff))
+                foreach (Active active in client.playerData.activeBuffs.Values)
+                    if (ActiveDefinition(active, out Buff buff))
                         foreach (Modifier m in buff.Modifiers)
                             if (m.Kind == KindStat && m.Stat == stat) total += m.Value;
             return total + TimedEffects.ForPlayer(client).Effects.Total(stat);
+        }
+
+        private static bool ActiveDefinition(Active active, out Buff buff)
+        {
+            buff = active.Definition;
+            return buff != null || TryGet(active.AbilityId, out buff);
         }
 
         private static int VitalValue(Buff buff, UInt16 stat) => buff.Modifiers.Where(m => m.Kind == KindStat && m.Stat == stat).Sum(m => m.Value);
@@ -272,7 +279,7 @@ namespace hds
         public static int VitalTotal(WorldClient client, UInt16 stat)
         {
             lock (client.playerData.activeBuffs)
-                return client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
+                return client.playerData.activeBuffs.Values.Sum(active => ActiveDefinition(active, out Buff buff) ? VitalValue(buff, stat) : 0);
         }
 
         public static UInt16 UnbuffedMaximum(WorldClient client, UInt16 stat)
@@ -353,9 +360,9 @@ namespace hds
         /// buff comes off by itself when its time is up. Returns false for abilities that are not buffs.
         /// The caller flushes the queue.
         /// </summary>
-        public static bool Apply(WorldClient client, UInt16 abilityId)
+        public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
         {
-            if (!TryGet(abilityId, out Buff buff))
+            if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
             {
                 return false;
             }
@@ -387,7 +394,7 @@ namespace hds
                 {
                     ids[i] = NextRecordId(data);
                 }
-                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration };
+                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Definition = buff };
                 data.activeBuffs[abilityId] = active;
             }
 
@@ -437,6 +444,7 @@ namespace hds
                 {
                     return false;
                 }
+                buff = active.Definition ?? buff;
                 data.activeBuffs.Remove(abilityId);
             }
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);

@@ -27,8 +27,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
             e.Has("Ability/AbilityInnerStrengthCost") ? "stored" : "fallback",
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
-        buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" : "stored constants",
-        buff_stats = buff ? b.Modifiers.Select(m => new { stat = m.Stat, value = m.Value }).ToArray() : null,
+        buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
+        buff_stats = buff ? b.Modifiers.Select(m => new { stat = m.Stat, value = m.Value, consumer = Consumer(m.Stat) }).ToArray() : null,
         timed = timed ? t.Mods.Select(m => new { state = m.Proc == TempMods.Proc.State ? m.Target : 0,
             stat = m.Proc == TempMods.Proc.Stat ? m.Target : 0, proc = m.Proc.ToString(), seconds = m.Seconds,
             chance = m.Chance, breaks = m.Break.ToString(), break_chance = m.BreakChance, protect_first_health_change = m.ProtectFirstHealthChange }).ToArray() : null,

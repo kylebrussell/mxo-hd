@@ -75,7 +75,7 @@ namespace hds
                 }
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
                 ServerPackets.SendPlayerAbilityEffect(target, fx);
-                AbilityBuffs.Apply(target, id);
+                AbilityBuffs.Apply(target, id, caster);
                 target.FlushQueue();
             }
         }
