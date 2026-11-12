@@ -15,7 +15,7 @@ namespace hds
     /// <item><c>67 &lt;Slot1 u16&gt; &lt;Slot2 u16&gt; &lt;IsCentralStorageItem u8&gt;</c> (0x6209b7c0, size 6): a stack dropped
     /// on a stack of the same item (0x620a0504), or on a bag page that has one with room (0x620a01e6).</item>
     /// <item><c>62 &lt;SourceSlot u16&gt; &lt;DestinationSlot u16&gt; &lt;PersonalInventoryItem u8&gt;</c> (0x621d4c00, 0x621e2000):
-    /// between the bag and central storage, which this server doesn't have. Not handled.</item>
+    /// between the bag and central storage: CentralStorageHandler, as are 67 and 68 with IsCentralStorageItem set.</item>
     /// </list>
     /// The answers are the records the server already uses for stacks, which the client took from retail:
     /// <c>69 01 &lt;slot u32&gt; &lt;(count - 1) * 4 u32&gt;</c> for a stack's new count, <c>5e</c> for a new stack and
@@ -179,6 +179,11 @@ namespace hds
             {
                 return;
             }
+            if (split.CentralStorage)
+            {
+                CentralStorageHandler.ProcessSplit(client, split.Source, split.Dest, split.Amount);
+                return;
+            }
             UInt32 charId = client.playerData.getCharID();
             StackMoves.Plan plan = StackMoves.PlanSplit(split, slot => At(charId, slot), () => FirstFree(charId), ItemStacks.MaxStack);
             if (plan.Refusal != null)
@@ -212,6 +217,11 @@ namespace hds
         {
             if (!StackMoves.TryParseMerge(rpcData, out StackMoves.Merge merge))
             {
+                return;
+            }
+            if (merge.CentralStorage)
+            {
+                CentralStorageHandler.ProcessMerge(client, merge.Source, merge.Dest);
                 return;
             }
             UInt32 charId = client.playerData.getCharID();

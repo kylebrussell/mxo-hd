@@ -85,6 +85,8 @@ namespace hds.databases.interfaces{
         (float Factor, double At) GetDeathPenalty(UInt32 charId);
         void SaveDeathPenalty(UInt32 charId, float factor, double at);
         void RemoveCodeStorage(UInt32 charId, UInt16 slot);
+        /// <summary>Known-abilities slots (below 0x208) an ability or stored code holds: central storage's occupied slots.</summary>
+        HashSet<int> GetAbilityInventorySlots(UInt32 charId);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);
         bool IsSlotinUseByItem(UInt16 slotId);
 

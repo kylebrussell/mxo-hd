@@ -110,6 +110,13 @@ namespace hds
             byte[] slotBytes = {packet[0], packet[1]};
             UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
 
+            // 5d <slot u16> <PersonalInventoryItem u8> <RecycleItem u8>: 0 is a central storage entry (0x621d4ae0)
+            if (packet.Length >= 3 && packet[2] == 0)
+            {
+                CentralStorageHandler.ProcessRecycle(Store.currentClient, slot);
+                return;
+            }
+
             UInt32 charId = Store.currentClient.playerData.getCharID();
             UInt32 itemGoId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
             ServerPackets pak = new ServerPackets();

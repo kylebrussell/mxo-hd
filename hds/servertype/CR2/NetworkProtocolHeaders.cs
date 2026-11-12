@@ -70,6 +70,7 @@ namespace hds
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_ITEM_MERGE_STACKS = 0x67,       // 67 <slot1 u16> <slot2 u16> <central storage u8> (StackHandler)
         CLIENT_ITEM_SPLIT_STACK = 0x68,        // 68 <source u8> <dest u8> <amount u32> <central storage u8>
+        CLIENT_ITEM_CENTRAL_STORAGE_MOVE = 0x62, // 62 <source u16> <dest u16> <from bag u8> (CentralStorageHandler)
         CLIENT_VENDOR_BUY = 0x10e,
         CLIENT_VENDOR_SELL = 0x111,
         CLIENT_COLLECTOR_EXCHANGE = 0x116,
