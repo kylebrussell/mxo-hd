@@ -24,6 +24,9 @@ namespace hds
             }
         }
 
+        /// <summary>The bot's ability level: low, so a player facing it within 21 m detects it on a 5 s pass about 40% of the time.</summary>
+        public const int BotLevel = 5;
+
         public const string Usage = "<sneak|improved|evasion|conceal|invis|imparted|shadow|off>";
 
         public static string Run(WorldClient caller, bool bot, string[] args)
@@ -42,7 +45,7 @@ namespace hds
                 bool pvp = args.Length > 1 && args[1].Equals("pvp", StringComparison.OrdinalIgnoreCase);
                 subject = DuelBot.Summon(caller, pvp ? DuelBot.Mode.Pvp : DuelBot.Mode.Wait);
                 // Let the visibility pass spawn the bot first, so the caller sees it go stealthed (or vanish)
-                DelayedActions.After(3, () => Stealth.Begin(subject, Stealth.Defs[ability.Value], 50));
+                DelayedActions.After(3, () => Stealth.Begin(subject, Stealth.Defs[ability.Value], BotLevel));
                 return "DuelBot goes " + what + (pvp ? " as your enemy" : "") + " in 3 s.";
             }
             Stealth.Begin(subject, Stealth.Defs[ability.Value], Stealth.AbilityLevel(subject, ability.Value));

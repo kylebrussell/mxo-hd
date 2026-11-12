@@ -449,7 +449,7 @@ namespace hds
 
         public static bool DetectedByPlayer(WorldClient client, State state)
         {
-            double range = DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility));
+            double range = DetectionRangeUnits(state.Level);
             int sl = StealthLevelOf(client);
             foreach (var (other, distance) in EnemiesFacing(client, range))
             {
@@ -477,7 +477,7 @@ namespace hds
             if (now < s.NextNpcCheck) return true;
             s.NextNpcCheck = now + UpdateSeconds;
             Position(client, out double x, out _, out double z);
-            double range = DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility));
+            double range = DetectionRangeUnits(s.Level);
             int sl = StealthLevelOf(client);
             foreach (var (mob, distance) in willing)
             {
