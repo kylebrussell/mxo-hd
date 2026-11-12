@@ -1,4 +1,5 @@
 using System;
+using hds.shared;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -127,6 +128,35 @@ namespace hds
                 Present(offer.Caster, target, offer.Ability);
             }
         }
+
+        // Trusted fixture operation, never an application-approval reply or a retail ability cast.
+        public static bool QaRevive(WorldClient caller, WorldClient target)
+        {
+            if (!QaReviveAllowed(caller, target, Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                Store.config?.dbParams?.DatabaseName)) return false;
+            var state = states.GetOrCreateValue(target);
+            lock (state.Sync)
+            {
+                lock (target.playerData.lifeSync)
+                {
+                    if (!QaReviveAllowed(caller, target, Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                        Store.config?.dbParams?.DatabaseName)) return false;
+                    state.Pending = null;
+                    RestoreVitals(target, 416);
+                }
+                Present(caller, target, 416);
+            }
+            return true;
+        }
+
+        public static bool QaReviveAllowed(WorldClient caller, WorldClient target, string dev, string database) =>
+            dev == "1" && database != null && database.StartsWith("mxotest_", StringComparison.Ordinal) &&
+            database.Length > "mxotest_".Length && InWorld(caller) && InWorld(target) &&
+            caller.playerData.getCharID() != 0 && caller.playerData.getCharID() != 2 &&
+            target.playerData.getCharID() != 0 && target.playerData.getCharID() != 2 &&
+            caller.playerData.getDistrictId() == target.playerData.getDistrictId() &&
+            !caller.playerData.respawnPending && target.playerData.isDead &&
+            !target.playerData.duelDeath && !target.playerData.respawnPending;
 
         /// <summary>Script callback resources. Ordinary resurrection retains Death Effect and the actual PvP choice.</summary>
         public static void RestoreVitals(WorldClient target, UInt16 ability)

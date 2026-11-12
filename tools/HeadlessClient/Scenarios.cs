@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
         new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
         new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
         new Scenario("stealth-shields-lifecycle", StealthShieldLifecycle, StillNpcs),
@@ -55,6 +56,7 @@ public static partial class Scenarios
         new Scenario("ability-tactical-blur", AbilityTacticalBlur, StillNpcs),
         new Scenario("ability-scaled-buffs", AbilityScaledBuffs, StillNpcs),
         new Scenario("ability-scaled-buff-vitals", AbilityScaledBuffVitals, StillNpcs),
+        new Scenario("qa-revive-in-place", QaReviveInPlace, StillNpcs),
         new Scenario("ability-resurrection-resources", AbilityResurrectionResources, StillNpcs),
         new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
@@ -88,6 +90,7 @@ public static partial class Scenarios
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
+        new Scenario("compile-session-authority", CompileSessionAuthority, StillNpcs),
         new Scenario("compile-storage-depletion", CompileStorageDepletion, StillNpcs),
         new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
@@ -113,6 +116,7 @@ public static partial class Scenarios
         new Scenario("subway-ride-by-car", SubwayRideByCar),
         new Scenario("subway-across-districts-and-refusals", SubwayAcrossDistrictsAndRefusals),
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
+        new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
