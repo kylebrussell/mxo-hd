@@ -30,6 +30,7 @@ public sealed class MarginSession : IDisposable
 
     /// <summary>The world session key the server sent under the account's key (which is what WorldEncryption defaults to).</summary>
     public byte[]? SessionKey { get; private set; }
+    public byte[] LoginReply { get; private set; } = Array.Empty<byte>();
 
     public async Task ConnectAsync(string host, int port, AuthTicket ticket, CancellationToken cancel)
     {
@@ -118,6 +119,7 @@ public sealed class MarginSession : IDisposable
     {
         await SendAsync(request, cancel);
         byte[] reply = await ReadEncryptedAsync(cancel);
+        if (expectedReply == ConnectResponse) LoginReply = reply.ToArray();
         if (reply[0] != expectedReply)
         {
             throw new InvalidDataException($"Expected margin {expectedReply:x2}, got " + WireFormat.ToHex(reply));
