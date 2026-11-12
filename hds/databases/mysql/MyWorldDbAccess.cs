@@ -1422,6 +1422,23 @@ namespace hds.databases{
             return slot;
         }
 
+        public System.Collections.Generic.HashSet<int> GetAbilityInventorySlots(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT slot FROM char_abilities WHERE char_id = '" + charId + "' AND slot < " +
+                                        CharacterAttributes.FirstSlot;
+            dr = queryExecuter.ExecuteReader();
+            var slots = new System.Collections.Generic.HashSet<int>();
+            while (dr.Read())
+            {
+                slots.Add(Convert.ToInt32(dr.GetValue(0)));
+            }
+            dr.Close();
+	        CloseConnection();
+            return slots;
+        }
+
         public void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry)
         {
 	        ExecuteNonResultQuery("INSERT INTO char_abilities SET char_id = '" + charId + "', slot = '" + entry.Slot +
