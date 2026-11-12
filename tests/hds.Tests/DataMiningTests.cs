@@ -12,6 +12,7 @@ public class DataMiningTests
         Assert.Equal(11,DataMining.Find(47100).PickupUse);
         Assert.Equal(10,DataMining.Find(596).Level);
         Assert.Equal(40,DataMining.Find(47100).Level);
+        Assert.Equal(3,DataMining.Find(47276).Exclusive.Length);
         Assert.True(DataMining.IsLight(596));
         Assert.False(DataMining.IsLight(606));
         Assert.False(DataMining.IsLight(2562));

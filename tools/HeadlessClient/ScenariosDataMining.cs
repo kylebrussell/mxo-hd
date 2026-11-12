@@ -62,6 +62,13 @@ public static partial class Scenarios
         p.SendRpc("5d 60 00 01 01"); await p.WaitForRpcAsync("5f 60 00 01");
         p.SendRpc($"80 c7 {MissionNpcId(item)} 02 00"); await p.WaitForRpcAsync("5e 60 00 54 02 00 00");
         Check.Equal(96L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId}"),"retry fills only freed slot");
+        p.SendRpc("5d 5f 00 01 01"); await p.WaitForRpcAsync("5f 5f 00 01");
+        p.SendRpc("5d 5e 00 01 01"); await p.WaitForRpcAsync("5f 5e 00 01");
+        var exclusive=await UtilityFixture(p,47277);
+        p.SendRpc($"80 c7 {MissionNpcId(exclusive)} 04 00"); await p.WaitForRpcAsync("5e ?? ?? ad b8 00 00");
+        var refused=await UtilityFixture(p,47276);
+        p.SendRpc($"80 c7 {MissionNpcId(refused)} 04 00"); await p.WaitForTextAsync("exclusive luggable");
+        Check.Equal(1L,await context.Database.LongAsync("SELECT COUNT(*) FROM world_luggables WHERE goid=47276"),"GOB PickupExclusive prevents a second datamine tap without consuming it");
     }
     private static async Task DataMiningLocator(ScenarioContext context)
     {

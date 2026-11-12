@@ -53,7 +53,7 @@ namespace hds
                     Level = Number("CharStatsPrerequisite/ReqCharLevel"), Size = Number("Luggable/Size"),
                     Singleton = Number("InvItem/Singleton") != 0, HalfExtents = String("Model/HalfExtents") ?? String("Normal/HalfExtents"),
                     Reach = f.TryGetProperty("Usable/MaxDistance", out var reach) ? reach.GetDouble() : 100,
-                    Exclusive = f.EnumerateObject().Where(p => p.Name.StartsWith("InvItem/PickupExclusive", StringComparison.Ordinal)).Select(p => p.Value.GetUInt32()).ToArray() };
+                    Exclusive = f.EnumerateObject().Where(p => p.Name.StartsWith("Usable/PickupExclusive", StringComparison.Ordinal)).Select(p => p.Value.GetUInt32()).ToArray() };
             }).ToDictionary(d => d.Goid);
         });
         public static Definition Find(ushort goid) => definitions.Value.TryGetValue(goid, out var d) ? d : null;
