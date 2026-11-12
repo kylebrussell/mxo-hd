@@ -122,6 +122,7 @@ public static partial class Scenarios
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
+        new Scenario("archive01-partial-world", Archive01PartialWorld, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
         new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,
             new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
