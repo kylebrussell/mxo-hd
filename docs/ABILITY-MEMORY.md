@@ -1,6 +1,6 @@
 # Ability memory admission
 
-This bounded package enforces sourced ability memory capacity on ordinary owned load/unload requests. Fresh wire/database validation and native QA remain pending coordinator review; it is not ready to merge.
+This bounded package enforces sourced ability memory capacity on ordinary owned load/unload requests. Fresh wire/database validation passed, including the integration with native-validated PR183. Native memory UI and preflight remain pending Claude; this is not a native UI PASS.
 
 Native source: cost getter62516370 reads MemCost then InventoryMemCost; capacity625d86f0 uses the exact level1–50 table. Absolute EXP enters inventory+138 through incoming80e5 dispatch6217d39c→621e1c70. Converter625d81d0 uses the initialized XP thresholds. Do not substitute stored Level50 for EXP0: capacity is16. Native621de9f0 validates and emits missing owned transitive prerequisites; this package does not rewrite that prerequisite graph or the current parser.
 
