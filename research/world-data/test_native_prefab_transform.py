@@ -49,10 +49,16 @@ class NativePrefabTransformTests(unittest.TestCase):
 
     def test_optin_is_limited_to_reviewed_world_and_not_historical_mode(self):
         script = Path(__file__).with_name('static_objects_small03.py')
-        for args in (('--world','12','--native-prefab-rotations'),('--world','16','--native-prefab-rotations','--omit-unproven-rotations')):
+        for args in (('--world','12','--native-prefab-rotations'),('--world','16','--native-prefab-rotations','--omit-unproven-rotations'),('--world','9','--native-prefab-rotations','--omit-unproven-rotations')):
             result = subprocess.run([sys.executable,str(script),'unused-tools',*args],capture_output=True,text=True)
             self.assertEqual(2,result.returncode)
-            self.assertIn('reviewed for world16 only',result.stderr)
+            self.assertIn('reviewed for worlds9 and16 only',result.stderr)
+
+    def test_sati_rotated_door_independent_literal(self):
+        point,q=T.sector_pose((1000,0,500),(0,-0.7071067094802856,0,0.7071067690849304),(250,80,530),2,(34000,0,-22000),parent_kind='direct-sector')
+        self.assertEqual((35500.,800.,-17200.),point)
+        import struct
+        self.assertEqual('00000000f304353f00000000f204353f',struct.pack('<4f',*q).hex())
 
     def test_unknown_parent_nonfinite_and_invalid_rotation_are_refused(self):
         for kind in ('nested-IPI','EPI','unknown'):

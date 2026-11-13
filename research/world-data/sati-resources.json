@@ -78,7 +78,7 @@
   "safeGoidContracts": [
     {
       "goid": 3,
-      "count": 3,
+      "count": 11,
       "name": "Computer",
       "schema": 20,
       "componentFields": [
@@ -190,7 +190,7 @@
     },
     {
       "goid": 10,
-      "count": 216,
+      "count": 704,
       "name": "Desktop_Spawner",
       "schema": 244,
       "componentFields": [
@@ -213,7 +213,7 @@
     },
     {
       "goid": 19,
-      "count": 303,
+      "count": 1030,
       "name": "Non Player Character Spawner",
       "schema": 3825,
       "componentFields": [
@@ -263,7 +263,7 @@
     },
     {
       "goid": 321,
-      "count": 3,
+      "count": 14,
       "name": "Cash Register Modern Style",
       "schema": 155,
       "componentFields": [
@@ -375,7 +375,7 @@
     },
     {
       "goid": 326,
-      "count": 112,
+      "count": 285,
       "name": "Filing Cabinet",
       "schema": 46,
       "componentFields": [
@@ -506,7 +506,7 @@
     },
     {
       "goid": 343,
-      "count": 11,
+      "count": 12,
       "name": "Door DT Pull Handle LtWood",
       "schema": 364,
       "componentFields": [
@@ -622,7 +622,7 @@
     },
     {
       "goid": 346,
-      "count": 7,
+      "count": 11,
       "name": "Door DT Push Knob LtWood",
       "schema": 364,
       "componentFields": [
@@ -737,8 +737,124 @@
       ]
     },
     {
+      "goid": 347,
+      "count": 1,
+      "name": "Door DT Push Handle Redwood",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "e91cfadc203793bd90dbe5d1186ffee7253e852f3697ebc9f0680d47dbad37eb",
+      "usables": [
+        {
+          "goid": "347",
+          "object": "Door DT Push Handle Redwood",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "347",
+          "object": "Door DT Push Handle Redwood",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "347",
+          "object": "Door DT Push Handle Redwood",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 348,
-      "count": 12,
+      "count": 13,
       "name": "Door DT Pull Knob LtWood",
       "schema": 364,
       "componentFields": [
@@ -853,8 +969,124 @@
       ]
     },
     {
+      "goid": 355,
+      "count": 7,
+      "name": "Door zz Push Knob Metal1",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "0774ac1bb8f41d88982644e685389147be3a02ec145967c1d04e42f4082b3c57",
+      "usables": [
+        {
+          "goid": "355",
+          "object": "Door zz Push Knob Metal1",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "355",
+          "object": "Door zz Push Knob Metal1",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "355",
+          "object": "Door zz Push Knob Metal1",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 364,
-      "count": 3,
+      "count": 27,
       "name": "Door DT Push Knob Graymetal01",
       "schema": 364,
       "componentFields": [
@@ -970,7 +1202,7 @@
     },
     {
       "goid": 365,
-      "count": 7,
+      "count": 98,
       "name": "Door DT Push Knob Darkwood01",
       "schema": 364,
       "componentFields": [
@@ -1085,8 +1317,124 @@
       ]
     },
     {
+      "goid": 415,
+      "count": 2,
+      "name": "Door SL Push Knob Greenmetal01texvar",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "4324fa294a8440c436c9184c507bc7826ee2a58d7109db946c181a8f186d5e81",
+      "usables": [
+        {
+          "goid": "415",
+          "object": "Door SL Push Knob Greenmetal01texvar",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "415",
+          "object": "Door SL Push Knob Greenmetal01texvar",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "415",
+          "object": "Door SL Push Knob Greenmetal01texvar",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 417,
-      "count": 11,
+      "count": 58,
       "name": "Door ZZ Elevator01",
       "schema": 363,
       "componentFields": [
@@ -1247,7 +1595,7 @@
     },
     {
       "goid": 485,
-      "count": 93,
+      "count": 306,
       "name": "Guard Look Around",
       "schema": 3612,
       "componentFields": [
@@ -1265,8 +1613,236 @@
       "usables": []
     },
     {
+      "goid": 486,
+      "count": 1,
+      "name": "Door DT Mensroom LtWood",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "2b5bfe6d9720bc1847cf922ea210894a39eeade3a311c62d5f83c1454f7bc2c8",
+      "usables": [
+        {
+          "goid": "486",
+          "object": "Door DT Mensroom LtWood",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "486",
+          "object": "Door DT Mensroom LtWood",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "486",
+          "object": "Door DT Mensroom LtWood",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 548,
+      "count": 3,
+      "name": "Large Cardboard Box",
+      "schema": 46,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 640,
+      "recordSha256": "2b33629ad4b5e90db6c2b318f930bdc8febf36924dd11c7fa5b5ef4dea9d0318",
+      "usables": [
+        {
+          "goid": "548",
+          "object": "Large Cardboard Box",
+          "class": "46",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "548",
+          "object": "Large Cardboard Box",
+          "class": "46",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "548",
+          "object": "Large Cardboard Box",
+          "class": "46",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 553,
-      "count": 57,
+      "count": 204,
       "name": "RoomLightSwitch",
       "schema": 4065,
       "componentFields": [
@@ -1334,7 +1910,7 @@
     },
     {
       "goid": 570,
-      "count": 22,
+      "count": 71,
       "name": "Guard Walk To",
       "schema": 3613,
       "componentFields": [
@@ -1350,6 +1926,230 @@
       "storedBytes": 61,
       "recordSha256": "7883cac964173ca7e5f5608ed08005ad993ff33df41def75b4e12c52e8fdf81d",
       "usables": []
+    },
+    {
+      "goid": 573,
+      "count": 4,
+      "name": "Bedroom Dresser",
+      "schema": 46,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 640,
+      "recordSha256": "d9b935fa51645a4f3e312c091b1a32d786b578222be46572c75517bf94b82992",
+      "usables": [
+        {
+          "goid": "573",
+          "object": "Bedroom Dresser",
+          "class": "46",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "573",
+          "object": "Bedroom Dresser",
+          "class": "46",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "573",
+          "object": "Bedroom Dresser",
+          "class": "46",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 574,
+      "count": 2,
+      "name": "Cash Register Classic Style",
+      "schema": 155,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 640,
+      "recordSha256": "a1b53eceb7e7ef671867e511cc69c02f1f0e455d0d1771605e3a88be800d2e73",
+      "usables": [
+        {
+          "goid": "574",
+          "object": "Cash Register Classic Style",
+          "class": "155",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "574",
+          "object": "Cash Register Classic Style",
+          "class": "155",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "574",
+          "object": "Cash Register Classic Style",
+          "class": "155",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
     },
     {
       "goid": 575,
@@ -1496,7 +2296,7 @@
     },
     {
       "goid": 580,
-      "count": 1,
+      "count": 15,
       "name": "Door SL Push Knob Fadedgreen02",
       "schema": 364,
       "componentFields": [
@@ -1611,8 +2411,124 @@
       ]
     },
     {
+      "goid": 581,
+      "count": 1,
+      "name": "Door DT Ladiesroom LtWood",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "44108094ac5a2efe0ee0f9830465f2aa1f191a926bd3e31b6c94e0634d785781",
+      "usables": [
+        {
+          "goid": "581",
+          "object": "Door DT Ladiesroom LtWood",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "581",
+          "object": "Door DT Ladiesroom LtWood",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "581",
+          "object": "Door DT Ladiesroom LtWood",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 587,
-      "count": 2,
+      "count": 4,
       "name": "oildrum_fire",
       "schema": 14,
       "componentFields": [
@@ -1642,7 +2558,7 @@
     },
     {
       "goid": 1401,
-      "count": 42,
+      "count": 66,
       "name": "Blinking_Desk_Phone",
       "schema": 128,
       "componentFields": [
@@ -1713,7 +2629,7 @@
     },
     {
       "goid": 1407,
-      "count": 30,
+      "count": 46,
       "name": "ComputerXformSpawner",
       "schema": 141,
       "componentFields": [
@@ -1736,7 +2652,7 @@
     },
     {
       "goid": 1408,
-      "count": 13,
+      "count": 17,
       "name": "MainframeXformSpawner",
       "schema": 141,
       "componentFields": [
@@ -1759,7 +2675,7 @@
     },
     {
       "goid": 1410,
-      "count": 7,
+      "count": 26,
       "name": "SafeXformSpawner",
       "schema": 141,
       "componentFields": [
@@ -1782,7 +2698,7 @@
     },
     {
       "goid": 1412,
-      "count": 36,
+      "count": 161,
       "name": "BoxXformSpawner",
       "schema": 141,
       "componentFields": [
@@ -1805,7 +2721,7 @@
     },
     {
       "goid": 1414,
-      "count": 84,
+      "count": 207,
       "name": "Wall_Spawner",
       "schema": 244,
       "componentFields": [
@@ -1828,7 +2744,7 @@
     },
     {
       "goid": 1415,
-      "count": 109,
+      "count": 389,
       "name": "Computer_Spawner",
       "schema": 244,
       "componentFields": [
@@ -1850,8 +2766,120 @@
       "usables": []
     },
     {
-      "goid": 1432,
+      "goid": 1431,
       "count": 2,
+      "name": "MediumDesk1",
+      "schema": 369,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 644,
+      "recordSha256": "3c845c918df45db6bc52ce394dd0eb8a93457ee340893d8a4bed17a056832ba2",
+      "usables": [
+        {
+          "goid": "1431",
+          "object": "MediumDesk1",
+          "class": "369",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "1431",
+          "object": "MediumDesk1",
+          "class": "369",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "1431",
+          "object": "MediumDesk1",
+          "class": "369",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 1432,
+      "count": 9,
       "name": "MediumDesk2",
       "schema": 3788,
       "componentFields": [
@@ -1963,7 +2991,7 @@
     },
     {
       "goid": 1433,
-      "count": 13,
+      "count": 39,
       "name": "MediumDesk3",
       "schema": 369,
       "componentFields": [
@@ -2075,7 +3103,7 @@
     },
     {
       "goid": 1434,
-      "count": 9,
+      "count": 10,
       "name": "MediumDesk4",
       "schema": 369,
       "componentFields": [
@@ -2187,7 +3215,7 @@
     },
     {
       "goid": 1435,
-      "count": 8,
+      "count": 14,
       "name": "MediumDesk5",
       "schema": 369,
       "componentFields": [
@@ -2299,7 +3327,7 @@
     },
     {
       "goid": 1439,
-      "count": 3,
+      "count": 8,
       "name": "LargeDesk2",
       "schema": 369,
       "componentFields": [
@@ -2411,7 +3439,7 @@
     },
     {
       "goid": 1443,
-      "count": 1,
+      "count": 2,
       "name": "DresserLarge",
       "schema": 46,
       "componentFields": [
@@ -2523,7 +3551,7 @@
     },
     {
       "goid": 1444,
-      "count": 2,
+      "count": 24,
       "name": "DresserMedium",
       "schema": 46,
       "componentFields": [
@@ -2635,7 +3663,7 @@
     },
     {
       "goid": 1445,
-      "count": 1,
+      "count": 18,
       "name": "DresserWide",
       "schema": 46,
       "componentFields": [
@@ -2747,7 +3775,7 @@
     },
     {
       "goid": 1446,
-      "count": 3,
+      "count": 10,
       "name": "DresserSlumLarge1",
       "schema": 369,
       "componentFields": [
@@ -2858,8 +3886,120 @@
       ]
     },
     {
+      "goid": 1447,
+      "count": 1,
+      "name": "DresserSlumLarge2",
+      "schema": 369,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 644,
+      "recordSha256": "383da1d215a599ee5725b5a2561a69c908c32c41e40965c82e613255ccdacefd",
+      "usables": [
+        {
+          "goid": "1447",
+          "object": "DresserSlumLarge2",
+          "class": "369",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "1447",
+          "object": "DresserSlumLarge2",
+          "class": "369",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "1447",
+          "object": "DresserSlumLarge2",
+          "class": "369",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 1448,
-      "count": 18,
+      "count": 57,
       "name": "DresserSlumMedium1",
       "schema": 369,
       "componentFields": [
@@ -2971,7 +4111,7 @@
     },
     {
       "goid": 1449,
-      "count": 13,
+      "count": 41,
       "name": "DresserSlumMedium2",
       "schema": 369,
       "componentFields": [
@@ -3083,7 +4223,7 @@
     },
     {
       "goid": 1450,
-      "count": 18,
+      "count": 55,
       "name": "DresserSlumWide1",
       "schema": 369,
       "componentFields": [
@@ -3195,7 +4335,7 @@
     },
     {
       "goid": 1451,
-      "count": 12,
+      "count": 38,
       "name": "DresserSlumWide2",
       "schema": 369,
       "componentFields": [
@@ -3307,7 +4447,7 @@
     },
     {
       "goid": 2367,
-      "count": 38,
+      "count": 141,
       "name": "Bedroom",
       "schema": 113,
       "componentFields": [
@@ -3322,7 +4462,7 @@
     },
     {
       "goid": 2368,
-      "count": 21,
+      "count": 95,
       "name": "LivingRoom",
       "schema": 113,
       "componentFields": [
@@ -3352,7 +4492,7 @@
     },
     {
       "goid": 2377,
-      "count": 2,
+      "count": 10,
       "name": "Laboratory",
       "schema": 113,
       "componentFields": [
@@ -3390,7 +4530,7 @@
     },
     {
       "goid": 2539,
-      "count": 55,
+      "count": 419,
       "name": "GenericAptStylePointer",
       "schema": 113,
       "componentFields": [
@@ -3405,7 +4545,7 @@
     },
     {
       "goid": 2545,
-      "count": 87,
+      "count": 109,
       "name": "OfficeStylePointer",
       "schema": 113,
       "componentFields": [
@@ -3420,7 +4560,7 @@
     },
     {
       "goid": 2546,
-      "count": 311,
+      "count": 1030,
       "name": "SlumAptStylePointer",
       "schema": 113,
       "componentFields": [
@@ -3435,7 +4575,7 @@
     },
     {
       "goid": 2548,
-      "count": 1,
+      "count": 3,
       "name": "DefaultStylePointer",
       "schema": 113,
       "componentFields": [
@@ -3473,7 +4613,7 @@
     },
     {
       "goid": 6580,
-      "count": 1,
+      "count": 5,
       "name": "water_drip_short_med",
       "schema": 14,
       "componentFields": [
@@ -3515,7 +4655,7 @@
     },
     {
       "goid": 6582,
-      "count": 76,
+      "count": 256,
       "name": "Stance Site Invis Chair",
       "schema": 4187,
       "componentFields": [
@@ -3542,7 +4682,7 @@
     },
     {
       "goid": 6583,
-      "count": 96,
+      "count": 290,
       "name": "Stance Site Invis Couch",
       "schema": 4187,
       "componentFields": [
@@ -3568,8 +4708,23 @@
       "usables": []
     },
     {
+      "goid": 6615,
+      "count": 120,
+      "name": "WarehouseStylePointer",
+      "schema": 113,
+      "componentFields": [
+        [
+          "Normal",
+          26
+        ]
+      ],
+      "storedBytes": 54,
+      "recordSha256": "d0f3cd374b10f99e495886b97c7719f875bf2aa009a1e30a721adeaf4c5d3a7e",
+      "usables": []
+    },
+    {
       "goid": 6627,
-      "count": 9,
+      "count": 45,
       "name": "RedPillExtractionStylePointer",
       "schema": 113,
       "componentFields": [
@@ -3584,7 +4739,7 @@
     },
     {
       "goid": 6635,
-      "count": 1,
+      "count": 5,
       "name": "TechPointer",
       "schema": 113,
       "componentFields": [
@@ -3599,7 +4754,7 @@
     },
     {
       "goid": 6950,
-      "count": 39,
+      "count": 106,
       "name": "Security_Camera_Spawner",
       "schema": 4093,
       "componentFields": [
@@ -3622,7 +4777,7 @@
     },
     {
       "goid": 6952,
-      "count": 12,
+      "count": 75,
       "name": "ElevatorPanel",
       "schema": 1608,
       "componentFields": [
@@ -3649,7 +4804,7 @@
     },
     {
       "goid": 6954,
-      "count": 80,
+      "count": 167,
       "name": "Door SL Push Handle Grnmetal",
       "schema": 364,
       "componentFields": [
@@ -3765,7 +4920,7 @@
     },
     {
       "goid": 6957,
-      "count": 3,
+      "count": 6,
       "name": "Door SL Push Handle Rdnmetal",
       "schema": 364,
       "componentFields": [
@@ -3880,8 +5035,240 @@
       ]
     },
     {
-      "goid": 6963,
+      "goid": 6958,
+      "count": 6,
+      "name": "Door SL Push Handle Wood 1",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "25b8693a4a4142da0376024b49cbd3fa71a838fc197b982f4884bea08f91242b",
+      "usables": [
+        {
+          "goid": "6958",
+          "object": "Door SL Push Handle Wood 1",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "6958",
+          "object": "Door SL Push Handle Wood 1",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "6958",
+          "object": "Door SL Push Handle Wood 1",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 6959,
       "count": 7,
+      "name": "Door SL Push Handle Wood 2",
+      "schema": 364,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 480,
+      "recordSha256": "81f647a5844583b2f407aea0f5a9231290548c49627376f259b00b1a6ac7abae",
+      "usables": [
+        {
+          "goid": "6959",
+          "object": "Door SL Push Handle Wood 2",
+          "class": "364",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b 3>0x842",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "6959",
+          "object": "Door SL Push Handle Wood 2",
+          "class": "364",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "150.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "6959",
+          "object": "Door SL Push Handle Wood 2",
+          "class": "364",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 6963,
+      "count": 11,
       "name": "SL Push Knob Grayflat03",
       "schema": 364,
       "componentFields": [
@@ -3997,7 +5384,7 @@
     },
     {
       "goid": 6964,
-      "count": 2,
+      "count": 12,
       "name": "SL Push Knob Grayflat02",
       "schema": 364,
       "componentFields": [
@@ -4113,7 +5500,7 @@
     },
     {
       "goid": 6965,
-      "count": 2,
+      "count": 7,
       "name": "SL Push Knob Grayflat01",
       "schema": 364,
       "componentFields": [
@@ -4229,7 +5616,7 @@
     },
     {
       "goid": 6987,
-      "count": 4,
+      "count": 5,
       "name": "LargeDeskMetal",
       "schema": 369,
       "componentFields": [
@@ -4341,7 +5728,7 @@
     },
     {
       "goid": 6992,
-      "count": 100,
+      "count": 196,
       "name": "LightGlareWhite",
       "schema": 14,
       "componentFields": [
@@ -4356,7 +5743,7 @@
     },
     {
       "goid": 6997,
-      "count": 1,
+      "count": 15,
       "name": "HackerRoomPointer",
       "schema": 113,
       "componentFields": [
@@ -4367,6 +5754,21 @@
       ],
       "storedBytes": 54,
       "recordSha256": "4e5e4ca555b9c6e87949de8b73efadc3d9e4e43cfa6b48064ef73ed7fbf4b548",
+      "usables": []
+    },
+    {
+      "goid": 6998,
+      "count": 5,
+      "name": "WeaponRoomPointer",
+      "schema": 113,
+      "componentFields": [
+        [
+          "Normal",
+          26
+        ]
+      ],
+      "storedBytes": 54,
+      "recordSha256": "d2fdba7b0a6003411efb06bb0b69b2d35cc317002f1e02ab421d9bda3c93da78",
       "usables": []
     },
     {
@@ -4386,7 +5788,7 @@
     },
     {
       "goid": 7024,
-      "count": 15,
+      "count": 38,
       "name": "SoundAirConditionerWall",
       "schema": 14,
       "componentFields": [
@@ -4401,7 +5803,7 @@
     },
     {
       "goid": 7025,
-      "count": 6,
+      "count": 17,
       "name": "SoundCoffeeMaker",
       "schema": 14,
       "componentFields": [
@@ -4415,8 +5817,23 @@
       "usables": []
     },
     {
+      "goid": 7027,
+      "count": 4,
+      "name": "SoundDryer",
+      "schema": 14,
+      "componentFields": [
+        [
+          "FX",
+          30
+        ]
+      ],
+      "storedBytes": 58,
+      "recordSha256": "747299f0790d7ecc580b779490cc97912ea5eaa2ee023d59c936ec67922d01a0",
+      "usables": []
+    },
+    {
       "goid": 7029,
-      "count": 21,
+      "count": 98,
       "name": "SoundRefrigerator",
       "schema": 14,
       "componentFields": [
@@ -4430,8 +5847,139 @@
       "usables": []
     },
     {
+      "goid": 7031,
+      "count": 4,
+      "name": "SoundWasher",
+      "schema": 14,
+      "componentFields": [
+        [
+          "FX",
+          30
+        ]
+      ],
+      "storedBytes": 58,
+      "recordSha256": "b30726da2bf274edc023de91b756416ad2c13ebffa31616a6fca43aa7ae823de",
+      "usables": []
+    },
+    {
+      "goid": 7289,
+      "count": 1,
+      "name": "Door DT Push Knob LtWood_WH",
+      "schema": 365,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 455,
+      "recordSha256": "a7764c3af2c74fefeef5c57f5d9741f856aa3722801412e51977aeafb74ef102",
+      "usables": [
+        {
+          "goid": "7289",
+          "object": "Door DT Push Knob LtWood_WH",
+          "class": "365",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7289",
+          "object": "Door DT Push Knob LtWood_WH",
+          "class": "365",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7289",
+          "object": "Door DT Push Knob LtWood_WH",
+          "class": "365",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 7294,
-      "count": 6,
+      "count": 12,
       "name": "Door SL Push Handle Grnmetal_WH",
       "schema": 365,
       "componentFields": [
@@ -4546,6 +6094,253 @@
       ]
     },
     {
+      "goid": 7298,
+      "count": 1,
+      "name": "Door DT Push Knob Darkwood01_WH",
+      "schema": 365,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "NavMeshController",
+          4
+        ],
+        [
+          "OpenUsage",
+          5
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "ThreshholdTrigger",
+          35
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "PortalController",
+          52
+        ],
+        [
+          "GuardAction",
+          58
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "AbilityTarget",
+          42
+        ]
+      ],
+      "storedBytes": 455,
+      "recordSha256": "6e38a8cfa0d77e51d41dea0892e395de9b0cef66cdec2f147354e7d09ee4c88a",
+      "usables": [
+        {
+          "goid": "7298",
+          "object": "Door DT Push Knob Darkwood01_WH",
+          "class": "365",
+          "use": "3",
+          "usable": "OpenUsage",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4004 DoorOpenGeneric",
+          "execute_rule": "4004 DoorOpenGeneric",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7298",
+          "object": "Door DT Push Knob Darkwood01_WH",
+          "class": "365",
+          "use": "4",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x835",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7298",
+          "object": "Door DT Push Knob Darkwood01_WH",
+          "class": "365",
+          "use": "8",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "1000.0",
+          "defaultable": "1",
+          "client_rule": "4003 DoorLockTest",
+          "execute_rule": "4003 DoorLockTest",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 7538,
+      "count": 12,
+      "name": "Wardrobe",
+      "schema": 369,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 644,
+      "recordSha256": "6dd481bbbe25481a61bf9d99f051721f731b869c5e2b94dbc9838f79328a7531",
+      "usables": [
+        {
+          "goid": "7538",
+          "object": "Wardrobe",
+          "class": "369",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7538",
+          "object": "Wardrobe",
+          "class": "369",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "7538",
+          "object": "Wardrobe",
+          "class": "369",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 7540,
+      "count": 2,
+      "name": "InteriorGangMasterNormal",
+      "schema": 3681,
+      "componentFields": [
+        [
+          "GangMaster",
+          79
+        ],
+        [
+          "Normal",
+          26
+        ]
+      ],
+      "storedBytes": 84,
+      "recordSha256": "e4c1c2746e260e8227b8f78462a7317d3bf44eeeb5e8335950f06ea7785fab52",
+      "usables": []
+    },
+    {
       "goid": 7541,
       "count": 1,
       "name": "InteriorGangMasterSecurityGuard",
@@ -4566,7 +6361,7 @@
     },
     {
       "goid": 7614,
-      "count": 18,
+      "count": 42,
       "name": "Stance Site Invis Stool",
       "schema": 4187,
       "componentFields": [
@@ -4592,8 +6387,232 @@
       "usables": []
     },
     {
+      "goid": 37912,
+      "count": 11,
+      "name": "Ammo Case",
+      "schema": 46,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 640,
+      "recordSha256": "4917753796b5081b9d9727445344391faac64990b79435ded0926d2fab9cedf6",
+      "usables": [
+        {
+          "goid": "37912",
+          "object": "Ammo Case",
+          "class": "46",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "37912",
+          "object": "Ammo Case",
+          "class": "46",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "37912",
+          "object": "Ammo Case",
+          "class": "46",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 37913,
+      "count": 8,
+      "name": "Supply Cabinet",
+      "schema": 46,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 640,
+      "recordSha256": "edfefb8b3e0e1747a62b3085ec8f7285ccd1b4e999c025151709f1d7820b6a72",
+      "usables": [
+        {
+          "goid": "37913",
+          "object": "Supply Cabinet",
+          "class": "46",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "37913",
+          "object": "Supply Cabinet",
+          "class": "46",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "37913",
+          "object": "Supply Cabinet",
+          "class": "46",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
       "goid": 38298,
-      "count": 32,
+      "count": 36,
       "name": "traffic_barrier",
       "schema": 14,
       "componentFields": [
@@ -4608,7 +6627,7 @@
     },
     {
       "goid": 38338,
-      "count": 30,
+      "count": 83,
       "name": "Stance Site Invis Casual Chair",
       "schema": 4187,
       "componentFields": [
@@ -4654,6 +6673,29 @@
       "usables": []
     },
     {
+      "goid": 38406,
+      "count": 7,
+      "name": "NPC_FemalePatronDefaultStand01_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "8d8c714bcb6ab4fa967bfc580fb87b6d341b46ea2219d239cdabb0b2aea55db7",
+      "usables": []
+    },
+    {
       "goid": 38408,
       "count": 1,
       "name": "NPC_FemalePatronDefaultStand03_Prop",
@@ -4674,6 +6716,52 @@
       ],
       "storedBytes": 162,
       "recordSha256": "588543a88f982acf5292e8db4844b3ef57f50eb8bb86337a55cf7fd258bf76c3",
+      "usables": []
+    },
+    {
+      "goid": 38409,
+      "count": 1,
+      "name": "NPC_FemalePatronDefaultStand04_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "4c4f8a5852b7aa9e37ef0397afd1be565ce1376c171c0aa15815014d03fdf381",
+      "usables": []
+    },
+    {
+      "goid": 38410,
+      "count": 2,
+      "name": "NPC_FemalePatronDefaultStand05_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "4f342c893d15caf3d1aba547c5f7a3ee253dfcd6d0a84c26778088624e9ac12e",
       "usables": []
     },
     {
@@ -4700,8 +6788,31 @@
       "usables": []
     },
     {
-      "goid": 38424,
+      "goid": 38423,
       "count": 1,
+      "name": "NPC_MalePatronDefaultStand02_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "29d56f8408275872896291c03e39299ba81d0f9c212a7ef7e69ce6ee379d63af",
+      "usables": []
+    },
+    {
+      "goid": 38424,
+      "count": 2,
       "name": "NPC_MalePatronDefaultStand03_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4724,7 +6835,7 @@
     },
     {
       "goid": 38427,
-      "count": 1,
+      "count": 2,
       "name": "NPC_MalePatronDefaultStand06_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4747,7 +6858,7 @@
     },
     {
       "goid": 38428,
-      "count": 1,
+      "count": 2,
       "name": "NPC_MalePatronDefaultStand07_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4769,8 +6880,77 @@
       "usables": []
     },
     {
-      "goid": 38441,
+      "goid": 38430,
       "count": 1,
+      "name": "NPC_MalePatronSlumStand01_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "2123257de35f86550fdc34fb262fbc8e88945dad389fd1141151086ecbbd9dd7",
+      "usables": []
+    },
+    {
+      "goid": 38433,
+      "count": 2,
+      "name": "NPC_MalePatronSlumStand04_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "f0d16add9638055cc7432e1cfd0ca1d43b79b0353886d9402fff8e99b4510ba6",
+      "usables": []
+    },
+    {
+      "goid": 38437,
+      "count": 1,
+      "name": "NPC_MalePatronSlumStand08_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "27a0d1650d70d72ecc777a5aaf5ce8df7793bcc77063217a9e3197b5f61f057a",
+      "usables": []
+    },
+    {
+      "goid": 38441,
+      "count": 3,
       "name": "NPC_MaleWorkerClerkSit01_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4792,8 +6972,77 @@
       "usables": []
     },
     {
+      "goid": 38443,
+      "count": 1,
+      "name": "NPC_FemaleWorkerClerkSit01_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "71806c4438b5297c8dc769959b94882c5925ea26543f15af70303f462c121b57",
+      "usables": []
+    },
+    {
+      "goid": 38455,
+      "count": 1,
+      "name": "NPC_MaleWorkerClerkStand01_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "be2cfab420faff682e705c64d8eb94bcd32b74ce8d785d735b8f87775a205e20",
+      "usables": []
+    },
+    {
+      "goid": 38456,
+      "count": 6,
+      "name": "NPC_FemaleWorkerClerkStand01_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "680761f5fff4ad39e2e4792887fd51f18f2d57fde6b422ec866bafc2f6458499",
+      "usables": []
+    },
+    {
       "goid": 38457,
-      "count": 2,
+      "count": 3,
       "name": "NPC_FemaleWorkerClerkStand02_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4812,6 +7061,52 @@
       ],
       "storedBytes": 162,
       "recordSha256": "aa97c9bce2dc13668552c441358923321089a5da12f36cb5e1807b8e712dc3f9",
+      "usables": []
+    },
+    {
+      "goid": 38471,
+      "count": 1,
+      "name": "NPC_MalePatronFormalStand03_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "5212403aa61b9d6a5a5d0154198bc5825dee34e7fcbec42a230ba572311887e5",
+      "usables": []
+    },
+    {
+      "goid": 38472,
+      "count": 1,
+      "name": "NPC_MalePatronFormalStand04_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "5ceab34d360ad3a9d03561bc68899e671f0a27b11eccc92b2f48c30fb68e92f1",
       "usables": []
     },
     {
@@ -4838,8 +7133,31 @@
       "usables": []
     },
     {
-      "goid": 38477,
+      "goid": 38474,
       "count": 1,
+      "name": "NPC_MalePatronFormalStand06_Prop",
+      "schema": 3832,
+      "componentFields": [
+        [
+          "Info",
+          12
+        ],
+        [
+          "Model",
+          6
+        ],
+        [
+          "RichworldTalker",
+          98
+        ]
+      ],
+      "storedBytes": 162,
+      "recordSha256": "e7fda2a8d090c887d79e7dc6c7d723d83e0a664067d305f0695e4a61cea69ffb",
+      "usables": []
+    },
+    {
+      "goid": 38477,
+      "count": 2,
       "name": "NPC_FemaleWorkerClerkSit02_Prop",
       "schema": 3832,
       "componentFields": [
@@ -4861,8 +7179,135 @@
       "usables": []
     },
     {
+      "goid": 38484,
+      "count": 4,
+      "name": "Supply Cabinet Alternate Texture",
+      "schema": 369,
+      "componentFields": [
+        [
+          "Model",
+          6
+        ],
+        [
+          "Info",
+          12
+        ],
+        [
+          "Container",
+          11
+        ],
+        [
+          "OpenUse",
+          5
+        ],
+        [
+          "MissionElement",
+          37
+        ],
+        [
+          "StateMachine",
+          36
+        ],
+        [
+          "Trap",
+          43
+        ],
+        [
+          "DmgVol",
+          1
+        ],
+        [
+          "PickLockUsage",
+          5
+        ],
+        [
+          "UnlockUsage",
+          5
+        ],
+        [
+          "AbilityTarget",
+          42
+        ],
+        [
+          "Reward",
+          80
+        ],
+        [
+          "InUseStanceSite",
+          32
+        ]
+      ],
+      "storedBytes": 644,
+      "recordSha256": "57333efc2b681225f01d23e6a907bef021b65676aa907b664f35e29ddf764697",
+      "usables": [
+        {
+          "goid": "38484",
+          "object": "Supply Cabinet Alternate Texture",
+          "class": "369",
+          "use": "3",
+          "usable": "OpenUse",
+          "label": "Open",
+          "cursor": "open.txa",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "1010 ContainerOpen",
+          "execute_rule": "1010 ContainerOpen",
+          "results": "1>0x834 2>0x83b",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "38484",
+          "object": "Supply Cabinet Alternate Texture",
+          "class": "369",
+          "use": "8",
+          "usable": "PickLockUsage",
+          "label": "Pick Lock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "0",
+          "client_rule": "4000 DoorPickLock",
+          "execute_rule": "4000 DoorPickLock",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        },
+        {
+          "goid": "38484",
+          "object": "Supply Cabinet Alternate Texture",
+          "class": "369",
+          "use": "9",
+          "usable": "UnlockUsage",
+          "label": "Unlock",
+          "cursor": "",
+          "max_distance": "100.0",
+          "defaultable": "1",
+          "client_rule": "4006 GenericKeyTest",
+          "execute_rule": "4006 GenericKeyTest",
+          "results": "1>0x841",
+          "tracker": "",
+          "starts_on": ""
+        }
+      ]
+    },
+    {
+      "goid": 39415,
+      "count": 1,
+      "name": "Arcademachine2_1",
+      "schema": 14,
+      "componentFields": [
+        [
+          "FX",
+          30
+        ]
+      ],
+      "storedBytes": 58,
+      "recordSha256": "f39deebfea253fc366f0c7c8ad5b0fb686ecb08553fdb6df16c49d228a98cb9a",
+      "usables": []
+    },
+    {
       "goid": 39416,
-      "count": 49,
+      "count": 50,
       "name": "Garbage_Bag_Flies_01",
       "schema": 14,
       "componentFields": [
@@ -4877,7 +7322,7 @@
     },
     {
       "goid": 39417,
-      "count": 14,
+      "count": 17,
       "name": "Garbage_Bag_Flies_06",
       "schema": 14,
       "componentFields": [

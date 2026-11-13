@@ -31,7 +31,7 @@ audit=json.loads(Path('research/world-data/archive_sati-static-audit.json').read
 excluded={tuple(k) for k in audit['excludedKeys']};raw=audit['raw'];safe={}
 for row in raw:
     if tuple(row[:2]) not in excluded:safe.setdefault(tuple(row[:2]),row)
-counts=collections.Counter(r[2] for r in safe.values());assert len(counts)==95 and len(safe)==2599
+counts=collections.Counter(r[2] for r in safe.values());assert len(counts)==132 and len(safe)==7917
 usables=collections.defaultdict(list)
 for r in csv.DictReader(open('data/object_usables.csv',encoding='utf-8-sig')):
     # Retain the actual column names/values instead of guessing a common object behavior.
@@ -51,4 +51,4 @@ result=dict(world=9,retailConstructId=18,sectorCount=31,layerCounts=dict(layers)
             capturedNpcRows=captured,safeGoidContracts=contracts,archiveBook=book,gameobjectsGobSha256=hashlib.sha256(g).hexdigest(),
             sourceSha256=hashes,arrivalPolicy='UNCHANGED existing OURS NearestEntry near(-500,2100,500); exact retail arrival unknown',
             unboundGenericSourceProxyKeys=[list(k) for k,v in sorted(safe.items()) if v[2]==47267])
-output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8');print('31 complete layers/58 prefab sources;95 GOID contracts;0 HDL/CNET; captured='+str(captured))
+output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8');print('31 complete layers/58 prefab sources;132 GOID contracts;0 HDL/CNET; captured='+str(captured))
