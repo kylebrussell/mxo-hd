@@ -5,7 +5,7 @@ public sealed class VendorBuybackMode : NativeQaMode
     public override string Name=>"vendor-buyback";
     public override NativeQaModePlan Plan {get;}=new(
         new ushort[]{2,17},17000,2300,Array.Empty<string>(),new[]{@"
-DELETE FROM inventory WHERE charId=110 AND slot<97;
+DELETE FROM inventory WHERE charId=110 AND slot BETWEEN 1 AND 96;
 INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,11666,11,0,872415232),(110,7332,12,8,0),(110,2147490819,13,0,0);
 UPDATE characters SET cash=10000,y=495 WHERE charId=110;
