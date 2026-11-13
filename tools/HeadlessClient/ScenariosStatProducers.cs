@@ -6,11 +6,17 @@ public static partial class Scenarios
     private static async Task StatProducers(ScenarioContext context)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed("StatProducers"){Level=50,InnerStrength=1000,MaxInnerStrength=1000});
-        await LoadAbilitiesAsync(context,p,32,75,356,314);await p.EnterWorldAsync();
-        await p.WaitForRpcAsync(PassiveRecord(75,1055,25));
-        await p.WaitForRpcAsync(PassiveRecord(32,1147,10));
-        // Startup grant is earned by loaded356, not an injected internal child/archive row.
-        await p.WaitForRpcAsync("80 b2 3f 04");
+        await LoadAbilitiesAsync(context,p,32,75,356,314);
+        string ownedRows=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={p.CharId} AND slot IN (400,401,402,403) ORDER BY slot");
+        Check.Equal(4L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot IN (400,401,402,403) AND level=50 AND is_loaded=1"),"Exact owned fixture rows before world admission");
+        try
+        {
+        await p.EnterWorldAsync();
+        // WaitForRpcAsync advances a cursor: startup32 precedes75, and the grant precedes both.
+        // Snapshot predicates preserve the exact contracts without depending on receipt/wait order.
+        await p.WaitUntilAsync(()=>p.Received(PassiveRecord(32,1147,10)).Count>0 &&
+            p.Received(PassiveRecord(75,1055,25)).Count>0 && p.Received("80 b2 3f 04").Count>0,
+            "Exact startup32/75 records and normal356 grant1087",TimeSpan.FromSeconds(10));
         SetAbilityLoaded(p,401,75,50,false);await p.WaitForRpcAsync(PassiveRecord(75,1055,25,true));
         SetAbilityLoaded(p,401,75,50,true);await p.WaitForRpcAsync("80 b2 4b 00 32 00 91 01");
         Cast(p,1087);await p.WaitForRpcAsync(ModPattern(1087,177));
@@ -28,7 +34,14 @@ public static partial class Scenarios
         var timed=mods.Single(r=>r!.SourceId==314&&r.TargetId==342&&r.AddRemoveType==0)!;
         Check.Equal(108,timed.SignedValue,"Captured314 direct342");Check.Equal(20f,timed.Duration,"Real20s expiry");
         Check.That(mods.Any(r=>r!.SourceId==314&&r.TargetId==342&&r.AddRemoveType==1&&r.Locator==timed.Locator),"Expiry removes same timed locator");
-        await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-stat-producers-wire-"+context.Database.Name+".json"),JsonSerializer.Serialize(new{SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Bases=bases,Modifiers=mods,Raw=wire.Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),CausalPassiveConversionProven=false},new JsonSerializerOptions{WriteIndented=true}));
         Check.Equal(0,p.World.Problems.Count,"Producer protocol errors");
+        }
+        finally
+        {
+            var wire=p.World.RpcSnapshot().Where(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&(r.Bytes[1]==0xb2||r.Bytes[1]==0xbc)).ToArray();
+            var bases=wire.Where(r=>r.Bytes[1]==0xb2).Select(r=>BaseAttributeRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
+            var mods=wire.Where(r=>r.Bytes[1]==0xbc).Select(r=>ManageBonusRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
+        await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-stat-producers-wire-"+context.Database.Name+".json"),JsonSerializer.Serialize(new{OwnedRowsBeforeWorld=ownedRows,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Bases=bases,Modifiers=mods,Raw=wire.Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),CausalPassiveConversionProven=false},new JsonSerializerOptions{WriteIndented=true}));
+        }
     }
 }

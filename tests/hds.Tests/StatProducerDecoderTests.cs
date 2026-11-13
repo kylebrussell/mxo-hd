@@ -43,6 +43,16 @@ public class StatProducerDecoderTests
         Assert.Null(samples[1].NativeFields);Assert.Equal("4e 00 08 00 08",samples[1].PayloadHex);
         Assert.Empty(PacketResearcher.DetectPlayerAttributePayloads(WireFormat.BuildRpcPacket(1,new[]{good}),7,"client"));
     }
+    [Fact] public void ExactOwnedFixtureLevelProducesKnownRawPassiveRecords()
+    {
+        var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();c.playerInstance.Level.setValue((byte)50);
+        c.messageQueue=new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
+        AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(32,50),(75,50),(356,50)});
+        Assert.Equal(50,AbilityPassives.Level(c,32));Assert.Equal(10,AbilityPassives.Total(c,1147));
+        Assert.Equal(25,AbilityPassives.Total(c,1055)-5); //356 owns a separate+5 passive
+    }
     [Fact] public void ModeUsesOwnedNormalProducerAndNoRandomOverride()
     {
         var p=new NativeQa.Modes.StatProducersMode().Plan;
