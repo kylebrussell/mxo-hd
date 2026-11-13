@@ -320,6 +320,11 @@ namespace hds
                 StealthShieldAbilities.Execute(client,ability,target,freeStealth);
                 return;
             }
+            if (CasterHostileArea.Handles(AbilityID))
+            {
+                CasterHostileArea.Land(client, ability);
+                return;
+            }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
@@ -335,7 +340,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
                 }
             }
             });

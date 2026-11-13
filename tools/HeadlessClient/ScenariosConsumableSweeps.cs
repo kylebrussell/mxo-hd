@@ -53,6 +53,7 @@ public static partial class Scenarios
         var caster=players[0]; var victim=players[1];
         foreach(var p in players) { p.SendChat("?pvpflag on"); await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn); }
         var view=await caster.WaitForViewNamedAsync(victim.Handle);
+        await PrepareFreeCastViralFixture(context,caster,315);
         Cast(caster,315,view.ViewId);
         await caster.WaitForRpcAsync("80 ac 3b 01");
         await Task.Delay(3500);

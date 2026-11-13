@@ -6,7 +6,7 @@
      buildings: Normal; the third, with its local security forces and alarm: Office), the looks and the enemy counts.
      Rewards: the 132,000 experience and 59,500 information shown right after this mission completed.
      Gaps: the posters are boxes that are used (torn down), as in Zion's The Power of Propaganda. Retail had three, one
-     and four; a phase has at most three objects, so the third building has three though Agent Gray still says four.
+     and four; all eight required proxies are now represented. Their Box models remain authored substitutes.
      No fight was logged in the first two buildings (the second took half a minute), so they have no enemies. In the
      third the alarm brought in hostiles: the Exiles and the two Security guards arrive when the second poster is torn
      down, and the operator's alarm line is that poster's done line. Agent Gray's "These posters appear to be attracting
@@ -48,11 +48,13 @@
     <object id="1" kind="Box" />
     <object id="2" kind="Box" />
     <object id="3" kind="Box" />
+    <object id="4" kind="Box" />
     <objective goal="1" text="Tear down the first poster" type="Use" object="1" />
     <objective goal="2" text="Tear down the second poster" type="Use" object="2">
       <done><say>You've triggered an alarm! Expect incoming hostiles.</say></done>
     </objective>
     <objective goal="3" text="Tear down the third poster" type="Use" object="3" />
+    <objective goal="4" text="Tear down the fourth poster" type="Use" object="4" />
     <complete><say>You've destroyed all of the posters.</say></complete>
   </phase>
   <finish>Without these posters, Morpheus cannot spread his subversive messages to the masses. Our next step will be eliminating his ability to produce further propaganda.</finish>
