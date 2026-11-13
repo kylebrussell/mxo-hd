@@ -25,3 +25,12 @@ Observe actual models, door access and walkable approaches; missing or inaccessi
 ## Validation
 
 Full unit suite: 4543 passed (72 seconds). Focused Machines contracts: 8 passed. Both configurations built and actual read-only plans/provenance passed; all-module AbilityAudit and Python12 passed, with three ignored CRLF artifact roundtrips exact. Draft NOT READY. Fresh is HELD for placement review and native checks are pending; no end-to-end PASS claimed.
+
+
+## PR195 integration (headless review pending)
+
+Locally merged exact PR195 ff40c35c; production runtime and data match that parent byte for byte. This draft DEPENDS ON195 and is not native READY until its parent merges. The previous blanket headless placement hold is replaced by explicit root launch review; no driver has run yet. Native194 proved the default source computer pose physically visible/usable; this is not blanket accessibility proof for every authored mission site.
+
+All three organization drivers share the identical optional evidenceLabel finalizer. It writes database-unique raw staging, all RPC/03 lists, actual DLL path/config/hash, current saved payload as exact HEX and selected completion receipts before context disposal. Proof capture failure cannot silently turn a successful case into PASS or replace an existing scenario failure.
+
+Current scoped contracts: 29 passed. Previous full-suite evidence remains valid for its documented source; no full repeat for pure upstream integration and fixture-only proof capture. Both actual configurations/plans/provenance are refreshed before root review. Fresh and native results remain pending.
