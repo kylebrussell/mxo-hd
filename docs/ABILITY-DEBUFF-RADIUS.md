@@ -1,0 +1,29 @@
+# Direct hostile area radius: partial consumer
+
+Range Booster345 already applies captured stat177 +21 for30 seconds. This change connects direct177 totals to the two target-centred selectors in AbilityTargets.Land and LandAround. Existing UBF0/stat127 support semantics remain unchanged. Resist Infection75 is NOT fixed: it modifies1055, whose numeric contribution to177 is unresolved.
+
+## Primary boundary
+
+ClientDLL SHA256 cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a. Reproduce `python research/abilities/inspect_debuff_radius.py <client.dll>` and the existing inspect_resist_damage_radius.py.
+
+Only direct caller of625c5500 found is UI621ed033: ECX comes from local-character [global629eee08]+b4; EDI is the ability template. Getter preserves this owner in ESI. It does not receive a selected-target character. Exact StatusCategory UDB0 predicate62515f30 compares30424455; the sibling UBF0 branch uses127. UDB0 pushes177 at625c556c, reads through625c4e90 with1,1,0, sign-extends AX, divides100, stores binary32 at625c558d, then returns base*(1+fraction). Stored radius is metres; native base getter62519100 multiplies100 and UI divides100. There is no new negative clamp. Server applies the same owner/caster formula to its existing metres selectors, following the merged74 policy. This is not independent evidence of a retail server landing caller or a complete native radius baseline.
+
+Direct177 buff totals use existing AbilityStats.Player caps. Zero direct total preserves the previous radius exactly. Existing captured345 +21 is preserved: raw catalog345 says12, a separate unresolved magnitude mismatch. At base4 the actual current +21 gives approximately4.84m. No magnitude, linked-attribute aggregation, character baseline or RNG is changed.
+
+75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links81 with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale; its native schema default, global threshold and actor coefficient are unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
+
+## Exact executor scope
+
+AbilityHandler's normal attack completion and CombatHandler's queued round call AbilityTargets.Land with the caster. An NPC primary is expanded only when CastDirectObjects==3 and computed radius>0; live hostile NPCs and PvP-legal players are checked around the primary. A player primary goes through PvpCombat.LandAbility; after its normal legality/range checks it calls LandAround with the SAME caster and primary. Both selectors now use AbilityRadius.TargetMetres(caster,ability). Existing target legality, level/style/cast/control/ownership, same-floor (<150 world units), distance, damage and per-target effect paths stay authoritative.
+
+The44 current audit-player UDB0/radius rows are catalog candidates, NOT44 fixed executors. The target-centred CastDirectObjects3 intersection is28 IDs:60,333,336,337,343,353,357,359,360,361,362,399,400,401,402,403,404,462,465,466,467,468,473,475,479,597,610,1088. All28 have isBuff=False in abilityIDs and an existing DirectDamage/DOT/timed/instant-hostile attack gate in the executable inventory. This identifies generic landing-path consumers, not proof every row is reachable or fully implemented; every existing cast/style/target/support/pet gate still applies. Only333 is the end-to-end regression representative. No caster-centred selector, aura, pet, taunt, flash/smoke bomb or other callback is changed or claimed.
+
+## Validation and Claude-only one-pass
+
+Unit checks cover actual345 application/removal, alias, owner rather than target, exact UBF0 separation, negative direct totals, unchanged unproven75, horizontal and vertical exclusion. Mode debuff-radius owns2,17,1006,333,345, actual50/IS2000, no dev/GM/random override. Actor23999/495/-1498, Machines/PvPflag; QAEnemy primary24499/495/-1498, other helpers Zion/PvPflag: QAFriend24879(3.8m), QAFar24939(4.4m), QAOther24999(5m). Native mode executes these exact helper coordinates after seeding. No team invites needed or desired.
+
+Use a new NativeQa directory on the exact CI-approved head, mode debuff-radius; Codex only reads plans. Enter world, trigger helpers normally and verify their actual names/flags/positions. Keep caster stationary. From Actions select Stun2.0/333 on QAEnemy: baseline4m should affect QAFriend and exclude QAFar/QAOther. Record actual control records, not damage (333 is stun). Wait at least35 seconds for normal reuse and control immunity. Cast Range Booster345 normally on self; verify stat177 record VALUE21 and30s timer. Within the30s window cast333 on the SAME QAEnemy: QAFar now included, QAOther excluded. Allow345 natural removal, wait333 reuse, cast again and verify QAFar excluded. Note game coordinates are world units (100/m). A separate NPC-primary comparison may target stationary WinterFrost at24499/495/-1498; overlapping NPC names may complicate UI selection. Do not infer this from helper request success or headless framing. Native target presentation, radius UI, exact baseline and raw12/captured21 discrepancy remain unverified.
+
+Headless scenario direct-debuff-radius uses normal333/345 casts with both an actual NPC primary and player primary, paired same-floor near/expanded/outside players, captured21 record and natural expiry. No fixed rolls, forced completions or global combat overrides. Fresh result is pending until recorded separately; a server pass does not prove native UI acceptance.
+
+Local source validation: full4328 Release units PASS; final15 focused PASS; Python12 policy/link tests PASS; both NativeQa configurations and named/unknown read-only profiles/provenance PASS. Fresh pending root grant; no native result claimed.
