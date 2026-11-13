@@ -20,4 +20,6 @@ Discovered `mission-courier`: CSR110 only, Mara23828/495/13984, actual50/matchin
 
 ## Validation
 
-In progress. Current authored-XML resolver already recognizes20001; separate neighborhood generic resolver is not imported or presumed a dependency. Actual repeat/relog/idempotence must pass before readiness. No generated ability snapshots changed.
+Full4432 tests PASS57s, focused1897 content/contact/Courier tests and Python12 policy PASS. Both actual NativeQa builds/read-only plans/provenance PASS. Current authored-XML lookup independently resolves20001; no dependency on the separate neighborhood generic resolver and no changes to persistence/DB/runtime/reward receipt code.
+
+Fresh `5d76dab62ead0073567699d826333f30bb1422bc` PASS69.3s/EXIT0/parallel1/peak1/disposed: actual Tyndall list critical+plot0Courier, normal accept/site entry/Talk/Get6831, normal quit33s/relog with exact ownedslot/completedGet, stale Get no duplicate, Talk/Give/exit, two completions/reward counts and reofferedCourier/unchangedcritical. Duplicate Give/exit did not replay items/rewards. Actual selected Debug DLL SHA256 `5eb6ccfd6baae101bc373cd14d84f57b2cc2bb722f643c2e8f817893c7526912`. Unique DB-named rawlog/RPC/03/DLL/phase/checkpoint proof was saved before teardown; failure runs also save evidence in finally. Final source imports current master186 only; own Courier runtime/XML/mode/driver remain byte-exact the fresh pin. Native UI/one-pass remains PENDING Claude. No generated ability snapshots changed.
