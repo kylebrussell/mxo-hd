@@ -8,5 +8,5 @@ public sealed class AttributeAllocationMode:NativeQaMode
         new[]{AttributeAllocationFixture.Seed(110)},
         new[]{"UPDATE characters SET level=50,exp="+PlayerProgression.ExperienceForLevel(50)+",cash=1000000,y=495,rotation=0 WHERE charId=110"},
         extraQaMetadata:new(){["AttributeAllocationQa"]=true,["AttributeAvailablePoints"]=49},
-        readyMessages:new[]{"CSR110: Level/EXP50, all five existing base attribute rows,49 available points. Open Status > Attributes, queue one Focus and one Reason point, confirm once, verify47 points left and those values+1; Info unchanged. Relog and verify all five values and remaining points. No dev/GM/RNG. See docs/ATTRIBUTE-ALLOCATION.md."});
+        readyMessages:new[]{"CSR110: Level/EXP50, all five existing base attribute rows,49 available points. Open Character > Upgrade > Attributes, queue one Focus and one Reason point, click Apply All once, verify47 points left and those values+1; Info unchanged. Relog and verify all five values and remaining points. No dev/GM/RNG. See docs/ATTRIBUTE-ALLOCATION.md."});
 }
