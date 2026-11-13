@@ -7,6 +7,24 @@ namespace hds
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
+        // tempmods2362: callback is initialization-only and has no explicit immunity timer.
+        public static bool HandlesInitial(ushort ability) => ability == 340 && AbilityCatalog.Find(ability)?.Modifiers.Any(
+            m => m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered") == true;
+        internal static bool InitialPowerless(ushort ability, ushort target) => ability == 340 && target == TempMods.PowerlessAbility;
+        internal static void Init(TimedEffects.Subject subject, TempMods.Effect effect, List<TimedEffects.Active> mods, double now)
+        {
+            if (!HandlesInitial(effect.Ability) || !subject.Alive ||
+                (!subject.Effects.HasAt(TempMods.StaggeredAbility,now) &&
+                 (subject.ConditionFlags & CombatInterlock.ConditionBit(CombatTactic.Power)) == 0)) return;
+            var source = AbilityCatalog.Find(effect.Ability)?.Modifiers.SingleOrDefault(m =>
+                m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered" && m.Number("WhenEnabled",-1) == 2 &&
+                m.Number("DurationType",-1) == 1 && m.Number("MinValue") == m.Number("MaxValue") &&
+                !m.Has("ValueScale") && m.Number("ValueFunction") == 0);
+            if (source == null || source.Number("MinValue") <= 0) return;
+            mods.Add(new TimedEffects.Active { Kind=TempMods.KindState, Target=TempMods.PowerlessAbility,
+                Proc=TempMods.Proc.State, Seconds=(float)source.Number("MinValue") });
+        }
+
         public static bool Handles(ushort ability) => AbilityCatalog.Find(ability)?.Modifiers.Any(m =>
             m.Text("StatModTermFunc") == "ApplyStunEffectIfDazed") == true;
 

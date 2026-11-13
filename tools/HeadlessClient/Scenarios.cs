@@ -56,6 +56,7 @@ public static partial class Scenarios
         new Scenario("conditional-daze-fixture", ConditionalDazeFixtureCommand, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
+        new Scenario("conditional-powerless", ConditionalPowerlessWire, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PVP_SERVER"]="1",["MXO_CONDITIONAL_POWERLESS_QA"]="1"}),
         new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
         new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
