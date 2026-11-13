@@ -14,7 +14,7 @@ public class ZionCriticalTests
     {
         var all=Load();var selected=all.Where(m=>ZionCriticalFixture.Missions.Contains(m.id)).OrderBy(m=>m.order).ToList();
         Assert.Equal(ZionCriticalFixture.Missions,selected.Select(m=>m.id));Assert.Equal(new[]{1101,1102,1103,1201,1202},selected.Select(m=>m.order));
-        Assert.Equal(7,selected.Sum(m=>m.phases.Count));Assert.Equal(22,selected.Sum(m=>m.phases.Sum(p=>p.missionObjectives.Count)));
+        Assert.Equal(7,selected.Sum(m=>m.phases.Count));Assert.Equal(26,selected.Sum(m=>m.phases.Sum(p=>p.missionObjectives.Count)));
         Assert.Empty(ZionCriticalFixture.Prerequisites.Intersect(ZionCriticalFixture.Missions));
         var contact=MissionContacts.ForOrg(1,0);var completed=ZionCriticalFixture.Prerequisites.ToHashSet();
         foreach(var mission in selected)
