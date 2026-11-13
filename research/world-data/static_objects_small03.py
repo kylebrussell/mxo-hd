@@ -162,9 +162,11 @@ elif args.world==13:
 elif args.world==5:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
  assert len(sources)==326
-parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
-else:
+elif args.world==15:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1061,1023,584,26,997 if args.native_prefab_rotations else 426)
+elif args.world==11:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(272,272,0,0,26,246)
+ assert len(sources)==146
 with open(args.output,'w',newline='') as f:
  w=csv.writer(f);w.writerow(['metr_id','sector_id','mxoId','staticId','type','exterior','pos_x','pos_y','pos_z','rotation','quat'])
  for sector,ident,go,pos,quat,rot,kind in objects:
