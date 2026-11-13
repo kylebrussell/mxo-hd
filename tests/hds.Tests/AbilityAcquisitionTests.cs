@@ -76,6 +76,7 @@ public class AbilityAcquisitionTests
     static WorldClient PublicationClient(uint district=1)
     {
         var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.Alive=true;typeof(WorldClient).GetField("lastUsedTime",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,TimeUtils.getUnixTimeUint32());
         c.playerData=new ClientData();c.playerData.setCharID(110);c.playerData.setDistrictId(district);c.playerData.setOnWorld(district!=901);c.messageQueue=new();
         typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());return c;
     }
@@ -91,7 +92,7 @@ public class AbilityAcquisitionTests
     }
     [Fact] public void StaleSessionRefusesBothSuccessAndRefusalWithoutTouchingUnrelatedRpc()
     {
-        for(int change=0;change<6;change++)
+        for(int change=0;change<9;change++)
         {
             var c=PublicationClient();c.messageQueue.addRpcMessage(new byte[]{0x81,0x49});var stamp=new AbilityAcquisition.Publication(c);
             if(change==0)c.playerData.lifeGeneration++;
@@ -100,6 +101,9 @@ public class AbilityAcquisitionTests
             if(change==3)c.playerData.setDistrictId(901);
             if(change==4)c.playerData=new ClientData();
             if(change==5)c.TransportFence.PublishIncoming(true,()=>{});
+            if(change==6)c.playerData.waitForRPCShutDown=true;
+            if(change==7)c.playerData.worldChangePending=true;
+            if(change==8)c.Alive=false;
             Assert.False(stamp.Publish(c,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
             Assert.False(stamp.Publish(c,ServerPackets.BuildSystemChatMessage("Refused","SYSTEM")));
             Assert.Single(c.messageQueue.RPCMessagesQueue);
@@ -115,5 +119,20 @@ public class AbilityAcquisitionTests
         var remaining=Assert.IsType<SequencedMessage>(Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<object>()));
         Assert.Equal(new byte[]{2,0x81,0x49},remaining.content);Assert.Equal(-1,remaining.rpcNumber);
         Assert.False(stamp.Publish(c,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
+    }
+    [Fact] public void WalletCacheChangesOnlyInsideCurrentPurchasePublication()
+    {
+        foreach(bool reset in new[]{false,true})
+        {
+            var c=PublicationClient();c.playerData.setInfo(777);var stamp=new AbilityAcquisition.Publication(c);
+            if(reset){c.TransportFence.PublishIncoming(true,()=>{});long epoch=c.TransportFence.Capture();Assert.True(c.TransportFence.ApplyReset(epoch,()=>{}));c.TransportFence.Resume(epoch);}
+            else c.playerData.setCharID(111);
+            Assert.False(stamp.PublishPurchase(c,123,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
+            Assert.Equal(777,c.playerData.getInfo());Assert.Empty(c.messageQueue.RPCMessagesQueue);
+        }
+        var current=PublicationClient();current.playerData.setInfo(777);var valid=new AbilityAcquisition.Publication(current);
+        Assert.True(valid.PublishPurchase(current,123,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));Assert.Equal(123,current.playerData.getInfo());
+        current=PublicationClient();current.playerData.worldChangePending=true;var pending=new AbilityAcquisition.Publication(current);
+        Assert.False(pending.PublishPurchase(current,123,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));Assert.Equal(0,current.playerData.getInfo());
     }
 }

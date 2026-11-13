@@ -53,22 +53,25 @@ namespace hds
         internal sealed class Publication
         {
             internal readonly ClientData Data;internal readonly uint Character,District;internal readonly int World,Life;
-            internal readonly long Transport;private readonly bool onWorld,la,pending;
+            internal readonly long Transport;private readonly bool onWorld,la;
             internal Publication(WorldClient client)
             {
                 Data=client.playerData;Character=Data.getCharID();World=Data.worldGeneration;Life=Data.lifeGeneration;
-                District=Data.getDistrictId();onWorld=Data.getOnWorld();la=Data.DistrictIsLA();pending=Data.worldChangePending;
+                District=Data.getDistrictId();onWorld=Data.getOnWorld();la=Data.DistrictIsLA();
                 Transport=client.TransportFence.Capture();
             }
-            private bool Current(WorldClient client)=>ReferenceEquals(Data,client.playerData)&&Data.getCharID()==Character&&
+            private bool Current(WorldClient client)=>client.Alive&&!Data.waitForRPCShutDown&&!Data.worldChangePending&&ReferenceEquals(Data,client.playerData)&&Data.getCharID()==Character&&
                 Data.worldGeneration==World&&Data.lifeGeneration==Life&&Data.getDistrictId()==District&&
-                Data.getOnWorld()==onWorld&&Data.DistrictIsLA()==la&&Data.worldChangePending==pending;
-            internal bool Publish(WorldClient client,params byte[][] packets)
+                Data.getOnWorld()==onWorld&&Data.DistrictIsLA()==la;
+            internal bool Publish(WorldClient client,params byte[][] packets)=>PublishPackets(client,null,packets);
+            internal bool PublishPurchase(WorldClient client,uint cash,params byte[][] packets)=>PublishPackets(client,cash,packets);
+            private bool PublishPackets(WorldClient client,uint? cash,byte[][] packets)
             {
                 bool sent=false;
                 client.TransportFence.TryRun(Transport,()=>
                 {
                     if(!Current(client))return;
+                    if(cash.HasValue)Data.setInfo(cash.Value);
                     foreach(var packet in packets)client.messageQueue.AddWorldBoundRpc(packet,World,Transport);
                     sent=true;
                 });

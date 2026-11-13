@@ -54,12 +54,11 @@ namespace hds{
                     Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: "+error.Message);
                     publication.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
                 }
-                if(ReferenceEquals(Store.currentClient.playerData,publication.Data))publication.Data.setInfo(receipt.Cash);
                 byte[][] acquiredPackets={ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID),
                     ServerPackets.BuildInfoDelta((long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy),
                     ServerPackets.BuildInfoCurrent(receipt.Cash,ServerPackets.InfoReasonVendorBuy),
                     ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price)};
-                publication.Publish(Store.currentClient,acquiredPackets);
+                publication.PublishPurchase(Store.currentClient,receipt.Cash,acquiredPackets);
                 return;
             }
             long currentCash = Store.currentClient.playerData.getInfo();
