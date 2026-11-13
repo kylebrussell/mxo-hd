@@ -3,12 +3,12 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,5,11,12,13,14,15,16,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,10,11,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-world_name={4:'archive01',5:'archive02',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -85,7 +85,10 @@ unproven={k:v for k,v in groups.items() if any(z[-2]!=0 for z in v)}
 incomplete={k:v for k,v in groups.items() if k[0] in missing_sectors}
 excluded=set(conflicts)|set(unproven)|set(incomplete)
 objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
-if args.world==14:
+if args.world==10:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(70,70,0,0,70)
+ assert len(sources)==258
+elif args.world==14:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(39,39,0,0,39)
 elif args.world==4:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(156,156,0,0,156)
@@ -143,5 +146,13 @@ if args.world==11:
 if args.world==15:
  audit.update(capturedPopulationValidated=False,
   capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
+if args.world==10:
+ usables=list(csv.DictReader(open('data/object_usables.csv')))
+ states=list(csv.DictReader(open('data/object_states.csv')))
+ goids=collections.Counter(r[2] for r in raw)
+ audit.update(availableSectors=86,availableNavigationSectors=86,prefabPlacements=0,
+  nativeGoidContracts={str(goid):dict(placements=count,usables=[u for u in usables if int(u['goid'])==goid],states=[u for u in states if int(u['goid'])==goid]) for goid,count in sorted(goids.items())},
+  populationBoundary='17 captured Instance rows:16 inside 2D sector footprint and1 outside; all17 fail exact recorded-coordinate NAV lookup. Preserve captures without relocation or NPC visibility/gameplay claim.',
+  transportBoundary='Native source returners38271/38272/38273 are preserved. Existing dynamic arrival returners and origin return rules remain unchanged; source-static returner usability is a separate unresolved gap.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
 print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
