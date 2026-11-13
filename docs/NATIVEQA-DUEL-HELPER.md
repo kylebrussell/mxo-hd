@@ -37,3 +37,9 @@ Native operators must use a new request stem and wait for its `responses/<reques
 A failed duel-accept response additionally preserves the helper's raw RPC, all received03 lists, protocol problems and concrete exception type. A stale challenge still raises TimeoutException; other helper actions and resurrection approval retain their original response behavior.
 
 After integrating actual master0d333c5c,68 focused duel/codec/profile checks and both actual builds/plans/provenance passed. Server/data bytes match that master exactly. Current DebugC6A4309B7EEDABF19F12ADF6FD6A500A51EEFC991C0FC65B2FF7B78B0A7A3F14; Release2E0479658F3CACAFDA6090A0CCD92876B9718BD4BD2FB1BECEA8D25970F10D82. Fresh and native UI checks remain pending coordinator review/grant and Claude respectively.
+
+## Fresh wire proof
+
+Frozen12c2093aa9521d9b0e853d6613a477dddafb1c37 passed nativeqa-duel-helper in18.2 seconds, exit0, parallel1, normal server disposal. Required preteardown proof Temp/mxo-nativeqa-duel-mxotest_run_1_150044b9d0.json SHA256 6548C5BCC557FD8A293165AFAE83CF8D70115CCA41A1AFD1C72669E65EB01F67 records Passed true, Step complete, Failure null and actual selected Release DLL2E0479658F3CACAFDA6090A0CCD92876B9718BD4BD2FB1BECEA8D25970F10D82. Paired full stdout/debug and all raw RPC/03 are retained.
+
+Initial PvE attack was refused. The explicit arm captured RPC cursor33/view cursor4 before the challenge. Actual new records were5104000200, ordinary reply52040002000100 and new begin5504000200 at index34. New paired IDs were4099 and4098. Ordinary combat then exchanged actual health damage; normal duel stop succeeded. A second arm timed out rather than reusing the historical challenge/begin. CSR_Tester retained49 RPCs/10 view lists and QAEnemy47/10, both with zero protocol problems. No server legality, flags, timers, RNG or resurrection response was changed. Native request-file/UI one pass remains Claude-only pending.
