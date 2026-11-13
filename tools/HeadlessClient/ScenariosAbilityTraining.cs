@@ -27,6 +27,9 @@ public static partial class Scenarios
         }
         try
         {
+            string cashColumnType=await context.Database.ScalarAsync("SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='characters' AND COLUMN_NAME='cash'");
+            Check.That(cashColumnType.Length>0,"Actual owned disposable cash column type is recorded");
+            databaseProof.Add(new{Step="owned-schema",CashColumnType=cashColumnType});
             p=await context.AddPlayerAsync(new CharacterSeed("TrainingAuthority"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Info=20000000});
             await context.Database.ExecuteAsync(AbilityTrainingFixture.Seed(p.CharId));
             await context.Database.ExecuteAsync($"UPDATE char_abilities SET ability_id=-2147329024 WHERE char_id={p.CharId} AND slot={AbilityTrainingFixture.Slot(151)}");
