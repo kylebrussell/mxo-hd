@@ -6,7 +6,7 @@ using hds.shared;
 namespace hds
 {
     /// <summary>Hardline filename ordinals advertised by Margin09. The six appended worlds/order are OURS policy;
-    /// Universe IDs come from shipped universe.btb. This is NOT the 06/PvP construct namespace.</summary>
+    /// Universe IDs come from shipped universe.btb. Registered testworlds also use these keys in06; server maps/private PvP IDs remain separate.</summary>
     public static class HardlineRegistration
     {
         private static readonly ushort[] maps = {1,2,3,12,13,14,15,16,17};
