@@ -102,17 +102,32 @@ namespace hds
             c.TransportFence.Capture()==transport&&c.Alive&&!data.worldChangePending&&!data.waitForRPCShutDown;
         //621e8860 signed-positive status takes the failure branch; 1800000c selects STA24000106.
         internal const uint FailureStatus=0x1800000c;
-        internal static void CompleteCurrent(WorldClient client,long transport,Func<bool> current,Action reconcile,Action publish,Action afterPublish=null)
+        internal static void CompleteCurrent(WorldClient client,long transport,Func<bool> current,Action reconcile,Action publish,Action afterPublish=null,Action prepare=null)
         {
             bool admitted=false;
             client.TransportFence.TryRun(transport,()=>admitted=current());
             if(!admitted)return;
             reconcile(); //callbacks may take holder->fence; no outer fence/queue/life lock here
+            prepare?.Invoke(); //pure packet construction outside the transport fence
             bool published=false;
             client.TransportFence.TryRun(transport,()=>{if(current()){publish();published=true;}});
             if(published && current())afterPublish?.Invoke();
             //Flush can traverse other clients and must also remain outside our transport fence.
             if(current())client.FlushQueue();
+        }
+        internal static byte[][] ResponsePackets(Result result,bool live)
+        {
+            if(!result.Committed)return new[]{ServerPackets.BuildSystemChatMessage(result.Reason,"MODAL"),
+                ServerPackets.BuildAbilityUpgraded(result.Ability,result.Level,FailureStatus)};
+            var packets=new List<byte[]>{ServerPackets.BuildInfoDelta(-(long)result.Cost,ServerPackets.InfoReasonAbilityUpgrade),
+                ServerPackets.BuildInfoCurrent((uint)result.Cash,ServerPackets.InfoReasonAbilityUpgrade)};
+            foreach(var grant in live?GrantRefreshes(result):Array.Empty<(ushort Ability,ushort Level)>())
+            {
+                packets.Add(ServerPackets.BuildAbilityUnload(grant.Ability));
+                packets.Add(ServerPackets.BuildAbilityLoad(grant.Ability,grant.Level,AbilityProgression.HiddenSlot));
+            }
+            packets.Add(ServerPackets.BuildAbilityUpgraded(result.Ability,result.Level));
+            return packets.ToArray();
         }
         public static void Handle(WorldClient client,byte[] body)
         {
@@ -131,7 +146,7 @@ namespace hds
                 }
                 //SQL is disposed. Never hold TransportFence while SetLoaded/registration/tutorial acquire their own locks.
                 Func<bool> current=()=>Current(client,data,generation,world,life,transport,character);
-                bool live=false;
+                bool live=false;byte[][] packets=Array.Empty<byte[]>();
                 CompleteCurrent(client,transport,current,()=>
                 {
                     if(!result.Committed || !current())return;
@@ -141,22 +156,8 @@ namespace hds
                     if(live && current())AbilityPassives.SetLoaded(client,result.Loaded);
                 },()=>
                 {
-                    var packets=new ServerPackets();
-                    if(!result.Committed)
-                    {
-                        packets.sendSystemChatMessage(client,result.Reason,"MODAL");
-                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(result.Ability,result.Level,FailureStatus));
-                        return;
-                    }
-                    packets.SendInfoDelta(client,-(long)result.Cost,ServerPackets.InfoReasonAbilityUpgrade);
-                    packets.SendInfoCurrent(client,(uint)result.Cash,ServerPackets.InfoReasonAbilityUpgrade);
-                    foreach(var grant in live?GrantRefreshes(result):Array.Empty<(ushort Ability,ushort Level)>())
-                    {
-                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant.Ability));
-                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant.Ability,grant.Level,AbilityProgression.HiddenSlot));
-                    }
-                    client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(result.Ability,result.Level));
-                },()=>{if(result.Committed && live && current())TutorialMission.Of(client)?.OnAbilityUpgraded();});
+                    foreach(var packet in packets)client.messageQueue.AddWorldBoundRpc(packet,world,transport);
+                },()=>{if(result.Committed && live && current())TutorialMission.Of(client)?.OnAbilityUpgraded();},prepare:()=>packets=ResponsePackets(result,live));
                 if(result.Committed)Output.WriteDebugLog("[TRAINING] Committed char="+character+" ability="+result.Ability+" level="+result.Level+" cost="+result.Cost);
 
             }
