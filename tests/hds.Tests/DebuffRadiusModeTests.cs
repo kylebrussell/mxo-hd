@@ -11,9 +11,16 @@ public class DebuffRadiusModeTests
     {
         var plan=new DebuffRadiusMode().Plan;
         Assert.Contains((ushort)345,plan.Abilities);Assert.Contains((ushort)333,plan.Abilities);Assert.DoesNotContain((ushort)75,plan.Abilities);
-        Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Empty(plan.Bootstrap);
+        Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Empty(plan.Bootstrap);
         Assert.Equal("1",plan.EnvironmentOverrides["MXO_PVP_SERVER"]);Assert.Equal("15",plan.EnvironmentOverrides["MXO_PVP_MAX_SAFE_LEVEL"]);
         Assert.Equal("1",plan.EnvironmentOverrides[AreaTargetDiagnostics.Variable]);
+        var env=NativeQa.NativeQaFixturePlan.EnvironmentFor("debuff-radius");
+        Assert.Equal("1",env["MXO_FREECAST_VIRAL_QA"]);Assert.Equal("32766",env["MXO_FREECAST_VIRAL_QA_ATTACK15"]);Assert.Equal("15636",env["MXO_FREECAST_VIRAL_QA_DEFENSE15"]);
+        Assert.Equal("",env["MXO_CALLBACK_QA_ROLL15"]);Assert.Equal("",env["MXO_CALLBACK_QA_ROLL100"]);
+        Assert.True(plan.ExtraQaMetadata["FreeCastViralContestQa"].GetBoolean());
+        foreach(string scenario in new[]{"direct-debuff-radius","debuff-radius-native-fixture"})
+        {var selected=Scenarios.All.Single(s=>s.Name==scenario);Assert.Equal("1",selected.Environment!["MXO_FREECAST_VIRAL_QA"]);Assert.Equal("15636",selected.Environment["MXO_FREECAST_VIRAL_QA_DEFENSE15"]);}
+
         Assert.Equal(DebuffRadiusFixture.NativeTargetsSql(6111,6112,6113,6114),plan.AfterHelpers[1]);
         Assert.Contains("WHEN 6112 THEN 17940",plan.AfterHelpers[1]);Assert.Contains("WHEN 6113 THEN 17500",plan.AfterHelpers[1]);Assert.Contains("WHEN 6113 THEN 2799",plan.AfterHelpers[1]);
         Assert.Equal(17000,plan.X);Assert.Equal(2300,plan.Z);
