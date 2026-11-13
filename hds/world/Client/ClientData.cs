@@ -74,6 +74,8 @@ namespace hds
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
         public readonly object upgradeSync = new object();
+        public readonly object attributeSync = new object();
+        public int attributeGeneration;
         // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
         public int buffHealthMaximumDelta, buffISMaximumDelta;
         public readonly AbilityPassives.State passives = new AbilityPassives.State();

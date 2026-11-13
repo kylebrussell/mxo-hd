@@ -475,12 +475,15 @@ namespace hds
                 return raises;
             }
 
-            int count = rpcData[2] | rpcData[3] << 8;
-            const int entrySize = 6;
-            for (int i = 0; i < count && 4 + (i + 1) * entrySize <= rpcData.Length; i++)
+            if(rpcData[0]!=4 || rpcData[1]!=0)return raises;
+            int count=rpcData[2]|rpcData[3]<<8;
+            if(count<1 || count>All.Length || rpcData.Length!=4+count*6)return raises;
+            var seen=new HashSet<byte>();
+            for(int i=0;i<count;i++)
             {
-                int p = 4 + i * entrySize;
-                raises.Add(new Raise { Attribute = rpcData[p + 1], Points = rpcData[p + 5] });
+                int p=4+i*6;uint attribute=BitConverter.ToUInt32(rpcData,p+1);
+                if(rpcData[p]!=0 || !AttributeAllocation.Known(attribute) || rpcData[p+5]==0 || !seen.Add((byte)attribute))return new List<Raise>();
+                raises.Add(new Raise{Attribute=(byte)attribute,Points=rpcData[p+5]});
             }
             return raises;
         }

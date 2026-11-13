@@ -119,6 +119,7 @@ public static partial class Scenarios
         new Scenario("hostile-fields-pvp", HostileFieldsPvp, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("hostile-fields-npc", HostileFieldsNpc, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
+        new Scenario("attribute-allocation-authority", AttributeAllocationAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_ID"]=""}),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),

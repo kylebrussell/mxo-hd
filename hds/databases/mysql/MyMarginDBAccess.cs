@@ -234,11 +234,9 @@ namespace hds.databases{
             using (MatrixDbContext dbContext = CreateDbContext())
             {
                 Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
-                foreach (CharAbility row in dbContext.CharAbilities.Where(ca => ca.CharId == charId && ca.Slot >= CharacterAttributes.FirstSlot))
-                {
-                    attributes[(byte)(row.Slot - CharacterAttributes.FirstSlot)] = (UInt16)row.Level;
-                }
-                return attributes;
+                var slots=CharacterAttributes.All.Select(a=>(int)CharacterAttributes.SlotOf(a)).ToArray();
+                var rows=dbContext.CharAbilities.Where(ca=>ca.CharId==charId && slots.Contains(ca.Slot)).OrderBy(ca=>ca.Id).ToArray();
+                return AttributeAllocation.ReadValues(rows.Select(row=>new AttributeAllocation.Row(row.Id,row.Slot,row.AbilityId,row.Level)));
             }
         }
 
