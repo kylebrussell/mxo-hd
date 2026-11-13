@@ -37,7 +37,8 @@ public static partial class Scenarios
             int ignoredCursor=p.World.RpcSnapshot().Count;
             p.SkipReceived();await ZionUpload(p);await Barrier();
             var ignored=p.World.RpcSnapshot().Skip(ignoredCursor).ToArray();
-            Check.That(!ignored.Any(r=>r.Bytes.Length>0&&r.Bytes[0]==0x2e),"Non-candidate-only Upload emits no misleading system refusal");
+            Check.That(!ignored.Any(r=>System.Text.Encoding.UTF8.GetString(r.Bytes).Contains("That ability code changed or its bag slot is ambiguous")||System.Text.Encoding.UTF8.GetString(r.Bytes).Contains("This item is not a recognized ability code")),"Non-candidate-only Upload emits no misleading ability refusal; normal movement notices remain allowed");
+            Check.Equal(0,ignored.Count(r=>r.Bytes.Length>0&&(r.Bytes[0]==0x5e||r.Bytes[0]==0x5f)),"Non-candidate-only Upload publishes no inventory or archive mutations");
             Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot IN (0,12)"),"Non-candidates remain untouched");
             operations.Add(new{Step=step,Cursor=ignoredCursor,Records=ignored.Select(r=>r.Hex).ToArray()});
             await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},11,7332,2)");
