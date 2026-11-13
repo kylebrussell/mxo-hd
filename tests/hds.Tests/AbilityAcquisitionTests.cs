@@ -11,6 +11,22 @@ public class AbilityAcquisitionTests
         Assert.False(AbilityAcquisition.Genuine(0));
         Assert.False(AbilityAcquisition.Genuine(0x803ffc00));
     }
+    [Fact] public void BulkUploadSkipsSlotZeroEquipmentAndNonPlayerAbilityFamilies()
+    {
+        // Native fixtures contain this slot0/count0 row; normalized snapshots must not
+        // turn it into an intended upload or produce a misleading transaction refusal.
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(0,0x800d9800,0)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(0,Detect,1)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(97,Detect,1)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(0x8001,Detect,1)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(1,0x80013800,1))); // Focus/class1.
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(1,0x8404c180,1)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(1,7332,1)));
+        Assert.False(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem { Slot=1,Goid=Detect,Count=0 }));
+        Assert.True(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(1,Detect,1)));
+        Assert.True(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(96,0x80401c03,1)));
+        Assert.True(AbilityAcquisition.UploadCandidate(new Crafting.InventoryItem(1,Detect,2))); // Transaction must still refuse malformed intended sources.
+    }
     [Fact] public void PurchaseUsesFreeBagAndCheckedWalletWithoutDeduplicatingReceipts()
     {
         var row=new AbilityAcquisition.BagRow(1,1,Detect,1);

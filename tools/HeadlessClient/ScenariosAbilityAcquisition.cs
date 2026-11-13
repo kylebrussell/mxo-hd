@@ -13,7 +13,7 @@ public static partial class Scenarios
         try
         {
             p=(await context.AddPlayersInWorldAsync(new CharacterSeed("Acquire"){X=17000,Y=495,Z=2300,Info=200000,Level=50,Experience=checked((int)PlayerProgression.ExperienceForLevel(50)),
-                OwnedLoadedAbilities=new[]{((ushort)2,(ushort)1),((ushort)17,(ushort)1)},Items=new[]{(11,7332u,2)}}))[0];sessions.Add(p);
+                OwnedLoadedAbilities=new[]{((ushort)2,(ushort)1),((ushort)17,(ushort)1)}}))[0];sessions.Add(p);
             Task<long> Cash()=>context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
             Task<long> Count(uint id)=>context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid={id}");
             async Task Barrier(){p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");}
@@ -30,6 +30,17 @@ public static partial class Scenarios
                 }
                 else Check.Equal(0,raw.Count(r=>r.Bytes[0]==0x5e||AcquisitionHeader(r,0x80,0xe7)||AcquisitionHeader(r,0x80,0xe4)||AcquisitionHeader(r,0x81,0x0f)),"No success publication after rollback");
             }
+            // Match the native failing fixture exactly, plus a non-player ability-class row.
+            // These rows are not upload candidates, and must not produce per-row refusals.
+            step="bulk-upload-ignores-non-candidates";
+            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},0,2148374528,0),({p.CharId},12,2147563520,1)");
+            int ignoredCursor=p.World.RpcSnapshot().Count;
+            p.SkipReceived();await ZionUpload(p);await Barrier();
+            var ignored=p.World.RpcSnapshot().Skip(ignoredCursor).ToArray();
+            Check.That(!ignored.Any(r=>r.Bytes.Length>0&&r.Bytes[0]==0x2e),"Non-candidate-only Upload emits no misleading system refusal");
+            Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot IN (0,12)"),"Non-candidates remain untouched");
+            operations.Add(new{Step=step,Cursor=ignoredCursor,Records=ignored.Select(r=>r.Hex).ToArray()});
+            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},11,7332,2)");
             step="failure-trigger-preflight";
             await context.Database.InstallAcquisitionRollbackTriggerAsync(p.CharId,unchecked((int)code));
             await context.Database.RemoveAcquisitionRollbackTriggerAsync();
@@ -101,7 +112,14 @@ public static partial class Scenarios
             step="cold-relog-known-archive";string user=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");p.Dispose();context.Server.Dispose();
             using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs);reloaded=server;using var again=await HeadlessPlayer.LoginAsync(server.Address,user,p.Handle);sessions.Add(again);
             byte[] known=again.CharacterData[0x07];Check.That(BytePattern.IndexOf(known,BitConverter.GetBytes(code|1u),0)>=0,"Calm Mind known archive survives cold login");Check.That(BytePattern.IndexOf(known,BitConverter.GetBytes(other|1u),0)>=0,"LA learned archive survives cold login");
-            await again.EnterWorldAsync();foreach(var session in sessions)Check.Equal(0,session.World.Problems.Count,"Acquisition parser clean");step="complete";passed=true;
+            await again.EnterWorldAsync();
+            foreach(var session in sessions)
+            {
+                Check.Equal(0,session.World.Problems.Count,"Acquisition parser clean");
+                Check.That(!session.World.RpcSnapshot().Any(r=>System.Text.Encoding.UTF8.GetString(r.Bytes).Contains("That ability code changed or its bag slot is ambiguous")),"Native slot0 row never emits the false transaction refusal during mixed Upload");
+            }
+            Check.That(p.World.RpcSnapshot().Any(r=>System.Text.Encoding.UTF8.GetString(r.Bytes).Contains("You already know this ability")),"Real duplicate code still emits its intended refusal");
+            step="complete";passed=true;
         }
         catch(Exception error){failure=error;throw;}
         finally

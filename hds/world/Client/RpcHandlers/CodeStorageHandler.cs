@@ -35,7 +35,7 @@ namespace hds
             var learned=new List<AbilityAcquisition.Receipt>();
             foreach(var item in bag)
             {
-                if(!Crafting.IsBagSlot(item.Slot)||!AbilityProgression.IsAbilityCode(item.Goid))continue;
+                if(!AbilityAcquisition.UploadCandidate(item))continue;
                 try { learned.Add(db.AcquireAbility(charId,item.Goid,0,item.Slot,null,plan.Added.ConvertAll(e=>e.Slot).ToArray())); }
                 catch(Exception error)
                 {

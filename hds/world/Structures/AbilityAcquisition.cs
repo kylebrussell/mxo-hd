@@ -17,6 +17,10 @@ namespace hds
         }
         public static bool Genuine(uint value) => (value & 0xfc000000u)==0x80000000u &&
             AbilityCatalog.Find(Identity(value))?.Number("Ability/AbilityClass",-1)==0;
+        // Bulk Upload considers occupied ability-code bag rows only. The transaction still
+        // revalidates the exact row, descriptor and count and reports real races/duplicates.
+        internal static bool UploadCandidate(Crafting.InventoryItem item) =>
+            item.Slot>=1&&item.Slot<=96&&item.Count>0&&Genuine(item.Goid);
         public static bool SameAbility(long raw,uint expected) => TryDescriptor(raw,out uint value)&&Genuine(value)&&Identity(value)==Identity(expected);
         public static ushort Identity(uint value) => AbilityCatalog.Canonical(AbilityCatalog.IdOf(value));
         public static ushort FreeBag(IEnumerable<BagRow> rows)
