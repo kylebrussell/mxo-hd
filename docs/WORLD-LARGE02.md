@@ -16,7 +16,7 @@ The world has226 METR sectors and34 prefab placements:20 quarter-turn0,13 turn1 
 |Union omitted|477|
 |Exported unrotated/unambiguous keys|1619|
 
-The audit retains all raw references and678 SID/SIDI/SIDG source hashes. Raw sources are41 exterior and2123 interior references. Nonzero transformed audit positions remain unproven diagnostics, never exported. The established native IDs, unrotated positions/quaternions and server CSV Y+145 convention are inherited unchanged. Original Large01 CSV/audit reproduce byte-for-byte. The new reviewed rollout restores433 keys while preserving all44 conflicting omissions; the historical diagnostics above are superseded only by that opt-in path.
+The current audit retains all raw references and741 resource hashes, including secondary prefab metadata resources; the historical audit used678 hashes. Raw sources are41 exterior and2123 interior references. Nonzero transformed audit positions remain unproven diagnostics, never exported. The established native IDs, unrotated positions/quaternions and server CSV Y+145 convention are inherited unchanged. Original Large01 CSV/audit reproduce byte-for-byte. The new reviewed rollout restores433 keys while preserving all44 conflicting omissions; the historical diagnostics above are superseded only by that opt-in path.
 
 ## Missing navigation is not a NoNav claim
 
@@ -48,7 +48,7 @@ Use the booth's actual Exit to Loading Area radial and accept. Inspect the nativ
 Native geometry, door reachability and UI acceptance remain Claude-only and pending.
 
 
-## Recorded automated validation
+## Historical initial-rollout validation
 
 Full4,177 unit tests and24 focused world/hardline tests passed;12 Python audit-policy/link tests passed. Debug/Release builds and actual read-only large02/unknown plans plus provenance passed. Large02 CSV/audit and inherited Large01 CSV/audit reproduce byte-for-byte, repeated nav matches after decompression, and default large02 export without the explicit omission option fails before writing output.
 

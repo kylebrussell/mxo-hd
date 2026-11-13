@@ -26,4 +26,10 @@ Existing missing NAV sector47 remains unavailable despite EnableNavigationMesh1;
 
 Use discovered `large02-prefab-door`, with no dev/GM/forced rolls. This diagnostic starts beside the sourced door with byte heading0. Inspect visible geometry and ordinary radial Open, then wait21seconds for natural close. Record clipping, collision and facing separately. The direct start proves neither a walk route from the hardline nor native Loading Area UI return. Existing normal profiles remain unchanged. Native rendering and acceptance are pending.
 
-Automated validation is pending for this revision.
+## Automated validation
+
+Full 4,353 unit tests and 10 focused world/fixture tests passed. Six native-transform Python tests and 12 audit policy/link tests passed. Debug/Release builds, actual new/normal/unknown plans and provenance passed. Current map13 and inherited map16 CSV/audit reproduce byte-for-byte; historical map13 CSV remains byte-for-byte identical. Four strict/default or invalid-option probes refused before writing output. Existing native map16 plan semantics and evidence-document default remain unchanged.
+
+The new actual-wire case passed in 35.6 seconds, exit0, peak one isolated server. It used the actual Debug hds.dll SHA256 AF2DB0D0657DAEC4F6CCEC2A89F0C442892F601B3C5792A999250AB981E73017. Actual orientation was00000000F304353F00000000F204353F; state bytes34080000 then view updates040001800238080000 and040001800235080000. All five received view lists and successful raw diagnostics were persisted before teardown under the owned Temp/mxo-large02-rotation-proof directory. This proves wire behavior and the tested source contract, not native rendering.
+
+Executable ability audit remains honest: 1,404 templates, 561 player candidates/grants (532 partial,27 cosmetic,1 inaccessible,1 missing) and843 other templates. Current coverage/report artifacts are ignored outputs; historical snapshots remain unchanged.
