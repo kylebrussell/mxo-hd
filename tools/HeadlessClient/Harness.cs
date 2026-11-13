@@ -49,6 +49,13 @@ public sealed class ThrowawayDatabase : IDisposable
             " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";
         return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
     }
+    /// <summary>Fixed failure point only in this harness-owned database, never a production setting.</summary>
+    public Task<string> InstallAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+            "DELIMITER $$\nCREATE TRIGGER ability_test_rollback BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF NEW.slot=502 AND NEW.is_loaded=1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='deliberate ability rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER ability_test_rollback");
+
     public Task<string> RemoveMissionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
 
