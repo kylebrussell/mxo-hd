@@ -9,12 +9,18 @@ public static partial class Scenarios
         BitConverter.GetBytes(ability).CopyTo(request,2);request[37]=slot;request[38]=1;
         p.SendRpc(WireFormat.ToHex(request));
     }
+    private static async Task PrisonDenied(HeadlessPlayer p,ushort ability,Action send)
+    {
+        string pattern=$"80 ba {Le(ability)}";int before=p.Received(pattern).Count;
+        p.SkipReceived();send();await p.WaitForRpcAsync(pattern);
+        Check.Equal(before+1,p.Received(pattern).Count,"A new denial answers this request, not historical traffic");
+    }
     private static async Task PrisonDeviceUse(ScenarioContext context)
     {
-        var sessions=new List<object>();var databaseProof=new List<object>();HeadlessPlayer? current=null;Exception? primary=null;string step="start";
+        var sessions=new List<object>();var databaseProof=new List<object>();var resourceProof=new List<object>();HeadlessPlayer? current=null;Exception? primary=null;string step="start";
         void Record(HeadlessPlayer p)
         {
-            sessions.Add(new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray()});
+            sessions.Add(new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray(),OrderedInnerStrength=ViewUpdateValues(p,2,"02 80 80 80 10").ToArray()});
             Check.Equal(0,p.World.Problems.Count,"Prison device parser clean");
         }
         try
@@ -57,8 +63,8 @@ public static partial class Scenarios
                     }
                     finally{await context.Database.RemovePrisonMoveFailureAsync();}
                 }
-                Cast(p,ability);await p.WaitForRpcAsync($"80 ba {Le(ability)}");
-                PrisonRequest(p,ability,1);await p.WaitForRpcAsync($"80 ba {Le(ability)}");
+                await PrisonDenied(p,ability,()=>Cast(p,ability));
+                await PrisonDenied(p,ability,()=>PrisonRequest(p,ability,1));
                 Check.Equal(1L,await context.Database.LongAsync($"SELECT slot FROM inventory WHERE charId={p.CharId} AND goid={hds.PrisonDevices.Item(ability)}"),"Bag tool cannot activate");
                 p.SendRpc("63 01 6a");await p.WaitForRpcAsync("65 01 00 6a 00");
                 Check.Equal(106L,await context.Database.LongAsync($"SELECT slot FROM inventory WHERE charId={p.CharId} AND goid={hds.PrisonDevices.Item(ability)}"),"Normal equipment move");
@@ -86,6 +92,11 @@ public static partial class Scenarios
                 int count=p.Received(ModPattern(ability,144)).Count;
                 p.SendChat("?health 5000");p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
                 Check.Equal(count,p.Received(ModPattern(ability,144)).Count,"Healing does not increment");
+                // Preserve ordered absolute resource records; normal regeneration is +8 and is not disabled.
+                await p.WaitUntilAsync(()=>ViewUpdateValues(p,2,"02 80 80 80 10").Count>0,"An actual IS update anchors terminal accounting",TimeSpan.FromSeconds(10));
+                int terminalStart=ViewUpdateValues(p,2,"02 80 80 80 10").Count;
+                int expectedRefund=ability==949?6:10;
+                resourceProof.Add(new{Ability=ability,Stage="before-terminal",ExpectedRefund=expectedRefund,Updates=ViewUpdateValues(p,2,"02 80 80 80 10").ToArray()});
                 if(ability==949)
                 {
                     step="expiry";await p.WaitForRpcAsync(ModPattern(ability,144,true),TimeSpan.FromSeconds(32));
@@ -96,13 +107,26 @@ public static partial class Scenarios
                     var off=await p.WaitForRpcAsync(ModPattern(ability,144,true));
                     Check.Equal(initial+increment,BitConverter.ToInt32(off.Bytes,13),"Term removes accumulated value");
                 }
+                int refundPair=-1;
+                await p.WaitUntilAsync(()=>
+                {
+                    var values=ViewUpdateValues(p,2,"02 80 80 80 10");
+                    refundPair=Enumerable.Range(Math.Max(0,terminalStart-1),Math.Max(0,values.Count-Math.Max(0,terminalStart-1)-1))
+                        .FirstOrDefault(i=>values[i+1]-values[i]==expectedRefund,-1);
+                    return refundPair>=0;
+                },"Exact terminal IS refund distinct from +8 regeneration",TimeSpan.FromSeconds(4));
+                var resourceValues=ViewUpdateValues(p,2,"02 80 80 80 10");
+                Check.Equal(expectedRefund,resourceValues[refundPair+1]-resourceValues[refundPair],"Actual ordered wire resource delta");
+                Check.That(resourceValues[refundPair+1]<2000,"Refund witness is not hidden by the IS cap");
+                if(ability==949)Check.That(resourceValues.Zip(resourceValues.Skip(1),(a,b)=>b-a).Any(delta=>delta==8),"Ordinary regeneration remains independently visible");
+                resourceProof.Add(new{Ability=ability,Stage="terminal",ExpectedRefund=expectedRefund,PairIndex=refundPair,Before=resourceValues[refundPair],After=resourceValues[refundPair+1],Updates=resourceValues.ToArray()});
                 Check.Equal(1L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={p.CharId} AND goid={hds.PrisonDevices.Item(ability)}"),"Activation never consumes device");
-                PrisonRequest(p,ability);await p.WaitForRpcAsync($"80 ba {Le(ability)}");
+                await PrisonDenied(p,ability,()=>PrisonRequest(p,ability));
                 if(ability==949)
                 {
                     p.SendRpc("64 6a 03");await p.WaitForRpcAsync("65 6a 00 03 00");
                     p.SendRpc("63 02 6a");await p.WaitForRpcAsync("65 02 00 6a 00");
-                    PrisonRequest(p,957);await p.WaitForRpcAsync("80 ba bd 03");
+                    await PrisonDenied(p,957,()=>PrisonRequest(p,957));
                     Check.Equal(0,p.Received(ModPattern(957,144)).Count,"Shared family cooldown survives device replacement");
                 }
                 Record(p);p.Dispose();current=null;
@@ -118,7 +142,7 @@ public static partial class Scenarios
             try
             {
                 string dll=context.Server.SourceAssembly;
-                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Database=context.Database.Name,DatabaseProof=databaseProof,Sessions=sessions,SourceAssembly=dll,
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Database=context.Database.Name,DatabaseProof=databaseProof,ResourceProof=resourceProof,Sessions=sessions,SourceAssembly=dll,
                     SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),AcquisitionImplemented=false},new JsonSerializerOptions{WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog());
                 Console.WriteLine("  PRISON evidence: "+stem+" step="+step);
