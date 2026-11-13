@@ -1,0 +1,809 @@
+{
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "StringTableSha256": "a14bd389ae5bef4d54600aa85ec2d3b96bb3e0ea0819da960dbbac5cf549bd2e",
+  "JumpTableVA": "0x621e5698",
+  "JumpTableHex": "e3521e620d531e6229531e620d541e6254541e627d541e628b541e621b531e6273561e62f1521e62ff521e622f551e6299541e62a7541e62f0541e620d551e623d551e6273561e6286551e62af551e6237531e629a531e623e561e62d8551e62e6551e62f1551e62fc551e6207561e6212561e621d561e6228561e6233561e6249561e625f561e6254561e6221551e62",
+  "PrimaryBytes": {
+    "0x6213b79c": "c706f0f9876288460c894e1075438b4e088b116a006a13ff52188b461066c70080ba8b4e10c74102001000008b5610c642066b8b4610c74007000000008b4e10c7410b000000008b5610c7420f00000000",
+    "0x62151a00": "558bec8b450c85c0568bf10f84e000000083f8025357740983f8030f85ce0000008b46108b7d088b58028bcf68b00e8862e88abfecff5357e883c1ecff83c4088bc86874de8662e874bfecff8b4e108a59068bcf68f00e8862e862bfecff0fb6d35257e8587aeeff83c4088bc86874de8662e849bfecff8b46108b58078bcf68e40e8862e837bfecff5357e830c1ecff83c4088bc86874de8662e821bfecff8b4e108b590b8bcf68cc0e8862e80fbfecff5357e8087aeeff83c4088bc86874de8662e8f9beecff8b56108b720f8bcf68bc0e8862e8e7beecff5657e8e0c0ecff83c4088bc86874de8662e8d1beecff5f5b",
+    "0x621e5890": "558bec83ec2033c08945ec8945f08945f48b45088b40108bd18b4802894de08b480b894df88b480f5657894dfc8b48070fb64006894de883ec208bfcb9080000008d75e0c645e401f3a5508bcae89ef9ffff5f5e8be55dc2",
+    "0x621e5280": "558bec83ec1c5356578bd9e8c0aae2ff8b750c81e6ff0f00008bf833c081ce0000e0ffc1e60a6a108975fc8945f08945f48945f8e8e7cbe1ff8d48108945f08945f4894df866c70000008b451483c0fe83c40483f8230f8797030000ff248598561e626a016a086854020076e9770300006a016a0868f1000060e9690300006a016a08689c02007ae95b0300006a016a086859020076e94d0300006a016a08681402007ae93f0300006a016a086865020076e9310300008d552b52682c0987628d4de4e8e811e2ffa108ee9e6285c0740a8b88b400000085c975198d4de4e88d11e2ff8d4df0e88511e2ff5f5e5b8be55dc224008b4d288d45e45051e8dfbaffff83c4085683ec0c8d55e48bcc52e88deae2ff68d801007aeb488d552b52682c0987628d4de4e88511e2ffa108ee9e6285c074a78b88b400000085c9749d8b4d288d45e45051e895baffff83c4085683ec0c8d55e48bcc52e843eae2ff684b02007a8d45f0508bcfe8d39fe5ff6a016a088d4df0518b0da8689e62e8606bf7ff8d4de4e8e810e2ffe9660200008bcbe84c7efeff85c00f8447ffffff8b550c6a00528bc8e8c7f83d00d95d28d94528e8a43e4c0085c07505b801000000565068550200768d45f0508bcfe8a18cffffe96c0100005668cf02007a8d55f0528bcfe8ab08e4ff8b0da8689e626a016a088d45f050e8e86af7ffe9f60100006a006a086881000080e9dd0100006a016a08687d01007ae9cf0100006a016a086864020076e9c10100008bcec1e90a81e1ff0f000051e8a80f330083c40450b940809f62e82a0112005056684701007a8d55f0528bcfe8587ce5ff8b0da8689e626a016a088d45f050e8756af7ffe98301000068cf2700c6e886a9ffff83c404508d4df0e8da1ee3ff6a00e9b50000008b5524528d45fc508bcbe8b4a1ffffe9520100006a016a08688a02007ae9390100006a016a0868ba02007ae92b0100008bcec1e90a81e1ff0f000051e8120f330083c40450b940809f62e8940012005056684701007a8d55f0528bcfe8c27be5ff8b0da8689e626a016a088d45f050e8df69f7ffe9ed00000056685a0200768d4df0518bcfe87907e4ff8b0da8689e626a016a088d55f052e8b669f7ffe9c400000056685b0200768d45f0508bcfe85007e4ff6a016a088d4df0518b0da8689e62e88d69f7ffe99b0000006a016a086860020076e9820000006a016a086861020076eb776a016a086862020076eb6c6a016a08685c020076eb616a016a08684901007aeb566a016a08684801007aeb4b6a016a08685d020076eb406a016a08685e020076eb356a016a08685f020076eb2a6a016a086856020076eb1f6a016a08684b01007aeb146a016a0868e101007aeb096a016a0868e401007a8b0da8689e62e81d51f8ff8b45f085c074138b55f82bd0d1fad1e25250e826c7e1ff83c4085f5e5b8be55dc22400",
+    "0x621df6d0": "558bec83ec0c56e87406e3ff6a108bf0c745f400000000c745f800000000c745fc00000000e8a627e2ff8b55088d4810894dfc8b4d0c83c4048945f48945f866c70000008b02515068630000248bce8935dc15a362e896182400508d55f452e8ccd1ffff8b0da8689e6283c4106a016a088d45f450e816c8f7ff8b45f485c05e74138b4dfc2bc8d1f9d1e15150e84e26e2ff83c4088be55dc20800",
+    "0x621e0e60": "558bec83ec1457e8e4eee2ff8bf885ff0f84e70000005333c956b301894df890b801000000d3e08b4d0885c10f84b900000050e8688d33008bf081e6ff0f000081ce0000e0ffc1e60a8bd681e200fc3f0083c40481fa000040000f848b00000033c06a108945ec8945f08945f4e8ce0fe2ff8d481083c40484db894df48945ec8945f066c70000008bcf56893ddc15a362741168e201007ae8c3002400508d55ec52eb0f68e301007ae8b2002400508d45ec50e85845e4ff8b55f08b45ec83c40c8d4dff518b4d0c5250e8011ae3ff8b45ec32db85c074138b4df42bc8d1f9d1e15150e8680ee2ff83c4088b4df84183f920894df80f8c25ffffff5e5b5f8be5"
+  },
+  "Reasons": [
+    {
+      "Code": 2,
+      "Entry": "0x621e52e3",
+      "Messages": [
+        {
+          "Address": "0x621e52e7",
+          "StringID": "0x76000254",
+          "Name": "ID_MUST_BE_STANDING",
+          "Text": "You must be standing to use this ability."
+        }
+      ]
+    },
+    {
+      "Code": 3,
+      "Entry": "0x621e530d",
+      "Messages": [
+        {
+          "Address": "0x621e5311",
+          "StringID": "0x76000259",
+          "Name": "ID_ABILITY_USE_UNKNOWN",
+          "Text": "Attempt to use an unknown ability?"
+        }
+      ]
+    },
+    {
+      "Code": 4,
+      "Entry": "0x621e5329",
+      "Messages": [
+        {
+          "Address": "0x621e532d",
+          "StringID": "0x76000265",
+          "Name": "ID_ABILITY_DISABLED",
+          "Text": "This ability has been disabled due to virus."
+        }
+      ]
+    },
+    {
+      "Code": 5,
+      "Entry": "0x621e540d",
+      "Messages": [
+        {
+          "Address": "0x621e543f",
+          "StringID": "0x76000255",
+          "Name": "ID_ABILITY_USE_TOO_SOON",
+          "Text": "You must wait %1I more seconds to use %2o again."
+        }
+      ]
+    },
+    {
+      "Code": 6,
+      "Entry": "0x621e5454",
+      "Messages": [
+        {
+          "Address": "0x621e5455",
+          "StringID": "0x7a0002cf",
+          "Name": "ID_NOT_WITH_CURRENT_TACTIC",
+          "Text": "You cannot activate %o while using this tactic."
+        }
+      ]
+    },
+    {
+      "Code": 7,
+      "Entry": "0x621e547d",
+      "Messages": [
+        {
+          "Address": "0x621e5481",
+          "StringID": "0x80000081",
+          "Name": "",
+          "Text": "You do not have this ability loaded."
+        }
+      ]
+    },
+    {
+      "Code": 8,
+      "Entry": "0x621e548b",
+      "Messages": [
+        {
+          "Address": "0x621e548f",
+          "StringID": "0x7a00017d",
+          "Name": "ID_ABILITY_CANT_PERFORM_FULL_QUEUE",
+          "Text": "You cannot perform this ability because your queue is full."
+        }
+      ]
+    },
+    {
+      "Code": 9,
+      "Entry": "0x621e531b",
+      "Messages": [
+        {
+          "Address": "0x621e531f",
+          "StringID": "0x7a000214",
+          "Name": "ID_TARGET_NOT_IN_LOS",
+          "Text": "You cannot see your target."
+        }
+      ]
+    },
+    {
+      "Code": 10,
+      "Entry": "0x621e5673",
+      "Messages": []
+    },
+    {
+      "Code": 11,
+      "Entry": "0x621e52f1",
+      "Messages": [
+        {
+          "Address": "0x621e52f5",
+          "StringID": "0x600000f1",
+          "Name": "ID_CANNOT_USE_WHILE_MOVING",
+          "Text": "You cannot use this ability while moving."
+        }
+      ]
+    },
+    {
+      "Code": 12,
+      "Entry": "0x621e52ff",
+      "Messages": [
+        {
+          "Address": "0x621e5303",
+          "StringID": "0x7a00029c",
+          "Name": "ID_CANNOT_USE_WHILE_IN_TARGET_FOV",
+          "Text": "You cannot use this ability while within your target's sight."
+        }
+      ]
+    },
+    {
+      "Code": 13,
+      "Entry": "0x621e552f",
+      "Messages": [
+        {
+          "Address": "0x621e5533",
+          "StringID": "0x7a0002ba",
+          "Name": "ID_ABILITY_NOT_IN_CORRECT_STYLE",
+          "Text": "You are not in the correct combat style to use this ability."
+        }
+      ]
+    },
+    {
+      "Code": 14,
+      "Entry": "0x621e5499",
+      "Messages": [
+        {
+          "Address": "0x621e549d",
+          "StringID": "0x76000264",
+          "Name": "ID_ABILITY_REQUIRES_PROGRAM_LAUNCHER",
+          "Text": "This ability requires the Program Launcher to be equipped."
+        }
+      ]
+    },
+    {
+      "Code": 15,
+      "Entry": "0x621e54a7",
+      "Messages": [
+        {
+          "Address": "0x621e54c8",
+          "StringID": "0x7a000147",
+          "Name": "ID_CLIENT_ABILITY_NEEDS_ITEM",
+          "Text": "%1o needs %2z in order to be performed."
+        }
+      ]
+    },
+    {
+      "Code": 16,
+      "Entry": "0x621e54f0",
+      "Messages": [
+        {
+          "Address": "0x621e54f0",
+          "StringID": "0xc60027cf",
+          "Name": "",
+          "Text": "This item must be equipped to be activated."
+        }
+      ]
+    },
+    {
+      "Code": 17,
+      "Entry": "0x621e550d",
+      "Messages": [
+        {
+          "Address": "0x621df718",
+          "StringID": "0x24000063",
+          "Name": "ID_INADEQUATE_INNER_STRENGTH",
+          "Text": "Could not perform %o.  You need %I more Inner Strength.",
+          "Via": "0x621e550d -> 0x621df6d0"
+        }
+      ]
+    },
+    {
+      "Code": 18,
+      "Entry": "0x621e553d",
+      "Messages": [
+        {
+          "Address": "0x621e555e",
+          "StringID": "0x7a000147",
+          "Name": "ID_CLIENT_ABILITY_NEEDS_ITEM",
+          "Text": "%1o needs %2z in order to be performed."
+        }
+      ]
+    },
+    {
+      "Code": 19,
+      "Entry": "0x621e5673",
+      "Messages": []
+    },
+    {
+      "Code": 20,
+      "Entry": "0x621e5586",
+      "Messages": [
+        {
+          "Address": "0x621e5587",
+          "StringID": "0x7600025a",
+          "Name": "ID_ABILITY_MUST_BE_IN_COMBAT",
+          "Text": "%1o is usable in combat only."
+        }
+      ]
+    },
+    {
+      "Code": 21,
+      "Entry": "0x621e55af",
+      "Messages": [
+        {
+          "Address": "0x621e55b0",
+          "StringID": "0x7600025b",
+          "Name": "ID_ABILITY_MUST_BE_OUTSIDE_COMBAT",
+          "Text": "%1o cannot be used during combat."
+        }
+      ]
+    },
+    {
+      "Code": 22,
+      "Entry": "0x621e5337",
+      "Messages": [
+        {
+          "Address": "0x621e5393",
+          "StringID": "0x7a0001d8",
+          "Name": "ID_TARGET_NOT_IN_CURRENT_ABILITY_STATE",
+          "Text": "Your target needs to be (%s) in order for you to use %2o on them."
+        }
+      ]
+    },
+    {
+      "Code": 23,
+      "Entry": "0x621e539a",
+      "Messages": [
+        {
+          "Address": "0x621e53dd",
+          "StringID": "0x7a00024b",
+          "Name": "ID_CASTER_NOT_IN_CURRENT_ABILITY_STATE",
+          "Text": "You must be (%s) in order for you to use %2o."
+        }
+      ]
+    },
+    {
+      "Code": 24,
+      "Entry": "0x621e563e",
+      "Messages": [
+        {
+          "Address": "0x621e5642",
+          "StringID": "0x76000256",
+          "Name": "ID_TARGET_NOT_VALID",
+          "Text": "Target is not valid."
+        }
+      ]
+    },
+    {
+      "Code": 25,
+      "Entry": "0x621e55d8",
+      "Messages": [
+        {
+          "Address": "0x621e55dc",
+          "StringID": "0x76000260",
+          "Name": "ID_INVALID_INVENTORY_SLOT",
+          "Text": "Invalid inventory slot."
+        }
+      ]
+    },
+    {
+      "Code": 26,
+      "Entry": "0x621e55e6",
+      "Messages": [
+        {
+          "Address": "0x621e55ea",
+          "StringID": "0x76000261",
+          "Name": "ID_ABILITY_NOT_GROUND_TARGET",
+          "Text": "Ground target is not valid."
+        }
+      ]
+    },
+    {
+      "Code": 27,
+      "Entry": "0x621e55f1",
+      "Messages": [
+        {
+          "Address": "0x621e55f5",
+          "StringID": "0x76000262",
+          "Name": "ID_ABILITY_NOT_REACHABLE_TARGET",
+          "Text": "Can't reach the selected target."
+        }
+      ]
+    },
+    {
+      "Code": 28,
+      "Entry": "0x621e55fc",
+      "Messages": [
+        {
+          "Address": "0x621e5600",
+          "StringID": "0x7600025c",
+          "Name": "ID_ABILITY_NOT_FRIENDLY_TARGET",
+          "Text": "Target is not a friend."
+        }
+      ]
+    },
+    {
+      "Code": 29,
+      "Entry": "0x621e5607",
+      "Messages": [
+        {
+          "Address": "0x621e560b",
+          "StringID": "0x7a000149",
+          "Name": "ID_ABILITY_NOT_DEAD_FRIENDLY_TARGET",
+          "Text": "Target is not a dead friend."
+        }
+      ]
+    },
+    {
+      "Code": 30,
+      "Entry": "0x621e5612",
+      "Messages": [
+        {
+          "Address": "0x621e5616",
+          "StringID": "0x7a000148",
+          "Name": "ID_ABILITY_NOT_DEAD_ENEMY_TARGET",
+          "Text": "Target is not a dead enemy."
+        }
+      ]
+    },
+    {
+      "Code": 31,
+      "Entry": "0x621e561d",
+      "Messages": [
+        {
+          "Address": "0x621e5621",
+          "StringID": "0x7600025d",
+          "Name": "ID_ABILITY_NOT_ENEMY_TARGET",
+          "Text": "Target is not an enemy."
+        }
+      ]
+    },
+    {
+      "Code": 32,
+      "Entry": "0x621e5628",
+      "Messages": [
+        {
+          "Address": "0x621e562c",
+          "StringID": "0x7600025e",
+          "Name": "ID_ABILITY_NOT_GROUP_TARGET",
+          "Text": "Target is not a group member."
+        }
+      ]
+    },
+    {
+      "Code": 33,
+      "Entry": "0x621e5633",
+      "Messages": [
+        {
+          "Address": "0x621e5637",
+          "StringID": "0x7600025f",
+          "Name": "ID_ABILITY_NOT_OBJECT_TARGET",
+          "Text": "Target is not an object."
+        }
+      ]
+    },
+    {
+      "Code": 34,
+      "Entry": "0x621e5649",
+      "Messages": [
+        {
+          "Address": "0x621e564d",
+          "StringID": "0x7a00014b",
+          "Name": "ID_TARGET_NOT_IN_RANGE",
+          "Text": "Target is not in range of this ability."
+        }
+      ]
+    },
+    {
+      "Code": 35,
+      "Entry": "0x621e565f",
+      "Messages": [
+        {
+          "Address": "0x621e5663",
+          "StringID": "0x7a0001e4",
+          "Name": "ID_TARGET_NOT_A_FRIENDLY_SIMULACRA",
+          "Text": "Target is not a friendly simulacra."
+        }
+      ]
+    },
+    {
+      "Code": 36,
+      "Entry": "0x621e5654",
+      "Messages": [
+        {
+          "Address": "0x621e5658",
+          "StringID": "0x7a0001e1",
+          "Name": "ID_TARGET_NOT_AN_ENEMY_SIMULACRA",
+          "Text": "Target is not an enemy simulacra."
+        }
+      ]
+    },
+    {
+      "Code": 37,
+      "Entry": "0x621e5521",
+      "Messages": [
+        {
+          "Address": "0x621e5525",
+          "StringID": "0x7a00028a",
+          "Name": "ID_ABILITY_CANT_WHILE_DISARMED",
+          "Text": "You cannot use this ability while disarmed."
+        }
+      ]
+    }
+  ],
+  "RetailSamples": [
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66753,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 49",
+      "PayloadOffset": 7,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66753,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 49",
+      "PayloadOffset": 30,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66779,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 42",
+      "PayloadOffset": 23,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66798,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 26",
+      "PayloadOffset": 7,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66810,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 94",
+      "PayloadOffset": 24,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66831,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 90",
+      "PayloadOffset": 71,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66845,
+      "Header": "WORLD->Client [18:29:03 07/31/09] packet size: 26",
+      "PayloadOffset": 7,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66876,
+      "Header": "WORLD->Client [18:29:04 07/31/09] packet size: 66",
+      "PayloadOffset": 24,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66876,
+      "Header": "WORLD->Client [18:29:04 07/31/09] packet size: 66",
+      "PayloadOffset": 47,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66925,
+      "Header": "WORLD->Client [18:29:04 07/31/09] packet size: 73",
+      "PayloadOffset": 54,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66941,
+      "Header": "WORLD->Client [18:29:04 07/31/09] packet size: 34",
+      "PayloadOffset": 15,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66960,
+      "Header": "WORLD->Client [18:29:04 07/31/09] packet size: 65",
+      "PayloadOffset": 46,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66976,
+      "Header": "WORLD->Client [18:29:05 07/31/09] packet size: 26",
+      "PayloadOffset": 7,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 66988,
+      "Header": "WORLD->Client [18:29:05 07/31/09] packet size: 226",
+      "PayloadOffset": 197,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 67012,
+      "Header": "WORLD->Client [18:29:05 07/31/09] packet size: 97",
+      "PayloadOffset": 78,
+      "Literal": "80ba660300006b060000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 77137,
+      "Header": "WORLD->Client [18:30:41 07/31/09] packet size: 88",
+      "PayloadOffset": 18,
+      "Literal": "80ba050100006b040000000000000000000000",
+      "AbilityID": 261,
+      "ToolsSlot": 107,
+      "ErrorID": 4,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 106647,
+      "Header": "WORLD->Client [18:35:38 07/31/09] packet size: 184",
+      "PayloadOffset": 165,
+      "Literal": "80ba050100006b060000000000000000000000",
+      "AbilityID": 261,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 141668,
+      "Header": "WORLD->Client [18:41:30 07/31/09] packet size: 362",
+      "PayloadOffset": 334,
+      "Literal": "80ba660300006b050000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 141707,
+      "Header": "WORLD->Client [18:41:31 07/31/09] packet size: 34",
+      "PayloadOffset": 15,
+      "Literal": "80ba660300006b050000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 237547,
+      "Header": "WORLD->Client [19:02:20 07/31/09] packet size: 85",
+      "PayloadOffset": 43,
+      "Literal": "80ba660300006b050000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected\\logs\\ProxyM2_m2_packets.log.txt",
+      "HeaderLine": 237547,
+      "Header": "WORLD->Client [19:02:20 07/31/09] packet size: 85",
+      "PayloadOffset": 66,
+      "Literal": "80ba660300006b050000000000000000000000",
+      "AbilityID": 870,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7397,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 90",
+      "PayloadOffset": 71,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7413,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 26",
+      "PayloadOffset": 7,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7446,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 50",
+      "PayloadOffset": 31,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7465,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 272",
+      "PayloadOffset": 253,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7493,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 46",
+      "PayloadOffset": 27,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7505,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 90",
+      "PayloadOffset": 71,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 7519,
+      "Header": "WORLD->Client [02:45:43 07/30/09] packet size: 47",
+      "PayloadOffset": 28,
+      "Literal": "80baae0100006b060000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 6,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 19692,
+      "Header": "WORLD->Client [02:47:39 07/30/09] packet size: 67",
+      "PayloadOffset": 48,
+      "Literal": "80ba280400006b0a0000000000000000000000",
+      "AbilityID": 1064,
+      "ToolsSlot": 107,
+      "ErrorID": 10,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 75553,
+      "Header": "WORLD->Client [02:54:16 07/30/09] packet size: 26",
+      "PayloadOffset": 7,
+      "Literal": "80baae0100006b050000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    },
+    {
+      "File": "research\\packet-dumps\\community-intake\\20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected\\logs\\mxopackets2_RajkoPacketsNearTheEnd_PacketsZombiesPortingEtc.log.txt",
+      "HeaderLine": 75563,
+      "Header": "WORLD->Client [02:54:16 07/30/09] packet size: 108",
+      "PayloadOffset": 7,
+      "Literal": "80baae0100006b050000000000000000000000",
+      "AbilityID": 430,
+      "ToolsSlot": 107,
+      "ErrorID": 5,
+      "InnerstrengthDeficit": 0,
+      "StatesNotMet": 0
+    }
+  ]
+}
