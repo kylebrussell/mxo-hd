@@ -129,6 +129,7 @@ public static partial class Scenarios
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
         new Scenario("widowsmoor-partial-world", WidowsMoorPartialWorld, StillNpcs),
         new Scenario("utility-security-and-traps", SecurityAndTraps, StillNpcs),
+        new Scenario("yuki-partial-world", YukiPartialWorld, StillNpcs),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("archive02-partial-world", Archive02PartialWorld, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
