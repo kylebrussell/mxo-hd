@@ -7,5 +7,5 @@ public sealed class StatProducersMode : NativeQaMode
         Array.Empty<string>(),Array.Empty<string>(),new[]{"UPDATE characters SET level=50,innerStrC=1000,innerStrM=1000 WHERE charId=110"},
         DevCommands:true,
         extraQaMetadata:new(){["StatProducersDiagnostic"]=true,["StatProducersAuthority"]="records only; no75/32 conversion proof"},
-        readyMessages:new[]{"CSR110 only: owned32/75/356; normal356 grants1087. ?qaunload 75 / ?qaload 75 use ordinary owned loadout; Actions Howitzer Upgrade1087 toggles on/off (no timed expiry). Normal Upgrade Attacks314 has20s expiry. No random outcomes or forced rolls. See docs/STAT-PRODUCERS.md."});
+        readyMessages:new[]{"CSR110 only: owned32/75/356; normal356 grants1087. ?qaunload 75 / ?qaload 75 use ordinary owned loadout; Actions Howitzer Upgrade1087 activates its indefinite exclusive buff; off/toggle behavior unresolved (no second-use/off requirement). Normal Upgrade Attacks314 has20s expiry. No random outcomes or forced rolls. See docs/STAT-PRODUCERS.md."});
 }

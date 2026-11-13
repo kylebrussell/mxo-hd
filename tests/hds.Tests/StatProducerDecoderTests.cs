@@ -62,7 +62,7 @@ public class StatProducerDecoderTests
         Assert.Empty(p.EnvironmentOverrides);
         Assert.Contains((ushort)1087,AbilityProgression.GrantsOf(356));
         foreach(ushort id in new ushort[]{32,75,356,314,1087})Assert.Equal(0,AbilityCatalog.Find(id).Number("Ability/AbilityClass",-1));
-        Assert.True(AbilityBuffs.Retail[1087].Exclusive);Assert.Equal(0,AbilityBuffs.Retail[1087].Seconds);
+        Assert.True(AbilityBuffs.Retail[1087].Exclusive);Assert.False(AbilityBuffs.Retail[1087].Toggle);Assert.True(AbilityBuffs.CooldownStartsOnUse(1087));Assert.Equal(0,AbilityBuffs.Retail[1087].Seconds);
         Assert.Equal(20,AbilityBuffs.Retail[314].Seconds);
     }
 }

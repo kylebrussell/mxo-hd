@@ -25,7 +25,6 @@ public static partial class Scenarios
         SetAbilityLoaded(p,401,75,50,false);await p.WaitForRpcAsync(PassiveRecord(75,1055,25,true));
         SetAbilityLoaded(p,401,75,50,true);await p.WaitForRpcAsync("80 b2 4b 00 32 00 91 01");
         Cast(p,1087);await p.WaitForRpcAsync(ModPattern(1087,177));
-        Cast(p,1087);await p.WaitForRpcAsync(ModPattern(1087,177,true));
         Cast(p,314);await p.WaitForRpcAsync(ModPattern(314,342));await p.WaitForRpcAsync(ModPattern(314,342,true),TimeSpan.FromSeconds(30));
         var wire=p.World.RpcSnapshot().Where(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&(r.Bytes[1]==0xb2||r.Bytes[1]==0xbc)).ToArray();
         var bases=wire.Where(r=>r.Bytes[1]==0xb2).Select(r=>BaseAttributeRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
@@ -36,7 +35,8 @@ public static partial class Scenarios
         Check.That(mods.Any(r=>r!.SourceId==75&&r.TargetId==1055&&r.SignedValue==25&&r.IndividualOperation==IndividualBonusOperation.Add),"Raw passive75 owns1055, not177");
         var how=mods.Single(r=>r!.SourceId==1087&&r.TargetId==177&&r.AddRemoveType==0)!;
         Check.Equal(17,how.SignedValue,"Independent captured Howitzer direct177");
-        Check.That(mods.Any(r=>r!.SourceId==1087&&r.TargetId==177&&r.AddRemoveType==1&&r.Locator==how.Locator),"Normal toggle removes same direct locator");
+        Check.That(mods.Any(r=>r!.SourceId==1087&&r.TargetId==342&&r.SignedValue==13&&r.AddRemoveType==0),"Howitzer separately supplies captured direct342");
+        Check.That(mods.Any(r=>r!.SourceId==75&&r.TargetId==1055&&r.AddRemoveType==1),"Ordinary passive unload supplies actual Remove");
         var timed=mods.Single(r=>r!.SourceId==314&&r.TargetId==342&&r.AddRemoveType==0)!;
         Check.Equal(108,timed.SignedValue,"Captured314 direct342");Check.Equal(20f,timed.Duration,"Real20s expiry");
         Check.That(mods.Any(r=>r!.SourceId==314&&r.TargetId==342&&r.AddRemoveType==1&&r.Locator==timed.Locator),"Expiry removes same timed locator");
