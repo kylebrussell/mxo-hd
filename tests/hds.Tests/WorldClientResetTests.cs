@@ -12,14 +12,33 @@ public class WorldClientResetTests
     private sealed class RecordingCipher : IWorldEncryption
     {
         public readonly List<byte[]> Plain = new();
+        public Exception? Fault;
         public byte[] encrypt(byte[] bytes,int length,ushort pss,ushort cseq,ushort sseq)
-        { lock(Plain) Plain.Add(bytes.ToArray()); return bytes; }
+        { if(Fault != null) throw Fault; lock(Plain) Plain.Add(bytes.ToArray()); return bytes; }
         public ArrayList decrypt(byte[] bytes,int length)=>throw new NotSupportedException();
     }
     private static void Set(WorldClient client,string field,object value)=>typeof(WorldClient)
         .GetField(field,BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(client,value);
     private static bool Flag(WorldClient client,string field)=>(bool)typeof(WorldClient)
         .GetField(field,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(client)!;
+
+    [Fact]
+    public void EncryptionFailureReleasesTheActualFlushClaimForLaterWork()
+    {
+        var client=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        var cipher=new RecordingCipher {Fault=new InvalidOperationException("test encryption failure")};
+        Set(client,"flushLock",new object());Set(client,"<TransportFence>k__BackingField",new WorldSendFence());
+        Set(client,"cypher",cipher);
+        client.playerData=new ClientData();client.messageQueue=new MessageQueue();client.viewMan=new ViewManager();
+        client.messageQueue.addRpcMessage(new byte[]{0x81,0x49});
+        Assert.Throws<InvalidOperationException>(()=>client.FlushQueue(force:true));
+        Assert.False(Flag(client,"flushingQueueInProgress"));
+        cipher.Fault=null;
+        client.messageQueue.addRpcMessage(new byte[]{0x81,0x4b});
+        client.TickFlush();
+        Assert.Contains(cipher.Plain,p=>p.AsSpan().IndexOf(new byte[]{0x81,0x4b})>=0);
+        Assert.False(Flag(client,"flushingQueueInProgress"));
+    }
 
     [Fact]
     public void ArchiveViewProducerCannotAllocateAfterItsEpochWorldOrMapChanges()

@@ -230,9 +230,10 @@ namespace hds
                 flushPending = false; // consume only requests that preceded this flush
             }
 
-            long scaleFlushStart=ScaleDiagnostics.Start;
+            long scaleFlushStart=0;
             try
             {
+            scaleFlushStart=ScaleDiagnostics.Start;
             long outgoingEpoch = TransportFence.Capture();
 
             // This resend the MessageQueue - should be called after parsing or after sending something out
@@ -399,13 +400,13 @@ namespace hds
             }
             finally
             {
-                ScaleDiagnostics.FlushCompleted(scaleFlushStart);
                 lock (flushLock)
                 {
                     flushingQueueInProgress = false;
                     lastFlushTick = Environment.TickCount64;
                     // Preserve requests raised during this flush, including reset/setup retries.
                 }
+                ScaleDiagnostics.FlushCompleted(scaleFlushStart);
             }
         }
 
