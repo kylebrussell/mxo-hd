@@ -125,6 +125,7 @@ public static partial class Scenarios
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
@@ -1055,11 +1056,11 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
     };
 
     /// <summary>The values after this update in a view list, in the order they arrived: `&lt;view&gt; &lt;bytes&gt; &lt;u16&gt;`.</summary>
-    private static List<ushort> ViewUpdateValues(HeadlessPlayer player, ushort viewId, string bytes)
+    private static List<ushort> ViewUpdateValues(HeadlessPlayer player, ushort viewId, string bytes, int firstViewList = 0)
     {
         byte[] needle = WireFormat.FromHex($"{viewId & 0xff:x2}{viewId >> 8:x2}{bytes}");
         List<ushort> values = new();
-        foreach (byte[] section in player.World.ViewSnapshot())
+        foreach (byte[] section in player.World.ViewSnapshot().Skip(firstViewList))
         {
             for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
             {
