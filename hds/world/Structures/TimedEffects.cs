@@ -517,6 +517,7 @@ namespace hds
             if (subject is PlayerEffects player)
             {
                 if (damageTaken > 0) CraftingSession.End(player.Context);
+                PrisonDevices.Damage(player.Context, damageTaken);
                 if (damageEvent && damageTaken > 0) AbilityCastInterrupts.OnDamage(player.Context,damageTaken);
                 Stealth.HealthChanged(player.Context, damageTaken, belowMaximum);
             }
