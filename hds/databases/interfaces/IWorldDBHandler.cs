@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
+        bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
         UInt32 SaveSupportTicket(UInt32 character, string handle, UInt32 ticket, string text, bool cancel);
         UInt32 FindSupportGroup(string name, bool faction);
@@ -57,6 +59,7 @@ namespace hds.databases.interfaces{
         AbilityAcquisition.Receipt AcquireAbility(UInt32 character, UInt32 goid, UInt32 price, UInt16? bagSlot = null, UInt16? archiveSlot = null, UInt16[] reserved = null);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
+        AbilityMemory.Result CommitAbilityLoadout(uint charId, IReadOnlyList<AbilityProgression.LoadoutEntry> entries, bool unload, int characterLevel);
         void UpdateAbilityLoadOut(List<UInt16> abilitySlots, uint loaded);
 
         UInt16 GetCurrentAbilityLevel(Int32 abilityGoId, UInt32 charId);
