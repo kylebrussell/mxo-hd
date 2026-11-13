@@ -143,9 +143,17 @@ public static partial class Scenarios
         }
         finally
         {
-            Record();string path=Path.Combine(Path.GetTempPath(),"mxo-neighbourhood-persistence-"+context.Database.Name+".json");
-            await File.WriteAllTextAsync(path,JsonSerializer.Serialize(new{Passed=passed,Database=context.Database.Name,Sessions=sessions,Processes=processes,Completions=completions,Lifetimes=lifetimes,NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
-            Console.WriteLine("Neighborhood proof: "+path);if(p!=original)p.Dispose();foreach(var owned in extraServers)owned.Dispose();
+            try
+            {
+                Record();string path=Path.Combine(Path.GetTempPath(),"mxo-neighbourhood-persistence-"+context.Database.Name+".json");
+                await File.WriteAllTextAsync(path,JsonSerializer.Serialize(new{Passed=passed,Database=context.Database.Name,Sessions=sessions,Processes=processes,Completions=completions,Lifetimes=lifetimes,NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
+                Console.WriteLine("Neighborhood proof: "+path);
+            }
+            finally
+            {
+                try {if(p!=original)p.Dispose();}
+                finally {foreach(var owned in extraServers)owned.Dispose();}
+            }
         }
     }
 }
