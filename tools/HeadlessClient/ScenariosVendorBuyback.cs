@@ -78,7 +78,7 @@ public static partial class Scenarios
                 proof.Add(new{Step="independent-races",BuyAccepted=result.Count(r=>r.Committed),SellAccepted=sales.Count(r=>r.Committed)});
             }
             finally{Store.config=previous;}
-            step="relog-expiry";uint id=p.CharId;p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");Record();p.Dispose();p=null;
+            step="relog-expiry";uint id=p.CharId;p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");Record();Check.Equal(0,p.World.Problems.Count,"First session parser clean before relog");p.Dispose();p=null;
             await Task.Delay(TimeSpan.FromSeconds(33));p=await HeadlessPlayer.LoginAsync(context.Server.Address,"user"+id,"BuybackAuthority");await p.EnterWorldAsync();await Open();
             long relogCash=await Cash();await Operation("81 0e 00 00 00 00 01",true,false);Check.Equal(relogCash,await Cash(),"Old world-session receipt cannot refund after relog");
             Check.Equal(0,p.World.Problems.Count,"Buyback parser clean");step="complete";
