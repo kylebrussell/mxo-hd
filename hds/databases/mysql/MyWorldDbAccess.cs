@@ -568,7 +568,7 @@ namespace hds.databases{
 				double z = dr.GetDouble(3);
 
 				Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x,y,z));
-				Store.currentClient.playerInstance.YawInterval.setValue((byte)Convert.ToDecimal(dr.GetValue(4)));	
+				Store.currentClient.playerInstance.YawInterval.setValue(PersistedYawInterval(dr.GetValue(4)));
 				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(dr.GetValue(5)));	
 				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(dr.GetValue(6)));	
 				
