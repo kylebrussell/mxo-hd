@@ -25,10 +25,10 @@ public class MeleeReachTests
 public class AbilityDeniedTests
 {
     [Fact]
-    public void DeniedMatchesRetail()
+    public void CapturedReason31RemainsLosslessWithoutATimerClassification()
     {
-        // mission_and_crew_things: 80 ba 49 01 00 00 6b 1f + 11 zero bytes while 80 bd locked ability 0x149
+        // Captured mission_and_crew_things literal31 is retained. Temporal adjacency to80bd did not establish its meaning.
         byte[] expected = { 0x80, 0xba, 0x49, 0x01, 0x00, 0x00, 0x6b, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        Assert.Equal(expected, AbilityCooldowns.BuildDenied(0x149, AbilityCooldowns.DeniedTimerRunning));
+        Assert.Equal(expected, AbilityCooldowns.BuildDenied(0x149, 0x1f));
     }
 }
