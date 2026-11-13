@@ -25,7 +25,7 @@ public class AbilityCastTests
     }
 
     [Fact]
-    public void BusyDenialHasRetailShape()
+    public void LegacyAmbiguousReason6KeepsItsRetailShape()
     {
         byte[] record = AbilityCooldowns.BuildDenied(0x1ae, AbilityCooldowns.DeniedBusy);
         Assert.Equal(new byte[] { 0x80, 0xba, 0xae, 0x01, 0x00, 0x00, 0x6b, 0x06 }, record.Take(8).ToArray());

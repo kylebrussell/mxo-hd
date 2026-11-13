@@ -13,7 +13,7 @@ public static partial class Scenarios
         Cast(first,1025);
         await first.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[EMP] " + mob.ViewId + " damage=0"),"Unmarked NPC takes zero scripted damage",TimeSpan.FromSeconds(8));
         Check.Equal(0,ViewUpdateValues(first,mob.ViewId,NpcHealthUpdate).Count,"Zero damage does not mutate NPC health");
-        Cast(first,1025);await first.WaitForRpcAsync("80 ba 01 04 00 00 6b 1f");
+        Cast(first,1025);await first.WaitForRpcAsync("80 ba 01 04 00 00 6b 05");
         var target=await second.WaitForViewNamedAsync("WinterFrost");
         second.SendRpc($"81 51 {Le(target.ViewId)} {target.SpawnId:x2}");
         second.SendChat("?combatdepth empweakness on 6000"); await second.WaitForTextAsync("EMP fixture weakness=1");
