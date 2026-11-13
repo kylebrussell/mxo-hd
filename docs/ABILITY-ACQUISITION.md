@@ -73,3 +73,16 @@ The corrected fresh run at f03328575884e6688f8360f20d85df971d79f783 passed49.2se
 Validation before fresh:48 focused and4,793 full tests passed at b3f25c0d; subsequent master3cba77ec integration changed only documentation and unrelated ReadyMessages. Both actual NativeQa builds/read-only acquisition plans/provenance passed (Debug above; Release1330D0D6348F5D1071951B3B1FF0B1FAA639241CE3B8BB8E6E98E022BE687BD2). The final assertion-only driver rebuild is not relabeled as another full-suite run.
 
 Claude-only native retest: repeat the one-pass sequence above. In particular, the first hardline Upload must learn Calm Mind without a false slot0/ambiguous-code warning. Uploading its duplicate must keep that code and show only the real duplicate refusal. The prior native core behavior passed; this new head still needs Claude's native retest before merge.
+
+
+## Legacy single-item count compatibility
+
+The schema default, ItemStacks.CountFromDb and marketplace/trade inventory writers establish that raw inventory.count0 means one item. The transaction now admits raw0 or1 and deletes with the EXACT captured raw count parameter, preserving row/descriptor/primary-key identity. Negative counts and actual multi-item counts remain refused. The bulk caller still excludes slot0; accepting a legitimate raw-zero code in slots1-96 does not upload the fixture's slot0 placeholder.
+
+A new actual hardline Upload regression inserts an unowned Detect Vulnerability code with raw count0, injects a late archive-insert failure, verifies its exact zero-count source and no archive/success packets survive rollback, then uploads it normally and cold-relogs its single known/unloaded entry. New count1 purchases, duplicate retention, both upload routes, races and archive capacity remain covered. It does not change general stack normalization, vendor prices, loadout or grants.
+
+At sourceec13d82bdbb45f3b6b20c2abbd64f9ffd7b15a01, including actualmaster402d843e,51 focused and4,811 full tests passed. Both actual NativeQa builds/read-only acquisition plans/provenance passed: Debug2C7F97472AB8BC62815EAAC5141199097853D655AA6C951289BA9FD5E4F7214C; Release9A71B9E08C6D16B84701253B92081E2CF3559909592C9B393BFEE7D23556D05C.
+
+Fresh ability-acquisition passed47.7seconds, exit0/parallel1/peak1, owned resources disposed. Actual selected Debug is the hash above. Proof Temp/mxo-ability-acquisition-mxotest_run_1_bd16c203a9.json SHA256cd59de16b8b9f399aed16badca537d08dd3f240dc86057f0ddbf4e5ef6d632e9. Root independently inspected the legacy failure window atRPC64 (no bag delete/archive add) and success at69 (exact5f140001 then known7 add), with111/31RPC,9/1view lists and zero parser problems. Earlier failed/passing proofs retain their own exact source attribution.
+
+The NativeQa mode/one-pass UI sequence is unchanged: the count0/count1 storage distinction normalizes to the same client inventory representation, and the extra raw-count rollback/learning authority is verified headlessly. Claude's attempted3c472bef native retest was NOT RUN because the client rendered black; that environment interruption is not a server result. The new head still requires the queued ordinary native sequence after display recovery. Final documentation follows the fresh-tested source with no runtime changes.
