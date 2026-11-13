@@ -56,6 +56,7 @@ namespace hds.databases.interfaces{
         void SaveInfo(WorldClient client, long exp);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
+        AbilityMemory.Result CommitAbilityLoadout(uint charId, IReadOnlyList<AbilityProgression.LoadoutEntry> entries, bool unload, int characterLevel);
         void UpdateAbilityLoadOut(List<UInt16> abilitySlots, uint loaded);
 
         UInt16 GetCurrentAbilityLevel(Int32 abilityGoId, UInt32 charId);

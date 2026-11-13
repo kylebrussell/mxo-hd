@@ -353,45 +353,53 @@ namespace hds
                 return;
             }
 
-            List<UInt16> abilitySlots = new List<UInt16>();
-            var ownedAbilities = Store.dbManager.MarginDbHandler.LoadAbilities((int)Store.currentClient.playerData.getCharID());
-            foreach (AbilityProgression.LoadoutEntry entry in entries)
+            WorldClient client=Store.currentClient;
+            lock(client.playerData.loadoutSync)
             {
-                var owned = ownedAbilities.FirstOrDefault(row => row.getSlot() == entry.Slot &&
-                    AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())) == AbilityCatalog.Canonical(entry.Ability));
-                if (owned == null) continue;
-                // Ownership/uploading does not bypass the shipped character prerequisite.
-                if (!unload && !AbilityProgression.MeetsCharacterLevel(entry.Ability,
-                    Store.currentClient.playerInstance.Level.getValue()[0]))
+                AbilityMemory.Result result;
+                try
                 {
-                    var reply = new ServerPackets();
-                    reply.sendSystemChatMessage(Store.currentClient, "Your character level is too low to load that ability.", "MODAL");
-                    continue;
+                    result=Store.dbManager.WorldDbHandler.CommitAbilityLoadout(client.playerData.getCharID(),entries,unload,
+                        client.playerInstance.Level.getValue()[0]);
                 }
-                List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
-                if (unload)
+                catch(Exception error)
                 {
-                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(entry.Ability));
-                    foreach (UInt16 grant in grants) if (!AbilityGrantRegistration.Handles(entry.Ability, grant)) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
+                    Output.WriteDebugLog("[ABILITY] Loadout transaction failed: "+error.Message);
+                    new ServerPackets().sendSystemChatMessage(client,"Your ability loadout could not be saved. Please try again.","MODAL");
+                    client.FlushQueue();
+                    return;
                 }
-                else
+                if(result.Refusal!=null)
                 {
-                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, owned.getLevel(), entry.Slot));
-                    foreach (UInt16 grant in grants)
+                    new ServerPackets().sendSystemChatMessage(client,result.Refusal,"MODAL");
+                    client.FlushQueue();
+                    return;
+                }
+                if(result.LevelRefused) new ServerPackets().sendSystemChatMessage(client,"Your character level is too low to load that ability.","MODAL");
+                var remainingMembership=AbilityMemory.Membership(result.Loaded);
+                foreach(var owned in result.Accepted.GroupBy(r=>r.Ability).Select(g=>g.First()))
+                {
+                    ushort ability=owned.Ability;
+                    if(unload)
                     {
-                        if (AbilityGrantRegistration.Handles(entry.Ability, grant)) continue;
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
-                            AbilityProgression.GrantLevel(entry.Ability, owned.getLevel()), AbilityProgression.HiddenSlot));
+                        if(remainingMembership.Contains(ability)) continue;
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(ability));
+                        foreach(ushort grant in AbilityProgression.GrantsOf(ability))
+                            if(!remainingMembership.Contains(grant) && !AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
+                    }
+                    else
+                    {
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot));
+                        foreach(ushort grant in AbilityProgression.GrantsOf(ability))
+                            if(!AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                                AbilityProgression.GrantLevel(ability,owned.Level),AbilityProgression.HiddenSlot));
                     }
                 }
-                abilitySlots.Add(entry.Slot);
+                if(result.Accepted.Length==0) return;
+                AbilityPassives.SetLoaded(client,result.Loaded.Where(r=>AbilityMemory.IsAbility(r.Descriptor)).Select(r=>(r.Ability,r.Level)));
+                client.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] "+(unload?"Unloaded ":"Loaded ")+result.Accepted.Length+" abilities; memory "+result.Used+"/"+result.Maximum);
             }
-
-            if (abilitySlots.Count == 0) return;
-            Store.dbManager.WorldDbHandler.UpdateAbilityLoadOut(abilitySlots, unload ? 0u : 1u);
-            AbilityPassives.Load(Store.currentClient);
-            Store.currentClient.FlushQueue();
-            Output.WriteDebugLog("[ABILITY] " + (unload ? "Unloaded " : "Loaded ") + entries.Count + " abilities");
         }
     }
 }
