@@ -1,0 +1,276 @@
+{
+  "Master": "0d333c5c70e12a2c840bee9bc7847f851940ed99",
+  "ClientDllSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "GobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "MultiplierRows": [
+    {
+      "id": 37,
+      "name": "WriteCodeAbility",
+      "multiplier": 0.5
+    },
+    {
+      "id": 151,
+      "name": "SneakAbility",
+      "multiplier": 0.5
+    },
+    {
+      "id": 1006,
+      "name": "HackerCombatStyleAbility",
+      "multiplier": 0.5
+    },
+    {
+      "id": 1112,
+      "name": "SpyStyleAbility",
+      "multiplier": 0.5
+    }
+  ],
+  "MasteryRows": [
+    {
+      "id": 186,
+      "name": "ImprovedSneakAbility",
+      "schema": 3671,
+      "components": [
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq_Operative",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AIAbilityInnerStrengthCost": 0,
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2147674112,
+        "Ability/AbilityIsExclusive": 1,
+        "Ability/AbilityLevelCap": 50,
+        "Ability/AbilityRank": 1,
+        "Ability/AggroClass": 0,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 1,
+        "Ability/CastingTime": 2.0,
+        "Ability/DetectionDifficultyChange": 0,
+        "Ability/DisciplineBelongsTo": 0,
+        "Ability/InventoryMemCost": 1,
+        "Ability/IsAToggleAbility": 1,
+        "Ability/MasteryAbility": 1,
+        "Ability/MasteryBaseAbility": 2147638272,
+        "Ability/MinValueScaleLevel": 25,
+        "Ability/StatusCategory": 809910869,
+        "AblReq_Operative/ReqAbilityID": 2147638272,
+        "AblReq_Operative/ReqAbilityLevel": 25,
+        "Info/IconID": 1409286429,
+        "Info/InfoID": 2080375313,
+        "Info/MoreInfoID": 603980004,
+        "InvItem/Complexity": 25,
+        "InvItem/GOCategoryID": 2958381889,
+        "InvItem/VendorPrice": 312500
+      }
+    },
+    {
+      "id": 621,
+      "name": "FindDataNodeAbility",
+      "schema": 3575,
+      "components": [
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "InvItem",
+          "type": 9
+        },
+        {
+          "name": "Ability",
+          "type": 40
+        },
+        {
+          "name": "AblReq_Rifle",
+          "type": 39
+        },
+        {
+          "name": "AbilityPrerequisite 2",
+          "type": 39
+        }
+      ],
+      "fields": {
+        "Ability/AbilityClass": 0,
+        "Ability/AbilityID": 2148119552,
+        "Ability/AbilityInnerStrengthCost": 0,
+        "Ability/AbilityIsExclusive": 1,
+        "Ability/AbilityLevelCap": 50,
+        "Ability/AbilityRank": 1,
+        "Ability/AggroClass": 0,
+        "Ability/CastDirectObjects": 1,
+        "Ability/CastValidTarget": 0,
+        "Ability/CastWhatHow": 3,
+        "Ability/CastWhenUsed": 1,
+        "Ability/CastingTime": 2.0,
+        "Ability/DisciplineBelongsTo": 2148033536,
+        "Ability/InventoryMemCost": 1,
+        "Ability/IsAToggleAbility": 1,
+        "Ability/MasteryAbility": 1,
+        "Ability/MasteryBaseAbility": 2147703808,
+        "Ability/MinValueScaleLevel": 17,
+        "Ability/MouseOverTextAddition": 3288334765,
+        "Ability/RequiresTool": 1,
+        "Ability/StatusCategory": 1111707201,
+        "AbilityPrerequisite 2/ReqAbilityID": 2147485696,
+        "AbilityPrerequisite 2/ReqAbilityLevel": 17,
+        "AblReq_Rifle/ReqAbilityID": 2147652608,
+        "AblReq_Rifle/ReqAbilityLevel": 5,
+        "Info/IconID": 3221225603,
+        "Info/InfoID": 3288334750,
+        "Info/MoreInfoID": 3288334765,
+        "InvItem/Complexity": 17,
+        "InvItem/GOCategoryID": 2958377281,
+        "InvItem/VendorPrice": 144500
+      }
+    }
+  ],
+  "LevelingCostStoredRows": 0,
+  "CostSamples": [
+    {
+      "Ability": 2,
+      "Name": "AwakenedAbility",
+      "From": 1,
+      "Levels": 1,
+      "CurrentServerCost": 800,
+      "NativeCost": 800
+    },
+    {
+      "Ability": 37,
+      "Name": "WriteCodeAbility",
+      "From": 1,
+      "Levels": 3,
+      "CurrentServerCost": 2900,
+      "NativeCost": 2900
+    },
+    {
+      "Ability": 151,
+      "Name": "SneakAbility",
+      "From": 1,
+      "Levels": 1,
+      "CurrentServerCost": 800,
+      "NativeCost": 400
+    },
+    {
+      "Ability": 1112,
+      "Name": "SpyStyleAbility",
+      "From": 1,
+      "Levels": 1,
+      "CurrentServerCost": 800,
+      "NativeCost": 400
+    },
+    {
+      "Ability": 186,
+      "Name": "ImprovedSneakAbility",
+      "From": 1,
+      "Levels": 1,
+      "CurrentServerCost": 800,
+      "NativeCost": 260900
+    },
+    {
+      "Ability": 621,
+      "Name": "FindDataNodeAbility",
+      "From": 1,
+      "Levels": 1,
+      "CurrentServerCost": 800,
+      "NativeCost": 8000
+    },
+    {
+      "Ability": 477,
+      "Name": "EfficientCodeAbility",
+      "From": 32,
+      "Levels": 1,
+      "CurrentServerCost": 217800,
+      "NativeCost": 217800
+    },
+    {
+      "Ability": 298,
+      "Name": "DetectionAbility",
+      "From": 1,
+      "Levels": 49,
+      "CurrentServerCost": 8584800,
+      "NativeCost": 8584800
+    }
+  ],
+  "BaselineSourceHashes": {
+    "hds\\world\\Client\\RpcHandlers\\AbilityHandler.cs": "69c241b37b011e5c207a498cdb5f3e4ecccd3809779c25eb17de95c8a81abbb3",
+    "hds\\world\\Structures\\PlayerProgression.cs": "fa9fb2aa01e1fc8eac40ed2e3d1a985cf27e18561db39c10a74c9b5e5e7d1abd",
+    "hds\\databases\\mysql\\MyWorldDbAccess.cs": "b6a89ca316033f970c2b6a14209be97ebae369362b1402ffa9794dd4844f848c",
+    "data\\ability_catalog.json": "2b4146c502c602c18ad4ca96af2cd6c252900e05001bb39884bd10125d0379e9"
+  },
+  "BareDescriptorCounts": {
+    "LevelingCost": 0,
+    "UpgradeCostMultiplier": 4,
+    "MasteryAbility": 2,
+    "MasteryBaseAbility": 2,
+    "AbilityLevelCap": 274
+  },
+  "NativeSlices": [
+    {
+      "Purpose": "StepCost",
+      "Address": "0x62518f00",
+      "Hex": "558bec5153568b75085633dbe8afd1ffff83c40484c0741f8d45fc5056e80ed2ffff56e828d3ffff8b4dfc5051e8ceffffff83c4148bd88b450c578d7801400faff85669ffc8000000e8c2d5ffff0fb6c083c40448740c48740403dfeb088d1cbbeb038d1c7b81fe001000005f760433c9eb2f8b0db07f9f628b1181e6ff0f000081ce0000e0ffc1e60a568d450c50ff52308b4d0c85c98b3074058b11ff52088bce85c9c745080000803f740e8d4508506828908c62e8d54fcbff85db895d0cdb450c7d06d80500db8662d95d0cd9450cd84d08e8ff0219005e5b8be55dc3"
+    },
+    {
+      "Purpose": "LevelingCostGetter",
+      "Address": "0x62516510",
+      "Hex": "558bec518b550832c081fa001000008845ff77468b0db07f9f628b0181e2ff0f000081ca0000e0ff56c1e20a528d550852ff50308b4d0885c98b3074058b01ff500885f674108d4dff5168708b8c628bcee83a1eb3ff8a45ff5e8be55dc3"
+    },
+    {
+      "Purpose": "AbilityCapGetter",
+      "Address": "0x625161e0",
+      "Hex": "558bec518b45083d0010000056772f8b0db07f9f628b1125ff0f00000d0000e0ffc1e00a508d450850ff52308b4d0885c98b3074058b11ff520885f6750733c05e8be55dc38d45fc50682c8b8c628bcee83b7ecbff8b4dfcf6d85e1bc023c18be55dc3"
+    },
+    {
+      "Purpose": "MasteryBaseCap",
+      "Address": "0x62516250",
+      "Hex": "558bec518b45083d00100000560f87870000008b0db07f9f628b1125ff0f00000d0000e0ffc1e00a508d45fc50ff52308b4dfc85c98b3074058b11ff520885f674588d45085068188b8c628bcec7450800000000e82725afff84c0743d8b450885c07920a9000000047519c1e80a25ff0f00000fb7c851e814ffffff83c4045e8be55dc3b8001000000fb7c851e8fefeffff83c4045e8be55dc333c05e8be55d"
+    },
+    {
+      "Purpose": "CharacterExpLimit",
+      "Address": "0x621cd360",
+      "Hex": "558bec8b893801000051e861ae40000fb6c050e8886334000fbf4d0c83c4083bc11bc0f7d85dc20800"
+    },
+    {
+      "Purpose": "AbilityCapLimit",
+      "Address": "0x621c9bc0",
+      "Hex": "558bec8b450850e814c6340083c40485c0740e0fbf4d0c3bc11bc0f7d85dc2080032c05dc208"
+    },
+    {
+      "Purpose": "UpgradeSender",
+      "Address": "0x621e1370",
+      "Hex": "8b45f803c65057e8847b33008b550803d083c408463bf38955087ce48b4df4e8bc88feff3b450872688b0dbc059e62e81c8ce3ff8d4de0e8a41effff8b4df0668b55fc668951048b45f08a550c668978028b4df08d45e08851068b0da8689e6250e82ab3f6ff"
+    },
+    {
+      "Purpose": "FpuTruncation",
+      "Address": "0x626a92d8",
+      "Hex": "558bec83ec2083e4f0d9c0d9542418df7c2410df6c24108b5424188b44241085c0743cdee985d2791ed91c248b0c2481f10000008081c1ffffff7f83d0008b54241483d200eb2cd91c248b0c2481c1ffffff7f83d8008b54241483da00eb148b542414f7c2ffffff7f75b8d95c2418d95c2418c9c3"
+    }
+  ],
+  "ResponseContract": {
+    "Consumer": "621e8860",
+    "SignedStatusGate": "621e8882..8888: signed Status >=1 is failure; otherwise native writes NewLevel",
+    "GenericTrainingFailure": "0x1800000c -> 621e8bac..8bbf -> STA0x24000106 Ability Level-Up Failure!",
+    "OtherStatusMappings": {
+      "0x0c000264": "0x24000109 Ability is not equipped.",
+      "0x0c00029a": "0x24000107 Character does not have enough Information.",
+      "0x0c0002a8": "0x24000108 You must be at least level %I to use this item.",
+      "unknown-positive": "0x240000f9 ERROR!"
+    },
+    "SlotResolution": "621e88b1 calls621d5ad0 by ID; response has no requested slot. Canonical duplicate refusal is OURS safety policy."
+  }
+}
