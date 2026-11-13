@@ -34,9 +34,22 @@ public static partial class Scenarios
             Check.That(door.Attributes["Orientation"].SequenceEqual(Convert.FromHexString(f.ExpectedQuaternion)),
                 "actual wire contains the independent primary quaternion bytes, without normalization");
         Check.Equal(0x834u, BitConverter.ToUInt32(door.Attributes["CurrentState"]), "native OpenedState");
-        await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 38 08 00 00", TimeSpan.FromSeconds(25));
-        await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 35 08 00 00", TimeSpan.FromSeconds(5));
+        byte[] closing = await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 38 08 00 00", TimeSpan.FromSeconds(25));
+        byte[] closed = await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 35 08 00 00", TimeSpan.FromSeconds(5));
         Check.Equal(0, actor.World.Problems.Count, "door protocol parser");
+        if (f.ExpectedQuaternion != null)
+            await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"mxo-{f.Mode}-actual-wire.json"),
+                System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    SourceAssembly = context.Server.SourceAssembly,
+                    SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
+                    StaticId = f.StaticId, door.Goid, door.ViewId,
+                    Position = Convert.ToHexString(door.Attributes["Position"]),
+                    Orientation = Convert.ToHexString(door.Attributes["Orientation"]),
+                    OpenedState = Convert.ToHexString(door.Attributes["CurrentState"]),
+                    ClosingViewList = Convert.ToHexString(closing), ClosedViewList = Convert.ToHexString(closed),
+                    NativeRenderingProven = false
+                }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"mxo-{f.Mode}-success-debug.log"),
             context.Server.FullOutput() + "\n--- DebugLog ---\n" + context.Server.DebugLog());
         Console.WriteLine($"  {f.Mode}: ordinary login; exact source{f.Goid}/{f.Sector}/{f.LocalId}; Open3/state834; natural838 then835. Direct diagnostic start, no walk-route/LA UI proof.");
