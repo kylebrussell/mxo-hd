@@ -3,7 +3,7 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static readonly IReadOnlyDictionary<string,string> DataMineReturnEnvironment =
+    private static IReadOnlyDictionary<string,string> DataMineReturnEnvironment =>
         new Dictionary<string,string>(StillNpcs){["MXO_PACKET_LOG"]="1"};
 
     private static async Task DataMineNativeReturnRegression(ScenarioContext context)

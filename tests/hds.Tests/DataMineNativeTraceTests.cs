@@ -8,6 +8,17 @@ public class DataMineNativeTraceTests
 {
     private static string Root {get{var p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;}}
     [Fact]
+    public void RegisteredReturnScenarioActuallyEnablesOnlyItsOwnPacketLog()
+    {
+        var capture=Scenarios.All.Single(s=>s.Name=="datamine-native-return-regression");
+        Assert.NotNull(capture.Environment);
+        Assert.Equal("1",capture.Environment["MXO_PACKET_LOG"]);
+        Assert.Equal("0",capture.Environment["MXO_MOB_WANDER"]);
+        var ordinary=Scenarios.All.Single(s=>s.Name=="datamine-partial-world");
+        Assert.NotNull(ordinary.Environment);Assert.False(ordinary.Environment.ContainsKey("MXO_PACKET_LOG"));
+    }
+
+    [Fact]
     public void ExactNativeFailureBatchesRetainTheirHashesAndIndependentWireContracts()
     {
         using var trace=JsonDocument.Parse(File.ReadAllText(Path.Combine(Root,"research/protocol/datamine-native-failure.json")));
