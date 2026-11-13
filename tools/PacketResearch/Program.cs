@@ -20,7 +20,7 @@ if(abilityUseHex!=null || abilityUseBodyHex!=null)
         bool valid=abilityUseHex!=null?AbilityUseRecord.TryDecode(bytes,out record):AbilityUseRecord.TryDecodePayload(bytes,out record);
         if(!valid){Console.Error.WriteLine("Expected exactly43 bytes80b9 or41 body bytes; short harness records are not full native records.");return 2;}
         byte[] rpc=record!.Encode();
-        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{Fields=record,RpcHex=Convert.ToHexString(rpc),BodyHex=Convert.ToHexString(rpc.AsSpan(2)),Semantics="Native printer names only; ground words/flags are raw, no activation/admission inference."},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));return 0;
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{Fields=record,GroundWordsHex=new[]{record.TargetGroundLocationWord0.ToString("X16"),record.TargetGroundLocationWord1.ToString("X16"),record.TargetGroundLocationWord2.ToString("X16")},RpcHex=Convert.ToHexString(rpc),BodyHex=Convert.ToHexString(rpc.AsSpan(2)),Semantics="Native printer names only; ground words/flags are raw, no activation/admission inference."},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));return 0;
     }
     catch(FormatException){Console.Error.WriteLine("Input must be exact hexadecimal bytes without separators.");return 2;}
 }
