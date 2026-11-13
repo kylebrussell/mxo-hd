@@ -44,13 +44,21 @@ namespace hds
         }
         public static bool TryBuyback(byte[] body)=>body!=null&&body.Length==5&&body[4]==1&&
             body[0]==0&&body[1]==0&&body[2]==0&&body[3]==0;
+        internal static bool ReceiptSlot(ushort slot)=>slot>=1&&slot<=96;
         public static bool TryDescriptor(Item item,out uint goid,out byte[] descriptor)
         {
             goid=0;descriptor=null;
             if(item==null||item.RawGoid<int.MinValue||item.RawGoid>uint.MaxValue||item.RawCount<0||item.RawCount>ItemStacks.MaxStack)return false;
             goid=unchecked((uint)item.RawGoid);if(goid==0)return false;
             if(AbilityProgression.IsAbilityCode(goid))
+            {
+                // Local receipt qualification only: code-family values and attribute/hidden templates are not ordinary ability items.
+                if((goid&0xfc000000u)!=0x80000000u)return false;
+                ushort ability=AbilityCatalog.Canonical(AbilityCatalog.IdOf(goid));
+                var entry=AbilityCatalog.Find(ability);
+                if(ability==0||entry==null||entry.Number("Ability/AbilityClass",-1)!=0)return false;
                 descriptor=NumericalUtils.uint32ToByteArray(AbilityProgression.AbilityCodeValue(goid),1);
+            }
             else descriptor=new byte[]{0,0,ItemStacks.AmountByte(item.RawCount),0x10};
             return true;
         }

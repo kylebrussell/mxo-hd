@@ -34,6 +34,28 @@ public class VendorBuybackTests
     [Theory] [InlineData(4294967297L,1)] [InlineData(-2147483649L,1)] [InlineData(11666L,65)] [InlineData(11666L,-1)]
     public void UnrepresentableRowsCannotBeDestructivelySold(long raw,int count)=>
         Assert.False(VendorBuyback.TryDescriptor(new(1,raw,count,0,1),out _,out _));
+    [Theory] [InlineData(0,false)] [InlineData(1,true)] [InlineData(96,true)] [InlineData(97,false)]
+    public void OnlyRealBagSlotsCanCreateASaleReceipt(ushort slot,bool expected)=>
+        Assert.Equal(expected,VendorBuyback.ReceiptSlot(slot));
+    [Theory]
+    [InlineData(0x8404c180u)] // Stored-code family: its masked ID aliases an ordinary ability.
+    [InlineData(0x8002c400u)] // Focus177 is an attribute, not an ordinary learned ability.
+    [InlineData(0x8010fc01u)] // Howitzer's internal1087 state is not an ordinary bag ability.
+    [InlineData(0x83fffc01u)] // Genuine family but unknown canonical template4095.
+    public void HighBitDoesNotMakeCodeAttributesOrUnknownTemplatesOrdinaryAbilityItems(uint raw)
+    {
+        Assert.False(VendorBuyback.TryDescriptor(new(1,raw,0,0,1),out _,out _));
+        Assert.False(VendorBuyback.TryDescriptor(new(1,unchecked((int)raw),0,0,1),out _,out _));
+    }
+    [Theory] [InlineData(0x80059000u)] [InlineData(0x80459000u)] [InlineData(0x80859000u)]
+    public void GenuineKnownClassZeroCanonicalAliasesRetainExactRawIdentity(uint raw)
+    {
+        Assert.Equal((ushort)356,AbilityCatalog.Canonical(AbilityCatalog.IdOf(raw)));
+        Assert.True(VendorBuyback.TryDescriptor(new(1,raw,0,123,1),out var goid,out var descriptor));
+        Assert.Equal(raw,goid);Assert.Equal(raw|1,BitConverter.ToUInt32(descriptor));
+        Assert.True(VendorBuyback.TryDescriptor(new(1,unchecked((int)raw),0,123,1),out goid,out descriptor));
+        Assert.Equal(raw,goid);Assert.Equal(raw|1,BitConverter.ToUInt32(descriptor));
+    }
     [Theory] [InlineData(32,"7C")] [InlineData(33,"80")] [InlineData(64,"FC")]
     public void ExistingSixBitStackEncodingIsPreserved(int count,string amount)
     {

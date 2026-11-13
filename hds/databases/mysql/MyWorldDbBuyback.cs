@@ -43,7 +43,7 @@ original_created VARCHAR(32) NOT NULL, original_updated VARCHAR(32) NOT NULL
         }
         public VendorBuyback.Result SellVendorItem(uint character,ushort slot,string session,uint vendor)
         {
-            if(!Crafting.IsBagSlot(slot)||!ReceiptSession(session))return VendorBuyback.Result.Denied("That sale is not available.");
+            if(!VendorBuyback.ReceiptSlot(slot)||!ReceiptSession(session))return VendorBuyback.Result.Denied("That sale is not available.");
             using var connection=new MySqlConnection(connectionString);connection.Open();RequireBuybackEngines(connection);
             using var tx=connection.BeginTransaction();using var c=connection.CreateCommand();c.Transaction=tx;c.Parameters.AddWithValue("@char",character);
             long? before=BuybackCash(c);if(!before.HasValue)return VendorBuyback.Result.Denied("The character is unavailable.");
