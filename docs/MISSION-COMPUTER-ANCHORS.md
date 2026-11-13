@@ -40,7 +40,7 @@ Validation: focused resolver tests cover an old serialized checkpoint, no source
 
 Mode `mission-computer-anchors` uses default production resolution, no pose-probe environment, no GM character and no forced combat/callback outcome. The only dev fixture policy is the existing deterministic3072 site seed on the disposable QA database.
 
-1. As CSR110, right-click The Chessman, Get Mission, choose Retrieval and accept the normal3072 offer. Use the ordinary mission-elevator dialogue.
+1. As CSR110, right-click The Chessman, Use, choose Retrieval and accept the normal3072 offer. Use the ordinary mission-elevator dialogue.
 2. Quit/relog before Take. Confirm the same mission and site. Approach the upright computer on the red desk next to the white dresser, full source pose(91865,4300,12660); same-floor player approach(91865,4295,12740). Observe normal walking/visibility/hover and radial Take. Headless movement is not native walking proof.
 3. Use Take. Verify the disk dialogue, completed Search row, owned disk and Leave-area instruction. Leave through the normal elevator/area route; verify one reward.
 4. Accept Retrieval again and repeat Take/leave. Verify a separate acceptance and one reward pair, with no duplicated disk or payout after relog.
