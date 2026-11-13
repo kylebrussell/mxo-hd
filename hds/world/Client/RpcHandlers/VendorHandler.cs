@@ -22,6 +22,14 @@ namespace hds{
 
         public void processBuyItem(ref byte[] packet){
             if (!HasSession(Store.currentClient)) return;
+            if (VendorBuyback.TryBuyback(packet))
+            {
+                VendorBuyback.Handle(Store.currentClient,true);return;
+            }
+            if (packet.Length != 5 || packet[4] != 0)
+            {
+                ClientActionsHandler.Notice(Store.currentClient,"Unsupported vendor purchase request.");return;
+            }
             if (packet.Length < 4)
             {
                 Output.WriteDebugLog("[VENDOR] Buy packet too short.");
@@ -86,6 +94,7 @@ namespace hds{
             {
                 if(!HasSession(client))return;
                 if(!VendorTrading.TrySellRequest(packet,out bool appraise,out byte slot))return;
+                if(!appraise){VendorBuyback.Handle(client,false,slot);return;}
                 var db=Store.dbManager.WorldDbHandler;
                 Crafting.InventoryItem item=db.GetInventoryItems(client.playerData.getCharID()).FirstOrDefault(i=>i.Slot==slot);
                 if(item.Goid==0){ClientActionsHandler.Notice(client,"There is nothing to sell in that slot.");return;}
@@ -95,22 +104,6 @@ namespace hds{
                 {
                     client.messageQueue.addRpcMessage(ServerPackets.BuildVendorItemSellAck(item.Goid,item.Count,quote,true));
                     return;
-                }
-                try
-                {
-                    InventoryPayout result=db.ExchangeInventoryForInfo(client.playerData.getCharID(),slot,item.Goid,item.Count,quote);
-                    if(result==null){ClientActionsHandler.Notice(client,"That inventory item changed; try again.");return;}
-                    client.playerData.setInfo(result.Cash);
-                    var packets=new ServerPackets();
-                    packets.SendInfoDelta(client,result.Credited,ServerPackets.InfoReasonVendorSell);
-                    packets.SendInfoCurrent(client,result.Cash,ServerPackets.InfoReasonVendorSell);
-                    packets.sendInventoryItemDelete(slot,client);
-                    client.messageQueue.addRpcMessage(ServerPackets.BuildVendorItemSellAck(item.Goid,item.Count,result.Credited,false));
-                }
-                catch(Exception e)
-                {
-                    Output.WriteDebugLog("[VENDOR] Sale rolled back: "+e.Message);
-                    ClientActionsHandler.Notice(client,"The sale could not be completed. Your item and information were kept.");
                 }
             }
         }

@@ -59,6 +59,15 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemoveMissionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
 
+    // Fixed receipt failure points only in this harness-owned disposable database.
+    public Task<string> InstallVendorBuybackFailureAsync(uint character,bool buying) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        "DELIMITER $$\nCREATE TRIGGER vendor_buyback_test_"+(buying?"consume BEFORE DELETE":"sale BEFORE INSERT")+
+        " ON vendor_last_sale FOR EACH ROW BEGIN IF "+(buying?"OLD":"NEW")+".char_id="+character+
+        " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Vendor deliberate late receipt failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveVendorBuybackFailureAsync(bool buying) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS vendor_buyback_test_"+(buying?"consume":"sale"));
+
     //Fixed late-mutation failure only in this harness-owned database; never changes server settings.
     public Task<string> InstallTrainingChargeFailureAsync(uint character) => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,

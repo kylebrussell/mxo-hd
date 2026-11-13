@@ -56,6 +56,9 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        void EnsureVendorBuyback();
+        VendorBuyback.Result SellVendorItem(uint character, ushort slot, string session, uint vendor);
+        VendorBuyback.Result BuyBackVendorItem(uint character, string session, uint vendor);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
         AbilityMemory.Result CommitAbilityLoadout(uint charId, IReadOnlyList<AbilityProgression.LoadoutEntry> entries, bool unload, int characterLevel);
