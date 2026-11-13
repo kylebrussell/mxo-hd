@@ -231,6 +231,7 @@ public static partial class Scenarios
         new Scenario("full-bag-mission-computer", FullBagMissionComputer, StillNpcs),
         new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
+        new Scenario("neighbourhood-retrieval-persistence", NeighbourhoodRetrievalPersistence, NeighbourhoodMissionFixture.Environment),
         new Scenario("azuna-collector", AzunaCollector, StillNpcs),
         new Scenario("legacy-inventory-startup", LegacyInventoryStartup, StillNpcs),
         new Scenario("azuna-collector-full-bag", AzunaCollectorFullBag, StillNpcs),

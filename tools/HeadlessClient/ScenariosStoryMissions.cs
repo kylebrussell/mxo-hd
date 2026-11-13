@@ -300,20 +300,22 @@ public static partial class Scenarios
         return Task.CompletedTask;
     }
 
-    private static async Task EnterMissionArea(ScenarioContext context, HeadlessPlayer player)
+    private static Task EnterMissionArea(ScenarioContext context, HeadlessPlayer player) => EnterMissionArea(context.Server, player);
+
+    private static async Task EnterMissionArea(ServerInstance server, HeadlessPlayer player)
     {
         // The waypoint is the elevator door on the target floor, sometimes outside the site's area bounds.
         // Teleporting there bypassed the ride ("already on that floor"), left followers behind, and could
         // leave deadline clocks unstarted. Travel from the street, wait for the actual ride, then enter.
-        Match site = Regex.Matches(context.Server.DebugLog(),
+        Match site = Regex.Matches(server.DebugLog(),
             @"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
         double Coordinate(int group) => double.Parse(site.Groups[group].Value, System.Globalization.CultureInfo.InvariantCulture);
         await MoveForMissionTest(player, Coordinate(4), Coordinate(5), Coordinate(6));
         if (Math.Abs(Coordinate(2) - Coordinate(5)) > 150)
         {
-            int rides = Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
+            int rides = Regex.Matches(server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
             player.SendChat("?missionfloor");
-            await player.WaitUntilAsync(() => Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
+            await player.WaitUntilAsync(() => Regex.Matches(server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
                 "elevator ride completes before entering the mission area", TimeSpan.FromSeconds(10));
         }
         await MoveForMissionTest(player, Coordinate(1), Coordinate(2), Coordinate(3));
