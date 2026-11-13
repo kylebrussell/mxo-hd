@@ -31,9 +31,9 @@ DELETE FROM inventory WHERE charId=110;
             p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(contact)} 02 00");await p.WaitForRpcAsync("80 97 00 00");
             var entry=p.Received("80 96").Single(r=>{int at=BitConverter.ToUInt16(r.Bytes,6),n=BitConverter.ToUInt16(r.Bytes,at);return Encoding.ASCII.GetString(r.Bytes,at+2,n-1)=="Retrieval";});
             p.SendRpc($"80 98 06 00 {Le(BitConverter.ToUInt16(entry.Bytes,4))} 01 02 00");await p.WaitForRpcAsync("80 99");p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9c");await p.WaitForRpcAsync("80 9e 00");
-            phase="accepted";var saved=await MissionCheckpoint(context,p);Check.Equal(3072,saved.Mission,"Normal accepted Retrieval3072");var original=saved.Objects.Single(o=>o.Id==1);
+            phase="accepted";var saved=await MissionCheckpoint(context,p);before=saved;Check.Equal(3072,saved.Mission,"Normal accepted Retrieval3072");var original=saved.Objects.Single(o=>o.Id==1);
             Check.Equal((ushort)3,original.Goid,"Exact GO3");Check.Equal(0x15b01176u,original.Spot.mxoStaticId,"Exact source key bytes7611b015");
-            Check.Equal(new[]{92740d,4445d,13535d},new[]{original.Spot.pos_x,original.Spot.pos_y,original.Spot.pos_z},"Checkpoint keeps original source position");
+            Check.That(new[]{92740d,4445d,13535d}.SequenceEqual(new[]{original.Spot.pos_x,original.Spot.pos_y,original.Spot.pos_z}),"Checkpoint original source position: "+JsonSerializer.Serialize(new[]{original.Spot.pos_x,original.Spot.pos_y,original.Spot.pos_z}));
             Check.Equal("00000000f20435bf00000000f304353f",original.Spot.quat.ToLowerInvariant(),"Checkpoint keeps source quaternion");
             before=new{Saved=saved,Experience=await context.Database.LongAsync("SELECT exp FROM characters WHERE charId=110"),Cash=await context.Database.LongAsync("SELECT cash FROM characters WHERE charId=110"),Items=await context.Database.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110")};
             await EnterMissionArea(context,p);phase="actual-view";
@@ -43,19 +43,20 @@ DELETE FROM inventory WHERE charId=110;
             string quat=variant=="full-native"?"0000000000000000000000000000803f":original.Spot.quat;
             Check.Equal(quat.ToUpperInvariant(),Convert.ToHexString(computer.Attributes["Orientation"]),"Actual03 exact variant quaternion");
             Check.Equal(0x961u,BitConverter.ToUInt32(computer.Attributes["CurrentState"]),"Take state unchanged");
-            Check.Equal(new byte[]{0xff,(byte)saved.Instance,(byte)(saved.Instance>>8),2},computer.Attributes["MissionKey"],"Mission ownership key unchanged");
+            Check.That(new byte[]{0xff,(byte)saved.Instance,(byte)(saved.Instance>>8),2}.SequenceEqual(computer.Attributes["MissionKey"]),"Mission ownership key unchanged: "+Convert.ToHexString(computer.Attributes["MissionKey"]));
             Check.That(context.Server.DebugLog().Contains("[MISSION-POSE-PROBE] DIAGNOSTIC variant="+variant+" char=110 mission=3072 phase=0 object=1 source=7611b015"),"Actual exact-identity probe activated");
             var current=await MissionCheckpoint(context,p);var spot=current.Objects.Single(o=>o.Id==1).Spot;
-            Check.Equal(new[]{92740d,4445d,13535d},new[]{spot.pos_x,spot.pos_y,spot.pos_z},"Display overlay never persists");Check.Equal(original.Spot.quat,spot.quat,"Source quaternion never persists an overlay");
+            Check.That(new[]{92740d,4445d,13535d}.SequenceEqual(new[]{spot.pos_x,spot.pos_y,spot.pos_z}),"Display overlay never persists: "+JsonSerializer.Serialize(new[]{spot.pos_x,spot.pos_y,spot.pos_z}));Check.Equal(original.Spot.quat,spot.quat,"Source quaternion never persists an overlay");
             Check.Equal(1282500L,await context.Database.LongAsync("SELECT exp FROM characters WHERE charId=110"),"No diagnostic XP");Check.Equal(1000L,await context.Database.LongAsync("SELECT cash FROM characters WHERE charId=110"),"No diagnostic info");Check.Equal(0L,await context.Database.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110"),"No diagnostic item");
             after=current;Check.Equal(0,p.World.Problems.Count,"Diagnostic wire clean");phase="complete";passed=true;
         }
         catch(Exception ex){failure=ex.ToString();throw;}
         finally
         {
+            string checkpoint;try{checkpoint=await context.Database.ScalarAsync("SELECT payload FROM char_active_missions WHERE charId=110");}catch(Exception ex){checkpoint="UNAVAILABLE: "+ex.Message;}
             string stem=Path.Combine(Path.GetTempPath(),"mxo-mission-pose-"+variant+"-"+context.Database.Name);
             await File.WriteAllTextAsync(stem+".log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
-            await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,Failure=failure,Variant=variant,Character=p.CharId,Before=before,After=after,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Computer=computer==null?null:new{computer.Goid,computer.ViewId,computer.SpawnId,Attributes=computer.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))},ReceivedRpcs=p.World.RpcSnapshot().Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),ReceivedViewLists=p.World.ViewSnapshot().Select(WireFormat.ToHex).ToArray(),NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true,IncludeFields=true}));
+            await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,Failure=failure,Variant=variant,Character=p.CharId,Before=before,After=after,FinalCheckpoint=checkpoint,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Computer=computer==null?null:new{computer.Goid,computer.ViewId,computer.SpawnId,Attributes=computer.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))},ReceivedRpcs=p.World.RpcSnapshot().Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),ReceivedViewLists=p.World.ViewSnapshot().Select(WireFormat.ToHex).ToArray(),NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true,IncludeFields=true}));
             Console.WriteLine("MISSION POSE PRETEARDOWN "+stem);
         }
     }
