@@ -3,14 +3,16 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,5,6,8,10,12,13,14,15,16,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,6,7,8,10,11,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
+parser.add_argument('--omit-missing-sectors',action='store_true',help='Explicitly omit the WHOLE sector if its required exterior SID is absent; unknown exterior counts remain unknown.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
+parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
 parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds13/16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
 if args.native_prefab_rotations and (args.world not in (13,16) or args.omit_unproven_rotations):
  parser.error('--native-prefab-rotations requires a reviewed world and cannot be combined with historical omission mode')
-world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',8:'archive_sakura',10:'widowsmoor',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',7:'datamine',8:'archive_sakura',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -86,28 +88,57 @@ def decode(s):
     placement_sources.append(evidence)
  return out
 
-selected=[r for r in rows if r['metr_id']==str(args.world)]
-missing_sid=[r for r in selected if r['file'].lower()+'.sid' not in byname]
-assert not missing_sid or args.omit_missing_sid_sectors, 'Required SID resource missing; strict default refuses export. Explicit whole-sector omission is required.'
-missing_sectors={int(r['sector']) for r in missing_sid}
+missing=[]
 missing_evidence=[]
-if missing_sid:
- assert args.world==5 and missing_sectors=={108}, 'Unreviewed missing SID sector'
- metr_rel=next(path for world,_,path in M.WORLDS if world==args.world)
- metr_path=Path(R.D)/metr_rel
- references={r['sector']:r for r in M.read_metr(str(metr_path),include_resource_refs=True)}
+missing_sectors=set()
+# Retain each reviewed world-specific refusal/omission contract and its historical audit shape.
+if args.world==7:
+ missing=[]
+ selected=[r for r in rows if r['metr_id']==str(args.world)]
  for row in selected:
-  native=references[int(row['sector'])]
-  for label,ext in [('SID','.sid'),('SIDI','.sidi'),('SIDG','.sidgo'),('NAV','.nav')]:
-   path=native['path'].replace(chr(92),'/')+ext
-   rid=native['resource_refs'][label]
-   if label=='SID' and int(row['sector']) in missing_sectors:
-    assert rid==0x0c00b400 and rid not in idx and path not in bp and not (Path(R.D)/path).exists()
-    missing_evidence.append(dict(sector=int(row['sector']),path=path,declaredResourceId=rid,packedRidPresent=False,packedPathPresent=False,loosePathPresent=False))
-   else:
-    assert path in bp and bp[path]['rid']==rid,(row['sector'],label,path,rid)
-raw=[]
-for row in selected: raw.extend((int(row['sector']),*o) for o in decode(row))
+  if row['file'].lower()+'.sid' not in byname:
+   assert args.world==7 and row['sector']=='34' and row['file']=='dataminene_3','Unreviewed missing static sector'
+   metr_path='resource/worlds/final_world/constructs/archive/archive_datamine/datamine.metr'
+   d=(Path(R.D)/metr_path).read_bytes();sources[metr_path]=hashlib.sha256(d).hexdigest();q=d.find(b'SINS')+12;rid=None
+   for _ in range(struct.unpack_from('<I',d,q-4)[0]):
+    end=q+12+struct.unpack_from('<I',d,q+4)[0];r=M.Reader(d,q+12);r.s16();sector=r.u16();r.p+=48
+    if sector==34:
+     rid=struct.unpack_from('<I',d,r.p+4)[0]
+     assert struct.unpack_from('<I',d,r.p+8)[0]==bp[byname['dataminene_3.sidi']]['rid']
+    q=end
+   assert rid==0x04000800 and rid not in idx
+   path=metr_path.rsplit('/',1)[0]+'/'+row['file']+'.sid';assert path not in bp and not (Path(R.D)/path).exists()
+   missing.append(dict(sector=34,file=row['file'],missingPath=path,declaredSidRid=rid,packedAbsent=True,looseAbsent=True,unknownExteriorCount=None,policy='Whole sector omitted, including available companions; unknown exterior object count.'))
+   for ext in ('.sidi','.sidgo'):read(byname[row['file']+ext])
+ assert args.omit_missing_sectors or not missing,'Missing required SID: strict default refuses export; explicit --omit-missing-sectors required'
+ raw=[]
+ for row in selected:
+  if int(row['sector']) not in {m['sector'] for m in missing}:raw.extend((int(row['sector']),*o) for o in decode(row))
+else:
+ selected=[r for r in rows if r['metr_id']==str(args.world)]
+ missing_layers=[(r,label,ext) for r in selected for label,ext in [('SID','.sid'),('SIDI','.sidi'),('SIDG','.sidgo')] if r['file'].lower()+ext not in byname]
+ from static_layer_policy import require_explicit_omission
+ require_explicit_omission([label for _,label,_ in missing_layers],args.omit_missing_sid_sectors,args.omit_missing_static_layer_sectors)
+ missing_sectors={int(r['sector']) for r,_,_ in missing_layers}
+ missing_pairs={(int(r['sector']),label) for r,label,_ in missing_layers}
+ missing_evidence=[]
+ if missing_layers:
+  assert (args.world,missing_pairs) in [(5,{(108,'SID')}),(11,{(5,'SIDI')})], 'Unreviewed missing static layer sector'
+  metr_rel=next(path for world,_,path in M.WORLDS if world==args.world)
+  metr_path=Path(R.D)/metr_rel
+  references={r['sector']:r for r in M.read_metr(str(metr_path),include_resource_refs=True)}
+  for row in selected:
+   native=references[int(row['sector'])]
+   for label,ext in [('SID','.sid'),('SIDI','.sidi'),('SIDG','.sidgo'),('NAV','.nav')]:
+    path=native['path'].replace(chr(92),'/')+ext
+    rid=native['resource_refs'][label]
+    if (int(row['sector']),label) in missing_pairs:
+     assert rid=={(5,108,'SID'):0x0c00b400,(11,5,'SIDI'):0x0c00a800}[(args.world,int(row['sector']),label)] and rid not in idx and path not in bp and not (Path(R.D)/path).exists()
+     missing_evidence.append(dict(sector=int(row['sector']),**({'kind':label} if args.world==11 else {}),path=path,declaredResourceId=rid,packedRidPresent=False,packedPathPresent=False,loosePathPresent=False))
+    else:
+     assert path in bp and bp[path]['rid']==rid,(row['sector'],label,path,rid)
+ raw=[]
+ for row in selected: raw.extend((int(row['sector']),*o) for o in decode(row))
 groups=collections.defaultdict(list)
 for o in raw:groups[o[:2]].append(o)
 conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in v})>1}
@@ -130,6 +161,8 @@ elif args.world==4:
 elif args.world==17:
  assert set(conflicts)=={(13,13),(13,15),(13,16)}
  assert len(raw)==370 and len(objects)==358
+elif args.world==7:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(13219,12960,6821,175,6105)
 elif args.world==16:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(4762,4625,3321,134,4491 if args.native_prefab_rotations else 1282)
 elif args.world==12:
@@ -139,8 +172,11 @@ elif args.world==13:
 elif args.world==5:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
  assert len(sources)==326
-else:
+elif args.world==15:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1061,1023,584,26,426)
+elif args.world==11:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(272,272,0,0,26,246)
+ assert len(sources)==146
 with open(args.output,'w',newline='') as f:
  w=csv.writer(f);w.writerow(['metr_id','sector_id','mxoId','staticId','type','exterior','pos_x','pos_y','pos_z','rotation','quat'])
  for sector,ident,go,pos,quat,rot,kind in objects:
@@ -150,11 +186,13 @@ with open(args.output,'w',newline='') as f:
 audit=dict(world=args.world,rawReferences=len(raw),uniqueKeys=len(groups),exportedKeys=len(objects),excludedKeys=[list(k) for k in sorted(excluded)],
  convention='METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.',
  sourceSha256=sources,raw=raw,conflicts={str(k):v for k,v in conflicts.items()})
+if missing:audit.update(missingSectors=missing,knownInputScope='Available resources only; missing whole sector excluded; no total-world completeness claim.')
 if args.native_prefab_rotations:
  audit.update(convention='Native direct-sector IPI pivot*10 + exact quarterturn, parent*local quaternion; float32 native stores. Server +145Y remains separate. Raw retains historical diagnostic convention.',
   nativePrefabRotations=dict(reviewedWorld=args.world,algorithm='client.dll6246b0c0/62111670/62046a40',parentEligibility='Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.',floatStores='signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.',placements=placement_sources),
   historicallyUnprovenRotationKeys=[list(k) for k in sorted(unproven)],
   omissionPolicy='Every conflicting native key variant remains excluded, even if transformed poses coincide. Unsupported actual nested/EPI parents, invalid flags, and missing resources refuse export; blank resource aliases are recorded, not guessed. No first/last variant policy.')
+
 if args.omit_unproven_rotations:
  audit.update(unprovenRotationKeys=[list(k) for k in sorted(unproven)],
   rotationAmbiguityOverlap=len(set(unproven)&set(conflicts)),
@@ -173,6 +211,13 @@ if missing_evidence:
   resourceIndexSha256=hashlib.sha256((Path(R.D)/'rezmap.ltb').read_bytes()).hexdigest(),
   omissionPolicy='Every known variant in missing-SID sector108 is omitted; its unseen exterior contents are unquantified. Raw references cover available layers only, not a complete world.',
   capturedPopulationBoundary='No ambient Archive02 captures; two Encounter rows are outside its footprint and remain encounter-scoped.')
+if args.world==11:
+ usables=list(csv.DictReader(open('data/object_usables.csv')));states=list(csv.DictReader(open('data/object_states.csv')))
+ goids=collections.Counter(r[2] for r in raw)
+ audit.update(availableNavigationSectors=49,knownAvailablePrefabPlacements=0,navigationCompletenessProven=False,
+  omissionPolicy='Every known variant in missing-SIDI sector5 is omitted; its unseen interior contents and prefab extent are unquantified. Raw references cover available layers only.',
+  capturedPopulationBoundary='179 Instance map11 rows are all outside the native 2D world footprint; no relocation, NPC visibility or gameplay claim.',
+  nativeGoidContracts={str(goid):dict(placements=count,usables=[u for u in usables if int(u["goid"])==goid],states=[u for u in states if int(u["goid"])==goid]) for goid,count in sorted(goids.items())})
 if args.world==15:
  audit.update(capturedPopulationValidated=False,
   capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
