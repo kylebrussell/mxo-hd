@@ -28,6 +28,9 @@ public class ZionCriticalTests
         byte[] Entry(ushort index,byte plot,string title){var b=new byte[18+title.Length];b[0]=0x80;b[1]=0x96;BitConverter.GetBytes(index).CopyTo(b,4);b[14]=plot;System.Text.Encoding.ASCII.GetBytes(title).CopyTo(b,17);return b;}
         var entries=new[]{Entry(0,0,"Courier"),Entry(7,1,"Redpill Rescue"),Entry(9,0,"Redpill Rescue")};
         Assert.Equal(7,MissionContactChoice.CriticalIndex(entries,"Redpill Rescue"));
+        var history=new[]{Entry(2,1,"Redpill Rescue")}.ToList();int listStart=history.Count;history.AddRange(entries);
+        Assert.Equal(7,MissionContactChoice.CriticalIndex(history.Skip(listStart),"Redpill Rescue"));
+        Assert.Throws<InvalidOperationException>(()=>MissionContactChoice.CriticalIndex(history,"Redpill Rescue"));
         Assert.Throws<InvalidOperationException>(()=>MissionContactChoice.CriticalIndex(entries,"Unknown"));
         Assert.Throws<InvalidOperationException>(()=>MissionContactChoice.CriticalIndex(entries.Append(Entry(8,1,"Redpill Rescue")),"Redpill Rescue"));
     }
