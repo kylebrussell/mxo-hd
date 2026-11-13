@@ -135,7 +135,9 @@ namespace hds
                         new double[] {-5000,95,-15000},
                         new double[] {18500,95,7500} };
                 bool found;
-                if (map == 7 || map == 9)
+                if (map == SatiFallbackLayout.Map)
+                    found = SatiFallbackLayout.TryGet(out point, out _);
+                else if (map == 7)
                     found = NavMesh.NearestEntry(map, -500, 2100, 500, out point);
                 else
                 {
@@ -193,6 +195,8 @@ namespace hds
             if (action != 2 || !Available(c)) return true;
             if (Organization(c) != org) { Say(c, "This teleporter belongs to a different organization."); return true; }
             if (!Arrival((ushort)c.playerData.getDistrictId(), (uint)org, out NavPoint p)) return true;
+            if (c.playerData.getDistrictId() == SatiFallbackLayout.Map &&
+                !SatiFallbackLayout.TryGet(out _, out p)) return true;
             double[] at = Position(c);
             if (Math.Sqrt(Math.Pow(at[0]-p.x,2)+Math.Pow(at[1]-p.y,2)+Math.Pow(at[2]-p.z,2)) > 1000) return true;
             ReturnToOrigin(c);
@@ -278,7 +282,10 @@ namespace hds
                 else if (IsArchive(map))
                     for (uint org = 1; org <= 6; org++)
                         if ((map != 7 && map != 9 || org == Organization(c)) && Arrival((ushort)map, org, out NavPoint p))
+                        {
+                            if (map == SatiFallbackLayout.Map && !SatiFallbackLayout.TryGet(out _, out p)) continue;
                             View(0xa200000000000000UL | map << 8 | org, (ushort)returners[org], p.x,p.y,p.z,null,0);
+                        }
                 // These actual statics are NPC/model views, not automatically visible merely because CSV exists.
                 // Keep the existing generated map7 fallback ALWAYS: exact retail arrival/route remains unknown.
                 if (map == 7)

@@ -5,17 +5,16 @@ public class Medium02Tests
 {
     private static string Root { get { var p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;} }
     [Fact]
-    public void EveryRotatedAndAmbiguousKeyVariantRemainsOmitted()
+    public void NativeRotationsRetainHistoricalKeysAndOmitEveryAmbiguousVariant()
     {
         using var d=JsonDocument.Parse(File.ReadAllText(Path.Combine(Root,"research","world-data","medium02-static-audit.json")));
         var a=d.RootElement;Assert.Equal(1061,a.GetProperty("rawReferences").GetInt32());Assert.Equal(1023,a.GetProperty("uniqueKeys").GetInt32());
-        Assert.Equal(426,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(584,a.GetProperty("unprovenRotationKeys").GetArrayLength());
-        Assert.Equal(26,a.GetProperty("conflicts").EnumerateObject().Count());Assert.Equal(13,a.GetProperty("rotationAmbiguityOverlap").GetInt32());
-        var excluded=a.GetProperty("excludedKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();Assert.Equal(597,excluded.Count);
+        Assert.Equal(997,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(584,a.GetProperty("historicallyUnprovenRotationKeys").GetArrayLength());
+        Assert.Equal(26,a.GetProperty("conflicts").EnumerateObject().Count());
+        var excluded=a.GetProperty("excludedKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();Assert.Equal(26,excluded.Count);
         foreach(var c in a.GetProperty("conflicts").EnumerateObject())foreach(var v in c.Value.EnumerateArray())Assert.Contains((v[0].GetInt32(),v[1].GetInt32()),excluded);
-        foreach(var v in a.GetProperty("raw").EnumerateArray())if(v[5].GetInt32()!=0)Assert.Contains((v[0].GetInt32(),v[1].GetInt32()),excluded);
         var rows=File.ReadLines(Path.Combine(Root,"data","staticObjects_medium02.csv")).Skip(1).Select(l=>l.Split(',')).ToArray();
-        Assert.Equal(426,rows.Length);Assert.Equal(426,rows.Select(r=>r[2]).Distinct().Count());Assert.All(rows,r=>Assert.Equal("15",r[0]));
+        Assert.Equal(997,rows.Length);Assert.Equal(997,rows.Select(r=>r[2]).Distinct().Count());Assert.All(rows,r=>Assert.Equal("15",r[0]));
         Assert.Empty(rows.Select(r=>(int.Parse(r[1]),(int)BitConverter.ToUInt32(Convert.FromHexString(r[3])))).Intersect(excluded));
         var booth=Assert.Single(rows,r=>r[4]=="50020000");Assert.Equal("07008003",booth[2]);Assert.Equal(new[]{"-1000.0","145.0","2400.0"},booth[6..9]);
     }

@@ -14,19 +14,10 @@ namespace hds
         /// </summary>
         public void processHardlineStatusRequest(ref byte[] packet)
         {
-            if (packet.Length < 2)
-            {
-                return;
-            }
-
-            UInt16 district = (UInt16)(packet[0] | (packet[1] << 8));
-            List<UInt16> hardlines = Store.worldConfig.HardlineUploadRequired
-                ? Store.dbManager.WorldDbHandler.GetUploadedHardlines(Store.currentClient.playerData.getCharID(), district)
-                : HardlineNetwork.Covers(district)
-                    ? HardlineNetwork.Ids(district)
-                    : Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
+            if (packet.Length < 8 || !HardlineRegistration.TryMap(BitConverter.ToUInt32(packet,0),out UInt16 district)) return;
+            List<UInt16> hardlines = HardlineRegistration.Known(Store.currentClient.playerData.getCharID(),district);
             Output.WriteDebugLog("[HARDLINE] Status for district " + district + ": " + hardlines.Count + " hardlines");
-            new ServerPackets().SendHardlineStatus(Store.currentClient, district, hardlines);
+            new ServerPackets().SendHardlineStatus(Store.currentClient, (ushort)BitConverter.ToUInt32(packet,0), hardlines);
         }
 
         /// <summary>
@@ -73,28 +64,13 @@ namespace hds
                 return;
             }
 
-            byte[] sourceHardline = new byte[2];
-            sourceHardline[0] = packet[0];
-            sourceHardline[1] = packet[1];
-
-            byte[] sourceDistrict = new byte[2];
-            sourceDistrict[0] = packet[4];
-            sourceDistrict[1] = packet[5];
-
-            byte[] destHardline = new byte[2];
-            destHardline[0] = packet[8];
-            destHardline[1] = packet[9];
-
-            byte[] destDistrict = new byte[2];
-            destDistrict[0] = packet[12];
-            destDistrict[1] = packet[13];
-
-            UInt16 sourceHL = NumericalUtils.ByteArrayToUint16(sourceHardline, 1);
-            UInt16 sourceDIS = NumericalUtils.ByteArrayToUint16(sourceDistrict, 1);
-
-            UInt16 destHL = NumericalUtils.ByteArrayToUint16(destHardline, 1);
-            UInt16 destDIS = NumericalUtils.ByteArrayToUint16(destDistrict, 1);
-
+            uint sourceId=BitConverter.ToUInt32(packet,0), destinationId=BitConverter.ToUInt32(packet,8);
+            if(sourceId==0 || sourceId>ushort.MaxValue ||
+                !HardlineRegistration.TryMap(BitConverter.ToUInt32(packet,4),out ushort sourceDIS) ||
+                sourceDIS!=Store.currentClient.playerData.getDistrictId() ||
+                HardlineNetwork.Get(sourceDIS,(ushort)sourceId)==null ||
+                !HardlineRegistration.Destination(Store.currentClient.playerData.getCharID(),BitConverter.ToUInt32(packet,12),destinationId,out ushort destDIS))return;
+            ushort sourceHL=(ushort)sourceId,destHL=(ushort)destinationId;
             // This should do the magic - we just catch
             CraftingSession.End(Store.currentClient);
             MoveToHardline(Store.currentClient, destDIS, destHL);
@@ -169,6 +145,22 @@ namespace hds
             UInt16 hardline = NearestHardline(district, booth.pos_x, booth.pos_z);
             Output.WriteDebugLog("[HARDLINE] Booth " + booth.mxoStaticId + " action " + action + " -> hardline " + hardline +
                                  " in district " + district);
+            if (action == HardlineBooths.ActionSynchronize)
+            {
+                byte[] discovered = HardlineBooths.BuildSynchronized(district, hardline);
+                if (discovered == null)
+                {
+                    Output.WriteDebugLog("[HARDLINE] Synchronize refused: no registered source hardline");
+                    return;
+                }
+                // serverrules.HardlineSync/10040: add discovery and break shadow. An already-known
+                // row still receives the incremental reply, so retries repair stale client state.
+                Store.dbManager.WorldDbHandler.AddUploadedHardline(client.playerData.getCharID(), district, hardline);
+                Stealth.BreakForAction(client, "synchronized hardline");
+                client.messageQueue.addRpcMessage(discovered);
+                client.FlushQueue();
+                return;
+            }
             MissionRuntime.OnHardline(client, action == HardlineBooths.ActionUpload);
 
             switch (action)
@@ -332,15 +324,14 @@ namespace hds
         /// <summary>80 ff &lt;district u32&gt; &lt;hardline u32&gt;: the player picked a hardline in the Loading Area.</summary>
         public void ProcessLoadingAreaHardline(ref byte[] packet)
         {
-            if (packet.Length < 8 || !Store.currentClient.playerData.DistrictIsLA())
+            if (packet.Length < 8 || !Store.currentClient.playerData.DistrictIsLA() || Store.currentClient.playerData.worldChangePending)
             {
                 Output.WriteDebugLog("[LA] 80 ff ignored (not in the Loading Area or too short)");
                 return;
             }
 
-            PacketReader reader = new PacketReader(packet);
-            UInt16 district = (UInt16)reader.ReadUInt32(1);
-            UInt16 hardline = (UInt16)reader.ReadUInt32(1);
+            if (!HardlineRegistration.Destination(Store.currentClient.playerData.getCharID(),BitConverter.ToUInt32(packet,0),BitConverter.ToUInt32(packet,4),out ushort district))return;
+            ushort hardline=(ushort)BitConverter.ToUInt32(packet,4);
             Output.WriteDebugLog("[LA] Leaving the Loading Area for district " + district + " hardline " + hardline);
 
             MoveToHardline(Store.currentClient, district, hardline);

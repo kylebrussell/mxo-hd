@@ -1,6 +1,6 @@
 # Sati's Playground / map9 — PARTIAL
 
-This package loads7,917 native static keys using the reviewed direct-sector prefab transforms alongside the existing31-sector navigation. It does not add an engine, transport packet, actor population or retail arrival formula. Runtime DB key remains `archive_sati`, the shipped resource is `archive_sati/sati.metr`, server map9 is retail construct18. PvpArchives is unchanged.
+This package loads7,917 native static keys using the reviewed direct-sector prefab transforms alongside the existing31-sector navigation. It does not add an engine, transport packet, actor population or retail arrival formula. Runtime DB key remains `archive_sati`, the shipped resource is `archive_sati/sati.metr`, server map9 is retail construct18. A Sati-only authored fallback placement now separates the arrival and generated returner on a validated source floor; other archive layouts remain unchanged.
 
 ## Source boundaries
 
@@ -18,7 +18,11 @@ Packed HDL has NextID2 and zero hardline nodes; proper NETS parsing finds zero C
 
 ## Existing transport remains an OURS fallback
 
-The recovered archive script lacks a Sati arrival. Existing PvpArchives uses OURS `NearestEntry` near `(-500,2100,500)`, resulting in `(14070,95,-4070)`, sector2/region3/polygon6. This is grounded but **not a recovered retail arrival**. The generated organization returner ALWAYS remains. Owned Zion book47726 has source PvPID8, organization1, levels1–100; ordinary equip106 and the actual180-second sender cycle remain authoritative. Return uses the existing city-origin session; no fake session is seeded.
+The recovered archive script lacks a Sati arrival. The previous OURS nearest-entry fallback placed both the traveller and returner at `(14070,95,-4070)`, only20 units inside a corner of sector2/region3/polygon6. Three corners of the default38271 footprint lay outside the available same-floor NAV. Claude reported a hover-only returner with337zero and no80c7; that report does not prove the native picking cause.
+
+The new **OURS** arrival is `(14225,95,-5225)` and the separate generated returner is `(14225,95,-4925)`,300 units/3m ahead at heading0. Both are on the same flat floor0 polygon; the complete default25/95/95 returner footprint is inside it. Production `Project`/`Locate` require the exact points, a direct same-floor route and all footprint corners. No arbitrary bounds resize, model, organization, rule9007, default-component,0c or identity-orientation change is made. Source proof: `research/world-data/sati-fallback-layout.json`. **Retail arrival remains unrecovered and native clickability requires retest.**
+
+The generated organization returner ALWAYS remains. Owned Zion book47726 has source PvPID8, organization1, levels1–100; ordinary equip106 and the actual180-second sender cycle remain authoritative. Return uses the existing city-origin session and distance to the actual returner, without a fake session. All other archive layouts and the four unbound source proxies are unchanged.
 
 Four safe source `Generic_ArchivistBase_Returner`47267 placements remain **UNBOUND**:23/1335 `(30200,145,-18800)`,23/1347 `(23500,145,-16200)`,27/411 `(23400,145,-9400)`,28/1434 `(33200,145,-11200)`. Each has NAV standing95. Their GOB schema3602/GeneralSuccess usable does not justify silently reusing the map7 binding engine here. This PR adds no proxy renderer/executor, relocation or PvpArchives change. Use of those source proxies and exact retail arrival remain explicit gaps.
 
@@ -33,14 +37,18 @@ This is a direct diagnostic standing point, **not proof of a walk route from the
 ## Claude-only native one-pass checklist
 
 1. Normal mode `sati`: actual default50/XP50, Zion, abilities2/17, safe protocol heading0, owned47726 bag3 at real Richland sender38282 `111600/695/-6130`. No dev/GM/forced rolls. Double-click/equip into launcher106 (an Equip menu may be absent), stand on the pad and wait up to **three real minutes** for ordinary timing plus loading.
-2. Confirm Sati world/grounding at existing OURS fallback14070/95/-4070. Right-click the generated Zion38271→Use2; confirm full city reload, exact original sender position and retained reusable book. Do not substitute a generic47267 source proxy, hardline, Loading Area selection or teleport.
+2. Confirm Sati world/grounding at OURS arrival14225/95/-5225. The generated Zion38271 is3m separate at14225/95/-4925, on the same platform. Walk toward it normally; confirm actual targeting/radial interaction, then use it and confirm full city reload, exact original sender position and retained reusable book. If clicks still produce only337zero, record that failure; do not claim clickability from a headless80c7 alone. Do not substitute a generic47267 source proxy, hardline, Loading Area selection or teleport.
 3. Separately run discovered `sati-door` using the existing NativeQa workflow. This explicitly starts directly at34800/95/-13800, heading0. Confirm nearby door/interior render, right-click Open, observe Open834→natural Closing838 after20s→Closed835 after1s. No manual Close, timing override or walk-route claim.
 4. Record missing geometry/menus/collision separately. No headless packet assertion establishes native rendering, traversal, source-proxy usability or retail parity.
 
-Headless `sati-partial-world` performs normal book/cycle/world/full-city-return then invokes the shared door diagnostic with a separate fixture player; it never pretends that actor walked from arrival. One driver saves owned raw logs before teardown. Validation/native status is reported in the PR and append-only handoff. No generated parity snapshots are changed.
+Headless `sati-partial-world` performs normal book/cycle/world/full-city-return and verifies ordinary movement through a witness. The unchanged door diagnostic remains a separate registered case; it never pretends that actor walked from arrival. One driver saves owned raw logs before teardown. Validation/native status is reported in the PR and append-only handoff. No generated parity snapshots are changed.
 
 ## Validation
 
 Full Release4330 tests PASS; initial24 focused tests PASS and final27 focused tests PASS after upstream-only Widow10 integration. Both NativeQa configurations build; actual new/unknown profiles and provenance pass. Both old173 serialized Plan blocks are BYTE-EXACT; full manifests differ only by two empty environment keys imported upstream from156. Python12/snapshot policy pass; strict9 refuses before output, CSV/raw audit/resource95-contract audit reproduce exactly, and source NAV reproduces all512,010 decompressed bytes exactly. Current all-module ignored audit has532partial/27cosmetic/1missing/1inaccessible/0done and exact3-artifact CRLF roundtrip; historical snapshots stay unchanged.
 
 Combined ordinary-wire fresh **PASS86.4s, EXIT0, parallel1/peak1, disposed**:47726 equip106, real sender cycle, retail18/map9, existing OURS arrival, generated38271 Use2, full city resource/new-self reload and exact origin/book retained. A SEPARATE actor then used exact source365/0/8 Open3 and observed834→natural838→835. No walking-route or native UI claim. Owned raw logs were saved before teardown (main and door SHA256 `caf3878d1e4f72bf28a0d63438f3b673107ef9723d5548146cfac538ef7331da`). Fresh-tested0bb342e3 data/modes/driver/QA helper remain byte-identical after pure upstream10 union; final changes document results only. Native one-pass remains pending.
+
+### Separated fallback repair (13 November)
+
+Full Release4405 tests,17 focused tests and Python12 policy checks passed before the fixture-only evidence update. Both NativeQa configurations and actual read-only plans/provenance passed. Fresh source `dac9aa8b8e4ca91a42d30f081ad54591dd88b960` passed the normal book route in96.3s, EXIT0, parallel1/peak1, disposed. Actual selected Debug DLL SHA256 `58451bb4142bbc5fb747b6164c2002af846108a4311b30677c087d71df649041`. Actual06/map9, actor14225/95/-5225, separate38271 at14225/95/-4925 with identity orientation, ordinary witnessed movement, Use2, full city reload, exact origin and retained book were verified. Raw and wire evidence were saved before teardown. The separate unchanged door case was not repeated. Earlier86.4s proof above is historical baseline. Native targeting/clickability remains PENDING Claude retest; this route does not establish the native picking cause.

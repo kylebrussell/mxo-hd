@@ -44,7 +44,8 @@ namespace hds
             pak.AddUShort(0);
             uint instance = districtId == 0 && client.playerData.tutorialConstructId != 0
                 ? client.playerData.tutorialConstructId : PvpArchives.ConstructId(districtId);
-            pak.AddUint32(instance, 1); // retail construct ID, distinct from our map index
+            instance = HardlineRegistration.WorldConstructId(districtId, instance);
+            pak.AddUint32(instance, 1); // native context: registered testworld ordinal, or the existing private/city fallback
             pak.AddByteArray(TimeUtils.getCurrentSimTime());
             pak.AddByte(0x01); // SimeTime + 01 
             pak.AddUint16(offsetWeatherEvent, 1);
