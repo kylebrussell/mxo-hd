@@ -10,7 +10,7 @@ Discovered NativeQa mode and headless case: `merv-propaganda-count`. Normal CSR1
 
 One-pass native checklist: Call Flood > Critical > Propaganda; accept the actual title. In the first building, approach and normally Open each of3 Box proxies, exit. In the final building, approach and Open each of5. Confirm after3 and4 that the area remains unfinished; after5 exit normally and observe completion/reward. This checks current proxy usability; it does not validate real poster assets, wall attachment or Destroy2/event30.
 
-Headless uses the unchanged shared normal contact/title/accepted-ID driver and mandatory unique preteardown raw/debug, RPC/all03, source DLL/config/hash, active payload and receipt evidence. It must earn8 goal-done records and one completion/receipt. Fresh execution is pending root review/grant.
+Headless uses the unchanged shared normal contact/title/accepted-ID driver and mandatory unique preteardown raw/debug, RPC/all03, source DLL/config/hash, active payload and receipt evidence. It must earn8 goal-done records and one completion/receipt. Fresh execution passed as recorded below.
 
 ## Offline allocation and limits
 
@@ -18,4 +18,13 @@ Actual normal Choose/PlaceObjects with seed301101 and fixed17000/2300 input per 
 
 The proxy/source policy is existing OURS, not a proved retail7914 mapping. No mapper, anchor, pivot, model, chooser or runtime change is included. Native model picking, wall/room reach and walking remain unverified. StillNpcs suppresses unsolicited aggro; movement helpers can cross walls, so headless does not prove ordinary attack survival or native reachability. No claim of exact retail rewards/content mechanics.
 
-Validation before fresh: full 4,574 tests passed; 16 focused tests passed (including normal offline allocation). Both actual Debug/Release builds and read-only fixture plans/provenance passed. Python audit/policy tests 12 passed; executable all-module audit and current ignored artifact generation/roundtrip passed. Historical tracked Markdown/coverage unchanged. Regeneration exposed seven already-stale master CSV rows unrelated to this mission; tracked CSV restored rather than including unrelated changes. Fresh and native remain pending.
+Validation before fresh: full 4,574 tests passed; 16 focused tests passed (including normal offline allocation). Both actual Debug/Release builds and read-only fixture plans/provenance passed. Python audit/policy tests 12 passed; executable all-module audit and current ignored artifact generation/roundtrip passed. Historical tracked Markdown/coverage unchanged. Regeneration exposed seven already-stale master CSV rows unrelated to this mission; tracked CSV restored rather than including unrelated changes. Fresh proof is recorded below; native remains pending.
+
+
+## Actual normal-wire proof
+
+At frozen source `5161be52c014a7add062a9f1225e13bafb1bdca6`, the single serial `merv-propaganda-count` case passed in 32.5 seconds, exit 0, peak one server; normal disposal completed. All eight actual GO548 creations and quaternions match the offline inventory above. They are free0c records without a source key: source attribution is the offline selection/unique pose match, not direct wire binding proof. Actual boxes were used normally through Open/use3. Eight goal-done records and one80A2 completion were received; receipt301202 count1, final active payloadNULL, protocol problems0. Final goals4 and5 both ticked before the final area completed.
+
+Required preteardown evidence: `Temp/mxo-merv-propaganda-mxotest_run_1_0132e9048c.json` (109 RPCs,27 view lists; SHA256 `E2ED07BF9B483C7B699DDF313B90E1A1B812591D340D04EF699C7D67CEB9B22F`) and sibling `-debug.log`. Durable stdout/exit: `Temp/mxo-merv-propaganda-fresh-5161-stdout.txt` / `-exit.txt`. Existing WireFormat.FindCreations decoded actual records to `Temp/mxo-merv-propaganda-live548.json`.
+
+The Debug harness selected the newer **Release** server DLL using its normal selection policy: own worktree `hds/bin/Release/net8.0/hds.dll`, SHA256 `47ACE9E5DBC4ADA27926F52C5F5073EDD5667A17A9B0F4CA319A529940472EC2`. Both configurations were built/reviewed before the run. No source/build changes occurred while it ran. Native Box/source picking, walking and real poster representation remain unproven; this headless proof does not clear those gates or ordinary attack survival.
