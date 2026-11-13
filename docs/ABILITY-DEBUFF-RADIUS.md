@@ -10,7 +10,7 @@ Only direct caller of625c5500 found is UI621ed033: ECX comes from local-characte
 
 Direct177 buff totals use existing AbilityStats.Player caps. Zero direct total preserves the previous radius exactly. Existing captured345 +21 is preserved: raw catalog345 says12, a separate unresolved magnitude mismatch. At base4 the actual current +21 gives approximately4.84m. No magnitude, linked-attribute aggregation, character baseline or RNG is changed.
 
-75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links81 with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale. The loader follow-up below establishes that the initial property getter returns0; the global threshold, actor coefficient and later mutation paths remain unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
+75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links82 (Belief) with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale. The loader follow-up below establishes that the initial property getter returns0; the global threshold, actor coefficient and later mutation paths remain unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
 
 ## Initial linked-attribute default
 
