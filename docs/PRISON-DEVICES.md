@@ -29,8 +29,23 @@ Discovered mode and case: `prison-devices`. Native setup uses CSR 110 at Mara, a
 
 Headless proof retains actual RPC/03, slots/count, cast cancellation, changing modifiers, expiry/unequip, parser results and actual DLL path/configuration/hash on failure as well as success. Native appearance, discovery and clickability remain pending Claude observation. No native action has been performed by Codex.
 
-## Local validation before fresh review
+## Initial validation (superseded by identity hardening)
 
 Full Release suite: **4,587 passed** in 80 seconds. Final focused device, crafting-session, archive and health-callback checks: **19 passed**, including the subsequently added fixture no-RNG/no-free-grant contract. Both actual NativeQa configurations built and emitted the discovered plan and read-only provenance; Python snapshot policy **9 passed**. No fresh scenario has run yet.
 
 Actual Release hds SHA256: `35471afe3bda33d443a5c91f510a107f945549499d24b40e05d566cec86c5a24`; Debug: `390a1208b16722bb188c40c302b395706190b6462caa0aa5ca518194dc03f2da`. Logs and read-only plans are retained under `Temp/mxo-prison-*`. An initial C# language-version compile error and a test-only arithmetic expectation failure were corrected and their logs retained. No failed fresh proof is being treated as a pass.
+
+## Row identity and reset safeguards
+
+Equipment now uses a dedicated transaction with no schema changes. It requires the existing InnoDB character, inventory and ability tables; locks the character and source/destination inventory rows; checks the exact inventory primary key, GOID and raw count; verifies an empty destination and current SQL prerequisite; then updates that exact row and commits before buff, queue or transport-fence work. Competing moves cannot both adopt a stale slot snapshot. Devices use native bag slots 1 through 95 (`slot < 0x60`), with 106 as equipment. Other item conventions remain unchanged.
+
+Pending casts retain the physical inventory row ID as well as slot, GOID and count, plus world, life, cast stamp and transport epoch. Landing rereads that same row before taking the existing transport fence around actual buff application. Removing and reinserting a different row with the same GOID cannot inherit the cast. Equipment uses ordinary world/life/shutdown guards, without borrowing the ability-only Powerless or Incapacitated restrictions; activation still requires normal ability controls. These are source-authority safeguards, not a generic equipment framework.
+
+The disposable fixture adds two independent competing SQL moves, a deliberate precommit SQL failure with no move acknowledgement, and a same-GOID replacement during the cast. Unit tests exercise actual fenced application versus world/life/shutdown/reset-and-resume invalidation. These checks do not claim fresh success before they run. Actual master 05673205668c6a7c9f434ec67439e09b0d913866 was merged before these revisions.
+
+
+## Current identity-hardening validation
+
+After merging actual master 05673205 and adding the row/epoch safeguards, the final full Release suite passed **4,613 tests** in 68 seconds; the focused device/crafting/archive/health checks passed **25 tests**. Both actual NativeQa builds, discovered plans and read-only provenance passed, as did **9** Python snapshot-policy tests. The earlier new Powerless test initially omitted its state-proc discriminator; that fixture was corrected and the entire suite subsequently passed. No production workaround was made for the fixture failure.
+
+Current Release hds SHA256: `5efa5a72ee508e370d0d0d501603923927524a4134279de83d8b786c26520ddc`; Debug: `759eceb044c3f6932ce6bf463b01ba769f19aedc9601a0a33adf727a0fa393fe`. Evidence files are `Temp/mxo-prison-identity-*`. The transactional races, deliberate SQL rollback and same-GOID replacement wire checks are prepared but **not yet run**; fresh remains subject to root review and grant. Native UI and acquisition limitations remain unchanged.

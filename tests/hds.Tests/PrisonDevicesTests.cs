@@ -55,6 +55,44 @@ public class PrisonDevicesTests
         typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
         return c;
     }
+    private static WorldClient ReadyClient()
+    {
+        var c=Client();c.Alive=true;c.playerData.setOnWorld(true);c.playerData.setDistrictId(1);
+        c.playerInstance.Level.setValue((byte)50);
+        typeof(WorldClient).GetField("lastUsedTime",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,TimeUtils.getUnixTimeUint32());
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,new WorldSendFence());
+        AbilityPassives.SetLoaded(c,new[]{((ushort)2,(ushort)50)});return c;
+    }
+    [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
+    public void LandingRejectsSameGoidReplacementOrStaleLifecycle(int mutation)
+    {
+        var c=ReadyClient();var original=new PrisonDevices.Owned(10,106,42722,1,50,50);
+        var current=mutation==0?new PrisonDevices.Owned(11,106,42722,1,50,50):original;
+        long epoch=c.TransportFence.Capture();int world=c.playerData.worldGeneration,life=c.playerData.lifeGeneration;
+        c.playerData.castEndsAt=7;
+        if(mutation==1)c.playerData.worldGeneration++;
+        if(mutation==2)c.playerData.lifeGeneration++;
+        if(mutation==3)c.playerData.waitForRPCShutDown=true;
+        if(mutation==4){c.TransportFence.PublishIncoming(true,()=>{});long next=c.TransportFence.Capture();c.TransportFence.ApplyReset(next,()=>{});c.TransportFence.Resume(next);}
+        int queued=c.messageQueue.RPCMessagesQueue.Count;
+        Assert.False(PrisonDevices.CommitLanding(c,949,original,current,world,life,7,epoch));
+        Assert.Empty(c.playerData.activeBuffs);Assert.Equal(queued,c.messageQueue.RPCMessagesQueue.Count);
+    }
+    [Fact]
+    public void ActualFencedLandingAcceptsTheSameOwnedRowAndEquipmentNeedsNoAbilityControlBypass()
+    {
+        var c=ReadyClient();var row=new PrisonDevices.Owned(10,106,42722,1,50,50);c.playerData.castEndsAt=7;
+        Assert.True(PrisonDevices.EquipmentReady(c));
+        Assert.True(PrisonDevices.CommitLanding(c,949,row,row,c.playerData.worldGeneration,c.playerData.lifeGeneration,7,c.TransportFence.Capture()));
+        Assert.True(AbilityBuffs.IsActive(c,949));AbilityBuffs.RemoveAll(c);
+        var effects=TimedEffects.ForPlayer(c).Effects;
+        effects.Apply(900,new[]{new TimedEffects.Active{Kind=TempMods.KindState,Target=TempMods.PowerlessAbility,Proc=TempMods.Proc.State,Seconds=10}},TimeUtils.GetSimTimeSeconds());
+        Assert.False(ControlActions.CanUseAbilities(c));Assert.True(PrisonDevices.EquipmentReady(c));
+        effects.RemoveParent(900);
+        Assert.False(PrisonDevices.SameItem(row,new PrisonDevices.Owned(10,106,42722,0,50,50)));
+        Assert.False(PrisonDevices.Admitted(new PrisonDevices.Owned(10,106,42723,1,50,50),949));
+    }
     private static int Inner(WorldClient c)=>NumericalUtils.ByteArrayToUint16(c.playerInstance.InnerStrengthAvailable.getValue(),1);
     [Fact]
     public void DamageMutatesOnlyActiveInstanceAndExpiryRefundsExactlyOnce()

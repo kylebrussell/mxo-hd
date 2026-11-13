@@ -9,7 +9,20 @@ namespace hds
     public static class PrisonDevices
     {
         public const byte Slot = 106;
-        private sealed class Pending { }
+        public sealed class Owned
+        {
+            public readonly uint Identity,Goid;
+            public readonly ushort Slot;
+            public readonly int Count,CharacterLevel,AwakenedLevel;
+            public Owned(uint identity,ushort slot,uint goid,int count,int characterLevel,int awakenedLevel)
+            {Identity=identity;Slot=slot;Goid=goid;Count=count;CharacterLevel=characterLevel;AwakenedLevel=awakenedLevel;}
+        }
+        private sealed class Pending { public Owned Item; public int World,Life; public long Transport; public double Cast; }
+        public static bool Device(uint goid)=>goid==42722 || goid==42723;
+        public static bool SameItem(Owned before,Owned after)=>before!=null && after!=null && before.Identity==after.Identity &&
+            before.Slot==after.Slot && before.Goid==after.Goid && before.Count==after.Count;
+        public static bool Admitted(Owned row,ushort ability)=>row!=null && row.Slot==Slot && row.Goid==Item(ability) &&
+            row.Count>=0 && row.Count<=1 && row.CharacterLevel>=RequiredLevel(ability) && row.AwakenedLevel>=RequiredLevel(ability);
         private static readonly ConditionalWeakTable<WorldClient, Pending> pending = new ConditionalWeakTable<WorldClient, Pending>();
         public static bool Handles(ushort ability) => ability == 949 || ability == 957;
         public static uint Item(ushort ability) => ability == 949 ? 42722u : ability == 957 ? 42723u : 0;
@@ -27,9 +40,10 @@ namespace hds
                 Modifiers = new[] { new AbilityBuffs.Modifier(AbilityBuffs.KindStat,144,ability == 949 ? 1 : 2) } };
             return true;
         }
-        private static bool Ready(WorldClient c) => c.Alive && c.playerData.getOnWorld() &&
-            !c.playerData.worldChangePending && !c.playerData.DistrictIsLA() && !c.playerData.isDead &&
-            !c.playerData.duelDeath && ControlActions.CanUseAbilities(c) &&
+        internal static bool EquipmentReady(WorldClient c) => c.Alive && c.playerData.getOnWorld() &&
+            !c.playerData.waitForRPCShutDown && !c.playerData.worldChangePending && !c.playerData.DistrictIsLA() &&
+            !c.playerData.isDead && !c.playerData.duelDeath;
+        private static bool Ready(WorldClient c) => EquipmentReady(c) && ControlActions.CanUseAbilities(c) &&
             !ControlActions.Incapacitated(TimedEffects.ForPlayer(c).Effects);
         private static bool Prerequisite(WorldClient c, ushort ability) =>
             c.playerInstance.Level.getValue()[0] >= RequiredLevel(ability) &&
@@ -42,56 +56,84 @@ namespace hds
             var data=c.playerData;
             lock(data.craftingSync)
             {
-                double now=TimeUtils.GetSimTimeSeconds();
-                TryGet(ability,out var buff);
-                if (!Request(body,ability) || !Ready(c) || !Prerequisite(c,ability) ||
-                    Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(Slot)!=Item(ability) ||
-                    pending.TryGetValue(c,out _) || AbilityCooldowns.IsCasting(data,now) ||
-                    AbilityCooldowns.IsCoolingDown(data,ability,now) || !AbilityBuffBuffer.CanApply(c,ability,buff))
-                { Deny(c,ability); return; }
-                CraftingSession.End(c);
-                var token=new Pending(); pending.Add(c,token);
+                long transport=c.TransportFence.Capture();
                 int world=data.worldGeneration,life=data.lifeGeneration;
-                float cast=AbilityCatalog.Find(ability).CastSeconds;
-                AbilityCooldowns.StartCast(data,now,cast); double stamp=data.castEndsAt;
-                new ServerPackets().SendCastAbilityBar(ability,cast); c.FlushQueue();
-                DelayedActions.AfterFor(c,cast,()=>
+                Owned item;
+                try { item=Store.dbManager.WorldDbHandler.ReadPrisonDevice(data.getCharID(),Slot); }
+                catch(Exception e) { Output.WriteDebugLog("[PRISON] Item admission failed: "+e.Message);Deny(c,ability);return; }
+                // The owned-row read is finished before taking the transport/buff locks.
+                c.TransportFence.TryRun(transport,()=>
                 {
-                    lock(data.craftingSync)
+                    double now=TimeUtils.GetSimTimeSeconds();TryGet(ability,out var buff);
+                    if(!Request(body,ability) || !Ready(c) || !Prerequisite(c,ability) || !Admitted(item,ability) ||
+                        world!=data.worldGeneration || life!=data.lifeGeneration || pending.TryGetValue(c,out _) ||
+                        AbilityCooldowns.IsCasting(data,now) || AbilityCooldowns.IsCoolingDown(data,ability,now) ||
+                        !AbilityBuffBuffer.CanApply(c,ability,buff)) {Deny(c,ability);return;}
+                    CraftingSession.End(c);
+                    AbilityCooldowns.StartCast(data,now,AbilityCatalog.Find(ability).CastSeconds);
+                    var token=new Pending{Item=item,World=world,Life=life,Transport=transport,Cast=data.castEndsAt};pending.Add(c,token);
+                    new ServerPackets().SendCastAbilityBar(ability,AbilityCatalog.Find(ability).CastSeconds);c.FlushQueue();
+                    DelayedActions.AfterFor(c,AbilityCatalog.Find(ability).CastSeconds,()=>
                     {
-                        if(!pending.TryGetValue(c,out var current) || current!=token) return;
-                        pending.Remove(c);
-                        if(!Ready(c) || !Prerequisite(c,ability) || world!=data.worldGeneration || life!=data.lifeGeneration ||
-                            stamp!=data.castEndsAt || Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(Slot)!=Item(ability)) return;
-                        if(AbilityBuffs.Apply(c,ability,c)) AbilityCooldowns.Start(c,ability,TimeUtils.GetSimTimeSeconds());
-                        c.FlushQueue();
-                    }
+                        lock(data.craftingSync)
+                        {
+                            if(!pending.TryGetValue(c,out var current) || current!=token)return;
+                            pending.Remove(c);
+                            Owned atLanding;
+                            try {atLanding=Store.dbManager.WorldDbHandler.ReadPrisonDevice(data.getCharID(),Slot);}
+                            catch(Exception e){Output.WriteDebugLog("[PRISON] Landing item validation failed: "+e.Message);return;}
+                            CommitLanding(c,ability,token.Item,atLanding,token.World,token.Life,token.Cast,token.Transport);
+                        }
+                    });
                 });
             }
+        }
+        // SQL/transaction must be complete before this actual presentation/application fence.
+        internal static bool CommitLanding(WorldClient c,ushort ability,Owned original,Owned current,int world,int life,double cast,long transport)
+        {
+            bool applied=false;
+            c.TransportFence.TryRun(transport,()=>
+            {
+                if(!Ready(c) || !Prerequisite(c,ability) || !SameItem(original,current) || !Admitted(current,ability) ||
+                    world!=c.playerData.worldGeneration || life!=c.playerData.lifeGeneration || cast!=c.playerData.castEndsAt)return;
+                applied=AbilityBuffs.Apply(c,ability,c);
+                if(applied)AbilityCooldowns.Start(c,ability,TimeUtils.GetSimTimeSeconds());c.FlushQueue();
+            });
+            return applied;
         }
 
         /// <summary>Native category 0x6c505449 maps automatic equipment destination to106.</summary>
         public static bool Equipment(WorldClient c, ushort source, ushort destination)
         {
-            if(source!=Slot && destination!=Slot && destination!=107) return false;
+            if(source!=Slot && destination!=Slot && destination!=107)return false;
             lock(c.playerData.craftingSync)
             {
-                var db=Store.dbManager.WorldDbHandler;
-                var inventory=db.GetInventoryItems(c.playerData.getCharID());
-                uint goid=inventory.FirstOrDefault(i=>i.Slot==source).Goid;
-                bool device=goid==42722 || goid==42723;
-                bool occupiedDevice=inventory.Any(i=>i.Slot==Slot && (i.Goid==42722 || i.Goid==42723));
-                if(device && destination==107) destination=Slot;
-                if(!(device && (source==Slot || destination==Slot)) && !(occupiedDevice && destination==Slot)) return false;
-                ushort ability=goid==42722?(ushort)949:(ushort)957;
-                bool mounting=destination==Slot;
-                if(!Ready(c) || !device || source==destination ||
-                    (mounting ? source<1 || source>96 || !Prerequisite(c,ability) : source!=Slot || destination<1 || destination>96) ||
-                    inventory.Any(i=>i.Slot==destination))
-                { ClientActionsHandler.Notice(c,"Empty the destination slot and meet the device prerequisite before moving it."); return true; }
-                db.UpdateInventorySlot(source,destination,c.playerData.getCharID());
-                if(source==Slot) Unequipped(c);
-                new ServerPackets().sendInventoryItemMove(source,destination,c); c.FlushQueue(); return true;
+                var db=Store.dbManager.WorldDbHandler;Owned item,occupant;
+                long transport=c.TransportFence.Capture();int world=c.playerData.worldGeneration,life=c.playerData.lifeGeneration;
+                try
+                {
+                    item=db.ReadPrisonDevice(c.playerData.getCharID(),source);
+                    occupant=destination==Slot?db.ReadPrisonDevice(c.playerData.getCharID(),Slot):null;
+                }
+                catch(Exception e){Output.WriteDebugLog("[PRISON] Equipment read failed: "+e.Message);return true;}
+                if(source==Slot && item==null)return true; // empty/ambiguous equipment cannot fall through to a slot-only move
+                bool device=item!=null && Device(item.Goid);
+                if(device && destination==107)destination=Slot;
+                if(!(device && (source==Slot || destination==Slot)) && !(occupant!=null && Device(occupant.Goid)))return false;
+                if(!EquipmentReady(c))return true;
+                bool moved;
+                try {moved=db.MovePrisonDevice(c.playerData.getCharID(),item,destination);}
+                catch(Exception e)
+                {Output.WriteDebugLog("[PRISON] Equipment move rolled back: "+e.Message);ClientActionsHandler.Notice(c,"The device could not be moved; your inventory was kept.");return true;}
+                if(!moved){ClientActionsHandler.Notice(c,"Empty the destination slot and meet the device prerequisite before moving it.");return true;}
+                // Durable move is complete before any buff/queue/fence operation.
+                if(source==Slot)Unequipped(c);
+                c.TransportFence.TryRun(transport,()=>
+                {
+                    if(!EquipmentReady(c) || world!=c.playerData.worldGeneration || life!=c.playerData.lifeGeneration)return;
+                    new ServerPackets().sendInventoryItemMove(source,destination,c);c.FlushQueue();
+                });
+                return true;
             }
         }
         public static void Unequipped(WorldClient c)
