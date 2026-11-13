@@ -101,7 +101,7 @@ public class SectorPropertiesTests
     {
         Load();
         Assert.True(HardlineNetwork.Covers(1));
-        Assert.False(HardlineNetwork.Covers(14)); // unvalidated constructs stay on data_hardlines
+        Assert.True(HardlineNetwork.Covers(14)); Assert.False(HardlineNetwork.Covers(99)); // unvalidated constructs stay on data_hardlines
 
         List<ushort> slums = HardlineNetwork.Ids(1);
         Assert.Equal(54, slums.Count);           // 55 in the file, less 154 (no name)
