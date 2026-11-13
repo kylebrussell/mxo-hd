@@ -49,3 +49,11 @@ Headless scenario direct-debuff-radius uses normal333/345 casts with both an act
 Local source validation: full4328 Release units PASS; final15 focused PASS; Python12 policy/link tests PASS; both NativeQa configurations and named/unknown read-only profiles/provenance PASS. Fresh server proof is recorded above; no native result claimed.
 
 After master85798 import:47 focused tests PASS, both builds and five named/unknown read-only profiles in both configurations PASS; actual DLL SHA256 Debugd1431ce925f0c6f0bde4ac5cbd736aa4d9ede7084d40e95fc3a80331343fc591, Release6f012953d7e67f6e1533b9b03560117bf0ff5e118bbe054b637be4255f35f405. These final hashes are distinct from the preserved fresh build, as expected after upstream imports.
+
+## Native-fixture repair validation
+
+Repair source6c51eecc plus pure master7172 import was tested at frozen2f7f1c076b95ced8aa56013a51ea12c66b449718. Full4401 Release tests passed before that pure import; final19 focused tests and both actual Debug/Release read-only plans/provenance passed afterward. Radius math, both original AbilityTargets radius calls and AbilityScaledBuffs are byte-identical to73c0aa7f. Historical audit snapshot policy passed; no generated snapshot was changed.
+
+Fresh debuff-radius-native-fixture PASS56.4s, runner EXIT0/peak1, normal disposal complete. This runs the repaired native geometry with ordinary entry/flagging and normal333/345 casts. It independently checks actual own flag views, baseline3.8m inclusion/4.4m exclusion, captured345 stat177 VALUE21 and subsequent4.4m inclusion,4.99m exclusion, actual per-recipient org/team/PvP reasons and zero protocol problems. The original102.7s NPC/player-primary and natural-expiry proof is retained; this focused repair case does not repeat that whole scenario.
+
+Preteardown evidence: Temp/mxo-debuff-radius-native-mxotest_run_1_54b86d9fee.json (131942bytes), containing actual received RPC/view bytes and complete diagnostics; permanent stdout Temp/mxo-178-native-fixture-final.stdout.txt. Actual selected assembly was hds/bin/Debug/net8.0/hds.dll SHA25698EF7E6C1182F262F7F00A46B6434B95E400333F9DB83C6E7C843301D25E209C. Final Release assembly SHA2567B0B2CF107C1037CEE46012BDC5A7D22B249E2AAEAFCA63CF23E0A48F2473881. These are assembly provenance, not native UI evidence. Claude's fresh native retest remains pending.
