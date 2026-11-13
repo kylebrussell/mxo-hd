@@ -30,3 +30,11 @@ Native targetability, UI presentation and this ordinary non-duel combat path rem
 HP evidence is operation-scoped: the round's damage must match a health value received after the attack cursor by the victim, attacker and unrelated observer. All values are retained, including later regeneration; latest HP alone cannot hide or manufacture the opening loss. Both ordinary withdrawal requests must end combat. Every session must have no parser problems or duel event, and database flag values must remain zero.
 
 A unique JSON file is written before teardown on success or failure. It retains the actual selected server assembly path, configuration and SHA256, request cursors, raw RPC and `03` lists, observations, step/failure and server output. Delivery bytes prove the headless path, not native rendering or client menu availability.
+
+## Retained headless result
+
+Frozen source `4daec74b5ce5466ebc20268a18e1e98beab6d7ef` passed `pvp-opponents-entry` in 23.5 seconds with exit 0 and one server at peak. The actual selected server was the Debug assembly, SHA256 `2E7E4DC50E31F42FC42A685CA0E7D6F1B273EAD8D46AD0BE0BD1333EDEB56A93`; the runner executable's Release directory is not evidence of server configuration.
+
+The ordinary opening round dealt 40 damage from 5000 HP. Victim, attacker and observer each received the corresponding current-operation 4960 HP value. Same-organization refusal, ordinary paired withdrawal, absence of duel events, unchanged database flags zero and clean parsing passed. The three sessions retained 50/47/34 RPCs and 10/9/8 view lists, with zero parser problems each. These are observed results, not fixed future damage expectations.
+
+Raw proof: `C:/Users/russe/AppData/Local/Temp/mxo-pvp-opponents-mxotest_run_1_0a4105b2b2.json`, SHA256 `45F803158ACC34A68CF1267D11CBD3E46FACE1EFA89343A51BC3DEADB265771F`. Driver output: `mxo-pvp-opponents-4daec74b-driver.log` in the same directory. Both server and disposable database exited through the harness disposal path; no owned server process remained. Native CSR entry, menu availability and UI observation remain pending.
