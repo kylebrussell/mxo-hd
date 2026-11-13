@@ -3,7 +3,7 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,5,6,7,8,10,11,12,13,14,15,16,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,6,7,8,9,10,11,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--omit-missing-sectors',action='store_true',help='Explicitly omit the WHOLE sector if its required exterior SID is absent; unknown exterior counts remain unknown.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
@@ -12,7 +12,7 @@ parser.add_argument('--native-prefab-rotations',action='store_true',help='Use pr
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
 if args.native_prefab_rotations and (args.world not in (7,13,15,16) or args.omit_unproven_rotations):
  parser.error('--native-prefab-rotations requires a reviewed world and cannot be combined with historical omission mode')
-world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',7:'datamine',8:'archive_sakura',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',7:'datamine',8:'archive_sakura',9:'archive_sati',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -160,6 +160,8 @@ if args.world==10:
  assert len(sources)==258
 elif args.world==14:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(39,39,0,0,39)
+elif args.world==9:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(8177,7987,5381,70,2599)
 elif args.world==6:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(223,223,0,0,223)
 elif args.world==8:

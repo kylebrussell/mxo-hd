@@ -16,6 +16,7 @@ public class NativeWorldDoorFixtureTests
     {
         yield return new object[] { NativeWorldDoorFixtures.Large01 };
         yield return new object[] { NativeWorldDoorFixtures.Large02 };
+        yield return new object[] { NativeWorldDoorFixtures.Sati };
     }
 
     [Theory, MemberData(nameof(Fixtures))]

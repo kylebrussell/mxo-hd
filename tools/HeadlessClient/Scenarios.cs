@@ -137,6 +137,8 @@ public static partial class Scenarios
         new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
+        new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
+        new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
         new Scenario("sakura-partial-world", SakuraPartialWorld, new Dictionary<string,string>{["MXO_MOBS"]="",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
