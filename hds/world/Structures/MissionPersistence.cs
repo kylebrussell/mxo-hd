@@ -171,7 +171,7 @@ namespace hds
                 LoadCheckpoint(client);
                 if(data.missionCheckpoint==null)return;
                 var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(data.missionCheckpoint,MissionProgress.SaveJson);
-                var mission=DataLoader.getInstance().missions.Find(m=>m.id==saved.Mission);
+                var mission=MissionDefinitions.Find(saved.Mission);
                 if(mission==null)throw new InvalidOperationException("Saved mission definition not found: "+saved.Mission);
                 var progress=MissionProgress.Restore(mission,saved);
                 data.activeMission=mission;data.missionProgress=progress;data.missionInstanceCounter=saved.Instance;

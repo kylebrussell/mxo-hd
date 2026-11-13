@@ -113,16 +113,18 @@ public static partial class Scenarios
         await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Any(v=>v.Name==name && (v.Attributes.ContainsKey("TalkDefaultable")==friendly)),name+" side-specific view",TimeSpan.FromSeconds(10));
         return p.World.CreationSnapshot().Last(v=>v.Name==name && (v.Attributes.ContainsKey("TalkDefaultable")==friendly));
     }
-    private static async Task<ViewCreation> ZionObject(ScenarioContext context,HeadlessPlayer p,int id)
+    private static Task<ViewCreation> ZionObject(ScenarioContext context,HeadlessPlayer p,int id)=>ZionObject(context.Server,p,id);
+
+    private static async Task<ViewCreation> ZionObject(ServerInstance server,HeadlessPlayer p,int id,int creationStart=0)
     {
         string pattern=@"\[MISSION\] Object "+id+@" \([^)]+\) is a (\d+) at ([^,\r\n]+),([^,\r\n]+),([^\r\n]+)";
-        var matches=Regex.Matches(context.Server.DebugLog(),pattern);Check.That(matches.Count>0,"Object placement "+id);
+        var matches=Regex.Matches(server.DebugLog(),pattern);Check.That(matches.Count>0,"Object placement "+id);
         var match=matches.Last();double D(int i)=>double.Parse(match.Groups[i].Value,CultureInfo.InvariantCulture);
         ushort goid=ushort.Parse(match.Groups[1].Value);double x=D(2),y=D(3),z=D(4);
         await MoveForMissionTest(p,x+100,y,z);
         bool At(ViewCreation v)=>v.Goid==goid && v.Attributes.TryGetValue("Position",out var pos) && Math.Abs(BitConverter.ToDouble(pos)-x)<1 && Math.Abs(BitConverter.ToDouble(pos,16)-z)<1;
-        await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Any(At),"correct placed object view",TimeSpan.FromSeconds(10));
-        return p.World.CreationSnapshot().Last(At);
+        await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(creationStart).Any(At),"correct placed object view",TimeSpan.FromSeconds(10));
+        return p.World.CreationSnapshot().Skip(creationStart).Last(At);
     }
     private static async Task ZionUpload(HeadlessPlayer p)
     {

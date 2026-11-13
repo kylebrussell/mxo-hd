@@ -138,7 +138,7 @@ namespace hds.databases
             }
             if(expected==null)throw new MissionCheckpointException("No active mission to complete");
             var state=JsonSerializer.Deserialize<MissionProgress.SavedState>(expected,MissionProgress.SaveJson);
-            var mission=DataLoader.getInstance().missions.Find(m=>m.id==state.Mission)??throw new MissionCheckpointException("Mission definition missing");
+            var mission=MissionDefinitions.Find(state.Mission)??throw new MissionCheckpointException("Mission definition missing");
             CollectorExchange exchange=null;
             if(mission.entryItem!=0&&(!state.Flags.TryGetValue("entryItemExchanged",out bool exchanged)||!exchanged))
             {
