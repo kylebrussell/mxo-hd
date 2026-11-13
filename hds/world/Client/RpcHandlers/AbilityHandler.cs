@@ -335,7 +335,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
                 }
             }
             });
