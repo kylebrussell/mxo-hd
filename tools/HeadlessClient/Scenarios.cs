@@ -220,6 +220,7 @@ public static partial class Scenarios
         new Scenario("mission-objectives-relog", MissionObjectivesRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
+        new Scenario("merovingian-critical-opening",MervCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
         new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
