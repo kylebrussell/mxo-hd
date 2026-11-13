@@ -25,12 +25,35 @@ Handlers serialize acquisition through the existing per-player crafting lock. SQ
 Use discovered mode `ability-acquisition`. It owns only ordinary abilities 2 and 17, removes any copied real archive ownership of 1 and 5, provides 200,000 information and an empty bag, and retains the framework's consistent level-50 profile.
 
 1. Type `?abilityacquisition vendor`. This explicit disposable CSR110-only QA control opens existing vendor277874480 through normal `processVendorOpen`, without changing stock or executing a purchase. It is a window opener, not evidence that the catalog NPC is rendered, nearby or reachable.
-2. In the real vendor window, buy **Calm Mind Calm Body** for 40,000 and **Adrenaline Booster** for 40,000. Both are stocked, initially unowned ordinary abilities with character-level qualification below 50. Observe the two bag codes and the two cash debits.
-3. Close the window and use the Mara hardline's ordinary Upload action. Verify both abilities are now known and unloaded in the Loading Area archive. Relog and verify ownership persists. This checks the normal UI route; it does not claim the inferred upload response came from a retail capture.
-4. Open the same vendor again, buy another Calm Mind Calm Body code and upload it. The duplicate learning refusal must retain its bag code. Repeated BUY still charges for that second code.
+2. In the vendor window, buy **Calm Mind Calm Body** for 40,000 and **Adrenaline Booster** for 40,000. Both are stocked, initially unowned ordinary abilities with character-level qualification below 50. Observe two bag codes and two cash debits. Close the vendor.
+3. At the Mara hardline, choose the ordinary Loading Area exit without uploading yet. In Loading Area **Central Storage**, drag the Adrenaline Booster code from the bag to an empty archive slot. Observe that code leave the bag and its known, unloaded archive entry appear. Leave the Calm Mind code in the bag. This exercises the ordinary `62` upload UI.
+4. Use the Loading Area **Hardlines** chooser to return to Mara. Use the hardline's ordinary **Upload** action to learn the remaining Calm Mind code. Verify it leaves the bag. Relog and verify both acquired abilities remain known and unloaded.
+5. Open the same vendor again, buy another Calm Mind code and use hardline Upload. Duplicate learning must retain the code in the bag. Repeated BUY still charges for that new code.
+
+Follow this complete sequence to exercise both upload paths; the mode's short Ready message summarizes the hardline path. No QA action buys, uploads, grants or completes these operations.
 
 The opener requires exact mode opt-in, `MXO_DEV_COMMANDS=1`, a fully validated actual `mxotest_` database name, CSR110, a live ready Slums world and no pending world change. Default modes refuse it. It has no GM, RNG, buy, upload, grant or teleport operation.
 
 ## Validation contract
 
 Unit cases cover genuine family versus code-family aliases, canonical duplicates, ambiguous slots, archive slot519/full, reserved code-plan slots, wallet representability and unchanged literal bag/buy records. The fresh case uses ordinary vendor requests, hardline Upload and LA upload, then cold login. It deliberately fails the second wallet or archive write and checks both durable sides plus the current-operation RPC window. Independent connections test purchase overspend and same-source learning races. Exact source DLL/configuration/hash, all received RPC/03, operation cursors, SQL outcomes, server output and step/failure are retained before teardown. Native menu behavior remains pending until observed.
+
+## Retained validation and failures
+
+Frozen combined source `cc4b91f14b07c297d9f34e1c613814b6e81fff00`, based on actual master `41ef78e0bf2ca1e7f21bef13dff2e0b0cdebb916`, passed the full **4,659** tests and **130** focused tests. Both actual Debug/Release builds and read-only acquisition/default/vendor-economy plans passed. The acquisition runtime itself is unchanged from reviewed `131f8580e361b1563593fc73300e44fc33c19fb4`; current master imports include the independently merged memory and attribute work.
+
+The complete fresh case passed in **41.9 seconds**, exit 0, one server at peak. It selected Release `hds.dll`, SHA256 `695182B06E9FF9E969D8FABD6BE3BECC4999CF2D53D2EB519755CB1D56731529` (Debug build SHA256 `3BD36F22E9B1A77A00E38B3ABA39E82B0F8265D5FCC9A5121AB6373488DF40E2`). Both sequential owned servers and the disposable database exited through harness cleanup; no owned server process remained.
+
+Raw pre-teardown proof: `C:/Users/russe/AppData/Local/Temp/mxo-ability-acquisition-mxotest_run_1_7d720ac2c0.json`, SHA256 `7B9FE4F197172DAD0790E31BFE77823DBB5FB3801A07B4A03DF8FA647E25846D`. Original/cold sessions retained 96/31 RPCs, 6/1 view lists and literal Margin blocks, with zero parser problems in both. `mxo-acquisition-cc4b-independent-wire-witness.json` independently decodes three purchases as item46/price40,000/debit40,000/reason8 and balances160,000/120,000/80,000. Exactly two new nonpersonal genuine-ability adds appear: slot0/`0x80001401` and slot1/`0x80000401`.
+
+The wallet rollback window contains only the refusal and barrier, with no purchase-success records. The late archive-trigger failure preserves both ability codes and publishes no ability transfer; an independent Code Bit upload still succeeds in that mixed batch. Ordinary hardline learning, LA learning, canonical duplicates, buyback refusal, signed32/exact raw deletion, corrupt64 refusal, slot519/full archive, independent two-connection purchase and learning races, and cold relog passed. Recorded session isolation was REPEATABLE-READ; all three participating tables were InnoDB. The direct repository race/raw/capacity tests are SQL authority evidence, not additional native UI actions.
+
+Three earlier attempts remain retained and are not relabeled as passes:
+
+| Attempt | Result and scope | Proof SHA256 |
+| --- | --- | --- |
+| `162d8a3a4f`, 24.6s | Fixture used incorrect81 0c opener; no purchase attempted. | `A4C4FDFF493097CE47094C86D537FBB8FEA2ACEE5B3CD3818FB77B54B64B48B4` |
+| `210e316d68`, 26.4s | Correct opener worked; MySQL rejected the test CHECK on an auto-increment column before buying. | `E0E49F754DB1778ACD127AF05B60A2509C3D4E75C0DC179AE5946F88CBB9D391` |
+| `fd7d39c3e0`, 19.8s | Purchase rollback and two buys passed; archive CHECK installation revalidated legacy zero timestamps. | `E4372E7117139C3A0842166C658517064FCC22D1307A6C80AC9A5C50A241EEC8` |
+
+Each proof is `mxo-ability-acquisition-mxotest_run_1_<attempt>.json` in Temp, with its driver/server logs retained. The final fixed trigger preflights install/drop and drops in finally, using only the existing guarded harness root environment. It changes no production schema, legacy dates, SQL mode, privilege or server setting. Native ordinary UI purchase, both upload paths and relog remain pending Claude.
