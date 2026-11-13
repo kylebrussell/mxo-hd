@@ -48,7 +48,7 @@ namespace hds
         public static bool TryDescriptor(Item item,out uint goid,out byte[] descriptor)
         {
             goid=0;descriptor=null;
-            if(item==null||item.RawGoid<int.MinValue||item.RawGoid>uint.MaxValue||item.RawCount<0||item.RawCount>ItemStacks.MaxStack)return false;
+            if(item==null||!ReceiptSlot(item.Slot)||item.RawGoid<int.MinValue||item.RawGoid>uint.MaxValue||item.RawCount<0||item.RawCount>ItemStacks.MaxStack)return false;
             goid=unchecked((uint)item.RawGoid);if(goid==0)return false;
             if(AbilityProgression.IsAbilityCode(goid))
             {
