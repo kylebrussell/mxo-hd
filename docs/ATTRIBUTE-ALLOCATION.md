@@ -59,3 +59,6 @@ The first attempt remains a **40.0 second fixture failure**, before any allocati
 A source review also found that the old system-chat sender flushes internally. Refusal bytes are now built by the shared pure chat builder before the transport gate; that gate only enqueues world-bound modal/reply bytes. Flush and tutorial callbacks remain outside, with unit tests proving another thread can enter the fence during both callbacks.
 
 Isolation is scoped to participating attribute allocations. At validation base `41ef78e0`, the old separate80b7 training route could still address hidden attribute rows; pending PR215 addresses that path independently and should land first. No pending215 code was imported here, and this package does not claim global integrity against every legacy writer.
+
+
+Master refresh after PR215: both independent training and attribute synchronization fields are retained, and the shared pure chat encoder/wrapper is exactly the native-tested master version. Attribute runtime, SQL, readers, mode and driver remain unchanged. The original 62.5-second fresh proof remains source-qualified; this upstream merge was checked with 142 combined focused tests and both actual build/profile/provenance checks, without another fresh run. Native attribute UI verification is still pending.

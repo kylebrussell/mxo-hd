@@ -21,10 +21,10 @@ public class AbilityMemoryTests
     }
     [Fact] public void ExactCapDuplicateAndOneOverAreSetBased()
     {
-        var rows=new[]{Row(1,1,23),Row(2,2,356),Row(3,3,314,false),Row(4,4,75,false)}; //15 plus1, then2
-        var exact=AbilityMemory.Plan(rows,new[]{E(3,314),E(3,4410)},false,0,50);
+        var rows=new[]{Row(1,1,23),Row(2,2,356),Row(3,3,217,false),Row(4,4,113,false),Row(5,5,2)}; //Legacy15; legal new1, then2
+        var exact=AbilityMemory.Plan(rows,new[]{E(3,217),E(3,4313)},false,0,50);
         Assert.Null(exact.Refusal);Assert.Single(exact.Accepted);Assert.Equal(16,exact.Used);
-        var over=AbilityMemory.Plan(exact.Loaded.Append(rows[3]).ToArray(),new[]{E(4,75)},false,0,50);
+        var over=AbilityMemory.Plan(exact.Loaded.Append(rows[3]).ToArray(),new[]{E(4,113)},false,0,50);
         Assert.NotNull(over.Refusal);Assert.Empty(over.Accepted);Assert.Equal(16,over.Used);
     }
     [Fact] public void GrantsAreNotASecondChargeAndPersistedLevelCannotOverrideExp()
@@ -45,9 +45,9 @@ public class AbilityMemoryTests
     {
         var code=new AbilityMemory.Row(1,1,0x8404c180,0,true);Assert.Equal((ushort)304,code.Ability);
         Assert.False(AbilityMemory.IsAbility(code.Descriptor));
-        var rows=new[]{code,Row(2,2,75,false),Row(3,3,2,false),Row(4,4,314,false),Row(5,4,314,false)};
+        var rows=new[]{code,Row(2,2,217,false),Row(3,3,2),Row(4,4,314,false),Row(5,4,314,false)};
         Assert.Empty(AbilityMemory.Plan(rows,new[]{E(1,304)},true,0,50).Accepted);
-        Assert.Null(AbilityMemory.Plan(rows,new[]{E(2,75)},false,0,50).Refusal);
+        Assert.Null(AbilityMemory.Plan(rows,new[]{E(2,217)},false,0,50).Refusal);
         Assert.Null(AbilityMemory.Plan(rows,new[]{E(3,2)},false,0,50).Refusal);
         Assert.Empty(AbilityMemory.Plan(rows,new[]{E(4,314)},false,0,50).Accepted);
     }

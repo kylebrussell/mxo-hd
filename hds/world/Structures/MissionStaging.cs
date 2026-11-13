@@ -559,6 +559,7 @@ namespace hds
 
         public static void DespawnObjects(WorldClient client, MissionProgress progress)
         {
+            PosterBoxFloorProbe.Clear(client);
             foreach (MissionObjectState state in progress.objects.Values)
             {
                 ClientView view = client.viewMan.FindViewForEntity(state.entity);

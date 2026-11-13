@@ -187,13 +187,14 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
         foreach (string file in Directory.GetFiles(Path.Combine(qaRoot,"requests"), "*.json").Order())
         {
             if (handled.Contains(file)) continue;
+            HeadlessPlayer? duelActor = null;
             try
             {
                 using var request = JsonDocument.Parse(await File.ReadAllTextAsync(file));
                 JsonElement q = request.RootElement;
                 var actor = helpers[q.GetProperty("actor").GetString()!];
                 string action = q.GetProperty("action").GetString()!;
-                string result = "sent";
+                object result = "sent";
                 if (q.TryGetProperty("delayMs", out var delay)) await Task.Delay(Math.Clamp(delay.GetInt32(), 0, 30000));
                 if (action == "chat") actor.SendChat(q.GetProperty("text").GetString()!);
                 else if (action == "cast" || action == "ranged" || action == "melee")
@@ -202,6 +203,12 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                     if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
                     else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
+                }
+                else if (action == "duel-accept")
+                {
+                    duelActor = actor;
+                    result = await HelperDuelAcceptance.AcceptNextAsync(actor,q.GetProperty("challenger").GetString()!,onArmed:armed =>
+                        File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileNameWithoutExtension(file)+".armed.json"),JsonSerializer.Serialize(new { Armed=true, State=armed, At=DateTime.UtcNow })));
                 }
                 else if (action == "approve")
                 {
@@ -228,6 +235,10 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
             catch(Exception ex)
             {
+                if(duelActor!=null)
+                    await File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileName(file)),JsonSerializer.Serialize(new { Ok=false, Error=ex.Message, ErrorType=ex.GetType().FullName, At=DateTime.UtcNow,
+                        Actor=duelActor.Handle, AllRpc=duelActor.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(), ReceivedViewLists=duelActor.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(), Problems=duelActor.World.Problems.ToArray() }));
+                else
                 await File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileName(file)), JsonSerializer.Serialize(new { Ok=false, Error=ex.Message, At=DateTime.UtcNow }));
                 handled.Add(file);
             }
