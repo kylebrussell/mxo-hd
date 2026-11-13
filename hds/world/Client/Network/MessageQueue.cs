@@ -77,6 +77,12 @@ namespace hds
             }
         }
 
+        /// <summary>The client discarded every old-world view at comm reset, including unacked creations.</summary>
+        public void ForgetWorldObjects()
+        {
+            lock (ObjectMessagesQueue.SyncRoot) ObjectMessagesQueue.Clear();
+        }
+
         public void addRawMessage(byte[] messageBlock)
         {
             rawMessages.Add(messageBlock);

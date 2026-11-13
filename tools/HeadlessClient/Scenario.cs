@@ -163,4 +163,4 @@ public static class Check
 }
 
 public sealed record Scenario(string Name, Func<ScenarioContext, Task> Run,
-    IReadOnlyDictionary<string, string>? Environment = null, string? MissionFixture = null);
+    IReadOnlyDictionary<string, string>? Environment = null, string? MissionFixture = null, TimeSpan? Timeout = null);
