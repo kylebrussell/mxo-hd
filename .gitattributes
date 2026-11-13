@@ -1,2 +1,5 @@
 # Shell scripts run under bash even on Windows, where a CRLF checkout breaks them
 *.sh text eol=lf
+
+# Keep audited computer-anchor bytes identical across platforms.
+data/mission_computer_anchors.csv text eol=lf
