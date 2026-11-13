@@ -54,6 +54,7 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        AbilityAcquisition.Receipt AcquireAbility(UInt32 character, UInt32 goid, UInt32 price, UInt16? bagSlot = null, UInt16? archiveSlot = null, UInt16[] reserved = null);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
         void UpdateAbilityLoadOut(List<UInt16> abilitySlots, uint loaded);

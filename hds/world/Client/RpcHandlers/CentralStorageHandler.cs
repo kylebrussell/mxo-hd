@@ -56,6 +56,10 @@ namespace hds
         /// <summary>Client 62.</summary>
         public static void ProcessMove(WorldClient client, byte[] rpcData)
         {
+            lock(client.playerData.craftingSync) ProcessMoveLocked(client,rpcData);
+        }
+        private static void ProcessMoveLocked(WorldClient client,byte[] rpcData)
+        {
             if (!CentralStorage.TryParseMove(rpcData, out CentralStorage.Move move))
             {
                 return;
@@ -110,17 +114,24 @@ namespace hds
         {
             MarketPlaceHandler.Db.GetInventoryItem(charId, plan.BagSlot, out UInt32 goid, out UInt32 ignored);
 
+            if(plan.LearnAbility)
+            {
+                // A changed snapshot must still use the exact shared ability transaction.
+                AbilityAcquisition.Receipt receipt;
+                try { receipt=Db.AcquireAbility(charId,goid,0,plan.BagSlot,plan.StorageSlot); }
+                catch(Exception error)
+                {
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] LA upload refused/rolled back: "+error.Message);
+                    ClientActionsHandler.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
+                    client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(0,false,CentralStorage.InvalidTransaction));return;
+                }
+                CodeStorageHandler.PublishLearn(client,receipt);
+                client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(1,true,CentralStorage.Success));
+                return;
+            }
             SetBagCount(client, charId, plan.BagSlot, plan.BagCount);
-            if (plan.LearnAbility)
-            {
-                Db.AddAbility(charId, plan.StorageSlot, unchecked((Int32)goid), 1);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(plan.StorageSlot, AbilityProgression.AbilityCodeValue(goid)));
-            }
-            else
-            {
-                SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
-            }
-            client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(plan.LearnAbility ? 1 : plan.Moved, plan.LearnAbility, plan.Status));
+            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
+            client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(plan.Moved,false,plan.Status));
         }
 
         private static void ApplyDownload(WorldClient client, UInt32 charId, CentralStorage.Plan plan)

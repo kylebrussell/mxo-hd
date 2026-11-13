@@ -20,7 +20,11 @@ namespace hds{
         /// <summary>Native6210ab10 reads Appraise and Slot as separate bytes. Normal sales are00+slot.</summary>
         internal static UInt16 ParseSellSlot(byte[] packet) => packet[1];
 
-        public void processBuyItem(ref byte[] packet){
+        public void processBuyItem(ref byte[] packet)
+        {
+            lock(Store.currentClient.playerData.craftingSync) BuyItem(ref packet);
+        }
+        private void BuyItem(ref byte[] packet){
             if (!HasSession(Store.currentClient)) return;
             if (packet.Length < 4)
             {
@@ -36,6 +40,27 @@ namespace hds{
                 return;
             }
 
+            // Native BuyBackLastItemSold is a separate operation; no normal-purchase fallback.
+            if(packet.Length>4 && packet[4]!=0)
+            { ClientActionsHandler.Notice(Store.currentClient,"Buying back the last sold item is not supported.");return; }
+            if(AbilityProgression.IsAbilityCode(itemGoID))
+            {
+                if(packet.Length!=5){ClientActionsHandler.Notice(Store.currentClient,"Invalid ability purchase request.");return;}
+                AbilityAcquisition.Receipt receipt;
+                try { receipt=Store.dbManager.WorldDbHandler.AcquireAbility(Store.currentClient.playerData.getCharID(),itemGoID,VendorPricing.GetBuyPrice(itemGoID)); }
+                catch(Exception error)
+                {
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: "+error.Message);
+                    ClientActionsHandler.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
+                }
+                Store.currentClient.playerData.setInfo(receipt.Cash);
+                var output=new ServerPackets();
+                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID));
+                output.SendInfoDelta(Store.currentClient,(long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy);
+                output.SendInfoCurrent(Store.currentClient,receipt.Cash,ServerPackets.InfoReasonVendorBuy);
+                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price));
+                return;
+            }
             long currentCash = Store.currentClient.playerData.getInfo();
             ServerPackets packets = new ServerPackets();
             if (!VendorPricing.TryApplyBuy(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
@@ -47,36 +72,14 @@ namespace hds{
 
             // Retail order: 5e (add item, sent by processItemAdd) -> 80 e7 (-price) -> 80 e4 (new cash)
             // -> 81 0f (buy complete), all with reason 8.
-            bool abilityCode = AbilityProgression.IsAbilityCode(itemGoID);
-            if (abilityCode)
-            {
-                UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-                if (freeSlot == 0)
-                {
-                    packets.sendSystemChatMessage(Store.currentClient, "Your inventory is full.", "BROADCAST");
-                    return;
-                }
-                Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemGoID);
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(freeSlot, itemGoID));
-            }
-            else
-            {
-                InventoryHandler inventory = new InventoryHandler();
-                inventory.processItemAdd(itemGoID,0x10);
-            }
+            InventoryHandler inventory = new InventoryHandler();
+            inventory.processItemAdd(itemGoID,0x10);
 
             Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
             Store.currentClient.playerData.setInfo(newCash);
             packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorBuy);
             packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorBuy);
-            if (abilityCode)
-            {
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeBuyAck(itemGoID, price));
-            }
-            else
-            {
-                packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
-            }
+            packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
         }
 
         public void processSellItem(ref byte[] packet)
