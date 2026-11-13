@@ -81,7 +81,7 @@ namespace hds
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
                 primary.getXPos(), primary.getYPos(), primary.getZPos()) > range) return false;
             var targets = new List<(Mob Mob, UInt16 View)> { (primary, targetViewId) };
-            double radius = definition?.Number("Ability/RadiusOfEffect") ?? 0;
+            double radius = AbilityRadius.TargetMetres(client, ability.getAbilityID());
             if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
             {
                 lock (WorldServer.mobs.SyncRoot)
@@ -106,7 +106,7 @@ namespace hds
         public static void LandAround(WorldClient client, AbilityItem ability, WorldClient primary, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
         {
             var definition = AbilityCatalog.Find(ability.getAbilityID());
-            double radius = definition?.Number("Ability/RadiusOfEffect") ?? 0;
+            double radius = AbilityRadius.TargetMetres(client, ability.getAbilityID());
             if (definition?.Number("Ability/CastDirectObjects") != 3 || radius <= 0) return;
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(primary.playerInstance.Position.getValue(), ref x, ref y, ref z);
