@@ -4,6 +4,7 @@ using System.Text.Json;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    private static bool AcquisitionHeader(RpcRecord rpc,byte first,byte second)=>rpc.Bytes.Length>=2&&rpc.Bytes[0]==first&&rpc.Bytes[1]==second;
     private static async Task AbilityAcquisitionCase(ScenarioContext context)
     {
         const uint code=0x80001400,other=0x80000400;const uint vendor=277874480;
@@ -23,11 +24,11 @@ public static partial class Scenarios
                 var raw=p.World.RpcSnapshot().Skip(cursor).ToArray();operations.Add(new{Step=step,Cursor=cursor,Records=raw.Select(r=>r.Hex).ToArray()});
                 if(accept)
                 {
-                    int add=Array.FindIndex(raw,r=>r.Bytes[0]==0x5e),delta=Array.FindIndex(raw,r=>r.Hex.StartsWith("80 e7",StringComparison.OrdinalIgnoreCase)),current=Array.FindIndex(raw,r=>r.Hex.StartsWith("80 e4",StringComparison.OrdinalIgnoreCase)),ack=Array.FindIndex(raw,r=>r.Hex.StartsWith("81 0f",StringComparison.OrdinalIgnoreCase));
+                    int add=Array.FindIndex(raw,r=>r.Bytes[0]==0x5e),delta=Array.FindIndex(raw,r=>AcquisitionHeader(r,0x80,0xe7)),current=Array.FindIndex(raw,r=>AcquisitionHeader(r,0x80,0xe4)),ack=Array.FindIndex(raw,r=>AcquisitionHeader(r,0x81,0x0f));
                     Check.That(add>=0&&delta>add&&current>delta&&ack>current,"Committed normal purchase preserves retail packet order");
                     uint price=VendorPricing.GetBuyPrice(id);Check.That(raw.Any(r=>r.Bytes.SequenceEqual(ServerPackets.BuildAbilityCodeBuyAck(id,price))),"Literal ordinary ability buy ack");
                 }
-                else Check.Equal(0,raw.Count(r=>r.Bytes[0]==0x5e||r.Hex.StartsWith("80 e7",StringComparison.OrdinalIgnoreCase)||r.Hex.StartsWith("80 e4",StringComparison.OrdinalIgnoreCase)||r.Hex.StartsWith("81 0f",StringComparison.OrdinalIgnoreCase)),"No success publication after rollback");
+                else Check.Equal(0,raw.Count(r=>r.Bytes[0]==0x5e||AcquisitionHeader(r,0x80,0xe7)||AcquisitionHeader(r,0x80,0xe4)||AcquisitionHeader(r,0x81,0x0f)),"No success publication after rollback");
             }
             p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");
             step="buy-second-write-rollback";
