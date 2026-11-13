@@ -3,6 +3,8 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large01);
     private static Task Large02DoorDiagnostic(ScenarioContext context) =>
@@ -28,6 +30,9 @@ public static partial class Scenarios
         await actor.WaitUntilAsync(() => actor.ViewsOfGoid(f.Goid).Any(IsSourceDoor),
             "the exact existing source door opens", TimeSpan.FromSeconds(10));
         var door = actor.ViewsOfGoid(f.Goid).Last(IsSourceDoor);
+        if (f.ExpectedQuaternion != null)
+            Check.That(door.Attributes["Orientation"].SequenceEqual(Convert.FromHexString(f.ExpectedQuaternion)),
+                "actual wire contains the independent primary quaternion bytes, without normalization");
         Check.Equal(0x834u, BitConverter.ToUInt32(door.Attributes["CurrentState"]), "native OpenedState");
         await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 38 08 00 00", TimeSpan.FromSeconds(25));
         await actor.WaitForViewUpdateAsync(door.ViewId, "01 80 02 35 08 00 00", TimeSpan.FromSeconds(5));
