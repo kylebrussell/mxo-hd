@@ -125,6 +125,7 @@ public static partial class Scenarios
         new Scenario("ashencourte-partial-world", AshencourtePartialWorld, new Dictionary<string,string>{["MXO_MOBS"]="",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
         new Scenario("datamine-partial-world", DataMinePartialWorld, StillNpcs),
+        new Scenario("datamine-prefab-door", DataMinePrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),
         new Scenario("datamine-native-return-regression", DataMineNativeReturnRegression, DataMineReturnEnvironment, Timeout: TimeSpan.FromMinutes(8)),
         new Scenario("data-mining-mission-map", DataMiningMissionMap, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),

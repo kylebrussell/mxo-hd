@@ -7,14 +7,17 @@ public class DataMineWorldTests
     private static StaticWorldObject[] Objects()=>File.ReadLines(Path.Combine(Root,"data/staticObjects_datamine.csv")).Skip(1).Select(l=>l.Split(',')).Select(r=>new StaticWorldObject{
         metrId=ushort.Parse(r[0]),sectorID=ushort.Parse(r[1]),mxoStaticId=BitConverter.ToUInt32(Convert.FromHexString(r[2])),staticId=BitConverter.ToUInt32(Convert.FromHexString(r[3])),type=Convert.FromHexString(r[4]),exterior=bool.Parse(r[5]),pos_x=double.Parse(r[6],System.Globalization.CultureInfo.InvariantCulture),pos_y=double.Parse(r[7],System.Globalization.CultureInfo.InvariantCulture),pos_z=double.Parse(r[8],System.Globalization.CultureInfo.InvariantCulture),quat=r[10]}).ToArray();
     private static void Nav(){SectorProperties.Load(Path.Combine(Root,"data/sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data/navmesh"));}
-    [Fact]public void KnownStaticsExcludeEveryUnprovenVariantAndWholeMissingSector()
+    [Fact]public void KnownStaticsExcludeEveryConflictAndWholeMissingSectorAfterNativeRollout()
     {
         using var d=JsonDocument.Parse(File.ReadAllText(Path.Combine(Root,"research/world-data/datamine-static-audit.json")));var a=d.RootElement;
-        Assert.Equal(13219,a.GetProperty("rawReferences").GetInt32());Assert.Equal(12960,a.GetProperty("uniqueKeys").GetInt32());Assert.Equal(6105,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(6821,a.GetProperty("unprovenRotationKeys").GetArrayLength());Assert.Equal(175,a.GetProperty("conflicts").EnumerateObject().Count());
+        Assert.Equal(13219,a.GetProperty("rawReferences").GetInt32());Assert.Equal(12960,a.GetProperty("uniqueKeys").GetInt32());Assert.Equal(12785,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(6821,a.GetProperty("historicallyUnprovenRotationKeys").GetArrayLength());Assert.Equal(175,a.GetProperty("conflicts").EnumerateObject().Count());
         var missing=Assert.Single(a.GetProperty("missingSectors").EnumerateArray());Assert.Equal(34,missing.GetProperty("sector").GetInt32());Assert.Equal(0x04000800,missing.GetProperty("declaredSidRid").GetInt32());Assert.Equal(JsonValueKind.Null,missing.GetProperty("unknownExteriorCount").ValueKind);
-        var excluded=a.GetProperty("excludedKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();Assert.Equal(6855,excluded.Count);
-        var rows=Objects();Assert.Equal(6105,rows.Length);Assert.Equal(6105,rows.Select(s=>s.mxoStaticId).Distinct().Count());Assert.All(rows,s=>{Assert.Equal(7,s.metrId);Assert.NotEqual(34,s.sectorID);Assert.DoesNotContain(((int)s.sectorID,(int)s.staticId),excluded);});
-        foreach(var r in a.GetProperty("raw").EnumerateArray())if(r[5].GetInt32()!=0)Assert.Contains((r[0].GetInt32(),r[1].GetInt32()),excluded);
+        var excluded=a.GetProperty("excludedKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();Assert.Equal(175,excluded.Count);
+        var rows=Objects();Assert.Equal(12785,rows.Length);Assert.Equal(12785,rows.Select(s=>s.mxoStaticId).Distinct().Count());Assert.All(rows,s=>{Assert.Equal(7,s.metrId);Assert.NotEqual(34,s.sectorID);Assert.DoesNotContain(((int)s.sectorID,(int)s.staticId),excluded);});
+        var historical=a.GetProperty("historicallyUnprovenRotationKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();
+        var rawKeys=a.GetProperty("raw").EnumerateArray().Select(r=>(r[0].GetInt32(),r[1].GetInt32())).ToHashSet();
+        var oldSafe=rawKeys.Except(historical.Union(excluded)).ToHashSet();Assert.Equal(6105,oldSafe.Count);
+        var actual=rows.Select(r=>((int)r.sectorID,(int)r.staticId)).ToHashSet();Assert.True(oldSafe.IsSubsetOf(actual));Assert.True(actual.SetEquals(rawKeys.Except(excluded)));Assert.Equal(6680,actual.Count(historical.Contains));
         foreach(var c in a.GetProperty("conflicts").EnumerateObject())foreach(var r in c.Value.EnumerateArray())Assert.Contains((r[0].GetInt32(),r[1].GetInt32()),excluded);
     }
     [Fact]public void EightExactGenericReturnersHaveSourceFloorsAndIncompleteBindingsRefuse()
