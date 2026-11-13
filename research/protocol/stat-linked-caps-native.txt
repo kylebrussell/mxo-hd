@@ -22,10 +22,10 @@ RANGE 0x62517f10 0x160
 62517f44 call     0x626a92d8
 62517f49 mov      esp, ebp
 62517f4b pop      ebp
-62517f4c ret      
-62517f4d int3     
-62517f4e int3     
-62517f4f int3     
+62517f4c ret
+62517f4d int3
+62517f4e int3
+62517f4f int3
 62517f50 push     ebp
 62517f51 mov      ebp, esp
 62517f53 sub      esp, 8
@@ -49,7 +49,7 @@ RANGE 0x62517f10 0x160
 62517f7e pop      esi
 62517f7f mov      esp, ebp
 62517f81 pop      ebp
-62517f82 ret      
+62517f82 ret
 62517f83 lea      ecx, [ebp - 8]
 62517f86 push     ecx
 62517f87 push     0x6286f658
@@ -69,7 +69,7 @@ RANGE 0x62517f10 0x160
 62517fb6 pop      esi
 62517fb7 mov      esp, ebp
 62517fb9 pop      ebp
-62517fba ret      
+62517fba ret
 62517fbb cmp      eax, 0x67485749
 62517fc0 je       0x62517fdd
 62517fc2 cmp      eax, 0x6d535749
@@ -78,26 +78,26 @@ RANGE 0x62517f10 0x160
 62517fce pop      esi
 62517fcf mov      esp, ebp
 62517fd1 pop      ebp
-62517fd2 ret      
+62517fd2 ret
 62517fd3 mov      eax, 0x9e
 62517fd8 pop      esi
 62517fd9 mov      esp, ebp
 62517fdb pop      ebp
-62517fdc ret      
+62517fdc ret
 62517fdd mov      eax, 0x81
 62517fe2 pop      esi
 62517fe3 mov      esp, ebp
 62517fe5 pop      ebp
-62517fe6 ret      
-62517fe7 int3     
-62517fe8 int3     
-62517fe9 int3     
-62517fea int3     
-62517feb int3     
-62517fec int3     
-62517fed int3     
-62517fee int3     
-62517fef int3     
+62517fe6 ret
+62517fe7 int3
+62517fe8 int3
+62517fe9 int3
+62517fea int3
+62517feb int3
+62517fec int3
+62517fed int3
+62517fee int3
+62517fef int3
 62517ff0 push     ebp
 62517ff1 mov      ebp, esp
 62517ff3 sub      esp, 0x18
@@ -127,7 +127,7 @@ RANGE 0x62517f10 0x160
 62518038 movsx    edx, cx
 6251803b imul     eax, edx
 6251803e shr      eax, 0xf
-62518041 cdq      
+62518041 cdq
 62518042 xor      eax, edx
 62518044 sub      eax, edx
 62518046 add      eax, edi
@@ -138,14 +138,14 @@ RANGE 0x62517f10 0x160
 62518055 sub      ebx, esi
 62518057 movsx    ecx, bx
 6251805a mov      eax, ecx
-6251805c cdq      
+6251805c cdq
 6251805d idiv     dword ptr [0x62b048ec]
 62518063 push     ecx
 62518064 xor      edi, edi
 62518066 push     edi
 62518067 push     eax
 62518068 mov      eax, ecx
-6251806a cdq      
+6251806a cdq
 6251806b sub      eax, edx
 6251806d sar      eax, 1
 6251806f push     eax

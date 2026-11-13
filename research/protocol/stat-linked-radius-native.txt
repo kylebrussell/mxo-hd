@@ -65,6 +65,6 @@ RANGE 0x625c5500 0xb5
 625c55ac mov      esp, ebp
 625c55ae pop      ebp
 625c55af ret      4
-625c55b2 int3     
-625c55b3 int3     
-625c55b4 int3     
+625c55b2 int3
+625c55b3 int3
+625c55b4 int3

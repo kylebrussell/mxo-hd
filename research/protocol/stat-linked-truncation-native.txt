@@ -35,9 +35,9 @@ RANGE 0x626a92d8 0xc0
 626a9341 jne      0x626a92fb
 626a9343 fstp     dword ptr [esp + 0x18]
 626a9347 fstp     dword ptr [esp + 0x18]
-626a934b leave    
-626a934c ret      
-626a934d int3     
+626a934b leave
+626a934c ret
+626a934d int3
 626a934e jmp      dword ptr [0x628682b0]
 626a9354 jmp      dword ptr [0x62868540]
 626a935a jmp      dword ptr [0x628682b8]

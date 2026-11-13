@@ -47,11 +47,11 @@ RANGE 0x625c5ab0 0x30
 625c5ad5 mov      dword ptr [eax], ecx
 625c5ad7 pop      ebp
 625c5ad8 ret      0xc
-625c5adb int3     
-625c5adc int3     
-625c5add int3     
-625c5ade int3     
-625c5adf int3     
+625c5adb int3
+625c5adc int3
+625c5add int3
+625c5ade int3
+625c5adf int3
 
 RANGE 0x621e10a0 0x90
 621e10a0 push     ebp
@@ -111,7 +111,7 @@ RANGE 0x625fd730 0x10
 625fd733 add      ecx, 0x134
 625fd739 pop      ebp
 625fd73a jmp      0x625ebb90
-625fd73f int3     
+625fd73f int3
 
 RANGE 0x625ebb90 0xe5
 625ebb90 push     ebp
@@ -217,7 +217,7 @@ RANGE 0x625eb8ef 0x75
 625eb8f9 mov      ecx, dword ptr [0x629f1748]
 625eb8ff fld      dword ptr [ebx]
 625eb901 mov      eax, dword ptr [ecx + 0x20]
-625eb904 fucompp  
+625eb904 fucompp
 625eb906 xor      esi, esi
 625eb908 mov      si, word ptr [edx + 0x64]
 625eb90c mov      dword ptr [ebx + 4], eax

@@ -9,4 +9,4 @@ RANGE 0x62819080 0x24
 62819098 push     0x6285a620
 6281909d call     0x626a9288
 628190a2 pop      ecx
-628190a3 ret      
+628190a3 ret

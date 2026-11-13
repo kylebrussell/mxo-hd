@@ -58,11 +58,11 @@ RANGE 0x625c4b00 0x390
 625c4b85 mov      esp, ebp
 625c4b87 pop      ebp
 625c4b88 ret      0xc
-625c4b8b int3     
-625c4b8c int3     
-625c4b8d int3     
-625c4b8e int3     
-625c4b8f int3     
+625c4b8b int3
+625c4b8c int3
+625c4b8d int3
+625c4b8e int3
+625c4b8f int3
 625c4b90 push     ebp
 625c4b91 mov      ebp, esp
 625c4b93 push     ecx
@@ -117,11 +117,11 @@ RANGE 0x625c4b00 0x390
 625c4c05 mov      esp, ebp
 625c4c07 pop      ebp
 625c4c08 ret      4
-625c4c0b int3     
-625c4c0c int3     
-625c4c0d int3     
-625c4c0e int3     
-625c4c0f int3     
+625c4c0b int3
+625c4c0c int3
+625c4c0d int3
+625c4c0e int3
+625c4c0f int3
 625c4c10 push     ebp
 625c4c11 mov      ebp, esp
 625c4c13 sub      esp, 0x1c
@@ -208,8 +208,8 @@ RANGE 0x625c4b00 0x390
 625c4ce8 mov      esp, ebp
 625c4cea pop      ebp
 625c4ceb ret      8
-625c4cee int3     
-625c4cef int3     
+625c4cee int3
+625c4cef int3
 625c4cf0 push     ebp
 625c4cf1 mov      ebp, esp
 625c4cf3 sub      esp, 0x20
@@ -304,11 +304,11 @@ RANGE 0x625c4b00 0x390
 625c4df5 mov      esp, ebp
 625c4df7 pop      ebp
 625c4df8 ret      8
-625c4dfb int3     
-625c4dfc int3     
-625c4dfd int3     
-625c4dfe int3     
-625c4dff int3     
+625c4dfb int3
+625c4dfc int3
+625c4dfd int3
+625c4dfe int3
+625c4dff int3
 625c4e00 push     ebp
 625c4e01 mov      ebp, esp
 625c4e03 sub      esp, 8
@@ -365,17 +365,17 @@ RANGE 0x625c4b00 0x390
 625c4e7c mov      esp, ebp
 625c4e7e pop      ebp
 625c4e7f ret      4
-625c4e82 int3     
-625c4e83 int3     
-625c4e84 int3     
-625c4e85 int3     
-625c4e86 int3     
-625c4e87 int3     
-625c4e88 int3     
-625c4e89 int3     
-625c4e8a int3     
-625c4e8b int3     
-625c4e8c int3     
-625c4e8d int3     
-625c4e8e int3     
-625c4e8f int3     
+625c4e82 int3
+625c4e83 int3
+625c4e84 int3
+625c4e85 int3
+625c4e86 int3
+625c4e87 int3
+625c4e88 int3
+625c4e89 int3
+625c4e8a int3
+625c4e8b int3
+625c4e8c int3
+625c4e8d int3
+625c4e8e int3
+625c4e8f int3
