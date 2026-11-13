@@ -331,15 +331,35 @@ namespace hds
         /// <summary>Other players inside an area who are legal hostile targets (PvP rules) and visible to the caster.</summary>
         public static List<WorldClient> PlayersInArea(WorldClient caster, double x, double y, double z, double radiusMetres, WorldClient skip = null)
         {
-            uint district = caster.playerData.getDistrictId();
-            return SocialHandler.OnlineWhere(c =>
+            var trace=AreaTargetDiagnostics.Enabled?new List<string>():null;
+            var found=SocialHandler.OnlineWhere(c=>
             {
-                if (c == caster || c == skip || c.playerData.isDead || c.playerData.duelDeath || c.playerData.getDistrictId() != district) return false;
-                double tx = 0, ty = 0, tz = 0;
-                NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref tx, ref ty, ref tz);
-                return AbilityTargets.WithinArea(x, y, z, tx, ty, tz, radiusMetres) && caster.viewMan.FindViewForEntity(c.playerData.getEntityId()) != null &&
-                    PvpCombat.Check(caster, c) == PvpRules.Verdict.Allowed;
+                string reason=PlayerAreaReason(caster,c,x,y,z,radiusMetres,skip,out var verdict);
+                if(trace!=null)trace.Add(AreaTargetDiagnostics.Describe(caster,c,reason,verdict,x,y,z,radiusMetres));
+                return reason=="included";
             });
+            // OnlineWhere holds the client-list lock; keep diagnostic I/O outside it.
+            if(trace!=null)foreach(string line in trace)AreaTargetDiagnostics.Write(line);
+            return found;
+        }
+
+        /// <summary>The original area predicate, in its original short-circuit order; no PvP override.</summary>
+        public static string PlayerAreaReason(WorldClient caster,WorldClient candidate,double x,double y,double z,
+            double radiusMetres,WorldClient skip,out PvpRules.Verdict? verdict)
+        {
+            verdict=null;
+            if(candidate==caster)return "caster";
+            if(candidate==skip)return "primary";
+            if(candidate.playerData.isDead)return "dead";
+            if(candidate.playerData.duelDeath)return "duel-death";
+            if(candidate.playerData.getDistrictId()!=caster.playerData.getDistrictId())return "district";
+            double tx=0,ty=0,tz=0;
+            NumericalUtils.LtVector3dToDoubles(candidate.playerInstance.Position.getValue(),ref tx,ref ty,ref tz);
+            if(!AbilityTargets.WithinArea(x,y,z,tx,ty,tz,radiusMetres))
+                return Math.Abs(ty-y)>=150?"floor":"radius";
+            if(caster.viewMan.FindViewForEntity(candidate.playerData.getEntityId())==null)return "invisible";
+            verdict=PvpCombat.Check(caster,candidate);
+            return verdict==PvpRules.Verdict.Allowed?"included":"pvp-"+verdict.Value;
         }
 
         /// <summary>Hostile live NPCs inside an area that the caster can see, with their view ids.</summary>
