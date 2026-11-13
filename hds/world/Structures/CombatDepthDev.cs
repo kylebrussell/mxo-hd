@@ -9,6 +9,7 @@ namespace hds
             if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1") return "Combat depth requires MXO_DEV_COMMANDS=1.";
             string command = args.Length > 0 ? args[0] : "";
             if (command == "hurtme") return ConcentrationDamageQa.Run(caller,args);
+            if (command == "specialattack") return TypedAttackDiagnostic.Run(caller,args);
             if (command == "specialdefense")
             {
                 // Paired seeded production contests; fixture-only. No live round's RNG or health is changed.
