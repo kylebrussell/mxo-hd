@@ -316,14 +316,14 @@ RANGE 0x621c7c05 0x240
 621c7de2 mov      esp, ebp
 621c7de4 pop      ebp
 621c7de5 ret      4
-621c7de8 int3     
-621c7de9 int3     
-621c7dea int3     
-621c7deb int3     
-621c7dec int3     
-621c7ded int3     
-621c7dee int3     
-621c7def int3     
+621c7de8 int3
+621c7de9 int3
+621c7dea int3
+621c7deb int3
+621c7dec int3
+621c7ded int3
+621c7dee int3
+621c7def int3
 621c7df0 push     ebp
 621c7df1 mov      ebp, esp
 621c7df3 sub      esp, 0x3c
@@ -354,4 +354,3 @@ RANGE 0x621c7c05 0x240
 621c7e38 mov      byte ptr [ebp - 0x3c], 0
 621c7e3c mov      byte ptr [ebp - 0x3b], 0
 621c7e40 call     0x62001e20
-
