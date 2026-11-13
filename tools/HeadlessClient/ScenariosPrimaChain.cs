@@ -20,8 +20,9 @@ public static partial class Scenarios
             var mission=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
                 .Single(m=>(int)m.Attribute("id")! == id);
             int logStart=context.Server.DebugLog().Length;int ends=p.Received("80 a2 00").Count;
+            int listStart=p.World.RpcSnapshot().Count;
             p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForRpcAsync("80 97 05 00");
-            var entries=p.World.RpcSnapshot().Select(r=>r.Bytes).Where(b=>b.Length>17 && b[0]==0x80 && b[1]==0x96 && BitConverter.ToUInt16(b,2)==5).ToArray();
+            var entries=p.World.RpcSnapshot().Skip(listStart).Select(r=>r.Bytes).Where(b=>b.Length>17 && b[0]==0x80 && b[1]==0x96 && BitConverter.ToUInt16(b,2)==5).ToArray();
             // The list contains indices and titles, not definition IDs. Resolve the actual Critical entry,
             // then verify the selected definition from the accepted mission's authoritative staging record.
             int index=MissionContactChoice.CriticalIndex(entries,(string)mission.Attribute("title")!);
