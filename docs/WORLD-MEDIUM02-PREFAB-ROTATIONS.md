@@ -32,3 +32,13 @@ Claude-only native one-pass, from CSR110 alone:
 2. Inspect actual placement, full orientation, hinge and rendered model relative to surrounding geometry. The wire quaternion test does not establish native appearance or pivot correctness by itself.
 3. Right-click that real door and select **Open**. Confirm normal radial option/use and opening, natural closing after20 seconds and closed state another second later. No invented Close command or state mutation.
 4. Repeat Open once; verify the ordinary interaction remains usable. Report missing model, orientation, collision/reach or radial discrepancies. Do not treat this diagnostic as arrival/hardline/LA/subway/NPC/walk-route validation.
+
+## Recorded validation
+
+Full4347 tests passed; final scoped Medium02/Medium03/Archive02/actual-CLI checks47 passed after the pure master437fd4c6 import. Python native-math6 and audit/link12 passed. Current map15 CSV/audit reproduce byte-for-byte; historical15 and unchanged native16/default17/historical12 reproduce the baseline with exact content after newline normalization. Strict map15 refuses before output. No other world CSV/audit was regenerated in this PR.
+
+One actual-wire case passed36.3s, exit0, peak1, with its throwaway server disposed. Frozen fresh sourcec7b69f0d526c1aa73bbee4681e3ee292ecbcec3c used actual **Debug** hds.dll SHA256B8A3520259AE223DB0F5AC81079F7AED71313F0648B06EFC2B6ED23840B82A9C. The fixture saved Temp/mxo-medium02-prefab-door-actual-wire.json before teardown: actual config/path/hash, five received03 view lists, exact position/quaternion and834→838→835 records. NativeRenderingProven remainsfalse. Raw server success and runner logs were also retained.
+
+After the pure Archive02/master import, both configurations and read-only plans/provenance passed again: Debug60A745E592A03CB8DFF87C002AAFD206E9B0EF9B8EF1DCC68BEBE4343632C402 / Release44A1B560B5EFAF40184B2803EED106FEEA5886E1B3D42D9944D496DA06D6C088. Own map15 data/fixture/door-helper bodies remain byte-identical to the fresh source; upstream loader/exporter additions preserve the Archive02 missing-resource guard. No native result is claimed.
+
+The export audit records322 source hashes, including21 distinct IPI RIDs. Current CSV SHA256b3a29cee7e6c4563538b593054c477baf1d69eb8a9c9153ad2cb1e54fa3743cb; audit673bec6b2980896230a8c99d90b47bcfd5bc58b0a13e4a1a4e0d1e3887c6c202.
