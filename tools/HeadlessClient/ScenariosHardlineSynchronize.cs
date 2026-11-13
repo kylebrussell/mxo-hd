@@ -10,6 +10,7 @@ public static partial class Scenarios
             {District="medium03",DistrictId=16,X=37700,Y=495,Z=31700,Rotation=192});
         Check.That(!p.CharacterData.ContainsKey(8) || p.CharacterData[8].Length==0,"No fixture visited-row grants");
         await p.EnterWorldAsync();
+        Check.Equal(8u,BitConverter.ToUInt32(p.Received("06").Last().Bytes,3),"Native current construct matches cached/discovery ordinal8, not internal16");
         await p.WaitUntilAsync(()=>p.ViewsOfGoid(592).Count>0,"Actual source booth",TimeSpan.FromSeconds(15));
         var booth=p.ViewsOfGoid(592).Last();
         p.SendRpc($"80 c7 {Le(booth.ViewId)} {Le((ushort)(booth.SpawnId+1))} 08 00");
@@ -29,6 +30,7 @@ public static partial class Scenarios
         using var again=await HeadlessPlayer.LoginAsync(context.Server.Address,"user"+p.CharId,p.Handle);
         Check.That(again.CharacterData.TryGetValue(8,out var cache) && cache.SequenceEqual(Convert.FromHexString("0802000000")),"Margin08 uses persisted logical8/HID2");
         await again.EnterWorldAsync();
+        Check.Equal(8u,BitConverter.ToUInt32(again.Received("06").Last().Bytes,3),"Relog current-construct lookup uses the persisted cache namespace");
         await again.WaitUntilAsync(()=>again.ViewsOfGoid(592).Count>0,"Booth after ordinary relog",TimeSpan.FromSeconds(15));
         booth=again.ViewsOfGoid(592).Last();
         again.SendRpc($"80 c7 {MissionNpcId(booth)} 05 00");await again.WaitForRpcAsync("80 fb 02 00 00 00 01");
@@ -41,6 +43,7 @@ public static partial class Scenarios
         await again.WaitUntilAsync(()=>again.Received("06").Count>loads,"Synchronized LA destination loads",TimeSpan.FromSeconds(15));
         again.SendRpc("05");await Task.Delay(300);
         Check.That(Encoding.Latin1.GetString(again.Received("06").Last().Bytes).Contains("medium03/medium03.metr"),"Source filename unchanged");
+        Check.Equal(8u,BitConverter.ToUInt32(again.Received("06").Last().Bytes,3),"LA return preserves the same client hardline key");
         Check.Equal("16 37700 495 31700",await context.Database.ScalarAsync($"SELECT CONCAT(districtId,' ',x,' ',y,' ',z) FROM characters WHERE charId={p.CharId}"),"Exact HDL arrival after sync/relog/LA");
         var proof=new {context.Server.SourceAssembly,SourceAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
             InitialSyncRpcs=syncRpcs,RelogCache=Convert.ToHexString(cache!),RelogAndLaRpcs=again.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),NativeUiProven=false};

@@ -66,3 +66,14 @@ Claude-only one-pass: use la-hardline-registration/CSR110. If the actual booth i
 
 
 Synchronize repair validation:21 focused hardline/travel/door/loading-area checks PASS. Both NativeQa builds and actual read-only plans/provenance PASS at compiled8701082 (subsequent72bbd785 is evidence whitespace only). Actual la-hardline-sync PASS51.9s, exit0, peak1 server, normal disposal. Selected Debug hds.dll SHA2560A4D57BE0BA88F62220968F0E41ECFA06BCAD4F3B095CC9B09CC087193F73C6E. Pre-teardown unique mxo-hardline-sync-mxotest_run_1_5ac4d7b45d.json retains exact RPCs, relog cache and source/hash; paired raw debug log retained. ReleaseE4B01E3F7B4462DE3636D0E87115BD914DF48E5528114D926BFB75550D2BE709 is build/read-only provenance, not the actual fresh server. Native retest remains pending; no menu/rendering success inferred.
+
+
+## Second native failure: current construct namespace
+
+Claude23:34 retested e8de31d: exact80fa8/2 arrived, but the booth stayed unknown immediately and after relog. That failed native result supersedes the prior retest-ready state. The51.9s wire pass proved the exchange and persistence; it did not model the native isKnown context key.
+
+The newly recovered06 handler62172540 passes payload+3 ConstructID to62172450, which installs it as the current context's map key. hardlineMgr.isKnown621c4840 looks up exactly(currentContextKey, Hardline.getID), testing record existence. Previously the actual06 said16 while cached08 and80fa said8. This explains why the same booth had a full radial with the older internal-ID cache and became unknown when registration translated only the cache. Incoming08's actual native consumer62198670->621c7df0 reads five-byte entries, with no implicit ID translation.
+
+The repair now translates06 ConstructID ONLY for the six registered maps12..17 into their filename ordinals4..9. Source WorldFile, server map/DB IDs and PvpArchives.ConstructId remain unchanged; city/private archive/tutorial/LA fallbacks stay unchanged. This is the shared identity required by the client, within the explicitly OURS appended registration policy. The original statement that06 could stay separate is superseded by this positive primary chain.
+
+[Current-context and source-HID evidence](../research/protocol/hardline-current-construct.txt). The real HDL value is2, notsector52/static1. The actual runtime spatial association remains for native confirmation. New headless assertions independently decode06+3 at initial login, relog and LA return and require8 alongside08/80fa8/2, while SQL staysinternal16. Native full-radial and Loading Area success are still pending.

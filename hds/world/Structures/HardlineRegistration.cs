@@ -15,6 +15,10 @@ namespace hds
         { map=0; if(logical<1 || logical>maps.Length)return false;map=maps[logical-1];return true; }
         public static bool TryLogical(ushort map,out byte logical)
         {int index=Array.IndexOf(maps,map);logical=(byte)(index+1);return index>=0;}
+        /// <summary>06 ConstructID also selects native hardlineMgr.isKnown's current-context key.
+        /// Only the six appended hardline constructs change; private/city instance fallbacks remain intact.</summary>
+        public static uint WorldConstructId(uint map,uint instance)
+        {return map>=12 && map<=17 && TryLogical((ushort)map,out byte logical) ? logical : instance;}
         public static byte[] LoginReply()
         {
             using(var stream=new MemoryStream())using(var w=new BinaryWriter(stream))

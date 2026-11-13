@@ -2,6 +2,19 @@ using hds;
 namespace hds.Tests;
 public class HardlineRegistrationTests
 {
+    [Fact] public void WorldLoadAndKnownCacheShareTheNativeCurrentConstructKey()
+    {
+        for(uint map=12;map<=17;map++)Assert.Equal(map-8,HardlineRegistration.WorldConstructId(map,1000+map));
+        // Keep native/private IDs for worlds outside this appended hardline namespace; never truncate aliases.
+        foreach(uint map in new uint[]{0,1,2,3,4,5,6,7,8,9,10,11,18,800,901,65552,uint.MaxValue})
+            Assert.Equal(9876u,HardlineRegistration.WorldConstructId(map,9876));
+        for(int book=1;book<=8;book++)
+        {
+            uint map=PvpArchives.MapFor(book),instance=PvpArchives.ConstructId(map);
+            Assert.Equal(instance,HardlineRegistration.WorldConstructId(map,instance));
+        }
+        Assert.Equal(Convert.FromHexString("0802000000"),HardlineRegistration.Cache(map=>map==16?new ushort[]{2}:Array.Empty<ushort>()));
+    }
     [Fact] public void IncrementalDiscoveryMatchesRetailAndUsesRegisteredOrdinals()
     {
         Assert.Equal(Convert.FromHexString("80fa030000001100000001"),HardlineBooths.BuildSynchronized(3,17));
