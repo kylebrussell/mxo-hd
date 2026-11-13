@@ -31,7 +31,7 @@ namespace hds
             QueueRpc(messageBlock,null,0);
         }
 
-        // Current sole caller is captured ability registration. No validity callbacks or owner locks in the queue.
+        // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
         internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
         private void QueueRpc(byte[] messageBlock,int? world,long transport)
         {

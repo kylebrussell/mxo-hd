@@ -23,6 +23,7 @@ namespace hds
         private static int UploadLocked(WorldClient client,out bool abilityCodeUploaded)
         {
             abilityCodeUploaded = false;
+            var publication=new AbilityAcquisition.Publication(client);
             UInt32 charId = client.playerData.getCharID();
             IWorldDBHandler db = Store.dbManager.WorldDbHandler;
 
@@ -39,14 +40,14 @@ namespace hds
                 catch(Exception error)
                 {
                     Output.WriteDebugLog("[ABILITY ACQUISITION] Upload refused/rolled back: "+error.Message);
-                    ClientActionsHandler.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
+                    publication.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
                 }
             }
             if(plan.ItemsMoved==0&&learned.Count==0)return 0;
             string name=StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
             client.messageQueue.addRpcMessage(CodeStorage.BuildUploadMessage(name));
             abilityCodeUploaded=learned.Count>0;
-            foreach(var receipt in learned)PublishLearn(client,receipt);
+            foreach(var receipt in learned)PublishLearn(client,receipt,publication);
 
             foreach (UInt16 slot in plan.ClearedBagSlots)
             {
@@ -88,11 +89,12 @@ namespace hds
             client.FlushQueue();
         }
 
-        internal static void PublishLearn(WorldClient client,AbilityAcquisition.Receipt receipt)
+        internal static void PublishLearn(WorldClient client,AbilityAcquisition.Receipt receipt,AbilityAcquisition.Publication publication,bool la=false)
         {
-            client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(receipt.BagSlot));
             uint value=0x80000000u|((uint)AbilityAcquisition.Identity(receipt.Goid)<<10)|1u;
-            client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(receipt.ArchiveSlot,value));
+            var packets=new List<byte[]>{ServerPackets.BuildInventoryItemDelete(receipt.BagSlot),ServerPackets.BuildKnownAbilityAdd(receipt.ArchiveSlot,value)};
+            if(la)packets.Add(CentralStorage.BuildUploadResult(1,true,CentralStorage.Success));
+            publication.Publish(client,packets.ToArray());
         }
 
         /// <summary>Takes one item from storage: 69 00 with the new count, or 5f with PersonalInventoryItem 0 for the last one.</summary>

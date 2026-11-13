@@ -6,11 +6,18 @@ namespace hds
     /// <summary>Explicit server acquisition policy; no training, loading or prerequisite qualification.</summary>
     public static class AbilityAcquisition
     {
-        public sealed class BagRow { public readonly uint Id,Goid; public readonly int Slot,Count; public BagRow(uint id,int slot,uint goid,int count){Id=id;Slot=slot;Goid=goid;Count=count;} }
-        public sealed class ArchiveRow { public readonly uint Id,Descriptor; public readonly int Slot; public ArchiveRow(uint id,int slot,uint descriptor){Id=id;Slot=slot;Descriptor=descriptor;} }
+        public sealed class BagRow { public readonly uint Id; public readonly long Goid; public readonly int Slot,Count; public BagRow(uint id,int slot,long goid,int count){Id=id;Slot=slot;Goid=goid;Count=count;} }
+        public sealed class ArchiveRow { public readonly uint Id; public readonly long Descriptor; public readonly int Slot; public ArchiveRow(uint id,int slot,long descriptor){Id=id;Slot=slot;Descriptor=descriptor;} }
         public sealed class Receipt { public readonly ushort BagSlot,ArchiveSlot; public readonly uint Goid,Cash,Price; public readonly long BeforeCash; public Receipt(ushort bag,ushort archive,uint goid,long before,uint cash,uint price){BagSlot=bag;ArchiveSlot=archive;Goid=goid;BeforeCash=before;Cash=cash;Price=price;} }
         public sealed class Refusal : Exception { public Refusal(string text):base(text){} }
-        public static bool Genuine(uint value) => (value & 0xfc000000u)==0x80000000u && AbilityCatalog.Find(Identity(value))!=null;
+        public static bool TryDescriptor(long raw,out uint value)
+        {
+            value=0;if(raw<int.MinValue||raw>uint.MaxValue)return false;
+            value=unchecked((uint)raw);return true;
+        }
+        public static bool Genuine(uint value) => (value & 0xfc000000u)==0x80000000u &&
+            AbilityCatalog.Find(Identity(value))?.Number("Ability/AbilityClass",-1)==0;
+        public static bool SameAbility(long raw,uint expected) => TryDescriptor(raw,out uint value)&&Genuine(value)&&Identity(value)==Identity(expected);
         public static ushort Identity(uint value) => AbilityCatalog.Canonical(AbilityCatalog.IdOf(value));
         public static ushort FreeBag(IEnumerable<BagRow> rows)
         {
@@ -31,7 +38,7 @@ namespace hds
             if(!Genuine(goid))throw new Refusal("This item is not a recognized ability code.");
             var real=rows.Where(r=>r.Slot>=0&&r.Slot<520).ToArray();
             if(real.GroupBy(r=>r.Slot).Any(g=>g.Count()!=1))throw new Refusal("Your archive has ambiguous slots; the upload was refused.");
-            if(real.Any(r=>(r.Descriptor&0xfc000000u)==0x80000000u&&Identity(r.Descriptor)==Identity(goid)))
+            if(real.Any(r=>SameAbility(r.Descriptor,goid)))
                 throw new Refusal("You already know this ability. Its code was kept in your bag.");
             var occupied=new HashSet<int>(real.Select(r=>r.Slot));
             if(reserved!=null)foreach(var slot in reserved)occupied.Add(slot);
@@ -42,6 +49,36 @@ namespace hds
             }
             for(ushort slot=0;slot<520;slot++)if(!occupied.Contains(slot))return slot;
             throw new Refusal("Your archive is full. The ability code was kept in your bag.");
+        }
+        internal sealed class Publication
+        {
+            internal readonly ClientData Data;internal readonly uint Character,District;internal readonly int World,Life;
+            internal readonly long Transport;private readonly bool onWorld,la,pending;
+            internal Publication(WorldClient client)
+            {
+                Data=client.playerData;Character=Data.getCharID();World=Data.worldGeneration;Life=Data.lifeGeneration;
+                District=Data.getDistrictId();onWorld=Data.getOnWorld();la=Data.DistrictIsLA();pending=Data.worldChangePending;
+                Transport=client.TransportFence.Capture();
+            }
+            private bool Current(WorldClient client)=>ReferenceEquals(Data,client.playerData)&&Data.getCharID()==Character&&
+                Data.worldGeneration==World&&Data.lifeGeneration==Life&&Data.getDistrictId()==District&&
+                Data.getOnWorld()==onWorld&&Data.DistrictIsLA()==la&&Data.worldChangePending==pending;
+            internal bool Publish(WorldClient client,params byte[][] packets)
+            {
+                bool sent=false;
+                client.TransportFence.TryRun(Transport,()=>
+                {
+                    if(!Current(client))return;
+                    foreach(var packet in packets)client.messageQueue.AddWorldBoundRpc(packet,World,Transport);
+                    sent=true;
+                });
+                return sent;
+            }
+            internal void Notice(WorldClient client,string text)
+            {
+                byte[] packet=ServerPackets.BuildSystemChatMessage(text,"SYSTEM");
+                if(Publish(client,packet))client.FlushQueue(); // Outside the transport fence.
+            }
         }
     }
 }

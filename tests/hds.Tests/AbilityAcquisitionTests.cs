@@ -59,4 +59,61 @@ public class AbilityAcquisitionTests
         Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("")["MXO_ABILITY_ACQUISITION_QA"]);
         foreach(ushort id in new ushort[]{1,5}){Assert.NotNull(AbilityCatalog.Find(id));Assert.True(AbilityProgression.MeetsCharacterLevel(id,50));}
     }
+    [Fact] public void StoredRawDescriptorsAcceptOnlySignedOrUnsigned32AndCannotAliasCorrupt64()
+    {
+        Assert.True(AbilityAcquisition.TryDescriptor(unchecked((int)Detect),out uint signed));Assert.Equal(Detect,signed);
+        Assert.True(AbilityAcquisition.TryDescriptor(Detect,out uint unsigned));Assert.Equal(Detect,unsigned);
+        Assert.True(AbilityAcquisition.TryDescriptor(int.MinValue,out _));Assert.True(AbilityAcquisition.TryDescriptor(uint.MaxValue,out _));
+        Assert.False(AbilityAcquisition.TryDescriptor((long)int.MinValue-1,out _));
+        Assert.False(AbilityAcquisition.TryDescriptor((long)uint.MaxValue+1,out _));
+        foreach(long raw in new[]{(long)unchecked((int)Detect),(long)Detect,(long)0x80401c03})
+            Assert.Throws<AbilityAcquisition.Refusal>(()=>AbilityAcquisition.LearnSlot(new[]{new AbilityAcquisition.ArchiveRow(1,0,raw)},Detect,null));
+        foreach(long corrupt in new[]{(long)Detect+(1L<<32),(long)unchecked((int)Detect)-(1L<<32)})
+            Assert.Equal(1,AbilityAcquisition.LearnSlot(new[]{new AbilityAcquisition.ArchiveRow(1,0,corrupt)},Detect,null));
+        Assert.False(AbilityAcquisition.Genuine(0x80000000u|(78u<<10))); // Focus attribute, class1.
+        Assert.False(AbilityAcquisition.Genuine(0x80000000u|(108u<<10))); // Current Health internal, class2.
+    }
+    static WorldClient PublicationClient(uint district=1)
+    {
+        var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.playerData=new ClientData();c.playerData.setCharID(110);c.playerData.setDistrictId(district);c.playerData.setOnWorld(district!=901);c.messageQueue=new();
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());return c;
+    }
+    [Fact] public void PostCommitPublicationKeepsPacketOrderAndAllowsCapturedLoadingAreaState()
+    {
+        foreach(uint district in new uint[]{1,901})
+        {
+            var c=PublicationClient(district);var stamp=new AbilityAcquisition.Publication(c);
+            byte[][] packets={ServerPackets.BuildAbilityCodeAdd(1,Detect),ServerPackets.BuildInfoDelta(-10000,8),ServerPackets.BuildInfoCurrent(10000,8),ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)};
+            Assert.True(stamp.Publish(c,packets));Assert.Equal(4,c.messageQueue.RPCMessagesQueue.Count);
+            for(int i=0;i<packets.Length;i++){var message=(SequencedMessage)c.messageQueue.RPCMessagesQueue[i]!;Assert.Equal(packets[i],message.content.Skip(1));Assert.Equal(c.playerData.worldGeneration,message.RpcWorldGeneration);Assert.Equal(-1,message.rpcNumber);}
+        }
+    }
+    [Fact] public void StaleSessionRefusesBothSuccessAndRefusalWithoutTouchingUnrelatedRpc()
+    {
+        for(int change=0;change<6;change++)
+        {
+            var c=PublicationClient();c.messageQueue.addRpcMessage(new byte[]{0x81,0x49});var stamp=new AbilityAcquisition.Publication(c);
+            if(change==0)c.playerData.lifeGeneration++;
+            if(change==1)c.playerData.setOnWorld(false);
+            if(change==2)c.playerData.setCharID(111);
+            if(change==3)c.playerData.setDistrictId(901);
+            if(change==4)c.playerData=new ClientData();
+            if(change==5)c.TransportFence.PublishIncoming(true,()=>{});
+            Assert.False(stamp.Publish(c,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
+            Assert.False(stamp.Publish(c,ServerPackets.BuildSystemChatMessage("Refused","SYSTEM")));
+            Assert.Single(c.messageQueue.RPCMessagesQueue);
+        }
+    }
+    [Fact] public void ResetAfterQueuePrunesOnlyUnassignedAcquisitionRecordsBeforeNumbering()
+    {
+        var c=PublicationClient();c.messageQueue.addRpcMessage(new byte[]{0x81,0x49});var stamp=new AbilityAcquisition.Publication(c);
+        Assert.True(stamp.Publish(c,ServerPackets.BuildAbilityCodeAdd(1,Detect),ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
+        c.TransportFence.PublishIncoming(true,()=>{});long epoch=c.TransportFence.Capture();
+        Assert.True(c.TransportFence.ApplyReset(epoch,()=>{}));c.TransportFence.Resume(epoch);
+        Assert.True(c.TransportFence.TryRun(epoch,()=>c.messageQueue.PruneUnassignedWorldRpcs(c.playerData.worldGeneration,epoch)));
+        var remaining=Assert.IsType<SequencedMessage>(Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<object>()));
+        Assert.Equal(new byte[]{2,0x81,0x49},remaining.content);Assert.Equal(-1,remaining.rpcNumber);
+        Assert.False(stamp.Publish(c,ServerPackets.BuildAbilityCodeBuyAck(Detect,10000)));
+    }
 }

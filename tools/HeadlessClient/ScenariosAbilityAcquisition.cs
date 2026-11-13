@@ -77,7 +77,12 @@ public static partial class Scenarios
                 string occupied=await context.Database.ScalarAsync($"SELECT GROUP_CONCAT(slot) FROM char_abilities WHERE char_id={p.CharId} AND slot<520");var used=occupied.Split(',',StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToHashSet();
                 var filler=Enumerable.Range(0,519).Where(i=>!used.Contains(i)).ToArray();
                 await context.Database.ExecuteAsync("INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES"+string.Join(",",filler.Select(i=>$"({p.CharId},{i},2214904192,0,0,'acquisition filler')")));
-                await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},20,2147489792,1),({p.CharId},21,2147491840,1)");
+                await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},20,{unchecked((int)0x80001800u)},1),({p.CharId},21,2147491840,1)");
+                long corruptArchive=(long)0x80001800u+(1L<<32),corruptBag=(long)0x80002400u+(1L<<32);
+                await context.Database.ExecuteAsync($"UPDATE char_abilities SET ability_id={corruptArchive} WHERE char_id={p.CharId} AND ability_name='acquisition filler' AND slot={filler[0]}; INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},22,{corruptBag},1)");
+                bool rawRejected=false;try{db.AcquireAbility(p.CharId,0x80002400,0,22);}catch(AbilityAcquisition.Refusal){rawRejected=true;}Check.That(rawRejected,"Corrupt64 bag value cannot alias a32-bit ability");
+                Check.Equal(corruptBag,await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={p.CharId} AND slot=22"),"Corrupt64 source remains exact");
+                await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId={p.CharId} AND slot=22");
                 var last=db.AcquireAbility(p.CharId,0x80001800,0,20);Check.Equal((ushort)519,last.ArchiveSlot,"Last real archive slot is usable");
                 refused=false;try{db.AcquireAbility(p.CharId,0x80002000,0,21);}catch(AbilityAcquisition.Refusal){refused=true;}Check.That(refused,"Archive full retains the unowned code");
                 Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot=21 AND goid=2147491840"),"Full archive does not delete source");
@@ -86,7 +91,7 @@ public static partial class Scenarios
                 var learns=await Task.WhenAll(Enumerable.Range(0,2).Select(_=>Task.Run(()=>{try{db.AcquireAbility(p.CharId,0x80002000,0,21);return true;}catch(AbilityAcquisition.Refusal){return false;}})));
                 Check.Equal(1,learns.Count(x=>x),"Independent learning connections consume one exact source only");
                 Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)0x80002000u)}"),"Learning race adds exactly one archive row");
-                operations.Add(new{Step=step,Accepted=learns,LastSlot=last.ArchiveSlot});
+                operations.Add(new{Step=step,Accepted=learns,LastSlot=last.ArchiveSlot,SignedRawSource=unchecked((int)0x80001800u),CorruptArchive=corruptArchive,CorruptBag=corruptBag});
             }
             finally{hds.shared.Store.config=old;}
             step="cold-relog-known-archive";string user=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");p.Dispose();context.Server.Dispose();

@@ -64,6 +64,7 @@ namespace hds
             {
                 return;
             }
+            var publication=new AbilityAcquisition.Publication(client);
             UInt32 charId = client.playerData.getCharID();
             CentralStorage.Plan plan;
             if (!IsOpenFor(client))
@@ -100,7 +101,7 @@ namespace hds
 
             if (move.FromBag)
             {
-                ApplyUpload(client, charId, plan);
+                ApplyUpload(client, charId, plan,publication);
             }
             else
             {
@@ -110,7 +111,7 @@ namespace hds
             Output.WriteDebugLog("[CENTRAL STORAGE] " + what + ": moved " + plan.Moved + " (" + CentralStorage.NameOf(plan.Status) + ")");
         }
 
-        private static void ApplyUpload(WorldClient client, UInt32 charId, CentralStorage.Plan plan)
+        private static void ApplyUpload(WorldClient client, UInt32 charId, CentralStorage.Plan plan,AbilityAcquisition.Publication publication)
         {
             MarketPlaceHandler.Db.GetInventoryItem(charId, plan.BagSlot, out UInt32 goid, out UInt32 ignored);
 
@@ -122,11 +123,10 @@ namespace hds
                 catch(Exception error)
                 {
                     Output.WriteDebugLog("[ABILITY ACQUISITION] LA upload refused/rolled back: "+error.Message);
-                    ClientActionsHandler.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
-                    client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(0,false,CentralStorage.InvalidTransaction));return;
+                    publication.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
+                    publication.Publish(client,CentralStorage.BuildUploadResult(0,false,CentralStorage.InvalidTransaction));return;
                 }
-                CodeStorageHandler.PublishLearn(client,receipt);
-                client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(1,true,CentralStorage.Success));
+                CodeStorageHandler.PublishLearn(client,receipt,publication,true);
                 return;
             }
             SetBagCount(client, charId, plan.BagSlot, plan.BagCount);

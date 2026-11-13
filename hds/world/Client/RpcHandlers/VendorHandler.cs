@@ -46,19 +46,20 @@ namespace hds{
             if(AbilityProgression.IsAbilityCode(itemGoID))
             {
                 if(packet.Length!=5){ClientActionsHandler.Notice(Store.currentClient,"Invalid ability purchase request.");return;}
+                var publication=new AbilityAcquisition.Publication(Store.currentClient);
                 AbilityAcquisition.Receipt receipt;
                 try { receipt=Store.dbManager.WorldDbHandler.AcquireAbility(Store.currentClient.playerData.getCharID(),itemGoID,VendorPricing.GetBuyPrice(itemGoID)); }
                 catch(Exception error)
                 {
                     Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: "+error.Message);
-                    ClientActionsHandler.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
+                    publication.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
                 }
-                Store.currentClient.playerData.setInfo(receipt.Cash);
-                var output=new ServerPackets();
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID));
-                output.SendInfoDelta(Store.currentClient,(long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy);
-                output.SendInfoCurrent(Store.currentClient,receipt.Cash,ServerPackets.InfoReasonVendorBuy);
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price));
+                if(ReferenceEquals(Store.currentClient.playerData,publication.Data))publication.Data.setInfo(receipt.Cash);
+                byte[][] acquiredPackets={ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID),
+                    ServerPackets.BuildInfoDelta((long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy),
+                    ServerPackets.BuildInfoCurrent(receipt.Cash,ServerPackets.InfoReasonVendorBuy),
+                    ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price)};
+                publication.Publish(Store.currentClient,acquiredPackets);
                 return;
             }
             long currentCash = Store.currentClient.playerData.getInfo();
