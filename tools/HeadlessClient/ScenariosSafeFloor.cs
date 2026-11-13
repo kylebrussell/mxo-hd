@@ -42,7 +42,7 @@ DELETE FROM inventory WHERE charId=110;
                 Check.That(new[]{25100d,2050d,14100d}.SequenceEqual(Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(v.Attributes["Position"],i*8))),"Measured floor-relative centre");
                 Check.Equal("0000000000000000000000000000803f",Convert.ToHexString(v.Attributes["Orientation"]).ToLowerInvariant(),"Explicit identity baseline");
                 Check.That(v.Attributes["MissionKey"].SequenceEqual(new byte[4]),"No mission identity");Check.That(v.Attributes["UseCount"].SequenceEqual(new byte[]{1}),"Source ContainerOpen prerequisite");
-                Check.That(v.Attributes["CurrentState"].SequenceEqual(BitConverter.GetBytes(0x835u)),"Native Closed835 baseline");
+                Check.That(!v.Attributes.ContainsKey("CurrentState"),"Baseline omits CurrentState exactly like failed197; rawGOB default is835");
                 Check.That(!v.Attributes.ContainsKey("HalfExtents"),"No bounds override");
                 step="ordinary-open-"+pass;await Barrier(p);int rpc=p.World.RpcSnapshot().Count;int useLog=context.Server.DebugLog().Length;
                 byte[] use=WireFormat.FromHex($"80 c7 {MissionNpcId(v)} 03 00");p.SendRpc(use);

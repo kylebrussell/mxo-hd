@@ -14,7 +14,7 @@ Claude's PR197 failure at70a748c9 showed two filing cabinets and no separately r
 
 ## Diagnostic geometry and authority
 
-The probe is fixed at 25100/2050/14100 with an explicitly documented identity quaternion baseline. Y 2050 places the measured closed rest minimum−50 on source floor 2000. It preserves the real GO 552 template. It sends default Closed 835, UseCount 1 and MissionKey 0; it does not override HalfExtents, model resource or usability rules. The old mission source quaternion remains untouched.
+The probe is fixed at 25100/2050/14100 with an explicitly documented identity quaternion baseline. Y 2050 places the measured closed rest minimum−50 on source floor 2000. It preserves the real GO 552 template. It omits CurrentState exactly like the failed mission creation, inheriting raw GOB default Closed 835; it sends UseCount 1 and MissionKey 0. It does not override HalfExtents, model resource or usability rules. The old mission source quaternion remains untouched.
 
 NAV209/54/12 is rectangle[25000,14000]..[25200,14200], floor 2000. The entire measured closed base footprint and standing25100/2095/14020 lie inside it. The standing-to-centre distance is sqrt(80²+45²)=91.79, under100 even with centre distance; no range enlargement is needed. This is a point/base NAV witness only: it does not certify scene/static/avatar clearance, animated sweep, a normal elevator route or native availability.
 
@@ -27,7 +27,7 @@ The guard requires exact dev=1, explicit MXO_SAFE_FLOOR_QA=1, a fully validated 
 3. Choose ordinary Open and retain actual `80c7 <view/spawn> 03 00` plus `[OBJECT-USE]` identity. This diagnostic has no container executor; do not expect loot, mission ticks, opening animation or rewards, and do not claim them from a request log.
 4. Type `?safefloor off`; confirm only the diagnostic Safe disappears. Repeat on/off once and retain distinct view/spawn logs and screenshots. Reset/session cleanup removes the lease.
 
-A visible/selectable result isolates the asset from PR197's mission placement/occlusion question. Failure bounds the free552 presentation/picking/defaults question. Neither result repairs the mission source or proves a retail chooser. Native observations remain pending Claude.
+A visible/selectable result demonstrates that the asset can draw and be picked under this identity/open-floor control. The mission source pose, orientation and scene remain unresolved. Failure bounds the free552 presentation/picking/defaults question. Neither result repairs the mission source or proves a retail chooser. Native observations remain pending Claude.
 
 Reproduce the asset-only measurements without writing client files:
 
@@ -39,4 +39,6 @@ The script pins the MOA/skeleton, checks each exact mesh size and preserves blan
 
 ## Local qualification before fresh review
 
-The current full suite passed 4,800 tests; final focused Safe/Box-probe/protocol checks passed 52. Both actual Debug/Release builds, read-only safe-floor/poster-box-floor/default plans and provenance passed. The read-only asset reproducer passed against the pinned client resources. No fresh or native run has been performed for this package yet. The initial standalone creation test failed because its test wrapper omitted the master-view prefix; framing was corrected without changing production bytes. Initial compilation caught a namespace and existing Loading Area accessor mismatch; both were corrected before these passing checks.
+The current full suite passed 4,800 tests; final focused Safe/Box-probe/protocol checks passed 52. Both actual Debug/Release builds, read-only safe-floor/poster-box-floor/default plans and provenance passed. The read-only asset reproducer passed against the pinned client resources. The baseline was then corrected to omit CurrentState, matching the failed mission creation; the 4,800 full result predates this diagnostic-only correction. Focused/build/plan qualification below covers the revised baseline. No fresh or native run has been performed for this package yet. The initial standalone creation test failed because its test wrapper omitted the master-view prefix; framing was corrected without changing production bytes. Initial compilation caught a namespace and existing Loading Area accessor mismatch; both were corrected before these passing checks.
+
+Revised omitted-state baseline: all 52 focused checks, both actual builds, all three read-only profile plans and provenance checks passed. The earlier full 4,800 result remains attributed to the pre-correction diagnostic source. No second explicit-state arm exists.

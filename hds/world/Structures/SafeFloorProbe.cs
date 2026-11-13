@@ -29,7 +29,7 @@ namespace hds
         {
             var obj=new AttributeClass46("Object552",552);obj.UnsetRelatedStaticObjId();obj.DisableAllAttributes();
             Set(obj.Position,NumericalUtils.doublesToLtVector3d(25100,2050,14100));Set(obj.Orientation,StringUtils.hexStringToBytes(Identity));
-            Set(obj.CurrentState,BitConverter.GetBytes(0x835u));Set(obj.UseCount,new byte[]{1});Set(obj.MissionKey,new byte[4]);return obj;
+            Set(obj.UseCount,new byte[]{1});Set(obj.MissionKey,new byte[4]);return obj;
         }
         private static void Set(Attribute a,byte[] value){a.enable();a.setValue(value);}
         private static bool SameWorld(WorldClient c,Lease l) => ReferenceEquals(c.playerData,l.Data)&&ReferenceEquals(c.viewMan,l.Views)&&
@@ -63,7 +63,7 @@ namespace hds
                     c.messageQueue.addObjectMessage(encoded,false);l.View.viewCreated=true;queued=true;
                 });
                 if(!queued){Remove(c,holder);return false;}
-                Output.WriteDebugLog("[SAFE-FLOOR] on char=110 view="+l.View.ViewID+" spawn="+l.Spawn+" goid=552 free=1 position=25100,2050,14100 state=835 missionKey=0 diagnosticOnly=1");return true;
+                Output.WriteDebugLog("[SAFE-FLOOR] on char=110 view="+l.View.ViewID+" spawn="+l.Spawn+" goid=552 free=1 position=25100,2050,14100 state=raw-default835 missionKey=0 diagnosticOnly=1");return true;
             }
         }
         public static bool Dev(WorldClient c,string[] words)

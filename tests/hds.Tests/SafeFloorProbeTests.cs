@@ -35,7 +35,7 @@ public class SafeFloorProbeTests:IDisposable
         var obj=SafeFloorProbe.CreateObject();Assert.Equal(uint.MaxValue,obj.GetRelatedStaticObjId());Assert.False(obj.HalfExtents.isActive());
         var raw=new ObjectManager().GenerateCreationPacket(obj,0,7).getBytes();Assert.Equal(0x0c,raw[0]);
         var v=WireFormat.FindCreations(new byte[]{1,0}.Concat(raw).Concat(new byte[]{12,0,0}).ToArray()).Single();Assert.Equal((ushort)552,v.Goid);
-        Assert.Equal(Convert.FromHexString(SafeFloorProbe.Identity),v.Attributes["Orientation"]);Assert.Equal(BitConverter.GetBytes(0x835u),v.Attributes["CurrentState"]);
+        Assert.Equal(Convert.FromHexString(SafeFloorProbe.Identity),v.Attributes["Orientation"]);Assert.False(v.Attributes.ContainsKey("CurrentState"));Assert.False(obj.CurrentState.isActive());
         Assert.Equal(new byte[]{1},v.Attributes["UseCount"]);Assert.Equal(new byte[4],v.Attributes["MissionKey"]);
         Assert.Equal(new[]{25100d,2050d,14100d},Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(v.Attributes["Position"],8*i)));
     }
