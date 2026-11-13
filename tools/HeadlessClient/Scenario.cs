@@ -36,6 +36,7 @@ public sealed class ScenarioContext : IAsyncDisposable
     private const int TemplateCharacter = 2;
 
     private readonly List<HeadlessPlayer> players = new();
+    private readonly ExpectedServerDiagnostics expectedServerDiagnostics = new();
     private int nextId = 1000;
 
     public ThrowawayDatabase Database { get; }
@@ -119,9 +120,19 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
 
     /// <summary>What the server's own output says went wrong: handlers that threw, a visibility pass that failed.</summary>
     public IEnumerable<string> ServerProblems() =>
-        new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception", "[MISSION] Tick failed" }
+        expectedServerDiagnostics.Unacknowledged(new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception", "[MISSION] Tick failed" }
             .SelectMany(Server.OutputLines)
+            .Select(line => line.TrimEnd('\r')))
             .Select(line => line.Length > 300 ? line[..300] : line);
+
+    /// <summary>A scenario must first verify the full expected failure. No wildcard/prefix suppression is supported.</summary>
+    public void AcknowledgeExpectedServerDiagnostic(string exactLine, int count = 1)
+    {
+        int observed = Server.FullOutput().Split('\n').Count(line => line.TrimEnd('\r') == exactLine);
+        if (count <= 0 || observed < expectedServerDiagnostics.Count(exactLine) + count)
+            throw new ArgumentException("The exact diagnostic/count has not occurred on this server.", nameof(exactLine));
+        expectedServerDiagnostics.Acknowledge(exactLine, count);
+    }
 
     public async ValueTask DisposeAsync()
     {
