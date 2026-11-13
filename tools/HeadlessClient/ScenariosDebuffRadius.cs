@@ -20,6 +20,11 @@ public static partial class Scenarios
         var pEdge=await context.AddPlayerAsync(new CharacterSeed("PvpRadiusEdge"){Level=50,X=24939,Z=502,Organization=1,Health=5000,MaxHealth=5000});
         var pFar=await context.AddPlayerAsync(new CharacterSeed("PvpRadiusFar"){Level=50,X=24999,Z=502,Organization=1,Health=5000,MaxHealth=5000});
         foreach(var p in new[]{near,edge,far,primary,pNear,pEdge,pFar}){await p.EnterWorldAsync();p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
+        foreach(var actor in new[]{caster,second})
+        {
+            int loaded=actor.Received("80 b2 4d 01").Count;actor.SendChat("?qaload 333");
+            await actor.WaitUntilAsync(()=>actor.Received("80 b2 4d 01").Count>loaded,"Owned333 refreshed through ordinary80ae",TimeSpan.FromSeconds(5));
+        }
         var npc=(await caster.WaitForViewNamedAsync("WinterFrost"));
         var pv=await second.WaitForViewNamedAsync(primary.Handle);
         async Task Area(HeadlessPlayer actor,ushort view,bool expanded,string label)
