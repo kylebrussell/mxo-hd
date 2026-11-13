@@ -59,6 +59,13 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemoveMissionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
 
+    public Task<string> InstallPrisonMoveFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        "DELIMITER $$\nCREATE TRIGGER prison_move_rollback BEFORE UPDATE ON inventory FOR EACH ROW BEGIN IF NEW.charId="+character+
+        " AND NEW.slot=106 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Prison deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemovePrisonMoveFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER prison_move_rollback");
+
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 
     public async Task<long> LongAsync(string sql) => long.Parse(await ScalarAsync(sql), CultureInfo.InvariantCulture);
