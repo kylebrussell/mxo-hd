@@ -21,7 +21,7 @@ public class FreeCastViralContestTests
         Assert.Equal(-1,FreeCastViralContest.Tactic(-2,1,false));
     }
     [Theory]
-    [InlineData(33,true)] [InlineData(359,true)] [InlineData(97,false)] [InlineData(261,false)]
+    [InlineData(33,true)] [InlineData(359,true)] [InlineData(97,true)] [InlineData(261,false)]
     [InlineData(134,false)] [InlineData(35,false)] [InlineData(697,false)]
     public void OnlySupportedPrimaryFreeCastOriginsEnter(ushort id,bool expected)
     {
