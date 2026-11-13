@@ -33,8 +33,17 @@ Full4543 unit tests passed (62 seconds), with5 focused Merovingian contracts pas
 
 ## PR195 integration (headless review pending)
 
-Locally merged exact PR195 ff40c35c; production runtime and data match that parent byte for byte. This draft DEPENDS ON195 and is not native READY until its parent merges. The previous blanket headless placement hold is replaced by explicit root launch review; no driver has run yet. Native194 proved the default source computer pose physically visible/usable; this is not blanket accessibility proof for every authored mission site.
+Locally merged exact PR195 ff40c35c; production runtime and data match that parent byte for byte. This draft DEPENDS ON195 and is not native READY until its parent merges. The previous blanket headless placement hold is replaced by explicit root launch review; the granted driver has now passed as recorded below. Native194 proved the default source computer pose physically visible/usable; this is not blanket accessibility proof for every authored mission site.
 
 All three organization drivers share the identical optional evidenceLabel finalizer. It writes database-unique raw staging, all RPC/03 lists, actual DLL path/config/hash, current saved payload as exact HEX and selected completion receipts before context disposal. Proof capture failure cannot silently turn a successful case into PASS or replace an existing scenario failure.
 
-Current scoped contracts: 26 passed. Previous full-suite evidence remains valid for its documented source; no full repeat for pure upstream integration and fixture-only proof capture. Both actual configurations/plans/provenance are refreshed before root review. Fresh and native results remain pending.
+Current scoped contracts: 26 passed. Previous full-suite evidence remains valid for its documented source; no full repeat for pure upstream integration and fixture-only proof capture. Both actual configurations/plans/provenance are refreshed before root review. The headless result is recorded below; native verification remains pending.
+
+
+## Granted headless result on exact PR195 runtime
+
+merovingian-critical-opening PASS in 58.2 seconds, runner exit0, standard server disposal complete. Actual wire proof contains 3 completed-mission80a2 messages, 10 staged phases and 25 actual80a0 goal-done records (including automatic prerequisites/protection where applicable). Every selected completion receipt is exactly1; final active payload isNULL; protocol problems0. Selected receipts were earned by the normal protocol, never SQL-granted.
+
+Actual source: C:\Users\russe\Developer\mxo-wt\codex-merovingian-critical-opening\hds\bin\Debug\net8.0\hds.dll (Debug), SHA256 2E66A4DDA777F7F1E7790E082CE5068C5D6E40C5E15C35EBE0EC7FCC96B43384. Evidence saved in finally before teardown: C:\Users\russe\AppData\Local\Temp\mxo-merv-critical-mxotest_run_1_5002e8c093.json, SHA256 53cc5e8ecb1fa746df5762d7221006212cb6ade8498b6cab6f21f897f40ac63f; its sibling-debug.log retains raw staging. All RPC/03 lists, current payloadHEX and selected receipts are included (489 RPC records, 140 view lists). Permanent stdout/exit and combined accounting:Temp/mxo-m4-chapters-195. All three runs together earned11missions/22phases/61goal-done records with globalpeak2servers; this case usedparallel1.
+
+This is headless protocol/receipt evidence, not native rendering, walking, reachability or full-retail proof. DRAFT DEP3 ON195; native READY remains subject to parent merge and Claude's real-client review. No runtime/source changes or builds occurred while any driver was active.
