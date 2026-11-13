@@ -39,6 +39,20 @@ public static partial class Scenarios
                 step=entry.Label+"-ordinary217-load";SetAbilityLoaded(actor,14,217,1,true);var loadedAck=await actor.WaitForRpcAsync("80 b2 d9 00");if(ack==null)ack=loadedAck.Bytes.ToArray();else Check.That(ack.SequenceEqual(loadedAck.Bytes),"Literal ordinary217 acknowledgement equals master");
                 Check.Equal(1L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={seed.CharId} AND slot=14"),"Ordinary217 durable load");
                 evidence.Add(new{Label=entry.Label,Load217Ack=Convert.ToHexString(loadedAck.Bytes),AfterLoadRows=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={seed.CharId} ORDER BY slot")});
+                if(entry.Label=="PR")
+                {
+                    step="PR-current-operation628-refusal";
+                    int refusalStart=actor.World.RpcSnapshot().Count;actor.SkipReceived();
+                    SetAbilityLoaded(actor,15,628,1,true);await actor.WaitForTextAsync("exceed your memory capacity");
+                    Check.Equal(0,actor.World.RpcSnapshot().Skip(refusalStart).Count(r=>r.Bytes.Length>=4&&r.Bytes[0]==0x80&&r.Bytes[1]==0xb2&&r.Bytes[2]==0x74&&r.Bytes[3]==0x02),"Refused628 has no current-operation success acknowledgement");
+                    Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={seed.CharId} AND slot=15"),"Over-cap628 leaves durable flag off");
+                    evidence.Add(new{Label="PR-refused628",RpcStart=refusalStart,Rows=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={seed.CharId} ORDER BY slot")});
+                    step="PR-unload217-load628";SetAbilityLoaded(actor,14,217,1,false);await actor.WaitForRpcAsync("80 b3 d9 00");
+                    SetAbilityLoaded(actor,15,628,1,true);await actor.WaitForRpcAsync("80 b2 74 02");
+                    Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={seed.CharId} AND slot=14"),"Unloaded217 durable flag off");
+                    Check.Equal(1L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={seed.CharId} AND slot=15"),"Freed memory admits628 at16");
+                    evidence.Add(new{Label="PR-recovered628",Rows=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={seed.CharId} ORDER BY slot")});
+                }
                 Check.Equal(0,actor.World.Problems.Count,"Measured session protocol problems");Record(entry.Label);actor.Dispose();actor=null;
                 int pid=server.ProcessId;server.Dispose();bool gone;try{using var process=Process.GetProcessById(pid);gone=process.HasExited;}catch(ArgumentException){gone=true;}Check.That(gone,"Owned server exits before replacement");evidence.Add(new{Label=entry.Label,DisposedPid=pid,ExitedBeforeNext=gone});server=null;
             }
