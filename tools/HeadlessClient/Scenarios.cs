@@ -129,6 +129,7 @@ public static partial class Scenarios
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
+        new Scenario("hyperjump-resource-records", HyperjumpResourceRecords, StillNpcs),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),

@@ -69,10 +69,8 @@ namespace hds
 
         public void SendHyperJumpID(UInt32 possibleJumpID)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_HYPERJUMP_ID, 0);
-            pak.AddUint32(possibleJumpID, 1);
-            Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            // Historical method name: the native field is a client GetTickCount sample, not a jump nonce.
+            Store.currentClient.messageQueue.addRpcMessage(JumpRecords.EncodeClockEcho(possibleJumpID));
         }
 
         public void SendHyperJumpStepUpdate(LtVector3f currentPos, double xDestPos, double yDestPos, double zDestPos,
@@ -128,7 +126,7 @@ namespace hds
             Store.currentClient.playerInstance.JumpPeakHeight.setValue(peakHeight);
             Store.currentClient.playerInstance.JumpFlags.setValue(4);
             Store.currentClient.playerInstance.JumpEndTime.setValue(endTime);
-            Store.currentClient.playerInstance.InnerStrengthAvailable.setValue(284);
+            // Serialize the current authoritative value; jumping must not overwrite resources with a capture literal.
             Store.currentClient.playerInstance.JumpDestination.setValue(NumericalUtils.doublesToLtVector3d(xDestPos, yDestPos, zDestPos));
             
             updateAttributes.Add(Store.currentClient.playerInstance.JumpPeakHeight);
