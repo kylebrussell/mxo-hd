@@ -27,6 +27,7 @@ namespace hds
         private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
         private bool packetWorkerRunning;
         private readonly object flushLock = new object();
+        internal WorldSendFence TransportFence { get; } = new WorldSendFence();
         private long lastFlushTick;
         private volatile bool flushPending;
         public const int FlushIntervalMs = 50;
@@ -226,9 +227,14 @@ namespace hds
                     return;
                 }
                 flushingQueueInProgress = true;
+                flushPending = false; // consume only requests that preceded this flush
             }
 
-            long scaleFlushStart=ScaleDiagnostics.Start;
+            long scaleFlushStart=0;
+            try
+            {
+            scaleFlushStart=ScaleDiagnostics.Start;
+            long outgoingEpoch = TransportFence.Capture();
 
             // This resend the MessageQueue - should be called after parsing or after sending something out
             // or in a timed interval (keep alive for example)
@@ -239,6 +245,8 @@ namespace hds
 
             WorldPacket packet = new WorldPacket(playerData);
 
+            if (!TransportFence.TryRun(outgoingEpoch, () =>
+            {
             // Init encrypted Packet if we have MPM Messages
             if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0)
             {
@@ -343,6 +351,8 @@ namespace hds
             }
 
 
+            })) { flushPending = true; return; }
+
             // We have now PacketObjects - time to send them
             if (worldPackets.Count > 0)
             {
@@ -351,6 +361,8 @@ namespace hds
                 #endif 
                 foreach (WorldPacket thePacket in worldPackets)
                 {
+                    if (!TransportFence.TryRun(outgoingEpoch, () =>
+                    {
                     playerData.IncrementSseq();
 
                     byte[] finalData = thePacket.getFinalData(playerData);
@@ -381,13 +393,21 @@ namespace hds
                     Output.WritePacketLog(this, finalData, "SERVER",
                         playerData.getPss().ToString(), playerData.getCseq().ToString(),
                         playerData.getSseq().ToString(), ts.TotalMilliseconds.ToString(), "ENCRYPT");
+                    })) flushPending = true;
                 }
             }
 
-            ScaleDiagnostics.FlushCompleted(scaleFlushStart);
-            flushingQueueInProgress = false;
-            lastFlushTick = Environment.TickCount64;
-            flushPending = false;
+            }
+            finally
+            {
+                lock (flushLock)
+                {
+                    flushingQueueInProgress = false;
+                    lastFlushTick = Environment.TickCount64;
+                    // Preserve requests raised during this flush, including reset/setup retries.
+                }
+                ScaleDiagnostics.FlushCompleted(scaleFlushStart);
+            }
         }
 
         private void SendRawMessages()
@@ -488,6 +508,9 @@ namespace hds
             }
 
 
+            // Fence reset before publishing its new envelope headers, not later in Parse.
+            TransportFence.PublishIncoming((processedPacket[0] & 0x40) != 0, () =>
+            {
             //clData.setPss((UInt16) decValues[1]);
             playerData.setPss((UInt16) decValues[1]);
             playerData.setCseq((UInt16) decValues[2]);
@@ -499,6 +522,7 @@ namespace hds
             }
 
             this.DeletedAckedPackets((UInt16) decValues[3]); // REMOVING FROM ACK QUEUE
+            });
             return processedPacket;
         }
 
