@@ -280,33 +280,7 @@ namespace hds
         /// </summary>
         public void ProcessRaiseAttributes(ref byte[] rpcData)
         {
-            WorldClient client = Store.currentClient;
-            UInt32 charId = client.playerData.getCharID();
-
-            foreach (CharacterAttributes.Raise raise in CharacterAttributes.ParseRaises(rpcData))
-            {
-                if (Array.IndexOf(CharacterAttributes.All, raise.Attribute) < 0)
-                {
-                    Output.WriteDebugLog("[ATTRIBUTE] Ignored unknown attribute " + raise.Attribute);
-                    continue;
-                }
-
-                Dictionary<byte, UInt16> stored = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
-                int level = client.playerInstance.Level.getValue()[0];
-                if (!CharacterAttributes.CanRaise(stored, raise.Attribute, raise.Points, level))
-                {
-                    Output.WriteDebugLog("[ATTRIBUTE] Raise of " + raise.Attribute + " by " + raise.Points + " refused at level " + level);
-                    client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaiseRefused());
-                    continue;
-                }
-
-                UInt16 raised = (UInt16)(CharacterAttributes.ValueOf(stored, raise.Attribute) + raise.Points);
-                Store.dbManager.WorldDbHandler.SetCharacterAttribute(charId, raise.Attribute, raised);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaised(raise.Attribute,
-                    CharacterAttributes.NewLevelOf(raise.Attribute, raised)));
-                Output.WriteDebugLog("[ATTRIBUTE] " + raise.Attribute + " raised to " + raised);
-            }
-            client.FlushQueue();
+            AttributeAllocation.Handle(Store.currentClient,rpcData);
         }
 
         public void ProcessSetBackgroundRequest(ref byte[] packetData)
