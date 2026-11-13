@@ -12,11 +12,16 @@ public static partial class Scenarios
         try
         {
         await p.EnterWorldAsync();
-        // WaitForRpcAsync advances a cursor: startup32 precedes75, and the grant precedes both.
+        // WaitForRpcAsync advances a cursor: startup32 precedes75.
         // Snapshot predicates preserve the exact contracts without depending on receipt/wait order.
         await p.WaitUntilAsync(()=>p.Received(PassiveRecord(32,1147,10)).Count>0 &&
-            p.Received(PassiveRecord(75,1055,25)).Count>0 && p.Received("80 b2 3f 04").Count>0,
-            "Exact startup32/75 records and normal356 grant1087",TimeSpan.FromSeconds(10));
+            p.Received(PassiveRecord(75,1055,25)).Count>0,
+            "Exact startup32/75 records",TimeSpan.FromSeconds(10));
+        // Initial setup ran during Login before these fixture archive rows were inserted.
+        // Ordinary owned356 load emits its parent base and normal hidden grant, without injecting1087.
+        SetAbilityLoaded(p,402,356,50,true);
+        await p.WaitForRpcAsync("80 b2 64 01 32 00 92 01");
+        await p.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
         SetAbilityLoaded(p,401,75,50,false);await p.WaitForRpcAsync(PassiveRecord(75,1055,25,true));
         SetAbilityLoaded(p,401,75,50,true);await p.WaitForRpcAsync("80 b2 4b 00 32 00 91 01");
         Cast(p,1087);await p.WaitForRpcAsync(ModPattern(1087,177));
@@ -26,6 +31,7 @@ public static partial class Scenarios
         var bases=wire.Where(r=>r.Bytes[1]==0xb2).Select(r=>BaseAttributeRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
         var mods=wire.Where(r=>r.Bytes[1]==0xbc).Select(r=>ManageBonusRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
         Check.That(bases.All(r=>r!=null)&&mods.All(r=>r!=null),"Every received producer RPC has its exact supported width");
+        Check.That(bases.Any(r=>r!.Id==1087&&r.Value==0&&r.CsSlot==520),"Ordinary parent load supplies hidden grant base record");
         Check.That(bases.Any(r=>r!.Id==75&&r.Value==50&&r.CsSlot==401),"Base value and archive slot independently decoded");
         Check.That(mods.Any(r=>r!.SourceId==75&&r.TargetId==1055&&r.SignedValue==25&&r.IndividualOperation==IndividualBonusOperation.Add),"Raw passive75 owns1055, not177");
         var how=mods.Single(r=>r!.SourceId==1087&&r.TargetId==177&&r.AddRemoveType==0)!;
