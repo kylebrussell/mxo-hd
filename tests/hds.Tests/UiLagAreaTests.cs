@@ -137,9 +137,9 @@ public class UiLagAreaTests : IDisposable
         Assert.False(Affected(t));Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(t.messageQueue.RPCMessagesQueue);
     }
     [Theory] [InlineData(38)] [InlineData(47)] [InlineData(694)] [InlineData(1025)] [InlineData(1109)]
-    public void NoOtherSelectorFourFamilyIsEnabled(ushort id)
+    public void UiLagWrapperRejectsEveryOtherSelectorFourFamily(ushort id)
     {
         var c=Actor();var t=Target(c,111,100);UiLagArea.Land(c,Ability(id));
-        Assert.False(Affected(t));Assert.False(FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast) && id!=97);
+        Assert.False(Affected(t));Assert.Equal(id==38,FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));
     }
 }
