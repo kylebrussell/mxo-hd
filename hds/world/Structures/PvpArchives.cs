@@ -211,9 +211,24 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
             return new[] {x,y,z};
         }
+        internal static bool CommitViews(WorldClient c, long epoch, uint map, int world, Action update)
+        {
+            bool applied = false;
+            c.TransportFence.TryRun(epoch, () =>
+            {
+                if (!c.playerData.getOnWorld() || c.playerData.waitForRPCShutDown || c.playerData.worldChangePending ||
+                    c.playerData.getDistrictId() != map || c.playerData.worldGeneration != world) return;
+                update();
+                applied = true;
+            });
+            return applied;
+        }
+
         public static void Check(WorldClient c, double now)
         {
             if (!c.playerData.getOnWorld() || c.playerData.waitForRPCShutDown) return;
+            long viewEpoch = c.TransportFence.Capture();
+            int viewWorld = c.playerData.worldGeneration;
             Session s = sessions.GetOrCreateValue(c);
             lock (s)
             {
@@ -223,6 +238,8 @@ namespace hds
                 void View(ulong entity, ushort goid, double x, double y, double z, StaticWorldObject spot, uint state)
                 {
                     if (Math.Abs(at[1]-y) > 3000 || Math.Pow(at[0]-x,2)+Math.Pow(at[2]-z,2) > 5000*5000) return;
+                    CommitViews(c, viewEpoch, map, viewWorld, () =>
+                    {
                     wanted.Add(entity);
                     ClientView v = c.viewMan.FindViewForEntity(entity);
                     if (v == null || !v.viewCreated)
@@ -243,6 +260,7 @@ namespace hds
                         if (state != 0) ObjectStates.Track(c, entity, goid, state);
                     }
                     else if (state != 0 && ObjectStates.TrackedState(c, entity) != state) ObjectStates.SetState(c, entity, state);
+                    });
                 }
                 if (map == 1)
                     foreach (var spot in senders.Value)
@@ -266,12 +284,15 @@ namespace hds
                 if (map == 7)
                     foreach (var spot in DataMineReturners.Bindings)
                         View(DataMineReturners.Entity(spot),DataMineReturners.GoId,spot.pos_x,spot.pos_y,spot.pos_z,spot,0);
+                CommitViews(c, viewEpoch, map, viewWorld, () =>
+                {
                 foreach (ulong entity in s.Views.Keys.Where(e => !wanted.Contains(e)).ToArray())
                 {
                     var v = c.viewMan.FindViewForEntity(entity);
                     if (v != null) { new ServerPackets().sendDeleteViewPacket(c,v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); }
                     s.Views.Remove(entity);
                 }
+                });
                 c.FlushQueue();
             }
         }

@@ -69,11 +69,18 @@ namespace hds{
 	            #if DEBUG
                 Output.WriteDebugLog("[CLIENT]CLIENTFLAGS_RESETDONE found - we can init new RCC Comm ");
 				#endif
+                var resetClient = Store.currentClient;
+                long resetEpoch = resetClient.TransportFence.Capture();
+                try
+                {
+                // No transport gate around life/control cleanup: those paths can flush other clients.
+                resetClient.playerData.setOnWorld(false);
+                if (!resetClient.TransportFence.ApplyReset(resetEpoch, () =>
+                {
                 // Reset comm
                 Store.currentClient.playerData.setCseq(0);
                 Store.currentClient.playerData.setSseq(0);
                 Store.currentClient.playerData.setPss(0x00);
-                Store.currentClient.playerData.setOnWorld(false);
                 Store.currentClient.playerData.worldChangePending = false;
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
@@ -81,11 +88,12 @@ namespace hds{
                 Store.currentClient.messageQueue.ForgetSentRpcs();
                 Store.currentClient.messageQueue.ForgetWorldObjects();
                 man04.ResetReceiveWindow();
+                Store.currentClient.viewMan.Clear();
+                })) return;
                 // The client dropped all its views with the old world, and any fight with them.
                 CombatManager.GetHandler(Store.currentClient).AbandonCombat();
                 TradeHandler.Abort(Store.currentClient);
                 SubwayHandler.Forget(Store.currentClient);
-                Store.currentClient.viewMan.Clear();
                 lock (Store.currentClient.playerData.openDoors)
                 {
                     Store.currentClient.playerData.openDoors.Clear(); // their views went with the old world
@@ -93,6 +101,8 @@ namespace hds{
                 PlayerHandler handler = new PlayerHandler();
                 handler.processAttributes();
                 handler.processPlayerSetup();
+                }
+                finally { resetClient.TransportFence.Resume(resetEpoch); }
             }
 
 
