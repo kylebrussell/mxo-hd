@@ -3,13 +3,14 @@ import sys,struct,csv,collections,importlib.util,json,math,hashlib,argparse
 from pathlib import Path
 parser=argparse.ArgumentParser(description='Bounded read-only construct static decoder; strict default rejects unsupported placement rotations.')
 parser.add_argument('tools')
-parser.add_argument('--world',type=int,choices=(4,6,9,10,12,13,14,15,16,17),default=17)
+parser.add_argument('--world',type=int,choices=(4,5,6,9,10,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
+parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed world16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
 if args.native_prefab_rotations and (args.world!=16 or args.omit_unproven_rotations):
  parser.error('--native-prefab-rotations is reviewed for world16 only and cannot be combined with historical omission mode')
-world_name={4:'archive01',6:'archive_ashencourte',9:'archive_sati',10:'widowsmoor',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
+world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',9:'archive_sati',10:'widowsmoor',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
 sys.path.insert(0,args.tools)
@@ -47,8 +48,9 @@ def gos(d):
  return [struct.unpack_from('<II3f4f6f3IH',d,p+i*74) for i in range(n)]
 def decode(s):
  out=[];name=s['file'].lower();x0=float(s['min_x']);z0=float(s['min_z'])
- d=read(byname[name+'.sid']);b=buffers(d)
- for g in gos(b[3]):out.append((g[1],g[0],(x0+g[2],g[3]+145,z0+g[4]),g[5:9],0,'ext'))
+ if name+'.sid' in byname:
+  d=read(byname[name+'.sid']);b=buffers(d)
+  for g in gos(b[3]):out.append((g[1],g[0],(x0+g[2],g[3]+145,z0+g[4]),g[5:9],0,'ext'))
  if name+'.sidgo' in byname:
   d=read(byname[name+'.sidgo']);assert d[:4]==b'SIDG';r=M.Reader(d,16);M.read_schema(r)
   for g in gos(d[r.p-4:]):out.append((g[1],g[0],(x0+g[2],g[3]+145,z0+g[4]),g[5:9],0,'designer'))
@@ -74,14 +76,34 @@ def decode(s):
     placement_sources.append(dict(sector=int(s['sector']),source=byname[name+'.sidi'],rid=rid,pivot=list(box[:3]),rotation=rot,parent='direct-sector',prefab=rec.get('path',''),resourcePack=rec['pack'],resourceOffset=rec['off'],resourceSize=rec['size'],resourceSha256=digest))
  return out
 
+selected=[r for r in rows if r['metr_id']==str(args.world)]
+missing_sid=[r for r in selected if r['file'].lower()+'.sid' not in byname]
+assert not missing_sid or args.omit_missing_sid_sectors, 'Required SID resource missing; strict default refuses export. Explicit whole-sector omission is required.'
+missing_sectors={int(r['sector']) for r in missing_sid}
+missing_evidence=[]
+if missing_sid:
+ assert args.world==5 and missing_sectors=={108}, 'Unreviewed missing SID sector'
+ metr_rel=next(path for world,_,path in M.WORLDS if world==args.world)
+ metr_path=Path(R.D)/metr_rel
+ references={r['sector']:r for r in M.read_metr(str(metr_path),include_resource_refs=True)}
+ for row in selected:
+  native=references[int(row['sector'])]
+  for label,ext in [('SID','.sid'),('SIDI','.sidi'),('SIDG','.sidgo'),('NAV','.nav')]:
+   path=native['path'].replace(chr(92),'/')+ext
+   rid=native['resource_refs'][label]
+   if label=='SID' and int(row['sector']) in missing_sectors:
+    assert rid==0x0c00b400 and rid not in idx and path not in bp and not (Path(R.D)/path).exists()
+    missing_evidence.append(dict(sector=int(row['sector']),path=path,declaredResourceId=rid,packedRidPresent=False,packedPathPresent=False,loosePathPresent=False))
+   else:
+    assert path in bp and bp[path]['rid']==rid,(row['sector'],label,path,rid)
 raw=[]
-for row in rows:
- if row['metr_id']==str(args.world): raw.extend((int(row['sector']),*o) for o in decode(row))
+for row in selected: raw.extend((int(row['sector']),*o) for o in decode(row))
 groups=collections.defaultdict(list)
 for o in raw:groups[o[:2]].append(o)
 conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in v})>1}
 unproven={k:v for k,v in groups.items() if any(z[-2]!=0 for z in v)}
-excluded=set(conflicts) if args.native_prefab_rotations else set(conflicts)|set(unproven)
+incomplete={k:v for k,v in groups.items() if k[0] in missing_sectors}
+excluded=(set(conflicts) if args.native_prefab_rotations else set(conflicts)|set(unproven))|set(incomplete)
 objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
 if args.native_prefab_rotations:objects=[native_poses.get(o,o) for o in objects]
 if args.world==10:
@@ -104,6 +126,9 @@ elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
+elif args.world==5:
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
+ assert len(sources)==326
 else:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1061,1023,584,26,426)
 with open(args.output,'w',newline='') as f:
@@ -132,6 +157,12 @@ if args.world==13:
  audit.update(missingNavigationResources=missing,
   navigationBoundary='225 available sectors; sector47 declares EnableNavigationMesh1 but has no packed nav resource. Unavailable, not proven NoNav; no fabricated polygon.',
   capturedPopulationBoundary='No ambient map13 captured rows. One Special Agent in Encounter.csv remains encounter-scoped, not made ambient.')
+if missing_evidence:
+ audit.update(rawReferencesAreComplete=False,unquantifiedMissingStaticData=True,missingStaticLayers=missing_evidence,
+  knownIncompleteSectorKeys=[list(k) for k in sorted(incomplete)],metrSha256=hashlib.sha256(metr_path.read_bytes()).hexdigest(),
+  resourceIndexSha256=hashlib.sha256((Path(R.D)/'rezmap.ltb').read_bytes()).hexdigest(),
+  omissionPolicy='Every known variant in missing-SID sector108 is omitted; its unseen exterior contents are unquantified. Raw references cover available layers only, not a complete world.',
+  capturedPopulationBoundary='No ambient Archive02 captures; two Encounter rows are outside its footprint and remain encounter-scoped.')
 if args.world==15:
  audit.update(capturedPopulationValidated=False,
   capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
