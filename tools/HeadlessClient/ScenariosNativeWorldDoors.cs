@@ -5,6 +5,7 @@ public static partial class Scenarios
 {
     private static Task SatiPrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.SatiPrefab);
+    private static Task DataMinePrefabDoorDiagnostic(ScenarioContext context) => NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.DataMinePrefab);
     private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>

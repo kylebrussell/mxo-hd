@@ -16,6 +16,9 @@ public static class NativeWorldDoorFixtures
     public static readonly NativeWorldDoorFixture Medium03Prefab =
         new("medium03-prefab-door", "medium03", 16, 580, 33, 1380, 25300, 2495, 43100, 25300, 2545, 43200)
         { ExpectedQuaternion = "00000000f30435b300000000ffff7f3f" };
+    public static readonly NativeWorldDoorFixture DataMinePrefab =
+        new("datamine-prefab-door", "datamine", 7, 355, 18, 21, -11000, 3695, -3000, -10900, 3745, -3000, "archive_datamine/datamine.metr")
+        { ExpectedQuaternion = "00000000f304353f00000000f304353f", EvidenceDocument = "WORLD-DATAMINE-PREFAB-ROTATIONS.md" };
     public static readonly NativeWorldDoorFixture Large01 =
         new("large01-door", "large01", 12, 365, 136, 1, 12900, 95, 15500, 12900, 145, 15600);
     public static readonly NativeWorldDoorFixture Large02 =
