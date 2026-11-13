@@ -82,6 +82,8 @@ public static partial class Scenarios
         new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),
         new Scenario("typed-attack-npc", TypedAttackNpc, StillNpcs),
         new Scenario("typed-attack-pvp", TypedAttackPvp, StillNpcs),
+        new Scenario("freecast-viral-hit", c=>FreeCastViralWire(c,true), FreeCastViralEnvironment(true)),
+        new Scenario("freecast-viral-deflect", c=>FreeCastViralWire(c,false), FreeCastViralEnvironment(false)),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),

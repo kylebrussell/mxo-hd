@@ -666,6 +666,16 @@ namespace hds
             
         }
 
+        // A deflection effect is not a damage/aggro event. Reuse the established view attributes and counter under its lock.
+        internal byte[] BuildAbilityEffect(uint effect)
+        {
+            lock(hitSync)
+            {
+                if(is_dead || healthC==0)return null;
+                return BuildHitUpdate(healthC,effect,(byte)++hitCounter);
+            }
+        }
+
         public void HitEnemyWithDamage(ushort hitValue, uint hitFxId)
         {
             lock (hitSync)
