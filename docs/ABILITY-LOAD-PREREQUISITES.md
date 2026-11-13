@@ -1,6 +1,6 @@
-# Ability load prerequisites: source contract and dormant helper
+# Ability load prerequisites: source contract and admission
 
-This dependent draft adds sourced prerequisite metadata and bounded server admission through PR206's exact existing planner/transaction. It includes exact PR206 source `b368ee291877c6c4e3a285a80fa1181b9b489a9f` as an explicit dependency; it is not claimed to be on actual master or ready for native/merge while that dependency is unmerged. No second transaction, parser change, implicit parent load or hidden grant ownership is introduced.
+This change adds sourced prerequisite metadata and bounded server admission through PR206's existing planner and transaction. Claude natively passed exact PR206 source `b368ee291877c6c4e3a285a80fa1181b9b489a9f` and merged it as actual master `3d240f9621cdca195c1b4bef5b499b5b47321fcd` on 2026-11-13. That dependency is satisfied and has been merged into this branch. No second transaction, parser change, implicit parent load or hidden grant ownership is introduced.
 
 ## Primary evidence
 
@@ -57,7 +57,7 @@ Discovered mode **ability-load-prerequisites** seeds consistent Level1/EXP0, tra
 2. Double-click archived Hindering Shot130. The native client should include its owned Combat Insight113 parent in the same ordinary load operation; verify both loaded and memory4/16. Retain the actual80ae rows and server acknowledgements.
 3. Unload/reload through the normal UI, then load Evade Combat217 and Concentration628. Full relog must preserve the admitted flags.
 
-No random result, helper client or developer bypass is required. Invalid child-only RPCs and character-gate failures are headless authority cases: native UI should prevent sending them. Native rendering/tree grouping, automatic parent request and persistence remain Claude-only pending. This draft is not READY until source review, complete validation, granted fresh proof and dependency merge.
+No random result, helper client or developer bypass is required. Invalid child-only RPCs and character-gate failures are headless authority cases: native UI should prevent sending them. Native rendering/tree grouping, automatic parent request and persistence remain Claude-only pending. Source review, full validation and the granted fresh proof are recorded below. Native UI validation remains pending; root marks readiness after current CI passes.
 
 ## Retained local and fresh validation
 
@@ -69,4 +69,4 @@ Invalid child-only, undertrained-current-parent, code-family-parent and locked-E
 
 Unique pre-teardown proof `Temp/mxo-load-prerequisites-mxotest_run_1_eacb3cb7aa.json`, SHA256 `b70dac9c7ee4066209b356fa36ab92ebf4795d75fcfa1dc009a2b8c4bc72ae36`, records Passed true, Step complete, Failure null, all sent request windows, raw received RPC/03, debug/stdout, rows, source path/config/hash and observations. `Temp/mxo-prerequisite-74ed-verified-evidence.json` retains the independent rollback-window extraction. Historical206 proofs remain historical; this does not claim a rerun of its old managed Howitzer lifecycle (merged207 has its own evidence).
 
-The PR remains a dependent **DRAFT against master**, with exact unmerged206 pin `b368ee291877c6c4e3a285a80fa1181b9b489a9f` transparently included. No native UI/automatic-parent request or retail server atomicity claim follows from headless success. Dependency merge, fresh CI and Claude-only native validation remain required.
+The dependency was natively verified and actually merged. Merge `c0f628e7` records actual master `3d240f96`; the entire resulting source tree is identical to pre-merge `99921e85`, because that draft already included the exact dependency source. The four add/add or registry conflicts were resolved to the existing prerequisite-enabled versions only after verifying that the complete upstream tree equals dependency `b368ee29`. No runtime, profile, driver or fixture changed, so the retained 67.5-second fresh proof remains applicable to the unchanged source. Root also ran 23 combined prerequisite, memory and grant-registration tests successfully after the ancestry merge. Current CI must pass before readiness; no additional fresh or native UI run is claimed. Native automatic-parent requests, grouping and persistence remain Claude-only checks.
