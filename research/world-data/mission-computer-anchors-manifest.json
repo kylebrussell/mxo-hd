@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "scope": "Dormant Slums1415 to freeGO3; no runtime wiring",
+  "legacyKeys": 47434,
+  "acceptedKeys": 47365,
+  "conflictingKeys": 0,
+  "unsupportedKeys": 0,
+  "missingLayerExcludedKeys": 69,
+  "unavailableLayers": [
+    {
+      "sector": 556,
+      "layer": ".sidi",
+      "declaredRid": 939577344,
+      "reason": "unavailable declared static layer"
+    },
+    {
+      "sector": 1139,
+      "layer": ".sidgo",
+      "declaredRid": 3489661952,
+      "reason": "unavailable declared static layer"
+    }
+  ],
+  "parentSha256": "50d2f1828507da6022fbe38a90d857975e5e68e9339854dd18ca85941e9dd23d",
+  "sourceCount": 4477,
+  "sourceInventorySha256": "a445018dcc1de76d914e955845583ba3bce9399dc27441a6471cc38f37e170c5",
+  "referencedResourceCount": 532,
+  "resourceInventorySha256": "ab45ffd9e0197576e393bc54216499d20fd0bac81cb2a807dbf1eb72938fde7a",
+  "csvSha256": "e3de3515122f560b54d79c0442fa14b302e1610cddabae2c1a2bc0b7ed799039",
+  "sourceConvention": "Native direct-sector IPI quarterturn/pivot*10, full Hamilton quaternion and float32 stores; NO server+145 in output pose; legacy pose retained solely as provenance guard."
+}
