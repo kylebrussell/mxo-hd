@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace hds
 {
-    /// <summary>Dormant audited Slums1415→freeGO3 lookup. No production caller loads or applies this data.</summary>
+    /// <summary>Audited Slums1415→freeGO3 poses; saved source spots remain immutable.</summary>
     public sealed class MissionComputerAnchors
     {
         public const string Header = "metr,sector,static_id,native_id,source_goid,native_x,native_y,native_z,native_quat,legacy_x,legacy_y,legacy_z,legacy_quat,source_rid,placement,record_offset";
@@ -16,8 +16,10 @@ namespace hds
             public double Y { get; }
             public double Z { get; }
             private readonly byte[] orientation;
-            public byte[] Orientation => (byte[])orientation.Clone();
+            private readonly string unchangedQuaternion;
+            public byte[] Orientation => orientation==null ? StringUtils.hexStringToBytes(unchangedQuaternion) : (byte[])orientation.Clone();
             internal Pose(double x, double y, double z, byte[] q) { X=x;Y=y;Z=z;orientation=(byte[])q.Clone(); }
+            internal Pose(double x, double y, double z, string q) { X=x;Y=y;Z=z;unchangedQuaternion=q; }
         }
         private sealed class Anchor
         {
@@ -27,6 +29,24 @@ namespace hds
         }
         private readonly Dictionary<ulong,Anchor> anchors = new Dictionary<ulong,Anchor>();
         public int Count => anchors.Count;
+        private static readonly Lazy<MissionComputerAnchors> current = new Lazy<MissionComputerAnchors>(LoadDefault);
+        private static MissionComputerAnchors LoadDefault()
+        {
+            string path=DataLoader.DataPath("mission_computer_anchors.csv");
+            try { using(var reader=File.OpenText(path))return Read(reader); }
+            catch(Exception e) when(e is IOException || e is InvalidDataException || e is FormatException || e is OverflowException)
+            {
+                Output.WriteLine("[MISSION] Computer anchors unavailable; source poses retained: "+e.Message);
+                return new MissionComputerAnchors();
+            }
+        }
+        /// <summary>The same effective point/orientation for rendering, interaction and object-relative goals; never changes the saved spot.</summary>
+        public static Pose For(MissionObjectState state)
+        {
+            if(state==null||state.spot==null)throw new ArgumentNullException(nameof(state));
+            if(current.Value.TryResolve(state.spot,state.goid,out Pose pose))return pose;
+            return new Pose(state.spot.pos_x,state.spot.pos_y,state.spot.pos_z,state.spot.quat);
+        }
         private static ulong Key(ushort sector,uint id) => ((ulong)sector<<32)|id;
         private static double Number(string value)
         {

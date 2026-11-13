@@ -57,4 +57,35 @@ public class MissionComputerAnchorsTests
         Assert.Equal(manifest.RootElement.GetProperty("csvSha256").GetString(),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant());
         var rows=File.ReadLines(path).Skip(1).Select(r=>r.Split(',')).ToArray();Assert.DoesNotContain(rows,r=>r[1]=="1139"||r[1]=="556");
     }
+
+    [Theory][InlineData(null)][InlineData("not-a-quaternion")]
+    public void PositionOnlyFallbackDoesNotParseCustomQuaternion(string? quaternion)
+    {
+        var state=new MissionObjectState { goid=3,spot=new StaticWorldObject {pos_x=100,pos_y=200,pos_z=300,type=new byte[4],quat=quaternion!} };
+        var pose=MissionComputerAnchors.For(state);Assert.Equal((100d,200d,300d),(pose.X,pose.Y,pose.Z));
+        var progress=new MissionProgress(new Mission());progress.objects[1]=state;
+        var point=MissionRuntime.ArrivalSpot(null!,progress,new MissionArrival{at="object:1"},0,0,0,0);
+        Assert.Equal(200,point[1]);Assert.Equal(100+300*Math.Cos(.6),point[0]);
+        var near=typeof(MissionRuntime).GetMethods(System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static).Single(m=>m.Name=="Near"&&m.GetParameters().Length==7&&m.GetParameters()[2].ParameterType==typeof(string));
+        Assert.True((bool)near.Invoke(null,new object?[]{null,progress,"object:1",1d,100d,200d,300d})!);
+    }
+    [Fact] public void DefaultConsumersUseRecoveredPoseAndPreserveSiteFloorAndCheckpoint()
+    {
+        var spot=Spot();var state=new MissionObjectState{goid=3,spot=spot};var progress=new MissionProgress(new Mission()){site=new MissionSite{floorY=4345}};progress.objects[1]=state;
+        var pose=MissionComputerAnchors.For(state);Assert.Equal((91865d,4300d,12660d),(pose.X,pose.Y,pose.Z));
+        var arrival=MissionRuntime.ArrivalSpot(null!,progress,new MissionArrival{at="object:1"},0,0,0,0);
+        Assert.Equal(91865+300*Math.Cos(.6),arrival[0]);Assert.Equal(4295,arrival[1]);Assert.Equal(12660+300*Math.Sin(.6),arrival[2]);
+        Assert.Equal((92740d,4445d,13535d),(spot.pos_x,spot.pos_y,spot.pos_z));
+        var near=typeof(MissionRuntime).GetMethods(System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static).Single(m=>m.Name=="Near"&&m.GetParameters().Length==7&&m.GetParameters()[2].ParameterType==typeof(string));
+        Assert.True((bool)near.Invoke(null,new object?[]{null,progress,"object:1",100d,91865d,4295d,12740d})!);
+        Assert.False((bool)near.Invoke(null,new object?[]{null,progress,"object:1",100d,92740d,4295d,13535d})!);
+    }
+    [Fact] public void NativeModeUsesDefaultResolverWithoutProbeOrRewardBypass()
+    {
+        var mode=NativeQa.NativeQaModes.Find("mission-computer-anchors");Assert.False(mode.Plan.GmCharacter110);Assert.False(mode.Plan.FixedCallbackRolls);
+        Assert.Equal(HeadlessClient.NeighbourhoodMissionFixture.Abilities,mode.Plan.Abilities);
+        var env=NativeQa.NativeQaFixturePlan.EnvironmentFor(mode.Name);Assert.Equal("3072",env["MXO_MISSION_SITE_QA_SEED"]);
+        Assert.DoesNotContain(env,p=>p.Key.Contains("POSE",StringComparison.OrdinalIgnoreCase)&&!string.IsNullOrEmpty(p.Value));
+        Assert.NotNull(HeadlessClient.Scenarios.All.Single(s=>s.Name==mode.Name));
+    }
 }

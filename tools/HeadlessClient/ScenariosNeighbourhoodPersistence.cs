@@ -6,7 +6,9 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task NeighbourhoodRetrievalPersistence(ScenarioContext context)
+    private static Task NeighbourhoodRetrievalPersistence(ScenarioContext context) => RunNeighbourhoodRetrieval(context,false);
+    private static Task MissionComputerAnchorsPersistence(ScenarioContext context) => RunNeighbourhoodRetrieval(context,true);
+    private static async Task RunNeighbourhoodRetrieval(ScenarioContext context,bool sourceAnchors)
     {
         var original=await context.AddPlayerAsync(new CharacterSeed("NeighbourhoodRun")
         {
@@ -19,7 +21,7 @@ public static partial class Scenarios
         string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={original.CharId}");
         HeadlessPlayer p=original;ServerInstance server=context.Server;
         var extraServers=new List<ServerInstance>();var sessions=new List<object>();var processes=new List<object>();
-        var completions=new List<object>();var lifetimes=new List<object>();var fields=new JsonSerializerOptions{IncludeFields=true};bool passed=false;
+        var completions=new List<object>();var lifetimes=new List<object>();var fields=new JsonSerializerOptions{IncludeFields=true};bool passed=false;bool sourceAreaEntered=false;object? oldCheckpointProof=null;
         void Record()
         {
             sessions.Add(new{p.Handle,p.CharId,Problems=p.World.Problems.ToArray(),Rpcs=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray()});
@@ -66,7 +68,18 @@ public static partial class Scenarios
         }
         async Task<ViewCreation> Search(int creationStart)
         {
-            await EnterMissionArea(server,p);var computer=await ZionObject(server,p,1,creationStart);
+            if(!sourceAnchors || !sourceAreaEntered)await EnterMissionArea(server,p);
+            sourceAreaEntered=true;
+            ViewCreation computer;
+            if(sourceAnchors)
+            {
+                // Proven same-floor approach. This test movement is not a native walking/LOS claim.
+                await MoveForMissionTest(p,91865,4295,12740);
+                await p.WaitUntilAsync(()=>p.ViewsOfGoid(3).Any(v=>v.Attributes.TryGetValue("Position",out var pos)&&BitConverter.ToDouble(pos)==91865&&BitConverter.ToDouble(pos,8)==4300&&BitConverter.ToDouble(pos,16)==12660),"Resolved source computer view",TimeSpan.FromSeconds(10));
+                computer=p.ViewsOfGoid(3).Last(v=>v.Attributes.TryGetValue("Position",out var pos)&&BitConverter.ToDouble(pos)==91865&&BitConverter.ToDouble(pos,16)==12660);
+                Check.Equal("00000000F304353300000000FFFF7F3F",Convert.ToHexString(computer.Attributes["Orientation"]),"Full recovered source quaternion bytes");
+            }
+            else computer=await ZionObject(server,p,1,creationStart);
             byte use=ObjectStates.UseNumber(computer.Goid,"Take")??throw new ScenarioFailure("No native Take action on the actual mission computer");
             uint State()
             {
@@ -96,6 +109,7 @@ public static partial class Scenarios
         }
         async Task<string> Finish(int run)
         {
+            sourceAreaEntered=false;
             await LeaveMissionArea(p);var end=await p.WaitForRpcAsync("80 a2 00",TimeSpan.FromSeconds(12));
             Check.Equal(6300u,BitConverter.ToUInt32(end.Bytes,11),"Existing level10 info policy");Check.Equal(4040u,BitConverter.ToUInt32(end.Bytes,15),"Existing level10 XP floor");
             Check.Equal(1282500L+run*4040,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Exactly one XP pair per run");
@@ -126,16 +140,27 @@ public static partial class Scenarios
         }
         try
         {
-            int cursor=p.World.CreationSnapshot().Count;await OfferAndAccept();var first=await MissionCheckpoint(context,p);var computer=await Search(cursor);var carried=await MissionCheckpoint(context,p);
+            int cursor=p.World.CreationSnapshot().Count;await OfferAndAccept();var first=await MissionCheckpoint(context,p);
+            if(sourceAnchors)
+            {
+                await EnterMissionArea(server,p);sourceAreaEntered=true;
+                var old=await MissionCheckpoint(context,p);var source=old.Objects.Single(o=>o.Id==1).Spot;
+                Check.Equal((92740d,4445d,13535d),(source.pos_x,source.pos_y,source.pos_z),"Old raw legacy spot remains checkpoint authority");
+                string before=JsonSerializer.Serialize(old.Objects,fields);await Restart(true);
+                var reloaded=await MissionCheckpoint(context,p);Check.Equal(before,JsonSerializer.Serialize(reloaded.Objects,fields),"Cold restore never rewrites source spot");
+                Check.Equal(old.Identity,reloaded.Identity,"Old checkpoint restored before Search");
+                oldCheckpointProof=new{old.Identity,SourceSpot=source,Before=before,After=JsonSerializer.Serialize(reloaded.Objects,fields)};
+            }
+            var computer=await Search(cursor);var carried=await MissionCheckpoint(context,p);
             await Restart(true);var restored=await MissionCheckpoint(context,p);
             Check.Equal(carried.Identity,restored.Identity,"Same acceptance after cold process restart");Check.Equal(carried.Instance,restored.Instance,"Same mission key");
             Check.Equal(JsonSerializer.Serialize(carried.Objects,fields),JsonSerializer.Serialize(restored.Objects,fields),"Exact object placement/state preserved");
             Check.Equal(JsonSerializer.Serialize(carried.Mobs),JsonSerializer.Serialize(restored.Mobs),"Exact placed NPC identity/health/loot preserved");
             Check.Equal(carried.Items[6831],restored.Items[6831],"Same owned item slot");Check.That(restored.Done.Contains(1),"Search remains done");
             Check.That(!server.DebugLog().Contains(" listed "),"Cold restore resolved before any contact list could populate its private cache");
-            string receipt1=await Finish(1);Replay(receipt1,false);
-            cursor=p.World.CreationSnapshot().Count;await OfferAndAccept();var second=await MissionCheckpoint(context,p);Check.That(first.Identity!=second.Identity,"Repeat uses a new durable identity");Replay(receipt1,true);
-            await Search(cursor);string receipt2=await Finish(2);Check.That(receipt1!=receipt2,"Each actual run has its own receipt");Replay(receipt2,false);
+            string receipt1=await Finish(1);if(!sourceAnchors)Replay(receipt1,false);
+            cursor=p.World.CreationSnapshot().Count;await OfferAndAccept();var second=await MissionCheckpoint(context,p);Check.That(first.Identity!=second.Identity,"Repeat uses a new durable identity");if(!sourceAnchors)Replay(receipt1,true);
+            await Search(cursor);string receipt2=await Finish(2);Check.That(receipt1!=receipt2,"Each actual run has its own receipt");if(!sourceAnchors)Replay(receipt2,false);
             await Restart(false);p.SendChat("?missionpersist status");await p.WaitForTextAsync("Mission persistence: none");
             Check.Equal(1290580L,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Duplicate finish/relog never pays XP again");
             Check.Equal(13600L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Duplicate finish/relog never pays info again");
@@ -145,8 +170,8 @@ public static partial class Scenarios
         {
             try
             {
-                Record();string path=Path.Combine(Path.GetTempPath(),"mxo-neighbourhood-persistence-"+context.Database.Name+".json");
-                await File.WriteAllTextAsync(path,JsonSerializer.Serialize(new{Passed=passed,Database=context.Database.Name,Sessions=sessions,Processes=processes,Completions=completions,Lifetimes=lifetimes,NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
+                Record();string path=Path.Combine(Path.GetTempPath(),(sourceAnchors?"mxo-mission-computer-anchors-":"mxo-neighbourhood-persistence-")+context.Database.Name+".json");
+                await File.WriteAllTextAsync(path,JsonSerializer.Serialize(new{Passed=passed,SourceAnchors=sourceAnchors,OldCheckpointProof=oldCheckpointProof,Database=context.Database.Name,Sessions=sessions,Processes=processes,Completions=completions,Lifetimes=lifetimes,NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
                 Console.WriteLine("Neighborhood proof: "+path);
             }
             finally

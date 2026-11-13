@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "scope": "Dormant Slums1415 to freeGO3; no runtime wiring",
+  "scope": "Slums1415 to freeGO3; source/checkpoint immutable",
   "legacyKeys": 47434,
   "acceptedKeys": 47365,
   "conflictingKeys": 0,

@@ -1,6 +1,6 @@
-# Dormant mission computer anchor preparation
+# Mission computer source anchors
 
-This package prepares source data and a pure resolver. **Nothing loads or applies it during gameplay.** Native PR194's full-source pose comparison still gates any default conversion. No mission placement, reach, checkpoint, world CSV, NAV, waypoint or inventory behavior changes here.
+Slums Computer_Spawner1415 markers used for free GO3 Computers now resolve to their recovered native pose. The existing site choice, saved source spot, global world CSV, NAV, waypoint and distance/floor algorithms stay unchanged. Native PR194's full-source diagnostic passed visibility, upright desk placement, hover/Take and actual80c7 Search completion; control and native-Y-only variants were not run. This is evidence for the full source pose, not a universal mission-prop correction.
 
 ## Source and bounded eligibility
 
@@ -26,12 +26,23 @@ Key0x1176 is explicitly stored, not derived from an export ordinal:6246af75..84 
 
 The full-source object centre need not lie on walkmesh. Same-floor4200 player point(91865,4295,12740), region184/poly203, is80.16 units away. Geometric NAV paths connect the existing elevator and observed player position to this approach. This is not native LOS/render/picking proof. Native model translation copies Position unchanged (622ddb50,623adeb0); asset-local computer pivot remains a separate question. No inferred HalfExtents offset is introduced.
 
-## Dormant resolver and later integration seam
+## Strict resolver and shared consumers
 
 `MissionComputerAnchors.Read(TextReader)` strictly validates the complete artifact, including full unsigned identities, quaternion bytes, finite values and counted SIDI provenance. Duplicate keys refuse the artifact. `TryResolve(source, concreteGoid, out pose)` accepts only map1/source1415→freeGO3, exact sector/static/native IDs, interior markers, and an exact known legacy pose or canonical native+145 source pose. It preserves the recovered full quaternion without normalization. The output pose is native; server+145 is only the canonical source representation.
 
 Identity alone is insufficient: a changed XYZ/quaternion refuses resolution even if a custom tool retained its key. Existing MoveObjectToPlayer replaces the spot with type0 and no source identity, so it also refuses. Bound same-GOID statics, real furniture, other markers/worlds and unknown/missing keys refuse. Neither source objects nor saved checkpoints are mutated.
 
-Future wiring must use one derived pose consistently in MissionStaging.SpawnObject and MissionRuntime's Put reach, object:N NearPlace, object-relative arrivals, TickObjects and escort AtObject, plus DataMining's mission-object locator. A canonical MissionSites input must be a copy, never a mutation of WorldObjectsDB. Old SavedObject.Spot identity must resolve through the same function without rerolling site/phase or migrating item state. Current mission waypoint packets refer to the saved elevator door and should remain unchanged. No such wiring is part of this preparation.
+One derived pose is used by MissionStaging.SpawnObject and MissionRuntime's Put reach, object:N NearPlace, object-relative arrivals, TickObjects and escort AtObject, plus DataMining's mission-object locator. No canonical MissionSites input copies are introduced: selection/bounds remain exact. Old SavedObject.Spot identity resolves through the same function without rerolling site/phase or migrating item state. Current mission waypoint packets refer to the saved elevator door and remain unchanged. Source quaternion is serialized in full; these arrival/trigger paths do not read spot.rot. Their existing index-based arrival angle and site-floor height remain unchanged. Fallback quaternion parsing stays lazy, so position-only custom/type0 callers retain their previous behavior even with null/malformed quaternion text.
 
-Validation: focused resolver tests cover an old serialized checkpoint, no source mutation, returned orientation immutability, canonical-source vs native-output separation, key-preserving custom pose refusal, bound/type0/wrong-world/refused aliases, invalid/nonfinite/truncated/duplicate rows, complete artifact count/hash and unavailable-sector exclusion. No fresh or native test is claimed for the dormant package.
+Validation: focused resolver tests cover an old serialized checkpoint, no source mutation, returned orientation immutability, canonical-source vs native-output separation, key-preserving custom pose refusal, bound/type0/wrong-world/refused aliases, invalid/nonfinite/truncated/duplicate rows, complete artifact count/hash and unavailable-sector exclusion. Default-path fresh validation is recorded separately below; no new native result is inferred from headless execution.
+
+## One-pass native checklist
+
+Mode `mission-computer-anchors` uses default production resolution, no pose-probe environment, no GM character and no forced combat/callback outcome. The only dev fixture policy is the existing deterministic3072 site seed on the disposable QA database.
+
+1. As CSR110, right-click The Chessman, Get Mission, choose Retrieval and accept the normal3072 offer. Use the ordinary mission-elevator dialogue.
+2. Quit/relog before Take. Confirm the same mission and site. Approach the upright computer on the red desk next to the white dresser, full source pose(91865,4300,12660); same-floor player approach(91865,4295,12740). Observe normal walking/visibility/hover and radial Take. Headless movement is not native walking proof.
+3. Use Take. Verify the disk dialogue, completed Search row, owned disk and Leave-area instruction. Leave through the normal elevator/area route; verify one reward.
+4. Accept Retrieval again and repeat Take/leave. Verify a separate acceptance and one reward pair, with no duplicated disk or payout after relog.
+
+The headless `mission-computer-anchors` scenario reuses the ordinary contact/list/accept/elevator/Take/leave driver, adds a cold process restore before the first Search, verifies the old raw source spot remains unchanged, checks actual source XYZ/quaternion bytes, and completes twice through normal client requests. This variant skips the existing repository-level completion-replay helper entirely. It preserves final receivedRPC/view bytes, selected assembly path/configuration/hash, checkpoints and owned process-disposal evidence before teardown.

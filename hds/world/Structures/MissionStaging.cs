@@ -386,8 +386,9 @@ namespace hds
                 };
                 progress.objects[def.id] = state;
                 SpawnObject(client, progress, state);
-                Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + spot.pos_x + "," +
-                                     spot.pos_y + "," + spot.pos_z);
+                var pose = MissionComputerAnchors.For(state);
+                Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + pose.X + "," +
+                                     pose.Y + "," + pose.Z);
             }
         }
 
@@ -488,8 +489,9 @@ namespace hds
             }
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
-            SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z));
-            SetAttribute(obj, "Orientation", StringUtils.hexStringToBytes(state.spot.quat));
+            var pose = MissionComputerAnchors.For(state);
+            SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
+            SetAttribute(obj, "Orientation", pose.Orientation);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
             // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });

@@ -291,7 +291,7 @@ namespace hds
             Position(c,out double x,out double y,out double z); var pings = new List<DataMiningPackets.Ping>();
             void Add(double px,double py,double pz,byte relationship)
             { if (Math.Abs(py-y)<=250 && DataMiningPackets.Relative(x,z,px,pz,relationship) is DataMiningPackets.Ping p) pings.Add(p); }
-            if ((flags & 1)!=0) foreach (var o in progress.objects.Values) if (o.spot!=null) Add(o.spot.pos_x,o.spot.pos_y,o.spot.pos_z,0);
+            if ((flags & 1)!=0) foreach (var o in progress.objects.Values) if (o.spot!=null) { var pose=MissionComputerAnchors.For(o);Add(pose.X,pose.Y,pose.Z,0); }
             if ((flags & 2)!=0) foreach (Mob m in progress.hostiles) if (!m.getIsDead()) Add(m.getXPos(),m.getYPos(),m.getZPos(),2);
             if ((flags & 4)!=0 && progress.site!=null)
                 foreach (ClientView view in c.viewMan.Snapshot().Where(v=>v.staticObject!=null))
