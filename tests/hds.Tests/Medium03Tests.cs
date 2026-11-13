@@ -5,7 +5,7 @@ public class Medium03Tests
 {
     private static string Root { get { var p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;} }
     [Fact]
-    public void EveryVariantOfUnprovenOrConflictingKeysIsExcluded()
+    public void EveryConflictingKeyVariantRemainsExcludedAfterPrimaryRotationRecovery()
     {
         using var audit=JsonDocument.Parse(File.ReadAllText(Path.Combine(Root,"research","world-data","medium03-static-audit.json")));
         var a=audit.RootElement;
@@ -13,21 +13,20 @@ public class Medium03Tests
         Assert.Equal(60,resources.RootElement.GetProperty("navSectorCount").GetInt32());Assert.Equal(2,resources.RootElement.GetProperty("hardlineHid").GetInt32());
         Assert.Equal(0,resources.RootElement.GetProperty("subwayCnetCount").GetInt32());
         Assert.Equal(4762,a.GetProperty("rawReferences").GetInt32());Assert.Equal(4625,a.GetProperty("uniqueKeys").GetInt32());
-        Assert.Equal(1282,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(3321,a.GetProperty("unprovenRotationKeys").GetArrayLength());
-        Assert.Equal(134,a.GetProperty("conflicts").EnumerateObject().Count());Assert.Equal(180,a.GetProperty("sourceSha256").EnumerateObject().Count());
+        Assert.Equal(4491,a.GetProperty("exportedKeys").GetInt32());Assert.Equal(3321,a.GetProperty("historicallyUnprovenRotationKeys").GetArrayLength());
+        Assert.Equal(134,a.GetProperty("conflicts").EnumerateObject().Count());Assert.Equal(204,a.GetProperty("sourceSha256").EnumerateObject().Count());
         var excluded=a.GetProperty("excludedKeys").EnumerateArray().Select(k=>(k[0].GetInt32(),k[1].GetInt32())).ToHashSet();
-        Assert.Equal(3343,excluded.Count);
+        Assert.Equal(134,excluded.Count);
         var rows=File.ReadLines(Path.Combine(Root,"data","staticObjects_medium03.csv")).Skip(1).Select(l=>l.Split(',')).ToArray();
-        Assert.Equal(1282,rows.Length);Assert.Equal(1282,rows.Select(r=>r[2]).Distinct().Count());
+        Assert.Equal(4491,rows.Length);Assert.Equal(4491,rows.Select(r=>r[2]).Distinct().Count());
         var keys=rows.Select(r=>(int.Parse(r[1]),(int)BitConverter.ToUInt32(Convert.FromHexString(r[3])))).ToHashSet();
         Assert.Empty(keys.Intersect(excluded));Assert.All(rows,r=>Assert.Equal("16",r[0]));
-        foreach(var raw in a.GetProperty("raw").EnumerateArray())
-            if(raw[5].GetInt32()!=0)Assert.Contains((raw[0].GetInt32(),raw[1].GetInt32()),excluded);
+        Assert.Equal(173,a.GetProperty("nativePrefabRotations").GetProperty("placements").GetArrayLength());
         foreach(var conflict in a.GetProperty("conflicts").EnumerateObject())
             foreach(var variant in conflict.Value.EnumerateArray())Assert.Contains((variant[0].GetInt32(),variant[1].GetInt32()),excluded);
         var booth=Assert.Single(rows,r=>r[4]=="50020000");
         Assert.Equal("01004003",booth[2]);Assert.Equal(new[]{"37800.0","545.0","31700.0"},booth[6..9]);
-        Assert.Equal(18,rows.Count(r=>r[4]=="281b0000"));
+        Assert.Equal(59,rows.Count(r=>r[4]=="281b0000"));
     }
     [Fact]
     public void ShippedHid2ArrivalAndSafeDoorApproachHaveExactFloors()

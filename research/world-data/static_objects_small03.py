@@ -5,7 +5,10 @@ parser=argparse.ArgumentParser(description='Bounded read-only construct static d
 parser.add_argument('tools')
 parser.add_argument('--world',type=int,choices=(4,8,10,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
+parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed world16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
+if args.native_prefab_rotations and (args.world!=16 or args.omit_unproven_rotations):
+ parser.error('--native-prefab-rotations is reviewed for world16 only and cannot be combined with historical omission mode')
 world_name={4:'archive01',8:'archive_sakura',10:'widowsmoor',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
@@ -13,11 +16,23 @@ sys.path.insert(0,args.tools)
 import rezmap_ltb as R
 def mod(n):
  s=importlib.util.spec_from_file_location(n,str(Path(__file__).with_name(n+'.py')));m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
-N=mod('navmesh');M=mod('metr_sectors');bp=R.by_path();idx=R.index();sources={}
+N=mod('navmesh');M=mod('metr_sectors');bp=R.by_path();idx=R.index();sources={};native_poses={};placement_sources=[]
+T=mod('native_prefab_transform') if args.native_prefab_rotations else None
 def read(path):
  d=R.read(bp[path]);sources[path]=hashlib.sha256(d).hexdigest();return d
 byname={Path(p).name:p for p in bp if p.endswith(('.sid','.sidi','.sidgo'))}
 rows=list(csv.DictReader(open('data/sector_properties.csv')))
+sector_parents={}
+if args.native_prefab_rotations:
+ # Only direct METR SCIN -> sector SIDI. No nested/EPI resource traversal or assumed parent graph.
+ rel=next(p for ident,_,p in M.WORLDS if ident==16);path=Path(R.D)/rel
+ sources[rel]=hashlib.sha256(path.read_bytes()).hexdigest()
+ sector_parents={v['sector']:v for v in M.read_metr(path)}
+ for row in (r for r in rows if r['metr_id']=='16'):
+  parent=sector_parents[int(row['sector'])]
+  assert parent['name'].lower()==row['file'].lower(), 'Unvalidated direct sector filename'
+  assert (float(row['min_x']),float(row['min_z']))==(parent['min'][0],parent['min'][2]), 'Sector parent translation mismatch'
+
 def buffers(d):
  assert d[:4]==b'OSID';p=struct.unpack_from('<I',d,12)[0];out=[]
  for _ in range(10):
@@ -39,7 +54,7 @@ def decode(s):
   for g in gos(d[r.p-4:]):out.append((g[1],g[0],(x0+g[2],g[3]+145,z0+g[4]),g[5:9],0,'designer'))
  if name+'.sidi' in byname:
   d=read(byname[name+'.sidi']);b=buffers(d);q=b[0]
-  ps=N.placements(q,idx);assert args.omit_unproven_rotations or all(rot==0 for _,_,rot in ps),'Unproven placement rotations: strict default refuses export';count=struct.unpack_from('<I',q)[0];assert count==len(ps),(name,count,len(ps))
+  ps=N.placements(q,idx);assert args.omit_unproven_rotations or args.native_prefab_rotations or all(rot==0 for _,_,rot in ps),'Unproven placement rotations: strict default refuses export';count=struct.unpack_from('<I',q)[0];assert count==len(ps),(name,count,len(ps))
   positions=[]
   for rid,box,rot in ps:
    h=struct.pack('<I9hHH',rid,*box,rot,0);p=q.find(h);assert p>=0 and q.find(h,p+1)<0;assert not positions or p>positions[-1];positions.append(p)
@@ -49,6 +64,14 @@ def decode(s):
    for i in range(count):
     g=struct.unpack_from('<II3f4f6f3IH',q,p+36+i*74);x,y,z=g[2:5];x,z=[(x,z),(z,-x),(-x,-z),(-z,x)][rot]
     out.append((g[1],g[0],(x0+box[0]*10+x,y+box[1]*10+145,z0+box[2]*10+z),g[5:9],rot,'int'))
+    if args.native_prefab_rotations:
+     assert rid in idx, ('Missing native IPI resource',hex(rid))
+     native_pos,native_q=T.sector_pose(g[2:5],g[5:9],box[:3],rot,(x0,0,z0),parent_kind='direct-sector')
+     # Raw diagnostics above remain historically byte-identical; +145 is SERVER presentation, not native pivot math.
+     native_poses[(int(s['sector']),*out[-1])]=(int(s['sector']),g[1],g[0],(native_pos[0],native_pos[1]+145,native_pos[2]),native_q,rot,'int')
+   if args.native_prefab_rotations:
+    rec=idx[rid];data=R.read(rec);digest=hashlib.sha256(data).hexdigest();sources['RID:'+format(rid,'08x')]=digest
+    placement_sources.append(dict(sector=int(s['sector']),source=byname[name+'.sidi'],rid=rid,pivot=list(box[:3]),rotation=rot,parent='direct-sector',prefab=rec.get('path',''),resourcePack=rec['pack'],resourceOffset=rec['off'],resourceSize=rec['size'],resourceSha256=digest))
  return out
 
 raw=[]
@@ -58,8 +81,9 @@ groups=collections.defaultdict(list)
 for o in raw:groups[o[:2]].append(o)
 conflicts={k:v for k,v in groups.items() if len({(z[2],z[3],z[4],z[5]) for z in v})>1}
 unproven={k:v for k,v in groups.items() if any(z[-2]!=0 for z in v)}
-excluded=set(conflicts)|set(unproven)
+excluded=set(conflicts) if args.native_prefab_rotations else set(conflicts)|set(unproven)
 objects=[v[0] for k,v in sorted(groups.items()) if k not in excluded]
+if args.native_prefab_rotations:objects=[native_poses.get(o,o) for o in objects]
 if args.world==10:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(70,70,0,0,70)
  assert len(sources)==258
@@ -73,7 +97,7 @@ elif args.world==17:
  assert set(conflicts)=={(13,13),(13,15),(13,16)}
  assert len(raw)==370 and len(objects)==358
 elif args.world==16:
- assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(4762,4625,3321,134,1282)
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(4762,4625,3321,134,4491 if args.native_prefab_rotations else 1282)
 elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
@@ -89,6 +113,11 @@ with open(args.output,'w',newline='') as f:
 audit=dict(world=args.world,rawReferences=len(raw),uniqueKeys=len(groups),exportedKeys=len(objects),excludedKeys=[list(k) for k in sorted(excluded)],
  convention='METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.',
  sourceSha256=sources,raw=raw,conflicts={str(k):v for k,v in conflicts.items()})
+if args.native_prefab_rotations:
+ audit.update(convention='Native direct-sector IPI pivot*10 + exact quarterturn, parent*local quaternion; float32 native stores. Server +145Y remains separate. Raw retains historical diagnostic convention.',
+  nativePrefabRotations=dict(reviewedWorld=16,algorithm='client.dll6246b0c0/62111670/62046a40',parentEligibility='Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.',floatStores='signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.',placements=placement_sources),
+  historicallyUnprovenRotationKeys=[list(k) for k in sorted(unproven)],
+  omissionPolicy='Every conflicting native key variant remains excluded, even if transformed poses coincide. Unsupported actual nested/EPI parents, invalid flags, and missing resources refuse export; blank resource aliases are recorded, not guessed. No first/last variant policy.')
 if args.omit_unproven_rotations:
  audit.update(unprovenRotationKeys=[list(k) for k in sorted(unproven)],
   rotationAmbiguityOverlap=len(set(unproven)&set(conflicts)),
@@ -113,4 +142,4 @@ if args.world==10:
   populationBoundary='17 captured Instance rows:16 inside 2D sector footprint and1 outside; all17 fail exact recorded-coordinate NAV lookup. Preserve captures without relocation or NPC visibility/gameplay claim.',
   transportBoundary='Native source returners38271/38272/38273 are preserved. Existing dynamic arrival returners and origin return rules remain unchanged; source-static returner usability is a separate unresolved gap.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
-print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
+print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous); primary native top-level rotations; {len(raw)} historical raw references retained' if args.native_prefab_rotations else f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
