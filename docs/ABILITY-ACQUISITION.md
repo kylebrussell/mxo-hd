@@ -57,3 +57,6 @@ Three earlier attempts remain retained and are not relabeled as passes:
 | `fd7d39c3e0`, 19.8s | Purchase rollback and two buys passed; archive CHECK installation revalidated legacy zero timestamps. | `E4372E7117139C3A0842166C658517064FCC22D1307A6C80AC9A5C50A241EEC8` |
 
 Each proof is `mxo-ability-acquisition-mxotest_run_1_<attempt>.json` in Temp, with its driver/server logs retained. The final fixed trigger preflights install/drop and drops in finally, using only the existing guarded harness root environment. It changes no production schema, legacy dates, SQL mode, privilege or server setting. Native ordinary UI purchase, both upload paths and relog remain pending Claude.
+
+
+After Claude merged the natively passed training and attribute packages, root refreshed this branch through actual master061dd088. The only manual conflicts retained both isolated QA command handlers and both fixed test rollback helper sets. Acquisition runtime, SQL, mode and protocol scenario blobs remain identical to fresh-tested cc4b91f1. Root ran134 combined acquisition/attribute/training/prerequisite/Box-probe/storage/queue tests successfully, plus both actual NativeQa builds and acquisition/default/vendor-economy read-only plans/provenance. The41.9-second fresh proof remains pinned to original Release695182B0; no post-merge fresh rerun is claimed.
