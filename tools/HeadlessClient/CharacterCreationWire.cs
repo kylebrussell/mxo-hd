@@ -15,11 +15,12 @@ public static class CharacterCreationWire
     // Source StartingCharacterData.xml male clothing choices, and newrsiIDs.csv male body/head/hair.
     // Sixteen actual u32 appearance slots; no character/RSI row is seeded or copied.
     public static readonly uint[] MaleAppearance = {0,106,103,105,0,0,0,0,1030,987,5907,6727,922,6386,0,1258};
-    public static byte[] Create(uint trait,string first,string last,string background,string fourth = "")
+    public static byte[] Create(uint trait,string first,string last,string background,string fourth = "",IReadOnlyList<uint>? appearance=null)
     {
+        var values=appearance??MaleAppearance;if(values.Count!=16)throw new ArgumentException("Sixteen native appearance fields required");
         var strings=new[]{Text(first),Text(last),Text(background),Text(fourth)};
         byte[] body=new byte[77+strings.Sum(s=>2+s.Length)];body[0]=0x0c;
-        for(int i=0;i<16;i++)BinaryPrimitives.WriteUInt32LittleEndian(body.AsSpan(1+4*i),MaleAppearance[i]);
+        for(int i=0;i<16;i++)BinaryPrimitives.WriteUInt32LittleEndian(body.AsSpan(1+4*i),values[i]);
         BinaryPrimitives.WriteUInt32LittleEndian(body.AsSpan(65),trait);
         int offset=77;
         for(int i=0;i<4;i++)

@@ -361,8 +361,9 @@
       "HEAD": 103,
       "HAIR": 105
     },
-    "NewRsiCsvSha256": "b057692cb8d10b1adc6d33b1537cf1358d42c0d52ea1f4b659513626fe2c19d0",
-    "ClothingCsvSha256": "23b9bcf5933333985a317f4f1c506dc968563ad4da246f2656861eda6ad00125"
+    "NewRsiCsvSha256": "3519b35594c516ab3c8e3f375ecf558994f8731c3dff2340e969b3df62c63dab",
+    "ClothingCsvSha256": "23b9bcf5933333985a317f4f1c506dc968563ad4da246f2656861eda6ad00125",
+    "OriginalNewRsiCsvSha256": "b057692cb8d10b1adc6d33b1537cf1358d42c0d52ea1f4b659513626fe2c19d0"
   },
   "CreationClothingWhitelist": [
     {
@@ -537,6 +538,841 @@
       "RSIFHead001,112,0,HEAD,1",
       "RSIFHead006,112,5,HEAD,1"
     ],
-    "Policy": "Refuse only the selected ambiguous key; do not repair or guess its internal model."
+    "Policy": "Refuse only the selected ambiguous key; do not repair or guess its internal model.",
+    "ResolvedByPrimarySource": "One default CSV row corrected112->100. Native100 is ordinal0;112 remains5. Other19 existing legacy head-index mismatches remain explicitly outside this correction."
+  },
+  "NativeHeadDefaultGate": {
+    "Resource": "resource/characters/rsi/library.rsia",
+    "ResourceSha256": "d2e93160ea23f8a48987386c14ba3efaa46e449229794bd9aa825079955891ff",
+    "Heads": {
+      "0": {
+        "CategoryOffset": 4267,
+        "WidthBits": 5,
+        "Entries": [
+          {
+            "Index": 0,
+            "Id": 103,
+            "Label": "Male Head 1",
+            "Offset": 4279,
+            "RawHex": "67000b004d616c6520486561642031"
+          },
+          {
+            "Index": 1,
+            "Id": 104,
+            "Label": "Male Head 2",
+            "Offset": 4306,
+            "RawHex": "68000b004d616c6520486561642032"
+          },
+          {
+            "Index": 2,
+            "Id": 107,
+            "Label": "Male Head 3",
+            "Offset": 4333,
+            "RawHex": "6b000b004d616c6520486561642033"
+          },
+          {
+            "Index": 3,
+            "Id": 109,
+            "Label": "Male Head 4",
+            "Offset": 4360,
+            "RawHex": "6d000b004d616c6520486561642034"
+          },
+          {
+            "Index": 4,
+            "Id": 111,
+            "Label": "Male Head 5",
+            "Offset": 4387,
+            "RawHex": "6f000b004d616c6520486561642035"
+          },
+          {
+            "Index": 5,
+            "Id": 113,
+            "Label": "Male Head 6",
+            "Offset": 4414,
+            "RawHex": "71000b004d616c6520486561642036"
+          },
+          {
+            "Index": 6,
+            "Id": 116,
+            "Label": "Male Head 7",
+            "Offset": 4441,
+            "RawHex": "74000b004d616c6520486561642037"
+          },
+          {
+            "Index": 7,
+            "Id": 117,
+            "Label": "Male Head 8",
+            "Offset": 4468,
+            "RawHex": "75000b004d616c6520486561642038"
+          },
+          {
+            "Index": 8,
+            "Id": 119,
+            "Label": "Male Head 9",
+            "Offset": 4495,
+            "RawHex": "77000b004d616c6520486561642039"
+          },
+          {
+            "Index": 9,
+            "Id": 118,
+            "Label": "Male Head 10",
+            "Offset": 4522,
+            "RawHex": "76000c004d616c652048656164203130"
+          },
+          {
+            "Index": 10,
+            "Id": 131,
+            "Label": "Male Head 13",
+            "Offset": 4550,
+            "RawHex": "83000c004d616c652048656164203133"
+          },
+          {
+            "Index": 11,
+            "Id": 132,
+            "Label": "Male Head 11",
+            "Offset": 4578,
+            "RawHex": "84000c004d616c652048656164203131"
+          },
+          {
+            "Index": 12,
+            "Id": 134,
+            "Label": "Male Head 12",
+            "Offset": 4606,
+            "RawHex": "86000c004d616c652048656164203132"
+          },
+          {
+            "Index": 13,
+            "Id": 135,
+            "Label": "Male Head 14",
+            "Offset": 4634,
+            "RawHex": "87000c004d616c652048656164203134"
+          },
+          {
+            "Index": 14,
+            "Id": 133,
+            "Label": "Male Head 15",
+            "Offset": 4662,
+            "RawHex": "85000c004d616c652048656164203135"
+          },
+          {
+            "Index": 15,
+            "Id": 136,
+            "Label": "Male Head 16",
+            "Offset": 4690,
+            "RawHex": "88000c004d616c652048656164203136"
+          },
+          {
+            "Index": 16,
+            "Id": 139,
+            "Label": "Male Head 17",
+            "Offset": 4718,
+            "RawHex": "8b000c004d616c652048656164203137"
+          },
+          {
+            "Index": 17,
+            "Id": 140,
+            "Label": "Male Head 19",
+            "Offset": 4746,
+            "RawHex": "8c000c004d616c652048656164203139"
+          },
+          {
+            "Index": 18,
+            "Id": 137,
+            "Label": "Male Head 20",
+            "Offset": 4774,
+            "RawHex": "89000c004d616c652048656164203230"
+          },
+          {
+            "Index": 19,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4802,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 20,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4818,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 21,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4834,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 22,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4850,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 23,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4866,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 24,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4882,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 25,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4898,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 26,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4914,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 27,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4930,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 28,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4946,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 29,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4962,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 30,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4978,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 31,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4994,
+            "RawHex": "00000000"
+          }
+        ]
+      },
+      "1": {
+        "CategoryOffset": 14557,
+        "WidthBits": 5,
+        "Entries": [
+          {
+            "Index": 0,
+            "Id": 100,
+            "Label": "Female Head1",
+            "Offset": 14569,
+            "RawHex": "64000c0046656d616c65204865616431"
+          },
+          {
+            "Index": 1,
+            "Id": 101,
+            "Label": "Female Head2",
+            "Offset": 14597,
+            "RawHex": "65000c0046656d616c65204865616432"
+          },
+          {
+            "Index": 2,
+            "Id": 102,
+            "Label": "Female Head3",
+            "Offset": 14625,
+            "RawHex": "66000c0046656d616c65204865616433"
+          },
+          {
+            "Index": 3,
+            "Id": 108,
+            "Label": "Female Head4",
+            "Offset": 14653,
+            "RawHex": "6c000c0046656d616c65204865616434"
+          },
+          {
+            "Index": 4,
+            "Id": 110,
+            "Label": "Female Head5",
+            "Offset": 14681,
+            "RawHex": "6e000c0046656d616c65204865616435"
+          },
+          {
+            "Index": 5,
+            "Id": 112,
+            "Label": "Female Head6",
+            "Offset": 14709,
+            "RawHex": "70000c0046656d616c65204865616436"
+          },
+          {
+            "Index": 6,
+            "Id": 114,
+            "Label": "Female Head7",
+            "Offset": 14737,
+            "RawHex": "72000c0046656d616c65204865616437"
+          },
+          {
+            "Index": 7,
+            "Id": 115,
+            "Label": "Female Head8",
+            "Offset": 14765,
+            "RawHex": "73000c0046656d616c65204865616438"
+          },
+          {
+            "Index": 8,
+            "Id": 130,
+            "Label": "Female Head9",
+            "Offset": 14793,
+            "RawHex": "82000c0046656d616c65204865616439"
+          },
+          {
+            "Index": 9,
+            "Id": 120,
+            "Label": "Female Head10",
+            "Offset": 14821,
+            "RawHex": "78000d0046656d616c6520486561643130"
+          },
+          {
+            "Index": 10,
+            "Id": 121,
+            "Label": "Female Head11",
+            "Offset": 14850,
+            "RawHex": "79000d0046656d616c6520486561643131"
+          },
+          {
+            "Index": 11,
+            "Id": 122,
+            "Label": "Female Head12",
+            "Offset": 14879,
+            "RawHex": "7a000d0046656d616c6520486561643132"
+          },
+          {
+            "Index": 12,
+            "Id": 123,
+            "Label": "Female Head13",
+            "Offset": 14908,
+            "RawHex": "7b000d0046656d616c6520486561643133"
+          },
+          {
+            "Index": 13,
+            "Id": 124,
+            "Label": "Female Head14",
+            "Offset": 14937,
+            "RawHex": "7c000d0046656d616c6520486561643134"
+          },
+          {
+            "Index": 14,
+            "Id": 125,
+            "Label": "Female Head15",
+            "Offset": 14966,
+            "RawHex": "7d000d0046656d616c6520486561643135"
+          },
+          {
+            "Index": 15,
+            "Id": 126,
+            "Label": "Female Head16",
+            "Offset": 14995,
+            "RawHex": "7e000d0046656d616c6520486561643136"
+          },
+          {
+            "Index": 16,
+            "Id": 127,
+            "Label": "Female Head17",
+            "Offset": 15024,
+            "RawHex": "7f000d0046656d616c6520486561643137"
+          },
+          {
+            "Index": 17,
+            "Id": 128,
+            "Label": "Female Head18",
+            "Offset": 15053,
+            "RawHex": "80000d0046656d616c6520486561643138"
+          },
+          {
+            "Index": 18,
+            "Id": 129,
+            "Label": "Female Head19",
+            "Offset": 15082,
+            "RawHex": "81000d0046656d616c6520486561643139"
+          },
+          {
+            "Index": 19,
+            "Id": 138,
+            "Label": "Female Head20",
+            "Offset": 15111,
+            "RawHex": "8a000d0046656d616c6520486561643230"
+          },
+          {
+            "Index": 20,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15140,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 21,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15156,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 22,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15172,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 23,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15188,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 24,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15204,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 25,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15220,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 26,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15236,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 27,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15252,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 28,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15268,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 29,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15284,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 30,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15300,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 31,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15316,
+            "RawHex": "00000000"
+          }
+        ]
+      }
+    },
+    "NativeCalls": {
+      "Default": "620523c1..62052464: femaleHead100/male103/Hair0;62054a44 carriesHead to0c",
+      "Load": "6267fb6a female;6267fc08..6267fc6a readsIDu16 in order;62687140 stores vector+C8",
+      "Pack": "62686bc7..62686c0a scansID and writesordinal; zeroID branch62686bd3 leavesordinal0",
+      "Unpack": "62686dff..62686e2f readsordinal and indexes samevector"
+    },
+    "ExistingHeadCsvMismatches": [
+      {
+        "Csv": {
+          "Name": "RSIMHead009",
+          "NewRSIID": "118",
+          "InternalID": "8",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 9,
+            "Id": 118,
+            "Label": "Male Head 10",
+            "Offset": 4522,
+            "RawHex": "76000c004d616c652048656164203130"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead010",
+          "NewRSIID": "119",
+          "InternalID": "9",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 8,
+            "Id": 119,
+            "Label": "Male Head 9",
+            "Offset": 4495,
+            "RawHex": "77000b004d616c6520486561642039"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead013",
+          "NewRSIID": "133",
+          "InternalID": "12",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 14,
+            "Id": 133,
+            "Label": "Male Head 15",
+            "Offset": 4662,
+            "RawHex": "85000c004d616c652048656164203135"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead014",
+          "NewRSIID": "134",
+          "InternalID": "13",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 12,
+            "Id": 134,
+            "Label": "Male Head 12",
+            "Offset": 4606,
+            "RawHex": "86000c004d616c652048656164203132"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead015",
+          "NewRSIID": "135",
+          "InternalID": "14",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 13,
+            "Id": 135,
+            "Label": "Male Head 14",
+            "Offset": 4634,
+            "RawHex": "87000c004d616c652048656164203134"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead017",
+          "NewRSIID": "137",
+          "InternalID": "16",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 18,
+            "Id": 137,
+            "Label": "Male Head 20",
+            "Offset": 4774,
+            "RawHex": "89000c004d616c652048656164203230"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead018",
+          "NewRSIID": "139",
+          "InternalID": "17",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 16,
+            "Id": 139,
+            "Label": "Male Head 17",
+            "Offset": 4718,
+            "RawHex": "8b000c004d616c652048656164203137"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead019",
+          "NewRSIID": "140",
+          "InternalID": "18",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 17,
+            "Id": 140,
+            "Label": "Male Head 19",
+            "Offset": 4746,
+            "RawHex": "8c000c004d616c652048656164203139"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead001",
+          "NewRSIID": "112",
+          "InternalID": "0",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 5,
+            "Id": 112,
+            "Label": "Female Head6",
+            "Offset": 14709,
+            "RawHex": "70000c0046656d616c65204865616436"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead009",
+          "NewRSIID": "120",
+          "InternalID": "8",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 9,
+            "Id": 120,
+            "Label": "Female Head10",
+            "Offset": 14821,
+            "RawHex": "78000d0046656d616c6520486561643130"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead010",
+          "NewRSIID": "121",
+          "InternalID": "9",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 10,
+            "Id": 121,
+            "Label": "Female Head11",
+            "Offset": 14850,
+            "RawHex": "79000d0046656d616c6520486561643131"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead011",
+          "NewRSIID": "122",
+          "InternalID": "10",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 11,
+            "Id": 122,
+            "Label": "Female Head12",
+            "Offset": 14879,
+            "RawHex": "7a000d0046656d616c6520486561643132"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead012",
+          "NewRSIID": "123",
+          "InternalID": "11",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 12,
+            "Id": 123,
+            "Label": "Female Head13",
+            "Offset": 14908,
+            "RawHex": "7b000d0046656d616c6520486561643133"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead013",
+          "NewRSIID": "124",
+          "InternalID": "12",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 13,
+            "Id": 124,
+            "Label": "Female Head14",
+            "Offset": 14937,
+            "RawHex": "7c000d0046656d616c6520486561643134"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead014",
+          "NewRSIID": "125",
+          "InternalID": "13",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 14,
+            "Id": 125,
+            "Label": "Female Head15",
+            "Offset": 14966,
+            "RawHex": "7d000d0046656d616c6520486561643135"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead015",
+          "NewRSIID": "126",
+          "InternalID": "14",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 15,
+            "Id": 126,
+            "Label": "Female Head16",
+            "Offset": 14995,
+            "RawHex": "7e000d0046656d616c6520486561643136"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead016",
+          "NewRSIID": "127",
+          "InternalID": "15",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 16,
+            "Id": 127,
+            "Label": "Female Head17",
+            "Offset": 15024,
+            "RawHex": "7f000d0046656d616c6520486561643137"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead017",
+          "NewRSIID": "128",
+          "InternalID": "16",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 17,
+            "Id": 128,
+            "Label": "Female Head18",
+            "Offset": 15053,
+            "RawHex": "80000d0046656d616c6520486561643138"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead018",
+          "NewRSIID": "129",
+          "InternalID": "17",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 18,
+            "Id": 129,
+            "Label": "Female Head19",
+            "Offset": 15082,
+            "RawHex": "81000d0046656d616c6520486561643139"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead019",
+          "NewRSIID": "130",
+          "InternalID": "18",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 8,
+            "Id": 130,
+            "Label": "Female Head9",
+            "Offset": 14793,
+            "RawHex": "82000c0046656d616c65204865616439"
+          }
+        ]
+      }
+    ]
   }
 }

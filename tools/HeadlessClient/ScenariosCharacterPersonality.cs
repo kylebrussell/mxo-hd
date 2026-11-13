@@ -24,7 +24,7 @@ public static partial class Scenarios
         async Task Create(MarginSession margin,uint id,uint trait)
         {
             using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            await margin.CreateCharacterAsync(id,CharacterCreationWire.Create(trait,"First","Last","Personality creation proof"),timeout.Token);
+            await margin.CreateCharacterAsync(id,CharacterCreationWire.Create(trait,"First","Last","Personality creation proof",appearance:trait==304?new uint[]{0,102,100,0,0,0,0,0,737,671,842,726,5621,748,743,6734}:null),timeout.Token);
         }
         async Task Refused(MarginSession margin,uint id,byte[] body)
         {
@@ -45,12 +45,13 @@ public static partial class Scenarios
                 step="normal-create-"+trait;var a=await Reserve("Personality"+trait);await Create(a.Margin,a.Character,trait);
                 Check.Equal(trait,BitConverter.ToUInt32(a.Margin.CharacterData[2]),"New02 trait is FIRSTu32, without return header");
                 Check.Equal((long)trait,await context.Database.LongAsync($"SELECT trait_id FROM characters WHERE charId={a.Character}"),"Actual selected trait persisted");
-                Check.Equal("0\t0\t0\t0\t0\t0\t5\t4\t1\t3\t5\t1\t1\t12\t3\t9\t0",await context.Database.ScalarAsync($"SELECT body,sex,face,hair,haircolor,tattoo,hat,glasses,shirt,gloves,coat,pants,shoes,shirtcolor,coatcolor,pantscolor,shoecolor FROM rsivalues WHERE charid={a.Character}"),"Actual request appearance and source clothing values, no template RSI");
+                Check.Equal(trait==308?"0\t0\t0\t0\t0\t0\t5\t4\t1\t3\t5\t1\t1\t12\t3\t9\t0\t0":"2\t1\t0\t0\t0\t0\t7\t3\t5\t4\t11\t1\t4\t5\t2\t3\t1\t2",await context.Database.ScalarAsync($"SELECT body,sex,face,hair,haircolor,tattoo,hat,glasses,shirt,gloves,coat,pants,shoes,shirtcolor,coatcolor,pantscolor,shoecolor,leggins FROM rsivalues WHERE charid={a.Character}"),"Actual request appearance and source clothing values, no template RSI");
                 foreach(byte attribute in CharacterAttributes.All)Check.Equal((long)CharacterAttributes.BaseValue(attribute,trait),await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={a.Character} AND slot={CharacterAttributes.SlotOf(attribute)}"),"Allfive coherent selected bases");
                 Check.Equal(19L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={a.Character}"),"Exactly unchanged14starting grants plusfiveattributes");
-                Check.Equal(7L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={a.Character}"),"Exactly actualselected sevenclothes");
+                Check.Equal(trait==308?7L:8L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={a.Character}"),"Exactly actual selected creation clothes, with optional female tights");
                 string before=await Snapshot(a.Character);evidence.Add(new{Step=step,a.Character,Snapshot=before,New02=Convert.ToHexString(a.Margin.CharacterData[2])});
-                await Refused(a.Margin,a.Character,CharacterCreationWire.Create(trait==308?304u:308u,"Other","Name","Replay"));Check.Equal(before,await Snapshot(a.Character),"Replay cannot rewrite trait/RSI/rows or regrant items");a.Margin.Dispose();
+                var created=await HeadlessPlayer.AttachCreatedAsync(address,"Personality"+trait,a.Character,a.Margin);players.Add(created);await created.EnterWorldAsync();
+                created.SendRpc("80fe00");await created.WaitForRpcAsync("80fd");Record(created);created.Dispose();
                 // Progression ONLY for one ordinary80b5 witness. No RSI/trait/attribute row is seeded around creation.
                 await context.Database.ExecuteAsync($"UPDATE characters SET level=2,exp={PlayerProgression.ExperienceForLevel(2)} WHERE charId={a.Character}");
                 step="normal-attribute-"+trait;var player=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(player);
@@ -70,6 +71,8 @@ public static partial class Scenarios
                 step="invalid-trait-"+bad;var a=await Reserve("BadTrait"+bad);string before=await Snapshot(a.Character);
                 await Refused(a.Margin,a.Character,CharacterCreationWire.Create(bad,"First","Last","Invalid"));Check.Equal(before,await Snapshot(a.Character),"Invalidtrait reservation/RSI shell unchanged");evidence.Add(new{Step=step,a.Character,Before=before,After=await Snapshot(a.Character)});a.Margin.Dispose();
             }
+            step="actual-0c-replay";var replay=await Reserve("CreationReplay");await Create(replay.Margin,replay.Character,308);string replayBefore=await Snapshot(replay.Character);
+            await Refused(replay.Margin,replay.Character,CharacterCreationWire.Create(304,"Other","Name","Replay"));Check.Equal(replayBefore,await Snapshot(replay.Character),"Replay cannot rewrite trait/RSI/rows or regrant items");evidence.Add(new{Step=step,replay.Character,Before=replayBefore,After=await Snapshot(replay.Character)});replay.Margin.Dispose();
             step="malformed-offset";var malformed=await Reserve("BadOffset");string malformedBefore=await Snapshot(malformed.Character);byte[] broken=CharacterCreationWire.Create(308,"First","Last","");broken[69]--;
             await Refused(malformed.Margin,malformed.Character,broken);Check.Equal(malformedBefore,await Snapshot(malformed.Character),"Malformedfullrequest nomutation");malformed.Margin.Dispose();
             step="actual-late-SQL-rollback";var rollback=await Reserve("CreationRollback");string rollbackBefore=await Snapshot(rollback.Character);

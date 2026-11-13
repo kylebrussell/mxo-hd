@@ -4,7 +4,7 @@ namespace hds.Tests;
 public class CharacterPersonalityTests
 {
     private static string Root {get{string p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;}}
-    private static bool Resolve(CharacterCreation.Request request,out CharacterCreation.InitialState state)=>CreationAssets.Load(Root).TryResolve(request,out state);
+    private static bool ResolveAssets(CharacterCreation.Request request,out CharacterCreation.InitialState state)=>CreationAssets.Load(Root).TryResolve(request,out state);
 
     [Theory]
     [InlineData(299,8,11,8,5,8)][InlineData(300,8,5,8,11,8)][InlineData(301,5,8,11,8,8)][InlineData(302,11,8,5,8,8)]
@@ -58,7 +58,7 @@ public class CharacterPersonalityTests
     [Fact] public void OnlyActualStartingClothesCanBeGrantedAndOptionalZerosRemainValid()
     {
         byte[] Valid()=>CharacterCreationWire.Create(308,"First","Last","");
-        bool Resolve(byte[] b)=>CharacterCreation.TryParse(b,out var r)&&Resolve(r,out _);
+        bool Resolve(byte[] b)=>CharacterCreation.TryParse(b,out var r)&&ResolveAssets(r,out _);
         Assert.True(Resolve(Valid()));
         foreach(uint invalid in new uint[]{737,6386,1026})
         {var b=Valid();BitConverter.GetBytes(invalid).CopyTo(b,33);Assert.False(Resolve(b));} // Wrong gender, wrong slot, known non-creation hat.
@@ -70,17 +70,18 @@ public class CharacterPersonalityTests
     [Fact] public void FemaleStartingTightsSurviveRequestResolutionAndActualRsiEncoding()
     {
         byte[] b=CharacterCreationWire.Create(304,"First","Last","");
-        uint[] values={0,105,101,100,0,0,0,0,737,671,842,726,5621,748,743,6734};
+        uint[] values={0,102,100,0,0,0,0,0,737,671,842,726,5621,748,743,6734};
         for(int i=0;i<values.Length;i++)BitConverter.GetBytes(values[i]).CopyTo(b,1+i*4);
-        Assert.True(CharacterCreation.TryParse(b,out var request));Assert.True(Resolve(request,out var state));
+        Assert.True(CharacterCreation.TryParse(b,out var request));Assert.True(ResolveAssets(request,out var state));
         Assert.Equal(743u,state.Clothing[103]);Assert.Equal(2,state.Rsi["leggins"]);
         string[] keys={"sex","body","hat","face","shirt","coat","pants","shoes","gloves","glasses","hair","facialdetail","shirtcolor","pantscolor","coatcolor","shoecolor","glassescolor","haircolor","skintone","tattoo","facialdetailcolor","leggins"};
         byte[] encoded=PacketsUtils.getRSIBytes(keys.Select(k=>state.Rsi.TryGetValue(k,out int v)?v:0).ToArray());
         string bits=string.Concat(encoded.Select(v=>Convert.ToString(v,2).PadLeft(8,'0')));
         Assert.Equal(2,Convert.ToInt32(bits.Substring(51,4),2));
-        BitConverter.GetBytes(0u).CopyTo(b,57);Assert.True(CharacterCreation.TryParse(b,out request));Assert.True(Resolve(request,out state));
+        BitConverter.GetBytes(0u).CopyTo(b,57);Assert.True(CharacterCreation.TryParse(b,out request));Assert.True(ResolveAssets(request,out state));
         Assert.False(state.Clothing.ContainsKey(103));Assert.Equal(0,state.Rsi["leggins"]);
-        BitConverter.GetBytes(112u).CopyTo(b,9);Assert.True(CharacterCreation.TryParse(b,out request));Assert.False(Resolve(request,out _)); // Existing duplicate female HEAD112 is not guessed.
+        Assert.Equal(0,state.Rsi["face"]);Assert.Equal(0,state.Rsi["hair"]);
+        BitConverter.GetBytes(112u).CopyTo(b,9);Assert.True(CharacterCreation.TryParse(b,out request));Assert.True(ResolveAssets(request,out state));Assert.Equal(5,state.Rsi["face"]); // Native allocation:100->0,112->5.
     }
     [Fact] public void NativeCloneNamesEveryLegacyColumnAndDeliberatelyLeavesNullableTraitUnassigned()
     {

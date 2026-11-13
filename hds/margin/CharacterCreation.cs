@@ -73,7 +73,9 @@ namespace hds
         {
             state=null;if(request==null||part==null||apparel==null)return false;var a=request.Appearance;
             var body=part("BODY",(ushort)a[1]);
-            var hair=part("HAIR",(ushort)a[3]);
+            if(body==null||body.type!="BODY"||body.gender>1)return false;
+            // Native creation starts HairID0; native pack62686bd3 writes ordinal0 without an asset lookup.
+            var hair=a[3]==0?new NewRSIItem{type="HAIR",gender=body.gender,internalId=0}:part("HAIR",(ushort)a[3]);
             var head=part("HEAD",(ushort)a[2]);
             if(body==null||hair==null||head==null||body.type!="BODY"||hair.type!="HAIR"||head.type!="HEAD"||body.gender>1||hair.gender!=body.gender||head.gender!=body.gender)return false;
             if(a[0]>31||a[4]>31||a[5]>7||a[6]>15||a[7]>7)return false; // Existing RSI wire widths, no masked truncation.
