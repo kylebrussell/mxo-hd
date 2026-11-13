@@ -3,6 +3,8 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task Medium02PrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium02Prefab);
     private static Task DataMinePrefabDoorDiagnostic(ScenarioContext context) => NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.DataMinePrefab);
     private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
@@ -42,8 +44,8 @@ public static partial class Scenarios
             await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"mxo-{f.Mode}-actual-wire.json"),
                 System.Text.Json.JsonSerializer.Serialize(new
                 {
-                    SourceAssembly = context.Server.SourceAssembly,
                     SourceConfiguration = new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name,
+                    SourceAssembly = context.Server.SourceAssembly,
                     SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
                     StaticId = f.StaticId, door.Goid, door.ViewId,
                     Position = Convert.ToHexString(door.Attributes["Position"]),
