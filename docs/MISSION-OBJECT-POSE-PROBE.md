@@ -22,7 +22,9 @@ FullNative shifts X/Z about12.37m while authoritative state.spot intentionally s
 
 Use the existing exclusive NativeQa workflow, one profile/variant at a time. CSR110 starts at real Chessman7 approach76015/485/15845, heading128, actuallevel10/XP1282500, ordinary2/17,2000HP/1000IS. No3072 progress, disk, completion or receipt is pregranted. Existing layout-onlyseed3072 reproduces the site; GM/generic callback/combat/drop forcing remain off.
 
-1. Right-click The Chessman, Get Mission, choose Retrieval and accept normally. Follow the mission/elevator to the target floor. Verify the positive diagnostic log names char110/3072/phase0/Object1/source7611b015 and the requested variant. STOP this comparison if another source is selected.
+Prioritize `mission-object-pose-full-native`, comparing with the recorded189 failure. Run the control and native-y profiles if needed to separate height from X/Z and orientation. A successful native comparison does not require repeating all three profiles.
+
+1. Right-click The Chessman and choose **Use** (the actual native radial label), then Retrieval and accept normally. Follow the mission/elevator to the target floor. Verify the positive diagnostic log names char110/3072/phase0/Object1/source7611b015 and the requested variant. STOP this comparison if another source is selected.
 2. Compare visible computer placement/floor relation, hover, left/right/doubleclick selection and radial actions. Preserve identical camera/standing conditions where possible; record337 selection clears versus actual80c7. No inferred picking success from a headless request.
 3. For FullNative, grounded source approach91865/4295/12740 is inside sector347/region184/poly203 floor4200 and about0.8m from the candidate object. Independent geometricNAV routes exist from the observed room/elevator; this is not a native collision/walking guarantee. Walk normally if possible; record obstruction separately. Do not teleport through a wall or change bounds to force selection.
 4. A visible/targetable FullNative object may still refuse use as too far from the OLD authoritative source. Record that distinction; no forcedTake/serverComplete/reward claim.
