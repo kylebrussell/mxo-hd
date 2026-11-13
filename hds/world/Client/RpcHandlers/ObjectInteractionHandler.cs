@@ -370,6 +370,7 @@ namespace hds
 
             if (interactedView != null && HardlineBooths.IsBooth(interactedView.GoID) && interactedView.staticObject != null)
             {
+                if (interactedView.spawnId != (numericObjectId >> 16)) return;
                 TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, interactedView.staticObject);
                 return;
             }

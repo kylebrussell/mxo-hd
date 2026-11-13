@@ -145,6 +145,22 @@ namespace hds
             UInt16 hardline = NearestHardline(district, booth.pos_x, booth.pos_z);
             Output.WriteDebugLog("[HARDLINE] Booth " + booth.mxoStaticId + " action " + action + " -> hardline " + hardline +
                                  " in district " + district);
+            if (action == HardlineBooths.ActionSynchronize)
+            {
+                byte[] discovered = HardlineBooths.BuildSynchronized(district, hardline);
+                if (discovered == null)
+                {
+                    Output.WriteDebugLog("[HARDLINE] Synchronize refused: no registered source hardline");
+                    return;
+                }
+                // serverrules.HardlineSync/10040: add discovery and break shadow. An already-known
+                // row still receives the incremental reply, so retries repair stale client state.
+                Store.dbManager.WorldDbHandler.AddUploadedHardline(client.playerData.getCharID(), district, hardline);
+                Stealth.BreakForAction(client, "synchronized hardline");
+                client.messageQueue.addRpcMessage(discovered);
+                client.FlushQueue();
+                return;
+            }
             MissionRuntime.OnHardline(client, action == HardlineBooths.ActionUpload);
 
             switch (action)

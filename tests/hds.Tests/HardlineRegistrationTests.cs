@@ -2,6 +2,15 @@ using hds;
 namespace hds.Tests;
 public class HardlineRegistrationTests
 {
+    [Fact] public void IncrementalDiscoveryMatchesRetailAndUsesRegisteredOrdinals()
+    {
+        Assert.Equal(Convert.FromHexString("80fa030000001100000001"),HardlineBooths.BuildSynchronized(3,17));
+        Assert.Equal(Convert.FromHexString("80fa080000000200000001"),HardlineBooths.BuildSynchronized(16,2));
+        Assert.Equal((byte)8,HardlineBooths.ActionSynchronize);
+        Assert.Null(HardlineBooths.BuildSynchronized(16,0));
+        Assert.Null(HardlineBooths.BuildSynchronized(16,ushort.MaxValue));
+        Assert.Null(HardlineBooths.BuildSynchronized(901,2));
+    }
     [Fact] public void LoginReplyPreservesOpaqueHeaderAndRegistersOrderedUniverseIds()
     {
         byte[] p=HardlineRegistration.LoginReply();

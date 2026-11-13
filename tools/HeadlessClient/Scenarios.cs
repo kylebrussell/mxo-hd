@@ -192,6 +192,7 @@ public static partial class Scenarios
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
         new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),
         new Scenario("la-hardline-registration", LaHardlineRegistration, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),
+        new Scenario("la-hardline-sync", LaHardlineSynchronize, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]="",["HEADLESS_HARDLINE_UPLOAD_REQUIRED"]="1"}),
         new Scenario("la-hardline-discovery", LaHardlineDiscovery, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]="",["HEADLESS_HARDLINE_UPLOAD_REQUIRED"]="1"}),
         new Scenario("large01-partial-world", Large01PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),

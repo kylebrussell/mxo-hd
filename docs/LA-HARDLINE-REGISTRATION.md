@@ -14,7 +14,7 @@ This is an explicit OURS registration extension, not a recovered retail assignme
 |8|16|383|medium03|
 |9|17|381|small03|
 
-The original09 opaque header and cities remain unchanged. At offset13 its u16 absolute array offset remains15; the u16 count is followed by Universeu16 IDs. Cached08 hardlines are five-byte logicalu8/HIDu32LE records.6c/6d,80ff and both818e construct fields use logical IDs, with full uint validation before conversion. Database rows and HardlineNetwork keep internal map IDs.06 world/instance fields, PvP11-18, tutorial800, LA901 and the existing city1 tutorial80fa packet are unchanged. No general activation packet was added.
+The original09 opaque header and cities remain unchanged. At offset13 its u16 absolute array offset remains15; the u16 count is followed by Universeu16 IDs. Cached08 hardlines are five-byte logicalu8/HIDu32LE records.6c/6d,80ff and both818e construct fields use logical IDs, with full uint validation before conversion. Database rows and HardlineNetwork keep internal map IDs.06 world/instance fields, PvP11-18, tutorial800, LA901 and the existing city1 tutorial80fa packet are unchanged. The native-retest repair below adds the sourced incremental80fa discovery reply for ordinary Synchronize.
 
 `HardlineUploadRequired=false` remains the existing OURS default. When true, cached/status/teleport destinations require uploaded, source-valid hardlines. No normal player receives new discovery rows. The discovery fixture inserts explicit QA-only rows after proving refusal. Its harness-only XML override copies the ordinary source configuration into a new GUID working directory and edits only that ordinary file, never source/output hardlinks. It verifies source configuration bytes remain unchanged.
 
@@ -50,3 +50,16 @@ Both actual headless scenarios passed18.3s each,36.6s total, exit0, peakone serv
 Full4328 unit tests passed; after pure upstream170/173 imports,20 focused registration/world-fixture tests passed. Both configurations built and actual read-only fixture plans/provenance passed;12 Python audit/link/policy tests passed. Historical parity Markdown, coverage JSON and current CSV remain unchanged. No ability source changed. Original production empty08 omission is preserved; the independent wire decoder treats an absent08 block as empty. No native empty-versus-absent reset semantics are claimed.
 
 Native UI/rendering remains pending Claude's one-pass. No client, native setup, main database or settings were changed.
+
+
+## Native failure and Synchronize repair
+
+Claude's22:09 native test at711ca7f FAILED: the booth showed only Synchronize and action8 received no reply. The4029799 transport integration did not repair that failure; earlier READY statements are superseded. Native retest is pending.
+
+The missing production path now handles ordinary80c7/80c8 action8 on a sourced GO592 booth: resolve its nearest real HDL entry, persist internal map/HID discovery, break shadow, then send80fa with the Margin09 filename ordinal/HID/MakeActive1. Already-known rows still receive the reply for an idempotent retry. Unknown registrations/HIDs refuse; stale dynamic spawn handles refuse before all booth actions. Synchronize does not upload bag items, advance mission hardline objectives or reset the world. No fixture-known-row grant is used.
+
+Primary evidence: [native discovery handler](../research/protocol/hardline-sync-native.txt), shipped serverrules/clientrules HardlineSync10040 and the literal Rajko02:38:41 request/reply. The handler sets the known byte, and client rules require it for Loading Area exit. This is distinct from the initial cached08 producer; native UI success is still unproven.
+
+New headless la-hardline-sync uses discovery-required configuration: initial empty cache, stale handle refusal, normal Synchronize, exact80fa080000000200000001, one persisted row after retry, no upload/reset, ordinary33s logout cleanup/relog, exact five-byte Margin08 cache, then ordinary booth->LA901->logical8/HID2->exact HDL arrival. It retains actual raw RPCs/cache/DLL hash before teardown. Prior default/discovery and combined169-fence wire passes remain prior evidence.
+
+Claude-only one-pass: use la-hardline-registration/CSR110. If the actual booth is unknown, double-click or radial Synchronize; confirm the full radial now appears and record80fa. Exit to Loading Area, select medium03/logical8/HID2, jack in, confirm37700,495,31700. Relog and check that the booth remains known. Then check ordinary city travel. No bypass, dev/RNG command or guessed activation packet is required.
