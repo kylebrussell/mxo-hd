@@ -109,4 +109,77 @@ public class WorldClientResetTests
         Assert.Contains(cipher.Plain,p=>p.AsSpan().IndexOf(new byte[]{0x81,0x49})>=0);
         Assert.False(Flag(client,"flushingQueueInProgress"));
     }
+    [Fact]
+    public async Task UnsentHowitzerRegistrationCannotLeakAcrossResetOrConsumeRpcNumbers()
+    {
+        using var receiver=new Socket(AddressFamily.InterNetwork,SocketType.Dgram,ProtocolType.Udp);receiver.Bind(new IPEndPoint(IPAddress.Loopback,0));
+        using var sender=new Socket(AddressFamily.InterNetwork,SocketType.Dgram,ProtocolType.Udp);
+        var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));var fence=new WorldSendFence();var cipher=new RecordingCipher();
+        Set(c,"flushLock",new object());Set(c,"<TransportFence>k__BackingField",fence);Set(c,"cypher",cipher);Set(c,"socket",sender);Set(c,"Remote",receiver.LocalEndPoint!);
+        c.playerData=new ClientData();c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);c.playerData.passives.Loaded[356]=50;c.messageQueue=new();c.viewMan=new();
+        c.messageQueue.addRpcMessage(new byte[]{0x81,0x49});
+        AbilityGrantRegistration.LoadingComplete(c,new byte[]{1});
+        var old=c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Skip(1).ToArray();Assert.Equal(2,old.Length);Assert.All(old,m=>Assert.Equal(-1,m.rpcNumber));
+        c.messageQueue.addRpcMessage(new byte[]{0x81,0x4b});
+        fence.PublishIncoming(true,()=>c.playerData.setPss(0));long reset=fence.Capture();
+        Assert.True(fence.ApplyReset(reset,()=>{c.playerData.setOnWorld(false);c.messageQueue.ForgetSentRpcs();c.messageQueue.ForgetWorldObjects();c.playerData.setRPCCounter(0);}));
+        c.playerData.passives.Loaded.Remove(356);c.playerData.setOnWorld(true);fence.Resume(reset);
+        var receive=receiver.ReceiveAsync(new byte[4096],SocketFlags.None);c.FlushQueue(force:true);Assert.True(await receive.WaitAsync(TimeSpan.FromSeconds(5))>0);
+        var rpcs=cipher.Plain.SelectMany(p=>HeadlessClient.WireFormat.ParsePayload(p).Rpcs).ToArray();
+        Assert.Equal(new[]{"8149","814B"},rpcs.Select(r=>Convert.ToHexString(r.Bytes)));
+        Assert.Equal(new[]{0,1},rpcs.Select(r=>(int)r.ListCounter+r.Index));
+        Assert.All(old,m=>Assert.Equal(-1,m.rpcNumber));
+        Assert.Equal((ushort)2,c.playerData.getRPCCounter());
+        //New-world readiness still has no parent; later ordinary parent load can register once in this world.
+        AbilityGrantRegistration.LoadingComplete(c,new byte[]{1});Assert.Equal(2,c.messageQueue.RPCMessagesQueue.Count);
+        c.playerData.passives.Loaded[356]=50;AbilityGrantRegistration.LoadedChanged(c);Assert.Equal(4,c.messageQueue.RPCMessagesQueue.Count);
+        AbilityGrantRegistration.LoadingComplete(c,new byte[]{1});Assert.Equal(4,c.messageQueue.RPCMessagesQueue.Count);
+    }
+
+    [Fact]
+    public void ResetAfterPreparationRejectsOldBatchAndKeepsUnrelatedUnsentRpcContiguous()
+    {
+        var fence=new WorldSendFence();var data=new ClientData();var queue=new MessageQueue();
+        queue.AddWorldBoundRpc(ServerPackets.BuildAbilityLoad(1087,0,520),0,0);queue.addRpcMessage(new byte[]{0x81,0x49});
+        var old=(SequencedMessage)queue.RPCMessagesQueue[0]!;var unaffected=(SequencedMessage)queue.RPCMessagesQueue[1]!;
+        var prepared=new WorldPacket(data);prepared.addRPCContent(old);prepared.addRPCContent(unaffected);
+        long oldEpoch=fence.Capture();Assert.Equal(-1,old.rpcNumber);
+        fence.PublishIncoming(true,()=>data.setPss(0));long current=fence.Capture();
+        Assert.True(fence.ApplyReset(current,queue.ForgetSentRpcs));fence.Resume(current);
+        Assert.False(fence.TryRun(oldEpoch,()=>prepared.getFinalData(data)));Assert.Equal(-1,old.rpcNumber);
+        Assert.True(fence.TryRun(current,()=>
+        {
+            queue.PruneUnassignedWorldRpcs(data.worldGeneration,current);
+            var next=new WorldPacket(data);foreach(SequencedMessage message in queue.RPCMessagesQueue)next.addRPCContent(message);
+            var rpc=Assert.Single(HeadlessClient.WireFormat.ParsePayload(next.getFinalData(data)).Rpcs);
+            Assert.Equal("8149",Convert.ToHexString(rpc.Bytes));Assert.Equal((ushort)0,rpc.ListCounter);
+        }));
+        Assert.Single(queue.RPCMessagesQueue);Assert.Equal(-1,old.rpcNumber);Assert.Equal(0,unaffected.rpcNumber);
+    }
+    [Fact]
+    public void GenerationChangeAfterPreparationKeepsExistingBareAckAndConsumesNoRpcCounter()
+    {
+        var queue=new MessageQueue();var data=new ClientData {lastSimTimeUpdate=1,lastSimTimeSeconds=TimeUtils.GetSimTimeSeconds()};
+        queue.AddWorldBoundRpc(ServerPackets.BuildAbilityLoad(1087,0,520),data.worldGeneration,0);
+        var message=(SequencedMessage)queue.RPCMessagesQueue[0]!;var packet=new WorldPacket(data);packet.addRPCContent(message);
+        data.setOnWorld(false); //generation changed without transport reset, AFTER preparation.
+        packet.PruneUnassignedWorldRpcs(data.worldGeneration,0);queue.PruneUnassignedWorldRpcs(data.worldGeneration,0);
+        byte[] ack=packet.getFinalData(data);
+        Assert.Equal(new byte[]{2},ack);Assert.Empty(HeadlessClient.WireFormat.ParsePayload(ack).Rpcs);
+        Assert.Equal((ushort)0,data.getRPCCounter());Assert.Equal(-1,message.rpcNumber);Assert.Empty(queue.RPCMessagesQueue);
+    }
+    [Fact]
+    public void AlreadyNumberedOwnedRpcKeepsReliableResendAndFollowingCounter()
+    {
+        var queue=new MessageQueue();var data=new ClientData();data.setRPCCounter(8);
+        queue.AddWorldBoundRpc(ServerPackets.BuildAbilityLoad(1087,0,520),0,0);
+        var old=(SequencedMessage)queue.RPCMessagesQueue[0]!;old.rpcNumber=7;
+        queue.addRpcMessage(new byte[]{0x81,0x49});data.setOnWorld(false);
+        queue.PruneUnassignedWorldRpcs(data.worldGeneration,0);Assert.Equal(2,queue.RPCMessagesQueue.Count);
+        var packet=new WorldPacket(data);foreach(SequencedMessage message in queue.RPCMessagesQueue)packet.addRPCContent(message);
+        packet.PruneUnassignedWorldRpcs(data.worldGeneration,0);
+        var rpc=HeadlessClient.WireFormat.ParsePayload(packet.getFinalData(data)).Rpcs;
+        Assert.Equal(new[]{7,8},rpc.Select(r=>(int)r.ListCounter+r.Index));Assert.Equal((ushort)9,data.getRPCCounter());
+    }
+
 }

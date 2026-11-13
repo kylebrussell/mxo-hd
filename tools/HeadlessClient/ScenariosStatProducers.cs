@@ -10,7 +10,7 @@ public static partial class Scenarios
         // Ownership and loaded flags were seeded BEFORE Login, so initial setup is the actual tested path.
         string ownedRows=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={p.CharId} AND slot IN (400,401,402,403) ORDER BY slot");
         Check.Equal(4L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot IN (400,401,402,403) AND level=50 AND is_loaded=1"),"Exact owned fixture rows before world admission");
-        int readyRpcIndex=-1; bool selfBeforeReady=false; bool initialProven=false; Exception? scenarioFailure=null;
+        int readyRpcIndex=-1; bool selfBeforeReady=false; bool initialProven=false; bool relogProven=false; HeadlessPlayer? relogged=null; string[] firstSessionRpc=Array.Empty<string>(); string[] firstSessionViews=Array.Empty<string>(); Exception? scenarioFailure=null;
         try
         {
         await p.EnterWorldAsync();
@@ -23,9 +23,6 @@ public static partial class Scenarios
         readyRpcIndex=p.World.RpcSnapshot().Count; selfBeforeReady=p.World.CreationSnapshot().Any(c=>c.ViewId==2);
         Check.That(selfBeforeReady,"Actual self creation was received before readiness");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={0x80000000L|((long)1087<<10)}"),"Child registration never adds direct archive ownership");
-        p.SendRpc("0c 01");
-        await p.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
-        await p.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00");
         p.SendRpc("0c 01");
         await p.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
         await p.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00");
@@ -66,6 +63,26 @@ public static partial class Scenarios
         Check.Equal(108,timed.SignedValue,"Captured314 direct342");Check.Equal(20f,timed.Duration,"Real20s expiry");
         Check.That(mods.Any(r=>r!.SourceId==314&&r.TargetId==342&&r.AddRemoveType==1&&r.Locator==timed.Locator),"Expiry removes same timed locator");
         Check.Equal(0,p.World.Problems.Count,"Producer protocol errors");
+        p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");
+        firstSessionRpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray();
+        firstSessionViews=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray();
+        uint actorId=p.CharId;p.Dispose();
+        // Ordinary logout reservation cleanup, not a production timer or registration workaround.
+        await Task.Delay(TimeSpan.FromSeconds(33));
+        p=relogged=await HeadlessPlayer.LoginAsync(context.Server.Address,"user"+actorId,"StatProducers");
+        await p.EnterWorldAsync();
+        Check.That(p.World.CreationSnapshot().Any(c=>c.ViewId==2),"Relog receives actual self before readiness");
+        Check.Equal(0,p.Received("80 b2 3f 04").Count,"Relog child remains deferred before readiness");
+        int relogReadyIndex=p.World.RpcSnapshot().Count;
+        p.SendRpc("0c 01");await p.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
+        await p.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00");
+        var relogRpc=p.World.RpcSnapshot().Select(r=>r.Bytes).ToList();
+        int relogBase=relogRpc.FindIndex(b=>BytePattern.Parse("80 b2 3f 04 00 00 08 02").IsMatch(b));
+        int relogGrant=relogRpc.FindIndex(b=>grantAdd.IsMatch(b));
+        Check.That(relogBase>=relogReadyIndex&&relogGrant>relogBase,"Relog self -> ready -> base -> grant without parent reload");
+        p.SendRpc("0c 01");p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
+        Check.Equal(1,p.World.RpcSnapshot().Count(r=>grantAdd.IsMatch(r.Bytes)),"Relog readiness remains idempotent");
+        Check.Equal(0,p.World.Problems.Count,"Relog protocol errors");relogProven=true;
         }
         catch(Exception error){scenarioFailure=error;throw;}
         finally
@@ -76,13 +93,14 @@ public static partial class Scenarios
             var wire=p.World.RpcSnapshot().Where(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&(r.Bytes[1]==0xb2||r.Bytes[1]==0xbc)).ToArray();
             var bases=wire.Where(r=>r.Bytes[1]==0xb2).Select(r=>BaseAttributeRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
             var mods=wire.Where(r=>r.Bytes[1]==0xbc).Select(r=>ManageBonusRecord.TryDecode(r.Bytes,out var x)?x:null).ToArray();
-        await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-stat-producers-wire-"+context.Database.Name+".json"),JsonSerializer.Serialize(new{OwnedRowsBeforeWorld=ownedRows,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Bases=bases,Modifiers=mods,Raw=wire.Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),AllRpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),ProtocolProblems=p.World.Problems.ToArray(),InitialReadyRpcIndex=readyRpcIndex,SelfBeforeReady=selfBeforeReady,GrantRegistrationInitial=initialProven,ScenarioFailure=scenarioFailure?.ToString(),ManualPostEntryReloadWorkaround=false,CausalPassiveConversionProven=false},new JsonSerializerOptions{WriteIndented=true}));
+        await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-stat-producers-wire-"+context.Database.Name+".json"),JsonSerializer.Serialize(new{OwnedRowsBeforeWorld=ownedRows,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(context.Server.SourceAssembly)!)!.Name,SourceAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Bases=bases,Modifiers=mods,Raw=wire.Select(r=>WireFormat.ToHex(r.Bytes)).ToArray(),ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),AllRpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),ProtocolProblems=p.World.Problems.ToArray(),InitialReadyRpcIndex=readyRpcIndex,SelfBeforeReady=selfBeforeReady,GrantRegistrationInitial=initialProven,GrantRegistrationRelog=relogProven,FirstSessionRpc=firstSessionRpc,FirstSessionViewLists=firstSessionViews,ScenarioFailure=scenarioFailure?.ToString(),ManualPostEntryReloadWorkaround=false,CausalPassiveConversionProven=false},new JsonSerializerOptions{WriteIndented=true}));
           }
           catch(Exception proofError)
           {
             if(scenarioFailure==null)throw;
             Console.Error.WriteLine("Required grant evidence also failed; preserving original failure: "+proofError);
           }
+          finally { relogged?.Dispose(); }
         }
     }
 }

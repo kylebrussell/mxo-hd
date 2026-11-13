@@ -90,7 +90,7 @@ namespace hds
                     {
                         var desired=data.passives.Loaded.ContainsKey(Parent)
                             ?new[]{new Relation(Parent,Child,0)}:Array.Empty<Relation>();
-                        foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.addRpcMessage(packet);
+                        foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                     }
                 });
         }

@@ -291,6 +291,7 @@ namespace hds
                     packet.timed = false;
                 }
 
+                messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
                 if (messageQueue.RPCMessagesQueue.Count > 0)
                 {
                     lock (messageQueue.RPCMessagesQueue.SyncRoot)
@@ -363,6 +364,10 @@ namespace hds
                 {
                     if (!TransportFence.TryRun(outgoingEpoch, () =>
                     {
+                    // A world generation can change after preparation. Drop only unnumbered producer-owned records.
+                    thePacket.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
+                    messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
+                    // The existing encoder still emits its ordinary bare ACK if no content remains.
                     playerData.IncrementSseq();
 
                     byte[] finalData = thePacket.getFinalData(playerData);
