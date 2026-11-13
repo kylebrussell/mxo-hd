@@ -193,7 +193,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                 JsonElement q = request.RootElement;
                 var actor = helpers[q.GetProperty("actor").GetString()!];
                 string action = q.GetProperty("action").GetString()!;
-                string result = "sent";
+                object result = "sent";
                 if (q.TryGetProperty("delayMs", out var delay)) await Task.Delay(Math.Clamp(delay.GetInt32(), 0, 30000));
                 if (action == "chat") actor.SendChat(q.GetProperty("text").GetString()!);
                 else if (action == "cast" || action == "ranged" || action == "melee")
@@ -203,6 +203,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                     else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
                 }
+                else if (action == "duel-accept")
+                    result = await HelperDuelAcceptance.AcceptNextAsync(actor,q.GetProperty("challenger").GetString()!);
                 else if (action == "approve")
                 {
                     var pending = await actor.WaitForRpcAsync("81 88");
