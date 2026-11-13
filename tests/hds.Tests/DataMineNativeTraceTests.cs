@@ -14,6 +14,7 @@ public class DataMineNativeTraceTests
         Assert.Equal("77716469f91d67e22655b624ad2b8cfd5e80b0a532da8cc3e05f596afcfaa521",trace.RootElement.GetProperty("sourceSha256").GetString());
         var packets=trace.RootElement.GetProperty("packets").EnumerateArray().ToDictionary(p=>p.GetProperty("name").GetString()!);
         byte[] Bytes(string name){var p=packets[name];var b=Convert.FromHexString(p.GetProperty("hex").GetString()!);Assert.Equal(p.GetProperty("sha256").GetString(),Convert.ToHexString(SHA256.HashData(b)).ToLowerInvariant());return b;}
+        foreach(string name in packets.Keys) Bytes(name);
         var requests=WireFormat.ParsePayload(Bytes("FirstMissingRequestBatch"));
         Assert.Equal(3,requests.Rpcs.Count);Assert.All(requests.Rpcs,r=>Assert.Equal(0xc9,r.Opcode));
         Assert.Equal(0x01b00004u,BitConverter.ToUInt32(requests.Rpcs[0].Bytes,2));
