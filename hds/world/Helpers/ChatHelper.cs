@@ -18,6 +18,7 @@ namespace hds
             if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
             if (QaLoadout.Dev(Store.currentClient, commands)) return;
             if (AbilityRefusalQa.Dev(Store.currentClient, commands)) return;
+            if (SafeFloorProbe.Dev(Store.currentClient, commands)) return;
             if (PosterBoxFloorProbe.Dev(Store.currentClient, commands)) return;
             if (MissionRuntime.DevPresentation(Store.currentClient, commands)) return;
 
