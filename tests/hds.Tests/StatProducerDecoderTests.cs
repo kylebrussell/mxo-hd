@@ -2,6 +2,7 @@ using MxoHd.PacketResearch;
 using HeadlessClient;
 using hds;
 namespace hds.Tests;
+[Collection("DelayedActions")]
 public class StatProducerDecoderTests
 {
     static byte[] Hex(string s)=>Convert.FromHexString(s.Replace(" ",""));
