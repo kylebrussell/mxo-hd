@@ -28,7 +28,7 @@ namespace hds{
             }
             if (packet.Length != 5 || packet[4] != 0)
             {
-                ClientActionsHandler.Notice(Store.currentClient,"Unsupported vendor purchase request.");return;
+                ClientActionsHandler.Notice(Store.currentClient,"This vendor purchase request is not supported.");return;
             }
             if (packet.Length < 4)
             {
