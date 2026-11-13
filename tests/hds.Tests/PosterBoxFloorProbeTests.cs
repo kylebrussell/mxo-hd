@@ -71,4 +71,13 @@ public class PosterBoxFloorProbeTests
         Assert.True(NavMesh.Project(1,24960,2095,14100,out var p,reachableFrom:new[]{25579.31146596289,2095d,13959.481277120463}));
         Assert.Equal((24960d,2095d,14100d),(p.x,p.y,p.z));
     }
+    [Fact] public void SourceViewMustBeCreatedAndNotMarkedForDeletion()
+    {
+        var view=new ClientView(548,10,100);
+        Assert.False(PosterBoxFloorProbe.SourceViewCurrent(view));
+        view.viewCreated=true;Assert.True(PosterBoxFloorProbe.SourceViewCurrent(view));
+        view.viewNeedsToBeDeleted=true;Assert.False(PosterBoxFloorProbe.SourceViewCurrent(view));
+        Assert.False(PosterBoxFloorProbe.SourceViewCurrent(null!));
+        Assert.False(PosterBoxFloorProbe.SourceViewCurrent(new ClientView(3,10,100){viewCreated=true}));
+    }
 }

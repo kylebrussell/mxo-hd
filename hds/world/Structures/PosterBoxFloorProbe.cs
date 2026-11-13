@@ -43,12 +43,13 @@ namespace hds
         private static bool Context(WorldClient c, out MissionObjectState source, out ClientView view)
         {
             source=null;view=null;
-            var p=c.playerData.missionProgress;
-            if(!Ready(c) || c.playerData.activeMission?.id != 201202 || p?.mission.id != 201202 ||
+            var p=c?.playerData?.missionProgress;
+            if(!Ready(c) || c.playerData.activeMission?.id != 201202 || p?.mission?.id != 201202 ||
                 !ReferenceEquals(p.mission,c.playerData.activeMission) || p.phaseIndex != 0 || !p.objects.TryGetValue(1,out source) || !SourceMatches(source))return false;
             view=c.viewMan.FindViewForEntity(source.entity);
-            return view != null && view.GoID == 548 && view.viewCreated;
+            return SourceViewCurrent(view);
         }
+        internal static bool SourceViewCurrent(ClientView view) => view != null && view.GoID == 548 && view.viewCreated && !view.viewNeedsToBeDeleted;
         public static AttributeClass46 CreateObject()
         {
             var obj=new AttributeClass46("Object548",548);obj.UnsetRelatedStaticObjId();obj.DisableAllAttributes();
