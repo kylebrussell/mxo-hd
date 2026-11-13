@@ -119,6 +119,7 @@ public static partial class Scenarios
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
         new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
+        new Scenario("ashencourte-partial-world", AshencourtePartialWorld, new Dictionary<string,string>{["MXO_MOBS"]="",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
         new Scenario("data-mining-mission-map", DataMiningMissionMap, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),

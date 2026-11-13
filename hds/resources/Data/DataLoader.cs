@@ -70,6 +70,7 @@ namespace hds
             loadWorldObjectsDb(DataPath("staticObjects_medium03.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive01.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive_sati.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive_ashencourte.csv"));
         }
 
         public void LoadMissions()
