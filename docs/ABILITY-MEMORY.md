@@ -1,0 +1,15 @@
+# Ability memory admission — implementation checkpoint
+
+This work is paused for the higher-priority native computer-picking repair. It has not had fresh wire/database validation, final builds or native QA and is not ready to merge.
+
+Native source: cost getter62516370 reads MemCost then InventoryMemCost; capacity625d86f0 uses the exact level1–50 table. Absolute EXP enters inventory+138 through incoming80e5 dispatch6217d39c→621e1c70. Converter625d81d0 uses the initialized XP thresholds. Do not substitute stored Level50 for EXP0: capacity is16. Native621de9f0 validates and emits missing owned transitive prerequisites; this package does not rewrite that prerequisite graph or the current parser.
+
+The read-only probe research/abilities/inspect_ability_memory.py finds586 bare MemCost aliases,290 InventoryMemCost descriptors and528 templates with neither. All876 cost descriptors are stored bytes. The effective native cost matches the existing qualified catalog field for all1,404 templates. No generated catalog/parity/coverage changes are needed.
+
+Explicit OURS policies: individually filter owned/current-character-level entries; deduplicate canonical memory identity; memory-atomic positive-cost additions; exact cap accepted; legacy over-capacity no-op and zero-cost additions allowed; unknown loaded ability blocks positive additions; owned unload recovery remains available. Code-family rows are excluded before canonical decoding. Ambiguous slots are refused, and SQL changes exact primary IDs. No automatic startup unload or XP/level rewrite.
+
+Transaction ordering is dedicated client loadoutSync, owned database connection, character row FOR UPDATE, owned archive rows FOR UPDATE, commit/dispose, then existing acknowledgements and passive/grant reconciliation from the committed snapshot. No life/transport locks or callbacks are acquired inside the transaction. Existing one-live-world-session policy bounds presentation ordering. Independent upload/delete writers do not all share this character-lock protocol; this is not a global archive rewrite.
+
+Negative response is the existing modal text with no invented150000c8 network reply or80b8 upgrade codec. Server transaction/batch/refusal choices are OURS; retail server atomicity remains unrecovered.
+
+Validation at pause:100 focused tests and4,592 full tests passed; the raw descriptor probe passed. The final headless scenario includes exact16 admission, refusal, unload/reload, real SQL rollback without positive acknowledgements, relog loaded-Margin decoding, and two-connection admission/rollback proofs. It has NOT been executed. Final fixture edits made after the full build need their scoped compile before execution. Native mode ability-memory is registered but has not had final read-only plan/provenance validation. Its final AfterHelpers explicitly sets EXP0 after the generic fixture's EXP50 seed. It enables no GM, dev-command or RNG override.
