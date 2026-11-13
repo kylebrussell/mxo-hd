@@ -65,6 +65,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
+        conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),
         tactical_toggle = e.Id == 9 || e.Id == 15,
         buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
             e.Id == 1149 || AbilityHealthCallbacks.Template(e.Id) || AbilityBuffs.Scripted.ContainsKey(e.Id) || AbilityScaledBuffs.TryScriptedTimed(e.Id,50,out _) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",

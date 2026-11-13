@@ -422,6 +422,7 @@ namespace hds
             string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
         {
             List<Active> mods = Instantiate(effect, rng ?? random);
+            AbilityConditionalControls.Init(subject,effect,mods,now);
             for (int i = mods.Count - 1; i >= 0; i--)
             {
                 Active m = mods[i];
@@ -441,7 +442,8 @@ namespace hds
 
             // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
             // Snapshot immunity from the unmitigated control; its timer is a separate script effect.
-            Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
+            Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target) &&
+                !AbilityConditionalControls.InitialPowerless(effect.Ability,m.Target));
             Active unmitigatedImmunity = originalControl == null ? null : ImmunityFor(effect, originalControl);
             if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
                 foreach (Active m in mods)
@@ -458,7 +460,8 @@ namespace hds
             }
             else
             {
-                Active control = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
+                Active control = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target) &&
+                    !AbilityConditionalControls.InitialPowerless(effect.Ability,m.Target));
                 if (control != null)
                 {
                     immunity = unmitigatedImmunity;
