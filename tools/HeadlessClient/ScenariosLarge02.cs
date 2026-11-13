@@ -11,10 +11,10 @@ public static partial class Scenarios
         p.SendRpc($"80 c7 {MissionNpcId(p.ViewsOfGoid(592).Last())} 05 00");await p.WaitForRpcAsync("80 fb 01 00 00 00 01");
         p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");
         p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");
-        p.SendRpc("6c 0d 00 00 00 00 00 00 00");await p.WaitForRpcAsync("6d 0d 00 00 00 08 00 01 01 00 00 01 00 00 00 00");
+        p.SendRpc("6c 05 00 00 00 00 00 00 00");await p.WaitForRpcAsync("6d 05 00 00 00 08 00 01 01 00 00 01 00 00 00 00");
         int selfSpawns=p.World.CreationSnapshot().Count(c=>c.ViewId==2),loads=p.Received("06").Count;
         // Explicit protocol route: not proof that the native Loading Area menu offers this construct.
-        p.SendRpc("80 ff 0d 00 00 00 01 00 00 00");await p.WaitForRpcAsync("81 07");p.SendRpc("81 08");
+        p.SendRpc("80 ff 05 00 00 00 01 00 00 00");await p.WaitForRpcAsync("81 07");p.SendRpc("81 08");
         await p.WaitUntilAsync(()=>p.Received("06").Count>loads,"normal-world06 after LA return",TimeSpan.FromSeconds(10));
         p.SendRpc("05");await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Count(c=>c.ViewId==2)>selfSpawns,"new real self spawn after return",TimeSpan.FromSeconds(15));
         Check.Equal(13L,await context.Database.LongAsync($"SELECT districtId FROM characters WHERE charId={p.CharId}"),"Return map");
