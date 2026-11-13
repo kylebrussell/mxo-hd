@@ -25,6 +25,7 @@ namespace hds.databases.Entities
         public int InnerStrM { get; set; }
         public int Level { get; set; }
         public short Profession { get; set; }
+        public uint? TraitId { get; set; }
         public short Alignment { get; set; }
         public short Pvpflag { get; set; }
         public int ConquestPoints { get; set; }

@@ -17,12 +17,15 @@ namespace hds.databases
                 if(Convert.ToInt32(engine.ExecuteScalar())!=2)throw new InvalidOperationException("Attribute allocation requires transactional tables");
             }
             using var transaction=connection.BeginTransaction();using var command=connection.CreateCommand();command.Transaction=transaction;
-            command.Parameters.AddWithValue("@character",character);command.CommandText="SELECT exp FROM characters WHERE charId=@character FOR UPDATE";
-            object xp=command.ExecuteScalar();if(xp==null||xp==DBNull.Value)return Refuse("Character not found.");
+            command.Parameters.AddWithValue("@character",character);command.CommandText="SELECT exp,trait_id FROM characters WHERE charId=@character FOR UPDATE";
+            long xp;uint? trait;
+            using(var reader=command.ExecuteReader())
+            {if(!reader.Read())return Refuse("Character not found.");xp=reader.GetInt64(0);trait=reader.IsDBNull(1)?(uint?)null:reader.GetUInt32(1);}
+            if(trait.HasValue&&!CharacterPersonality.Valid(trait.Value))return Refuse("The saved character trait is invalid.");
             command.CommandText="SELECT id,slot,ability_id,level FROM char_abilities WHERE char_id=@character AND slot IN (598,599,601,602,604) ORDER BY id FOR UPDATE";
             var rows=new List<AttributeAllocation.Row>();
             using(var reader=command.ExecuteReader())while(reader.Read())rows.Add(new AttributeAllocation.Row(reader.GetUInt32(0),reader.GetInt32(1),reader.GetInt64(2),reader.GetInt64(3)));
-            if(!AttributeAllocation.TryPlan(rows,raises,Convert.ToInt64(xp),out var values))return Refuse("That allocation exceeds your available points or attribute cap, or the saved attribute rows are ambiguous.");
+            if(!AttributeAllocation.TryPlan(rows,raises,xp,out var values,trait))return Refuse("That allocation exceeds your available points or attribute cap, or the saved attribute rows are ambiguous.");
             foreach(byte attribute in CharacterAttributes.All)
             {
                 int slot=CharacterAttributes.SlotOf(attribute);var owned=rows.Where(r=>r.Slot==slot).ToArray();
@@ -40,7 +43,7 @@ namespace hds.databases
                 }
                 if(command.ExecuteNonQuery()!=1)return Refuse("The saved attribute row changed; nothing was allocated.");
             }
-            var result=new AttributeAllocation.Result(true,"",values);transaction.Commit();return result;
+            var result=new AttributeAllocation.Result(true,"",values,trait);transaction.Commit();return result;
         }
     }
 }

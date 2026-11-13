@@ -28,6 +28,7 @@ namespace hds{
 		private bool waitingForWorld;
 		private UInt32 userID;
         private UInt32 newCharID;
+        private uint reservedCreationID;
         private ushort numCharacterReplies;
         private bool isNewCreatedChar;
         public List<MarginAbilityItem> Abilities;
@@ -305,171 +306,33 @@ namespace hds{
         }
 		
 
-        private void createCharacterRSI(byte[] packet, NetworkStream client){
-            // Instance the Data Loader
-            DataLoader itemLoader = DataLoader.getInstance();
-            isNewCreatedChar = true;
-            string debugHexPacket = StringUtils.bytesToString_NS(packet);
-
-            // ToDo: Replace all with Packet Reader Instance
-            PacketReader reader = new PacketReader(packet);
-	        reader.IncrementOffsetByValue(3);
-
-            
-	        UInt16 skintone = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(7);
-	        UInt16 bodyTypeId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(15);
-	        UInt16 hairId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(19);
-	        UInt16 haircolor = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(23);
-	        UInt16 tattoo = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(27);
-	        UInt16 headId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(31);
-	        UInt16 facialDetail = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(35);
-	        // ToDo: it has a bug - figure out correct position
-	        UInt16 facialDetailColor = reader.ReadUInt16(1);
-	        // ToDo: Remove this when facialDetailColor is parsed properly
-	        facialDetailColor = 0;
-	        reader.SetOffsetOverrideValue(67);
-	        UInt16 profession = reader.ReadUInt16(1);
-	        
-	        
-            // lets read the values
-            // the IDs for the Appeareance is always uint16 goID
-	        // Extra Hint: there are no leggins in Char Creation Process
-	        reader.SetOffsetOverrideValue(35);
-	        UInt16 hatId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(39);
-	        UInt16 eyewearId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(43);
-	        UInt16 shirtId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(47);
-	        UInt16 glovesId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(51);
-	        UInt16 outerwearId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(55);
-	        UInt16 pantsId = reader.ReadUInt16(1);
-	        reader.SetOffsetOverrideValue(63);
-	        UInt16 footwearId = reader.ReadUInt16(1);
-
-
-            // Get Values by "NewRSI" IDs
-            NewRSIItem hairItem = itemLoader.getNewRSIItemByTypeAndID("HAIR", hairId);
-            NewRSIItem bodyItem = itemLoader.getNewRSIItemByTypeAndID("BODY", bodyTypeId);
-            NewRSIItem headItem = itemLoader.getNewRSIItemByTypeAndID("HEAD", headId);
-
-            Store.dbManager.MarginDbHandler.updateRSIValue("body", bodyItem.internalId.ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("sex", bodyItem.gender.ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("face", headItem.internalId.ToString(), newCharID);              // ToDo: 
-            Store.dbManager.MarginDbHandler.updateRSIValue("hair", hairItem.internalId.ToString(), newCharID); 
-            Store.dbManager.MarginDbHandler.updateRSIValue("haircolor", haircolor.ToString(), newCharID);                   // ToDo: check if it is correct
-            Store.dbManager.MarginDbHandler.updateRSIValue("tattoo", tattoo.ToString(), newCharID);                         // ToDo:
-	        Store.dbManager.MarginDbHandler.updateRSIValue("facialdetail", facialDetail.ToString(), newCharID);   			// ToDo:
-            Store.dbManager.MarginDbHandler.updateRSIValue("facialdetailcolor", facialDetailColor.ToString(), newCharID);   // ToDo:
-            Store.dbManager.MarginDbHandler.updateRSIValue("skintone", skintone.ToString(), newCharID);
-            
-            
-			// Clothing Items
-            ClothingItem shirt      = itemLoader.getItemValues(shirtId);
-            ClothingItem pants      = itemLoader.getItemValues(pantsId);
-            ClothingItem outerwear  = itemLoader.getItemValues(outerwearId);
-            ClothingItem hat        = itemLoader.getItemValues(hatId);
-            ClothingItem eyewear    = itemLoader.getItemValues(eyewearId);
-            ClothingItem footwear   = itemLoader.getItemValues(footwearId);
-            ClothingItem gloves     = itemLoader.getItemValues(glovesId);
-
-            Store.dbManager.MarginDbHandler.updateRSIValue("hat", hat.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("shirt", shirt.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("shirtcolor", shirt.getColorId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("coat", outerwear.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("coatcolor", outerwear.getColorId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("pants", pants.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("pantscolor", pants.getColorId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("shoes", footwear.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("shoecolor", footwear.getColorId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("glasses", eyewear.getModelId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("glassescolor", eyewear.getColorId().ToString(), newCharID);
-            Store.dbManager.MarginDbHandler.updateRSIValue("gloves", gloves.getModelId().ToString(), newCharID);
-
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(hatId,0x61,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(eyewearId,0x62,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(shirtId,0x63,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(glovesId,0x64,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(outerwearId,0x65,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(pantsId,0x66,newCharID);
-	        Store.dbManager.MarginDbHandler.AddItemToSlot(footwearId,0x68,newCharID);
-	        
-
-            // FirstName
-            UInt16 currentOffset = 79;
-            byte[] firstNameLenBytes = new byte[2];
-            ArrayUtils.copy(packet, currentOffset, firstNameLenBytes, 0,2);
-            UInt16 firstNameLen = NumericalUtils.ByteArrayToUint16(firstNameLenBytes, 1);
-            currentOffset += 2;
-
-            byte[] firstNameBytes = new byte[NumericalUtils.ByteArrayToUint16(firstNameLenBytes,1) - 1];
-            ArrayUtils.copy(packet, currentOffset, firstNameBytes, 0, firstNameLen - 1);
-            string firstNameString = StringUtils.charBytesToString(firstNameBytes);
-            currentOffset += firstNameLen;
-
-            // LastName
-            byte[] lastNameLenBytes = new byte[2];
-            ArrayUtils.copy(packet, currentOffset, lastNameLenBytes, 0, 2);
-            UInt16 lastNameLen = NumericalUtils.ByteArrayToUint16(lastNameLenBytes, 1);
-            currentOffset += 2;
-
-            byte[] lastNameBytes = new byte[NumericalUtils.ByteArrayToUint16(lastNameLenBytes, 1) - 1];
-            ArrayUtils.copy(packet, currentOffset, lastNameBytes, 0, lastNameLen - 1);
-            string lastNameString = StringUtils.charBytesToString(lastNameBytes);
-            currentOffset += lastNameLen;
-
-            // Description
-            byte[] descriptionLenBytes = new byte[2];
-            ArrayUtils.copy(packet, currentOffset, descriptionLenBytes, 0, 2);
-            UInt16 descriptionLen = NumericalUtils.ByteArrayToUint16(descriptionLenBytes, 1);
-            currentOffset += 2;
-
-            byte[] descriptionBytes = new byte[NumericalUtils.ByteArrayToUint16(descriptionLenBytes, 1) - 1];
-            ArrayUtils.copy(packet, currentOffset, descriptionBytes, 0, descriptionLen - 1);
-            string descriptionString = StringUtils.charBytesToString(descriptionBytes);
-            currentOffset += lastNameLen;
-
-            // Update Characters values
-            Store.dbManager.MarginDbHandler.updateCharacter(firstNameString, lastNameString, descriptionString,newCharID);
-            
-            // Add the Basic Abilitys...
-            addStartAbilitys(newCharID);
-            Store.dbManager.MarginDbHandler.SetStartingStats(newCharID);
-
-            // we have all created - lets load the charData 
-            loadCharacter(packet, client, newCharID);
+        private void createCharacterRSI(byte[] packet,NetworkStream client)
+        {
+            // Complete native shape/assets/trait validation before the first creation write.
+            byte[] body=packet.Length>=2?packet.AsSpan(2).ToArray():Array.Empty<byte>();
+            if(userID==0||reservedCreationID==0||reservedCreationID!=newCharID||
+                !CharacterCreation.TryParse(body,out var request)||!CharacterCreation.TryResolve(request,DataLoader.getInstance(),out var state))
+            {working=false;forceClose();return;}
+            try
+            {
+                if(!Store.dbManager.MarginDbHandler.CompleteCharacterCreation(reservedCreationID,userID,state))
+                {working=false;forceClose();return;}
+            }
+            catch(Exception e)
+            {
+                Output.WriteDebugLog("[CREATION] completion rolled back char="+reservedCreationID+": "+e);
+                working=false;forceClose();return;
+            }
+            reservedCreationID=0;isNewCreatedChar=true;
+            loadCharacter(packet,client,newCharID);
         }
 
-		
-
-
-        private void addStartAbilitys(UInt32 charID){
-            Store.dbManager.MarginDbHandler.addAbility(-2147481600, 0, charID, 1, 1);
-            Store.dbManager.MarginDbHandler.addAbility(-2147367936, 1, charID, 1, 1);
-            Store.dbManager.MarginDbHandler.addAbility(-2147294208, 2, charID, 0, 1);
-            Store.dbManager.MarginDbHandler.addAbility(-2147281920, 3, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2147280896, 4, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2147437568, 5, charID, 1, 1);
-            Store.dbManager.MarginDbHandler.addAbility(-2147425280, 6, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2147404800, 7, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2147445760, 8, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2146493440, 9, charID, 0, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2146453504, 10, charID, 1, 0);
-            Store.dbManager.MarginDbHandler.addAbility(-2147472384, 11, charID, 20, 1); // Hyperjump
-            Store.dbManager.MarginDbHandler.addAbility(-2147295232, 12, charID, 20, 1); // Hyperspeed
-            Store.dbManager.MarginDbHandler.addAbility(-2147295232,13,charID,20,1); // HyperSprint
-        }
-		
 		private void charNameRequest(byte[] packet,NetworkStream client){
+            if(userID==0||packet.Length<8||packet[3]!=3||packet[4]!=0) {working=false;forceClose();return;}
+            int nameLength=packet[5]|packet[6]<<8;
+            if(nameLength<2||nameLength>32||packet.Length!=7+nameLength||packet[packet.Length-1]!=0||Array.IndexOf(packet,(byte)0,7,nameLength-1)>=0)
+            {working=false;forceClose();return;}
+
 			
 			// Get the handle text
 			byte[] handleSize = new byte[2];
@@ -498,6 +361,7 @@ namespace hds{
 			}else{
 				
 				newCharID = dbResult;
+                reservedCreationID = dbResult;
 				nameRequestResponse += "0b0f0000000000";
 				nameRequestResponse += StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray(dbResult,1));
 				nameRequestResponse += "0000000000";
@@ -516,10 +380,7 @@ namespace hds{
 
 
             PacketContent pak = new PacketContent();
-            if (!isNewCreatedChar)
-            {
-                pak.AddByteArray(StringUtils.hexStringToBytes("01000000640000007B0000006500000000000000000000006C000000000000002B010000"));
-            }
+            pak.AddByteArray(CharacterPersonality.BackgroundPrefix(!isNewCreatedChar,marginCharacter.TraitId));
             pak.AddStringWithFixedSized(marginCharacter.FirstName,31);
             pak.AddStringWithFixedSized(marginCharacter.LastName,31);
             pak.AddStringWithFixedSized(marginCharacter.Background,1023);
@@ -554,7 +415,7 @@ namespace hds{
             }
 
             pak.AddHexBytes("0301310000b402320000b403380000b4");
-            pak.AddByteArray(CharacterAttributes.BuildSpentPoints(LoadAttributes(charID, marginCharacter)));
+            pak.AddByteArray(CharacterAttributes.BuildSpentPoints(LoadAttributes(charID, marginCharacter),marginCharacter.TraitId));
             // TheLast Part
 
 	        #if DEBUG
@@ -575,6 +436,8 @@ namespace hds{
         private Dictionary<byte, UInt16> LoadAttributes(int charID, Character character)
         {
             Dictionary<byte, UInt16> attributes = Store.dbManager.MarginDbHandler.LoadCharacterAttributes(charID);
+            CharacterPersonality.Resolve(character.TraitId);
+            if(character.TraitId.HasValue&&attributes.Count!=5)throw new InvalidOperationException("Assigned character trait has incomplete attribute rows");
             if (attributes.Count == 0 && character.Level <= 1)
             {
                 Store.dbManager.MarginDbHandler.SetStartingAttributes((UInt32)charID);

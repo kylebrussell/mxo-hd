@@ -14,7 +14,7 @@ public static class CharacterCreationWire
 
     // Source StartingCharacterData.xml male clothing choices, and newrsiIDs.csv male body/head/hair.
     // Sixteen actual u32 appearance slots; no character/RSI row is seeded or copied.
-    public static readonly uint[] MaleAppearance = {0,106,0,105,0,0,103,0,1030,987,5907,6727,922,6386,0,1258};
+    public static readonly uint[] MaleAppearance = {0,106,103,105,0,0,0,0,1030,987,5907,6727,922,6386,0,1258};
     public static byte[] Create(uint trait,string first,string last,string background,string fourth = "")
     {
         var strings=new[]{Text(first),Text(last),Text(background),Text(fourth)};

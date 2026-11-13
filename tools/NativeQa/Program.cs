@@ -85,7 +85,7 @@ INSERT INTO users (userId,username,publicExponent,publicModulus,privateExponent,
 SELECT 990110,'CSR_AbilityQA',publicExponent,publicModulus,privateExponent,0,passwordmd5
 FROM reality_hd.users WHERE userId=(SELECT userId FROM reality_hd.characters WHERE charId=110);
 DELETE FROM characters WHERE charId=110;
-INSERT INTO characters SELECT * FROM reality_hd.characters WHERE charId=110;
+INSERT INTO characters (charId, userId, worldId, status, handle, firstName, lastName, background, x, y, z, rotation, healthC, healthM, innerStrC, innerStrM, level, profession, alignment, pvpflag, conquest_points, exp, cash, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion, district, districtId, factionId, crewId, is_deleted, is_online, created) SELECT charId, userId, worldId, status, handle, firstName, lastName, background, x, y, z, rotation, healthC, healthM, innerStrC, innerStrM, level, profession, alignment, pvpflag, conquest_points, exp, cash, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion, district, districtId, factionId, crewId, is_deleted, is_online, created FROM reality_hd.characters WHERE charId=110;
 UPDATE characters SET userId=990110,level=50,healthC=100,healthM=500,innerStrC=200,innerStrM=200,
  x=23828,y=495,z=13984,rotation=126,district='slums',districtId=1,alignment=1,repMero=100,
  crewId=0,factionId=0,is_online=0,pvpflag=0 WHERE charId=110;
