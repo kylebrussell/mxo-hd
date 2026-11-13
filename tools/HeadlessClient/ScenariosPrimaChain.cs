@@ -7,22 +7,33 @@ public static partial class Scenarios
 {
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,X=startX,Z=startZ,Health=5000,MaxHealth=5000,
             InnerStrength=2000,MaxInnerStrength=2000,Organization=org});
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
+        Exception? scenarioFailure=null;
+        try
+        {
         await p.EnterWorldAsync();
         foreach(int id in ids)
         {
             var mission=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
                 .Single(m=>(int)m.Attribute("id")! == id);
             int logStart=context.Server.DebugLog().Length;int ends=p.Received("80 a2 00").Count;
-            p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForTextAsync((string)mission.Attribute("title")!);
-            await p.WaitForRpcAsync("80 97 05 00");p.SendRpc("80 98 06 00 00 00 01 02 00");await p.WaitForRpcAsync("80 99");
+            int listStart=p.World.RpcSnapshot().Count;
+            p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForRpcAsync("80 97 05 00");
+            var entries=p.World.RpcSnapshot().Skip(listStart).Select(r=>r.Bytes).Where(b=>b.Length>17 && b[0]==0x80 && b[1]==0x96 && BitConverter.ToUInt16(b,2)==5).ToArray();
+            // The list contains indices and titles, not definition IDs. Resolve the actual Critical entry,
+            // then verify the selected definition from the accepted mission's authoritative staging record.
+            int index=MissionContactChoice.CriticalIndex(entries,(string)mission.Attribute("title")!);
+            if(requireStandardCourier)
+                Check.That(entries.Any(b=>b[14]==0 && System.Text.Encoding.ASCII.GetString(b,17,b.Length-18)=="Courier"),"Standard Courier remains present beside the Critical entry");
+            p.SendRpc($"80 98 06 00 {Le((ushort)index)} 01 02 00");await p.WaitForRpcAsync("80 99");
             p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
+            Check.Equal((long)id,await context.Database.LongAsync($"SELECT JSON_EXTRACT(payload,'$.Mission') FROM char_active_missions WHERE charId={p.CharId}"),"Actual accepted definition ID matches selected Critical title");
             int phase=0;
             foreach(var area in mission.Elements("phase"))
             {
@@ -157,6 +168,35 @@ public static partial class Scenarios
             Check.Equal(0,p.World.Problems.Count,"Prima chain protocol problems");
         }
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
+        }
+        catch(Exception error) {scenarioFailure=error;throw;}
+        finally
+        {
+            if(evidenceLabel!=null)
+            try
+            {
+                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+evidenceLabel+"-"+context.Database.Name);
+                File.WriteAllText(stem+"-debug.log",context.Server.DebugLog());
+                var dll=context.Server.SourceAssembly;
+                await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
+                    SourceAssembly=dll,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,
+                    SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
+                    SelectedMissions=ids,Prerequisites=prerequisites,
+                    CurrentPayloadHex=await context.Database.ExecuteAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE charId={p.CharId}"),
+                    CompletionReceipts=await context.Database.ExecuteAsync($"SELECT missionId,completions FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) ORDER BY missionId"),
+                    Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),
+                    ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),
+                    ProtocolProblems=p.World.Problems.ToArray(),NativeReachabilityProven=false,NativeRenderingProven=false,
+                    MovementPolicy="Existing test-only movement/weaken helpers; completion is protocol evidence, not wall/room reachability proof"
+                },new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+                Console.WriteLine("  Required mission evidence "+stem+".json");
+            }
+            catch(Exception proofError)
+            {
+                if(scenarioFailure==null)throw; // A successful scenario cannot silently omit required proof.
+                Console.Error.WriteLine("Required evidence capture also failed; preserving original scenario exception: "+proofError);
+            }
+        }
     }
 
     private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase)
