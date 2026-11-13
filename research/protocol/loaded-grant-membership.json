@@ -1,0 +1,836 @@
+{
+  "client_sha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "decoder_sha256": "BDE5BF9EE756D4F0C7038A927B2755F20B45E7207753A6945C6BA41A7EF49D2E",
+  "scope": "Observed zero-valued loaded-parent type45/locator3 relations only. Counts include duplicates. Legacy2/37/277 and scaled151 excluded.",
+  "relations": [
+    {
+      "parent": 51,
+      "child": 1094,
+      "countIncludingDuplicates": 1,
+      "values": [
+        0
+      ],
+      "operations": [
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "HealEffectBoost/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_025_loading_area_load_and_unload_hacker_trees.log.txt",
+        "FileSha256": "84251EEAF8AA07A96376247AB62B647FE622049DF2276A0C5F794705E230B2CD",
+        "Line": 6463,
+        "Type": 69,
+        "Locator": 280067,
+        "Source": 51,
+        "Target": 1094,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 46 04 00 33 00 00 00 46 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "4ADB12370509DDBBB4B9578DA35A1F9796BD1921660431E5F0C7F6854D57B827"
+      }
+    },
+    {
+      "parent": 64,
+      "child": 1078,
+      "countIncludingDuplicates": 72,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T022135Z-hdneo-public-two-person-actions-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_020_afterwhoruneo_some_2_person_actions_with_mxoemu_and_mission_and_crew_things.log.txt",
+        "FileSha256": "86F372CB8DBD342DE320B64D88D4838A0D94B5579F4E5209C6E478F5F1D97FB2",
+        "Line": 3334,
+        "Type": 69,
+        "Locator": 275971,
+        "Source": 64,
+        "Target": 1078,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 36 04 00 40 00 00 00 36 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "A1C1F4A9BB469A2A467A0807C0AA481CCA6AA9F18277C75186EF07184F028869"
+      }
+    },
+    {
+      "parent": 67,
+      "child": 1085,
+      "countIncludingDuplicates": 273,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T003822Z-hdneo-mxopackets1-combat-ability-selected\\logs\\actions_combat.log.txt",
+        "FileSha256": "780EDB6E36D6030607445EF8198FD467A3772F55C69AA0751D283A9950F67119",
+        "Line": 146,
+        "Type": 69,
+        "Locator": 277763,
+        "Source": 67,
+        "Target": 1085,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3d 04 00 43 00 00 00 3d 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "E8C55076527F2823C133BFB725187BE15D532FA57F30C5D00FFE89BDCA992249"
+      }
+    },
+    {
+      "parent": 83,
+      "child": 1082,
+      "countIncludingDuplicates": 91,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "Grant/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T014317Z-hdneo-mxopackets1-trinity-vendor-redacted-selected\\logs\\crashover2k_trinitys_proxy_second_pc_009_trinitys_session_weapon_vendor.log.txt",
+        "FileSha256": "E350ECA66815FE228134BDE2D80EB88A7351DD18FA4B608A396BD5BF30C94BF3",
+        "Line": 941,
+        "Type": 69,
+        "Locator": 276995,
+        "Source": 83,
+        "Target": 1082,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3a 04 00 53 00 00 00 3a 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "FB6ADC0B285F2288D730306EA90ADD30D7610063FC58C39AD4C784FD306D988C"
+      }
+    },
+    {
+      "parent": 92,
+      "child": 1089,
+      "countIncludingDuplicates": 3,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_024_chatting_hyperjump_fight.log.txt",
+        "FileSha256": "CBC0816CE890492F50B749A14CB3E5C21557D939AC32AB75885158E4F8B2899F",
+        "Line": 14957,
+        "Type": 69,
+        "Locator": 278787,
+        "Source": 92,
+        "Target": 1089,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 41 04 00 5c 00 00 00 41 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "F51D109722BF46490737CE2671DD6F0429A3F93B6A0474607DA0548D83A89A6E"
+      }
+    },
+    {
+      "parent": 98,
+      "child": 1077,
+      "countIncludingDuplicates": 352,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 3/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T003822Z-hdneo-mxopackets1-combat-ability-selected\\logs\\actions_combat.log.txt",
+        "FileSha256": "780EDB6E36D6030607445EF8198FD467A3772F55C69AA0751D283A9950F67119",
+        "Line": 146,
+        "Type": 69,
+        "Locator": 275715,
+        "Source": 98,
+        "Target": 1077,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 35 04 00 62 00 00 00 35 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "E8C55076527F2823C133BFB725187BE15D532FA57F30C5D00FFE89BDCA992249"
+      }
+    },
+    {
+      "parent": 137,
+      "child": 1062,
+      "countIncludingDuplicates": 165,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected\\logs\\mxopackets1_entilsar_enti_lastday2.log.txt",
+        "FileSha256": "878367ED3451A8ADB76CDF50F91B811F5849F3C3174D67ECE1AFC9DF23C6E972",
+        "Line": 2059,
+        "Type": 69,
+        "Locator": 271875,
+        "Source": 137,
+        "Target": 1062,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 26 04 00 89 00 00 00 26 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "8FFA6AD5CE64CBC371520A92CF8ED7F975B32E1F8300554C947DD3E9A72966C2"
+      }
+    },
+    {
+      "parent": 143,
+      "child": 1060,
+      "countIncludingDuplicates": 152,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected\\logs\\mxopackets1_entilsar_enti_lastday2.log.txt",
+        "FileSha256": "878367ED3451A8ADB76CDF50F91B811F5849F3C3174D67ECE1AFC9DF23C6E972",
+        "Line": 2059,
+        "Type": 69,
+        "Locator": 271363,
+        "Source": 143,
+        "Target": 1060,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 24 04 00 8f 00 00 00 24 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "8FFA6AD5CE64CBC371520A92CF8ED7F975B32E1F8300554C947DD3E9A72966C2"
+      }
+    },
+    {
+      "parent": 154,
+      "child": 1061,
+      "countIncludingDuplicates": 150,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected\\logs\\mxopackets1_entilsar_enti_lastday2.log.txt",
+        "FileSha256": "878367ED3451A8ADB76CDF50F91B811F5849F3C3174D67ECE1AFC9DF23C6E972",
+        "Line": 2059,
+        "Type": 69,
+        "Locator": 271619,
+        "Source": 154,
+        "Target": 1061,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 25 04 00 9a 00 00 00 25 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "8FFA6AD5CE64CBC371520A92CF8ED7F975B32E1F8300554C947DD3E9A72966C2"
+      }
+    },
+    {
+      "parent": 236,
+      "child": 1097,
+      "countIncludingDuplicates": 2,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_025_loading_area_load_and_unload_hacker_trees.log.txt",
+        "FileSha256": "84251EEAF8AA07A96376247AB62B647FE622049DF2276A0C5F794705E230B2CD",
+        "Line": 5260,
+        "Type": 69,
+        "Locator": 280835,
+        "Source": 236,
+        "Target": 1097,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 49 04 00 ec 00 00 00 49 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "4ADB12370509DDBBB4B9578DA35A1F9796BD1921660431E5F0C7F6854D57B827"
+      }
+    },
+    {
+      "parent": 257,
+      "child": 1063,
+      "countIncludingDuplicates": 147,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected\\logs\\mxopackets1_entilsar_enti_lastday2.log.txt",
+        "FileSha256": "878367ED3451A8ADB76CDF50F91B811F5849F3C3174D67ECE1AFC9DF23C6E972",
+        "Line": 2059,
+        "Type": 69,
+        "Locator": 272131,
+        "Source": 257,
+        "Target": 1063,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 27 04 00 01 01 00 00 27 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "8FFA6AD5CE64CBC371520A92CF8ED7F975B32E1F8300554C947DD3E9A72966C2"
+      }
+    },
+    {
+      "parent": 263,
+      "child": 1065,
+      "countIncludingDuplicates": 2,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T200024Z-hdneo-public-remaining-small-ability-loot-market\\logs\\mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt",
+        "FileSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B",
+        "Line": 93777,
+        "Type": 69,
+        "Locator": 272643,
+        "Source": 263,
+        "Target": 1065,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 29 04 00 07 01 00 00 29 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B"
+      }
+    },
+    {
+      "parent": 270,
+      "child": 1067,
+      "countIncludingDuplicates": 19,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "Grant/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T200024Z-hdneo-public-remaining-small-ability-loot-market\\logs\\mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt",
+        "FileSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B",
+        "Line": 101755,
+        "Type": 69,
+        "Locator": 273155,
+        "Source": 270,
+        "Target": 1067,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 2b 04 00 0e 01 00 00 2b 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B"
+      }
+    },
+    {
+      "parent": 310,
+      "child": 1083,
+      "countIncludingDuplicates": 77,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T022135Z-hdneo-public-two-person-actions-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_020_afterwhoruneo_some_2_person_actions_with_mxoemu_and_mission_and_crew_things.log.txt",
+        "FileSha256": "86F372CB8DBD342DE320B64D88D4838A0D94B5579F4E5209C6E478F5F1D97FB2",
+        "Line": 3334,
+        "Type": 69,
+        "Locator": 277251,
+        "Source": 310,
+        "Target": 1083,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3b 04 00 36 01 00 00 3b 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "A1C1F4A9BB469A2A467A0807C0AA481CCA6AA9F18277C75186EF07184F028869"
+      }
+    },
+    {
+      "parent": 334,
+      "child": 1084,
+      "countIncludingDuplicates": 71,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T022135Z-hdneo-public-two-person-actions-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_020_afterwhoruneo_some_2_person_actions_with_mxoemu_and_mission_and_crew_things.log.txt",
+        "FileSha256": "86F372CB8DBD342DE320B64D88D4838A0D94B5579F4E5209C6E478F5F1D97FB2",
+        "Line": 3334,
+        "Type": 69,
+        "Locator": 277507,
+        "Source": 334,
+        "Target": 1084,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3c 04 00 4e 01 00 00 3c 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "A1C1F4A9BB469A2A467A0807C0AA481CCA6AA9F18277C75186EF07184F028869"
+      }
+    },
+    {
+      "parent": 335,
+      "child": 1086,
+      "countIncludingDuplicates": 264,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T003822Z-hdneo-mxopackets1-combat-ability-selected\\logs\\actions_combat.log.txt",
+        "FileSha256": "780EDB6E36D6030607445EF8198FD467A3772F55C69AA0751D283A9950F67119",
+        "Line": 146,
+        "Type": 69,
+        "Locator": 278019,
+        "Source": 335,
+        "Target": 1086,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3e 04 00 4f 01 00 00 3e 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "E8C55076527F2823C133BFB725187BE15D532FA57F30C5D00FFE89BDCA992249"
+      }
+    },
+    {
+      "parent": 356,
+      "child": 1087,
+      "countIncludingDuplicates": 263,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T003822Z-hdneo-mxopackets1-combat-ability-selected\\logs\\actions_combat.log.txt",
+        "FileSha256": "780EDB6E36D6030607445EF8198FD467A3772F55C69AA0751D283A9950F67119",
+        "Line": 146,
+        "Type": 69,
+        "Locator": 278275,
+        "Source": 356,
+        "Target": 1087,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "E8C55076527F2823C133BFB725187BE15D532FA57F30C5D00FFE89BDCA992249"
+      }
+    },
+    {
+      "parent": 369,
+      "child": 1092,
+      "countIncludingDuplicates": 1,
+      "values": [
+        0
+      ],
+      "operations": [
+        0
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_025_loading_area_load_and_unload_hacker_trees.log.txt",
+        "FileSha256": "84251EEAF8AA07A96376247AB62B647FE622049DF2276A0C5F794705E230B2CD",
+        "Line": 3050,
+        "Type": 69,
+        "Locator": 279555,
+        "Source": 369,
+        "Target": 1092,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 44 04 00 71 01 00 00 44 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "4ADB12370509DDBBB4B9578DA35A1F9796BD1921660431E5F0C7F6854D57B827"
+      }
+    },
+    {
+      "parent": 390,
+      "child": 1079,
+      "countIncludingDuplicates": 25,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 3/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T022135Z-hdneo-public-two-person-actions-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_020_afterwhoruneo_some_2_person_actions_with_mxoemu_and_mission_and_crew_things.log.txt",
+        "FileSha256": "86F372CB8DBD342DE320B64D88D4838A0D94B5579F4E5209C6E478F5F1D97FB2",
+        "Line": 3334,
+        "Type": 69,
+        "Locator": 276227,
+        "Source": 390,
+        "Target": 1079,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 37 04 00 86 01 00 00 37 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "A1C1F4A9BB469A2A467A0807C0AA481CCA6AA9F18277C75186EF07184F028869"
+      }
+    },
+    {
+      "parent": 410,
+      "child": 1069,
+      "countIncludingDuplicates": 6,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 5/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T200024Z-hdneo-public-remaining-small-ability-loot-market\\logs\\mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt",
+        "FileSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B",
+        "Line": 101755,
+        "Type": 69,
+        "Locator": 273667,
+        "Source": 410,
+        "Target": 1069,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 2d 04 00 9a 01 00 00 2d 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B"
+      }
+    },
+    {
+      "parent": 426,
+      "child": 1064,
+      "countIncludingDuplicates": 122,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 4/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected\\logs\\mxopackets1_entilsar_enti_lastday2.log.txt",
+        "FileSha256": "878367ED3451A8ADB76CDF50F91B811F5849F3C3174D67ECE1AFC9DF23C6E972",
+        "Line": 2059,
+        "Type": 69,
+        "Locator": 272387,
+        "Source": 426,
+        "Target": 1064,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 28 04 00 aa 01 00 00 28 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "8FFA6AD5CE64CBC371520A92CF8ED7F975B32E1F8300554C947DD3E9A72966C2"
+      }
+    },
+    {
+      "parent": 439,
+      "child": 1093,
+      "countIncludingDuplicates": 1,
+      "values": [
+        0
+      ],
+      "operations": [
+        0
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_025_loading_area_load_and_unload_hacker_trees.log.txt",
+        "FileSha256": "84251EEAF8AA07A96376247AB62B647FE622049DF2276A0C5F794705E230B2CD",
+        "Line": 3275,
+        "Type": 69,
+        "Locator": 279811,
+        "Source": 439,
+        "Target": 1093,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 45 04 00 b7 01 00 00 45 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "4ADB12370509DDBBB4B9578DA35A1F9796BD1921660431E5F0C7F6854D57B827"
+      }
+    },
+    {
+      "parent": 469,
+      "child": 1088,
+      "countIncludingDuplicates": 248,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T003822Z-hdneo-mxopackets1-combat-ability-selected\\logs\\actions_combat.log.txt",
+        "FileSha256": "780EDB6E36D6030607445EF8198FD467A3772F55C69AA0751D283A9950F67119",
+        "Line": 146,
+        "Type": 69,
+        "Locator": 278531,
+        "Source": 469,
+        "Target": 1088,
+        "Value": 0,
+        "Operation": 1,
+        "DurationBits": 0,
+        "Payload": "45 03 40 04 00 d5 01 00 00 40 04 00 00 00 00 01 00 00 00 00",
+        "FileLfSha256": "E8C55076527F2823C133BFB725187BE15D532FA57F30C5D00FFE89BDCA992249"
+      }
+    },
+    {
+      "parent": 490,
+      "child": 1091,
+      "countIncludingDuplicates": 2,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 2/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected\\logs\\mxopackets1_crashover2k_afterwhoruneo_proxy_024_chatting_hyperjump_fight.log.txt",
+        "FileSha256": "CBC0816CE890492F50B749A14CB3E5C21557D939AC32AB75885158E4F8B2899F",
+        "Line": 10884,
+        "Type": 69,
+        "Locator": 279299,
+        "Source": 490,
+        "Target": 1091,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 43 04 00 ea 01 00 00 43 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "F51D109722BF46490737CE2671DD6F0429A3F93B6A0474607DA0548D83A89A6E"
+      }
+    },
+    {
+      "parent": 533,
+      "child": 1066,
+      "countIncludingDuplicates": 2,
+      "values": [
+        0
+      ],
+      "operations": [
+        0,
+        1
+      ],
+      "durationBits": [
+        0
+      ],
+      "template": {
+        "ValueFunction": 0,
+        "Prefix": "StatModifier 4/"
+      },
+      "example": {
+        "File": "research\\packet-dumps\\community-intake\\20260607T200024Z-hdneo-public-remaining-small-ability-loot-market\\logs\\mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt",
+        "FileSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B",
+        "Line": 93777,
+        "Type": 69,
+        "Locator": 272899,
+        "Source": 533,
+        "Target": 1066,
+        "Value": 0,
+        "Operation": 0,
+        "DurationBits": 0,
+        "Payload": "45 03 2a 04 00 15 02 00 00 2a 04 00 00 00 00 00 00 00 00 00",
+        "FileLfSha256": "6744AB2701FAEDFC07F1CA683E5BD2089C267B90ACCBD9B1FA83DEA4D22A5C5B"
+      }
+    }
+  ],
+  "capture_inventory_sha256": "f1abde9406b8ac047eafc096b185bea31596a049711fde73750174841aadc8f1",
+  "corpus_accounting": {
+    "framedFiles": 278,
+    "locatorKind3ObservationsIncludingDuplicates": 3459,
+    "catalogMatchedLoadedRelations": 29,
+    "admittedZeroValuedRelations": 25
+  }
+}
