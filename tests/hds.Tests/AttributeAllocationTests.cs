@@ -78,14 +78,29 @@ public class AttributeAllocationTests
     [Fact] public void PublicationDoesNotRequireAvatarAndCallbackIsOutsideFenceAfterPackets()
     {
         var c=Client();var d=c.playerData;long epoch=c.TransportFence.Capture();Assert.True(AttributeAllocation.Current(c,d,0,d.worldGeneration,0,epoch,110));
-        bool called=false;AttributeAllocation.Finish(c,epoch,()=>true,new(true,"",new Dictionary<byte,ushort>{{78,9}}),Raises(78),()=>
+        bool called=false;AttributeAllocation.Finish(c,epoch,d.worldGeneration,()=>true,new(true,"",new Dictionary<byte,ushort>{{78,9}}),Raises(78),()=>
         {
             var queued=(SequencedMessage)Assert.Single(c.messageQueue.RPCMessagesQueue)!;
             Assert.Equal(new byte[]{0x80,0xb6},queued.content.Skip(1).Take(2));
             var other=Task.Run(()=>c.TransportFence.TryRun(epoch,()=>{}));Assert.True(other.Wait(TimeSpan.FromSeconds(2)));Assert.True(other.Result);called=true;
+        },()=>
+        {
+            var other=Task.Run(()=>c.TransportFence.TryRun(epoch,()=>{}));Assert.True(other.Wait(TimeSpan.FromSeconds(2)));Assert.True(other.Result);
         });Assert.True(called);
-        called=false;AttributeAllocation.Finish(c,epoch,()=>true,new(false,"refused"),Raises(78),()=>called=true);Assert.False(called);
-        c.TransportFence.PublishIncoming(true,()=>{});AttributeAllocation.Finish(c,epoch,()=>true,new(true,""),Raises(78),()=>called=true);Assert.False(called);
+        called=false;AttributeAllocation.Finish(c,epoch,d.worldGeneration,()=>true,new(false,"refused"),Raises(78),()=>called=true,()=>{});Assert.False(called);
+        c.TransportFence.PublishIncoming(true,()=>{});AttributeAllocation.Finish(c,epoch,d.worldGeneration,()=>AttributeAllocation.Current(c,d,0,d.worldGeneration,0,epoch,110),new(true,"",new Dictionary<byte,ushort>{{78,9}}),Raises(78),()=>called=true,()=>{});Assert.False(called);
+    }
+    [Fact] public void ModalBuilderIsPureAndRefusalFlushRunsOutsideFence()
+    {
+        const string header="00000000000000000024000000000000000000000000000000000000000000000000";
+        Assert.Equal("2e17"+header+"03006e6f00",Convert.ToHexString(ServerPackets.BuildSystemChatMessage("no","MODAL")).ToLowerInvariant());
+        var c=Client();long epoch=c.TransportFence.Capture();bool flushed=false,callback=false;
+        AttributeAllocation.Finish(c,epoch,c.playerData.worldGeneration,()=>true,new(false,"no"),Raises(78),()=>callback=true,()=>
+        {
+            Assert.Equal(2,c.messageQueue.RPCMessagesQueue.Count);
+            var other=Task.Run(()=>c.TransportFence.TryRun(epoch,()=>{}));Assert.True(other.Wait(TimeSpan.FromSeconds(2)));Assert.True(other.Result);flushed=true;
+        });Assert.True(flushed);Assert.False(callback);
+        Assert.Null(new HeadlessClient.CharacterSeed("legacy").AttributeValues);
     }
     [Theory][InlineData(0)][InlineData(1)][InlineData(2)][InlineData(3)][InlineData(4)]
     public void PublicationRejectsChangedCharacterWorldLifeEpochOrGeneration(int change)

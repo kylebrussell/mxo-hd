@@ -66,19 +66,21 @@ namespace hds
         internal static bool Current(WorldClient c,ClientData d,int generation,int world,int life,long transport,uint character)=>
             ReferenceEquals(c.playerData,d)&&d.getCharID()==character&&d.attributeGeneration==generation&&d.worldGeneration==world&&d.lifeGeneration==life&&
             c.Alive&&c.TransportFence.Capture()==transport&&!d.worldChangePending&&!d.waitForRPCShutDown;
-        internal static void Finish(WorldClient client,long transport,Func<bool> current,Result result,IReadOnlyList<CharacterAttributes.Raise> raises,Action onSuccess)
+        internal static void Finish(WorldClient client,long transport,int world,Func<bool> current,Result result,IReadOnlyList<CharacterAttributes.Raise> raises,Action onSuccess,Action flush)
         {
-            bool published=false;
+            if(!current())return;
+            byte[] modal=result.Committed?null:ServerPackets.BuildSystemChatMessage(result.Reason,"MODAL");
+            byte[] reply=Reply(result,raises);bool published=false;
             //The database transaction is disposed; no callback runs inside this short packet-publication fence.
             client.TransportFence.TryRun(transport,()=>
             {
                 if(!current())return;
-                if(!result.Committed)new ServerPackets().sendSystemChatMessage(client,result.Reason,"MODAL");
-                client.messageQueue.addRpcMessage(Reply(result,raises));published=true;
+                if(modal!=null)client.messageQueue.AddWorldBoundRpc(modal,world,transport);
+                client.messageQueue.AddWorldBoundRpc(reply,world,transport);published=true;
             });
             //Tutorial may flush/reward. Its callback follows the committed reply, outside the transport fence.
             if(published&&result.Committed&&current())onSuccess();
-            if(current())client.FlushQueue();
+            if(published&&current())flush();
         }
         public static void Handle(WorldClient client,byte[] body)
         {
@@ -90,8 +92,8 @@ namespace hds
                 long transport=client.TransportFence.Capture();Result result;
                 try{result=Store.dbManager.WorldDbHandler.AllocateAttributes(character,raises);}
                 catch(Exception e){Output.WriteDebugLog("[ATTRIBUTE] char="+character+" allocation failed: "+e);result=new Result(false,"Attribute allocation could not be saved; nothing was changed.");}
-                Finish(client,transport,()=>Current(client,data,generation,world,life,transport,character),result,raises,
-                    ()=>TutorialMission.Of(client)?.OnAttributeRaised());
+                Finish(client,transport,world,()=>Current(client,data,generation,world,life,transport,character),result,raises,
+                    ()=>TutorialMission.Of(client)?.OnAttributeRaised(),()=>client.FlushQueue());
             }
         }
     }

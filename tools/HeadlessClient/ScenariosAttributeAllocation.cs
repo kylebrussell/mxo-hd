@@ -39,9 +39,11 @@ public static partial class Scenarios
         try
         {
             Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned disposable database only");
-            main=await context.AddPlayerAsync(new CharacterSeed("AttributeAuthority"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Info=1000});
-            await context.Database.ExecuteAsync(AttributeAllocationFixture.Seed(main.CharId)+$"; UPDATE char_abilities SET ability_id=2147566592 WHERE char_id={main.CharId} AND slot=601; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({main.CharId},854,-2147403776,30,0)");
-            step="failure-trigger-preflight";await context.Database.InstallAttributeFailureAsync(main.CharId);await context.Database.RemoveAttributeFailureAsync();
+            main=await context.AddPlayerAsync(new CharacterSeed("AttributeAuthority"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Info=1000,AttributeValues=bases});
+            await context.Database.ExecuteAsync($"UPDATE char_abilities SET ability_id=2147566592 WHERE char_id={main.CharId} AND slot=601; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({main.CharId},854,-2147403776,30,0)");
+            witnesses.Add(new{Step="pre-login-main",Rows=context.AttributeRowsBeforeLogin(main.CharId),Expected=bases});
+            step="failure-trigger-preflight";string seeded=await Rows(main.CharId);await context.Database.InstallAttributeFailureAsync(main.CharId);await context.Database.RemoveAttributeFailureAsync();
+            Check.Equal(seeded,await Rows(main.CharId),"DDL preflight preserves all seeded rows");witnesses.Add(new{Step=step,Rows=seeded,PreflightAfter=await Rows(main.CharId)});
             await Initial(main,bases);string original=await Rows(main.CharId);
             string identities=await context.Database.ScalarAsync($"SELECT id,slot,ability_id,is_loaded FROM char_abilities WHERE char_id={main.CharId} AND slot IN ({slots}) ORDER BY slot,id");
             step="normal-two-attribute-batch";var expected=new Dictionary<byte,ushort>(bases){[78]=9,[81]=9};
@@ -56,14 +58,14 @@ public static partial class Scenarios
             Check.Equal(identities,await context.Database.ScalarAsync($"SELECT id,slot,ability_id,is_loaded FROM char_abilities WHERE char_id={main.CharId} AND slot IN ({slots}) ORDER BY slot,id"),"Normal allocation preserves every existing PK/raw descriptor/load flag");
             witnesses.Add(new{Step=step,Before=original,After=await Rows(main.CharId),Info=1000});
             uint mainId=main.CharId;await Logout(main);main=null;
-            step="eligible-partial-first-raise";partial=await context.AddPlayerAsync(new CharacterSeed("AttributePartial"){Level=18,Experience=(int)PlayerProgression.ExperienceForLevel(18),Info=1000});
-            await context.Database.ExecuteAsync(AttributeAllocationFixture.Seed(partial.CharId)+$"; DELETE FROM char_abilities WHERE char_id={partial.CharId} AND slot=598");
+            step="eligible-partial-first-raise";partial=await context.AddPlayerAsync(new CharacterSeed("AttributePartial"){Level=18,Experience=(int)PlayerProgression.ExperienceForLevel(18),Info=1000,AttributeValues=bases.Where(v=>v.Key!=78).ToDictionary(v=>v.Key,v=>v.Value)});
+            witnesses.Add(new{Step="pre-login-partial",Rows=context.AttributeRowsBeforeLogin(partial.CharId)});
             var partialBefore=new Dictionary<byte,ushort>(bases){[78]=24};await Initial(partial,partialBefore);
             var partialAfter=new Dictionary<byte,ushort>(partialBefore){[81]=9};await Allocate(partial,new[]{((byte)81,(byte)1)},true,partialAfter);
             Check.Equal(5L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={partial.CharId} AND slot IN ({slots})"),"Accepted partial snapshot lazily materializes all five values");
             witnesses.Add(new{Step=step,Values=partialAfter,Rows=await Rows(partial.CharId),Spent=17,Remaining=0});uint partialId=partial.CharId;await Logout(partial);partial=null;
-            step="no-row-legacy-refusal";legacy=await context.AddPlayerAsync(new CharacterSeed("AttributeLegacy"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Info=1000});
-            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={legacy.CharId} AND slot IN ({slots})");
+            step="no-row-legacy-refusal";legacy=await context.AddPlayerAsync(new CharacterSeed("AttributeLegacy"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Info=1000,AttributeValues=new Dictionary<byte,ushort>()});
+            witnesses.Add(new{Step="pre-login-no-row",Rows=context.AttributeRowsBeforeLogin(legacy.CharId)});
             var legacyValues=CharacterAttributes.All.ToDictionary(a=>a,a=>CharacterAttributes.LegacyValue(a));await Initial(legacy,legacyValues);await Allocate(legacy,new[]{((byte)78,(byte)1)},false,legacyValues);
             Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={legacy.CharId} AND slot IN ({slots})"),"No-row refusal creates no fallback rows");uint legacyId=legacy.CharId;await Logout(legacy);legacy=null;
             step="earned-relog";await Task.Delay(TimeSpan.FromSeconds(33));
