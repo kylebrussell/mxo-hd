@@ -54,7 +54,7 @@ public static partial class Scenarios
             step="latest-receipt-baseline";await Operation("81 11 00 01",false,true);
             string priorReceipt=await context.Database.ScalarAsync($"SELECT CONCAT(original_id,':',raw_goid,':',raw_count,':',purity,':',paid) FROM vendor_last_sale WHERE char_id={p.CharId}");
             step="unsupported-receipt-identity";
-            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,goid,slot,count,purity) SELECT {p.CharId},11666,0,0,0 WHERE NOT EXISTS(SELECT 1 FROM inventory WHERE charId={p.CharId} AND slot=0); INSERT INTO inventory(charId,goid,slot,count,purity) VALUES({p.CharId},{0x8404c180u},15,0,0),({p.CharId},{0x8002c400u},16,0,0),({p.CharId},{4294967296L+11666},17,0,0)");
+            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,goid,slot,count,purity) SELECT {p.CharId},11666,0,0,0 WHERE NOT EXISTS(SELECT 1 FROM inventory WHERE charId={p.CharId} AND slot=0); INSERT INTO inventory(charId,goid,slot,count,purity) VALUES({p.CharId},{0x8404c180u},15,0,0),({p.CharId},{0x80013800u},16,0,0),({p.CharId},{4294967296L+11666},17,0,0)");
             string guardedRows=await context.Database.ScalarAsync($"SELECT GROUP_CONCAT(CONCAT(invId,':',goid,':',slot,':',count,':',purity) ORDER BY invId) FROM inventory WHERE charId={p.CharId} AND slot IN(0,15,16,17)");
             long guardedCash=await Cash();
             foreach(byte rejectedSlot in new byte[]{0,15,16,17})

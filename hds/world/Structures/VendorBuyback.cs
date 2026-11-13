@@ -52,7 +52,7 @@ namespace hds
             goid=unchecked((uint)item.RawGoid);if(goid==0)return false;
             if(AbilityProgression.IsAbilityCode(goid))
             {
-                // Local receipt qualification only: code-family values and attribute/hidden templates are not ordinary ability items.
+                // Local receipt qualification only: code-family values and non-class0 templates are not ordinary ability items.
                 if((goid&0xfc000000u)!=0x80000000u)return false;
                 ushort ability=AbilityCatalog.Canonical(AbilityCatalog.IdOf(goid));
                 var entry=AbilityCatalog.Find(ability);

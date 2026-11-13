@@ -39,8 +39,8 @@ public class VendorBuybackTests
         Assert.Equal(expected,VendorBuyback.ReceiptSlot(slot));
     [Theory]
     [InlineData(0x8404c180u)] // Stored-code family: its masked ID aliases an ordinary ability.
-    [InlineData(0x8002c400u)] // Focus177 is an attribute, not an ordinary learned ability.
-    [InlineData(0x8010fc01u)] // Howitzer's internal1087 state is not an ordinary bag ability.
+    [InlineData(0x8002c400u)] // DebuffAreaRadius177 is a class2 attribute, not an ordinary learned ability.
+    [InlineData(0x80013800u)] // Focus78 is the actual class1 attribute template.
     [InlineData(0x83fffc01u)] // Genuine family but unknown canonical template4095.
     public void HighBitDoesNotMakeCodeAttributesOrUnknownTemplatesOrdinaryAbilityItems(uint raw)
     {
