@@ -6,10 +6,10 @@ parser.add_argument('tools')
 parser.add_argument('--world',type=int,choices=(4,5,6,8,10,12,13,14,15,16,17),default=17)
 parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclude EVERY native key touched by a nonzero prefab rotation; never export its variants.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
-parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed world16 ONLY. Other worlds retain strict omission policy.')
+parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds13/16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-if args.native_prefab_rotations and (args.world!=16 or args.omit_unproven_rotations):
- parser.error('--native-prefab-rotations is reviewed for world16 only and cannot be combined with historical omission mode')
+if args.native_prefab_rotations and (args.world not in (13,16) or args.omit_unproven_rotations):
+ parser.error('--native-prefab-rotations requires a reviewed world and cannot be combined with historical omission mode')
 world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',8:'archive_sakura',10:'widowsmoor',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
 args.audit=args.audit or f'research/world-data/{world_name}-static-audit.json'
@@ -26,10 +26,10 @@ rows=list(csv.DictReader(open('data/sector_properties.csv')))
 sector_parents={}
 if args.native_prefab_rotations:
  # Only direct METR SCIN -> sector SIDI. No nested/EPI resource traversal or assumed parent graph.
- rel=next(p for ident,_,p in M.WORLDS if ident==16);path=Path(R.D)/rel
+ rel=next(p for ident,_,p in M.WORLDS if ident==args.world);path=Path(R.D)/rel
  sources[rel]=hashlib.sha256(path.read_bytes()).hexdigest()
  sector_parents={v['sector']:v for v in M.read_metr(path)}
- for row in (r for r in rows if r['metr_id']=='16'):
+ for row in (r for r in rows if r['metr_id']==str(args.world)):
   parent=sector_parents[int(row['sector'])]
   assert parent['name'].lower()==row['file'].lower(), 'Unvalidated direct sector filename'
   assert (float(row['min_x']),float(row['min_z']))==(parent['min'][0],parent['min'][2]), 'Sector parent translation mismatch'
@@ -73,7 +73,17 @@ def decode(s):
      native_poses[(int(s['sector']),*out[-1])]=(int(s['sector']),g[1],g[0],(native_pos[0],native_pos[1]+145,native_pos[2]),native_q,rot,'int')
    if args.native_prefab_rotations:
     rec=idx[rid];data=R.read(rec);digest=hashlib.sha256(data).hexdigest();sources['RID:'+format(rid,'08x')]=digest
-    placement_sources.append(dict(sector=int(s['sector']),source=byname[name+'.sidi'],rid=rid,pivot=list(box[:3]),rotation=rot,parent='direct-sector',prefab=rec.get('path',''),resourcePack=rec['pack'],resourceOffset=rec['off'],resourceSize=rec['size'],resourceSha256=digest))
+    evidence=dict(sector=int(s['sector']),source=byname[name+'.sidi'],rid=rid,pivot=list(box[:3]),rotation=rot,parent='direct-sector',prefab=rec.get('path',''),resourcePack=rec['pack'],resourceOffset=rec['off'],resourceSize=rec['size'],resourceSha256=digest)
+    if args.world==13:
+     #6247608a copies this second RID to IPI+dc; the following optional u16 goes to+9c.
+     # Neither enters6246b0c0's pivot/rotation matrix. Preserve opaque metadata, never treat it as another parent.
+     secondary,metadata=struct.unpack_from('<IH',q,p+26)
+     assert secondary in idx, ('Missing secondary native IPI resource',hex(secondary))
+     second=idx[secondary];second_data=R.read(second);second_sha=hashlib.sha256(second_data).hexdigest();sources['RID:'+format(secondary,'08x')]=second_sha
+     evidence.update(rotationUpperWord=struct.unpack_from('<H',q,p+24)[0],resourceIndexFlags=rec['flags'],resourceType=rec['type'],secondaryRid=secondary,opaqueMetadataU16=metadata,
+      secondaryResourceIndexFlags=second['flags'],secondaryResourceType=second['type'],secondaryResourcePath=second.get('path',''),
+      secondaryResourcePack=second['pack'],secondaryResourceOffset=second['off'],secondaryResourceSize=second['size'],secondaryResourceSha256=second_sha)
+    placement_sources.append(evidence)
  return out
 
 selected=[r for r in rows if r['metr_id']==str(args.world)]
@@ -125,7 +135,7 @@ elif args.world==16:
 elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
- assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,2052 if args.native_prefab_rotations else 1619)
 elif args.world==5:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
  assert len(sources)==326
@@ -142,7 +152,7 @@ audit=dict(world=args.world,rawReferences=len(raw),uniqueKeys=len(groups),export
  sourceSha256=sources,raw=raw,conflicts={str(k):v for k,v in conflicts.items()})
 if args.native_prefab_rotations:
  audit.update(convention='Native direct-sector IPI pivot*10 + exact quarterturn, parent*local quaternion; float32 native stores. Server +145Y remains separate. Raw retains historical diagnostic convention.',
-  nativePrefabRotations=dict(reviewedWorld=16,algorithm='client.dll6246b0c0/62111670/62046a40',parentEligibility='Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.',floatStores='signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.',placements=placement_sources),
+  nativePrefabRotations=dict(reviewedWorld=args.world,algorithm='client.dll6246b0c0/62111670/62046a40',parentEligibility='Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.',floatStores='signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.',placements=placement_sources),
   historicallyUnprovenRotationKeys=[list(k) for k in sorted(unproven)],
   omissionPolicy='Every conflicting native key variant remains excluded, even if transformed poses coincide. Unsupported actual nested/EPI parents, invalid flags, and missing resources refuse export; blank resource aliases are recorded, not guessed. No first/last variant policy.')
 if args.omit_unproven_rotations:

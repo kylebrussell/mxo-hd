@@ -2,7 +2,7 @@
   "world": 13,
   "rawReferences": 2164,
   "uniqueKeys": 2096,
-  "exportedKeys": 1619,
+  "exportedKeys": 2052,
   "excludedKeys": [
     [
       27,
@@ -58,19 +58,7 @@
     ],
     [
       27,
-      572
-    ],
-    [
-      27,
       573
-    ],
-    [
-      27,
-      574
-    ],
-    [
-      27,
-      575
     ],
     [
       27,
@@ -162,747 +150,11 @@
     ],
     [
       225,
-      1
-    ],
-    [
-      225,
-      2
-    ],
-    [
-      225,
-      3
-    ],
-    [
-      225,
-      4
-    ],
-    [
-      225,
-      5
-    ],
-    [
-      225,
-      6
-    ],
-    [
-      225,
-      7
-    ],
-    [
-      225,
-      8
-    ],
-    [
-      225,
-      9
-    ],
-    [
-      225,
-      10
-    ],
-    [
-      225,
-      11
-    ],
-    [
-      225,
-      12
-    ],
-    [
-      225,
-      13
-    ],
-    [
-      225,
-      14
-    ],
-    [
-      225,
-      15
-    ],
-    [
-      225,
-      16
-    ],
-    [
-      225,
-      17
-    ],
-    [
-      225,
-      18
-    ],
-    [
-      225,
-      19
-    ],
-    [
-      225,
-      20
-    ],
-    [
-      225,
-      21
-    ],
-    [
-      225,
-      22
-    ],
-    [
-      225,
-      23
-    ],
-    [
-      225,
-      24
-    ],
-    [
-      225,
-      25
-    ],
-    [
-      225,
-      26
-    ],
-    [
-      225,
-      27
-    ],
-    [
-      225,
-      28
-    ],
-    [
-      225,
-      29
-    ],
-    [
-      225,
-      30
-    ],
-    [
-      225,
-      31
-    ],
-    [
-      225,
-      32
-    ],
-    [
-      225,
-      33
-    ],
-    [
-      225,
-      34
-    ],
-    [
-      225,
-      35
-    ],
-    [
-      225,
-      36
-    ],
-    [
-      225,
-      37
-    ],
-    [
-      225,
-      38
-    ],
-    [
-      225,
-      39
-    ],
-    [
-      225,
-      40
-    ],
-    [
-      225,
-      41
-    ],
-    [
-      225,
-      42
-    ],
-    [
-      225,
-      43
-    ],
-    [
-      225,
-      44
-    ],
-    [
-      225,
-      45
-    ],
-    [
-      225,
-      46
-    ],
-    [
-      225,
-      47
-    ],
-    [
-      225,
-      48
-    ],
-    [
-      225,
-      49
-    ],
-    [
-      225,
-      50
-    ],
-    [
-      225,
-      51
-    ],
-    [
-      225,
-      52
-    ],
-    [
-      225,
-      53
-    ],
-    [
-      225,
-      54
-    ],
-    [
-      225,
-      55
-    ],
-    [
-      225,
       56
     ],
     [
       225,
-      57
-    ],
-    [
-      225,
-      58
-    ],
-    [
-      225,
-      59
-    ],
-    [
-      225,
-      60
-    ],
-    [
-      225,
-      61
-    ],
-    [
-      225,
-      62
-    ],
-    [
-      225,
-      63
-    ],
-    [
-      225,
-      64
-    ],
-    [
-      225,
-      65
-    ],
-    [
-      225,
-      66
-    ],
-    [
-      225,
-      67
-    ],
-    [
-      225,
-      68
-    ],
-    [
-      225,
-      69
-    ],
-    [
-      225,
-      70
-    ],
-    [
-      225,
-      71
-    ],
-    [
-      225,
-      72
-    ],
-    [
-      225,
-      73
-    ],
-    [
-      225,
-      74
-    ],
-    [
-      225,
-      75
-    ],
-    [
-      225,
-      76
-    ],
-    [
-      225,
-      77
-    ],
-    [
-      225,
-      78
-    ],
-    [
-      225,
-      79
-    ],
-    [
-      225,
-      80
-    ],
-    [
-      225,
-      81
-    ],
-    [
-      225,
-      82
-    ],
-    [
-      225,
-      83
-    ],
-    [
-      225,
-      84
-    ],
-    [
-      225,
-      85
-    ],
-    [
-      225,
-      86
-    ],
-    [
-      225,
-      87
-    ],
-    [
-      225,
-      88
-    ],
-    [
-      225,
-      89
-    ],
-    [
-      225,
-      90
-    ],
-    [
-      225,
-      91
-    ],
-    [
-      225,
-      92
-    ],
-    [
-      225,
-      93
-    ],
-    [
-      225,
-      94
-    ],
-    [
-      225,
-      95
-    ],
-    [
-      225,
       96
-    ],
-    [
-      225,
-      97
-    ],
-    [
-      225,
-      98
-    ],
-    [
-      225,
-      99
-    ],
-    [
-      225,
-      100
-    ],
-    [
-      225,
-      101
-    ],
-    [
-      225,
-      102
-    ],
-    [
-      225,
-      103
-    ],
-    [
-      225,
-      104
-    ],
-    [
-      225,
-      105
-    ],
-    [
-      225,
-      106
-    ],
-    [
-      225,
-      107
-    ],
-    [
-      225,
-      108
-    ],
-    [
-      225,
-      109
-    ],
-    [
-      225,
-      110
-    ],
-    [
-      225,
-      111
-    ],
-    [
-      225,
-      112
-    ],
-    [
-      225,
-      113
-    ],
-    [
-      225,
-      114
-    ],
-    [
-      225,
-      115
-    ],
-    [
-      225,
-      116
-    ],
-    [
-      225,
-      117
-    ],
-    [
-      225,
-      118
-    ],
-    [
-      225,
-      119
-    ],
-    [
-      225,
-      120
-    ],
-    [
-      225,
-      121
-    ],
-    [
-      225,
-      122
-    ],
-    [
-      225,
-      123
-    ],
-    [
-      225,
-      124
-    ],
-    [
-      225,
-      125
-    ],
-    [
-      225,
-      126
-    ],
-    [
-      225,
-      127
-    ],
-    [
-      225,
-      128
-    ],
-    [
-      225,
-      129
-    ],
-    [
-      225,
-      130
-    ],
-    [
-      225,
-      131
-    ],
-    [
-      225,
-      132
-    ],
-    [
-      225,
-      133
-    ],
-    [
-      225,
-      134
-    ],
-    [
-      225,
-      135
-    ],
-    [
-      225,
-      136
-    ],
-    [
-      225,
-      137
-    ],
-    [
-      225,
-      138
-    ],
-    [
-      225,
-      139
-    ],
-    [
-      225,
-      140
-    ],
-    [
-      225,
-      141
-    ],
-    [
-      225,
-      142
-    ],
-    [
-      225,
-      143
-    ],
-    [
-      225,
-      144
-    ],
-    [
-      225,
-      145
-    ],
-    [
-      225,
-      146
-    ],
-    [
-      225,
-      147
-    ],
-    [
-      225,
-      148
-    ],
-    [
-      225,
-      149
-    ],
-    [
-      225,
-      150
-    ],
-    [
-      225,
-      151
-    ],
-    [
-      225,
-      152
-    ],
-    [
-      225,
-      153
-    ],
-    [
-      225,
-      154
-    ],
-    [
-      225,
-      155
-    ],
-    [
-      225,
-      156
-    ],
-    [
-      225,
-      157
-    ],
-    [
-      225,
-      158
-    ],
-    [
-      225,
-      159
-    ],
-    [
-      225,
-      160
-    ],
-    [
-      225,
-      161
-    ],
-    [
-      225,
-      162
-    ],
-    [
-      225,
-      163
-    ],
-    [
-      225,
-      164
-    ],
-    [
-      225,
-      165
-    ],
-    [
-      225,
-      166
-    ],
-    [
-      225,
-      167
-    ],
-    [
-      225,
-      168
-    ],
-    [
-      225,
-      169
-    ],
-    [
-      225,
-      170
-    ],
-    [
-      225,
-      171
-    ],
-    [
-      225,
-      172
-    ],
-    [
-      225,
-      173
-    ],
-    [
-      225,
-      174
-    ],
-    [
-      225,
-      175
-    ],
-    [
-      225,
-      176
-    ],
-    [
-      225,
-      177
-    ],
-    [
-      225,
-      178
-    ],
-    [
-      225,
-      179
-    ],
-    [
-      225,
-      180
-    ],
-    [
-      225,
-      181
-    ],
-    [
-      225,
-      182
-    ],
-    [
-      225,
-      183
-    ],
-    [
-      225,
-      184
-    ],
-    [
-      225,
-      185
-    ],
-    [
-      225,
-      186
     ],
     [
       225,
@@ -914,459 +166,7 @@
     ],
     [
       225,
-      189
-    ],
-    [
-      225,
-      190
-    ],
-    [
-      225,
-      191
-    ],
-    [
-      225,
-      192
-    ],
-    [
-      225,
-      193
-    ],
-    [
-      225,
-      194
-    ],
-    [
-      225,
-      195
-    ],
-    [
-      225,
-      196
-    ],
-    [
-      225,
-      197
-    ],
-    [
-      225,
-      198
-    ],
-    [
-      225,
-      199
-    ],
-    [
-      225,
-      200
-    ],
-    [
-      225,
-      201
-    ],
-    [
-      225,
-      202
-    ],
-    [
-      225,
-      203
-    ],
-    [
-      225,
-      204
-    ],
-    [
-      225,
-      205
-    ],
-    [
-      225,
-      206
-    ],
-    [
-      225,
-      207
-    ],
-    [
-      225,
-      208
-    ],
-    [
-      225,
-      209
-    ],
-    [
-      225,
-      210
-    ],
-    [
-      225,
-      211
-    ],
-    [
-      225,
-      212
-    ],
-    [
-      225,
-      213
-    ],
-    [
-      225,
-      214
-    ],
-    [
-      225,
-      215
-    ],
-    [
-      225,
-      216
-    ],
-    [
-      225,
-      217
-    ],
-    [
-      225,
-      218
-    ],
-    [
-      225,
-      219
-    ],
-    [
-      225,
-      220
-    ],
-    [
-      225,
-      221
-    ],
-    [
-      225,
-      222
-    ],
-    [
-      225,
-      223
-    ],
-    [
-      225,
-      224
-    ],
-    [
-      225,
-      225
-    ],
-    [
-      225,
-      226
-    ],
-    [
-      225,
-      227
-    ],
-    [
-      225,
-      228
-    ],
-    [
-      225,
-      229
-    ],
-    [
-      225,
-      230
-    ],
-    [
-      225,
-      231
-    ],
-    [
-      225,
-      232
-    ],
-    [
-      225,
-      233
-    ],
-    [
-      225,
-      234
-    ],
-    [
-      225,
-      235
-    ],
-    [
-      225,
-      236
-    ],
-    [
-      225,
-      237
-    ],
-    [
-      225,
-      238
-    ],
-    [
-      225,
-      239
-    ],
-    [
-      225,
-      240
-    ],
-    [
-      225,
-      241
-    ],
-    [
-      225,
-      242
-    ],
-    [
-      225,
-      243
-    ],
-    [
-      225,
-      244
-    ],
-    [
-      225,
-      245
-    ],
-    [
-      225,
-      246
-    ],
-    [
-      225,
-      247
-    ],
-    [
-      225,
-      248
-    ],
-    [
-      225,
       249
-    ],
-    [
-      225,
-      250
-    ],
-    [
-      225,
-      251
-    ],
-    [
-      225,
-      252
-    ],
-    [
-      225,
-      253
-    ],
-    [
-      225,
-      254
-    ],
-    [
-      225,
-      255
-    ],
-    [
-      225,
-      256
-    ],
-    [
-      225,
-      257
-    ],
-    [
-      225,
-      258
-    ],
-    [
-      225,
-      259
-    ],
-    [
-      225,
-      260
-    ],
-    [
-      225,
-      261
-    ],
-    [
-      225,
-      262
-    ],
-    [
-      225,
-      263
-    ],
-    [
-      225,
-      264
-    ],
-    [
-      225,
-      265
-    ],
-    [
-      225,
-      266
-    ],
-    [
-      225,
-      267
-    ],
-    [
-      225,
-      268
-    ],
-    [
-      225,
-      269
-    ],
-    [
-      225,
-      270
-    ],
-    [
-      225,
-      271
-    ],
-    [
-      225,
-      272
-    ],
-    [
-      225,
-      273
-    ],
-    [
-      225,
-      274
-    ],
-    [
-      225,
-      275
-    ],
-    [
-      225,
-      276
-    ],
-    [
-      225,
-      277
-    ],
-    [
-      225,
-      278
-    ],
-    [
-      225,
-      279
-    ],
-    [
-      225,
-      280
-    ],
-    [
-      225,
-      281
-    ],
-    [
-      225,
-      282
-    ],
-    [
-      225,
-      283
-    ],
-    [
-      225,
-      284
-    ],
-    [
-      225,
-      285
-    ],
-    [
-      225,
-      286
-    ],
-    [
-      225,
-      287
-    ],
-    [
-      225,
-      288
-    ],
-    [
-      225,
-      289
-    ],
-    [
-      225,
-      290
-    ],
-    [
-      225,
-      291
-    ],
-    [
-      225,
-      292
-    ],
-    [
-      225,
-      293
-    ],
-    [
-      225,
-      294
-    ],
-    [
-      225,
-      295
-    ],
-    [
-      225,
-      296
-    ],
-    [
-      225,
-      297
-    ],
-    [
-      225,
-      298
-    ],
-    [
-      225,
-      299
-    ],
-    [
-      225,
-      300
-    ],
-    [
-      225,
-      301
-    ],
-    [
-      225,
-      302
     ],
     [
       225,
@@ -1374,547 +174,16 @@
     ],
     [
       225,
-      304
-    ],
-    [
-      225,
-      305
-    ],
-    [
-      225,
-      306
-    ],
-    [
-      225,
-      307
-    ],
-    [
-      225,
-      308
-    ],
-    [
-      225,
-      309
-    ],
-    [
-      225,
-      310
-    ],
-    [
-      225,
-      311
-    ],
-    [
-      225,
-      312
-    ],
-    [
-      225,
-      313
-    ],
-    [
-      225,
-      314
-    ],
-    [
-      225,
-      315
-    ],
-    [
-      225,
-      316
-    ],
-    [
-      225,
-      317
-    ],
-    [
-      225,
-      318
-    ],
-    [
-      225,
-      319
-    ],
-    [
-      225,
-      320
-    ],
-    [
-      225,
-      321
-    ],
-    [
-      225,
-      322
-    ],
-    [
-      225,
-      323
-    ],
-    [
-      225,
-      324
-    ],
-    [
-      225,
-      325
-    ],
-    [
-      225,
-      326
-    ],
-    [
-      225,
-      327
-    ],
-    [
-      225,
-      328
-    ],
-    [
-      225,
-      329
-    ],
-    [
-      225,
-      330
-    ],
-    [
-      225,
-      331
-    ],
-    [
-      225,
-      332
-    ],
-    [
-      225,
-      333
-    ],
-    [
-      225,
-      334
-    ],
-    [
-      225,
-      335
-    ],
-    [
-      225,
-      336
-    ],
-    [
-      225,
-      337
-    ],
-    [
-      225,
-      338
-    ],
-    [
-      225,
-      339
-    ],
-    [
-      225,
-      340
-    ],
-    [
-      225,
-      341
-    ],
-    [
-      225,
-      342
-    ],
-    [
-      225,
-      343
-    ],
-    [
-      225,
-      344
-    ],
-    [
-      225,
-      345
-    ],
-    [
-      225,
-      346
-    ],
-    [
-      225,
-      347
-    ],
-    [
-      225,
-      348
-    ],
-    [
-      225,
-      349
-    ],
-    [
-      225,
-      350
-    ],
-    [
-      225,
-      351
-    ],
-    [
-      225,
-      352
-    ],
-    [
-      225,
-      353
-    ],
-    [
-      225,
-      354
-    ],
-    [
-      225,
-      355
-    ],
-    [
-      225,
-      356
-    ],
-    [
-      225,
-      357
-    ],
-    [
-      225,
-      358
-    ],
-    [
-      225,
-      359
-    ],
-    [
-      225,
-      360
-    ],
-    [
-      225,
-      361
-    ],
-    [
-      225,
-      362
-    ],
-    [
-      225,
-      363
-    ],
-    [
-      225,
-      364
-    ],
-    [
-      225,
-      365
-    ],
-    [
-      225,
-      366
-    ],
-    [
-      225,
-      367
-    ],
-    [
-      225,
-      368
-    ],
-    [
-      225,
-      369
-    ],
-    [
-      225,
-      370
-    ],
-    [
-      225,
-      371
-    ],
-    [
-      225,
-      372
-    ],
-    [
-      225,
-      373
-    ],
-    [
-      225,
-      374
-    ],
-    [
-      225,
-      375
-    ],
-    [
-      225,
-      376
-    ],
-    [
-      225,
-      377
-    ],
-    [
-      225,
-      378
-    ],
-    [
-      225,
-      379
-    ],
-    [
-      225,
-      380
-    ],
-    [
-      225,
-      381
-    ],
-    [
-      225,
       382
     ],
     [
       225,
-      383
-    ],
-    [
-      225,
-      384
-    ],
-    [
-      225,
-      385
-    ],
-    [
-      225,
-      386
-    ],
-    [
-      225,
-      387
-    ],
-    [
-      225,
-      388
-    ],
-    [
-      225,
-      389
-    ],
-    [
-      225,
-      390
-    ],
-    [
-      225,
-      391
-    ],
-    [
-      225,
-      392
-    ],
-    [
-      225,
-      393
-    ],
-    [
-      225,
-      394
-    ],
-    [
-      225,
-      395
-    ],
-    [
-      225,
-      396
-    ],
-    [
-      225,
-      397
-    ],
-    [
-      225,
-      398
-    ],
-    [
-      225,
-      399
-    ],
-    [
-      225,
-      400
-    ],
-    [
-      225,
-      401
-    ],
-    [
-      225,
-      402
-    ],
-    [
-      225,
-      403
-    ],
-    [
-      225,
-      404
-    ],
-    [
-      225,
-      405
-    ],
-    [
-      225,
-      406
-    ],
-    [
-      225,
-      407
-    ],
-    [
-      225,
-      408
-    ],
-    [
-      225,
-      409
-    ],
-    [
-      225,
-      410
-    ],
-    [
-      225,
-      411
-    ],
-    [
-      225,
-      412
-    ],
-    [
-      225,
-      413
-    ],
-    [
-      225,
-      414
-    ],
-    [
-      225,
-      415
-    ],
-    [
-      225,
-      416
-    ],
-    [
-      225,
       417
-    ],
-    [
-      225,
-      418
-    ],
-    [
-      225,
-      419
-    ],
-    [
-      225,
-      420
-    ],
-    [
-      225,
-      421
-    ],
-    [
-      225,
-      422
-    ],
-    [
-      225,
-      423
-    ],
-    [
-      225,
-      424
-    ],
-    [
-      225,
-      425
-    ],
-    [
-      225,
-      426
-    ],
-    [
-      225,
-      427
-    ],
-    [
-      225,
-      428
-    ],
-    [
-      225,
-      429
-    ],
-    [
-      225,
-      430
-    ],
-    [
-      225,
-      431
-    ],
-    [
-      225,
-      432
-    ],
-    [
-      225,
-      433
-    ],
-    [
-      225,
-      434
-    ],
-    [
-      225,
-      435
-    ],
-    [
-      225,
-      436
-    ],
-    [
-      225,
-      437
-    ],
-    [
-      225,
-      438
     ]
   ],
-  "convention": "METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.",
+  "convention": "Native direct-sector IPI pivot*10 + exact quarterturn, parent*local quaternion; float32 native stores. Server +145Y remains separate. Raw retains historical diagnostic convention.",
   "sourceSha256": {
+    "resource/worlds/final_world/constructs/large/large02/large02.metr": "24895d4c1125c5ace7d7fb49841cab3a26a8ec072ee1a63b169b6ebea634f435",
     "resource/worlds/final_world/constructs/large/large02/large02_122.sid": "9fe290663184c95c739c310a9f60550e8bf80abdb24b052bd1b723a10aad15d6",
     "resource/worlds/final_world/constructs/large/large02/large02_122.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/large/large02/large02_122.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
@@ -1999,6 +268,42 @@
     "resource/worlds/final_world/constructs/large/large02/large02_135.sid": "f7018b79042ce1bec97d237103b3db8ae999c992421c967daa3b606f34fbba3d",
     "resource/worlds/final_world/constructs/large/large02/large02_135.sidgo": "7b3e9c1c4fe1719aa95225ccd0f0b7942361a6c6ff4542303a79883785001cf3",
     "resource/worlds/final_world/constructs/large/large02/large02_135.sidi": "9a986b38b865c8a4a80b9bc073ecdeb2a5f708e6b65dfc239a8d12f990b9f10a",
+    "RID:0c003efc": "1fe2020359bcd4708d72714bc3473c3aaae5d04436fe7b0c0dc784635eb62162",
+    "RID:2c000ec8": "2905fafe4e878ec58238874ee3a1f23102c90cd716ed7e41acd36a91d4442086",
+    "RID:0c003efe": "c1494dd84049da6bcd23a8f5087ace7516a83e603cea8966b071dbcffe36592c",
+    "RID:2c000eca": "95df3d874c0cce8d1464e222216210ce4bca1dc4c4af39d098482e32ab90db4e",
+    "RID:0c003efd": "57c20436a63d264e93f63e77f5212c78cbd5586eaf40465cc6c42e5442a91396",
+    "RID:2c000ecc": "5f9b58f9d864b68be4a4a25dc502e0ae1b62306c3f2485bb7e145da24103a95e",
+    "RID:70001a5c": "3bdefe6ea9db45b8ddd4ca557abbcefa68b9a9367aa52f32e0d2d78ecd300947",
+    "RID:70001a5d": "be4f37a9cc1b0b847e7e88c9c5adbf22cfbaa2102e09e2c3cfb46e24dab3d42f",
+    "RID:2c0006ca": "9dbca70acb48f9720315887220c255b4a4e918408d1be110559a5f992948372c",
+    "RID:1a00108b": "6c2d9eb8f8a1291585dd63d70c1cfd7beb9c6714af865f75608be4bb0bbd8841",
+    "RID:2c0003ae": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a",
+    "RID:1a001091": "e4fb952812c38b9453b88fea0ffd99dd1674ca82baa991daed76cbfcbf1b1173",
+    "RID:2c00054b": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805",
+    "RID:1a00108e": "528e9fefe5edbcf2e9fd7e3c54a5533a0462ebb32c0950db6bbcf1798d123dcf",
+    "RID:8a0001fa": "200bd7f836c56dc03c73126ee0ea6fd93e4946d0c65553a9602ec88fb6b0bf98",
+    "RID:8a0001f0": "66b7c3b07604608a45cc844e04383896ed597e3de30cacf504cc59a5e0015b01",
+    "RID:8a0001f9": "1c47654aec2bfd84aa65f41367d9acac0e5a41a3deb54fac2322086f8beff78a",
+    "RID:8a0001f1": "25988215bf427297922cb0bbe2723714da7e37e99cd32c7e7ef5801b52ec2aa4",
+    "RID:2c0003af": "8ffe7bb9a341a62585c0c59ea50e701d27904754e87812b7b7c170c04e7ae598",
+    "RID:1a00108c": "8165ac57217d8198fcbe6374d6933dce05f0325324702ff0887af60cef871f30",
+    "RID:2c0006c9": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a",
+    "RID:1a00108f": "73fcaecf7741536fbf1c2466e21e54ee4fe83662476caf9c391a145796d2167f",
+    "RID:2c0003ab": "978751bf6f74eb7fbf67741e41f2503521f57e3b1740c85b66d102d7e05b8e29",
+    "RID:1a00108a": "f86083530b114314dfd5a42aaffea912ea1e8b524ff9bcad2f14cda8ffffa840",
+    "RID:2c0003ad": "303701239307c7b2c39dd4a000d1f49278e0dfbc57c0f41e9e75d197df35f58f",
+    "RID:1a00108d": "be445a9814741ef1baa0cf64b21d7489e3f32c277147dc2f4975d0998d1f73d8",
+    "RID:2c0003ac": "6b80934b427c51d7125116a91f38de88e8cd87428ed0de5a15c3d577cef203cd",
+    "RID:1a001090": "f383e3f23dd66b11a29421dbcf1a73bffff4f08ac6f57fc75e8c198ee6b0579f",
+    "RID:70001a7e": "b9f194a43f655b800e35a898ce984ad57af5c373f1502b779c2cedd91818c251",
+    "RID:70001a7f": "21173b354f2999e6c93ccf73bead6671755ab06a2ac97e3a6da3e4edfeef8556",
+    "RID:0c003eff": "29c005762eadd3794c6e9aa766a405a426557c414cf211333c14d14e2889246b",
+    "RID:2c000ec9": "ace4094d3d7a9e5da6a2c2e32386a4c6b67f850ab48b0ad8b9fcdca247e06ba8",
+    "RID:0c003efa": "16d4c97eda3cdf26b0811b50d217b4ef5c7acd12e838c3cfe098c2c9105fdf43",
+    "RID:2c000ecb": "3edb7b15e642ea3e0097499ed79cab9744387297609d9f8e7bc021cd9982aced",
+    "RID:0c003f01": "50c509c1700a6c718b85e07c5f7e83b4ab2670825e6d93ebeb3ae873b90fc9ca",
+    "RID:2c000ec7": "4f9efda542fd97865b64e256b605be6a896f672eef047e601c35c0397c373ce1",
     "resource/worlds/final_world/constructs/large/large02/large02_17.sid": "9c02ae26edd3bafac3cb82eda79f3344d7312456e992637e29f5249be43cbe42",
     "resource/worlds/final_world/constructs/large/large02/large02_17.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/large/large02/large02_17.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
@@ -2592,7 +897,33 @@
     "resource/worlds/final_world/constructs/large/large02/large02_84.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
     "resource/worlds/final_world/constructs/large/large02/large02_124.sid": "4d843fd424920d9f85543b7609e04bd2d333a462b6db0977e3d238c4d8b2b96c",
     "resource/worlds/final_world/constructs/large/large02/large02_124.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
-    "resource/worlds/final_world/constructs/large/large02/large02_124.sidi": "a81d100c1e6f59fa52924e04d6f59199de02c41a06f2f6e565a2077c71da9595"
+    "resource/worlds/final_world/constructs/large/large02/large02_124.sidi": "a81d100c1e6f59fa52924e04d6f59199de02c41a06f2f6e565a2077c71da9595",
+    "RID:0c0090e5": "7ded51723f05195201d7bc5d18f824de12d3c4c7b09208fa64a13d72918a8f64",
+    "RID:0c0090e6": "c400f2b36c77fe3779ea96770f8a5cadb7795230a5fabae0cb11307fd54faba3",
+    "RID:380059a5": "baae8dc26366dbc8e2d834baf88a774de0612373b35e50347851a3eb9a8b4990",
+    "RID:1a001419": "f9601e20b83a80e5261aa1add15aeacd124dbe444444697e10ea0ca0e505229a",
+    "RID:380059a1": "1737919fcc9565fcd659b2e4cfb8b161522b9c9bc93bcf9853945e0e72ee0648",
+    "RID:1a0013fb": "7b92f823289947e7ec51dd8cbfdb60769b3fb0c100ab7ff24b1d323b893156c6",
+    "RID:1a001697": "fe67489befa3f6906d047451c89580d3d080572a87302b816246e1ac8d66b0e5",
+    "RID:1a001698": "e85a3986895151e48c2712b3785900f9d3254c923a528242fca55d8dde9ac02a",
+    "RID:380059a2": "0ef1f880cf8c8b83cc632f65be237cc810fedaf0101ffae4d20e2dc12662faa4",
+    "RID:1a00141c": "358c683fc9b46436cd4c8432839c4d64ba1283dd61038a267cc1da21097b41cb",
+    "RID:380059a6": "0643ee24e35df07d16c17e50862f219c1760ccc47ece5f63c6a464e2aa7695b0",
+    "RID:1a00141b": "124c2bf8d0385010382e5d1b6c0c8b7ef4d105bc68b439f42df358c8cdc26410",
+    "RID:380059a3": "734125209bfe6b783a37e1563db1efed644635ab17b63362c95523c20f45b5f4",
+    "RID:1a00141a": "e2a3391be1accf203e39107a044a9a66b86028b704581c12260f283661cf452e",
+    "RID:380059a4": "8643d93ac7834788d846e714a936e9ab0645540300c7f6b4b1f8310923506ea3",
+    "RID:1a001415": "22299133dca93442a82df937749fcfa1143ca490d22cb5381428f6254306263f",
+    "RID:0c0090e9": "da0baf11fd62e3f8bb17d4116ecf809ae423c8d63fec0141df556b8613045495",
+    "RID:0c0090ea": "6453c7495cff64ebc95d503c6ccb8ba1bd3d192795e1e7e3b9885e8b264f9b77",
+    "RID:0c0090e7": "eab8d5cf3162436251f096c7fc9126d83f0af15da8771d37062b165d94ede606",
+    "RID:0c0090e8": "1af1136555b69c8c9383863050f5b00ea210d88a8b4dfd9ee5ea78692514c1d4",
+    "RID:3800599e": "29126d2c03987d0403932cd78f81ac75b801a91c7ba504db59320000b14399a6",
+    "RID:1a001416": "e56ccc60c0615e1e9fadc65d941cbb57b85430db25bc62bea8ea3c45e2d79ccc",
+    "RID:380059a0": "1aee12caa32903755e6ddd48657123d59669b7e6596482cb40e4ebdbbde91d0a",
+    "RID:1a001417": "9c87159f7646e7e59e9bb91a6b3022fb62faf3de5725de9f3d517bd80b64cb2d",
+    "RID:3800599f": "3e1d74578e415dfea000b878d370555d8988098dbed50737d16adcaa2c987139",
+    "RID:1a001418": "8d8e923ab59a564b3191ed8c1f5c3038e00773c34f37937c265df35128cbdb37"
   },
   "raw": [
     [
@@ -43222,7 +41553,1001 @@
       ]
     ]
   },
-  "unprovenRotationKeys": [
+  "nativePrefabRotations": {
+    "reviewedWorld": 13,
+    "algorithm": "client.dll6246b0c0/62111670/62046a40",
+    "parentEligibility": "Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.",
+    "floatStores": "signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.",
+    "placements": [
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342716,
+        "pivot": [
+          820,
+          0,
+          460
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01_ware02.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 22971804,
+        "resourceSize": 2854902,
+        "resourceSha256": "1fe2020359bcd4708d72714bc3473c3aaae5d04436fe7b0c0dc784635eb62162",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201288,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01_ware02.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 22354364,
+        "secondaryResourceSize": 617440,
+        "secondaryResourceSha256": "2905fafe4e878ec58238874ee3a1f23102c90cd716ed7e41acd36a91d4442086"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342718,
+        "pivot": [
+          560,
+          80,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s02b.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 44201802,
+        "resourceSize": 1821934,
+        "resourceSha256": "c1494dd84049da6bcd23a8f5087ace7516a83e603cea8966b071dbcffe36592c",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201290,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s02b.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 42793558,
+        "secondaryResourceSize": 1408244,
+        "secondaryResourceSha256": "95df3d874c0cce8d1464e222216210ce4bca1dc4c4af39d098482e32ab90db4e"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342717,
+        "pivot": [
+          560,
+          0,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01b.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 30659114,
+        "resourceSize": 5148972,
+        "resourceSha256": "57c20436a63d264e93f63e77f5212c78cbd5586eaf40465cc6c42e5442a91396",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201292,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01b.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 29250854,
+        "secondaryResourceSize": 1408260,
+        "secondaryResourceSha256": "5f9b58f9d864b68be4a4a25dc502e0ae1b62306c3f2485bb7e145da24103a95e"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 1879054940,
+        "pivot": [
+          560,
+          0,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 37216274,
+        "resourceSize": 983044,
+        "resourceSha256": "3bdefe6ea9db45b8ddd4ca557abbcefa68b9a9367aa52f32e0d2d78ecd300947",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 1879054941,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 35808086,
+        "secondaryResourceSize": 1408188,
+        "secondaryResourceSha256": "be4f37a9cc1b0b847e7e88c9c5adbf22cfbaa2102e09e2c3cfb46e24dab3d42f"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738199242,
+        "pivot": [
+          500,
+          0,
+          2080
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_04.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10542056,
+        "resourceSize": 64162,
+        "resourceSha256": "9dbca70acb48f9720315887220c255b4a4e918408d1be110559a5f992948372c",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211851,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 10480408,
+        "secondaryResourceSize": 61648,
+        "secondaryResourceSha256": "6c2d9eb8f8a1291585dd63d70c1cfd7beb9c6714af865f75608be4bb0bbd8841"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198446,
+        "pivot": [
+          500,
+          80,
+          1900
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 8556272,
+        "resourceSize": 99890,
+        "resourceSha256": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211857,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 8479600,
+        "secondaryResourceSize": 76672,
+        "secondaryResourceSha256": "e4fb952812c38b9453b88fea0ffd99dd1674ca82baa991daed76cbfcbf1b1173"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198859,
+        "pivot": [
+          500,
+          0,
+          1780
+        ],
+        "rotation": 2,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11389150,
+        "resourceSize": 139878,
+        "resourceSha256": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211854,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 11360862,
+        "secondaryResourceSize": 28288,
+        "secondaryResourceSha256": "528e9fefe5edbcf2e9fd7e3c54a5533a0462ebb32c0950db6bbcf1798d123dcf"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198446,
+        "pivot": [
+          500,
+          80,
+          1120
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 8556272,
+        "resourceSize": 99890,
+        "resourceSha256": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211857,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 8479600,
+        "secondaryResourceSize": 76672,
+        "secondaryResourceSha256": "e4fb952812c38b9453b88fea0ffd99dd1674ca82baa991daed76cbfcbf1b1173"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 2315256314,
+        "pivot": [
+          460,
+          80,
+          1480
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/off_05.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10732822,
+        "resourceSize": 245570,
+        "resourceSha256": "200bd7f836c56dc03c73126ee0ea6fd93e4946d0c65553a9602ec88fb6b0bf98",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 2315256304,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/off_05.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 10606218,
+        "secondaryResourceSize": 126604,
+        "secondaryResourceSha256": "66b7c3b07604608a45cc844e04383896ed597e3de30cacf504cc59a5e0015b01"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198859,
+        "pivot": [
+          320,
+          0,
+          1420
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11389150,
+        "resourceSize": 139878,
+        "resourceSha256": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211854,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 11360862,
+        "secondaryResourceSize": 28288,
+        "secondaryResourceSha256": "528e9fefe5edbcf2e9fd7e3c54a5533a0462ebb32c0950db6bbcf1798d123dcf"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 2315256313,
+        "pivot": [
+          260,
+          80,
+          1420
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/off_06.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11113252,
+        "resourceSize": 247610,
+        "resourceSha256": "1c47654aec2bfd84aa65f41367d9acac0e5a41a3deb54fac2322086f8beff78a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 2315256305,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/off_06.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 10978392,
+        "secondaryResourceSize": 134860,
+        "secondaryResourceSha256": "25988215bf427297922cb0bbe2723714da7e37e99cd32c7e7ef5801b52ec2aa4"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198447,
+        "pivot": [
+          260,
+          0,
+          1420
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 9099018,
+        "resourceSize": 1255892,
+        "resourceSha256": "8ffe7bb9a341a62585c0c59ea50e701d27904754e87812b7b7c170c04e7ae598",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211852,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 8656162,
+        "secondaryResourceSize": 442856,
+        "secondaryResourceSha256": "8165ac57217d8198fcbe6374d6933dce05f0325324702ff0887af60cef871f30"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738199241,
+        "pivot": [
+          80,
+          0,
+          1960
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10416462,
+        "resourceSize": 63946,
+        "resourceSha256": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211855,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 10354910,
+        "secondaryResourceSize": 61552,
+        "secondaryResourceSha256": "73fcaecf7741536fbf1c2466e21e54ee4fe83662476caf9c391a145796d2167f"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198443,
+        "pivot": [
+          80,
+          0,
+          1780
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 24575242,
+        "resourceSize": 5799412,
+        "resourceSha256": "978751bf6f74eb7fbf67741e41f2503521f57e3b1740c85b66d102d7e05b8e29",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211850,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 23652518,
+        "secondaryResourceSize": 922724,
+        "secondaryResourceSha256": "f86083530b114314dfd5a42aaffea912ea1e8b524ff9bcad2f14cda8ffffa840"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198445,
+        "pivot": [
+          80,
+          0,
+          1420
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 36783842,
+        "resourceSize": 486178,
+        "resourceSha256": "303701239307c7b2c39dd4a000d1f49278e0dfbc57c0f41e9e75d197df35f58f",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211853,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 36515890,
+        "secondaryResourceSize": 267952,
+        "secondaryResourceSha256": "be445a9814741ef1baa0cf64b21d7489e3f32c277147dc2f4975d0998d1f73d8"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738199241,
+        "pivot": [
+          80,
+          0,
+          1300
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10416462,
+        "resourceSize": 63946,
+        "resourceSha256": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211855,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 10354910,
+        "secondaryResourceSize": 61552,
+        "secondaryResourceSha256": "73fcaecf7741536fbf1c2466e21e54ee4fe83662476caf9c391a145796d2167f"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 738198444,
+        "pivot": [
+          80,
+          0,
+          1000
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 31297386,
+        "resourceSize": 5218504,
+        "resourceSha256": "6b80934b427c51d7125116a91f38de88e8cd87428ed0de5a15c3d577cef203cd",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 137472,
+        "secondaryRid": 436211856,
+        "opaqueMetadataU16": 80,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 30374654,
+        "secondaryResourceSize": 922732,
+        "secondaryResourceSha256": "f383e3f23dd66b11a29421dbcf1a73bffff4f08ac6f57fc75e8c198ee6b0579f"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 1879054974,
+        "pivot": [
+          20,
+          80,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 47431856,
+        "resourceSize": 2214400,
+        "resourceSha256": "b9f194a43f655b800e35a898ce984ad57af5c373f1502b779c2cedd91818c251",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 1879054975,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 46023736,
+        "secondaryResourceSize": 1408120,
+        "secondaryResourceSha256": "21173b354f2999e6c93ccf73bead6671755ab06a2ac97e3a6da3e4edfeef8556"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342719,
+        "pivot": [
+          20,
+          0,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s02a.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 39607542,
+        "resourceSize": 3186016,
+        "resourceSha256": "29c005762eadd3794c6e9aa766a405a426557c414cf211333c14d14e2889246b",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201289,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s02a.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 38199318,
+        "secondaryResourceSize": 1408224,
+        "secondaryResourceSha256": "ace4094d3d7a9e5da6a2c2e32386a4c6b67f850ab48b0ad8b9fcdca247e06ba8"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342714,
+        "pivot": [
+          20,
+          0,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01a.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 27234666,
+        "resourceSize": 2016188,
+        "resourceSha256": "16d4c97eda3cdf26b0811b50d217b4ef5c7acd12e838c3cfe098c2c9105fdf43",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201291,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01a.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 25826706,
+        "secondaryResourceSize": 1407960,
+        "secondaryResourceSha256": "3edb7b15e642ea3e0097499ed79cab9744387297609d9f8e7bc021cd9982aced"
+      },
+      {
+        "sector": 27,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_135.sidi",
+        "rid": 201342721,
+        "pivot": [
+          20,
+          0,
+          320
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01_ware01.iprf",
+        "resourcePack": "prefabs_6i1.pkb",
+        "resourceOffset": 20448236,
+        "resourceSize": 1906128,
+        "resourceSha256": "50c509c1700a6c718b85e07c5f7e83b4ab2670825e6d93ebeb3ae873b90fc9ca",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 738201287,
+        "opaqueMetadataU16": 81,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/id/id_warehouse01/id_warehouse01_s01_ware01.imap",
+        "secondaryResourcePack": "prefabs_6i1.pkb",
+        "secondaryResourceOffset": 20092888,
+        "secondaryResourceSize": 355348,
+        "secondaryResourceSha256": "4f9efda542fd97865b64e256b605be6a896f672eef047e601c35c0397c373ce1"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 201363685,
+        "pivot": [
+          1120,
+          80,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_05.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 15472918,
+        "resourceSize": 118860,
+        "resourceSha256": "7ded51723f05195201d7bc5d18f824de12d3c4c7b09208fa64a13d72918a8f64",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 201363686,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_05.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 15366830,
+        "secondaryResourceSize": 106088,
+        "secondaryResourceSha256": "c400f2b36c77fe3779ea96770f8a5cadb7795230a5fabae0cb11307fd54faba3"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547045,
+        "pivot": [
+          1120,
+          0,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_01.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11929684,
+        "resourceSize": 720818,
+        "resourceSha256": "baae8dc26366dbc8e2d834baf88a774de0612373b35e50347851a3eb9a8b4990",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212761,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/off_01.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 11529028,
+        "secondaryResourceSize": 400656,
+        "secondaryResourceSha256": "f9601e20b83a80e5261aa1add15aeacd124dbe444444697e10ea0ca0e505229a"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547041,
+        "pivot": [
+          880,
+          0,
+          1700
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/ware_01.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 16717134,
+        "resourceSize": 2535504,
+        "resourceSha256": "1737919fcc9565fcd659b2e4cfb8b161522b9c9bc93bcf9853945e0e72ee0648",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212731,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/ware_01.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 16012346,
+        "secondaryResourceSize": 704788,
+        "secondaryResourceSha256": "7b92f823289947e7ec51dd8cbfdb60769b3fb0c100ab7ff24b1d323b893156c6"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 436213399,
+        "pivot": [
+          760,
+          0,
+          1540
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_04.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 15130018,
+        "resourceSize": 236812,
+        "resourceSha256": "fe67489befa3f6906d047451c89580d3d080572a87302b816246e1ac8d66b0e5",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436213400,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_04.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 14969246,
+        "secondaryResourceSize": 160772,
+        "secondaryResourceSha256": "e85a3986895151e48c2712b3785900f9d3254c923a528242fca55d8dde9ac02a"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547042,
+        "pivot": [
+          480,
+          0,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_02_01.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 13539778,
+        "resourceSize": 142332,
+        "resourceSha256": "0ef1f880cf8c8b83cc632f65be237cc810fedaf0101ffae4d20e2dc12662faa4",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212764,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/off_02_01.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 13511490,
+        "secondaryResourceSize": 28288,
+        "secondaryResourceSha256": "358c683fc9b46436cd4c8432839c4d64ba1283dd61038a267cc1da21097b41cb"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547046,
+        "pivot": [
+          460,
+          80,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 14197830,
+        "resourceSize": 771416,
+        "resourceSha256": "0643ee24e35df07d16c17e50862f219c1760ccc47ece5f63c6a464e2aa7695b0",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212763,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/off_03.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 13682110,
+        "secondaryResourceSize": 515720,
+        "secondaryResourceSha256": "124c2bf8d0385010382e5d1b6c0c8b7ef4d105bc68b439f42df358c8cdc26410"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547043,
+        "pivot": [
+          460,
+          0,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_02.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 12962662,
+        "resourceSize": 548828,
+        "resourceSha256": "734125209bfe6b783a37e1563db1efed644635ab17b63362c95523c20f45b5f4",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212762,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/off_02.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 12650502,
+        "secondaryResourceSize": 312160,
+        "secondaryResourceSha256": "e2a3391be1accf203e39107a044a9a66b86028b704581c12260f283661cf452e"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547044,
+        "pivot": [
+          460,
+          0,
+          1540
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/ware_02.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 19476442,
+        "resourceSize": 892944,
+        "resourceSha256": "8643d93ac7834788d846e714a936e9ab0645540300c7f6b4b1f8310923506ea3",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212757,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/ware_02.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 19252638,
+        "secondaryResourceSize": 223804,
+        "secondaryResourceSha256": "22299133dca93442a82df937749fcfa1143ca490d22cb5381428f6254306263f"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 201363689,
+        "pivot": [
+          340,
+          80,
+          1480
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_06.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 15693026,
+        "resourceSize": 107222,
+        "resourceSha256": "da0baf11fd62e3f8bb17d4116ecf809ae423c8d63fec0141df556b8613045495",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 201363690,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_06.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 15591778,
+        "secondaryResourceSize": 101248,
+        "secondaryResourceSha256": "6453c7495cff64ebc95d503c6ccb8ba1bd3d192795e1e7e3b9885e8b264f9b77"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 201363687,
+        "pivot": [
+          340,
+          0,
+          1480
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_07.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 15901496,
+        "resourceSize": 110850,
+        "resourceSha256": "eab8d5cf3162436251f096c7fc9126d83f0af15da8771d37062b165d94ede606",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 201363688,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/off_07.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 15800248,
+        "secondaryResourceSize": 101248,
+        "secondaryResourceSha256": "1af1136555b69c8c9383863050f5b00ea210d88a8b4dfd9ee5ea78692514c1d4"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547038,
+        "pivot": [
+          280,
+          0,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/ware_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 20549030,
+        "resourceSize": 859458,
+        "resourceSha256": "29126d2c03987d0403932cd78f81ac75b801a91c7ba504db59320000b14399a6",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212758,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/ware_03.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 20369386,
+        "secondaryResourceSize": 179644,
+        "secondaryResourceSha256": "e56ccc60c0615e1e9fadc65d941cbb57b85430db25bc62bea8ea3c45e2d79ccc"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547040,
+        "pivot": [
+          100,
+          0,
+          1720
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/ware_04.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 21588132,
+        "resourceSize": 896024,
+        "resourceSha256": "1aee12caa32903755e6ddd48657123d59669b7e6596482cb40e4ebdbbde91d0a",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212759,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/ware_04.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 21408488,
+        "secondaryResourceSize": 179644,
+        "secondaryResourceSha256": "9c87159f7646e7e59e9bb91a6b3022fb62faf3de5725de9f3d517bd80b64cb2d"
+      },
+      {
+        "sector": 225,
+        "source": "resource/worlds/final_world/constructs/large/large02/large02_124.sidi",
+        "rid": 939547039,
+        "pivot": [
+          100,
+          0,
+          1480
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/variance01/ware_05.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 22663800,
+        "resourceSize": 988718,
+        "resourceSha256": "3e1d74578e415dfea000b878d370555d8988098dbed50737d16adcaa2c987139",
+        "rotationUpperWord": 0,
+        "resourceIndexFlags": 4,
+        "resourceType": 6400,
+        "secondaryRid": 436212760,
+        "opaqueMetadataU16": 6,
+        "secondaryResourceIndexFlags": 4,
+        "secondaryResourceType": 12544,
+        "secondaryResourcePath": "resource/Prefab_Database/floors/sl/sl_warehouse01/variance01/ware_05.imap",
+        "secondaryResourcePack": "prefabs_4e.pkb",
+        "secondaryResourceOffset": 22484156,
+        "secondaryResourceSize": 179644,
+        "secondaryResourceSha256": "8d8e923ab59a564b3191ed8c1f5c3038e00773c34f37937c265df35128cbdb37"
+      }
+    ]
+  },
+  "historicallyUnprovenRotationKeys": [
     [
       27,
       572
@@ -44992,8 +44317,7 @@
       438
     ]
   ],
-  "rotationAmbiguityOverlap": 9,
-  "omissionPolicy": "Every variant of any nonzero-placement or conflicting native key is excluded. Raw nonzero transformed positions are UNPROVEN diagnostics, not exported placements.",
+  "omissionPolicy": "Every conflicting native key variant remains excluded, even if transformed poses coincide. Unsupported actual nested/EPI parents, invalid flags, and missing resources refuse export; blank resource aliases are recorded, not guessed. No first/last variant policy.",
   "missingNavigationResources": [
     {
       "sector": 47,

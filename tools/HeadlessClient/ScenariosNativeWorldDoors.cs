@@ -7,6 +7,8 @@ public static partial class Scenarios
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large01);
+    private static Task Large02PrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large02Prefab);
     private static Task Large02DoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large02);
 
@@ -42,12 +44,14 @@ public static partial class Scenarios
                 System.Text.Json.JsonSerializer.Serialize(new
                 {
                     SourceAssembly = context.Server.SourceAssembly,
+                    SourceConfiguration = new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name,
                     SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
                     StaticId = f.StaticId, door.Goid, door.ViewId,
                     Position = Convert.ToHexString(door.Attributes["Position"]),
                     Orientation = Convert.ToHexString(door.Attributes["Orientation"]),
                     OpenedState = Convert.ToHexString(door.Attributes["CurrentState"]),
                     ClosingViewList = Convert.ToHexString(closing), ClosedViewList = Convert.ToHexString(closed),
+                    ReceivedViewLists = actor.World.ViewSnapshot().Select(v=>Convert.ToHexString(v)).ToArray(),
                     NativeRenderingProven = false
                 }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"mxo-{f.Mode}-success-debug.log"),
