@@ -28,6 +28,7 @@ public class AbilityDeniedTests
     public void CapturedReason31RemainsLosslessWithoutATimerClassification()
     {
         // Captured mission_and_crew_things literal31 is retained. Temporal adjacency to80bd did not establish its meaning.
+        // Native31 means not-enemy; the captured backend cause remains unknown.
         byte[] expected = { 0x80, 0xba, 0x49, 0x01, 0x00, 0x00, 0x6b, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         Assert.Equal(expected, AbilityCooldowns.BuildDenied(0x149, 0x1f));
     }
