@@ -124,13 +124,13 @@ namespace hds
         /// <summary>LTRS_INADEQUATEATTRIBUTEPOINTS, 0x98000000 | 0x0e in the client's status table.</summary>
         public const UInt32 StatusInadequateAttributePoints = 0x9800000e;
 
-        /// <summary>80 b6 with the refusal status and no attributes. Guess: no capture shows a refused raise.</summary>
+        /// <summary>80b6 positive failure recognized by native621e8fbc; no attributes on refusal.</summary>
         public static byte[] BuildAttributeRaiseRefused()
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_UPGRADE_ATTRIBUTE, 0);
             pak.AddUint16(8, 1);
-            pak.AddUint32(StatusInadequateAttributePoints, 1);
+            pak.AddUint32(AttributeAllocation.FailureStatus, 1);
             pak.AddUint16(0, 1);
             return pak.ReturnFinalPacket();
         }

@@ -206,11 +206,9 @@ namespace hds{
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);
-			        TutorialMission.Of(Store.currentClient)?.OnAbilityUpgraded();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ATTRIBUTE:
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
-			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_ABILITY_APPROVAL:
                     AbilityResurrection.Reply(Store.currentClient, rpcData);

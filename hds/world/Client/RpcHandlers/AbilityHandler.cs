@@ -15,71 +15,8 @@ namespace hds
         private List<JumpStep> Steps = new List<JumpStep>();
 
 
-        public void ProcessUpgradeAbility(ref byte[] packet)
-        {
-            AbilityProgression.UpgradeRequest? parsed = AbilityProgression.ParseUpgrade(packet);
-            if (!parsed.HasValue)
-            {
-                return;
-            }
+        public void ProcessUpgradeAbility(ref byte[] packet) => AbilityTraining.Handle(Store.currentClient, packet);
 
-            AbilityProgression.UpgradeRequest request = parsed.Value;
-            WorldClient client = Store.currentClient;
-            UInt32 charId = client.playerData.getCharID();
-            ServerPackets packets = new ServerPackets();
-
-            AbilityItem abilityItem = DataLoader.getInstance().getAbilityByID(request.Ability);
-            int? owned = Store.dbManager.WorldDbHandler.GetAbilityLevelAtSlot(charId, request.Slot, abilityItem.getGOID());
-            if (!owned.HasValue)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " in slot " + request.Slot + " refused: not owned");
-                return;
-            }
-
-            int newLevel = owned.Value + request.Levels;
-            int characterLevel = client.playerInstance.Level.getValue()[0];
-            if (request.Levels == 0 || newLevel > characterLevel)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " to " + newLevel + " refused at character level " + characterLevel);
-                packets.sendSystemChatMessage(client, "Your character level is too low for that ability level.", "MODAL");
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
-                client.FlushQueue();
-                return;
-            }
-
-            UInt32 cost = AbilityProgression.UpgradeCost(request.Ability, owned.Value, request.Levels);
-            long cash = client.playerData.getInfo();
-            if (cash < cost)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " refused: costs " + cost + ", has " + cash);
-                packets.sendSystemChatMessage(client, "You do not have enough information for that upgrade.", "MODAL");
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
-                client.FlushQueue();
-                return;
-            }
-
-            long newCash = cash - cost;
-            Store.dbManager.WorldDbHandler.SaveInfo(client, newCash);
-            client.playerData.setInfo(newCash);
-            Store.dbManager.WorldDbHandler.SetAbilityLevel(charId, request.Slot, newLevel);
-            AbilityPassives.Load(client);
-
-            // Retail order: 80 e7 (-cost), 80 e4 (new cash), the hidden ability again at its new level, 80 b8.
-            packets.SendInfoDelta(client, -(long)cost, ServerPackets.InfoReasonAbilityUpgrade);
-            packets.SendInfoCurrent(client, (UInt32)newCash, ServerPackets.InfoReasonAbilityUpgrade);
-            foreach (UInt16 grant in AbilityProgression.GrantsOf(request.Ability))
-            {
-                if (AbilityGrantRegistration.Handles(request.Ability, grant)) continue;
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
-                    AbilityProgression.GrantLevel(request.Ability, (UInt16)newLevel), AbilityProgression.HiddenSlot));
-            }
-            client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)newLevel));
-            client.FlushQueue();
-
-            Output.WriteDebugLog("[ABILITY] Upgraded " + request.Ability + " to level " + newLevel + " for " + cost + " info");
-        }
-        
         public void ProcessAbility(ref byte[] packet)
         {
             PacketReader reader = new PacketReader(packet);

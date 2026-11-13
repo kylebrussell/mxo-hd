@@ -27,6 +27,8 @@ public sealed record CharacterSeed(string Handle)
     /// <summary>Bag or worn items: slot, goid, and a stack count where it matters.</summary>
     public IReadOnlyList<(int Slot, uint Goid, int Count)> Items { get; init; } = Array.Empty<(int, uint, int)>();
     public IReadOnlyList<(ushort Ability, ushort Level)>? OwnedLoadedAbilities { get; init; }
+    /// <summary>Optional exact attribute rows installed before Margin/initial UDP; null preserves the legacy seed.</summary>
+    public IReadOnlyDictionary<byte,ushort>? AttributeValues { get; init; }
 }
 
 /// <summary>One scenario's world: its own server and throwaway database. Players made here go away with it.</summary>
@@ -39,6 +41,8 @@ public sealed class ScenarioContext : IAsyncDisposable
     private readonly List<HeadlessPlayer> players = new();
     private readonly ExpectedServerDiagnostics expectedServerDiagnostics = new();
     private int nextId = 1000;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<uint,string> attributeRowsBeforeLogin = new();
+    public string AttributeRowsBeforeLogin(uint character) => attributeRowsBeforeLogin[character];
 
     public ThrowawayDatabase Database { get; }
     public ServerInstance Server { get; }
@@ -99,7 +103,17 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
         {
             sql += FormattableString.Invariant($"INSERT INTO inventory (charId, goid, slot, count, purity) VALUES ({id}, {goid}, {slot}, {count}, 0);\n");
         }
+        if(seed.AttributeValues!=null)
+        {
+            if(seed.AttributeValues.Keys.Any(a=>!hds.AttributeAllocation.Known(a)))throw new ArgumentException("Unknown fixture attribute");
+            sql+=$"DELETE FROM char_abilities WHERE char_id={id} AND slot IN (598,599,601,602,604);\n";
+            foreach(var value in seed.AttributeValues.OrderBy(v=>v.Key))
+                sql+=$"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({id},{hds.CharacterAttributes.SlotOf(value.Key)},{hds.CharacterAttributes.RowValueOf(value.Key)},{value.Value},0);\n";
+        }
         await Database.ExecuteAsync(sql);
+
+        if(seed.AttributeValues!=null)
+            attributeRowsBeforeLogin[(uint)id]=await Database.ScalarAsync($"SELECT id,slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={id} AND slot IN (598,599,601,602,604) ORDER BY slot,id");
 
         HeadlessPlayer player = await HeadlessPlayer.LoginAsync(Server.Address, username, seed.Handle);
         lock (players)
