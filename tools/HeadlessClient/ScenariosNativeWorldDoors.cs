@@ -3,6 +3,7 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task DataMinePrefabDoorDiagnostic(ScenarioContext context) => NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.DataMinePrefab);
     private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>
@@ -17,7 +18,7 @@ public static partial class Scenarios
             Level = 50, District = f.District, DistrictId = f.World,
             X = f.X, Y = f.Y, Z = f.Z, Rotation = f.Heading
         }))[0];
-        Check.That(actor.Received("06").Any(r => Encoding.Latin1.GetString(r.Bytes).Contains($"{f.District}/{f.District}.metr")),
+        Check.That(actor.Received("06").Any(r => Encoding.Latin1.GetString(r.Bytes).Contains(f.MetrResource)),
             "ordinary login loads the actual source world");
         Check.Equal($"{f.X} {f.Y} {f.Z}", await context.Database.ScalarAsync(
             $"SELECT CONCAT(x,' ',y,' ',z) FROM characters WHERE charId={actor.CharId}"), "exact diagnostic standing point");
@@ -42,12 +43,14 @@ public static partial class Scenarios
                 System.Text.Json.JsonSerializer.Serialize(new
                 {
                     SourceAssembly = context.Server.SourceAssembly,
+                    SourceConfiguration = new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name,
                     SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
                     StaticId = f.StaticId, door.Goid, door.ViewId,
                     Position = Convert.ToHexString(door.Attributes["Position"]),
                     Orientation = Convert.ToHexString(door.Attributes["Orientation"]),
                     OpenedState = Convert.ToHexString(door.Attributes["CurrentState"]),
                     ClosingViewList = Convert.ToHexString(closing), ClosedViewList = Convert.ToHexString(closed),
+                    ReceivedViewLists = actor.World.ViewSnapshot().Select(v=>Convert.ToHexString(v)).ToArray(),
                     NativeRenderingProven = false
                 }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"mxo-{f.Mode}-success-debug.log"),
