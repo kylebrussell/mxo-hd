@@ -59,6 +59,12 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemoveMissionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
 
+    //Fixed late-mutation failure only in this harness-owned database; never changes server settings.
+    public Task<string> InstallTrainingChargeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER training_test_charge_failure BEFORE UPDATE ON characters FOR EACH ROW BEGIN IF OLD.charId={character} AND NEW.cash<OLD.cash THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Training deliberate late charge failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveTrainingChargeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS training_test_charge_failure");
     public Task<string> InstallPrisonMoveFailureAsync(uint character) => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
         "DELIMITER $$\nCREATE TRIGGER prison_move_rollback BEFORE UPDATE ON inventory FOR EACH ROW BEGIN IF NEW.charId="+character+
