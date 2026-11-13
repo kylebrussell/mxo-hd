@@ -30,6 +30,9 @@ public static partial class Scenarios
                 }
                 else Check.Equal(0,raw.Count(r=>r.Bytes[0]==0x5e||AcquisitionHeader(r,0x80,0xe7)||AcquisitionHeader(r,0x80,0xe4)||AcquisitionHeader(r,0x81,0x0f)),"No success publication after rollback");
             }
+            step="failure-trigger-preflight";
+            await context.Database.InstallAcquisitionRollbackTriggerAsync(p.CharId,unchecked((int)code));
+            await context.Database.RemoveAcquisitionRollbackTriggerAsync();
             p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");
             step="buy-second-write-rollback";
             await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT acquisition_wallet_failure CHECK(handle<>'Acquire' OR cash<>160000)");
@@ -39,13 +42,13 @@ public static partial class Scenarios
             step="buyback-not-normal-purchase";p.SkipReceived();p.SendRpc("81 0e "+Le(code)+" 01");await p.WaitForTextAsync("not supported");Check.Equal(120000L,await Cash(),"Unsupported buyback cannot buy");
             step="learn-second-write-rollback";
             int before=p.World.RpcSnapshot().Count;
-            await context.Database.ExecuteAsync($"ALTER TABLE char_abilities ADD CONSTRAINT acquisition_archive_failure CHECK(char_id<>{p.CharId} OR ability_id<>{unchecked((int)code)})");
+            await context.Database.InstallAcquisitionRollbackTriggerAsync(p.CharId,unchecked((int)code));
             await ZionUpload(p);Check.Equal(2L,await Count(code),"Failed archive insert restores bag code");
             Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)code)}"),"No failed archive row");
             var failed=p.World.RpcSnapshot().Skip(before).ToArray();operations.Add(new{Step=step,Cursor=before,Records=failed.Select(r=>r.Hex).ToArray()});
             Check.Equal(0,failed.Count(r=>r.Bytes.SequenceEqual(WireFormat.FromHex("5f 01 00 01"))||r.Bytes.SequenceEqual(WireFormat.FromHex("5f 02 00 01"))||
                 (r.Bytes.Length==12&&r.Bytes[0]==0x5e&&BitConverter.ToUInt32(r.Bytes,7)==(code|1u))),"Failed ability learning publishes neither its bag delete nor archive add; independent Code Bits remain unchanged in scope");
-            await context.Database.ExecuteAsync("ALTER TABLE char_abilities DROP CONSTRAINT acquisition_archive_failure");
+            await context.Database.RemoveAcquisitionRollbackTriggerAsync();
             step="hardline-learn-and-canonical-duplicate";p.SkipReceived();await ZionUpload(p);
             Check.Equal(1L,await Count(code),"One code learned; duplicate retained");
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)code)} AND level=1 AND is_loaded=0 AND slot<520"),"One genuine archive entry, not loaded/granted");
@@ -103,9 +106,13 @@ public static partial class Scenarios
         catch(Exception error){failure=error;throw;}
         finally
         {
+            bool wasSuccess=failure==null;Exception? cleanupFailure=null;
+            try{await context.Database.RemoveAcquisitionRollbackTriggerAsync();}
+            catch(Exception error){cleanupFailure=error;if(wasSuccess){failure=error;passed=false;}Console.Error.WriteLine("Acquisition trigger cleanup: "+error);}
             string proof=Path.Combine(Path.GetTempPath(),"mxo-ability-acquisition-"+context.Database.Name+".json");
             try{string dll=context.Server.SourceAssembly;await File.WriteAllTextAsync(proof,JsonSerializer.Serialize(new{Passed=passed,Step=step,Failure=failure?.ToString(),SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dll))),Operations=operations,Sessions=sessions.Select(p=>new{p.Handle,p.CharId,CharacterData=p.CharacterData.ToDictionary(k=>k.Key,v=>Convert.ToHexString(v.Value)),Rpcs=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray()}),Debug=context.Server.DebugLog(),Output=context.Server.FullOutput(),RelogDebug=reloaded?.DebugLog(),RelogOutput=reloaded?.FullOutput(),NativePickingProven=false},new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("Acquisition proof before teardown: "+proof);}
             catch(Exception proofError){if(failure==null)throw;Console.Error.WriteLine(proofError);}
+            if(wasSuccess&&cleanupFailure!=null)throw cleanupFailure;
         }
     }
 }
