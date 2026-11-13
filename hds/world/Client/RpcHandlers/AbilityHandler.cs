@@ -84,6 +84,7 @@ namespace hds
             PacketReader reader = new PacketReader(packet);
             UInt16 AbilityID = reader.ReadUInt16(1);
             AbilityID = AbilityCatalog.Canonical(AbilityID);
+            if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
 
