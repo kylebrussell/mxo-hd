@@ -89,7 +89,7 @@ namespace hds
         }
         internal static bool Player(WorldClient source,AbilityItem ability,WorldClient target)
         {
-            if(!Ready(source) || !Ready(target) || source.playerData.getDistrictId()!=target.playerData.getDistrictId() || PvpCombat.Check(source,target)!=PvpRules.Verdict.Allowed)return false;
+            if(!Ready(source) || !Ready(target) || source.playerData.getDistrictId()!=target.playerData.getDistrictId() || !Visible(source,target.playerData.getEntityId()) || PvpCombat.Check(source,target)!=PvpRules.Verdict.Allowed)return false;
             var r=Roll(source,ability.getAbilityID(),AbilityStats.Player(target,183),AbilityStats.Player(target,637),(int)target.playerData.combatTactic);
             var message=Message(ability.getAbilityID(),TimedEffects.PlayerName(source),TimedEffects.PlayerName(target),r);
             var receivers=Receivers(source,target,target.playerData.getEntityId());

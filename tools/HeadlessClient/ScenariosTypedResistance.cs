@@ -22,6 +22,7 @@ public static partial class Scenarios
                 "normal ability damage "+ability+"="+expected,TimeSpan.FromSeconds(10));
             Console.WriteLine($"Actual normal cast{ability} on {victim.Handle}: damage{expected}");
         }
+        await PrepareFreeCastViralFixture(context,caster,330,474);
         await Hit(330,baseline,424);await Task.Delay(4500);
         Cast(buffed,8,2);await buffed.WaitForRpcAsync(ModPattern(8,157));await Hit(330,buffed,348);
         Cast(buffed,5,2);await buffed.WaitForRpcAsync(ModPattern(5,1033));await Hit(1135,baseline,83);

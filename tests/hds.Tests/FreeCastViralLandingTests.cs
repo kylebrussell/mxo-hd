@@ -52,6 +52,20 @@ public class FreeCastViralLandingTests : IDisposable
         Environment.SetEnvironmentVariable("MXO_DB_NAME","mxotest_spoof");
         Assert.False(FreeCastViralContest.TryQaDraw(c,33,out _,out _));
     }
+    [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    public void MissingUncreatedOrDeletingPlayerViewProducesNoContestOrEffects(int state)
+    {
+        var c=Client(110);var victim=Client(111);Store.currentClient=c;
+        c.playerData.pvpFlag=victim.playerData.pvpFlag=true;c.playerInstance.OrganizationID.setValue((byte)1);victim.playerInstance.OrganizationID.setValue((byte)2);
+        AbilityPassives.SetLoaded(c,new[]{((ushort)33,(ushort)50)});
+        if(state!=0){var view=c.viewMan.addView(111,1);view.viewCreated=state==2;view.viewNeedsToBeDeleted=state==2;}
+        foreach(var client in WorldServer.Clients.Values){client.messageQueue.RPCMessagesQueue.Clear();client.messageQueue.ObjectMessagesQueue.Clear();}
+        Assert.Equal(PvpRules.Verdict.Allowed,PvpCombat.Check(c,victim));
+        var ability=new AbilityItem();ability.setAbilityID(33);
+        Assert.False(FreeCastViralContest.Player(c,ability,victim));
+        foreach(var client in WorldServer.Clients.Values){Assert.Empty(client.messageQueue.RPCMessagesQueue);Assert.Empty(client.messageQueue.ObjectMessagesQueue);}
+        Assert.Equal(1000,PvpCombat.HealthOf(victim));
+    }
     [Fact] public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld()
     {
         var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{((ushort)33,(ushort)50)});

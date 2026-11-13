@@ -3,6 +3,27 @@ using System.Text.Json;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    // Only explicitly listed legacy scenarios opt in. Preserve their other outcome controls verbatim.
+    private static IReadOnlyDictionary<string,string> FreeCastViralLandingEnvironment(IReadOnlyDictionary<string,string> original)=>new Dictionary<string,string>(original)
+    {
+        ["MXO_DEV_COMMANDS"]="1",["MXO_FREECAST_VIRAL_QA"]="1",
+        ["MXO_FREECAST_VIRAL_QA_ATTACK15"]="32766",["MXO_FREECAST_VIRAL_QA_DEFENSE15"]="15636"
+    };
+    private static async Task PrepareFreeCastViralFixture(ScenarioContext context,HeadlessPlayer caster,params ushort[] abilities)
+    {
+        // Test-only SQL establishes ownership; the existing strict QA bridge runs the normal80ae load handler.
+        foreach(ushort id in abilities)
+        {
+            int code=unchecked((int)(0x80000000u | (uint)id<<10));
+            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={caster.CharId} AND ability_id={code}");
+            int slot=500;while(await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={caster.CharId} AND slot={slot}")>0)slot++;
+            Check.That(slot<0x208,"Owned active fixture ability fits an ordinary archive slot");
+            await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({caster.CharId},{slot},{code},50,0)");
+            int before=caster.Received($"80 b2 {Le(id)}").Count;
+            caster.SendChat("?qaload "+id);
+            await caster.WaitUntilAsync(()=>caster.Received($"80 b2 {Le(id)}").Count>before,"Owned fixture ability loaded through ordinary80ae: "+id,TimeSpan.FromSeconds(5));
+        }
+    }
     private static IReadOnlyDictionary<string,string> FreeCastViralEnvironment(bool hit)=>new Dictionary<string,string>(StillNpcs)
     {
         ["MXO_DEV_COMMANDS"]="1",["MXO_FREECAST_VIRAL_QA"]="1",["MXO_FREECAST_VIRAL_QA_ATTACK15"]=hit?"32766":"0",

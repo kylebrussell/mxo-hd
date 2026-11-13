@@ -18,3 +18,9 @@ Captured `81 67` hit/deflect events in `research/protocol/freecast-viral-events.
 4. 314 and272 remain real existing buffs: activation changes modeled attack or defense inputs. They can change the diagnostic outcome, so the baseline checklist deliberately leaves them inactive.
 
 No new generic buffs, viral immunity/resistance contest, pet authority or caster-centered area consumer is claimed. Headless framing and authoritative state are separate from native rendering acceptance.
+
+## Existing fixture compatibility
+
+Twenty existing headless cases asserted guaranteed positive-cast TF2 landing. They now explicitly opt into contest-only draws32766/15636 and establish owned active abilities through the existing strict `?qaload` bridge when needed. This does not change their other RNG controls, base stats or damage policy. The two new hit/deflect cases use their own separate draw pairs. Other scenarios do not opt in. A future merge of the pending area-radius333 fixture must likewise choose explicit scoped landing control or ordinary retries.
+
+Affected existing cases: `consumable-sweep-control`, `ability-health-presentation-damage`, `ability-concentration-armed-fixture`, `ability-concentration-control`, `ability-concentration-loaded`, `ability-health-deflect-lineup`, `combat-depth-mitigation`, `ability-buff-buffer-death`, `ability-control-duration-bonuses`, `ability-control-duration-npc`, `buff-dispel-fixture-hit`, `buff-dispel-fixture-miss`, `buff-dispel-proc-pvp`, `hostile-fields-pvp`, `hostile-fields-npc`, `ability-passive-damage`, `typed-ability-resistance`, `combat-rounds-and-observers`, `ability-parity-controls`, `ability-parity-area`.
