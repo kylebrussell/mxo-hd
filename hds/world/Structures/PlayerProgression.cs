@@ -180,9 +180,6 @@ namespace hds
         public const UInt16 AwakenedAbility = 2;
         public const UInt16 SelfDefenseAbility = 17;
 
-        /// <summary>WriteCode and HackerCombatStyle cost half: retail charged 2,900 instead of 5,800 for levels 2 to 4.</summary>
-        private static readonly HashSet<UInt16> HalfPrice = new HashSet<UInt16> { 37, 1006 };
-
         /// <summary>
         /// Abilities that come with a hidden second one (80 b2 ... 08 02 next to the load, 80 b3 next to the unload).
         /// Retail: WriteCode -> Write Code (970), Compile -> Compile Activate (969), Awakened -> Self Defense (17),
@@ -221,15 +218,9 @@ namespace hds
             return (UInt32)(200 * level * level);
         }
 
-        public static UInt32 UpgradeCost(UInt16 ability, int fromLevel, int levels)
-        {
-            UInt32 total = 0;
-            for (int level = fromLevel + 1; level <= fromLevel + levels; level++)
-            {
-                total += LevelPrice(level);
-            }
-            return HalfPrice.Contains(ability) ? total / 2 : total;
-        }
+        public static UInt32 UpgradeCost(UInt16 ability, int fromLevel, int levels) =>
+            AbilityTraining.TryCost(ability, fromLevel, levels, out uint cost) ? cost :
+            throw new ArgumentException("Invalid ordinary ability training quote");
 
         public static UInt16? GrantOf(UInt16 ability)
         {
@@ -268,7 +259,7 @@ namespace hds
         /// <summary>Client 80 b7: ability u16, slot u16, levels to add u8 (retail <c>80 b7 dd 01 37 01 01</c>).</summary>
         public static UpgradeRequest? ParseUpgrade(byte[] rpcData)
         {
-            if (rpcData == null || rpcData.Length < 5)
+            if (rpcData == null || rpcData.Length != 5 || rpcData[4] == 0)
             {
                 return null;
             }
@@ -475,12 +466,15 @@ namespace hds
                 return raises;
             }
 
-            int count = rpcData[2] | rpcData[3] << 8;
-            const int entrySize = 6;
-            for (int i = 0; i < count && 4 + (i + 1) * entrySize <= rpcData.Length; i++)
+            if(rpcData[0]!=4 || rpcData[1]!=0)return raises;
+            int count=rpcData[2]|rpcData[3]<<8;
+            if(count<1 || count>All.Length || rpcData.Length!=4+count*6)return raises;
+            var seen=new HashSet<byte>();
+            for(int i=0;i<count;i++)
             {
-                int p = 4 + i * entrySize;
-                raises.Add(new Raise { Attribute = rpcData[p + 1], Points = rpcData[p + 5] });
+                int p=4+i*6;uint attribute=BitConverter.ToUInt32(rpcData,p+1);
+                if(rpcData[p]!=0 || !AttributeAllocation.Known(attribute) || rpcData[p+5]==0 || !seen.Add((byte)attribute))return new List<Raise>();
+                raises.Add(new Raise{Attribute=(byte)attribute,Points=rpcData[p+5]});
             }
             return raises;
         }

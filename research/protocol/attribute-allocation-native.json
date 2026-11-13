@@ -1,0 +1,176 @@
+{
+  "Master": "0d333c5c70e12a2c840bee9bc7847f851940ed99",
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "GobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "Files": {
+    "mxo-attribute-five-gob.json": "a4c4aeea013c071ae53316fddc8c01b6414a2e6e4e73fbccc7b3c5bd5138c68e",
+    "mxo-attribute-native-point-cap.txt": "bc4e235498ce8854eabe7dd0e0425f07abeab4ce00867cadd3962920d82d0e96",
+    "mxo-attribute-native-constructors-offsets.txt": "9cc4c24ba8cd2b9019f3aa94ff1c3595a5441bee790af8705984fe53bc81f0fc",
+    "mxo-attribute-native-ui-caller.txt": "86edd191dc6db38d48763f8294a807dc9dc18da29e4a045991db638e8c6b0d03",
+    "mxo-attribute-native-cap-confirm.txt": "2e3e44ac9f760650bbaefd7aa4904b1d7517dc7584b3944648ce12cb9f38a0c8",
+    "mxo-attribute-native-response.txt": "6f08c790035b425f1fcd3b975786a6132ee026cc681ad88ccae20fc944b223c6",
+    "mxo-attribute-native-errors.txt": "632a32f22e1763f613e7fd33c0e5131ca79897689d873c949d8087ce4432631a",
+    "mxo-attribute-native-final-producer.txt": "a018eaf6db0b9b2b931d0f2ce526068dd93b20ed9b1fb8ea30931e44f2bf2697"
+  },
+  "AttributeFields": [
+    {
+      "Id": 78,
+      "Name": "FocusAttributeAbility",
+      "Class": 1,
+      "StartingValue": 8,
+      "ShownCap": 30
+    },
+    {
+      "Id": 79,
+      "Name": "PerceptionAttributeAbility",
+      "Class": 1,
+      "StartingValue": 8,
+      "ShownCap": 30
+    },
+    {
+      "Id": 81,
+      "Name": "ReasonAttributeAbility",
+      "Class": 1,
+      "StartingValue": 8,
+      "ShownCap": 30
+    },
+    {
+      "Id": 82,
+      "Name": "BeliefAttributeAbility",
+      "Class": 1,
+      "StartingValue": 8,
+      "ShownCap": 30
+    },
+    {
+      "Id": 84,
+      "Name": "VitalityAttributeAbility",
+      "Class": 1,
+      "StartingValue": 8,
+      "ShownCap": 30
+    }
+  ],
+  "Contracts": {
+    "Request": "620c1343->621d4680; offset4/countu16/6byte IDu32+pointsu8; positive unique attribute map",
+    "Budget": "625c5320 max(level-1,0) minus spent;620c2cb4->625d81d0 actualEXP",
+    "Cap": "620c2e7a..8c->621c9b90; CURRENT SHOWN+pending compared to AbilityLevelCap",
+    "Success": "621e8c30, normalized returned level+existing archetype contribution621e8ce7..8cf5",
+    "Failure": "621e8c53..58 signed Status>=1;621e8fbc recognizes1800000c->STA24000106",
+    "BasePolicy": "Existing fixed BaseValue/LegacyValue retained. No general archetype/stat formula recovered.",
+    "BackendPolicy": "OURS whole-batch atomicity and lazy materialization of exact logical legacy values on accepted partial snapshots only."
+  },
+  "NativeSlices": [
+    {
+      "Address": "0x621e8c4d",
+      "Meaning": "Attribute Status signed-positive failure gate",
+      "Hex": "8b461083c0048b0083f8010f8d0f030000",
+      "Instructions": [
+        "621e8c4d mov eax, dword ptr [esi + 0x10]",
+        "621e8c50 add eax, 4",
+        "621e8c53 mov eax, dword ptr [eax]",
+        "621e8c55 cmp eax, 1",
+        "621e8c58 jge 0x621e8f6d"
+      ]
+    },
+    {
+      "Address": "0x621e8fb2",
+      "Meaning": "Attribute explicit failure status mappings",
+      "Hex": "8b41043da802000c74323d0c000018742468f9000024e8b36effff8d95",
+      "Instructions": [
+        "621e8fb2 mov eax, dword ptr [ecx + 4]",
+        "621e8fb5 cmp eax, 0xc0002a8",
+        "621e8fba je 0x621e8fee",
+        "621e8fbc cmp eax, 0x1800000c",
+        "621e8fc1 je 0x621e8fe7",
+        "621e8fc3 push 0x240000f9",
+        "621e8fc8 call 0x621dfe80",
+        "621e8fcd .byte 0x8d",
+        "621e8fce xchg ebp, eax"
+      ]
+    },
+    {
+      "Address": "0x625c5326",
+      "Meaning": "max(level-1,0) initial point pool",
+      "Hex": "8b45085356485733ff33db3bc70f9cc38bf1897de8897dec897df04b23d88d45",
+      "Instructions": [
+        "625c5326 mov eax, dword ptr [ebp + 8]",
+        "625c5329 push ebx",
+        "625c532a push esi",
+        "625c532b dec eax",
+        "625c532c push edi",
+        "625c532d xor edi, edi",
+        "625c532f xor ebx, ebx",
+        "625c5331 cmp eax, edi",
+        "625c5333 setl bl",
+        "625c5336 mov esi, ecx",
+        "625c5338 mov dword ptr [ebp - 0x18], edi",
+        "625c533b mov dword ptr [ebp - 0x14], edi",
+        "625c533e mov dword ptr [ebp - 0x10], edi",
+        "625c5341 dec ebx",
+        "625c5342 and ebx, eax",
+        "625c5344 .byte 0x8d",
+        "625c5345 inc ebp"
+      ]
+    },
+    {
+      "Address": "0x620c2cae",
+      "Meaning": "EXP-derived level passed to point budget",
+      "Hex": "8b1520a69e6252e8165551000fb6c083c40450b9e8a49e62e895a510008bc8e84e265000",
+      "Instructions": [
+        "620c2cae mov edx, dword ptr [0x629ea620]",
+        "620c2cb4 push edx",
+        "620c2cb5 call 0x625d81d0",
+        "620c2cba movzx eax, al",
+        "620c2cbd add esp, 4",
+        "620c2cc0 push eax",
+        "620c2cc1 mov ecx, 0x629ea4e8",
+        "620c2cc6 call 0x621cd260",
+        "620c2ccb mov ecx, eax",
+        "620c2ccd call 0x625c5320"
+      ]
+    },
+    {
+      "Address": "0x621c9b90",
+      "Meaning": "Source shown-value cap comparison",
+      "Hex": "558bec8b450850e844c6340083c40485c0740d0fbf4d0c3bc81bc0405dc2080032c05dc20800",
+      "Instructions": [
+        "621c9b90 push ebp",
+        "621c9b91 mov ebp, esp",
+        "621c9b93 mov eax, dword ptr [ebp + 8]",
+        "621c9b96 push eax",
+        "621c9b97 call 0x625161e0",
+        "621c9b9c add esp, 4",
+        "621c9b9f test eax, eax",
+        "621c9ba1 je 0x621c9bb0",
+        "621c9ba3 movsx ecx, word ptr [ebp + 0xc]",
+        "621c9ba7 cmp ecx, eax",
+        "621c9ba9 sbb eax, eax",
+        "621c9bab inc eax",
+        "621c9bac pop ebp",
+        "621c9bad ret 8",
+        "621c9bb0 xor al, al",
+        "621c9bb2 pop ebp",
+        "621c9bb3 ret 8"
+      ]
+    },
+    {
+      "Address": "0x621d4708",
+      "Meaning": "Full IDu32 and pointsu8 six-byte producer",
+      "Hex": "8b4de48d040f8945fc8b56108950018b4de48a461403cf894dfc4388410583c706",
+      "Instructions": [
+        "621d4708 mov ecx, dword ptr [ebp - 0x1c]",
+        "621d470b lea eax, [edi + ecx]",
+        "621d470e mov dword ptr [ebp - 4], eax",
+        "621d4711 mov edx, dword ptr [esi + 0x10]",
+        "621d4714 mov dword ptr [eax + 1], edx",
+        "621d4717 mov ecx, dword ptr [ebp - 0x1c]",
+        "621d471a mov al, byte ptr [esi + 0x14]",
+        "621d471d add ecx, edi",
+        "621d471f mov dword ptr [ebp - 4], ecx",
+        "621d4722 inc ebx",
+        "621d4723 mov byte ptr [ecx + 5], al",
+        "621d4726 add edi, 6"
+      ]
+    }
+  ],
+  "ImplementationMaster": "3d240f9621cdca195c1b4bef5b499b5b47321fcd"
+}

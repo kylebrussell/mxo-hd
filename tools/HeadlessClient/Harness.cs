@@ -49,8 +49,35 @@ public sealed class ThrowawayDatabase : IDisposable
             " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";
         return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
     }
+    /// <summary>Fixed failure point only in this harness-owned database, never a production setting.</summary>
+    public Task<string> InstallAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+            "DELIMITER $$\nCREATE TRIGGER ability_test_rollback BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF NEW.slot=502 AND NEW.is_loaded=1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='deliberate ability rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER ability_test_rollback");
+
     public Task<string> RemoveMissionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
+
+    //Fixed late-mutation failure only in this harness-owned database; never changes server settings.
+    public Task<string> InstallTrainingChargeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER training_test_charge_failure BEFORE UPDATE ON characters FOR EACH ROW BEGIN IF OLD.charId={character} AND NEW.cash<OLD.cash THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Training deliberate late charge failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveTrainingChargeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS training_test_charge_failure");
+    public Task<string> InstallPrisonMoveFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        "DELIMITER $$\nCREATE TRIGGER prison_move_rollback BEFORE UPDATE ON inventory FOR EACH ROW BEGIN IF NEW.charId="+character+
+        " AND NEW.slot=106 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Prison deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemovePrisonMoveFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER prison_move_rollback");
+
+    //Fixed late second-write failure only inside this harness-owned database; no settings/schema migration.
+    public Task<string> InstallAttributeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER attribute_test_second_write BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF OLD.char_id={character} AND OLD.slot=601 AND NEW.level<>OLD.level THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Attribute deliberate second-write failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAttributeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS attribute_test_second_write");
 
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 

@@ -23,6 +23,7 @@ namespace hds
 
             UInt16 fromSlot =  NumericalUtils.ByteArrayToUint16(sourceSlot,1);
             UInt16 toSlot   = NumericalUtils.ByteArrayToUint16(destSlot,1);
+            if(PrisonDevices.Equipment(Store.currentClient,fromSlot,toSlot)) return;
             if(!MissionPersistence.MoveItem(Store.currentClient,fromSlot,toSlot))
             {
                 Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
@@ -250,6 +251,7 @@ namespace hds
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
+            if (PrisonDevices.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
             if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
             {
                 uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
@@ -410,6 +412,7 @@ namespace hds
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
+            if (PrisonDevices.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
             if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
             {
                 uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);

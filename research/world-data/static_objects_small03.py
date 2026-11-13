@@ -8,9 +8,9 @@ parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclud
 parser.add_argument('--omit-missing-sectors',action='store_true',help='Explicitly omit the WHOLE sector if its required exterior SID is absent; unknown exterior counts remain unknown.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
-parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds7/9/15/16 ONLY. Other worlds retain strict omission policy.')
+parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds7/9/13/15/16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-if args.native_prefab_rotations and (args.world not in (7,9,15,16) or args.omit_unproven_rotations):
+if args.native_prefab_rotations and (args.world not in (7,9,13,15,16) or args.omit_unproven_rotations):
  parser.error('--native-prefab-rotations requires a reviewed world and cannot be combined with historical omission mode')
 world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',7:'datamine',8:'archive_sakura',9:'archive_sati',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
@@ -76,6 +76,15 @@ def decode(s):
    if args.native_prefab_rotations:
     rec=idx[rid];data=R.read(rec);digest=hashlib.sha256(data).hexdigest();sources['RID:'+format(rid,'08x')]=digest
     evidence=dict(sector=int(s['sector']),source=byname[name+'.sidi'],rid=rid,pivot=list(box[:3]),rotation=rot,parent='direct-sector',prefab=rec.get('path',''),resourcePack=rec['pack'],resourceOffset=rec['off'],resourceSize=rec['size'],resourceSha256=digest)
+    if args.world==13:
+     #6247608a copies this second RID to IPI+dc; the following optional u16 goes to+9c.
+     # Neither enters6246b0c0's pivot/rotation matrix. Preserve opaque metadata, never treat it as another parent.
+     secondary,metadata=struct.unpack_from('<IH',q,p+26)
+     assert secondary in idx, ('Missing secondary native IPI resource',hex(secondary))
+     second=idx[secondary];second_data=R.read(second);second_sha=hashlib.sha256(second_data).hexdigest();sources['RID:'+format(secondary,'08x')]=second_sha
+     evidence.update(rotationUpperWord=struct.unpack_from('<H',q,p+24)[0],resourceIndexFlags=rec['flags'],resourceType=rec['type'],secondaryRid=secondary,opaqueMetadataU16=metadata,
+      secondaryResourceIndexFlags=second['flags'],secondaryResourceType=second['type'],secondaryResourcePath=second.get('path',''),
+      secondaryResourcePack=second['pack'],secondaryResourceOffset=second['off'],secondaryResourceSize=second['size'],secondaryResourceSha256=second_sha)
     if args.world==7:
      upper=struct.unpack_from('<H',q,p+24)[0];secondary,opaque=struct.unpack_from('<IH',q,p+26)
      assert upper==0 and rec['flags']==4 and rec['type']==6400
@@ -169,7 +178,7 @@ elif args.world==16:
 elif args.world==12:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(1025,1001,46,22,953)
 elif args.world==13:
- assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,1619)
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(2164,2096,442,44,2052 if args.native_prefab_rotations else 1619)
 elif args.world==5:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(incomplete),len(objects))==(80,80,0,0,3,77)
  assert len(sources)==326

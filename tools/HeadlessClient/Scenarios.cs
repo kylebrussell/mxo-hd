@@ -24,6 +24,8 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
+        new Scenario("stat-producers", StatProducers, StillNpcs),
+        new Scenario("loaded-grant-membership", LoadedGrantMembership, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("medium03-partial-world", Medium03PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
@@ -49,11 +51,13 @@ public static partial class Scenarios
         new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
         new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
+        new Scenario("prison-devices", PrisonDeviceUse, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
         new Scenario("conditional-daze-fixture", ConditionalDazeFixtureCommand, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
+        new Scenario("conditional-powerless", ConditionalPowerlessWire, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PVP_SERVER"]="1",["MXO_CONDITIONAL_POWERLESS_QA"]="1"}),
         new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
         new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
@@ -116,9 +120,16 @@ public static partial class Scenarios
         new Scenario("hostile-fields-pvp", HostileFieldsPvp, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("hostile-fields-npc", HostileFieldsNpc, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
+        new Scenario("ability-memory-admission", AbilityMemoryAdmission, StillNpcs),
+        new Scenario("ability-load-prerequisites", AbilityLoadPrerequisiteAdmission, StillNpcs),
+        new Scenario("ability-memory-ui-compatibility", AbilityMemoryUiCompatibility, StillNpcs),
+        new Scenario("ability-training-authority", AbilityTrainingAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_IDS"]=""}),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
+        new Scenario("attribute-allocation-authority", AttributeAllocationAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_ID"]=""}),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
+        new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
@@ -190,6 +201,7 @@ public static partial class Scenarios
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
         new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
+        new Scenario("large02-prefab-door", Large02PrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("team-new-leader-and-boot", TeamNewLeaderAndBoot),
@@ -229,6 +241,7 @@ public static partial class Scenarios
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("machines-critical-opening",MachinesCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101"}),
         new Scenario("poster-hunt-count", PosterHuntCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
+        new Scenario("poster-box-floor", PosterBoxFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202",[PosterBoxFloorProbe.EnvironmentKey]="1"}),
         new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
         new Scenario("zion-propaganda-count", ZionPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
         new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
@@ -276,6 +289,7 @@ public static partial class Scenarios
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
         new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
         new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
+        new Scenario("nativeqa-duel-helper", NativeQaDuelHelper, new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="0",["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
@@ -1051,11 +1065,11 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
     };
 
     /// <summary>The values after this update in a view list, in the order they arrived: `&lt;view&gt; &lt;bytes&gt; &lt;u16&gt;`.</summary>
-    private static List<ushort> ViewUpdateValues(HeadlessPlayer player, ushort viewId, string bytes)
+    private static List<ushort> ViewUpdateValues(HeadlessPlayer player, ushort viewId, string bytes, int firstViewList = 0)
     {
         byte[] needle = WireFormat.FromHex($"{viewId & 0xff:x2}{viewId >> 8:x2}{bytes}");
         List<ushort> values = new();
-        foreach (byte[] section in player.World.ViewSnapshot())
+        foreach (byte[] section in player.World.ViewSnapshot().Skip(firstViewList))
         {
             for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
             {

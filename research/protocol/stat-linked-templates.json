@@ -1,0 +1,30 @@
+{
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "native_client_sha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "templates": {
+    "177": {
+      "key": "0x8002c400",
+      "name": "DebuffAreaRadiusAbility",
+      "offset": 5414972,
+      "entry_size": 176,
+      "header_offset": 5415040,
+      "storage_size": 422,
+      "schema": 315,
+      "component_table": 108,
+      "stored_size": 22,
+      "stored_hex": "0200c4028001007c108000be01007ab60000c4640001"
+    },
+    "1055": {
+      "key": "0x80107c00",
+      "name": "DebuffAreaRadiusBonusAbility",
+      "offset": 5415148,
+      "entry_size": 189,
+      "header_offset": 5415221,
+      "storage_size": 422,
+      "schema": 112,
+      "component_table": 83,
+      "stored_size": 30,
+      "stored_hex": "020000000002000000400048018000004842018c2400c603000001820001"
+    }
+  }
+}
