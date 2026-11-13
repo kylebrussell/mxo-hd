@@ -25,4 +25,4 @@ QAEnemy is exactly8m at17800/495/2300, QAFar8.01m at17801, QAFriend same-org1m a
 
 ## Validation
 
-In progress. Full/scoped tests, both actual read-only plans/provenance and root-reviewed frozen source are required before a granted fresh run. No generated ability snapshots are committed; classification remains PARTIAL, not full retail parity.
+Full4522 tests PASS56s before upstream-only189 import; final106 scoped tests PASS, including both97/38 registry-lock lifecycle barriers and upstream mission definitions. Both actual NativeQa builds,38 hit/deflect plans/provenance pass; old97 Plan and Environment are byte-equivalent after JSON decoding. Python12 policy and exact CRLF3-artifact roundtrip pass. Current ignored all-module audit:561playercandidates/grants,843other;532partial/27cosmetic/1missing/1inaccessible. Historical tracked CSV/JSON/Markdown are exact master. Fresh and native UI remain PENDING; source review/slot grant required before fresh. No generated ability snapshots are committed;38 remains PARTIAL, not full retail parity.
