@@ -63,4 +63,19 @@ public class AbilityTrainingPublicationTests
         });
         Assert.Single(c.messageQueue.RPCMessagesQueue);Assert.All(old,m=>Assert.Equal(-1,m.rpcNumber));Assert.Equal(0,unrelated.rpcNumber);
     }
+    [Theory][InlineData(false)][InlineData(true)]
+    public void CashCacheAndPacketsChangeOnlyTogetherAtCurrentPublication(bool resetDuringPreparation)
+    {
+        var c=Client();var data=c.playerData;data.setInfo(1000);long epoch=c.TransportFence.Capture();
+        var result=new AbilityTraining.Result(true,37,15,200,800,"");byte[][] packets=Array.Empty<byte[]>();
+        AbilityTraining.CompleteCurrent(c,epoch,()=>AbilityTraining.Current(c,data,0,0,0,epoch,110),()=>{},
+            ()=>AbilityTraining.PublishResponses(c,data,result,packets,0,epoch),prepare:()=>
+            {
+                packets=AbilityTraining.ResponsePackets(result,false);
+                if(resetDuringPreparation)c.TransportFence.PublishIncoming(true,()=>{});
+            });
+        Assert.Equal(resetDuringPreparation?1000L:800L,data.getInfo());
+        Assert.Equal(resetDuringPreparation?0:3,c.messageQueue.RPCMessagesQueue.Count);
+    }
+
 }

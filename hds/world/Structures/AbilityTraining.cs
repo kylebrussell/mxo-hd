@@ -129,6 +129,11 @@ namespace hds
             packets.Add(ServerPackets.BuildAbilityUpgraded(result.Ability,result.Level));
             return packets.ToArray();
         }
+        internal static void PublishResponses(WorldClient client,ClientData data,Result result,byte[][] packets,int world,long transport)
+        {
+            if(result.Committed)data.setInfo(result.Cash);
+            foreach(var packet in packets)client.messageQueue.AddWorldBoundRpc(packet,world,transport);
+        }
         public static void Handle(WorldClient client,byte[] body)
         {
             var request=AbilityProgression.ParseUpgrade(body);if(!request.HasValue)return;
@@ -150,13 +155,12 @@ namespace hds
                 CompleteCurrent(client,transport,current,()=>
                 {
                     if(!result.Committed || !current())return;
-                    data.setInfo(result.Cash);
                     live=client.playerInstance!=null && data.getOnWorld();
                     //Committed snapshot includes unrelated loaded rows. Normal RPC serialization owns this callback phase.
                     if(live && current())AbilityPassives.SetLoaded(client,result.Loaded);
                 },()=>
                 {
-                    foreach(var packet in packets)client.messageQueue.AddWorldBoundRpc(packet,world,transport);
+                    PublishResponses(client,data,result,packets,world,transport);
                 },()=>{if(result.Committed && live && current())TutorialMission.Of(client)?.OnAbilityUpgraded();},prepare:()=>packets=ResponsePackets(result,live));
                 if(result.Committed)Output.WriteDebugLog("[TRAINING] Committed char="+character+" ability="+result.Ability+" level="+result.Level+" cost="+result.Cost);
 
