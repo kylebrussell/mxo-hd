@@ -114,6 +114,8 @@ public static partial class Scenarios
         new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
+        new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
+        new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
         new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
         new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
