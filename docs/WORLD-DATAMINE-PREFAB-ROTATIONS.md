@@ -28,4 +28,10 @@ Select discovered `datamine-prefab-door`, with no dev/GM/RNG. It starts at that 
 
 Direct diagnostic start proves no walking route, normal book/transporter admission,180-second cycle, city-origin return, source-proxy appearance, NPC population or LA/UI behavior. The existing generated returner remains ALWAYS available. Original169 native crash causality remains unresolved; no appearance/transport fix is claimed here.
 
-Automated validation pending for this revision.
+## Automated validation
+
+Full4,393 and focused16 unit tests passed; native-transform Python6 and audit-policy/link Python12 passed. Debug/Release builds and actual read-only new/normal/unknown plans plus provenance passed. Existing map16 actual plan is unchanged. Current7, historical7 and inherited16 CSV/audit reproduce byte-for-byte. Nine strict/default/invalid-option checks refused before output, including independent missing-sector and rotation opt-ins and inherited5/11/4 missing-layer gates. No other world data was regenerated in the branch.
+
+The actual ordinary-login door wire test passed35.9seconds, exit0, peak one isolated server, normal disposal. Actual Debug hds.dll SHA256FFF9FD9843B730CFE9F1D1E82E37FD322E0DCF63FACB9325EE04DFB1D223C5D0. It received source355/18/21 at the exact CSV position, quaternion00000000F304353F00000000F304353F, Opened34080000 then natural view updates040001800238080000 and040001800235080000. All4 received03 lists and raw successful logs were saved before teardown under owned Temp/mxo-datamine-rotation-proof. These are wire/source checks, not native geometry acceptance.
+
+Executable ability audit remains1,404 templates:561 player candidates/grants (532partial,27cosmetic,1inaccessible,1missing),843others. The three ignored review artifacts reproduce deterministically with CRLF. Tracked coverage/Markdown snapshots remain unchanged.
