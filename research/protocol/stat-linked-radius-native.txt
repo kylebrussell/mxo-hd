@@ -1,0 +1,70 @@
+
+RANGE 0x625c5500 0xb5
+625c5500 push     ebp
+625c5501 mov      ebp, esp
+625c5503 sub      esp, 8
+625c5506 push     esi
+625c5507 push     edi
+625c5508 mov      edi, dword ptr [ebp + 8]
+625c550b lea      eax, [ebp - 8]
+625c550e push     eax
+625c550f push     edi
+625c5510 mov      esi, ecx
+625c5512 mov      dword ptr [ebp - 8], 0
+625c5519 mov      dword ptr [ebp - 4], 0
+625c5520 call     0x62519100
+625c5525 add      esp, 8
+625c5528 test     al, al
+625c552a je       0x625c55a4
+625c552c push     edi
+625c552d call     0x62515ef0
+625c5532 add      esp, 4
+625c5535 test     al, al
+625c5537 je       0x625c5559
+625c5539 push     0
+625c553b push     1
+625c553d push     1
+625c553f push     0x7f
+625c5541 mov      ecx, esi
+625c5543 call     0x625c4e90
+625c5548 movsx    ecx, ax
+625c554b mov      dword ptr [ebp + 8], ecx
+625c554e fild     dword ptr [ebp + 8]
+625c5551 fstp     dword ptr [ebp + 8]
+625c5554 fld      dword ptr [ebp + 8]
+625c5557 jmp      0x625c5587
+625c5559 push     edi
+625c555a call     0x62515f30
+625c555f add      esp, 4
+625c5562 test     al, al
+625c5564 je       0x625c5590
+625c5566 push     0
+625c5568 push     1
+625c556a push     1
+625c556c push     0xb1
+625c5571 mov      ecx, esi
+625c5573 call     0x625c4e90
+625c5578 movsx    edx, ax
+625c557b mov      dword ptr [ebp + 8], edx
+625c557e fild     dword ptr [ebp + 8]
+625c5581 fstp     dword ptr [ebp + 8]
+625c5584 fld      dword ptr [ebp + 8]
+625c5587 fdiv     dword ptr [0x628706a8]
+625c558d fstp     dword ptr [ebp - 4]
+625c5590 fld      dword ptr [ebp - 4]
+625c5593 pop      edi
+625c5594 fadd     dword ptr [0x62869248]
+625c559a pop      esi
+625c559b fmul     dword ptr [ebp - 8]
+625c559e mov      esp, ebp
+625c55a0 pop      ebp
+625c55a1 ret      4
+625c55a4 fld      dword ptr [0x62869250]
+625c55aa pop      edi
+625c55ab pop      esi
+625c55ac mov      esp, ebp
+625c55ae pop      ebp
+625c55af ret      4
+625c55b2 int3     
+625c55b3 int3     
+625c55b4 int3     

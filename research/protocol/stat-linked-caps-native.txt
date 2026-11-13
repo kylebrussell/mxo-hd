@@ -1,0 +1,151 @@
+
+RANGE 0x62517f10 0x160
+62517f10 push     ebp
+62517f11 mov      ebp, esp
+62517f13 push     ecx
+62517f14 mov      ecx, dword ptr [ebp + 8]
+62517f17 lea      eax, [ebp - 4]
+62517f1a push     eax
+62517f1b push     ecx
+62517f1c call     0x62517eb0
+62517f21 add      esp, 8
+62517f24 test     al, al
+62517f26 jne      0x62517f31
+62517f28 fild     dword ptr [0x62b04928]
+62517f2e fstp     dword ptr [ebp - 4]
+62517f31 movzx    edx, byte ptr [ebp + 0xc]
+62517f35 mov      dword ptr [ebp + 0xc], edx
+62517f38 fild     dword ptr [ebp + 0xc]
+62517f3b fstp     dword ptr [ebp + 0xc]
+62517f3e fld      dword ptr [ebp + 0xc]
+62517f41 fmul     dword ptr [ebp - 4]
+62517f44 call     0x626a92d8
+62517f49 mov      esp, ebp
+62517f4b pop      ebp
+62517f4c ret      
+62517f4d int3     
+62517f4e int3     
+62517f4f int3     
+62517f50 push     ebp
+62517f51 mov      ebp, esp
+62517f53 sub      esp, 8
+62517f56 mov      edx, dword ptr [ebp + 8]
+62517f59 mov      ecx, dword ptr [0x629f7fb0]
+62517f5f mov      eax, dword ptr [ecx]
+62517f61 push     esi
+62517f62 push     edx
+62517f63 lea      edx, [ebp - 4]
+62517f66 push     edx
+62517f67 call     dword ptr [eax + 0x30]
+62517f6a mov      ecx, dword ptr [ebp - 4]
+62517f6d test     ecx, ecx
+62517f6f mov      esi, dword ptr [eax]
+62517f71 je       0x62517f78
+62517f73 mov      eax, dword ptr [ecx]
+62517f75 call     dword ptr [eax + 8]
+62517f78 test     esi, esi
+62517f7a jne      0x62517f83
+62517f7c xor      eax, eax
+62517f7e pop      esi
+62517f7f mov      esp, ebp
+62517f81 pop      ebp
+62517f82 ret      
+62517f83 lea      ecx, [ebp - 8]
+62517f86 push     ecx
+62517f87 push     0x6286f658
+62517f8c mov      ecx, esi
+62517f8e call     0x620087d0
+62517f93 test     al, al
+62517f95 je       0x62517fc9
+62517f97 mov      eax, dword ptr [ebp - 8]
+62517f9a cmp      eax, 0x66525749
+62517f9f ja       0x62517fbb
+62517fa1 je       0x62517fb1
+62517fa3 cmp      eax, 0x48445749
+62517fa8 je       0x62517fdd
+62517faa cmp      eax, 0x53445749
+62517faf jmp      0x62517fc7
+62517fb1 mov      eax, 0x93
+62517fb6 pop      esi
+62517fb7 mov      esp, ebp
+62517fb9 pop      ebp
+62517fba ret      
+62517fbb cmp      eax, 0x67485749
+62517fc0 je       0x62517fdd
+62517fc2 cmp      eax, 0x6d535749
+62517fc7 je       0x62517fd3
+62517fc9 mov      eax, 0x1000
+62517fce pop      esi
+62517fcf mov      esp, ebp
+62517fd1 pop      ebp
+62517fd2 ret      
+62517fd3 mov      eax, 0x9e
+62517fd8 pop      esi
+62517fd9 mov      esp, ebp
+62517fdb pop      ebp
+62517fdc ret      
+62517fdd mov      eax, 0x81
+62517fe2 pop      esi
+62517fe3 mov      esp, ebp
+62517fe5 pop      ebp
+62517fe6 ret      
+62517fe7 int3     
+62517fe8 int3     
+62517fe9 int3     
+62517fea int3     
+62517feb int3     
+62517fec int3     
+62517fed int3     
+62517fee int3     
+62517fef int3     
+62517ff0 push     ebp
+62517ff1 mov      ebp, esp
+62517ff3 sub      esp, 0x18
+62517ff6 push     ebx
+62517ff7 push     esi
+62517ff8 mov      esi, dword ptr [ebp + 0x28]
+62517ffb test     esi, esi
+62517ffd push     edi
+62517ffe mov      edi, dword ptr [ebp + 0xc]
+62518001 mov      byte ptr [ebp - 1], 0
+62518005 je       0x6251800c
+62518007 movsx    eax, di
+6251800a mov      dword ptr [esi], eax
+6251800c mov      ecx, dword ptr [ebp + 0x2c]
+6251800f test     ecx, ecx
+62518011 mov      ebx, dword ptr [ebp + 0x10]
+62518014 je       0x6251801b
+62518016 movsx    edx, bx
+62518019 mov      dword ptr [ecx], edx
+6251801b mov      eax, dword ptr [ebp + 8]
+6251801e cmp      eax, 4
+62518021 ja       0x62518287
+62518027 jmp      dword ptr [eax*4 + 0x62518290]
+6251802e call     dword ptr [0x628682ec]
+62518034 mov      ecx, ebx
+62518036 sub      ecx, edi
+62518038 movsx    edx, cx
+6251803b imul     eax, edx
+6251803e shr      eax, 0xf
+62518041 cdq      
+62518042 xor      eax, edx
+62518044 sub      eax, edx
+62518046 add      eax, edi
+62518048 movsx    eax, ax
+6251804b mov      dword ptr [ebp - 8], eax
+6251804e jmp      0x625181b6
+62518053 mov      esi, edi
+62518055 sub      ebx, esi
+62518057 movsx    ecx, bx
+6251805a mov      eax, ecx
+6251805c cdq      
+6251805d idiv     dword ptr [0x62b048ec]
+62518063 push     ecx
+62518064 xor      edi, edi
+62518066 push     edi
+62518067 push     eax
+62518068 mov      eax, ecx
+6251806a cdq      
+6251806b sub      eax, edx
+6251806d sar      eax, 1
+6251806f push     eax
