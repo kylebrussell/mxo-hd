@@ -32,7 +32,7 @@ public static partial class Scenarios
             }
             p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");
             step="buy-second-write-rollback";
-            await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT acquisition_wallet_failure CHECK(charId<>{p.CharId} OR cash<>160000)");
+            await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT acquisition_wallet_failure CHECK(handle<>'Acquire' OR cash<>160000)");
             await Buy(code,false);Check.Equal(200000L,await Cash(),"Cash rolled back");Check.Equal(0L,await Count(code),"Inserted bag item rolled back with wallet");
             await context.Database.ExecuteAsync("ALTER TABLE characters DROP CONSTRAINT acquisition_wallet_failure");
             step="repeat-real-purchases";await Buy(code,true);await Buy(code,true);Check.Equal(120000L,await Cash(),"Repeated BUY charges per item");Check.Equal(2L,await Count(code),"Repeated BUY creates two separate codes");
