@@ -163,7 +163,7 @@ namespace hds
                     UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
                     if (id == AbilityProgression.AwakenedAbility) continue;
                     foreach (UInt16 grant in AbilityProgression.GrantsOf(id))
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                        if (!AbilityGrantRegistration.Handles(id, grant)) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(id, loaded.getLevel()), AbilityProgression.HiddenSlot));
                 }
 
@@ -411,13 +411,13 @@ namespace hds
                         if(remainingMembership.Contains(ability)) continue;
                         client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(ability));
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
-                            if(!remainingMembership.Contains(grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
+                            if(!remainingMembership.Contains(grant) && !AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                     }
                     else
                     {
                         client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot));
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
-                            client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                            if(!AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                                 AbilityProgression.GrantLevel(ability,owned.Level),AbilityProgression.HiddenSlot));
                     }
                 }

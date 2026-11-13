@@ -26,6 +26,7 @@ public sealed record CharacterSeed(string Handle)
 
     /// <summary>Bag or worn items: slot, goid, and a stack count where it matters.</summary>
     public IReadOnlyList<(int Slot, uint Goid, int Count)> Items { get; init; } = Array.Empty<(int, uint, int)>();
+    public IReadOnlyList<(ushort Ability, ushort Level)>? OwnedLoadedAbilities { get; init; }
 }
 
 /// <summary>One scenario's world: its own server and throwaway database. Players made here go away with it.</summary>
@@ -88,6 +89,12 @@ DROP TEMPORARY TABLE rsi_copy;
 INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability_name)
   SELECT {id}, slot, ability_id, level, is_loaded, ability_name FROM char_abilities WHERE char_id = {TemplateCharacter};
 ");
+        if (seed.OwnedLoadedAbilities != null)
+        {
+            sql += $"DELETE FROM char_abilities WHERE char_id={id};\n";
+            foreach(var row in seed.OwnedLoadedAbilities.Select((a,index)=>(a,index)))
+                sql += $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES({id},{400+row.index},{0x80000000L|((long)row.a.Ability<<10)},{row.a.Level},1,'QA owned before login');\n";
+        }
         foreach ((int slot, uint goid, int count) in seed.Items)
         {
             sql += FormattableString.Invariant($"INSERT INTO inventory (charId, goid, slot, count, purity) VALUES ({id}, {goid}, {slot}, {count}, 0);\n");
