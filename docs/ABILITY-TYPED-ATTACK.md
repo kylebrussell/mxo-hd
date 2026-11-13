@@ -38,3 +38,11 @@ Use discovered `typed-attack` fixture; no setup from an agent. CSR110 has5000HP/
 3. Load/activate129, use captured383 on self, enter close combat and queue105. Verify ordinary controls and selected524 log. Compare the read-only105 diagnostic before/after383 (+46 direct524). Existing ranged percentage convention remains OURS.
 4. Repeat a normal queued134 against a legal enemy helper (flagged enemy organization). A second native helper may cast owned97 normally on CSR110; compare134 diagnostic before/after (-10 direct1032) and verify actual modifier/expiry presentation. No fake helper mutation command is required.
 5. Switch back to ordinary melee and ranged attacks; verify those paths work as before. Do not infer exact retail hit probabilities or full Run Program parity from this fixture.
+
+## Validation
+
+4361 full tests and20 focused consumer/mode tests passed. Both configurations built and their actual read-only plans/provenance passed. Actual-wire cases passed NPC34.3s/PvP60.1s, total94.4s/exit0/peak1; each saved raw server evidence before disposal. The fresh source pin was6755df952895070c21487ab694ea5c650f634468. Harness selected **Debug**, corroborated by raw source data paths and the frozen DLL hash602D0587375C4042683FE50E53403340D781B059C35672040764FB8750272545; Release131B763AFCED08669FFE0279E3F011DEB4CE9D5C41CE4A8C87F056A6193815E4 was built/read-only only.
+
+The captured97 modifier and diagnostic/actual134 totals were66→56. Normal paid queued attempts produced actual RPC45 special result0x100; PvP Leg Sweep landed68 damage with authoritative HP updates. The normal fight is stochastic: up to eight paid attempts at the real recast establish admission/execution, not deterministic efficacy. Only the paired seed731 diagnostic is deterministic; it compares selected totals before/after a real captured stat change without forcing a live combat outcome. Native hit/miss observations must not be interpreted as a guaranteed outcome.
+
+Raw local evidence: `Temp/mxo-typed-attack-npc-success.log`, `Temp/mxo-typed-attack-pvp-success.log`, `Temp/mxo-typed-attack-fresh.log`. Native rendering/control validation remains Claude-only and pending.
