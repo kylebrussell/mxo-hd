@@ -221,6 +221,7 @@ public static partial class Scenarios
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
+        new Scenario("machines-critical-opening",MachinesCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101"}),
         new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
         new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
         new Scenario("mission-ticket-completion-retry", MissionTicketCompletionRetry, StillNpcs),
