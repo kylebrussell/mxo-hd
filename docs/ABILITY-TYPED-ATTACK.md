@@ -31,12 +31,12 @@ Normal instant Leg Sweep134 is TestFunction4 and already admitted by both queued
 
 ## Claude-only native one-pass checklist (pending)
 
-Use discovered `typed-attack` fixture; no setup from an agent. CSR110 has5000HP/2000IS, normal owned loadout, no GM and no live RNG override.
+Use discovered `typed-attack` fixture; no setup from an agent. CSR110 has5000HP/2000IS, normal owned loadout, no GM and no live RNG override. Every step below is driven from CSR110 alone.
 
 1. Open Abilities; verify normal134/1112 and105/129 plus314/383 are present. Choose1112, approach WinterFrost, enter close combat and queue134 through its normal ability control. Verify next-move display, round animation, hit/miss and HP behavior; server log must report selected1032. Native choreography/parity is not established by wire assertions.
 2. Outside combat use314 normally. Compare `?combatdepth specialattack 33` before/after: direct total increases108 and seeded hit count changes. Treat this solely as a diagnostic, not an accessible queued viral cast.
 3. Load/activate129, use captured383 on self, enter close combat and queue105. Verify ordinary controls and selected524 log. Compare the read-only105 diagnostic before/after383 (+46 direct524). Existing ranged percentage convention remains OURS.
-4. Repeat a normal queued134 against a legal enemy helper (flagged enemy organization). A second native helper may cast owned97 normally on CSR110; compare134 diagnostic before/after (-10 direct1032) and verify actual modifier/expiry presentation. No fake helper mutation command is required.
+4. From CSR110, use `?duelbot wait`, select DuelBot and type `/duel`; the existing bot accepts the challenge. Enter close combat with that selected opponent and queue134 normally. Observe its next move, hit/miss and HP presentation; use `?combatdepth specialattack 134` for the repeatable read-only total/seed731 diagnostic. End with `/duel stop` and `?duelbot off`. This single-client route uses existing `ChatHelper` dispatch and `DuelBot.OnChallenged`, not a second native client. The incoming97-on-CSR110 modifier/expiry comparison is **headless-covered only; native pending a helper cast control**. Do not require Claude to drive another character or claim that native comparison passed.
 5. Switch back to ordinary melee and ranged attacks; verify those paths work as before. Do not infer exact retail hit probabilities or full Run Program parity from this fixture.
 
 ## Validation
