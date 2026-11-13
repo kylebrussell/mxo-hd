@@ -206,11 +206,9 @@ namespace hds{
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);
-			        TutorialMission.Of(Store.currentClient)?.OnAbilityUpgraded();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ATTRIBUTE:
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
-			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_ABILITY_APPROVAL:
                     AbilityResurrection.Reply(Store.currentClient, rpcData);
@@ -411,7 +409,8 @@ namespace hds{
 
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
-		            break; // retail answered nothing
+                    AbilityGrantRegistration.LoadingComplete(Store.currentClient, rpcData);
+		            break; // no standalone reply; materialize reviewed grants once the native avatar exists
 		        case (int) RPCRequestHeader.CLIENT_FEATURES_REQUEST:
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
 		            break;

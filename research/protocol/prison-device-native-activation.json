@@ -1,0 +1,20 @@
+{
+  "ClientDllSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "NativeBuild": "c0e69b10c5d88de414b3c409473d6faf168388f3",
+  "Capture": "2026-11-13 09:15:38 ET CSR110 Prison Mentality Tools activation",
+  "PacketLogSha256": "5112b6ebbd7b05ec0349e7b88207d41c5da1c9a1f39b18421fc5bdfbf506aba5",
+  "RpcHex": "80b9b5030000000000000000000000000000000000000000000000000cf51a002096983b016a0000000000",
+  "BodyBytes": 41,
+  "BodyHex": "b5030000000000000000000000000000000000000000000000000cf51a002096983b016a0000000000",
+  "Offsets": {
+    "AbilityUInt16": 0,
+    "StateByte": 34,
+    "EquipmentSlotByte": 35,
+    "ExplicitFlagByte": 36
+  },
+  "NativeFlag0Caller": "621ed630 ->621ed688 push0 ->621ed68d call621ecf10",
+  "NativeFlag1Caller": "621ed3d7 ->621ed3de push1 ->621ed3e3 call621ecf10",
+  "Serializer": "621e5129..621e5138 copies slot/flag to packet+0x25/0x26 (body35/36). 621e524f..621e5255 copies separate state+0x24 to packet+0x24 (body34).",
+  "OpaqueBytes26To33": "0cf51a002096983b",
+  "OpaqueMeaning": "Not used for admission; exact semantic interpretation not required or claimed."
+}

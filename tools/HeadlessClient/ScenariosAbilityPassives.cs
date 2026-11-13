@@ -127,6 +127,7 @@ public static partial class Scenarios
         }
         var target = await caster.WaitForViewNamedAsync(enemy.Handle);
         var mob = await caster.WaitForViewNamedAsync("WinterFrost");
+        await PrepareFreeCastViralFixture(context,caster,330,474);
         Cast(caster, 474, target.ViewId);
         var virus = await enemy.WaitForRpcAsync(ModPattern(474, 1157));
         int total = BitConverter.ToInt32(virus.Bytes, 13);

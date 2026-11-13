@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
+        bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
         UInt32 SaveSupportTicket(UInt32 character, string handle, UInt32 ticket, string text, bool cancel);
         UInt32 FindSupportGroup(string name, bool faction);
@@ -56,17 +58,20 @@ namespace hds.databases.interfaces{
         void SaveInfo(WorldClient client, long exp);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
+        AbilityMemory.Result CommitAbilityLoadout(uint charId, IReadOnlyList<AbilityProgression.LoadoutEntry> entries, bool unload, int characterLevel);
         void UpdateAbilityLoadOut(List<UInt16> abilitySlots, uint loaded);
 
         UInt16 GetCurrentAbilityLevel(Int32 abilityGoId, UInt32 charId);
         /// <summary>The level of that ability in that slot, or null if the character has no such ability there.</summary>
         int? GetAbilityLevelAtSlot(UInt32 charId, UInt16 slot, Int32 abilityGoId);
         void SetAbilityLevel(UInt32 charId, UInt16 slot, int level);
+        AbilityTraining.Result TrainOwnedAbility(uint character, AbilityProgression.UpgradeRequest request);
         bool HasAbility(UInt32 charId, Int32 abilityGoId);
         void AddAbility(UInt32 charId, UInt16 slot, Int32 abilityGoId, int level);
         void SaveLevel(UInt32 charId, int level, UInt16 health, UInt16 maxHealth, UInt16 innerStrength, UInt16 maxInnerStrength);
         Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId);
         void SetCharacterAttribute(UInt32 charId, byte attribute, UInt16 value);
+        AttributeAllocation.Result AllocateAttributes(UInt32 character, System.Collections.Generic.IReadOnlyList<CharacterAttributes.Raise> raises);
         //NEW
         void UpdateInventorySlot(UInt16 sourceSlot, UInt16 destSlot, UInt32 charId);
         UInt16 GetFirstNewSlot();

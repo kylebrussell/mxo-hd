@@ -7,6 +7,10 @@ namespace MxoHd.PacketResearch;
 public sealed record ManageBonusRecord(byte Type, uint Locator, uint SourceId, ushort TargetId,
     uint ValueBits, byte AddRemoveType, uint DurationBits)
 {
+    // 625ebb90 dispatches on locator LOW BYTE; Type remains an uninterpreted bit field.
+    // Other locator kinds and operation bytes retain raw fields, without guessed aggregate semantics.
+    public IndividualBonusOperation? IndividualOperation => (Locator & 255)==0 && AddRemoveType<=2
+        ? (IndividualBonusOperation)AddRemoveType : null;
     public int SignedValue => unchecked((int)ValueBits);
     [System.Text.Json.Serialization.JsonIgnore]
     public float FloatValue => BitConverter.UInt32BitsToSingle(ValueBits);
@@ -35,3 +39,5 @@ public sealed record ManageBonusRecord(byte Type, uint Locator, uint SourceId, u
         return true;
     }
 }
+
+public enum IndividualBonusOperation : byte { Add=0, Remove=1, Update=2 }

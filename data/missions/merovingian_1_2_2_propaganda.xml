@@ -7,8 +7,8 @@
      Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's values
      (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: the posters are boxes that are used (torn down), as in Zion's The Power of Propaganda. The first building
-     had "at least three"; the second had five, but a phase has at most three objects, so it has three though the
-     operator still says five. The security camera that spotted the player has nothing to stand for it; the
+     retains the authored minimum of three (retail said "at least three"); the second has the captured five.
+     The security camera that spotted the player has nothing to stand for it; the
      operator's line about it is the first poster's done line, and the Zion operatives are on the floor from the
      start. The Zion operatives' barks in Team chat (Zion Expert Rifleman, Zion Ravager, Zion Kung Fu Grandmaster,
      Zion Network Attacker: "And now, you die!", "We've got a break in!") have no place, since the hostiles are
@@ -37,9 +37,13 @@
     <object id="1" kind="Box" />
     <object id="2" kind="Box" />
     <object id="3" kind="Box" />
+    <object id="4" kind="Box" />
+    <object id="5" kind="Box" />
     <objective goal="1" text="Tear down the first poster" type="Use" object="1" />
     <objective goal="2" text="Tear down the second poster" type="Use" object="2" />
     <objective goal="3" text="Tear down the third poster" type="Use" object="3" />
+    <objective goal="4" text="Tear down the fourth poster" type="Use" object="4" />
+    <objective goal="5" text="Tear down the fifth poster" type="Use" object="5" />
     <complete><say>All posters have been torn down!</say></complete>
   </phase>
   <finish>That is all for now, {player}.</finish>
