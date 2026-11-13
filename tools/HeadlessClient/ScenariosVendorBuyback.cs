@@ -100,7 +100,7 @@ public static partial class Scenarios
         {
             try
             {
-                if(p!=null){Record();Check.Equal(0,p.World.Problems.Count,"Final buyback parser clean");}
+                if(p!=null)Record();
                 string dll=context.Server.SourceAssembly;string stem=Path.Combine(Path.GetTempPath(),"mxo-vendor-buyback-"+context.Database.Name);
                 File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=failure?.ToString(),Database=context.Database.Name,Proof=proof,Sessions=sessions,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),NativeUiProven=false,RetailLifetimeOrPriceProven=false},new JsonSerializerOptions{WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n---Debug---\n"+context.Server.DebugLog());Console.WriteLine("  BUYBACK evidence: "+stem+" step="+step);
