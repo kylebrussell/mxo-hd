@@ -30,7 +30,7 @@ public static partial class Scenarios
         try
         {
             var normal=await context.AddPlayerAsync(new CharacterSeed("RefusalNormal"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),X=17000,Y=495,Z=2300,Health=100,MaxHealth=1000,InnerStrength=1000,MaxInnerStrength=1000,OwnedLoadedAbilities=loaded});sessions.Add(normal);
-            var poor=await context.AddPlayerAsync(new CharacterSeed("RefusalPoor"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),X=17100,Y=495,Z=2300,Health=100,MaxHealth=1000,InnerStrength=0,MaxInnerStrength=0,OwnedLoadedAbilities=loaded});sessions.Add(poor);
+            var poor=await context.AddPlayerAsync(new CharacterSeed("RefusalPoor"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),X=17100,Y=495,Z=2300,Health=100,MaxHealth=1000,InnerStrength=1,MaxInnerStrength=1,OwnedLoadedAbilities=loaded});sessions.Add(poor);
             await normal.EnterWorldAsync();normal.SendRpc("0c 01");await poor.EnterWorldAsync();poor.SendRpc("0c 01");await Barrier(normal);await Barrier(poor);
             step="normal-success";normal.SendChat("?health 100");await normal.WaitUntilAsync(()=>OwnHealth(normal)==100,"Existing health preparation",TimeSpan.FromSeconds(10));await Barrier(normal);
             ushort initialInner=RefusalOwnValue(normal,"InnerStrengthAvailable","02 80 80 80 10");int rpcCursor=normal.World.RpcSnapshot().Count,viewCursor=normal.World.ViewSnapshot().Count;byte[] request=Request(normal);
@@ -40,8 +40,8 @@ public static partial class Scenarios
             Check.That(ViewUpdateValues(normal,2,"02 80 80 80 10",viewCursor).Contains((ushort)(initialInner-10)),"Normal successful cast pays unchanged10 IS");
             operations.Add(new{Step=step,RpcCursor=rpcCursor,ViewCursor=viewCursor,Sent=Convert.ToHexString(request),InitialInnerStrength=initialInner,Records=normal.World.RpcSnapshot().Skip(rpcCursor).Select(r=>r.Hex).ToArray(),Health=ViewUpdateValues(normal,2,"02 80 80 80 40",viewCursor),Inner=ViewUpdateValues(normal,2,"02 80 80 80 10",viewCursor)});
             step="existing-cooldown-predicate";await Denied(normal,"80 ba 4d 00 00 00 6b 05 00 00 00 00 00 00 00 00 00 00 00");
-            step="existing-inner-strength-predicate";Check.Equal((ushort)0,RefusalOwnValue(poor,"InnerStrengthAvailable","02 80 80 80 10"),"Poor fixture actual available IS");
-            await Denied(poor,"80 ba 4d 00 00 00 6b 11 00 00 00 0a 00 00 00 00 00 00 00");
+            step="existing-inner-strength-predicate";Check.Equal((ushort)1,RefusalOwnValue(poor,"InnerStrengthAvailable","02 80 80 80 10"),"Poor fixture actual available IS");
+            await Denied(poor,"80 ba 4d 00 00 00 6b 11 00 00 00 09 00 00 00 00 00 00 00");
             Check.That(!context.Server.DebugLog().Contains("[ABILITY-REFUSAL-QA]"),"Actual predicate case did not use render probes");
             string user=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={normal.CharId}");
             normal.Dispose();poor.Dispose();context.Server.Dispose();

@@ -45,6 +45,16 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(Hex("80ba840000006b0d0000000000000000000000"),AbilityCooldowns.BuildDenied(132,CombatStyles.DeniedWrongStyle));
         Assert.Equal((byte)6,AbilityCooldowns.DeniedBusy);Assert.Equal((byte)6,AbilityCooldowns.DeniedLegacyAmbiguous);
     }
+    [Fact] public void PoorFixtureUsesActualMinimumAndCappedRegeneration()
+    {
+        var c=Client(0);c.playerInstance.InnerStrengthMax.setValue((ushort)0);
+        AbilityBuffs.RefreshVitals(c,false);
+        Assert.Equal((ushort)1,AbilityHandler.MaxInnerStrength(c));
+        Assert.Equal((ushort)1,AbilityHandler.RegenerateInnerStrength(c));
+        for(int i=0;i<5;i++)Assert.Null(AbilityHandler.RegenerateInnerStrength(c));
+        Assert.Equal((ushort)1,AbilityHandler.CurrentInnerStrength(c));
+        Assert.Equal(9,AbilityCosts.Effective(c,77)-AbilityHandler.CurrentInnerStrength(c));
+    }
     [Fact] public void ActualInsufficientPredicateReportsExactPositiveSnapshotWithoutStartingAnything()
     {
         var c=Client(4);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;Assert.Equal((ushort)10,AbilityCosts.Effective(c,77));byte[] request={77,0,2,0};new AbilityHandler().ProcessAbility(ref request);
