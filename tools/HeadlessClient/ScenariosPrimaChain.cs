@@ -7,13 +7,14 @@ public static partial class Scenarios
 {
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,X=startX,Z=startZ,Health=5000,MaxHealth=5000,
             InnerStrength=2000,MaxInnerStrength=2000,Organization=org});
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
+        Exception? scenarioFailure=null;
         try
         {
         await p.EnterWorldAsync();
@@ -168,23 +169,32 @@ public static partial class Scenarios
         }
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
         }
+        catch(Exception error) {scenarioFailure=error;throw;}
         finally
         {
-            if(requireStandardCourier)
+            if(evidenceLabel!=null)
+            try
             {
-                string stem=Path.Combine(Path.GetTempPath(),"mxo-zion-critical-"+context.Database.Name);
+                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+evidenceLabel+"-"+context.Database.Name);
                 File.WriteAllText(stem+"-debug.log",context.Server.DebugLog());
                 var dll=context.Server.SourceAssembly;
                 await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
                     SourceAssembly=dll,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,
                     SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
                     SelectedMissions=ids,Prerequisites=prerequisites,
+                    CurrentPayloadHex=await context.Database.ExecuteAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE charId={p.CharId}"),
+                    CompletionReceipts=await context.Database.ExecuteAsync($"SELECT missionId,completions FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) ORDER BY missionId"),
                     Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),
                     ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),
                     ProtocolProblems=p.World.Problems.ToArray(),NativeReachabilityProven=false,NativeRenderingProven=false,
                     MovementPolicy="Existing test-only movement/weaken helpers; completion is protocol evidence, not wall/room reachability proof"
                 },new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
-                Console.WriteLine("  Zion critical evidence "+stem+".json");
+                Console.WriteLine("  Required mission evidence "+stem+".json");
+            }
+            catch(Exception proofError)
+            {
+                if(scenarioFailure==null)throw; // A successful scenario cannot silently omit required proof.
+                Console.Error.WriteLine("Required evidence capture also failed; preserving original scenario exception: "+proofError);
             }
         }
     }
