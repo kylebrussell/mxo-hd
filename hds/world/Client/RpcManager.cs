@@ -411,7 +411,8 @@ namespace hds{
 
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
-		            break; // retail answered nothing
+                    AbilityGrantRegistration.LoadingComplete(Store.currentClient, rpcData);
+		            break; // no standalone reply; materialize reviewed grants once the native avatar exists
 		        case (int) RPCRequestHeader.CLIENT_FEATURES_REQUEST:
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
 		            break;

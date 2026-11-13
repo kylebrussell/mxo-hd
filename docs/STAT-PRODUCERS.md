@@ -1,4 +1,22 @@
-# P1 base and direct-aggregate producer gate (read-only)
+# Howitzer Upgrade registration and stat producer evidence
+
+Native PR183 at ab15e23c was **HOLD**: parent356 was loaded but Howitzer Upgrade1087 was absent from Actions.314 worked. The old40.5s headless proof manually reloaded356 after EnterWorld, so it did not prove initial native Actions availability.
+
+The repair is bounded to356 ->1087. Positive framed retail evidence preserves1087 at **level0, CSSlot520** and adds its distinct grant-membership record. No zero-to50, new slot, direct1087 archive row or stat-math change. Other legacy grants2/37/277 retain their exact packet behavior. Native appearance remains pending Claude retest.
+
+## Missing grant registration
+
+[Literal evidence](../research/protocol/howitzer-grant-registration.json) records captured80bc45/locator(child<<8)|3/source356/target1087/grantlevel0/duration0, operations0add/1remove. Native625ebb90 routes that locator kind to625e97e0 AddAbilityGrant /625e95a0 RmvAbilityGrant, separately from numeric modifiers. Across278 decoded files, all61 captured1087 base-load observations are0/520; retransmits/duplicate captures are included.
+
+AbilityGrantRegistration admits only this reviewed relation. Initial publication waits for exact existing0c01 LoadingComplete: nativeOnEnterWorld uses live avatar/inventory before sending it (6216c988/6216c9a9/6216c9f4 then6216cc56..78). A world/transport stamp rejects stale work. No timer or same-datagram assumption. Repeated loading-complete/load/unchanged parent upgrade emits no duplicate membership. Parent unload emits child80b3 then membership removal once; reload republishes. New world waits for its own readiness. A pure ownership planner retains an existing child source while valid and removes-before-adds on source change; synthetic shared-source tests do not admit additional production relations.
+
+The revised stat-producers case seeds actual parent356 and other owned abilities **before login**, receives its self view, verifies no early1087, sends normal0c01, asserts base then membership, checks duplicate readiness and normal parent unload/reload, then1087 and314 effects. It has no manual post-entry reload workaround for initial availability. Required raw/debug/RPC/all03/DLL evidence is saved before teardown with fail-closed proof handling. This remains wire proof; only Claude can establish native Actions appearance.
+
+## Native one-pass retest
+
+Use discovered stat-producers mode and ordinary login. Confirm Howitzer Upgrade appears in Actions without a QA reload workaround. Toggle75 through existing owned-loadout controls as before. Use1087 once and normal314; observe1087's currently indefinite exclusive buff and314's20s expiry. Unload/reload owned356 normally (or existing strict QA owned-loadout bridge), checking disappearance/reappearance; relog to check initial registration again. No direct1087 ownership or extra permissions. Capture failures before any additional change. Original1055/1147-to177/342 formula gates and1087 off/toggle semantics remain unresolved.
+
+## Prior source and validation history
 
 Offline research completed before this decoder package. No gameplay or stat-math change. All offsets in this document are hexadecimal; node+0x14 is distinct from decimal14.
 Native client SHA256 cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a.
@@ -80,3 +98,5 @@ Validation history remains explicit: the first26.0second attempt skipped earlier
 - Both NativeQa configurations built; actual `--fixture-plan stat-producers` and `--build-info` checks passed. Native rendering/UI checklist remains Claude-only PENDING.
 - Latest upstream169 was imported after the successful frozen-source wire proof; no owned producer decoder/fixture/gameplay implementation was changed by that merge. Scoped/read-only verification covers that source refresh; no additional fresh/full run is claimed for pure upstream imports.
 - Historical generated parity snapshots/current abilityCSV remain unchanged. The generated snapshot policy passes. Allthree earlier failed attempts remain described above; their stdout/exit codes and available raw evidence were retained rather than relabeled as passes.
+
+Current registration-repair validation before fresh: full 4,597 tests passed; 95 focused tests passed; Python audit/policy 12 passed. Both actual Debug/Release NativeQa builds, stat-producers plans and source provenance passed. All-module AbilityAudit and current ignored artifact roundtrip passed; historical tracked Markdown/coverage and unrelated CSV rows unchanged. Revised initial-registration fresh and native Actions retest are pending root review/grant.
