@@ -133,5 +133,13 @@ if missing_evidence:
 if args.world==15:
  audit.update(capturedPopulationValidated=False,
   capturedPopulationBoundary='54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim.')
+if args.world==10:
+ usables=list(csv.DictReader(open('data/object_usables.csv')))
+ states=list(csv.DictReader(open('data/object_states.csv')))
+ goids=collections.Counter(r[2] for r in raw)
+ audit.update(availableSectors=86,availableNavigationSectors=86,prefabPlacements=0,
+  nativeGoidContracts={str(goid):dict(placements=count,usables=[u for u in usables if int(u['goid'])==goid],states=[u for u in states if int(u['goid'])==goid]) for goid,count in sorted(goids.items())},
+  populationBoundary='17 captured Instance rows:16 inside 2D sector footprint and1 outside; all17 fail exact recorded-coordinate NAV lookup. Preserve captures without relocation or NPC visibility/gameplay claim.',
+  transportBoundary='Native source returners38271/38272/38273 are preserved. Existing dynamic arrival returners and origin return rules remain unchanged; source-static returner usability is a separate unresolved gap.')
 Path(args.audit).write_text(json.dumps(audit,indent=2)+'\n')
 print(f'{len(objects)} statics; {len(excluded)} excluded keys ({len(conflicts)} ambiguous, {len(unproven)} unproven-rotation); {len(raw)} raw references retained')
