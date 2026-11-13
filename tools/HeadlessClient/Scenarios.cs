@@ -80,6 +80,8 @@ public static partial class Scenarios
         new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
         new Scenario("typed-special-queued", TypedSpecialQueued, StillNpcs),
         new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),
+        new Scenario("typed-attack-npc", TypedAttackNpc, StillNpcs),
+        new Scenario("typed-attack-pvp", TypedAttackPvp, StillNpcs),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),

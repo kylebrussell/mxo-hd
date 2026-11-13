@@ -38,6 +38,23 @@ namespace hds
             (TimedEffects.ForPlayer(client).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()) ? -30 : 0);
         public static int Attack(Mob mob, bool ranged) => Npc(mob, 163) + Npc(mob, ranged ? (UInt16)524 : (UInt16)522) +
             (TimedEffects.ForMob(mob).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()) ? -30 : 0);
+        /// <summary>Native UI getCombatTacticBonusType (6251fe10), inferred for this server's queued-special contests.
+        /// Ordinary attacks, unknown functions and escape retain the existing server calculation.</summary>
+        public static ushort SpecialAttackStat(int testFunction) => testFunction switch
+        {
+            1 => 524, 2 => 342, 3 => 522, 4 => 1032, _ => 0
+        };
+        public static int SpecialAttack(WorldClient attacker, AbilityItem ability)
+        {
+            int test = ability == null ? -1 : (int)(AbilityCatalog.Find(ability.getAbilityID())?.Number("Ability/TestFunction", -1) ?? -1);
+            ushort stat = SpecialAttackStat(test);
+            // Preserve established melee/ranged calculations exactly; do not invent viral/thrown percentage links.
+            int total = test == 1 ? Attack(attacker, true) : stat == 342 || stat == 1032 ?
+                Player(attacker, 163) + Player(attacker, stat) +
+                (TimedEffects.ForPlayer(attacker).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()) ? -30 : 0) : Attack(attacker, false);
+            if (ability != null) Output.WriteDebugLog("[COMBAT-ATTACK OURS] special " + ability.getAbilityID() + " stat " + stat + " total " + total);
+            return total;
+        }
         public static int Defense(WorldClient client, bool ranged) => Player(client, 959) + Player(client, ranged ? (UInt16)1010 : (UInt16)1009) +
             PercentDelta(client.playerInstance.Level.getValue()[0], Player(client, ranged ? (ushort)1027 : (ushort)1143));
         public static int Defense(Mob mob, bool ranged) => Npc(mob, 959) + Npc(mob, ranged ? (UInt16)1010 : (UInt16)1009);

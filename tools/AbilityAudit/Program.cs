@@ -10,6 +10,7 @@ static string Consumer(ushort stat) => stat switch
     106 or 109 or 1056 or 1057 => "maximum vital",
     112 or 114 or 1058 or 1059 => "regeneration",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
+    1032 => "OURS queued-special direct thrown accuracy (native UI selector inference)",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",
     1011 or 183 or 1029 or 1030 => "typed combat-special defence in interlock",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
