@@ -26,6 +26,11 @@ namespace hds
         // first sent with, remembers the packets that carried it, and goes out again until the client acks one of them.
         // The client acks a packet's sequence and, in its ack bits, the 8 before it, so a lost one shows up as a gap.
         public int rpcNumber = -1;
+        // Only explicitly world-bound producer records use this lifetime; ordinary reliable RPCs are unchanged.
+        internal int? RpcWorldGeneration;
+        internal long RpcTransportEpoch;
+        internal bool DiscardUnassignedWorldRpc(int world,long transport) => rpcNumber < 0 &&
+            RpcWorldGeneration.HasValue && (RpcWorldGeneration.Value != world || RpcTransportEpoch != transport);
         public readonly HashSet<UInt16> rpcPackets = new HashSet<UInt16>();
         public long lastRpcSendTick;
 
