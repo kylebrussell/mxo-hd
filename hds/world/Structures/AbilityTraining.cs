@@ -77,6 +77,11 @@ namespace hds
             if(next>character||next>50||(cap>0&&next>cap)||!TryCost(request.Ability,(int)row.Level,request.Levels,out cost))return false;
             level=(ushort)next;return true;
         }
+        internal static bool TryRemainingInfo(long cash,uint cost,out long remaining)
+        {
+            remaining=0;if(cash<0 || cash<cost)return false;
+            remaining=cash-cost;return remaining<=uint.MaxValue;
+        }
         internal static bool UniqueOwnedAbility(IEnumerable<ArchiveRow> rows,ushort ability) =>
             rows.Count(r=>r.Slot>=0&&r.Slot<CharacterAttributes.FirstSlot&&DescriptorMatches(r.Descriptor,ability))==1;
         internal static IEnumerable<(ushort Ability,ushort Level)> LoadedSnapshot(IEnumerable<ArchiveRow> rows) =>

@@ -272,5 +272,15 @@
       "unknown-positive": "0x240000f9 ERROR!"
     },
     "SlotResolution": "621e88b1 calls621d5ad0 by ID; response has no requested slot. Canonical duplicate refusal is OURS safety policy."
+  },
+  "InfoWireContract": {
+    "NativeConstructors": [
+      "62129e80..62129eb6",
+      "6213dc75..6213dc9c"
+    ],
+    "Layout": "10 bytes: opcode80e4, absolute Info dword+2, reason dword+6",
+    "CapturedTrainingRecord": "research/packet-dumps/community-intake/20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected/logs/mxopackets1_luizoe_old_sniffer_Recursion.log.txt:5039",
+    "LiteralFraming": "0a80e4c800000011000000",
+    "Policy": "Only post-debit result must fit unsigned32; no global wallet cap."
   }
 }

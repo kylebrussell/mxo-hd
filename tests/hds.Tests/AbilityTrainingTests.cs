@@ -79,6 +79,12 @@ public class AbilityTrainingTests
         AbilityTraining.CompleteCurrent(c,epoch,()=>c.TransportFence.Capture()==epoch,()=>{},()=>c.TransportFence.PublishIncoming(true,()=>{}),()=>tutorial=true);
         Assert.False(tutorial);
     }
+    [Theory]
+    [InlineData(-1,0,false,0)][InlineData(799,800,false,0)][InlineData(800,800,true,0)]
+    [InlineData(4294967295L,0,true,4294967295L)][InlineData(4294968095L,800,true,4294967295L)]
+    [InlineData(4294968096L,800,false,4294967296L)][InlineData(long.MaxValue,800,false,long.MaxValue-800)]
+    public void OnlyResultingInformationMustFitNativeUnsignedField(long cash,uint cost,bool valid,long expected)
+    {Assert.Equal(valid,AbilityTraining.TryRemainingInfo(cash,cost,out long remaining));Assert.Equal(expected,remaining);}
     [Fact] public void NativeBodyIsExactAndCountPositive()
     {
         Assert.NotNull(AbilityProgression.ParseUpgrade(Convert.FromHexString("dd01370101")));

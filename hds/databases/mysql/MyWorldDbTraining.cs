@@ -39,6 +39,7 @@ namespace hds.databases
             var row=owned[0];ushort old=row.Level>=0&&row.Level<=ushort.MaxValue?(ushort)row.Level:(ushort)0;
             if(!AbilityTraining.Admit(request,row,experience,out ushort next,out uint cost))return Refuse("You cannot train that owned ability to this level.",old);
             if(cash<0||cash<cost)return Refuse("You do not have enough information for that upgrade.",old);
+            if(!AbilityTraining.TryRemainingInfo(cash,cost,out long remaining))return Refuse("The resulting information balance cannot be presented; nothing was changed.",old);
             command.Parameters.AddWithValue("@identity",row.Identity);command.Parameters.AddWithValue("@slot",row.Slot);
             command.Parameters.AddWithValue("@descriptor",row.Descriptor);command.Parameters.AddWithValue("@old",row.Level);
             command.Parameters.AddWithValue("@next",next);command.Parameters.AddWithValue("@cost",cost);
@@ -47,7 +48,7 @@ namespace hds.databases
             command.CommandText="UPDATE characters SET cash=cash-@cost WHERE charId=@character AND cash>=@cost";
             if(command.ExecuteNonQuery()!=1)return Refuse("Training could not be charged; nothing was changed.",old);
             var snapshot=rows.Select(r=>r.Identity==row.Identity?new AbilityTraining.ArchiveRow(r.Identity,r.Slot,r.Descriptor,next,r.Loaded):r).ToArray();
-            var result=new AbilityTraining.Result(true,request.Ability,next,cost,cash-cost,"",AbilityTraining.LoadedSnapshot(snapshot));
+            var result=new AbilityTraining.Result(true,request.Ability,next,cost,remaining,"",AbilityTraining.LoadedSnapshot(snapshot));
             transaction.Commit();return result;
         }
     }

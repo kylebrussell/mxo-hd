@@ -80,6 +80,15 @@ public static partial class Scenarios
                 Check.Equal(0L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={race.CharId}"),"Race debits once");
                 Check.Equal(2L,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={race.CharId} AND slot=300"),"Race trains once");
                 databaseProof.Add(new{Step=step,Accepted=results.Count(r=>r.Committed),Info=0,Level=2});
+                step="unrepresentable-info-refusal";
+                await context.Database.ExecuteAsync($"UPDATE characters SET cash=4294968096 WHERE charId={race.CharId}; UPDATE char_abilities SET level=1 WHERE char_id={race.CharId}");
+                Check.That(!db.TrainOwnedAbility(race.CharId,req).Committed,"Refuse before mutation when cash-cost exceeds nativeu32");
+                Check.Equal(4294968096L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={race.CharId}"),"Unrepresentable result retains BIGINT cash");
+                Check.Equal(1L,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={race.CharId}"),"Unrepresentable result retains level");
+                await context.Database.ExecuteAsync($"UPDATE characters SET cash=4294968095 WHERE charId={race.CharId}");
+                var recovery=db.TrainOwnedAbility(race.CharId,req);Check.That(recovery.Committed,"Overlimit original balance can recover into native range");
+                Check.Equal(4294967295L,recovery.Cash,"Exact nativeu32 upper boundary preserved");
+                databaseProof.Add(new{Step=step,RefusedBalance=4294968096L,RecoveredBalance=recovery.Cash});
                 step="duplicate-slot";await context.Database.ExecuteAsync($"UPDATE characters SET cash=800 WHERE charId={race.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({race.CharId},300,2147521536,1,0)");
                 Check.That(!db.TrainOwnedAbility(race.CharId,req).Committed,"Ambiguous slot refuses both rows");
                 Check.Equal(800L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={race.CharId}"),"Ambiguity charges nothing");
