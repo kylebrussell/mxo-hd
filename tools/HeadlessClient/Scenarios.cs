@@ -117,6 +117,7 @@ public static partial class Scenarios
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
         new Scenario("data-mining-base-and-margin", DataMiningKnownBaseLocator, StillNpcs),
+        new Scenario("ashencourte-partial-world", AshencourtePartialWorld, new Dictionary<string,string>{["MXO_MOBS"]="",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
         new Scenario("data-mining-locator", DataMiningLocator, StillNpcs),
         new Scenario("datamine-partial-world", DataMinePartialWorld, StillNpcs),
         new Scenario("datamine-native-return-regression", DataMineNativeReturnRegression, DataMineReturnEnvironment, Timeout: TimeSpan.FromMinutes(8)),
