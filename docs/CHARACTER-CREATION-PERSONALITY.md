@@ -41,7 +41,7 @@ Preserved baseline `0743a8ee276c7959205047212f22e98ce9096364`, production exactl
 
 Proof: `mxo-character-creation-baseline-mxotest_run_1_37e46a1a3a.json`, SHA256 `a858c519732c5e5b123c780d2ee2990de19669acabb37188b95c7fcb997d10be`. Actual Release hds SHA256 `0AED4FE86E44D7BD39374385A6FA613D0CC82C3162A9CD690CC622B4720445FE`. Original proof/stdout are unchanged.
 
-Current fresh validation is pending. Registered `character-creation-personality` covers normal 0a/0c for308/304, same-Margin first world entry, actual new/return02, male and native-default female appearance/tights, actual attributes and ordinary 80b5/relog, malformed/replay refusal, final-write rollback, two actual completion connections and legacyNULL no-migration behavior. Controlled EXP/level 2 preparation AFTER normal creation enables one attribute point; it does not claim creation earns XP. No trait/RSI/attribute SQL seed bypasses normal creation.
+Current final Release full suite: **4,822 passed**, including the source-default correction; prior final focus **83 passed**. Final fixture-only same-Margin/legacy-case rebuild and fresh validation are pending. Registered `character-creation-personality` covers normal 0a/0c for308/304, same-Margin first world entry, actual new/return02, male appearance and native-default female body/head/hair with selected allowed clothing/tights, actual attributes and ordinary 80b5/relog, malformed/replay refusal, final-write rollback, two actual completion connections and legacyNULL no-migration behavior. Controlled EXP/level 2 preparation AFTER normal creation enables one attribute point; it does not claim creation earns XP. No trait/RSI/attribute SQL seed bypasses normal creation.
 
 ## Claude-only native one-pass
 

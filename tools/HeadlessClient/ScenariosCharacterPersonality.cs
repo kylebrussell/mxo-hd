@@ -10,6 +10,7 @@ public static partial class Scenarios
         var margins=new List<MarginSession>();var players=new List<HeadlessPlayer>();var evidence=new List<object>();
         var assets=CreationAssets.Load(context.RepositoryRoot);
         Exception? failure=null;string step="start";var address=context.Server.Address;
+        (string User,string Handle,uint Character)? legacySource=null;
         async Task<(string User,uint Account,MarginSession Margin,uint Character)> Reserve(string handle)
         {
             string user=await context.AddCreationAccountAsync();using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(20));
@@ -64,7 +65,7 @@ public static partial class Scenarios
                 Check.Equal(1000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={a.Character}"),"Attribute raise spends noInfo");
                 player.SendRpc("80fe00");await player.WaitForRpcAsync("80fd");Record(player);player.Dispose();
                 var cold=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(cold);Check.Equal(trait,BitConverter.ToUInt32(cold.CharacterData[2],32),"Coldreturn trait");
-                Check.That(cold.CharacterData[2].AsSpan().EndsWith(new byte[]{1,raised,0,0,0,1,0}),"Coldreturn onepoint metadata uses assignedtrait");await cold.EnterWorldAsync();Record(cold);cold.SendRpc("80fe00");await cold.WaitForRpcAsync("80fd");cold.Dispose();
+                Check.That(cold.CharacterData[2].AsSpan().EndsWith(new byte[]{1,raised,0,0,0,1,0}),"Coldreturn onepoint metadata uses assignedtrait");await cold.EnterWorldAsync();Record(cold);cold.SendRpc("80fe00");await cold.WaitForRpcAsync("80fd");cold.Dispose();legacySource=(a.User,"Personality"+trait,a.Character);
             }
             foreach(uint bad in new uint[]{0,9,4096,0x1000134})
             {
@@ -94,17 +95,17 @@ public static partial class Scenarios
                 Check.Equal(19L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={race.Character}"),"No racing duplicategrants");evidence.Add(new{Step=step,race.Character,Committed=results,Snapshot=await Snapshot(race.Character)});
             }
             finally{Store.config=prior;race.Margin.Dispose();}
-            step="legacy-null-no-migration";
-            await context.Database.ExecuteAsync($"UPDATE characters SET trait_id=NULL,level=50,exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId={race.Character}; DELETE FROM char_abilities WHERE char_id={race.Character} AND slot IN (598,599,601,602,604)");
-            var legacy=await HeadlessPlayer.LoginAsync(address,race.User,"CreationRace");players.Add(legacy);
+            step="legacy-null-no-migration";var legacyFixture=legacySource!.Value;
+            await context.Database.ExecuteAsync($"UPDATE characters SET trait_id=NULL,level=50,exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId={legacyFixture.Character}; DELETE FROM char_abilities WHERE char_id={legacyFixture.Character} AND slot IN (598,599,601,602,604)");
+            var legacy=await HeadlessPlayer.LoginAsync(address,legacyFixture.User,legacyFixture.Handle);players.Add(legacy);
             Check.Equal(299u,BitConverter.ToUInt32(legacy.CharacterData[2],32),"Legacy NULL sends old299 selector");
             Check.That(legacy.CharacterData[2].AsSpan().EndsWith(Convert.FromHexString("03510000000400520000000B00540000000100")),"Legacy fixed16 metadata remains qualified");
             await legacy.EnterWorldAsync();
             foreach(byte attribute in CharacterAttributes.All){ushort value=CharacterAttributes.LegacyValue(attribute);await legacy.WaitUntilAsync(()=>legacy.World.RpcSnapshot().Any(r=>r.Bytes.SequenceEqual(new byte[]{0x80,0xb2,attribute,(byte)(value>>8),(byte)value,0,8,2})),"Legacy unchanged actual attribute",TimeSpan.FromSeconds(10));}
             int legacyCursor=legacy.World.RpcSnapshot().Count;legacy.SendRpc("80b504000100004e00000001");
             await legacy.WaitUntilAsync(()=>legacy.World.RpcSnapshot().Skip(legacyCursor).Any(r=>r.Bytes.SequenceEqual(Convert.FromHexString("80b608000c0000180000"))),"Legacy90spent refuses without invented migration",TimeSpan.FromSeconds(10));
-            Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={race.Character} AND slot IN (598,599,601,602,604)"),"Legacy refusal creates no rows");
-            Check.Equal(1000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={race.Character}"),"Legacy refusal no Info change");Record(legacy);legacy.Dispose();
+            Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={legacyFixture.Character} AND slot IN (598,599,601,602,604)"),"Legacy refusal creates no rows");
+            Check.Equal(1000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={legacyFixture.Character}"),"Legacy refusal no Info change");Record(legacy);legacy.Dispose();
             step="complete";
         }
         catch(Exception e){failure=e;throw;}
