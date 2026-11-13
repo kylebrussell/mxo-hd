@@ -234,10 +234,16 @@ namespace hds
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "You do not have enough Inner Strength.");
-                return;
+                // Snapshot the same existing admission inputs once; the response reports their exact positive deficit.
+                UInt16 available=CurrentInnerStrength(Store.currentClient);
+                UInt16 effective=AbilityCosts.Effective(Store.currentClient, AbilityID);
+                if(available<effective)
+                {
+                    Deny(AbilityID,"You do not have enough Inner Strength.",AbilityRefusals.InsufficientInnerStrength,(uint)(effective-available));
+                    return;
+                }
             }
 
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
@@ -350,9 +356,9 @@ namespace hds
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
 
-        private static void Deny(UInt16 id, string message)
+        private static void Deny(UInt16 id, string message,uint reason=AbilityRefusals.LegacyAmbiguous,uint deficit=0)
         {
-            Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(id, AbilityCooldowns.DeniedBusy));
+            Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(id,reason,deficit)));
             new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);
