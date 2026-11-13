@@ -37,6 +37,10 @@ public class VendorBuybackTests
     [Theory] [InlineData(0,false)] [InlineData(1,true)] [InlineData(96,true)] [InlineData(97,false)]
     public void OnlyRealBagSlotsCanCreateASaleReceipt(ushort slot,bool expected)=>
         Assert.Equal(expected,VendorBuyback.ReceiptSlot(slot));
+    [Fact] public void AStoredReceiptFromPermanentSlotZeroCannotBeRestored()
+    {
+        Assert.False(VendorBuyback.TryDescriptor(new(1,11666,0,0,0),out _,out _));
+    }
     [Theory]
     [InlineData(0x8404c180u)] // Stored-code family: its masked ID aliases an ordinary ability.
     [InlineData(0x8002c400u)] // DebuffAreaRadius177 is a class2 attribute, not an ordinary learned ability.
