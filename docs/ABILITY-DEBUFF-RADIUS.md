@@ -10,7 +10,15 @@ Only direct caller of625c5500 found is UI621ed033: ECX comes from local-characte
 
 Direct177 buff totals use existing AbilityStats.Player caps. Zero direct total preserves the previous radius exactly. Existing captured345 +21 is preserved: raw catalog345 says12, a separate unresolved magnitude mismatch. At base4 the actual current +21 gives approximately4.84m. No magnitude, linked-attribute aggregation, character baseline or RNG is changed.
 
-75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links81 with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale; its native schema default, global threshold and actor coefficient are unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
+75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links81 with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale. The loader follow-up below establishes that the initial property getter returns0; the global threshold, actor coefficient and later mutation paths remain unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
+
+## Initial linked-attribute default
+
+The link map stores the owner attribute, linked attribute and **owner coefficient**. Native6251d3c0 reads both AttributeLink and AttributeLevelBonusScale from the current owner template;6251d543..553 builds the triple, and6251c2f0 indexes its first word. Thus177 linked to1055 uses177's coefficient, rather than1055's stored2.0.
+
+The native GOB loader6231bad0 distinguishes declared storage size from stored size. It writes storage_size to object+20, writes stored_size to+28 at6231bda4, then allocates and reads exactly stored_size bytes into+2c. The raw177 template has schema315, declared storage422 and stored22 bytes. Its scale descriptor offset229 plus float width4 exceeds that actual buffer. Getter622ffce0 explicitly zero-fills out-of-range output at622ffd29..3d, so the initial scale getter returns0. It does not expand a422-byte tail or substitute1. The inspected derived postload callback621b3890/62327960 builds bounded view caches without expanding this property buffer.
+
+This closes the ordinary initial-template property default. It does not establish arbitrary later template/map mutations, the live threshold or a complete retail75 gameplay producer. No coefficient, linked-attribute sum or new passive effect is introduced;75's current parity label stays unchanged. The hash-gated probe now verifies the relevant owner-property read, stored-size allocation and zero-fill instructions as well as the radius branch.
 
 ## Exact executor scope
 

@@ -13,4 +13,9 @@ assert read(0x625c5590,14)==bytes.fromhex("d945fc5fd805489286625ed84df8")
 assert struct.unpack("<f",read(0x628706a8,4))[0]==100
 assert read(0x621ed024,6)==bytes.fromhex("8b88b4000000") # local character -> ECX
 assert read(0x625c5510,2)==bytes.fromhex("8bf1") # preserve owner ECX in ESI
-print(json.dumps({"owner":"UI621ed033 passes local-character [629eee08]+b4 as ECX; template as argument, no target argument", "selector":"StatusCategory exactly UDB0", "stat":177,"formula":"base*(1+binary32(signed16(total177)/100))", "units":"base getter stored metres*100; UI /100; server selectors metres", "unresolved":"75 modifies1055.177 AttributeLink1055 default scale, threshold62b11ee0 and baseline aggregation unresolved. No75 closure or native server landing caller claim."},indent=2))
+# Initial materialized-template link path; no runtime-memory or later-writer claim.
+assert read(0x6251d522,25)==bytes.fromhex("8d55fc5268d0908c62578bcbc745fc00000000e85672ffff8b")
+assert read(0x6231bda4,6)==bytes.fromhex("894e288b45d0") # stored_size -> object+28
+assert read(0x6231bdd4,15)==bytes.fromhex("ff157882866283c40489462ceb07c7") # alloc stored bytes -> +2c
+assert read(0x622ffd29,21)==bytes.fromhex("8bd1c1e90233c0f3ab8bca83e103f3aa5fb0015e5d") # zero-fill fallback
+print(json.dumps({"owner":"UI621ed033 passes local-character [629eee08]+b4 as ECX; template as argument, no target argument", "selector":"StatusCategory exactly UDB0", "stat":177,"formula":"base*(1+binary32(signed16(total177)/100))", "units":"base getter stored metres*100; UI /100; server selectors metres", "initialLinkDefault":{"owner":177,"linked":1055,"coefficientOwner":177,"storedBytes":22,"declaredStorageBytes":422,"scaleOffset":229,"scaleWidth":4,"initialGetterValue":0,"loader":"6231bad0 retains stored_size;622ffce0 zero-fills out-of-range output"}, "unresolved":"75 modifies1055. Threshold62b11ee0, later template/map mutations and complete baseline aggregation remain unresolved. No75 closure or native server landing caller claim."},indent=2))
