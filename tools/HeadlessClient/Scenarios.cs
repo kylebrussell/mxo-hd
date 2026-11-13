@@ -123,6 +123,7 @@ public static partial class Scenarios
         new Scenario("ability-memory-admission", AbilityMemoryAdmission, StillNpcs),
         new Scenario("ability-load-prerequisites", AbilityLoadPrerequisiteAdmission, StillNpcs),
         new Scenario("ability-memory-ui-compatibility", AbilityMemoryUiCompatibility, StillNpcs),
+        new Scenario("ability-training-authority", AbilityTrainingAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_IDS"]=""}),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
