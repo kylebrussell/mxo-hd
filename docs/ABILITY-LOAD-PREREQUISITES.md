@@ -1,6 +1,6 @@
 # Ability load prerequisites: source contract and dormant helper
 
-This package is pure catalog metadata and tests. `AbilityPrerequisites` has no gameplay callers, mutation, admission, implicit loading or grant expansion. Runtime integration waits for PR206's actual merge and a separate source review. It does not import that unmerged transaction or change the current parser, archive, prerequisites, load acknowledgements or passives.
+This dependent draft adds sourced prerequisite metadata and bounded server admission through PR206's exact existing planner/transaction. It includes exact PR206 source `b368ee291877c6c4e3a285a80fa1181b9b489a9f` as an explicit dependency; it is not claimed to be on actual master or ready for native/merge while that dependency is unmerged. No second transaction, parser change, implicit parent load or hidden grant ownership is introduced.
 
 ## Primary evidence
 
@@ -27,8 +27,34 @@ The selected ability's `ReqCharLevel` compares against EXP-derived character lev
 
 For an existing unsuppressed entry, flags-zero `625c4e90` returns the word at I-node+14 directly. The numeric/link bonus getter `625c47a0` is called only when the first flag is nonzero; fallback is 0 when flags are zero. Thus raw numeric modifiers do not raise this prerequisite level. [Stat producer evidence](STAT-PRODUCERS.md) establishes that ordinary 80b2 supplies the base level and CSSlot. A normal registered loaded row therefore matches its transmitted stored level; hidden membership and suppression remain separate eligibility concerns. No linked-stat formula or server default is inferred.
 
-## Integration proposal, not implemented
+## Explicit OURS batch interpretation
 
-After actual PR206 merge, reuse its owned-row transaction, canonical/type/PK safeguards, EXP input and committed snapshot rather than creating a second mutation path. Validate eligible new additions against the final current-plus-requested set of real owned loaded rows. No hidden slot 520, code-family row, client-provided level or folder ancestry may substitute. Do not auto-load missing parents: the native load caller already emits qualifying parent rows. Preserve repeat loads, existing accepted acknowledgement/grant order after commit and owned unload recovery, including preexisting invalid graphs. Preserve merged207 typed registration.
+The ordinary single-selection client inserts its selected row first through `621dde60`, then inserts parents at the front. `621d4150` serializes forward, so the selected row is LAST for that ordinary caller. However, the other positive caller `621df621` reconciles saved slot-set `629ebd68` with current loaded entries and emits multi-root loadouts. Therefore the server does not assume the first or last row universally identifies the selected root.
 
-Proposed atomic refusal and durable-row qualification are explicit OURS server-authority policies, not recovered retail server partial-batch semantics. Existing MODAL text is the compatible refusal path; native internal statuses are not invented negative wire codecs. A future fixture must separate invalid-wire server authority from ordinary native UI prevention and prove same-batch parent/child acceptance, under-level rejection, EXP mismatch, memory coexistence, database rollback and two-connection races. No runtime wiring, fresh fixture, native readiness or parity status is claimed here.
+The source manifest retains **all 21** counterexamples where auto-included parents have a higher ReqCharLevel than the selected child otherwise needs. For example, Power Shot14 at EXP-derived level12 can auto-include owned Energized Attacks9 with required training0 and parent ReqCharLevel99. Precise Blow15 at8 and Punishing Blows16 at12 can auto-include Detect Vulnerability7 with required training0 and parent ReqCharLevel99. Applying selected-root gates independently to every wire row would reject those native batches. This does not promote their effects or claim the retail server accepted every such historical build.
+
+The approved server interpretation is explicit **OURS** for ambiguous crafted/multi-root batches:
+
+- Consider only new eligible canonical additions, excluding existing loaded/no-op rows. Roots are new IDs not in another new ID's transitive prerequisite closure; order is irrelevant.
+- Every root must meet its ReqCharLevel using the character EXP locked by the existing transaction. Stored character Level cannot bypass it. Auto-parent additions covered by those roots are exempt from their own selected-root ReqCharLevel gate.
+- A prerequisite must be a real owned archive row in the final current-plus-requested loaded set, with sufficient raw base training. Hidden slot520, codes, folder ancestry and client-provided training do not qualify. The native loaded-level comparison sign-extends its16-bit word (`621deb77`), so wrapped-negative base levels do not qualify.
+- Newly included archived parents must also have stored training no greater than EXP-derived level, as in the native archived-parent search. This does not become a global selected-row or already-loaded-row training cap.
+- Every new node must belong to a qualified root/closure. Cyclic/rootless batches fail closed. Existing invalid graphs and no-op requests do not legitimize new forbidden parents, but remain recoverable by owned unload. There is no automatic loading, training, unloading or repair of legacy graphs.
+
+`AbilityMemory.Plan` performs this pure qualification using the rows and EXP already locked by `CommitAbilityLoadout`, before SQL changes or publication. It retains canonical family/slot/PK ownership filtering and the exact memory capacity/unknown/atomic rules. Accepted flags commit before the existing PlayerHandler acknowledgements/passives and merged207 grant lifecycle; no life/transport lock or callback is added inside the transaction. Refusal uses the existing MODAL path; internal native statuses are not fabricated response codecs. Durable-row qualification is OURS where it differs from the native actor membership/suppression lifecycle.
+
+## Fixture migration and validation boundary
+
+Historical PR206 proofs and source pins remain retained as capacity-only evidence. Their new high-tier314/75/356 additions omitted required parents and are now correctly refused. No production exception preserves that fixture. The old `ability-memory-admission` registration now forwards to the stronger prerequisite-legal successor `ability-load-prerequisites`; unit capacity examples use legal217/113 additions while retaining invalid preexisting-graph no-op/unload recovery checks. The ordinary206 level1 closed UI profile is unchanged.
+
+The new headless case has an exact pre-login owned profile, then tests owned-but-unloaded and undertrained parents, a code-family impostor, EXP versus stored character level, explicit parent+child in reversed order, exact16/one-over capacity, ordinary unload recovery, an actual second-write SQL failure with no positive acknowledgements and whole-batch rollback/retry, ordinary relog and a two-connection capacity race. Its storedLevel50/EXP0 mismatch and invalid requests are explicitly headless authority probes, not a legal native UI build. No fresh result is claimed until separately run and retained.
+
+## Claude-only native one pass
+
+Discovered mode **ability-load-prerequisites** seeds consistent Level1/EXP0, training1, owned2/17/113/130/217/628. Only Awakened2 and Self Defense17 start loaded; folder ancestors are owned only for UI grouping. Dev, GM and fixed rolls are off.
+
+1. Normal hardline radial > Abilities. Verify only Awakened and Self Defense are initially loaded.
+2. Double-click archived Hindering Shot130. The native client should include its owned Combat Insight113 parent in the same ordinary load operation; verify both loaded and memory4/16. Retain the actual80ae rows and server acknowledgements.
+3. Unload/reload through the normal UI, then load Evade Combat217 and Concentration628. Full relog must preserve the admitted flags.
+
+No random result, helper client or developer bypass is required. Invalid child-only RPCs and character-gate failures are headless authority cases: native UI should prevent sending them. Native rendering/tree grouping, automatic parent request and persistence remain Claude-only pending. This draft is not READY until source review, complete validation, granted fresh proof and dependency merge.

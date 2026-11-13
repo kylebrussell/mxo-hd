@@ -15,6 +15,329 @@
     "Strict family guard for corrupt catalog is conservative; all shipped edges have the real ability family.",
     "Initial/default descriptor evidence is not a recovered retail server admission policy."
   ],
+  "parentCharacterCounterexamples": [
+    {
+      "root": 14,
+      "characterLevel": 12,
+      "parents": [
+        [
+          9,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 15,
+      "characterLevel": 8,
+      "parents": [
+        [
+          7,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 16,
+      "characterLevel": 12,
+      "parents": [
+        [
+          7,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 696,
+      "characterLevel": 30,
+      "parents": [
+        [
+          484,
+          20,
+          33
+        ]
+      ]
+    },
+    {
+      "root": 862,
+      "characterLevel": 18,
+      "parents": [
+        [
+          860,
+          18,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 872,
+      "characterLevel": 30,
+      "parents": [
+        [
+          860,
+          30,
+          99
+        ],
+        [
+          861,
+          0,
+          99
+        ],
+        [
+          868,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 942,
+      "characterLevel": 23,
+      "parents": [
+        [
+          940,
+          23,
+          99
+        ],
+        [
+          941,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 944,
+      "characterLevel": 18,
+      "parents": [
+        [
+          940,
+          18,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 946,
+      "characterLevel": 30,
+      "parents": [
+        [
+          940,
+          30,
+          99
+        ],
+        [
+          941,
+          0,
+          99
+        ],
+        [
+          943,
+          0,
+          99
+        ],
+        [
+          945,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1167,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1163,
+          0,
+          99
+        ],
+        [
+          1166,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1168,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1163,
+          0,
+          99
+        ],
+        [
+          1166,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1169,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1163,
+          0,
+          99
+        ],
+        [
+          1166,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1171,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1165,
+          0,
+          99
+        ],
+        [
+          1170,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1172,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1165,
+          0,
+          99
+        ],
+        [
+          1170,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1173,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1165,
+          0,
+          99
+        ],
+        [
+          1170,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1175,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1164,
+          0,
+          99
+        ],
+        [
+          1174,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1176,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1164,
+          0,
+          99
+        ],
+        [
+          1174,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1177,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1164,
+          0,
+          99
+        ],
+        [
+          1174,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1180,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1163,
+          0,
+          99
+        ],
+        [
+          1166,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1181,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1164,
+          0,
+          99
+        ],
+        [
+          1174,
+          0,
+          99
+        ]
+      ]
+    },
+    {
+      "root": 1182,
+      "characterLevel": 20,
+      "parents": [
+        [
+          1165,
+          0,
+          99
+        ],
+        [
+          1170,
+          0,
+          99
+        ]
+      ]
+    }
+  ],
   "templates": 1404,
   "templatesWithRequirements": 963,
   "edges": 1429,

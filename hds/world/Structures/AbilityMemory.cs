@@ -54,16 +54,22 @@ namespace hds
             {
                 // The archive has no unique-slot constraint. Never update/adopt an ambiguous slot.
                 var slot=rows.Where(r=>r.Slot==request.Slot).ToArray();
-                if(slot.Length!=1) continue;
+                if(request.Slot>=AbilityProgression.HiddenSlot || slot.Length!=1) continue;
                 var row=slot[0];
                 if(!IsAbility(row.Descriptor) || row.Ability!=AbilityCatalog.Canonical(request.Ability)) continue;
-                if(!unload && !AbilityProgression.MeetsCharacterLevel(row.Ability,characterLevel)) { levelRefused=true; continue; }
+                if(!unload && AbilityCatalog.Find(row.Ability)==null) { levelRefused=true; continue; }
                 if(!accepted.Any(r=>r.Key==row.Key)) accepted.Add(row);
             }
             var loaded=rows.Where(r=>r.Loaded).ToArray();
             var current=loaded.Where(r=>IsAbility(r.Descriptor) && AbilityCatalog.Find(r.Ability)!=null)
                 .Select(r=>r.Ability).ToHashSet();
             int used=current.Sum(Cost),maximum=ForExperience(experience);
+            if(!unload)
+            {
+                string qualification=AbilityLoadQualification.Refusal(rows,accepted,experience,out bool rootLevelRefused);
+                levelRefused|=rootLevelRefused;
+                if(qualification!=null)return new Result(Array.Empty<Row>(),loaded,qualification,used,maximum,levelRefused);
+            }
             bool positive=accepted.Any(r=>!current.Contains(r.Ability) && Cost(r.Ability)>0);
             var desired=new HashSet<ushort>(current);
             foreach(var row in accepted) { if(unload) desired.Remove(row.Ability); else desired.Add(row.Ability); }

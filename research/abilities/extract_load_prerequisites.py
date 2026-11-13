@@ -21,6 +21,25 @@ for row in json.loads(source.read_text(encoding='utf-8-sig'))['abilities']:
     assert len(char) <= 1
     rows.append({'id': row['id'], 'characterLevel': char[0] if char else 0,
                  'direct': [[i,level] for i,level in sorted(direct.items())]})
+lookup = {row['id']: row for row in rows}
+def closure(root):
+    result = {}; pending = [root]; seen = set()
+    while pending:
+        node = pending.pop()
+        if node in seen: continue
+        seen.add(node)
+        for parent, level in lookup[node]['direct']:
+            result[parent] = max(result.get(parent, -2147483648), level)
+            pending.append(parent)
+    return result
+counterexamples = []
+for root, row in lookup.items():
+    parents = closure(root)
+    minimum = max([1, row['characterLevel'], *parents.values()])
+    excluded = [[parent, level, lookup[parent]['characterLevel']] for parent, level in sorted(parents.items())
+                if lookup[parent]['characterLevel'] > minimum]
+    if minimum <= 50 and excluded:
+        counterexamples.append({'root':root,'characterLevel':minimum,'parents':excluded})
 result = {'schema':1, 'sourceSha256':hashlib.sha256(source.read_bytes()).hexdigest(),
  'clientSha256':'cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a',
  'primary':{'collector':'6251d3c0 component39', 'closure':'6251d660; max6251d76e',
@@ -30,7 +49,7 @@ result = {'schema':1, 'sourceSha256':hashlib.sha256(source.read_bytes()).hexdige
  'limits':['Pure metadata, no admission or implicit loading.',
  'Strict family guard for corrupt catalog is conservative; all shipped edges have the real ability family.',
  'Initial/default descriptor evidence is not a recovered retail server admission policy.'],
- 'templates':len(rows), 'templatesWithRequirements':sum(bool(x['direct']) for x in rows),
+ 'parentCharacterCounterexamples':counterexamples, 'templates':len(rows), 'templatesWithRequirements':sum(bool(x['direct']) for x in rows),
  'edges':sum(len(x['direct']) for x in rows), 'positiveCharacterRequirements':sum(x['characterLevel'] > 0 for x in rows),
  'abilities':sorted(rows,key=lambda x:x['id'])}
 rows = result.pop('abilities')
