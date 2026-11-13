@@ -119,6 +119,23 @@ public class UiLagAreaTests : IDisposable
         c.messageQueue.RPCMessagesQueue.Clear();UiLagArea.Land(c,Ability());
         Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(TimedEffects.ForMob(mob).Effects.Snapshot());
     }
+    [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)]
+    public void ActualEnumerationBarrierRejectsAnInvalidatedCasterSnapshot(int mutation)
+    {
+        var c=Actor();var t=Target(c,111,100);Exception? error=null;
+        var worker=new Thread(()=>{try{UiLagArea.Land(c,Ability());}catch(Exception ex){error=ex;}});
+        lock(WorldServer.mobs.SyncRoot)
+        {
+            worker.Start();
+            Assert.True(SpinWait.SpinUntil(()=>worker.ThreadState.HasFlag(System.Threading.ThreadState.WaitSleepJoin),TimeSpan.FromSeconds(3)),"Actual MobsInArea waits on the held registry after capturing the centre");
+            if(mutation==0)c.playerData.worldGeneration++;
+            if(mutation==1)c.playerData.lifeGeneration++;
+            if(mutation==2)c.Alive=false;
+            if(mutation==3)c.playerData.worldChangePending=true;
+        }
+        Assert.True(worker.Join(TimeSpan.FromSeconds(3)));Assert.Null(error);
+        Assert.False(Affected(t));Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(t.messageQueue.RPCMessagesQueue);
+    }
     [Theory] [InlineData(38)] [InlineData(47)] [InlineData(694)] [InlineData(1025)] [InlineData(1109)]
     public void NoOtherSelectorFourFamilyIsEnabled(ushort id)
     {

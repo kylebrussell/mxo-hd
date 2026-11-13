@@ -24,3 +24,13 @@ Use discovered ui-lag-area-hit and then ui-lag-area-deflect profiles, CSR_Tester
 4. In deflect profile, refresh owned97 similarly and cast with no target. QAEnemy should deflect with no97 modifiers, HP damage or on-hit callbacks. Keep generic FX appearance findings separate from recipient/effect correctness.
 
 Headless cases ui-lag-area-hit/deflect additionally use ordinary no-target casts beside a real NPC and preserve every received RPC/03 list, actual selected DLL path/configuration/hash and runtime log before teardown, including failure. They test the selected-distant-target control using a second independently owned caster, without bypassing cooldown. Native rendering and click/UI acceptance remain pending Claude. Validation results will be recorded after final checks and authorized fresh execution.
+
+## Validation checkpoint
+
+Initial full4,486 passed, then final full4,492 passed after per-recipient caster generation guards and additional exclusion coverage. Python12, both actual NativeQa builds/plans/provenance and ignored all-module audit plus exact deterministic CRLF three-artifact roundtrip passed. Tracked historical snapshots and CSV are unchanged; current ignored inventory retains27 cosmetic/1 missing.
+
+Initial source84d929057f6060ad69fee6a48ecb0c861a97c331 fresh hit33.6s and deflect27.7s both passed, driver exit0, peak1, total61.4s, with normal disposal. Actual selected server was Debug8CF3DA39611976D406648D51849418D37F2018E037B708AD9D03BAAFCA585683. Unique preteardown hit JSON mxo-ui-lag-hit-mxotest_run_1_0053850cd8-wire.json SHA256d318c8119a9f893e94846d11b2258451fc79332eafbc492d6b6fc0befb35106f; deflect JSON mxo-ui-lag-deflect-mxotest_run_2_a916525ca3-wire.json SHA2564238d96e28be1a166225ecea8ab5276e33b57cdc75886ebe5a4438545075f016. Both include every RPC/03 list and runtime log; no native rendering claim.
+
+Final guard follow-up captures world/life before reading the centre, rechecks after reading it and before enumeration, and includes Alive/ordinary state gates for every recipient. Four actual registry-lock barrier units invalidate world, life, Alive or pending state while enumeration is blocked, then prove no result or effect escapes.87 scoped tests pass. Final fresh results will be recorded separately because this guard changes runtime; the first proof is not relabelled as testing the new guard.
+
+Two earlier unit-fixture failures are retained in Temp: NPC-hit setup lacked Store.world; a dead-NPC exclusion setup changed HP without setting the real Mob.isDead flag. Corrected test setup passes; no production workaround was introduced for either mistake.

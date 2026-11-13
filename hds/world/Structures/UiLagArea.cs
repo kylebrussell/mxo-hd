@@ -14,13 +14,14 @@ namespace hds
                 !caster.playerData.getOnWorld() || caster.playerData.worldChangePending ||
                 caster.playerData.DistrictIsLA() || caster.playerData.isDead || caster.playerData.duelDeath ||
                 !ControlActions.CanUseAbilities(caster)) return;
+            int world=caster.playerData.worldGeneration,life=caster.playerData.lifeGeneration;
+            bool Current()=>caster.Alive && caster.playerData.worldGeneration==world && caster.playerData.lifeGeneration==life &&
+                caster.playerData.getOnWorld() && !caster.playerData.worldChangePending && !caster.playerData.DistrictIsLA() && !caster.playerData.isDead && !caster.playerData.duelDeath && ControlActions.CanUseAbilities(caster);
             double x=0,y=0,z=0;
             NumericalUtils.LtVector3dToDoubles(caster.playerInstance.Position.getValue(),ref x,ref y,ref z);
-            int world=caster.playerData.worldGeneration,life=caster.playerData.lifeGeneration;
-            bool Current()=>caster.playerData.worldGeneration==world && caster.playerData.lifeGeneration==life &&
-                caster.playerData.getOnWorld() && !caster.playerData.worldChangePending && !caster.playerData.isDead && !caster.playerData.duelDeath && ControlActions.CanUseAbilities(caster);
+            if(!Current())return;
             double radius=AbilityRadius.TargetMetres(caster,Ability);
-            if(radius<=0)return;
+            if(radius<=0 || !Current())return;
             // Selection is intentionally absent: a selected distant enemy cannot move the centre.
             var mobs=AbilityHostile.MobsInArea(caster,x,y,z,radius);
             var players=AbilityHostile.PlayersInArea(caster,x,y,z,radius);
