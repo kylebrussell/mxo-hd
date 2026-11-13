@@ -129,6 +129,7 @@ public static partial class Scenarios
         Cast(p,378);await friend.WaitForRpcAsync(ModPattern(693,183),TimeSpan.FromSeconds(8));
         friend.SendChat("?pvpflag on");await friend.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var victim=await enemy.WaitForViewNamedAsync(friend.Handle);
+        await PrepareFreeCastViralFixture(context,enemy,481);
         Cast(enemy,481,victim.ViewId);await friend.WaitForRpcAsync(ModPattern(481,481),TimeSpan.FromSeconds(8));
         await friend.WaitForRpcAsync(ModPattern(481,481,true),TimeSpan.FromSeconds(8)); // fixture roll0 < term sweep4
         Cast(p,378);await p.WaitForRpcAsync("80 bd 05 7a 01 00 00 00 00 00 00");

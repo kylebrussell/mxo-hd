@@ -10,6 +10,7 @@ public static partial class Scenarios
         target.SendChat("?combatdepth determination 75"); await target.WaitForTextAsync("Determination 75");
         target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var view=await caster.WaitForViewNamedAsync(target.Handle);
+        await PrepareFreeCastViralFixture(context,caster,315);
         Cast(caster,315,view.ViewId);
         var stun=await target.WaitForRpcAsync(ModPattern(315,102));
         Check.That(Math.Abs(BitConverter.ToSingle(stun.Bytes,18)-4.69f)<.0001,"Target Determination reduces stun fractionally");
