@@ -8,6 +8,23 @@ if (HasFlag(options, "--help") || HasFlag(options, "-h"))
     return 0;
 }
 
+string? abilityUseHex=GetSingle(options,"--ability-use-hex");
+string? abilityUseBodyHex=GetSingle(options,"--ability-use-body-hex");
+if(abilityUseHex!=null || abilityUseBodyHex!=null)
+{
+    if(abilityUseHex!=null && abilityUseBodyHex!=null){Console.Error.WriteLine("Select one full RPC or body input.");return 2;}
+    try
+    {
+        byte[] bytes=Convert.FromHexString(abilityUseHex??abilityUseBodyHex!);
+        AbilityUseRecord? record;
+        bool valid=abilityUseHex!=null?AbilityUseRecord.TryDecode(bytes,out record):AbilityUseRecord.TryDecodePayload(bytes,out record);
+        if(!valid){Console.Error.WriteLine("Expected exactly43 bytes80b9 or41 body bytes; short harness records are not full native records.");return 2;}
+        byte[] rpc=record!.Encode();
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{Fields=record,RpcHex=Convert.ToHexString(rpc),BodyHex=Convert.ToHexString(rpc.AsSpan(2)),Semantics="Native printer names only; ground words/flags are raw, no activation/admission inference."},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));return 0;
+    }
+    catch(FormatException){Console.Error.WriteLine("Input must be exact hexadecimal bytes without separators.");return 2;}
+}
+
 string repo = GetSingle(options, "--repo") ?? Directory.GetCurrentDirectory();
 string fullRepo = Path.GetFullPath(repo);
 
@@ -106,6 +123,8 @@ static void PrintUsage()
       dotnet run --project tools/PacketResearch -- [options]
 
     Options:
+      --ability-use-hex <hex> Decode one exact full43-byte80b9 record and roundtrip.
+      --ability-use-body-hex <hex> Decode one exact41-byte80b9 body.
       --repo <path>            Repository root. Defaults to current directory.
       --families-json <path>  Bounded lossless 80bc / conservative 03 accounting; skips full report.
       --packet-dumps <path>    Packet dump root. Can be provided more than once.
