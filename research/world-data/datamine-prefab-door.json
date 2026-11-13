@@ -1,0 +1,252 @@
+{
+  "key": [
+    18,
+    21
+  ],
+  "goid": 355,
+  "placement": {
+    "sector": 18,
+    "source": "resource/worlds/final_world/constructs/archive/archive_datamine/datamine1_1_7.sidi",
+    "rid": "0x4000ad9",
+    "pivot": [
+      710,
+      360,
+      630
+    ],
+    "rotation": 1,
+    "flags": 0,
+    "tail26to31": "da0a00040100",
+    "count": 88,
+    "resource": {
+      "rid": 67111641,
+      "flags": 4,
+      "pack": "prefabs_1c.pkb",
+      "type": 6400,
+      "off": 10878640,
+      "size": 1610892,
+      "path": "resource/prefab_database/floors/dt/dt_skyscraper01/dt_skyscraper01_lby_03_nonpc.iprf"
+    }
+  },
+  "localPosition": [
+    300.0,
+    0.0,
+    0.0
+  ],
+  "localQuaternion": [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "nativePosition": [
+    -10900.0,
+    3600.0,
+    -3000.0
+  ],
+  "serverPosition": [
+    -10900.0,
+    3745.0,
+    -3000.0
+  ],
+  "quaternion": [
+    0.0,
+    0.7071067690849304,
+    0.0,
+    0.7071067690849304
+  ],
+  "quaternionHex": "00000000f304353f00000000f304353f",
+  "goTail": [
+    4294967295,
+    4294901841,
+    4294967295,
+    0
+  ],
+  "schema": 364,
+  "name": "Door zz Push Knob Metal1",
+  "modelDescriptionId": "0x280001d1",
+  "modelResource": {
+    "rid": 671089105,
+    "flags": 4,
+    "pack": "gameobjects.pkb",
+    "type": 84017920,
+    "off": 7352361,
+    "size": 891,
+    "path": "resource/GameObjects/Doors/Rotating/single_push/zz_push_knob_metal1.moa"
+  },
+  "modelBytes": 891,
+  "modelSha256": "7160c8744cf539c82fd33b7a11c89e48ea7b7fa506c920966e0a7443c22b44e3",
+  "usables": [
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "use": "3",
+      "usable": "OpenUsage",
+      "label": "Open",
+      "cursor": "open.txa",
+      "max_distance": "1000.0",
+      "defaultable": "1",
+      "client_rule": "4004 DoorOpenGeneric",
+      "execute_rule": "4004 DoorOpenGeneric",
+      "results": "1>0x834 2>0x83b 3>0x842",
+      "tracker": "",
+      "starts_on": ""
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "use": "4",
+      "usable": "PickLockUsage",
+      "label": "Pick Lock",
+      "cursor": "",
+      "max_distance": "150.0",
+      "defaultable": "0",
+      "client_rule": "4000 DoorPickLock",
+      "execute_rule": "4000 DoorPickLock",
+      "results": "1>0x835",
+      "tracker": "",
+      "starts_on": ""
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "use": "8",
+      "usable": "UnlockUsage",
+      "label": "Unlock",
+      "cursor": "",
+      "max_distance": "1000.0",
+      "defaultable": "1",
+      "client_rule": "4003 DoorLockTest",
+      "execute_rule": "4003 DoorLockTest",
+      "results": "1>0x834 2>0x83b",
+      "tracker": "",
+      "starts_on": ""
+    }
+  ],
+  "states": [
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x835",
+      "state_name": "ClosedState",
+      "default": "1",
+      "next": "",
+      "seconds": "",
+      "enables": "3",
+      "disables": "4 8"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x838",
+      "state_name": "ClosingState",
+      "default": "0",
+      "next": "0x835",
+      "seconds": "1",
+      "enables": "3",
+      "disables": "4 8"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x83a",
+      "state_name": "DisarmedState",
+      "default": "0",
+      "next": "",
+      "seconds": "",
+      "enables": "",
+      "disables": "11 12"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x836",
+      "state_name": "LockedState",
+      "default": "0",
+      "next": "",
+      "seconds": "",
+      "enables": "4 8",
+      "disables": "3"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x834",
+      "state_name": "OpenedState",
+      "default": "0",
+      "next": "0x838",
+      "seconds": "20",
+      "enables": "",
+      "disables": "3 4 8"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x842",
+      "state_name": "ReopenedState",
+      "default": "0",
+      "next": "0x838",
+      "seconds": "20",
+      "enables": "",
+      "disables": "3 4 8"
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x839",
+      "state_name": "TrappedState",
+      "default": "0",
+      "next": "",
+      "seconds": "",
+      "enables": "11 12",
+      "disables": ""
+    },
+    {
+      "goid": "355",
+      "object": "Door zz Push Knob Metal1",
+      "class": "364",
+      "state": "0x83b",
+      "state_name": "TriggeredState",
+      "default": "0",
+      "next": "",
+      "seconds": "",
+      "enables": "",
+      "disables": "11 12"
+    }
+  ],
+  "standingPoint": [
+    -11000,
+    3695,
+    -3000
+  ],
+  "nav": {
+    "sector": 18,
+    "region": 131,
+    "polygon": 224,
+    "floor": 3600,
+    "indoors": true
+  },
+  "nativeRenderingProven": false,
+  "preservedReturnerCsvRows": [
+    "7,8,01008000,01000000,a3b80000,True,-31200.0,1545.0,16450.0,-89.99998837950206,00000000f20435bf00000000f304353f",
+    "7,8,03008000,03000000,a3b80000,True,-37050.0,535.0,4100.0,89.99998837950206,00000000f204353f00000000f304353f",
+    "7,20,17004001,17000000,a3b80000,True,5950.0,395.0,12650.0,-135.45762401255584,8b62fcbc1c926bbf5b67abbd3227c33e",
+    "7,23,0c007001,0c000000,a3b80000,True,38550.0,108.0,-4350.0,-179.99999499104388,000000000000803f000000002ebd3bb3",
+    "7,28,ce04c001,ce040000,a3b80000,True,13550.0,645.0,-17200.0,89.99998837950206,00000000f204353f00000000f304353f",
+    "7,36,01004002,01000000,a3b80000,True,-16150.0,1545.0,43800.0,-179.99999499104388,000000000000803f000000002ebd3bb3",
+    "7,41,f80d9002,f80d0000,a3b80000,True,23200.0,13745.0,27550.0,0.0,0000000000000000000000000000803f",
+    "7,44,0200c002,02000000,a3b80000,True,6200.0,4945.0,-24150.0,89.99998837950206,00000000f204353f00000000f304353f"
+  ],
+  "changedOldRows": 157,
+  "maximumOldPositionDelta": 0.0009765625,
+  "changedOldQuaternionRows": 0
+}
