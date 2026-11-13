@@ -8,7 +8,7 @@ The shared helper is the already reviewed Medium03 implementation: client.dll SH
 
 All 268 Sati placements use the same direct METR SCIN→sector SIDI constructor path as world16. Declared placement counts match the strict parser; record signatures are unique and ordered, embedded GO lists stay inside their records, and the packed rotation field contains only 0/1/2/3: 62/73/45/88 placements. Every sector filename and X/Z parent translation matches the actual METR; parent Y is zero throughout. Every one of 58 prefab RIDs is indexed, readable and hashed. There are 121 blank placement aliases, which are metadata gaps rather than missing resources or an alternative parent class. The exporter does not flatten unknown nested/EPI parents.
 
-The opt-in now accepts only worlds9 and16. Parent lookup uses the requested world; world16 output remains byte-identical. Strict default still refuses nonzero placements. Historical `--omit-unproven-rotations` remains separate and produces the original 2,599-key Sati subset; combining it with the native option is refused.
+The opt-in preserves the reviewed worlds7/15/16 and adds world9. Parent lookup uses the requested world; other reviewed outputs remain byte-identical. Strict default still refuses nonzero placements. Historical `--omit-unproven-rotations` remains separate and produces the original 2,599-key Sati subset; combining it with the native option is refused.
 
 The audit preserves all 8,177 historical raw tuples and all 70 conflict groups byte-for-byte after normalizing checkout line endings. It records the native poses separately. Every old safe key remains. Exactly 42 old rows change positions at the recovered float32 store boundaries, by at most 0.001953125 world units; none changes its quaternion. There is no first/last variant selection or normalization. Current source contracts cover 132 GOIDs, compared with 95 in the historical subset. These are object references, not 132 actors or proof every object type spawns.
 
@@ -42,7 +42,7 @@ The headless scenario reuses the generic normal-login/Open3/closing diagnostic. 
 
 ## Unchanged boundaries
 
-Existing OURS NearestEntry arrival `(14070,95,−4070)` and generated organization returner ALWAYS remain. The normal owned book47726/180-second sender cycle and exact-origin session path are unchanged. Four source47267 archivist proxies remain unbound. There are no captured NPC rows, HDL nodes or CNET networks. No NPC relocation, fallback suppression, PvpArchives change or invented hardline/subway is part of this package.
+PR176's repaired OURS arrival `(14225,95,−5225)` and separate generated organization returner `(14225,95,−4925)` remain. Their native picking retest is still pending; this rotation package does not change either position. The normal owned book47726/180-second sender cycle and exact-origin session path are unchanged. Four source47267 archivist proxies remain unbound. There are no captured NPC rows, HDL nodes or CNET networks. No NPC relocation, fallback suppression, PvpArchives change or invented hardline/subway is part of this package.
 
 ## Local validation
 
@@ -54,3 +54,11 @@ Fresh source `78785d53292e554572ec4269b86881cc7936870f`: **sati-prefab-door PASS
 Evidence was saved before teardown: Temp/mxo-sati-prefab-door-actual-wire.json, mxo-sati-prefab-door-success-debug.log (25,332 bytes, SHA256 `5b91022fbdbbed648c153144a44730e9ad240146997aa7329e2fad3eb8d75bdc`) and permanent stdout/exit mxo-sati-prefab-fresh-summary.txt. No source/build edits occurred during the driver.
 
 After disposal, actual master437fd4c6/167 was imported, preserving its reviewed missing-SID108 guard and exact mixed loader plus the Sati line. Sati CSV/audit/resources and new mode Git blobs remain identical to the fresh pin. Final41 scoped tests, both configurations, six read-only profiles/provenance and source9+5+16/current/historical/NAV reproduction passed. Final Debug SHA256 `900b0a731c30e40c285ebfde93d8aa3c8730342513f5100c55109560ea3f2b0a`; Release `fb5ef6018043d552d54e0b9afd2bfbbf06276097e04615c380334c78882e570f`. The final hashes differ after upstream import; they are not mislabeled as the earlier fresh binaries. The draft still depends on PR176 until it actually lands.
+
+## Dependency and master refresh (2026-11-13)
+
+Imported the exact repaired PR176 head `cb051e119ea27da75521fb2918edc7950ab68250`, then actual master `cd1c8a9ce201b9777ffa79d89f18a56eeb8a3351`. Conflicts preserve both Sati and Medium02 door cases, the reviewed 7/9/15/16 exporter whitelist, current Sati counts and PR176's separated arrival/returner. PR181 remains **DRAFT** until PR176 actually merges and its native picking retest passes.
+
+Post-merge validation: 34 scoped Sati/fallback/door/prefab tests, seven native-transform Python tests and nine snapshot-policy tests passed. Both actual NativeQa configurations built; six discovered/unknown read-only plans per configuration and their provenance passed. Current world9/15/16 CSV and audit outputs reproduce exactly after checkout line-ending normalization. The Sati CSV, audit, independent door evidence and new mode are byte-identical to the earlier fresh-tested source. The DataLoader differs from current master by the single Sati load line, with all existing mixed line endings preserved (819 CRLF and 122 bare LF including that addition).
+
+Current Debug hds SHA256 `ba4e397f58153efefbb1c767cbaaa92aaba28543eb33526a2e255b7fae95815a`; Release `36b74f3d6c4f3d834c872de009b06968a065c2a252f7d83fc33f785d7805aa11`. These are post-merge build hashes, not the earlier fresh binaries. Read-only proof is retained in `Temp/mxo-sati-prefab-maintenance-proof.json` and `mxo-sati-prefab-maintenance-reproduction.json`. No fresh repeat or native/client/lock/database action occurred for this maintenance.
