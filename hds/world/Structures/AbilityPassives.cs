@@ -46,9 +46,11 @@ namespace hds
         public static void Load(WorldClient client, bool newWorld = false)
         {
             var rows = Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID());
-            SetLoaded(client, rows.Where(r => r.getLoaded()).Select(r =>
-                (AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())), r.getLevel())), newWorld);
+            SetLoaded(client, LoadedArchiveAbilities(rows), newWorld);
         }
+
+        internal static IEnumerable<(ushort Ability,ushort Level)> LoadedArchiveAbilities(IEnumerable<MarginAbilityItem> rows) =>
+            rows.Where(r=>r.getLoaded() && (unchecked((uint)r.getAbilityID()) & 0xfc000000u) == CodeStorage.AbilityFlag).Select(r=>(AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())),r.getLevel()));
 
         public static void SetLoaded(WorldClient client, IEnumerable<(ushort Ability, ushort Level)> loaded, bool newWorld = false)
         {
