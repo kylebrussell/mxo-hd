@@ -22,6 +22,12 @@ public static partial class Scenarios
             await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE {filter}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
                 $"({player.CharId},500,{Goid(23)},50,1),({player.CharId},501,{Goid(356)},50,1),({player.CharId},502,{Goid(314)},50,0),({player.CharId},503,{Goid(75)},50,0),({player.CharId},504,{Goid(2)},50,1)");
             step="initial-world";await player.EnterWorldAsync();
+            Check.That(player.World.CreationSnapshot().Any(c=>c.ViewId==2),"Initial actual self precedes loading-complete");
+            Check.Equal(0,player.Received("80 b2 3f 04").Count,"Managed child is absent before readiness");
+            int readyIndex=player.World.RpcSnapshot().Count;player.SendRpc("0c 01");
+            await player.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
+            await player.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00");
+            observations.Add(new{InitialSelfBeforeReady=true,InitialReadyRpcIndex=readyIndex,ManagedGrantLevel=0,ManagedGrantSlot=520});
             step="exact-cap";SetAbilityLoaded(player,502,314,50,true);await player.WaitForRpcAsync("80 b2 3a 01");
             player.SendRpc("81 48");await player.WaitForRpcAsync("81 49");
             Check.Equal(1L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE {filter} AND slot=502"),"Exact16 memory admits314");
@@ -30,6 +36,9 @@ public static partial class Scenarios
             Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE {filter} AND slot=503"),"One-over batch leaves DB unchanged");
             Check.Equal(beforeDenied,player.Received("80 b2 4b 00").Count,"No success for refused75");
             step="unload-frees-memory";SetAbilityLoaded(player,501,356,50,false);await player.WaitForRpcAsync("80 b3 64 01");
+            await player.WaitForRpcAsync("80 b3 3f 04");
+            await player.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 01 00 00 00 00");
+            Check.Equal(1,player.Received("80 b3 3f 04").Count,"Managed child unload has exactly one lifecycle owner");
             SetAbilityLoaded(player,503,75,50,true);await player.WaitForRpcAsync("80 b2 4b 00");
             Check.Equal(1L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE {filter} AND slot=503"),"Committed unload frees memory for ordinary load");
             SetAbilityLoaded(player,502,314,50,false);await player.WaitForRpcAsync("80 b3 3a 01");
@@ -47,6 +56,9 @@ public static partial class Scenarios
             }
             finally{await context.Database.RemoveAbilityRollbackTriggerAsync();}
             step="handler-retry";player.SendRpc(batch);await player.WaitForRpcAsync("80 b2 64 01");await player.WaitForRpcAsync("80 b2 3a 01");
+            await player.WaitForRpcAsync("80 b2 3f 04 00 00 08 02");
+            await player.WaitForRpcAsync("80 bc 45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00");
+            Check.Equal(2,player.Received("80 b2 3f 04 00 00 08 02").Count,"Committed parent reload reconciles one new managed child");
             SetAbilityLoaded(player,501,356,50,false);await player.WaitForRpcAsync("80 b3 64 01");
             SetAbilityLoaded(player,503,75,50,true);await player.WaitForRpcAsync("80 b2 4b 00");
             string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={player.CharId}");
@@ -57,6 +69,10 @@ public static partial class Scenarios
             using(var restored=relogged=await HeadlessPlayer.LoginAsync(context.Server.Address,username,player.Handle))
             {
                 await restored.EnterWorldAsync();
+                Check.That(restored.World.CreationSnapshot().Any(c=>c.ViewId==2),"Relog actual self precedes loading-complete");
+                restored.SendRpc("0c 01");restored.SendRpc("81 48");await restored.WaitForRpcAsync("81 49");
+                Check.Equal(0,restored.Received("80 b2 3f 04").Count,"Relog unloaded parent cannot create a managed child");
+                observations.Add(new{RelogSelfBeforeReady=true,ManagedParentUnloadedAtRelog=true});
                 byte[] loaded=restored.CharacterData[6];
                 Check.Equal(0,loaded.Length%6,"Margin loaded-ability six-byte rows");
                 var ids=Enumerable.Range(0,loaded.Length/6).Select(i=>(BitConverter.ToUInt32(loaded,i*6+2)>>10)&0xfff).ToHashSet();
