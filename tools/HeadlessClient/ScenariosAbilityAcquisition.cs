@@ -29,7 +29,7 @@ public static partial class Scenarios
                 }
                 else Check.Equal(0,raw.Count(r=>r.Bytes[0]==0x5e||r.Hex.StartsWith("80 e7",StringComparison.OrdinalIgnoreCase)||r.Hex.StartsWith("80 e4",StringComparison.OrdinalIgnoreCase)||r.Hex.StartsWith("81 0f",StringComparison.OrdinalIgnoreCase)),"No success publication after rollback");
             }
-            p.SendRpc("81 0c "+Le(vendor));await p.WaitForRpcAsync("81 0d");
+            p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");
             step="buy-second-write-rollback";
             await context.Database.ExecuteAsync($"ALTER TABLE characters ADD CONSTRAINT acquisition_wallet_failure CHECK(charId<>{p.CharId} OR cash<>160000)");
             await Buy(code,false);Check.Equal(200000L,await Cash(),"Cash rolled back");Check.Equal(0L,await Count(code),"Inserted bag item rolled back with wallet");
@@ -50,7 +50,7 @@ public static partial class Scenarios
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)code)} AND level=1 AND is_loaded=0 AND slot<520"),"One genuine archive entry, not loaded/granted");
             p.SkipReceived();await ZionUpload(p);Check.Equal(1L,await Count(code),"Repeated upload keeps duplicate code");
             step="la-learning-same-transaction";
-            p.SendRpc("81 0c "+Le(vendor));await p.WaitForRpcAsync("81 0d");await Buy(other,true);
+            p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");await Buy(other,true);
             ushort bag=checked((ushort)await context.Database.LongAsync($"SELECT slot FROM inventory WHERE charId={p.CharId} AND goid={other}"));
             await GoToLoadingAreaAsync(p);p.SkipReceived();int laCursor=p.World.RpcSnapshot().Count;p.SendRpc("62 "+Le(bag)+" 6b 00 01");await p.WaitForRpcAsync("81 18 01 01 00 00 00 00");
             operations.Add(new{Step=step,Cursor=laCursor,Records=p.World.RpcSnapshot().Skip(laCursor).Select(r=>r.Hex).ToArray()});Check.Equal(0L,await Count(other),"LA upload consumes code");
