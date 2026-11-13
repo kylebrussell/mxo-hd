@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 namespace hds
 {
-    /// <summary>Captured356->1087 registration, separate from numeric passive records and archive ownership.</summary>
+    /// <summary>Observed zero-valued loaded-parent registrations, separate from numeric stats and archive ownership.</summary>
     public static class AbilityGrantRegistration
     {
         public const ushort Parent = 356, Child = 1087;
@@ -59,7 +59,45 @@ namespace hds
         }
         private sealed class Holder { internal readonly Presentation State=new Presentation(); }
         private static readonly ConditionalWeakTable<WorldClient,Holder> holders=new ConditionalWeakTable<WorldClient,Holder>();
-        public static bool Handles(ushort parent,ushort child)=>parent==Parent && child==Child;
+        // Exact capture-qualified pairs; legacy and scaled grants keep their existing paths.
+        internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedPairs { get; } = Array.AsReadOnly(new (ushort Source,ushort Target)[] {
+            (51,1094),
+            (64,1078),
+            (67,1085),
+            (83,1082),
+            (92,1089),
+            (98,1077),
+            (137,1062),
+            (143,1060),
+            (154,1061),
+            (236,1097),
+            (257,1063),
+            (263,1065),
+            (270,1067),
+            (310,1083),
+            (334,1084),
+            (335,1086),
+            (356,1087),
+            (369,1092),
+            (390,1079),
+            (410,1069),
+            (426,1064),
+            (439,1093),
+            (469,1088),
+            (490,1091),
+            (533,1066)
+        });
+        public static bool Handles(ushort parent,ushort child)
+        {
+            parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
+            if(!ObservedPairs.Any(p=>p.Source==parent && p.Target==child))return false;
+            var modifiers=AbilityCatalog.Find(parent)?.Modifiers.Where(m=>
+                AbilityCatalog.IdOf((uint)m.Number("TargetAbilityGrant"))==child &&
+                m.Number("WhenEnabled",-1)==0 && m.Number("DurationType",-1)==2).ToArray();
+            return modifiers?.Length==1 && modifiers[0].Number("ValueFunction")==0 &&
+                modifiers[0].Number("MinValue")==0 && modifiers[0].Number("MaxValue")==0 &&
+                AbilityValues.TryValue(modifiers[0],0,0,out int value) && value==0;
+        }
         // Literal80bc45, locator(child<<8)|3, source, child, grant-level, add/remove, duration0.
         internal static byte[] Record(Relation relation,bool off)
         {
@@ -88,8 +126,8 @@ namespace hds
                        data.waitForRPCShutDown || data.DistrictIsLA())return;
                     lock(data.passives)
                     {
-                        var desired=data.passives.Loaded.ContainsKey(Parent)
-                            ?new[]{new Relation(Parent,Child,0)}:Array.Empty<Relation>();
+                        var desired=ObservedPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
+                            .Select(p=>new Relation(p.Source,p.Target,0));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                     }
                 });
