@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Retail proves Tyndall's plot-0 Courier label only. This entire definition, NPCs, text, pacing, layout and
      reward baseline are OURS. Uses existing mission-key Data Disk6831, not a recovered retail Courier package. -->
-<mission id="20001" title="Courier" description="Carry a data disk between two Zion couriers. Authored standard mission."
+<mission id="20001" title="Courier" description="Carry a data disk between two Zion couriers."
          plot="0" org="1" contact="Tyndall" district="1" districtName="slums" exp="22000" info="31500" rewardLevel="50">
   <npc id="1" handle="Leto" type="FRIENDLY" at="1" rsi="60010058" />
   <npc id="2" handle="Neris" type="FRIENDLY" at="2" rsi="d8040058" />
