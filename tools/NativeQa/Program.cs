@@ -187,6 +187,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
         foreach (string file in Directory.GetFiles(Path.Combine(qaRoot,"requests"), "*.json").Order())
         {
             if (handled.Contains(file)) continue;
+            HeadlessPlayer? duelActor = null;
             try
             {
                 using var request = JsonDocument.Parse(await File.ReadAllTextAsync(file));
@@ -204,7 +205,11 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
                 }
                 else if (action == "duel-accept")
-                    result = await HelperDuelAcceptance.AcceptNextAsync(actor,q.GetProperty("challenger").GetString()!);
+                {
+                    duelActor = actor;
+                    result = await HelperDuelAcceptance.AcceptNextAsync(actor,q.GetProperty("challenger").GetString()!,onArmed:armed =>
+                        File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileNameWithoutExtension(file)+".armed.json"),JsonSerializer.Serialize(new { Armed=true, State=armed, At=DateTime.UtcNow })));
+                }
                 else if (action == "approve")
                 {
                     var pending = await actor.WaitForRpcAsync("81 88");
@@ -230,6 +235,10 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
             catch(Exception ex)
             {
+                if(duelActor!=null)
+                    await File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileName(file)),JsonSerializer.Serialize(new { Ok=false, Error=ex.Message, ErrorType=ex.GetType().FullName, At=DateTime.UtcNow,
+                        Actor=duelActor.Handle, AllRpc=duelActor.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(), ReceivedViewLists=duelActor.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(), Problems=duelActor.World.Problems.ToArray() }));
+                else
                 await File.WriteAllTextAsync(Path.Combine(qaRoot,"responses",Path.GetFileName(file)), JsonSerializer.Serialize(new { Ok=false, Error=ex.Message, At=DateTime.UtcNow }));
                 handled.Add(file);
             }

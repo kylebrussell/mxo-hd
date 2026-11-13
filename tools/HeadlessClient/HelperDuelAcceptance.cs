@@ -5,6 +5,7 @@ namespace HeadlessClient;
 /// <summary>Test-helper transport only: accepts the NEXT ordinary challenge from one expected visible actor.</summary>
 public static class HelperDuelAcceptance
 {
+    public sealed record Armed(string Actor,string Challenger,uint ChallengerHandle,int RpcCursor,int ViewCursor);
     public sealed record Evidence(string Challenger,uint ChallengerHandle,string Challenge,string Reply,string Begin,uint SelfDuelId,uint ChallengerDuelId,int ArmRpcIndex,int BeginRpcIndex);
     public static byte[] Reply(ReadOnlySpan<byte> challenge,uint expectedHandle)
     {
@@ -13,12 +14,14 @@ public static class HelperDuelAcceptance
             throw new ArgumentException("Expected an exact DuelChallenged for the current visible challenger.");
         byte[] reply=new byte[7];reply[0]=0x52;challenge[1..].CopyTo(reply.AsSpan(1));reply[5]=1;return reply;
     }
-    public static async Task<Evidence> AcceptNextAsync(HeadlessPlayer actor,string challenger,TimeSpan? timeout=null)
+    public static async Task<Evidence> AcceptNextAsync(HeadlessPlayer actor,string challenger,TimeSpan? timeout=null,Func<Armed,Task>? onArmed=null)
     {
         if(string.IsNullOrWhiteSpace(challenger)||challenger==actor.Handle)throw new ArgumentException("Select a different expected challenger.");
         TimeSpan wait=timeout??TimeSpan.FromSeconds(30);if(wait<TimeSpan.FromSeconds(1)||wait>TimeSpan.FromSeconds(60))throw new ArgumentOutOfRangeException(nameof(timeout));
+        var view=await actor.WaitForViewNamedAsync(challenger,wait);uint handle=DuelPackets.Handle(view.ViewId,view.SpawnId);
         int start=actor.World.RpcSnapshot().Count,viewStart=actor.World.ViewSnapshot().Count;
-        var view=await actor.WaitForViewNamedAsync(challenger,wait);uint handle=DuelPackets.Handle(view.ViewId,view.SpawnId);RpcRecord? offer=null;
+        if(onArmed!=null)await onArmed(new Armed(actor.Handle,challenger,handle,start,viewStart));
+        RpcRecord? offer=null;
         await actor.WaitUntilAsync(()=>{offer=actor.World.RpcSnapshot().Skip(start).FirstOrDefault(r=>r.Bytes.Length>0&&r.Bytes[0]==0x51);return offer!=null;},"NEXT duel challenge from "+challenger,wait);
         byte[] reply=Reply(offer!.Bytes,handle);
         var current=actor.World.CreationSnapshot().LastOrDefault(v=>v.ViewId==view.ViewId);
