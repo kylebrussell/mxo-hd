@@ -10,9 +10,12 @@ if (HasFlag(options, "--help") || HasFlag(options, "-h"))
 
 string? abilityUseHex=GetSingle(options,"--ability-use-hex");
 string? abilityUseBodyHex=GetSingle(options,"--ability-use-body-hex");
-if(abilityUseHex!=null || abilityUseBodyHex!=null)
+bool hasAbilityUse=HasFlag(options,"--ability-use-hex"),hasAbilityUseBody=HasFlag(options,"--ability-use-body-hex");
+if(hasAbilityUse || hasAbilityUseBody)
 {
-    if(abilityUseHex!=null && abilityUseBodyHex!=null){Console.Error.WriteLine("Select one full RPC or body input.");return 2;}
+    if(hasAbilityUse && hasAbilityUseBody){Console.Error.WriteLine("Select one full RPC or body input.");return 2;}
+    string inputOption=hasAbilityUse?"--ability-use-hex":"--ability-use-body-hex";
+    if(options[inputOption].Count!=1){Console.Error.WriteLine("Provide exactly one hexadecimal value for "+inputOption+".");return 2;}
     try
     {
         byte[] bytes=Convert.FromHexString(abilityUseHex??abilityUseBodyHex!);
