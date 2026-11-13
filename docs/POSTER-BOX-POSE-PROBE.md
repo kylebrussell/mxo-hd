@@ -57,3 +57,29 @@ The current Box picking problem remains unresolved until this visual/action comp
 **68 scoped tests passed**: strict authority/source/variant guards, default-pose identity, source/state immutability, future normal-pose protection, independent literal quaternion/position, actual NAV grounding, mode scoping, existing Poster Hunt content and existing Computer-anchor regression units. Both actual Debug/Release NativeQa builds, all four read-only diagnostic plans and assembly provenance passed. Python snapshot policy: nine passed. No broad full-suite repeat was run for this QA-only hook, as agreed.
 
 Checked hds hashes: Debug `a8fa30b2e9d8ee515505ceb243532bf253d3fbe8f83e6f0bcd62c31236f48658`; Release `b6cd33102f328f67cfb52c8f17efc07ba0886c664dda7ec93e659c1ec69619ad`. No fresh or native diagnostic result is claimed yet.
+
+## Fresh serialization results
+
+Frozen source `1e6c35c3a4e1990a3aef454bd40f32973a00e303`, two serial cases with `--parallel 1`:
+
+| Case | Duration | Actual first Box 548 position | Actual quaternion |
+| --- | ---: | --- | --- |
+| Control | 22.7 s | `(23940,2245,15050)` | `00000000F204353F00000000F304353F` |
+| Source-native | 22.4 s | `(23940,2100,15050)` | `00000000F304353F00000000F20435BF` |
+
+Both passed with exit 0 and peak one server. All owned servers disposed; slot 1 was released. The worktree and binaries were frozen throughout. Actual selected configuration was **Debug**, hds SHA256 `a8fa30b2e9d8ee515505ceb243532bf253d3fbe8f83e6f0bcd62c31236f48658`; this is not a Release fresh result.
+
+Each case used actual CSR 110, normal Poster Hunt acceptance and the exact naturally selected source key. Saved object arrays were byte-equivalent before/after serialization, the other two Box poses were unchanged, and no goal, item, inventory, XP, information or completion receipt changed. Non-pose creation fields matched unchanged siblings within each case and also matched byte-for-byte across cases: `UseCount = 01`, `MissionKey = FF2F0002`. Both retained 48 actual RPCs and nine view lists with zero parser problems. No Open or completion action was sent.
+
+Required proof was saved before teardown:
+
+| File | SHA256 |
+| --- | --- |
+| `Temp/mxo-poster-box-pose-control-mxotest_run_1_2f9aaa8204.json` | `5a679b6a61be2a5f5db9ff14e6c461d394ab0ff7cf4fc79b68dc1a9095dd0171` |
+| Its `.log` | `9be4bd83da65013852646f68d002f57f802a74648dc95e646850d295b5876b36` |
+| `Temp/mxo-poster-box-pose-source-native-mxotest_run_1_52e38f68a3.json` | `a282d0601185c49cbf408db92e1bf33185577f359a8e86250c8a84456a699aef` |
+| Its `.log` | `d99b76c8a35beb27b97f124a47b07d3876cf7beb3f982997ce46b1704d5c4a01` |
+
+The complete file/assembly/creation-field manifest is `Temp/mxo-poster-box-pose-final-evidence.json`. Permanent stdout and explicit exit records use the `mxo-poster-box-pose-*` Temp prefix.
+
+These passes establish the isolated wire comparison and invariance only. **The draft diagnostic is not a native model/picking pass, default placement fix or merge-ready gameplay change.** Claude's subsequent visual, hover/target and radial-action comparison is still required.
