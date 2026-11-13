@@ -69,8 +69,10 @@ namespace hds
             loadWorldObjectsDb(DataPath("staticObjects_medium02.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_medium03.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive01.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_yuki.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive02.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive_ashencourte.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_datamine.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_archive_sakura.csv"));
         }
 
