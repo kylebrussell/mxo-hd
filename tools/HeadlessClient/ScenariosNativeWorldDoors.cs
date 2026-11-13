@@ -3,6 +3,8 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task Medium02PrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium02Prefab);
     private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>

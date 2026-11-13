@@ -1,10 +1,10 @@
 # Medium02: bounded partial construct support
 
-Map15 uses resource/worlds/final_world/constructs/medium/medium02/medium02.metr. This package adds426 validated native static keys, all100 shipped navigation sectors and the shipped hardline15/1 through the existing exporter/loader. It is **PARTIAL**, with597 native keys omitted and no captured NPC gameplay/visibility validation.
+Map15 uses resource/worlds/final_world/constructs/medium/medium02/medium02.metr. Current support exports997 proven native static keys, all100 shipped navigation sectors and the shipped hardline15/1 through the existing exporter/loader. It is **PARTIAL**, with26 conflicting native keys (all variants) omitted and no captured NPC gameplay/visibility validation. The original historical omission path exports426; the explicit reviewed native-transform extension restores571. See [rotation evidence and native checklist](WORLD-MEDIUM02-PREFAB-ROTATIONS.md).
 
 ## Resources and omissions
 
-All100 METR sectors have packed nav resources and SID/SIDI/SIDG layers. There are25 prefab placements:12 quarter-turn0,12 turn1 and1 turn2. Unproven nonzero static transforms remain disabled. The existing exporter adds --world15; its strict default still refuses nonzero rotations before writing output. Explicit --omit-unproven-rotations removes every variant of a key touched by a rotated placement or ambiguity, never resolving conflicts by first reference.
+All100 METR sectors have packed nav resources and SID/SIDI/SIDG layers. There are25 prefab placements:12 quarter-turn0,12 turn1 and1 turn2. The explicit `--native-prefab-rotations` path now uses the source-proven direct-sector IPI transform; nested/EPI parents remain unsupported. The existing exporter adds --world15; its strict default still refuses nonzero rotations before writing output. Explicit --omit-unproven-rotations removes every variant of a key touched by a rotated placement or ambiguity, never resolving conflicts by first reference.
 
 | Native key accounting | Count |
 |---|---:|
@@ -22,10 +22,10 @@ The existing nav exporter produces100 sectors/21 prefabs,256,512 decompressed by
 
 Reproduce from the repository root with existing read-only client-data tools:
 
-    python research/world-data/static_objects_small03.py <client-data-tools> --world 15 --omit-unproven-rotations
+    python research/world-data/static_objects_small03.py <client-data-tools> --world 15 --native-prefab-rotations
     python research/world-data/navmesh.py <client-data-tools> data/sector_properties.csv data/navmesh 15
 
-Omitting the omission flag must fail before output. No parser fork, fabricated polygons or invented subway is added. The native METR contains zero CNET networks (METR SHA15092777adbc18284dea2f2806db9f213166a25f6eafc3449684f382c9e0f631).
+Omitting both explicit transform/omission flags must fail before output. Historical `--omit-unproven-rotations` still reproduces426 keys and597 omissions. No parser fork, fabricated polygons or invented subway is added. The native METR contains zero CNET networks (METR SHA15092777adbc18284dea2f2806db9f213166a25f6eafc3449684f382c9e0f631).
 
 ## Grounded fixture and supported door
 

@@ -2,7 +2,7 @@
   "world": 15,
   "rawReferences": 1061,
   "uniqueKeys": 1023,
-  "exportedKeys": 426,
+  "exportedKeys": 997,
   "excludedKeys": [
     [
       76,
@@ -14,19 +14,7 @@
     ],
     [
       76,
-      56
-    ],
-    [
-      76,
       57
-    ],
-    [
-      76,
-      58
-    ],
-    [
-      76,
-      59
     ],
     [
       76,
@@ -74,187 +62,7 @@
     ],
     [
       87,
-      1
-    ],
-    [
-      87,
-      2
-    ],
-    [
-      87,
-      3
-    ],
-    [
-      87,
-      4
-    ],
-    [
-      87,
-      5
-    ],
-    [
-      87,
-      6
-    ],
-    [
-      87,
-      7
-    ],
-    [
-      87,
-      8
-    ],
-    [
-      87,
-      9
-    ],
-    [
-      87,
-      10
-    ],
-    [
-      87,
-      11
-    ],
-    [
-      87,
       12
-    ],
-    [
-      87,
-      13
-    ],
-    [
-      87,
-      14
-    ],
-    [
-      87,
-      15
-    ],
-    [
-      87,
-      16
-    ],
-    [
-      87,
-      17
-    ],
-    [
-      87,
-      18
-    ],
-    [
-      87,
-      19
-    ],
-    [
-      87,
-      20
-    ],
-    [
-      87,
-      21
-    ],
-    [
-      87,
-      22
-    ],
-    [
-      87,
-      23
-    ],
-    [
-      87,
-      24
-    ],
-    [
-      87,
-      25
-    ],
-    [
-      87,
-      26
-    ],
-    [
-      87,
-      27
-    ],
-    [
-      87,
-      28
-    ],
-    [
-      87,
-      29
-    ],
-    [
-      87,
-      30
-    ],
-    [
-      87,
-      31
-    ],
-    [
-      87,
-      32
-    ],
-    [
-      87,
-      33
-    ],
-    [
-      87,
-      34
-    ],
-    [
-      87,
-      35
-    ],
-    [
-      87,
-      36
-    ],
-    [
-      87,
-      37
-    ],
-    [
-      87,
-      38
-    ],
-    [
-      87,
-      39
-    ],
-    [
-      87,
-      40
-    ],
-    [
-      87,
-      41
-    ],
-    [
-      87,
-      42
-    ],
-    [
-      87,
-      43
-    ],
-    [
-      87,
-      44
-    ],
-    [
-      87,
-      45
-    ],
-    [
-      87,
-      46
     ],
     [
       87,
@@ -266,863 +74,11 @@
     ],
     [
       87,
-      49
-    ],
-    [
-      87,
-      50
-    ],
-    [
-      87,
-      51
-    ],
-    [
-      87,
-      52
-    ],
-    [
-      87,
-      53
-    ],
-    [
-      87,
-      54
-    ],
-    [
-      87,
-      55
-    ],
-    [
-      87,
-      56
-    ],
-    [
-      87,
-      57
-    ],
-    [
-      87,
-      58
-    ],
-    [
-      87,
-      59
-    ],
-    [
-      87,
-      60
-    ],
-    [
-      87,
-      61
-    ],
-    [
-      87,
-      62
-    ],
-    [
-      87,
-      63
-    ],
-    [
-      87,
-      64
-    ],
-    [
-      87,
-      65
-    ],
-    [
-      87,
       66
     ],
     [
       87,
-      67
-    ],
-    [
-      87,
-      68
-    ],
-    [
-      87,
-      69
-    ],
-    [
-      87,
-      70
-    ],
-    [
-      87,
-      71
-    ],
-    [
-      87,
-      72
-    ],
-    [
-      87,
-      73
-    ],
-    [
-      87,
-      74
-    ],
-    [
-      87,
-      75
-    ],
-    [
-      87,
-      76
-    ],
-    [
-      87,
-      77
-    ],
-    [
-      87,
-      78
-    ],
-    [
-      87,
-      79
-    ],
-    [
-      87,
-      80
-    ],
-    [
-      87,
-      81
-    ],
-    [
-      87,
-      82
-    ],
-    [
-      87,
-      83
-    ],
-    [
-      87,
-      84
-    ],
-    [
-      87,
-      85
-    ],
-    [
-      87,
-      86
-    ],
-    [
-      87,
-      87
-    ],
-    [
-      87,
-      88
-    ],
-    [
-      87,
-      89
-    ],
-    [
-      87,
-      90
-    ],
-    [
-      87,
-      91
-    ],
-    [
-      87,
-      92
-    ],
-    [
-      87,
-      93
-    ],
-    [
-      87,
-      94
-    ],
-    [
-      87,
-      95
-    ],
-    [
-      87,
-      96
-    ],
-    [
-      87,
-      97
-    ],
-    [
-      87,
-      98
-    ],
-    [
-      87,
-      99
-    ],
-    [
-      87,
-      100
-    ],
-    [
-      87,
-      101
-    ],
-    [
-      87,
-      102
-    ],
-    [
-      87,
-      103
-    ],
-    [
-      87,
-      104
-    ],
-    [
-      87,
-      105
-    ],
-    [
-      87,
-      106
-    ],
-    [
-      87,
-      107
-    ],
-    [
-      87,
-      108
-    ],
-    [
-      87,
-      109
-    ],
-    [
-      87,
-      110
-    ],
-    [
-      87,
-      111
-    ],
-    [
-      87,
-      112
-    ],
-    [
-      87,
-      113
-    ],
-    [
-      87,
-      114
-    ],
-    [
-      87,
-      115
-    ],
-    [
-      87,
-      116
-    ],
-    [
-      87,
-      117
-    ],
-    [
-      87,
-      118
-    ],
-    [
-      87,
-      119
-    ],
-    [
-      87,
-      120
-    ],
-    [
-      87,
-      121
-    ],
-    [
-      87,
-      122
-    ],
-    [
-      87,
-      123
-    ],
-    [
-      87,
-      124
-    ],
-    [
-      87,
-      125
-    ],
-    [
-      87,
-      126
-    ],
-    [
-      87,
-      127
-    ],
-    [
-      87,
-      128
-    ],
-    [
-      87,
-      129
-    ],
-    [
-      87,
-      130
-    ],
-    [
-      87,
-      131
-    ],
-    [
-      87,
-      132
-    ],
-    [
-      87,
-      133
-    ],
-    [
-      87,
-      134
-    ],
-    [
-      87,
-      135
-    ],
-    [
-      87,
-      136
-    ],
-    [
-      87,
-      137
-    ],
-    [
-      87,
-      138
-    ],
-    [
-      87,
-      139
-    ],
-    [
-      87,
-      140
-    ],
-    [
-      87,
-      141
-    ],
-    [
-      87,
-      142
-    ],
-    [
-      87,
-      143
-    ],
-    [
-      87,
-      144
-    ],
-    [
-      87,
-      145
-    ],
-    [
-      87,
-      146
-    ],
-    [
-      87,
-      147
-    ],
-    [
-      87,
-      148
-    ],
-    [
-      87,
-      149
-    ],
-    [
-      87,
-      150
-    ],
-    [
-      87,
-      151
-    ],
-    [
-      87,
-      152
-    ],
-    [
-      87,
-      153
-    ],
-    [
-      87,
-      154
-    ],
-    [
-      87,
-      155
-    ],
-    [
-      87,
-      156
-    ],
-    [
-      87,
-      157
-    ],
-    [
-      87,
-      158
-    ],
-    [
-      87,
-      159
-    ],
-    [
-      87,
-      160
-    ],
-    [
-      87,
-      161
-    ],
-    [
-      87,
-      162
-    ],
-    [
-      87,
-      163
-    ],
-    [
-      87,
-      164
-    ],
-    [
-      87,
-      165
-    ],
-    [
-      87,
-      166
-    ],
-    [
-      87,
-      167
-    ],
-    [
-      87,
-      168
-    ],
-    [
-      87,
-      169
-    ],
-    [
-      87,
-      170
-    ],
-    [
-      87,
-      171
-    ],
-    [
-      87,
-      172
-    ],
-    [
-      87,
-      173
-    ],
-    [
-      87,
-      174
-    ],
-    [
-      87,
-      175
-    ],
-    [
-      87,
-      176
-    ],
-    [
-      87,
-      177
-    ],
-    [
-      87,
-      178
-    ],
-    [
-      87,
-      179
-    ],
-    [
-      87,
-      180
-    ],
-    [
-      87,
-      181
-    ],
-    [
-      87,
-      182
-    ],
-    [
-      87,
-      183
-    ],
-    [
-      87,
-      184
-    ],
-    [
-      87,
-      185
-    ],
-    [
-      87,
-      186
-    ],
-    [
-      87,
-      187
-    ],
-    [
-      87,
-      188
-    ],
-    [
-      87,
-      189
-    ],
-    [
-      87,
-      190
-    ],
-    [
-      87,
-      191
-    ],
-    [
-      87,
-      192
-    ],
-    [
-      87,
-      193
-    ],
-    [
-      87,
-      194
-    ],
-    [
-      87,
-      195
-    ],
-    [
-      87,
-      196
-    ],
-    [
-      87,
-      197
-    ],
-    [
-      87,
-      198
-    ],
-    [
-      87,
-      199
-    ],
-    [
-      87,
-      200
-    ],
-    [
-      87,
-      201
-    ],
-    [
-      87,
-      202
-    ],
-    [
-      87,
-      203
-    ],
-    [
-      87,
       204
-    ],
-    [
-      87,
-      205
-    ],
-    [
-      87,
-      206
-    ],
-    [
-      87,
-      207
-    ],
-    [
-      87,
-      208
-    ],
-    [
-      87,
-      209
-    ],
-    [
-      87,
-      210
-    ],
-    [
-      87,
-      211
-    ],
-    [
-      87,
-      212
-    ],
-    [
-      87,
-      213
-    ],
-    [
-      87,
-      214
-    ],
-    [
-      87,
-      215
-    ],
-    [
-      87,
-      216
-    ],
-    [
-      87,
-      217
-    ],
-    [
-      87,
-      218
-    ],
-    [
-      87,
-      219
-    ],
-    [
-      87,
-      220
-    ],
-    [
-      87,
-      221
-    ],
-    [
-      87,
-      222
-    ],
-    [
-      87,
-      223
-    ],
-    [
-      87,
-      224
-    ],
-    [
-      87,
-      225
-    ],
-    [
-      87,
-      226
-    ],
-    [
-      87,
-      227
-    ],
-    [
-      87,
-      228
-    ],
-    [
-      87,
-      229
-    ],
-    [
-      87,
-      230
-    ],
-    [
-      87,
-      231
-    ],
-    [
-      87,
-      232
-    ],
-    [
-      87,
-      233
-    ],
-    [
-      87,
-      234
-    ],
-    [
-      87,
-      235
-    ],
-    [
-      87,
-      236
-    ],
-    [
-      87,
-      237
-    ],
-    [
-      87,
-      238
-    ],
-    [
-      87,
-      239
-    ],
-    [
-      87,
-      240
-    ],
-    [
-      87,
-      241
-    ],
-    [
-      87,
-      242
-    ],
-    [
-      87,
-      243
-    ],
-    [
-      87,
-      244
-    ],
-    [
-      87,
-      245
-    ],
-    [
-      87,
-      246
-    ],
-    [
-      87,
-      247
-    ],
-    [
-      87,
-      248
-    ],
-    [
-      87,
-      249
-    ],
-    [
-      87,
-      250
-    ],
-    [
-      87,
-      251
-    ],
-    [
-      87,
-      252
-    ],
-    [
-      87,
-      253
-    ],
-    [
-      87,
-      254
-    ],
-    [
-      87,
-      255
-    ],
-    [
-      87,
-      256
-    ],
-    [
-      87,
-      257
-    ],
-    [
-      87,
-      258
-    ],
-    [
-      87,
-      259
-    ],
-    [
-      87,
-      260
-    ],
-    [
-      87,
-      261
-    ],
-    [
-      87,
-      262
-    ],
-    [
-      87,
-      263
     ],
     [
       87,
@@ -1134,475 +90,7 @@
     ],
     [
       87,
-      266
-    ],
-    [
-      87,
-      267
-    ],
-    [
-      87,
-      268
-    ],
-    [
-      87,
-      269
-    ],
-    [
-      87,
-      270
-    ],
-    [
-      87,
-      271
-    ],
-    [
-      87,
-      272
-    ],
-    [
-      87,
-      273
-    ],
-    [
-      87,
-      274
-    ],
-    [
-      87,
-      275
-    ],
-    [
-      87,
-      276
-    ],
-    [
-      87,
-      277
-    ],
-    [
-      87,
-      278
-    ],
-    [
-      87,
-      279
-    ],
-    [
-      87,
-      280
-    ],
-    [
-      87,
-      281
-    ],
-    [
-      87,
-      282
-    ],
-    [
-      87,
-      283
-    ],
-    [
-      87,
-      284
-    ],
-    [
-      87,
-      285
-    ],
-    [
-      87,
-      286
-    ],
-    [
-      87,
-      287
-    ],
-    [
-      87,
-      288
-    ],
-    [
-      87,
-      289
-    ],
-    [
-      87,
-      290
-    ],
-    [
-      87,
-      291
-    ],
-    [
-      87,
-      292
-    ],
-    [
-      87,
-      293
-    ],
-    [
-      87,
-      294
-    ],
-    [
-      87,
-      295
-    ],
-    [
-      87,
-      296
-    ],
-    [
-      87,
-      297
-    ],
-    [
-      87,
-      298
-    ],
-    [
-      87,
-      299
-    ],
-    [
-      87,
-      300
-    ],
-    [
-      87,
-      301
-    ],
-    [
-      87,
-      302
-    ],
-    [
-      87,
-      303
-    ],
-    [
-      87,
       304
-    ],
-    [
-      87,
-      305
-    ],
-    [
-      87,
-      306
-    ],
-    [
-      87,
-      307
-    ],
-    [
-      87,
-      308
-    ],
-    [
-      87,
-      309
-    ],
-    [
-      87,
-      310
-    ],
-    [
-      87,
-      311
-    ],
-    [
-      87,
-      312
-    ],
-    [
-      87,
-      313
-    ],
-    [
-      87,
-      314
-    ],
-    [
-      87,
-      315
-    ],
-    [
-      87,
-      316
-    ],
-    [
-      87,
-      317
-    ],
-    [
-      87,
-      318
-    ],
-    [
-      87,
-      319
-    ],
-    [
-      87,
-      320
-    ],
-    [
-      87,
-      321
-    ],
-    [
-      87,
-      322
-    ],
-    [
-      87,
-      323
-    ],
-    [
-      87,
-      324
-    ],
-    [
-      87,
-      325
-    ],
-    [
-      87,
-      326
-    ],
-    [
-      87,
-      327
-    ],
-    [
-      87,
-      328
-    ],
-    [
-      87,
-      329
-    ],
-    [
-      87,
-      330
-    ],
-    [
-      87,
-      331
-    ],
-    [
-      87,
-      332
-    ],
-    [
-      87,
-      333
-    ],
-    [
-      87,
-      334
-    ],
-    [
-      87,
-      335
-    ],
-    [
-      87,
-      336
-    ],
-    [
-      87,
-      337
-    ],
-    [
-      87,
-      338
-    ],
-    [
-      87,
-      339
-    ],
-    [
-      87,
-      340
-    ],
-    [
-      87,
-      341
-    ],
-    [
-      87,
-      342
-    ],
-    [
-      87,
-      343
-    ],
-    [
-      87,
-      344
-    ],
-    [
-      87,
-      345
-    ],
-    [
-      87,
-      346
-    ],
-    [
-      87,
-      347
-    ],
-    [
-      87,
-      348
-    ],
-    [
-      87,
-      349
-    ],
-    [
-      87,
-      350
-    ],
-    [
-      87,
-      351
-    ],
-    [
-      87,
-      352
-    ],
-    [
-      87,
-      353
-    ],
-    [
-      87,
-      354
-    ],
-    [
-      87,
-      355
-    ],
-    [
-      87,
-      356
-    ],
-    [
-      87,
-      357
-    ],
-    [
-      87,
-      358
-    ],
-    [
-      87,
-      359
-    ],
-    [
-      87,
-      360
-    ],
-    [
-      87,
-      361
-    ],
-    [
-      87,
-      362
-    ],
-    [
-      87,
-      363
-    ],
-    [
-      87,
-      364
-    ],
-    [
-      87,
-      365
-    ],
-    [
-      87,
-      366
-    ],
-    [
-      87,
-      367
-    ],
-    [
-      87,
-      368
-    ],
-    [
-      87,
-      369
-    ],
-    [
-      87,
-      370
-    ],
-    [
-      87,
-      371
-    ],
-    [
-      87,
-      372
-    ],
-    [
-      87,
-      373
-    ],
-    [
-      87,
-      374
-    ],
-    [
-      87,
-      375
-    ],
-    [
-      87,
-      376
-    ],
-    [
-      87,
-      377
-    ],
-    [
-      87,
-      378
-    ],
-    [
-      87,
-      379
-    ],
-    [
-      87,
-      380
-    ],
-    [
-      87,
-      381
-    ],
-    [
-      87,
-      382
-    ],
-    [
-      87,
-      383
     ],
     [
       87,
@@ -1614,787 +102,16 @@
     ],
     [
       87,
-      386
-    ],
-    [
-      87,
-      387
-    ],
-    [
-      87,
-      388
-    ],
-    [
-      87,
-      389
-    ],
-    [
-      87,
-      390
-    ],
-    [
-      87,
-      391
-    ],
-    [
-      87,
-      392
-    ],
-    [
-      87,
-      393
-    ],
-    [
-      87,
-      394
-    ],
-    [
-      87,
-      395
-    ],
-    [
-      87,
-      396
-    ],
-    [
-      87,
-      397
-    ],
-    [
-      87,
-      398
-    ],
-    [
-      87,
-      399
-    ],
-    [
-      87,
-      400
-    ],
-    [
-      87,
-      401
-    ],
-    [
-      87,
-      402
-    ],
-    [
-      87,
-      403
-    ],
-    [
-      87,
-      404
-    ],
-    [
-      87,
-      405
-    ],
-    [
-      87,
-      406
-    ],
-    [
-      87,
-      407
-    ],
-    [
-      87,
-      408
-    ],
-    [
-      87,
-      409
-    ],
-    [
-      87,
-      410
-    ],
-    [
-      87,
-      411
-    ],
-    [
-      87,
-      412
-    ],
-    [
-      87,
-      413
-    ],
-    [
-      87,
-      414
-    ],
-    [
-      87,
-      415
-    ],
-    [
-      87,
-      416
-    ],
-    [
-      87,
-      417
-    ],
-    [
-      87,
-      418
-    ],
-    [
-      87,
-      419
-    ],
-    [
-      87,
-      420
-    ],
-    [
-      87,
-      421
-    ],
-    [
-      87,
-      422
-    ],
-    [
-      87,
-      423
-    ],
-    [
-      87,
-      424
-    ],
-    [
-      87,
-      425
-    ],
-    [
-      87,
-      426
-    ],
-    [
-      87,
-      427
-    ],
-    [
-      87,
-      428
-    ],
-    [
-      87,
-      429
-    ],
-    [
-      87,
-      430
-    ],
-    [
-      87,
-      431
-    ],
-    [
-      87,
-      432
-    ],
-    [
-      87,
-      433
-    ],
-    [
-      87,
-      434
-    ],
-    [
-      87,
-      435
-    ],
-    [
-      87,
-      436
-    ],
-    [
-      87,
-      437
-    ],
-    [
-      87,
-      438
-    ],
-    [
-      87,
-      439
-    ],
-    [
-      87,
-      440
-    ],
-    [
-      87,
-      441
-    ],
-    [
-      87,
-      442
-    ],
-    [
-      87,
-      443
-    ],
-    [
-      87,
-      444
-    ],
-    [
-      87,
-      445
-    ],
-    [
-      87,
-      446
-    ],
-    [
-      87,
-      447
-    ],
-    [
-      87,
-      448
-    ],
-    [
-      87,
-      449
-    ],
-    [
-      87,
-      450
-    ],
-    [
-      87,
-      451
-    ],
-    [
-      87,
-      452
-    ],
-    [
-      87,
-      453
-    ],
-    [
-      87,
-      454
-    ],
-    [
-      87,
-      455
-    ],
-    [
-      87,
-      456
-    ],
-    [
-      87,
-      457
-    ],
-    [
-      87,
-      458
-    ],
-    [
-      87,
-      459
-    ],
-    [
-      87,
-      460
-    ],
-    [
-      87,
-      461
-    ],
-    [
-      87,
-      462
-    ],
-    [
-      87,
-      463
-    ],
-    [
-      87,
-      464
-    ],
-    [
-      87,
-      465
-    ],
-    [
-      87,
-      466
-    ],
-    [
-      87,
-      467
-    ],
-    [
-      87,
-      468
-    ],
-    [
-      87,
-      469
-    ],
-    [
-      87,
-      470
-    ],
-    [
-      87,
-      471
-    ],
-    [
-      87,
-      472
-    ],
-    [
-      87,
-      473
-    ],
-    [
-      87,
-      474
-    ],
-    [
-      87,
-      475
-    ],
-    [
-      87,
-      476
-    ],
-    [
-      87,
-      477
-    ],
-    [
-      87,
-      478
-    ],
-    [
-      87,
-      479
-    ],
-    [
-      87,
-      480
-    ],
-    [
-      87,
-      481
-    ],
-    [
-      87,
-      482
-    ],
-    [
-      87,
-      483
-    ],
-    [
-      87,
-      484
-    ],
-    [
-      87,
-      485
-    ],
-    [
-      87,
-      486
-    ],
-    [
-      87,
-      487
-    ],
-    [
-      87,
       488
     ],
     [
       87,
-      489
-    ],
-    [
-      87,
-      490
-    ],
-    [
-      87,
-      491
-    ],
-    [
-      87,
-      492
-    ],
-    [
-      87,
-      493
-    ],
-    [
-      87,
-      494
-    ],
-    [
-      87,
-      495
-    ],
-    [
-      87,
-      496
-    ],
-    [
-      87,
-      497
-    ],
-    [
-      87,
-      498
-    ],
-    [
-      87,
-      499
-    ],
-    [
-      87,
-      500
-    ],
-    [
-      87,
-      501
-    ],
-    [
-      87,
-      502
-    ],
-    [
-      87,
-      503
-    ],
-    [
-      87,
-      504
-    ],
-    [
-      87,
-      505
-    ],
-    [
-      87,
-      506
-    ],
-    [
-      87,
-      507
-    ],
-    [
-      87,
-      508
-    ],
-    [
-      87,
-      509
-    ],
-    [
-      87,
-      510
-    ],
-    [
-      87,
-      511
-    ],
-    [
-      87,
-      512
-    ],
-    [
-      87,
-      513
-    ],
-    [
-      87,
-      514
-    ],
-    [
-      87,
-      515
-    ],
-    [
-      87,
-      516
-    ],
-    [
-      87,
-      517
-    ],
-    [
-      87,
-      518
-    ],
-    [
-      87,
-      519
-    ],
-    [
-      87,
-      520
-    ],
-    [
-      87,
-      521
-    ],
-    [
-      87,
-      522
-    ],
-    [
-      87,
-      523
-    ],
-    [
-      87,
-      524
-    ],
-    [
-      87,
-      525
-    ],
-    [
-      87,
-      526
-    ],
-    [
-      87,
-      527
-    ],
-    [
-      87,
-      528
-    ],
-    [
-      87,
-      529
-    ],
-    [
-      87,
-      530
-    ],
-    [
-      87,
-      531
-    ],
-    [
-      87,
-      532
-    ],
-    [
-      87,
-      533
-    ],
-    [
-      87,
-      534
-    ],
-    [
-      87,
-      535
-    ],
-    [
-      87,
-      536
-    ],
-    [
-      87,
-      537
-    ],
-    [
-      87,
-      538
-    ],
-    [
-      87,
-      539
-    ],
-    [
-      87,
-      540
-    ],
-    [
-      87,
-      541
-    ],
-    [
-      87,
-      542
-    ],
-    [
-      87,
-      543
-    ],
-    [
-      87,
-      544
-    ],
-    [
-      87,
-      545
-    ],
-    [
-      87,
-      546
-    ],
-    [
-      87,
-      547
-    ],
-    [
-      87,
-      548
-    ],
-    [
-      87,
-      549
-    ],
-    [
-      87,
-      550
-    ],
-    [
-      87,
-      551
-    ],
-    [
-      87,
-      552
-    ],
-    [
-      87,
-      553
-    ],
-    [
-      87,
-      554
-    ],
-    [
-      87,
-      555
-    ],
-    [
-      87,
-      556
-    ],
-    [
-      87,
-      557
-    ],
-    [
-      87,
-      558
-    ],
-    [
-      87,
-      559
-    ],
-    [
-      87,
-      560
-    ],
-    [
-      87,
-      561
-    ],
-    [
-      87,
-      562
-    ],
-    [
-      87,
-      563
-    ],
-    [
-      87,
       564
-    ],
-    [
-      87,
-      565
-    ],
-    [
-      87,
-      566
-    ],
-    [
-      87,
-      567
-    ],
-    [
-      87,
-      568
-    ],
-    [
-      87,
-      569
-    ],
-    [
-      87,
-      570
-    ],
-    [
-      87,
-      571
-    ],
-    [
-      87,
-      572
-    ],
-    [
-      87,
-      573
-    ],
-    [
-      87,
-      574
-    ],
-    [
-      87,
-      575
-    ],
-    [
-      87,
-      576
-    ],
-    [
-      87,
-      577
-    ],
-    [
-      87,
-      578
-    ],
-    [
-      87,
-      579
-    ],
-    [
-      87,
-      580
     ]
   ],
-  "convention": "METR sector corner + native local position; +145Y retains existing server CSV convention, not a native pivot claim. Only placement rotation0 supported.",
+  "convention": "Native direct-sector IPI pivot*10 + exact quarterturn, parent*local quaternion; float32 native stores. Server +145Y remains separate. Raw retains historical diagnostic convention.",
   "sourceSha256": {
+    "resource/worlds/final_world/constructs/medium/medium02/medium02.metr": "15092777adbc18284dea2f2806db9f213166a25f6eafc3449684f382c9e0f631",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_27.sid": "9fe290663184c95c739c310a9f60550e8bf80abdb24b052bd1b723a10aad15d6",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_27.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_27.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
@@ -2626,6 +343,16 @@
     "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sid": "5a8d0d3ccc490bcb6707f53c3b38c1fc9e2a6110766525a9d9552e830184184c",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi": "c252110a033eb34dd448cbc816e847c4c8aac4a48aa2b318c654567be47f2e3d",
+    "RID:2c0006ca": "9dbca70acb48f9720315887220c255b4a4e918408d1be110559a5f992948372c",
+    "RID:2c0003ae": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a",
+    "RID:2c00054b": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805",
+    "RID:8a0001fa": "200bd7f836c56dc03c73126ee0ea6fd93e4946d0c65553a9602ec88fb6b0bf98",
+    "RID:8a0001f9": "1c47654aec2bfd84aa65f41367d9acac0e5a41a3deb54fac2322086f8beff78a",
+    "RID:2c0003af": "8ffe7bb9a341a62585c0c59ea50e701d27904754e87812b7b7c170c04e7ae598",
+    "RID:2c0006c9": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a",
+    "RID:2c0003ab": "978751bf6f74eb7fbf67741e41f2503521f57e3b1740c85b66d102d7e05b8e29",
+    "RID:2c0003ad": "303701239307c7b2c39dd4a000d1f49278e0dfbc57c0f41e9e75d197df35f58f",
+    "RID:2c0003ac": "6b80934b427c51d7125116a91f38de88e8cd87428ed0de5a15c3d577cef203cd",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_48.sid": "9fe290663184c95c739c310a9f60550e8bf80abdb24b052bd1b723a10aad15d6",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_48.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_48.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
@@ -2659,6 +386,17 @@
     "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sid": "77130cab96984edb8959a1fcee00ca5624163636819eeb168c9bb6c844995d16",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi": "a444aa85c37deaee06faa725c7850000eaaa266127dd04d68d4d2369c36be0aa",
+    "RID:1a0015c7": "50f892178c697c6d3d0a2f363b73cfda076eaba42db173044064d34945193e6e",
+    "RID:1a0015ca": "e379cb5c1f1a72fb618c7022298f808d22f9ad32010b72e14c82ceef801870f3",
+    "RID:1a0015d6": "61115784e56f3e27713024731e28676d1a5067036561e3ed988cca13e8f7e875",
+    "RID:1a0015d0": "e7ef7ea9f4c81f9e2fcc7c4fa3842b817ee69e6cbbda7f2b42586778d30142b8",
+    "RID:1a0015d9": "0ee94fe0910e22c06600185b10ec78cc418e48b5d046628231b7d1e07a85be9f",
+    "RID:1a0015d8": "e20f492157b5699ffcb78953ea0481a663dc59114be06793a610baef82d41e18",
+    "RID:1a0015cc": "46e2c352a3f74e3d70958028ad3e42b2d56cdb3d039184d10e6523bb0b1d4e57",
+    "RID:1a0015d4": "780e7dbee6c3f2029bbf0c9631cad80c4827d51d82d701d9d07deaf195f174d4",
+    "RID:1a0015ce": "8739b59c2cef8949443f1513c487782d72a9fccfaba8c0c7d12119a6c420b9e9",
+    "RID:1a001699": "fb7c9b32ae529102db1a484ea59f71918f283023baffde3c6f0837d11ff86422",
+    "RID:1a0015d2": "bfc17ce612e9d9d71009097d48647dee96cb9c4dcd314e15f9be2de00ddf6195",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_98.sid": "9fe290663184c95c739c310a9f60550e8bf80abdb24b052bd1b723a10aad15d6",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_98.sidgo": "e2294df9436d1e3b219fe851bca34e0e60da158a3032ad550d4e95be477d861e",
     "resource/worlds/final_world/constructs/medium/medium02/medium02_98.sidi": "4becc56dd98d95a893dd635420fcb65c2aa17d3b08fd2418a1218609bc7cc84a",
@@ -22786,7 +20524,440 @@
       ]
     ]
   },
-  "unprovenRotationKeys": [
+  "nativePrefabRotations": {
+    "reviewedWorld": 15,
+    "algorithm": "client.dll6246b0c0/62111670/62046a40",
+    "parentEligibility": "Direct METR SCIN sector SIDI only; constructor resets EPI parent+30, sector parser sets SID parent+34. Unknown/nested/EPI refused.",
+    "floatStores": "signedi16*10; composed translation; rotated point; translated point; each final quaternion component. No normalization.",
+    "placements": [
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738199242,
+        "pivot": [
+          600,
+          0,
+          1180
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_04.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10542056,
+        "resourceSize": 64162,
+        "resourceSha256": "9dbca70acb48f9720315887220c255b4a4e918408d1be110559a5f992948372c"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198446,
+        "pivot": [
+          600,
+          80,
+          1000
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 8556272,
+        "resourceSize": 99890,
+        "resourceSha256": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198859,
+        "pivot": [
+          600,
+          0,
+          880
+        ],
+        "rotation": 2,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11389150,
+        "resourceSize": 139878,
+        "resourceSha256": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198446,
+        "pivot": [
+          600,
+          80,
+          220
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 8556272,
+        "resourceSize": 99890,
+        "resourceSha256": "206e37d558cd321329a7228c65d7a178fd4a1fd586c55e3f39ca37d0c09d578a"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 2315256314,
+        "pivot": [
+          560,
+          80,
+          580
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/off_05.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10732822,
+        "resourceSize": 245570,
+        "resourceSha256": "200bd7f836c56dc03c73126ee0ea6fd93e4946d0c65553a9602ec88fb6b0bf98"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198859,
+        "pivot": [
+          420,
+          0,
+          520
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11389150,
+        "resourceSize": 139878,
+        "resourceSha256": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 2315256313,
+        "pivot": [
+          360,
+          80,
+          520
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/off_06.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 11113252,
+        "resourceSize": 247610,
+        "resourceSha256": "1c47654aec2bfd84aa65f41367d9acac0e5a41a3deb54fac2322086f8beff78a"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198447,
+        "pivot": [
+          360,
+          0,
+          520
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 9099018,
+        "resourceSize": 1255892,
+        "resourceSha256": "8ffe7bb9a341a62585c0c59ea50e701d27904754e87812b7b7c170c04e7ae598"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738199241,
+        "pivot": [
+          180,
+          0,
+          1060
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10416462,
+        "resourceSize": 63946,
+        "resourceSha256": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198443,
+        "pivot": [
+          180,
+          0,
+          880
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 24575242,
+        "resourceSize": 5799412,
+        "resourceSha256": "978751bf6f74eb7fbf67741e41f2503521f57e3b1740c85b66d102d7e05b8e29"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198445,
+        "pivot": [
+          180,
+          0,
+          520
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 36783842,
+        "resourceSize": 486178,
+        "resourceSha256": "303701239307c7b2c39dd4a000d1f49278e0dfbc57c0f41e9e75d197df35f58f"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738199241,
+        "pivot": [
+          180,
+          0,
+          400
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "resource/Prefab_Database/Floors/sl/sl_warehouse01/off_03.iprf",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 10416462,
+        "resourceSize": 63946,
+        "resourceSha256": "cd489f52691a8737ba9eabac3831f00dc4c5a5e6b8d23884ee8ce5ba73b6db7a"
+      },
+      {
+        "sector": 76,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+        "rid": 738198444,
+        "pivot": [
+          180,
+          0,
+          100
+        ],
+        "rotation": 0,
+        "parent": "direct-sector",
+        "prefab": "",
+        "resourcePack": "prefabs_4e.pkb",
+        "resourceOffset": 31297386,
+        "resourceSize": 5218504,
+        "resourceSha256": "6b80934b427c51d7125116a91f38de88e8cd87428ed0de5a15c3d577cef203cd"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213191,
+        "pivot": [
+          1120,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_1b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 2588652,
+        "resourceSize": 790300,
+        "resourceSha256": "50f892178c697c6d3d0a2f363b73cfda076eaba42db173044064d34945193e6e"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213194,
+        "pivot": [
+          1000,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_2b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 3617168,
+        "resourceSize": 823486,
+        "resourceSha256": "e379cb5c1f1a72fb618c7022298f808d22f9ad32010b72e14c82ceef801870f3"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213206,
+        "pivot": [
+          940,
+          0,
+          380
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_3b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 4810490,
+        "resourceSize": 1638198,
+        "resourceSha256": "61115784e56f3e27713024731e28676d1a5067036561e3ed988cca13e8f7e875"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213200,
+        "pivot": [
+          640,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_4b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 6978920,
+        "resourceSize": 2103678,
+        "resourceSha256": "e7ef7ea9f4c81f9e2fcc7c4fa3842b817ee69e6cbbda7f2b42586778d30142b8"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213209,
+        "pivot": [
+          640,
+          0,
+          320
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_5b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 9379386,
+        "resourceSize": 1299468,
+        "resourceSha256": "0ee94fe0910e22c06600185b10ec78cc418e48b5d046628231b7d1e07a85be9f"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213208,
+        "pivot": [
+          380,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_strw.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 16737630,
+        "resourceSize": 139712,
+        "resourceSha256": "e20f492157b5699ffcb78953ea0481a663dc59114be06793a610baef82d41e18"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213196,
+        "pivot": [
+          340,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_6b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 11005794,
+        "resourceSize": 1113790,
+        "resourceSha256": "46e2c352a3f74e3d70958028ad3e42b2d56cdb3d039184d10e6523bb0b1d4e57"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213204,
+        "pivot": [
+          340,
+          0,
+          440
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_7b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 12440700,
+        "resourceSize": 663680,
+        "resourceSha256": "780e7dbee6c3f2029bbf0c9631cad80c4827d51d82d701d9d07deaf195f174d4"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213198,
+        "pivot": [
+          100,
+          0,
+          620
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_9b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 15166040,
+        "resourceSize": 1543302,
+        "resourceSha256": "8739b59c2cef8949443f1513c487782d72a9fccfaba8c0c7d12119a6c420b9e9"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213401,
+        "pivot": [
+          100,
+          80,
+          320
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_10b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 531132,
+        "resourceSize": 1656968,
+        "resourceSha256": "fb7c9b32ae529102db1a484ea59f71918f283023baffde3c6f0837d11ff86422"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213202,
+        "pivot": [
+          100,
+          0,
+          260
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_s01_8b.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 13416656,
+        "resourceSize": 1354908,
+        "resourceSha256": "bfc17ce612e9d9d71009097d48647dee96cb9c4dcd314e15f9be2de00ddf6195"
+      },
+      {
+        "sector": 87,
+        "source": "resource/worlds/final_world/constructs/medium/medium02/medium02_91.sidi",
+        "rid": 436213208,
+        "pivot": [
+          100,
+          0,
+          220
+        ],
+        "rotation": 1,
+        "parent": "direct-sector",
+        "prefab": "resource/prefab_database/floors/sl/sl_warehouse01/sl_warehouse01_strw.iprf",
+        "resourcePack": "prefabs_4d.pkb",
+        "resourceOffset": 16737630,
+        "resourceSize": 139712,
+        "resourceSha256": "e20f492157b5699ffcb78953ea0481a663dc59114be06793a610baef82d41e18"
+      }
+    ]
+  },
+  "historicallyUnprovenRotationKeys": [
     [
       76,
       56
@@ -25124,8 +23295,7 @@
       580
     ]
   ],
-  "rotationAmbiguityOverlap": 13,
-  "omissionPolicy": "Every variant of any nonzero-placement or conflicting native key is excluded. Raw nonzero transformed positions are UNPROVEN diagnostics, not exported placements.",
+  "omissionPolicy": "Every conflicting native key variant remains excluded, even if transformed poses coincide. Unsupported actual nested/EPI parents, invalid flags, and missing resources refuse export; blank resource aliases are recorded, not guessed. No first/last variant policy.",
   "capturedPopulationValidated": false,
   "capturedPopulationBoundary": "54 Instance rows,23 inside METR footprint/31 outside; no grounded NPC validated. Captures unchanged, no NPC gameplay/visibility claim."
 }

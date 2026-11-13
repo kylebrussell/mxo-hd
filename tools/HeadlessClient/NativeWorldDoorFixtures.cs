@@ -7,10 +7,14 @@ public sealed record NativeWorldDoorFixture(string Mode, string District, ushort
     public uint StaticId => ((uint)Sector << 20) | (uint)LocalId;
     public byte Heading => 0;
     public string? ExpectedQuaternion { get; init; }
+    public string EvidenceDocument { get; init; } = "WORLD-MEDIUM03-PREFAB-ROTATIONS.md";
 }
 
 public static class NativeWorldDoorFixtures
 {
+    public static readonly NativeWorldDoorFixture Medium02Prefab =
+        new("medium02-prefab-door", "medium02", 15, 414, 76, 56, -6100, 95, 17100, -6000, 145, 17100)
+        { ExpectedQuaternion = "00000000f304353f00000000f204353f", EvidenceDocument = "WORLD-MEDIUM02-PREFAB-ROTATIONS.md" };
     public static readonly NativeWorldDoorFixture Medium03Prefab =
         new("medium03-prefab-door", "medium03", 16, 580, 33, 1380, 25300, 2495, 43100, 25300, 2545, 43200)
         { ExpectedQuaternion = "00000000f30435b300000000ffff7f3f" };
