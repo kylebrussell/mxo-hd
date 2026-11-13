@@ -5,9 +5,7 @@ public static partial class Scenarios
 {
     private static void PrisonRequest(HeadlessPlayer p,ushort ability,byte slot=106)
     {
-        var request=new byte[43];request[0]=0x80;request[1]=0xb9;
-        BitConverter.GetBytes(ability).CopyTo(request,2);request[37]=slot;request[38]=1;
-        p.SendRpc(WireFormat.ToHex(request));
+        p.SendRpc(WireFormat.ToHex(PrisonDeviceWire.Activate(ability,slot)));
     }
     private static async Task PrisonDenied(HeadlessPlayer p,ushort ability,Action send)
     {

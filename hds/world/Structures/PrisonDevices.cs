@@ -31,7 +31,7 @@ namespace hds
             value < (ability == 949 ? 25 : 26) ? value + (ability == 949 ? 2 : 3) : value;
         public static int Refund(int value) => Math.Min(100, value * 2);
         public static bool Request(byte[] body, ushort ability) => Handles(ability) && body?.Length == 41 &&
-            BitConverter.ToUInt16(body, 0) == ability && body[35] == Slot && body[36] == 1;
+            BitConverter.ToUInt16(body, 0) == ability && body[35] == Slot && body[36] <= 1;
         public static bool TryGet(ushort ability, out AbilityBuffs.Buff buff)
         {
             buff = null;

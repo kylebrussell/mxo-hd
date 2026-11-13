@@ -26,15 +26,35 @@ public class PrisonDevicesTests
         Assert.Equal(360,timer.Seconds);Assert.Equal(958,timer.Group);
     }
     [Fact]
-    public void ExactFlagAndEquipmentSlotRequired()
+    public void BothProvenFlagsRequireExactEquipmentSlotAndStateIsNotAFlag()
     {
         var body=new byte[41];BitConverter.GetBytes((ushort)949).CopyTo(body,0);body[35]=106;body[36]=1;
         Assert.True(PrisonDevices.Request(body,949));
         body[35]=1;Assert.False(PrisonDevices.Request(body,949));
-        body[35]=106;body[36]=0;Assert.False(PrisonDevices.Request(body,949));
+        body[35]=106;body[36]=0;Assert.True(PrisonDevices.Request(body,949));
+        body[34]=8;Assert.True(PrisonDevices.Request(body,949));
+        body[34]=0x6b;body[36]=1;Assert.True(PrisonDevices.Request(body,949));
+        body[36]=2;Assert.False(PrisonDevices.Request(body,949));
         body[36]=1;Assert.False(PrisonDevices.Request(body,957));
         Assert.False(PrisonDevices.Request(body[..40],949));
         Assert.False(PrisonDevices.TryGet(2,out _));
+    }
+    [Fact]
+    public void ActualNativeToolsRequestMustAdmitOrdinaryFlagZero()
+    {
+        byte[] body=Convert.FromHexString("b5030000000000000000000000000000000000000000000000000cf51a002096983b016a0000000000");
+        Assert.Equal(41,body.Length);Assert.Equal(1,body[34]);Assert.Equal(106,body[35]);Assert.Equal(0,body[36]);
+        Assert.True(PrisonDevices.Request(body,949));
+    }
+    [Theory][InlineData(949)][InlineData(957)]
+    public void HeadlessUsesNativeOrdinaryFlagZeroAndIndependentState(int ability)
+    {
+        var rpc=HeadlessClient.PrisonDeviceWire.Activate((ushort)ability);
+        Assert.Equal(43,rpc.Length);Assert.Equal(new byte[]{0x80,0xb9},rpc[..2]);
+        Assert.Equal(1,rpc[36]);Assert.Equal(106,rpc[37]);Assert.Equal(0,rpc[38]);
+        Assert.True(PrisonDevices.Request(rpc[2..],(ushort)ability));
+        Assert.False(PrisonDevices.Request(HeadlessClient.PrisonDeviceWire.Activate((ushort)ability,1)[2..],(ushort)ability));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>HeadlessClient.PrisonDeviceWire.Activate(969));
     }
     [Fact]
     public void FixtureGrantsOnlyRealToolsAndNoRandomOverrides()
