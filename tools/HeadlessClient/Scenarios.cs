@@ -198,6 +198,7 @@ public static partial class Scenarios
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
         new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
+        new Scenario("large02-prefab-door", Large02PrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("team-new-leader-and-boot", TeamNewLeaderAndBoot),

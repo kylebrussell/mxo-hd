@@ -26,4 +26,7 @@ public static class NativeWorldDoorFixtures
         new("large01-door", "large01", 12, 365, 136, 1, 12900, 95, 15500, 12900, 145, 15600);
     public static readonly NativeWorldDoorFixture Large02 =
         new("large02-door", "large02", 13, 414, 27, 669, 14900, 95, 6300, 14900, 145, 6400);
+    public static readonly NativeWorldDoorFixture Large02Prefab =
+        new("large02-prefab-door", "large02", 13, 414, 27, 572, 16900, 95, 7100, 17000, 145, 7100)
+        { ExpectedQuaternion = "00000000f304353f00000000f204353f", EvidenceDocument = "WORLD-LARGE02-PREFAB-ROTATIONS.md" };
 }
