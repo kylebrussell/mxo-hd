@@ -306,7 +306,7 @@ public class PlayerProgressionTests
     [Fact]
     public void RefusedRaiseCarriesTheClientsStatus()
     {
-        Assert.Equal("80b608000e0000980000", Hex(ServerPackets.BuildAttributeRaiseRefused()));
+        Assert.Equal("80b608000c0000180000", Hex(ServerPackets.BuildAttributeRaiseRefused()));
     }
 
     [Fact]

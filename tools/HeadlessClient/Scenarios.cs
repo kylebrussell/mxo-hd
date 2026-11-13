@@ -125,6 +125,7 @@ public static partial class Scenarios
         new Scenario("ability-memory-ui-compatibility", AbilityMemoryUiCompatibility, StillNpcs),
         new Scenario("ability-training-authority", AbilityTrainingAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_IDS"]=""}),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
+        new Scenario("attribute-allocation-authority", AttributeAllocationAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0",["MXO_GM_CHARACTER_ID"]=""}),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),

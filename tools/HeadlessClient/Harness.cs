@@ -82,6 +82,12 @@ public sealed class ThrowawayDatabase : IDisposable
     }
     public Task<string> RemoveAcquisitionRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS ability_acquisition_test_rollback");
+    //Fixed late second-write failure only inside this harness-owned database; no settings/schema migration.
+    public Task<string> InstallAttributeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER attribute_test_second_write BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF OLD.char_id={character} AND OLD.slot=601 AND NEW.level<>OLD.level THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Attribute deliberate second-write failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAttributeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS attribute_test_second_write");
 
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 
