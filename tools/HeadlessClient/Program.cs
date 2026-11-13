@@ -73,7 +73,7 @@ foreach (Scenario scenario in selected)
             await using ScenarioContext context = await ScenarioContext.StartAsync(root, label, scenario.Environment, scenario.MissionFixture);
             try
             {
-                await scenario.Run(context).WaitAsync(TimeSpan.FromMinutes(6));
+                await scenario.Run(context).WaitAsync(scenario.Timeout ?? TimeSpan.FromMinutes(6));
                 string problems = string.Join("; ", context.ClientProblems().Concat(context.ServerProblems()));
                 if (problems.Length > 0)
                 {
