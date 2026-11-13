@@ -3,6 +3,7 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task DataMinePrefabDoorDiagnostic(ScenarioContext context) => NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.DataMinePrefab);
     private static Task Medium03PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>
@@ -19,7 +20,7 @@ public static partial class Scenarios
             Level = 50, District = f.District, DistrictId = f.World,
             X = f.X, Y = f.Y, Z = f.Z, Rotation = f.Heading
         }))[0];
-        Check.That(actor.Received("06").Any(r => Encoding.Latin1.GetString(r.Bytes).Contains($"{f.District}/{f.District}.metr")),
+        Check.That(actor.Received("06").Any(r => Encoding.Latin1.GetString(r.Bytes).Contains(f.MetrResource)),
             "ordinary login loads the actual source world");
         Check.Equal($"{f.X} {f.Y} {f.Z}", await context.Database.ScalarAsync(
             $"SELECT CONCAT(x,' ',y,' ',z) FROM characters WHERE charId={actor.CharId}"), "exact diagnostic standing point");
