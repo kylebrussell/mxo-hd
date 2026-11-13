@@ -103,8 +103,17 @@ public static partial class Scenarios
                 }
                 else
                 {
-                    step="unequip-active";p.SendRpc("64 6a 03");await p.WaitForRpcAsync("65 6a 00 03 00");
-                    var off=await p.WaitForRpcAsync(ModPattern(ability,144,true));
+                    step="unequip-active";
+                    int responseStart=p.World.RpcSnapshot().Count;
+                    var movePattern=BytePattern.Parse("65 6a 00 03 00");var offPattern=BytePattern.Parse(ModPattern(ability,144,true));
+                    bool CorrectOff(RpcRecord r)=>offPattern.IsMatch(r.Bytes) && BitConverter.ToInt32(r.Bytes,13)==initial+increment;
+                    p.SendRpc("64 6a 03");
+                    await p.WaitUntilAsync(()=>
+                    {
+                        var replies=p.World.RpcSnapshot().Skip(responseStart).ToArray();
+                        return replies.Any(r=>movePattern.IsMatch(r.Bytes)) && replies.Any(CorrectOff);
+                    },"This unequip emits its move acknowledgement and accumulated buff-off in either order",TimeSpan.FromSeconds(10));
+                    var off=p.World.RpcSnapshot().Skip(responseStart).Single(CorrectOff);
                     Check.Equal(initial+increment,BitConverter.ToInt32(off.Bytes,13),"Term removes accumulated value");
                 }
                 int refundPair=-1;
