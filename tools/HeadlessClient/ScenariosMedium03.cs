@@ -25,11 +25,11 @@ public static partial class Scenarios
         door.SendRpc("80 c8 37 04 10 02 03 00");
         await door.WaitUntilAsync(()=>door.ViewsOfGoid(365).Count>0,"native sector33/static1079 darkwood door",TimeSpan.FromSeconds(10));
         int excludedViews=door.ViewsOfGoid(417).Count;
-        door.SendRpc("80 c8 14 00 10 02 03 00"); // sector33/static20, omitted nonzero-placement key
+        door.SendRpc("80 c8 14 00 10 02 03 00"); // sector33/static20, omitted conflicting native key
         door.SendRpc("81 48");await door.WaitForRpcAsync("81 49");
-        Check.Equal(excludedViews,door.ViewsOfGoid(417).Count,"Unproven rotated key cannot spawn");
+        Check.Equal(excludedViews,door.ViewsOfGoid(417).Count,"Every ambiguous key variant remains absent");
         Check.Equal(0,p.World.Problems.Count,"Medium03 hardline wire");Check.Equal(0,door.World.Problems.Count,"Medium03 door wire");
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-medium03-success-debug.log"),context.Server.FullOutput()+"\n--- DebugLog ---\n"+context.Server.DebugLog());
-        Console.WriteLine("  medium03 PARTIAL:fixtureYaw192/592/HDL16/2;6d16/2;radialLA exit/direct80ff return/newself;safe365door;rotated417 absent. No NPC/elevator/subway/LA return UI claim.");
+        Console.WriteLine("  medium03 PARTIAL:fixtureYaw192/592/HDL16/2;6d16/2;radialLA exit/direct80ff return/newself;safe365door;ambiguous417 absent. No NPC/elevator/subway/LA return UI claim.");
     }
 }
