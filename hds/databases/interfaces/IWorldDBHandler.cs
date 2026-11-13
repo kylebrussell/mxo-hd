@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
+        bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
         UInt32 SaveSupportTicket(UInt32 character, string handle, UInt32 ticket, string text, bool cancel);
         UInt32 FindSupportGroup(string name, bool faction);

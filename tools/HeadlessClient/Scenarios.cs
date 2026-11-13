@@ -51,6 +51,7 @@ public static partial class Scenarios
         new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
         new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
+        new Scenario("prison-devices", PrisonDeviceUse, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
         new Scenario("anti-stun-writer-interruption", AntiStunWriterInterruption, HealthCallbackNpcs),
         new Scenario("conditional-daze-fixture", ConditionalDazeFixtureCommand, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
