@@ -211,6 +211,7 @@ public static partial class Scenarios
         new Scenario("login-reader-error-recovery", LoginReaderCleanup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
+        new Scenario("mission-courier", MissionCourier, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="20001"}),
         new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
         new Scenario("mission-objectives-relog", MissionObjectivesRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),

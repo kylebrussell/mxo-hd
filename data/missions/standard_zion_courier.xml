@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Retail proves Tyndall's plot-0 Courier label only. This entire definition, NPCs, text, pacing, layout and
+     reward baseline are OURS. Uses existing mission-key Data Disk6831, not a recovered retail Courier package. -->
+<mission id="20001" title="Courier" description="Carry a data disk between two Zion couriers."
+         plot="0" org="1" contact="Tyndall" district="1" districtName="slums" exp="22000" info="31500" rewardLevel="50">
+  <npc id="1" handle="Leto" type="FRIENDLY" at="1" rsi="60010058" />
+  <npc id="2" handle="Neris" type="FRIENDLY" at="2" rsi="d8040058" />
+  <phase site="Normal" enemies="0">
+    <briefing>Leto has a data disk for another member of our network. Meet Leto, collect the disk, and take it to the next address.</briefing>
+    <enter><say>Speak to Leto before collecting the disk.</say></enter>
+    <objective goal="1" text="Talk to Leto" type="Talk" npc="1" />
+    <objective goal="2" text="Get the data disk from Leto" type="Get" npc="1" item="6831" after="1" />
+  </phase>
+  <phase site="Normal" enemies="0">
+    <briefing>Take the disk to Neris. Make sure it reaches the right hands.</briefing>
+    <objective goal="1" text="Talk to Neris" type="Talk" npc="2" />
+    <objective goal="2" text="Give the data disk to Neris" type="Give" npc="2" item="6831" after="1" />
+    <complete><say>The disk arrived safely. Thank you, {player}.</say></complete>
+  </phase>
+</mission>

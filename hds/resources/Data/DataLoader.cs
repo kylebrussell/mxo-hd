@@ -104,7 +104,15 @@ namespace hds
         /// Only Zion's early missions exist so far, so every organisation is offered them.</summary>
         public List<Mission> FindMissions(MissionContact contact, HashSet<int> completed)
         {
-            return ContactOffer(missions.FindAll(m => MissionContacts.Offers(contact, m)), completed);
+            return ContactOfferWithStandards(missions.FindAll(m => MissionContacts.Offers(contact, m)), completed);
+        }
+
+        // Stored standard missions are independently repeatable; they never enter the ordered story selection.
+        public static List<Mission> ContactOfferWithStandards(List<Mission> missions, HashSet<int> completed)
+        {
+            List<Mission> result = ContactOffer(missions.FindAll(m => m.plot), completed);
+            result.AddRange(missions.Where(m => !m.plot).OrderBy(m => m.id));
+            return result;
         }
 
         public static List<Mission> ContactOffer(List<Mission> missions, HashSet<int> completed)
