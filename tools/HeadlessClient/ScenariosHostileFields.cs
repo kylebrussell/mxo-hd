@@ -51,6 +51,7 @@ public static partial class Scenarios
             Cast(target,49); await target.WaitForRpcAsync(ModPattern(49,520));
         }
         Check.That(skipped,"A landed261 skips its20% dispel proc within eight attempts");
+        await PrepareFreeCastViralFixture(context,caster,324);
         Cast(caster,324,view.ViewId);
         await target.WaitForRpcAsync(ModPattern(49,520,true),TimeSpan.FromSeconds(10));
         Check.That(context.Server.DebugLog().Contains("324 removes buff 49 from ProcTarget"),"Unqualified Delete Upgrade still removes the surviving upgrade");
@@ -74,6 +75,7 @@ public static partial class Scenarios
         await caster.WaitForViewNamedAsync("FieldBystander");
 
         // Fumble Field: radius 8 around the target, so the bystander one metre away is caught too
+        await PrepareFreeCastViralFixture(context,caster,324,350,361,476);
         Cast(caster, 361, victimView.ViewId);
         await victim.WaitForRpcAsync(ModPattern(361, 524), TimeSpan.FromSeconds(10));
         await bystander.WaitForRpcAsync(ModPattern(361, 1032), TimeSpan.FromSeconds(10));
@@ -126,6 +128,7 @@ public static partial class Scenarios
         await caster.WaitForRpcAsync("80 bd 05 3d 00 00 00 00 00 00 00", TimeSpan.FromSeconds(5));
         Check.That(context.Server.DebugLog().Contains("[AURA] 61 off"), "Using the aura again switches it off");
 
+        await PrepareFreeCastViralFixture(context,caster,400);
         Cast(caster, 400, frost.ViewId);
         await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("400 ticks on WinterFrost for 10"),
             "Plague Zone 1.0 ticks int(59 / 15 * 2.5 + .5)", TimeSpan.FromSeconds(12));
