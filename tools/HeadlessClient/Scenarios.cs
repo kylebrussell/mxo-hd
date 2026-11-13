@@ -89,6 +89,8 @@ public static partial class Scenarios
         new Scenario("freecast-viral-deflect", c=>FreeCastViralWire(c,false), FreeCastViralEnvironment(false)),
         new Scenario("ui-lag-area-hit", c=>UiLagAreaWire(c,true), UiLagEnvironment(true)),
         new Scenario("ui-lag-area-deflect", c=>UiLagAreaWire(c,false), UiLagEnvironment(false)),
+        new Scenario("area-disruption-hit", c=>AreaDisruptionWire(c,true), UiLagEnvironment(true)),
+        new Scenario("area-disruption-deflect", c=>AreaDisruptionWire(c,false), UiLagEnvironment(false)),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),

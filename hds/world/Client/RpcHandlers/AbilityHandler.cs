@@ -320,9 +320,9 @@ namespace hds
                 StealthShieldAbilities.Execute(client,ability,target,freeStealth);
                 return;
             }
-            if (AbilityID == UiLagArea.Ability)
+            if (CasterHostileArea.Handles(AbilityID))
             {
-                UiLagArea.Land(client, ability);
+                CasterHostileArea.Land(client, ability);
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).

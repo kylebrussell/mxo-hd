@@ -20,7 +20,7 @@ namespace hds
             var a=AbilityCatalog.Find(ability);
             return origin==AbilityCastOrigin.NormalFreeCast && a!=null && a.Number("Ability/AbilityClass",-1)==0 &&
                 a.Number("Ability/TestFunction",-1)==2 && a.Number("Ability/CastingTime")>0 && a.Number("Ability/CombatSpecialMove")==0 &&
-                (a.Number("Ability/CastDirectObjects",-1)==0 || a.Number("Ability/CastDirectObjects",-1)==3 || ability==UiLagArea.Ability);
+                (a.Number("Ability/CastDirectObjects",-1)==0 || a.Number("Ability/CastDirectObjects",-1)==3 || CasterHostileArea.Handles(ability));
         }
         internal static int Tactic(int total,int? tactic,bool defense)
         {
