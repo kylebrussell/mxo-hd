@@ -23,3 +23,9 @@ The profile keeps both actors as PvE allies so the native client can offer /duel
 ## Verification boundary
 
 Units check the literal failed-native51 to exact52 conversion, malformed/wrong-kind/zero/mismatched handles and no-extra-privilege profile. The normal wire fixture proves initial PvE attack refusal, armed helper, ordinary challenge/accept, new55 and paired IDs, legal combat with actual damage, normal stop, and rejection of a stale cached challenge by a second arm. Required raw RPC/all03/problems/full log/source DLL identity is saved before teardown, including failures. Native dialog/menu usability remains Claude-only pending. Validation and fresh results await coordinator review.
+
+## Candidate validation and one pass
+
+The candidate passed 35 focused codec/duel tests and 33 profile/metadata tests. Both actual Debug and Release NativeQa builds (including HeadlessClient), discovered plans and read-only build provenance passed. Server code and data are byte-identical to master bfdb9875; this is a tools-only change. Debug hds SHA256: 1211BE81DB35BCF18FEFA943A29BF7E37579295637CA38029374EC5026E6ECD0. Release: 85234E61CF01B339FFEAAE4EF2FFD53CA62C18F46CE1D9A4AAC4A22AF1798183. Fresh execution awaits coordinator review and grant.
+
+For Claude's disposable CSR110 one pass, use the normal CSR_Tester and QAEnemy profiles with abilities 2 and 17. First confirm ordinary Attack is refused in this PvE configuration. Bring QAEnemy online and arm the duel-accept request above. Immediately issue `/duel QAEnemy` from CSR_Tester; the helper response must show the exact new challenge, reply, begin and paired IDs. Confirm normal combat becomes available and exchanges damage. Stop the duel normally, then verify ordinary non-duel hostility is refused again. Do not use resurrection `approve` to answer the challenge, alter flags, or reset challenge timers. Native menu/dialog behavior remains unproven until this pass.
