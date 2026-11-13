@@ -16,7 +16,7 @@ The headless case uses the actual contact view and ordinary Use2/list/info/accep
 
 The same mission is completed twice with distinct acceptance identities. A carried item and actual object/NPC state are compared across the cold restart. The existing receipt repository is invoked only against the owned throwaway database to verify duplicate-finish idempotence and refusal of an old receipt during a new run. An unrelated identical item must survive cleanup. At unchanged level10, the existing reference50 policy pays4040 XP and6300 info per run; these are existing OURS tuning, not a recovered retail reward formula. Final relog must leave no active mission and no additional payout. Raw RPC/view lists, each selected DLL/config/hash, server logs and process lifetimes are retained before teardown.
 
-Fresh and native results are pending until recorded separately. Definition resolution for all153 IDs does not claim that every generated layout or contact appearance has received native testing.
+The recorded fresh result is below; native acceptance is pending. Definition resolution for all153 IDs does not claim that every generated layout or contact appearance has received native testing.
 
 ## Claude-only one-pass
 
@@ -25,3 +25,13 @@ Fresh and native results are pending until recorded separately. Definition resol
 3. Leave the area normally. Check the completion summary and XP/info. Repeat Retrieval once, then relog again: each run should pay once, with no resumed completed mission.
 
 No native/client/setup/main database action is performed by this change's implementation agent. Native UI and rendering acceptance remain Claude-only.
+
+## Recorded headless result
+
+`neighbourhood-retrieval-persistence` passed56.1s, driver exit0, parallel1 on frozen sourcef75591ca36f34d8200d612f609dbaf3763866f86. Three owned server processes ran sequentially; both replaced PIDs were observed exited before their replacements started, and all processes/sessions disposed normally. The actual selected Debug DLL was35692E4E867C380B6555312A9D4AEE7C070CE6D91904E0B3FCA33AA1A82B5011.
+
+The same existing Retrieval3072 completed twice through ordinary contact/object/exit records, with two distinct receipts and exactly4040 XP/6300 info each. The cold restore retained the acceptance, item slot, actual object state/placement and all NPC identities/health/loot before any contact list populated the new private cache. Duplicate completion returned the existing receipt, an old receipt during the second run was refused, unrelated identical inventory survived cleanup, and final cold relog produced no active mission or extra payout. No protocol/server failure was observed.
+
+Preteardown proof: `Temp/mxo-neighbourhood-persistence-mxotest_run_1_558aa5cabc.json`,112622bytes, SHA256d4457f0582e955492ff04b23fdbace650505a1a824715f5c9e05a9f492c7ffd9. It retains38view lists/allRPCs, all three DLL/config/process logs, two receipts and process lifetime checks. Durable runner stdout/exit are in `Temp/mxo-neighbourhood-fresh`.
+
+Full4438 tests passed before the evidence-finally cleanup hardening;44 scoped tests pass after the pure upstream186 merge. Both actual NativeQa configurations/read-only plans/provenance are checked separately. Nine fresh-tested runtime/mode/driver/helper blobs remain byte-identical after that import, so the fresh case was not redundantly repeated. Native acceptance remains pending.
