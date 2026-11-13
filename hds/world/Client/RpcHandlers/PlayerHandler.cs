@@ -163,7 +163,7 @@ namespace hds
                     UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
                     if (id == AbilityProgression.AwakenedAbility) continue;
                     foreach (UInt16 grant in AbilityProgression.GrantsOf(id))
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                        if (!AbilityGrantRegistration.Handles(id, grant)) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(id, loaded.getLevel()), AbilityProgression.HiddenSlot));
                 }
 
@@ -398,13 +398,14 @@ namespace hds
                 if (unload)
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(entry.Ability));
-                    foreach (UInt16 grant in grants) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
+                    foreach (UInt16 grant in grants) if (!AbilityGrantRegistration.Handles(entry.Ability, grant)) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                 }
                 else
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, owned.getLevel(), entry.Slot));
                     foreach (UInt16 grant in grants)
                     {
+                        if (AbilityGrantRegistration.Handles(entry.Ability, grant)) continue;
                         Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(entry.Ability, owned.getLevel()), AbilityProgression.HiddenSlot));
                     }

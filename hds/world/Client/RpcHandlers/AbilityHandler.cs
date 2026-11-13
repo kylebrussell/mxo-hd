@@ -69,6 +69,7 @@ namespace hds
             packets.SendInfoCurrent(client, (UInt32)newCash, ServerPackets.InfoReasonAbilityUpgrade);
             foreach (UInt16 grant in AbilityProgression.GrantsOf(request.Ability))
             {
+                if (AbilityGrantRegistration.Handles(request.Ability, grant)) continue;
                 client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                 client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                     AbilityProgression.GrantLevel(request.Ability, (UInt16)newLevel), AbilityProgression.HiddenSlot));

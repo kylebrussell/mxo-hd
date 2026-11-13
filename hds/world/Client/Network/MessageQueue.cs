@@ -28,6 +28,13 @@ namespace hds
         public void addRpcMessage(byte[] messageBlock)
         {
             if(MissionOutput.Stage(this,messageBlock,false,false))return;
+            QueueRpc(messageBlock,null,0);
+        }
+
+        // Current sole caller is captured ability registration. No validity callbacks or owner locks in the queue.
+        internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
+        private void QueueRpc(byte[] messageBlock,int? world,long transport)
+        {
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
             {
@@ -41,13 +48,21 @@ namespace hds
             content.append(rpcSizeByte);
             content.append(messageBlock);
 
-            SequencedMessage message = new SequencedMessage(content.getBytes());
+            SequencedMessage message = new SequencedMessage(content.getBytes()) { RpcWorldGeneration=world, RpcTransportEpoch=transport };
             // Same lock as the flush and ack code: the flush thread enumerates this list while packet
             // handlers add to it, and an unlocked Add crashed the server ("Collection was modified").
             lock (RPCMessagesQueue.SyncRoot)
             {
                 RPCMessagesQueue.Add(message);
             }
+        }
+
+        // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.
+        internal void PruneUnassignedWorldRpcs(int world,long transport)
+        {
+            lock(RPCMessagesQueue.SyncRoot)
+                for(int i=RPCMessagesQueue.Count-1;i>=0;i--)
+                    if(((SequencedMessage)RPCMessagesQueue[i]).DiscardUnassignedWorldRpc(world,transport)) RPCMessagesQueue.RemoveAt(i);
         }
 
         public void addObjectMessage(byte[]messageBlock,bool isTimed)

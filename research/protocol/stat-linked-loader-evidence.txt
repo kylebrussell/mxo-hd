@@ -1,0 +1,24 @@
+LINKED-ATTRIBUTE LOADER/DIRECTION GATE â€” read-only 2026-11-12
+Frozen179 WT unchanged:2130dd92a64ee8536d763b5e5dd6941e8d2b531c. No build/runtime/newbranch/fresh/native/RAM/DB action. Primaryclient.dll SHA cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a; GOB reparse hashes/offsets/bytes in Temp/mxo-a1-link-raw-loader.json. Baseline peer disassembly Temp/mxo-75-link-disassembly.txt independently checked.
+
+CLOSED 1 â€” map direction AND coefficient owner.
+62521c90 is sole directcaller6251d3c0: currentabilityID and resolvedcurrenttemplate are passed together.6251d3c0 iterates CURRENTtemplate+f0 componentdescriptors. Componenttype93 branch6251d4d9 reads AttributeLink (628c90ec) with ecx=CURRENTtemplate ebx, componentnameedi, normalizeslinkedIDesi. It then reads AttributeLevelBonusScale (628c90d0) with SAMEecx=ebx/componentedi at6251d522..535; there is NO lookupoflinkedtemplate between those reads.
+Triple constructed6251d543/553/54a = [ownerID,linkedID,ownerScale]. Insertion6251d160->6251c2f0 hashesandcompares FIRSTtripleword (6251c2ff/30b/320), copiesall3 to node+4/+8/+c.6251d780 looks up requestedowner at6251d7be, returnsnode+8/+c as(linkedID,ownerScale).625c47a0 queriesowner, then625c4950/4966 obtainslinkedID's total; coefficient625c498d comes fromreturnedownerScale. Thus177<-1055 uses177's scale.1055's stored2.0 does NOT become177's coefficient.
+
+CLOSED 2 â€” ACTUAL GOB loader retains stored size, no422byte expansion.
+Native6231c370 resolves/caches requestedGOBtemplate; missingcache usespackedresource seek6231c425 and6231bad0 at6231c43b. Loader6231bad0 creates0xf8-byte CLTGOGameObject usingctor6231b970 (vtable628a3a98), reads template name6231bb39,4headerwords and5bytecomponentrows, then:
+- storage_size read6231bc9a -> object+20 at6231bca0.
+- layout/schema/component/unknown u16 fields6231bca5..bd91; schema descriptorobject+ec andcomponentdescriptorobject+f0 resolvedagainstglobaltables.
+- stored_size read6231bd9e ->object+28 at6231bda4.
+- allocation EXACT stored_size viaIAT62868278 at6231bdd4 ->object+2c6231bddd; zero-size pointer0case6231bde2.
+- stream reads EXACTstored_size tothatpointer6231bde9..bdf5. No storage_size422 expansion/defaultfill occurs inthis materialization.
+Independent rawGOB reparse:177 DebuffAreaRadiusAbility GOID8002c400,offset5414972,header5415040,schema315,storage422,stored22;1055 DebuffAreaRadiusBonusAbility GOID80107c00,offset5415148,header5415221,schema112,storage422,stored30. These are radius attributes, not an infection-defence pair. Raw177scale descriptor229+floatwidth4 exceedsactualbuffer22;1055scaleoffset6 is inbounds andstores2.0.
+
+CLOSED 3 â€” initial default and postload route.
+622ffce0 compares descriptoroffset+typewidth toobject+28. Outofrange622ffd29..3d explicitlyzero-fills calleroutput andreturnstrue. Therefore initial177scale getter isfloat0, NOT1 andNOTborrowed2.0. This is a getter result; no fabricated422bytezero-tail is needed.
+Loader postloadcall6231bfad ismanagerVT+50. Genericmanager628a3da8+50->623069d0 isret8. DerivedCSGameObjMgr6288b2b8+50->621b3890->62327960 buildsproperty/viewcaches. Relevantboundedstoragecopychecks existingobject+28 at62327cc9; outofbounds skips. It initializesviewcachemembers+6c/+30, notpropertybuffer expansion.62326c50 isvectorinsert helper, not a schema-default constructor. Loaderretainsstored22 throughthisinspectedlookup/materializationpath; cache retainsloadedobject6231c440..462.
+
+STILL OPEN / do not overclaim.
+Threshold62b11ee0 is PEvirtualtailinitialzero; peerliteralxrefs625c1a98/625c496d areREADS, but arbitraryruntimeindirect/bulkwrites remainunproven. No nativeRAM was inspected. Arbitrarylatermutationoftemplatefields oralternativeproducer could changevalues; no suchwriterwas established. This normalinitial-template loader proof does not grantpermissiontoinventlivecoefficients/threshold/ability75radiusbaseorretailcaller. No rowpromotion or runtime patch proposed. For175/342/otherlinkedattributes independentlyinspect OWN coefficientdescriptor+storedlength ratherthanassuminglinkedbonus2.0 ordefault1. Preservecurrentpassive/paritylabels absentliveconsumerproof.
+
+Evidence files Temp/mxo-a1-linkmap-construction.txt,mxo-a1-linkmap-insert.txt,mxo-a1-gob-loader-primary.txt,mxo-a1-gob-loader-tail.txt,mxo-a1-gob-object-ctor.txt,mxo-a1-gob-afterload.txt,mxo-a1-gob-postload-hook.txt,mxo-a1-gob-postload-hook-tail.txt,mxo-a1-gob-postload-view-helper.txt,mxo-a1-link-raw-loader.json. Probes offlinefixedbinary/GOB only; ownTemptext/JSON outputs.

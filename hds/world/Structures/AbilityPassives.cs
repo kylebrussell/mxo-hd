@@ -86,6 +86,7 @@ namespace hds
             EvasionShield.LoadoutChanged(client);
             AbilityDesperation.LoadoutChanged(client);
             ProxyTechnician.LoadoutChanged(client);
+            AbilityGrantRegistration.LoadedChanged(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker
