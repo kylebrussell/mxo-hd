@@ -66,6 +66,24 @@ public class FreeCastViralLandingTests : IDisposable
         foreach(var client in WorldServer.Clients.Values){Assert.Empty(client.messageQueue.RPCMessagesQueue);Assert.Empty(client.messageQueue.ObjectMessagesQueue);}
         Assert.Equal(1000,PvpCombat.HealthOf(victim));
     }
+    [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
+    {
+        var c=Client(110);var target=Client(111);Store.currentClient=c;
+        c.playerData.pvpFlag=target.playerData.pvpFlag=true;c.playerInstance.OrganizationID.setValue((byte)1);target.playerInstance.OrganizationID.setValue((byte)2);
+        c.viewMan.addView(111,1).viewCreated=true;AbilityPassives.SetLoaded(c,new[]{((ushort)33,(ushort)50)});
+        var ability=new AbilityItem();ability.setAbilityID(33);
+        try
+        {
+            Assert.False(FreeCastViralContest.Player(c,ability,target)); //50 versus69
+            Assert.True(AbilityBuffs.Apply(c,314));Assert.Equal(108,AbilityStats.Player(c,342));
+            Assert.True(FreeCastViralContest.Player(c,ability,target)); //112 versus69
+            Assert.True(AbilityBuffs.Apply(target,272));Assert.Equal(54,AbilityStats.Player(target,183));
+            Assert.False(FreeCastViralContest.Player(c,ability,target)); //112 versus117
+            Assert.True(AbilityBuffs.Remove(target,272));Assert.True(FreeCastViralContest.Player(c,ability,target));
+            Assert.True(AbilityBuffs.Remove(c,314));Assert.False(FreeCastViralContest.Player(c,ability,target));
+        }
+        finally {AbilityBuffs.RemoveAll(c);AbilityBuffs.RemoveAll(target);}
+    }
     [Fact] public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld()
     {
         var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{((ushort)33,(ushort)50)});
