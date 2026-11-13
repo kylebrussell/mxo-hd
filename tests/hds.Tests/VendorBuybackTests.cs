@@ -82,6 +82,18 @@ public class VendorBuybackTests
         data.worldGeneration++;Assert.NotEqual(first,VendorBuyback.SessionFor(data));
         var another=new ClientData();another.setCharID(110);Assert.NotEqual(first,VendorBuyback.SessionFor(another));
     }
+    [Fact] public void DelayedOldAdmissionCannotAdoptOrReplaceNewWorldSession()
+    {
+        var data=new ClientData();data.setCharID(110);int oldWorld=data.worldGeneration;
+        string old=VendorBuyback.SessionFor(data,oldWorld,110);
+        data.worldGeneration++;string current=VendorBuyback.SessionFor(data,data.worldGeneration,110);
+        Assert.NotEqual(old,current);
+        Assert.Null(VendorBuyback.SessionFor(data,oldWorld,110));
+        Assert.Equal(current,VendorBuyback.SessionFor(data,data.worldGeneration,110));
+        data.setCharID(111);
+        Assert.Null(VendorBuyback.SessionFor(data,data.worldGeneration,110));
+        Assert.NotEqual(current,VendorBuyback.SessionFor(data,data.worldGeneration,111));
+    }
     private static WorldClient Client()
     {
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new();

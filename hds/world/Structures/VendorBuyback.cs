@@ -34,12 +34,15 @@ namespace hds
         private sealed class Session { public readonly string Token=Guid.NewGuid().ToString("N"); public readonly int World; public readonly uint Character; public Session(int world,uint character){World=world;Character=character;} }
         private static readonly ConditionalWeakTable<ClientData,Session> sessions=new ConditionalWeakTable<ClientData,Session>();
         private static readonly object sessionSync=new object();
-        internal static string SessionFor(ClientData data)
+        internal static string SessionFor(ClientData data)=>SessionFor(data,data.worldGeneration,data.getCharID());
+        internal static string SessionFor(ClientData data,int world,uint character)
         {
             lock(sessionSync)
             {
-                if(sessions.TryGetValue(data,out var s)&&s.World==data.worldGeneration&&s.Character==data.getCharID())return s.Token;
-                sessions.Remove(data);s=new Session(data.worldGeneration,data.getCharID());sessions.Add(data,s);return s.Token;
+                // Never let an old admission adopt or replace a token installed for the new world/character.
+                if(data.worldGeneration!=world||data.getCharID()!=character)return null;
+                if(sessions.TryGetValue(data,out var s)&&s.World==world&&s.Character==character)return s.Token;
+                sessions.Remove(data);s=new Session(world,character);sessions.Add(data,s);return s.Token;
             }
         }
         public static bool TryBuyback(byte[] body)=>body!=null&&body.Length==5&&body[4]==1&&
@@ -118,7 +121,7 @@ namespace hds
             lock(data.craftingSync)
             {
                 var stamp=new Publication(client);if(!stamp.Current(client))return;
-                string session=SessionFor(data);Result result;
+                string session=SessionFor(data,stamp.World,stamp.Character);if(session==null)return;Result result;
                 try
                 {
                     result=buy?Store.dbManager.WorldDbHandler.BuyBackVendorItem(stamp.Character,session,stamp.Vendor.vendorStaticID):
