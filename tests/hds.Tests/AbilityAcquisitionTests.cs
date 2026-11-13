@@ -11,6 +11,14 @@ public class AbilityAcquisitionTests
         Assert.False(AbilityAcquisition.Genuine(0));
         Assert.False(AbilityAcquisition.Genuine(0x803ffc00));
     }
+    [Theory]
+    [InlineData(int.MinValue,false)] [InlineData(-1,false)] [InlineData(0,true)]
+    [InlineData(1,true)] [InlineData(2,false)] [InlineData(int.MaxValue,false)]
+    public void AcquisitionAcceptsOnlyLegacyOrCurrentRawSingleItemCounts(int count,bool single)
+    {
+        Assert.Equal(single,AbilityAcquisition.RawSingleCount(count));
+        if(single)Assert.Equal(1,ItemStacks.CountFromDb(count));
+    }
     [Fact] public void BulkUploadSkipsSlotZeroEquipmentAndNonPlayerAbilityFamilies()
     {
         // Native fixtures contain this slot0/count0 row; normalized snapshots must not

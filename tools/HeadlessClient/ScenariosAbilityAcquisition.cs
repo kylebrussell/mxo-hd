@@ -65,6 +65,21 @@ public static partial class Scenarios
             Check.Equal(1L,await Count(code),"One code learned; duplicate retained");
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)code)} AND level=1 AND is_loaded=0 AND slot<520"),"One genuine archive entry, not loaded/granted");
             p.SkipReceived();await ZionUpload(p);Check.Equal(1L,await Count(code),"Repeated upload keeps duplicate code");
+            const uint legacyCode=0x80001c00;
+            step="legacy-zero-count-learn-rollback";
+            await context.Database.ExecuteAsync($"INSERT INTO inventory(charId,slot,goid,count) VALUES({p.CharId},20,{legacyCode},0)");
+            await context.Database.InstallAcquisitionRollbackTriggerAsync(p.CharId,unchecked((int)legacyCode));
+            int legacyRollback=p.World.RpcSnapshot().Count;p.SkipReceived();await ZionUpload(p);await Barrier();
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot=20 AND goid={legacyCode} AND count=0"),"Failed legacy upload restores exact raw zero count");
+            Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)legacyCode)}"),"Failed legacy archive insert has no entry");
+            var legacyFailed=p.World.RpcSnapshot().Skip(legacyRollback).ToArray();
+            Check.That(!legacyFailed.Any(r=>r.Bytes.SequenceEqual(WireFormat.FromHex("5f 14 00 01"))||(r.Bytes.Length==12&&r.Bytes[0]==0x5e&&BitConverter.ToUInt32(r.Bytes,7)==(legacyCode|1u))),"Legacy rollback publishes neither bag delete nor archive add");
+            operations.Add(new{Step=step,Cursor=legacyRollback,RawSourceCount=0,Records=legacyFailed.Select(r=>r.Hex).ToArray()});
+            await context.Database.RemoveAcquisitionRollbackTriggerAsync();
+            step="legacy-zero-count-learn";int legacyCursor=p.World.RpcSnapshot().Count;p.SkipReceived();await ZionUpload(p);await Barrier();
+            Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot=20"),"Committed legacy raw-zero source consumed exactly once");
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)legacyCode)} AND level=1 AND is_loaded=0"),"Legacy code becomes one known unloaded entry");
+            operations.Add(new{Step=step,Cursor=legacyCursor,RawSourceCount=0,Records=p.World.RpcSnapshot().Skip(legacyCursor).Select(r=>r.Hex).ToArray()});
             step="la-learning-same-transaction";
             p.SendRpc("80 c8 "+Le(vendor)+" 02 00");await p.WaitForRpcAsync("81 0d");await Buy(other,true);
             ushort bag=checked((ushort)await context.Database.LongAsync($"SELECT slot FROM inventory WHERE charId={p.CharId} AND goid={other}"));
@@ -113,6 +128,7 @@ public static partial class Scenarios
             step="cold-relog-known-archive";string user=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");p.Dispose();context.Server.Dispose();
             using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs);reloaded=server;using var again=await HeadlessPlayer.LoginAsync(server.Address,user,p.Handle);sessions.Add(again);
             byte[] known=again.CharacterData[0x07];Check.That(BytePattern.IndexOf(known,BitConverter.GetBytes(code|1u),0)>=0,"Calm Mind known archive survives cold login");Check.That(BytePattern.IndexOf(known,BitConverter.GetBytes(other|1u),0)>=0,"LA learned archive survives cold login");
+            Check.That(BytePattern.IndexOf(known,BitConverter.GetBytes(legacyCode|1u),0)>=0,"Legacy raw-zero learned archive survives cold login");
             await again.EnterWorldAsync();
             foreach(var session in sessions)
             {

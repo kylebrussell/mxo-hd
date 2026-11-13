@@ -21,6 +21,8 @@ namespace hds
         // revalidates the exact row, descriptor and count and reports real races/duplicates.
         internal static bool UploadCandidate(Crafting.InventoryItem item) =>
             item.Slot>=1&&item.Slot<=96&&item.Count>0&&Genuine(item.Goid);
+        // The legacy schema/writers store zero for one item; keep raw identity for CAS.
+        internal static bool RawSingleCount(int count) => count==0||count==1;
         public static bool SameAbility(long raw,uint expected) => TryDescriptor(raw,out uint value)&&Genuine(value)&&Identity(value)==Identity(expected);
         public static ushort Identity(uint value) => AbilityCatalog.Canonical(AbilityCatalog.IdOf(value));
         public static ushort FreeBag(IEnumerable<BagRow> rows)
