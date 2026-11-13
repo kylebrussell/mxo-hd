@@ -1,32 +1,34 @@
 # Medium03 (map16): heavily partial construct
 
-This package adds a bounded subset of the shipped Medium03 resources. **1,282 safe native keys are exported; all variants of 3,343 keys are omitted.** It does not establish a complete playable district. Existing NPC captures, elevator destinations, rotated interior statics and native Loading Area return remain unresolved.
+This package adds a bounded subset of the shipped Medium03 resources. **4,491 primary-proven native keys are exported; all variants of 134 ambiguous keys remain omitted.** It does not establish a complete playable district. Existing NPC captures, elevator destinations, ambiguous statics and native Loading Area return remain unresolved.
 
 ## Source and omission boundary
 
-The client Medium03 METR has 60 sectors. Their 180 SID/SIDI/SIDG resources pass the existing ten-OSID-buffer, EOF, placement-count and record-bound checks. The decoder retains4,762 references/4,625 native keys in [the static audit](../research/world-data/medium03-static-audit.json). It excludes 3,321 keys touched by nonzero prefab placement rotations and 134 conflicting keys (112 overlap), a union of 3,343. No first-variant rule or guessed quaternion composition is used. All 1,282 remaining keys have rotation0 and an unambiguous identity/position/quaternion.
+The client Medium03 METR has 60 sectors. Their 180 SID/SIDI/SIDG resources pass the existing ten-OSID-buffer, EOF, placement-count and record-bound checks. The decoder retains4,762 references/4,625 native keys in [the static audit](../research/world-data/medium03-static-audit.json). It retains all variants of the 134 conflicting keys as omissions. The explicit world16 native-transform opt-in restores3,209 previously omitted keys, using primary native IPI transforms rather than nav/appearance guesses. No first/last variant policy is used.
 
-Positions retain the established city-CSV convention: METR sector corner + local position, with +145 Y. This is a server convention, not proof of a native object pivot. Raw transformed positions on omitted rotated records are diagnostic only. The strict default still refuses nonzero rotations. Source hashes cover all 180 static inputs.
+The native IPI constructor/reset clears the EPI-parent pointer; the direct sector-SIDI parser supplies its SID parent. All173 placements here belong to that validated direct SCIN sector path. The native matrix uses signed pivot times10, exact quarter turns and parent-times-local quaternion composition with float32 stores. The server's +145Y convention is kept separate. Unknown actual nested/EPI contexts and invalid flags are refused. Resource aliases may be blank despite indexed/readable packed resources; their IDs, pack offsets and hashes remain recorded rather than guessed names. The original4,762 raw diagnostic tuples and all134 conflict groups are unchanged. Source hashes now cover180 static inputs, the METR parent proof and23 prefab resources.
 
-[The resource crosscheck](../research/world-data/medium03-resources.json) records the 60 NAV inputs, METR, HDL and cooked COD hashes and hardline schema. All 60 navigation sectors are packed using the existing exporter; navigation quarter-turn handling does not establish static-object transform semantics. METR NETS has zero CNET networks; no subway is added.
+See [the transform and diagnostic evidence](WORLD-MEDIUM03-PREFAB-ROTATIONS.md). The historical omission mode still reproduces1,282 rows and preserves its original unproven diagnostic meaning; the default remains strict.
+
+[The resource crosscheck](../research/world-data/medium03-resources.json) records the 60 NAV inputs, METR, HDL and cooked COD hashes and hardline schema. All 60 navigation sectors are packed using the existing exporter; the static transform is established independently by native IPI code, not inferred from navigation. METR NETS has zero CNET networks; no subway is added.
 
 Reproduce from the repository root (read-only client access):
 
 ```text
-python research/world-data/static_objects_small03.py <client-data-tools> --world 16 --omit-unproven-rotations
+python research/world-data/static_objects_small03.py <client-data-tools> --world 16 --native-prefab-rotations
 python research/world-data/navmesh.py <client-data-tools> data/sector_properties.csv data/navmesh 16
 python research/world-data/medium03_resources.py <client-data-tools> <MxO-directory>
 ```
 
-Existing12/17 exports must reproduce; without the explicit omission flag,16 must refuse before writing output.
+Existing12/17 exports remain unchanged. Without an explicit flag,16 still refuses before writing output; --omit-unproven-rotations retains the historical1,282-row export. --native-prefab-rotations is reviewed for16 only and rejects every other world.
 
 ## Exact hardline and grounded door
 
 HDL schema HID 2 (NextID 3) places the hardline at(37800,400,31700) with offset(-100,95,~0), yielding arrival(37700,495,31700), yaw−1.5708. Cooked sector 52 independently identifies GUID 1/RTID 592, name **467 Reitman Road**, sector-local position(7800,400,1700), forward−X and offset100. This is native static sector 52/ID 1 (`01004003` little-endian), not HID 1. The CSV booth position is(37800,545,31700); its centre has no nav polygon because it occupies the booth footprint. The exact shipped arrival is walkable NAV sector 52/region7/polygon4/floor400, also at adjacent Z31600/31800. It is100 units in front of the booth.
 
-Safe native darkwood door GOID 365, sector 33/static 1079 (`37041002`), is at(27100,1745,41200). Its approach(27100,1695,41100) is on interior region99/floor 1600. The second safe 365 is static 1087. No guessed417 door is added: e.g. sector 33/static20 is omitted because its placement rotation is unproven.
+Safe native darkwood door GOID 365, sector 33/static 1079 (`37041002`), is at(27100,1745,41200). Its approach(27100,1695,41100) is on interior region99/floor 1600. The second safe365 is static1087. The newly restored source580 door33/1380 has a separate [direct diagnostic fixture](WORLD-MEDIUM03-PREFAB-ROTATIONS.md); native rendering remains pending. No guessed417 door is added: e.g. sector 33/static20 is still omitted because its native key has conflicting variants.
 
-There are 18 safe 6952 elevator-panel statics. Cooked data contains 5 TransportGroups / 59 TransportSpaces, but this package has **no proven panel-key/destination association** and adds no elevator mapping. Static presence must not be reported as working elevator travel.
+There are59 primary-proven 6952 elevator-panel statics. Cooked data contains 5 TransportGroups / 59 TransportSpaces, but this package has **no proven panel-key/destination association** and adds no elevator mapping. Static presence must not be reported as working elevator travel.
 
 All 58 existing map16 Instance.csv NPC rows lie outside the shipped sector X/Z footprints. They remain byte-for-byte unchanged. No NPC is relocated, fabricated or claimed visible/usable. Missing population is an explicit limitation.
 
