@@ -279,6 +279,7 @@ public static partial class Scenarios
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
         new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
         new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
+        new Scenario("nativeqa-duel-helper", NativeQaDuelHelper, new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="0",["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
