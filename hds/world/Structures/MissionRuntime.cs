@@ -516,8 +516,9 @@ namespace hds
                 MissionProgress progress = client.playerData.missionProgress;
                 if (progress == null || progress.failed || client.playerData.loot.WindowOpen) return false;
                 MissionObjectState state = progress.objects.Values.FirstOrDefault(o => o.putOpen);
-                if (state?.spot == null || !ContainerActions.InReach(client.playerInstance.Position.getValue(),
-                    state.spot.pos_x, state.spot.pos_y, state.spot.pos_z)) return false;
+                if (state?.spot == null) return false;
+                var pose = MissionComputerAnchors.For(state);
+                if (!ContainerActions.InReach(client.playerInstance.Position.getValue(), pose.X, pose.Y, pose.Z)) return false;
                 MissionObjective objective = progress.OpenObjectives().FirstOrDefault(o => o.type == MissionGoalType.Put &&
                     o.objectId == state.def.id && progress.itemSlots.TryGetValue(o.item, out ushort ownedSlot) && ownedSlot == slot);
                 if (objective == null || !TakeItem(client, progress, objective.item)) return false;
@@ -629,8 +630,9 @@ namespace hds
         {
             if (place.StartsWith("object:"))
             {
-                return ushort.TryParse(place.Substring(7), out ushort objectId) && progress.objects.TryGetValue(objectId, out MissionObjectState state) &&
-                       state.spot != null && Distance2(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z, x, y, z) <= radius * radius;
+                if (!ushort.TryParse(place.Substring(7), out ushort objectId) || !progress.objects.TryGetValue(objectId, out MissionObjectState state) || state.spot == null) return false;
+                var pose = MissionComputerAnchors.For(state);
+                return Distance2(pose.X, pose.Y, pose.Z, x, y, z) <= radius * radius;
             }
 
             if (place.StartsWith("npc:"))
@@ -1000,8 +1002,8 @@ namespace hds
             if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
             {
                 // Object origins may be on a desk or cabinet. NPC height belongs to the floor, as site NPC spots do.
-                return Beside(state.spot.pos_x, progress.site == null ? state.spot.pos_y : progress.site.floorY - 50,
-                    state.spot.pos_z, index);
+                var pose = MissionComputerAnchors.For(state);
+                return Beside(pose.X, progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
             }
 
             return BesidePlayer(px, py, pz, index);
@@ -1448,8 +1450,9 @@ namespace hds
                     continue;
                 }
 
-                double dx = state.spot.pos_x - x, dz = state.spot.pos_z - z;
-                if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(state.spot.pos_y - y) > 300)
+                var pose = MissionComputerAnchors.For(state);
+                double dx = pose.X - x, dz = pose.Z - z;
+                if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(pose.Y - y) > 300)
                 {
                     continue;
                 }
@@ -1608,7 +1611,8 @@ namespace hds
         private static bool AtObject(WorldClient client, MissionProgress progress, MissionObjective objective, MissionObjectState state,
             double x, double y, double z)
         {
-            double ox = state.spot.pos_x, oy = state.spot.pos_y, oz = state.spot.pos_z;
+            var pose = MissionComputerAnchors.For(state);
+            double ox = pose.X, oy = pose.Y, oz = pose.Z;
             bool arrived = Distance2(ox, oy, oz, x, y, z) <= EscortArrivalUnits * EscortArrivalUnits;
             foreach (ushort id in objective.Npcs)
             {
