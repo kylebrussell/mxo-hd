@@ -1,6 +1,6 @@
 # Sati's Playground / map9 — PARTIAL
 
-This package loads2,599 strictly safe native static keys alongside the existing31-sector navigation. It does not add an engine, transport packet, actor population or retail arrival formula. Runtime DB key remains `archive_sati`, the shipped resource is `archive_sati/sati.metr`, server map9 is retail construct18. PvpArchives is unchanged.
+This package loads2,599 strictly safe native static keys alongside the existing31-sector navigation. It does not add an engine, transport packet, actor population or retail arrival formula. Runtime DB key remains `archive_sati`, the shipped resource is `archive_sati/sati.metr`, server map9 is retail construct18. A Sati-only authored fallback placement now separates the arrival and generated returner on a validated source floor; other archive layouts remain unchanged.
 
 ## Source boundaries
 
@@ -18,7 +18,11 @@ Packed HDL has NextID2 and zero hardline nodes; proper NETS parsing finds zero C
 
 ## Existing transport remains an OURS fallback
 
-The recovered archive script lacks a Sati arrival. Existing PvpArchives uses OURS `NearestEntry` near `(-500,2100,500)`, resulting in `(14070,95,-4070)`, sector2/region3/polygon6. This is grounded but **not a recovered retail arrival**. The generated organization returner ALWAYS remains. Owned Zion book47726 has source PvPID8, organization1, levels1–100; ordinary equip106 and the actual180-second sender cycle remain authoritative. Return uses the existing city-origin session; no fake session is seeded.
+The recovered archive script lacks a Sati arrival. The previous OURS nearest-entry fallback placed both the traveller and returner at `(14070,95,-4070)`, only20 units inside a corner of sector2/region3/polygon6. Three corners of the default38271 footprint lay outside the available same-floor NAV. Claude reported a hover-only returner with337zero and no80c7; that report does not prove the native picking cause.
+
+The new **OURS** arrival is `(14225,95,-5225)` and the separate generated returner is `(14225,95,-4925)`,300 units/3m ahead at heading0. Both are on the same flat floor0 polygon; the complete default25/95/95 returner footprint is inside it. Production `Project`/`Locate` require the exact points, a direct same-floor route and all footprint corners. No arbitrary bounds resize, model, organization, rule9007, default-component,0c or identity-orientation change is made. Source proof: `research/world-data/sati-fallback-layout.json`. **Retail arrival remains unrecovered and native clickability requires retest.**
+
+The generated organization returner ALWAYS remains. Owned Zion book47726 has source PvPID8, organization1, levels1–100; ordinary equip106 and the actual180-second sender cycle remain authoritative. Return uses the existing city-origin session and distance to the actual returner, without a fake session. All other archive layouts and the four unbound source proxies are unchanged.
 
 Four safe source `Generic_ArchivistBase_Returner`47267 placements remain **UNBOUND**:23/1335 `(30200,145,-18800)`,23/1347 `(23500,145,-16200)`,27/411 `(23400,145,-9400)`,28/1434 `(33200,145,-11200)`. Each has NAV standing95. Their GOB schema3602/GeneralSuccess usable does not justify silently reusing the map7 binding engine here. This PR adds no proxy renderer/executor, relocation or PvpArchives change. Use of those source proxies and exact retail arrival remain explicit gaps.
 
@@ -33,7 +37,7 @@ This is a direct diagnostic standing point, **not proof of a walk route from the
 ## Claude-only native one-pass checklist
 
 1. Normal mode `sati`: actual default50/XP50, Zion, abilities2/17, safe protocol heading0, owned47726 bag3 at real Richland sender38282 `111600/695/-6130`. No dev/GM/forced rolls. Double-click/equip into launcher106 (an Equip menu may be absent), stand on the pad and wait up to **three real minutes** for ordinary timing plus loading.
-2. Confirm Sati world/grounding at existing OURS fallback14070/95/-4070. Right-click the generated Zion38271→Use2; confirm full city reload, exact original sender position and retained reusable book. Do not substitute a generic47267 source proxy, hardline, Loading Area selection or teleport.
+2. Confirm Sati world/grounding at OURS arrival14225/95/-5225. The generated Zion38271 is3m separate at14225/95/-4925, on the same platform. Walk toward it normally; confirm actual targeting/radial interaction, then use it and confirm full city reload, exact original sender position and retained reusable book. If clicks still produce only337zero, record that failure; do not claim clickability from a headless80c7 alone. Do not substitute a generic47267 source proxy, hardline, Loading Area selection or teleport.
 3. Separately run discovered `sati-door` using the existing NativeQa workflow. This explicitly starts directly at34800/95/-13800, heading0. Confirm nearby door/interior render, right-click Open, observe Open834→natural Closing838 after20s→Closed835 after1s. No manual Close, timing override or walk-route claim.
 4. Record missing geometry/menus/collision separately. No headless packet assertion establishes native rendering, traversal, source-proxy usability or retail parity.
 

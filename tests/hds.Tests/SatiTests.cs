@@ -37,10 +37,10 @@ public class SatiTests
         var proxy=Assert.Single(a.GetProperty("safeGoidContracts").EnumerateArray(),r=>r.GetProperty("goid").GetInt32()==47267);Assert.Equal(3602,proxy.GetProperty("schema").GetInt32());
     }
     [Fact]
-    public void ExistingOursArrivalAndBookAuthorityAreNotReplaced()
+    public void BookAuthorityAndSatiOnlySeparatedFallbackAreValidated()
     {
         SectorProperties.Load(Path.Combine(Root,"data/sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data/navmesh"));
-        for(uint org=1;org<=6;org++){Assert.True(PvpArchives.Arrival(9,org,out var p));Assert.Equal((14070d,95d,-4070d),(p.x,p.y,p.z));Assert.True(NavMesh.Locate(9,p.x,p.y,p.z,out _));}
+        for(uint org=1;org<=6;org++){Assert.True(PvpArchives.Arrival(9,org,out var p));Assert.Equal((14225d,95d,-5225d),(p.x,p.y,p.z));Assert.True(NavMesh.Locate(9,p.x,p.y,p.z,out _));}
         Assert.Equal(9,PvpArchives.MapFor(8));Assert.Equal(18u,PvpArchives.ConstructId(9));var book=PvpArchives.Find(47726)!;Assert.Null(PvpArchives.Refusal(book,1,50,1));Assert.NotNull(PvpArchives.Refusal(book,2,50,1));
         var plan=NativeQaModes.Find("sati").Plan;Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Empty(plan.AfterHelpers);
         Assert.Contains("rotation=0",Assert.Single(plan.AfterLoadout));Assert.Contains("47726,3,1,0",Assert.Single(plan.AfterLoadout));Assert.False(plan.ExtraQaMetadata["GenericSourceReturnersBound"].GetBoolean());Assert.True(plan.ExtraQaMetadata["RetailArrivalUnrecovered"].GetBoolean());
