@@ -17,3 +17,11 @@ Claude alone operates the client and lock. Discovered mode `poster-hunt-count` u
 5. Leave normally. Verify one completion summary and reward pair. Reset CSR110 to the standard Mara lobby/full health/flag 0/mission 986 state before releasing the lock.
 
 The headless case earns all eight goals through actual Open actions and normal exits. Its inherited StillNpcs profile disables wander and unsolicited aggro; it does not prove ordinary attack survival. Movement helpers can cross walls. The required finalizer retains raw RPC/views, staging, receipt and actual DLL hash before disposal; headless results do not establish native walking, rendering or interaction. Validation results are appended after execution.
+
+## Validation
+
+Full Release tests: 4,573 passed; three focused checks passed after a test-only analyzer cleanup. Both actual Debug/Release fixture builds, read-only plans and provenance passed, as did historical snapshot policy and 12 Python checks. Independent source review confirmed the count and prerequisite-only fixture.
+
+Fresh `poster-hunt-count` passed in 27.0 seconds at frozen source `c4c7cacce68454e4fd8bfe9717871870f832ae79`, exit 0, parallelism 1, with normal server disposal. All eight Open actions earned their goal ticks, including one actual `80 a0 04 06 00 01` fourth-goal tick. One completion summary and receipt count 1 were recorded, the active payload was NULL and protocol problems were zero. The selected assembly was Debug, SHA256 `9B40B74F8D560B3876B0CCE7396A31664D88762729335C5A62A2AA3761E67DD2`.
+
+Required proof: `Temp/mxo-poster-hunt-mxotest_run_1_5898b7f1e8.json`, SHA256 `d27ecf370131a29155bd02add0da4954388502cbeecaabd3ed1117e74c68304b`, plus its paired debug log. It contains 118 RPCs and 31 view lists. Independent existing-decoder review confirms eight free GO548 creations in groups of 3/1/4. Unique coordinate/quaternion CSV matches infer mixed source types (1415; 326; 1412/1408/1415/1407), rather than eight Box 1412 markers. These are inferred source matches, not saved checkpoint identities or proof of the existing fallback mapping. Native models, picking and reach remain pending.
