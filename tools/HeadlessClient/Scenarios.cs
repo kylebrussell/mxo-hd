@@ -121,6 +121,7 @@ public static partial class Scenarios
         new Scenario("hostile-fields-npc", HostileFieldsNpc, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
         new Scenario("ability-memory-admission", AbilityMemoryAdmission, StillNpcs),
+        new Scenario("ability-load-prerequisites", AbilityLoadPrerequisiteAdmission, StillNpcs),
         new Scenario("ability-memory-ui-compatibility", AbilityMemoryUiCompatibility, StillNpcs),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
