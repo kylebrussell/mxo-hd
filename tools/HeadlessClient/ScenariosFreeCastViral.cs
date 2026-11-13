@@ -35,6 +35,14 @@ public static partial class Scenarios
         var caster=await context.AddPlayerAsync(NearNpc("ViralCaster") with{Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
         var victim=await context.AddPlayerAsync(NearNpc("ViralVictim",100) with{Organization=2,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
         var observer=await context.AddPlayerAsync(NearNpc("ViralObserver",200) with{Organization=1,Health=5000,MaxHealth=5000});
+        int CurrentHealth()
+        {
+            var updates=ViewUpdateValues(victim,2,"02 80 80 80 40");
+            return updates.Count>0?updates.Last():BitConverter.ToUInt16(victim.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes["Health"]);
+        }
+        bool passed=false;
+        try
+        {
         foreach(var p in new[]{caster,victim,observer})
         {
             await LoadAbilitiesAsync(context,p,2,17,1006,33,57);
@@ -57,15 +65,23 @@ public static partial class Scenarios
             await Task.Delay(500);Check.That(!context.Server.DebugLog()[start..].Contains("[ABILITY] 33 lands"),"Deflection skips NPC landing effects");
             Check.Equal(BitConverter.ToUInt16(npc.Attributes["Health"]),ViewUpdateValues(caster,npc.ViewId,"04 80 80 80 c0").Last(),"Deflection effect carries unchanged NPC HP");
         }
-        var enemyView=await caster.WaitForViewNamedAsync(victim.Handle);int healthBefore=OwnHealth(victim);start=context.Server.DebugLog().Length;
+        // Respect the actual shared VirusDamage1 timer; a different ability is still denied while it runs.
+        await caster.WaitForRpcAsync("80 bd 01 aa 02 00 00 00 80 40 00",TimeSpan.FromSeconds(10));
+        var enemyView=await caster.WaitForViewNamedAsync(victim.Handle);int healthBefore=CurrentHealth();start=context.Server.DebugLog().Length;
         Cast(caster,57,enemyView.ViewId);await caster.WaitForRpcAsync("80 ac 39 00");
         var playerLine=await caster.WaitForRpcAsync(Pattern(57),TimeSpan.FromSeconds(8));await victim.WaitForRpcAsync(Pattern(57));await observer.WaitForRpcAsync(Pattern(57));
-        if(hit)await victim.WaitUntilAsync(()=>OwnHealth(victim)<healthBefore,"Legal PvP hit reaches ordinary damage executor",TimeSpan.FromSeconds(5));
-        else {await Task.Delay(500);Check.Equal(healthBefore,OwnHealth(victim),"Deflection preserves PvP HP");Check.That(!context.Server.DebugLog()[start..].Contains("[PVP] ViralCaster's"),"No post-deflect PvP landing");}
+        if(hit)await victim.WaitUntilAsync(()=>OwnHealth(victim)>0 && OwnHealth(victim)<healthBefore,"Legal PvP hit reaches ordinary damage executor",TimeSpan.FromSeconds(5));
+        else {await Task.Delay(500);Check.Equal(healthBefore,CurrentHealth(),"Deflection preserves PvP HP");Check.That(!context.Server.DebugLog()[start..].Contains("[PVP] ViralCaster's"),"No post-deflect PvP landing");}
         Check.Equal(2,context.Server.DebugLog().Split('\n').Count(l=>l.Contains("[FREECAST-VIRAL]") && l.Contains("source=ViralCaster")),"Exactly one contest per normal legal recipient");
         Check.Equal(0,new[]{caster,victim,observer}.Sum(p=>p.World.Problems.Count),"Free-cast result/effect framing");
-        string stem=Path.Combine(Path.GetTempPath(),"mxo-freecast-viral-"+(hit?"hit":"deflect"));
-        await File.WriteAllTextAsync(stem+"-success.log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
-        await File.WriteAllTextAsync(stem+"-wire.json",JsonSerializer.Serialize(new{SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name,SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),NpcResult=Convert.ToHexString(npcLine.Bytes),PlayerResult=Convert.ToHexString(playerLine.Bytes),ReceivedViewLists=caster.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),NativeRenderingProven=false},new JsonSerializerOptions{WriteIndented=true}));
+        passed=true;
+        }
+        finally
+        {
+            string stem=Path.Combine(Path.GetTempPath(),"mxo-freecast-viral-"+(hit?"hit":"deflect")+"-"+context.Database.Name);
+            await File.WriteAllTextAsync(stem+"-runtime.log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
+            await File.WriteAllTextAsync(stem+"-wire.json",JsonSerializer.Serialize(new{Passed=passed,Database=context.Database.Name,SourceAssembly=context.Server.SourceAssembly,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name,SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),Actors=new[]{caster,victim,observer}.Select(p=>new{p.Handle,ReceivedRpcs=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray()}),NativeRenderingProven=false},new JsonSerializerOptions{WriteIndented=true}));
+            Console.WriteLine("Free-cast wire evidence: "+stem+"-wire.json");
+        }
     }
 }
