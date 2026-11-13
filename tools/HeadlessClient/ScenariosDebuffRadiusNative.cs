@@ -15,6 +15,8 @@ public static partial class Scenarios
         try
         {
             foreach(var p in all.Skip(1))startup.Add(await DebuffRadiusFixture.EnterFlaggedAsync(p));
+            int loaded=actor.Received("80 b2 4d 01").Count;actor.SendChat("?qaload 333");
+            await actor.WaitUntilAsync(()=>actor.Received("80 b2 4d 01").Count>loaded,"Owned333 refreshed through ordinary80ae",TimeSpan.FromSeconds(5));
             var target=await actor.WaitForViewNamedAsync("QAEnemy");await actor.WaitForViewNamedAsync("QAFriend");await actor.WaitForViewNamedAsync("QAFar");await actor.WaitForViewNamedAsync("QAOther");
             async Task CastArea(bool expanded)
             {
@@ -25,6 +27,15 @@ public static partial class Scenarios
                 Check.Equal(f,far.Received(ModPattern(333,102)).Count,"4.99m remains outside");
                 if(!expanded)Check.Equal(e,edge.Received(ModPattern(333,102)).Count,"4.4m outside base4m");
                 string trace=context.Server.DebugLog()[start..];
+                var contests=trace.Split('\n').Where(l=>l.Contains("[FREECAST-VIRAL] ability=333 source=RadiusActor ")).ToArray();
+                foreach(string name in expanded?new[]{"QAEnemy","QAFriend","QAFar"}:new[]{"QAEnemy","QAFriend"})
+                {
+                    var rows=contests.Where(l=>l.Contains("target="+name+" ")).ToArray();Check.Equal(1,rows.Length,"Exactly one333 contest for "+name);
+                    Check.That(rows[0].Contains("hit=True qa=True"),"Actual owned/runtime-cache scoped333 draw accepted for "+name);
+                }
+                Check.That(!contests.Any(l=>l.Contains("target=QAOther ")),"No contest outside radius");
+                if(!expanded)Check.That(!contests.Any(l=>l.Contains("target=QAFar ")),"No contest for baseline excluded edge");
+
                 Check.That(trace.Contains("candidate=QAFriend")&&trace.Contains("reason=included"),"Actual recipient decisions logged");
                 Check.That(trace.Split('\n').Any(l=>l.Contains("candidate=QAFar")&&l.Contains(expanded?"reason=included":"reason=radius")),"Exact edge include/exclude reason");
                 Check.That(trace.Split('\n').Any(l=>l.Contains("candidate=QAOther")&&l.Contains("reason=radius")),"Exact outside reason");
