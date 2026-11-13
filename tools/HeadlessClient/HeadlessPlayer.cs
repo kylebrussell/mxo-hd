@@ -31,6 +31,7 @@ public sealed class HeadlessPlayer : IDisposable
 
     /// <summary>Character data from the margin (05 inventory, 07 known abilities...).</summary>
     public IReadOnlyDictionary<byte, byte[]> CharacterData => margin.CharacterData;
+    public byte[] MarginLoginReply => margin.LoginReply.ToArray();
 
     /// <summary>Auth, margin, then the world session up to the point the real client would finish loading the map.</summary>
     public static async Task<HeadlessPlayer> LoginAsync(ServerAddress server, string username, string handle, string password = "x")

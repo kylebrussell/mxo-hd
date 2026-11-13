@@ -142,6 +142,20 @@ public sealed class ServerInstance : IDisposable
                 Path.Combine(missions, missionFixture));
         }
 
+        if (extraEnvironment != null && extraEnvironment.TryGetValue("HEADLESS_HARDLINE_UPLOAD_REQUIRED",out string upload))
+        {
+            // Only an isolated ordinary file in this new GUID directory, never the source/output config.
+            string target=Path.GetFullPath(Path.Combine(workingDirectory,"WorldConfig.xml"));
+            if(!target.StartsWith(Path.GetFullPath(workingDirectory)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase) || File.Exists(target))
+                throw new InvalidOperationException("Unsafe fixture config target");
+            string source=Path.Combine(repositoryRoot,"WorldConfig.xml.dist");
+            File.Copy(source,target);
+            var xml=new System.Xml.XmlDocument();xml.Load(target);
+            var node=xml.SelectSingleNode("//HardlineUploadRequired");
+            if(node==null){node=xml.CreateElement("HardlineUploadRequired");xml.DocumentElement!.AppendChild(node);}
+            node.InnerText=upload=="1"?"true":"false";xml.Save(target);
+        }
+
         ServerAddress address = new(Host, FreeTcpPort(), FreeTcpPort(), FreeUdpPort());
         ProcessStartInfo start = new("dotnet")
         {
@@ -165,7 +179,7 @@ public sealed class ServerInstance : IDisposable
         {
             foreach ((string key, string value) in extraEnvironment)
             {
-                start.Environment[key] = value;
+                if(key!="HEADLESS_HARDLINE_UPLOAD_REQUIRED")start.Environment[key] = value;
             }
         }
 
