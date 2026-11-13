@@ -14,6 +14,8 @@ public static partial class Scenarios
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
+        try
+        {
         await p.EnterWorldAsync();
         foreach(int id in ids)
         {
@@ -164,6 +166,26 @@ public static partial class Scenarios
             Check.Equal(0,p.World.Problems.Count,"Prima chain protocol problems");
         }
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
+        }
+        finally
+        {
+            if(requireStandardCourier)
+            {
+                string stem=Path.Combine(Path.GetTempPath(),"mxo-zion-critical-"+context.Database.Name);
+                File.WriteAllText(stem+"-debug.log",context.Server.DebugLog());
+                var dll=context.Server.SourceAssembly;
+                await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
+                    SourceAssembly=dll,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,
+                    SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
+                    SelectedMissions=ids,Prerequisites=prerequisites,
+                    Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),
+                    ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),
+                    ProtocolProblems=p.World.Problems.ToArray(),NativeReachabilityProven=false,NativeRenderingProven=false,
+                    MovementPolicy="Existing test-only movement/weaken helpers; completion is protocol evidence, not wall/room reachability proof"
+                },new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+                Console.WriteLine("  Zion critical evidence "+stem+".json");
+            }
+        }
     }
 
     private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase)
