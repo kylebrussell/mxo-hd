@@ -7,7 +7,7 @@ public static partial class Scenarios
 {
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,X=startX,Z=startZ,Health=5000,MaxHealth=5000,
             InnerStrength=2000,MaxInnerStrength=2000,Organization=org});
@@ -20,9 +20,16 @@ public static partial class Scenarios
             var mission=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
                 .Single(m=>(int)m.Attribute("id")! == id);
             int logStart=context.Server.DebugLog().Length;int ends=p.Received("80 a2 00").Count;
-            p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForTextAsync((string)mission.Attribute("title")!);
-            await p.WaitForRpcAsync("80 97 05 00");p.SendRpc("80 98 06 00 00 00 01 02 00");await p.WaitForRpcAsync("80 99");
+            p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForRpcAsync("80 97 05 00");
+            var entries=p.World.RpcSnapshot().Select(r=>r.Bytes).Where(b=>b.Length>17 && b[0]==0x80 && b[1]==0x96 && BitConverter.ToUInt16(b,2)==5).ToArray();
+            // The list contains indices and titles, not definition IDs. Resolve the actual Critical entry,
+            // then verify the selected definition from the accepted mission's authoritative staging record.
+            int index=MissionContactChoice.CriticalIndex(entries,(string)mission.Attribute("title")!);
+            if(requireStandardCourier)
+                Check.That(entries.Any(b=>b[14]==0 && System.Text.Encoding.ASCII.GetString(b,17,b.Length-18)=="Courier"),"Standard Courier remains present beside the Critical entry");
+            p.SendRpc($"80 98 06 00 {Le((ushort)index)} 01 02 00");await p.WaitForRpcAsync("80 99");
             p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
+            Check.Equal((long)id,await context.Database.LongAsync($"SELECT JSON_EXTRACT(payload,'$.Mission') FROM char_active_missions WHERE charId={p.CharId}"),"Actual accepted definition ID matches selected Critical title");
             int phase=0;
             foreach(var area in mission.Elements("phase"))
             {
