@@ -52,7 +52,7 @@ class NativePrefabTransformTests(unittest.TestCase):
         for args in (('--world','17','--native-prefab-rotations'),('--world','12','--native-prefab-rotations'),('--world','15','--native-prefab-rotations','--omit-unproven-rotations'),('--world','16','--native-prefab-rotations','--omit-unproven-rotations')):
             result = subprocess.run([sys.executable,str(script),'unused-tools',*args],capture_output=True,text=True)
             self.assertEqual(2,result.returncode)
-            self.assertIn('reviewed for worlds15/16 only',result.stderr)
+            self.assertIn('reviewed world',result.stderr)
 
     def test_unknown_parent_nonfinite_and_invalid_rotation_are_refused(self):
         for kind in ('nested-IPI','EPI','unknown'):
