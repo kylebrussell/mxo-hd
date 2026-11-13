@@ -41,3 +41,20 @@ Full Release suite: **4,575 passed** in 72 seconds. Focused count/offer/allocati
 The existing five-mission Zion opening aggregate test now expects 26 goals instead of 22 because this definition gained four required goals; no other selected mission or historical test result was rewritten.
 
 Actual checked hds hashes: Debug `4fe9acfba4bf18358d1dc69841a86dbf27eb83dafff795b2e0fffcf6ed0e1969`; Release `47ace9e5dbc4ada27926f52c5f5073edd5667a17a9b0f4ca319a529940472ec2`. No fresh result is claimed yet. Offline allocation proof SHA256: `413b5727b98458bda650d5ac8a2550f03f897c88fba4439f51fd206cde04ea54`.
+
+## Fresh protocol result
+
+Frozen source `0f38c1d2c643cd6e5130e1e196334af8fa6b47c4`: **PASS, 29.9 seconds, exit 0, peak one server**. All owned servers disposed and slot 2 was released. No source or binaries changed while the driver was active.
+
+The actual selected assembly was Debug hds, SHA256 `4fe9acfba4bf18358d1dc69841a86dbf27eb83dafff795b2e0fffcf6ed0e1969`. This is not described as a Release fresh run. The normal offer accepted 101202 without a granted completion. Six then four distinct actual source keys and positions matched the offline allocation. Every generated object was existing GO548, using actual Open action 3 with inherited source default Closed `0x835`.
+
+| Area | Object IDs | Actual source keys | Source kinds |
+| --- | --- | --- | --- |
+| First | 1–6 | `0d10009f`, `0d100042`, `0d100088`, `0d100043`, `0d10009c`, `0d100073` | 1408, 1408, 1415, 1407, 1408, 1407 |
+| Second | 1–4 | `22600850`, `22601d61`, `2260087b`, `22601db9` | 1412, 1407, 1407, 1407 |
+
+Checkpoints retained phase 0 after the first five goals. The sixth completed its required set; ordinary exit then advanced to phase 1. Phase 1 remained incomplete after its first three goals; the fourth permitted normal final completion. One receipt, exactly 137,500 XP and 91,000 information under the existing level-50 policy, ten object actions and zero protocol problems were asserted.
+
+Required evidence was saved before teardown: `Temp/mxo-zion-propaganda-count-mxotest_run_1_bba11cb89a.json` (SHA256 `093ee01e6bd0d87db47d9673d208ab6ab042deff23e0253d62225da1c81463db`) and `.log` (SHA256 `d48cf285c92cb635ea4b612b794325e230231f769429317c5cca03ba94b92091`). It contains all per-phase checkpoints, actual sources, action metadata, raw RPC/03 lists and selected assembly provenance. Permanent stdout and explicit exit are `Temp/mxo-zion-propaganda-fresh-stdout.log` and `Temp/mxo-zion-propaganda-fresh-exit.txt`.
+
+These are count, state and normal-protocol results only. Native model visibility, picking, reach, survival and walking remain pending Claude's one-pass. No new source-anchor or Box mapping policy is implied by the successful fallback actions.
