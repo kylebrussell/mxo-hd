@@ -17,6 +17,12 @@ public static partial class Scenarios
         var p = (await context.AddPlayersInWorldAsync(new CharacterSeed("DataMineReturn")
         { Level=25, Organization=1, X=111600, Y=745, Z=-6130, Rotation=126, Items=new[]{(3,47270u,1)} }))[0];
         await p.WaitUntilAsync(()=>p.ViewsOfGoid(38282).Any(), "ordinary Zion sender", TimeSpan.FromSeconds(15));
+        p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
+        string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
+        await p.WaitUntilAsync(()=>File.Exists(packetPath) && new FileInfo(packetPath).Length>0,
+            "Scenario packet logging enabled before any long cycle",TimeSpan.FromSeconds(5));
+        using(var probe=new FileStream(packetPath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete))
+            Check.That(probe.ReadByte()>=0,"Actual scenario PacketLog is readable before departure");
         int citySenderCount = p.ViewsOfGoid(38282).Count;
         p.SendRpc("63 03 6a"); await p.WaitForRpcAsync("65 03 00 6a 00");
         await p.WaitForRpcAsync("81 07", TimeSpan.FromSeconds(185));
@@ -51,8 +57,9 @@ public static partial class Scenarios
         await File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(),"mxo-datamine-return-rpc-snapshots.json"),
             System.Text.Json.JsonSerializer.Serialize(new{NativeHeaders=nativeHeaders,Stages=resetStages,
                 FirstSession=p.World.RpcSnapshot(),RelogSession=again.World.RpcSnapshot()},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
-        File.Copy(Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),
-            Path.Combine(Path.GetTempPath(),"mxo-datamine-return-packetlog.txt"),true);
+        using(var source=new FileStream(packetPath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete))
+        using(var destination=File.Create(Path.Combine(Path.GetTempPath(),"mxo-datamine-return-packetlog.txt")))
+            await source.CopyToAsync(destination);
         Console.WriteLine("  DataMine native-failure regression: both missing80c9 keys safely refuse; normal fallbackUse/fullcityreset/exactorigin/book106/ordinaryrelog/normal180scycle refire. Native client crash/render remain pending.");
         async Task Load(HeadlessPlayer actor,uint world,string resource)
         {
