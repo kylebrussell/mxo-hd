@@ -144,6 +144,34 @@ def portal(a: Surface, b: Surface) -> Point | None:
     return None
 
 
+def segment_touches_closed_base(a: Point, b: Point, shape: tuple[Point, ...]) -> bool:
+    """Convex segment clipping; contact with the closed base is also blocked."""
+    lo, hi = 0., 1.
+    for p, q in zip(shape, shape[1:] + shape[:1]):
+        edge = sub(q, p)
+        tolerance = EPS * max(1., math.hypot(*edge))
+        start = cross(edge, sub(a, p)) + tolerance
+        change = cross(edge, sub(b, a))
+        if change == 0:
+            if start < 0:
+                return False
+        elif change > 0:
+            lo = max(lo, -start/change)
+        else:
+            hi = min(hi, -start/change)
+        if lo > hi:
+            return False
+    return True
+
+
+def route_avoids_closed_base(route: tuple[Point, ...], shape: tuple[Point, ...]) -> bool:
+    # Degenerate segments explicitly validate every point, including a same-
+    # polygon root with no portal segments. No radius or alternative packing.
+    return (all(not segment_touches_closed_base(p, p, shape) for p in route)
+            and all(not segment_touches_closed_base(a, b, shape)
+                    for a, b in zip(route, route[1:])))
+
+
 def plan(surfaces: tuple[Surface, ...], root: Root | None, raw: RawPose) -> dict:
     """Return one geometric placement, or NoPlan. Does not certify use/clearance.
 
@@ -202,32 +230,35 @@ def plan(surfaces: tuple[Surface, ...], root: Root | None, raw: RawPose) -> dict
             continue
         centre = nearest(feasible, (raw.position[0], raw.position[2]))
         shape = tuple((centre[0]+x, centre[1]+z) for x, z in offsets)
-        # A point outside the base, connected to its centre within ONE convex
-        # polygon. This deliberately certifies no avatar radius/use distance.
-        approach_options = (nearest(s.vertices, (rx, rz)),) + s.vertices
-        approaches = [p for p in approach_options if not inside(shape, p)]
-        if not approaches:
+        path = [s.id]
+        while previous[path[-1]] is not None:
+            path.append(previous[path[-1]])
+        path.reverse()
+        # End at the actual destination ingress, not at a root-projected point
+        # whose final segment can cut through the newly placed Box itself.
+        route_xz = ((rx, rz),) + tuple(portals[i] for i in path[1:])
+        approach = route_xz[-1]
+        if not inside(s.vertices, approach) or not route_avoids_closed_base(route_xz, shape):
             continue
-        approach = min(approaches, key=lambda p: (math.dist(p, centre), p))
-        candidates.append((math.dist(centre, (raw.position[0], raw.position[2])), s.id, centre, approach))
+        candidates.append((math.dist(centre, (raw.position[0], raw.position[2])), s.id,
+                           centre, approach, path, route_xz))
     if not candidates:
-        return no('NoPositiveAreaFootprintAndApproachInRootComponent')
-    distance, sid, centre, approach = min(candidates)
-    path = [sid]
-    while previous[path[-1]] is not None:
-        path.append(previous[path[-1]])
-    path.reverse()
+        return no('NoPositiveAreaFootprintWithClearIngressRoute')
+    distance, sid, centre, approach, path, route_xz = min(candidates)
     floor = start.plane[2]
     chosen = by_id[sid]
-    route = [(rx, ry, rz)] + [(portals[i][0], floor+95, portals[i][1]) for i in path[1:]] + [(approach[0], floor+95, approach[1])]
+    route = [(x, floor+95, z) for x, z in route_xz]
     return dict(status='Plan', rawPosition=raw.position, rawQuaternion=raw.quaternion_hex,
                 root=dict(surface=root.surface, standing=root.standing, evidence=root.evidence),
                 surface=sid, surfaceY=floor, centre=(centre[0], floor+40, centre[1]),
                 surfaceVertices=chosen.vertices, feasibleCentreRegion=erode(chosen.vertices,offsets),
                 baseFootprintXZ=tuple((centre[0]+x,centre[1]+z) for x,z in offsets),
                 approach=(approach[0], floor+95, approach[1]), displacementXZ=distance,
+                approachDistanceXZ=math.dist(approach,centre),
+                approachDistance3D=math.sqrt(math.dist(approach,centre)**2+55**2),
+                useRangeValidated=False,
                 componentPolygons=len(previous), feasiblePolygons=len(candidates),
                 excludedUncertainSurfaces=rejected,
                 capacity='One Box only; feasible polygons are not a simultaneous allocation count',
                 route=route, routePolygons=path,
-                witness='NAV point/shared-edge path and final convex segment only; no avatar, animation, scene collision, native walking or use-range certification')
+                witness='NAV point/shared-edge path avoids this closed Box base including boundary contact; no avatar, animation, other scene collision, native walking or use-range certification')

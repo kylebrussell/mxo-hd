@@ -1,0 +1,269 @@
+{
+  "scope": "Retained live checkpoints reconstructed offline; not a live re-stage/native route proof",
+  "cases": [
+    {
+      "name": "51e509462f-phase1-site0",
+      "district": 1,
+      "sectors": [
+        209
+      ],
+      "rawPosition": [
+        24050,
+        3471,
+        14950
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          209,
+          60,
+          3
+        ],
+        "standing": [
+          25550.263656786137,
+          3295,
+          13932.585925048399
+        ],
+        "evidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site."
+      },
+      "context": "Read-only retained live checkpoint reconstruction, not native route proof",
+      "sourceEvidence": {
+        "run": "51e509462f",
+        "phase": 1,
+        "sourceMembershipCount": 1,
+        "siteBounds": {
+          "minX": 23900.0,
+          "maxX": 26365.0,
+          "minZ": 12905.0,
+          "maxZ": 15700.0
+        },
+        "elevator": {
+          "exterior": false,
+          "pos_x": 25700.0,
+          "pos_y": 3345.0,
+          "pos_z": 13800.0,
+          "rot": 180.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219153017,
+          "staticId": 633,
+          "type": [
+            161,
+            1
+          ],
+          "strType": null
+        },
+        "evidenceDocument": "BOX-WALKABILITY.md#actual-live218-inputs",
+        "catalogSourceBlob": "9c7cedde8c1fb670a4d466ece74e11b507751343",
+        "sourceGoid": 1412,
+        "sourceKey": "0d10029d",
+        "sector": 209,
+        "staticId": 669,
+        "concreteGoid": 548,
+        "retainedProofSha256": "faeed15493b3f94120cbaf0984413494d874ee36898b8e6f1d070505d58f59bc",
+        "catalogAssemblySha256": "F5A14557C90D08C0BE99419ED5823CFFC0137ED037DD61CAD38A60ED6DCC9E64",
+        "normalEntrySourceBlob": "0c718a67549323210e59b76d81c88a6eda485644",
+        "rootQualification": "Exact saved current elevator identity+XYZ; all catalog matches retained in source report; only this site contains the exact chosen source key/XYZ. Actual compiled Locate accepted root with surface+95."
+      }
+    },
+    {
+      "name": "51e509462f-phase2-site0",
+      "district": 1,
+      "sectors": [
+        1118
+      ],
+      "rawPosition": [
+        39965,
+        605,
+        14460
+      ],
+      "rawQuaternion": "00000000f204353f00000000f304353f",
+      "root": {
+        "surface": [
+          1118,
+          52,
+          8
+        ],
+        "standing": [
+          40970.71067811865,
+          495,
+          15470.710678118654
+        ],
+        "evidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site."
+      },
+      "context": "Read-only retained live checkpoint reconstruction, not native route proof",
+      "sourceEvidence": {
+        "run": "51e509462f",
+        "phase": 2,
+        "sourceMembershipCount": 1,
+        "siteBounds": {
+          "minX": 39800.0,
+          "maxX": 41300.0,
+          "minZ": 13500.0,
+          "maxZ": 15200.0
+        },
+        "elevator": {
+          "exterior": false,
+          "pos_x": 40900.0,
+          "pos_y": 545.0,
+          "pos_z": 15400.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308608,
+          "staticId": 640,
+          "type": [
+            161,
+            1
+          ],
+          "strType": null
+        },
+        "evidenceDocument": "BOX-WALKABILITY.md#actual-live218-inputs",
+        "catalogSourceBlob": "9c7cedde8c1fb670a4d466ece74e11b507751343",
+        "sourceGoid": 1412,
+        "sourceKey": "45e003c5",
+        "sector": 1118,
+        "staticId": 965,
+        "concreteGoid": 548,
+        "retainedProofSha256": "faeed15493b3f94120cbaf0984413494d874ee36898b8e6f1d070505d58f59bc",
+        "catalogAssemblySha256": "F5A14557C90D08C0BE99419ED5823CFFC0137ED037DD61CAD38A60ED6DCC9E64",
+        "normalEntrySourceBlob": "0c718a67549323210e59b76d81c88a6eda485644",
+        "rootQualification": "Exact saved current elevator identity+XYZ; all catalog matches retained in source report; only this site contains the exact chosen source key/XYZ. Actual compiled Locate accepted root with surface+95."
+      }
+    },
+    {
+      "name": "cae96c70b5-phase1-site0",
+      "district": 1,
+      "sectors": [
+        555
+      ],
+      "rawPosition": [
+        29055,
+        625,
+        -7485
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          555,
+          41,
+          3
+        ],
+        "standing": [
+          30278.80849421055,
+          495,
+          -6998.874131254861
+        ],
+        "evidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site."
+      },
+      "context": "Read-only retained live checkpoint reconstruction, not native route proof",
+      "sourceEvidence": {
+        "run": "cae96c70b5",
+        "phase": 1,
+        "sourceMembershipCount": 1,
+        "siteBounds": {
+          "minX": 27975.0,
+          "maxX": 32300.0,
+          "minZ": -10000.0,
+          "maxZ": -6650.0
+        },
+        "elevator": {
+          "exterior": false,
+          "pos_x": 30300.0,
+          "pos_y": 545.0,
+          "pos_z": -6800.0,
+          "rot": 0.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 555,
+          "metrId": 1,
+          "mxoStaticId": 581959699,
+          "staticId": 19,
+          "type": [
+            161,
+            1
+          ],
+          "strType": null
+        },
+        "evidenceDocument": "BOX-WALKABILITY.md#actual-live218-inputs",
+        "catalogSourceBlob": "9c7cedde8c1fb670a4d466ece74e11b507751343",
+        "sourceGoid": 1415,
+        "sourceKey": "22b00184",
+        "sector": 555,
+        "staticId": 388,
+        "concreteGoid": 548,
+        "retainedProofSha256": "41a8779eea3ede61d5976669cf239781df2fab69c5210db91784921908956ab8",
+        "catalogAssemblySha256": "F5A14557C90D08C0BE99419ED5823CFFC0137ED037DD61CAD38A60ED6DCC9E64",
+        "normalEntrySourceBlob": "0c718a67549323210e59b76d81c88a6eda485644",
+        "rootQualification": "Exact saved current elevator identity+XYZ; all catalog matches retained in source report; only this site contains the exact chosen source key/XYZ. Actual compiled Locate accepted root with surface+95."
+      }
+    },
+    {
+      "name": "cae96c70b5-phase2-site0",
+      "district": 1,
+      "sectors": [
+        298
+      ],
+      "rawPosition": [
+        35150,
+        1445,
+        -20055
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          298,
+          63,
+          8
+        ],
+        "standing": [
+          35970.71067811865,
+          1295,
+          -20529.289321881344
+        ],
+        "evidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site."
+      },
+      "context": "Read-only retained live checkpoint reconstruction, not native route proof",
+      "sourceEvidence": {
+        "run": "cae96c70b5",
+        "phase": 2,
+        "sourceMembershipCount": 1,
+        "siteBounds": {
+          "minX": 34400.0,
+          "maxX": 36200.0,
+          "minZ": -22000.0,
+          "maxZ": -20000.0
+        },
+        "elevator": {
+          "exterior": false,
+          "pos_x": 35900.0,
+          "pos_y": 1345.0,
+          "pos_z": -20600.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 298,
+          "metrId": 1,
+          "mxoStaticId": 312475935,
+          "staticId": 287,
+          "type": [
+            161,
+            1
+          ],
+          "strType": null
+        },
+        "evidenceDocument": "BOX-WALKABILITY.md#actual-live218-inputs",
+        "catalogSourceBlob": "9c7cedde8c1fb670a4d466ece74e11b507751343",
+        "sourceGoid": 1415,
+        "sourceKey": "12a0028a",
+        "sector": 298,
+        "staticId": 650,
+        "concreteGoid": 548,
+        "retainedProofSha256": "41a8779eea3ede61d5976669cf239781df2fab69c5210db91784921908956ab8",
+        "catalogAssemblySha256": "F5A14557C90D08C0BE99419ED5823CFFC0137ED037DD61CAD38A60ED6DCC9E64",
+        "normalEntrySourceBlob": "0c718a67549323210e59b76d81c88a6eda485644",
+        "rootQualification": "Exact saved current elevator identity+XYZ; all catalog matches retained in source report; only this site contains the exact chosen source key/XYZ. Actual compiled Locate accepted root with surface+95."
+      }
+    }
+  ]
+}

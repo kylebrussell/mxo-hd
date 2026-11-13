@@ -7,6 +7,7 @@ import unittest
 
 from box_walkability import Root, RawPose, Surface, erode, footprint, inside, plan
 from box_nav_audit import read_nav
+from box_route_test_oracle import route_is_clear
 
 IDENTITY = '0000000000000000000000000000803f'
 
@@ -28,6 +29,16 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(95,r['approach'][1])
         self.assertEqual((200,999,200),r['rawPosition'])
         self.assertEqual(IDENTITY,r['rawQuaternion'])
+
+    def test_ingress_distance_is_reported_without_a_use_range_filter(self):
+        s=square(size=1000)
+        r=plan((s,),Root(s.id,(10,95,10),'far actual root'),RawPose((800,999,800),IDENTITY))
+        self.assertEqual('Plan',r['status'])
+        self.assertGreater(r['approachDistanceXZ'],1000)
+        self.assertAlmostEqual(math.hypot(790,790),r['approachDistanceXZ'])
+        self.assertAlmostEqual(math.sqrt(790**2+790**2+55**2),r['approachDistance3D'])
+        self.assertFalse(r['useRangeValidated'])
+        self.assertEqual((10,95,10),r['approach'])
 
     def test_nearest_erosion_is_not_polygon_centre_or_grid(self):
         r = plan((self.s,),self.root,RawPose((-10,95,135.25),IDENTITY))
@@ -59,6 +70,51 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(a,plan((b,self.s),self.root,raw))
         self.assertEqual([self.s.id,b.id],a['routePolygons'])
         self.assertEqual((600,40,200),a['centre'])
+
+    def test_final_ingress_replaces_literal_old_self_crossing_route(self):
+        # A three-turn route enters the final square opposite the root's
+        # closest boundary. The old projected approach cut through the Box.
+        ss=(Surface((1,0,0),((0,0),(100,0),(100,100),(0,100)),(0,0,0)),
+            Surface((1,0,1),((100,0),(400,0),(400,100),(100,100)),(0,0,0)),
+            square((1,0,2),400,0),square((1,0,3),400,400),square((1,0,4),0,400))
+        r=plan(ss,Root((1,0,0),(10,95,10),'literal route'),RawPose((300,999,600),IDENTITY))
+        self.assertEqual('Plan',r['status'])
+        self.assertEqual((300,40,600),r['centre'])
+        self.assertEqual((400,95,600),r['approach'])
+        self.assertEqual(r['approach'],r['route'][-1])
+        old_route=r['route']+[(10,95,400)]
+        self.assertFalse(route_is_clear(old_route,r['baseFootprintXZ']))
+        self.assertTrue(route_is_clear(r['route'],r['baseFootprintXZ']))
+        self.assertEqual(r,plan(tuple(reversed(ss)),Root((1,0,0),(10,95,10),'literal route'),RawPose((300,999,600),IDENTITY)))
+
+    def test_root_inside_or_touching_closed_base_refuses_without_repacking(self):
+        for x,z in ((200,200),(150,200),(150,130),(200,130)):
+            with self.subTest(root=(x,z)):
+                r=plan((self.s,),Root(self.s.id,(x,95,z),'inside/edge/corner'),self.raw)
+                self.assertEqual('NoPlan',r['status'])
+                self.assertEqual('NoPositiveAreaFootprintWithClearIngressRoute',r['reason'])
+                self.assertEqual(self.raw.position,r['rawPosition'])
+
+    def test_intermediate_portal_touch_refuses_candidate(self):
+        # Nearest destination footprint starts on the shared edge. Its actual
+        # ingress touches the closed base, even though its centre is on NAV.
+        b=square((1,0,1),400,0)
+        r=plan((self.s,b),self.root,RawPose((450,999,200),IDENTITY))
+        # Destination candidate is refused; the remaining nearer-first valid
+        # root-polygon candidate is retained rather than moving within b.
+        self.assertEqual('Plan',r['status'])
+        self.assertEqual(self.s.id,r['surface'])
+        self.assertEqual((350.,40,200.),r['centre'])
+        self.assertTrue(route_is_clear(r['route'],r['baseFootprintXZ']))
+
+    def test_independent_oracle_rejects_crossing_tangent_and_collinear_contact(self):
+        shape=((150,130),(250,130),(250,270),(150,270))
+        for route in (((100,95,200),(300,95,200)),
+                      ((100,95,130),(300,95,130)),
+                      ((100,95,80),(150,95,130)),
+                      ((200,95,200),)):
+            self.assertFalse(route_is_clear(route,shape))
+        self.assertTrue(route_is_clear(((100,95,100),(300,95,100)),shape))
 
     def test_root_validated_by_planner_not_label(self):
         for root in (None,Root(self.s.id,(10,95,10),''),Root((99,0,0),(10,95,10),'x'),
