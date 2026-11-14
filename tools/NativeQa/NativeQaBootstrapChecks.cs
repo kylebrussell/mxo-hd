@@ -84,11 +84,11 @@ public static class NativeQaBootstrapChecks
                         NativeQaFixtureSeeder.HelperNames, helpers, server.Address));
                     if (server.HasExited) throw new InvalidOperationException("Bootstrap server exited.");
                     var modePlan = mode.Plan;
-                    var state = modePlan.StateWithMetadata(new NativeQaFixtureState
+                    var standard = new NativeQaFixtureState
                     {
                         Database = database.Name, Directory = server.WorkingDirectory, Account = "CSR_AbilityQA",
                         Character = "CSR_Tester", CharId = 110, BuildCommit = "bootstrap-check",
-                        Configuration = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(sourceAssembly))),
+                        Configuration = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(sourceAssembly))) ?? "unknown",
                         Status = "BootstrapChecked", Abilities = seeded.Abilities,
                         SourceAssembly = sourceAssembly, SourceAssemblySha256 = sourceHash,
                         OwnedUnloadedDisciplineAncestors = seeded.DisciplineAncestors,
@@ -98,8 +98,12 @@ public static class NativeQaBootstrapChecks
                         CompileItemsQa = plan.CompileItemsQa,
                         CallbackRoll15 = plan.HealthCallbackQa ? 0 : null,
                         CallbackRoll100 = plan.HealthCallbackQa ? 0 : null
-                    });
-                    await WriteAsync(Path.Combine(modeDirectory, "state.json"), state);
+                    };
+                    // Every mode's declared metadata is serialized against the executor's exact
+                    // standard shape, including inherited no-op modes. This catches key collisions.
+                    await WriteAsync(Path.Combine(modeDirectory, "state-schema-check.json"), modePlan.StateWithMetadata(standard));
+                    // This separate state describes the ACTUAL seeded server, including a shared baseline.
+                    await WriteAsync(Path.Combine(modeDirectory, "state.json"), plan.StateWithMetadata(standard));
                     string? equipped = null;
                     if (name.StartsWith("mobius-free-attack-", StringComparison.Ordinal))
                     {
