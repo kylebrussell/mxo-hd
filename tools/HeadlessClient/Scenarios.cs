@@ -297,6 +297,7 @@ public static partial class Scenarios
         new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
         new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
+        new Scenario("pvp-opponents-entry", PvpOpponentsEntry, PvpOpponentsFixture.Environment),
         new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
         new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
         new Scenario("nativeqa-duel-helper", NativeQaDuelHelper, new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="0",["MXO_DEV_COMMANDS"]="0"}),
