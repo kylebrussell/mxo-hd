@@ -264,6 +264,7 @@ public static partial class Scenarios
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
         new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),
         new Scenario("full-bag-mission-container", FullBagMissionContainer, StillNpcs),
+        new Scenario("mission-safe-anchors", MissionSafeAnchorsScenario, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="220110"}),
         new Scenario("full-bag-mission-computer", FullBagMissionComputer, StillNpcs),
         new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
