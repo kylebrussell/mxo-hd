@@ -9,14 +9,14 @@ namespace hds
     internal static class MissionOpenFloorPhasePlanner
     {
         // OURS computational admission policy, not a retail geometry or feasibility claim.
-        internal const int SearchPolicyVersion=1;
+        internal const int SearchPolicyVersion=2;
         internal sealed class Limits
         {
             internal int BodyNodes {get;} internal int RouteGraphs {get;}
             internal Limits(int bodyNodes,int routeGraphs){if(bodyNodes<1||routeGraphs<1)throw new ArgumentOutOfRangeException();BodyNodes=bodyNodes;RouteGraphs=routeGraphs;}
             internal static readonly Limits Default=new Limits(4096,32);
         }
-        internal sealed class Work {internal int BodyNodes,RouteGraphs;}
+        internal sealed class Work {internal int BodyNodes,RouteGraphs,StaticRootGraphs;}
         internal sealed class Input
         {
             internal ushort ObjectId {get;} internal G.Request Request {get;}
@@ -26,8 +26,9 @@ namespace hds
         {
             internal IReadOnlyDictionary<ushort,G.Result> Results {get;} internal IReadOnlyList<ushort> Order {get;} internal int Attempts {get;} internal long Milliseconds {get;}
             internal long BodyNodes {get;} internal long RouteGraphs {get;}
-            internal Plan(IDictionary<ushort,G.Result> results,IEnumerable<ushort> order,int attempts,long milliseconds,long bodyNodes,long routeGraphs)
-            {Results=new ReadOnlyDictionary<ushort,G.Result>(new Dictionary<ushort,G.Result>(results));Order=Array.AsReadOnly(order.ToArray());Attempts=attempts;Milliseconds=milliseconds;BodyNodes=bodyNodes;RouteGraphs=routeGraphs;}
+            internal int StaticRootGraphs {get;} internal bool DirectSingle {get;}
+            internal Plan(IDictionary<ushort,G.Result> results,IEnumerable<ushort> order,int attempts,long milliseconds,long bodyNodes,long routeGraphs,int staticRootGraphs=0,bool directSingle=false)
+            {Results=new ReadOnlyDictionary<ushort,G.Result>(new Dictionary<ushort,G.Result>(results));Order=Array.AsReadOnly(order.ToArray());Attempts=attempts;Milliseconds=milliseconds;BodyNodes=bodyNodes;RouteGraphs=routeGraphs;StaticRootGraphs=staticRootGraphs;DirectSingle=directSingle;}
         }
         // Bounded deterministic search family: every authored cyclic rotation, then reverse rotations.
         // At most2n orders per root/all-candidate wave, first feasible. No source/site reroll, timeout, margin relaxation or post-admission repacking.
@@ -42,16 +43,27 @@ namespace hds
         }
         internal static bool TryPlan(IReadOnlyList<Input> inputs,out Plan plan,out string refusal)
             =>TryPlan(inputs,out plan,out refusal,out _,Limits.Default);
-        internal static bool TryPlan(IReadOnlyList<Input> inputs,out Plan plan,out string refusal,out Work work,Limits limits)
+        internal static bool TryPlan(IReadOnlyList<Input> inputs,out Plan plan,out string refusal,out Work work,Limits limits,bool directSingle=true)
         {
             work=new Work();var measured=work;if(limits==null)throw new ArgumentNullException(nameof(limits));
             plan=null;refusal="NoWholePhasePlacement";
             if(inputs==null||inputs.Count==0||inputs.Any(i=>i?.Request==null)||inputs.Select(i=>i.ObjectId).Distinct().Count()!=inputs.Count)return false;
             var watch=Stopwatch.StartNew();int attempts=0;
+            if(inputs.Count==1&&directSingle)
+            {
+                var input=inputs[0];var direct=G.Plan(input.Request,limits.BodyNodes,limits.RouteGraphs,out int nodes,out int graphs);
+                measured.BodyNodes=nodes;measured.RouteGraphs=graphs;
+                if(direct.HasPlan&&G.ValidateRouteIds(input.Request,direct.RoutePolygons,direct.Route)&&G.ValidateSet(new[]{direct},out _))
+                {
+                    plan=new Plan(new Dictionary<ushort,G.Result>{{input.ObjectId,direct}},new[]{input.ObjectId},1,watch.ElapsedMilliseconds,nodes,graphs,0,true);refusal=null;return true;
+                }
+                if(direct.Refusal?.StartsWith("SearchExhausted:",StringComparison.Ordinal)==true){refusal=direct.Refusal;return false;}
+            }
             var candidates=new Dictionary<ushort,IReadOnlyList<G.BodyCandidate>>();
             foreach(var input in inputs)
             {
-                var values=G.BodyCandidates(input.Request,out refusal);if(values.Count==0){refusal=refusal??"NoGeometricBodyCandidates";return false;}candidates.Add(input.ObjectId,values);
+                var values=G.BodyCandidates(input.Request,out refusal,out bool graphBuilt);if(graphBuilt)measured.StaticRootGraphs++;
+                if(values.Count==0){refusal=refusal??"NoGeometricBodyCandidates";return false;}candidates.Add(input.ObjectId,values);
             }
             string lastRefusal="NoDisjointBodySet",exhausted=null;G.Result[] accepted=null;
             foreach(bool rootWave in new[]{true,false})foreach(var order in Orders(inputs.Count))
@@ -77,7 +89,7 @@ namespace hds
                 }
                 if(Search(0))
                 {
-                    plan=new Plan(inputs.Select((input,i)=>(input.ObjectId,Result:accepted[i])).ToDictionary(x=>x.ObjectId,x=>x.Result),order.Select(i=>inputs[i].ObjectId),attempts,watch.ElapsedMilliseconds,measured.BodyNodes,measured.RouteGraphs);return true;
+                    plan=new Plan(inputs.Select((input,i)=>(input.ObjectId,Result:accepted[i])).ToDictionary(x=>x.ObjectId,x=>x.Result),order.Select(i=>inputs[i].ObjectId),attempts,watch.ElapsedMilliseconds,measured.BodyNodes,measured.RouteGraphs,measured.StaticRootGraphs);return true;
                 }
                 if(exhausted!=null){refusal=exhausted;return false;}
             }

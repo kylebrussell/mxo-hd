@@ -549,14 +549,16 @@ namespace hds
                 }
             }            return candidates.DistinctBy(c=>(c.Centre.X,c.Centre.Z)).OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
         }
-        internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal)
+        internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal)=>BodyCandidates(r,out refusal,out _);
+        internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal,out bool staticRootGraphBuilt)
         {
+            staticRootGraphBuilt=false;
             var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return Array.AsReadOnly(Array.Empty<BodyCandidate>());
             var candidates=GeometricCandidates(p.Context,true);
             if(candidates.Count==0){refusal="NoGeometricBodyCandidates";return Freeze(Array.Empty<BodyCandidate>());}
             // Search root-reachable centres first; all remaining candidates remain eligible.
             {
-                var graph=BuildStandingGraph(r,p.Context.Component,Array.Empty<Point[]>(),p.Context.Guard);
+                staticRootGraphBuilt=true;var graph=BuildStandingGraph(r,p.Context.Component,Array.Empty<Point[]>(),p.Context.Guard);
                 if(graph==null){refusal="BlockedStaticRoot";return Freeze(Array.Empty<BodyCandidate>());}
                 var reachablePolygons=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
                 foreach(var c in candidates)c.RootReachable=reachablePolygons.Any(p=>Inside(p,c.Centre));
@@ -564,8 +566,10 @@ namespace hds
             }
             return Freeze(candidates.Select(c=>new BodyCandidate(r,c.Surface,c.Centre,c.Shape,c.Distance,c.RootReachable)));
         }
-        internal static Result Plan(Request r)
+        internal static Result Plan(Request r)=>Plan(r,int.MaxValue,int.MaxValue,out _,out _);
+        internal static Result Plan(Request r,int maxBodyNodes,int maxRouteGraphs,out int bodyNodes,out int routeGraphs)
         {
+            bodyNodes=0;routeGraphs=0;
             Result No(string reason)=>new Result(reason,r);var prepared=Prepare(r);if(prepared.Context==null)return No(prepared.Refusal);
             var context=prepared.Context;var offsets=context.Offsets;var start=context.Start;var component=context.Component;double guard=context.Guard,centreY=context.CentreY,maxY=context.MaxY;
             var relevant=context.Relevant;var forbidden=context.Forbidden;
@@ -573,7 +577,9 @@ namespace hds
             // The same total candidate order as the original minimum selection; defer expensive route work.
             foreach(var candidate in candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z))
             {
+                if(bodyNodes>=maxBodyNodes)return No("SearchExhausted:BodyNodes");bodyNodes++;
                 var position=new Position(candidate.Centre.X,centreY,candidate.Centre.Z);
+                if(routeGraphs>=maxRouteGraphs)return No("SearchExhausted:RouteGraphs");routeGraphs++;
                 if(Standing(r,component,candidate.Shape,position,guard,out var route,out var path,out var range)&&RouteValid(context,position,candidate.Shape,route))
                     return new Result(r,candidate.Surface,candidate.Centre,candidate.Shape,route,path,guard,range);
             }

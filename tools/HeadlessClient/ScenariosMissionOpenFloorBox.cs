@@ -125,16 +125,22 @@ public static partial class Scenarios
             phase="sameworld-reaccept";await Accept();await RideToPublishedRoot();var second=await ViewAtPublishedPlan();var fixedSet=await WholeSet();
             Check.That(firstSet.Length==fixedSet.Length,"All three natural objects remain present on same-world reaccept");
             Check.Equal(first.Source,second.Source,"Abort/reaccept never rewrites source geometry");NoSourceBinding();
+            phase="pre-open-save";int saveCursor=player.World.RpcSnapshot().Count;player.SkipReceived();player.SendChat("?save");await player.WaitForRpcAsync("2e 07");
+            string savedPosition=await context.Database.ScalarAsync($"SELECT CONCAT(x+0e0,',',y+0e0,',',z+0e0) FROM characters WHERE charId={charId}");
+            double[] savedCoordinates=savedPosition.Split(',').Select(x=>double.Parse(x,CultureInfo.InvariantCulture)).ToArray();
+            operations.Add(new{Phase=phase,SaveCursor=saveCursor,SaveRecords=player.World.RpcSnapshot().Skip(saveCursor).Select(r=>r.Hex).ToArray(),SavedDatabasePosition=savedPosition,ExpectedStanding=second.Witness.Standing.ToArray()});
+            Check.That(savedCoordinates.SequenceEqual(second.Witness.Standing),"Existing QA save persists exact standing bits before controlled cold shutdown; no SQL pose override");
             phase="pre-open-cold-logout";player.SendRpc("80 fe 00");await player.WaitForRpcAsync("80 fd");player.Dispose();context.Server.Dispose();
             cold=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"});
             CaptureServer(cold,"cold");
             Check.Equal(dll,cold.SourceAssembly,"Cold owned server selects the same frozen source assembly");
             phase="cold-relog";player=await HeadlessPlayer.LoginAsync(cold.Address,"user"+charId,handle);actors.Add(player);creationStart=player.World.CreationSnapshot().Count;await player.EnterWorldAsync();await player.WaitForRpcAsync("80 9c");
             var coldSelf=player.World.CreationSnapshot().Last(v=>v.ViewId==2);
+            operations.Add(new{Phase=phase,ColdSelfView=coldSelf.ViewId,coldSelf.Goid,coldSelf.SpawnId,RawAttributes=coldSelf.Attributes.ToDictionary(x=>x.Key,x=>Convert.ToHexString(x.Value)),ExpectedStanding=second.Witness.Standing.ToArray()});
             byte[] coldPosition=coldSelf.Attributes["Position"];
             double[] coldStart=Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(coldPosition,i*8)).ToArray();
-            Check.That(coldStart.SequenceEqual(second.Witness.Standing),"Cold login starts at the persisted clear standing point, before any fixture movement");
             operations.Add(new{Phase=phase,ColdSelfPosition=Convert.ToHexString(coldPosition),ExpectedStanding=second.Witness.Standing.ToArray()});
+            Check.That(coldStart.SequenceEqual(second.Witness.Standing),"Cold login starts at the persisted clear standing point, before any fixture movement");
             Check.That(fixedSet.SequenceEqual(await WholeSet()),"Cold restore preserves all three fixed witnesses, no cross-object repacking");
             var again=await ViewAtPublishedPlan();Check.Equal(second.Source,again.Source,"Cold restore leaves source spot byte-for-byte unchanged");
             Check.That(second.Witness.Centre.SequenceEqual(again.Witness.Centre)&&second.Witness.Standing.SequenceEqual(again.Witness.Standing)&&
@@ -161,6 +167,12 @@ public static partial class Scenarios
             string? finalPayload=null,finalPayloadError=null;
             try{if(charId!=0)finalPayload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}");}
             catch(Exception read){finalPayloadError=read.ToString();}
+            Exception? requiredEvidenceFailure=null;
+            if(finalPayloadError!=null)
+            {
+                passed=false;
+                if(failure==null){requiredEvidenceFailure=new ScenarioFailure("Required final raw checkpoint read failed: "+finalPayloadError);failure=requiredEvidenceFailure;}
+            }
             try
             {
                 File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,Failure=failure?.ToString(),SourceAssembly=dll,
@@ -171,10 +183,10 @@ public static partial class Scenarios
                     NativeRenderingProven=false,NativePickingProven=false,NativeWalkingProven=false,StaticMutationRequested=false},new JsonSerializerOptions{WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog()+"\n--- Cold ---\n"+cold?.FullOutput()+"\n--- Cold debug ---\n"+cold?.DebugLog());
                 Console.WriteLine("BOX OPEN FLOOR EVIDENCE before teardown="+stem);
-                if(finalPayloadError!=null&&failure==null)throw new ScenarioFailure("Required final raw checkpoint read failed: "+finalPayloadError);
             }
             catch(Exception evidence){if(failure==null)throw;Console.Error.WriteLine("Box evidence failure: "+evidence);}
             finally{foreach(var actor in actors)actor.Dispose();cold?.Dispose();}
+            if(requiredEvidenceFailure!=null)throw requiredEvidenceFailure;
         }
     }
 }

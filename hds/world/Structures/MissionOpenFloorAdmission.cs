@@ -124,7 +124,7 @@ namespace hds
             if(!MissionOpenFloorPhasePlanner.TryPlan(inputs,out var planned,out refusal)){pending?.RememberFailedGeometry(geometryKey,refusal);return false;}
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
                 poses.Add(choice.ObjectId,MissionOpenFloorPlacement.From(mission.id,phaseIndex,choice.ObjectId,choice.ReadSpot(),planned.Results[choice.ObjectId]));
-            Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" bodyNodes="+planned.BodyNodes+" routeGraphs="+planned.RouteGraphs+" geometryMs="+planned.Milliseconds);
+            Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" bodyNodes="+planned.BodyNodes+" routeGraphs="+planned.RouteGraphs+" staticRootGraphs="+planned.StaticRootGraphs+" directSingle="+planned.DirectSingle+" geometryMs="+planned.Milliseconds);
             return true;
         }
         private static bool FixedSetClear(MissionProgress progress,out string refusal)
