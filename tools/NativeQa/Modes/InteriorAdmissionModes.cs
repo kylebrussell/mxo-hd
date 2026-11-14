@@ -1,0 +1,16 @@
+using hds;
+using HeadlessClient;
+namespace NativeQa.Modes;
+internal static class InteriorAdmissionPlans
+{
+    internal static NativeQaModePlan For(InteriorAdmissionCase c)=>new(new ushort[]{2,17,1006,77},checked((int)c.X),checked((int)c.Z),Array.Empty<string>(),Array.Empty<string>(),
+        new[]{InteriorAdmissionFixture.Seed(c,110),"UPDATE characters SET level="+c.Level+",exp="+PlayerProgression.ExperienceForLevel(c.Level)+",y="+c.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)+",alignment="+c.Organization+",healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110"},
+        DevCommands:true,GmCharacter110:false,FixedCallbackRolls:false,environmentOverrides:InteriorAdmissionFixture.Environment(c).ToDictionary(x=>x.Key,x=>x.Value),
+        extraQaMetadata:new(){["AdmissionProofOnly"]=true,["MissionId"]=c.Mission,["TargetPhase"]=c.TargetPhase,["EarlierReceiptsOnly"]=true,["ExpectedTargetObjects"]=c.Objects,["ProfileLevel"]=c.Level,["OriginalNativeDoor"]=c.OriginalDoor.ToString("x8"),["OriginalNativeSource"]=c.OriginalSource.ToString("x8")},
+        readyMessages:new[]{"CSR110 only. Call correct contact > Critical "+c.Title+"; actual normal offer/accept, earlier receipts only. "+(c.Mission==201201?"Talk Ophiuchi, ordinary exit to operations post; verify Computer and initial Wong/Park inside the same floor. Native Take MapDisk6783.":c.Mission==301203?"Talk Alpha, approach/kill Fortuna normally, Make Alpha Talk, ordinary exit to Rhett computer; Talk Rhett then native Take AudioCD6832.":c.Mission==201202?"Level17/9,560,000XP, seed201202. Earlier201201receipt only. Positive compatibility:0d1003bb and naturaldc/314/2f1 source tuple remain valid. Use ordinary RideRoot2095; y2145 teleport observation was retracted. Require three actual Box Open/Use goals at current fixed witnesses; stop before ordinary exit, no payout claim.":"101208 is an EARLIER seeded receipt, not a completion claim. Begin7800/95/13795, accept101209; inspect first junction Box and native Open/Use. Do not conflate17k preview with original0d100401/0d100402 case.")+" Follow current persisted Root/Route/Standing; verify actual body/pose and NPC floors. Stop after this authored interaction. This is narrow admission proof, not a full mission completion. Claude alone native lock/reset/merge. See docs/MISSION-INTERIOR-ADMISSION-PROOF.md."});
+}
+public sealed class InteriorAdmissionMachinesMode:NativeQaMode {public override string Name=>InteriorAdmissionFixture.Machines.Name;public override NativeQaModePlan Plan {get;}=InteriorAdmissionPlans.For(InteriorAdmissionFixture.Machines);}
+public sealed class InteriorAdmissionMervMode:NativeQaMode {public override string Name=>InteriorAdmissionFixture.Merv.Name;public override NativeQaModePlan Plan {get;}=InteriorAdmissionPlans.For(InteriorAdmissionFixture.Merv);}
+public sealed class InteriorAdmissionZionMode:NativeQaMode {public override string Name=>InteriorAdmissionFixture.Zion.Name;public override NativeQaModePlan Plan {get;}=InteriorAdmissionPlans.For(InteriorAdmissionFixture.Zion);}
+
+public sealed class InteriorAdmissionPostersMode:NativeQaMode {public override string Name=>InteriorAdmissionFixture.Posters.Name;public override NativeQaModePlan Plan {get;}=InteriorAdmissionPlans.For(InteriorAdmissionFixture.Posters);}
