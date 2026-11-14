@@ -59,9 +59,10 @@ namespace hds
         private static bool SameView(WorldClient c,Lease l) => l.View!=null&&ReferenceEquals(c.viewMan.getViewById(l.View.ViewID),l.View)&&
             l.View.spawnId==l.Spawn&&l.View.GoID==l.Goid&&!l.View.viewNeedsToBeDeleted;
         internal static bool Activate(WorldClient c,int delta)=>Activate(c,548,delta);
-        internal static bool Activate(WorldClient c,ushort goid,int delta)
+        internal static bool ActivateSame(WorldClient c)=>Activate(c,548,0,true);
+        internal static bool Activate(WorldClient c,ushort goid,int delta,bool sameKey=false)
         {
-            if(!Asset(goid)||!South(delta)||!ReferenceEquals(Store.currentClient,c)||!Authorized(c)||MissionOutput.Buffered(c.messageQueue))return false;
+            if((sameKey&&delta!=0)||!Asset(goid)||!South(delta)||!ReferenceEquals(Store.currentClient,c)||!Authorized(c)||MissionOutput.Buffered(c.messageQueue))return false;
             if(!Exact(c.playerData.missionProgress,out var original))return false;
             var originalView=c.viewMan.FindViewForEntity(original.entity);
             if(originalView==null||originalView.GoID!=548||!originalView.viewCreated||originalView.viewNeedsToBeDeleted)return false;
@@ -81,7 +82,9 @@ namespace hds
                 holder.Active=l;
                 // Build the complete native creation outside the transport gate; no Flush or callbacks inside it.
                 var packet=new PacketContent();packet.AddUint16(1,1);
-                packet.AddByteArray(new ObjectManager().GenerateCreationPacket(CreateObject(delta),0,(byte)l.Spawn).getBytes());
+                var duplicate=CreateObject(delta);
+                if(sameKey)Set(duplicate.MissionKey,new byte[]{MissionStaging.ContainerElement,(byte)l.Instance,(byte)(l.Instance>>8),2});
+                packet.AddByteArray(new ObjectManager().GenerateCreationPacket(duplicate,0,(byte)l.Spawn).getBytes());
                 packet.AddUint16(l.View.ViewID,1);packet.AddByte(0);byte[] encoded=packet.ReturnFinalPacket();bool queued=false;
                 c.TransportFence.TryRun(l.Epoch,()=>
                 {
@@ -89,22 +92,23 @@ namespace hds
                     c.messageQueue.addObjectMessage(encoded,false);l.View.viewCreated=true;queued=true;
                 });
                 if(!queued){Remove(c,holder);return false;}
-                Output.WriteDebugLog("[ZION-BOX-VISIBILITY] on char=110 view="+l.View.ViewID+" spawn="+l.Spawn+" goid="+goid+" free=1 position="+X+","+Y+","+(Z+delta)+" delta="+delta+" state="+"raw-default0x835"+" missionKey=0 diagnosticOnly=1");return true;
+                Output.WriteDebugLog("[ZION-BOX-VISIBILITY] on char=110 view="+l.View.ViewID+" spawn="+l.Spawn+" goid="+goid+" free=1 position="+X+","+Y+","+(Z+delta)+" delta="+delta+" state="+"raw-default0x835"+" missionKey="+Convert.ToHexString(duplicate.MissionKey.getValue())+" sameKey="+sameKey+" diagnosticOnly=1");return true;
             }
         }
-        internal static bool Parse(string[] words,out ushort goid,out int delta,out bool off)
+        internal static bool Parse(string[] words,out ushort goid,out int delta,out bool off)=>Parse(words,out goid,out delta,out off,out _);
+        internal static bool Parse(string[] words,out ushort goid,out int delta,out bool off,out bool sameKey)
         {
-            goid=548;delta=0;off=words.Length==2&&words[1]=="off";
-            if(off)return true;
+            goid=548;delta=0;sameKey=words.Length==2&&words[1]=="same";off=words.Length==2&&words[1]=="off";
+            if(off||sameKey)return true;
             if(words.Length!=2)return false;
             string value=words[words.Length-1];return int.TryParse(value,out delta)&&South(delta)&&value==delta.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
         public static bool Dev(WorldClient c,string[] words)
         {
             if(words.Length==0||!words[0].Equals("?zionbox",StringComparison.OrdinalIgnoreCase))return false;
-            if(!ReferenceEquals(Store.currentClient,c)||!Authorized(c)||!Parse(words,out ushort goid,out int delta,out bool off)||MissionOutput.Buffered(c.messageQueue))
-            {if(c!=null)new ServerPackets().sendSystemChatMessage(c,"Zion Box visibility diagnostic refused; use ?zionbox <0|-50|-100|-150|-200|-300> or off only with exact live101209 phase0 source0d100397 in its disposable CSR110 mode.","MODAL");return true;}
-            if(off)Clear(c);else Activate(c,goid,delta);
+            if(!ReferenceEquals(Store.currentClient,c)||!Authorized(c)||!Parse(words,out ushort goid,out int delta,out bool off,out bool sameKey)||MissionOutput.Buffered(c.messageQueue))
+            {if(c!=null)new ServerPackets().sendSystemChatMessage(c,"Zion Box visibility diagnostic refused; use ?zionbox <same|0|-50|-100|-150|-200|-300> or off only with exact live101209 phase0 source0d100397 in its disposable CSR110 mode.","MODAL");return true;}
+            if(off)Clear(c);else Activate(c,goid,delta,sameKey);
             c.FlushQueue();return true;
         }
         public static void Check(WorldClient c)

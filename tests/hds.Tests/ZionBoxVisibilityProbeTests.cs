@@ -98,4 +98,23 @@ public class ZionBoxVisibilityProbeTests:IDisposable
         Assert.Equal("1",p.EnvironmentOverrides[ZionBoxVisibilityProbe.EnvironmentKey]);Assert.Equal("101208",p.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("")[ZionBoxVisibilityProbe.EnvironmentKey]);
         Assert.DoesNotContain(p.AfterHelpers,s=>s.Contains("char_active_missions"));
     }
+    [Fact] public void SameKeyControlUsesOnlyCapturedCurrentInstanceAndNoExecutor()
+    {
+        var c=Client();var p=c.playerData.missionProgress;var original=p.objects[1];var view=c.viewMan.FindViewForEntity(original.entity);
+        Assert.True(ZionBoxVisibilityProbe.ActivateSame(c));var clone=Creation(c);
+        Assert.Equal(new byte[]{0xff,7,0,2},clone.Attributes["MissionKey"]);Assert.NotEqual(view.ViewID,clone.ViewId);
+        var zero=ZionBoxVisibilityProbe.CreateObject(0);var raw=new ObjectManager().GenerateCreationPacket(zero,0,7).getBytes();
+        var expected=WireFormat.FindCreations(new byte[]{1,0}.Concat(raw).Concat(new byte[]{12,0,0}).ToArray()).Single();
+        Assert.Equal(expected.Attributes.Keys.Order(),clone.Attributes.Keys.Order());foreach(var a in expected.Attributes)if(a.Key!="MissionKey")Assert.Equal(a.Value,clone.Attributes[a.Key]);
+        Assert.Same(original,p.objects[1]);Assert.Single(p.objects);Assert.Empty(p.itemSlots);Assert.Empty(c.messageQueue.RPCMessagesQueue);
+        c.playerData.missionInstanceCounter++;ZionBoxVisibilityProbe.Check(c);Assert.Null(c.viewMan.getViewById(clone.ViewId));Assert.Same(view,c.viewMan.FindViewForEntity(original.entity));
+        Assert.False(ZionBoxVisibilityProbe.Activate(c,548,-50,true));
+    }
+    [Fact] public void SameIsSingleLiteralAndNeverArbitraryKeyInput()
+    {
+        Assert.True(ZionBoxVisibilityProbe.Parse(new[]{"?zionbox","same"},out _,out int delta,out bool off,out bool same));Assert.True(same);Assert.False(off);Assert.Equal(0,delta);
+        foreach(var words in new[]{new[]{"?zionbox","same","0"},new[]{"?zionbox","FF070002"},new[]{"?zionbox","Same"},new[]{"?zionbox","same","-50"}})
+            Assert.False(ZionBoxVisibilityProbe.Parse(words,out _,out _,out _,out _));
+    }
+
 }

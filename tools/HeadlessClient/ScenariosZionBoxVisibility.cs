@@ -53,24 +53,26 @@ DELETE FROM inventory WHERE charId=110;
             Check.Equal(ZionBoxVisibilityProbe.Identity,Convert.ToHexString(original.Attributes["Orientation"]),"Original exact quaternion");
             before=await State();int diagnosticRpc=p.World.RpcSnapshot().Count;int diagnosticViews=p.World.ViewSnapshot().Count;
             probes.Add(new{Original=true,original.ViewId,original.SpawnId,Attributes=original.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value)),RideLog=context.Server.DebugLog()[rideLog..],Accepted=accepted});
-            foreach(int delta in new[]{0,-50,-100,-150,-200,-300})
+            foreach(var control in new[]{("0",0,false),("same",0,true),("-50",-50,false),("-100",-100,false),("-150",-150,false),("-200",-200,false),("-300",-300,false)})
             {
-                step="duplicate-"+delta;int cursor=p.World.CreationSnapshot().Count;int log=context.Server.DebugLog().Length;p.SendChat("?zionbox "+delta);
+                int delta=control.Item2;bool sameKey=control.Item3;string command=control.Item1;
+                step="duplicate-"+command;int cursor=p.World.CreationSnapshot().Count;int log=context.Server.DebugLog().Length;p.SendChat("?zionbox "+command);
                 await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[ZION-BOX-VISIBILITY] on char=110"),"Owned duplicate creation",TimeSpan.FromSeconds(8));
                 await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(cursor).Any(v=>v.Goid==548),"Actual03 duplicate",TimeSpan.FromSeconds(8));
                 var v=p.World.CreationSnapshot().Skip(cursor).Single(v=>v.Goid==548);
                 Check.That(new[]{ZionBoxVisibilityProbe.X,ZionBoxVisibilityProbe.Y,ZionBoxVisibilityProbe.Z+delta}.SequenceEqual(Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(v.Attributes["Position"],i*8))),"Only literal SOUTH offset changes duplicate pose");
-                Check.Equal(ZionBoxVisibilityProbe.Identity,Convert.ToHexString(v.Attributes["Orientation"]),"Same original quaternion");Check.That(v.Attributes["MissionKey"].SequenceEqual(new byte[4]),"Private key0 duplicate has no mission authority");
+                Check.Equal(ZionBoxVisibilityProbe.Identity,Convert.ToHexString(v.Attributes["Orientation"]),"Same original quaternion");Check.That(v.Attributes["MissionKey"].SequenceEqual(sameKey?original.Attributes["MissionKey"]:new byte[4]),"Only literal same copies current original key; no executor registered");
                 Check.That(v.Attributes["UseCount"].SequenceEqual(original.Attributes["UseCount"])&&!v.Attributes.ContainsKey("CurrentState")&&!v.Attributes.ContainsKey("HalfExtents"),"Same original state/defaults, no bounds override");
+                if(sameKey)Check.That(v.Attributes.Count==original.Attributes.Count&&original.Attributes.All(a=>v.Attributes.TryGetValue(a.Key,out var value)&&value.SequenceEqual(a.Value)),"Same-key actual03 attributes identical to original except independent view/spawn");
                 Check.That(v.ViewId!=original.ViewId&&v.SpawnId!=original.SpawnId,"Independent private view and spawn");await Barrier(p);Check.Equal(before,await State(),"Checkpoint/items/cash/XP/receipts unchanged by duplicate");
                 step="off-"+delta;int off=context.Server.DebugLog().Length;int offViews=p.World.ViewSnapshot().Count;p.SendChat("?zionbox off");
                 await p.WaitUntilAsync(()=>context.Server.DebugLog()[off..].Contains("[ZION-BOX-VISIBILITY] off char=110 view="+v.ViewId),"Owned duplicate removed",TimeSpan.FromSeconds(5));
                 var delete=BytePattern.Parse($"01 00 01 01 00 {v.ViewId&255:x2} {v.ViewId>>8:x2}");await p.WaitUntilAsync(()=>p.World.ViewSnapshot().Skip(offViews).Any(delete.Occurs),"Private-only wire deletion",TimeSpan.FromSeconds(5));await Barrier(p);
-                Check.Equal(before,await State(),"Off does not mutate original checkpoint/account");probes.Add(new{Delta=delta,v.ViewId,v.SpawnId,Attributes=v.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value)),OffViewCursor=offViews});
+                Check.Equal(before,await State(),"Off does not mutate original checkpoint/account");probes.Add(new{Control=command,SameKey=sameKey,Delta=delta,v.ViewId,v.SpawnId,Attributes=v.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value)),OffViewCursor=offViews});
             }
             var originalDelete=BytePattern.Parse($"01 00 01 01 00 {original.ViewId&255:x2} {original.ViewId>>8:x2}");Check.That(!p.World.ViewSnapshot().Skip(diagnosticViews).Any(originalDelete.Occurs),"Original mission view never deleted by clone/off");
             Check.That(!p.World.RpcSnapshot().Skip(diagnosticRpc).Any(v=>v.Bytes.Length>=2&&((v.Bytes[0]==0x80&&v.Bytes[1]==0xa0)||(v.Bytes[0]==0x81&&(v.Bytes[1]==0x19||v.Bytes[1]==0x20)))),"No loot/claim/goal output; no probe Open attempted");
-            step="actual-world-reset";int reset=p.World.CreationSnapshot().Count;int resetLog=context.Server.DebugLog().Length;p.SendChat("?zionbox 0");await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(reset).Any(v=>v.Goid==548),"Final duplicate before actual reset",TimeSpan.FromSeconds(5));
+            step="actual-world-reset";int reset=p.World.CreationSnapshot().Count;int resetLog=context.Server.DebugLog().Length;p.SendChat("?zionbox same");await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(reset).Any(v=>v.Goid==548),"Final duplicate before actual reset",TimeSpan.FromSeconds(5));
             var last=p.World.CreationSnapshot().Skip(reset).Single(v=>v.Goid==548);
             p.SkipReceived();p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");
             await p.WaitUntilAsync(()=>context.Server.DebugLog()[resetLog..].Contains("[ZION-BOX-VISIBILITY] off char=110 view="+last.ViewId),"Actual LA reset removes final lease",TimeSpan.FromSeconds(5));
