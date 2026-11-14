@@ -556,7 +556,7 @@ namespace hds.databases{
             {
 			OpenConnection();
             UInt32 charID = Store.currentClient.playerData.getCharID();
-			string sqlQuery="Select handle,x,y,z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
+			string sqlQuery="Select handle,x+0e0 AS x,y+0e0 AS y,z+0e0 AS z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
 			queryExecuter= conn.CreateCommand();
 			queryExecuter.CommandText = sqlQuery;					
 			reader= queryExecuter.ExecuteReader();
