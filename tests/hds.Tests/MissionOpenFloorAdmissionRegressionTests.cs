@@ -244,9 +244,32 @@ public class MissionOpenFloorAdmissionRegressionTests
         var timer=System.Diagnostics.Stopwatch.StartNew();Assert.True(MissionOpenFloorAdmission.TryGeometry(m,0,site,choices,out var poses,out string why),why);long planMs=timer.ElapsedMilliseconds;
         var p=new MissionProgress(m){site=site,openFloorCheckpoint=true,openFloorResolvedPhase=0,startedAt=100,persistenceId="three-box-cold"};p.sites.Add(site);
         foreach(var choice in choices)p.objects.Add(choice.ObjectId,new MissionObjectState{def=m.phases[0].objects.Single(d=>d.id==choice.ObjectId),spot=choice.ReadSpot(),goid=choice.Goid,entity=(uint)(100+choice.ObjectId),OpenFloor=poses[choice.ObjectId]});
+        var inputs=choices.Select(c=>
+        {
+            Assert.True(MissionOpenFloorRequests.TryCreate(c.ReadSpot(),c.Goid,site,1,out var request,out string reason,m.phases[0],c.ObjectId),reason);
+            return new MissionOpenFloorPhasePlanner.Input(c.ObjectId,request);
+        }).ToArray();
+        Assert.True(MissionOpenFloorPhasePlanner.TryPlan(inputs,out var independent,out why),why);
+        Assert.Equal(new ushort[]{1,2,3},independent.Order);Assert.Equal(303,independent.BodyNodes);Assert.Equal(5,independent.RouteGraphs);
+        Assert.True(G.ValidateSet(independent.Results.Values.ToArray(),out why),why); // original + native-cast geometry, route and range
+        foreach(var c in choices)Assert.Equal(JsonSerializer.Serialize(poses[c.ObjectId],Fields),JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,c.ObjectId,c.ReadSpot(),independent.Results[c.ObjectId]),Fields));
+        Assert.Equal(new[]{25585.388671875,2095,14143.16796875},poses[1].Standing);
+        Assert.Equal(new[]{25800d,2095,13860},poses[2].Standing);
+        Assert.Equal(new[]{25841.595703125,2040,14214.611328125},poses[3].Centre);
+        Assert.Equal(new[]{25689.16015625,2095,14143.16796875},poses[3].Standing);
+        Assert.Equal(new ushort[]{209,63,3,209,63,4},poses[3].RouteSurfaces);
         var saved=RoundTrip(p);timer.Restart();var restored=MissionProgress.RestoreFromCatalog(m,saved,new[]{site});long restoreMs=timer.ElapsedMilliseconds;
         Assert.Equal(3,restored.objects.Count);Assert.Equal(JsonSerializer.Serialize(saved.Objects,Fields),JsonSerializer.Serialize(restored.Capture(23,Array.Empty<Mob>()).Objects,Fields));
         Assert.Equal(3,restored.objects.Values.Select(o=>o.OpenFloor!.InputFingerprint).Distinct().Count());
+        // Old admitted Policy3 wall witnesses remain valid fixed geometry. Selection is
+        // never rerun during restore, even when a preferred route is now available.
+        var current=poses[3];
+        p.objects[3].OpenFloor=new MissionOpenFloorPlacement(current.Policy,current.World,current.Mission,current.Phase,current.ObjectId,current.SourceKey,current.SourceGoid,current.ConcreteGoid,
+            current.RawFingerprint,current.InputFingerprint,current.Quaternion,current.Centre,new[]{25940d,2095,14214.611328125},
+            new[]{25579.31146596289,2095,13959.481277120463,25689.16015625,2095,13860,25940,2095,13860,25940,2095,14000,25940,2095,14200,25940,2095,14214.611328125},
+            current.Surface,current.RootSurface,new ushort[]{209,63,3,209,63,3,209,63,3,209,63,9,209,63,5});
+        var historical=RoundTrip(p);var oldRestored=MissionProgress.RestoreFromCatalog(m,historical,new[]{site});
+        Assert.Equal(JsonSerializer.Serialize(historical.Objects,Fields),JsonSerializer.Serialize(oldRestored.Capture(23,Array.Empty<Mob>()).Objects,Fields));
         System.Diagnostics.Trace.WriteLine($"Normal three-box planning {planMs}ms; fixed restore {restoreMs}ms");
     }
     [Theory] [InlineData(3,-25.00377655029297)] [InlineData(548,-40)] [InlineData(552,-50)]
