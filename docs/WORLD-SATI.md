@@ -61,3 +61,8 @@ Claude passed cb051e119ea27da75521fb2918edc7950ab68250 natively at14:55ET on2026
 Current masterc31c9d8b was merged after that pass. The only conflict was the NativeWorldDoorFixtures registry: both Sati and Large02Prefab definitions are retained. SatiFallbackLayout.cs, PvpArchives.cs and the Sati static CSV remain byte-identical to the native-tested head; all Sati source/mode/driver artifacts are unchanged. DataLoader.cs is not wholly byte-identical because master adds the unrelated Courier standard-mission ContactOfferWithStandards method. Its current bytes are verified to equal exact master plus only the unchanged Sati load line, preserving mixed line endings. No prior native evidence is relabeled as a test of that upstream method.
 
 Twenty combined Sati/fallback/door/contact checks and nine Python world-data checks passed. Both actual NativeQa builds and read-only sati/sati-door plans/provenance passed: Debug29D73C65DCD0BE617563EB71237E51604DCA64E9A3D0D74DD19EA257F1F276E6; Release5FC7CE487A746A64BF30FAD0AED7DCA5C78D2927CF8A6398D28D109ACB0D51B8. Original96.3-second fresh proof remains pinned to its source. No new full/fresh/native run was performed for this registry union; final documentation is after the checked merge.
+
+
+## Reviewed prefab rotation extension (PR181)
+
+The reviewed explicit world 9 native-prefab-rotations export restores 5,318 keys: current dataset 7,917, all 70 conflicting keys/all 140 variants omitted. All 2,599 historical safe keys remain; no source proxies are newly bound and no parent arrival/returner policy changes. See WORLD-SATI-PREFAB-ROTATIONS.md for primary transform evidence, omissions and separate native door checklist. The parent native results above retain their original dataset/source attribution.

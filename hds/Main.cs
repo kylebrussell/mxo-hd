@@ -45,6 +45,7 @@ namespace hds{
                 Store.dbManager.WorldDbHandler.EnsureTransactionalInventory();
                 Store.dbManager.WorldDbHandler.EnsureMissionPersistence();
                 Store.dbManager.MarginDbHandler.EnsureCharacterCreationStorage();
+                Store.dbManager.WorldDbHandler.EnsureVendorBuyback();
 
                 /* Initialize the scripting server */
                 Store.rpcScriptManager = new ScriptManager();
