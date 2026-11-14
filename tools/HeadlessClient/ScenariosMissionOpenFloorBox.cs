@@ -8,15 +8,21 @@ public static partial class Scenarios
 {
     private static async Task MissionOpenFloorBoxScenario(ScenarioContext context)
     {
-        var player=await context.AddPlayerAsync(new CharacterSeed("OpenFloorBox"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=2,
-            X=17000,Y=495,Z=2300,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
-        await context.Database.ExecuteAsync(PosterHuntFixture.SeedPrerequisites(player.CharId));
-        string phase="entry";Exception? failure=null;bool passed=false;var fields=new JsonSerializerOptions{IncludeFields=true};
-        var sourceIdentities=new HashSet<(ushort Goid,uint Key)>();var checkpoints=new List<object>();var operations=new List<object>();var actors=new List<HeadlessPlayer>{player};ServerInstance? cold=null;
-        string dll=context.Server.SourceAssembly;uint charId=player.CharId;string handle=player.Handle;int creationStart=0;
+        HeadlessPlayer player=null!;uint charId=0;string handle="";
+        string phase="initial-preparation";Exception? failure=null;bool passed=false;var fields=new JsonSerializerOptions{IncludeFields=true};
+        var sourceIdentities=new HashSet<(ushort Goid,uint Key)>();var checkpoints=new List<object>();var rawCheckpoints=new List<object>();var operations=new List<object>();var actors=new List<HeadlessPlayer>();var servers=new List<object>();ServerInstance? cold=null;
+        string dll=context.Server.SourceAssembly;int creationStart=0;string? originalSha=null;DateTime? originalMtime=null;int originalPid=0;
+        void CaptureServer(ServerInstance server,string role)
+        {
+            var file=new FileInfo(server.SourceAssembly);string sha=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file.FullName)));
+            if(role=="original"){originalSha=sha;originalMtime=file.LastWriteTimeUtc;originalPid=server.ProcessId;}
+            servers.Add(new{Role=role,server.ProcessId,server.SourceAssembly,Configuration=Directory.GetParent(file.DirectoryName!)!.Name,
+                Sha256=sha,MtimeUtc=file.LastWriteTimeUtc.ToString("O"),file.Length,CapturedUtc=DateTimeOffset.UtcNow});
+        }
         async Task<(MissionProgress.SavedState State,MissionOpenFloorWitness Witness,string Source)> Saved(int objectId=1)
         {
             string payload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}");
+            rawCheckpoints.Add(new{Phase=phase,RequestedObjectId=objectId,Payload=payload,CapturedUtc=DateTimeOffset.UtcNow});
             using var json=JsonDocument.Parse(payload);var root=json.RootElement;
             Check.Equal(201202,root.GetProperty("Mission").GetInt32(),"Normal Agent Gray accepted201202");
             Check.Equal(0,root.GetProperty("Phase").GetInt32(),"Open-floor Box proof remains in phase0 before Take");
@@ -108,6 +114,11 @@ public static partial class Scenarios
         }
         try
         {
+            CaptureServer(context.Server,"original");
+            player=await context.AddPlayerAsync(new CharacterSeed("OpenFloorBox"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=2,
+                X=17000,Y=495,Z=2300,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
+            actors.Add(player);charId=player.CharId;handle=player.Handle;
+            await context.Database.ExecuteAsync(PosterHuntFixture.SeedPrerequisites(charId));phase="entry";
             await player.EnterWorldAsync();phase="first-ordinary-accept";await Accept();await RideToPublishedRoot();var first=await ViewAtPublishedPlan();var firstSet=await WholeSet();
             phase="first-ordinary-abort";await Abort();
             phase="return-original-offer-origin";await MoveForMissionTest(player,17000,495,2300);
@@ -116,6 +127,7 @@ public static partial class Scenarios
             Check.Equal(first.Source,second.Source,"Abort/reaccept never rewrites source geometry");NoSourceBinding();
             phase="pre-open-cold-logout";player.SendRpc("80 fe 00");await player.WaitForRpcAsync("80 fd");player.Dispose();context.Server.Dispose();
             cold=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"});
+            CaptureServer(cold,"cold");
             Check.Equal(dll,cold.SourceAssembly,"Cold owned server selects the same frozen source assembly");
             phase="cold-relog";player=await HeadlessPlayer.LoginAsync(cold.Address,"user"+charId,handle);actors.Add(player);creationStart=player.World.CreationSnapshot().Count;await player.EnterWorldAsync();await player.WaitForRpcAsync("80 9c");
             var coldSelf=player.World.CreationSnapshot().Last(v=>v.ViewId==2);
@@ -146,16 +158,20 @@ public static partial class Scenarios
         finally
         {
             string stem=Path.Combine(Path.GetTempPath(),"mxo-mission-box-open-floor-"+context.Database.Name);
+            string? finalPayload=null,finalPayloadError=null;
+            try{if(charId!=0)finalPayload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}");}
+            catch(Exception read){finalPayloadError=read.ToString();}
             try
             {
                 File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,Failure=failure?.ToString(),SourceAssembly=dll,
-                    SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),
+                    SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=originalSha,SourceMtimeUtc=originalMtime,OriginalProcessId=originalPid,Servers=servers,Database=context.Database.Name,FinalRawPayload=finalPayload,FinalRawPayloadError=finalPayloadError,RawCheckpoints=rawCheckpoints,
                     Checkpoints=checkpoints,Operations=operations,Sessions=actors.Select(p=>new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),
                         Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray()}),
                     ColdSourceAssembly=cold?.SourceAssembly,OriginalDebug=context.Server.DebugLog(),OriginalOutput=context.Server.FullOutput(),ColdDebug=cold?.DebugLog(),ColdOutput=cold?.FullOutput(),
                     NativeRenderingProven=false,NativePickingProven=false,NativeWalkingProven=false,StaticMutationRequested=false},new JsonSerializerOptions{WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog()+"\n--- Cold ---\n"+cold?.FullOutput()+"\n--- Cold debug ---\n"+cold?.DebugLog());
-                Console.WriteLine("SAFE OPEN FLOOR EVIDENCE before teardown="+stem);
+                Console.WriteLine("BOX OPEN FLOOR EVIDENCE before teardown="+stem);
+                if(finalPayloadError!=null&&failure==null)throw new ScenarioFailure("Required final raw checkpoint read failed: "+finalPayloadError);
             }
             catch(Exception evidence){if(failure==null)throw;Console.Error.WriteLine("Box evidence failure: "+evidence);}
             finally{foreach(var actor in actors)actor.Dispose();cold?.Dispose();}
