@@ -110,7 +110,7 @@ public class EngageFoesTests
     {
         var mode=NativeQa.NativeQaModes.Find("engage-foes-taunt");Assert.Equal(HeadlessClient.EngageFoesFixture.Abilities,mode.Plan.Abilities);
         Assert.False(mode.Plan.FixedCallbackRolls);Assert.False(mode.Plan.GmCharacter110);Assert.Contains("QAFriend6111",mode.Plan.ExtraQaMetadata["Blocker"].GetString());
-        var source=HeadlessClient.EngageFoesFixture.Seed("EngageUnit");Assert.Equal(50,source.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),source.Experience);
+        var source=HeadlessClient.EngageFoesFixture.Seed("EngageUnit");Assert.Equal(24699,source.X);Assert.Equal(source.X,mode.Plan.X);Assert.True(CombatHandler.InMeleeReach((float)(Math.Abs(source.X-24499)/100.0)));Assert.Equal("Trainman500/500",mode.Plan.ExtraQaMetadata["FullHpPrimary"].GetString());Assert.Equal(50,source.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),source.Experience);
         Assert.Equal(mode.Plan.Abilities,source.OwnedLoadedAbilities!.Select(x=>x.Ability));
         var blocker=HeadlessClient.EngageFoesFixture.Seed("BlockUnit",true);Assert.DoesNotContain(blocker.OwnedLoadedAbilities!,x=>x.Ability==610);
         var env=NativeQa.NativeQaFixturePlan.EnvironmentFor(mode.Name);Assert.Equal("",env["MXO_CALLBACK_QA_ROLL15"]);Assert.Equal("",env["MXO_CALLBACK_QA_ROLL100"]);

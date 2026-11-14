@@ -9,7 +9,7 @@ public static class EngageFoesFixture
     {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!string.Equals(expected,actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Engage Foes proof requires root-pinned source hash via "+ExpectedSourceEnvironment);}
     public static ushort[] Abilities=>new ushort[]{2,1008,610};
     public static Dictionary<string,string> Environment=>new(){["MXO_DEV_COMMANDS"]="1",["MXO_MOBS"]="test",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"};
-    public static CharacterSeed Seed(string name,bool blocker=false)=>new(name){X=blocker?24699:25300,Y=495,Z=-1498,Organization=1,
+    public static CharacterSeed Seed(string name,bool blocker=false)=>new(name){X=24699,Y=495,Z=-1498,Organization=1,
         Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Health=10000,MaxHealth=10000,InnerStrength=2000,MaxInnerStrength=2000,
         OwnedLoadedAbilities=(blocker?new ushort[]{2,17}:Abilities).Select(id=>(id,(ushort)50)).ToArray()};
     public static ViewCreation? CurrentNpc(IEnumerable<ViewCreation> views,string name)=>views.GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>
@@ -21,7 +21,6 @@ public static class EngageFoesFixture
         actor.SendRpc("42 03 00 00 00 00 00"); // ordinary Block tactic, no effect/aggro/health injection
         actor.SendRpc($"40 {WireFormat.ToHex(BitConverter.GetBytes(npc.ViewId))} {WireFormat.ToHex(BitConverter.GetBytes((ushort)npc.SpawnId))} 00 6b");
         await actor.WaitUntilAsync(()=>actor.World.CreationSnapshot().Any(v=>v.Goid==55),"ordinary Block interlock",TimeSpan.FromSeconds(15));
-        await RequireFullHealthAsync(actor,npc);
         return npc;
     }
     public static async Task<int> RequireFullHealthAsync(HeadlessPlayer observer,ViewCreation npc)
