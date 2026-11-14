@@ -241,6 +241,7 @@ public static partial class Scenarios
         new Scenario("mission-objectives-relog", MissionObjectivesRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("zion-critical-opening", ZionCriticalOpening, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
+        new Scenario("zion-critical-next-five",ZionCriticalNextFive,ZionNextFiveEnvironment),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-critical-opening",MervCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merv-propaganda-count", MervPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
