@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Globalization;
 using System.Xml.Linq;
 using hds;
 namespace HeadlessClient;
@@ -27,11 +29,31 @@ public static partial class Scenarios
             int selected=MissionContactChoice.CriticalIndex(entries,"Disturbing Trends");p.SendRpc($"80 98 06 00 {Le((ushort)selected)} 01 02 00");await p.WaitForRpcAsync("80 99");p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
             Check.Equal(201201,(await Saved()).Mission,"Normal accepted definition, never granted");
             step="phase1-talk";await EnterMissionArea(context,p);var first=await Ophiuchi(1);p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");
-            await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00");step="phase2-computer";await EnterMissionArea(context,p);var before=await Saved();Check.Equal(1,before.Phase,"Operations post phase");
+            step="phase2-admission";await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(30));
+            var before=await Saved();Check.Equal(1,before.Phase,"Operations post phase");
             var source=before.Objects.Single(o=>o.Id==1);Check.Equal((ushort)3,source.Goid,"Actual normal GO3");Check.Equal(0x0d1001edu,source.Spot.mxoStaticId,"Existing seed source unchanged");
-            var computer=await ZionObject(context,p,1);var position=computer.Attributes["Position"];
-            Check.That(new[]{28740d,881d,13200d}.SequenceEqual(new[]{BitConverter.ToDouble(position),BitConverter.ToDouble(position,8),BitConverter.ToDouble(position,16)}),"Reviewed parent196 native source pose");
-            Check.Equal("00000000F204353F00000000F40435BF",Convert.ToHexString(computer.Attributes["Orientation"]),"Exact parent source quaternion");
+            Check.Equal((29000d,1026d,13460d),(source.Spot.pos_x,source.Spot.pos_y,source.Spot.pos_z),"Unchanged raw source, separate from resolved placement");
+            Check.That(source.OpenFloor!=null,"Current master must admit an open-floor Computer before the phase advances");
+            var witness=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(source.OpenFloor,options));
+            witness.Require(201201,1,1,0x0d1001ed,1407,3);
+            step="phase2-ride";int creationStart=p.World.CreationSnapshot().Count;
+            var site=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
+            double Number(int n)=>double.Parse(site.Groups[n].Value,CultureInfo.InvariantCulture);
+            await MoveForMissionTest(p,Number(4),Number(5),Number(6));
+            int rideCursor=context.Server.DebugLog().Length;p.SendChat("?missionfloor");
+            await p.WaitUntilAsync(()=>context.Server.DebugLog()[rideCursor..].Contains("[MISSION] Teleported to "),"Ordinary operations-post elevator ride",TimeSpan.FromSeconds(10));
+            var ride=Regex.Matches(context.Server.DebugLog()[rideCursor..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
+            Check.That(Enumerable.Range(1,3).Select(n=>double.Parse(ride.Groups[n].Value,CultureInfo.InvariantCulture)).SequenceEqual(witness.Route.Take(3)),"Actual ride starts at the unchanged published route root");
+            step="phase2-computer";
+            SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
+            Check.That(NavMesh.Locate(1,witness.Standing[0],witness.Standing[1],witness.Standing[2],out var standingNav),"Published standing point is on the actual NAV floor");
+            Check.Equal(standingNav.floorY+95,witness.Standing[1],"Actual standing height");
+            // Headless movement assistance follows the persisted route; native walking remains Claude's gate.
+            for(int i=0;i<witness.Route.Count;i+=3)await MoveForMissionTest(p,witness.Route[i],witness.Route[i+1],witness.Route[i+2]);
+            bool AtPlan(ViewCreation v)=>v.Goid==3&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==witness.Centre[i]);
+            await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(creationStart).Any(AtPlan),"Actual free Computer at the persisted centre",TimeSpan.FromSeconds(10));
+            var computer=p.World.CreationSnapshot().Skip(creationStart).Last(AtPlan);
+            Check.Equal(witness.Quaternion,Convert.ToHexString(computer.Attributes["Orientation"]),"Actual creation quaternion matches persisted plan");
             byte take=ObjectStates.UseNumber(computer.Goid,"Take")??throw new ScenarioFailure("No native Take definition on actual Computer");
             await p.WaitUntilAsync(()=>{var updates=ViewUpdateValues(p,computer.ViewId,"01 08");uint state=updates.Count>0?updates[^1]:BitConverter.ToUInt32(computer.Attributes["CurrentState"]);return ObjectStates.Offered(computer.Goid,state).Contains(take);},"Actual Computer state offers Take",TimeSpan.FromSeconds(10));
             p.SendRpc($"80 c7 {MissionNpcId(computer)} {take:x2} 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");step="carry-before-relog";var carried=await Saved();Check.Equal(1,carried.Phase,"Carry before normal exit");Check.That(carried.Done.Contains(1)&&carried.Items.ContainsKey(6783),"Normal Take earned tracked Map Disk6783");ushort slot=carried.Items[6783];
@@ -49,7 +71,7 @@ public static partial class Scenarios
             Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={id} AND missionId=201201"),"One earned completion");Check.Equal((long)PlayerProgression.ExperienceForLevel(50)+54871,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={id}"),"Current default50 quote paid once");Check.Equal(46339L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={id}"),"Current information paid once");
             Check.Equal(0,p.World.Problems.Count,"Final session parser clean");step="complete";
         }
-        catch(Exception e){primary=e;throw;}
+        catch(Exception e){primary=e;try{await Saved();}catch(Exception snapshotError){Console.Error.WriteLine("Failure checkpoint unavailable: "+snapshotError.Message);}throw;}
         finally
         {
             Exception? proofFailure=null;try{Record();}catch(Exception e){proofFailure=e;}
@@ -57,7 +79,7 @@ public static partial class Scenarios
             try
             {
                 string dll=context.Server.SourceAssembly;
-                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Database=context.Database.Name,Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Checkpoints=checkpoints,Npcs=npcs,Sessions=sessions,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),NativePickingProven=false,Dependency="PR196 981dda27; native HOLD"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Database=context.Database.Name,Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Checkpoints=checkpoints,Npcs=npcs,Sessions=sessions,ServerPid=context.Server.ProcessId,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),NativePickingProven=false,NativeWalkingProven=false,MovementPolicy="Test-only movement follows the persisted open-floor route; it is not native walking proof"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog());Console.WriteLine("  DISTURBING evidence: "+stem+" step="+step);
             }
             catch(Exception e){proofFailure??=e;Console.Error.WriteLine("Proof failure: "+e);}

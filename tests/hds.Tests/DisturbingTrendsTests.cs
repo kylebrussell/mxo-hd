@@ -29,11 +29,11 @@ public class DisturbingTrendsTests
         var quote=MissionRewards.Calculate(mission,50);Assert.Equal(DisturbingTrendsFixture.ExpectedXp,quote.Experience);Assert.Equal(DisturbingTrendsFixture.ExpectedInfo,quote.Info);
         var low=MissionRewards.Calculate(mission,17);Assert.Equal(17917u,low.Experience);Assert.Equal(15415u,low.Info);
     }
-    [Fact] public void NativeModeKeepsDependencyHoldAndOnlyExistingLayoutControl()
+    [Fact] public void NativeModeUsesMergedOpenFloorAndOnlyExistingLayoutControl()
     {
         var plan=new DisturbingTrendsMode().Plan;Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Equal(DisturbingTrendsFixture.SeedPrerequisites(110),plan.AfterHelpers[0]);
-        Assert.Single(plan.EnvironmentOverrides);Assert.Equal("201101",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.True(plan.ExtraQaMetadata["NativePickingHold"].GetBoolean());
-        Assert.Equal("4dbb2067672e806aa31a04d9e3aba496385342b5",plan.ExtraQaMetadata["RequiredComputerParent"].GetString());Assert.Contains("exp="+PlayerProgression.ExperienceForLevel(50),plan.AfterHelpers[1]);
+        Assert.Single(plan.EnvironmentOverrides);Assert.Equal("201101",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.False(plan.ExtraQaMetadata["NativePickingHold"].GetBoolean());
+        Assert.True(plan.ExtraQaMetadata["SharedOpenFloorRouteAdmission"].GetBoolean());Assert.Equal("9cdc49b5fa7c1f7d2b97afd8e036700e0624d9b2",plan.ExtraQaMetadata["RequiredComputerParent"].GetString());Assert.Contains("exp="+PlayerProgression.ExperienceForLevel(50),plan.AfterHelpers[1]);
         Assert.NotNull(Scenarios.All.Single(s=>s.Name=="machines-disturbing-trends"));
     }
 }

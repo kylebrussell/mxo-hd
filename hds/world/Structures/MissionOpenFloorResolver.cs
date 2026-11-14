@@ -608,9 +608,12 @@ namespace hds
         internal sealed class ReplayableBodies : IEnumerable<BodyCandidate>
         {
             private readonly Func<bool,IEnumerable<BodyCandidate>> enumerate;private readonly Func<int> evaluations;
-            internal ReplayableBodies(Func<bool,IEnumerable<BodyCandidate>> enumerate,Func<int> evaluations){this.enumerate=enumerate;this.evaluations=evaluations;}
+            private readonly Func<IEnumerable<BodyCandidate>> staticRange;
+            internal ReplayableBodies(Func<bool,IEnumerable<BodyCandidate>> enumerate,Func<int> evaluations,Func<IEnumerable<BodyCandidate>> staticRange)
+            {this.enumerate=enumerate;this.evaluations=evaluations;this.staticRange=staticRange;}
             internal int GeometryEvaluations=>evaluations();
             internal IEnumerable<BodyCandidate> Enumerate(bool rootOnly)=>enumerate(rootOnly);
+            internal IEnumerable<BodyCandidate> EnumerateStaticRange()=>staticRange();
             public IEnumerator<BodyCandidate> GetEnumerator()=>enumerate(false).GetEnumerator();
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()=>GetEnumerator();
         }
@@ -635,7 +638,30 @@ namespace hds
                     yield return candidate.Body;
                 }
             }
-            sequence=new ReplayableBodies(Enumerate,()=>context.GeometryEvaluations);refusal=null;return true;
+            // A centre may be outside the static-root component while a point on this side of a
+            // partition is within the unchanged native use range. Do not spend every complete-body
+            // graph on nearer, unreachable centres before considering those usable candidates.
+            // This is only a search hint: the complete set still rebuilds its graph with every body,
+            // and rechecks fixed geometry, exact/cast routes and range before admission.
+            var rangeHints=new Dictionary<Candidate,bool>();
+            IEnumerable<BodyCandidate> StaticRange()
+            {
+                foreach(var candidate in ordered)
+                {
+                    if(!ProveCandidate(context,candidate,true))continue;
+                    bool available=candidate.RootReachable;
+                    if(!available&&!rangeHints.TryGetValue(candidate,out available))
+                    {
+                        var position=new Position(candidate.Centre.X,context.CentreY,candidate.Centre.Z);
+                        available=Standing(r,context.Component,Array.Empty<Point>(),position,context.Guard,out _,out _,out _,graph);
+                        rangeHints.Add(candidate,available);
+                    }
+                    if(!available)continue;
+                    if(candidate.Body==null)candidate.Body=new BodyCandidate(r,candidate.Surface,candidate.Centre,candidate.Shape,candidate.Distance,candidate.RootReachable);
+                    yield return candidate.Body;
+                }
+            }
+            sequence=new ReplayableBodies(Enumerate,()=>context.GeometryEvaluations,StaticRange);refusal=null;return true;
         }
         internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal)=>BodyCandidates(r,out refusal,out _);
         internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal,out bool staticRootGraphBuilt)

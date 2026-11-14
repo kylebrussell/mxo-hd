@@ -1,9 +1,40 @@
-## Current master refresh
+# Disturbing Trends: current admission repair
 
-Refreshed onto cc8f5555 after the native-passed open-floor trio merged. The selected mission, authored XML, default rewards, prerequisites and NativeQa mode remain unchanged; production hds/data match master exactly. PR202's rewardLevel metadata is not included. The old dependency HOLD and old wire positions below are historical.
+PR204 builds on master cc8f5555 (merged open-floor trio196/197/203). It now includes a shared search-policy repair for the native failure reported at6fa29181. Mission XML, source/site selection, dialogue, Map Disk6783, prerequisite receipts and reward law remain unchanged. PR202's rewardLevel metadata is separate.
 
-For current free objects, use the checkpoint's published Root/Route/Standing witness rather than old raw marker coordinates. Native end-to-end picking, walking, Map Disk carry/relog, Ophiuchi Give and one earned default payout remain Claude's checklist. No new headless or native result is inferred from this source refresh.
+## Reproduced failure and repair
 
+A clean detached master build reproduces the native report headlessly: first Ophiuchi Talk succeeds, then ordinary exit refuses the next area with SearchExhausted:RouteGraphs. Exact master cc8f5555121f73357b58bef05c49061b1c3de6e0, Debug DLL SHA256 B14651EE444CCC42910FA22200BC0E7C6921A888EC1BE6A76F7A0544C70EAF16,32.5 seconds. Owned PID36636 exited; its disposable schema was disposed. The negative proof is retained under Temp/mxo-pr204-route-repro-20261114/master-before-*.
+
+The normal existing seed201101 selects source1407/key0d1001ed, sector209/static493, raw29000/1026/13460, on the Office site whose door is28800/945/14700 and bounds28900..31100/12350..15100. An exact-source offline test reproduces33 body-node visits,32 complete graph attempts and one static-root graph before refusal. No easier seed or source was selected.
+
+Reflection of the same request finds386 connected NAV surfaces,489 static-subtracted standing cells and only nine cells reachable from the actual Ride root. Conservative selected-elevator419 bounds fully cover NAV209/42/0, sealing the lobby's sole exit in the static graph. Both duplicate bounds independently cover it; deduplication is insufficient. Reports: Temp/mxo-pr204-route-repro-20261114/static-graph-diagnostic.{json,txt} and office-before.json. The first160 nearest-source candidate bodies all lack a reachable static use point.
+
+SearchPolicyVersion3 retains the original direct probe and root-centre wave, then prioritizes candidates with a reachable use point on the already-built static graph, including mixed multi-object sets. The original all-candidate family remains the final fallback. Repeated identical complete body sets are not charged twice across waves/orders. Every accepted set still rebuilds its complete-body graph and passes the existing geometry, static bounds, NAV, exact/native-cast route and native usable-range checks. Work budgets remain4096/32. Failed-search memo keys change with the search policy; existing admitted placement fingerprints and fixed replay do not.
+
+The exact-source regression now uses two body nodes, two complete graphs (one direct probe, one complete set) and one static-root graph. Centre29101.4375/825.003776550293/14592.57421875; Standing28740/895/14592.57421875. Read the actual checkpoint for Root/Route/Standing. These coordinates are a deterministic current candidate, not retail placement evidence.
+
+**Native limitation:** the conservative closed-door graph remains sealed. This repair finds an in-range standing point inside the lobby for a body outside that standing component; it does not claim an open office route or native line of sight. No statics are hidden, moved, deleted or excluded. Claude must verify visible open-floor placement, physical access and native hover/radial Take. Stop and retain a native failure if the wall/door prevents picking.
+
+## Protocol coverage and one-pass native checklist
+
+Mode/scenario: machines-disturbing-trends. CSR_Tester110 only for native QA. The fixture grants exactly20 prior receipts, level50/appropriate XP, Machines organisation and ordinary support abilities; no selected mission, item, progress, completion or reward is injected. Only the existing strict dev/disposable layout seed201101 controls site RNG. No callback/combat-roll override or GM character is used.
+
+1. With the client lock, Agent Gray > Call > Critical > Disturbing Trends. Accept, use the ordinary street-lobby elevator, Talk to the first Ophiuchi and leave at the elevator. The next waypoint must arrive with no safe-placement refusal.
+2. Enter the operations post with its normal elevator. Compare the actual checkpoint source1407/0d1001ed and published Root/Route/Standing. Walk to the standing point and verify the free Computer renders on floor, source scenery remains unchanged, hover offers Computer/Take and radial Take works. Do not use the historical anchor28740/881/13200 as the free proxy position or force a Take request.
+3. Take one Map Disk6783, logout/relog while carrying, verify the same active mission and disk, leave normally, enter phase3 and Give to the current Ophiuchi definition6. Do not reuse the historical first Ophiuchi view.
+4. Verify exactly one completion receipt and default level50 gains54,871 XP/45,339 information. The archived HUD17 and pending PR202 are separate reward caveats. Existing level scaling is authored reconstruction, not a proven retail curve.
+5. Release/reset CSR110 to Mara23828/495/13984, full health, pvpflag0 and mission986 only. Never TheNeo. Claude owns native QA and merge.
+
+The current headless driver follows saved route points with test-only movement assistance after the ordinary elevator ride and checks actual creation centre/quaternion against the persisted placement. It retains raw checkpoints on failure, exact source/item identity, carry/relog, current NPC6 Give, one payout, RPC/view lists and actual DLL/PID provenance. Test movement is not native walking proof.
+
+## Current validation
+
+The first candidate passed15 focused checks; the integrated search/mixed-set changes passed158 open-floor and Disturbing Trends checks. Full-suite, frozen current fresh-run, Debug/Release plan/provenance and CI results are published by exact head and DLL hash in PR204 and the shared handoff before a new READY. Earlier protocol successes below predate the shared resolver and do not validate this repair.
+
+## Historical evidence (superseded heads only)
+
+Everything below retains its original source attribution. Old DRAFT/HOLD text and coordinates describe those historical heads, not the current checklist or readiness.
 # Disturbing Trends — dependent draft
 
 **HOLD: depends on PR 196 and its unresolved native Computer picking. Not ready for native completion or merge.** This package makes no placement or gameplay-policy fork and does not relax the existing native blocker.
