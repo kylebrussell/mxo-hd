@@ -6,7 +6,9 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task MissionOpenFloorBoxScenario(ScenarioContext context)
+    private static Task MissionOpenFloorBoxScenario(ScenarioContext context)=>MissionOpenFloorBoxScenarioCore(context,false);
+    private static Task MissionStandingInteriorScenario(ScenarioContext context)=>MissionOpenFloorBoxScenarioCore(context,true);
+    private static async Task MissionOpenFloorBoxScenarioCore(ScenarioContext context,bool requireInterior)
     {
         HeadlessPlayer player=null!;uint charId=0;string handle="";
         string phase="initial-preparation";Exception? failure=null;bool passed=false;var fields=new JsonSerializerOptions{IncludeFields=true};
@@ -49,6 +51,12 @@ public static partial class Scenarios
             var all=new List<MissionOpenFloorWitness>();
             for(int id=1;id<=3;id++)all.Add((await Saved(id)).Witness);
             Check.Equal(3,all.Select(w=>string.Join(",",w.Centre.Select(v=>v.ToString("R",CultureInfo.InvariantCulture)))).Distinct().Count(),"All three published Box centres are distinct; no fixture repacking");
+            if(requireInterior)
+            {
+                var third=all.Single(w=>w.ObjectId==3);
+                Check.Equal("25841.595703125,2040,14214.611328125",string.Join(",",third.Centre.Select(v=>v.ToString("R",CultureInfo.InvariantCulture))),"Unchanged normal S3 body");
+                Check.Equal("25689.16015625,2095,14143.16796875",string.Join(",",third.Standing.Select(v=>v.ToString("R",CultureInfo.InvariantCulture))),"S3 uses the already legal route without a representational sliver");
+            }
             return all.Select(w=>w.RawJson).ToArray();
         }
         async Task Accept()
