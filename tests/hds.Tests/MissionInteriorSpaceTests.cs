@@ -64,4 +64,16 @@ public class MissionInteriorSpaceTests
         Assert.True(MissionInteriorSites.Eligible(phase,site,out _,0));
         Assert.False(MissionInteriorSites.Eligible(phase,site,out _,1));
     }
+    [Fact] public void NativeUseSphereIncludesTheActualFloatBasisForNearUnitQuaternions()
+    {
+        var q=new OpenFloorOrientation(Convert.ToHexString(new[]{0f,0.9999952912330627f,0f,0f}.SelectMany(BitConverter.GetBytes).ToArray()));
+        var standing=new G.Position(-312.48040771484375,181.67123413085938,-290.679443359375);
+        var origin=new G.Position(0,0,0);Assert.True(MissionOpenFloorProfiles.TryUsable(3,out var usable));
+        Assert.True(MissionOpenFloorUsableRange.Test(usable,new(standing.X,standing.Y,standing.Z),new(0,0,0),q).Within);
+        var polygon=new[]{new G.Point(standing.X-0.0001,standing.Z-0.0001),new G.Point(standing.X+0.0001,standing.Z-0.0001),new G.Point(standing.X+0.0001,standing.Z+0.0001),new G.Point(standing.X-0.0001,standing.Z+0.0001)};
+        var surface=new G.Surface(new(127,1,1),polygon,0,0,standing.Y-95,true);
+        var region=new G.ReachableRegion(surface,new[]{polygon});
+        Assert.True(region.CouldReachNative(origin,usable,q));
+        Assert.True(region.CouldReachNative(origin,usable,null)); // unknown orientation is not an emptiness proof
+    }
 }

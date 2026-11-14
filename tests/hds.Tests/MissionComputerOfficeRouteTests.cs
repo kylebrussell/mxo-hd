@@ -90,6 +90,21 @@ public class MissionComputerOfficeRouteTests
         Assert.Equal(before,JsonSerializer.Serialize(site,new JsonSerializerOptions{IncludeFields=true}));
     }
     [Fact]
+    public void AlreadyBoundComputerOutsideTheArrivalRoomCannotSupplyItsNativeUsePoint()
+    {
+        SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));
+        var site=Assert.Single(MissionSites.Build(Statics(),1),s=>s.elevatorDoor?.mxoStaticId==0x0ee000fa&&s.elevatorDoor.pos_y==545&&s.CentreX==10925&&s.CentreZ==5662.5);
+        var source=Assert.Single(site.realObjects,s=>s.mxoStaticId==0x0ee00451);
+        Assert.Equal((10955d,631d,7120d),(source.pos_x,source.pos_y,source.pos_z));
+        var xml=new XmlDocument();xml.Load(Path.Combine(Root,"data","missions","merovingian_1_2_3_turf_of_vengeance.xml"));var mission=MissionXml.Parse(xml.DocumentElement!);
+        string before=MissionOpenFloorSite.CatalogFingerprint(site);
+        Assert.True(MissionInteriorSites.TryRegion(site,out var region,out string why),why);
+        Assert.True(MissionOpenFloorProfiles.TryUsable(3,out var usable));
+        Assert.False(region.CouldReachNative(new(source.pos_x,source.pos_y,source.pos_z),usable,new OpenFloorOrientation(source.quat)));
+        Assert.False(MissionInteriorSites.Eligible(mission.phases[1],site,out why,1));Assert.Equal("NoInteriorNativeUse:Computer",why);
+        Assert.Equal(before,MissionOpenFloorSite.CatalogFingerprint(site));
+    }
+    [Fact]
     public void HardlineHunterFiltersTheExactTooShallowSiteBeforeItsNormalPreviewPick()
     {
         SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));

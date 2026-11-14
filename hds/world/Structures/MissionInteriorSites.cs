@@ -29,8 +29,20 @@ namespace hds
                     MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
             if(!TryAllocate(site,npcCount,out _,out refusal))return false;
             var first=phase.objects.FirstOrDefault();if(first==null)return true;
-            if(site.realObjects.Any(s=>MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&
-                string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)))return true; // already-bound native object
+            var bound=site.realObjects.Where(s=>MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&
+                string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
+            if(bound.Length>0)
+            {
+                if(!TryRegion(site,out var nativeRegion,out refusal))return false;
+                bool Possible(StaticWorldObject s)
+                {
+                    if(!MissionOpenFloorProfiles.TryUsable(MissionSites.Goid(s),out var usable))return true;
+                    OpenFloorOrientation orientation;try{orientation=new OpenFloorOrientation(s.quat);}catch(ArgumentException){return true;}
+                    return nativeRegion.CouldReachNative(new G.Position(s.pos_x,s.pos_y,s.pos_z),usable,orientation);
+                }
+                if(bound.Any(Possible))return true;
+                refusal="NoInteriorNativeUse:"+first.kind;return false;
+            }
             var matching=site.objectSpots.Where(s=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.

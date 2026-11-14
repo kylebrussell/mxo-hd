@@ -368,6 +368,19 @@ namespace hds
             internal bool Contains(Position p)=>Finite(p.X,p.Y,p.Z)&&Math.Abs(p.Y-Floor-95)<=Epsilon&&
                 cells.Any(c=>Inside(c,p.Xz))&&cells.Any(c=>Inside(c,Rounded(p.Xz)));
             internal bool Covers(Point[] shape)=>shape.Length>=3&&Difference(new[]{shape},cells,0).Count==0;
+            // Necessary condition for an already-bound native object. The native OBB plus its
+            // unchanged use distance is contained by this sphere; a disjoint root component
+            // therefore cannot supply any usable standing point. Nonempty remains unproved.
+            internal bool CouldReachNative(Position centre,MissionOpenFloorUsableRange.Profile usable,OpenFloorOrientation orientation)
+            {
+                if(usable==null||orientation==null||!Finite(centre.X,centre.Y,centre.Z))return true;
+                var e=usable.HalfExtents;
+                double guard=NumericalGuard(cells.SelectMany(c=>c.SelectMany(p=>new[]{p.X,p.Z})).Concat(new[]{centre.X,centre.Y,centre.Z}));
+                if(!orientation.TryNativeWorldRadius(usable.LowerBound+Math.Sqrt(e.X*e.X+e.Y*e.Y+e.Z*e.Z),out double radius))return true;
+                radius+=4*guard;
+                double dy=Floor+95-centre.Y;
+                return cells.Any(c=>{double dxz=Distance(Nearest(c,centre.Xz),centre.Xz);return dxz*dxz+dy*dy<=radius*radius;});
+            }
             // Necessary first-prop admission only. This does not prove its complete phase, height
             // clearance, interaction range or route; the normal immutable-source planner still must.
             internal bool CanFit(OpenFloorModelBounds model,OpenFloorOrientation orientation,Bounds bounds)
