@@ -291,4 +291,16 @@ public class MissionOpenFloorAdmissionRegressionTests
         var cold=JsonSerializer.Deserialize<MissionOpenFloorPendingAdmission>(json,Fields)!;Run(cold,"B");Assert.Equal(3,executions);
         Assert.Equal(json,JsonSerializer.Serialize(cold,Fields));
     }
+
+    [Fact]
+    public void ActualSingleBoxDoesNotSpendTheWholeGraphBudgetBeforeExpandedFallback()
+    {
+        LoadNav();var m=Definition();var (site,raw)=QualifiedScene();Assert.True(MissionOpenFloorRequests.TryCreate(raw,548,site,1,out var request,out string why,m.phases[0],1),why);
+        var fullDirect=G.Plan(request,4096,32,out _,out int graphs);Assert.False(fullDirect.HasPlan);Assert.Equal("SearchExhausted:RouteGraphs",fullDirect.Refusal);Assert.Equal(32,graphs);
+        Assert.True(MissionOpenFloorPhasePlanner.TryPlan(new[]{new MissionOpenFloorPhasePlanner.Input(1,request)},out var plan,out why,out var work,MissionOpenFloorPhasePlanner.Limits.Default),why);
+        Assert.False(plan.DirectSingle);Assert.Equal(2,work.RouteGraphs);Assert.Equal(1,work.StaticRootGraphs);Assert.InRange(work.BodyNodes,2,4096);
+        Assert.True(MissionOpenFloorPhasePlanner.TryPlan(new[]{new MissionOpenFloorPhasePlanner.Input(1,request)},out var oldExpanded,out why,out _,MissionOpenFloorPhasePlanner.Limits.Default,false),why);
+        Assert.Equal(JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,1,raw,oldExpanded.Results[1]),MissionProgress.SaveJson),
+            JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,1,raw,plan.Results[1]),MissionProgress.SaveJson));
+    }
 }

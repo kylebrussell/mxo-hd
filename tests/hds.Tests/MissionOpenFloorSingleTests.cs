@@ -35,7 +35,7 @@ public class MissionOpenFloorSingleTests
     [Fact] public void DirectAndFallbackCannotEachSpendANewGraphBudget()
     {
         Assert.False(P.TryPlan(new[]{new P.Input(1,Input(true))},out _,out string why,out var work,new P.Limits(4096,1)));
-        Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(1,work.RouteGraphs);Assert.Equal(1,work.StaticRootGraphs);
+        Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(1,work.RouteGraphs);Assert.Equal(0,work.StaticRootGraphs);
     }
     [Fact] public void DirectCandidateWorkAlsoHonorsTheBodyNodeBudget()
     {

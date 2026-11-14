@@ -51,13 +51,17 @@ namespace hds
             var watch=Stopwatch.StartNew();int attempts=0;
             if(inputs.Count==1&&directSingle)
             {
-                var input=inputs[0];var direct=G.Plan(input.Request,limits.BodyNodes,limits.RouteGraphs,out int nodes,out int graphs);
+                // Positive probe only. Do not spend the whole phase budget searching direct candidates
+                // before the expanded family can try its already-proven root-component alternatives.
+                var input=inputs[0];var direct=G.Plan(input.Request,1,1,out int nodes,out int graphs);
                 measured.BodyNodes=nodes;measured.RouteGraphs=graphs;
                 if(direct.HasPlan&&G.ValidateRouteIds(input.Request,direct.RoutePolygons,direct.Route)&&G.ValidateSet(new[]{direct},out _))
                 {
                     plan=new Plan(new Dictionary<ushort,G.Result>{{input.ObjectId,direct}},new[]{input.ObjectId},1,watch.ElapsedMilliseconds,nodes,graphs,0,true);refusal=null;return true;
                 }
-                if(direct.Refusal?.StartsWith("SearchExhausted:",StringComparison.Ordinal)==true){refusal=direct.Refusal;return false;}
+                // Probe-local exhaustion is not global exhaustion; carry its exact consumed work onward.
+                if(measured.BodyNodes>=limits.BodyNodes){refusal="SearchExhausted:BodyNodes";return false;}
+                if(measured.RouteGraphs>=limits.RouteGraphs){refusal="SearchExhausted:RouteGraphs";return false;}
             }
             var candidates=new Dictionary<ushort,IReadOnlyList<G.BodyCandidate>>();
             foreach(var input in inputs)

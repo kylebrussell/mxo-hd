@@ -33,7 +33,7 @@ public class MissionOpenFloorSearchWorkTests
     {
         var input=Input(1,true);Assert.NotEmpty(G.BodyCandidates(input,out _));
         Assert.False(P.TryPlan(new[]{new P.Input(1,input)},out _,out string why,out var work,new P.Limits(4096,1)));
-        Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(1,work.RouteGraphs);Assert.InRange(work.BodyNodes,2,4096);
+        Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(1,work.RouteGraphs);Assert.Equal(1,work.BodyNodes);
     }
 
     [Fact] public void EmptyGeometryHasStableNonemptyFailureThatCanBeMemoized()
