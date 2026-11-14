@@ -13,9 +13,9 @@ public static partial class Scenarios
     /// </summary>
     private static async Task MissionLockedSafe(ScenarioContext context)
     {
-        var player = await context.AddPlayerAsync(new CharacterSeed("Picker") { Level = 50 });
-        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={player.CharId}; " +
-            $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES ({player.CharId},300,{AbilityGoid(142)},10,0)");
+        var player = await context.AddPlayerAsync(new CharacterSeed("Picker") { Level = 50, Experience = (int)hds.PlayerProgression.ExperienceForLevel(50) });
+        await context.Database.ExecuteAsync(LockedSafeLoadoutFixture.SeedSql(player.CharId));
+        Check.Equal((long)LockedSafeLoadoutFixture.Rows().Count,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={player.CharId} AND is_loaded=0"),"Only the legitimate owned unloaded prerequisite closure is seeded");
         await player.EnterWorldAsync();
         player.SendRpc("80 94 05 00 03");
         await player.WaitForTextAsync("Locked Safe Fixture");
@@ -34,7 +34,9 @@ public static partial class Scenarios
         await player.WaitForRpcAsync(AbilityLine(0x7a000141)); // "Make sure you have %1z loaded."
         Check.Equal(0, player.Received("81 19").Count, "A locked safe opens no loot window");
 
-        SetAbilityLoaded(player, 300, 142, 10, true);
+        player.SkipReceived();player.SendRpc(LockedSafeLoadoutFixture.LoadRequest());
+        await player.WaitForRpcAsync("80 b2 8e 00 0a 00 2c 01"); // Actual selected142/level10/slot300 load acknowledgement.
+        Check.Equal((long)LockedSafeLoadoutFixture.Rows().Count,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={player.CharId} AND slot<520 AND is_loaded=1"),"Normal admission loads the complete owned batch");
         player.SendRpc("81 48"); // a round trip, so the loadout change has landed
         await player.WaitForRpcAsync("81 49");
         player.SendRpc($"80 c7 {MissionNpcId(safe)} 08 00");
