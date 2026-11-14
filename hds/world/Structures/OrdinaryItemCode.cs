@@ -23,10 +23,18 @@ namespace hds
             float second = (float)(first * (100 - (short)consumableReduction) * .01);
             return Math.Clamp(second, 3f, 50f);
         }
-        // Native62080630 uses the float32 multiplier, unlike the existing Code Writer policy.
-        // Negative modifiers increase price. Nonnegative server charge is the script's discount<=1 policy.
-        public static long Cost(CraftingRules.Item item, int modifier530) => Math.Max(0, (long)(
-            (float)unchecked((uint)(item.Price ?? throw new ArgumentException("Ordinary IC compilation requires a proven VendorPrice", nameof(item)))) * (double)(float)(100 - (short)modifier530) * .12f / 100));
+        // Native62080630: float32 operands and .12f, then truncation (626a92d8).
+        // Round each arithmetic step to the native UI's single precision; double promotion
+        // underquotes integral boundaries (75 -> 8 instead of the displayed 9).
+        // Negative modifiers increase price. Nonnegative charge retains the script discount<=1 policy.
+        public static long Cost(CraftingRules.Item item, int modifier530)
+        {
+            float price = unchecked((uint)(item.Price ?? throw new ArgumentException("Ordinary IC compilation requires a proven VendorPrice", nameof(item))));
+            float discounted = price * (float)(100 - (short)modifier530);
+            float scaled = discounted * .12f;
+            float total = scaled / 100f;
+            return Math.Max(0, (long)total);
+        }
         public static bool Succeeds(int skill, int complexity, int roll, int specialization) =>
             CraftingRules.Succeeds(skill, complexity, roll, Math.Max(0, specialization));
         public static byte[] Update(ushort slot, uint value, int charges) => new byte[] { 0x69, 0, (byte)slot, (byte)(slot >> 8) }

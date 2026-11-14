@@ -27,15 +27,39 @@ public class OrdinaryItemCodeTests
         Assert.Equal(10,OrdinaryItemCode.Update(400,source,1).Length);
     }
     [Fact]
-    public void CostUsesNativeFloatConstantWithoutChangingWriterPolicy()
+    public void CostUsesNativeSinglePrecisionWithoutChangingWriterPolicy()
     {
         var item=new CraftingRules.Item { Price=75 };
-        Assert.Equal(8,OrdinaryItemCode.Cost(item,0)); Assert.Equal(9,CraftingRules.InfoCost(item));
-        item.Price=137000; Assert.Equal(16439,OrdinaryItemCode.Cost(item,0));
+        Assert.Equal(9,OrdinaryItemCode.Cost(item,0)); Assert.Equal(9,CraftingRules.InfoCost(item));
+        item.Price=137000; Assert.Equal(16440,OrdinaryItemCode.Cost(item,0));
         Assert.Equal(0,OrdinaryItemCode.Cost(item,100));
         Assert.Equal(16604,OrdinaryItemCode.Cost(item,-1));
         Assert.Equal(0,OrdinaryItemCode.Cost(item,101));
         Assert.Throws<ArgumentException>(()=>OrdinaryItemCode.Cost(new CraftingRules.Item(),0));
+    }
+    [Theory]
+    [InlineData(75,0,9)] // Native displayed9, formerly underquoted8.
+    [InlineData(137000,0,16440)] // Native displayed16440, formerly underquoted16439.
+    [InlineData(76,0,9)] // Truncation, not ceiling.
+    [InlineData(137001,0,16440)]
+    [InlineData(137000,33,11014)]
+    [InlineData(137000,-1,16604)]
+    [InlineData(75,65536,9)] // Signed16 modifier.
+    [InlineData(137000,100,0)]
+    [InlineData(137000,101,0)]
+    [InlineData(16777217,0,2013265)] // Input price itself rounds to float32.
+    public void NativeCostArithmeticBoundaryVectors(int price,int modifier,long expected)
+        => Assert.Equal(expected,OrdinaryItemCode.Cost(new CraftingRules.Item { Price=price },modifier));
+    [Fact]
+    public void MinorRepairsFixtureOwnsTheEntireNormalLoadClosure()
+    {
+        var closure=AbilityPrerequisites.Current.Closure(24);
+        Assert.Equal(new ushort[]{2,36,37,1008},closure.Keys.OrderBy(id=>id));
+        Assert.Equal(1,closure[37]); Assert.Equal(1,closure[1008]);
+        string sql=string.Join("\n",new OrdinaryIcCompileMode().Plan.AfterHelpers);
+        foreach(ushort id in closure.Keys.Where(id=>id!=2))
+            Assert.Contains($"{0x80000000L | (long)id << 10},1,0,",sql);
+        Assert.Contains("'Coder Combat Style prerequisite (unloaded)'",sql);
     }
     [Fact]
     public void SupportedPrototypesHaveExplicitSourcePrices()

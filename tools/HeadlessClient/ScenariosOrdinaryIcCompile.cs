@@ -14,12 +14,20 @@ public static partial class Scenarios
         var p=await context.AddPlayerAsync(new CharacterSeed("OrdinaryCompiler") { Level=50,Info=200000,Items=new[]{(1,1271u,1)} });
         const uint code=0x40000000u | 39413u<<7; // retained opaque upper bit, excluded from decodedGOID
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES"+
-            $"({p.CharId},30,{AbilityGoid(277)},50,1),({p.CharId},31,{AbilityGoid(24)},1,0),({p.CharId},400,{code},2,0),({p.CharId},401,{2399u<<7},1,0)");
-        // Preflight the real CHECK before timed work. Only the later167122-8 debit is rejected.
-        await context.Database.ExecuteAsync("ALTER TABLE characters ADD CONSTRAINT ordinary_ic_refuse_debit CHECK(handle<>'OrdinaryCompiler' OR cash<>167114)");
+            $"({p.CharId},29,{AbilityGoid(2)},50,1),({p.CharId},30,{AbilityGoid(277)},50,1),({p.CharId},31,{AbilityGoid(24)},1,0),({p.CharId},32,{AbilityGoid(37)},1,0),({p.CharId},33,{AbilityGoid(1008)},1,0),({p.CharId},34,{AbilityGoid(36)},1,0),({p.CharId},400,{code},2,0),({p.CharId},401,{2399u<<7},1,0)");
+        // Preflight the real CHECK before timed work. Only the later167120-9 debit is rejected.
+        await context.Database.ExecuteAsync("ALTER TABLE characters ADD CONSTRAINT ordinary_ic_refuse_debit CHECK(handle<>'OrdinaryCompiler' OR cash<>167111)");
         await p.EnterWorldAsync();
         await p.WaitForRpcAsync(PassiveRecord(277,706,50));
         var actual706=p.Received(PassiveRecord(277,706,50)).Select(r=>WireFormat.ToHex(r.Bytes)).ToArray();
+        // Same prerequisites as the native fixture, loaded through ordinary80ae, never SQL flags.
+        foreach(var prerequisite in new[]{(Id:(ushort)37,Slot:(ushort)32),(Id:(ushort)1008,Slot:(ushort)33),(Id:(ushort)36,Slot:(ushort)34)})
+        {
+            p.SendChat("?qaload "+prerequisite.Id);
+            await p.WaitForRpcAsync($"80 b2 {Le(prerequisite.Id)} 01 00 {Le(prerequisite.Slot)}");
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={p.CharId} AND slot={prerequisite.Slot}"),"Normal prerequisite load "+prerequisite.Id);
+        }
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={p.CharId} AND slot=31"),"Baseline Minor Repairs remains off");
         string request=$"60 {Le(39413u)} 90 01 00 01 01";
         p.SkipReceived(); p.SendRpc(request); await p.WaitForRpcAsync("61 01");
         CompilerTool(p,1,true); await p.WaitForRpcAsync(ModPattern(969,968));
@@ -33,7 +41,7 @@ public static partial class Scenarios
         Check.That(watch.Elapsed.TotalSeconds>=17.8 && watch.Elapsed.TotalSeconds<22,"Actual70650 baseline timer18s");
         Check.That(p.World.RpcSnapshot().Any(r=>r.Bytes.SequenceEqual(OrdinaryItemCode.Update(400,code,1))),"Exact ordinary-charge update precedes61 success");
         Console.WriteLine($"ORDINARY_IC baseline passed elapsed={baselineElapsed:F3}s");
-        Check.Equal(183561L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Source float32 Info cost16439");
+        Check.Equal(183560L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Source float32 Info cost16440");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={p.CharId} AND goid=39413"),"Duplicate request cannot duplicate output");
         CompilerTool(p,1,false); await p.WaitForRpcAsync(ModPattern(969,968,true));
         p.SendChat("?qaload 24"); await p.WaitForRpcAsync(PassiveRecord(24,955,33));
@@ -46,7 +54,7 @@ public static partial class Scenarios
         Check.Equal(1,p.Received("5f 90 01 00").Count,"Final charge removal precedes61 success");
         Console.WriteLine($"ORDINARY_IC reduced passed elapsed={reducedElapsed:F3}s");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot=400"),"Last direct charge removed");
-        Check.Equal(167122L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Only two successful debits");
+        Check.Equal(167120L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Only two successful debits");
         Check.Equal(2L,await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={p.CharId} AND goid=39413"),"Two single-instance outputs");
         // Native2399 low-complexity route clamps3s. Closing the tool cancels without consumption.
         p.SkipReceived(); p.SendRpc($"60 {Le(2399u)} 91 01 00 01 01");
@@ -54,7 +62,7 @@ public static partial class Scenarios
         await p.WaitForRpcAsync("61 01",TimeSpan.FromSeconds(5));
         await Task.Delay(3100); // No stale delayed completion after the original deadline.
         Check.Equal(1L,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={p.CharId} AND slot=401"),"Cancelled source intact");
-        Check.Equal(167122L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Cancelled cash intact");
+        Check.Equal(167120L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Cancelled cash intact");
         Check.Equal(0,p.World.Problems.Count,"All actual result/archive/inventory packets decode");
         File.WriteAllText(Path.Combine(Path.GetTempPath(),"mxo-ordinary-ic-main-wire.json"),JsonSerializer.Serialize(new {
             Phase="timing-pair-and-cancel",context.Server.SourceAssembly,
@@ -67,16 +75,16 @@ public static partial class Scenarios
         try
         {
             // Offline fixture110 avoids changing the live actor's cached Info through the repository test.
-            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id=110; DELETE FROM inventory WHERE charId=110; UPDATE characters SET cash=16 WHERE charId=110;"+
+            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id=110; DELETE FROM inventory WHERE charId=110; UPDATE characters SET cash=18 WHERE charId=110;"+
                 $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES(110,30,{AbilityGoid(277)},50,1),(110,401,{2399u<<7},1,0); INSERT INTO inventory(charId,slot,goid,count) VALUES(110,1,1271,1)");
             var db=new hds.databases.MyWorldDbAccess(); var source=db.GetOrdinaryItemCode(110,401);
-            var results=await Task.WhenAll(Task.Run(()=>db.MaterializeOrdinaryItemCode(110,source!,1,8)),Task.Run(()=>db.MaterializeOrdinaryItemCode(110,source!,1,8)));
+            var results=await Task.WhenAll(Task.Run(()=>db.MaterializeOrdinaryItemCode(110,source!,1,9)),Task.Run(()=>db.MaterializeOrdinaryItemCode(110,source!,1,9)));
             Check.Equal(1,results.Count(r=>r.Result==0),"One exact-charge transaction wins concurrent race");
             Check.Equal(1L,await context.Database.LongAsync("SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId=110 AND goid=2399"),"Atomic race one output");
-            Check.Equal(8L,await context.Database.LongAsync("SELECT cash FROM characters WHERE charId=110"),"Same-source race one debit");
+            Check.Equal(9L,await context.Database.LongAsync("SELECT cash FROM characters WHERE charId=110"),"Same-source race one debit");
             await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId=110 AND goid=2399; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES(110,401,{2399u<<7},1,0),(110,402,{2399u<<7},1,0)");
             var first=db.GetOrdinaryItemCode(110,401); var second=db.GetOrdinaryItemCode(110,402);
-            results=await Task.WhenAll(Task.Run(()=>db.MaterializeOrdinaryItemCode(110,first!,1,8)),Task.Run(()=>db.MaterializeOrdinaryItemCode(110,second!,1,8)));
+            results=await Task.WhenAll(Task.Run(()=>db.MaterializeOrdinaryItemCode(110,first!,1,9)),Task.Run(()=>db.MaterializeOrdinaryItemCode(110,second!,1,9)));
             Check.Equal(1,results.Count(r=>r.Result==0),"Different-source cash race one winner");
             Check.Equal(1,results.Count(r=>r.Result==4),"Cash race refuses overdraw");
             Check.Equal(0L,await context.Database.LongAsync("SELECT cash FROM characters WHERE charId=110"),"Cash race one final debit");
@@ -86,7 +94,7 @@ public static partial class Scenarios
         Console.WriteLine("ORDINARY_IC same-charge and shared-cash atomic races passed");
         // Native 00:29 close-during-compile observation sent only target-clear8151, not a
         // crafting close. That packet cannot authorize cancellation of an unrelated action.
-        var noCancel=await context.AddPlayerAsync(new CharacterSeed("CompilerNoCancel") { Level=50,Info=8,Items=new[]{(1,1271u,1)} });
+        var noCancel=await context.AddPlayerAsync(new CharacterSeed("CompilerNoCancel") { Level=50,Info=9,Items=new[]{(1,1271u,1)} });
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={noCancel.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES"+
             $"({noCancel.CharId},30,{AbilityGoid(277)},50,1),({noCancel.CharId},401,{2399u<<7},1,0)");
         await noCancel.EnterWorldAsync();
@@ -94,7 +102,7 @@ public static partial class Scenarios
         noCancel.SkipReceived(); noCancel.SendRpc($"60 {Le(2399u)} 91 01 00 01 01");
         await Task.Delay(400); noCancel.SendRpc("81 51 00 00 00 00");
         await noCancel.WaitForRpcAsync("61 00",TimeSpan.FromSeconds(5));
-        Check.Equal(0L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={noCancel.CharId}"),"No crafting close: exactly8 charged");
+        Check.Equal(0L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={noCancel.CharId}"),"No crafting close: exactly9 charged");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={noCancel.CharId} AND slot=401"),"No crafting close: source consumed");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={noCancel.CharId} AND goid=2399"),"Target-clear leaves pending compile intact");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={noCancel.CharId} AND goid=1271"),"Compiler retained");
@@ -104,7 +112,7 @@ public static partial class Scenarios
         p.SkipReceived(); watch.Restart(); p.SendRpc($"60 {Le(2399u)} 92 01 00 01 01");
         await p.WaitForRpcAsync("61 01",TimeSpan.FromSeconds(5));
         Check.That(watch.Elapsed.TotalSeconds>=2.9,"Late transaction error reaches actual delayed completion");
-        Check.Equal(167122L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Exception rolls back cash");
+        Check.Equal(167120L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Exception rolls back cash");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={p.CharId} AND slot=402"),"Exception rolls back code charge");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=2399"),"Exception rolls back tentative output");
         Check.That(context.Server.DebugLog().Contains("[COMPILE60] Completion failed"),"Actual transaction exception is logged");
