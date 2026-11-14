@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 namespace hds
 {
     // Native Usable5:625d6b20 ->625d72b0 ->625d7230 ->62393c60.
@@ -11,12 +13,13 @@ namespace hds
         {
             public ushort Goid {get;} public byte Use {get;} public float StoredMaxDistance {get;} public OpenFloorPoint HalfExtents {get;} public string Evidence {get;}
             public RangeSource Source {get;}
+            public IReadOnlyList<byte> Uses {get;private set;}
             public bool AssumesInitialClientConfiguration=>Source==RangeSource.InitialClientFallback;
             public Profile(ushort goid,byte use,float max,OpenFloorPoint half,string evidence)
             {
                 if(goid==0||use==0||!float.IsFinite(max)||max<=0||!half.Finite||half.X<=0||half.Y<=0||half.Z<=0||
                     half.X>float.MaxValue||half.Y>float.MaxValue||half.Z>float.MaxValue||string.IsNullOrWhiteSpace(evidence))throw new ArgumentException("UnprovenUsableRange");
-                Goid=goid;Use=use;StoredMaxDistance=max;HalfExtents=half;Evidence=evidence;
+                Goid=goid;Use=use;Uses=Array.AsReadOnly(new[]{use});StoredMaxDistance=max;HalfExtents=half;Evidence=evidence;
             }
             // Native omitted/nonpositive branch bypasses the size floor and reads current CVar.
             // This profile is ONLY its proven initial400 configuration, not an observed runtime value.
@@ -24,8 +27,14 @@ namespace hds
             {Source=RangeSource.InitialClientFallback;StoredMaxDistance=0;}
             public static Profile InitialClient400(ushort goid,byte use,OpenFloorPoint half,string evidence)
             {
-                if(goid!=3||use!=5)throw new ArgumentException("UnprovenInitialFallbackProfile");
+                if(goid!=3||(use!=4&&use!=5&&use!=8))throw new ArgumentException("UnprovenInitialFallbackProfile");
                 return new Profile(goid,use,half,evidence);
+            }
+            public static Profile InitialComputerActions(IEnumerable<byte> uses,OpenFloorPoint half,string evidence)
+            {
+                byte[] actions=(uses??Array.Empty<byte>()).Distinct().OrderBy(x=>x).ToArray();
+                if(actions.Length==0||actions.Any(x=>x!=4&&x!=5&&x!=8))throw new ArgumentException("UnprovenComputerActionProfile");
+                var result=InitialClient400(3,actions[0],half,evidence);result.Uses=Array.AsReadOnly(actions);return result;
             }
             public float LowerBound=>Source==RangeSource.InitialClientFallback?400f:Math.Max(StoredMaxDistance,(float)((float)HalfExtents.Z+65f));
         }

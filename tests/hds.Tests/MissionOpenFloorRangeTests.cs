@@ -81,4 +81,12 @@ public class MissionOpenFloorRangeTests
         Assert.Equal(8,corners.Count);Assert.Equal(2000,corners.Min(p=>p.Y));Assert.Equal(2107,corners.Max(p=>p.Y));
         Assert.Equal(100,corners.Average(p=>p.X));Assert.Equal(300,corners.Average(p=>p.Z));
     }
-}
+    [Fact]
+    public void ComputerActionProfilesAreExplicitImmutableAndShareOnlyTheProvenInitialFallback()
+    {
+        byte[] actions={8,4,5};var profile=MissionOpenFloorUsableRange.Profile.InitialComputerActions(actions,new(43,25,40),"literal three Usable5 components zero beyond stored327");actions[0]=99;
+        Assert.Equal(new byte[]{4,5,8},profile.Uses);Assert.Equal(4,profile.Use);Assert.True(profile.AssumesInitialClientConfiguration);Assert.Equal(400,profile.LowerBound);
+        foreach(byte use in new byte[]{4,5,8})Assert.Equal(400,MissionOpenFloorUsableRange.Profile.InitialClient400(3,use,new(43,25,1000),"same nonpositive branch bypasses size floor").LowerBound);
+        Assert.Throws<ArgumentException>(()=>MissionOpenFloorUsableRange.Profile.InitialComputerActions(new byte[]{3},new(43,25,40),"unproven action"));
+        Assert.Throws<ArgumentException>(()=>MissionOpenFloorUsableRange.Profile.InitialComputerActions(Array.Empty<byte>(),new(43,25,40),"unknown action"));
+    }}

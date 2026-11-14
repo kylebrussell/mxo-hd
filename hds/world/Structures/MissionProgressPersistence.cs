@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace hds
 {
@@ -42,6 +43,11 @@ namespace hds
             public double[][] Exits { get; set; } = Array.Empty<double[]>();
             public StaticWorldObject[] SiteDoors { get; set; } = Array.Empty<StaticWorldObject>();
             public List<SavedObject> Objects { get; set; } = new List<SavedObject>();
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionOpenFloorPendingAdmission PendingOpenFloor { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorCurrentSiteIndex { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorPhase { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorLegacyPhase { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionOpenFloorSite[] OpenFloorSites { get; set; }
             public List<SavedMob> Mobs { get; set; } = new List<SavedMob>();
         }
         public sealed class SavedObject
@@ -51,8 +57,7 @@ namespace hds
             public ushort Goid { get; set; }
             public bool Unlocked { get; set; }
             public uint State { get; set; }
-            [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-            public MissionOpenFloorPlacement OpenFloor { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionOpenFloorPlacement OpenFloor { get; set; }
         }
         public sealed class SavedLoot
         {
@@ -101,7 +106,13 @@ namespace hds
                 NpcElapsed=npcTriggered.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)), WaveElapsed=waveTriggered.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)),
                 GoalElapsed=goalClock.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)), Waypoints=waypoints.ToArray(), Exits=exits.ToArray(),
                 SiteDoors=sites.Select(s=>s.elevatorDoor).ToArray(),
-                Objects=objects.Values.Select(o=>new SavedObject { Id=o.def.id, Spot=o.spot, Goid=o.goid, Unlocked=o.unlockedOnce, State=o.shownState }).ToList() };
+                Objects=objects.Values.Select(o=>new SavedObject { Id=o.def.id, Spot=o.spot, Goid=o.goid, Unlocked=o.unlockedOnce, State=o.shownState, OpenFloor=o.OpenFloor }).ToList() };
+            if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null))
+            {
+                state.Version=2;state.PendingOpenFloor=pendingOpenFloor;state.OpenFloorPhase=openFloorResolvedPhase;state.OpenFloorLegacyPhase=openFloorLegacyPhase;state.OpenFloorSites=sites.Select(MissionOpenFloorSite.From).ToArray();
+                state.OpenFloorCurrentSiteIndex=site==null?-1:sites.FindIndex(s=>ReferenceEquals(s,site));
+                if(site!=null&&state.OpenFloorCurrentSiteIndex<0)throw new InvalidOperationException("Box current site absent from exact history");
+            }
             state.Flags[nameof(waitingForExit)]= waitingForExit;
             state.Flags[nameof(entered)]= entered;
             state.Flags[nameof(failed)]= failed;
@@ -130,10 +141,15 @@ namespace hds
         internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door) =>
             door==null?null:candidates.FirstOrDefault(s=>s?.elevatorDoor!=null && s.elevatorDoor.mxoStaticId==door.mxoStaticId &&
                 s.elevatorDoor.sectorID==door.sectorID && s.elevatorDoor.metrId==door.metrId);
-        public static MissionProgress Restore(Mission mission, SavedState state, Func<double> clock = null)
+        public static MissionProgress Restore(Mission mission, SavedState state, Func<double> clock = null) => RestoreCore(mission,state,clock,null);
+        internal static MissionProgress RestoreFromCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,Func<double> clock=null) => RestoreCore(mission,state,clock,siteCatalog);
+        private static MissionProgress RestoreCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog)
         {
-            if (state.Version!=1 || state.Mission!=mission.id || state.Phase<0 || state.Phase>=mission.phases.Count)
+            if ((state.Version!=1&&state.Version!=2) || state.Mission!=mission.id || state.Phase<0 || state.Phase>=mission.phases.Count)
                 throw new InvalidOperationException("Unsupported or invalid saved mission phase");
+            if(state.Version==1&&(state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
+                throw new InvalidOperationException("Version1 cannot contain resolved open-floor metadata");
+            if(state.Version==2&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
             var p=new MissionProgress(mission) { persistenceId=state.Identity, phaseIndex=state.Phase, startedAt=state.Started, kills=state.Kills };
             if(clock!=null)p.clock=clock;
             double now=p.clock();
@@ -158,9 +174,26 @@ namespace hds
             p.justArrived.AddRange(mission.npcs.Where(n=>state.JustArrived.Contains(n.id)));
             p.wavesJustArrived.AddRange(p.Phase.Waves().Where(w=>state.WavesJustArrived.Contains(w.id)));p.justSwitched.AddRange(state.JustSwitched);
             p.waypoints=state.Waypoints.ToList();p.exits.AddRange(state.Exits);
-            foreach(var door in state.SiteDoors) { var site=FindSavedSite(MissionSites.For(mission.district),door); if(site!=null)p.sites.Add(site); }
-            p.site=p.sites.LastOrDefault();
-            foreach(var o in state.Objects) { var def=p.Phase.objects.Find(d=>d.id==o.Id);if(def!=null)p.objects[o.Id]=new MissionObjectState {def=def,spot=o.Spot,goid=o.Goid,unlockedOnce=o.Unlocked,shownState=o.State}; }
+            if(state.Version==1)
+                foreach(var door in state.SiteDoors) { var site=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door); if(site!=null)p.sites.Add(site); }
+            else
+            {
+                p.openFloorCheckpoint=true;p.pendingOpenFloor=state.PendingOpenFloor;p.openFloorResolvedPhase=state.OpenFloorPhase;p.openFloorLegacyPhase=state.OpenFloorLegacyPhase;
+                foreach(var saved in state.OpenFloorSites)
+                {
+                    var site=saved?.Resolve(siteCatalog??MissionSites.For(mission.district));
+                    if(site==null)throw new InvalidOperationException("Missing or ambiguous exact open-floor site history");
+                    p.sites.Add(site);
+                }
+            }
+            p.site=state.Version==1?p.sites.LastOrDefault():state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            foreach(var o in state.Objects)
+            {
+                var def=p.Phase.objects.Find(d=>d.id==o.Id);
+                if(state.Version==2&&(def==null||p.objects.ContainsKey(o.Id)))throw new InvalidOperationException("Invalid open-floor checkpoint object identity");
+                if(def!=null)p.objects[o.Id]=new MissionObjectState {def=def,spot=o.Spot,goid=o.Goid,unlockedOnce=o.Unlocked,shownState=o.State,OpenFloor=o.OpenFloor};
+            }
+            if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             return p;
         }
     }

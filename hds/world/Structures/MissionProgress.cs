@@ -26,6 +26,10 @@ namespace hds
 
         // A generated phase's placement, for this player: mission definitions are shared.
         public MissionSite site;
+        internal MissionOpenFloorPendingAdmission pendingOpenFloor;
+        internal bool openFloorCheckpoint;
+        internal int? openFloorResolvedPhase;
+        internal int? openFloorLegacyPhase;
         public readonly List<MissionSite> sites = new List<MissionSite>();         // every site used so far, in phase order
         public List<MissionWaypoint> waypoints = new List<MissionWaypoint>();      // this phase's, as sent
         public readonly List<double[]> exits = new List<double[]>();              // other places that count as leaving
@@ -429,6 +433,7 @@ namespace hds
         public bool NextPhase()
         {
             phaseIndex++;
+            openFloorResolvedPhase=null;openFloorLegacyPhase=null;
             waitingForExit = false;
             goalsCompleteSent = false;
             leaveNotNeeded = false;

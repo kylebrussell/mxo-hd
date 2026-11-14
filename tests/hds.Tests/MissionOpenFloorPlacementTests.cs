@@ -13,6 +13,16 @@ public class MissionOpenFloorPlacementTests
         return(request,new MissionObjectState{def=new MissionObjectDef{id=1},spot=raw,goid=3});
     }
     [Fact]
+    public void ExplicitLegacyMoveRefusesFixedStateBeforeChangingSourceOrViews()
+    {
+        var (request,state)=Input();state.OpenFloor=MissionOpenFloorPlacement.From(3082,0,1,state.spot,G.Plan(request));
+        var source=state.spot;string before=JsonSerializer.Serialize(source,MissionProgress.SaveJson);
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        var mission=new Mission{id=3082};var progress=new MissionProgress(mission);progress.objects[1]=state;client.playerData=new ClientData();client.playerData.missionProgress=progress;
+        Assert.False(MissionStaging.MoveObjectToPlayer(client,1));Assert.Same(source,state.spot);Assert.NotNull(state.OpenFloor);
+        Assert.Equal(before,JsonSerializer.Serialize(source,MissionProgress.SaveJson));
+    }
+    [Fact]
     public void UntouchedSavedObjectRetainsTheExactVersionOneJsonShape()
     {
         var saved=new MissionProgress.SavedObject{Id=1,Goid=548};

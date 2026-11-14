@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,7 +14,7 @@ namespace hds
     internal static class MissionOpenFloorResolver
     {
         internal const double Epsilon = 1e-7;
-        internal const int PolicyVersion = 2;
+        internal const int PolicyVersion = 3;
         internal readonly struct Point
         {
             public double X { get; }
@@ -87,21 +88,39 @@ namespace hds
         internal sealed class StaticScene
         {
             public ushort World {get;} public bool Complete {get;} public Bounds Coverage {get;} public double MinY {get;} public double MaxY {get;} public string Evidence {get;} public IReadOnlyList<StaticObstacle> Obstacles {get;}
-            public string Fingerprint=>Hash(new{World,Complete,Coverage.MinX,Coverage.MaxX,Coverage.MinZ,Coverage.MaxZ,MinY,MaxY,Evidence,Obstacles});
+            private readonly Lazy<string> fingerprint;
+            public string Fingerprint=>fingerprint.Value;
             public StaticScene(ushort world,bool complete,Bounds coverage,double minY,double maxY,IEnumerable<StaticObstacle> obstacles,string evidence)
-            {World=world;Complete=complete;Coverage=coverage;MinY=minY;MaxY=maxY;Obstacles=Freeze((obstacles??Array.Empty<StaticObstacle>()).OrderBy(o=>o?.Identity,StringComparer.Ordinal));Evidence=evidence;}
+            {World=world;Complete=complete;Coverage=coverage;MinY=minY;MaxY=maxY;Obstacles=Freeze((obstacles??Array.Empty<StaticObstacle>()).OrderBy(o=>o?.Identity,StringComparer.Ordinal));Evidence=evidence;fingerprint=new Lazy<string>(()=>Hash(new{World,Complete,Coverage.MinX,Coverage.MaxX,Coverage.MinZ,Coverage.MaxZ,MinY,MaxY,Evidence,Obstacles}));}
+        }
+        internal sealed class Reservation
+        {
+            public ushort World {get;} public ushort ObjectId {get;} public uint SourceKey {get;} public string SceneFingerprint {get;} public string PriorInputFingerprint {get;}
+            public double MinY {get;} public double MaxY {get;} public double Floor {get;} public Id RootSurface {get;} public Position Root {get;}
+            public IReadOnlyList<Point> Base {get;} public IReadOnlyList<Position> Route {get;} public bool ProtectRoute {get;}
+            private Reservation(Result result,ushort objectId,bool protectRoute)
+            {
+                World=result.Input.World;ObjectId=objectId;SourceKey=result.Input.RawSource.SourceKey;SceneFingerprint=result.Input.Scene.Fingerprint;PriorInputFingerprint=result.InputFingerprint;
+                MinY=Math.Min(result.Centre.Y,(float)result.Centre.Y)+result.Input.Model.Min.Y;MaxY=Math.Max(result.Centre.Y,(float)result.Centre.Y)+result.Input.Model.Max.Y;
+                Floor=result.Input.Entry.Standing.Y-95;RootSurface=result.Input.Entry.Surface;Root=result.Input.Entry.Standing;Base=Freeze(result.Base);ProtectRoute=protectRoute;Route=Freeze(protectRoute?result.Route:Array.Empty<Position>());
+            }
+            internal static Reservation From(Result result,ushort objectId,bool protectRoute=true)
+            {if(result?.HasPlan!=true)throw new ArgumentException("MissingPrefixPlan");return new Reservation(result,objectId,protectRoute);}
         }
         internal sealed class Request
         {
             public ushort World {get;} public SourceModelPresence SourceModel {get;} public string SourceModelEvidence {get;} public RawPose RawSource {get;} public RawPose Anchor {get;} public string AnchorEvidence {get;}
             public OpenFloorModelBounds Model {get;} public MissionOpenFloorUsableRange.Profile Usable {get;}
             public IReadOnlyList<Surface> Surfaces {get;} public Root Entry {get;} public Bounds SiteBounds {get;} public StaticScene Scene {get;}
-            public string Fingerprint=>Hash(new{Policy=PolicyVersion,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,
-                Scene=Scene.Fingerprint,Surfaces=Surfaces.OrderBy(s=>s.Identity).ToArray()});
+            public IReadOnlyList<Reservation> Reservations {get;}
+            private readonly Lazy<string> fingerprint;
+            public string Fingerprint=>fingerprint.Value;
             public Request(ushort world,SourceModelPresence sourceModel,string sourceModelEvidence,RawPose rawSource,RawPose anchor,string anchorEvidence,OpenFloorModelBounds model,MissionOpenFloorUsableRange.Profile usable,
-                IEnumerable<Surface> surfaces,Root entry,Bounds siteBounds,StaticScene scene)
-            {World=world;SourceModel=sourceModel;SourceModelEvidence=sourceModelEvidence;RawSource=rawSource;Anchor=anchor;AnchorEvidence=anchorEvidence;Model=model;Usable=usable;Surfaces=Freeze(surfaces??Array.Empty<Surface>());Entry=entry;SiteBounds=siteBounds;Scene=scene;}
+                IEnumerable<Surface> surfaces,Root entry,Bounds siteBounds,StaticScene scene,IEnumerable<Reservation> reservations=null)
+            {World=world;SourceModel=sourceModel;SourceModelEvidence=sourceModelEvidence;RawSource=rawSource;Anchor=anchor;AnchorEvidence=anchorEvidence;Model=model;Usable=usable;Surfaces=Freeze(surfaces??Array.Empty<Surface>());Entry=entry;SiteBounds=siteBounds;Scene=scene;Reservations=Freeze(reservations??Array.Empty<Reservation>());fingerprint=new Lazy<string>(()=>Hash(new{Policy=PolicyVersion,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,Scene=Scene.Fingerprint,Surfaces=Surfaces.OrderBy(s=>s.Identity).ToArray(),Reservations}));}
         }
+        internal static Request WithReservations(Request r,IEnumerable<Reservation> reservations)=>new Request(r.World,r.SourceModel,r.SourceModelEvidence,r.RawSource,r.Anchor,r.AnchorEvidence,
+            r.Model,r.Usable,r.Surfaces,r.Entry,r.SiteBounds,r.Scene,reservations);
         internal sealed class Result
         {
             public bool HasPlan=>Refusal==null; public string Refusal {get;} public Request Input {get;} public string InputFingerprint {get;}
@@ -255,13 +274,11 @@ namespace hds
         }
         // Exact broad phase only: every candidate base and route is contained in this NAV component.
         // Keep closed contact and the full numerical guard; never use a locality radius or source-sector filter.
-        private static bool ComponentRelevant(StaticObstacle o,Surface[] component,double guard)
-        {
-            double minX=component.Min(s=>s.Vertices.Min(p=>p.X)),maxX=component.Max(s=>s.Vertices.Max(p=>p.X));
-            double minZ=component.Min(s=>s.Vertices.Min(p=>p.Z)),maxZ=component.Max(s=>s.Vertices.Max(p=>p.Z));
-            return o.Footprint.Max(p=>p.X)>=minX-guard&&o.Footprint.Min(p=>p.X)<=maxX+guard&&
-                o.Footprint.Max(p=>p.Z)>=minZ-guard&&o.Footprint.Min(p=>p.Z)<=maxZ+guard;
-        }
+        private static Bounds ComponentBounds(Surface[] component)=>new Bounds(component.Min(s=>s.Vertices.Min(p=>p.X)),component.Max(s=>s.Vertices.Max(p=>p.X)),
+            component.Min(s=>s.Vertices.Min(p=>p.Z)),component.Max(s=>s.Vertices.Max(p=>p.Z)));
+        private static bool ComponentRelevant(StaticObstacle o,Bounds bounds,double guard)=>
+            o.Footprint.Max(p=>p.X)>=bounds.MinX-guard&&o.Footprint.Min(p=>p.X)<=bounds.MaxX+guard&&
+            o.Footprint.Max(p=>p.Z)>=bounds.MinZ-guard&&o.Footprint.Min(p=>p.Z)<=bounds.MaxZ+guard;
         private static bool RouteRelevant(StaticObstacle o,double floor)=>o.MinY<=Math.Max(floor+95,(float)(floor+95))+Epsilon&&o.MaxY>=Math.Min(floor,(float)floor)-Epsilon;
         private static bool VolumeRelevant(StaticObstacle o,double min,double max)=>o.MinY<=max+Epsilon&&o.MaxY>=min-Epsilon;
         private static List<Cell> StandingCells(Surface[] component,IEnumerable<Point[]> obstacles,double guard)
@@ -277,7 +294,8 @@ namespace hds
         private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range)
         {
             route=null;path=null;range=default;double floor=r.Entry.Standing.Y-95;
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,component,guard)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
+            Bounds envelope=ComponentBounds(component);
+            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,envelope,guard)).Select(o=>o.Footprint.ToArray()).Concat(r.Reservations.Where(o=>o.MinY<=floor+95+Epsilon&&o.MaxY>=floor-Epsilon).Select(o=>o.Base.ToArray())).Append(shape).ToArray();
             var cells=StandingCells(component,obstacles,guard);var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(r.Entry.Surface)&&Inside(c.Polygon,r.Entry.Standing.Xz));if(start==null)return false;
             var previous=new Dictionary<int,int?>{{start.Index,null}};var portals=new Dictionary<int,Point>();var queue=new Queue<Cell>();queue.Enqueue(start);
             while(queue.Count>0)
@@ -304,10 +322,23 @@ namespace hds
             return false;
         }
         internal static bool TryResolve(Request request,out Result result){result=Plan(request);return result.HasPlan;}
+        private static readonly ConcurrentDictionary<string,Lazy<Surface[]>> topologyCache=new ConcurrentDictionary<string,Lazy<Surface[]>>(StringComparer.Ordinal);
+        private static Surface[] ConnectedComponent(Request r,Surface start)
+        {
+            // Content key, not mutable NavMesh/global-path identity. Only immutable numeric surfaces are cached.
+            string key=Hash(new{r.World,Start=start.Identity,Surfaces=r.Surfaces.OrderBy(s=>s.Identity).ToArray()});
+            return topologyCache.GetOrAdd(key,_=>new Lazy<Surface[]>(()=>
+            {
+                var all=r.Surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();
+                var found=new HashSet<Id>{start.Identity};var queue=new Queue<Surface>();queue.Enqueue(start);
+                while(queue.Count>0){var current=queue.Dequeue();foreach(var surface in all)if(!found.Contains(surface.Identity)&&Portal(current,surface).HasValue){found.Add(surface.Identity);queue.Enqueue(surface);}}
+                return all.Where(s=>found.Contains(s.Identity)).ToArray();
+            })).Value;
+        }
         private sealed class Context
         {
             internal Request Input;internal Point[] Offsets;internal Surface Start;internal Surface[] Component;
-            internal double Guard,CentreY,MinY,MaxY;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
+            internal double Guard,CentreY,MinY,MaxY;internal Bounds Envelope;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
         }
         private static (Context Context,string Refusal) Prepare(Request r)
         {
@@ -316,18 +347,27 @@ namespace hds
             if(r.Entry==null||string.IsNullOrWhiteSpace(r.Entry.Evidence)||!Finite(r.Entry.Standing.X,r.Entry.Standing.Y,r.Entry.Standing.Z))return No("MissingFiniteRoot");
             if(!r.SiteBounds.Valid||r.Scene==null||!r.Scene.Complete||r.Scene.World!=r.World||!r.Scene.Coverage.Valid||!Finite(r.Scene.MinY,r.Scene.MaxY)||r.Scene.MinY>=r.Scene.MaxY||string.IsNullOrWhiteSpace(r.Scene.Evidence))return No("MissingStaticCoverage");
             if(!Inside(r.Scene.Coverage.Polygon,r.Entry.Standing.Xz)||r.SiteBounds.Polygon.Any(p=>!Inside(r.Scene.Coverage.Polygon,p)))return No("IncompleteStaticEnvelope");
-            if(r.Surfaces==null||r.Surfaces.Any(s=>s==null||!Finite(s.FloorX,s.FloorZ,s.FloorC))||r.Surfaces.Select(s=>s.Identity).Distinct().Count()!=r.Surfaces.Count)return No("InvalidSurfaceSnapshot");
+            if(r.Surfaces==null||r.Surfaces.Any(s=>s==null||!Finite(s.FloorX,s.FloorZ,s.FloorC)||s.Vertices.Any(p=>!Finite(p.X,p.Z)))||r.Surfaces.Select(s=>s.Identity).Distinct().Count()!=r.Surfaces.Count)return No("InvalidSurfaceSnapshot");
             if(r.Scene.Obstacles.Any(o=>o==null||!Finite(o.MinY,o.MaxY)||o.MinY>o.MaxY||!Convex(o.Footprint)||string.IsNullOrWhiteSpace(o.Evidence)||string.IsNullOrWhiteSpace(o.Identity))||r.Scene.Obstacles.Select(o=>o.Identity).Distinct(StringComparer.Ordinal).Count()!=r.Scene.Obstacles.Count)return No("UnprovenStaticBounds");
             if(r.SourceModel==SourceModelPresence.Unproven||(r.SourceModel==SourceModelPresence.MeasuredModel&&!r.Scene.Obstacles.Any(o=>o.Key==r.RawSource.SourceKey&&o.Goid==r.RawSource.SourceGoid)))return No("MissingSourceModelEvidence");
             Surface start=r.Surfaces.FirstOrDefault(s=>s.Identity.Equals(r.Entry.Surface));if(start==null||!start.Flat||!Convex(start.Vertices)||Math.Abs(r.Entry.Standing.Y-start.FloorC-95)>Epsilon||!Inside(start.Vertices,r.Entry.Standing.Xz))return No("InvalidStandingRoot");
-            var all=r.Surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();var found=new HashSet<Id>{start.Identity};var queue=new Queue<Surface>();queue.Enqueue(start);
-            while(queue.Count>0){var current=queue.Dequeue();foreach(var s in all)if(!found.Contains(s.Identity)&&Portal(current,s).HasValue){found.Add(s.Identity);queue.Enqueue(s);}}
-            var component=all.Where(s=>found.Contains(s.Identity)).ToArray();double guard=Guard(r);if(!double.IsFinite(guard))return No("UnrepresentableCoordinates");
+            if(r.Reservations.Any(p=>p==null||p.World!=r.World||p.SceneFingerprint!=r.Scene.Fingerprint||p.Floor!=start.FloorC||!p.RootSurface.Equals(r.Entry.Surface)||
+                p.Root.X!=r.Entry.Standing.X||p.Root.Y!=r.Entry.Standing.Y||p.Root.Z!=r.Entry.Standing.Z||!Convex(p.Base)||!Finite(p.MinY,p.MaxY)||p.MinY>p.MaxY)||
+                r.Reservations.Select(p=>p.ObjectId).Distinct().Count()!=r.Reservations.Count||r.Reservations.Select(p=>p.SourceKey).Distinct().Count()!=r.Reservations.Count)return No("InvalidPrefixReservation");
+            var component=ConnectedComponent(r,start);double guard=Guard(r);if(!double.IsFinite(guard))return No("UnrepresentableCoordinates");
             double centreY=r.Model.CentreY(start.FloorC),minY=centreY+r.Model.Min.Y,maxY=centreY+r.Model.Max.Y;
             if(r.Scene.MinY>Math.Min(start.FloorC,minY)-guard||r.Scene.MaxY<Math.Max(maxY,start.FloorC+95)+guard)return No("IncompleteStaticVerticalEnvelope");
-            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,minY,maxY)&&ComponentRelevant(o,component,guard)).ToArray();
-            var forbidden=relevant.Select(o=>Hull(o.Footprint.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
-            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Relevant=relevant,Forbidden=forbidden},null);
+            Bounds envelope=ComponentBounds(component);
+            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,minY,maxY)&&ComponentRelevant(o,envelope,guard)).ToArray();
+            var forbidden=relevant.Select(o=>Hull(o.Footprint.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToList();
+            foreach(var prior in r.Reservations)
+            {
+                if(prior.MinY<=maxY+Epsilon&&prior.MaxY>=minY-Epsilon)forbidden.Add(Hull(prior.Base.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z)))));
+                if(prior.ProtectRoute&&minY<=prior.Floor+95+Epsilon&&maxY>=prior.Floor-Epsilon)
+                    foreach(var points in new[]{prior.Route.Select(p=>p.Xz).ToArray(),prior.Route.Select(p=>Rounded(p.Xz)).ToArray()})
+                        for(int i=0;i<points.Length-1;i++)forbidden.Add(Hull(new[]{points[i],points[i+1]}.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z)))));
+            }
+            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Envelope=envelope,Relevant=relevant,Forbidden=forbidden.ToArray()},null);
         }
         private static bool GeometryClear(Context c,Surface surface,Position position,out Point[] shape)
         {
@@ -337,7 +377,10 @@ namespace hds
             var carrier=c.Component.Where(s=>Inside(s.Vertices,position.Xz)).OrderBy(s=>s.Identity).FirstOrDefault();
             if(carrier==null||!carrier.Identity.Equals(surface.Identity))return false;
             shape=c.Offsets.Select(p=>new Point(position.X+p.X,position.Z+p.Z)).ToArray();
-            var fixedShape=shape;if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component))||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
+            var fixedShape=shape;
+            if(r.Reservations.Any(prior=>(prior.MinY<=c.MaxY+Epsilon&&prior.MaxY>=c.MinY-Epsilon&&Overlap(fixedShape,prior.Base.ToArray()))||
+                (prior.ProtectRoute&&c.MinY<=prior.Floor+95+Epsilon&&c.MaxY>=prior.Floor-Epsilon&&(!Clear(prior.Route.Select(p=>p.Xz).ToArray(),fixedShape)||!Clear(prior.Route.Select(p=>Rounded(p.Xz)).ToArray(),fixedShape)))))return false;
+            if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component))||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
             return (castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component))&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
         }
@@ -347,7 +390,7 @@ namespace hds
                 Distance(route[0].Xz,r.Entry.Standing.Xz)>Epsilon||Math.Abs(route[0].Y-r.Entry.Standing.Y)>Epsilon)return false;
             var points=route.Select(p=>p.Xz).ToArray();var cast=points.Select(Rounded).ToArray();
             if(points.Concat(cast).Any(p=>!Inside(r.Scene.Coverage.Polygon,p)))return false;
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,c.Start.FloorC)&&ComponentRelevant(o,c.Component,c.Guard)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
+            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,c.Start.FloorC)&&ComponentRelevant(o,c.Envelope,c.Guard)).Select(o=>o.Footprint.ToArray()).Concat(r.Reservations.Where(o=>o.MinY<=c.Start.FloorC+95+Epsilon&&o.MaxY>=c.Start.FloorC-Epsilon).Select(o=>o.Base.ToArray())).Append(shape).ToArray();
             if(obstacles.Any(o=>!Clear(points,o)||!Clear(cast,o)))return false;
             var cells=StandingCells(c.Component,obstacles,c.Guard);
             for(int i=0;i<points.Length-1;i++)
@@ -363,6 +406,26 @@ namespace hds
             if(string.IsNullOrEmpty(expectedInputFingerprint)||expectedInputFingerprint!=r.Fingerprint){refusal="ChangedFixedPlacementInputs";return false;}
             if(!GeometryClear(c,c.Component.FirstOrDefault(s=>s.Identity.Equals(surface)),centre,out var shape)){refusal="InvalidFixedGeometry";return false;}
             if(!RouteValid(c,centre,shape,route)){refusal="InvalidFixedStandingRouteOrRange";return false;}return true;
+        }
+        // Initial whole-phase search only. The body stays fixed; all routes are solved against the complete body set.
+        // Admitted identity is the canonical sourced request, never the ephemeral search reservation order.
+        internal static bool RerouteFixedBody(Request canonical,Id surface,Position centre,IEnumerable<Reservation> bodies,out Result result,out string refusal)
+        {
+            result=null;var working=WithReservations(canonical,bodies);var prepared=Prepare(working);refusal=prepared.Refusal;if(prepared.Context==null)return false;
+            var context=prepared.Context;var carrier=context.Component.FirstOrDefault(s=>s.Identity.Equals(surface));
+            if(!GeometryClear(context,carrier,centre,out var shape)){refusal="InvalidWholePhaseBody";return false;}
+            if(!Standing(working,context.Component,shape,centre,context.Guard,out var route,out var ids,out var range)||!RouteValid(context,centre,shape,route))
+            {refusal="NoWholePhaseStandingRoute";return false;}
+            result=new Result(canonical,carrier,centre.Xz,shape,route,ids,context.Guard,range);return true;
+        }
+        internal static bool TryReplay(Request r,string fingerprint,Id surface,Position centre,IReadOnlyList<Position> route,IReadOnlyList<Id> ids,out Result result,out string refusal)
+        {
+            result=null;
+            if(!ValidateFixed(r,fingerprint,surface,centre,route,out refusal)||!ValidateRouteIds(r,ids,route)){refusal=refusal??"InvalidFixedRouteIdentity";return false;}
+            var p=Prepare(r);var c=p.Context;var carrier=c.Component.Single(s=>s.Identity.Equals(surface));
+            if(!GeometryClear(c,carrier,centre,out var shape)){refusal="InvalidFixedGeometry";return false;}
+            var range=MissionOpenFloorUsableRange.Test(r.Usable,Native(route.Last()),Native(centre),new OpenFloorOrientation(r.Anchor.QuaternionHex));
+            result=new Result(r,carrier,centre.Xz,shape,route.ToArray(),ids.ToArray(),c.Guard,range);return true;
         }
         internal static bool ValidateRouteIds(Request r,IReadOnlyList<Id> ids,IReadOnlyList<Position> route)
         {

@@ -5,6 +5,16 @@ public class MissionOpenFloorSourceTests
 {
     private static string Repo {get {string p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds","Hardline Dreams MxO server.csproj")))p=Path.GetDirectoryName(p)!;return p;}}
     [Fact]
+    public void AllThreeComputerActionsAreTypedUsable5FieldsBeyondTheCopiedStoredBytes()
+    {
+        using var doc=JsonDocument.Parse(File.ReadAllText(Path.Combine(Repo,"research/protocol/mission-open-floor-computer-usables.json")));
+        var root=doc.RootElement;Assert.Equal(648,root.GetProperty("storageSize").GetInt32());Assert.Equal(327,root.GetProperty("storedSize").GetInt32());
+        foreach(var pair in new[]{("HackUsable",399),("GetUsable",387),("PutUsable",606)})
+        {
+            var field=root.GetProperty("fields").EnumerateArray().Single(f=>f.GetProperty("component").GetProperty("name").GetString()==pair.Item1&&f.GetProperty("slot").GetInt32()==6);
+            Assert.Equal(5,field.GetProperty("component").GetProperty("type").GetInt32());Assert.Equal(pair.Item2,field.GetProperty("offset").GetInt32());Assert.Equal(4,field.GetProperty("width").GetInt32());Assert.False(field.GetProperty("stored").GetBoolean());Assert.Equal("",field.GetProperty("rawHex").GetString());
+        }
+    }    [Fact]
     public void PinnedNativeAndGobEvidenceDistinguishesStoredRangeFromInitializedFallback()
     {
         using var native=JsonDocument.Parse(File.ReadAllText(Path.Combine(Repo,"research/protocol/mission-open-floor-usable-range.json")));

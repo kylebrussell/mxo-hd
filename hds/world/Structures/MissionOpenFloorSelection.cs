@@ -15,7 +15,7 @@ namespace hds
         public ushort Goid { get; }
         public string RawSpotJson { get; }
         [JsonConstructor] public MissionOpenFloorChoice(ushort objectId,ushort goid,string rawSpotJson) {ObjectId=objectId;Goid=goid;RawSpotJson=rawSpotJson;}
-        internal StaticWorldObject ReadSpot() => JsonSerializer.Deserialize<StaticWorldObject>(RawSpotJson,MissionProgress.SaveJson);
+        internal StaticWorldObject ReadSpot() => RawSpotJson==null?null:JsonSerializer.Deserialize<StaticWorldObject>(RawSpotJson,MissionProgress.SaveJson);
         internal static MissionOpenFloorChoice From(MissionStaging.ObjectChoice c) => new MissionOpenFloorChoice(c.Definition.id,c.Goid,
             c.Spot==null?null:JsonSerializer.Serialize(c.Spot,MissionProgress.SaveJson));
     }

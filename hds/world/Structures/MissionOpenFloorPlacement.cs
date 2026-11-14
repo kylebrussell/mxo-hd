@@ -41,16 +41,17 @@ namespace hds
                 route.Length!=routeSurfaces.Length+3||centre.Concat(standing).Concat(route).Any(x=>!double.IsFinite(x))||!standing.SequenceEqual(route.Skip(route.Length-3)))return false;
             try{_ = new OpenFloorOrientation(Quaternion);}catch(ArgumentException){return false;}return true;
         }
-        internal bool Replay(G.Request request,int mission,int phase,MissionObjectState state,out string refusal)
+        internal bool Replay(G.Request request,int mission,int phase,MissionObjectState state,out string refusal)=>TryReplay(request,mission,phase,state,out _,out refusal);
+        internal bool TryReplay(G.Request request,int mission,int phase,MissionObjectState state,out G.Result result,out string refusal)
         {
-            refusal="InvalidOpenFloorCheckpointIdentity";
+            result=null;refusal="InvalidOpenFloorCheckpointIdentity";
             if(state==null||state.def==null||Mission!=mission||Phase!=phase||!Basic(state.spot,state.goid,state.def.id)||request.World!=World||request.Anchor.QuaternionHex!=Quaternion||
                 !Id(request.Entry.Surface).SequenceEqual(rootSurface))return false;
             var points=Enumerable.Range(0,route.Length/3).Select(i=>new G.Position(route[i*3],route[i*3+1],route[i*3+2])).ToArray();
             if(points[0].X!=request.Entry.Standing.X||points[0].Y!=request.Entry.Standing.Y||points[0].Z!=request.Entry.Standing.Z)return false;
             var ids=Enumerable.Range(0,routeSurfaces.Length/3).Select(i=>new G.Id(routeSurfaces[i*3],routeSurfaces[i*3+1],routeSurfaces[i*3+2])).ToArray();
             if(!G.ValidateRouteIds(request,ids,points))return false;
-            return G.ValidateFixed(request,InputFingerprint,new G.Id(surface[0],surface[1],surface[2]),new G.Position(centre[0],centre[1],centre[2]),points,out refusal);
+            return G.TryReplay(request,InputFingerprint,new G.Id(surface[0],surface[1],surface[2]),new G.Position(centre[0],centre[1],centre[2]),points,ids,out result,out refusal);
         }
         private static bool Hex(string s,int length)=>s!=null&&s.Length==length&&s.All(Uri.IsHexDigit);
     }

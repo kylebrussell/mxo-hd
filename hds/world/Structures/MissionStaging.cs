@@ -123,7 +123,9 @@ namespace hds
         public static int SpotsForWaves(MissionPhase phase) => phase.Waves().Where(w => w.arrival.at == null).Sum(w => w.count);
 
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
-        public static bool Stage(WorldClient client, MissionProgress progress)
+        public static bool Stage(WorldClient client, MissionProgress progress) => StageCore(client,progress,null);
+        internal static bool StagePrepared(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan) => StageCore(client,progress,plan);
+        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared)
         {
             MissionPhase phase = progress.Phase;
             Mission mission = progress.mission;
@@ -139,19 +141,30 @@ namespace hds
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
             int furniture = FurnitureNeeded(phase);
-            Random rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
-            List<MissionSite> sites = MissionSites.For(mission.district);
-            MissionSite site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
-            client.playerData.missionPreview = null;
-            client.playerData.missionPreviewFor = null;
-            List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            int npcs = placed.Count + SpotsForWaves(phase);
-            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture)
-                        ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture);
-            if (site == null)
+            Random rng=null;MissionSite site;
+            if(prepared==null)
             {
-                Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
-                return false;
+                rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
+                List<MissionSite> sites = MissionSites.For(mission.district);
+                site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
+                client.playerData.missionPreview = null;
+                client.playerData.missionPreviewFor = null;
+                List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
+                int npcs = placed.Count + SpotsForWaves(phase);
+                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture)
+                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture);
+                if (site == null)
+                {
+                    Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
+                    return false;
+                }
+            }
+            else
+            {
+                prepared.RequireCurrent(client,progress);
+                site=prepared.Site;
+                if(prepared.Adopted)progress.openFloorResolvedPhase=progress.phaseIndex;
+                client.playerData.missionPreview=null;client.playerData.missionPreviewFor=null;
             }
 
             progress.site = site;
@@ -251,7 +264,8 @@ namespace hds
                 }
             }
 
-            PlaceObjects(client, progress, rng);
+            if(prepared==null)PlaceObjects(client, progress, rng);
+            else PlacePreparedObjects(client,progress,prepared);
 
             for (int i = 0; i < besideObjects.Count; i++)
             {
@@ -508,7 +522,7 @@ namespace hds
             }
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
-            var pose = MissionComputerAnchors.For(state);
+            var pose = MissionObjectPoses.For(state);
             SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
             SetAttribute(obj, "Orientation", pose.Orientation);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
@@ -557,6 +571,9 @@ namespace hds
             {
                 return false;
             }
+
+            // Fixed admitted poses are immutable; this explicit legacy custom-move tool refuses before touching a view or source.
+            if(state.OpenFloor!=null)return false;
 
             ClientView view = client.viewMan.FindViewForEntity(state.entity);
             if (view != null)
