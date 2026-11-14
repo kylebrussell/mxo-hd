@@ -147,7 +147,7 @@ namespace hds
             {Input=input;Surface=surface.Identity;Centre=new Position(centre.X,input.Model.CentreY(surface.FloorC),centre.Z);Base=Freeze(shape);Distance=distance;RootReachableCentre=rootReachable;}
         }
         private sealed class Candidate
-        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal double Distance;internal bool RootReachable;}
+        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal double Distance;internal bool RootReachable;internal int Proof;internal BodyCandidate Body;}
         private sealed class Cell
         {internal Surface Surface;internal Point[] Polygon;internal int Index;}
         private static string Hash(object value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value))));
@@ -376,7 +376,7 @@ namespace hds
         {
             internal Request Input;internal Point[] Offsets;internal Surface Start;internal Surface[] Component;
             internal double Guard,CentreY,MinY,MaxY;internal Bounds Envelope;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
-            internal double CastCentreY;internal Point[][] OriginalGeometryFootprints,CastGeometryFootprints;
+            internal double CastCentreY;internal Point[][] OriginalGeometryFootprints,CastGeometryFootprints;internal int GeometryEvaluations;
             internal readonly Dictionary<(double X,double Z),Surface> Carriers=new Dictionary<(double X,double Z),Surface>();
         }
         private static (Context Context,string Refusal) Prepare(Request r)
@@ -556,8 +556,22 @@ namespace hds
             return true;
         }
         private static List<Candidate> GeometricCandidates(Context context,bool expanded)=>GeometricCandidatesCore(context,expanded,true);
-        // The late-only mode preserves the prior sequence oracle for equivalence tests. Runtime always deduplicates early.
         private static List<Candidate> GeometricCandidatesCore(Context context,bool expanded,bool deduplicateEarly)
+            =>EnumerateGeometry(context,expanded,deduplicateEarly).DistinctBy(c=>(c.Centre.X,c.Centre.Z)).ToList();
+        private static IEnumerable<Candidate> EnumerateGeometry(Context context,bool expanded,bool deduplicateEarly=true)
+        {
+            foreach(var candidate in RepresentedProposals(context,expanded,deduplicateEarly))
+                if(ProveCandidate(context,candidate,expanded))yield return candidate;
+        }
+        private static bool ProveCandidate(Context context,Candidate candidate,bool expanded)
+        {
+            if(candidate.Proof!=0)return candidate.Proof>0;context.GeometryEvaluations++;
+            bool clear=GeometryClear(context,candidate.Surface,new Position(candidate.Centre.X,context.CentreY,candidate.Centre.Z),out var shape);
+            candidate.Shape=shape;
+            if(clear&&expanded)clear=Clear(new[]{context.Input.Entry.Standing.Xz},shape)&&Clear(new[]{Rounded(context.Input.Entry.Standing.Xz)},shape);
+            candidate.Proof=clear?1:-1;return clear;
+        }
+        private static List<Candidate> RepresentedProposals(Context context,bool expanded,bool deduplicateEarly=true)
         {
             var r=context.Input;var offsets=context.Offsets;var component=context.Component;double guard=context.Guard,centreY=context.CentreY;var forbidden=context.Forbidden;
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
@@ -578,28 +592,47 @@ namespace hds
                     // failures have identical geometry. Preserve the first occurrence, as the final DistinctBy did.
                     if(deduplicateEarly&&!representedCentres.Add((centre.X,centre.Z)))continue;
                     var surface=Carrier(context,centre);if(surface==null)continue;
-                    var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
-                    if(expanded&&(!Clear(new[]{r.Entry.Standing.Xz},shape)||!Clear(new[]{Rounded(r.Entry.Standing.Xz)},shape)))continue;
-                    candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Distance=Distance(centre,r.Anchor.Position.Xz)});
+                    candidates.Add(new Candidate{Surface=surface,Centre=centre,Distance=Distance(centre,r.Anchor.Position.Xz)});
                 }
-            }            return candidates.DistinctBy(c=>(c.Centre.X,c.Centre.Z)).OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
+            }            return candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
+        }
+        internal sealed class ReplayableBodies : IEnumerable<BodyCandidate>
+        {
+            private readonly Func<bool,IEnumerable<BodyCandidate>> enumerate;private readonly Func<int> evaluations;
+            internal ReplayableBodies(Func<bool,IEnumerable<BodyCandidate>> enumerate,Func<int> evaluations){this.enumerate=enumerate;this.evaluations=evaluations;}
+            internal int GeometryEvaluations=>evaluations();
+            internal IEnumerable<BodyCandidate> Enumerate(bool rootOnly)=>enumerate(rootOnly);
+            public IEnumerator<BodyCandidate> GetEnumerator()=>enumerate(false).GetEnumerator();
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()=>GetEnumerator();
+        }
+        internal static bool TryBodySequence(Request r,out ReplayableBodies sequence,out string refusal,out bool staticRootGraphBuilt)
+        {
+            sequence=null;staticRootGraphBuilt=false;var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return false;
+            var context=p.Context;var proposals=RepresentedProposals(context,true);
+            // Match eager refusal order: establish at least one valid body BEFORE the static-root graph.
+            if(!proposals.Any(candidate=>ProveCandidate(context,candidate,true))){refusal="NoGeometricBodyCandidates";return false;}
+            staticRootGraphBuilt=true;var graph=BuildStandingGraph(r,context.Component,Array.Empty<Point[]>(),context.Guard);
+            if(graph==null){refusal="BlockedStaticRoot";return false;}
+            var reachable=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
+            foreach(var candidate in proposals)candidate.RootReachable=reachable.Any(polygon=>Inside(polygon,candidate.Centre));
+            var ordered=proposals.OrderBy(c=>c.RootReachable?0:1).ThenBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToArray();
+            IEnumerable<BodyCandidate> Enumerate(bool rootOnly)
+            {
+                foreach(var candidate in ordered)
+                {
+                    if(rootOnly&&!candidate.RootReachable)yield break;
+                    if(!ProveCandidate(context,candidate,true))continue;
+                    if(candidate.Body==null)candidate.Body=new BodyCandidate(r,candidate.Surface,candidate.Centre,candidate.Shape,candidate.Distance,candidate.RootReachable);
+                    yield return candidate.Body;
+                }
+            }
+            sequence=new ReplayableBodies(Enumerate,()=>context.GeometryEvaluations);refusal=null;return true;
         }
         internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal)=>BodyCandidates(r,out refusal,out _);
         internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal,out bool staticRootGraphBuilt)
         {
-            staticRootGraphBuilt=false;
-            var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return Array.AsReadOnly(Array.Empty<BodyCandidate>());
-            var candidates=GeometricCandidates(p.Context,true);
-            if(candidates.Count==0){refusal="NoGeometricBodyCandidates";return Freeze(Array.Empty<BodyCandidate>());}
-            // Search root-reachable centres first; all remaining candidates remain eligible.
-            {
-                staticRootGraphBuilt=true;var graph=BuildStandingGraph(r,p.Context.Component,Array.Empty<Point[]>(),p.Context.Guard);
-                if(graph==null){refusal="BlockedStaticRoot";return Freeze(Array.Empty<BodyCandidate>());}
-                var reachablePolygons=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
-                foreach(var c in candidates)c.RootReachable=reachablePolygons.Any(p=>Inside(p,c.Centre));
-                candidates=candidates.OrderBy(c=>c.RootReachable?0:1).ThenBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
-            }
-            return Freeze(candidates.Select(c=>new BodyCandidate(r,c.Surface,c.Centre,c.Shape,c.Distance,c.RootReachable)));
+            if(!TryBodySequence(r,out var sequence,out refusal,out staticRootGraphBuilt))return Freeze(Array.Empty<BodyCandidate>());
+            return Freeze(sequence);
         }
         internal static Result Plan(Request r)=>Plan(r,int.MaxValue,int.MaxValue,out _,out _);
         internal static Result Plan(Request r,int maxBodyNodes,int maxRouteGraphs,out int bodyNodes,out int routeGraphs)
@@ -608,9 +641,9 @@ namespace hds
             Result No(string reason)=>new Result(reason,r);var prepared=Prepare(r);if(prepared.Context==null)return No(prepared.Refusal);
             var context=prepared.Context;var offsets=context.Offsets;var start=context.Start;var component=context.Component;double guard=context.Guard,centreY=context.CentreY,maxY=context.MaxY;
             var relevant=context.Relevant;var forbidden=context.Forbidden;
-            var candidates=GeometricCandidates(context,false);
+            var candidates=EnumerateGeometry(context,false);
             // The same total candidate order as the original minimum selection; defer expensive route work.
-            foreach(var candidate in candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z))
+            foreach(var candidate in candidates)
             {
                 if(bodyNodes>=maxBodyNodes)return No("SearchExhausted:BodyNodes");bodyNodes++;
                 var position=new Position(candidate.Centre.X,centreY,candidate.Centre.Z);

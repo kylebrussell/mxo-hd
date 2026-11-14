@@ -63,11 +63,11 @@ namespace hds
                 if(measured.BodyNodes>=limits.BodyNodes){refusal="SearchExhausted:BodyNodes";return false;}
                 if(measured.RouteGraphs>=limits.RouteGraphs){refusal="SearchExhausted:RouteGraphs";return false;}
             }
-            var candidates=new Dictionary<ushort,IReadOnlyList<G.BodyCandidate>>();
+            var candidates=new Dictionary<ushort,G.ReplayableBodies>();
             foreach(var input in inputs)
             {
-                var values=G.BodyCandidates(input.Request,out refusal,out bool graphBuilt);if(graphBuilt)measured.StaticRootGraphs++;
-                if(values.Count==0){refusal=refusal??"NoGeometricBodyCandidates";return false;}candidates.Add(input.ObjectId,values);
+                bool available=G.TryBodySequence(input.Request,out var values,out refusal,out bool graphBuilt);if(graphBuilt)measured.StaticRootGraphs++;
+                if(!available){refusal=refusal??"NoGeometricBodyCandidates";return false;}candidates.Add(input.ObjectId,values);
             }
             string lastRefusal="NoDisjointBodySet",exhausted=null;G.Result[] accepted=null;
             foreach(bool rootWave in new[]{true,false})foreach(var order in Orders(inputs.Count))
@@ -82,7 +82,7 @@ namespace hds
                         lastRefusal=reason;return false;
                     }
                     int index=order[depth];
-                    foreach(var body in candidates[inputs[index].ObjectId])
+                    foreach(var body in candidates[inputs[index].ObjectId].Enumerate(rootWave))
                     {
                         if(rootWave&&!body.RootReachableCentre)continue;
                         if(measured.BodyNodes>=limits.BodyNodes){exhausted="SearchExhausted:BodyNodes";return false;}measured.BodyNodes++;
