@@ -22,9 +22,9 @@ public class NpcLootTests
     }
 
     [Fact]
-    public void LootReplyMatchesRetailFullBagCapture()
+    public void LootReplyMatchesRetailClaimedIdentityCapture()
     {
-        // abilities_loot_but_inventory_full_corrupted, lines 80-81. Both items remain unclaimed.
+        // Retail claimed identity list. Client621e2bb0 removes these exact pairs; it is not a remaining-items list.
         Assert.Equal("81200c000000000000000000020000000028d61e000000000000a41c0000",
             Hex(ServerPackets.BuildLootAccepted(new[]
             {
@@ -33,6 +33,22 @@ public class NpcLootTests
             })));
         Assert.Equal("81200c0000000000000000000000",
             Hex(ServerPackets.BuildLootAccepted(Array.Empty<(byte[], uint)>())));
+    }
+
+    [Fact]
+    public void PartialClaimListsTransferredIdentitiesAndRetainsOnlyFailuresForRetry()
+    {
+        var items = new List<uint> { 7332, 2399, 7332 };
+        int capacity = 1;
+        var claimed = NpcLoot.ClaimItems(items, _ => capacity-- > 0);
+        Assert.Equal(7332u, Assert.Single(claimed).Item);
+        Assert.Equal(new byte[4], claimed[0].Data);
+        Assert.Equal(new uint[] { 2399, 7332 }, items);
+        Assert.Empty(NpcLoot.ClaimItems(items, _ => false));
+        var retry = NpcLoot.ClaimItems(items, _ => true);
+        Assert.Equal(new uint[] { 2399, 7332 }, retry.Select(c => c.Item));
+        Assert.Empty(items);
+        Assert.Empty(NpcLoot.ClaimItems(items, _ => throw new Exception("Duplicate grant")));
     }
 
     [Fact]

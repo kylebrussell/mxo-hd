@@ -210,7 +210,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
 | `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
 | `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
-| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
+| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Server `81 1a` also closes it (retail `loot.txt:420`; client dispatcher `62179a05`) | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
 | `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
@@ -353,6 +353,10 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 - `62` is sent for central-storage moves only; with IsCentralStorageItem set, `67` and `68` work on storage entries (see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)).
 
 **The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+
+## Loot acknowledgements and closure
+
+Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).
 
 ## Looting single items
 

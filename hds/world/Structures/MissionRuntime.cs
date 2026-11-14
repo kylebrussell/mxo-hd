@@ -543,7 +543,16 @@ namespace hds
         /// <summary>Take All (81 1f) on a mission object's loot window. Returns true if it was one.</summary>
         public static bool OnTakeAll(WorldClient client)
         {
-            return MissionPersistence.Mutate(client,()=>OnTakeAllCore(client));
+            lock (client.playerData.missionSync)
+            {
+                if (client.playerData.missionProgress?.objects.Values.Any(o => o.lootOpen) != true) return false;
+                var owner = new MissionContainerRetry.Owner(client);
+                bool committed = MissionPersistence.Mutate(client,()=>MissionPersistence.DeferContainerCheckpoint(client,()=>OnTakeAllCore(client)));
+                // A failed mutation removes no client items and must still release Take All's pending cursor.
+                // Never fall through to another loot owner or publish into a switched world/life/transport.
+                if (!committed && MissionContainerRetry.Acknowledge(client, owner) && owner.Current(client)) client.FlushQueue();
+                return true;
+            }
         }
 
         private static bool OnTakeAllCore(WorldClient client)
@@ -561,31 +570,15 @@ namespace hds
                     continue;
                 }
 
-                foreach (MissionObjective objective in new List<MissionObjective>(progress.OpenObjectives()))
-                {
-                    if (objective.type == MissionGoalType.Search && objective.objectId == state.def.id)
+                return MissionContainerClaim.Take(state, progress.OpenObjectives(), client.playerData.missionInstanceCounter,
+                    item => GiveItem(client, progress, item, reservePending: true),
+                    (claimed, empty) =>
                     {
-                        if (objective.item != 0 && !GiveItem(client, progress, objective.item))
-                        {
-                            ushort instance = client.playerData.missionInstanceCounter;
-                            new ServerPackets().SendLootAccepted(client, new[]
-                            {
-                                (new byte[] { 0, (byte)instance, (byte)(instance >> 8), 0x82 }, objective.item)
-                            });
-                            return true;
-                        }
-
-                        Complete(client, progress, objective);
-                    }
-                }
-
-                state.lootOpen = false;
-                // Emptied: the container goes to the state retail's Open leads to (OpenedState, 0x834), which plays its
-                // opening and takes Open off its menu
-                ObjectStates.ShowOpened(client, state.entity, state.goid);
-                new ServerPackets().SendLootAccepted(client);
-                client.FlushQueue();
-                return true;
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildLootAccepted(claimed));
+                        if (empty) client.messageQueue.addRpcMessage(ServerPackets.BuildLootClosed());
+                    },
+                    () => ObjectStates.ShowOpened(client, state.entity, state.goid),
+                    objective => Complete(client, progress, objective));
             }
 
             return false;
@@ -729,10 +722,12 @@ namespace hds
             return chosen;
         }
 
-        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId)
+        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId, bool reservePending = false)
         {
             if(progress.itemSlots.ContainsKey(goId))return true;
-            UInt16 slot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            UInt16 slot = reservePending
+                ? MissionContainerClaim.FreeSlot(Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()).Select(i => (int)i.Slot), progress.itemSlots.Values)
+                : Store.dbManager.WorldDbHandler.GetFirstNewSlot();
             if (slot == 0)
             {
                 if (!progress.inventoryFullNotice)

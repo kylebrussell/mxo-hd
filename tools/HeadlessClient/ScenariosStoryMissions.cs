@@ -297,6 +297,9 @@ public static partial class Scenarios
         double z = BitConverter.ToDouble(waypoint, 19);
         // The phase can advance before the teleport acknowledgment. Keep its briefing in the receive cursor.
         player.SendChat(FormattableString.Invariant($"?tp {x} {y} {z} 0 0 0"));
+        // Generated interior-door proximity is not departure. Use the actual static door RPC;
+        // authored sites continue to use their existing crossing predicate.
+        player.SendRpc($"80 c8 {WireFormat.ToHex(waypoint.Skip(31).Take(4).ToArray())} 03 00");
         return Task.CompletedTask;
     }
 

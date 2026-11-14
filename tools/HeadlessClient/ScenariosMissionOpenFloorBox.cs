@@ -6,10 +6,13 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task MissionOpenFloorBoxScenario(ScenarioContext context)
+    private static Task MissionOpenFloorBoxScenario(ScenarioContext context)=>MissionOpenFloorBoxScenarioCore(context,false,false);
+    private static Task MissionStandingInteriorScenario(ScenarioContext context)=>MissionOpenFloorBoxScenarioCore(context,true,false);
+    private static Task MissionLeaveTransitionScenario(ScenarioContext context)=>MissionOpenFloorBoxScenarioCore(context,false,true);
+    private static async Task MissionOpenFloorBoxScenarioCore(ScenarioContext context,bool requireInterior,bool verifyDepartureRollback)
     {
         HeadlessPlayer player=null!;uint charId=0;string handle="";
-        string phase="initial-preparation";Exception? failure=null;bool passed=false;var fields=new JsonSerializerOptions{IncludeFields=true};
+        string phase="initial-preparation";Exception? failure=null;bool passed=false;bool departureTriggerInstalled=false;var fields=new JsonSerializerOptions{IncludeFields=true};
         var sourceIdentities=new HashSet<(ushort Goid,uint Key)>();var checkpoints=new List<object>();var rawCheckpoints=new List<object>();var operations=new List<object>();var actors=new List<HeadlessPlayer>();var servers=new List<object>();ServerInstance? cold=null;
         string dll=context.Server.SourceAssembly;int creationStart=0;string? originalSha=null;DateTime? originalMtime=null;int originalPid=0;
         void CaptureServer(ServerInstance server,string role)
@@ -49,6 +52,12 @@ public static partial class Scenarios
             var all=new List<MissionOpenFloorWitness>();
             for(int id=1;id<=3;id++)all.Add((await Saved(id)).Witness);
             Check.Equal(3,all.Select(w=>string.Join(",",w.Centre.Select(v=>v.ToString("R",CultureInfo.InvariantCulture)))).Distinct().Count(),"All three published Box centres are distinct; no fixture repacking");
+            if(requireInterior)
+            {
+                var third=all.Single(w=>w.ObjectId==3);
+                Check.Equal("25841.595703125,2040,14214.611328125",string.Join(",",third.Centre.Select(v=>v.ToString("R",CultureInfo.InvariantCulture))),"Unchanged normal S3 body");
+                Check.Equal("25689.16015625,2095,14143.16796875",string.Join(",",third.Standing.Select(v=>v.ToString("R",CultureInfo.InvariantCulture))),"S3 uses the already legal route without a representational sliver");
+            }
             return all.Select(w=>w.RawJson).ToArray();
         }
         async Task Accept()
@@ -155,7 +164,66 @@ public static partial class Scenarios
                 Check.That((await MissionCheckpoint(context,player)).Done.Contains((ushort)objectId),"Normal Open completed the authored current Use goal");
                 operations.Add(new{Phase=phase,RpcCursor=cursor,Records=player.World.RpcSnapshot().Skip(cursor).Select(r=>r.Hex).ToArray()});
             }
+            phase="stationary-final-goal";
+            // Several ordinary mission ticks at the last published standing point must not advance.
+            await Task.Delay(1600);
             var carried=await MissionCheckpoint(context,player);
+            Check.Equal(0,carried.Phase,"Final Open beside the interior elevator remains in phase0 until a real exit");
+            Check.That(carried.Flags.GetValueOrDefault("waitingForExit"),"Area goals are complete and waiting for departure");
+            Check.That(carried.DepartedSite==null,"No transport departure was invented from stationary proximity");
+            if(verifyDepartureRollback)
+            {
+                phase="departure-rollback-save-original-pose";
+                var activeServer=cold??context.Server;
+                var interior=carried.Waypoints.Single();
+                await MoveForMissionTest(player,interior.x,interior.y,interior.z);
+                int beforeSaveCursor=player.World.RpcSnapshot().Count;player.SkipReceived();player.SendChat("?save");await player.WaitForRpcAsync("2e 07");
+                async Task<string> DatabasePose()=>await context.Database.ScalarAsync($"SELECT CONCAT(x+0e0,',',y+0e0,',',z+0e0) FROM characters WHERE charId={charId}");
+                string oldPose=await DatabasePose();
+                var oldCoordinates=oldPose.Split(',').Select(x=>double.Parse(x,CultureInfo.InvariantCulture)).ToArray();
+                Check.That(oldCoordinates.SequenceEqual(new[]{interior.x,interior.y,interior.z}),"QA save barrier captures actual interior waypoint before SQL fault; no SQL pose override");
+                carried=await MissionCheckpoint(context,player);await Saved();
+                var before=carried;
+                string sourcesBefore=JsonSerializer.Serialize(before.Objects.Select(o=>new{o.Id,o.Spot,o.Goid,o.OpenFloor}),fields);
+                string sitesBefore=JsonSerializer.Serialize(new{before.SiteDoors,before.OpenFloorSites,before.OpenFloorCurrentSiteIndex},fields);
+                operations.Add(new{Phase=phase,BeforeSaveCursor=beforeSaveCursor,OriginalDatabasePose=oldPose,
+                    RawCheckpoint=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}"),
+                    Rpcs=player.World.RpcSnapshot().Skip(beforeSaveCursor).Select(r=>r.Hex).ToArray()});
+                await context.Database.InstallMissionDepartureRollbackTriggerAsync();departureTriggerInstalled=true;
+                phase="ordinary-door-sql-departure-rollback";
+                Check.That(interior.doorHex?.Length==8,"Actual interior waypoint has exact static door identity");
+                uint doorId=BitConverter.ToUInt32(Convert.FromHexString(interior.doorHex!),0);
+                string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(doorId))} 03 00";
+                int doorCursor=player.World.RpcSnapshot().Count,viewCursor=player.World.ViewSnapshot().Count,logCursor=activeServer.DebugLog().Length,outputCursor=activeServer.FullOutput().Length;
+                player.SkipReceived();player.SendRpc(request);
+                await player.WaitForTextAsync("Mission progress could not be saved");
+                await player.WaitUntilAsync(()=>activeServer.FullOutput()[outputCursor..].Contains("Checkpoint action rolled back:")&&
+                    activeServer.FullOutput()[outputCursor..].Contains("M1 deliberate departure rollback"),"exact deliberate departure SQL failure caught",TimeSpan.FromSeconds(12));
+                var rolled=await MissionCheckpoint(context,player);await Saved();
+                Check.Equal(before.Phase,rolled.Phase,"Failed transport retains the actual current phase, regardless of waypoint reannouncement");
+                Check.Equal(before.Identity,rolled.Identity,"Failed transport retains mission identity");Check.Equal(before.Started,rolled.Started,"Failed transport retains acceptance time");
+                Check.That(before.Done.Order().SequenceEqual(rolled.Done.Order()),"All three Open goals survive departure rollback");
+                Check.Equal(sourcesBefore,JsonSerializer.Serialize(rolled.Objects.Select(o=>new{o.Id,o.Spot,o.Goid,o.OpenFloor}),fields),"Departure rollback preserves exact source and proxy witnesses");
+                Check.Equal(sitesBefore,JsonSerializer.Serialize(new{rolled.SiteDoors,rolled.OpenFloorSites,rolled.OpenFloorCurrentSiteIndex},fields),"Departure rollback preserves actual current site/history");
+                Check.That(rolled.Flags.GetValueOrDefault("waitingForExit")&&rolled.DepartedSite==null&&rolled.DepartedPhase==null,"Failed departure remains waiting without invented evidence");
+                int afterSaveCursor=player.World.RpcSnapshot().Count;player.SkipReceived();player.SendChat("?save");await player.WaitForRpcAsync("2e 07");
+                string rolledPose=await DatabasePose();Check.Equal(oldPose,rolledPose,"Post-rollback QA save persists exact original server pose; no SQL pose overwrite");
+                operations.Add(new{Phase=phase,Request=request,DoorCursor=doorCursor,ViewCursor=viewCursor,LogCursor=logCursor,OutputCursor=outputCursor,AfterSaveCursor=afterSaveCursor,
+                    OriginalDatabasePose=oldPose,RolledBackDatabasePose=rolledPose,
+                    RawCheckpoint=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}"),
+                    Rpcs=player.World.RpcSnapshot().Skip(doorCursor).Select(r=>r.Hex).ToArray(),Views=player.World.ViewSnapshot().Skip(viewCursor).Select(Convert.ToHexString).ToArray(),
+                    CaughtFailureLog=activeServer.DebugLog()[logCursor..],CaughtFailureOutput=activeServer.FullOutput()[outputCursor..]});
+                await context.Database.RemoveMissionRollbackTriggerAsync();departureTriggerInstalled=false;
+                phase="ordinary-door-retry-after-sql-departure-rollback";
+                int retryCursor=player.World.RpcSnapshot().Count,retryLogCursor=activeServer.DebugLog().Length;player.SkipReceived();player.SendRpc(request);
+                await player.WaitUntilAsync(()=>activeServer.DebugLog()[retryLogCursor..].Contains("Left the area: phase 1"),"ordinary door retry advances actual phase after trigger removal",TimeSpan.FromSeconds(15));
+                await player.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(15));
+                Check.Equal(1,(await MissionCheckpoint(context,player)).Phase,"Ordinary retry after rollback advances actual mission phase");
+                operations.Add(new{Phase=phase,Request=request,RpcCursor=retryCursor,
+                    RawCheckpoint=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}"),
+                    Rpcs=player.World.RpcSnapshot().Skip(retryCursor).Select(r=>r.Hex).ToArray()});
+                carried=await MissionCheckpoint(context,player);
+            }
             phase="ordinary-exit";if(carried.Phase==0){await LeaveMissionArea(player);await player.WaitForRpcAsync("80 9e 00");}
             Check.Equal(1,(await MissionCheckpoint(context,player)).Phase,"All three normal Open Use goals plus exit advance authored second phase");NoSourceBinding();
             foreach(var actor in actors)Check.Equal(0,actor.World.Problems.Count,"Every Box session protocol parser clean");phase="complete";passed=true;
@@ -163,11 +231,17 @@ public static partial class Scenarios
         catch(Exception e){failure=e;throw;}
         finally
         {
+            Exception? departureCleanupFailure=null;
+            if(departureTriggerInstalled)
+            {
+                try{await context.Database.RemoveMissionRollbackTriggerAsync();departureTriggerInstalled=false;}
+                catch(Exception cleanup){operations.Add(new{Phase="departure-trigger-cleanup-failed",Failure=cleanup.ToString()});if(failure==null){failure=cleanup;departureCleanupFailure=cleanup;passed=false;}}
+            }
             string stem=Path.Combine(Path.GetTempPath(),"mxo-mission-box-open-floor-"+context.Database.Name);
             string? finalPayload=null,finalPayloadError=null;
             try{if(charId!=0)finalPayload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={charId}");}
             catch(Exception read){finalPayloadError=read.ToString();}
-            Exception? requiredEvidenceFailure=null;
+            Exception? requiredEvidenceFailure=departureCleanupFailure;
             if(finalPayloadError!=null)
             {
                 passed=false;
@@ -175,7 +249,7 @@ public static partial class Scenarios
             }
             try
             {
-                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,Failure=failure?.ToString(),SourceAssembly=dll,
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Phase=phase,VerifyDepartureRollback=verifyDepartureRollback,DepartureTriggerInstalled=departureTriggerInstalled,Failure=failure?.ToString(),SourceAssembly=dll,
                     SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=originalSha,SourceMtimeUtc=originalMtime,OriginalProcessId=originalPid,Servers=servers,Database=context.Database.Name,FinalRawPayload=finalPayload,FinalRawPayloadError=finalPayloadError,RawCheckpoints=rawCheckpoints,
                     Checkpoints=checkpoints,Operations=operations,Sessions=actors.Select(p=>new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),
                         Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray()}),
