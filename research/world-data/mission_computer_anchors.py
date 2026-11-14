@@ -9,7 +9,7 @@ def mod(n):
  s=importlib.util.spec_from_file_location(n,base/(n+'.py'));m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 N=mod('navmesh');M=mod('metr_sectors');T=mod('native_prefab_transform');bp=R.by_path();idx=R.index()
 rows=[r for r in csv.DictReader(open('data/sector_properties.csv'))if r['metr_id']=='1']
-anchors={1415};groups=collections.defaultdict(list);issues=[];sources={}
+anchors={1407,1415};groups=collections.defaultdict(list);issues=[];sources={}
 def buffers(d):
  assert d[:4]==b'OSID';p=struct.unpack_from('<I',d,12)[0];out=[]
  for _ in range(10):
@@ -66,19 +66,21 @@ for row in rows:
   for g,pose,quat,extra in records:
    assert sector<=0x7ff and g[1]<=0xfffff
    key=(sector,g[1]);allgroups[key].append(dict(goid=g[0],sector=sector,staticId=g[1],nativeKey=(sector<<20)|g[1],position=pose,quaternion=quat,source=name,sourceRid=declared,**extra))
-selected={k:v for k,v in allgroups.items()if any(t['goid']==1415 for t in v)}
+selected={k:v for k,v in allgroups.items()if any(t['goid'] in anchors for t in v)}
 conflicts={k:v for k,v in selected.items()if len({(t['goid'],tuple(t['position']),tuple(t['quaternion']))for t in v})>1}
 unsupported={k:v for k,v in selected.items()if any(t['unsupported']for t in v)}
 safe={k:v[0] for k,v in selected.items()if k not in conflicts and k not in unsupported}
 # An unavailable layer can conceal conflicting keys: omit every known key in that sector.
 missing={i['sector']for i in issues};safe={k:v for k,v in safe.items()if k[0]not in missing}
-legacy={}
+legacy={};legacyVariants=collections.defaultdict(list)
 for file in ['data/staticObjects_slums_1.csv','data/staticObjects_slums_2.csv']:
  for r in csv.DictReader(open(file)):
-  if int.from_bytes(bytes.fromhex(r['type']),'little')!=1415:continue
+  if int.from_bytes(bytes.fromhex(r['type']),'little')not in anchors:continue
   k=(int(r['sector_id']),int.from_bytes(bytes.fromhex(r['staticId']),'little'))
-  assert k not in legacy;legacy[k]=r
-assert len(legacy)==47434 and len(safe)==47365 and not(set(safe)-set(legacy))
+  legacyVariants[k].append(r);legacy.setdefault(k,r)
+legacyConflicts={k:v for k,v in legacyVariants.items()if len({tuple(r[c]for c in ['type','pos_x','pos_y','pos_z','quat'])for r in v})>1}
+safe={k:v for k,v in safe.items()if k not in legacyConflicts}
+assert len(legacy)==65473 and len(safe)==65404 and not(set(safe)-set(legacy))
 resourceHashes={}
 for rid in sorted({r[k]for r in safe.values()for k in ['prefab','secondary']if k in r and r[k]}):
  rec=idx[rid];assert rec['flags']==4
@@ -89,7 +91,7 @@ with out.open('w',newline='',encoding='utf-8')as f:
  w=csv.writer(f,lineterminator='\n');w.writerow(header)
  for k,r in sorted(safe.items()):
   old=legacy[k];q=struct.pack('<4f',*r['quaternion']).hex()
-  w.writerow([1,*k,r['nativeKey'],1415,*r['position'],q,old['pos_x'],old['pos_y'],old['pos_z'],old['quat'].lower(),r['sourceRid'],r.get('placement',-1),r.get('offset',-1)])
+  w.writerow([1,*k,r['nativeKey'],r['goid'],*r['position'],q,old['pos_x'],old['pos_y'],old['pos_z'],old['quat'].lower(),r['sourceRid'],r.get('placement',-1),r.get('offset',-1)])
 def digest(records):return hashlib.sha256(json.dumps(records,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-manifest=dict(format=1,scope='Slums1415 to freeGO3; source/checkpoint immutable',legacyKeys=len(legacy),acceptedKeys=len(safe),conflictingKeys=len(conflicts),unsupportedKeys=len(unsupported),missingLayerExcludedKeys=len(selected)-len(safe)-len(conflicts)-len(unsupported),unavailableLayers=issues,parentSha256=hashlib.sha256((Path(R.D)/parentPath).read_bytes()).hexdigest(),sourceCount=len(sources),sourceInventorySha256=digest(sources),referencedResourceCount=len(resourceHashes),resourceInventorySha256=digest(resourceHashes),csvSha256=hashlib.sha256(out.read_bytes()).hexdigest(),sourceConvention='Native direct-sector IPI quarterturn/pivot*10, full Hamilton quaternion and float32 stores; NO server+145 in output pose; legacy pose retained solely as provenance guard.')
+manifest=dict(format=1,scope='Slums1407/1415 to freeGO3; source/checkpoint immutable',legacyKeys=len(legacy),legacyIdenticalDuplicates=sum(len(v)-1 for k,v in legacyVariants.items()if k not in legacyConflicts),legacyConflictingKeys=len(legacyConflicts),acceptedKeys=len(safe),acceptedBySourceGoid=dict(collections.Counter(r['goid']for r in safe.values())),conflictingKeys=len(conflicts),unsupportedKeys=len(unsupported),missingLayerExcludedKeys=len(selected)-len(safe)-len(conflicts)-len(unsupported),unavailableLayers=issues,parentSha256=hashlib.sha256((Path(R.D)/parentPath).read_bytes()).hexdigest(),sourceCount=len(sources),sourceInventorySha256=digest(sources),referencedResourceCount=len(resourceHashes),resourceInventorySha256=digest(resourceHashes),csvSha256=hashlib.sha256(out.read_bytes()).hexdigest(),sourceConvention='Native direct-sector IPI quarterturn/pivot*10, full Hamilton quaternion and float32 stores; NO server+145 in output pose; legacy pose retained solely as provenance guard.')
 Path(args.manifest).write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8');print(json.dumps(manifest,indent=2))

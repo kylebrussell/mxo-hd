@@ -330,6 +330,7 @@ namespace hds
             // A hardline booth view (80 c7 <view> <spawn> 03|04|05 00 in retail)
             UInt16 interactedViewId = (UInt16)(packet[0] | (packet[1] << 8));
             ClientView interactedView = Store.currentClient.viewMan.getViewById(interactedViewId);
+            MissionComputer1407Qa.Request(Store.currentClient, "use", interactedViewId, (ushort)(numericObjectId >> 16), objectTypeID, packet);
             Output.WriteDebugLog("[OBJECT-USE] char="+Store.currentClient.playerData.getCharID()+" view="+interactedViewId+
                 " receivedSpawn="+(numericObjectId>>16)+" expectedSpawn="+interactedView?.spawnId+" goid="+interactedView?.GoID+" use="+objectTypeID);
             if (interactedView != null && TutorialMission.Of(Store.currentClient)?.OnViewUse(interactedView.entityId, (byte)objectTypeID) == true)

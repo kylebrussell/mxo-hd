@@ -500,6 +500,13 @@ namespace hds
             }
         }
 
+        // A generated proxy is independent of its spawner; unrelated same-prototype furniture keeps its existing binding.
+        internal static void ConfigureSourceBinding(GameObject obj,MissionObjectState state)
+        {
+            if(MissionSites.Goid(state.spot)==state.goid)obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
+            else obj.UnsetRelatedStaticObjId();
+        }
+
         private static void SpawnObject(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
             FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
@@ -512,14 +519,7 @@ namespace hds
             // Bound to the static only when it's the same object, as retail bound its filing cabinets and dressers (08 <goid>
             // <static>). At a spawner marker retail spawned it free (0c, no static): the client's definitions give the
             // spawners no Info or Usable part, so a mission object bound to one couldn't be selected.
-            if (MissionSites.Goid(state.spot) == state.goid)
-            {
-                obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
-            }
-            else
-            {
-                obj.UnsetRelatedStaticObjId();
-            }
+            ConfigureSourceBinding(obj,state);
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
             var pose = MissionObjectPoses.For(state);

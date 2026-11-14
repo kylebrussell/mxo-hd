@@ -331,6 +331,7 @@ namespace hds
         {
             UInt16 viewId = NumericalUtils.ByteArrayToUint16(new byte[] {rpcData[0], rpcData[1]}, 1);
             ushort spawnId = rpcData[2];
+            MissionComputer1407Qa.Request(currentClient, viewId == 0 ? "target-clear" : "target", viewId, spawnId, -1, rpcData);
             // ToDo: add this to the ClientData
 
             if (viewId == 0)

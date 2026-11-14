@@ -1,0 +1,34 @@
+PR196 native A/B diagnostic, head 981dda27, 2026-11-13T12:44:06Z. Claude native QA, CSR_Tester 110, mode mission-computer-1407.
+Sequence: accept Retrieval (Digger) -> relog -> ?tp 40820 3295 -88280 -> observe original -> baseline -> hide -> Take -> show.
+Visual: original/baseline = static monitor+tower on desk; hide = monitor+tower vanish, a lower flat computer model (GO3) remains; show = monitor+tower return.
+Picking: original and baseline = no radial, left-click gives target-clear raw=00000000; hide = client says 'You target [Computer]', radial Take; Take -> use view=4 GO3, Goal 1 done; show = no radial again.
+--- raw lines ---
+[MISSION] Digger listed 3 missions
+[MISSION] Digger used (02)
+[MISSION] Phase 1 at a Office floor in Kedemoth (41700,3346,-88577.5), elevator 4c05f007 at 42200,3345,-88700, 24 NPC spots; street door at 42200,145,-88700
+[MISSION] Spawned hostile NPC Exile Soldier at 42250,3295,-86650
+[MISSION] Spawned hostile NPC Exile Soldier at 40450,3295,-87650
+[MISSION] Spawned hostile NPC Exile Soldier at 41350,3295,-90550
+[COMPUTER1407-QA] outgoing view=5 entity=987000047001 goid=3 expectedSpawn=3 sourceGoid=1407 sourceKey=07f005a3 relatedStatic=ffffffff free=True currentState=61090000 missionKey=FF2F0002 useCount=01 position=0000000060FCE3400000000000AAA94000000000808DF5C0 orientation=00000000F304353F00000000F20435BF creation=01000C030003CDAB053D0000000060FCE3400000000000AAA94000000000808DF5C0FF2F0002016109000000000000F304353F00000000F20435BF050000
+[MISSION] Object 1 (Computer) is a 3 at 40931,3285,-88280
+[MISSION] Accepted 'Retrieval'
+[COMPUTER1407-QA] target-clear view=0 receivedSpawn=0 action=-1 resolved=none raw=00000000
+[COMPUTER1407-QA] target-clear view=0 receivedSpawn=0 action=-1 resolved=none raw=00000000
+[MISSION] Elevator: to 3345
+[MISSION] Elevator callback elapsed ms 2013
+[MISSION] Elevator callback for 3082; current 3082
+[MISSION] Elevator navigation start
+[MISSION] Elevator navigation finished
+[MISSION] Teleported to 42005.74511825657,3295,-88652.40755397287
+[COMPUTER1407-QA] target-clear view=0 receivedSpawn=0 action=-1 resolved=none raw=00000000
+[COMPUTER1407-QA] outgoing view=4 entity=987000047001 goid=3 expectedSpawn=2 sourceGoid=1407 sourceKey=07f005a3 relatedStatic=ffffffff free=True currentState=61090000 missionKey=FF2F0002 useCount=01 position=0000000060FCE3400000000000AAA94000000000808DF5C0 orientation=00000000F304353F00000000F20435BF creation=01000C030002CDAB053D0000000060FCE3400000000000AAA94000000000808DF5C0FF2F0002016109000000000000F304353F00000000F20435BF040000
+[MISSION] Restored 3082 phase 0 instance 47
+[COMPUTER1407-QA] target-clear view=0 receivedSpawn=0 action=-1 resolved=none raw=00000000
+[COMPUTER1407-QA] bound-baseline outgoing view=8 spawn=6 goid=1407 relatedStatic=07f005a3 Hidden=0 creation=0100087F05A305F00706CDAB010800080000
+[COMPUTER1407-QA] baseline Hidden=0 sourceKey=07f005a3 view=8 spawn=6 entity=1133170595 world=0 epoch=0
+[COMPUTER1407-QA] command Hidden=1 sourceKey=07f005a3 view=8 spawn=6 world=0 epoch=0 update=010201
+[COMPUTER1407-QA] target-clear view=0 receivedSpawn=0 action=-1 resolved=none raw=00000000
+[COMPUTER1407-QA] use view=4 receivedSpawn=2 action=5 entity=987000047001 goid=3 expectedSpawn=2 sourceGoid=1407 sourceKey=07f005a3 raw=040002000500
+[MISSION] Goal 1 done: Search the computer
+[MISSION] Phase 0 goals done; waiting for the player to leave
+[COMPUTER1407-QA] command Hidden=0 sourceKey=07f005a3 view=8 spawn=6 world=0 epoch=0 update=010200
