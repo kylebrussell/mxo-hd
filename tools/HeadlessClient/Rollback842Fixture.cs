@@ -9,6 +9,11 @@ public static class Rollback842Fixture
     public const string Phase0Fingerprint="EE14642429DDB504E87EB5DA29BCCF7C368B045FAAFE2CBE89F56D7EBE31F7A0";
     public const string Phase1Fingerprint="B35F28E2919D869A7844C6F4C04A4519803C7440F196F1EE23260B591C7BF1FA";
     public const string ChoiceHash="18EE2EB80B361613983F46FB5B4932A94153F93320B85C4578413886784F97BD";
+    public static bool MatchesSafe(ViewCreation view,IReadOnlyList<double> centre,string quaternion,ushort instance) =>
+        view.Goid==552&&view.Attributes.TryGetValue("Position",out var p)&&p.Length==24&&
+        Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==centre[i])&&
+        view.Attributes.TryGetValue("Orientation",out var q)&&q.SequenceEqual(Convert.FromHexString(quaternion))&&
+        view.Attributes.TryGetValue("MissionKey",out var key)&&key.SequenceEqual(new byte[]{0xff,(byte)instance,(byte)(instance>>8),2});
     public static void PreGet(double[] position)
     {Check.That(position.SequenceEqual(new double[]{27480,895,14650}),"Exact failed pre-Get position preserved");}
     public static void Phase0(MissionProgress.SavedState state)

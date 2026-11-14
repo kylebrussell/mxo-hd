@@ -28,4 +28,15 @@ public class Rollback842FixtureTests
         spot.pos_x+=1;
         Assert.ThrowsAny<Exception>(()=>Rollback842Fixture.Phase1(saved));
     }
+    [Fact]public void CurrentCursorAndPublishedPoseKeyRejectHistoricalSafe()
+    {
+        var centre=new double[]{10099.4033203125,2850,9950};const string q="00000000f20435bf00000000f304353f";
+        HeadlessClient.ViewCreation View(ushort id,double x,ushort mission)=>new(id,552,1,new Dictionary<string,byte[]>{
+            ["Position"]=new[]{x,centre[1],centre[2]}.SelectMany(BitConverter.GetBytes).ToArray(),
+            ["Orientation"]=Convert.FromHexString(q),["MissionKey"]=new byte[]{255,(byte)mission,(byte)(mission>>8),2}});
+        var historical=View(7,centre[0],47);var wrongPose=View(8,centre[0]+1,47);var wrongKey=View(9,centre[0],48);var current=View(10,centre[0],47);
+        var snapshots=new[]{historical,wrongPose,wrongKey,current};
+        Assert.Same(current,Assert.Single(snapshots.Skip(1).Where(v=>Rollback842Fixture.MatchesSafe(v,centre,q,47))));
+        Assert.Empty(snapshots.Skip(4).Where(v=>Rollback842Fixture.MatchesSafe(v,centre,q,47)));
+    }
 }

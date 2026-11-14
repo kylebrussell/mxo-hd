@@ -193,6 +193,7 @@ public static partial class Scenarios
             Rollback842Fixture.PreGet(new[]{BitConverter.ToDouble(restoredCourier)+100,BitConverter.ToDouble(restoredCourier,8),BitConverter.ToDouble(restoredCourier,16)});
         }
         Window("courier-get",original);
+        int objectCursor=original.World.CreationSnapshot().Count;
         var courierPosition=courier.Attributes["Position"];
         var positionBeforeGet=new[]{(double)(float)(BitConverter.ToDouble(courierPosition)+100),(double)(float)BitConverter.ToDouble(courierPosition,8),(double)(float)BitConverter.ToDouble(courierPosition,16)};
         byte[] teleportHeader=WireFormat.FromHex("02 00 01 1c");var positionRecords=new List<string>();
@@ -213,15 +214,19 @@ public static partial class Scenarios
         await Raw("next-phase-briefing");
         if(exact842)Rollback842Fixture.Phase1(await Checkpoint(original));
         Window("enter-safe-area",original);
-        int objectCursor=original.World.CreationSnapshot().Count;
         await EnterMissionArea(currentOwnedServer,original);
         await ApproachMissionObjectFixture(context,original,1);
         ViewCreation safe;
         if(exact842)
         {
-            ushort concrete=(await Checkpoint(original)).Objects.Single(o=>o.Id==1).Goid;
-            await original.WaitUntilAsync(()=>original.World.CreationSnapshot().Skip(objectCursor).Any(v=>v.Goid==concrete),"Current admitted safe view",TimeSpan.FromSeconds(10));
-            safe=original.World.CreationSnapshot().Skip(objectCursor).Last(v=>v.Goid==concrete);
+            var current=await Checkpoint(original);
+            using var checkpoint=JsonDocument.Parse(await Raw("exact842-safe-view-witness"));
+            var witness=MissionOpenFloorWitness.Read(checkpoint.RootElement.GetProperty("Objects").EnumerateArray().Single(o=>o.GetProperty("Id").GetUInt16()==1).GetProperty("OpenFloor"));
+            witness.Require(399905,1,1,882902114,1410,552);
+            bool Match(ViewCreation v)=>Rollback842Fixture.MatchesSafe(v,witness.Centre,witness.Quaternion,current.Instance);
+            await original.WaitUntilAsync(()=>original.World.CreationSnapshot().Skip(objectCursor).Any(Match),"Current admitted safe view at exact published pose/key",TimeSpan.FromSeconds(10));
+            safe=original.World.CreationSnapshot().Skip(objectCursor).Last(Match);
+            operations.Add(new{Step="exact842-current-safe",CreationCursorBeforeGet=objectCursor,safe.ViewId,safe.SpawnId,Witness=witness.RawJson});
         }
         else safe=await MissionObjectView(context,original,"Safe");
         original.SendRpc($"80 c7 {MissionNpcId(safe)} 08 00");
