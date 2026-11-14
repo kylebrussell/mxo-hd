@@ -44,17 +44,25 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             step="ordinary-incoming-fire";shooter.SendRpc("3d 01");shooter.SendRpc("41 "+HandleOf(target));
             await victim.WaitForRpcAsync("81 68");
             int viewCursor=victim.World.ViewSnapshot().Count, rpcCursor=victim.World.RpcSnapshot().Count;
+            ushort healthBefore=RefusalOwnValue(victim,"Health","02 80 80 80 40");
             ushort inner=RefusalOwnValue(victim,"InnerStrengthAvailable","02 80 80 80 10");
             step="normal967-callback";Cast(victim,967,2);
-            await victim.WaitForRpcAsync("80 ac c7 03");await victim.WaitForRpcAsync("80 bd 01 c7 03");
+            //967 is instant. Its sourced callback and actual600/10 timers are the barriers, not a cast-bar packet.
             await victim.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[MOBIUS] PARTIAL967 callback roll="+(positive?0:99)+" proc="+positive),"Actual967 landed producer",TimeSpan.FromSeconds(10));
             var interval=System.Diagnostics.Stopwatch.StartNew();
+            await victim.WaitForRpcAsync("80 bd 01 c7 03 04 00 00 16 44 01");
             await victim.WaitForRpcAsync("80 bd 01 c7 02 00 00 00 20 41 01");
             Check.That(context.Server.DebugLog().Contains("Heal 967 -> MobiusCSR for 500"),"Unchanged maxHP/10 healing");
+            bool HealDeltaReceived()
+            {
+                var health=new[]{healthBefore}.Concat(ViewUpdateValues(victim,2,"02 80 80 80 40",viewCursor)).ToArray();
+                return health.Zip(health.Skip(1),(a,b)=>(int)b-a).Contains(500);
+            }
+            await victim.WaitUntilAsync(HealDeltaReceived,"Independent received500 health delta; regeneration remains separate",TimeSpan.FromSeconds(5));
             await victim.WaitUntilAsync(()=>ViewUpdateValues(victim,2,"02 80 80 80 10",viewCursor).Contains((ushort)(inner-5)),"Unchanged five IS debit",TimeSpan.FromSeconds(5));
             var timers=victim.World.RpcSnapshot().Skip(rpcCursor).Where(r=>r.Bytes.Length>=11&&r.Bytes[0]==0x80&&r.Bytes[1]==0xbd).ToArray();
             Check.That(timers.Any(r=>r.Bytes[3]==0xc7&&r.Bytes[4]==3&&BitConverter.ToSingle(r.Bytes,6)==600),"Independent ordinary967 timer600");
-            Check.That(timers.Any(r=>BitConverter.ToSingle(r.Bytes,6)==10),"Independent ordinary family timer10");
+            Check.That(timers.Any(r=>r.Bytes[3]==0xc7&&r.Bytes[4]==2&&r.Bytes[5]==0&&BitConverter.ToSingle(r.Bytes,6)==10&&r.Bytes[10]==1),"Independent ordinary family711 timer10");
             string log=context.Server.DebugLog();int callback=log.IndexOf("[MOBIUS] PARTIAL967 callback",StringComparison.Ordinal);
             // Inspect a bounded interval well inside the proc, with ordinary rolls. No RNG retry.
             Check.That(interval.Elapsed<TimeSpan.FromSeconds(8),"Wire accounting completed inside the bounded proc interval");
@@ -70,8 +78,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             else Check.That(shots.Any(m=>m.Groups[1].Value.StartsWith("hit for ",StringComparison.Ordinal)),"Negative callback leaves ordinary incoming damage");
             int continued=CountViewUpdate(victim,attacker.ViewId,"032a");
             Check.That(continued>=2,"Ordinary received attack animations continue");
-            step="natural-expiry";int after=context.Server.DebugLog().Length;
-            await victim.WaitUntilAsync(()=>Regex.IsMatch(context.Server.DebugLog()[after..],@"MobiusShooter fires at MobiusCSR: hit for [1-9]"),"Natural expiry restores hits without a second41",TimeSpan.FromSeconds(30));
+            step=positive?"natural-expiry":"negative-continuation";int after=context.Server.DebugLog().Length;
+            await victim.WaitUntilAsync(()=>Regex.IsMatch(context.Server.DebugLog()[after..],@"MobiusShooter fires at MobiusCSR: hit for [1-9]"),positive?"Natural expiry restores hits without a second41":"Negative branch continues normal damage without a second41",TimeSpan.FromSeconds(30));
             Check.Equal(1,context.Server.DebugLog().Split("[MOBIUS-QA] callback-only one-shot consumed").Length-1,"Exactly one producer callback override");
             Check.Equal(0,victim.Received("47").Count+shooter.Received("47").Count,"Freefire does not become interlock");
             shooter.SendRpc("44 00");

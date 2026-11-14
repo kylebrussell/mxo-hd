@@ -156,6 +156,18 @@ public class MobiusCodeTests
         Assert.True(MobiusCodeQa.HasLoadedOwned(new[]{owned}));
         Assert.False(MobiusCodeQa.HasLoadedOwned(Array.Empty<MarginAbilityItem>()));
     }
+    [Fact]
+    public void Primary967IsInstantSelfCallbackWithFiveIsAndSixHundredOwnReuse()
+    {
+        var row=AbilityCatalog.Find(967)!;
+        Assert.Equal(0,row.CastSeconds);Assert.False(row.Has("Ability/CastingTime"));
+        Assert.Equal(1,row.Number("Ability/CastDirectObjects"));
+        Assert.Equal(5,row.Number("Ability/AbilityInnerStrengthCost"));
+        Assert.Equal(600,row.Number("Ability/RecastTime"));
+        var mod=Assert.Single(row.Modifiers);
+        Assert.Equal("MobiusCodeEffect",mod.Text("StatModInitFunc"));
+        Assert.Equal(1,mod.Number("DurationType"));Assert.Equal(2,mod.Number("WhenEnabled"));
+    }
     [Theory]
     [InlineData(967,true,1,401,true,true)]
     [InlineData(967,false,1,401,true,false)]
