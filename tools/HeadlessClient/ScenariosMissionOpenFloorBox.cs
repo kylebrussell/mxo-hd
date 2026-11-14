@@ -155,7 +155,13 @@ public static partial class Scenarios
                 Check.That((await MissionCheckpoint(context,player)).Done.Contains((ushort)objectId),"Normal Open completed the authored current Use goal");
                 operations.Add(new{Phase=phase,RpcCursor=cursor,Records=player.World.RpcSnapshot().Skip(cursor).Select(r=>r.Hex).ToArray()});
             }
+            phase="stationary-final-goal";
+            // Several ordinary mission ticks at the last published standing point must not advance.
+            await Task.Delay(1600);
             var carried=await MissionCheckpoint(context,player);
+            Check.Equal(0,carried.Phase,"Final Open beside the interior elevator remains in phase0 until a real exit");
+            Check.That(carried.Flags.GetValueOrDefault("waitingForExit"),"Area goals are complete and waiting for departure");
+            Check.That(carried.DepartedSite==null,"No transport departure was invented from stationary proximity");
             phase="ordinary-exit";if(carried.Phase==0){await LeaveMissionArea(player);await player.WaitForRpcAsync("80 9e 00");}
             Check.Equal(1,(await MissionCheckpoint(context,player)).Phase,"All three normal Open Use goals plus exit advance authored second phase");NoSourceBinding();
             foreach(var actor in actors)Check.Equal(0,actor.World.Problems.Count,"Every Box session protocol parser clean");phase="complete";passed=true;

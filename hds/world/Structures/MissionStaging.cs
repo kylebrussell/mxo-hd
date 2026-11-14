@@ -698,10 +698,15 @@ namespace hds
             client.FlushQueue();
             Output.WriteDebugLog("[MISSION] Elevator: to " + target.pos_y);
             var rideRequested = System.Diagnostics.Stopwatch.StartNew();
+            var stamp=new MissionRideStamp(client,progress);
             DelayedActions.AfterFor(client, 2, () =>
             {
                 Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
-                Ride(client, progress, target, site);
+                MissionTransportState.Run(client, () => client.TransportFence.TryRun(stamp.Transport, () =>
+                {
+                    if(!stamp.Current)return;
+                    Ride(client, progress, target, site);
+                }));
             });
             return true;
         }
@@ -734,6 +739,7 @@ namespace hds
 
             Output.WriteDebugLog("[MISSION] Elevator navigation finished");
             Teleport(client, x, y, z);
+            progress.CommitGeneratedFloor(progress.phaseIndex, site, target);
             foreach (ushort id in progress.following)
             {
                 Mob mob = MissionRuntime.FindNpc(client.playerData, id);
