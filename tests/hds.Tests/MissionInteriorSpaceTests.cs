@@ -56,4 +56,12 @@ public class MissionInteriorSpaceTests
         var tiny=new OpenFloorModelBounds(3,new(-1e-9,-1,-1e-9),new(1e-9,1,1e-9),"literal numerical counterexample");
         Assert.True(region.CanFit(tiny,new OpenFloorOrientation(Q),scene.Coverage));
     }
+    [Fact] public void EntirelyBoundNativePhaseWithoutActorsRetainsItsLegacyAdmissionPath()
+    {
+        var xml=new System.Xml.XmlDocument();xml.LoadXml("<mission id='901' title='Bound' description='D'><phase site='Normal'><object id='1' kind='Computer'/><objective goal='1' type='Use' object='1'/></phase></mission>");
+        var phase=MissionXml.Parse(xml.DocumentElement!).phases[0];var site=new MissionSite();
+        site.realObjects.Add(new StaticWorldObject{type=BitConverter.GetBytes((ushort)3)});
+        Assert.True(MissionInteriorSites.Eligible(phase,site,out _,0));
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out _,1));
+    }
 }

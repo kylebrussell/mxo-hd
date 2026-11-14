@@ -201,11 +201,11 @@ namespace hds
                 if(!ChoicesValid(progress.Phase,progress.site,selected))throw new InvalidOperationException("Invalid adopted open-floor source choices");
             }
             else if(boxes.Length>0)throw new InvalidOperationException("Resolved open-floor without adopted phase marker");
+            if(progress.pendingOpenFloor!=null&&!PendingValid(progress,progress.pendingOpenFloor,siteCatalog))throw new InvalidOperationException("Invalid pending open-floor checkpoint choice");
             if(boxes.Length>0&&!MissionInteriorSites.Eligible(progress.Phase,progress.site,out string interiorRefusal,
                 progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
-                throw new InvalidOperationException("Invalid fixed interior site:"+interiorRefusal);
-            if(!FixedSetClear(progress,out string fixedRefusal))throw new InvalidOperationException("Invalid fixed open-floor checkpoint:"+fixedRefusal);
-            if(progress.pendingOpenFloor!=null&&!PendingValid(progress,progress.pendingOpenFloor,siteCatalog))throw new InvalidOperationException("Invalid pending open-floor checkpoint choice");
+                throw new MissionPlacementRestoreException(progress,"Invalid fixed interior site:"+interiorRefusal);
+            if(!FixedSetClear(progress,out string fixedRefusal))throw new MissionPlacementRestoreException(progress,"Invalid fixed open-floor checkpoint:"+fixedRefusal);
         }
     }
     public static partial class MissionStaging

@@ -10,7 +10,7 @@ public static partial class Scenarios
     {
         InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))));
         var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
-            X=c.X,Y=c.Y,Z=c.Z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
+            X=c.X,Y=c.Y,Z=c.Z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,CompletedMissions=c.Prerequisites});
         var fields=new JsonSerializerOptions{IncludeFields=true};var proof=new List<object>();string step="prerequisites";Exception? failure=null;
         long baselineXp=0,baselineInfo=0;int initialViews=0,initialSections=0;
         async Task<MissionProgress.SavedState> Saved()
@@ -57,7 +57,8 @@ public static partial class Scenarios
         }
         try
         {
-            Check.That(!c.Prerequisites.Contains(c.Mission),"No selected completion seeded");await context.Database.ExecuteAsync(InteriorAdmissionFixture.Seed(c,p.CharId));
+            Check.That(!c.Prerequisites.Contains(c.Mission),"No selected completion seeded");
+            Check.Equal((long)c.Prerequisites.Distinct().Count(),await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId}"),"Only earlier receipts installed before Margin, as in NativeQa");
             step="normal-entry-and-offer";await p.EnterWorldAsync();baselineXp=await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}");baselineInfo=await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
             int offer=p.World.RpcSnapshot().Count;p.SkipReceived();p.SendRpc($"80 94 05 00 {c.Organization:x2}");await p.WaitForRpcAsync("80 97 05 00");
             int index=MissionContactChoice.CriticalIndex(p.World.RpcSnapshot().Skip(offer).Select(r=>r.Bytes),c.Title);
@@ -96,7 +97,9 @@ public static partial class Scenarios
             var w=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(obj.OpenFloor,fields));w.Require(c.Mission,c.TargetPhase,objectId,obj.Spot.mxoStaticId,BitConverter.ToUInt16(obj.Spot.type,0),obj.Goid);
             Check.That(NavMesh.Locate(1,w.Route[0],w.Route[1],w.Route[2],out var rootNav),"Committed root is actual NAV");Check.Equal(rootNav.floorY+95,w.Route[1],"Committed root uses actual floor standing height");
             foreach(var npc in target.Mobs.Where(m=>m.Phase==target.Phase&&!m.Dead))
-            {Check.That(NavMesh.Locate(1,npc.X,npc.Y,npc.Z,out var npcNav),"Target NPC remains on NAV");Check.Equal(rootNav.floorY,npcNav.floorY,"Target NPC and admitted root are on the same actual floor");}
+            {Check.That(NavMesh.Locate(1,npc.X,npc.Y,npc.Z,out var npcNav),"Target NPC remains on NAV");Check.Equal(rootNav.floorY,npcNav.floorY,"Target NPC and admitted root are on the same actual floor");
+             Check.Equal(rootNav.indoors,npcNav.indoors,"Target NPC and root share NAV space kind");
+             if(rootNav.indoors){Check.Equal(rootNav.sector,npcNav.sector,"Target NPC shares root interior sector");Check.Equal(rootNav.region,npcNav.region,"Target NPC shares root interior placement");}}
             if(c.Mission==301203){step="ordinary-Rhett-talk";var rhett=await Npc(4);int cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(rhett)} 09 00");await Goal(6,cursor);}
             step="published-route-and-actual-body";int routeRpc=p.World.RpcSnapshot().Count,routeViews=p.World.ViewSnapshot().Count;
             for(int i=0;i<w.Route.Count;i+=3)await MoveForMissionTest(p,w.Route[i],w.Route[i+1],w.Route[i+2]);

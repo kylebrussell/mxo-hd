@@ -30,6 +30,8 @@ namespace hds
         internal bool openFloorCheckpoint;
         internal int? openFloorResolvedPhase;
         internal int? openFloorLegacyPhase;
+        // Runtime-only quarantine: retain the durable checkpoint and owned items for explicit abort.
+        internal string restoreRefusal;
         public readonly List<MissionSite> sites = new List<MissionSite>();         // every site used so far, in phase order
         public List<MissionWaypoint> waypoints = new List<MissionWaypoint>();      // this phase's, as sent
         public readonly List<double[]> exits = new List<double[]>();              // other places that count as leaving

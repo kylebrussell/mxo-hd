@@ -121,7 +121,31 @@ public class MissionOpenFloorAdmissionRegressionTests
         if(fault=="site")json["OpenFloorSites"]![0]!["Fingerprint"]="not-current";
         if(fault=="policy")pose["Policy"]=99;
         var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(json.ToJsonString(),Fields)!;
-        Assert.Throws<InvalidOperationException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+        Assert.ThrowsAny<InvalidOperationException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+    }
+    [Fact]
+    public void InvalidFixedGeometryCanEnterWorldForExplicitAbortWithoutChangingTheCheckpoint()
+    {
+        var (p,site)=Adopted();p.itemSlots[6783]=7;
+        var json=JsonNode.Parse(JsonSerializer.Serialize(RoundTrip(p),Fields))!;
+        json["Objects"]![0]!["OpenFloor"]!["Centre"]![0]=999999;
+        var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(json.ToJsonString(),Fields)!;
+        string original=JsonSerializer.Serialize(saved,Fields);
+        Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+        var restored=MissionPersistence.RestoreForWorld(p.mission,saved,new[]{site});
+        Assert.NotNull(restored.restoreRefusal);Assert.Equal(p.persistenceId,restored.persistenceId);
+        Assert.Equal(p.startedAt,restored.startedAt);Assert.Equal((ushort)7,restored.itemSlots[6783]);
+        Assert.Equal(999999,restored.objects[1].OpenFloor!.Centre[0]);
+        Assert.Equal(original,JsonSerializer.Serialize(saved,Fields));
+        var c=Client();c.playerData.activeMission=p.mission;c.playerData.missionProgress=restored;c.playerData.missionCheckpoint=original;
+        bool invoked=false;Assert.False(MissionPersistence.Mutate(c,()=>{invoked=true;return true;}));Assert.False(invoked);
+        MissionPersistence.Save(c);Assert.Equal(original,c.playerData.missionCheckpoint);
+        MissionRuntime.Reannounce(c);Assert.Equal(original,c.playerData.missionCheckpoint);
+        Assert.Empty(c.playerData.missionMobs);Assert.Equal(999999,restored.objects[1].OpenFloor.Centre[0]);
+        string moved=MissionPersistence.MoveQuarantinedItem(original,6783,7,8);
+        var expected=JsonNode.Parse(original)!;expected["Items"]!["6783"]=8;
+        Assert.True(JsonNode.DeepEquals(expected,JsonNode.Parse(moved)));
+        Assert.Throws<InvalidOperationException>(()=>MissionPersistence.MoveQuarantinedItem(original,6783,9,8));
     }
     [Fact]
     public void AdoptedHistoryPersistsAcrossLaterNonOpenFloorPhaseButNoCurrentSiteIsInvented()

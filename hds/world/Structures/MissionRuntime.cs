@@ -102,7 +102,7 @@ namespace hds
         }
 
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
-        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;});
+        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;},abortBlocked:true);
 
         private static void EndCore(WorldClient client, bool clearPersistent = true)
         {
@@ -152,6 +152,15 @@ namespace hds
         {
             var progress=client.playerData.missionProgress;
             if(progress==null)return;
+            if(progress.restoreRefusal!=null)
+            {
+                new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
+                MissionObjectiveReplay.Arm(client,progress);
+                foreach(var item in progress.itemSlots)
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value,item.Key,ItemElement(progress,item.Key),client.playerData.missionInstanceCounter));
+                new ServerPackets().sendSystemChatMessage(client,"Your saved mission area is no longer safe to restore. Abort this mission from Mission Status before accepting another.","BROADCAST");
+                return; // Never publish unsafe objects, actors, waypoints or automatic goal/item grants.
+            }
             EnsureTimer();
             if(client.playerData.getDistrictId()!=progress.mission.district)return;
             new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
