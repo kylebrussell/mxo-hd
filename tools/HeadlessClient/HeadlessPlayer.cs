@@ -76,10 +76,11 @@ public sealed class HeadlessPlayer : IDisposable
     /// <summary>
     /// Tells the server the world is loaded (RPC 05) and waits for the self spawn (a creation record for view 2).
     /// </summary>
-    public async Task EnterWorldAsync()
+    public async Task EnterWorldAsync(bool loadingComplete=true)
     {
         SendRpc("05");
         await WaitUntilAsync(() => World.CreationSnapshot().Any(c => c.ViewId == 2), "the self spawn", TimeSpan.FromSeconds(15));
+        if(loadingComplete)SendRpc("0c 01"); // native OnEnterWorld lifecycle marker
     }
 
     public void SendRpc(byte[] record) => World.SendRpcs(record);
