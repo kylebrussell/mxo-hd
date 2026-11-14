@@ -99,4 +99,15 @@ public class ConditionalThrownDamageTests
         }finally{Environment.SetEnvironmentVariable("MXO_CONDITIONAL_THROW_QA",old);}
         foreach(string bad in new[]{"0","61","NaN","Infinity","-1"})Assert.False(CombatDepthOffBalance.Parse(new[]{"offbalance",bad},out _));
     }
+    [Fact]public void HeadlessEntryUsesTheSameSmallNpcProfileAndOnlyTheDeclaredOwnedLoadout()
+    {
+        var environment=HeadlessClient.ConditionalThrowFixture.Environment;
+        Assert.Equal("test",environment["MXO_MOBS"]);Assert.True(MobSpawnFilter.UseTestList(environment["MXO_MOBS"]));
+        Assert.Equal(environment["MXO_MOBS"],NativeQa.NativeQaFixturePlan.EnvironmentFor("conditional-thrown-damage")["MXO_MOBS"]);
+        var actor=HeadlessClient.ConditionalThrowFixture.Seed("ProofActor",100,2);
+        Assert.Equal(24799,actor.X);Assert.Equal(495,actor.Y);Assert.Equal(-1498,actor.Z);Assert.Equal(1,actor.DistrictId);Assert.Equal(2,actor.Organization);
+        Assert.Equal(50,actor.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),actor.Experience);
+        Assert.NotNull(actor.OwnedLoadedAbilities);Assert.Equal(HeadlessClient.ConditionalThrowFixture.Abilities,actor.OwnedLoadedAbilities!.Select(a=>a.Ability));
+        Assert.All(actor.OwnedLoadedAbilities,a=>Assert.Equal((ushort)50,a.Level));
+    }
 }

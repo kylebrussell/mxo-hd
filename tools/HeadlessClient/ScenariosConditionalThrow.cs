@@ -7,14 +7,19 @@ public static partial class Scenarios
 {
     private static async Task ConditionalThrownDamageWire(ScenarioContext context)
     {
-        var caster=await context.AddPlayerAsync(NearNpc("ThrowCaster") with{Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
-        var victim=await context.AddPlayerAsync(NearNpc("ThrowVictim",100) with{Organization=2,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
-        var npcActor=await context.AddPlayerAsync(NearNpc("ThrowNpc",200) with{Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
-        var cancelled=await context.AddPlayerAsync(NearNpc("ThrowCancelled",300) with{Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000});
-        var actors=new[]{caster,victim,npcActor,cancelled};var measurements=new List<object>();string stage="entry";bool passed=false;Exception? failure=null;
+        var caster=await context.AddPlayerAsync(ConditionalThrowFixture.Seed("ThrowCaster",0,1));
+        var victim=await context.AddPlayerAsync(ConditionalThrowFixture.Seed("ThrowVictim",100,2));
+        var npcActor=await context.AddPlayerAsync(ConditionalThrowFixture.Seed("ThrowNpc",200,1));
+        var cancelled=await context.AddPlayerAsync(ConditionalThrowFixture.Seed("ThrowCancelled",300,1));
+        var actors=new[]{caster,victim,npcActor,cancelled};var profiles=new List<object>();var measurements=new List<object>();string stage="entry";bool passed=false;Exception? failure=null;
         try
         {
-            foreach(var p in actors){await LoadAbilitiesAsync(context,p,ConditionalThrowFixture.Abilities);await p.EnterWorldAsync();p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
+            foreach(var p in actors)
+            {
+                profiles.Add(new{p.Handle,p.CharId,Character=await context.Database.ExecuteAsync($"SELECT charId,districtId,x,y,z,level,exp,alignment,healthC,healthM FROM characters WHERE charId={p.CharId}"),Owned=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={p.CharId} ORDER BY slot,id")});
+                Check.Equal((long)ConditionalThrowFixture.Abilities.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND slot<520 AND is_loaded=1"),"Only declared fixture archive abilities are loaded before world entry");
+            }
+            foreach(var p in actors){await p.EnterWorldAsync();p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
             var target=await caster.WaitForViewNamedAsync(victim.Handle);var npc=await npcActor.WaitForViewNamedAsync("Trainman");
             async Task Prepare(HeadlessPlayer actor,ViewCreation view,string state,int seconds=30)
             {
@@ -63,7 +68,7 @@ public static partial class Scenarios
             {
                 string stem=Path.Combine(Path.GetTempPath(),"mxo-conditional-throw-"+context.Database.Name);
                 await File.WriteAllTextAsync(stem+".log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
-                await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Stage=stage,Failure=failure?.ToString(),Database=context.Database.Name,ServerPid=context.Server.ProcessId,SourceAssembly=context.Server.SourceAssembly,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))),Measurements=measurements,Sessions=actors.Select(a=>new{a.Handle,a.CharId,Rpc=a.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=a.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=a.World.Problems.ToArray()}),RandomOverrides=false,QueueQualification="Stored2s279/282 casts bypass current round queue even while interlocked; this does not implement or claim queued hit parity.",NativeProven=false},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
+                await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Stage=stage,Failure=failure?.ToString(),Database=context.Database.Name,ServerPid=context.Server.ProcessId,SourceAssembly=context.Server.SourceAssembly,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))),FixtureEnvironment=ConditionalThrowFixture.Environment,InitialProfiles=profiles,Measurements=measurements,Sessions=actors.Select(a=>new{a.Handle,a.CharId,Rpc=a.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=a.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=a.World.Problems.ToArray()}),RandomOverrides=false,QueueQualification="Stored2s279/282 casts bypass current round queue even while interlocked; this does not implement or claim queued hit parity.",NativeProven=false},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
             }
             catch(Exception proofError){if(failure==null)throw;Console.Error.WriteLine("Conditional throw proof capture failed: "+proofError);}
         }
