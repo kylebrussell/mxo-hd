@@ -1349,6 +1349,7 @@ namespace hds
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
+            MissionStaging.IntroduceDeferredObjects(client,progress);
             bool sent = GiveProvidedItems(client, progress);
             SwitchSides(client, progress); // Retry a side change that was waiting for a safe placement.
             MissionStaging.Follow(client, progress, x, y, z);

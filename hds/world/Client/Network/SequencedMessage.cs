@@ -15,6 +15,7 @@ namespace hds
             if(scaleEnqueued!=0 && System.Threading.Interlocked.Exchange(ref scaleFirstSent,1)==0)
                 ScaleDiagnostics.FirstSend(scaleEnqueued,objectMessage);
         }
+        internal ObjectMessageReceipt ObjectReceipt;
         public byte[] content;
         public UInt16 sendCounter;
         private int resendTime;

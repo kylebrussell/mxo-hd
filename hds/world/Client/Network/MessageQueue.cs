@@ -13,6 +13,15 @@ namespace hds
         public ArrayList rawMessages;
         public ArrayList worldPackets; // These are final worldPackets to be resend
         public int ackOnlyCount = 0;
+        private readonly object receiptSync=new object();
+        private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
+        internal void ObserveObjectReceipts(ushort ack,ushort bits)
+        {
+            var exact=SequencedMessage.AckedSequences(ack,bits);
+            lock(receiptSync){foreach(var receipt in receipts)receipt.Observe(exact);receipts.RemoveWhere(r=>r.Finished);}
+        }
+        internal void CancelObjectReceipts()
+        {lock(receiptSync){foreach(var receipt in receipts)receipt.Cancel();receipts.Clear();}}
 
         public MessageQueue()
         {
@@ -67,8 +76,14 @@ namespace hds
 
         public void addObjectMessage(byte[]messageBlock,bool isTimed)
         {
-            if(MissionOutput.Stage(this,messageBlock,true,isTimed))return;
-            SequencedMessage message = new SequencedMessage(messageBlock);
+            AddObject(messageBlock,isTimed,null);
+        }
+        internal void AddTrackedObject(byte[] messageBlock,ObjectMessageReceipt receipt)=>AddObject(messageBlock,false,receipt);
+        private void AddObject(byte[] messageBlock,bool isTimed,ObjectMessageReceipt receipt)
+        {
+            if(MissionOutput.Stage(this,messageBlock,true,isTimed,receipt))return;
+            if(receipt!=null)lock(receiptSync)receipts.Add(receipt);
+            SequencedMessage message = new SequencedMessage(messageBlock) {ObjectReceipt=receipt};
             message.isTimed = isTimed;
             lock (ObjectMessagesQueue.SyncRoot)
             {
@@ -96,6 +111,7 @@ namespace hds
         public void ForgetWorldObjects()
         {
             lock (ObjectMessagesQueue.SyncRoot) ObjectMessagesQueue.Clear();
+            CancelObjectReceipts();
         }
 
         public void addRawMessage(byte[] messageBlock)

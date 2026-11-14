@@ -32,7 +32,7 @@ namespace hds
         public const UInt32 StringElevatorOffer = 0x600000E2;
         public const UInt32 StringYes = 0x02000007, StringNo = 0x02000000;
 
-        private const UInt64 EntityBase = 987000000000UL;
+        internal const UInt64 EntityBase = 987000000000UL;
 
         /// <summary>The MissionKey element retail's mission containers carried.</summary>
         public const byte ContainerElement = 0xff;
@@ -519,6 +519,16 @@ namespace hds
 
         private static void SpawnObject(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
+            if(MissionProxyIntroduction.Deferred(state))return;
+            SpawnObjectNow(client,progress,state);
+        }
+        internal static void IntroduceDeferredObjects(WorldClient client,MissionProgress progress)
+        {
+            foreach(var state in progress.objects.Values)
+                if(MissionProxyIntroduction.Ready(client,progress,state))SpawnObjectNow(client,progress,state);
+        }
+        private static void SpawnObjectNow(WorldClient client, MissionProgress progress, MissionObjectState state)
+        {
             FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
             if (field == null)
             {
@@ -806,7 +816,7 @@ namespace hds
         public static void Teleport(WorldClient client, double x, double y, double z)
         {
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
+            MissionProxyIntroduction.Arrival(client,x,y,z);
             Output.WriteDebugLog("[MISSION] Teleported to " + x + "," + y + "," + z);
         }
 
