@@ -176,6 +176,7 @@ public static partial class Scenarios
         new Scenario("writer-session-dev-disabled", WriterSessionDevDisabled,
             new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("compile-storage-depletion", CompileStorageDepletion, StillNpcs),
+        new Scenario("ordinary-ic-compile", OrdinaryIcCompile, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-controls", AbilityParityControls, FreeCastViralLandingEnvironment(StillNpcs)),
