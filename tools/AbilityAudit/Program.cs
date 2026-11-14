@@ -67,6 +67,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
+        conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
         conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),
         tactical_toggle = e.Id == 9 || e.Id == 15,
         buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
