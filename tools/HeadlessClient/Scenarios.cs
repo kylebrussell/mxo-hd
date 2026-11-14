@@ -242,6 +242,7 @@ public static partial class Scenarios
         new Scenario("machines-critical-opening",MachinesCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101"}),
         new Scenario("poster-hunt-count", PosterHuntCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("poster-box-floor", PosterBoxFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202",[PosterBoxFloorProbe.EnvironmentKey]="1"}),
+        new Scenario("safe-floor", SafeFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",[SafeFloorProbe.EnvironmentKey]="1"}),
         new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
         new Scenario("zion-propaganda-count", ZionPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
         new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
