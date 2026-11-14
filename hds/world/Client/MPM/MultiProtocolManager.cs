@@ -75,6 +75,7 @@ namespace hds{
                 {
                 // No transport gate around life/control cleanup: those paths can flush other clients.
                 SafeFloorProbe.ClearBeforeEpoch(resetClient, resetEpoch);
+                PropSupportProbe.ClearBeforeEpoch(resetClient, resetEpoch);
                 PosterBoxFloorProbe.Clear(resetClient);
                 resetClient.playerData.setOnWorld(false);
                 if (!resetClient.TransportFence.ApplyReset(resetEpoch, () =>

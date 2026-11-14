@@ -70,6 +70,7 @@ namespace hds
                 CheckForStaticObjectsViewsInRange(aliveClients);
                 MissionContactNpcs.CheckViews(aliveClients);
                 foreach (WorldClient client in aliveClients) SafeFloorProbe.Check(client);
+                foreach (WorldClient client in aliveClients) PropSupportProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PosterBoxFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PvpArchives.Check(client, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
               }
