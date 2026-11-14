@@ -353,7 +353,13 @@ namespace hds{
 			string handleStr = StringUtils.charBytesToString(handleB); // Handle as "AAA"
 			
 			// Process DB to answer the client - we directly create the character
-            UInt32 dbResult = Store.dbManager.MarginDbHandler.getNewCharnameID(handleStr, userID);
+            uint dbResult;
+            try{dbResult=Store.dbManager.MarginDbHandler.getNewCharnameID(handleStr,userID);}
+            catch(Exception e)
+            {
+                Output.WriteDebugLog("[CREATION] reservation rolled back account="+userID+": "+e);
+                working=false;forceClose();return;
+            }
 
             // Add the new charId so that we can work with it
 

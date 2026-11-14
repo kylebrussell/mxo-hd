@@ -37,6 +37,8 @@ namespace hds.databases
             using var r=c.ExecuteReader();
             if(!r.Read()||r.GetString(0)!="int"||!r.GetString(1).Contains("unsigned",StringComparison.OrdinalIgnoreCase)||r.GetString(2)!="YES")throw new InvalidOperationException("Character trait storage is incompatible");
         }
+        internal const string ReservationInsert="INSERT INTO characters(handle,userId,worldId,status,created) VALUES(@handle,@account,@world,0,NOW())";
+        internal const string InitialClothingInsert="INSERT INTO inventory(charId,slot,goid,count,purity) VALUES(@character,@slot,@goid,0,0)";
         private uint ReserveCharacter(string handle,uint account,uint world)
         {
             if(account==0||world!=1||string.IsNullOrEmpty(handle)||handle.Length>31||handle.IndexOf('\0')>=0)return 0;
@@ -46,7 +48,7 @@ namespace hds.databases
             // Verify the authenticated account; the existing 0a reservation persists if 0c is abandoned.
             c.CommandText="SELECT userId FROM users WHERE userId=@account FOR UPDATE";if(c.ExecuteScalar()==null)return 0;
             c.CommandText="SELECT charId FROM characters WHERE handle=@handle AND is_deleted=0 FOR UPDATE";if(c.ExecuteScalar()!=null)return 0;
-            c.CommandText="INSERT INTO characters(handle,userId,worldId,created) VALUES(@handle,@account,@world,NOW())";if(c.ExecuteNonQuery()!=1)return 0;
+            c.CommandText=ReservationInsert;if(c.ExecuteNonQuery()!=1)return 0;
             uint character=checked((uint)c.LastInsertedId);c.Parameters.AddWithValue("@character",character);
             c.CommandText="INSERT INTO rsivalues(charid) VALUES(@character)";if(c.ExecuteNonQuery()!=1)throw new InvalidOperationException("RSI reservation shell was not created");
             tx.Commit();return character;
@@ -76,7 +78,7 @@ namespace hds.databases
             foreach(var entry in state.Clothing)
             {
                 c.Parameters.AddWithValue("@slot",entry.Key);c.Parameters.AddWithValue("@goid",entry.Value);
-                c.CommandText="INSERT INTO inventory(charId,slot,goid,count,purity) VALUES(@character,@slot,@goid,1,0)";c.ExecuteNonQuery();c.Parameters.RemoveAt("@slot");c.Parameters.RemoveAt("@goid");
+                c.CommandText=InitialClothingInsert;c.ExecuteNonQuery();c.Parameters.RemoveAt("@slot");c.Parameters.RemoveAt("@goid");
             }
             for(int i=0;i<StartingGrants.Length;i++)
             {

@@ -93,6 +93,21 @@ public class CharacterPersonalityTests
         Assert.Contains("INSERT INTO characters ("+fields+") SELECT "+fields+" FROM reality_hd.characters WHERE charId=110;",program);
         Assert.DoesNotContain("INSERT INTO characters SELECT * FROM reality_hd.characters",program);
     }
+    [Fact] public void ReservationSuppliesEveryRequiredColumnAndKeepsExistingEfAndClothingDefaults()
+    {
+        string schema=File.ReadAllText(Path.Combine(Root,"SQL","reality_hd.sql"));
+        string table=System.Text.RegularExpressions.Regex.Match(schema,@"CREATE TABLE `characters` \(([\s\S]+?)\) ENGINE=").Groups[1].Value;
+        string[] required=table.Split('\n').Where(l=>l.Contains("NOT NULL")&&!l.Contains("DEFAULT")).Select(l=>System.Text.RegularExpressions.Regex.Match(l,"`([^`]+)`").Groups[1].Value).ToArray();
+        Assert.Equal(new[]{"charId","userId","worldId","status","handle","created"},required);
+        string sql=hds.databases.MyMarginDBAccess.ReservationInsert;
+        string[] inserted=System.Text.RegularExpressions.Regex.Match(sql,@"characters\(([^)]+)\)").Groups[1].Value.Split(',');
+        Assert.Equal(required.Where(c=>c!="charId").Order(),inserted.Order()); // charId is the existing AUTO_INCREMENT key.
+        Assert.Equal(0,new hds.databases.Entities.Character().Status);
+        Assert.Contains("VALUES(@handle,@account,@world,0,NOW())",sql);
+        Assert.Contains("`rotation` mediumint(11) NOT NULL DEFAULT '139'",table);
+        Assert.DoesNotContain("rotation",sql);Assert.DoesNotContain("profession",sql);
+        Assert.Equal("INSERT INTO inventory(charId,slot,goid,count,purity) VALUES(@character,@slot,@goid,0,0)",hds.databases.MyMarginDBAccess.InitialClothingInsert);
+    }
     [Fact] public void NativeConsumerProfilesAreOnly110AndHaveCoherentBaseRows()
     {
         foreach(uint trait in new uint[]{308,304})
