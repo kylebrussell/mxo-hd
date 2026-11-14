@@ -72,6 +72,16 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemovePrisonMoveFailureAsync() => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER prison_move_rollback");
 
+    /// <summary>Fixed late ability-insert failure inside this owned mxotest database; no table rebuild or mode change.</summary>
+    public Task<string> InstallAcquisitionRollbackTriggerAsync(uint character,int descriptor)
+    {
+        if(character==0||character==2)throw new ArgumentException("Acquisition rollback requires the owned fixture character.");
+        string sql="DELIMITER $$\nCREATE TRIGGER ability_acquisition_test_rollback BEFORE INSERT ON char_abilities FOR EACH ROW BEGIN IF NEW.char_id="+character+
+            " AND NEW.ability_id="+descriptor+" THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Acquisition deliberate late archive rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
+    public Task<string> RemoveAcquisitionRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS ability_acquisition_test_rollback");
     //Fixed late second-write failure only inside this harness-owned database; no settings/schema migration.
     public Task<string> InstallAttributeFailureAsync(uint character) => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
