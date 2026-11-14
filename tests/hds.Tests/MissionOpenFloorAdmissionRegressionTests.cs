@@ -276,7 +276,8 @@ public class MissionOpenFloorAdmissionRegressionTests
             return new MissionOpenFloorPhasePlanner.Input(c.ObjectId,request);
         }).ToArray();
         Assert.True(MissionOpenFloorPhasePlanner.TryPlan(inputs,out var independent,out why),why);
-        Assert.Equal(new ushort[]{1,2,3},independent.Order);Assert.Equal(303,independent.BodyNodes);Assert.Equal(5,independent.RouteGraphs);
+        // Policy4's search-work baseline; the exact published poses and independent geometry checks below stay unchanged.
+        Assert.Equal(new ushort[]{1,2,3},independent.Order);Assert.Equal(329,independent.BodyNodes);Assert.Equal(5,independent.RouteGraphs);
         Assert.True(G.ValidateSet(independent.Results.Values.ToArray(),out why),why); // original + native-cast geometry, route and range
         foreach(var c in choices)Assert.Equal(JsonSerializer.Serialize(poses[c.ObjectId],Fields),JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,c.ObjectId,c.ReadSpot(),independent.Results[c.ObjectId]),Fields));
         Assert.Equal(new[]{25585.388671875,2095,14143.16796875},poses[1].Standing);
