@@ -51,6 +51,8 @@ namespace hds
             public ushort Goid { get; set; }
             public bool Unlocked { get; set; }
             public uint State { get; set; }
+            [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+            public MissionOpenFloorPlacement OpenFloor { get; set; }
         }
         public sealed class SavedLoot
         {

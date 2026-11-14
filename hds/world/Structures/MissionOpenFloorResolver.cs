@@ -334,6 +334,8 @@ namespace hds
             shape=Array.Empty<Point>();var r=c.Input;
             if(surface==null||!Finite(position.X,position.Y,position.Z)||Math.Abs(position.Y-c.CentreY)>Epsilon||
                 position.X!=(double)(float)position.X||position.Z!=(double)(float)position.Z)return false;
+            var carrier=c.Component.Where(s=>Inside(s.Vertices,position.Xz)).OrderBy(s=>s.Identity).FirstOrDefault();
+            if(carrier==null||!carrier.Identity.Equals(surface.Identity))return false;
             shape=c.Offsets.Select(p=>new Point(position.X+p.X,position.Z+p.Z)).ToArray();
             var fixedShape=shape;if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component))||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
@@ -362,6 +364,17 @@ namespace hds
             if(!GeometryClear(c,c.Component.FirstOrDefault(s=>s.Identity.Equals(surface)),centre,out var shape)){refusal="InvalidFixedGeometry";return false;}
             if(!RouteValid(c,centre,shape,route)){refusal="InvalidFixedStandingRouteOrRange";return false;}return true;
         }
+        internal static bool ValidateRouteIds(Request r,IReadOnlyList<Id> ids,IReadOnlyList<Position> route)
+        {
+            if(r?.Entry==null||ids==null||route==null||route.Count!=ids.Count+1||ids.Count==0||!ids[0].Equals(r.Entry.Surface))return false;
+            for(int i=0;i<ids.Count;i++)
+            {
+                var surface=r.Surfaces.SingleOrDefault(s=>s.Identity.Equals(ids[i]));
+                if(surface==null||!surface.Flat||Math.Abs(route[i].Y-surface.FloorC-95)>Epsilon||Math.Abs(route[i+1].Y-surface.FloorC-95)>Epsilon||
+                    !Inside(surface.Vertices,route[i].Xz)||!Inside(surface.Vertices,route[i+1].Xz)||!Inside(surface.Vertices,Rounded(route[i].Xz))||!Inside(surface.Vertices,Rounded(route[i+1].Xz)))return false;
+            }
+            return true;
+        }
         internal static bool ValidateSet(IReadOnlyList<Result> results,out string refusal)
         {
             refusal=null;if(results==null||results.Count==0||results.Any(r=>r==null||!r.HasPlan)){refusal="IncompletePlacementSet";return false;}
@@ -388,6 +401,7 @@ namespace hds
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
             // Minkowski expansion excludes every centre whose full footprint would meet that complement.
             Point[] allowed=Erode(r.SiteBounds.Polygon,offsets);
+            if(allowed.Length==0)return No("NoClearFootprintAndInRangeReachableStandingPoint");
             var outside=Difference(new[]{r.SiteBounds.Polygon},component.Select(s=>s.Vertices.ToArray()),0);
             var outsideForbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
             var candidates=new List<Candidate>();

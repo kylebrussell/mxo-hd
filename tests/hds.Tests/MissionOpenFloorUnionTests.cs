@@ -17,6 +17,7 @@ public class MissionOpenFloorUnionTests
         // Independent rectangle union: every footprint point and the whole convex rectangle lie in the gapless floor.
         Assert.All(result.Base,p=>{Assert.InRange(p.X,0,200);Assert.InRange(p.Z,-100,100);});
         Assert.True(G.ValidateFixed(request,result.InputFingerprint,result.Surface,result.Centre,result.Route,out string refusal),refusal);
+        Assert.False(G.ValidateFixed(request,result.InputFingerprint,new G.Id(127,1,2),result.Centre,result.Route,out _));
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void MissingStripOrDifferentFloorCannotBeBridgedByTheFootprint(bool differentFloor)
@@ -29,6 +30,11 @@ public class MissionOpenFloorUnionTests
     {
         var request=Request(new[]{Floor(1,0,-100,95,100),Floor(2,95,-100,105,-5),Floor(3,95,5,105,100),Floor(4,105,-100,200,100)},65,65);
         Assert.False(G.Plan(request).HasPlan);
+    }
+    [Fact]
+    public void OversizedFootprintRefusesWithoutAttemptingAnEmptyCell()
+    {
+        Assert.False(G.Plan(Request(new[]{Floor(1,0,-100,200,100)},1000,1000)).HasPlan);
     }
     [Fact]
     public void LiteralSafeCellFindsAdjacentRepresentableInteriorWithoutRelaxingItsBoundary()
