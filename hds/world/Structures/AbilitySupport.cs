@@ -83,6 +83,7 @@ namespace hds
                         TimedEffects.Apply(TimedEffects.ForPlayer(target), effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
                     }
                     else AbilityHandler.HealSelf(target, amount);
+                    if (id == MobiusCode.Ability) MobiusCode.Land(caster,target);
                     Output.WriteDebugLog("[ABILITY] Heal " + id + " -> " + TimedEffects.PlayerName(target) + " for " + amount);
                 }
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
