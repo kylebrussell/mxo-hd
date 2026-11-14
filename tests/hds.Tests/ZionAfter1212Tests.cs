@@ -36,7 +36,8 @@ public class ZionAfter1212Tests
     [Fact] public void DuplicateNamesUseCurrentPhasePoseAndSideAndKillOracleIsIndependent()
     {
         ViewCreation View(ushort view,double x,double y,bool enemy)=>new(view,599,1,new Dictionary<string,byte[]>{["CharacterName"]=System.Text.Encoding.ASCII.GetBytes("Agent Lee\0"),["Position"]=NumericalUtils.doublesToLtVector3d(x,y,100),["IsEnemy"]=new byte[]{(byte)(enemy?1:0)}});
-        var mob=new MissionProgress.SavedMob{Name="Agent Lee",X=100,Y=495,Z=100,Hostile=true,Npc=3};
+        var mob=new MissionProgress.SavedMob{Name="Agent Lee",X=100,Y=495,Z=100,Hostile=false,Friendly=false,Npc=3};
+        // Hostile is generated-wave membership. Scripted hostile NPCs can be Friendly=false/Hostile=false.
         var records=new[]{View(4,100,495,true),View(5,200,495,true),View(6,100,895,true),View(7,100,495,false),View(8,100,495,true)};
         Assert.Equal((ushort)8,ZionAfter1212Fixture.CurrentNpc(records,1,mob)!.ViewId);
         Assert.Null(ZionAfter1212Fixture.CurrentNpc(records,records.Length,mob));Assert.Null(ZionAfter1212Fixture.CurrentNpc(records,-1,mob));

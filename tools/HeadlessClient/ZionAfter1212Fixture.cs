@@ -14,7 +14,7 @@ public static class ZionAfter1212Fixture
         if(cursor<0||cursor>views.Count)return null;
         return views.Skip(cursor).LastOrDefault(v=>v.Goid==599&&v.Name==mob.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
             Math.Abs(BitConverter.ToDouble(pos)-mob.X)<1&&Math.Abs(BitConverter.ToDouble(pos,8)-mob.Y)<1&&Math.Abs(BitConverter.ToDouble(pos,16)-mob.Z)<1&&
-            (v.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy[0]!=0)==mob.Hostile);
+            (v.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy[0]!=0)==!mob.Friendly);
     }
     public static string SeedPrerequisites(long character)=>"INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",Prerequisites.Select(id=>$"({character},{id})"));
 }
