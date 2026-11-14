@@ -246,7 +246,7 @@ public sealed class WorldSession : IDisposable
                     problems.Add($"Server RPC counter jumped: expected {expectedServerRpc.Value}, got {number}");
                 }
                 expectedServerRpc = (ushort)(number + 1);
-                rpcLog.Add(rpc);
+                rpcLog.Add(rpc with { DatagramSequence=serverSeq });
             }
         }
 

@@ -26,7 +26,13 @@ public class MissionObjectiveReplayTests
         client.playerData = new ClientData(); client.playerInstance = new PlayerCharacter();
         client.playerInstance.CharacterName.setValue(Encoding.ASCII.GetBytes("ObjectiveQA\0"));
         client.messageQueue = new MessageQueue();
+        client.playerData.missionProgress=progress;client.playerData.setDistrictId(progress.mission.district);client.playerData.setOnWorld(true);
         MissionRuntime.SendObjectives(client, progress, restoring);
+        if(restoring)
+        {
+            Assert.Empty(client.messageQueue.RPCMessagesQueue); // no pre-loading copy
+            var finish=MissionObjectiveReplay.Begin(client,new byte[]{1});Assert.NotNull(finish);Assert.True(finish!());
+        }
         return client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(m =>
         {
             var rpc = m.content[(m.content[0] >= 128 ? 2 : 1)..];

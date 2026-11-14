@@ -1124,13 +1124,21 @@ namespace hds
         /// Replay only this phase's completed or currently open goals; a locked goal stays hidden.</summary>
         internal static void SendObjectives(WorldClient client, MissionProgress progress, bool restoring)
         {
+            if(restoring){MissionObjectiveReplay.Arm(client,progress);return;}
+            SendObjectiveRows(client,progress,false);
+        }
+        internal static void SendObjectiveRows(WorldClient client, MissionProgress progress, bool restoring)
+        {
             ServerPackets packets = new ServerPackets();
             foreach (MissionObjective objective in progress.Phase.missionObjectives)
                 if (progress.IsOpen(objective) || restoring && progress.IsDone(objective.goal))
                     packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
-            if (restoring)
-                foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
-                    packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
+        }
+        internal static void SendObjectiveCompletions(WorldClient client, MissionProgress progress)
+        {
+            ServerPackets packets = new ServerPackets();
+            foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
+                packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
         }
 
         // Items the briefing provides, including a retry when the bag was full at the start of this phase.

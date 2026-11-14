@@ -5,18 +5,29 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    // Optional profile only; null keeps the previous level50/XP0 seed exactly.
+    private static CharacterSeed PrimaActorSeed(string handle,byte org,double x,double z,int? level)
+    {
+        if(level.HasValue&&(level.Value<1||level.Value>50))throw new ArgumentOutOfRangeException(nameof(level));
+        return new CharacterSeed(handle){Level=level??50,Experience=level.HasValue?(int)PlayerProgression.ExperienceForLevel(level.Value):0,
+            X=x,Z=z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,Organization=org};
+    }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,int? actorLevel=null,bool strictFollowupApproach=false)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,X=startX,Z=startZ,Health=5000,MaxHealth=5000,
-            InnerStrength=2000,MaxInnerStrength=2000,Organization=org});
+        var p=await context.AddPlayerAsync(PrimaActorSeed(handle,org,startX,startZ,actorLevel));
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
         Exception? scenarioFailure=null;HeadlessPlayer? relogged=null;object? relogProof=null;string step="entry";var carriedEvidence=new List<object>();var phaseCheckpoints=new List<object>();
         try
         {
+        if(strictFollowupApproach)
+        {
+            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId} AND slot<520");
+            await LoadAbilitiesAsync(context,p,2,17,45,1006,77);
+        }
         await p.EnterWorldAsync();
         foreach(int id in ids)
         {
@@ -43,7 +54,8 @@ public static partial class Scenarios
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
                 bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
-                await EnterMissionArea(context,p);
+                if(strictFollowupApproach)await MervFollowupRide(context,p,true,phaseCheckpoints);
+                else await EnterMissionArea(context,p);
                 if(checkpointRecreatedCarriedNpcs)
                 {
                     string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
@@ -107,7 +119,7 @@ public static partial class Scenarios
                         case "Search":case "Use":case "Put":
                         {
                             int objectId=(int)goal.Attribute("object")!;uint item=(uint?)goal.Attribute("item")??0;
-                            var view=await ZionObject(context,p,objectId);
+                            var view=strictFollowupApproach?await MervFollowupObject(context,p,objectId,viewsStart,phaseCheckpoints):await ZionObject(context,p,objectId);
                             if(!MissionStaging.IsClickable(view.Goid))
                             {await p.WaitUntilAsync(()=>Done(number),"nonclickable mission object proximity",TimeSpan.FromSeconds(10));break;}
                             bool computer=MissionStaging.IsComputer(view.Goid);
@@ -161,10 +173,10 @@ public static partial class Scenarios
                                 }
                             }
                             string to=(string?)goal.Attribute("to")??"exit";
-                            if(to=="exit")await LeaveMissionArea(p);
+                            if(to=="exit") {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints);else await LeaveMissionArea(p);}
                             else if(to=="hardline")await ZionUpload(p);
                             else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);
-                            else if(to.StartsWith("object:"))await ZionObject(context,p,int.Parse(to[7..]));
+                            else if(to.StartsWith("object:")) {if(strictFollowupApproach)await MervFollowupObject(context,p,int.Parse(to[7..]),viewsStart,phaseCheckpoints);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
@@ -191,7 +203,7 @@ public static partial class Scenarios
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))await LeaveMissionArea(p);
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")) {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints);else await LeaveMissionArea(p);}
                 phase++;
                 if(phase<mission.Elements("phase").Count())
                     await p.WaitUntilAsync(()=>Regex.Matches(Log(),@"\[MISSION\] Phase \d+ at a").Count>phase,"next phase staged",TimeSpan.FromSeconds(15));
