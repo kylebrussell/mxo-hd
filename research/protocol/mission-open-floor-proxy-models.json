@@ -1,0 +1,1360 @@
+{
+  "generatorSha256": "f9bbe783866e78103ce71816e4c3c848e706c72bff948ea9dd96e057d7f7c645",
+  "clientDllSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "sourceHashes": {
+    "mxo-open-floor-model-skeletons.json": "5b57b06409f18eb7f17a65dd069e0f8c2cdc6e8e0f33a953cce01af47f3ab500",
+    "mxo-open-floor-animation-tracks.json": "a4b80a239f900551c6e9a0902cac2d3ae528650a69088f9f43afebf449f5c654"
+  },
+  "models": [
+    {
+      "model": "0x2800018a",
+      "goid": 3,
+      "supportMinY": -25.00377655029297,
+      "conservativeMin": [
+        -42.56936264038086,
+        -25.00377655029297,
+        -41.43278884887695
+      ],
+      "conservativeMax": [
+        42.56936264038086,
+        25.135780334472656,
+        41.43278884887695
+      ],
+      "sourceClips": [
+        671089033
+      ],
+      "meshes": [
+        {
+          "rid": 973078885,
+          "path": "",
+          "sha256": "64b4954155c55d2dc56683514d4ca8f57481cfd3178376dcccddbddde032d2cc",
+          "bone": 1,
+          "min": [
+            -41.85332489013672,
+            -25.00377655029297,
+            -40.961978912353516
+          ],
+          "max": [
+            42.56936264038086,
+            25.135780334472656,
+            41.43278884887695
+          ]
+        }
+      ],
+      "domains": [
+        {
+          "mesh": 973078885,
+          "clip": 671089033,
+          "bounds": [
+            [
+              -42.56936264038086,
+              -25.00377655029297,
+              -41.43278884887695
+            ],
+            [
+              41.85332489013672,
+              25.135780334472656,
+              40.961978912353516
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 1,
+              "kind": "constant",
+              "translation": [
+                -2.220446049250313e-15,
+                0.0,
+                -10.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      ],
+      "includesRawInitialSkinIdentity": true,
+      "outwardF32Witness": [
+        {
+          "side": 0,
+          "axis": 0,
+          "exactGeometric": -42.56936264038086,
+          "nearestF32": -42.56936264038086,
+          "outwardF32": -42.56936264038086,
+          "literalLE": "07472ac2",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 1,
+          "exactGeometric": -25.00377655029297,
+          "nearestF32": -25.00377655029297,
+          "outwardF32": -25.00377655029297,
+          "literalLE": "bc07c8c1",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 2,
+          "exactGeometric": -41.43278884887695,
+          "nearestF32": -41.43278884887695,
+          "outwardF32": -41.43278884887695,
+          "literalLE": "2dbb25c2",
+          "direction": "lower"
+        },
+        {
+          "side": 1,
+          "axis": 0,
+          "exactGeometric": 42.56936264038086,
+          "nearestF32": 42.56936264038086,
+          "outwardF32": 42.56936264038086,
+          "literalLE": "07472a42",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 1,
+          "exactGeometric": 25.135780334472656,
+          "nearestF32": 25.135780334472656,
+          "outwardF32": 25.135780334472656,
+          "literalLE": "1416c941",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 2,
+          "exactGeometric": 41.43278884887695,
+          "nearestF32": 41.43278884887695,
+          "outwardF32": 41.43278884887695,
+          "literalLE": "2dbb2542",
+          "direction": "upper"
+        }
+      ],
+      "numericDomain": "Exact-real geometry of source f32 vertices/keys/matrices with directed outward f32 boundary export. Does not certify GPU arithmetic bit parity.",
+      "qualification": "Geometric conservative admission derived from actual vertices, inverse bind and source clip axis envelopes. Not exact default frame, retail placement policy, arbitrary animation, scene clearance or GPU rounding parity."
+    },
+    {
+      "model": "0x28000872",
+      "goid": 548,
+      "supportMinY": -40.0,
+      "conservativeMin": [
+        -98.42459106445312,
+        -40.0,
+        -125.44692993164062
+      ],
+      "conservativeMax": [
+        98.39927673339844,
+        96.44692993164062,
+        125.38443756103516
+      ],
+      "sourceClips": [
+        671090803,
+        671090873
+      ],
+      "meshes": [
+        {
+          "rid": 671090797,
+          "path": "resource/GameObjects/Containers/cardboardbox_large/geometry/base.mga",
+          "sha256": "10ed8bc5b72e6b13d3b92c65e6e98944a9bc90287a0829615cb7892837d90af2",
+          "bone": 0,
+          "min": [
+            -50.0,
+            -40.0,
+            -70.0
+          ],
+          "max": [
+            50.0,
+            40.0,
+            70.0
+          ]
+        },
+        {
+          "rid": 671090798,
+          "path": "resource/GameObjects/Containers/cardboardbox_large/geometry/flap1.mga",
+          "sha256": "490777c06e0cbc2bcc657ff73f755b61927b4c4cfec57b40fb3c8dfd82f68846",
+          "bone": 1,
+          "min": [
+            -49.0,
+            39.0,
+            13.965435981750488
+          ],
+          "max": [
+            49.0,
+            40.0,
+            69.0
+          ]
+        },
+        {
+          "rid": 671090799,
+          "path": "resource/GameObjects/Containers/cardboardbox_large/geometry/flap2.mga",
+          "sha256": "fab70dd79beb120b32d617f6c0aef7f833a129168f26009e8e1a194940b7a428",
+          "bone": 2,
+          "min": [
+            -49.0,
+            39.0,
+            -69.0
+          ],
+          "max": [
+            49.0,
+            40.0,
+            -13.965435981750488
+          ]
+        },
+        {
+          "rid": 671090800,
+          "path": "resource/GameObjects/Containers/cardboardbox_large/geometry/flap3.mga",
+          "sha256": "8f6eb780581cb42e520aafcd2f31ffbdae8cd4e45f3efa33f8dabb47430cb146",
+          "bone": 3,
+          "min": [
+            -3.3306690738754696e-15,
+            40.0,
+            -69.0
+          ],
+          "max": [
+            49.0,
+            41.0,
+            69.0
+          ]
+        },
+        {
+          "rid": 671090801,
+          "path": "resource/GameObjects/Containers/cardboardbox_large/geometry/flap4.mga",
+          "sha256": "85819354891e7bd845db30cf4a7202a655ed332e19fb0dd9dbdb476055854b2e",
+          "bone": 4,
+          "min": [
+            -49.0,
+            40.0,
+            -69.0
+          ],
+          "max": [
+            3.3306690738754696e-15,
+            41.0,
+            69.0
+          ]
+        }
+      ],
+      "domains": [
+        {
+          "mesh": 671090797,
+          "clip": 671090803,
+          "bounds": [
+            [
+              -50.0,
+              -40.0,
+              -70.0
+            ],
+            [
+              50.0,
+              40.0,
+              70.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090797,
+          "clip": 671090873,
+          "bounds": [
+            [
+              -50.0,
+              -40.0,
+              -70.0
+            ],
+            [
+              50.0,
+              40.0,
+              70.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090798,
+          "clip": 671090803,
+          "bounds": [
+            [
+              -49.0,
+              -16.38443201465777,
+              12.615567985342231
+            ],
+            [
+              49.0,
+              96.38443201465776,
+              125.38443201465776
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 0,
+              "maxKeyNormSquared": 1.000006380487814,
+              "minAdjacentAbsDot": 0.97594715568815,
+              "linearNormSquaredUpper": 1.000006380487814,
+              "slerpNormSquaredUpper": 1.0121792757555286,
+              "combinedNormSquaredUpper": 1.0121792757555286,
+              "operatorUpper": 1.0243585515110571,
+              "radiusUpper": 56.38443201465777,
+              "translation": [
+                -0.0,
+                40.0,
+                69.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090798,
+          "clip": 671090873,
+          "bounds": [
+            [
+              -49.0,
+              -16.38443201465777,
+              12.615567985342231
+            ],
+            [
+              49.0,
+              96.38443201465776,
+              125.38443201465776
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 0,
+              "maxKeyNormSquared": 1.000006380487814,
+              "minAdjacentAbsDot": 0.97594715568815,
+              "linearNormSquaredUpper": 1.000006380487814,
+              "slerpNormSquaredUpper": 1.0121792757555286,
+              "combinedNormSquaredUpper": 1.0121792757555286,
+              "operatorUpper": 1.0243585515110571,
+              "radiusUpper": 56.38443201465777,
+              "translation": [
+                -0.0,
+                40.0,
+                69.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090799,
+          "clip": 671090803,
+          "bounds": [
+            [
+              -49.0,
+              -16.446924891064768,
+              -125.44692489106477
+            ],
+            [
+              49.0,
+              96.44692489106477,
+              -12.553075108935232
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 2,
+              "kind": "axis-envelope",
+              "axis": 0,
+              "maxKeyNormSquared": 1.0000016396222096,
+              "minAdjacentAbsDot": 0.9748302322048961,
+              "linearNormSquaredUpper": 1.0000016396222096,
+              "slerpNormSquaredUpper": 1.012746942308766,
+              "combinedNormSquaredUpper": 1.012746942308766,
+              "operatorUpper": 1.025493884617532,
+              "radiusUpper": 56.44692489106477,
+              "translation": [
+                -0.0,
+                40.0,
+                -69.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090799,
+          "clip": 671090873,
+          "bounds": [
+            [
+              -49.0,
+              -16.446924891064768,
+              -125.44692489106477
+            ],
+            [
+              49.0,
+              96.44692489106477,
+              -12.553075108935232
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 2,
+              "kind": "axis-envelope",
+              "axis": 0,
+              "maxKeyNormSquared": 1.0000016396222096,
+              "minAdjacentAbsDot": 0.9748302322048961,
+              "linearNormSquaredUpper": 1.0000016396222096,
+              "slerpNormSquaredUpper": 1.012746942308766,
+              "combinedNormSquaredUpper": 1.012746942308766,
+              "operatorUpper": 1.025493884617532,
+              "radiusUpper": 56.44692489106477,
+              "translation": [
+                -0.0,
+                40.0,
+                -69.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090800,
+          "clip": 671090803,
+          "bounds": [
+            [
+              -0.39927012252488936,
+              -9.39927012252489,
+              -69.0
+            ],
+            [
+              98.39927012252488,
+              89.39927012252488,
+              69.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 3,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000042840392878,
+              "minAdjacentAbsDot": 0.9921014274850828,
+              "linearNormSquaredUpper": 1.0000042840392878,
+              "slerpNormSquaredUpper": 1.0039692459853689,
+              "combinedNormSquaredUpper": 1.0039692459853689,
+              "operatorUpper": 1.0079384919707377,
+              "radiusUpper": 49.39927012252489,
+              "translation": [
+                49.0,
+                40.0,
+                0.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090800,
+          "clip": 671090873,
+          "bounds": [
+            [
+              -0.39927012252488936,
+              -9.39927012252489,
+              -69.0
+            ],
+            [
+              98.39927012252488,
+              89.39927012252488,
+              69.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 3,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000042840392878,
+              "minAdjacentAbsDot": 0.9921014274850828,
+              "linearNormSquaredUpper": 1.0000042840392878,
+              "slerpNormSquaredUpper": 1.0039692459853689,
+              "combinedNormSquaredUpper": 1.0039692459853689,
+              "operatorUpper": 1.0079384919707377,
+              "radiusUpper": 49.39927012252489,
+              "translation": [
+                49.0,
+                40.0,
+                0.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090801,
+          "clip": 671090803,
+          "bounds": [
+            [
+              -98.42458355851109,
+              -9.424583558511088,
+              -69.0
+            ],
+            [
+              0.4245835585110882,
+              89.42458355851109,
+              69.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 4,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000006966890391,
+              "minAdjacentAbsDot": 0.9915819952721815,
+              "linearNormSquaredUpper": 1.0000006966890391,
+              "slerpNormSquaredUpper": 1.0042274925792076,
+              "combinedNormSquaredUpper": 1.0042274925792076,
+              "operatorUpper": 1.0084549851584153,
+              "radiusUpper": 49.42458355851109,
+              "translation": [
+                -49.0,
+                40.0,
+                0.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090801,
+          "clip": 671090873,
+          "bounds": [
+            [
+              -98.42458355851109,
+              -9.424583558511088,
+              -69.0
+            ],
+            [
+              0.4245835585110882,
+              89.42458355851109,
+              69.0
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 4,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000006966890391,
+              "minAdjacentAbsDot": 0.9915819952721815,
+              "linearNormSquaredUpper": 1.0000006966890391,
+              "slerpNormSquaredUpper": 1.0042274925792076,
+              "combinedNormSquaredUpper": 1.0042274925792076,
+              "operatorUpper": 1.0084549851584153,
+              "radiusUpper": 49.42458355851109,
+              "translation": [
+                -49.0,
+                40.0,
+                0.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          ]
+        }
+      ],
+      "includesRawInitialSkinIdentity": true,
+      "outwardF32Witness": [
+        {
+          "side": 0,
+          "axis": 0,
+          "exactGeometric": -98.42458355851109,
+          "nearestF32": -98.4245834350586,
+          "outwardF32": -98.42459106445312,
+          "literalLE": "64d9c4c2",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 1,
+          "exactGeometric": -40.0,
+          "nearestF32": -40.0,
+          "outwardF32": -40.0,
+          "literalLE": "000020c2",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 2,
+          "exactGeometric": -125.44692489106477,
+          "nearestF32": -125.4469223022461,
+          "outwardF32": -125.44692993164062,
+          "literalLE": "d4e4fac2",
+          "direction": "lower"
+        },
+        {
+          "side": 1,
+          "axis": 0,
+          "exactGeometric": 98.39927012252488,
+          "nearestF32": 98.3992691040039,
+          "outwardF32": 98.39927673339844,
+          "literalLE": "6eccc442",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 1,
+          "exactGeometric": 96.44692489106477,
+          "nearestF32": 96.4469223022461,
+          "outwardF32": 96.44692993164062,
+          "literalLE": "d4e4c042",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 2,
+          "exactGeometric": 125.38443201465776,
+          "nearestF32": 125.38442993164062,
+          "outwardF32": 125.38443756103516,
+          "literalLE": "d5c4fa42",
+          "direction": "upper"
+        }
+      ],
+      "numericDomain": "Exact-real geometry of source f32 vertices/keys/matrices with directed outward f32 boundary export. Does not certify GPU arithmetic bit parity.",
+      "qualification": "Geometric conservative admission derived from actual vertices, inverse bind and source clip axis envelopes. Not exact default frame, retail placement policy, arbitrary animation, scene clearance or GPU rounding parity."
+    },
+    {
+      "model": "0x28000654",
+      "goid": 552,
+      "supportMinY": -50.0,
+      "conservativeMin": [
+        -96.58653259277344,
+        -50.0,
+        -40.13495635986328
+      ],
+      "conservativeMax": [
+        39.400634765625,
+        50.0,
+        98.58653259277344
+      ],
+      "sourceClips": [
+        671090262,
+        671090264
+      ],
+      "meshes": [
+        {
+          "rid": 671090255,
+          "path": "",
+          "sha256": "ac401f8a5ce51a30addd6474b1f2f33f8d57a51b2661d9ceb4215f37dacb159a",
+          "bone": 2,
+          "min": [
+            -23.342147827148438,
+            -5.075900554656982,
+            -38.08912658691406
+          ],
+          "max": [
+            -13.19035530090332,
+            5.0758957862854,
+            -33.96957015991211
+          ]
+        },
+        {
+          "rid": 671090257,
+          "path": "",
+          "sha256": "f7099d4c549b6d0c714e084278426b3459cdb61a944fc373a3073d21434cba57",
+          "bone": 3,
+          "min": [
+            -9.41278076171875,
+            -1.1326109170913696,
+            -40.13495635986328
+          ],
+          "max": [
+            2.423686981201172,
+            1.1326135396957397,
+            -33.72468566894531
+          ]
+        },
+        {
+          "rid": 671090258,
+          "path": "",
+          "sha256": "ec276ac0a0ac085ee51096adb4613818fcd2a342ff51e5b29797debeec7aba65",
+          "bone": 1,
+          "min": [
+            -32.0,
+            -43.999996185302734,
+            -34.0
+          ],
+          "max": [
+            31.999998092651367,
+            43.999996185302734,
+            -25.999984741210938
+          ]
+        },
+        {
+          "rid": 671090259,
+          "path": "",
+          "sha256": "4c59c32105603829243251cc7b21165ac9c498739481e40ba25ee3c7226d5171",
+          "bone": 0,
+          "min": [
+            -39.400634765625,
+            -50.0,
+            -34.000003814697266
+          ],
+          "max": [
+            39.400634765625,
+            50.0,
+            34.08476257324219
+          ]
+        }
+      ],
+      "domains": [
+        {
+          "mesh": 671090255,
+          "clip": 671090262,
+          "bounds": [
+            [
+              -87.56912518047857,
+              -5.075900554656982,
+              -21.569125180478565
+            ],
+            [
+              23.569125180478565,
+              5.0758957862854,
+              89.56912518047857
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 2,
+              "kind": "constant",
+              "translation": [
+                -50.26625061035156,
+                0.0,
+                0.00043544903746806085
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 55.569125180478565,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090255,
+          "clip": 671090264,
+          "bounds": [
+            [
+              -87.56912518047857,
+              -5.075900554656982,
+              -21.569125180478565
+            ],
+            [
+              23.569125180478565,
+              5.0758957862854,
+              89.56912518047857
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 2,
+              "kind": "constant",
+              "translation": [
+                -50.26625061035156,
+                0.0,
+                0.00043544903746806085
+              ],
+              "quaternion": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 55.569125180478565,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090257,
+          "clip": 671090262,
+          "bounds": [
+            [
+              -83.62776988943165,
+              -11.11478826625046,
+              -17.627769889431647
+            ],
+            [
+              19.627769889431647,
+              11.11478826625046,
+              85.62776988943165
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 3,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000000483372062,
+              "minAdjacentAbsDot": 0.9488604068756104,
+              "linearNormSquaredUpper": 1.0000000483372062,
+              "slerpNormSquaredUpper": 1.0262408172583222,
+              "combinedNormSquaredUpper": 1.0262408172583222,
+              "operatorUpper": 1.0524816345166443,
+              "radiusUpper": 11.11478826625046,
+              "translation": [
+                -40.07595443725586,
+                0.0,
+                -0.006399134173989296
+              ]
+            },
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 51.62776988943165,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090257,
+          "clip": 671090264,
+          "bounds": [
+            [
+              -83.62776988943165,
+              -11.11478826625046,
+              -17.627769889431647
+            ],
+            [
+              19.627769889431647,
+              11.11478826625046,
+              85.62776988943165
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 3,
+              "kind": "axis-envelope",
+              "axis": 2,
+              "maxKeyNormSquared": 1.0000000483372062,
+              "minAdjacentAbsDot": 0.9488604068756104,
+              "linearNormSquaredUpper": 1.0000000483372062,
+              "slerpNormSquaredUpper": 1.0262408172583222,
+              "combinedNormSquaredUpper": 1.0262408172583222,
+              "operatorUpper": 1.0524816345166443,
+              "radiusUpper": 11.11478826625046,
+              "translation": [
+                -40.07595443725586,
+                0.0,
+                -0.006399134173989296
+              ]
+            },
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 51.62776988943165,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090258,
+          "clip": 671090262,
+          "bounds": [
+            [
+              -96.58652930249625,
+              -43.999996185302734,
+              -30.586529302496245
+            ],
+            [
+              32.586529302496245,
+              43.999996185302734,
+              98.58652930249625
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 64.58652930249625,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090258,
+          "clip": 671090264,
+          "bounds": [
+            [
+              -96.58652930249625,
+              -43.999996185302734,
+              -30.586529302496245
+            ],
+            [
+              32.586529302496245,
+              43.999996185302734,
+              98.58652930249625
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 1,
+              "kind": "axis-envelope",
+              "axis": 1,
+              "maxKeyNormSquared": 1.0000000686042343,
+              "minAdjacentAbsDot": 0.9986294789854391,
+              "linearNormSquaredUpper": 1.0000000686042343,
+              "slerpNormSquaredUpper": 1.0006857990625282,
+              "combinedNormSquaredUpper": 1.0006857990625282,
+              "operatorUpper": 1.0013715981250564,
+              "radiusUpper": 64.58652930249625,
+              "translation": [
+                32.0,
+                0.0,
+                -34.0
+              ]
+            },
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090259,
+          "clip": 671090262,
+          "bounds": [
+            [
+              -39.400634765625,
+              -50.0,
+              -34.08476257324219
+            ],
+            [
+              39.400634765625,
+              50.0,
+              34.000003814697266
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": 671090259,
+          "clip": 671090264,
+          "bounds": [
+            [
+              -39.400634765625,
+              -50.0,
+              -34.08476257324219
+            ],
+            [
+              39.400634765625,
+              50.0,
+              34.000003814697266
+            ]
+          ],
+          "steps": [
+            {
+              "bone": 0,
+              "kind": "constant",
+              "translation": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quaternion": [
+                0.0,
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      ],
+      "includesRawInitialSkinIdentity": true,
+      "outwardF32Witness": [
+        {
+          "side": 0,
+          "axis": 0,
+          "exactGeometric": -96.58652930249625,
+          "nearestF32": -96.58653259277344,
+          "outwardF32": -96.58653259277344,
+          "literalLE": "4e2cc1c2",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 1,
+          "exactGeometric": -50.0,
+          "nearestF32": -50.0,
+          "outwardF32": -50.0,
+          "literalLE": "000048c2",
+          "direction": "lower"
+        },
+        {
+          "side": 0,
+          "axis": 2,
+          "exactGeometric": -40.13495635986328,
+          "nearestF32": -40.13495635986328,
+          "outwardF32": -40.13495635986328,
+          "literalLE": "328a20c2",
+          "direction": "lower"
+        },
+        {
+          "side": 1,
+          "axis": 0,
+          "exactGeometric": 39.400634765625,
+          "nearestF32": 39.400634765625,
+          "outwardF32": 39.400634765625,
+          "literalLE": "409a1d42",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 1,
+          "exactGeometric": 50.0,
+          "nearestF32": 50.0,
+          "outwardF32": 50.0,
+          "literalLE": "00004842",
+          "direction": "upper"
+        },
+        {
+          "side": 1,
+          "axis": 2,
+          "exactGeometric": 98.58652930249625,
+          "nearestF32": 98.58653259277344,
+          "outwardF32": 98.58653259277344,
+          "literalLE": "4e2cc542",
+          "direction": "upper"
+        }
+      ],
+      "numericDomain": "Exact-real geometry of source f32 vertices/keys/matrices with directed outward f32 boundary export. Does not certify GPU arithmetic bit parity.",
+      "qualification": "Geometric conservative admission derived from actual vertices, inverse bind and source clip axis envelopes. Not exact default frame, retail placement policy, arbitrary animation, scene clearance or GPU rounding parity."
+    }
+  ],
+  "domainHash": "3ca719213f6fdc40295769c06087e5bf1772eae6a999c1656eec048f321fcd31"
+}

@@ -24,6 +24,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
+        new Scenario("mission-open-floor-box", MissionOpenFloorBoxScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("character-creation-baseline", CharacterCreationBaseline, StillNpcs),
         new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
@@ -36,6 +37,7 @@ public static partial class Scenarios
         new Scenario("mission-relog-corpse-loot", MissionRelogCorpseLoot, StillNpcs, "mission-persistence-loot.xml"),
         new Scenario("mission-relog-disconnect-move", MissionRelogDisconnectAndMove, StillNpcs),
         new Scenario("mission-relog-object-rollback", MissionRelogObjectsAndRollback, StillNpcs, "mission-persistence.xml"),
+        new Scenario("mission-relog-object-rollback-842", MissionRelogObjectsAndRollback842, new Dictionary<string,string>(StillNpcs){["MXO_MISSION_SITE_QA_SEED"]=Rollback842Fixture.InitialSeed.ToString()}, "mission-persistence.xml"),
         new Scenario("mission-relog-persistence", MissionRelogPersistence, StillNpcs),
         new Scenario("mission-presentation", MissionPresentation, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("machines-prima-chain",MachinesPrimaChain,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="220110"}),

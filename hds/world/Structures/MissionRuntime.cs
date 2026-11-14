@@ -40,14 +40,21 @@ namespace hds
 
         public static bool Start(WorldClient client, Mission mission, ushort transaction = 0) => MissionPersistence.Mutate(client,()=>{StartCore(client,mission,transaction);return true;},true);
 
-        private static void StartCore(WorldClient client, Mission mission, ushort transaction)
+        internal static bool StartOpenFloor(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan,ushort transaction) =>
+            MissionPersistence.Mutate(client,()=>
+            {
+                if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;
+                StartCore(client,progress.mission,transaction,progress,plan);return true;
+            },true);
+
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null)
         {
             lock (client.playerData.missionSync)
             {
                 EndCore(client,false);
 
                 ClientData data = client.playerData;
-                MissionProgress progress = new MissionProgress(mission);
+                MissionProgress progress = preparedProgress ?? new MissionProgress(mission);
                 data.activeMission = mission;
                 data.missionProgress = progress;
                 new ServerPackets().sendMissionAccept(client,transaction,data.missionInstanceCounter,mission);
@@ -67,7 +74,8 @@ namespace hds
                     }
                 }
 
-                MissionStaging.Stage(client, progress);
+                if(prepared==null)MissionStaging.Stage(client, progress);
+                else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
                 SendPhase(client, progress);
                 EnsureTimer();
                 MissionPersistence.Save(client);
@@ -517,7 +525,7 @@ namespace hds
                 if (progress == null || progress.failed || client.playerData.loot.WindowOpen) return false;
                 MissionObjectState state = progress.objects.Values.FirstOrDefault(o => o.putOpen);
                 if (state?.spot == null) return false;
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 if (!ContainerActions.InReach(client.playerInstance.Position.getValue(), pose.X, pose.Y, pose.Z)) return false;
                 MissionObjective objective = progress.OpenObjectives().FirstOrDefault(o => o.type == MissionGoalType.Put &&
                     o.objectId == state.def.id && progress.itemSlots.TryGetValue(o.item, out ushort ownedSlot) && ownedSlot == slot);
@@ -631,7 +639,7 @@ namespace hds
             if (place.StartsWith("object:"))
             {
                 if (!ushort.TryParse(place.Substring(7), out ushort objectId) || !progress.objects.TryGetValue(objectId, out MissionObjectState state) || state.spot == null) return false;
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 return Distance2(pose.X, pose.Y, pose.Z, x, y, z) <= radius * radius;
             }
 
@@ -1002,8 +1010,8 @@ namespace hds
             if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
             {
                 // Object origins may be on a desk or cabinet. NPC height belongs to the floor, as site NPC spots do.
-                var pose = MissionComputerAnchors.For(state);
-                return Beside(pose.X, progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
+                var pose = MissionObjectPoses.For(state);
+                return Beside(pose.X, state.OpenFloor!=null ? state.OpenFloor.Standing[1] : progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
             }
 
             return BesidePlayer(px, py, pz, index);
@@ -1417,10 +1425,37 @@ namespace hds
                     Finish(client, progress);
                     return;
                 }
+                MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
+                {
+                    if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
+                    {
+                        if(selected!=null&&openFloorPlan?.BeforeCurrent(client)==true)
+                        {
+                            bool changed=progress.pendingOpenFloor==null||progress.pendingOpenFloor.Refusal!=refusal;
+                            progress.pendingOpenFloor=selected.WithRefusal(refusal);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                            if(changed) {Output.WriteDebugLog("[MISSION] Box next-phase admission deferred: "+refusal);
+                                client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(MissionOpenFloorAdmission.UnavailableMessage,"BROADCAST"));}
+                        }
+                        return;
+                    }
+                    if(!openFloorPlan.BeforeCurrent(client))return;
+                    // Admit the exact choice durably before tearing down the old phase.
+                    // A later staging/SQL rollback restores this same pending choice.
+                    if(openFloorPlan.Adopted)
+                    {
+                        progress.pendingOpenFloor=openFloorPlan.Selection.WithRefusal(null);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                        MissionPersistence.Save(client);
+                        if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
+                    }
+                }
+                if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
+                progress.pendingOpenFloor=null;
                 Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                MissionStaging.Stage(client, progress);
+                if(openFloorPlan==null)MissionStaging.Stage(client, progress);
+                else {if(openFloorPlan.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,openFloorPlan);}
                 SendPhase(client, progress);
 
                 return;
@@ -1450,7 +1485,7 @@ namespace hds
                     continue;
                 }
 
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 double dx = pose.X - x, dz = pose.Z - z;
                 if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(pose.Y - y) > 300)
                 {
@@ -1611,7 +1646,7 @@ namespace hds
         private static bool AtObject(WorldClient client, MissionProgress progress, MissionObjective objective, MissionObjectState state,
             double x, double y, double z)
         {
-            var pose = MissionComputerAnchors.For(state);
+            var pose = MissionObjectPoses.For(state);
             double ox = pose.X, oy = pose.Y, oz = pose.Z;
             bool arrived = Distance2(ox, oy, oz, x, y, z) <= EscortArrivalUnits * EscortArrivalUnits;
             foreach (ushort id in objective.Npcs)
