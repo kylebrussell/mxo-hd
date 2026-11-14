@@ -120,7 +120,18 @@ namespace hds
                 {
                     replaced=null;
                     if(!active.Contains(owner)||now>=owner.Expires||owner.CallbackStateCurrent?.Invoke()!=true)return false;
+                    if(!active.Contains(owner))return false;
                     replaced=Apply(owner.Parent,new[]{child},now,preserveOtherTargets:true);return true;
+                }
+            }
+            internal void RollbackCallback(Active owner,Active child,IEnumerable<Active> replaced,double now)
+            {
+                lock(active)
+                {
+                    // Another apply/clear may already have retired this exact unpublished child.
+                    if(!active.Remove(child)||!active.Contains(owner))return;
+                    foreach(var old in replaced)
+                        if(old.Expires>now&&!active.Any(a=>a.Parent==old.Parent&&a.Target==old.Target))active.Add(old);
                 }
             }
             public List<Active> RemoveParent(UInt16 parent)

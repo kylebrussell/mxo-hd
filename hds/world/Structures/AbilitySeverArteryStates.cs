@@ -94,7 +94,7 @@ namespace hds
                 Caster=marker.Caster,CasterName=marker.CasterName,TargetView=marker.TargetView};
             if(!subject.Alive||marker.CallbackCurrent?.Invoke()!=true||!subject.Effects.ApplyCallback(marker,child,now,out var replaced))return false;
             // Same-target refresh only: DOT, slows, parent callback and other state siblings stay intact.
-            if(marker.CallbackCurrent?.Invoke()!=true){subject.Effects.Remove(child);return false;}
+            if(marker.CallbackCurrent?.Invoke()!=true){subject.Effects.RollbackCallback(marker,child,replaced,now);return false;}
             TimedEffects.Track(subject);subject.Applied(new TempMods.Effect {Ability=341},new List<TimedEffects.Active>{child},null,replaced);
             Output.WriteDebugLog("[SEVER-STATE] 341 -> "+state+" inputSeconds=10 seconds="+seconds+" source="+marker.CasterName);
             return true;

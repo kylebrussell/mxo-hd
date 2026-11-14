@@ -95,4 +95,34 @@ public class SeverArteryStateTests
         var respawn=AbilitySeverArteryStates.MobLifetime(mob);Assert.True(respawn());mob.setEntityId(2);Assert.False(respawn());
         var current=AbilitySeverArteryStates.MobLifetime(mob);mob.setIsSpawned(false);Assert.False(current());
     }
+    [Theory][InlineData(false)][InlineData(true)] public void PostAppendLifetimeFailureRestoresExactPreviousStateAndItsOriginalExpiryWithoutPublishing(bool transport)
+    {
+        double now=TimeUtils.GetSimTimeSeconds()+100;var(s,m)=Marker(now);
+        Assert.True(AbilitySeverArteryStates.Execute(s,m,now,n=>0));var old=Assert.Single(s.Effects.Snapshot(),a=>a.Target==199);old.RecordId=17;
+        double originalExpiry=old.Expires;int published=s.AppliedCount;var c=Client();var stamp=AbilitySeverArteryStates.Lifetime(c);int checks=0;
+        m.CallbackCurrent=()=>{if(transport&&++checks==3)c.TransportFence.PublishIncoming(true,()=>{});return stamp();};
+        m.CallbackStateCurrent=()=>{if(!transport)c.playerData.worldGeneration++;return true;}; // locked guard returns true despite the injected world change; transport reset is injected outside its lock
+        Assert.False(AbilitySeverArteryStates.Execute(s,m,now+2,n=>0));
+        Assert.Same(old,Assert.Single(s.Effects.Snapshot(),a=>a.Target==199));Assert.Equal(originalExpiry,old.Expires);Assert.Equal(17,old.RecordId);Assert.Equal(published,s.AppliedCount);
+        Assert.True(s.Effects.HasAt(199,now+9));Assert.False(s.Effects.HasAt(199,now+10));TimedEffects.Clear(s);
+    }
+    [Theory][InlineData(false)][InlineData(true)]
+    public void AppendRollbackNeverResurrectsClearedOrSupersededState(bool newer)
+    {
+        double now=TimeUtils.GetSimTimeSeconds()+100;var(s,m)=Marker(now);AbilitySeverArteryStates.Execute(s,m,now,n=>0);
+        var old=Assert.Single(s.Effects.Snapshot(),a=>a.Target==199);int checks=0;TimedEffects.Active? latest=null;
+        m.CallbackCurrent=()=>{if(++checks<3)return true;if(newer){latest=new(){Target=199,Proc=TempMods.Proc.State,Kind=TempMods.KindState,Seconds=20,RecordId=99};s.Effects.Apply(341,new[]{latest},now+2,true);}else s.Effects.RemoveAll();return false;};
+        Assert.False(AbilitySeverArteryStates.Execute(s,m,now+2,n=>0));Assert.DoesNotContain(old,s.Effects.Snapshot());
+        if(newer)Assert.Same(latest,Assert.Single(s.Effects.Snapshot(),a=>a.Target==199));else Assert.Empty(s.Effects.Snapshot());TimedEffects.Clear(s);
+    }
+    [Fact] public void BothWireProfilesAreExplicitBeforeLoginAndNativeEnemyIsLegalWithoutInheritedDetermination()
+    {
+        var caster=HeadlessClient.SeverArteryFixture.Actor(true);var victim=HeadlessClient.SeverArteryFixture.Actor(false);
+        foreach(var p in new[]{caster,victim}){Assert.Equal(50,p.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),p.Experience);Assert.NotNull(p.OwnedLoadedAbilities);}
+        Assert.Equal(new ushort[]{2,17,339,341,1112},caster.OwnedLoadedAbilities!.Select(a=>a.Ability));Assert.Empty(victim.OwnedLoadedAbilities!);
+        var plan=new NativeQa.Modes.SeverArteryStatesMode().Plan;Assert.Contains(plan.AfterHelpers,s=>s.Contains("alignment=1,pvpflag=1")&&s.Contains("charId=110"));
+        Assert.Contains(plan.AfterHelpers,s=>s.Contains("alignment=2,pvpflag=1")&&s.Contains("charId=6114")&&s.Contains("DELETE FROM char_abilities WHERE char_id=6114"));
+        Assert.Equal("QAEnemy",plan.ExtraQaMetadata["QaTarget"].GetString());Assert.Equal(0,plan.ExtraQaMetadata["TargetDetermination"].GetInt32());
+        Assert.Contains("old341/710 parent OFF",plan.ReadyMessages.Single());
+    }
 }
