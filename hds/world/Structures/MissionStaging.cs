@@ -92,8 +92,9 @@ namespace hds
             Random rng = LayoutRandom(mission.id,0,unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture) ??
-                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible) ??
+                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible);
             data.missionPreviewFor = mission;
             return data.missionPreview;
         }
@@ -151,8 +152,10 @@ namespace hds
                 client.playerData.missionPreviewFor = null;
                 List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
                 int npcs = placed.Count + SpotsForWaves(phase);
-                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture)
-                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture);
+                bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+                if(site!=null&&!Eligible(site))site=null;
+                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible)
+                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible);
                 if (site == null)
                 {
                     Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
@@ -183,7 +186,14 @@ namespace hds
                                  site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
-            List<double[]> spots = site.npcSpots
+            IEnumerable<double[]> sourceSpots=site.npcSpots;
+            if(MissionOpenFloorAdmission.Requires(phase)&&placed.Count+SpotsForWaves(phase)>0)
+            {
+                int count=placed.Count+SpotsForWaves(phase);
+                if(!MissionInteriorSites.TryAllocate(site,count,out var allocated,out string why))throw new MissionCheckpointException("Interior NPC admission changed: "+why);
+                if(allocated.Length>0)sourceSpots=allocated;
+            }
+            List<double[]> spots = sourceSpots
                 .OrderByDescending(s => Distance2(s[0], s[2], site.elevatorDoor.pos_x, site.elevatorDoor.pos_z))
                 .ToList();
             int next = 0;

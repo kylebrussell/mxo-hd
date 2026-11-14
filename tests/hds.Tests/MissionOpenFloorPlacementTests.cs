@@ -42,4 +42,15 @@ public class MissionOpenFloorPlacementTests
         Assert.Equal(result.Centre.Y,MissionObjectPoses.For(state).Y);Assert.Equal(145,state.spot.pos_y);
         state.spot.pos_x=1;Assert.False(restored.Basic(state.spot,3,1));Assert.Throws<InvalidOperationException>(()=>MissionObjectPoses.For(state));
     }
+    [Fact] public void LegacyPolicyThreeNeedsItsExactOriginalInputAndCurrentGeometryWithoutReselection()
+    {
+        var (request,state)=Input();var current=MissionOpenFloorPlacement.From(3082,0,1,state.spot,G.Plan(request));
+        MissionOpenFloorPlacement Legacy(string hash)=>new(3,current.World,current.Mission,current.Phase,current.ObjectId,current.SourceKey,current.SourceGoid,current.ConcreteGoid,
+            current.RawFingerprint,hash,current.Quaternion,current.Centre,current.Standing,current.Route,current.Surface,current.RootSurface,current.RouteSurfaces);
+        var old=Legacy(request.LegacyFingerprint);string before=JsonSerializer.Serialize(old,MissionProgress.SaveJson);
+        Assert.True(old.TryReplay(request,3082,0,state,out var replay,out string why),why);
+        Assert.Equal(current.Centre,new[]{replay.Centre.X,replay.Centre.Y,replay.Centre.Z});
+        Assert.Equal(before,JsonSerializer.Serialize(old,MissionProgress.SaveJson));
+        Assert.False(Legacy(request.Fingerprint).TryReplay(request,3082,0,state,out _,out why));Assert.Equal("LegacyOpenFloorInputChanged",why);
+    }
 }

@@ -154,7 +154,7 @@ namespace hds
         public const double TargetDistance = 15800, DistanceBandLow = 14500, DistanceBandHigh = 17000;
 
         public static MissionSite Choose(IEnumerable<MissionSite> sites, string wanted, double x, double z, int npcs, int objects,
-            Random rng, ICollection<MissionSite> exclude = null, ICollection<string> neighbourhoods = null, int requiredFurniture = 0)
+            Random rng, ICollection<MissionSite> exclude = null, ICollection<string> neighbourhoods = null, int requiredFurniture = 0, Func<MissionSite,bool> admissible = null)
         {
             List<(MissionSite site, double distance)> fitting = new List<(MissionSite, double)>();
             foreach (MissionSite site in sites)
@@ -180,17 +180,32 @@ namespace hds
             bool InBand((MissionSite site, double distance) f) => f.distance >= DistanceBandLow && f.distance <= DistanceBandHigh;
             bool InHoods((MissionSite site, double distance) f) =>
                 neighbourhoods == null || neighbourhoods.Count == 0 || neighbourhoods.Contains(f.site.neighbourhood);
-            List<(MissionSite site, double distance)> pool = fitting.Where(f => InBand(f) && InHoods(f)).ToList();
+            var eligibility=new Dictionary<MissionSite,bool>();
+            bool Admitted((MissionSite site,double distance) f)
+            {
+                if(admissible==null)return true;
+                if(!eligibility.TryGetValue(f.site,out bool ok)){ok=admissible(f.site);eligibility.Add(f.site,ok);}
+                return ok;
+            }
+            List<(MissionSite site, double distance)> pool = fitting.Where(f => InBand(f) && InHoods(f)).Where(Admitted).ToList();
             if (pool.Count == 0)
             {
-                pool = fitting.Where(InBand).ToList();
+                pool = fitting.Where(InBand).Where(Admitted).ToList();
             }
 
             if (pool.Count == 0)
             {
-                double best = fitting.Min(f => Math.Abs(f.distance - TargetDistance));
-                pool = fitting.Where(f => Math.Abs(f.distance - TargetDistance) <= best + 2000).ToList();
+                double? best=null;
+                foreach(var candidate in fitting.OrderBy(f=>Math.Abs(f.distance-TargetDistance)))
+                {
+                    double distance=Math.Abs(candidate.distance-TargetDistance);
+                    if(best.HasValue&&distance>best.Value+2000)break;
+                    if(!Admitted(candidate))continue;
+                    best??=distance;pool.Add(candidate);
+                }
             }
+
+            if(pool.Count==0)return null;
 
             return pool[rng.Next(pool.Count)].site;
         }

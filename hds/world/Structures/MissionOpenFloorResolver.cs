@@ -14,7 +14,7 @@ namespace hds
     internal static class MissionOpenFloorResolver
     {
         internal const double Epsilon = 1e-7;
-        internal const int PolicyVersion = 3;
+        internal const int PolicyVersion = 4;
         internal readonly struct Point
         {
             public double X { get; }
@@ -47,8 +47,9 @@ namespace hds
             public double FloorX { get; }
             public double FloorZ { get; }
             public double FloorC { get; }
-            public Surface(Id id,IEnumerable<Point> vertices,double floorX,double floorZ,double floorC)
-            { Identity=id;Vertices=Freeze(vertices);FloorX=floorX;FloorZ=floorZ;FloorC=floorC; }
+            public bool Indoors {get;}
+            public Surface(Id id,IEnumerable<Point> vertices,double floorX,double floorZ,double floorC,bool indoors=false)
+            { Identity=id;Vertices=Freeze(vertices);FloorX=floorX;FloorZ=floorZ;FloorC=floorC;Indoors=indoors; }
             public bool Flat => FloorX==0 && FloorZ==0;
         }
         internal sealed class RawPose
@@ -126,6 +127,11 @@ namespace hds
             public Request(ushort world,SourceModelPresence sourceModel,string sourceModelEvidence,RawPose rawSource,RawPose anchor,string anchorEvidence,OpenFloorModelBounds model,MissionOpenFloorUsableRange.Profile usable,
                 IEnumerable<Surface> surfaces,Root entry,Bounds siteBounds,StaticScene scene,IEnumerable<Reservation> reservations=null)
             {World=world;SourceModel=sourceModel;SourceModelEvidence=sourceModelEvidence;RawSource=rawSource;Anchor=anchor;AnchorEvidence=anchorEvidence;Model=model;Usable=usable;Surfaces=Freeze(surfaces??Array.Empty<Surface>());Entry=entry;SiteBounds=siteBounds;Scene=scene;Reservations=Freeze(reservations??Array.Empty<Reservation>());fingerprint=new Lazy<string>(()=>Hash(new{Policy=PolicyVersion,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,Scene=Scene.Fingerprint,Surfaces=Surfaces.OrderBy(s=>s.Identity).ToArray(),Reservations}));}
+            // Verify an old fixed pose against its ORIGINAL exact input before checking it under
+            // the current constraints. This does not reselect or rewrite a saved centre/route.
+            internal string LegacyFingerprint=>Hash(new{Policy=3,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,
+                SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,Scene=Scene.Fingerprint,
+                Surfaces=Surfaces.OrderBy(s=>s.Identity).Select(s=>new{s.Identity,s.Vertices,s.FloorX,s.FloorZ,s.FloorC}).ToArray(),Reservations});
         }
         internal static Request WithReservations(Request r,IEnumerable<Reservation> reservations)=>new Request(r.World,r.SourceModel,r.SourceModelEvidence,r.RawSource,r.Anchor,r.AnchorEvidence,
             r.Model,r.Usable,r.Surfaces,r.Entry,r.SiteBounds,r.Scene,reservations);
@@ -209,7 +215,7 @@ namespace hds
         }
         private static Point? Portal(Surface a,Surface b)
         {
-            if(a.FloorC!=b.FloorC)return null;
+            if(a.FloorC!=b.FloorC||!SameSpace(a,b))return null;
             foreach(var e in Edges(a.Vertices))
             {
                 Point d=Sub(e.B,e.A);double length=Distance(e.A,e.B),n=length*length;
@@ -224,6 +230,8 @@ namespace hds
             }
             return null;
         }
+        internal static bool SameSpace(Surface a,Surface b)=>a.Indoors==b.Indoors&&(!a.Indoors||
+            (a.Identity.Sector==b.Identity.Sector&&a.Identity.Region==b.Identity.Region));
         private static bool Touches(Point a,Point b,IReadOnlyList<Point> shape)
         {
             double lo=0,hi=1;for(int i=0;i<shape.Count;i++)
@@ -294,6 +302,10 @@ namespace hds
         private static double Guard(Request r)
         {
             double[] n=r.Surfaces.SelectMany(s=>s.Vertices.SelectMany(p=>new[]{p.X,p.Z})).Concat(new[]{r.Anchor.Position.X,r.Anchor.Position.Y,r.Anchor.Position.Z}).ToArray();
+            return NumericalGuard(n);
+        }
+        private static double NumericalGuard(IEnumerable<double> n)
+        {
             double ulp=n.Max(v=>{float f=(float)v;return Math.Max(Math.Abs((double)MathF.BitIncrement(f)-f),Math.Abs((double)f-MathF.BitDecrement(f)));});
             return Math.Max(Epsilon*8,ulp*2);
         }
@@ -314,7 +326,7 @@ namespace hds
         }
         private static Point? CellPortal(Cell a,Cell b)
         {
-            return Portal(new Surface(a.Surface.Identity,a.Polygon,0,0,a.Surface.FloorC),new Surface(b.Surface.Identity,b.Polygon,0,0,b.Surface.FloorC));
+            return Portal(new Surface(a.Surface.Identity,a.Polygon,0,0,a.Surface.FloorC,a.Surface.Indoors),new Surface(b.Surface.Identity,b.Polygon,0,0,b.Surface.FloorC,b.Surface.Indoors));
         }
         private sealed class StandingGraph
         {
@@ -322,17 +334,108 @@ namespace hds
             internal Dictionary<int,int?> Previous; internal Dictionary<int,Point> Portals;
         }
         private static StandingGraph BuildStandingGraph(Request r,Surface[] component,IEnumerable<Point[]> bodies,double guard)
+            =>BuildStandingGraph(r.Entry,r.Scene,component,bodies,guard);
+        private static StandingGraph BuildStandingGraph(Root root,StaticScene scene,Surface[] component,IEnumerable<Point[]> bodies,double guard)
         {
-            double floor=r.Entry.Standing.Y-95;
+            double floor=root.Standing.Y-95;
             Bounds envelope=ComponentBounds(component);
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,envelope,guard)).Select(o=>o.Footprint.ToArray()).Concat(bodies).ToArray();
-            var cells=StandingCells(component,obstacles,guard);var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(r.Entry.Surface)&&Inside(c.Polygon,r.Entry.Standing.Xz));if(start==null)return null;
+            var obstacles=scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,envelope,guard)).Select(o=>o.Footprint.ToArray()).Concat(bodies).ToArray();
+            var cells=StandingCells(component,obstacles,guard);
+            foreach(var cell in cells)
+                foreach(var edge in Edges(scene.Coverage.Polygon))cell.Polygon=Clip(cell.Polygon,edge.A,edge.B,0);
+            cells.RemoveAll(c=>c.Polygon.Length<3);
+            for(int i=0;i<cells.Count;i++)cells[i].Index=i;
+            var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(root.Surface)&&Inside(c.Polygon,root.Standing.Xz));if(start==null)return null;
             var previous=new Dictionary<int,int?>{{start.Index,null}};var portals=new Dictionary<int,Point>();var queue=new Queue<Cell>();queue.Enqueue(start);
             while(queue.Count>0)
             {
                 var current=queue.Dequeue();foreach(var other in cells){if(previous.ContainsKey(other.Index))continue;var p=CellPortal(current,other);if(p.HasValue){previous[other.Index]=current.Index;portals[other.Index]=p.Value;queue.Enqueue(other);}}
             }
             return new StandingGraph{Obstacles=obstacles,Cells=cells,Previous=previous,Portals=portals};
+        }
+        // In-range standing points alone can use a prop through a closed wall. Keep both the
+        // full body and site NPC spots in the entry's static-open region. This proves NAV/static
+        // connectivity; it does not claim to recover architectural interior volumes from NAV.
+        internal sealed class ReachableRegion
+        {
+            private readonly Point[][] cells;
+            private readonly Surface origin;
+            private readonly ConcurrentDictionary<string,Lazy<bool>> footprintFits=new ConcurrentDictionary<string,Lazy<bool>>(StringComparer.Ordinal);
+            internal double Floor {get;}
+            internal ReachableRegion(Surface origin,IEnumerable<Point[]> polygons){this.origin=origin;Floor=origin.FloorC;cells=polygons.ToArray();}
+            internal bool SameSpace(NavLocation at)=>Math.Abs(at.floorY-Floor)<=Epsilon&&at.indoors==origin.Indoors&&
+                (!at.indoors||(at.sector==origin.Identity.Sector&&at.region==origin.Identity.Region));
+            internal bool Contains(Position p)=>Finite(p.X,p.Y,p.Z)&&Math.Abs(p.Y-Floor-95)<=Epsilon&&
+                cells.Any(c=>Inside(c,p.Xz))&&cells.Any(c=>Inside(c,Rounded(p.Xz)));
+            internal bool Covers(Point[] shape)=>shape.Length>=3&&Difference(new[]{shape},cells,0).Count==0;
+            // Necessary condition for an already-bound native object. The native OBB plus its
+            // unchanged use distance is contained by this sphere; a disjoint root component
+            // therefore cannot supply any usable standing point. Nonempty remains unproved.
+            internal bool CouldReachNative(Position centre,MissionOpenFloorUsableRange.Profile usable,OpenFloorOrientation orientation)
+            {
+                if(usable==null||orientation==null||!Finite(centre.X,centre.Y,centre.Z))return true;
+                var e=usable.HalfExtents;
+                double guard=NumericalGuard(cells.SelectMany(c=>c.SelectMany(p=>new[]{p.X,p.Z})).Concat(new[]{centre.X,centre.Y,centre.Z}));
+                if(!orientation.TryNativeWorldRadius(usable.LowerBound+Math.Sqrt(e.X*e.X+e.Y*e.Y+e.Z*e.Z),out double radius))return true;
+                radius+=4*guard;
+                double dy=Floor+95-centre.Y;
+                return cells.Any(c=>{double dxz=Distance(Nearest(c,centre.Xz),centre.Xz);return dxz*dxz+dy*dy<=radius*radius;});
+            }
+            // Necessary first-prop admission only. This does not prove its complete phase, height
+            // clearance, interaction range or route; the normal immutable-source planner still must.
+            internal bool CanFit(OpenFloorModelBounds model,OpenFloorOrientation orientation,Bounds bounds)
+            {
+                string key=Hash(new{model.Goid,model.Min,model.Max,orientation.Hex,bounds.MinX,bounds.MaxX,bounds.MinZ,bounds.MaxZ});
+                return footprintFits.GetOrAdd(key,_=>new Lazy<bool>(()=>
+                {
+                    if(!bounds.Valid||!orientation.YawOnly)return false;
+                    var offsets=Hull(model.Corners(new OpenFloorPoint(0,0,0),orientation).Select(p=>new Point(p.X,p.Z)));
+                    var allowed=Erode(bounds.Polygon,offsets);if(allowed.Length==0)return false;
+                    var outside=Difference(new[]{bounds.Polygon},cells,0);
+                    var forbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
+                    // A missed finite f32 sample is not an emptiness proof. A nonempty domain
+                    // remains eligible; the ordinary source-anchored full planner must find and
+                    // validate the actual representable body, complete route and use point.
+                    return Difference(new[]{allowed},forbidden,0).Count>0;
+                })).Value;
+            }
+            internal bool Project(Position desired,Bounds bounds,double radius,out Position placed)
+            {
+                placed=default;
+                if(!Finite(desired.X,desired.Y,desired.Z,radius)||radius<0||!bounds.Valid||Math.Abs(desired.Y-Floor-95)>NavMesh.MaxFloorDistance)return false;
+                var candidates=new List<Point>();
+                foreach(var original in cells)
+                {
+                    var cell=original;
+                    foreach(var edge in Edges(bounds.Polygon))cell=Clip(cell,edge.A,edge.B,0);
+                    if(cell.Length<3)continue;
+                    var p=RepresentableNear(cell,desired.Xz);if(p.HasValue)candidates.Add(p.Value);
+                }
+                foreach(var p in candidates.OrderBy(p=>Distance(p,desired.Xz)).ThenBy(p=>p.X).ThenBy(p=>p.Z))
+                    if(Distance(p,desired.Xz)<=radius&&Contains(new Position(p.X,Floor+95,p.Z)))
+                    {placed=new Position(p.X,Floor+95,p.Z);return true;}
+                return false;
+            }
+        }
+        internal static bool TryReachableRegion(ushort world,IReadOnlyList<Surface> surfaces,Root root,StaticScene scene,out ReachableRegion region,out string refusal)
+        {
+            region=null;refusal=null;
+            if(world==0||root==null||surfaces==null||surfaces.Count==0||scene==null||!scene.Complete||scene.World!=world||!scene.Coverage.Valid||
+                surfaces.Any(s=>s==null||!Finite(s.FloorX,s.FloorZ,s.FloorC)||s.Vertices.Any(p=>!Finite(p.X,p.Z)))||
+                surfaces.Select(s=>s.Identity).Distinct().Count()!=surfaces.Count||
+                scene.Obstacles.Any(o=>o==null||!Convex(o.Footprint)||!Finite(o.MinY,o.MaxY)||o.MinY>o.MaxY))
+            {refusal="InvalidReachableRegionInputs";return false;}
+            var start=surfaces.SingleOrDefault(s=>s.Identity.Equals(root.Surface));
+            if(start==null||!start.Flat||!Convex(start.Vertices)||!Finite(root.Standing.X,root.Standing.Y,root.Standing.Z)||
+                Math.Abs(root.Standing.Y-start.FloorC-95)>Epsilon||!Inside(start.Vertices,root.Standing.Xz)||!Inside(scene.Coverage.Polygon,root.Standing.Xz)||
+                scene.MinY>start.FloorC||scene.MaxY<root.Standing.Y)
+            {refusal="InvalidReachableRegionRoot";return false;}
+            var component=ConnectedComponent(world,surfaces,start);
+            double guard=NumericalGuard(surfaces.SelectMany(s=>s.Vertices.SelectMany(p=>new[]{p.X,p.Z})).Concat(new[]{root.Standing.X,root.Standing.Y,root.Standing.Z}));
+            if(!double.IsFinite(guard)){refusal="UnrepresentableReachableRegion";return false;}
+            var graph=BuildStandingGraph(root,scene,component,Array.Empty<Point[]>(),guard);
+            if(graph==null){refusal="BlockedReachableRegionRoot";return false;}
+            region=new ReachableRegion(start,graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon));return true;
         }
         private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range,StandingGraph shared=null)
         {
@@ -361,12 +464,14 @@ namespace hds
         internal static bool TryResolve(Request request,out Result result){result=Plan(request);return result.HasPlan;}
         private static readonly ConcurrentDictionary<string,Lazy<Surface[]>> topologyCache=new ConcurrentDictionary<string,Lazy<Surface[]>>(StringComparer.Ordinal);
         private static Surface[] ConnectedComponent(Request r,Surface start)
+            =>ConnectedComponent(r.World,r.Surfaces,start);
+        private static Surface[] ConnectedComponent(ushort world,IReadOnlyList<Surface> surfaces,Surface start)
         {
             // Content key, not mutable NavMesh/global-path identity. Only immutable numeric surfaces are cached.
-            string key=Hash(new{r.World,Start=start.Identity,Surfaces=r.Surfaces.OrderBy(s=>s.Identity).ToArray()});
+            string key=Hash(new{World=world,Start=start.Identity,Surfaces=surfaces.OrderBy(s=>s.Identity).ToArray()});
             return topologyCache.GetOrAdd(key,_=>new Lazy<Surface[]>(()=>
             {
-                var all=r.Surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();
+                var all=surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();
                 var found=new HashSet<Id>{start.Identity};var queue=new Queue<Surface>();queue.Enqueue(start);
                 while(queue.Count>0){var current=queue.Dequeue();foreach(var surface in all)if(!found.Contains(surface.Identity)&&Portal(current,surface).HasValue){found.Add(surface.Identity);queue.Enqueue(surface);}}
                 return all.Where(s=>found.Contains(s.Identity)).ToArray();
@@ -378,6 +483,9 @@ namespace hds
             internal double Guard,CentreY,MinY,MaxY;internal Bounds Envelope;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
             internal double CastCentreY;internal Point[][] OriginalGeometryFootprints,CastGeometryFootprints;internal int GeometryEvaluations;
             internal bool SiteContained;internal Bounds PlacementBounds;internal Point[] CoveragePolygon;
+            internal ReachableRegion Reachable;
+            internal StandingGraph StaticGraph;
+            internal bool StaticGraphAttempted;
             internal readonly Dictionary<(double X,double Z),Surface> Carriers=new Dictionary<(double X,double Z),Surface>();
         }
         private static (Context Context,string Refusal) Prepare(Request r)
@@ -446,7 +554,16 @@ namespace hds
             if(!reuse||!sameXY)if(!(castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component)))return false;
             // Keep the original ALL-scene cast-volume predicate. A tolerated Y perturbation can cast differently.
             var castFootprints=reuse&&cast.Y==c.CastCentreY?c.CastGeometryFootprints:r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Select(o=>o.Footprint.ToArray());
-            return !castFootprints.Any(o=>Overlap(castShape,o));
+            if(castFootprints.Any(o=>Overlap(castShape,o)))return false;
+            if(c.Reachable==null)
+            {
+                if(c.StaticGraphAttempted)return false;
+                c.StaticGraphAttempted=true;
+                c.StaticGraph=BuildStandingGraph(r,c.Component,Array.Empty<Point[]>(),c.Guard);
+                if(c.StaticGraph==null)return false;
+                c.Reachable=new ReachableRegion(c.Start,c.StaticGraph.Cells.Where(cell=>c.StaticGraph.Previous.ContainsKey(cell.Index)).Select(cell=>cell.Polygon));
+            }
+            return c.Reachable.Covers(fixedShape)&&c.Reachable.Covers(castShape);
         }
         private static bool RouteValid(Context c,Position centre,Point[] shape,IReadOnlyList<Position> route)
         {
@@ -540,7 +657,8 @@ namespace hds
             for(int i=0;i<ids.Count;i++)
             {
                 var surface=r.Surfaces.SingleOrDefault(s=>s.Identity.Equals(ids[i]));
-                if(surface==null||!surface.Flat||Math.Abs(route[i].Y-surface.FloorC-95)>Epsilon||Math.Abs(route[i+1].Y-surface.FloorC-95)>Epsilon||
+                var start=r.Surfaces.SingleOrDefault(s=>s.Identity.Equals(r.Entry.Surface));
+                if(surface==null||start==null||!SameSpace(start,surface)||!surface.Flat||Math.Abs(route[i].Y-surface.FloorC-95)>Epsilon||Math.Abs(route[i+1].Y-surface.FloorC-95)>Epsilon||
                     !Inside(surface.Vertices,route[i].Xz)||!Inside(surface.Vertices,route[i+1].Xz)||!Inside(surface.Vertices,Rounded(route[i].Xz))||!Inside(surface.Vertices,Rounded(route[i+1].Xz)))return false;
             }
             return true;
@@ -574,6 +692,9 @@ namespace hds
         private static bool ProveCandidate(Context context,Candidate candidate,bool expanded)
         {
             if(candidate.Proof!=0)return candidate.Proof>0;context.GeometryEvaluations++;
+            var initialShape=context.Offsets.Select(p=>new Point(candidate.Centre.X+p.X,candidate.Centre.Z+p.Z)).ToArray();
+            if(expanded&&(!Clear(new[]{context.Input.Entry.Standing.Xz},initialShape)||!Clear(new[]{Rounded(context.Input.Entry.Standing.Xz)},initialShape)))
+            {candidate.Shape=initialShape;candidate.Proof=-1;return false;}
             bool clear=GeometryClear(context,candidate.Surface,new Position(candidate.Centre.X,context.CentreY,candidate.Centre.Z),out var shape);
             candidate.Shape=shape;
             if(clear&&expanded)clear=Clear(new[]{context.Input.Entry.Standing.Xz},shape)&&Clear(new[]{Rounded(context.Input.Entry.Standing.Xz)},shape);
@@ -608,7 +729,8 @@ namespace hds
         internal sealed class ReplayableBodies : IEnumerable<BodyCandidate>
         {
             private readonly Func<bool,IEnumerable<BodyCandidate>> enumerate;private readonly Func<int> evaluations;
-            internal ReplayableBodies(Func<bool,IEnumerable<BodyCandidate>> enumerate,Func<int> evaluations){this.enumerate=enumerate;this.evaluations=evaluations;}
+            internal ReplayableBodies(Func<bool,IEnumerable<BodyCandidate>> enumerate,Func<int> evaluations)
+            {this.enumerate=enumerate;this.evaluations=evaluations;}
             internal int GeometryEvaluations=>evaluations();
             internal IEnumerable<BodyCandidate> Enumerate(bool rootOnly)=>enumerate(rootOnly);
             public IEnumerator<BodyCandidate> GetEnumerator()=>enumerate(false).GetEnumerator();
@@ -619,8 +741,12 @@ namespace hds
             sequence=null;staticRootGraphBuilt=false;var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return false;
             var context=p.Context;var proposals=RepresentedProposals(context,true);
             // Match eager refusal order: establish at least one valid body BEFORE the static-root graph.
-            if(!proposals.Any(candidate=>ProveCandidate(context,candidate,true))){refusal="NoGeometricBodyCandidates";return false;}
-            staticRootGraphBuilt=true;var graph=BuildStandingGraph(r,context.Component,Array.Empty<Point[]>(),context.Guard);
+            if(!proposals.Any(candidate=>ProveCandidate(context,candidate,true)))
+            {
+                staticRootGraphBuilt=context.StaticGraphAttempted;
+                refusal=context.StaticGraphAttempted&&context.StaticGraph==null?"BlockedStaticRoot":"NoGeometricBodyCandidates";return false;
+            }
+            staticRootGraphBuilt=true;var graph=context.StaticGraph??BuildStandingGraph(r,context.Component,Array.Empty<Point[]>(),context.Guard);
             if(graph==null){refusal="BlockedStaticRoot";return false;}
             var reachable=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
             foreach(var candidate in proposals)candidate.RootReachable=reachable.Any(polygon=>Inside(polygon,candidate.Centre));

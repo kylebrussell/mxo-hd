@@ -21,7 +21,7 @@ public class MissionOpenFloorWitnessTests
         Assert.Throws<NotSupportedException>(()=>((IList<double>)w.Centre)[0]=1);
         Assert.Contains("SourceKey",w.RawJson);
     }
-    [Theory][InlineData("Policy",1)][InlineData("Policy",2)][InlineData("Policy",4)][InlineData("SourceGoid",0)][InlineData("World",0)][InlineData("Phase",-1)]
+    [Theory][InlineData("Policy",1)][InlineData("Policy",2)][InlineData("Policy",5)][InlineData("SourceGoid",0)][InlineData("World",0)][InlineData("Phase",-1)]
     public void UnsupportedOrZeroIdentityRefuses(string field,int value)
     {var n=JsonNode.Parse(Literal)!;n[field]=value;Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));}
     [Fact]public void WrongMissionObjectCannotBeAcceptedFromHistoricalCheckpoint()
@@ -53,7 +53,7 @@ public class MissionOpenFloorWitnessTests
         var dto=hds.MissionOpenFloorPlacement.From(3082,0,1,raw,result);
         using var document=JsonDocument.Parse(JsonSerializer.Serialize(dto,hds.MissionProgress.SaveJson));
         var witness=MissionOpenFloorWitness.Read(document.RootElement);
-        Assert.Equal(3,witness.Policy); // Deliberately literal: a policy bump requires reader review.
+        Assert.Equal(4,witness.Policy); // Deliberately literal: a policy bump requires reader review.
         witness.Require(3082,0,1,raw.mxoStaticId,1415,3);
         Assert.Equal(dto.Centre,witness.Centre);Assert.Equal(dto.Route,witness.Route);
         Assert.Equal(dto.RouteSurfaces,witness.RouteSurfaces);Assert.Equal(dto.InputFingerprint,witness.InputFingerprint);

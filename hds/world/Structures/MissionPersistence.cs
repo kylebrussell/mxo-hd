@@ -5,6 +5,11 @@ using hds.shared;
 
 namespace hds
 {
+    internal sealed class MissionPlacementRestoreException : InvalidOperationException
+    {
+        internal readonly MissionProgress Progress;
+        internal MissionPlacementRestoreException(MissionProgress progress,string reason):base(reason){Progress=progress;}
+    }
     public static class MissionPersistence
     {
         public static bool DevAllowed(string dev,string database,uint character,bool live,bool onWorld,bool dead,string handle) =>
@@ -40,10 +45,11 @@ namespace hds
                 finally {deferredKill=previous;}
             });
         }
-        internal static T Mutate<T>(WorldClient client,Func<T> action,bool beginMission=false)
+        internal static T Mutate<T>(WorldClient client,Func<T> action,bool beginMission=false,bool abortBlocked=false)
         {
             lock(client.playerData.missionSync)
             {
+                if(client.playerData.missionProgress?.restoreRefusal!=null&&!abortBlocked)return default(T);
                 if(MissionOutput.Buffered(client.messageQueue)||client.playerData.missionProgress==null&&!beginMission)return action();
                 Mob[] previousActors;
                 lock(client.playerData.missionMobs)previousActors=client.playerData.missionMobs.ToArray();
@@ -102,6 +108,7 @@ namespace hds
             lock(client.playerData.missionSync)
             {
                 var data=client.playerData;
+                if(data.missionProgress?.restoreRefusal!=null&&!clear)return;
                 if(data.missionProgress==null&&!clear)return;
                 // Death presentation precedes its reward callback. Never checkpoint that transient dead/unpaid gap.
                 if(data.missionProgress!=null)
@@ -138,13 +145,21 @@ namespace hds
                 try
                 {
                     string next;
-                    lock(data.missionMobs)next=JsonSerializer.Serialize(progress.Capture(data.missionInstanceCounter,data.missionMobs,data.loot),MissionProgress.SaveJson);
+                    if(progress.restoreRefusal!=null)next=MoveQuarantinedItem(data.missionCheckpoint,owned.Key,from,to);
+                    else lock(data.missionMobs)next=JsonSerializer.Serialize(progress.Capture(data.missionInstanceCounter,data.missionMobs,data.loot),MissionProgress.SaveJson);
                     Store.dbManager.WorldDbHandler.CommitActiveMission(data.getCharID(),data.missionCheckpoint,next,from,to);
                     data.missionCheckpoint=next;
                 }
                 catch {progress.itemSlots[owned.Key]=from;throw;}
                 return true;
             }
+        }
+        internal static string MoveQuarantinedItem(string checkpoint,uint item,ushort from,ushort to)
+        {
+            var saved=System.Text.Json.Nodes.JsonNode.Parse(checkpoint);
+            var items=saved?["Items"]?.AsObject();string key=item.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if(items==null||items[key]?.GetValue<ushort>()!=from)throw new InvalidOperationException("Quarantined mission item ownership changed");
+            items[key]=to;return saved.ToJsonString(); // Preserve withheld actors, loot, timers and fixed geometry verbatim as JSON values.
         }
         // Used on disconnect only: inventory ownership is kept. Abandon/complete still use End.
         public static void Suspend(WorldClient client)
@@ -173,8 +188,15 @@ namespace hds
                 var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(data.missionCheckpoint,MissionProgress.SaveJson);
                 var mission=MissionDefinitions.Find(saved.Mission);
                 if(mission==null)throw new InvalidOperationException("Saved mission definition not found: "+saved.Mission);
-                var progress=MissionProgress.Restore(mission,saved);
+                var progress=RestoreForWorld(mission,saved);
                 data.activeMission=mission;data.missionProgress=progress;data.missionInstanceCounter=saved.Instance;
+                if(progress.restoreRefusal!=null)
+                {
+                    Output.WriteDebugLog("[MISSION] Saved placement quarantined without checkpoint mutation: "+progress.restoreRefusal);
+                    SocialHandler.RestoreMissionTeam(client);
+                    MissionRuntime.Reannounce(client);
+                    return;
+                }
                 foreach(var record in saved.Mobs)
                 {
                     var mob=new Mob();mob.setEntityId(WorldServer.entityIdCounter++);mob.setDistrict(mission.district);mob.setDistrictName(mission.districtName);
@@ -201,6 +223,12 @@ namespace hds
                 MissionRuntime.Reannounce(client);
                 Output.WriteDebugLog("[MISSION] Restored "+mission.id+" phase "+progress.phaseIndex+" instance "+saved.Instance);
             }
+        }
+        internal static MissionProgress RestoreForWorld(Mission mission,MissionProgress.SavedState saved,
+            System.Collections.Generic.IReadOnlyList<MissionSite> sites=null)
+        {
+            try{return sites==null?MissionProgress.Restore(mission,saved):MissionProgress.RestoreFromCatalog(mission,saved,sites);}
+            catch(MissionPlacementRestoreException ex){ex.Progress.restoreRefusal=ex.Message;return ex.Progress;}
         }
     }
 }

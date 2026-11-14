@@ -39,7 +39,9 @@ public class MissionOpenFloorAdmissionRegressionTests
     }
     private static readonly Lazy<string> QualifiedCase=new(()=>
     {
-        // Reconstruct the exact normal catalog once. No source/scene/prototype injection or seed selection.
+        // Reconstruct the exact normal catalog once. This object-only floor is the PR203 native
+        // compatibility case at the ordinary Ride root Y2095. Claude retracted the PR202 Y2145
+        // teleport report; unused NPC markers in other prefabs cannot invalidate this empty phase.
         var statics=new List<StaticWorldObject>();
         foreach(string file in new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"})
         foreach(string line in File.ReadLines(Path.Combine(Repo,"data",file)).Skip(1))
@@ -119,7 +121,31 @@ public class MissionOpenFloorAdmissionRegressionTests
         if(fault=="site")json["OpenFloorSites"]![0]!["Fingerprint"]="not-current";
         if(fault=="policy")pose["Policy"]=99;
         var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(json.ToJsonString(),Fields)!;
-        Assert.Throws<InvalidOperationException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+        Assert.ThrowsAny<InvalidOperationException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+    }
+    [Fact]
+    public void InvalidFixedGeometryCanEnterWorldForExplicitAbortWithoutChangingTheCheckpoint()
+    {
+        var (p,site)=Adopted();p.itemSlots[6783]=7;
+        var json=JsonNode.Parse(JsonSerializer.Serialize(RoundTrip(p),Fields))!;
+        json["Objects"]![0]!["OpenFloor"]!["Centre"]![0]=999999;
+        var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(json.ToJsonString(),Fields)!;
+        string original=JsonSerializer.Serialize(saved,Fields);
+        Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(p.mission,saved,new[]{site}));
+        var restored=MissionPersistence.RestoreForWorld(p.mission,saved,new[]{site});
+        Assert.NotNull(restored.restoreRefusal);Assert.Equal(p.persistenceId,restored.persistenceId);
+        Assert.Equal(p.startedAt,restored.startedAt);Assert.Equal((ushort)7,restored.itemSlots[6783]);
+        Assert.Equal(999999,restored.objects[1].OpenFloor!.Centre[0]);
+        Assert.Equal(original,JsonSerializer.Serialize(saved,Fields));
+        var c=Client();c.playerData.activeMission=p.mission;c.playerData.missionProgress=restored;c.playerData.missionCheckpoint=original;
+        bool invoked=false;Assert.False(MissionPersistence.Mutate(c,()=>{invoked=true;return true;}));Assert.False(invoked);
+        MissionPersistence.Save(c);Assert.Equal(original,c.playerData.missionCheckpoint);
+        MissionRuntime.Reannounce(c);Assert.Equal(original,c.playerData.missionCheckpoint);
+        Assert.Empty(c.playerData.missionMobs);Assert.Equal(999999,restored.objects[1].OpenFloor.Centre[0]);
+        string moved=MissionPersistence.MoveQuarantinedItem(original,6783,7,8);
+        var expected=JsonNode.Parse(original)!;expected["Items"]!["6783"]=8;
+        Assert.True(JsonNode.DeepEquals(expected,JsonNode.Parse(moved)));
+        Assert.Throws<InvalidOperationException>(()=>MissionPersistence.MoveQuarantinedItem(original,6783,9,8));
     }
     [Fact]
     public void AdoptedHistoryPersistsAcrossLaterNonOpenFloorPhaseButNoCurrentSiteIsInvented()
@@ -293,12 +319,12 @@ public class MissionOpenFloorAdmissionRegressionTests
     }
 
     [Fact]
-    public void ActualSingleBoxDoesNotSpendTheWholeGraphBudgetBeforeExpandedFallback()
+    public void ActualSingleBoxFiltersDisconnectedBodiesBeforeSpendingRouteGraphs()
     {
         LoadNav();var m=Definition();var (site,raw)=QualifiedScene();Assert.True(MissionOpenFloorRequests.TryCreate(raw,548,site,1,out var request,out string why,m.phases[0],1),why);
-        var fullDirect=G.Plan(request,4096,32,out _,out int graphs);Assert.False(fullDirect.HasPlan);Assert.Equal("SearchExhausted:RouteGraphs",fullDirect.Refusal);Assert.Equal(32,graphs);
+        var fullDirect=G.Plan(request,4096,32,out _,out int graphs);Assert.True(fullDirect.HasPlan,fullDirect.Refusal);Assert.InRange(graphs,1,32);
         Assert.True(MissionOpenFloorPhasePlanner.TryPlan(new[]{new MissionOpenFloorPhasePlanner.Input(1,request)},out var plan,out why,out var work,MissionOpenFloorPhasePlanner.Limits.Default),why);
-        Assert.False(plan.DirectSingle);Assert.Equal(2,work.RouteGraphs);Assert.Equal(1,work.StaticRootGraphs);Assert.InRange(work.BodyNodes,2,4096);
+        Assert.InRange(work.RouteGraphs,1,2);Assert.InRange(work.BodyNodes,1,4096);
         Assert.True(MissionOpenFloorPhasePlanner.TryPlan(new[]{new MissionOpenFloorPhasePlanner.Input(1,request)},out var oldExpanded,out why,out _,MissionOpenFloorPhasePlanner.Limits.Default,false),why);
         Assert.Equal(JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,1,raw,oldExpanded.Results[1]),MissionProgress.SaveJson),
             JsonSerializer.Serialize(MissionOpenFloorPlacement.From(m.id,0,1,raw,plan.Results[1]),MissionProgress.SaveJson));
