@@ -8,9 +8,9 @@ parser.add_argument('--omit-unproven-rotations',action='store_true',help='Exclud
 parser.add_argument('--omit-missing-sectors',action='store_true',help='Explicitly omit the WHOLE sector if its required exterior SID is absent; unknown exterior counts remain unknown.')
 parser.add_argument('--omit-missing-sid-sectors',action='store_true',help='Explicitly omit EVERY known key in a sector whose required exterior SID is unavailable; total missing contents remain unknown.')
 parser.add_argument('--omit-missing-static-layer-sectors',action='store_true',help='Explicitly omit every known key in a reviewed sector with unavailable SID/SIDI/SIDG data; unseen contents remain unquantified.')
-parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds7/13/15/16 ONLY. Other worlds retain strict omission policy.')
+parser.add_argument('--native-prefab-rotations',action='store_true',help='Use primary native top-level IPI transforms; reviewed worlds7/9/13/15/16 ONLY. Other worlds retain strict omission policy.')
 parser.add_argument('--output');parser.add_argument('--audit');args=parser.parse_args()
-if args.native_prefab_rotations and (args.world not in (7,13,15,16) or args.omit_unproven_rotations):
+if args.native_prefab_rotations and (args.world not in (7,9,13,15,16) or args.omit_unproven_rotations):
  parser.error('--native-prefab-rotations requires a reviewed world and cannot be combined with historical omission mode')
 world_name={4:'archive01',5:'archive02',6:'archive_ashencourte',7:'datamine',8:'archive_sakura',9:'archive_sati',10:'widowsmoor',11:'yuki',12:'large01',13:'large02',14:'medium01',15:'medium02',16:'medium03',17:'small03'}[args.world]
 args.output=args.output or f'data/staticObjects_{world_name}.csv'
@@ -161,7 +161,7 @@ if args.world==10:
 elif args.world==14:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(39,39,0,0,39)
 elif args.world==9:
- assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(8177,7987,5381,70,2599)
+ assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(8177,7987,5381,70,7917 if args.native_prefab_rotations else 2599)
 elif args.world==6:
  assert (len(raw),len(groups),len(unproven),len(conflicts),len(objects))==(223,223,0,0,223)
 elif args.world==8:

@@ -26,6 +26,9 @@ public static class NativeWorldDoorFixtures
         new("large01-door", "large01", 12, 365, 136, 1, 12900, 95, 15500, 12900, 145, 15600);
     public static readonly NativeWorldDoorFixture Large02 =
         new("large02-door", "large02", 13, 414, 27, 669, 14900, 95, 6300, 14900, 145, 6400);
+    public static readonly NativeWorldDoorFixture SatiPrefab =
+        new("sati-prefab-door", "archive_sati", 9, 580, 0, 126, 35600, 895, -17200, 35500, 945, -17200, "archive_sati/sati.metr")
+        { ExpectedQuaternion = "00000000f304353f00000000f204353f", EvidenceDocument = "WORLD-SATI-PREFAB-ROTATIONS.md" };
     public static readonly NativeWorldDoorFixture Sati =
         new("sati-door", "archive_sati", 9, 365, 0, 8, 34800, 95, -13800, 34800, 145, -13700, "archive_sati/sati.metr");
     public static readonly NativeWorldDoorFixture Large02Prefab =
