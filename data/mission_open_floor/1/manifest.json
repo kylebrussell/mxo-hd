@@ -17958,6 +17958,12 @@
     }
   },
   "sectorsCsvSha256": "c94801450389eda7db4ffe72e6e763eb5ae83be3d9e7f65b7911716bf61921c5",
+  "sourceAnchorIndex": {
+    "file": "../anchors_1/manifest.json",
+    "rows": 1013197,
+    "sectors": 535,
+    "sha256": "7dfaac918e0a47f68d73b4316f55c21d678d021d7e14d90b3ee45d3cbf93a37d"
+  },
   "sourceModelLookup": {
     "file": "../source_models_1.json",
     "sha256": "ff04fd2b9f35d5c526ee21c5bf01ab9b33b9d96e0a84e96c75c1435b1296cfaa"
