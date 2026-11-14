@@ -10,14 +10,15 @@ namespace hds
         internal readonly struct Fence
         {
             internal readonly int World,Life,TargetWorld,TargetLife;
-            internal readonly uint District;
+            internal readonly uint District,SourceCharacter,TargetCharacter;
+            internal readonly ClientData SourceOwner,TargetOwner;
             internal readonly uint NpcSpawn;
             internal Fence(WorldClient source,WorldClient target=null,uint npcSpawn=0)
-            {NpcSpawn=npcSpawn;World=source.playerData.worldGeneration;Life=source.playerData.lifeGeneration;District=source.playerData.getDistrictId();
+            {SourceOwner=source.playerData;TargetOwner=target?.playerData;SourceCharacter=SourceOwner.getCharID();TargetCharacter=TargetOwner?.getCharID()??0;NpcSpawn=npcSpawn;World=source.playerData.worldGeneration;Life=source.playerData.lifeGeneration;District=source.playerData.getDistrictId();
              TargetWorld=target?.playerData.worldGeneration??0;TargetLife=target?.playerData.lifeGeneration??0;}
-            internal bool Current(WorldClient source)=>source.Alive&&source.playerData.getOnWorld()&&!source.playerData.worldChangePending&&
+            internal bool Current(WorldClient source)=>source!=null&&ReferenceEquals(SourceOwner,source.playerData)&&SourceCharacter==source.playerData.getCharID()&&source.Alive&&source.playerData.getOnWorld()&&!source.playerData.worldChangePending&&
                 !source.playerData.isDead&&!source.playerData.duelDeath&&World==source.playerData.worldGeneration&&Life==source.playerData.lifeGeneration&&District==source.playerData.getDistrictId();
-            internal bool TargetCurrent(WorldClient target)=>target.Alive&&target.playerData.getOnWorld()&&!target.playerData.worldChangePending&&
+            internal bool TargetCurrent(WorldClient target)=>target!=null&&ReferenceEquals(TargetOwner,target.playerData)&&TargetCharacter==target.playerData.getCharID()&&target.Alive&&target.playerData.getOnWorld()&&!target.playerData.worldChangePending&&
                 !target.playerData.isDead&&!target.playerData.duelDeath&&TargetWorld==target.playerData.worldGeneration&&TargetLife==target.playerData.lifeGeneration&&District==target.playerData.getDistrictId();
         }
         public static bool Handles(ushort ability)=>ability==279||ability==282;
@@ -57,6 +58,7 @@ namespace hds
             if(value<=0)return;
             int raw=AbilityStats.ScaleAbilityDamage(source,ability,value);
             ushort damage=TypedAbilityResistance.Player(source,target,ability,raw,7);
+            if(!fence.Current(source)||!fence.TargetCurrent(target)||PvpCombat.Check(source,target)!=PvpRules.Verdict.Allowed)return;
             string casterName=PvpFlag.Name(source),targetName=PvpFlag.Name(target);
             source.messageQueue.addRpcMessage(AbilityMessages.Build(AbilityMessages.DamageCaster,true,AbilityMessages.ByGameObject,
                 AbilityMessages.AbilityGameObject(ability),AbilityMessages.TypeGameObject,casterName,targetName,damage,raw-damage));

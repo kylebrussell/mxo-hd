@@ -56,6 +56,30 @@ public class ConditionalThrownDamageTests
         target.playerData.lifeGeneration++;Assert.False(fence.TargetCurrent(target));target.playerData.lifeGeneration--;target.playerData.worldChangePending=true;Assert.False(fence.TargetCurrent(target));
         target.playerData.worldChangePending=false;target.playerData.setOnWorld(false);Assert.False(fence.TargetCurrent(target));
     }
+    [Fact]public void IdenticalCountersCannotAuthorizeAReplacementCharacterOwner()
+    {
+        var source=Client();var target=Client();source.playerData.setCharID(110);target.playerData.setCharID(111);
+        var fence=new ConditionalThrownDamage.Fence(source,target);
+        var oldSource=source.playerData;var oldTarget=target.playerData;
+        source.playerData=Client().playerData;source.playerData.setCharID(110);
+        Assert.Equal(oldSource.worldGeneration,source.playerData.worldGeneration);Assert.Equal(oldSource.lifeGeneration,source.playerData.lifeGeneration);Assert.Equal(oldSource.getDistrictId(),source.playerData.getDistrictId());
+        Assert.False(fence.Current(source));source.playerData=oldSource;Assert.True(fence.Current(source));
+        target.playerData=Client().playerData;target.playerData.setCharID(111);
+        Assert.Equal(oldTarget.worldGeneration,target.playerData.worldGeneration);Assert.Equal(oldTarget.lifeGeneration,target.playerData.lifeGeneration);Assert.Equal(oldTarget.getDistrictId(),target.playerData.getDistrictId());
+        Assert.False(fence.TargetCurrent(target));target.playerData=oldTarget;Assert.True(fence.TargetCurrent(target));
+        source.playerData.setCharID(112);Assert.False(fence.Current(source));target.playerData.setCharID(113);Assert.False(fence.TargetCurrent(target));
+    }
+    [Fact]public void BonusReusesCurrentPvpEligibilityBeforeAnySuccessOutputOrHealthWrite()
+    {
+        var source=Client();var target=Client();source.playerData.setCharID(110);target.playerData.setCharID(111);
+        source.playerInstance.OrganizationID.setValue((byte)1);target.playerInstance.OrganizationID.setValue((byte)2);target.playerData.pvpFlag=true;
+        Assert.Equal(PvpRules.Verdict.Allowed,PvpCombat.Check(source,target));
+        var fence=new ConditionalThrownDamage.Fence(source,target);target.playerData.conditionStateFlags=4;
+        target.playerInstance.OrganizationID.setValue((byte)1); // A synchronous base-hit callback changed the alliance.
+        Assert.Equal(PvpRules.Verdict.NotOpponent,PvpCombat.Check(source,target));
+        ConditionalThrownDamage.Player(source,target,279,fence);
+        Assert.Equal(1000,PvpCombat.HealthOf(target));Assert.Empty(source.messageQueue.RPCMessagesQueue);Assert.Empty(target.messageQueue.RPCMessagesQueue);
+    }
     [Fact]public void PreparationUsesReal885StateWithoutChangingImmunityOrGrantingAnAbility()
     {var e=CombatDepthOffBalance.Effect(30);Assert.NotNull(e);Assert.Equal((ushort)885,e.Ability);var m=Assert.Single(e.Mods);Assert.Equal((ushort)200,m.Target);Assert.Equal(30,m.Seconds);Assert.Null(CombatDepthOffBalance.Effect(61));}
     [Fact]public void NativeModeAndStrictPreparationExposeNoRandomOverridesOrNpcAbilityGrant()
