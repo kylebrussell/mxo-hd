@@ -28,3 +28,27 @@ public class MissionOpenFloorSourceTests
         Assert.DoesNotContain(objects[1415].GetProperty("components").EnumerateArray(),c=>c.GetProperty("type").GetInt32()==6);
     }
 }
+
+public class MissionOpenFloorProfileTests
+{
+    [Fact]
+    public void SharedRegistryIsExactlyTheApprovedAssetEnvelopeAndPreservesExactSupport()
+    {
+        string p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds","Hardline Dreams MxO server.csproj")))p=Path.GetDirectoryName(p)!;
+        byte[] bytes=File.ReadAllBytes(Path.Combine(p,"research/protocol/mission-open-floor-proxy-models.json"));
+        Assert.Equal(hds.MissionOpenFloorProfiles.ModelSourceSha256,Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant());
+        using var doc=JsonDocument.Parse(bytes);
+        foreach(var row in doc.RootElement.GetProperty("models").EnumerateArray())
+        {
+            Assert.True(hds.MissionOpenFloorProfiles.TryModel(row.GetProperty("goid").GetUInt16(),out var model));
+            Assert.Equal(row.GetProperty("supportMinY").GetDouble(),model.SupportMinY);
+            Assert.Equal(row.GetProperty("conservativeMin").EnumerateArray().Select(x=>x.GetDouble()),new[]{model.Min.X,model.Min.Y,model.Min.Z});
+            Assert.Equal(row.GetProperty("conservativeMax").EnumerateArray().Select(x=>x.GetDouble()),new[]{model.Max.X,model.Max.Y,model.Max.Z});
+            Assert.True(hds.MissionOpenFloorProfiles.TryUsable(model.Goid,out var usable));Assert.Equal(model.Goid,usable.Goid);
+        }
+        Assert.False(hds.MissionOpenFloorProfiles.TryModel(1415,out _));Assert.False(hds.MissionOpenFloorProfiles.TryUsable(1415,out _));
+        Assert.True(hds.MissionOpenFloorProfiles.TryUsable(3,out var computer));Assert.True(computer.AssumesInitialClientConfiguration);Assert.Equal(400,computer.LowerBound);
+        Assert.True(hds.MissionOpenFloorProfiles.TryUsable(548,out var box));Assert.False(box.AssumesInitialClientConfiguration);Assert.Equal(135,box.LowerBound);
+        Assert.True(hds.MissionOpenFloorProfiles.TryUsable(552,out var safe));Assert.Equal(100,safe.LowerBound);
+    }
+}

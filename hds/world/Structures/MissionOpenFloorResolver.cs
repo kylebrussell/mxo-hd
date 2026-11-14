@@ -13,7 +13,7 @@ namespace hds
     internal static class MissionOpenFloorResolver
     {
         internal const double Epsilon = 1e-7;
-        internal const int PolicyVersion = 1;
+        internal const int PolicyVersion = 2;
         internal readonly struct Point
         {
             public double X { get; }
@@ -114,7 +114,7 @@ namespace hds
             {Input=input;InputFingerprint=input.Fingerprint;Surface=surface.Identity;Centre=new Position(centre.X,input.Model.CentreY(surface.FloorC),centre.Z);Base=Freeze(shape);Route=Freeze(route);RoutePolygons=Freeze(ids);Standing=route.Last();NumericalGuard=guard;Range=range;NativeCastRange=MissionOpenFloorUsableRange.Test(input.Usable,Native(Cast(Standing)),Native(Cast(Centre)),new OpenFloorOrientation(input.Anchor.QuaternionHex));}
         }
         private sealed class Candidate
-        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal Position[] Route;internal Id[] Path;internal double Distance;internal MissionOpenFloorUsableRange.Witness Range;}
+        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal double Distance;}
         private sealed class Cell
         {internal Surface Surface;internal Point[] Polygon;internal int Index;}
         private static string Hash(object value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value))));
@@ -230,12 +230,37 @@ namespace hds
         private static bool Overlap(Point[] a,Point[] b)=>Edges(a).Any(e=>Touches(e.A,e.B,b))||Edges(b).Any(e=>Touches(e.A,e.B,a));
         private static bool Fits(Point[] shape,Surface surface,Bounds bounds)=>shape.All(p=>Inside(surface.Vertices,p)&&Inside(bounds.Polygon,p));
         private static Point Rounded(Point p)=>new Point((float)p.X,(float)p.Z);
+        private static Point? RepresentableNear(Point[] cell,Point target)
+        {
+            // A nearest boundary point can round outside the closed cell. Try adjacent native-f32 values
+            // around that point, actual vertices and the convex-cell centroid; never relax Inside/final clearance.
+            Point nearest=Nearest(cell,target),rounded=Rounded(nearest);if(Inside(cell,rounded))return rounded;
+            var seeds=new[]{nearest,new Point(cell.Average(p=>p.X),cell.Average(p=>p.Z))}.Concat(cell);
+            var candidates=new List<Point>();foreach(var seed in seeds)
+            {
+                float x=(float)seed.X,z=(float)seed.Z;
+                foreach(float a in new[]{MathF.BitDecrement(x),x,MathF.BitIncrement(x)})
+                    foreach(float b in new[]{MathF.BitDecrement(z),z,MathF.BitIncrement(z)})
+                    {var p=new Point(a,b);if(Finite(a,b)&&Inside(cell,p))candidates.Add(p);}
+            }
+            return candidates.OrderBy(p=>Distance(p,target)).ThenBy(p=>p.X).ThenBy(p=>p.Z).Select(p=>(Point?)p).FirstOrDefault();
+        }
+        private static bool Covered(Point[] shape,Surface[] component)=>Difference(new[]{shape},component.Select(s=>s.Vertices.ToArray()),0).Count==0;
         private static Position Cast(Position p)=>new Position((float)p.X,(float)p.Y,(float)p.Z);
         private static double Guard(Request r)
         {
             double[] n=r.Surfaces.SelectMany(s=>s.Vertices.SelectMany(p=>new[]{p.X,p.Z})).Concat(new[]{r.Anchor.Position.X,r.Anchor.Position.Y,r.Anchor.Position.Z}).ToArray();
             double ulp=n.Max(v=>{float f=(float)v;return Math.Max(Math.Abs((double)MathF.BitIncrement(f)-f),Math.Abs((double)f-MathF.BitDecrement(f)));});
             return Math.Max(Epsilon*8,ulp*2);
+        }
+        // Exact broad phase only: every candidate base and route is contained in this NAV component.
+        // Keep closed contact and the full numerical guard; never use a locality radius or source-sector filter.
+        private static bool ComponentRelevant(StaticObstacle o,Surface[] component,double guard)
+        {
+            double minX=component.Min(s=>s.Vertices.Min(p=>p.X)),maxX=component.Max(s=>s.Vertices.Max(p=>p.X));
+            double minZ=component.Min(s=>s.Vertices.Min(p=>p.Z)),maxZ=component.Max(s=>s.Vertices.Max(p=>p.Z));
+            return o.Footprint.Max(p=>p.X)>=minX-guard&&o.Footprint.Min(p=>p.X)<=maxX+guard&&
+                o.Footprint.Max(p=>p.Z)>=minZ-guard&&o.Footprint.Min(p=>p.Z)<=maxZ+guard;
         }
         private static bool RouteRelevant(StaticObstacle o,double floor)=>o.MinY<=Math.Max(floor+95,(float)(floor+95))+Epsilon&&o.MaxY>=Math.Min(floor,(float)floor)-Epsilon;
         private static bool VolumeRelevant(StaticObstacle o,double min,double max)=>o.MinY<=max+Epsilon&&o.MaxY>=min-Epsilon;
@@ -252,7 +277,7 @@ namespace hds
         private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range)
         {
             route=null;path=null;range=default;double floor=r.Entry.Standing.Y-95;
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
+            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,component,guard)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
             var cells=StandingCells(component,obstacles,guard);var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(r.Entry.Surface)&&Inside(c.Polygon,r.Entry.Standing.Xz));if(start==null)return false;
             var previous=new Dictionary<int,int?>{{start.Index,null}};var portals=new Dictionary<int,Point>();var queue=new Queue<Cell>();queue.Enqueue(start);
             while(queue.Count>0)
@@ -262,7 +287,7 @@ namespace hds
             var q=new OpenFloorOrientation(r.Anchor.QuaternionHex);var possibilities=new List<(Cell Cell,Point Point,MissionOpenFloorUsableRange.Witness Range)>();
             foreach(var cell in cells.Where(c=>previous.ContainsKey(c.Index)))
             {
-                Point p=Rounded(Nearest(cell.Polygon,centre.Xz));if(!Inside(cell.Polygon,p))continue;
+                Point? represented=RepresentableNear(cell.Polygon,centre.Xz);if(!represented.HasValue)continue;Point p=represented.Value;
                 var standing=new Position(p.X,floor+95,p.Z);
                 var w=MissionOpenFloorUsableRange.Test(r.Usable,Native(standing),Native(centre),q);
                 var cast=MissionOpenFloorUsableRange.Test(r.Usable,Native(Cast(standing)),Native(Cast(centre)),q);if(w.Within&&cast.Within)possibilities.Add((cell,p,w));
@@ -300,7 +325,7 @@ namespace hds
             var component=all.Where(s=>found.Contains(s.Identity)).ToArray();double guard=Guard(r);if(!double.IsFinite(guard))return No("UnrepresentableCoordinates");
             double centreY=r.Model.CentreY(start.FloorC),minY=centreY+r.Model.Min.Y,maxY=centreY+r.Model.Max.Y;
             if(r.Scene.MinY>Math.Min(start.FloorC,minY)-guard||r.Scene.MaxY<Math.Max(maxY,start.FloorC+95)+guard)return No("IncompleteStaticVerticalEnvelope");
-            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,minY,maxY)).ToArray();
+            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,minY,maxY)&&ComponentRelevant(o,component,guard)).ToArray();
             var forbidden=relevant.Select(o=>Hull(o.Footprint.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
             return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Relevant=relevant,Forbidden=forbidden},null);
         }
@@ -310,9 +335,9 @@ namespace hds
             if(surface==null||!Finite(position.X,position.Y,position.Z)||Math.Abs(position.Y-c.CentreY)>Epsilon||
                 position.X!=(double)(float)position.X||position.Z!=(double)(float)position.Z)return false;
             shape=c.Offsets.Select(p=>new Point(position.X+p.X,position.Z+p.Z)).ToArray();
-            var fixedShape=shape;if(!Fits(fixedShape,surface,r.SiteBounds)||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
+            var fixedShape=shape;if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component))||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
-            return Fits(castShape,surface,r.SiteBounds)&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
+            return (castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component))&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
         }
         private static bool RouteValid(Context c,Position centre,Point[] shape,IReadOnlyList<Position> route)
         {
@@ -320,7 +345,7 @@ namespace hds
                 Distance(route[0].Xz,r.Entry.Standing.Xz)>Epsilon||Math.Abs(route[0].Y-r.Entry.Standing.Y)>Epsilon)return false;
             var points=route.Select(p=>p.Xz).ToArray();var cast=points.Select(Rounded).ToArray();
             if(points.Concat(cast).Any(p=>!Inside(r.Scene.Coverage.Polygon,p)))return false;
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,c.Start.FloorC)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
+            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,c.Start.FloorC)&&ComponentRelevant(o,c.Component,c.Guard)).Select(o=>o.Footprint.ToArray()).Append(shape).ToArray();
             if(obstacles.Any(o=>!Clear(points,o)||!Clear(cast,o)))return false;
             var cells=StandingCells(c.Component,obstacles,c.Guard);
             for(int i=0;i<points.Length-1;i++)
@@ -360,20 +385,26 @@ namespace hds
             Result No(string reason)=>new Result(reason,r);var prepared=Prepare(r);if(prepared.Context==null)return No(prepared.Refusal);
             var context=prepared.Context;var offsets=context.Offsets;var start=context.Start;var component=context.Component;double guard=context.Guard,centreY=context.CentreY,maxY=context.MaxY;
             var relevant=context.Relevant;var forbidden=context.Forbidden;
-            var candidates=new List<Candidate>();foreach(var surface in component)
+            // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
+            // Minkowski expansion excludes every centre whose full footprint would meet that complement.
+            Point[] allowed=Erode(r.SiteBounds.Polygon,offsets);
+            var outside=Difference(new[]{r.SiteBounds.Polygon},component.Select(s=>s.Vertices.ToArray()),0);
+            var outsideForbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
+            var candidates=new List<Candidate>();
+            foreach(var cell in Difference(new[]{allowed},outsideForbidden.Concat(forbidden),guard))
             {
-                Point[] region=Erode(surface.Vertices,offsets);Point[] allowed=Erode(r.SiteBounds.Polygon,offsets);foreach(var e in Edges(allowed))region=Clip(region,e.A,e.B,0);
-                if(allowed.Length==0||region.Length==0)continue;
-                foreach(var cell in Difference(new[]{region},forbidden,guard))
-                {
-                    Point centre=Rounded(Nearest(cell,r.Anchor.Position.Xz));if(!Inside(cell,centre))continue;
-                    var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
-                    if(!Standing(r,component,shape,position,guard,out var route,out var path,out var range)||!RouteValid(context,position,shape,route))continue;
-                    candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Route=route,Path=path,Range=range,Distance=Distance(centre,r.Anchor.Position.Xz)});
-                }
+                Point? represented=RepresentableNear(cell,r.Anchor.Position.Xz);if(!represented.HasValue)continue;Point centre=represented.Value;
+                var surface=component.Where(s=>Inside(s.Vertices,centre)).OrderBy(s=>s.Identity).FirstOrDefault();if(surface==null)continue;
+                var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
+                candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Distance=Distance(centre,r.Anchor.Position.Xz)});
+            }            // The same total candidate order as the original minimum selection; defer expensive route work.
+            foreach(var candidate in candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z))
+            {
+                var position=new Position(candidate.Centre.X,centreY,candidate.Centre.Z);
+                if(Standing(r,component,candidate.Shape,position,guard,out var route,out var path,out var range)&&RouteValid(context,position,candidate.Shape,route))
+                    return new Result(r,candidate.Surface,candidate.Centre,candidate.Shape,route,path,guard,range);
             }
-            var best=candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).FirstOrDefault();
-            return best==null?No("NoClearFootprintAndInRangeReachableStandingPoint"):new Result(r,best.Surface,best.Centre,best.Shape,best.Route,best.Path,guard,best.Range);
+            return No("NoClearFootprintAndInRangeReachableStandingPoint");
         }
     }
 }
