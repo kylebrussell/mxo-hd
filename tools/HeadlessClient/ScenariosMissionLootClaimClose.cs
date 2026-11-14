@@ -62,7 +62,10 @@ public static partial class Scenarios
             step="late-checkpoint-rollback"; await context.Database.InstallMissionRollbackTriggerAsync(false); trigger=true;
             cursor=p.World.RpcSnapshot().Count; p.SkipReceived(); p.SendRpc("81 1f"); await p.WaitForTextAsync("Mission progress could not be saved"); await Barrier();
             var rolled=p.World.RpcSnapshot().Skip(cursor).ToArray();
-            Check.Equal(0,rolled.Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x81&&(r.Bytes[1]==0x20||r.Bytes[1]==0x1a)),"Late rollback emits no claim or close");
+            var retryAck=rolled.Where(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x81&&r.Bytes[1]==0x20).ToArray();
+            Check.Equal(1,retryAck.Length,"Late rollback acknowledges the pending request exactly once");
+            Check.Equal("81200c0000000000000000000000",Convert.ToHexString(retryAck[0].Bytes).ToLowerInvariant(),"Rollback acknowledges zero claims with unchanged response fields");
+            Check.Equal(0,rolled.Count(r=>r.Bytes.SequenceEqual(new byte[]{0x81,0x1a})),"Late rollback keeps the container window open");
             Check.Equal(0,rolled.Count(r=>BytePattern.Parse("80 a0 01 06 00 01").Occurs(r.Bytes)),"Late rollback emits no done goal");
             Check.Equal(0,rolled.Count(r=>BytePattern.Parse("5e ?? ?? 8f 1a 00 00").Occurs(r.Bytes)),"Late rollback emits no inventory-add success");
             Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6799"),"Late rollback undoes staged item ownership");

@@ -546,8 +546,11 @@ namespace hds
             lock (client.playerData.missionSync)
             {
                 if (client.playerData.missionProgress?.objects.Values.Any(o => o.lootOpen) != true) return false;
-                MissionPersistence.Mutate(client,()=>MissionPersistence.DeferContainerCheckpoint(client,()=>OnTakeAllCore(client)));
-                // A rollback already restored the selected mission. Do not fall through to an unrelated loot reply.
+                var owner = new MissionContainerRetry.Owner(client);
+                bool committed = MissionPersistence.Mutate(client,()=>MissionPersistence.DeferContainerCheckpoint(client,()=>OnTakeAllCore(client)));
+                // A failed mutation removes no client items and must still release Take All's pending cursor.
+                // Never fall through to another loot owner or publish into a switched world/life/transport.
+                if (!committed && MissionContainerRetry.Acknowledge(client, owner) && owner.Current(client)) client.FlushQueue();
                 return true;
             }
         }
