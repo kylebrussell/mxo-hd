@@ -26,6 +26,7 @@ static string Consumer(ushort stat) => stat switch
     575 => "Determination duration mitigation (known target totals)",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
+    954 or 955 => "native client Compile60 IC timer; OURS server scheduling, known CBB IC prototypes only; [evidence](COMPILE-ORDINARY-IC.md)",
     _ => "total only"
 };
 static string UtilityCoverage(ushort id) => id switch

@@ -145,6 +145,7 @@ namespace hds
             lock (client.playerData.craftingSync)
             {
                 var r = ClientActionRequests.ParseStoredCompile(body);
+                if (OrdinaryItemCompile.TryStart(client, r)) return;
                 byte result = 1;
                 var db = Store.dbManager.WorldDbHandler;
                 if (r != null && !client.playerData.isDead && !client.playerData.duelDeath && !client.playerData.worldChangePending &&
