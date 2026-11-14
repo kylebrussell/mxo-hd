@@ -26,7 +26,7 @@ namespace hds
     /// NPC spawners, spawns its hostiles and objects, and sets its waypoint to the floor's elevator door. Also walks
     /// escorted NPCs after the player, and offers the elevator ride retail's operator offered (ID_OPERATOR_MISSION_ELEVATOR).
     /// </summary>
-    public static class MissionStaging
+    public static partial class MissionStaging
     {
         /// <summary>"I've hacked into the elevator control system. Do you want me to send you to the right floor?"</summary>
         public const UInt32 StringElevatorOffer = 0x600000E2;
@@ -114,7 +114,7 @@ namespace hds
                 !database.All(c=>char.IsAsciiLetterOrDigit(c)||c=='_') || !int.TryParse(raw,out int seed) || seed<0) return null;
             return unchecked(seed ^ mission*31 ^ phase*104729);
         }
-        private static Random LayoutRandom(int mission,int phase,int legacySeed) => new Random(
+        internal static Random LayoutRandom(int mission,int phase,int legacySeed) => new Random(
             QaSiteSeed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                 Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED"),mission,phase) ?? legacySeed);
 
@@ -331,13 +331,22 @@ namespace hds
             return true;
         }
 
-        private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
+        internal sealed class ObjectChoice
         {
-            MissionSite site = progress.site;
+            internal readonly MissionObjectDef Definition;
+            internal readonly StaticWorldObject Spot;
+            internal readonly ushort Goid;
+            internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
+            {Definition=definition;Spot=spot;Goid=goid;}
+        }
+        // Shared exact chooser. The legacy iterator still yields between each spawn;
+        // only opt-in open-floor preflight materializes it before mutation.
+        internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
+        {
             List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
             List<StaticWorldObject> spawners = site.objectSpots.OrderBy(_ => rng.Next()).ToList();
             HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
-            foreach (MissionObjectDef def in progress.Phase.objects)
+            foreach (MissionObjectDef def in phase.objects)
             {
                 StaticWorldObject spot;
                 UInt16 goid;
@@ -372,6 +381,15 @@ namespace hds
                     goid = spot == null ? (UInt16)0 : MissionSites.Goid(spot);
                 }
 
+                yield return new ObjectChoice(def,spot,goid);
+            }
+        }
+
+        private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
+        {
+            foreach (ObjectChoice choice in SelectObjects(progress.Phase,progress.site,rng))
+            {
+                MissionObjectDef def=choice.Definition;StaticWorldObject spot=choice.Spot;ushort goid=choice.Goid;
                 if (spot == null)
                 {
                     Output.WriteLine("[MISSION] Nowhere to put object " + def.id + " (" + def.kind + ")");
@@ -387,7 +405,7 @@ namespace hds
                 };
                 progress.objects[def.id] = state;
                 SpawnObject(client, progress, state);
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + pose.X + "," +
                                      pose.Y + "," + pose.Z);
             }
