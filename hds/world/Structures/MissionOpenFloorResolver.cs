@@ -553,10 +553,11 @@ namespace hds
         {
             var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return Array.AsReadOnly(Array.Empty<BodyCandidate>());
             var candidates=GeometricCandidates(p.Context,true);
+            if(candidates.Count==0){refusal="NoGeometricBodyCandidates";return Freeze(Array.Empty<BodyCandidate>());}
             // Search root-reachable centres first; all remaining candidates remain eligible.
             {
                 var graph=BuildStandingGraph(r,p.Context.Component,Array.Empty<Point[]>(),p.Context.Guard);
-                if(graph==null)return Freeze(Array.Empty<BodyCandidate>());
+                if(graph==null){refusal="BlockedStaticRoot";return Freeze(Array.Empty<BodyCandidate>());}
                 var reachablePolygons=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
                 foreach(var c in candidates)c.RootReachable=reachablePolygons.Any(p=>Inside(p,c.Centre));
                 candidates=candidates.OrderBy(c=>c.RootReachable?0:1).ThenBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();

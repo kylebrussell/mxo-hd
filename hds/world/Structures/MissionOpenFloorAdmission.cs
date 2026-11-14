@@ -119,12 +119,12 @@ namespace hds
                 if(!MissionOpenFloorRequests.TryCreate(raw,choice.Goid,site,mission.district,out var request,out refusal,mission.phases[phaseIndex],choice.ObjectId))return false;
                 inputs.Add(new MissionOpenFloorPhasePlanner.Input(choice.ObjectId,request));
             }
-            string geometryKey=MissionOpenFloorSite.Hash(string.Join(";",inputs.OrderBy(i=>i.ObjectId).Select(i=>i.ObjectId+":"+i.Request.Fingerprint)));
+            string geometryKey=MissionOpenFloorSite.Hash(MissionOpenFloorPhasePlanner.SearchPolicyVersion+":"+string.Join(";",inputs.OrderBy(i=>i.ObjectId).Select(i=>i.ObjectId+":"+i.Request.Fingerprint)));
             if(pending?.TryFailedGeometry(geometryKey,out refusal)==true)return false;
             if(!MissionOpenFloorPhasePlanner.TryPlan(inputs,out var planned,out refusal)){pending?.RememberFailedGeometry(geometryKey,refusal);return false;}
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
                 poses.Add(choice.ObjectId,MissionOpenFloorPlacement.From(mission.id,phaseIndex,choice.ObjectId,choice.ReadSpot(),planned.Results[choice.ObjectId]));
-            Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" geometryMs="+planned.Milliseconds);
+            Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" bodyNodes="+planned.BodyNodes+" routeGraphs="+planned.RouteGraphs+" geometryMs="+planned.Milliseconds);
             return true;
         }
         private static bool FixedSetClear(MissionProgress progress,out string refusal)
