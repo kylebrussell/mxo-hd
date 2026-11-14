@@ -98,7 +98,7 @@ public class MissionOpenFloorGeometryTests
     {
         var polygon=Rect(-20,-20,20,20);var obstacle=new G.StaticObstacle("GO:100",100,1407,0,100,polygon,"literal");
         var rows=new[]{obstacle};var input=Input(obstacles:rows);polygon[0]=new(-999,-999);rows[0]=new("GO:999",999,1407,0,100,Rect(-400,-400,400,400),"changed caller array");
-        Assert.Equal(100u,input.Scene.Obstacles[0].Key);Assert.Equal(-20,input.Scene.Obstacles[0].Footprint[0].X);Assert.True(G.Plan(input).HasPlan);
+        Assert.Equal(100u,input.Scene.Obstacles[0].Key!.Value);Assert.Equal(-20,input.Scene.Obstacles[0].Footprint[0].X);Assert.True(G.Plan(input).HasPlan);
     }
     [Fact]
     public void FixedReplayChecksGeometryAndRangeWithoutReselectingNearestPose()

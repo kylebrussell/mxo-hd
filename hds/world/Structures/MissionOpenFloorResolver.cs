@@ -76,12 +76,12 @@ namespace hds
             public bool Valid => Finite(MinX,MaxX,MinZ,MaxZ) && MinX<MaxX && MinZ<MaxZ;
             public Point[] Polygon => new[] { new Point(MinX,MinZ),new Point(MaxX,MinZ),new Point(MaxX,MaxZ),new Point(MinX,MaxZ) };
         }
-        internal enum SourceModelPresence { Unproven, NoModel, MeasuredModel }
+        internal enum SourceModelPresence { Unproven=0, Model6Absent=1, NoModel=Model6Absent, AuthoredStaticBounds=2, MeasuredModel=AuthoredStaticBounds }
         internal sealed class StaticObstacle
         {
-            public string Identity {get;} public uint Key {get;} public ushort Goid {get;} public double MinY {get;} public double MaxY {get;} public string Evidence {get;}
+            public string Identity {get;} public uint? Key {get;} public ushort? Goid {get;} public double MinY {get;} public double MaxY {get;} public string Evidence {get;}
             public IReadOnlyList<Point> Footprint {get;}
-            public StaticObstacle(string identity,uint key,ushort goid,double minY,double maxY,IEnumerable<Point> polygon,string evidence)
+            public StaticObstacle(string identity,uint? key,ushort? goid,double minY,double maxY,IEnumerable<Point> polygon,string evidence)
             {Identity=identity;Key=key;Goid=goid;MinY=minY;MaxY=maxY;Footprint=Freeze(Canonical(polygon??Array.Empty<Point>()));Evidence=evidence;}
         }
         internal sealed class StaticScene
