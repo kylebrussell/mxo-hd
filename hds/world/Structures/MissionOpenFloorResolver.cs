@@ -360,6 +360,7 @@ namespace hds
         {
             private readonly Point[][] cells;
             private readonly Surface origin;
+            private readonly ConcurrentDictionary<string,Lazy<bool>> footprintFits=new ConcurrentDictionary<string,Lazy<bool>>(StringComparer.Ordinal);
             internal double Floor {get;}
             internal ReachableRegion(Surface origin,IEnumerable<Point[]> polygons){this.origin=origin;Floor=origin.FloorC;cells=polygons.ToArray();}
             internal bool SameSpace(NavLocation at)=>Math.Abs(at.floorY-Floor)<=Epsilon&&at.indoors==origin.Indoors&&
@@ -367,6 +368,26 @@ namespace hds
             internal bool Contains(Position p)=>Finite(p.X,p.Y,p.Z)&&Math.Abs(p.Y-Floor-95)<=Epsilon&&
                 cells.Any(c=>Inside(c,p.Xz))&&cells.Any(c=>Inside(c,Rounded(p.Xz)));
             internal bool Covers(Point[] shape)=>shape.Length>=3&&Difference(new[]{shape},cells,0).Count==0;
+            // Necessary first-prop admission only. This does not prove its complete phase, height
+            // clearance, interaction range or route; the normal immutable-source planner still must.
+            internal bool CanFit(OpenFloorModelBounds model,OpenFloorOrientation orientation,Bounds bounds)
+            {
+                string key=Hash(new{model.Goid,model.Min,model.Max,orientation.Hex,bounds.MinX,bounds.MaxX,bounds.MinZ,bounds.MaxZ});
+                return footprintFits.GetOrAdd(key,_=>new Lazy<bool>(()=>
+                {
+                    if(!bounds.Valid||!orientation.YawOnly)return false;
+                    var offsets=Hull(model.Corners(new OpenFloorPoint(0,0,0),orientation).Select(p=>new Point(p.X,p.Z)));
+                    var allowed=Erode(bounds.Polygon,offsets);if(allowed.Length==0)return false;
+                    var outside=Difference(new[]{bounds.Polygon},cells,0);
+                    var forbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
+                    foreach(var cell in Difference(new[]{allowed},forbidden,0))
+                    {
+                        var point=RepresentableNear(cell,new Point(cell.Average(p=>p.X),cell.Average(p=>p.Z)));
+                        if(point.HasValue&&Covers(offsets.Select(p=>new Point(p.X+point.Value.X,p.Z+point.Value.Z)).ToArray()))return true;
+                    }
+                    return false;
+                })).Value;
+            }
             internal bool Project(Position desired,Bounds bounds,double radius,out Position placed)
             {
                 placed=default;

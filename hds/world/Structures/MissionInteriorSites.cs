@@ -7,8 +7,8 @@ using G=hds.MissionOpenFloorResolver;
 namespace hds
 {
     // Generated mission floors are inferred clusters, not authoritative building volumes. Before
-    // selecting one for a free prop, require its authored NPC points on the elevator entry's
-    // same-floor NAV/static-open component. A sealed lobby must not borrow a nearby outdoor floor.
+    // selecting one for a free prop, require a proven footprint in the entry's interior. Phases
+    // placing actors also need same-interior anchors and actual separated standing positions.
     internal static class MissionInteriorSites
     {
         private sealed class Cached
@@ -22,7 +22,29 @@ namespace hds
         {
             refusal=null;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
-            return TryAllocate(site,npcCount,out _,out refusal);
+            if(!TryAllocate(site,npcCount,out _,out refusal))return false;
+            var first=phase.objects.FirstOrDefault();if(first==null)return true;
+            if(site.realObjects.Any(s=>MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&
+                string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)))return true; // already-bound native object
+            var matching=site.objectSpots.Where(s=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
+                string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
+            // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.
+            var sources=matching.Length>0?matching:site.objectSpots.Count>0?site.objectSpots.ToArray():site.containers.ToArray();
+            if(!TryRegion(site,out var region,out refusal))return false;
+            bool known=false;
+            foreach(var raw in sources)
+            {
+                ushort goid=MissionStaging.ExpectedConcrete(first,raw);
+                if(!MissionOpenFloorAdmission.Target(goid,raw)||!MissionOpenFloorProfiles.TryModel(goid,out var model)||
+                    !MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))return true; // not proven by this necessary check
+                OpenFloorOrientation orientation;
+                try{orientation=new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation));}catch(ArgumentException){return true;}
+                if(!orientation.YawOnly)return true;
+                known=true;
+                if(region.CanFit(model,orientation,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ)))return true;
+            }
+            if(known){refusal="NoInteriorFootprint:"+first.kind;return false;}
+            return true;
         }
         internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal)
         {
