@@ -78,6 +78,38 @@ public class MobiusCodeTests
         Assert.False(MobiusCode.Apply(beforeChance,103));
         Assert.True(MobiusCode.PreventsFreeAttack(c,104));
     }
+    [Theory]
+    [InlineData("world")] [InlineData("life")] [InlineData("owner")] [InlineData("clear")] [InlineData("parent")]
+    public void ImmediateHealBoundaryRejectsLifecycleChangedByHealthCallbackBeforeAnyDraw(string change)
+    {
+        var c=Client();int heals=0,draws=0,clocks=0;
+        var invocation=AbilitySupport.HealImmediate(c,c,967,()=>
+        {
+            heals++; // Simulates synchronous TimedEffects.HealthChanged inside the ordinary HealSelf callback.
+            switch(change)
+            {
+                case "world":c.playerData.worldGeneration++;break;
+                case "life":c.playerData.lifeGeneration++;break;
+                case "owner":c.playerData=new ClientData();c.playerData.setOnWorld(true);break;
+                case "clear":TimedEffects.ForPlayer(c).Effects.RemoveAll();break;
+                case "parent":TimedEffects.ForPlayer(c).Effects.RemoveParent(967);break;
+            }
+        });
+        Assert.Equal(1,heals);
+        Assert.False(MobiusCode.Resolve(invocation,()=>{draws++;return 0;},()=>{clocks++;return 100;}));
+        Assert.Equal(0,draws);Assert.Equal(0,clocks);
+        Assert.False(MobiusCode.PreventsFreeAttack(c,101));
+    }
+    [Theory]
+    [InlineData(967,true,true)] [InlineData(77,true,false)] [InlineData(967,false,false)]
+    public void ImmediateHealBoundaryKeepsOrdinaryHealingAndOnlySelf967Producer(ushort ability,bool self,bool proc)
+    {
+        var caster=Client();var target=self?caster:Client();int heals=0,draws=0;
+        var invocation=AbilitySupport.HealImmediate(caster,target,ability,()=>heals++);
+        Assert.Equal(1,heals);
+        Assert.Equal(proc,MobiusCode.Resolve(invocation,()=>{draws++;Assert.Equal(1,heals);return 0;},()=>100));
+        Assert.Equal(proc?1:0,draws);Assert.Equal(proc,MobiusCode.PreventsFreeAttack(target,101));
+    }
     private sealed class CountingRandom:Random
     {
         public int Draws;

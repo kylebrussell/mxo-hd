@@ -40,15 +40,23 @@ namespace hds
 
         public static bool ProcSucceeds(int roll) => roll >= 0 && roll < TempMods.MobiusImmunityChance;
 
-        internal static void Land(WorldClient caster, WorldClient target)
+        internal static Invocation CaptureForHeal(WorldClient caster,WorldClient target,ushort ability) =>
+            ability==Ability && ReferenceEquals(caster,target) && target?.playerData!=null ? new Invocation(target) : null;
+
+        private static int NaturalRoll() { lock(random)return random.Next(100); }
+        internal static void Land(Invocation invocation)
         {
-            if (!ReferenceEquals(caster,target) || target?.playerData==null) return;
-            var invocation=new Invocation(target);
-            if(!invocation.Current)return;
-            int roll;
-            lock(random) roll = MobiusCodeQa.Roll(target, () => random.Next(100));
-            bool success = ProcSucceeds(roll) && Apply(invocation,TimeUtils.GetSimTimeSeconds());
+            if(invocation==null)return;
+            Resolve(invocation,()=>MobiusCodeQa.Roll(invocation.Owner,NaturalRoll),()=>TimeUtils.GetSimTimeSeconds());
+        }
+        // Validation precedes even the chance draw: synchronous heal callbacks can invalidate the invocation.
+        internal static bool Resolve(Invocation invocation,Func<int> draw,Func<double> now)
+        {
+            if(invocation==null || !invocation.Current)return false;
+            int roll=draw();
+            bool success = ProcSucceeds(roll) && Apply(invocation,now());
             Output.WriteDebugLog("[MOBIUS] PARTIAL967 callback roll="+roll+" proc="+success+" seconds="+(success?10:0));
+            return success;
         }
 
         internal static bool Live(WorldClient owner) => owner?.playerData != null && owner.Alive &&
