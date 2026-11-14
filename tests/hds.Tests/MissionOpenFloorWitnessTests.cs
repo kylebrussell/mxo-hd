@@ -6,7 +6,7 @@ namespace hds.Tests;
 public class MissionOpenFloorWitnessTests
 {
     private const string Literal="""
-    {"Policy":1,"World":1,"Mission":2201,"Phase":0,"ObjectId":1,"SourceKey":219152446,"SourceGoid":1410,"ConcreteGoid":552,
+    {"Policy":3,"World":1,"Mission":2201,"Phase":0,"ObjectId":1,"SourceKey":219152446,"SourceGoid":1410,"ConcreteGoid":552,
      "RawFingerprint":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
      "InputFingerprint":"abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
      "Quaternion":"00000000f304353f00000000f20435bf","Centre":[28950,2050,14950],"Standing":[28950,2095,14850],
@@ -21,7 +21,7 @@ public class MissionOpenFloorWitnessTests
         Assert.Throws<NotSupportedException>(()=>((IList<double>)w.Centre)[0]=1);
         Assert.Contains("SourceKey",w.RawJson);
     }
-    [Theory][InlineData("Policy",2)][InlineData("SourceGoid",0)][InlineData("World",0)][InlineData("Phase",-1)]
+    [Theory][InlineData("Policy",1)][InlineData("Policy",2)][InlineData("Policy",4)][InlineData("SourceGoid",0)][InlineData("World",0)][InlineData("Phase",-1)]
     public void UnsupportedOrZeroIdentityRefuses(string field,int value)
     {var n=JsonNode.Parse(Literal)!;n[field]=value;Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));}
     [Fact]public void WrongMissionObjectCannotBeAcceptedFromHistoricalCheckpoint()
@@ -35,8 +35,28 @@ public class MissionOpenFloorWitnessTests
         var n=JsonNode.Parse(Literal)!;n.AsObject().Remove("Standing");Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));
         n=JsonNode.Parse(Literal)!;n["Centre"]=new JsonArray(1,2);Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));
         n=JsonNode.Parse(Literal)!;n["Quaternion"]="0000807f00000000000000000000803f";Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));
-        Assert.Throws<FormatException>(()=>Read(Literal.Replace("\"Policy\":1","\"Policy\":1,\"Policy\":1")));
+        Assert.Throws<FormatException>(()=>Read(Literal.Replace("\"Policy\":3","\"Policy\":3,\"Policy\":3")));
         n=JsonNode.Parse(Literal)!;n["Standing"]=new JsonArray(28800,2095,14700);Assert.Throws<FormatException>(()=>Read(n.ToJsonString()));
+    }
+    [Fact]public void CurrentProductionResultSerializationInteroperatesWithIndependentReader()
+    {
+        const string q="0000000000000000000000000000803f";
+        var raw=new hds.StaticWorldObject{metrId=1,sectorID=127,mxoStaticId=133169153,staticId=1,type=BitConverter.GetBytes((ushort)1415),pos_y=145,quat=q};
+        var rect=new[]{new hds.MissionOpenFloorResolver.Point(-500,-500),new hds.MissionOpenFloorResolver.Point(500,-500),new hds.MissionOpenFloorResolver.Point(500,500),new hds.MissionOpenFloorResolver.Point(-500,500)};
+        var request=new hds.MissionOpenFloorResolver.Request(1,hds.MissionOpenFloorResolver.SourceModelPresence.Model6Absent,"literal positive absent",
+            new(new(0,145,0),q,raw.mxoStaticId,1415),new(new(0,0,0),q,raw.mxoStaticId,1415),"literal source",
+            new hds.OpenFloorModelBounds(3,new(-10,-10,-10),new(10,10,10),"literal model"),
+            hds.MissionOpenFloorUsableRange.Profile.InitialClient400(3,5,new(43,25,40),"literal initial400"),
+            new[]{new hds.MissionOpenFloorResolver.Surface(new(127,1,1),rect,0,0,0)},new(new(127,1,1),new(-300,95,0),"literal root"),
+            new(-500,500,-500,500),new(1,true,new(-500,500,-500,500),-100,1000,Array.Empty<hds.MissionOpenFloorResolver.StaticObstacle>(),"literal complete domains"));
+        var result=hds.MissionOpenFloorResolver.Plan(request);Assert.True(result.HasPlan,result.Refusal);
+        var dto=hds.MissionOpenFloorPlacement.From(3082,0,1,raw,result);
+        using var document=JsonDocument.Parse(JsonSerializer.Serialize(dto,hds.MissionProgress.SaveJson));
+        var witness=MissionOpenFloorWitness.Read(document.RootElement);
+        Assert.Equal(3,witness.Policy); // Deliberately literal: a policy bump requires reader review.
+        witness.Require(3082,0,1,raw.mxoStaticId,1415,3);
+        Assert.Equal(dto.Centre,witness.Centre);Assert.Equal(dto.Route,witness.Route);
+        Assert.Equal(dto.RouteSurfaces,witness.RouteSurfaces);Assert.Equal(dto.InputFingerprint,witness.InputFingerprint);
     }
     [Fact]public void CanonicalSectorZeroStaticZeroKeyRemainsValid()
     {

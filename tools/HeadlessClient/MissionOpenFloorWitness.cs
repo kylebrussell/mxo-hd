@@ -24,7 +24,7 @@ public sealed class MissionOpenFloorWitness
         Surface=Ids(value,"Surface",true);RootSurface=Ids(value,"RootSurface",true);RouteSurfaces=Ids(value,"RouteSurfaces",false);
         byte[] q=Convert.FromHexString(Quaternion);
         if(Enumerable.Range(0,4).Any(i=>!float.IsFinite(BitConverter.ToSingle(q,i*4))))throw new FormatException("Nonfinite open-floor quaternion");
-        if(Policy!=1 || World==0 || Mission<=0 || Phase<0 || ObjectId<=0  || SourceGoid==0 || ConcreteGoid==0)
+        if(Policy!=3 || World==0 || Mission<=0 || Phase<0 || ObjectId<=0  || SourceGoid==0 || ConcreteGoid==0)
             throw new FormatException("Invalid open-floor witness identity");
         if(Route.Count<6 || Route.Count!=RouteSurfaces.Count+3 || !RouteSurfaces.Take(3).SequenceEqual(RootSurface))
             throw new FormatException("Invalid route segment framing or root surface");
