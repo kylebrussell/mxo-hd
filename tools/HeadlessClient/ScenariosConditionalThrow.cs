@@ -55,9 +55,17 @@ public static partial class Scenarios
             await Prepare(npcActor,npc,"offbalance");npcActor.SendRpc("3d 01");npcActor.SendRpc($"40 {HandleOf(npc)} 00 6b");await npcActor.WaitForRpcAsync("46");
             await Hit(npcActor,npc,279,"Trainman",58,true);npcActor.SendRpc("44 00");await npcActor.WaitForRpcAsync("46");
             stage="npc-free282";await Prepare(npcActor,npc,"offbalance");await Hit(npcActor,npc,282,"Trainman",30);
-            stage="cancelled-life";var cancelTarget=await cancelled.WaitForViewNamedAsync(victim.Handle);await Prepare(cancelled,cancelTarget,"offbalance");int cancelledStart=context.Server.DebugLog().Length;
-            Cast(cancelled,279,cancelTarget.ViewId);await cancelled.WaitForRpcAsync("80 ac 17 01");cancelled.SendRpc("80 fe 00");await cancelled.WaitForRpcAsync("80 fd");cancelled.Dispose();await Task.Delay(3000);
-            Check.That(!context.Server.DebugLog()[cancelledStart..].Contains("[CONDITIONAL-THROW]"),"World departure during cast cannot produce a conditional hit");
+            stage="world-departure-before-cast";var cancelTarget=await cancelled.WaitForViewNamedAsync(victim.Handle);await Prepare(cancelled,cancelTarget,"offbalance");int cancelledStart=context.Server.DebugLog().Length;
+            int departureRpc=cancelled.World.RpcSnapshot().Count;var departureClock=System.Diagnostics.Stopwatch.StartNew();
+            Cast(cancelled,279,cancelTarget.ViewId);var castBar=await cancelled.WaitForRpcAsync("80 ac 17 01");float castSeconds=BitConverter.ToSingle(castBar.Bytes,castBar.Bytes.Length-4);Check.Equal(2f,castSeconds,"Real stored cast window");
+            cancelled.SendRpc("80 fc 01");var finish=await cancelled.WaitForRpcAsync("80 fd");cancelled.SendRpc("80 fe 01");var reset=await cancelled.WaitForRpcAsync("81 07");
+            double boundaryMs=departureClock.Elapsed.TotalMilliseconds;Check.That(boundaryMs<castSeconds*1000,"Observable world reset arrives before the earliest cast completion");
+            Check.That(context.Server.DebugLog()[cancelledStart..].Contains("[LA] Loading the Loading Area"),"Existing GoToLoadingArea changed district and world epoch before reset");
+            cancelled.SendRpc("81 08");await cancelled.WaitForRpcAsync("81 09");cancelled.SendRpc("05");
+            await cancelled.WaitUntilAsync(()=>cancelled.World.RpcSnapshot().Skip(departureRpc).Any(r=>BytePattern.IndexOf(r.Bytes,System.Text.Encoding.UTF8.GetBytes("la.metr"),0)>=0),"Actual Loading Area world command",TimeSpan.FromSeconds(4));
+            await Task.Delay(3000);
+            measurements.Add(new{Stage=stage,WorldDeparture="80fc01 /80fd /80fe01 /8107 /8108 /8109 /05 +la.metr",BoundaryMs=boundaryMs,CastSeconds=castSeconds,CastBar=castBar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelledStart..],ExpectedConditional=0});
+            Check.That(!context.Server.DebugLog()[cancelledStart..].Contains("[CONDITIONAL-THROW]"),"Completed Loading Area world change during cast cannot produce a conditional hit");
             int after=context.Server.DebugLog().Length;await Task.Delay(3000);Check.That(!context.Server.DebugLog()[after..].Contains("[CONDITIONAL-THROW]"),"DOT ticks and state expiry never rerun the initializer");
             Check.Equal(0,actors.Sum(a=>a.World.Problems.Count),"All conditional throw sessions parse cleanly");passed=true;stage="complete";
         }

@@ -28,7 +28,7 @@ public class ConditionalThrownDamageTests
     {
         var rows=AbilityCatalog.All.Values.Where(a=>a.Modifiers.Any(m=>m.Text("StatModInitFunc")=="DealDamageIfOffBalance")).Select(a=>a.Id).Order();
         Assert.Equal(new ushort[]{279,282},rows);
-        foreach(ushort id in rows){var m=Assert.Single(AbilityCatalog.Find(id).Modifiers,m=>m.Text("StatModInitFunc")=="DealDamageIfOffBalance");Assert.Equal(2,m.Number("WhenEnabled"));Assert.Equal(1,m.Number("DurationType"));}
+        foreach(ushort id in rows){Assert.Equal(2,AbilityCatalog.Find(id).CastSeconds);var m=Assert.Single(AbilityCatalog.Find(id).Modifiers,m=>m.Text("StatModInitFunc")=="DealDamageIfOffBalance");Assert.Equal(2,m.Number("WhenEnabled"));Assert.Equal(1,m.Number("DurationType"));}
     }
     [Theory][InlineData(0,0)][InlineData(2,0)][InlineData(8,0)][InlineData(4,45)][InlineData(6,45)]
     public void ScriptTestsOffBalanceRatherThanTheMisleadingDamageOnDazeComponentName(uint flags,int expected)
@@ -109,5 +109,13 @@ public class ConditionalThrownDamageTests
         Assert.Equal(50,actor.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),actor.Experience);
         Assert.NotNull(actor.OwnedLoadedAbilities);Assert.Equal(HeadlessClient.ConditionalThrowFixture.Abilities,actor.OwnedLoadedAbilities!.Select(a=>a.Ability));
         Assert.All(actor.OwnedLoadedAbilities,a=>Assert.Equal((ushort)50,a.Level));
+    }
+    [Fact]public void ActualWorldOffSetterChangesTheEpochAndInvalidatesThePendingNormalCast()
+    {
+        var client=Client();AbilityCooldowns.StartCast(client.playerData,TimeUtils.GetSimTimeSeconds(),2);var cast=AbilityCastInterrupts.Begin(client,279,2);
+        Assert.True(AbilityCastInterrupts.IsCurrent(cast));int world=client.playerData.worldGeneration;var fence=new ConditionalThrownDamage.Fence(client);
+        client.playerData.setOnWorld(false);client.playerData.setDistrictId(9);
+        Assert.Equal(world+1,client.playerData.worldGeneration);Assert.False(fence.Current(client));Assert.False(AbilityCastInterrupts.IsCurrent(cast));
+        int completed=0;Assert.False(AbilityCastInterrupts.Complete(cast,()=>completed++));Assert.Equal(0,completed);
     }
 }
