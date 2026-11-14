@@ -89,11 +89,11 @@ public static partial class Scenarios
                                 string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
                                 var point=CarriedMissionNpcFixture.Resolve(checkpoint,token!,phase,type=="Get");
                                 await MoveForMissionTest(p,point.X+100,point.Y,point.Z);
-                                view=CarriedMissionNpcFixture.RecreatedView(p.World.CreationSnapshot(),viewsStart,token!);
+                                view=CarriedMissionNpcFixture.RecreatedView(p.World.CreationSnapshot(),viewsStart,token!,strictFollowupApproach?point:null);
                                 carriedEvidence.Add(new{Operation="resolve",Checkpoint=checkpoint,Token=token,Point=point,View=view.ViewId,Spawn=view.SpawnId,Phase=phase});
                                 Console.WriteLine($"  carried NPC{npcId} current-phase view{view.ViewId}/spawn{view.SpawnId} from owned checkpoint");
                             }
-                            else view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1);
+                            else view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1,strictFollowupApproach);
                             bool hostile=view.Attributes.TryGetValue("IsEnemy",out var enemy) && enemy[0]!=0;
                             var key=(view.ViewId,view.SpawnId);
                             if(type=="Defeat" || type=="Loot" && !killed.Contains(key) &&
@@ -129,7 +129,7 @@ public static partial class Scenarios
                             {
                                 uint CurrentState()
                                 {
-                                    uint state=BitConverter.ToUInt32(view.Attributes["CurrentState"]);
+                                    uint state=strictFollowupApproach?MervFollowupApproachFixture.InitialState(view):BitConverter.ToUInt32(view.Attributes["CurrentState"]);
                                     byte[] prefix=WireFormat.FromHex($"{Le(view.ViewId)} 01 08");
                                     foreach(byte[] section in p.World.ViewSnapshot().Skip(sectionsStart))
                                         for(int at=BytePattern.IndexOf(section,prefix,0);at>=0;at=BytePattern.IndexOf(section,prefix,at+1))
@@ -162,7 +162,7 @@ public static partial class Scenarios
                                 var npc=Npc(key);
                                 if((int?)npc.Attribute("at")==phase+1)
                                 {
-                                    await PrimaNpc(context,p,npc,viewsStart,true);await Task.Delay(800);
+                                    await PrimaNpc(context,p,npc,viewsStart,true,strictFollowupApproach);await Task.Delay(800);
                                     ushort npcId=ushort.Parse((string)npc.Attribute("id")!);
                                     if(checkpointRecreatedCarriedNpcs && mission.Elements("phase").Skip(phase+1).SelectMany(a=>a.Elements("objective")).Any(o=>((string?)o.Attribute("npc"))?.Split(',').Contains(key)==true))
                                     {
@@ -175,7 +175,7 @@ public static partial class Scenarios
                             string to=(string?)goal.Attribute("to")??"exit";
                             if(to=="exit") {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints);else await LeaveMissionArea(p);}
                             else if(to=="hardline")await ZionUpload(p);
-                            else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);
+                            else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true,strictFollowupApproach);
                             else if(to.StartsWith("object:")) {if(strictFollowupApproach)await MervFollowupObject(context,p,int.Parse(to[7..]),viewsStart,phaseCheckpoints);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
@@ -203,7 +203,17 @@ public static partial class Scenarios
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")) {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints);else await LeaveMissionArea(p);}
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))
+                {
+                    if(strictFollowupApproach)
+                    {
+                        string raw=await context.Database.ScalarAsync($"SELECT IFNULL(payload,'') FROM char_active_missions WHERE charId={p.CharId}");
+                        var actual=string.IsNullOrWhiteSpace(raw)?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,MervFollowupFields);
+                        if(MervFollowupApproachFixture.OwnsWaitingPhase(actual,id,phase))await MervFollowupRide(context,p,false,phaseCheckpoints);
+                        else phaseCheckpoints.Add(new{Operation="legitimate-auto-advance-before-exit",Mission=id,CompletedPhase=phase,ActualMission=actual?.Mission,ActualPhase=actual?.Phase,Checkpoint=raw});
+                    }
+                    else await LeaveMissionArea(p);
+                }
                 phase++;
                 if(phase<mission.Elements("phase").Count())
                     await p.WaitUntilAsync(()=>Regex.Matches(Log(),@"\[MISSION\] Phase \d+ at a").Count>phase,"next phase staged",TimeSpan.FromSeconds(15));
@@ -268,8 +278,16 @@ public static partial class Scenarios
         }
     }
 
-    private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase)
+    private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase,bool strictCurrent=false)
     {
+        if(strictCurrent)
+        {
+            var state=await MervFollowupCheckpoint(context,p);var mob=state.Mobs.Single(m=>m.Npc==(ushort)(int)npc.Attribute("id")!);
+            await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
+            ViewCreation? current=null;
+            await p.WaitUntilAsync(()=>(current=MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),introducedThisPhase?viewsStart:0).LastOrDefault(v=>MervFollowupApproachFixture.NpcMatches(v,mob,state.Instance)))!=null,"current saved NPC XYZ/side/generation",TimeSpan.FromSeconds(15));
+            return current!;
+        }
         string name=(string)npc.Attribute("handle")!;
         await VisitMissionNpc(context,p,name);
         var match=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Spawned (friendly|hostile) NPC "+Regex.Escape(name)+@" at ([^,\r\n]+),([^,\r\n]+),([^\r\n]+)").Last();

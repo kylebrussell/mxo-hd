@@ -3,6 +3,19 @@ using System.Globalization;
 namespace HeadlessClient;
 public static class MervFollowupApproachFixture
 {
+    public static bool OwnsWaitingPhase(MissionProgress.SavedState? current,int mission,int phase)=>current?.Mission==mission&&current.Phase==phase;
+    public static IEnumerable<ViewCreation> CurrentGenerations(IReadOnlyList<ViewCreation> rows,int cursor)=>
+        rows.Skip(cursor).GroupBy(v=>v.ViewId).Select(g=>g.Last());
+    public static uint InitialState(ViewCreation view)=>view.Attributes.TryGetValue("CurrentState",out var state)?BitConverter.ToUInt32(state):ObjectStates.DefaultState(view.Goid);
+    public static bool NpcMatches(ViewCreation v,MissionProgress.SavedMob mob,ushort instance)
+    {
+        bool hasEnemy=v.Attributes.TryGetValue("IsEnemy",out var side);
+        bool friendly=(!hasEnemy||(side!.Length==1&&side[0]==0))&&v.Attributes.TryGetValue("DontAttack",out var safe)&&safe.Length==1&&safe[0]==1&&
+            v.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&BitConverter.ToUInt16(key,1)==instance&&key[3]==2;
+        return v.Goid==599&&v.Name==mob.Name&&(mob.Friendly?friendly:hasEnemy&&side!.Length==1&&side[0]==1)&&
+            v.Attributes.TryGetValue("Position",out var at)&&at.Length==24&&
+            Math.Abs(BitConverter.ToDouble(at)-mob.X)<1&&Math.Abs(BitConverter.ToDouble(at,8)-mob.Y)<1&&Math.Abs(BitConverter.ToDouble(at,16)-mob.Z)<1;
+    }
     public static bool RequiresWitness(MissionProgress.SavedObject item)=>
         item.Goid is 3 or 548 or 552 && MissionSites.Goid(item.Spot)!=item.Goid;
     public static uint DoorAt(IEnumerable<string> rows,double[] pose)

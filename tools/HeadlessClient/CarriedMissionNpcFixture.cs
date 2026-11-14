@@ -31,7 +31,7 @@ public static class CarriedMissionNpcFixture
         if(!double.IsFinite(point.X)||!double.IsFinite(point.Y)||!double.IsFinite(point.Z))throw new InvalidDataException("Nonfinite carried position");return point;
     }
     // Opt-in only for this chain's observed recreated-on-new-phase path. No historical retained/deleted-view fallback.
-    public static ViewCreation RecreatedView(IReadOnlyList<ViewCreation> rows,int phaseCursor,Token token)
+    public static ViewCreation RecreatedView(IReadOnlyList<ViewCreation> rows,int phaseCursor,Token token,Point? expected=null)
     {
         bool SideMatches(ViewCreation v)
         {
@@ -44,7 +44,8 @@ public static class CarriedMissionNpcFixture
             return (!hasEnemy||enemy![0]==0) && v.Attributes.TryGetValue("DontAttack",out var safe)&&safe.Length==1&&safe[0]==1 &&
                 v.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&BitConverter.ToUInt16(key,1)==token.Instance&&key[3]==2;
         }
-        var view=rows.Skip(phaseCursor).LastOrDefault(v=>v.Name==token.Name&&SideMatches(v));
+        var view=rows.Skip(phaseCursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Name==token.Name&&SideMatches(v)&&
+            (expected==null||v.Attributes.TryGetValue("Position",out var at)&&at.Length==24&&Math.Abs(BitConverter.ToDouble(at)-expected.X)<1&&Math.Abs(BitConverter.ToDouble(at,8)-expected.Y)<1&&Math.Abs(BitConverter.ToDouble(at,16)-expected.Z)<1));
         return view??throw new InvalidDataException("No matching current-phase recreated carried view; old history is not admissible");
     }
     public static async Task<string> ReadOwnedAsync(ScenarioContext context,HeadlessPlayer actor)
