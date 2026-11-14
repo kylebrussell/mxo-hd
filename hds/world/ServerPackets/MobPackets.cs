@@ -143,27 +143,5 @@ namespace hds
             client.FlushQueue();
         }
 
-        public void SendLootAccepted(WorldClient client, (byte[] Data, UInt32 Item)[] remaining = null)
-        {
-            client.messageQueue.addRpcMessage(BuildLootAccepted(remaining ?? Array.Empty<(byte[], UInt32)>()));
-            client.FlushQueue();
-        }
-
-        /// <summary>Retail 81 20 returns the unclaimed items, allowing Take All to be retried when the bag was full.</summary>
-        internal static byte[] BuildLootAccepted((byte[] Data, UInt32 Item)[] remaining)
-        {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_LOOT_ACCEPTED_RESPONSE,0);
-            pak.AddUint16(12, 1); // ItemArray offset
-            pak.AddUint32(0, 1); // Status
-            pak.AddUint32(0, 1); // InfoAmount
-            pak.AddUint16((UInt16)remaining.Length, 1);
-            foreach ((byte[] data, UInt32 item) in remaining)
-            {
-                pak.AddByteArray(data);
-                pak.AddUint32(item, 1);
-            }
-            return pak.ReturnFinalPacket();
-        }
     }
 }

@@ -30,6 +30,15 @@ namespace hds
                 return true;
             }
         }
+        [ThreadStatic] private static WorldClient deferredContainerCheckpoint;
+        // Container grants and every goal callback commit as one mutation, including a late goal failure.
+        internal static T DeferContainerCheckpoint<T>(WorldClient client, Func<T> action)
+        {
+            var previous = deferredContainerCheckpoint;
+            deferredContainerCheckpoint = client;
+            try { return action(); }
+            finally { deferredContainerCheckpoint = previous; }
+        }
         [ThreadStatic] private static WorldClient deferredKill;
         internal static void MutateKill(WorldClient client,Mob mob,Action action)
         {
@@ -98,7 +107,7 @@ namespace hds
         }
         public static void Save(WorldClient client, bool clear = false)
         {
-            if(!Available(client)||deferredKill==client)return;
+            if(!Available(client)||deferredKill==client||deferredContainerCheckpoint==client)return;
             lock(client.playerData.missionSync)
             {
                 var data=client.playerData;
