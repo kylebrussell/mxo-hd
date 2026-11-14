@@ -9,8 +9,9 @@ public static partial class Scenarios
         var p = await context.AddPlayerAsync(new CharacterSeed("LootClaim") { Level=50, Organization=2,
             Experience=(int)PlayerProgression.ExperienceForLevel(50), X=17000,Y=495,Z=2300,
             Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,
+            CompletedMissions=MachinesChainFixture.Prerequisites.Prepend(986).ToArray(),
+            OwnedLoadedAbilities=new ushort[]{2,17,1006,77}.Select(id=>(id,(ushort)50)).ToArray(),
             Items=Enumerable.Range(1,96).Select(slot=>(slot,2568u,1)).ToArray() });
-        await context.Database.ExecuteAsync(MachinesChainFixture.SeedPrerequisites(p.CharId));
         string step="entry"; Exception? failure=null; var checkpoints=new List<object>(); var operations=new List<object>();
         bool trigger=false; var options=new JsonSerializerOptions { IncludeFields=true };
         async Task<MissionProgress.SavedState> Saved()
@@ -41,11 +42,21 @@ public static partial class Scenarios
         }
         try
         {
+            Check.Equal((byte)7,p.CharacterData[0x02][1155],"Contacts visible in the actual pre-world Margin reply");
+            Check.Equal("986,1201,1203,1204,1205,1206,1207,1208",await context.Database.ScalarAsync($"SELECT GROUP_CONCAT(missionId ORDER BY missionId) FROM char_missions WHERE charId={p.CharId}"),"Native mode earlier receipts, no selected mission receipt");
             await p.EnterWorldAsync(); step="normal-accept"; int creationCursor=p.World.CreationSnapshot().Count; int cursor=p.World.RpcSnapshot().Count;
-            p.SendRpc("80 94 05 00 02"); await p.WaitForRpcAsync("80 97 05 00");
-            var entries=p.World.RpcSnapshot().Skip(cursor).Select(r=>r.Bytes).Where(b=>b.Length>17&&b[0]==0x80&&b[1]==0x96&&BitConverter.ToUInt16(b,2)==5).ToArray();
-            int selected=MissionContactChoice.CriticalIndex(entries,"The End of the Beginning");
-            p.SendRpc($"80 98 06 00 {Le((ushort)selected)} 01 02 00"); await p.WaitForRpcAsync("80 99"); p.SendRpc("80 9b 07 00 01"); await p.WaitForRpcAsync("80 9e 00");
+            Check.Equal(96L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot BETWEEN 1 AND 96 AND goid=2568"),"Exact mode bag rows exist before contact call");
+            int selected=-1;
+            foreach(ushort request in new ushort[]{1,2})
+            {
+                cursor=p.World.RpcSnapshot().Count;p.SkipReceived();
+                p.SendRpc($"80 94 {Le(request)} 02");await p.WaitForRpcAsync($"80 97 {Le(request)}");
+                var offer=MissionLootOfferWire.Require(p.World.RpcSnapshot().Skip(cursor).Select(r=>r.Bytes),request);
+                selected=offer.Index;
+                operations.Add(new { Step="normal-contact-header",Request=request,Header=Convert.ToHexString(offer.Header),Entry=Convert.ToHexString(offer.Entry),End=Convert.ToHexString(offer.End) });
+                Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={p.CharId} AND payload IS NOT NULL"),"Header request never selects or starts a mission");
+            }
+            p.SendRpc($"80 98 03 00 {Le((ushort)selected)} 01 02 00"); await p.WaitForRpcAsync("80 99"); p.SendRpc("80 9b 04 00 01"); await p.WaitForRpcAsync("80 9e 00");
             Check.Equal(2201,(await Saved()).Mission,"Normal selected mission, never granted");
             await EnterMissionArea(context,p); var safe=await Safe(creationCursor);
             step="full-bag"; byte[] identity=await Open(safe); cursor=p.World.RpcSnapshot().Count;
