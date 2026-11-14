@@ -163,7 +163,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
     byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers));
-    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new
+    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
