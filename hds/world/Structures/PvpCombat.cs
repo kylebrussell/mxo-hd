@@ -405,6 +405,7 @@ namespace hds
             }
             damage = CombatSpecials.Damage(abilityId, null) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
+            var conditionalFence=new ConditionalThrownDamage.Fence(caster,target);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Player(caster, target, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
@@ -430,6 +431,7 @@ namespace hds
             {
                 Defeated(target, caster);
             }
+            else ConditionalThrownDamage.Player(caster,target,abilityId,conditionalFence);
         }
 
         // Tactic conditions on a player (CombatInterlock.ConditionBit), each for its own ten seconds
