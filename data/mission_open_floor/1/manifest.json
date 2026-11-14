@@ -29,7 +29,7 @@
       "sha256": "55e3f96c472e1274a808dcd5f9f2a6092ccd289900a70da4b51cc1e634ef1c89"
     }
   },
-  "packerSha256": "c962a4b9c4eb2784c0ca94f26016e290c0ca0d42cd8a568d0cda7389a06f0732",
+  "packerSha256": "0ccedd43332d6faab5c45ec2b17ec904e5b6fd3f8c67261322b829de031cf33a",
   "policy": "Every exact XZ sector/AABB overlap at all heights; all source-conflict variants. Missing declared layers explicitly refuse their scene; no unsafe legacy placement fallback.",
   "profiles": {
     "epi": "EPI-authored-PROP-and-GOIN-parent-union-bound-v1",
@@ -17958,6 +17958,10 @@
     }
   },
   "sectorsCsvSha256": "c94801450389eda7db4ffe72e6e763eb5ae83be3d9e7f65b7911716bf61921c5",
+  "sourceModelLookup": {
+    "file": "../source_models_1.json",
+    "sha256": "ff04fd2b9f35d5c526ee21c5bf01ab9b33b9d96e0a84e96c75c1435b1296cfaa"
+  },
   "sourceRowCounts": {
     "epi": 29563,
     "go": 290446,
