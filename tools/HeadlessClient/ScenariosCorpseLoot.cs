@@ -55,7 +55,7 @@ public static partial class Scenarios
             "Tutorial corpse-loot goal opens", TimeSpan.FromSeconds(15));
         player.SendRpc("81 1f");
         RpcRecord full = await player.WaitForRpcAsync("81 20");
-        Check.Equal((ushort)2, BitConverter.ToUInt16(full.Bytes, 12), "Both tutorial drops remain in a full bag");
+        Check.Equal((ushort)0, BitConverter.ToUInt16(full.Bytes, 12), "Full bag acknowledges no claimed identities");
         Check.Equal(0, player.Received("80 a0 18 06 00 01").Count, "The tutorial loot goal waits for its items");
 
         await FreeLastBagSlot(player);
@@ -64,7 +64,8 @@ public static partial class Scenarios
         player.SendRpc("81 1f");
         await player.WaitForRpcAsync("5e 60 00 05 0a 00 00");
         RpcRecord partial = await player.WaitForRpcAsync("81 20");
-        Check.Equal((ushort)1, BitConverter.ToUInt16(partial.Bytes, 12), "The letter remains after the revolver fits");
+        Check.Equal((ushort)1, BitConverter.ToUInt16(partial.Bytes, 12), "The successfully claimed revolver is removed from the loot UI");
+        Check.Equal(2565u, BitConverter.ToUInt32(partial.Bytes, 18), "Partial acknowledgement identifies the revolver, not the unclaimed letter");
         Check.Equal(0, player.Received("80 a0 18 06 00 01").Count, "A partial claim keeps the tutorial loot goal open");
 
         player.SendRpc("5d 5f 00 01 01");
