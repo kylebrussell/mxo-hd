@@ -509,6 +509,7 @@ namespace hds
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
             var pose = MissionComputerAnchors.For(state);
+            pose = PosterBoxPoseProbe.SerializedPose(client, progress, state, pose);
             SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
             SetAttribute(obj, "Orientation", pose.Orientation);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
