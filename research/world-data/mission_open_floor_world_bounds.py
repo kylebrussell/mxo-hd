@@ -256,12 +256,15 @@ def export(tools, sectors, catalog_path):
                         lo, hi = model_world_bounds(pos, quat, model['halfExtents'])
                         obstacles.append(dict(identity=f"go:{rid:08x}:{context['ordinal'] if context else -1}:{offset}:{model['componentOrdinal']}", domain='GO_MODEL6', **common, model=model, min=lo, max=hi))
     return dict(format=1, scope='Authored persistent static spatial bounds, not full rendering/physics/animation/avatar clearance',
+                originSectorSelection=None if sectors is None else sorted(sectors),
+                crossSectorSourceTraversal=sectors is None,
                 clientSha256=CLIENT_SHA256, gobSha256=GOB_SHA256, metrSha256=digest(metr_bytes), catalogSha256=digest(catalog_bytes),
                 sourceSha256=digest(Path(__file__).read_bytes()), sourceLayers=ledger, missingDeclaredLayers=missing,
                 obstacles=obstacles, model6Absent=absent, placementContexts=placements,
                 conflictingGoKeys=sorted(k for k, variants in keys.items() if len(variants)>1),
                 counts=dict(collections.Counter(o['domain'] for o in obstacles)),
                 limits=['No first/last conflict resolution; all variants retained.',
+                        '--sectors selects source origins only; use all and intersect world bounds to certify cross-sector overhang coverage.',
                         'Missing declared source layers remain unsupported; no legacy geometry fallback.',
                         'SIDI non-obstacle tail bytes are preserved by hash, not reinterpreted as new pose arrays.',
                         'Model6Absent is domain-specific, not a global no-render claim.',
@@ -270,7 +273,7 @@ def export(tools, sectors, catalog_path):
 def main():
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument('--tools', required=True)
-    a.add_argument('--sectors', default='all', help='all or comma-separated source sectors; no radius filtering')
+    a.add_argument('--sectors', default='all', help='all or comma-separated SOURCE ORIGINS; subset output does not certify cross-sector coverage')
     a.add_argument('--catalog', required=True)
     a.add_argument('--output', required=True)
     args = a.parse_args()
