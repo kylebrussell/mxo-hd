@@ -1,0 +1,77 @@
+{
+  "goid": 3,
+  "name": "Computer",
+  "gobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "recordSha256": "40c2616bfda860de964472baa72825267a067ee87fbda69ef209e7ad8cc74bf1",
+  "storageSize": 648,
+  "storedSize": 327,
+  "layout": 20,
+  "schema": 20,
+  "componentHeaderHex": "01250000000106000000010c00000001050000000005000000000500000000240000000105000000001a000000",
+  "fields": [
+    {
+      "component": {
+        "name": "Model",
+        "type": 6
+      },
+      "ordinal": 2,
+      "slot": 3,
+      "offset": 73,
+      "type": 11,
+      "width": 12,
+      "stored": true,
+      "rawHex": "00002c420000c84100002042",
+      "absoluteOffset": 5327516,
+      "values": [
+        43.0,
+        25.0,
+        40.0
+      ]
+    },
+    {
+      "component": {
+        "name": "HackUsable",
+        "type": 5
+      },
+      "ordinal": 4,
+      "slot": 6,
+      "offset": 399,
+      "type": 1,
+      "width": 4,
+      "stored": false,
+      "rawHex": "",
+      "absoluteOffset": 5327842,
+      "values": null
+    },
+    {
+      "component": {
+        "name": "GetUsable",
+        "type": 5
+      },
+      "ordinal": 5,
+      "slot": 6,
+      "offset": 387,
+      "type": 1,
+      "width": 4,
+      "stored": false,
+      "rawHex": "",
+      "absoluteOffset": 5327830,
+      "values": null
+    },
+    {
+      "component": {
+        "name": "PutUsable",
+        "type": 5
+      },
+      "ordinal": 8,
+      "slot": 6,
+      "offset": 606,
+      "type": 1,
+      "width": 4,
+      "stored": false,
+      "rawHex": "",
+      "absoluteOffset": 5328049,
+      "values": null
+    }
+  ]
+}

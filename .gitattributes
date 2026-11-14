@@ -3,3 +3,6 @@
 
 # Keep audited computer-anchor bytes identical across platforms.
 data/mission_computer_anchors.csv text eol=lf
+
+# Preserve the exact pinned primary evidence bytes, including their original line endings.
+research/protocol/mission-open-floor-*.json -text
