@@ -42,8 +42,20 @@ Use discovered mode `vendor-buyback`, CSR110. It enables the existing dev-only `
 1. Open the window. Appraise shirt slot11; expect680, unchanged cash/item and no Buy Back receipt change. Sell it. Observe the single Buy Back row and price680.
 2. Click the actual **Buy Back** control. Observe shirt restoration, cash reversal and the row clearing. Do not inject an RPC for native proof.
 3. Repeat Sell/Buy Back with Code Bits slot12 (whole stack) and leveled ability code slot13. Check that their count/level survives. This does not close arbitrary purity rendering.
-4. Sell one item, then another. Verify the last row replaces the previous one. A failed/empty repeated buyback must not award another item or spend information.
+4. Sell one item, then another. Verify the last row replaces the previous one. After successful Buy Back, observe that the row clears and its control disables. Empty-request backend refusal is headless-covered; do not inject a request for native proof.
 5. Close/reopen the same vendor. Do not expect a fabricated/replayed row. If the client retains and offers it, test the same-vendor receipt; report what the UI actually does.
-6. Relog after a sale. Confirm the expired world-session receipt cannot be used. Check durable cash/inventory and retain raw `810e`, `8112`, `810f` and `8110` evidence.
+6. Relog after a sale and reopen the vendor. Report whether the client offers the old row. If offered, click once and observe refusal; if absent, record that UI preflight prevented a request. Headless separately proves backend expiry. Check durable cash/inventory and retain actual `810e`, `8112`, `810f` and `8110` evidence; do not synthesize a native request.
 
-Native UI proof is pending. The owned headless case independently covers normal wire actions, raw count/purity, full/poor refusals, late SQL rollback, duplicate requests, independent connection races and world-session expiry. Its results must be recorded before claiming PASS.
+Native UI proof remains pending. The accepted headless proof below establishes server/protocol behavior, not client widget rendering, retail lifetime or retail repurchase pricing.
+
+## Validation
+
+- Full Release suite: **4,820 passed** at `451220a3`, before the narrow slot/family/session qualification fixes. Final qualification: **123 focused tests passed** with those fixes. Do not label the earlier full run as testing the later guards.
+- Fresh `vendor-buyback`: **PASS, 69.5 seconds, exit 0**, source `a52923285585964e054f1a2c4e1cae4afef5a804`, `--parallel 1`, peak one owned server. Actual runtime was Release `20DC8B295C308B2E841F93D9A1BAE54411A2EB88310EFAFE65C2C37F7558B8D6`.
+- Retained proof: `C:/Users/russe/AppData/Local/Temp/mxo-vendor-buyback-mxotest_run_1_cb14ccf2ca.json`, SHA256 `F86B1E5065BA343E8A308D4EABC532972902B5D448186EEC8FD5ABAD40E46858`. Step complete, Failure null; sessions contained 98 RPCs/3 views and 56 RPCs/2 views, both with zero parser problems. All three participating tables were InnoDB; actual isolation was REPEATABLE-READ.
+- The actual shirt sale paid 680 and removed the selected item with `8112`; Buy Back debited 680, added it once and sent `810f` final byte 1. Duplicate, late rollback and relog refusals emitted MODAL plus `8110(0,0)` without positive inventory/cash/success records. Raw count 0/purity, whole stack, full/poor, protected slot 0, foreign-family/Focus/high64, cross-vendor/session and two independent-connection races passed. These are headless facts, not native UI claims.
+- Runner output, exit and disposal checks are retained under `C:/Users/russe/AppData/Local/Temp/mxo-buyback-a529-fresh-0de0c1a4df`. The owned runtime process count and exact owned-schema count were both zero after disposal. The case did not record the exact child PID; no PID is fabricated.
+- Actual master `a28e573c` (#217) was merged afterwards. The interface preserves both APIs; zero-field buyback precedes the unsupported/nonzero ability-buy handling. Own helper, SQL, driver and mode git blobs are **byte-identical** to the fresh pin. No new fresh run was performed for this upstream union.
+- Combined validation after that merge: **165 focused vendor/acquisition/publication/fence tests passed**, both actual NativeQa builds, both read-only `vendor-buyback` plans and requested 2,17 provenance passed. Combined runtime hashes: Debug `DAEC0C9DAC2B0D69D8980841D6F06FFFD0A5B2DE5B5827F19A9CDF980A679A38`; Release `BD7F845B6547C199B90156AA30B466154735DA8D8BE8669B323681B94A51E59A`. These are build/unit results, not the binaries used for the earlier fresh proof.
+
+No generated ability coverage or parity snapshots are changed. Native one-pass remains Claude-only and pending.
