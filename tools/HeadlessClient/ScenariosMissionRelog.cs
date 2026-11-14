@@ -188,7 +188,9 @@ public static partial class Scenarios
             var coldSelf=new[]{BitConverter.ToDouble(self),BitConverter.ToDouble(self,8),BitConverter.ToDouble(self,16)};
             operations.Add(new{Step="exact842-cold-phase0",InitialSeed=Rollback842Fixture.InitialSeed,Phase1Seed=Rollback842Fixture.Phase1Seed,
                 PredecessorPid=oldPid,PredecessorExited=exited,SavedPosition=savedPosition,ColdSelf=coldSelf,RawBefore=rawBefore,RawAfter=await Raw("exact842-restored-phase0")});
-            Rollback842Fixture.PreGet(coldSelf);courier=await VisitMissionNpc(context,original,"Checkpoint Courier");
+            Rollback842Fixture.PreGet(coldSelf);courier=await original.WaitForViewNamedAsync("Checkpoint Courier");
+            byte[] restoredCourier=courier.Attributes["Position"];
+            Rollback842Fixture.PreGet(new[]{BitConverter.ToDouble(restoredCourier)+100,BitConverter.ToDouble(restoredCourier,8),BitConverter.ToDouble(restoredCourier,16)});
         }
         Window("courier-get",original);
         var courierPosition=courier.Attributes["Position"];

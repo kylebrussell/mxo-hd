@@ -22,7 +22,9 @@ public static class Rollback842Fixture
     public static void Phase1(MissionProgress.SavedState state)
     {
         Check.Equal(1,state.Phase,"Exact reproduced phase1 admitted");
-        var site=state.OpenFloorSites!.Single(s=>s.DoorKey==882901607);
+        var originalSite=state.OpenFloorSites!.Single(s=>s.DoorKey==219152420);
+        Check.Equal(Phase0Fingerprint,originalSite.Fingerprint,"Original phase0 catalog fingerprint preserved in v2 history");
+        var site=state.OpenFloorSites.Single(s=>s.DoorKey==882901607);
         Check.Equal(Phase1Fingerprint,site.Fingerprint,"Exact failed selected site fingerprint");
         var obj=state.Objects.Single();Check.Equal((ushort)552,obj.Goid,"Same generated Safe");
         Check.Equal(882902114u,obj.Spot.mxoStaticId,"Exact failed source, never seed-hop");
