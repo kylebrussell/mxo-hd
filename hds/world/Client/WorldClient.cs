@@ -384,7 +384,7 @@ namespace hds
                     else
                     {
                         bool dispatched=sendPacket(encryptedData);
-                        if(dispatched)thePacket.RecordDispatchedObjectReceipts();
+                        if(dispatched)thePacket.RecordDispatchedObjectReceipts(messageQueue);
                         if(dispatched && ScaleDiagnostics.Enabled)
                         {
                             foreach(var message in thePacket.RPCMessages)message.RecordScaleFirstSend(false);

@@ -15,13 +15,36 @@ namespace hds
         public int ackOnlyCount = 0;
         private readonly object receiptSync=new object();
         private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
+        private bool receiptSequenceKnown;
+        private ushort receiptLastSequence;
+        private long receiptLogicalSequence;
+        internal int ObjectReceiptCount {get{lock(receiptSync)return receipts.Count;}}
+        // Optional observer only: every SUCCESSFULLY dispatched packet advances the unambiguous 12-bit window.
+        internal void RecordDispatchedReceipts(ushort sequence,System.Collections.Generic.IEnumerable<SequencedMessage> messages)
+        {
+            sequence=(ushort)(sequence&0xfff);
+            lock(receiptSync)
+            {
+                if(receiptSequenceKnown)
+                {
+                    int delta=(sequence-receiptLastSequence)&0xfff;
+                    if(delta==0){receipts.RemoveWhere(r=>r.Finished);return;}
+                    if(delta>=0x800){foreach(var r in receipts)r.Cancel();receipts.Clear();receiptLogicalSequence=0;}
+                    else receiptLogicalSequence+=delta;
+                }
+                receiptSequenceKnown=true;receiptLastSequence=sequence;
+                foreach(var r in receipts)r.Advance(receiptLogicalSequence);
+                foreach(var message in messages)message.ObjectReceipt?.Dispatched(sequence,receiptLogicalSequence);
+                receipts.RemoveWhere(r=>r.Finished);
+            }
+        }
         internal void ObserveObjectReceipts(ushort ack,ushort bits)
         {
             var exact=SequencedMessage.AckedSequences(ack,bits);
             lock(receiptSync){foreach(var receipt in receipts)receipt.Observe(exact);receipts.RemoveWhere(r=>r.Finished);}
         }
         internal void CancelObjectReceipts()
-        {lock(receiptSync){foreach(var receipt in receipts)receipt.Cancel();receipts.Clear();}}
+        {lock(receiptSync){foreach(var receipt in receipts)receipt.Cancel();receipts.Clear();receiptSequenceKnown=false;receiptLogicalSequence=0;}}
 
         public MessageQueue()
         {
@@ -82,7 +105,7 @@ namespace hds
         private void AddObject(byte[] messageBlock,bool isTimed,ObjectMessageReceipt receipt)
         {
             if(MissionOutput.Stage(this,messageBlock,true,isTimed,receipt))return;
-            if(receipt!=null)lock(receiptSync)receipts.Add(receipt);
+            if(receipt!=null)lock(receiptSync){receipts.RemoveWhere(r=>r.Finished);receipts.Add(receipt);}
             SequencedMessage message = new SequencedMessage(messageBlock) {ObjectReceipt=receipt};
             message.isTimed = isTimed;
             lock (ObjectMessagesQueue.SyncRoot)

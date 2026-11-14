@@ -44,7 +44,7 @@ public class MissionProxyIntroductionTests:IDisposable
     private static void DispatchAndAck(WorldClient c,bool dispatch=true)
     {
         var packet=new WorldPacket(c.playerData);foreach(SequencedMessage message in c.messageQueue.ObjectMessagesQueue)packet.addObjectContent(message);
-        packet.getFinalData(c.playerData);if(dispatch)packet.RecordDispatchedObjectReceipts();
+        packet.getFinalData(c.playerData);if(dispatch)packet.RecordDispatchedObjectReceipts(c.messageQueue);
         c.playerData.setPss(0);c.DeletedAckedPackets(packet.neededAckSSeq);
     }
     private static void TickIntroduction(WorldClient c,MissionProgress p)

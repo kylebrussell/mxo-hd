@@ -195,8 +195,8 @@ namespace hds
         }
 
         // Called only after sendPacket actually succeeds, using this final encoded packet's SSEQ.
-        internal void RecordDispatchedObjectReceipts()
-        {foreach(var message in ObjectMessages)message.ObjectReceipt?.Dispatched(neededAckSSeq);}
+        internal void RecordDispatchedObjectReceipts(MessageQueue queue)
+        {queue.RecordDispatchedReceipts(neededAckSSeq,ObjectMessages);}
 
         public void generateObjectMessageData()
         {
