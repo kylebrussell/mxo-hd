@@ -377,6 +377,7 @@ namespace hds
             internal Request Input;internal Point[] Offsets;internal Surface Start;internal Surface[] Component;
             internal double Guard,CentreY,MinY,MaxY;internal Bounds Envelope;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
             internal double CastCentreY;internal Point[][] OriginalGeometryFootprints,CastGeometryFootprints;internal int GeometryEvaluations;
+            internal bool SiteContained;internal Bounds PlacementBounds;internal Point[] CoveragePolygon;
             internal readonly Dictionary<(double X,double Z),Surface> Carriers=new Dictionary<(double X,double Z),Surface>();
         }
         private static (Context Context,string Refusal) Prepare(Request r)
@@ -385,7 +386,12 @@ namespace hds
             try{offsets=Offsets(r);}catch(ArgumentException ex){return No(ex.Message);}
             if(r.Entry==null||string.IsNullOrWhiteSpace(r.Entry.Evidence)||!Finite(r.Entry.Standing.X,r.Entry.Standing.Y,r.Entry.Standing.Z))return No("MissingFiniteRoot");
             if(!r.SiteBounds.Valid||r.Scene==null||!r.Scene.Complete||r.Scene.World!=r.World||!r.Scene.Coverage.Valid||!Finite(r.Scene.MinY,r.Scene.MaxY)||r.Scene.MinY>=r.Scene.MaxY||string.IsNullOrWhiteSpace(r.Scene.Evidence))return No("MissingStaticCoverage");
-            if(!Inside(r.Scene.Coverage.Polygon,r.Entry.Standing.Xz)||r.SiteBounds.Polygon.Any(p=>!Inside(r.Scene.Coverage.Polygon,p)))return No("IncompleteStaticEnvelope");
+            var coveragePolygon=r.Scene.Coverage.Polygon;
+            if(!Inside(coveragePolygon,r.Entry.Standing.Xz))return No("IncompleteStaticEnvelope");
+            bool siteContained=r.SiteBounds.Polygon.All(p=>Inside(coveragePolygon,p));
+            var placementBounds=siteContained?r.SiteBounds:new Bounds(Math.Max(r.SiteBounds.MinX,r.Scene.Coverage.MinX),Math.Min(r.SiteBounds.MaxX,r.Scene.Coverage.MaxX),
+                Math.Max(r.SiteBounds.MinZ,r.Scene.Coverage.MinZ),Math.Min(r.SiteBounds.MaxZ,r.Scene.Coverage.MaxZ));
+            if(!placementBounds.Valid)return No("IncompleteStaticEnvelope");
             if(r.Surfaces==null||r.Surfaces.Any(s=>s==null||!Finite(s.FloorX,s.FloorZ,s.FloorC)||s.Vertices.Any(p=>!Finite(p.X,p.Z)))||r.Surfaces.Select(s=>s.Identity).Distinct().Count()!=r.Surfaces.Count)return No("InvalidSurfaceSnapshot");
             if(r.Scene.Obstacles.Any(o=>o==null||!Finite(o.MinY,o.MaxY)||o.MinY>o.MaxY||!Convex(o.Footprint)||string.IsNullOrWhiteSpace(o.Evidence)||string.IsNullOrWhiteSpace(o.Identity))||r.Scene.Obstacles.Select(o=>o.Identity).Distinct(StringComparer.Ordinal).Count()!=r.Scene.Obstacles.Count)return No("UnprovenStaticBounds");
             if(r.SourceModel==SourceModelPresence.Unproven||(r.SourceModel==SourceModelPresence.MeasuredModel&&!r.Scene.Obstacles.Any(o=>o.Key==r.RawSource.SourceKey&&o.Goid==r.RawSource.SourceGoid)))return No("MissingSourceModelEvidence");
@@ -409,6 +415,7 @@ namespace hds
             double castCentreY=(float)centreY;
             return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Envelope=envelope,Relevant=relevant,Forbidden=forbidden.ToArray(),
                 CastCentreY=castCentreY,OriginalGeometryFootprints=relevant.Select(o=>o.Footprint.ToArray()).ToArray(),
+                SiteContained=siteContained,PlacementBounds=placementBounds,CoveragePolygon=coveragePolygon,
                 CastGeometryFootprints=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(minY,castCentreY+r.Model.Min.Y),Math.Max(maxY,castCentreY+r.Model.Max.Y))).Select(o=>o.Footprint.ToArray()).ToArray()},null);
         }
         private static Surface Carrier(Context c,Point point)
@@ -431,9 +438,10 @@ namespace hds
             var fixedShape=shape;
             if(r.Reservations.Any(prior=>(prior.MinY<=c.MaxY+Epsilon&&prior.MaxY>=c.MinY-Epsilon&&Overlap(fixedShape,prior.Base.ToArray()))||
                 (prior.ProtectRoute&&c.MinY<=prior.Floor+95+Epsilon&&c.MaxY>=prior.Floor-Epsilon&&(!Clear(prior.Route.Select(p=>p.Xz).ToArray(),fixedShape)||!Clear(prior.Route.Select(p=>Rounded(p.Xz)).ToArray(),fixedShape)))))return false;
-            if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component)))return false;
+            if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p)&&Inside(c.CoveragePolygon,p))&&Covered(fixedShape,c.Component)))return false;
             if(reuse?c.OriginalGeometryFootprints.Any(o=>Overlap(fixedShape,o)):c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
+            if(!castShape.All(p=>Inside(c.CoveragePolygon,p)))return false;
             bool sameXY=BitConverter.DoubleToInt64Bits(cast.X)==BitConverter.DoubleToInt64Bits(position.X)&&BitConverter.DoubleToInt64Bits(cast.Z)==BitConverter.DoubleToInt64Bits(position.Z);
             if(!reuse||!sameXY)if(!(castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component)))return false;
             // Keep the original ALL-scene cast-volume predicate. A tolerated Y perturbation can cast differently.
@@ -576,7 +584,8 @@ namespace hds
             var r=context.Input;var offsets=context.Offsets;var component=context.Component;double guard=context.Guard,centreY=context.CentreY;var forbidden=context.Forbidden;
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
             // Minkowski expansion excludes every centre whose full footprint would meet that complement.
-            Point[] allowed=Erode(r.SiteBounds.Polygon,offsets);
+            // The selected site is immutable. Only the internal proposal domain is restricted to proven coverage.
+            Point[] allowed=Erode(context.SiteContained?r.SiteBounds.Polygon:context.PlacementBounds.Polygon,offsets);
             if(allowed.Length==0)return new List<Candidate>();
             var outside=Difference(new[]{r.SiteBounds.Polygon},component.Select(s=>s.Vertices.ToArray()),0);
             var outsideForbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
