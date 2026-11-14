@@ -159,7 +159,12 @@ namespace hds
         private static IEnumerable<(Point A,Point B)> Edges(IReadOnlyList<Point> p)
         { for(int i=0;i<p.Count;i++)yield return (p[i],p[(i+1)%p.Count]); }
         internal static double Area(IReadOnlyList<Point> p) => Edges(p).Sum(e=>Cross(e.A,e.B))/2;
-        private static bool Inside(IReadOnlyList<Point> p,Point q) => Edges(p).All(e=>Cross(Sub(e.B,e.A),Sub(q,e.A))>=-Epsilon);
+        private static bool Inside(IReadOnlyList<Point> p,Point q)
+        {
+            for(int i=0;i<p.Count;i++)
+                if(!(Cross(Sub(p[(i+1)%p.Count],p[i]),Sub(q,p[i]))>=-Epsilon))return false;
+            return true;
+        }
         private static bool Convex(IReadOnlyList<Point> p) => p.Count>=3 && p.All(v=>Finite(v.X,v.Z)) && double.IsFinite(Area(p)) && Area(p)>Epsilon &&
             Edges(p).All(e=>Distance(e.A,e.B)>Epsilon && p.All(v=>Cross(Sub(e.B,e.A),Sub(v,e.A))>=-Epsilon));
         private static OpenFloorPoint Native(Position p)=>new OpenFloorPoint(p.X,p.Y,p.Z);
@@ -221,8 +226,9 @@ namespace hds
         }
         private static bool Touches(Point a,Point b,IReadOnlyList<Point> shape)
         {
-            double lo=0,hi=1;foreach(var e in Edges(shape))
+            double lo=0,hi=1;for(int i=0;i<shape.Count;i++)
             {
+                var e=(A:shape[i],B:shape[(i+1)%shape.Count]);
                 Point edge=Sub(e.B,e.A);double start=Cross(edge,Sub(a,e.A))+Epsilon*Math.Max(1,Distance(e.A,e.B)),change=Cross(edge,Sub(b,a));
                 if(change==0) { if(start<0)return false; }
                 else if(change>0)lo=Math.Max(lo,-start/change);else hi=Math.Min(hi,-start/change);
@@ -260,7 +266,12 @@ namespace hds
         {
             var result=regions.ToList();foreach(var obstacle in obstacles){result=result.SelectMany(r=>Subtract(r,obstacle,guard)).ToList();if(result.Count==0)break;}return result;
         }
-        private static bool Overlap(Point[] a,Point[] b)=>Edges(a).Any(e=>Touches(e.A,e.B,b))||Edges(b).Any(e=>Touches(e.A,e.B,a));
+        private static bool Overlap(Point[] a,Point[] b)
+        {
+            for(int i=0;i<a.Length;i++)if(Touches(a[i],a[(i+1)%a.Length],b))return true;
+            for(int i=0;i<b.Length;i++)if(Touches(b[i],b[(i+1)%b.Length],a))return true;
+            return false;
+        }
         private static bool Fits(Point[] shape,Surface surface,Bounds bounds)=>shape.All(p=>Inside(surface.Vertices,p)&&Inside(bounds.Polygon,p));
         private static Point Rounded(Point p)=>new Point((float)p.X,(float)p.Z);
         private static Point? RepresentableNear(Point[] cell,Point target)
