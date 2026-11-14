@@ -5,6 +5,8 @@
      barks. Ours: the description, the objective texts (the Objectives tab was never opened), the sites (the first two
      buildings: Normal; the third, with its local security forces and alarm: Office), the looks and the enemy counts.
      Rewards: the 132,000 experience and 59,500 information shown right after this mission completed.
+     Reward reference: the archived replay shows post-completion HUD level 17. This anchors the existing OURS
+     scaling policy, not a recovered pre-award level, normal retail difficulty or reward curve.
      Gaps: the posters are boxes that are used (torn down), as in Zion's The Power of Propaganda. Retail had three, one
      and four; all eight required proxies are now represented. Their Box models remain authored substitutes.
      No fight was logged in the first two buildings (the second took half a minute), so they have no enemies. In the
@@ -15,7 +17,7 @@
      Exiles' barks (Merovingian Martial Arts Initiate: "Hey! Get back here!"; Elite Guard: "What's it to you,
      human?") have no place, since the Exiles are generated. Code Bit 8 came from a body and is generic loot. -->
 <mission id="201202" title="Poster Hunt" description="Tear down Morpheus' posters around the City." plot="1"
-         order="1202" org="2" contact="Agent Gray" exp="132000" info="59500">
+         order="1202" org="2" contact="Agent Gray" rewardLevel="17" exp="132000" info="59500">
   <npc id="1" handle="Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" spawnAfter="2">
     <say>Oh man. What else can go wrong today?</say>
   </npc>
