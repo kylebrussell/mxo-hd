@@ -5,4 +5,4 @@
 data/mission_computer_anchors.csv text eol=lf
 
 # Preserve the exact pinned primary evidence bytes, including their original line endings.
-research/protocol/mission-open-floor-*.json -text
+research/protocol/mission-open-floor-*.json -text whitespace=cr-at-eol
