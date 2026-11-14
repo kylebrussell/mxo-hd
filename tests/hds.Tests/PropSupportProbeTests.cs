@@ -108,4 +108,12 @@ public class PropSupportProbeTests:IDisposable
         var plan=new NativeQa.Modes.PropSupportMode().Plan;Assert.Equal(new ushort[]{2,17},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
         Assert.Equal("1",plan.EnvironmentOverrides[PropSupportProbe.EnvironmentKey]);Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("")[PropSupportProbe.EnvironmentKey]);Assert.DoesNotContain(plan.AfterHelpers,s=>s.Contains("char_missions"));
     }
+    [Fact] public void OnlyExactZeroItemGenericComputerReplyIsAllowed()
+    {
+        byte[] empty=Convert.FromHexString("811900000000100000000000000000000000");
+        Assert.True(PropSupportReplies.Allowed(3,empty));Assert.False(PropSupportReplies.Allowed(548,empty));Assert.False(PropSupportReplies.Allowed(552,empty));
+        var nonempty=empty.Concat(Convert.FromHexString("000000087F1A0000")).ToArray();nonempty[16]=1;Assert.False(PropSupportReplies.Allowed(3,nonempty));
+        var info=empty.ToArray();info[8]=1;Assert.False(PropSupportReplies.Allowed(3,info));Assert.False(PropSupportReplies.Allowed(3,empty.Concat(new byte[]{0}).ToArray()));
+        Assert.False(PropSupportReplies.Allowed(3,Convert.FromHexString("81200000")));Assert.False(PropSupportReplies.Allowed(3,Convert.FromHexString("80A001060001")));
+    }
 }

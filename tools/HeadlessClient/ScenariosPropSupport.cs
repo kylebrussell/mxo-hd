@@ -26,8 +26,8 @@ DELETE FROM inventory WHERE charId=110;
 
         using var p=await HeadlessPlayer.LoginAsync(context.Server.Address,"PropSupportUser","CSR_Tester");
         bool passed=false;string step="entry";Exception? failure=null;var probes=new List<object>();
-        string before="",after="";
-        async Task<string> State()=>await context.Database.ScalarAsync("SELECT CONCAT(cash,':',exp,':',(SELECT COUNT(*) FROM inventory WHERE charId=110),':',(SELECT COUNT(*) FROM char_active_missions WHERE charId=110),':',(SELECT COUNT(*) FROM char_missions WHERE charId=110)) FROM characters WHERE charId=110");
+        string before="",after="",afterStateError="";
+        async Task<string> State()=>await context.Database.ScalarAsync("SELECT JSON_OBJECT('cash',cash,'xp',exp,'items',COALESCE((SELECT GROUP_CONCAT(CONCAT(slot,':',goid,':',count,':',purity) ORDER BY slot SEPARATOR '|') FROM inventory WHERE charId=110),''),'active',COALESCE((SELECT payload FROM char_active_missions WHERE charId=110),''),'receipt',COALESCE((SELECT receipt FROM char_active_missions WHERE charId=110),''),'history',COALESCE((SELECT GROUP_CONCAT(CONCAT(missionId,':',completions) ORDER BY missionId SEPARATOR '|') FROM char_missions WHERE charId=110),'')) FROM characters WHERE charId=110");
         static async Task Barrier(HeadlessPlayer p){p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");}
         try
         {
@@ -49,7 +49,9 @@ DELETE FROM inventory WHERE charId=110;
                 step="ordinary-take-"+pass;await Barrier(p);int rpc=p.World.RpcSnapshot().Count;int useLog=context.Server.DebugLog().Length;
                 byte[] use=WireFormat.FromHex($"80 c7 {MissionNpcId(v)} {(goid==3?5:3):x2} 00");p.SendRpc(use);
                 await p.WaitUntilAsync(()=>context.Server.DebugLog()[useLog..].Contains("[OBJECT-USE] char=110 view="+v.ViewId+" "),"Normal Take5 logged",TimeSpan.FromSeconds(5));await Barrier(p);
-                var replies=p.World.RpcSnapshot().Skip(rpc).ToArray();Check.Equal(0,replies.Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x81&&r.Bytes[1]==0x19),"No container executor registered");
+                var replies=p.World.RpcSnapshot().Skip(rpc).ToArray();
+                Check.That(replies.All(r=>PropSupportReplies.Allowed(goid,r.Bytes)),"Only exact empty generic GO3 loot fallback; no nonempty loot, claims or goal output");
+                Check.Equal(before,await State(),"No item, cash, XP, checkpoint or receipt mutation after ordinary use");
                 step="off-"+pass;int off=context.Server.DebugLog().Length;int offView=p.World.ViewSnapshot().Count;p.SendChat("?propsupport off");
                 await p.WaitUntilAsync(()=>context.Server.DebugLog()[off..].Contains("[PROP-SUPPORT] off char=110 view="+v.ViewId),"Owned Computer removed",TimeSpan.FromSeconds(5));
                 var delete=BytePattern.Parse($"01 00 01 01 00 {v.ViewId&255:x2} {v.ViewId>>8:x2}");
@@ -68,9 +70,21 @@ DELETE FROM inventory WHERE charId=110;
         catch(Exception e){failure=e;throw;}
         finally
         {
+            try{after=await State();}catch(Exception stateError){afterStateError=stateError.ToString();}
             string dll=context.Server.SourceAssembly;string proof=Path.Combine(Path.GetTempPath(),"mxo-prop-support-"+context.Database.Name+".json");
-            try{await File.WriteAllTextAsync(proof,JsonSerializer.Serialize(new{Passed=passed,Step=step,Failure=failure?.ToString(),Before=before,After=after,Standing=new{standing.sector,standing.region,standing.polygon,standing.floorY},Probes=probes,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dll))),Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray(),Debug=context.Server.DebugLog(),Output=context.Server.FullOutput(),NativeRenderingProven=false,NativePickingProven=false,MissionExecutor=false},new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("Prop support proof before teardown: "+proof);}
+            try{await File.WriteAllTextAsync(proof,JsonSerializer.Serialize(new{Passed=passed,Step=step,Failure=failure?.ToString(),Before=before,After=after,AfterStateError=afterStateError,Standing=new{standing.sector,standing.region,standing.polygon,standing.floorY},Probes=probes,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dll))),Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray(),Debug=context.Server.DebugLog(),Output=context.Server.FullOutput(),NativeRenderingProven=false,NativePickingProven=false,MissionExecutor=false},new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("Prop support proof before teardown: "+proof);}
             catch(Exception proofError){if(failure==null)throw;Console.Error.WriteLine(proofError);}
         }
+    }
+}
+public static class PropSupportReplies
+{
+    // Ordinary unregistered GO3 Take5 reaches existing generic NpcLoot.Open and truthfully lists zero items.
+    private static readonly byte[] EmptyLoot=Convert.FromHexString("811900000000100000000000000000000000");
+    public static bool Allowed(ushort goid,byte[] rpc)
+    {
+        if(rpc.Length<2)return true;
+        if(rpc[0]==0x81&&rpc[1]==0x19)return goid==3&&rpc.SequenceEqual(EmptyLoot);
+        return !(rpc[0]==0x81&&rpc[1]==0x20)&&!(rpc[0]==0x80&&rpc[1]==0xa0);
     }
 }
