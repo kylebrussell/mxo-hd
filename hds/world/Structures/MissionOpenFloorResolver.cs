@@ -214,6 +214,8 @@ namespace hds
         }
         private static IEnumerable<Point[]> Subtract(Point[] region,Point[] obstacle,double guard)
         {
+            // Avoid partitioning a region already strictly outside the numerical guard band.
+            if(Edges(obstacle).Any(e=>region.All(p=>Cross(Sub(e.B,e.A),Sub(p,e.A)) < -guard*Distance(e.A,e.B)-Epsilon))) {yield return region;yield break;}
             Point[] remaining=region;foreach(var e in Edges(obstacle))
             {
                 if(remaining.Length==0)yield break;double length=Distance(e.A,e.B);
@@ -280,7 +282,7 @@ namespace hds
         private sealed class Context
         {
             internal Request Input;internal Point[] Offsets;internal Surface Start;internal Surface[] Component;
-            internal double Guard,CentreY,MaxY;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
+            internal double Guard,CentreY,MinY,MaxY;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
         }
         private static (Context Context,string Refusal) Prepare(Request r)
         {
@@ -296,11 +298,11 @@ namespace hds
             var all=r.Surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();var found=new HashSet<Id>{start.Identity};var queue=new Queue<Surface>();queue.Enqueue(start);
             while(queue.Count>0){var current=queue.Dequeue();foreach(var s in all)if(!found.Contains(s.Identity)&&Portal(current,s).HasValue){found.Add(s.Identity);queue.Enqueue(s);}}
             var component=all.Where(s=>found.Contains(s.Identity)).ToArray();double guard=Guard(r);if(!double.IsFinite(guard))return No("UnrepresentableCoordinates");
-            double centreY=r.Model.CentreY(start.FloorC),maxY=centreY+r.Model.Max.Y;
-            if(r.Scene.MinY>start.FloorC-guard||r.Scene.MaxY<Math.Max(maxY,start.FloorC+95)+guard)return No("IncompleteStaticVerticalEnvelope");
-            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,start.FloorC,maxY)).ToArray();
+            double centreY=r.Model.CentreY(start.FloorC),minY=centreY+r.Model.Min.Y,maxY=centreY+r.Model.Max.Y;
+            if(r.Scene.MinY>Math.Min(start.FloorC,minY)-guard||r.Scene.MaxY<Math.Max(maxY,start.FloorC+95)+guard)return No("IncompleteStaticVerticalEnvelope");
+            var relevant=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,minY,maxY)).ToArray();
             var forbidden=relevant.Select(o=>Hull(o.Footprint.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
-            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MaxY=maxY,Relevant=relevant,Forbidden=forbidden},null);
+            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Relevant=relevant,Forbidden=forbidden},null);
         }
         private static bool GeometryClear(Context c,Surface surface,Position position,out Point[] shape)
         {
@@ -310,7 +312,7 @@ namespace hds
             shape=c.Offsets.Select(p=>new Point(position.X+p.X,position.Z+p.Z)).ToArray();
             var fixedShape=shape;if(!Fits(fixedShape,surface,r.SiteBounds)||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
-            return Fits(castShape,surface,r.SiteBounds)&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.Start.FloorC,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
+            return Fits(castShape,surface,r.SiteBounds)&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
         }
         private static bool RouteValid(Context c,Position centre,Point[] shape,IReadOnlyList<Position> route)
         {

@@ -40,15 +40,16 @@ namespace hds
     }
     internal sealed class OpenFloorModelBounds
     {
-        public ushort Goid {get;} public OpenFloorPoint Min {get;} public OpenFloorPoint Max {get;} public string Evidence {get;}
-        public OpenFloorModelBounds(ushort goid,OpenFloorPoint min,OpenFloorPoint max,string evidence)
+        public ushort Goid {get;} public double SupportMinY {get;} public OpenFloorPoint Min {get;} public OpenFloorPoint Max {get;} public string Evidence {get;}
+        public OpenFloorModelBounds(ushort goid,OpenFloorPoint min,OpenFloorPoint max,string evidence):this(goid,min,max,min.Y,evidence) {}
+        public OpenFloorModelBounds(ushort goid,OpenFloorPoint min,OpenFloorPoint max,double supportMinY,string evidence)
         {
-            if(goid==0||!min.Finite||!max.Finite||min.X>=max.X||min.Y>=max.Y||min.Z>=max.Z||string.IsNullOrWhiteSpace(evidence))throw new ArgumentException("UnprovenModelBounds");
-            Goid=goid;Min=min;Max=max;Evidence=evidence;
+            if(goid==0||!min.Finite||!max.Finite||min.X>=max.X||min.Y>=max.Y||min.Z>=max.Z||!double.IsFinite(supportMinY)||supportMinY<min.Y||supportMinY>max.Y||string.IsNullOrWhiteSpace(evidence))throw new ArgumentException("UnprovenModelBounds");
+            Goid=goid;SupportMinY=supportMinY;Min=min;Max=max;Evidence=evidence;
         }
         public double CentreY(double floor)
         {
-            double centre=floor-Min.Y;if(!double.IsFinite(floor)||!double.IsFinite(centre))throw new ArgumentException("NonfiniteFloor");return centre;
+            double centre=floor-SupportMinY;if(!double.IsFinite(floor)||!double.IsFinite(centre))throw new ArgumentException("NonfiniteFloor");return centre;
         }
         public IReadOnlyList<OpenFloorPoint> Corners(OpenFloorPoint centre,OpenFloorOrientation q)
         {

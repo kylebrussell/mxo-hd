@@ -66,6 +66,14 @@ public class MissionOpenFloorRangeTests
         Assert.Throws<ArgumentException>(()=>new OpenFloorOrientation("00000000000000000000000000000000"));
     }
     [Fact]
+    public void OutwardEnvelopeRoundingDoesNotChangeTheSeparatelyProvenSupportHeight()
+    {
+        var p=new OpenFloorModelBounds(3,new(-43,-25.01,-42),new(43,25.14,42),-25.003776550292969,"literal conservative envelope plus source support");
+        Assert.Equal(2025.003776550293,p.CentreY(2000));Assert.Equal(2000,p.CentreY(2000)+p.SupportMinY);
+        Assert.True(p.CentreY(2000)+p.Min.Y<2000); // conservative envelope is retained, not moved upward to fake contact
+        Assert.Throws<ArgumentException>(()=>new OpenFloorModelBounds(3,new(-43,-25,-42),new(43,25,42),-26,"outside envelope"));
+    }
+    [Fact]
     public void RestingHeightComesFromActualMeshMinimumRatherThanInteractionHalfExtents()
     {
         var measured=new OpenFloorModelBounds(548,new(-10,-17,-20),new(10,90,20),"literal measured asymmetric model");
