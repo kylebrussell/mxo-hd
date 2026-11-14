@@ -225,6 +225,8 @@ def server(i):
         parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
     if r.get('registered_grants'):
         parts.append('captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
+    if r.get('conditional_thrown_damage'):
+        parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
     if r.get('conditional_powerless'):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):

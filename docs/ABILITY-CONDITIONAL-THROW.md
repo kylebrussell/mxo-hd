@@ -1,0 +1,38 @@
+# Conditional thrown damage: Deadly Throw and Blinding Throw
+
+Deadly Throw279 and Blinding Throw282 now execute their stored `DealDamageIfOffBalance` initializer once when a normal cast lands on a living Off Balance target. Daze alone does not qualify, despite279's misleading component name `DamageOnDaze`. Existing ordinary damage, DOTs, reuse, cost, styles and control effects retain their current policy. This closes one missing consumer; it does not establish complete retail damage parity.
+
+## Primary evidence and formula
+
+The original `tempmods.pyc` SHA256 is `968a7ab4525d5b62ed37f3703539da2b2ad66b8a7f1b1ba0cf60041fe0c5f060`. Its `DealDamageIfOffBalance`, original line2853, tests `subject.AbilityInv.ConditionStateFlags & constants.combat.ST_OFFBALANCE`, then makes exactly one call:
+
+```python
+subject.AbilityInv.dealAbilityDamage(tempMod.Source, tempMod.Value,
+    tempMod.ParentAbility, Throw, tempMod.IsAbility)
+```
+
+The original names/constant/bytecode objects confirm the decompilation at `research/client-scripts/tempmods.py:2374`. Reproduce read-only with `python research/abilities/inspect_conditional_throw.py <Monolith.ltp> <client-data-tools>`. No client process or original Python function is executed.
+
+Both real catalog components have WhenEnabled2 and DurationType1, with this initialization callback.279 uses native ValueFunction3: `22 + trunc(characterLevel * binary32(0.466667))`, giving45 at50.282 uses fixed24. The existing recovered native value evaluator62517ff0/626a92d8 supplies that arithmetic. Only these two stored producers are opted in; unknown scripts/components are not guessed.
+
+The script proves a separate thrown damage call, not the unavailable server-side `dealAbilityDamage` implementation or complete modifier initialization order. This server completes the existing base hit and ordinary effects first, then evaluates current Off Balance and applies one separate conditional hit if source/target lifecycle and health remain valid. It never combines components before rounding. This ordering is declared integration policy, not recovered native ordering. Neither cast's own stored effects adds Off Balance:279 adds Daze/Staggered chances;282 adds Blind/DOT. There is no invented same-cast ordering rule for a new Off Balance effect.
+
+Existing caster influence and normalized typed resistance remain **OURS/current policy** where already documented. A learned50 Spy Style1112 supplies29 thrown influence: conditional45 becomes58;24 becomes30 before target resistance. With current75 thrown resistance, those become47 and24. The279 base50..80/CSV path and282's existing base/DOT behavior are not newly validated retail magnitudes. Individual damage outputs and authoritative health transitions identify this extra component independently of base rolls and regeneration.
+
+## Actual callers and lifecycle
+
+Both templates store CastingTime2s. `AbilityHandler` deliberately bypasses its queued-round executor for positive casting times; these are delayed normal casts even while interlocked. NPC and PvP landing funnels execute the initializer only after the ordinary cast completes. This change does not install a queued hit contest or claim queued-special parity. No random controls were added: base draws, existing20% control procs, interlock contests and DOT RNG remain ordinary.
+
+There is no listener, timer or expiry callback for the extra hit. State expiry, DOT ticks, duplicate wire requests and denied casts cannot schedule it independently. Current source world/life/district and target world/life, NPC object/view/spawn identity, living health and on-world ownership are checked across synchronous base-health callbacks. A fatal base hit cannot award another death/reward from the bonus. The condition accepts the existing timed OffBalance200 state or the current Grab tactic flag; Daze199 and Staggered201 alone fail.
+
+## Disposable fixture and Claude-only native check
+
+Discovered mode and headless filter: `conditional-thrown-damage`. CSR110 is level50, org1, HP5000/IS2000, with normal2/17/1112/279/282. QAEnemy is org2/flagged and has5000HP. The only new control is `MXO_CONDITIONAL_THROW_QA=1`: `?combatdepth offbalance [1..60]` prepares the existing NPCOffBalance885/200 on the selected current visible QA target, without granting885 as a player ability. It requires exact dev1, actual strictly validated disposable database, matching current selection/spawn, a live in-world actor/target, and excludes2/TheNeo. Existing `?combatdepth daze` provides the negative control. No GM, generic callback draw, hit or base-damage override is used.
+
+1. Claude verifies the exact head, both read-only build-info/fixture plans, reserves the native client normally and runs this mode on CSR110 only. Activate Spy Style normally; keep its29 influence and target resistance unchanged across comparisons. Use Actions and ordinary target selection. Record health and the separate damage lines; regeneration makes separated long-interval HP readings unsuitable for subtracting whole casts.
+2. On QAEnemy with no Off Balance, use279 normally: existing base hit, no additional conditional hit. Daze-only preparation then282 also produces no conditional hit; its ordinary Blind/DOT remains. Do not infer a fixed whole-cast279 amount.
+3. Select QAEnemy, prepare `?combatdepth offbalance 30`, then normal279 after its true reuse: one extra58 damage with this loadout. Repeat preparation and normal282 after its reuse: one extra30 damage. Capture ordinary damage UI, raw RPCs and `[CONDITIONAL-THROW]` actual health before/after. Neither the visible name Daze nor a historical expired state may qualify.
+4. Prepare one-second Off Balance, observe its exact record removal, then cast: no extra hit. Start ordinary NPC combat and activate279 normally; its2s cast still lands through the existing timed-cast path and adds the conditional hit when Off Balance is present. This is not a queued45 special-result claim. Observe expiry and ordinary action recovery; avoid treating NPC death or a missed/stopped action as a successful bonus.
+5. Shut down through the normal NativeQa cleanup. Reset only CSR110 to Mara/full health/pvp0/mission986; never select TheNeo. Preserve all aids and failures.
+
+The headless fixture checks normal player casts with none/Daze/Off Balance/expired state, exact58/30 conditional HP transitions, duplicated request framing, normal NPC free and interlocked casts, departure during an unfinished cast, no DOT/expiry reinitialization, and all-session parser health. It saves full raw proof on pass or failure. Units cover real metadata/value functions, condition/expiry/death, influence/resistance, lifecycle fences and strict preparation bounds. Fresh and native validation are pending; no server has been started for this package without a slot grant. Current generated audit stays PARTIAL and artifacts remain uncommitted.
