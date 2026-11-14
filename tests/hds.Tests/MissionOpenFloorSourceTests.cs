@@ -62,3 +62,15 @@ public class MissionOpenFloorProfileTests
         Assert.True(hds.MissionOpenFloorProfiles.TryUsable(552,out var safe));Assert.Equal(100,safe.LowerBound);
     }
 }
+
+public class MissionOpenFloorComputerActionTests
+{
+    [Fact] public void ActualDecorativeComputerHasGeometricProfilesWithoutInventingObjectives()
+    {
+        string root=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(root,"hds","Hardline Dreams MxO server.csproj")))root=Path.GetDirectoryName(root)!;
+        var xml=new System.Xml.XmlDocument();xml.Load(Path.Combine(root,"data/missions/machines_05_compromised.xml"));var mission=hds.MissionXml.Parse(xml.DocumentElement!);
+        var phase=mission.phases[1];var computer=Assert.Single(phase.objects.Where(o=>o.kind=="Computer"));
+        Assert.DoesNotContain(phase.missionObjectives,o=>o.objectId==computer.id);int before=phase.missionObjectives.Count;
+        Assert.True(hds.MissionOpenFloorRequests.TryComputerActions(phase,computer.id,out var actions));Assert.Equal(new byte[]{4,5,8},actions);Assert.Equal(before,phase.missionObjectives.Count);
+    }
+}

@@ -56,9 +56,15 @@ namespace hds
         private readonly MissionOpenFloorChoice[] choices;
         public MissionOpenFloorChoice[] Choices => (MissionOpenFloorChoice[])choices.Clone();
         public string Refusal { get; }
+        private FailureMemo failureMemo=new FailureMemo();
+        private sealed class FailureMemo { internal string Key,Refusal; }
+        internal bool TryFailedGeometry(string key,out string refusal)
+        {refusal=failureMemo.Key==key?failureMemo.Refusal:null;return refusal!=null;}
+        internal void RememberFailedGeometry(string key,string refusal)
+        {if(!string.IsNullOrEmpty(key)&&!string.IsNullOrEmpty(refusal)){failureMemo.Key=key;failureMemo.Refusal=refusal;}}
         [JsonConstructor] public MissionOpenFloorPendingAdmission(int policy,int mission,string identity,int phase,long started,MissionOpenFloorSite site,MissionOpenFloorChoice[] choices,string refusal)
         {Policy=policy;Mission=mission;Identity=identity;Phase=phase;Started=started;Site=site;this.choices=(MissionOpenFloorChoice[])(choices??Array.Empty<MissionOpenFloorChoice>()).Clone();Refusal=refusal;}
-        internal MissionOpenFloorPendingAdmission WithRefusal(string reason) => new MissionOpenFloorPendingAdmission(Policy,Mission,Identity,Phase,Started,Site,choices,reason);
+        internal MissionOpenFloorPendingAdmission WithRefusal(string reason) => new MissionOpenFloorPendingAdmission(Policy,Mission,Identity,Phase,Started,Site,choices,reason){failureMemo=failureMemo};
     }
 
 }

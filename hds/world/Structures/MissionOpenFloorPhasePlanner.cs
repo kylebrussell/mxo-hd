@@ -20,7 +20,7 @@ namespace hds
             {Results=new ReadOnlyDictionary<ushort,G.Result>(new Dictionary<ushort,G.Result>(results));Order=Array.AsReadOnly(order.ToArray());Attempts=attempts;Milliseconds=milliseconds;}
         }
         // Bounded deterministic search family: every authored cyclic rotation, then reverse rotations.
-        // At most2n orders, first feasible. No source/site reroll, timeout, margin relaxation or post-admission repacking.
+        // At most2n orders per root/all-candidate wave, first feasible. No source/site reroll, timeout, margin relaxation or post-admission repacking.
         internal static IEnumerable<int[]> Orders(int count)
         {
             if(count<1)yield break;var seen=new HashSet<string>(StringComparer.Ordinal);
@@ -35,27 +35,37 @@ namespace hds
             plan=null;refusal="NoWholePhasePlacement";
             if(inputs==null||inputs.Count==0||inputs.Any(i=>i?.Request==null)||inputs.Select(i=>i.ObjectId).Distinct().Count()!=inputs.Count)return false;
             var watch=Stopwatch.StartNew();int attempts=0;
-            foreach(var order in Orders(inputs.Count))
+            var candidates=new Dictionary<ushort,IReadOnlyList<G.BodyCandidate>>();
+            foreach(var input in inputs)
             {
-                attempts++;var bodies=new Dictionary<ushort,G.Result>();var prefix=new List<G.Reservation>();bool complete=true;
-                foreach(int index in order)
-                {
-                    var input=inputs[index];var result=G.Plan(G.WithReservations(input.Request,prefix));
-                    if(!result.HasPlan){refusal=result.Refusal;complete=false;break;}
-                    bodies.Add(input.ObjectId,result);prefix.Add(G.Reservation.From(result,input.ObjectId,false));
-                }
-                if(!complete)continue;
-                var final=new Dictionary<ushort,G.Result>();
-                foreach(var input in inputs)
-                {
-                    var body=bodies[input.ObjectId];var other=inputs.Where(i=>i.ObjectId!=input.ObjectId).Select(i=>G.Reservation.From(bodies[i.ObjectId],i.ObjectId,false)).ToArray();
-                    if(!G.RerouteFixedBody(input.Request,body.Surface,body.Centre,other,out var result,out refusal)){complete=false;break;}
-                    final.Add(input.ObjectId,result);
-                }
-                if(complete&&G.ValidateSet(inputs.Select(i=>final[i.ObjectId]).ToArray(),out refusal))
-                {plan=new Plan(final,order.Select(i=>inputs[i].ObjectId),attempts,watch.ElapsedMilliseconds);return true;}
+                var values=G.BodyCandidates(input.Request,out refusal);if(values.Count==0)return false;candidates.Add(input.ObjectId,values);
             }
-            refusal="NoWholePhasePlacement:"+refusal+";orders="+attempts+";ms="+watch.ElapsedMilliseconds;return false;
+            string lastRefusal="NoDisjointBodySet";G.Result[] accepted=null;
+            foreach(bool rootWave in new[]{true,false})foreach(var order in Orders(inputs.Count))
+            {
+                attempts++;var bodies=new G.BodyCandidate[inputs.Count];
+                bool Search(int depth)
+                {
+                    if(depth==order.Length)
+                    {
+                        if(G.RouteBodySet(bodies,out var result,out var reason)){accepted=result;return true;}
+                        lastRefusal=reason;return false;
+                    }
+                    int index=order[depth];
+                    foreach(var body in candidates[inputs[index].ObjectId])
+                    {
+                        if(rootWave&&!body.RootReachableCentre)continue;
+                        if(order.Take(depth).Any(i=>!G.BodiesClear(body,bodies[i])))continue;
+                        bodies[index]=body;if(Search(depth+1))return true;
+                    }
+                    bodies[index]=null;return false;
+                }
+                if(Search(0))
+                {
+                    plan=new Plan(inputs.Select((input,i)=>(input.ObjectId,Result:accepted[i])).ToDictionary(x=>x.ObjectId,x=>x.Result),order.Select(i=>inputs[i].ObjectId),attempts,watch.ElapsedMilliseconds);return true;
+                }
+            }
+            refusal="NoWholePhasePlacement:"+lastRefusal+";orders="+attempts;return false;
         }
     }
 }

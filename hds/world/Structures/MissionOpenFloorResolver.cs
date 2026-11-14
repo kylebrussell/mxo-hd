@@ -104,6 +104,14 @@ namespace hds
                 MinY=Math.Min(result.Centre.Y,(float)result.Centre.Y)+result.Input.Model.Min.Y;MaxY=Math.Max(result.Centre.Y,(float)result.Centre.Y)+result.Input.Model.Max.Y;
                 Floor=result.Input.Entry.Standing.Y-95;RootSurface=result.Input.Entry.Surface;Root=result.Input.Entry.Standing;Base=Freeze(result.Base);ProtectRoute=protectRoute;Route=Freeze(protectRoute?result.Route:Array.Empty<Position>());
             }
+            private Reservation(BodyCandidate body,ushort objectId)
+            {
+                World=body.Input.World;ObjectId=objectId;SourceKey=body.Input.RawSource.SourceKey;SceneFingerprint=body.Input.Scene.Fingerprint;PriorInputFingerprint=body.Input.Fingerprint;
+                MinY=Math.Min(body.Centre.Y,(float)body.Centre.Y)+body.Input.Model.Min.Y;MaxY=Math.Max(body.Centre.Y,(float)body.Centre.Y)+body.Input.Model.Max.Y;
+                Floor=body.Input.Entry.Standing.Y-95;RootSurface=body.Input.Entry.Surface;Root=body.Input.Entry.Standing;Base=Freeze(body.Base);Route=Freeze(Array.Empty<Position>());ProtectRoute=false;
+            }
+            internal static Reservation FromBody(BodyCandidate body,ushort objectId)
+            {if(body==null)throw new ArgumentException("MissingBodyCandidate");return new Reservation(body,objectId);}
             internal static Reservation From(Result result,ushort objectId,bool protectRoute=true)
             {if(result?.HasPlan!=true)throw new ArgumentException("MissingPrefixPlan");return new Reservation(result,objectId,protectRoute);}
         }
@@ -132,8 +140,14 @@ namespace hds
             internal Result(Request input,Surface surface,Point centre,Point[] shape,Position[] route,Id[] ids,double guard,MissionOpenFloorUsableRange.Witness range)
             {Input=input;InputFingerprint=input.Fingerprint;Surface=surface.Identity;Centre=new Position(centre.X,input.Model.CentreY(surface.FloorC),centre.Z);Base=Freeze(shape);Route=Freeze(route);RoutePolygons=Freeze(ids);Standing=route.Last();NumericalGuard=guard;Range=range;NativeCastRange=MissionOpenFloorUsableRange.Test(input.Usable,Native(Cast(Standing)),Native(Cast(Centre)),new OpenFloorOrientation(input.Anchor.QuaternionHex));}
         }
+        internal sealed class BodyCandidate
+        {
+            internal Request Input {get;} internal Id Surface {get;} internal Position Centre {get;} internal IReadOnlyList<Point> Base {get;} internal double Distance {get;} internal bool RootReachableCentre {get;}
+            internal BodyCandidate(Request input,Surface surface,Point centre,Point[] shape,double distance,bool rootReachable=false)
+            {Input=input;Surface=surface.Identity;Centre=new Position(centre.X,input.Model.CentreY(surface.FloorC),centre.Z);Base=Freeze(shape);Distance=distance;RootReachableCentre=rootReachable;}
+        }
         private sealed class Candidate
-        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal double Distance;}
+        {internal Surface Surface;internal Point Centre;internal Point[] Shape;internal double Distance;internal bool RootReachable;}
         private sealed class Cell
         {internal Surface Surface;internal Point[] Polygon;internal int Index;}
         private static string Hash(object value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value))));
@@ -291,17 +305,29 @@ namespace hds
         {
             return Portal(new Surface(a.Surface.Identity,a.Polygon,0,0,a.Surface.FloorC),new Surface(b.Surface.Identity,b.Polygon,0,0,b.Surface.FloorC));
         }
-        private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range)
+        private sealed class StandingGraph
         {
-            route=null;path=null;range=default;double floor=r.Entry.Standing.Y-95;
+            internal Point[][] Obstacles; internal List<Cell> Cells;
+            internal Dictionary<int,int?> Previous; internal Dictionary<int,Point> Portals;
+        }
+        private static StandingGraph BuildStandingGraph(Request r,Surface[] component,IEnumerable<Point[]> bodies,double guard)
+        {
+            double floor=r.Entry.Standing.Y-95;
             Bounds envelope=ComponentBounds(component);
-            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,envelope,guard)).Select(o=>o.Footprint.ToArray()).Concat(r.Reservations.Where(o=>o.MinY<=floor+95+Epsilon&&o.MaxY>=floor-Epsilon).Select(o=>o.Base.ToArray())).Append(shape).ToArray();
-            var cells=StandingCells(component,obstacles,guard);var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(r.Entry.Surface)&&Inside(c.Polygon,r.Entry.Standing.Xz));if(start==null)return false;
+            var obstacles=r.Scene.Obstacles.Where(o=>RouteRelevant(o,floor)&&ComponentRelevant(o,envelope,guard)).Select(o=>o.Footprint.ToArray()).Concat(bodies).ToArray();
+            var cells=StandingCells(component,obstacles,guard);var start=cells.FirstOrDefault(c=>c.Surface.Identity.Equals(r.Entry.Surface)&&Inside(c.Polygon,r.Entry.Standing.Xz));if(start==null)return null;
             var previous=new Dictionary<int,int?>{{start.Index,null}};var portals=new Dictionary<int,Point>();var queue=new Queue<Cell>();queue.Enqueue(start);
             while(queue.Count>0)
             {
                 var current=queue.Dequeue();foreach(var other in cells){if(previous.ContainsKey(other.Index))continue;var p=CellPortal(current,other);if(p.HasValue){previous[other.Index]=current.Index;portals[other.Index]=p.Value;queue.Enqueue(other);}}
             }
+            return new StandingGraph{Obstacles=obstacles,Cells=cells,Previous=previous,Portals=portals};
+        }
+        private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range,StandingGraph shared=null)
+        {
+            route=null;path=null;range=default;double floor=r.Entry.Standing.Y-95;
+            var graph=shared??BuildStandingGraph(r,component,r.Reservations.Where(o=>o.MinY<=floor+95+Epsilon&&o.MaxY>=floor-Epsilon).Select(o=>o.Base.ToArray()).Append(shape),guard);
+            if(graph==null)return false;var obstacles=graph.Obstacles;var cells=graph.Cells;var previous=graph.Previous;var portals=graph.Portals;
             var q=new OpenFloorOrientation(r.Anchor.QuaternionHex);var possibilities=new List<(Cell Cell,Point Point,MissionOpenFloorUsableRange.Witness Range)>();
             foreach(var cell in cells.Where(c=>previous.ContainsKey(c.Index)))
             {
@@ -394,10 +420,30 @@ namespace hds
             if(obstacles.Any(o=>!Clear(points,o)||!Clear(cast,o)))return false;
             var cells=StandingCells(c.Component,obstacles,c.Guard);
             for(int i=0;i<points.Length-1;i++)
-                if(!cells.Any(cell=>Inside(cell.Polygon,points[i])&&Inside(cell.Polygon,points[i+1])&&Inside(cell.Polygon,cast[i])&&Inside(cell.Polygon,cast[i+1])))return false;
+                if(!SegmentCovered(points[i],points[i+1],cells.Select(cell=>cell.Polygon))||!SegmentCovered(cast[i],cast[i+1],cells.Select(cell=>cell.Polygon)))return false;
             var q=new OpenFloorOrientation(r.Anchor.QuaternionHex);
             return MissionOpenFloorUsableRange.Test(r.Usable,Native(route[^1]),Native(centre),q).Within&&
                 MissionOpenFloorUsableRange.Test(r.Usable,Native(Cast(route[^1])),Native(Cast(centre)),q).Within;
+        }
+        // CSG subdivisions are not physical boundaries. Cover the entire segment with convex-cell intervals;
+        // gaps remain gaps and closed static/body contact is checked independently before this test.
+        internal static bool SegmentCovered(Point a,Point b,IEnumerable<Point[]> polygons)
+        {
+            var intervals=new List<(double Lo,double Hi)>();
+            foreach(var polygon in polygons)
+            {
+                double lo=0,hi=1;bool valid=true;
+                foreach(var edge in Edges(polygon))
+                {
+                    var d=Sub(edge.B,edge.A);double start=Cross(d,Sub(a,edge.A))+Epsilon,change=Cross(d,Sub(b,a));
+                    if(change==0){if(start<0){valid=false;break;}}
+                    else if(change>0)lo=Math.Max(lo,-start/change);else hi=Math.Min(hi,-start/change);
+                    if(lo>hi){valid=false;break;}
+                }
+                if(valid&&lo<=hi)intervals.Add((lo,hi));
+            }
+            double covered=0;foreach(var interval in intervals.OrderBy(x=>x.Lo).ThenBy(x=>x.Hi))
+            {if(interval.Lo>covered)return false;covered=Math.Max(covered,interval.Hi);if(covered>=1)return true;}return false;
         }
         // Replays fixed geometry only; never invokes nearest-centre selection or chooses a replacement.
         internal static bool ValidateFixed(Request r,string expectedInputFingerprint,Id surface,Position centre,IReadOnlyList<Position> route,out string refusal)
@@ -417,6 +463,29 @@ namespace hds
             if(!Standing(working,context.Component,shape,centre,context.Guard,out var route,out var ids,out var range)||!RouteValid(context,centre,shape,route))
             {refusal="NoWholePhaseStandingRoute";return false;}
             result=new Result(canonical,carrier,centre.Xz,shape,route,ids,context.Guard,range);return true;
+        }
+        internal static bool BodiesClear(BodyCandidate a,BodyCandidate b)
+        {
+            double minA=a.Centre.Y+a.Input.Model.Min.Y,maxA=a.Centre.Y+a.Input.Model.Max.Y,minB=b.Centre.Y+b.Input.Model.Min.Y,maxB=b.Centre.Y+b.Input.Model.Max.Y;
+            return minA>maxB+Epsilon||minB>maxA+Epsilon||!Overlap(a.Base.ToArray(),b.Base.ToArray());
+        }
+        internal static bool RouteBodySet(IReadOnlyList<BodyCandidate> bodies,out Result[] results,out string refusal)
+        {
+            results=null;refusal="IncompletePlacementSet";if(bodies==null||bodies.Count==0)return false;
+            var first=Prepare(bodies[0].Input);if(first.Context==null){refusal=first.Refusal;return false;}
+            var graph=BuildStandingGraph(bodies[0].Input,first.Context.Component,bodies.Select(b=>b.Base.ToArray()),first.Context.Guard);
+            if(graph==null){refusal="BlockedWholePhaseRoot";return false;}
+            var output=new List<Result>();
+            foreach(var body in bodies)
+            {
+                var r=body.Input;var reservations=bodies.Where(b=>!ReferenceEquals(b,body)).Select((b,i)=>Reservation.FromBody(b,(ushort)(i+1)));
+                var prepared=Prepare(WithReservations(r,reservations));if(prepared.Context==null){refusal=prepared.Refusal;return false;}var c=prepared.Context;
+                var carrier=c.Component.FirstOrDefault(s=>s.Identity.Equals(body.Surface));
+                if(!GeometryClear(c,carrier,body.Centre,out var shape)){refusal="InvalidWholePhaseBody";return false;}
+                if(!Standing(c.Input,c.Component,shape,body.Centre,c.Guard,out var route,out var ids,out var range,graph)||!RouteValid(c,body.Centre,shape,route)){refusal="NoWholePhaseStandingRoute:"+(output.Count+1);return false;}
+                output.Add(new Result(r,carrier,body.Centre.Xz,shape,route,ids,c.Guard,range));
+            }
+            results=output.ToArray();return ValidateSet(results,out refusal);
         }
         internal static bool TryReplay(Request r,string fingerprint,Id surface,Position centre,IReadOnlyList<Position> route,IReadOnlyList<Id> ids,out Result result,out string refusal)
         {
@@ -456,25 +525,51 @@ namespace hds
             }
             return true;
         }
-        internal static Result Plan(Request r)
+        private static List<Candidate> GeometricCandidates(Context context,bool expanded)
         {
-            Result No(string reason)=>new Result(reason,r);var prepared=Prepare(r);if(prepared.Context==null)return No(prepared.Refusal);
-            var context=prepared.Context;var offsets=context.Offsets;var start=context.Start;var component=context.Component;double guard=context.Guard,centreY=context.CentreY,maxY=context.MaxY;
-            var relevant=context.Relevant;var forbidden=context.Forbidden;
+            var r=context.Input;var offsets=context.Offsets;var component=context.Component;double guard=context.Guard,centreY=context.CentreY;var forbidden=context.Forbidden;
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
             // Minkowski expansion excludes every centre whose full footprint would meet that complement.
             Point[] allowed=Erode(r.SiteBounds.Polygon,offsets);
-            if(allowed.Length==0)return No("NoClearFootprintAndInRangeReachableStandingPoint");
+            if(allowed.Length==0)return new List<Candidate>();
             var outside=Difference(new[]{r.SiteBounds.Polygon},component.Select(s=>s.Vertices.ToArray()),0);
             var outsideForbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
             var candidates=new List<Candidate>();
             foreach(var cell in Difference(new[]{allowed},outsideForbidden.Concat(forbidden),guard))
             {
-                Point? represented=RepresentableNear(cell,r.Anchor.Position.Xz);if(!represented.HasValue)continue;Point centre=represented.Value;
-                var surface=component.Where(s=>Inside(s.Vertices,centre)).OrderBy(s=>s.Identity).FirstOrDefault();if(surface==null)continue;
-                var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
-                candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Distance=Distance(centre,r.Anchor.Position.Xz)});
-            }            // The same total candidate order as the original minimum selection; defer expensive route work.
+                IEnumerable<Point> seeds=expanded?new[]{Nearest(cell,r.Anchor.Position.Xz),Nearest(cell,r.Entry.Standing.Xz),new Point(cell.Average(p=>p.X),cell.Average(p=>p.Z))}
+                    .Concat(cell).Concat(Edges(cell).Select(e=>new Point((e.A.X+e.B.X)/2,(e.A.Z+e.B.Z)/2))):new[]{r.Anchor.Position.Xz};
+                foreach(var seed in seeds)
+                {
+                    Point? represented=RepresentableNear(cell,seed);if(!represented.HasValue)continue;Point centre=represented.Value;
+                    var surface=component.Where(s=>Inside(s.Vertices,centre)).OrderBy(s=>s.Identity).FirstOrDefault();if(surface==null)continue;
+                    var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
+                    if(expanded&&(!Clear(new[]{r.Entry.Standing.Xz},shape)||!Clear(new[]{Rounded(r.Entry.Standing.Xz)},shape)))continue;
+                    candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Distance=Distance(centre,r.Anchor.Position.Xz)});
+                }
+            }            return candidates.DistinctBy(c=>(c.Centre.X,c.Centre.Z)).OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
+        }
+        internal static IReadOnlyList<BodyCandidate> BodyCandidates(Request r,out string refusal)
+        {
+            var p=Prepare(r);refusal=p.Refusal;if(p.Context==null)return Array.AsReadOnly(Array.Empty<BodyCandidate>());
+            var candidates=GeometricCandidates(p.Context,true);
+            // Search root-reachable centres first; all remaining candidates remain eligible.
+            {
+                var graph=BuildStandingGraph(r,p.Context.Component,Array.Empty<Point[]>(),p.Context.Guard);
+                if(graph==null)return Freeze(Array.Empty<BodyCandidate>());
+                var reachablePolygons=graph.Cells.Where(c=>graph.Previous.ContainsKey(c.Index)).Select(c=>c.Polygon).ToArray();
+                foreach(var c in candidates)c.RootReachable=reachablePolygons.Any(p=>Inside(p,c.Centre));
+                candidates=candidates.OrderBy(c=>c.RootReachable?0:1).ThenBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z).ToList();
+            }
+            return Freeze(candidates.Select(c=>new BodyCandidate(r,c.Surface,c.Centre,c.Shape,c.Distance,c.RootReachable)));
+        }
+        internal static Result Plan(Request r)
+        {
+            Result No(string reason)=>new Result(reason,r);var prepared=Prepare(r);if(prepared.Context==null)return No(prepared.Refusal);
+            var context=prepared.Context;var offsets=context.Offsets;var start=context.Start;var component=context.Component;double guard=context.Guard,centreY=context.CentreY,maxY=context.MaxY;
+            var relevant=context.Relevant;var forbidden=context.Forbidden;
+            var candidates=GeometricCandidates(context,false);
+            // The same total candidate order as the original minimum selection; defer expensive route work.
             foreach(var candidate in candidates.OrderBy(c=>c.Distance).ThenBy(c=>c.Surface.Identity).ThenBy(c=>c.Centre.X).ThenBy(c=>c.Centre.Z))
             {
                 var position=new Position(candidate.Centre.X,centreY,candidate.Centre.Z);

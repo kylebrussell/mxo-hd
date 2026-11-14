@@ -49,6 +49,7 @@ namespace hds
                 world=expectedWorld;life=expectedLife;transport=expectedTransport;character=expectedCharacter;
             }
             internal bool Adopted => Poses.Count>0;
+            internal bool BindOutput(WorldClient c) => !Adopted||MissionOutput.BindCurrent(c.messageQueue,c.TransportFence,transport,world);
             internal bool WorldCurrent(WorldClient c) => ReferenceEquals(c.playerData,owner)&&owner.getCharID()==character&&c.Alive&&owner.getOnWorld()&&
                 !owner.worldChangePending&&!owner.waitForRPCShutDown&&owner.worldGeneration==world&&owner.lifeGeneration==life&&
                 owner.getDistrictId()==Progress.mission.district&&c.TransportFence.Capture()==transport;
@@ -99,13 +100,13 @@ namespace hds
             if(site==null) {refusal="NoSite";return false;}
             bool hasTargets=choices.Any(c=>Target(c.Goid,c.ReadSpot()));
             if(hasTargets&&(!ValidSite(site)||selected.Site.Resolve(siteCatalog??MissionSites.For(mission.district))==null||!ChoicesValid(phase,site,choices))) {refusal="MissingAmbiguousOrRepeatedObjectSource";return false;}
-            bool geometry=TryGeometry(mission,phaseIndex,site,choices,out var poses,out refusal);
+            bool geometry=TryGeometry(mission,phaseIndex,site,choices,out var poses,out refusal,selected);
             if(!Current()||MissionOpenFloorSite.CatalogFingerprint(site)!=selected.Site.Fingerprint) {selected=null;refusal="StaleWorldOrSource";return false;}
             if(!geometry)return false;
             plan=new Plan(client,progress,phaseIndex,site,selected,poses,before,beforePhase,data,world,life,transport,character);return true;
         }
         internal static bool TryGeometry(Mission mission,int phaseIndex,MissionSite site,IReadOnlyList<MissionOpenFloorChoice> choices,
-            out Dictionary<ushort,MissionOpenFloorPlacement> poses,out string refusal)
+            out Dictionary<ushort,MissionOpenFloorPlacement> poses,out string refusal,MissionOpenFloorPendingAdmission pending=null)
         {
             poses=new Dictionary<ushort,MissionOpenFloorPlacement>();refusal=null;
             if(mission==null||phaseIndex<0||phaseIndex>=mission.phases.Count||choices==null||choices.Any(c=>c==null)){refusal="InvalidPhaseChoices";return false;}
@@ -118,7 +119,9 @@ namespace hds
                 if(!MissionOpenFloorRequests.TryCreate(raw,choice.Goid,site,mission.district,out var request,out refusal,mission.phases[phaseIndex],choice.ObjectId))return false;
                 inputs.Add(new MissionOpenFloorPhasePlanner.Input(choice.ObjectId,request));
             }
-            if(!MissionOpenFloorPhasePlanner.TryPlan(inputs,out var planned,out refusal))return false;
+            string geometryKey=MissionOpenFloorSite.Hash(string.Join(";",inputs.OrderBy(i=>i.ObjectId).Select(i=>i.ObjectId+":"+i.Request.Fingerprint)));
+            if(pending?.TryFailedGeometry(geometryKey,out refusal)==true)return false;
+            if(!MissionOpenFloorPhasePlanner.TryPlan(inputs,out var planned,out refusal)){pending?.RememberFailedGeometry(geometryKey,refusal);return false;}
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
                 poses.Add(choice.ObjectId,MissionOpenFloorPlacement.From(mission.id,phaseIndex,choice.ObjectId,choice.ReadSpot(),planned.Results[choice.ObjectId]));
             Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" geometryMs="+planned.Milliseconds);

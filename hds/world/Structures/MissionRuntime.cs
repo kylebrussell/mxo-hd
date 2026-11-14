@@ -43,7 +43,7 @@ namespace hds
         internal static bool StartOpenFloor(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan,ushort transaction) =>
             MissionPersistence.Mutate(client,()=>
             {
-                if(!plan.BeforeCurrent(client))return false;
+                if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;
                 StartCore(client,progress.mission,transaction,progress,plan);return true;
             },true);
 
@@ -1449,6 +1449,7 @@ namespace hds
                         if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
                     }
                 }
+                if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
                 progress.pendingOpenFloor=null;

@@ -234,4 +234,61 @@ public class MissionOpenFloorAdmissionRegressionTests
         var (p,_)=Adopted();var c=Client();c.playerData.missionProgress=p;string before=JsonSerializer.Serialize(p.objects[1].spot,Fields);
         Assert.False(MissionStaging.MoveObjectToPlayer(c,1));Assert.Equal(before,JsonSerializer.Serialize(p.objects[1].spot,Fields));
     }
+
+    [Fact]
+    public void ActualThreeObjectPhaseCapturesAndColdReplaysCanonicalWholeSetWithoutReselection()
+    {
+        LoadNav();var xml=new XmlDocument();xml.Load(Path.Combine(Repo,"data","missions","machines_1_2_2_poster_hunt.xml"));var m=MissionXml.Parse(xml.DocumentElement!);
+        var (site,_)=QualifiedScene();var choices=MissionStaging.SelectObjects(m.phases[0],site,new Random(6045116)).Select(MissionOpenFloorChoice.From).ToArray();
+        Assert.Equal(new uint[]{0x0d1003dc,0x0d100314,0x0d1002f1},choices.Select(c=>c.ReadSpot().mxoStaticId));
+        var timer=System.Diagnostics.Stopwatch.StartNew();Assert.True(MissionOpenFloorAdmission.TryGeometry(m,0,site,choices,out var poses,out string why),why);long planMs=timer.ElapsedMilliseconds;
+        var p=new MissionProgress(m){site=site,openFloorCheckpoint=true,openFloorResolvedPhase=0,startedAt=100,persistenceId="three-box-cold"};p.sites.Add(site);
+        foreach(var choice in choices)p.objects.Add(choice.ObjectId,new MissionObjectState{def=m.phases[0].objects.Single(d=>d.id==choice.ObjectId),spot=choice.ReadSpot(),goid=choice.Goid,entity=(uint)(100+choice.ObjectId),OpenFloor=poses[choice.ObjectId]});
+        var saved=RoundTrip(p);timer.Restart();var restored=MissionProgress.RestoreFromCatalog(m,saved,new[]{site});long restoreMs=timer.ElapsedMilliseconds;
+        Assert.Equal(3,restored.objects.Count);Assert.Equal(JsonSerializer.Serialize(saved.Objects,Fields),JsonSerializer.Serialize(restored.Capture(23,Array.Empty<Mob>()).Objects,Fields));
+        Assert.Equal(3,restored.objects.Values.Select(o=>o.OpenFloor!.InputFingerprint).Distinct().Count());
+        System.Diagnostics.Trace.WriteLine($"Normal three-box planning {planMs}ms; fixed restore {restoreMs}ms");
+    }
+    [Theory] [InlineData(3,-25.00377655029297)] [InlineData(548,-40)] [InlineData(552,-50)]
+    public void AdoptedObjectRelativeNpcArrivalUsesPublishedStandingFloorForEveryModel(int goid,double support)
+    {
+        var (p,_)=Adopted();var state=p.objects[1];state.goid=(ushort)goid;var raw=state.spot;double floor=2000,centre=floor-support;
+        state.OpenFloor=new MissionOpenFloorPlacement(G.PolicyVersion,1,p.mission.id,0,1,raw.mxoStaticId,MissionSites.Goid(raw),(ushort)goid,
+            MissionOpenFloorPlacement.RawHash(raw),new string('A',64),"0000000000000000000000000000803f",new[]{100d,centre,300d},new[]{200d,floor+95,300d},new[]{0d,floor+95,0d,200d,floor+95,300d},new ushort[]{209,1,1},new ushort[]{209,1,1},new ushort[]{209,1,1});
+        var actual=MissionRuntime.ArrivalSpot(Client(),p,new MissionArrival{at="object:1"},0,0,0,0);
+        Assert.Equal(MissionRuntime.Beside(100,floor+95,300,0),actual);
+    }
+    [Theory] [InlineData(3)] [InlineData(548)] [InlineData(552)]
+    public void SamePrototypeAndExplicitCustomSourcesStayLegacyWithoutAdoption(int goid)
+    {
+        var m=Definition();foreach(ushort rawGoid in new[]{(ushort)0,(ushort)goid})
+        {
+            var raw=new StaticWorldObject{metrId=1,mxoStaticId=0,type=BitConverter.GetBytes(rawGoid),quat="0000000000000000000000000000803f"};
+            Assert.False(MissionOpenFloorAdmission.Target((ushort)goid,raw));var choices=new[]{new MissionOpenFloorChoice(1,(ushort)goid,JsonSerializer.Serialize(raw,Fields))};
+            Assert.True(MissionOpenFloorAdmission.TryGeometry(m,0,null!,choices,out var poses,out _));Assert.Empty(poses);
+        }
+        var staticZero=new StaticWorldObject{metrId=1,mxoStaticId=0,type=BitConverter.GetBytes((ushort)1415)};Assert.True(MissionOpenFloorAdmission.Target((ushort)goid,staticZero));
+    }
+    [Fact]
+    public void AdoptedAdmissionDropsBothKindsOfOutputIfResetOccursAfterValidation()
+    {
+        LoadNav();var c=Client();var m=Definition();var p=new MissionProgress(m){startedAt=100};var (site,_)=QualifiedScene();c.playerData.missionPreview=site;c.playerData.missionPreviewFor=m;
+        Assert.True(MissionOpenFloorAdmission.TryPrepare(c,p,0,null!,out var plan,out _,out string why,new[]{site}),why);
+        using(var batch=MissionOutput.Begin(c.messageQueue))
+        {
+            Assert.True(plan.BindOutput(c));c.messageQueue.addRpcMessage(new byte[]{0x80,0x9e});c.messageQueue.addObjectMessage(new byte[]{0x03,1},false);
+            c.TransportFence.PublishIncoming(true,()=>{});batch.Commit();
+        }
+        Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+    }
+    [Fact]
+    public void FailureMemoSurvivesRefusalCopiesButNotColdRestoreOrChangedInputs()
+    {
+        var p=new MissionOpenFloorPendingAdmission(1,901,"memo",1,100,null,Array.Empty<MissionOpenFloorChoice>(),null);int executions=0;
+        bool Run(MissionOpenFloorPendingAdmission pending,string key){if(pending.TryFailedGeometry(key,out _))return false;executions++;pending.RememberFailedGeometry(key,"NoWholePhasePlacement");return false;}
+        Run(p,"A");Run(p.WithRefusal("NoWholePhasePlacement"),"A");Assert.Equal(1,executions);
+        Run(p,"B");Assert.Equal(2,executions);string json=JsonSerializer.Serialize(p,Fields);Assert.DoesNotContain("Memo",json);
+        var cold=JsonSerializer.Deserialize<MissionOpenFloorPendingAdmission>(json,Fields)!;Run(cold,"B");Assert.Equal(3,executions);
+        Assert.Equal(json,JsonSerializer.Serialize(cold,Fields));
+    }
 }
