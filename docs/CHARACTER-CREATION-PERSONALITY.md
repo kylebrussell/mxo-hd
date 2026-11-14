@@ -43,6 +43,12 @@ Proof: `mxo-character-creation-baseline-mxotest_run_1_37e46a1a3a.json`, SHA256 `
 
 Current final Release full suite: **4,822 passed**, including the source-default correction; prior final focus **83 passed**. Final fixture-only same-Margin/legacy-case rebuild and fresh validation are pending. Registered `character-creation-personality` covers normal 0a/0c for308/304, same-Margin first world entry, actual new/return02, male appearance and native-default female body/head/hair with selected allowed clothing/tights, actual attributes and ordinary 80b5/relog, malformed/replay refusal, final-write rollback, two actual completion connections and legacyNULL no-migration behavior. Controlled EXP/level 2 preparation AFTER normal creation enables one attribute point; it does not claim creation earns XP. No trait/RSI/attribute SQL seed bypasses normal creation.
 
+## Preserved first implementation failure and ingress correction
+
+First implementation run at bb1ae753: **FAIL 20.3 s, exit 1**, before0c, on approved Debug885076608AC7D95729FD620917DFCBE9C38181D7B4A027ADE4D0B4C495DAD137. Valid normal0a body20 had PKCS suffix02/02 after decryption; legacy decryptMargin intentionally returns the suffix, so the new strict body-length guard rejected it. Proof `mxo-character-personality-mxotest_run_1_ef58cd28ac.json`, SHA256 `776137d69924652f003e3d49e7085f150c736d4a878a5bd835f77b8ed0171baf`; owned PID4564 exited and slot was released. Four actual participant engines were InnoDB. Original evidence is unchanged.
+
+Creation alone now opts into exact envelope decoding: declared u16 body size at decrypted+4, CRC32 over size/timestamp/body, block length and every PKCS byte must match before returning the body. Only0a/0c opt in. Existing decryptMargin and other consumers retain their previous bytes/behavior. The strict name/body/string checks are not weakened to accept arbitrary suffixes. Encrypted codec tests cover all16 padding sizes and corrupt size/CRC/padding, truncated ciphertext and unrelated opcodes. Retry validation is pending.
+
 ## Claude-only native one-pass
 
 Discovered modes `character-personality-308` and `character-personality-304` use **CSR110 only**, seeded consumer profiles, not native character creation. Actual Level/EXP 50, coherent bases, 49 points; no dev/GM/RNG.

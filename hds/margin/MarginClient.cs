@@ -167,6 +167,12 @@ namespace hds{
 		            clientStream.Close();
                     return;
 	            }
+                // Creation opts into exact declared payload; do not weaken its body parser or alter other Margin paths.
+                if(decrypted.Length>0&&(decrypted[0]==0x0a||decrypted[0]==0x0c))
+                {
+                    if(!marginEncr.TryDecryptCreationBody(encryptedPacket,out decrypted))
+                    {working=false;forceClose();return;}
+                }
                 // Just 2 zero bytes for opcode handling later (As we use third byte for both state, encrypted or not
                 byte[] spacer = { 0x00, 0x00 };
 
