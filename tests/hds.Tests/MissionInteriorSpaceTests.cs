@@ -35,4 +35,25 @@ public class MissionInteriorSpaceTests
         Assert.False(MissionPlacement.Resolve(1,new[]{0d,95,0},null,Array.Empty<double[]>(),false,out _,out _,
             new[]{new[]{0d,95,0}},projector:Constant));
     }
+    [Fact] public void StandingAreaAloneDoesNotProveTheMeasuredPropFootprintFits()
+    {
+        var r=Input(false);Assert.True(G.TryReachableRegion(r.World,r.Surfaces,r.Entry,r.Scene,out var region,out string why),why);
+        Assert.True(MissionOpenFloorProfiles.TryModel(548,out var box));
+        var narrow=new G.Bounds(-500,500,160,300);
+        Assert.True(region.Project(new(0,95,220),narrow,100,out _));
+        Assert.False(region.CanFit(box,new OpenFloorOrientation(Q),narrow));
+        Assert.True(region.CanFit(box,new OpenFloorOrientation(Q),new(-500,500,-300,300)));
+    }
+    [Fact] public void NonemptyCentreDomainIsNotRejectedBecauseFiniteSamplesMissItsFloatPoint()
+    {
+        var points=new[]{new G.Point(100000.0234375,100000.00334040179),new G.Point(100000.8046875,100000.11494754464),
+            new G.Point(100000.8046875,100000.11496316965),new G.Point(100000.0234375,100000.00335602679)};
+        var surface=new G.Surface(new(127,1,1),points,0,0,0);
+        var root=new G.Root(surface.Identity,new(100000.0546875,95,100000.0078125),"literal exact-f32 point");
+        var scene=new G.StaticScene(1,true,new(99999,100002,99999,100002),-100,1000,Array.Empty<G.StaticObstacle>(),"literal complete scene");
+        Assert.True(G.TryReachableRegion(1,new[]{surface},root,scene,out var region,out string why),why);
+        Assert.True(region.Contains(root.Standing));
+        var tiny=new OpenFloorModelBounds(3,new(-1e-9,-1,-1e-9),new(1e-9,1,1e-9),"literal numerical counterexample");
+        Assert.True(region.CanFit(tiny,new OpenFloorOrientation(Q),scene.Coverage));
+    }
 }

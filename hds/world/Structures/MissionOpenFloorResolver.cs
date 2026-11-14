@@ -380,12 +380,10 @@ namespace hds
                     var allowed=Erode(bounds.Polygon,offsets);if(allowed.Length==0)return false;
                     var outside=Difference(new[]{bounds.Polygon},cells,0);
                     var forbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
-                    foreach(var cell in Difference(new[]{allowed},forbidden,0))
-                    {
-                        var point=RepresentableNear(cell,new Point(cell.Average(p=>p.X),cell.Average(p=>p.Z)));
-                        if(point.HasValue&&Covers(offsets.Select(p=>new Point(p.X+point.Value.X,p.Z+point.Value.Z)).ToArray()))return true;
-                    }
-                    return false;
+                    // A missed finite f32 sample is not an emptiness proof. A nonempty domain
+                    // remains eligible; the ordinary source-anchored full planner must find and
+                    // validate the actual representable body, complete route and use point.
+                    return Difference(new[]{allowed},forbidden,0).Count>0;
                 })).Value;
             }
             internal bool Project(Position desired,Bounds bounds,double radius,out Position placed)

@@ -22,6 +22,11 @@ namespace hds
         {
             refusal=null;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
+            // With no runtime actors and enough same-kind native objects, SelectObjects never
+            // creates a free prop. Preserve that existing bound-only path without a new NAV proof.
+            if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
+                .GroupBy(o=>o.kind,StringComparer.OrdinalIgnoreCase).All(g=>site.realObjects.Count(s=>
+                    MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
             if(!TryAllocate(site,npcCount,out _,out refusal))return false;
             var first=phase.objects.FirstOrDefault();if(first==null)return true;
             if(site.realObjects.Any(s=>MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&
@@ -79,7 +84,7 @@ namespace hds
         private static NavPoint? Project(G.ReachableRegion region,MissionSite site,double[] target,double radius)
         {
             if(target==null||target.Length<3||!region.Project(new G.Position(target[0],target[1],target[2]),new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ),radius,out var p)||
-                !NavMesh.Locate(site.metrId,p.X,p.Y,p.Z,out var at)||Math.Abs(at.floorY-region.Floor)>G.Epsilon)return null;
+                !NavMesh.Locate(site.metrId,p.X,p.Y,p.Z,out var at)||!region.SameSpace(at))return null;
             return new NavPoint{x=p.X,y=p.Y,z=p.Z,location=at};
         }
         internal static bool TryRegion(MissionSite site,out G.ReachableRegion region,out string refusal)

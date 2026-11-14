@@ -187,7 +187,7 @@ namespace hds
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
             IEnumerable<double[]> sourceSpots=site.npcSpots;
-            if(MissionOpenFloorAdmission.Requires(phase))
+            if(MissionOpenFloorAdmission.Requires(phase)&&placed.Count+SpotsForWaves(phase)>0)
             {
                 int count=placed.Count+SpotsForWaves(phase);
                 if(!MissionInteriorSites.TryAllocate(site,count,out var allocated,out string why))throw new MissionCheckpointException("Interior NPC admission changed: "+why);

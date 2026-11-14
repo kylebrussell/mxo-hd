@@ -89,4 +89,25 @@ public class MissionComputerOfficeRouteTests
         Assert.NotNull(why);
         Assert.Equal(before,JsonSerializer.Serialize(site,new JsonSerializerOptions{IncludeFields=true}));
     }
+    [Fact]
+    public void HardlineHunterFiltersTheExactTooShallowSiteBeforeItsNormalPreviewPick()
+    {
+        SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));
+        var sites=MissionSites.Build(Statics(),1);
+        var old=Assert.Single(sites,s=>s.elevatorDoor?.mxoStaticId==0x0d100401&&s.minX==22100&&s.maxX==24100&&s.minZ==14200&&s.maxZ==15950);
+        var source=Assert.Single(old.objectSpots,s=>s.mxoStaticId==0x0d100402);Assert.Equal((ushort)1412,MissionSites.Goid(source));
+        var xml=new XmlDocument();xml.Load(Path.Combine(Root,"data","missions","zion_1_2_9_hardline_hunter.xml"));var mission=MissionXml.Parse(xml.DocumentElement!);
+        Assert.True(MissionInteriorSites.TryRegion(old,out _,out string why),why);
+        string fingerprint=MissionOpenFloorSite.CatalogFingerprint(old);
+        Assert.False(MissionInteriorSites.Eligible(mission.phases[0],old,out why,0));Assert.Equal("NoInteriorFootprint:Box",why);
+        Assert.Equal(fingerprint,MissionOpenFloorSite.CatalogFingerprint(old));
+        int seed=MissionStaging.QaSiteSeed("1","mxotest_exact218","101208",101209,0)!.Value;
+        bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(mission.phases[0],s,out _,0);
+        var selected=MissionSites.Choose(sites,"Normal",7800,13795,0,1,new Random(seed),admissible:Eligible);
+        Assert.NotNull(selected);Assert.NotEqual(fingerprint,MissionOpenFloorSite.CatalogFingerprint(selected));
+        // Preview caches only the site. Acceptance starts the same seeded source stream afresh.
+        var choices=MissionStaging.SelectObjects(mission.phases[0],selected,new Random(seed)).Select(MissionOpenFloorChoice.From).ToArray();
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(mission,0,selected,choices,out var poses,out why),why);
+        Assert.Single(poses);
+    }
 }
