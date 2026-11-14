@@ -1,6 +1,6 @@
 # Poster Hunt: shared open-floor Box witness
 
-Compile-only preparation; shared runtime, qualified scene admission, fresh proof and native walking/picking remain pending. This case does not establish poster-model parity or a complete mission chain.
+The shared runtime and qualified authored-scene admission are integrated in this candidate. Fresh headless proof and native walking/picking remain pending. This case does not establish poster-model parity or a complete mission chain.
 
 Use NativeQa mode `mission-open-floor-box`. CSR110 starts at Mara17000/495/2300 with normal level50/EXP50 and the existing earlier-receipt fixture. Call Agent Gray > Critical > Poster Hunt > accept. The unchanged seed201202 naturally selects first object source0d1003dc; all three first-phase objects must remain their natural choices. No source pose, seed or chooser override is permitted.
 
