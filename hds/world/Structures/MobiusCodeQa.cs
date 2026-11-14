@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using hds.shared;
@@ -18,15 +19,23 @@ namespace hds
         public static bool Allowed(string dev,string database,string feature,uint character,bool world,bool dead,string name) =>
             feature=="1" && character==110 && QaLoadout.Allowed(dev,database,character,world,dead) &&
             !string.Equals(name,"TheNeo",StringComparison.OrdinalIgnoreCase);
+        // The normal Margin archive/load source includes zero-memory967. Passive stat projection deliberately does not.
+        internal static bool HasLoadedOwned(IEnumerable<MarginAbilityItem> rows) => rows?.Any(row =>
+            row.getSlot()<CharacterAttributes.FirstSlot && row.getLoaded() && row.getLevel()>0 &&
+            AbilityMemory.IsAbility(unchecked((uint)row.getAbilityID())) &&
+            AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID()))==MobiusCode.Ability)==true;
         private static bool Ready(WorldClient c)
         {
             if(!MobiusCode.Live(c) || !ReferenceEquals(Store.currentClient,c) || c.IsBot ||
                 !c.playerData.getUDPSEssionEstablished() || c.playerData.waitForRPCShutDown || c.playerData.DistrictIsLA() ||
                 !Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                     Environment.GetEnvironmentVariable("MXO_MOBIUS_QA"),c.playerData.getCharID(),c.playerData.getOnWorld(),
-                    c.playerData.isDead,TimedEffects.PlayerName(c)) || AbilityPassives.Level(c,MobiusCode.Ability)<=0)return false;
+                    c.playerData.isDead,TimedEffects.PlayerName(c)))return false;
             if(WorldServer.Clients==null)return false;
-            lock(WorldServer.Clients)return WorldServer.Clients.Values.Any(v=>ReferenceEquals(v,c));
+            bool present;
+            lock(WorldServer.Clients)present=WorldServer.Clients.Values.Any(v=>ReferenceEquals(v,c));
+            // Database I/O is outside client/holder/arm/random locks. This is QA eligibility, not new cast admission.
+            return present && HasLoadedOwned(Store.dbManager?.MarginDbHandler?.LoadAbilities((int)c.playerData.getCharID()));
         }
         public static string Run(WorldClient c,string[] args)
         {

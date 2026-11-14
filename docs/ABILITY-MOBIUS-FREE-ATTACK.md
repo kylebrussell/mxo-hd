@@ -40,3 +40,9 @@ NativeQA and merge remain Claude-owned. No native pass is claimed by unit/headle
 7. Reset via the normal NativeQA stop/reset flow and the client's ordinary Hardline/Loading Area path as required by the coordinator. Record teardown rather than treating a headless pass as native UI proof.
 
 Validation status is reported with the frozen commit and external logs. Fresh/native execution requires a separate root grant; this checklist is not such a grant.
+
+## Frozen first fresh attempt and eligibility correction
+
+The two authorized isolated runs at `ae482326` both stopped at entry: positive31.6s and negative28.2s, before any967 cast/freefire/proc callback. Raw server2e refusal said the disposable owned/loaded QA requirement was not met. Source hashes matched the frozen Release; both session parsers were clean, both PIDs and exact schemas were disposed. All raw failures remain external in `Temp/mxo-mobius-ae482326-fresh`; neither is a positive or negative proc proof and neither was retried.
+
+The QA guard incorrectly queried `AbilityPassives.Level`, whose stat projection excludes nondiscipline abilities with zero memory cost. Actual967 has memory cost0. The corrected QA-only guard reads the same normal `MarginDbHandler.LoadAbilities` archive/is_loaded rows used for world ability registration, requiring exact ability-code descriptor967, positive stored level, loaded flag, and an archive slot. It preserves every dev/schema/CSR110/current-life gate. This does **not** add a generic loaded/owned casting gate to `AbilityHandler`; that existing admission gap remains as documented in ABILITY-REFUSAL-FEEDBACK.md. Database I/O remains outside holder, arm, random and client-list locks.

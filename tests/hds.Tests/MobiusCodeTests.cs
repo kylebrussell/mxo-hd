@@ -146,6 +146,29 @@ public class MobiusCodeTests
         Assert.Equal(42,MobiusCodeQa.Roll(c,()=>{draws++;return 42;}));Assert.Equal(1,draws);
         Assert.False(MobiusCode.PreventsFreeAttack(c,0));
     }
+    [Fact]
+    public void NormallyOwnedLoadedZeroMemory967DoesNotRequirePassiveProjection()
+    {
+        Assert.Equal(0,AbilityCatalog.Find(967)!.Number("Ability/InventoryMemCost"));
+        Assert.Equal(0,AbilityCatalog.Find(967)!.Number("Ability/IsDiscipline"));
+        var c=Client();Assert.Equal(0,AbilityPassives.Level(c,967));
+        var owned=new MarginAbilityItem {slot=401,AbilityID=unchecked((int)(0x80000000u|967u<<10)),level=1,isLoaded=true};
+        Assert.True(MobiusCodeQa.HasLoadedOwned(new[]{owned}));
+        Assert.False(MobiusCodeQa.HasLoadedOwned(Array.Empty<MarginAbilityItem>()));
+    }
+    [Theory]
+    [InlineData(967,true,1,401,true,true)]
+    [InlineData(967,false,1,401,true,false)]
+    [InlineData(967,true,0,401,true,false)]
+    [InlineData(77,true,1,401,true,false)]
+    [InlineData(967,true,1,401,false,false)]
+    [InlineData(967,true,1,598,true,false)]
+    public void CallbackRequiresExactOwnedLoadedArchiveDescriptor(ushort id,bool loaded,ushort level,ushort slot,bool abilityCode,bool expected)
+    {
+        uint descriptor=(abilityCode?0x80000000u:0u)|((uint)id<<10);
+        var row=new MarginAbilityItem {slot=slot,AbilityID=unchecked((int)descriptor),level=level,isLoaded=loaded};
+        Assert.Equal(expected,MobiusCodeQa.HasLoadedOwned(new[]{row}));
+    }
     [Theory]
     [InlineData("mobius-free-attack-positive","positive")]
     [InlineData("mobius-free-attack-negative","negative")]
