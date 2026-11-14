@@ -1,6 +1,6 @@
 ## Current master refresh
 
-Refreshed onto cc8f5555 after the open-floor trio passed native QA and merged. Production hds/data match master exactly; the selected five missions, 27 earlier receipts, NativeQa profile and independent wire reward ledger are unchanged. Older room-geometry/dependency HOLD notes below are historical; this candidate is prepared for native QA, not a native success claim.
+Refreshed onto38a15939 after PR198's native-passed five Zion missions merged. The sole merge conflict was the scenario registry: both zion-critical-followup and zion-critical-next-five entries are retained. Production hds/data match master exactly; the selected five missions,27 earlier receipts, NativeQa profile and independent wire reward ledger are unchanged. The refreshed source drops no native-verified coverage and changes no gameplay. Older room-geometry/dependency HOLD notes below are historical; this candidate is prepared for native QA, not a native success claim.
 
 Historical source positions below are not current movement destinations. For adopted objects, follow the current checkpoint's Root/Route/Standing witness and inspect each actual Box model/hover/Open. All seven phases and the final ordinary relog/no-replay check still require native validation; prior helper movement/StillNpcs evidence does not establish native walking or survival.
 
