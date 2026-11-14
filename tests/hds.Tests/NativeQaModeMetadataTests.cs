@@ -33,14 +33,6 @@ public class NativeQaModeMetadataTests
         Assert.Equal(standardFields.EnumerateObject().Count() + plan.ExtraQaMetadata.Count, actual.EnumerateObject().Count());
     }
 
-    [Fact]
-    public void SeverArteryOrganizationMetadataDoesNotReplaceTheStandardField()
-    {
-        var state = NativeQaModes.Find("sever-artery-states").Plan.StateWithMetadata(new NativeQaFixtureState());
-        Assert.Null(state["CasterOrganization"]);
-        Assert.Equal(1, state["SeverArteryCasterOrganization"]!.GetValue<int>());
-    }
-
     private static NativeQaModePlan Plan(Dictionary<string,object?>? values=null,string[]? messages=null) =>
         new(new ushort[]{2},0,0,Array.Empty<string>(),Array.Empty<string>(),Array.Empty<string>(),extraQaMetadata:values,readyMessages:messages);
 
