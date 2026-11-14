@@ -105,16 +105,73 @@ public static partial class Scenarios
     }
     private static async Task MissionRelogObjectsAndRollback(ScenarioContext context)
     {
+        var proofActors=new List<HeadlessPlayer>();
+        var proofServers=new List<(ServerInstance Server,int Pid,string Dll,string Hash,DateTime Mtime)>();
+        var rawCheckpoints=new List<object>();var operations=new List<object>();
+        var clock=System.Diagnostics.Stopwatch.StartNew();string step="entry";Exception? failure=null;uint character=0;
+        void TrackServer(ServerInstance server)
+        {
+            string dll=server.SourceAssembly;proofServers.Add((server,server.ProcessId,dll,
+                Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),File.GetLastWriteTimeUtc(dll)));
+        }
+        async Task<string> Raw(string label)
+        {
+            string payload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={character}");
+            rawCheckpoints.Add(new{Label=label,ElapsedMs=clock.ElapsedMilliseconds,Payload=payload});return payload;
+        }
+        async Task<MissionProgress.SavedState> Checkpoint(HeadlessPlayer player)
+        {
+            string payload=await Raw(step);return JsonSerializer.Deserialize<MissionProgress.SavedState>(payload,new JsonSerializerOptions{IncludeFields=true})!;
+        }
+        void Window(string label,HeadlessPlayer player)
+        {
+            step=label;operations.Add(new{Step=step,ElapsedMs=clock.ElapsedMilliseconds,RpcCursor=player.World.RpcSnapshot().Count,
+                CreationCursor=player.World.CreationSnapshot().Count,ViewCursor=player.World.ViewSnapshot().Count});
+        }
+        TrackServer(context.Server);
+        try
+        {
+
         var original=await context.AddPlayerAsync(new CharacterSeed("Checkpoint"){Level=50,Experience=int.MaxValue-10,Info=int.MaxValue-5,Items=new[]{(20,48125u,1),(21,4u,1)}});
+        proofActors.Add(original);character=original.CharId;
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={original.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({original.CharId},300,{AbilityGoid(142)},10,1)");
         await original.EnterWorldAsync();
         original.SendRpc("59 14");
         await original.WaitForRpcAsync("80 9c");await original.WaitForRpcAsync("80 9e 00");
+        string acceptedRaw=await Raw("accepted-before-courier");
+        try
+        {
+            using var state=JsonDocument.Parse(acceptedRaw);var saved=state.RootElement;
+            int mission=saved.GetProperty("Mission").GetInt32(),nextPhase=saved.GetProperty("Phase").GetInt32()+1;
+            uint started=saved.GetProperty("Started").GetUInt32();
+            int legacySeed=unchecked((int)character*7919+mission*31+(nextPhase+1)+(int)started);
+            string? rawQaSeed=Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED");
+            int? qaSeed=MissionStaging.QaSiteSeed("1",context.Database.Name,rawQaSeed,mission,nextPhase);
+            operations.Add(new{Step="next-phase-source-inputs",ElapsedMs=clock.ElapsedMilliseconds,Character=character,Mission=mission,NextPhase=nextPhase,Started=started,
+                LegacyFallbackSeed=legacySeed,RawQaSeed=rawQaSeed,EffectiveNextPhaseSeed=qaSeed??legacySeed,
+                Qualification="Read-only reconstruction of unchanged LayoutRandom inputs; no Pending choice is claimed before it persists."});
+        }
+        catch(Exception decode){operations.Add(new{Step="next-phase-input-decode-failed",Failure=decode.ToString()});}
         var courier=await VisitMissionNpc(context,original,"Checkpoint Courier");
+        Window("courier-get",original);
+        var courierPosition=courier.Attributes["Position"];
+        var positionBeforeGet=new[]{(double)(float)(BitConverter.ToDouble(courierPosition)+100),(double)(float)BitConverter.ToDouble(courierPosition,8),(double)(float)BitConverter.ToDouble(courierPosition,16)};
+        byte[] teleportHeader=WireFormat.FromHex("02 00 01 1c");var positionRecords=new List<string>();
+        foreach(byte[] section in original.World.ViewSnapshot())
+            for(int at=BytePattern.IndexOf(section,teleportHeader,0);at>=0;at=BytePattern.IndexOf(section,teleportHeader,at+1))
+                if(at+28<=section.Length&&Enumerable.Range(0,3).All(i=>(double)BitConverter.ToSingle(section,at+12+i*4)==positionBeforeGet[i]))
+                    positionRecords.Add(Convert.ToHexString(section.AsSpan(at,28)));
+        operations.Add(new{Step="courier-current-target",ElapsedMs=clock.ElapsedMilliseconds,courier.ViewId,courier.SpawnId,courier.Goid,
+            Attributes=courier.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value)),Request=$"80 c7 {MissionNpcId(courier)} 0d 00",
+            PositionBeforeGet=positionBeforeGet,ScopedMatchingReceivedTeleportRecords=positionRecords,
+            PositionQualification="Unchanged VisitMissionNpc adds100X; existing ?tp stores f32 coordinates. Actual matching28-byte03 records retained; not a new world-position decoder."});
         original.SendRpc($"80 c7 {MissionNpcId(courier)} 0d 00");
         await original.WaitForRpcAsync("80 a0 01 06 00 01");
+        await Raw("courier-goal-ack-before-next-phase");
+        Window("await-next-phase-briefing",original);
         await original.WaitForTextAsync("Unlock the safe");
         await original.WaitForRpcAsync("80 9e 00");
+        await Raw("next-phase-briefing");Window("enter-safe-area",original);
         await EnterMissionArea(context,original);
         await ApproachMissionObjectFixture(context,original,1);
         var safe=await MissionObjectView(context,original,"Safe");
@@ -123,16 +180,17 @@ public static partial class Scenarios
         original.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");await original.WaitForRpcAsync("81 19");
         original.SendRpc("81 1f");await original.WaitForRpcAsync("80 a0 01 06 00 01");
         original.SendChat("?missionpersist status");await original.WaitForTextAsync("phase 2");
-        var before=await MissionCheckpoint(context,original);
+        var before=await Checkpoint(original);
         Check.Equal(1,before.Phase,"Second phase saved");Check.That(before.Objects.Single().Unlocked,"Actual lockpick persisted");
         Check.Equal(2,before.Items.Count,"Prior phase unused disk and current search disk owned");
         original.SendChat("?save");await original.WaitForRpcAsync("2e 07");
         string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={original.CharId}");
         original.Dispose();context.Server.Dispose();
         using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence.xml");
-        using var p=await HeadlessPlayer.LoginAsync(server.Address,username,original.Handle);await p.EnterWorldAsync();
+        TrackServer(server);
+        using var p=await HeadlessPlayer.LoginAsync(server.Address,username,original.Handle);proofActors.Add(p);Window("cold-safe-restore",p);await p.EnterWorldAsync();
         await p.WaitForRpcAsync("80 9c");await p.WaitForRpcAsync("80 a0 01 06 00 01");
-        var after=await MissionCheckpoint(context,p);
+        var after=await Checkpoint(p);
         Check.Equal(before.Identity,after.Identity,"Same acceptance identity");
         Check.Equal(1,after.Phase,"No phase restart");Check.Equal(before.Objects.Single().Spot.pos_x,after.Objects.Single().Spot.pos_x,"Same object placement");
         Check.That(after.Objects.Single().Unlocked,"Safe stays unlocked");
@@ -143,6 +201,7 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"Prior phase item not duplicated");
         Check.Equal("InnoDB",await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='characters'"),"Character engine migrated");
         Check.Equal("InnoDB",await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='char_missions'"),"Mission engine migrated");
+        Window("completion-SQL-rollback",p);
         await context.Database.InstallMissionRollbackTriggerAsync(true);
         int disk=after.Items[6786];p.SendRpc($"81 21 {disk:x2}");await p.WaitForRpcAsync("80 a0 02 06 00 01");
         await p.WaitUntilAsync(()=>server.OutputLines("[MISSION] Completion transaction deferred").Any(),"Deliberate completion rollback",TimeSpan.FromSeconds(10));
@@ -152,7 +211,7 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48125"),"Rolled back ticket consumption");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48134"),"Rolled back ticket reward");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"Rolled back owned-item cleanup");
-        Check.That((await MissionCheckpoint(context,p)).Done.Contains(2),"Completed goal remains retryable active phase");
+        Check.That((await Checkpoint(p)).Done.Contains(2),"Completed goal remains retryable active phase");
         await context.Database.RemoveMissionRollbackTriggerAsync();
         var completion=await p.WaitForRpcAsync("80 a2 00");
         Check.Equal(5u,BitConverter.ToUInt32(completion.Bytes,11),"Summary reports actual capped info delta");
@@ -165,11 +224,39 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={p.CharId} AND payload IS NULL AND receipt IS NOT NULL"),"Durable completion receipt");
         p.Dispose();server.Dispose();
         using var last=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence.xml");
-        using var again=await HeadlessPlayer.LoginAsync(last.Address,username,original.Handle);await again.EnterWorldAsync();
+        TrackServer(last);
+        using var again=await HeadlessPlayer.LoginAsync(last.Address,username,original.Handle);proofActors.Add(again);Window("completed-cold-return",again);await again.EnterWorldAsync();
         again.SendChat("?missionpersist status");await again.WaitForTextAsync("Mission persistence: none");
         Check.Equal((long)int.MaxValue,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={again.CharId}"),"Relog does not replay completed payout");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={again.CharId} AND goid=48134"),"Relog does not repeat ticket reward");
         Check.Equal(0,again.World.Problems.Count,"Postcompletion records readable");
+        step="complete";
+        }
+        catch(Exception e){failure=e;throw;}
+        finally
+        {
+            string stem=Path.Combine(Path.GetTempPath(),"mxo-mission-relog-object-rollback-"+context.Database.Name);
+            try
+            {
+                if(character!=0)
+                {
+                    try{await Raw("finally-before-decode");}
+                    catch(Exception read){rawCheckpoints.Add(new{Label="finally-checkpoint-read-failed",ElapsedMs=clock.ElapsedMilliseconds,ReadFailure=read.ToString()});}
+                }
+                var env=new[]{"MXO_MISSION_SITE_QA_SEED","MXO_DEV_COMMANDS"}.ToDictionary(k=>k,k=>Environment.GetEnvironmentVariable(k));
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=failure?.ToString(),ElapsedMs=clock.ElapsedMilliseconds,
+                    Database=context.Database.Name,Character=character,RawCheckpoints=rawCheckpoints,Operations=operations,InheritedEnvironment=env,
+                    Fixture="mission-persistence.xml",FixtureSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(context.RepositoryRoot,"tools","HeadlessClient","Fixtures","mission-persistence.xml")))),
+                    Servers=proofServers.Select(s=>new{ProcessId=s.Pid,SourceAssembly=s.Dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(s.Dll)!)!.Name,SourceSha256=s.Hash,SourceMtimeUtc=s.Mtime,
+                        Output=s.Server.FullOutput(),Debug=s.Server.DebugLog()}),
+                    Sessions=proofActors.Select(p=>new{p.CharId,p.Handle,Rpcs=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),
+                        Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray()}),NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
+                File.WriteAllText(stem+".log",string.Join("\n--- owned server ---\n",proofServers.Select(s=>s.Server.FullOutput()+"\n--- Debug ---\n"+s.Server.DebugLog())));
+                Console.WriteLine("MISSION RELOG OBJECT ROLLBACK evidence before teardown="+stem);
+            }
+            catch(Exception evidence){if(failure==null)throw;Console.Error.WriteLine("Rollback evidence failure; preserving primary: "+evidence);}
+            finally{foreach(var player in proofActors)player.Dispose();}
+        }
     }
 
     private static async Task MissionRelogDisconnectAndMove(ScenarioContext context)
