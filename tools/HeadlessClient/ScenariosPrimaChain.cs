@@ -14,7 +14,7 @@ public static partial class Scenarios
     }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,int? actorLevel=null,bool strictFollowupApproach=false)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,bool strictFollowupApproach=false,int? actorLevel=null)
     {
         var p=await context.AddPlayerAsync(PrimaActorSeed(handle,org,startX,startZ,actorLevel));
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
