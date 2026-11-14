@@ -169,6 +169,7 @@ namespace hds
                 return false;
             }
 
+            var conditionalFence=new ConditionalThrownDamage.Fence(client,npcSpawn:view.spawnId);
             CombatHandler handler = CombatManager.GetHandler(client);
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
@@ -176,6 +177,7 @@ namespace hds
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
             AbilityHostile.LandedOnMob(client, mob, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
+            ConditionalThrownDamage.Npc(client,mob,targetViewId,abilityId,fx,conditionalFence);
             CombatSpecials.Landed(client, abilityId);
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
