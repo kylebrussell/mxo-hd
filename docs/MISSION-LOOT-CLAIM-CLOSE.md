@@ -1,6 +1,6 @@
 # Mission loot claim acknowledgement and closure
 
-Status: local implementation under review; fresh/backend integration and Claude-only native acceptance remain pending. This package is based on master38a15939. It changes no mission source/site, placement resolver, leave predicate, reward law or XML.
+Status: implemented and qualified by the combined backend results in [MISSION-NATIVE-FOLLOWUPS-QA.md](MISSION-NATIVE-FOLLOWUPS-QA.md); Claude-only native acceptance remains pending. Component development results below retain their original source attribution. This package is based on master38a15939. It changes no mission source/site, placement resolver, leave predicate, reward law or XML.
 
 A successful Safe Take All previously granted dossier6799 and completed Search but replied with an empty `81 20`. Client7.6005 treats its array as claimed identities to remove, so the dossier icon remained. The empty reply also does not close the window.
 
@@ -26,7 +26,7 @@ Caller audit: NPC loot previously sent remaining drops, which would remove the w
 
 Registered normal-wire filter: `mission-loot-claim-close`. It accepts2201 through Agent Gray, uses existing strict disposable site seed220110, ordinary elevator and current saved Root/Route/Standing to Safe552/source0d10003e. Only prior receipts and96 ordinary filler items are seeded. Dossier, selected mission/progress/completion/rewards are never injected. Test movement follows the published route and is not native walking proof.
 
-The case checks full bag/repeated failure, close/reopen exact identity, frees one bag slot through normal delete, deliberately fails the late Done checkpoint in the harness-owned schema, verifies exactly one empty zero-claim acknowledgement and no item/goal/nonempty claim/close publication, reopens/retries, verifies exact claimed pair and close-before-goal ordering, and repeats without duplicate dossier. Raw checkpoints/RPC/03/PID/DLL SHA are written before cleanup on pass/failure. No fresh run is claimed until a frozen grant and result are recorded.
+The case checks full bag/repeated failure, close/reopen exact identity, frees one bag slot through normal delete, deliberately fails the late Done checkpoint in the harness-owned schema, verifies exactly one empty zero-claim acknowledgement and no item/goal/nonempty claim/close publication, reopens/retries, verifies exact claimed pair and close-before-goal ordering, and repeats without duplicate dossier. Raw checkpoints/RPC/03/PID/DLL SHA are written before cleanup on pass/failure. The combined frozen integration run passed27.8s, including real late SQL rollback/retry and fresh Safe reannouncement; exact heads, DLL hashes and raw proof are recorded in the combined checklist and handoff.
 
 Companion regression filters: `full-bag-tutorial-loot`, `container-and-corpse-loot`, `retained-corpse-loot`, `mission-relog-corpse-loot`. NPC full-bag assertions now expect zero claimed pairs and partial claims explicitly identify the transferred revolver; reopened8119 independently verifies retained letter contents.
 

@@ -2,7 +2,7 @@
 
 This is an OURS computational selection preference, not avatar-width or retail collision proof. Body/source/quaternion/NAV/static/range laws and search budgets remain unchanged. A route is preferred when none of its traversed cells has an open x or z interval containing no float32 coordinate. This sufficient degeneracy proof does not inset artificial NAV/CSG seams. Existing valid routes remain fallback; old Policy3 witnesses replay without reselection. A separate standing-selection version separates admission memo keys.
 
-Normal-wire headless scenario: `mission-standing-interior`. It reuses the ordinary offer/accept, first three Box creation/use, abort/reaccept and cold replay flow from `mission-open-floor-box`, with exact normal S3 centre/standing assertions. No forced spot, pose, or source. Backend execution remains pending until a fresh slot is granted.
+Normal-wire headless scenario: `mission-standing-interior`. It reuses the ordinary offer/accept, first three Box creation/use, abort/reaccept and cold replay flow from `mission-open-floor-box`, with exact normal S3 centre/standing assertions. No forced spot, pose, or source. The combined frozen flow passed60.1s with unchanged bodies/sources, updated S2/S3 routes, same-world abort/reaccept, cold fixed replay, stationary post-goal phase0 and ordinary exit to phase1. Exact source/proof hashes are recorded in the combined checklist and handoff; native acceptance remains pending.
 
 NativeQa mode: `mission-standing-interior` (auto-discovered). CSR110 only; seed201202; original Mara17000/495/2300; normal Agent Gray Critical Poster Hunt offer. This fixture is a disposable QA database. The mode does not alter main data, enable GM or force callback rolls.
 
