@@ -15,6 +15,7 @@ namespace hds
     {
         internal const double Epsilon = 1e-7;
         internal const int PolicyVersion = 3;
+        internal const int StandingSelectionVersion = 1;
         internal readonly struct Point
         {
             public double X { get; }
@@ -334,6 +335,20 @@ namespace hds
             }
             return new StandingGraph{Obstacles=obstacles,Cells=cells,Previous=previous,Portals=portals};
         }
+        // A sufficient proof of representational degeneracy, not an avatar clearance or
+        // an inset from CSG/NAV seams. Diagonal thin cells without this proof stay in the
+        // preferred tier. No route is refused by this selection preference.
+        internal static bool HasNoInteriorFloatCoordinate(IReadOnlyList<Point> polygon)
+        {
+            static bool Empty(double min,double max)
+            {
+                float next=(float)min;
+                if(next<=min)next=MathF.BitIncrement(next);
+                return !float.IsFinite(next)||next>=max;
+            }
+            return Empty(polygon.Min(p=>p.X),polygon.Max(p=>p.X))||
+                Empty(polygon.Min(p=>p.Z),polygon.Max(p=>p.Z));
+        }
         private static bool Standing(Request r,Surface[] component,Point[] shape,Position centre,double guard,out Position[] route,out Id[] path,out MissionOpenFloorUsableRange.Witness range,StandingGraph shared=null)
         {
             route=null;path=null;range=default;double floor=r.Entry.Standing.Y-95;
@@ -347,6 +362,8 @@ namespace hds
                 var w=MissionOpenFloorUsableRange.Test(r.Usable,Native(standing),Native(centre),q);
                 var cast=MissionOpenFloorUsableRange.Test(r.Usable,Native(Cast(standing)),Native(Cast(centre)),q);if(w.Within&&cast.Within)possibilities.Add((cell,p,w));
             }
+            (Position[] Route,Id[] Path,MissionOpenFloorUsableRange.Witness Range)? fallback=null;
+            var degenerate=cells.Select(c=>HasNoInteriorFloatCoordinate(c.Polygon)).ToArray();
             foreach(var candidate in possibilities.OrderBy(c=>Distance(c.Point,centre.Xz)).ThenBy(c=>c.Cell.Surface.Identity).ThenBy(c=>c.Point.X).ThenBy(c=>c.Point.Z).ThenBy(c=>c.Cell.Index))
             {
                 var ids=new List<int>{candidate.Cell.Index};while(previous[ids[^1]].HasValue)ids.Add(previous[ids[^1]].Value);ids.Reverse();
@@ -354,8 +371,11 @@ namespace hds
                 bool nav=true;for(int i=0;i<ids.Count;i++)if(!Inside(cells[ids[i]].Polygon,points[i])||!Inside(cells[ids[i]].Polygon,points[i+1]))nav=false;
                 if(points.Any(p=>!Inside(r.Scene.Coverage.Polygon,p)||!Inside(r.Scene.Coverage.Polygon,Rounded(p))))continue;
                 if(!nav||obstacles.Any(o=>!Clear(points,o))||obstacles.Any(o=>!Clear(points.Select(Rounded).ToArray(),o)))continue;
-                route=points.Select(p=>new Position(p.X,floor+95,p.Z)).ToArray();path=ids.Select(i=>cells[i].Surface.Identity).ToArray();range=candidate.Range;return true;
+                var valid=(Route:points.Select(p=>new Position(p.X,floor+95,p.Z)).ToArray(),Path:ids.Select(i=>cells[i].Surface.Identity).ToArray(),Range:candidate.Range);
+                if(ids.Any(i=>degenerate[i])){fallback??=valid;continue;}
+                route=valid.Route;path=valid.Path;range=valid.Range;return true;
             }
+            if(fallback.HasValue){route=fallback.Value.Route;path=fallback.Value.Path;range=fallback.Value.Range;return true;}
             return false;
         }
         internal static bool TryResolve(Request request,out Result result){result=Plan(request);return result.HasPlan;}

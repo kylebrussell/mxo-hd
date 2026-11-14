@@ -25,6 +25,8 @@ public static partial class Scenarios
     {
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("mission-open-floor-box", MissionOpenFloorBoxScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
+        new Scenario("mission-standing-interior", MissionStandingInteriorScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
+        new Scenario("mission-leave-transition", MissionLeaveTransitionScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("character-creation-baseline", CharacterCreationBaseline, StillNpcs),
         new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
@@ -265,6 +267,7 @@ public static partial class Scenarios
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
         new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),
         new Scenario("full-bag-mission-container", FullBagMissionContainer, StillNpcs),
+        new Scenario("mission-loot-claim-close", MissionLootClaimClose, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="220110"}),
         new Scenario("mission-safe-anchors", MissionSafeAnchorsScenario, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="220110"}),
         new Scenario("full-bag-mission-computer", FullBagMissionComputer, StillNpcs),
         new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
