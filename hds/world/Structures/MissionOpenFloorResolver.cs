@@ -365,6 +365,8 @@ namespace hds
         {
             internal Request Input;internal Point[] Offsets;internal Surface Start;internal Surface[] Component;
             internal double Guard,CentreY,MinY,MaxY;internal Bounds Envelope;internal StaticObstacle[] Relevant;internal Point[][] Forbidden;
+            internal double CastCentreY;internal Point[][] OriginalGeometryFootprints,CastGeometryFootprints;
+            internal readonly Dictionary<(double X,double Z),Surface> Carriers=new Dictionary<(double X,double Z),Surface>();
         }
         private static (Context Context,string Refusal) Prepare(Request r)
         {
@@ -393,22 +395,39 @@ namespace hds
                     foreach(var points in new[]{prior.Route.Select(p=>p.Xz).ToArray(),prior.Route.Select(p=>Rounded(p.Xz)).ToArray()})
                         for(int i=0;i<points.Length-1;i++)forbidden.Add(Hull(new[]{points[i],points[i+1]}.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z)))));
             }
-            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Envelope=envelope,Relevant=relevant,Forbidden=forbidden.ToArray()},null);
+            double castCentreY=(float)centreY;
+            return(new Context{Input=r,Offsets=offsets,Start=start,Component=component,Guard=guard,CentreY=centreY,MinY=minY,MaxY=maxY,Envelope=envelope,Relevant=relevant,Forbidden=forbidden.ToArray(),
+                CastCentreY=castCentreY,OriginalGeometryFootprints=relevant.Select(o=>o.Footprint.ToArray()).ToArray(),
+                CastGeometryFootprints=r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(minY,castCentreY+r.Model.Min.Y),Math.Max(maxY,castCentreY+r.Model.Max.Y))).Select(o=>o.Footprint.ToArray()).ToArray()},null);
+        }
+        private static Surface Carrier(Context c,Point point)
+        {
+            if(!c.Carriers.TryGetValue((point.X,point.Z),out var carrier))
+            {carrier=c.Component.Where(s=>Inside(s.Vertices,point)).OrderBy(s=>s.Identity).FirstOrDefault();c.Carriers.Add((point.X,point.Z),carrier);}
+            return carrier;
         }
         private static bool GeometryClear(Context c,Surface surface,Position position,out Point[] shape)
+            =>GeometryClearCore(c,surface,position,out shape,true);
+        // Reference mode retains the prior literal predicates for clearance-equivalence tests.
+        private static bool GeometryClearCore(Context c,Surface surface,Position position,out Point[] shape,bool reuse)
         {
             shape=Array.Empty<Point>();var r=c.Input;
             if(surface==null||!Finite(position.X,position.Y,position.Z)||Math.Abs(position.Y-c.CentreY)>Epsilon||
                 position.X!=(double)(float)position.X||position.Z!=(double)(float)position.Z)return false;
-            var carrier=c.Component.Where(s=>Inside(s.Vertices,position.Xz)).OrderBy(s=>s.Identity).FirstOrDefault();
+            var carrier=reuse?Carrier(c,position.Xz):c.Component.Where(s=>Inside(s.Vertices,position.Xz)).OrderBy(s=>s.Identity).FirstOrDefault();
             if(carrier==null||!carrier.Identity.Equals(surface.Identity))return false;
             shape=c.Offsets.Select(p=>new Point(position.X+p.X,position.Z+p.Z)).ToArray();
             var fixedShape=shape;
             if(r.Reservations.Any(prior=>(prior.MinY<=c.MaxY+Epsilon&&prior.MaxY>=c.MinY-Epsilon&&Overlap(fixedShape,prior.Base.ToArray()))||
                 (prior.ProtectRoute&&c.MinY<=prior.Floor+95+Epsilon&&c.MaxY>=prior.Floor-Epsilon&&(!Clear(prior.Route.Select(p=>p.Xz).ToArray(),fixedShape)||!Clear(prior.Route.Select(p=>Rounded(p.Xz)).ToArray(),fixedShape)))))return false;
-            if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component))||c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
+            if(!(fixedShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(fixedShape,c.Component)))return false;
+            if(reuse?c.OriginalGeometryFootprints.Any(o=>Overlap(fixedShape,o)):c.Relevant.Any(o=>Overlap(fixedShape,o.Footprint.ToArray())))return false;
             var cast=Cast(position);var castShape=c.Offsets.Select(p=>new Point(cast.X+p.X,cast.Z+p.Z)).ToArray();
-            return (castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component))&&!r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Any(o=>Overlap(castShape,o.Footprint.ToArray()));
+            bool sameXY=BitConverter.DoubleToInt64Bits(cast.X)==BitConverter.DoubleToInt64Bits(position.X)&&BitConverter.DoubleToInt64Bits(cast.Z)==BitConverter.DoubleToInt64Bits(position.Z);
+            if(!reuse||!sameXY)if(!(castShape.All(p=>Inside(r.SiteBounds.Polygon,p))&&Covered(castShape,c.Component)))return false;
+            // Keep the original ALL-scene cast-volume predicate. A tolerated Y perturbation can cast differently.
+            var castFootprints=reuse&&cast.Y==c.CastCentreY?c.CastGeometryFootprints:r.Scene.Obstacles.Where(o=>VolumeRelevant(o,Math.Min(c.MinY,cast.Y+r.Model.Min.Y),Math.Max(c.MaxY,cast.Y+r.Model.Max.Y))).Select(o=>o.Footprint.ToArray());
+            return !castFootprints.Any(o=>Overlap(castShape,o));
         }
         private static bool RouteValid(Context c,Position centre,Point[] shape,IReadOnlyList<Position> route)
         {
@@ -547,7 +566,7 @@ namespace hds
                     // Same immutable context and deterministic centre->carrier mapping: duplicate successes AND
                     // failures have identical geometry. Preserve the first occurrence, as the final DistinctBy did.
                     if(deduplicateEarly&&!representedCentres.Add((centre.X,centre.Z)))continue;
-                    var surface=component.Where(s=>Inside(s.Vertices,centre)).OrderBy(s=>s.Identity).FirstOrDefault();if(surface==null)continue;
+                    var surface=Carrier(context,centre);if(surface==null)continue;
                     var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
                     if(expanded&&(!Clear(new[]{r.Entry.Standing.Xz},shape)||!Clear(new[]{Rounded(r.Entry.Standing.Xz)},shape)))continue;
                     candidates.Add(new Candidate{Surface=surface,Centre=centre,Shape=shape,Distance=Distance(centre,r.Anchor.Position.Xz)});
