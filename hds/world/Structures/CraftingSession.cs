@@ -99,6 +99,7 @@ namespace hds
             {
                 var state = c.playerData.craftingSession;
                 if (state == null || ability != 0 && state.Ability != ability) return false;
+                OrdinaryItemCompile.Cancel(c);
                 c.playerData.craftingSession = null;
                 if (c.playerData.stance == TypingStance)
                 {
