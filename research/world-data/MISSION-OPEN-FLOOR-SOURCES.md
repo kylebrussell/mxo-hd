@@ -75,6 +75,23 @@ Each pack's raw-source qualification, format, coverage rectangle, profile
 versions and SHA256 are reviewable in its manifest. Generated server coverage
 and ability-parity snapshots are not part of this data.
 
+`anchors_1` is a separate source-only index:535 lazy CSV-gzip files contain
+1,013,197 canonical native/legacy-associated keys. It changes no chooser,
+eligibility or concrete prototype. `mission_open_floor_anchors.py --tools
+<resource-tools> --output <directory>` reproduces it directly from the client's
+counted GO records and both repository Slums CSVs. Native/legacy conflicts,
+missing-layer sectors, type mismatches and exterior rows are omitted. Every
+accepted row retains the exact legacy XYZ/full quaternion plus native XYZ/full
+quaternion, identity and source-record provenance. It includes all65,404 earlier
+Computer anchors byte-for-byte in these fields and covers other spawners and
+furniture fallback sources. Selected unsupported orientations still refuse;
+unrelated rows do not invalidate a whole sector.
+
+`source_models_1.json` independently supplies positive Model6 presence/absence
+for627 source templates. A missing obstacle never becomes evidence of absence.
+The packer's `--models-only --source-model-catalog <catalog> --output
+data/mission_open_floor/1` regenerates this lookup without rebuilding geometry.
+
 Run source/parser/pack regressions with:
 
 ```text
