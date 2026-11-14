@@ -185,7 +185,8 @@ public static partial class Scenarios
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
                             foreach(var npc in mission.Elements("npc"))names.Add((string)npc.Attribute("handle")!);
-                            List<ViewCreation> Targets()=>p.World.CreationSnapshot().Skip(viewsStart)
+                            IEnumerable<ViewCreation> CurrentTargets()=>strictFollowupApproach?MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),viewsStart):p.World.CreationSnapshot().Skip(viewsStart);
+                            List<ViewCreation> Targets()=>CurrentTargets()
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
                                     (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();

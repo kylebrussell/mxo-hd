@@ -54,11 +54,11 @@ public static partial class Scenarios
             await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification="bound source NAV/range only; no route/collision/picking proof";
         }
         bool Match(ViewCreation v)=>MervFollowupApproachFixture.Matches(v,owned.Goid,centre,quaternion);
-        await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(cursor).Any(Match),"Current saved object XYZ/quaternion view",TimeSpan.FromSeconds(12));
+        await p.WaitUntilAsync(()=>MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),cursor).Any(Match),"Current saved object XYZ/quaternion view",TimeSpan.FromSeconds(12));
         var after=await MervFollowupCheckpoint(context,p);
         Check.Equal(saved.Mission,after.Mission,"Approach retains selected mission");Check.Equal(saved.Phase,after.Phase,"Approach retains current phase");
         Check.Equal(original,Raw(after.Objects.Single(o=>o.Id==id)),"Approach retains exact raw source and fixed witness DTO");
         evidence.Add(new{Operation="current-object-approach",saved.Mission,saved.Phase,Object=id,SourceAndWitness=original,Centre=centre,Quaternion=quaternion,Qualification=qualification});
-        return p.World.CreationSnapshot().Skip(cursor).Last(Match);
+        return MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),cursor).Last(Match);
     }
 }
