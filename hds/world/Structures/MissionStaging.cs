@@ -395,7 +395,7 @@ namespace hds
                     goid = spot == null ? (UInt16)0 : MissionSites.Goid(spot);
                 }
 
-                yield return new ObjectChoice(def,spot,goid);
+                yield return new ObjectChoice(def,spot,GeneratedConcrete(spot,goid));
             }
         }
 

@@ -190,11 +190,13 @@ namespace hds
     }
     public static partial class MissionStaging
     {
+        // Classify the reviewed1410 generated Safe as552 before proof. Missing anchor/scene then refuses in preflight; never silently falls back1416.
+        internal static ushort GeneratedConcrete(StaticWorldObject spot,ushort fallback)=>fallback==1416&&spot?.type!=null&&spot.type.Length>=2&&MissionSites.Goid(spot)==1410?(ushort)552:fallback;
         internal static ushort ExpectedConcrete(MissionObjectDef def,StaticWorldObject spot)
         {
             ushort source=MissionSites.Goid(spot);
             if(MissionSites.RealObjects.TryGetValue(source,out string kind)&&string.Equals(kind,def.kind,StringComparison.OrdinalIgnoreCase))return source;
-            return ObjectGoids.TryGetValue(def.kind,out ushort replacement)?replacement:source;
+            return ObjectGoids.TryGetValue(def.kind,out ushort replacement)?GeneratedConcrete(spot,replacement):source;
         }
         private static void PlacePreparedObjects(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan)
         {
