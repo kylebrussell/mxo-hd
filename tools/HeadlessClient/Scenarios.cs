@@ -239,6 +239,7 @@ public static partial class Scenarios
         new Scenario("mission-courier", MissionCourier, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="20001"}),
         new Scenario("mission-team-relog", MissionTeamRelog, StillNpcs),
         new Scenario("mission-objectives-relog", MissionObjectivesRelog, StillNpcs),
+        new Scenario("mission-objective-ui-relog", MissionObjectiveUiRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("zion-critical-opening", ZionCriticalOpening, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
         new Scenario("zion-critical-followup",ZionCriticalFollowup,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101203"}),
