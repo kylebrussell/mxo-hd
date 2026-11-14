@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        OrdinaryItemCode.Entry GetOrdinaryItemCode(UInt32 character, UInt16 slot);
+        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost);
         PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
         bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
