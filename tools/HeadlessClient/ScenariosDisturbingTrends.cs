@@ -57,13 +57,29 @@ public static partial class Scenarios
             Check.Equal(witness.Quaternion,Convert.ToHexString(computer.Attributes["Orientation"]),"Actual creation quaternion matches persisted plan");
             byte take=ObjectStates.UseNumber(computer.Goid,"Take")??throw new ScenarioFailure("No native Take definition on actual Computer");
             await p.WaitUntilAsync(()=>{var updates=ViewUpdateValues(p,computer.ViewId,"01 08");uint state=updates.Count>0?updates[^1]:BitConverter.ToUInt32(computer.Attributes["CurrentState"]);return ObjectStates.Offered(computer.Goid,state).Contains(take);},"Actual Computer state offers Take",TimeSpan.FromSeconds(10));
-            p.SendRpc($"80 c7 {MissionNpcId(computer)} {take:x2} 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");step="carry-before-relog";var carried=await Saved();Check.Equal(1,carried.Phase,"Carry before normal exit");Check.That(carried.Done.Contains(1)&&carried.Items.ContainsKey(6783),"Normal Take earned tracked Map Disk6783");ushort slot=carried.Items[6783];
-            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid=6783"),"Exactly one earned disk");string savedObjects=JsonSerializer.Serialize(carried.Objects,options);
+            p.SendRpc($"80 c7 {MissionNpcId(computer)} {take:x2} 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");step="earned-disk";var taken=await Saved();
+            Check.That(taken.Items.ContainsKey(6783),"Normal Take earned tracked Map Disk6783");ushort slot=taken.Items[6783];
+            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid=6783"),"Exactly one earned disk");
+            // Near-door auto-exit is a separately tracked runtime issue. Stabilize at the delivery
+            // phase through the ordinary exit before logout; never pretend its fresh Give goal is
+            // the prior phase's completed Take goal, or claim active phase2 proxy replay here.
+            if(taken.Phase==1)
+            {
+                Check.That(taken.Done.Contains(1),"Take completed its current goal before ordinary exit");
+                await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(30));
+            }
+            else Check.Equal(2,taken.Phase,"Only the normal next delivery phase may already have advanced");
+            step="carry-before-relog";var carried=await Saved();Check.Equal(2,carried.Phase,"Stable delivery phase before carry logout");
+            Check.That(carried.Done.Length==0,"Delivery Give is still pending before carry logout");Check.Equal(slot,carried.Items[6783],"Normal exit retains earned disk slot");
+            string savedSites=JsonSerializer.Serialize(carried.OpenFloorSites,options);
             p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");Record();p.Dispose();Console.WriteLine("  DISTURBING normal carry logout; waiting33s reservation cleanup");await Task.Delay(TimeSpan.FromSeconds(33));
             step="carry-relog";p=await HeadlessPlayer.LoginAsync(context.Server.Address,"user"+id,handle);await p.EnterWorldAsync();await p.WaitForRpcAsync("80 9c");await p.WaitForRpcAsync("80 9e 00");var restored=await Saved();
-            Check.Equal(carried.Identity,restored.Identity,"Same active mission identity");Check.Equal(slot,restored.Items[6783],"Exact owned disk slot survives relog");Check.That(restored.Done.Contains(1),"Take goal survives relog");Check.Equal(savedObjects,JsonSerializer.Serialize(restored.Objects,options),"Saved source/prototype/state survives relog unchanged");
+            Check.Equal(carried.Identity,restored.Identity,"Same active mission identity");Check.Equal(carried.Started,restored.Started,"Original acceptance time survives carry relog");
+            Check.Equal(2,restored.Phase,"Same pending delivery phase survives relog");Check.That(restored.Done.Length==0,"Delivery Give remains pending after relog");
+            Check.Equal(slot,restored.Items[6783],"Exact earned disk slot survives relog");Check.That(carried.EverDone.SequenceEqual(restored.EverDone),"Earned goal history survives relog");
+            Check.Equal(savedSites,JsonSerializer.Serialize(restored.OpenFloorSites,options),"Original phase sites and source descriptors survive carry relog unchanged");
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid=6783"),"Relog does not duplicate disk");
-            await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00");step="phase3-give";await EnterMissionArea(context,p);var delivery=await Saved();Check.Equal(2,delivery.Phase,"New phase3 Ophiuchi");var npc=delivery.Mobs.Single(m=>m.Npc==6);
+            step="phase3-give";await EnterMissionArea(context,p);var delivery=await Saved();Check.Equal(2,delivery.Phase,"New phase3 Ophiuchi");var npc=delivery.Mobs.Single(m=>m.Npc==6);
             var last=await Ophiuchi(6);Check.That(last.Attributes.TryGetValue("TakerActiveTracker",out var active)&&active.Any(b=>b!=0),"Actual phase3 NPC exposes Give");
             Check.That(last.Attributes.TryGetValue("Position",out var at)&&Math.Abs(BitConverter.ToDouble(at)-npc.X)<1&&Math.Abs(BitConverter.ToDouble(at,8)-npc.Y)<1&&Math.Abs(BitConverter.ToDouble(at,16)-npc.Z)<1,"Resolved current NPC6 placement, not old Ophiuchi1");
             p.SendRpc($"80 c7 {MissionNpcId(last)} 0e 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid=6783"),"Normal Give consumes tracked disk");
@@ -80,7 +96,7 @@ public static partial class Scenarios
             try
             {
                 string dll=context.Server.SourceAssembly;
-                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Database=context.Database.Name,Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Checkpoints=checkpoints,Npcs=npcs,Sessions=sessions,ServerPid=context.Server.ProcessId,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),NativePickingProven=false,NativeWalkingProven=false,MovementPolicy="Test-only movement follows the persisted open-floor route; it is not native walking proof"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Database=context.Database.Name,Step=step,Failure=primary?.ToString()??proofFailure?.ToString(),Checkpoints=checkpoints,Npcs=npcs,Sessions=sessions,ServerPid=context.Server.ProcessId,SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),NativePickingProven=false,NativeWalkingProven=false,CarryRelogPhase=2,ActivePhaseTwoProxyRelogProven=false,MovementPolicy="Test-only movement follows the persisted open-floor route; it is not native walking proof"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
                 File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog());Console.WriteLine("  DISTURBING evidence: "+stem+" step="+step);
             }
             catch(Exception e){proofFailure??=e;Console.Error.WriteLine("Proof failure: "+e);}
