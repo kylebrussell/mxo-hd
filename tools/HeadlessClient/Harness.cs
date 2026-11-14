@@ -171,12 +171,16 @@ public sealed class ServerInstance : IDisposable
 
     public ServerAddress Address { get; }
     public string WorkingDirectory { get; }
+    public string SourceAssembly { get; }
+    public string SourceAssemblySha256 { get; }
 
-    private ServerInstance(Process process, ServerAddress address, string workingDirectory)
+    private ServerInstance(Process process, ServerAddress address, string workingDirectory, string sourceAssembly)
     {
         this.process = process;
         Address = address;
         WorkingDirectory = workingDirectory;
+        SourceAssembly = sourceAssembly;
+        SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(sourceAssembly)));
     }
 
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
@@ -236,7 +240,7 @@ public sealed class ServerInstance : IDisposable
         }
 
         Process process = new() { StartInfo = start };
-        ServerInstance server = new(process, address, workingDirectory);
+        ServerInstance server = new(process, address, workingDirectory, serverDll);
         process.OutputDataReceived += (_, line) => server.Capture(line.Data);
         process.ErrorDataReceived += (_, line) => server.Capture(line.Data);
         process.Start();

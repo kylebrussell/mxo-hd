@@ -1,5 +1,4 @@
 using HeadlessClient;
-using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace NativeQa;
@@ -58,11 +57,8 @@ public static class NativeQaBootstrapChecks
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });
         var seeded = await NativeQaFixtureSeeder.PrepareAsync(root, database, plan);
-        string sourceAssembly = Directory.EnumerateFiles(Path.Combine(root,"hds","bin"),"hds.dll",SearchOption.AllDirectories)
-            .Where(p => File.Exists(Path.ChangeExtension(p,"runtimeconfig.json")))
-            .OrderByDescending(File.GetLastWriteTimeUtc).First();
-        string sourceHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(sourceAssembly)));
         using var server = await ServerInstance.StartAsync(root, database.Name, IsolatedEnvironment(seedMode));
+        string sourceAssembly = server.SourceAssembly, sourceHash = server.SourceAssemblySha256;
         string directory = Path.Combine(output, "server-" + server.ProcessId);
         Directory.CreateDirectory(directory);
         Console.WriteLine($"BOOTSTRAP SERVER {server.ProcessId} {database.Name} modes={names.Length}");
@@ -88,21 +84,20 @@ public static class NativeQaBootstrapChecks
                         NativeQaFixtureSeeder.HelperNames, helpers, server.Address));
                     if (server.HasExited) throw new InvalidOperationException("Bootstrap server exited.");
                     var modePlan = mode.Plan;
-                    var abilities = names.Length == 1 ? seeded.Abilities : modePlan.Abilities;
                     var state = modePlan.StateWithMetadata(new NativeQaFixtureState
                     {
                         Database = database.Name, Directory = server.WorkingDirectory, Account = "CSR_AbilityQA",
                         Character = "CSR_Tester", CharId = 110, BuildCommit = "bootstrap-check",
                         Configuration = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(sourceAssembly))),
-                        Status = "BootstrapChecked", Abilities = abilities,
+                        Status = "BootstrapChecked", Abilities = seeded.Abilities,
                         SourceAssembly = sourceAssembly, SourceAssemblySha256 = sourceHash,
                         OwnedUnloadedDisciplineAncestors = seeded.DisciplineAncestors,
-                        StealthShieldQa = modePlan.StealthShieldQa, ShieldReady = ack.Length > 0,
-                        CasterOrganization = modePlan.StealthShieldQa ? 1 : null,
-                        CasterPvpFlag = modePlan.StealthShieldQa, HealthCallbackQa = modePlan.HealthCallbackQa,
-                        CompileItemsQa = modePlan.CompileItemsQa,
-                        CallbackRoll15 = modePlan.HealthCallbackQa ? 0 : null,
-                        CallbackRoll100 = modePlan.HealthCallbackQa ? 0 : null
+                        StealthShieldQa = plan.StealthShieldQa, ShieldReady = ack.Length > 0,
+                        CasterOrganization = plan.StealthShieldQa ? 1 : null,
+                        CasterPvpFlag = plan.StealthShieldQa, HealthCallbackQa = plan.HealthCallbackQa,
+                        CompileItemsQa = plan.CompileItemsQa,
+                        CallbackRoll15 = plan.HealthCallbackQa ? 0 : null,
+                        CallbackRoll100 = plan.HealthCallbackQa ? 0 : null
                     });
                     await WriteAsync(Path.Combine(modeDirectory, "state.json"), state);
                     string? equipped = null;
@@ -119,8 +114,9 @@ public static class NativeQaBootstrapChecks
                     if (new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception", "[MISSION] Tick failed" }
                         .Any(marker => serverOutput.Contains(marker, StringComparison.Ordinal)))
                         throw new InvalidOperationException("Server diagnostics failed; see the retained server output.");
-                    var result = new { Mode = name, Passed = true, Database = database.Name, ServerPid = server.ProcessId,
+                    var result = new { Mode = name, BootstrapPassed = true, Database = database.Name, ServerPid = server.ProcessId,
                         Address = server.Address, CustomHook = HasCustomHook(mode), SharedNoOpFixture = names.Length > 1,
+                        DeclaredModeAbilities = modePlan.Abilities, SeededAbilities = seeded.Abilities,
                         HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, StateSerialized = true, At = DateTime.UtcNow };
                     results.Add(result);
                     await WriteAsync(Path.Combine(modeDirectory, "result.json"), result);
