@@ -18,7 +18,12 @@ namespace hds
         /// </summary>
         public static int UploadCode(WorldClient client, out bool abilityCodeUploaded)
         {
+            lock(client.playerData.craftingSync) return UploadLocked(client,out abilityCodeUploaded);
+        }
+        private static int UploadLocked(WorldClient client,out bool abilityCodeUploaded)
+        {
             abilityCodeUploaded = false;
+            var publication=new AbilityAcquisition.Publication(client);
             UInt32 charId = client.playerData.getCharID();
             IWorldDBHandler db = Store.dbManager.WorldDbHandler;
 
@@ -27,39 +32,22 @@ namespace hds
             UInt16 nextSlot = db.GetNextAbilitySlot(charId);
             CodeStorage.UploadPlan plan = CodeStorage.PlanUpload(bag, stored, nextSlot);
 
-            List<Crafting.InventoryItem> abilityCode = new List<Crafting.InventoryItem>();
-            HashSet<UInt32> uploading = new HashSet<UInt32>();
-            foreach (Crafting.InventoryItem item in bag)
+            var learned=new List<AbilityAcquisition.Receipt>();
+            foreach(var item in bag)
             {
-                if (Crafting.IsBagSlot(item.Slot) && AbilityProgression.IsAbilityCode(item.Goid) &&
-                    !db.HasAbility(charId, unchecked((Int32)item.Goid)) && uploading.Add(item.Goid))
+                if(!AbilityAcquisition.UploadCandidate(item))continue;
+                try { learned.Add(db.AcquireAbility(charId,item.Goid,0,item.Slot,null,plan.Added.ConvertAll(e=>e.Slot).ToArray())); }
+                catch(Exception error)
                 {
-                    abilityCode.Add(item);
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] Upload refused/rolled back: "+error.Message);
+                    publication.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
                 }
             }
-
-            if (plan.ItemsMoved == 0 && abilityCode.Count == 0)
-            {
-                Output.WriteDebugLog("[CODE STORAGE] Nothing to upload");
-                return 0;
-            }
-
-            string name = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
+            if(plan.ItemsMoved==0&&learned.Count==0)return 0;
+            string name=StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
             client.messageQueue.addRpcMessage(CodeStorage.BuildUploadMessage(name));
-
-            abilityCodeUploaded = abilityCode.Count > 0;
-
-            // Bought abilities join the known-abilities list after the storage entries this upload adds.
-            UInt16 abilitySlot = (UInt16)(nextSlot + plan.Added.Count);
-            foreach (Crafting.InventoryItem item in abilityCode)
-            {
-                db.RemoveItemAtInventorySlot(item.Slot, charId);
-                db.AddAbility(charId, abilitySlot, unchecked((Int32)item.Goid), 1);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(item.Slot));
-                client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(abilitySlot, AbilityProgression.AbilityCodeValue(item.Goid)));
-                Output.WriteDebugLog("[CODE STORAGE] Uploaded ability code " + item.Goid + " to slot " + abilitySlot);
-                abilitySlot++;
-            }
+            abilityCodeUploaded=learned.Count>0;
+            foreach(var receipt in learned)PublishLearn(client,receipt,publication);
 
             foreach (UInt16 slot in plan.ClearedBagSlots)
             {
@@ -87,7 +75,7 @@ namespace hds
 
             Output.WriteDebugLog("[CODE STORAGE] Uploaded " + plan.ItemsMoved + " items: " + plan.ClearedBagSlots.Count +
                                  " bag slots emptied, " + plan.Updated.Count + " entries grew, " + plan.Added.Count + " new");
-            return plan.ItemsMoved + abilityCode.Count;
+            return plan.ItemsMoved + learned.Count;
         }
 
         /// <summary>
@@ -99,6 +87,14 @@ namespace hds
             UploadCode(client, out _);
             client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
             client.FlushQueue();
+        }
+
+        internal static void PublishLearn(WorldClient client,AbilityAcquisition.Receipt receipt,AbilityAcquisition.Publication publication,bool la=false)
+        {
+            uint value=0x80000000u|((uint)AbilityAcquisition.Identity(receipt.Goid)<<10)|1u;
+            var packets=new List<byte[]>{ServerPackets.BuildInventoryItemDelete(receipt.BagSlot),ServerPackets.BuildKnownAbilityAdd(receipt.ArchiveSlot,value)};
+            if(la)packets.Add(CentralStorage.BuildUploadResult(1,true,CentralStorage.Success));
+            publication.Publish(client,packets.ToArray());
         }
 
         /// <summary>Takes one item from storage: 69 00 with the new count, or 5f with PersonalInventoryItem 0 for the last one.</summary>
