@@ -116,7 +116,7 @@ public static partial class Scenarios
         await original.WaitForTextAsync("Unlock the safe");
         await original.WaitForRpcAsync("80 9e 00");
         await EnterMissionArea(context,original);
-        original.SendChat("?missionobject 1");await original.WaitForTextAsync("Object moved");
+        await ApproachMissionObjectFixture(context,original,1);
         var safe=await MissionObjectView(context,original,"Safe");
         original.SendRpc($"80 c7 {MissionNpcId(safe)} 08 00");
         await original.WaitForRpcAsync(AbilityLine(0x7a000145));
