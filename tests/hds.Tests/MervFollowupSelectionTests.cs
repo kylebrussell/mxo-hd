@@ -43,14 +43,19 @@ public class MervFollowupSelectionTests
                 var selected=new List<object>();
                 foreach(var pair in progress.objects.OrderBy(x=>x.Key))
                 {
-                    var state=pair.Value;objectCount++;var pose=MissionObjectPoses.For(state);bool projected=NavMesh.Project(1,pose.X,site.floorY,pose.Z,out var approach,maxDistance:200);
-                    if(id==301204&&phaseIndex==1&&pair.Key==2){Assert.Equal((ushort)1410,MissionSites.Goid(state.spot));Assert.Equal((ushort)552,state.goid);Assert.Equal(0x0d1001d3u,state.spot.mxoStaticId);Assert.Equal((28900d,800d,14100d),(pose.X,pose.Y,pose.Z));Assert.Equal("00000000F304353F00000000F304353F",Convert.ToHexString(pose.Orientation));}
-                    selected.Add(new{Object=pair.Key,Kind=state.def.kind,SourceGoid=MissionSites.Goid(state.spot),Concrete=state.goid,State=MissionStaging.IsComputer(state.goid)?MissionStaging.ComputerStateFor(progress,state):ObjectStates.DefaultState(state.goid),Bound=MissionSites.Goid(state.spot)==state.goid,Spot=state.spot,Pose=new{pose.X,pose.Y,pose.Z,Orientation=Convert.ToHexString(pose.Orientation)},ApproachProjected=projected,Approach=approach,NativeReachabilityProven=false});
+                    var state=pair.Value;objectCount++;var pose=MissionObjectPoses.For(state);
+                    // This reflection-only inventory has no admission metadata. Recover the source anchor
+                    // independently; only normal admission can publish an OpenFloor free-proxy pose.
+                    bool anchorOnly=MissionSites.Goid(state.spot)!=state.goid&&(state.goid==3||state.goid==552);
+                    if(anchorOnly){Assert.Null(state.OpenFloor);Assert.True(MissionOpenFloorAnchors.TryCurrent(state.spot,out var anchor,out var evidence),evidence);pose=anchor;}
+                    bool projected=NavMesh.Project(1,pose.X,site.floorY,pose.Z,out var approach,maxDistance:200);
+                    if(id==301204&&phaseIndex==1&&pair.Key==2){Assert.Equal((ushort)1410,MissionSites.Goid(state.spot));Assert.Equal((ushort)552,state.goid);Assert.Equal(0x0d1001d3u,state.spot.mxoStaticId);var unadopted=MissionObjectPoses.For(state);Assert.Equal((state.spot.pos_x,state.spot.pos_y,state.spot.pos_z),(unadopted.X,unadopted.Y,unadopted.Z));Assert.Equal((28900d,800d,14100d),(pose.X,pose.Y,pose.Z));Assert.Equal("00000000F304353F00000000F304353F",Convert.ToHexString(pose.Orientation));}
+                    selected.Add(new{Object=pair.Key,Kind=state.def.kind,SourceGoid=MissionSites.Goid(state.spot),Concrete=state.goid,State=MissionStaging.IsComputer(state.goid)?MissionStaging.ComputerStateFor(progress,state):ObjectStates.DefaultState(state.goid),Bound=MissionSites.Goid(state.spot)==state.goid,Spot=state.spot,SourceAnchorOnly=anchorOnly,SourceAnchor=new{pose.X,pose.Y,pose.Z,Orientation=Convert.ToHexString(pose.Orientation)},ApproachProjected=projected,Approach=approach,NativeReachabilityProven=false});
                 }
                 rows.Add(new{Mission=id,Phase=phaseIndex+1,Seed=seed,Site=site,Selected=selected});
             }
         }
-        File.WriteAllText(Path.Combine(Path.GetTempPath(),"mxo-merv-followup-offline-selection.json"),JsonSerializer.Serialize(new{Input="Fixed17000/2300 EACH offline phase; normal Choose/PlaceObjects seed301101/per-mission exclusions, no forced sites. Live transition selections may differ; NAV projection is not a physical/walked path proof.",Phases=rows},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
+        File.WriteAllText(Path.Combine(Path.GetTempPath(),"mxo-merv-followup-offline-selection.json"),JsonSerializer.Serialize(new{Input="Fixed17000/2300 EACH offline phase; normal Choose/PlaceObjects seed301101/per-mission exclusions, no forced sites. Source-anchor inventory only, not an admitted free-proxy pose. Live transition selections may differ; NAV projection is not a physical/walked path proof.",Phases=rows},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
         Assert.Equal(11,rows.Count);Assert.Equal(8,objectCount);
     }
 }
