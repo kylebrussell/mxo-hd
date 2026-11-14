@@ -9,7 +9,7 @@ namespace hds
     internal static class MissionOpenFloorPhasePlanner
     {
         // OURS computational admission policy, not a retail geometry or feasibility claim.
-        internal const int SearchPolicyVersion=2;
+        internal const int SearchPolicyVersion=3;
         internal sealed class Limits
         {
             internal int BodyNodes {get;} internal int RouteGraphs {get;}
@@ -31,7 +31,8 @@ namespace hds
             {Results=new ReadOnlyDictionary<ushort,G.Result>(new Dictionary<ushort,G.Result>(results));Order=Array.AsReadOnly(order.ToArray());Attempts=attempts;Milliseconds=milliseconds;BodyNodes=bodyNodes;RouteGraphs=routeGraphs;StaticRootGraphs=staticRootGraphs;DirectSingle=directSingle;}
         }
         // Bounded deterministic search family: every authored cyclic rotation, then reverse rotations.
-        // At most2n orders per root/all-candidate wave, first feasible. No source/site reroll, timeout, margin relaxation or post-admission repacking.
+        // At most2n orders per root/range-hint/all-candidate wave, first feasible. No source/site reroll,
+        // timeout, margin relaxation or post-admission repacking.
         internal static IEnumerable<int[]> Orders(int count)
         {
             if(count<1)yield break;var seen=new HashSet<string>(StringComparer.Ordinal);
@@ -70,21 +71,28 @@ namespace hds
                 if(!available){refusal=refusal??"NoGeometricBodyCandidates";return false;}candidates.Add(input.ObjectId,values);
             }
             string lastRefusal="NoDisjointBodySet",exhausted=null;G.Result[] accepted=null;
-            foreach(bool rootWave in new[]{true,false})foreach(var order in Orders(inputs.Count))
+            var testedSets=new HashSet<string>(StringComparer.Ordinal);
+            foreach(int wave in new[]{0,1,2})foreach(var order in Orders(inputs.Count))
             {
                 attempts++;var bodies=new G.BodyCandidate[inputs.Count];
                 bool Search(int depth)
                 {
                     if(depth==order.Length)
                     {
+                        // A wave/order may revisit the exact immutable body set. Its full graph result
+                        // cannot change, so do not charge another graph or crowd out mixed sets.
+                        string key=string.Join(";",bodies.Select(b=>BitConverter.DoubleToInt64Bits(b.Centre.X)+":"+
+                            BitConverter.DoubleToInt64Bits(b.Centre.Y)+":"+BitConverter.DoubleToInt64Bits(b.Centre.Z)));
+                        if(!testedSets.Add(key))return false;
                         if(measured.RouteGraphs>=limits.RouteGraphs){exhausted="SearchExhausted:RouteGraphs";return false;}measured.RouteGraphs++;
                         if(G.RouteBodySet(bodies,out var result,out var reason)){accepted=result;return true;}
                         lastRefusal=reason;return false;
                     }
                     int index=order[depth];
-                    foreach(var body in candidates[inputs[index].ObjectId].Enumerate(rootWave))
+                    var sequence=candidates[inputs[index].ObjectId];
+                    foreach(var body in wave==1?sequence.EnumerateStaticRange():sequence.Enumerate(wave==0))
                     {
-                        if(rootWave&&!body.RootReachableCentre)continue;
+                        if(wave==0&&!body.RootReachableCentre)continue;
                         if(measured.BodyNodes>=limits.BodyNodes){exhausted="SearchExhausted:BodyNodes";return false;}measured.BodyNodes++;
                         if(order.Take(depth).Any(i=>!G.BodiesClear(body,bodies[i])))continue;
                         bodies[index]=body;if(Search(depth+1))return true;if(exhausted!=null)return false;
