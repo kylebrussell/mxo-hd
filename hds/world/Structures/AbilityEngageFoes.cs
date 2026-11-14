@@ -40,7 +40,8 @@ namespace hds
                 !Source.playerData.worldChangePending && !Source.playerData.DistrictIsLA() && !Source.playerData.isDead && !Source.playerData.duelDeath &&
                 Source.playerData.worldGeneration==Normal.World && Source.playerData.lifeGeneration==Normal.Life &&
                 Source.playerData.getDistrictId()==District && Source.TransportFence.IsCurrent(Transport) && PvpCombat.HealthOf(Source)>0;
-            internal bool Current => SourceCurrent && Normal.Completed && ControlActions.CanUseAbilities(Source) && Primary!=null && Primary.viewCreated &&
+            internal bool LandingCurrent => SourceCurrent && Normal.Completed && ControlActions.CanUseAbilities(Source);
+            internal bool Current => LandingCurrent && Primary!=null && Primary.viewCreated && !Primary.viewNeedsToBeDeleted &&
                 ReferenceEquals(Source.viewMan.getViewById(Primary.ViewID),Primary) && Primary.spawnId==PrimarySpawn && Primary.entityId==PrimaryEntity &&
                 (PrimaryMob!=null ? ReferenceEquals(AbilityTargets.FindMob(Source,Primary.ViewID,out _),PrimaryMob) && !PrimaryMob.getIsDead() &&
                     PrimaryMob.getHealthC()>0 && PrimaryMob.DeathGeneration==PrimaryDeath : PrimaryPlayer!=null && PrimaryPlayer.Alive &&
@@ -61,7 +62,7 @@ namespace hds
             {Cast=cast;Mob=mob;View=view;Entity=mob.getEntityId();Spawn=view.spawnId;Death=mob.DeathGeneration;}
             internal bool Current => Cast.SourceCurrent && Mob!=null && View!=null && !Mob.isFriendly && !Mob.getIsDead() && Mob.getHealthC()>0 &&
                 Mob.DeathGeneration==Death && Mob.getEntityId()==Entity && Mob.getDistrict()==Cast.District && View.entityId==Entity &&
-                View.viewCreated && View.spawnId==Spawn && ReferenceEquals(Cast.Source.viewMan.getViewById(View.ViewID),View) &&
+                View.viewCreated && !View.viewNeedsToBeDeleted && View.spawnId==Spawn && ReferenceEquals(Cast.Source.viewMan.getViewById(View.ViewID),View) &&
                 ReferenceEquals(AbilityTargets.FindMob(Cast.Source,View.ViewID,out _),Mob);
         }
 
@@ -85,7 +86,7 @@ namespace hds
                 client.Alive && data.getOnWorld() && !data.worldChangePending && !data.DistrictIsLA() && !data.isDead && !data.duelDeath &&
                 data.getDistrictId()==district && client.TransportFence.IsCurrent(transport) && PvpCombat.HealthOf(client)>0 &&
                 !mob.getIsDead() && mob.getHealthC()>0 && !mob.isFriendly && mob.DeathGeneration==death && mob.getEntityId()==entity &&
-                mob.getDistrict()==district && view.viewCreated && view.spawnId==spawn && view.entityId==entity &&
+                mob.getDistrict()==district && view.viewCreated && !view.viewNeedsToBeDeleted && view.spawnId==spawn && view.entityId==entity &&
                 ReferenceEquals(client.viewMan.getViewById(view.ViewID),view) && ReferenceEquals(AbilityTargets.FindMob(client,view.ViewID,out _),mob);
         }
 
@@ -93,14 +94,14 @@ namespace hds
             HasInitializer(ability)?new Cast(source,view,normal):null;
         internal static Recipient Before(Cast cast,WorldClient source,Mob mob,ClientView view,ushort ability)
         {
-            if(!HasInitializer(ability) || cast==null || !ReferenceEquals(cast.Source,source) || !cast.Current || mob==null || view==null)return null;
+            if(!HasInitializer(ability) || cast==null || !ReferenceEquals(cast.Source,source) || !cast.LandingCurrent || mob==null || view==null)return null;
             var stamp=new Recipient(cast,mob,view);return stamp.Current?stamp:null;
         }
         internal static bool After(Recipient recipient)
         {
-            if(recipient==null || !recipient.Cast.Current || !recipient.Current)return false;
+            if(recipient==null || !recipient.Cast.LandingCurrent || !recipient.Current)return false;
             lock(recipient.Cast.Applied)if(!recipient.Cast.Applied.Add(recipient.Mob))return false;
-            if(!recipient.Cast.Current || !recipient.Current)return false;
+            if(!recipient.Cast.LandingCurrent || !recipient.Current)return false;
             // Reuse647's established consumer, retaining610's lifecycle witness with the stored owner.
             var lifetime=new Lifetime(recipient);
             if(!CombatSpecials.ApplyNpcTaunt(recipient.Cast.Source,recipient.Mob,lifetime.Current))return false;

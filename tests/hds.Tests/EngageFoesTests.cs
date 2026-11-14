@@ -71,6 +71,32 @@ public class EngageFoesTests
         }
         finally{lock(WorldServer.mobs.SyncRoot)WorldServer.mobs.Remove(secondary);}
     }
+    [Fact]public void PendingPrimaryDeletionRejectsInitialLanding()
+    {
+        using var f=new Fixture();var cast=f.Cast();Assert.True(cast.Current);
+        f.View.viewNeedsToBeDeleted=true;Assert.False(cast.Current);
+    }
+    [Fact]public void SuccessfullyLandedSecondaryDoesNotDependOnPrimarySurvival()
+    {
+        using var f=new Fixture();var cast=f.Cast();var secondary=new Mob();secondary.setEntityId(6100002);secondary.setDistrict(1);secondary.setHealthC(500);secondary.setHealthM(500);
+        lock(WorldServer.mobs.SyncRoot)WorldServer.mobs.Add(secondary);
+        try
+        {
+            var view=f.Source.viewMan.addView(secondary.getEntityId(),599);view.viewCreated=true;view.spawnId=8;
+            var stamp=AbilityEngageFoes.Before(cast,f.Source,secondary,view,610);Assert.NotNull(stamp);
+            f.Mob.setIsDead(true);f.View.viewNeedsToBeDeleted=true;
+            Assert.False(cast.Current);Assert.NotNull(AbilityEngageFoes.Before(cast,f.Source,secondary,view,610));
+            Assert.True(AbilityEngageFoes.After(stamp));Assert.Same(f.Source,CombatSpecials.MostHated(secondary));
+        }
+        finally{lock(WorldServer.mobs.SyncRoot)WorldServer.mobs.Remove(secondary);}
+    }
+    [Fact]public void PendingRecipientDeletionRejectsBeforeAfterAndRetainedOwner()
+    {
+        using var f=new Fixture();var cast=f.Cast();var stamp=f.Stamp(cast);
+        f.View.viewNeedsToBeDeleted=true;Assert.Null(f.Stamp(cast));Assert.False(AbilityEngageFoes.After(stamp));
+        f.View.viewNeedsToBeDeleted=false;Assert.True(AbilityEngageFoes.After(f.Stamp(cast)));Assert.Same(f.Source,CombatSpecials.MostHated(f.Mob));
+        f.View.viewNeedsToBeDeleted=true;Assert.Null(CombatSpecials.MostHated(f.Mob));
+    }
     [Fact]public void ActualShippedBuffFlagAndDefaultNpcAreaAreRetained()
     {
         string root=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(root,"data","abilityIDs.csv")))root=Path.GetDirectoryName(root)!;
