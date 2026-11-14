@@ -74,23 +74,35 @@ namespace hds
                 client.TransportFence.Capture()==transport&&ReferenceEquals(data.missionProgress,before)&&(before==null||before.phaseIndex==beforePhase);
             if(!Current()) {refusal="StaleWorld";return false;}
             Mission mission=progress.mission;if(phaseIndex<0||phaseIndex>=mission.phases.Count||!Requires(mission.phases[phaseIndex])) {refusal="NotAopen-floorPhase";return false;}
-            MissionPhase phase=mission.phases[phaseIndex];MissionSite site;MissionOpenFloorChoice[] choices;
+            MissionPhase phase=mission.phases[phaseIndex];MissionSite site=null;MissionOpenFloorChoice[] choices=null;
+            int requiredNpcs=mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(phase);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,requiredNpcs);
             if(progress.pendingOpenFloor!=null)
             {
                 selected=progress.pendingOpenFloor;
                 if(!PendingValid(progress,selected,siteCatalog)||selected.Phase!=phaseIndex) {refusal="InvalidPendingChoice";return false;}
                 site=selected.Site?.Resolve(siteCatalog??MissionSites.For(mission.district));choices=selected.Choices;
+                // The pending phase has not been staged or entered. Retire only a site newly proven
+                // disconnected by the shared interior gate, preserving the same ordinary selection inputs.
+                // Other geometry failures retain their immutable pending choice and failure memo.
+                if(site!=null&&!Eligible(site))
+                {
+                    MissionInteriorSites.Eligible(phase,site,out string reason,requiredNpcs);
+                    Output.WriteDebugLog("[MISSION] Pending interior site rejected: "+reason+" door="+site.elevatorDoor.mxoStaticId);
+                    selected=null;
+                }
             }
-            else
+            if(selected==null)
             {
                 double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref x,ref y,ref z);
                 int at=phaseIndex+1;Random rng=MissionStaging.LayoutRandom(mission.id,phaseIndex,
                     unchecked((int)data.getCharID()*7919+mission.id*31+at+(int)progress.startedAt));
                 var sites=siteCatalog??MissionSites.For(mission.district);site=phaseIndex==0&&data.missionPreviewFor==mission?data.missionPreview:null;
+                if(site!=null&&!Eligible(site))site=null;
                 var hoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
                 int npcs=mission.npcs.Count(n=>n.at==at)+MissionStaging.SpotsForWaves(phase),objects=MissionStaging.PlacesNeeded(phase),furniture=MissionStaging.FurnitureNeeded(phase);
-                site=site??MissionSites.Choose(sites,phase.site,x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture)
-                    ??MissionSites.Choose(sites,"Any",x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture);
+                site=site??MissionSites.Choose(sites,phase.site,x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
+                    ??MissionSites.Choose(sites,"Any",x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
 
                 choices=site==null?Array.Empty<MissionOpenFloorChoice>():MissionStaging.SelectObjects(phase,site,rng).Select(MissionOpenFloorChoice.From).ToArray();
                 selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":null);
@@ -112,6 +124,8 @@ namespace hds
             if(mission==null||phaseIndex<0||phaseIndex>=mission.phases.Count||choices==null||choices.Any(c=>c==null)){refusal="InvalidPhaseChoices";return false;}
             if(!choices.Any(c=>Target(c.Goid,c.ReadSpot())))return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
+            if(!MissionInteriorSites.Eligible(mission.phases[phaseIndex],site,out refusal,
+                mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex])))return false;
             var inputs=new List<MissionOpenFloorPhasePlanner.Input>();
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
             {
@@ -187,6 +201,9 @@ namespace hds
                 if(!ChoicesValid(progress.Phase,progress.site,selected))throw new InvalidOperationException("Invalid adopted open-floor source choices");
             }
             else if(boxes.Length>0)throw new InvalidOperationException("Resolved open-floor without adopted phase marker");
+            if(boxes.Length>0&&!MissionInteriorSites.Eligible(progress.Phase,progress.site,out string interiorRefusal,
+                progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
+                throw new InvalidOperationException("Invalid fixed interior site:"+interiorRefusal);
             if(!FixedSetClear(progress,out string fixedRefusal))throw new InvalidOperationException("Invalid fixed open-floor checkpoint:"+fixedRefusal);
             if(progress.pendingOpenFloor!=null&&!PendingValid(progress,progress.pendingOpenFloor,siteCatalog))throw new InvalidOperationException("Invalid pending open-floor checkpoint choice");
         }
