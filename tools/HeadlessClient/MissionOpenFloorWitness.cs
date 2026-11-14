@@ -73,4 +73,3 @@ public sealed class MissionOpenFloorWitness
             throw new FormatException("Open-floor witness does not identify the current mission object");
     }
 }
-
