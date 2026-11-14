@@ -3,6 +3,20 @@ using HeadlessClient;
 namespace hds.Tests;
 public class CarriedMissionNpcFixtureTests
 {
+    [Fact] public void AReusedCurrentGenerationCannotFallBackToItsOldFriendlyBody()
+    {
+        var old=View(68,1);var replaced=View(68,2,false);
+        Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.RecreatedView(new[]{old,replaced},0,Token()));
+    }
+    [Fact] public void OptedInCarriedViewRequiresTheResolvedCurrentHeight()
+    {
+        var point=CarriedMissionNpcFixture.Resolve(Snapshot(phase:1),Token(),1,true);var view=View(68,2);
+        var attrs=(Dictionary<string,byte[]>)view.Attributes;
+        attrs["Position"]=new[]{point.X,point.Y+100,point.Z}.SelectMany(BitConverter.GetBytes).ToArray();
+        Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.RecreatedView(new[]{view},0,Token(),point));
+        attrs["Position"]=new[]{point.X,point.Y,point.Z}.SelectMany(BitConverter.GetBytes).ToArray();
+        Assert.Same(view,CarriedMissionNpcFixture.RecreatedView(new[]{view},0,Token(),point));
+    }
     private const string Identity="d8c6dd0ceca741c28dbd85d1bba0c23a";
     private static string Snapshot(int phase=0,int mission=301207,int instance=51,ushort npc=1,string name="Sharmaine Tarn",bool friendly=true,bool giver=true,bool dead=false,string identity=Identity,bool following=true)=>JsonSerializer.Serialize(new{Version=1,Mission=mission,Instance=instance,Phase=phase,Following=following?new[]{1}:Array.Empty<int>(),Mobs=new[]{new{Npc=npc,Name=name,Identity=identity,Friendly=friendly,Giver=giver,Dead=dead,Health=1,X=47928.26170730894,Y=895d,Z=7711.280382300636}}});
     private static CarriedMissionNpcFixture.Token Token()=>CarriedMissionNpcFixture.Capture(Snapshot(),301207,0,1,"Sharmaine Tarn",true);
