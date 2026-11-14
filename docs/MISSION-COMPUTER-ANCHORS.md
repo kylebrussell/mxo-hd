@@ -1,5 +1,9 @@
 # Mission computer source anchors
 
+Current integration checkpoint: the common factory now resolves both 1407 and 1415 Computers to persisted clear-floor poses. The source-pose contract and prior validation below are historical evidence; they are not the new final published proxy coordinates. The final bounded common planner is integrated; native validation and a newly qualified headless run remain pending. Use that run’s retained Centre/Standing, keep the exact raw source/checkpoint evidence, and leave source statics untouched.
+
+The current combined artifact also includes 18,039 audited 1407 anchors; see [the 1407 extension](MISSION-COMPUTER-1407.md). The 1415 source roster and 195 validation record below remain unchanged.
+
 Slums Computer_Spawner1415 markers used for free GO3 Computers now resolve to their recovered native pose. The existing site choice, saved source spot, global world CSV, NAV, waypoint and distance/floor algorithms stay unchanged. Native PR194's full-source diagnostic passed visibility, upright desk placement, hover/Take and actual80c7 Search completion; control and native-Y-only variants were not run. This is evidence for the full source pose, not a universal mission-prop correction.
 
 ## Source and bounded eligibility
@@ -41,7 +45,7 @@ Validation: focused resolver tests cover an old serialized checkpoint, no source
 Mode `mission-computer-anchors` uses default production resolution, no pose-probe environment, no GM character and no forced combat/callback outcome. The only dev fixture policy is the existing deterministic3072 site seed on the disposable QA database.
 
 1. As CSR110, right-click The Chessman, Use, choose Retrieval and accept the normal3072 offer. Use the ordinary mission-elevator dialogue.
-2. Quit/relog before Take. Confirm the same mission and site. Approach the upright computer on the red desk next to the white dresser, full source pose(91865,4300,12660); same-floor player approach(91865,4295,12740). Observe normal walking/visibility/hover and radial Take. Headless movement is not native walking proof.
+2. Quit/relog before Take. Confirm the same mission and site. Approach the independent clear-floor Computer using the final retained headless proof’s persisted Centre/Standing. The old source pose (91865,4300,12660) and approach (91865,4295,12740) are historical geometry evidence, not final placement authority. Observe normal walking/visibility/hover and radial Take. Headless movement is not native walking proof.
 3. Use Take. Verify the disk dialogue, completed Search row, owned disk and Leave-area instruction. Leave through the normal elevator/area route; verify one reward.
 4. Accept Retrieval again and repeat Take/leave. Verify a separate acceptance and one reward pair, with no duplicated disk or payout after relog.
 

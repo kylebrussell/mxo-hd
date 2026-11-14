@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace hds
 {
-    /// <summary>Audited Slums1415→freeGO3 poses; saved source spots remain immutable.</summary>
+    /// <summary>Audited Slums1407/1415→freeGO3 poses; saved source spots remain immutable.</summary>
     public sealed class MissionComputerAnchors
     {
         public const string Header = "metr,sector,static_id,native_id,source_goid,native_x,native_y,native_z,native_quat,legacy_x,legacy_y,legacy_z,legacy_quat,source_rid,placement,record_offset";
@@ -23,6 +23,7 @@ namespace hds
         }
         private sealed class Anchor
         {
+            public ushort SourceGoid;
             public Pose Native;
             public double LegacyX,LegacyY,LegacyZ;
             public byte[] LegacyQuaternion;
@@ -47,6 +48,8 @@ namespace hds
             if(current.Value.TryResolve(state.spot,state.goid,out Pose pose))return pose;
             return new Pose(state.spot.pos_x,state.spot.pos_y,state.spot.pos_z,state.spot.quat);
         }
+        internal static bool TrySource(MissionObjectState state,out Pose pose)
+        { pose=null;return state!=null&&current.Value.TryResolve(state.spot,state.goid,out pose); }
         private static ulong Key(ushort sector,uint id) => ((ulong)sector<<32)|id;
         private static double Number(string value)
         {
@@ -71,9 +74,9 @@ namespace hds
             {
                 string[] f=line.Split(',');if(f.Length!=16)throw new InvalidDataException("Invalid computer anchor row");
                 uint metr=uint.Parse(f[0],CultureInfo.InvariantCulture),sector=uint.Parse(f[1],CultureInfo.InvariantCulture),id=uint.Parse(f[2],CultureInfo.InvariantCulture),native=uint.Parse(f[3],CultureInfo.InvariantCulture);
-                if(metr!=1||sector>0x7ff||id>0xfffff||native!=((sector<<20)|id)||f[4]!="1415")throw new InvalidDataException("Invalid anchor identity");
+                if(metr!=1||sector>0x7ff||id>0xfffff||native!=((sector<<20)|id)||(f[4]!="1407"&&f[4]!="1415"))throw new InvalidDataException("Invalid anchor identity");
                 if(uint.Parse(f[13],CultureInfo.InvariantCulture)==0||int.Parse(f[14],CultureInfo.InvariantCulture)<0||int.Parse(f[15],CultureInfo.InvariantCulture)<0)throw new InvalidDataException("Missing counted SIDI provenance");
-                var a=new Anchor {Native=new Pose(Number(f[5]),Number(f[6]),Number(f[7]),Quaternion(f[8])),LegacyX=Number(f[9]),LegacyY=Number(f[10]),LegacyZ=Number(f[11]),LegacyQuaternion=Quaternion(f[12])};
+                var a=new Anchor {SourceGoid=ushort.Parse(f[4],CultureInfo.InvariantCulture),Native=new Pose(Number(f[5]),Number(f[6]),Number(f[7]),Quaternion(f[8])),LegacyX=Number(f[9]),LegacyY=Number(f[10]),LegacyZ=Number(f[11]),LegacyQuaternion=Quaternion(f[12])};
                 if(!result.anchors.TryAdd(Key((ushort)sector,id),a))throw new InvalidDataException("Duplicate anchor identity");
             }
             return result;
@@ -83,8 +86,8 @@ namespace hds
         {
             pose=null;
             if(source==null||concreteGoid!=3||source.metrId!=1||source.exterior||source.sectorID>0x7ff||source.staticId>0xfffff||source.mxoStaticId!=((uint)source.sectorID<<20|source.staticId)||source.type==null||
-               (source.type.Length!=2&&source.type.Length!=4)||source.type[0]!=0x87||source.type[1]!=5||(source.type.Length==4&&(source.type[2]!=0||source.type[3]!=0))||
-               !anchors.TryGetValue(Key(source.sectorID,source.staticId),out Anchor a))return false;
+               (source.type.Length!=2&&source.type.Length!=4)||source.type[1]!=5||(source.type[0]!=0x87&&source.type[0]!=0x7f)||(source.type.Length==4&&(source.type[2]!=0||source.type[3]!=0))||
+               !anchors.TryGetValue(Key(source.sectorID,source.staticId),out Anchor a)||a.SourceGoid!=(ushort)(source.type[0]|source.type[1]<<8))return false;
             byte[] q;
             try { q=Quaternion(source.quat??""); }catch(InvalidDataException){return false;}
             bool legacy=source.pos_x==a.LegacyX&&source.pos_y==a.LegacyY&&source.pos_z==a.LegacyZ&&q.SequenceEqual(a.LegacyQuaternion);
