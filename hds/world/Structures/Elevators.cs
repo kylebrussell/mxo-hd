@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -53,6 +54,20 @@ namespace hds
             return floors.TryGetValue((from.metrId, from.sector, from.shaft, (UInt16)(button - 1)), out PanelFloor floor) ? floor : null;
         }
 
+        // Bind a door to the uniquely nearest panel in the shipped sector data. No player-distance
+        // threshold is involved; the floor-pair delta is checked again before authorizing departure.
+        internal static PanelFloor PanelForDoor(StaticWorldObject door)
+        {
+            Load();
+            if (door == null) return null;
+            double Distance(PanelFloor p) => (p.x-door.pos_x)*(p.x-door.pos_x) +
+                (p.y-door.pos_y)*(p.y-door.pos_y) + (p.z-door.pos_z)*(p.z-door.pos_z);
+            var candidates=panels.Values.Where(p=>p.metrId==door.metrId && p.sector==door.sectorID)
+                .OrderBy(Distance).Take(2).ToArray();
+            return candidates.Length==0 || (candidates.Length==2 && Distance(candidates[0])==Distance(candidates[1]))
+                ? null : candidates[0];
+        }
+
         /// <summary>The player used an elevator panel: show its floor list.</summary>
         public static void OnPanelUsed(WorldClient client, StaticWorldObject panel)
         {
@@ -68,6 +83,12 @@ namespace hds
 
         /// <summary>81 40 &lt;button u16&gt;: take the player to that floor of the shaft they used.</summary>
         public static void OnFloorChosen(WorldClient client, UInt16 button)
+        {
+            if(client.playerData.missionProgress==null)ChooseFloor(client,button); // ordinary nonmission behavior
+            else MissionTransportState.Run(client, () => {ChooseFloor(client, button);return true;});
+        }
+
+        private static void ChooseFloor(WorldClient client, UInt16 button)
         {
             StaticWorldObject panel = client.playerData.elevatorPanel;
             PanelFloor from = Find(panel);
@@ -92,6 +113,7 @@ namespace hds
             client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
             Output.WriteDebugLog("[ELEVATOR] Button " + button + ": to " + x + "," + y + "," + z);
             client.messageQueue.addRpcMessage(PacketsUtils.BuildElevatorDing(to.region, to.sector));
+            client.playerData.missionProgress?.CommitGeneratedPanelFloor(from, to);
             MissionStaging.OnFloorReached(client, x, y, z);
             client.FlushQueue();
         }

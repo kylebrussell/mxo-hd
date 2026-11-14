@@ -42,7 +42,7 @@ public static partial class Scenarios
         HeadlessPlayer p=original;
         var extraServers=new List<ServerInstance>();var sessions=new List<object>();var processes=new List<object>();
         var contactSelections=new List<object>();HeadlessPlayer? lastContactSession=null;
-        byte[]? automaticCompletion=null;var exitBranches=new List<object>();
+        var exitBranches=new List<object>();
         var resolvedSearches=new List<object>();var completions=new List<object>();var lifetimes=new List<object>();var fields=new JsonSerializerOptions{IncludeFields=true};bool passed=false;bool sourceAreaEntered=false;object? oldCheckpointProof=null;
         void Record()
         {
@@ -104,7 +104,7 @@ public static partial class Scenarios
         }
         async Task<ViewCreation> Search(int creationStart,HeadlessPlayer creationOwner,bool performTake=true)
         {
-            automaticCompletion=null;bool exitsAtWitness=false;
+            bool exitsAtWitness=false;
             if(!sourceAnchors || !sourceAreaEntered)await EnterMissionArea(server,p);
             sourceAreaEntered=true;
             ViewCreation computer;
@@ -155,7 +155,7 @@ public static partial class Scenarios
                 return state;
             }
             await p.WaitUntilAsync(()=>ObjectStates.Offered(computer.Goid,State()).Contains(use),"Actual computer Take enabled",TimeSpan.FromSeconds(10));
-            // Use the actual NAV witness; the existing exit law determines active carry versus immediate completion.
+            // Use the actual NAV witness; generated floors now require a committed ordinary exit.
             var checkpoint=await MissionCheckpoint(context,p);var position=computer.Attributes["Position"];
             double ox=BitConverter.ToDouble(position),oy=BitConverter.ToDouble(position,8),oz=BitConverter.ToDouble(position,16);
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
@@ -164,7 +164,7 @@ public static partial class Scenarios
             {
                 Check.That(NavMesh.Locate(1,approachX,approachY,approachZ,out var nav)&&Math.Abs(nav.floorY+95-approachY)<1e-7,"Persisted planned witness is still exactly grounded");
                 exitsAtWitness=MissionExit.HasLeft(checkpoint.Waypoints.ToList(),checkpoint.Exits.ToList(),approachX,approachY,approachZ);
-                if(source1407)Check.That(!exitsAtWitness,"Planned witness permits carry/relog before ordinary exit");
+                // HasLeft remains diagnostic for the historical radius, not generated departure authority.
                 standing=(approachX,approachY,approachZ);
             }
             else
@@ -179,12 +179,7 @@ public static partial class Scenarios
             if(!performTake)return computer;
             int takeCursor=p.World.RpcSnapshot().Count;
             p.SendRpc($"80 c7 {MissionNpcId(computer)} {use:x2} 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");
-            exitBranches.Add(new{Standing=new[]{standing.Value.X,standing.Value.Y,standing.Value.Z},HasLeft=exitsAtWitness,Automatic=sourceAnchors&&!source1407&&exitsAtWitness,RpcCursor=takeCursor});
-            if(sourceAnchors&&!source1407&&exitsAtWitness)
-            {
-                await p.WaitUntilAsync(()=>{automaticCompletion=MissionComputer1407Fixture.AutomaticExitSince(p.World.RpcSnapshot(),takeCursor);return automaticCompletion!=null;},"Current Take goal tick then ordinary automatic completion",TimeSpan.FromSeconds(12));
-                return computer;
-            }
+            exitBranches.Add(new{Standing=new[]{standing.Value.X,standing.Value.Y,standing.Value.Z},HasLeft=exitsAtWitness,Automatic=false,RpcCursor=takeCursor});
             var saved=await MissionCheckpoint(context,p);Check.That(saved.Done.Contains(1)&&saved.Items.ContainsKey(6831),"Actual completed Search and owned data item checkpoint");
             Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6831"),"One quest item plus unrelated identical item");
             return computer;
@@ -192,9 +187,8 @@ public static partial class Scenarios
         async Task<string> Finish(int run)
         {
             sourceAreaEntered=false;
-            byte[] endBytes;
-            if(automaticCompletion!=null)endBytes=automaticCompletion;
-            else{await LeaveMissionArea(p);endBytes=(await p.WaitForRpcAsync("80 a2 00",TimeSpan.FromSeconds(12))).Bytes;}
+            await LeaveMissionArea(p);
+            byte[] endBytes=(await p.WaitForRpcAsync("80 a2 00",TimeSpan.FromSeconds(12))).Bytes;
             Check.Equal(6300u,BitConverter.ToUInt32(endBytes,11),"Existing level10 info policy");Check.Equal(4040u,BitConverter.ToUInt32(endBytes,15),"Existing level10 XP floor");
             Check.Equal(1282500L+run*4040,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Exactly one XP pair per run");
             Check.Equal(1000L+run*6300,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Exactly one info pair per run");
@@ -238,8 +232,6 @@ public static partial class Scenarios
                 oldCheckpointProof=new{old.Identity,SourceSpot=source,Before=before,After=JsonSerializer.Serialize(reloaded.Objects,fields)};
             }
             var computer=await Search(cursor,cursorSession);
-            if(automaticCompletion==null)
-            {
             var carried=await MissionCheckpoint(context,p);
             await Restart(true);var restored=await MissionCheckpoint(context,p);
             Check.Equal(carried.Identity,restored.Identity,"Same acceptance after cold process restart");Check.Equal(carried.Instance,restored.Instance,"Same mission key");
@@ -247,10 +239,9 @@ public static partial class Scenarios
             Check.Equal(JsonSerializer.Serialize(carried.Mobs),JsonSerializer.Serialize(restored.Mobs),"Exact placed NPC identity/health/loot preserved");
             Check.Equal(carried.Items[6831],restored.Items[6831],"Same owned item slot");Check.That(restored.Done.Contains(1),"Search remains done");
             Check.That(!server.DebugLog().Contains(" listed "),"Cold restore resolved before any contact list could populate its private cache");
-            }
-            bool firstAutomatic=automaticCompletion!=null;
+
             string receipt1=await Finish(1);if(!sourceAnchors)Replay(receipt1,false);
-            if(firstAutomatic)
+            if(sourceAnchors)
             {
                 await Restart(false);
                 Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={p.CharId} AND payload IS NOT NULL"),"Completed cold no active mission");
