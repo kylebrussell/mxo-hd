@@ -17,7 +17,7 @@ public sealed class DebuffRadiusMode : NativeQaMode
         var evidence=new List<object>();
         foreach(string name in context.HelperNames)
         {
-            var p=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),name,name);
+            var p=await HeadlessPlayer.LoginAsync(context.Address,name,name);
             context.Helpers.Add(name,p);evidence.Add(await DebuffRadiusFixture.EnterFlaggedAsync(p));
         }
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"debuff-radius-helpers-ready.json"),JsonSerializer.Serialize(new{PvpServer=true,MaxSafeLevel=15,Helpers=evidence,DevCommands=true,ForcedCallbackRolls=false,ForcedViralContest=true,ViralAttackRand15=32766,ViralDefenseRand15=15636},new JsonSerializerOptions{WriteIndented=true}));
