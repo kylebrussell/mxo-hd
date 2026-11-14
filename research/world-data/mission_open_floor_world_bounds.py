@@ -137,7 +137,7 @@ def model_world_bounds(position, q, half):
     hi = [max(p+e, F(F(math.ceil(p))+n)) for p, e, n in zip(position, full, native)]
     return lo, hi
 
-def inline_placements(data, index):
+def sidi_go_contexts(data, index):
     placements = N.placements(data, index)
     if len(placements) != struct.unpack_from('<I', data)[0]:
         raise ValueError('Unrepresented SIDI placement count')
@@ -156,13 +156,23 @@ def inline_placements(data, index):
         for _ in range(count):
             offset = r.at
             gos.append((offset, struct.unpack('<II3f4f6f3IH', r.take(74))))
-        r.take(26*r.u32())  #62476224:2+2+1+2+2+1+8+8 source bytes
+        result.append(dict(ordinal=ordinal, prefab=rid, secondary=secondary, rotation=rotation,
+                           upper=upper, pivot=box[:3], offset=at, goEnd=r.at, gos=gos))
+    return result
+
+def inline_placements(data, index):
+    result = []
+    for context in sidi_go_contexts(data, index):
+        r = Reader(data)
+        r.at = context['goEnd']
+        r.take(26*r.u32())
         count, extra = r.read('<II')
         props = prop_records(r, count)
-        result.append(dict(ordinal=ordinal, prefab=rid, secondary=secondary, rotation=rotation,
-                           upper=upper, pivot=box[:3], offset=at, typedEnd=r.at,
-                           resourceAvailability=[reason for ok, reason in ((rid in index, 'missing-primary-prefab'), (not secondary or secondary in index, 'missing-secondary-resource')) if not ok],
-                           propHeaderExtra=extra, gos=gos, props=props))
+        context = dict(context)
+        context.update(typedEnd=r.at, propHeaderExtra=extra, props=props,
+            resourceAvailability=[reason for ok, reason in ((context['prefab'] in index, 'missing-primary-prefab'),
+                (not context['secondary'] or context['secondary'] in index, 'missing-secondary-resource')) if not ok])
+        result.append(context)
     ordered = sorted(result, key=lambda x: x['offset'])
     for i, p in enumerate(ordered):
         end = ordered[i+1]['offset'] if i+1 < len(ordered) else len(data)
