@@ -8,9 +8,24 @@ public static class ZionNextFiveFixture
     public static ViewCreation? CurrentNpc(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedMob mob)
     {
         if(cursor<0||cursor>views.Count)return null;
-        return views.Skip(cursor).LastOrDefault(v=>v.Goid==599&&v.Name==mob.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
+        bool Side(ViewCreation v)
+        {
+            bool present=v.Attributes.TryGetValue("IsEnemy",out var side);
+            if(present&&(side!.Length!=1||side[0]>1))return false;
+            if(!mob.Friendly)return present&&side![0]==1;
+            // Friendly mission actors omit IsEnemy and publish DontAttack=1 (Mob.toObject).
+            return (!present||side![0]==0)&&v.Attributes.TryGetValue("DontAttack",out var safe)&&safe.Length==1&&safe[0]==1;
+        }
+        return views.Skip(cursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Goid==599&&v.Name==mob.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
             Math.Abs(BitConverter.ToDouble(pos)-mob.X)<1&&Math.Abs(BitConverter.ToDouble(pos,8)-mob.Y)<1&&Math.Abs(BitConverter.ToDouble(pos,16)-mob.Z)<1&&
-            v.Attributes.TryGetValue("IsEnemy",out var side)&&side.Length>0&&(side[0]!=0)==!mob.Friendly);
+            Side(v));
+    }
+    public static IReadOnlyList<ViewCreation> CurrentHostiles(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedState saved,int mission,int phase)
+    {
+        if(saved.Mission!=mission||saved.Phase!=phase)throw new InvalidDataException("Wrong current hostile mission/phase");
+        return saved.Mobs.Where(m=>m.Phase==phase&&!m.Friendly&&!m.Dead&&m.Health>0)
+            .Select(m=>CurrentNpc(views,cursor,m)).Where(v=>v!=null&&(!v.Attributes.TryGetValue("IsDead",out var dead)||dead.Length==1&&dead[0]==0))
+            .Select(v=>v!).DistinctBy(v=>(v.ViewId,v.SpawnId)).ToArray();
     }
     public static uint DoorAt(IEnumerable<string> rows,double[] pose)
     {

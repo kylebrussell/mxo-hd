@@ -183,11 +183,32 @@ public static partial class Scenarios
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
                                     (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();
+                            if(evidenceOptions?.ExactZionNextFive==true)
+                            {
+                                for(int attempts=0;!Done(number)&&attempts<100;attempts++)
+                                {
+                                    int observed=p.World.CreationSnapshot().Count;
+                                    var saved=await MissionCheckpoint(context,p);
+                                    var targets=ZionNextFiveFixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,saved,id,phase)
+                                        .Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToArray();
+                                    if(Done(number))break;
+                                    if(targets.Length==0)
+                                    {
+                                        await p.WaitUntilAsync(()=>Done(number)||p.World.CreationSnapshot().Count>observed,"new current hostile creation or actual wave completion",TimeSpan.FromSeconds(30));
+                                        continue;
+                                    }
+                                    var target=targets.Last();diagnostics!.Target("Current saved hostile",target);
+                                    await ZionNextFiveDefeat(p,target);killed.Add((target.ViewId,target.SpawnId));
+                                }
+                            }
+                            else
+                            {
                             for(int attempts=0;!Done(number) && attempts<100;attempts++)
                             {
                                 await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(30));
                                 if(Done(number))break;
                                 var target=Targets().Last();if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveDefeat(p,target);else await DefeatMissionNpc(p,target);killed.Add((target.ViewId,target.SpawnId));
+                            }
                             }
                             break;
                         }

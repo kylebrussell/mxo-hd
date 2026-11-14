@@ -80,4 +80,32 @@ public class ZionNextFiveTests
         var right=Body(95,1);Assert.Same(right,ZionNextFiveFixture.CurrentNpc(new[]{Body(195,1),Body(95,0),right},0,mob));
         Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{right},1,mob));Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{Body(95,0)},0,mob));
     }
+    [Fact] public void ActualFriendlyMissionCreationOmitsIsEnemyAndRequiresDontAttack()
+    {
+        var mob=new MissionProgress.SavedMob{Name="Maynard",X=10,Y=95,Z=20,Friendly=true,Hostile=false};
+        ViewCreation Body(byte? enemy,byte? safe,double y=95)
+        {
+            var attrs=new Dictionary<string,byte[]>{{"Position",BitConverter.GetBytes(10d).Concat(BitConverter.GetBytes(y)).Concat(BitConverter.GetBytes(20d)).ToArray()},{"CharacterName",System.Text.Encoding.UTF8.GetBytes("Maynard\0")}};
+            if(enemy.HasValue)attrs["IsEnemy"]=new[]{enemy.Value};if(safe.HasValue)attrs["DontAttack"]=new[]{safe.Value};return new(21,599,4,attrs);
+        }
+        var actual=Body(null,1);Assert.False(actual.Attributes.ContainsKey("IsEnemy"));
+        Assert.Same(actual,ZionNextFiveFixture.CurrentNpc(new[]{Body(1,1),Body(null,1,195),actual},0,mob));
+        Assert.NotNull(ZionNextFiveFixture.CurrentNpc(new[]{Body(0,1)},0,mob));
+        foreach(var bad in new[]{Body(null,null),Body(1,1),Body(null,0),Body(0,null),Body(2,1)})Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{bad},0,mob));
+        Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{actual},1,mob));mob.Friendly=false;
+        Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{actual},0,mob));Assert.NotNull(ZionNextFiveFixture.CurrentNpc(new[]{Body(1,null)},0,mob));
+    }
+    [Fact] public void ReusedViewCannotResurrectHistoricalNpcAndDefeatAllRequiresCurrentSavedHostile()
+    {
+        var mob=new MissionProgress.SavedMob{Name="Enemy",X=1,Y=95,Z=2,Friendly=false,Hostile=false,Health=100,Phase=1};
+        ViewCreation Body(string name,byte spawn,double x=1)=>new(42,599,spawn,new Dictionary<string,byte[]>{{"CharacterName",System.Text.Encoding.UTF8.GetBytes(name+"\0")},{"IsEnemy",new byte[]{1}},{"Position",BitConverter.GetBytes(x).Concat(BitConverter.GetBytes(95d)).Concat(BitConverter.GetBytes(2d)).ToArray()}});
+        var original=Body("Enemy",1);var reused=Body("Other",2);
+        Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{original,reused},0,mob));
+        var state=new MissionProgress.SavedState{Mission=101209,Phase=1,Mobs=new(){mob}};
+        Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused},0,state,101209,1));
+        var actual=Body("Enemy",3);Assert.Same(actual,Assert.Single(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused,actual},0,state,101209,1)));
+        foreach(var change in new Action[]{()=>mob.Friendly=true,()=>{mob.Friendly=false;mob.Dead=true;},()=>{mob.Dead=false;mob.Health=0;},()=>{mob.Health=100;mob.Phase=0;}})
+        {change();Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101209,1));}
+        Assert.Throws<InvalidDataException>(()=>ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101208,1));
+    }
 }
