@@ -17,6 +17,7 @@ public sealed class EngageFoesMode:NativeQaMode
     {
         var a=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),"QAFriend","QAFriend");context.Helpers.Add("QAFriend",a);
         await a.EnterWorldAsync();var npc=await EngageFoesFixture.BlockNpcAsync(a);
+        await a.WaitUntilAsync(()=>EngageFoesFixture.CurrentNpc(a.World.CreationSnapshot(),"Trainman")!=null,"actual healthy-primary Trainman view",TimeSpan.FromSeconds(15));
         var primary=EngageFoesFixture.CurrentNpc(a.World.CreationSnapshot(),"Trainman")!;
         int fullHpPrimary=await EngageFoesFixture.RequireFullHealthAsync(a,primary);
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"engage-foes-ready.json"),JsonSerializer.Serialize(new{Blocker=a.CharId,Secondary=npc,Primary=primary,FullHpPrimary=fullHpPrimary,
