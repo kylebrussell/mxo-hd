@@ -10,6 +10,22 @@ public static partial class Scenarios
         var margins=new List<MarginSession>();var players=new List<HeadlessPlayer>();var evidence=new List<object>();
         var assets=CreationAssets.Load(context.RepositoryRoot);
         Exception? failure=null;string step="start";var address=context.Server.Address;
+        ServerInstance currentServer=context.Server;int initialProcessId=context.Server.ProcessId;int currentProcessId=initialProcessId;
+        var coldServers=new List<ServerInstance>();var serverHistory=new List<object>();
+        async Task ColdReturn(uint character)
+        {
+            string before=await Snapshot(character);int oldPid=currentServer.ProcessId;
+            // Stop only this fixture's owned server. A normal80fd clears durable online state but
+            // its Margin reservation survives until world inactivity cleanup; this is a true cold return.
+            serverHistory.Add(new{ProcessId=oldPid,currentServer.SourceAssembly,Output=currentServer.FullOutput(),Debug=currentServer.DebugLog()});
+            currentServer.Dispose();
+            currentServer=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs);
+            coldServers.Add(currentServer);address=currentServer.Address;currentProcessId=currentServer.ProcessId;
+            Check.That(oldPid!=currentProcessId,"Cold return owns a new process, not an immediate reserved-session reconnect");
+            Check.Equal(context.Server.SourceAssembly,currentServer.SourceAssembly,"Cold return uses the same frozen executable");
+            Check.Equal(before,await Snapshot(character),"Cold startup preserves the same character's trait/RSI/archive/clothes without fixture repair");
+            evidence.Add(new{Step=step,ColdReturnCharacter=character,OldProcessId=oldPid,NewProcessId=currentServer.ProcessId,Snapshot=before});
+        }
         (string User,string Handle,uint Character)? legacySource=null;
         async Task<(string User,uint Account,MarginSession Margin,uint Character)> Reserve(string handle)
         {
@@ -55,7 +71,8 @@ public static partial class Scenarios
                 created.SendRpc("80fe00");await created.WaitForRpcAsync("80fd");Record(created);created.Dispose();
                 // Progression ONLY for one ordinary80b5 witness. No RSI/trait/attribute row is seeded around creation.
                 await context.Database.ExecuteAsync($"UPDATE characters SET level=2,exp={PlayerProgression.ExperienceForLevel(2)} WHERE charId={a.Character}");
-                step="normal-attribute-"+trait;var player=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(player);
+                await ColdReturn(a.Character);
+                step="normal-attribute-"+trait;var player=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(player);Check.Equal(a.Character,player.CharId,"Cold return retains the exact normally created character");
                 Check.Equal(trait,BitConverter.ToUInt32(player.CharacterData[2],32),"Returning02 trait follows EXACT32header");await player.EnterWorldAsync();
                 foreach(byte attribute in CharacterAttributes.All){ushort value=CharacterAttributes.BaseValue(attribute,trait);await player.WaitUntilAsync(()=>player.World.RpcSnapshot().Any(r=>r.Bytes.SequenceEqual(new byte[]{0x80,0xb2,attribute,(byte)(value>>8),(byte)value,0,8,2})),"Actual initial attribute",TimeSpan.FromSeconds(10));}
                 byte raised=trait==308?(byte)78:(byte)82;int cursor=player.World.RpcSnapshot().Count;
@@ -64,7 +81,8 @@ public static partial class Scenarios
                 Check.Equal((long)CharacterAttributes.BaseValue(raised,trait)+1,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={a.Character} AND slot={CharacterAttributes.SlotOf(raised)}"),"Onepoint persisted");
                 Check.Equal(1000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={a.Character}"),"Attribute raise spends noInfo");
                 player.SendRpc("80fe00");await player.WaitForRpcAsync("80fd");Record(player);player.Dispose();
-                var cold=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(cold);Check.Equal(trait,BitConverter.ToUInt32(cold.CharacterData[2],32),"Coldreturn trait");
+                await ColdReturn(a.Character);
+                var cold=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(cold);Check.Equal(a.Character,cold.CharId,"Second cold return retains exact character identity");Check.Equal(trait,BitConverter.ToUInt32(cold.CharacterData[2],32),"Coldreturn trait");
                 Check.That(cold.CharacterData[2].AsSpan().EndsWith(new byte[]{1,raised,0,0,0,1,0}),"Coldreturn onepoint metadata uses assignedtrait");await cold.EnterWorldAsync();Record(cold);cold.SendRpc("80fe00");await cold.WaitForRpcAsync("80fd");cold.Dispose();legacySource=(a.User,"Personality"+trait,a.Character);
             }
             foreach(uint bad in new uint[]{0,9,4096,0x1000134})
@@ -97,7 +115,8 @@ public static partial class Scenarios
             finally{Store.config=prior;race.Margin.Dispose();}
             step="legacy-null-no-migration";var legacyFixture=legacySource!.Value;
             await context.Database.ExecuteAsync($"UPDATE characters SET trait_id=NULL,level=50,exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId={legacyFixture.Character}; DELETE FROM char_abilities WHERE char_id={legacyFixture.Character} AND slot IN (598,599,601,602,604)");
-            var legacy=await HeadlessPlayer.LoginAsync(address,legacyFixture.User,legacyFixture.Handle);players.Add(legacy);
+            await ColdReturn(legacyFixture.Character);
+            var legacy=await HeadlessPlayer.LoginAsync(address,legacyFixture.User,legacyFixture.Handle);players.Add(legacy);Check.Equal(legacyFixture.Character,legacy.CharId,"Legacy cold return retains the same created character");
             Check.Equal(299u,BitConverter.ToUInt32(legacy.CharacterData[2],32),"Legacy NULL sends old299 selector");
             Check.That(legacy.CharacterData[2].AsSpan().EndsWith(Convert.FromHexString("03510000000400520000000B00540000000100")),"Legacy fixed16 metadata remains qualified");
             await legacy.EnterWorldAsync();
@@ -118,11 +137,11 @@ public static partial class Scenarios
             try
             {
                 string stem=Path.Combine(Path.GetTempPath(),"mxo-character-personality-"+context.Database.Name),dll=context.Server.SourceAssembly;
-                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=failure?.ToString()??proofFailure?.ToString(),Database=context.Database.Name,Engines=engines,Evidence=evidence,Margin=margins.Select((m,i)=>new{Session=i,Transcript=m.CreationTranscript.Select(r=>new{r.Direction,Body=Convert.ToHexString(r.Body)})}),SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),ProcessId=context.Server.ProcessId,NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
-                File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n---Debug---\n"+context.Server.DebugLog());Console.WriteLine("  PERSONALITY evidence: "+stem+" step="+step);
+                File.WriteAllText(stem+".json",JsonSerializer.Serialize(new{Step=step,Failure=failure?.ToString()??proofFailure?.ToString(),Database=context.Database.Name,Engines=engines,Evidence=evidence,Margin=margins.Select((m,i)=>new{Session=i,Transcript=m.CreationTranscript.Select(r=>new{r.Direction,Body=Convert.ToHexString(r.Body)})}),SourceAssembly=dll,SourceConfiguration=Directory.GetParent(Path.GetDirectoryName(dll)!)!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),ProcessId=initialProcessId,ServerHistory=serverHistory,FinalServer=new{ProcessId=currentProcessId,Output=currentServer.FullOutput(),Debug=currentServer.DebugLog()},NativeUiProven=false},new JsonSerializerOptions{WriteIndented=true}));
+                File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n---Debug---\n"+context.Server.DebugLog()+"\n---Cold servers---\n"+JsonSerializer.Serialize(serverHistory)+"\n---Current---\n"+currentServer.FullOutput()+"\n"+currentServer.DebugLog());Console.WriteLine("  PERSONALITY evidence: "+stem+" step="+step);
             }
             catch(Exception e){proofFailure=e;Console.Error.WriteLine(e);}
-            finally{foreach(var p in players)p.Dispose();foreach(var m in margins)m.Dispose();}
+            finally{foreach(var p in players)p.Dispose();foreach(var m in margins)m.Dispose();foreach(var server in coldServers)server.Dispose();}
             if(failure==null&&proofFailure!=null)throw new ScenarioFailure("Requiredcreationproof: "+proofFailure);
         }
     }
