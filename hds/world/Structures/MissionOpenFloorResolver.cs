@@ -525,7 +525,9 @@ namespace hds
             }
             return true;
         }
-        private static List<Candidate> GeometricCandidates(Context context,bool expanded)
+        private static List<Candidate> GeometricCandidates(Context context,bool expanded)=>GeometricCandidatesCore(context,expanded,true);
+        // The late-only mode preserves the prior sequence oracle for equivalence tests. Runtime always deduplicates early.
+        private static List<Candidate> GeometricCandidatesCore(Context context,bool expanded,bool deduplicateEarly)
         {
             var r=context.Input;var offsets=context.Offsets;var component=context.Component;double guard=context.Guard,centreY=context.CentreY;var forbidden=context.Forbidden;
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
@@ -534,7 +536,7 @@ namespace hds
             if(allowed.Length==0)return new List<Candidate>();
             var outside=Difference(new[]{r.SiteBounds.Polygon},component.Select(s=>s.Vertices.ToArray()),0);
             var outsideForbidden=outside.Select(cell=>Hull(cell.SelectMany(p=>offsets.Select(d=>new Point(p.X-d.X,p.Z-d.Z))))).ToArray();
-            var candidates=new List<Candidate>();
+            var candidates=new List<Candidate>();var representedCentres=new HashSet<(double X,double Z)>();
             foreach(var cell in Difference(new[]{allowed},outsideForbidden.Concat(forbidden),guard))
             {
                 IEnumerable<Point> seeds=expanded?new[]{Nearest(cell,r.Anchor.Position.Xz),Nearest(cell,r.Entry.Standing.Xz),new Point(cell.Average(p=>p.X),cell.Average(p=>p.Z))}
@@ -542,6 +544,9 @@ namespace hds
                 foreach(var seed in seeds)
                 {
                     Point? represented=RepresentableNear(cell,seed);if(!represented.HasValue)continue;Point centre=represented.Value;
+                    // Same immutable context and deterministic centre->carrier mapping: duplicate successes AND
+                    // failures have identical geometry. Preserve the first occurrence, as the final DistinctBy did.
+                    if(deduplicateEarly&&!representedCentres.Add((centre.X,centre.Z)))continue;
                     var surface=component.Where(s=>Inside(s.Vertices,centre)).OrderBy(s=>s.Identity).FirstOrDefault();if(surface==null)continue;
                     var position=new Position(centre.X,centreY,centre.Z);if(!GeometryClear(context,surface,position,out var shape))continue;
                     if(expanded&&(!Clear(new[]{r.Entry.Standing.Xz},shape)||!Clear(new[]{Rounded(r.Entry.Standing.Xz)},shape)))continue;
