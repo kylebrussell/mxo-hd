@@ -16,9 +16,9 @@ public abstract class MobiusCodeFixtureMode:NativeQaMode
     public override NativeQaModePlan Plan {get;}
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        var enemy=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),"QAEnemy","QAEnemy");
+        var enemy=await HeadlessPlayer.LoginAsync(context.Address,"QAEnemy","QAEnemy");
         context.Helpers.Add("QAEnemy",enemy);await enemy.EnterWorldAsync();
-        enemy.SendRpc("63 01 00 69 00");await enemy.WaitForRpcAsync("65 01 00 69 00");
+        await MobiusRifleBootstrap.EquipAsync(enemy);
         enemy.SendChat("?pvpflag on");
         return Array.Empty<byte>();
     }
@@ -32,4 +32,26 @@ public sealed class MobiusCodeNegativeMode:MobiusCodeFixtureMode
 {
     public MobiusCodeNegativeMode():base(false){}
     public override string Name=>"mobius-free-attack-negative";
+}
+
+/// <summary>Ordinary rifle equip: opcode63 has byte source/destination, while reply65 uses u16 slots.</summary>
+public static class MobiusRifleBootstrap
+{
+    public static byte[] Request=>new byte[]{0x63,0x01,0x69};
+    private static readonly byte[] Success=Convert.FromHexString("650100690000");
+    private static readonly byte[] Refusal=Convert.FromHexString("650100010000");
+    private static readonly BytePattern RifleInHand=BytePattern.Parse("02 00 02 80 80 80 80 08 b4 02 00 00");
+    public static bool HasEquipEvidence(IEnumerable<byte[]> replies,IEnumerable<byte[]> currentViews)=>
+        replies.Any(r=>r.SequenceEqual(Success))&&currentViews.Any(RifleInHand.Occurs);
+    public static async Task EquipAsync(HeadlessPlayer enemy)
+    {
+        int rpcCursor=enemy.World.RpcSnapshot().Count,viewCursor=enemy.World.ViewSnapshot().Count;
+        enemy.SendRpc(Request);
+        await enemy.WaitUntilAsync(()=>
+        {
+            var replies=enemy.World.RpcSnapshot().Skip(rpcCursor).Select(r=>r.Bytes).ToArray();
+            Check.That(!replies.Any(r=>r.SequenceEqual(Refusal)),"Ordinary QAEnemy rifle equip was refused; no ready claim");
+            return HasEquipEvidence(replies,enemy.World.ViewSnapshot().Skip(viewCursor));
+        },"Successful bag1->weapon105 equip AND current own03 EquippedItemID692",HeadlessPlayer.DefaultTimeout);
+    }
 }
