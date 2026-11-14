@@ -49,6 +49,13 @@ public sealed class ThrowawayDatabase : IDisposable
             " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";
         return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
     }
+    /// <summary>Reject only the first newly recorded generated departure in this owned schema.</summary>
+    public Task<string> InstallMissionDepartureRollbackTriggerAsync()
+    {
+        if(!Name.StartsWith(Prefix,StringComparison.Ordinal))throw new InvalidOperationException("Departure fault requires owned mxotest schema");
+        const string sql="DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF NEW.payload IS NOT NULL AND JSON_EXTRACT(NEW.payload,'$.DepartedSite') IS NOT NULL AND (OLD.payload IS NULL OR JSON_EXTRACT(OLD.payload,'$.DepartedSite') IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate departure rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
     /// <summary>Fixed failure point only in this harness-owned database, never a production setting.</summary>
     public Task<string> InstallAbilityRollbackTriggerAsync() =>
         RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
