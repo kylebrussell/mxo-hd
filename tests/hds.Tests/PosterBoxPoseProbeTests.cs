@@ -70,12 +70,9 @@ public class PosterBoxPoseProbeTests:IDisposable
         Assert.True(NavMesh.Locate(1,24080,2095,15080,out var nav));Assert.Equal(2000,nav.floorY,2);
         Assert.True(NavMesh.Project(1,24080,2095,15080,out var p,reachableFrom:new[]{24080d,2095d,15080d},requireDirect:true));Assert.Equal(24080,p.x,2);Assert.Equal(2095,p.y,2);Assert.Equal(15080,p.z,2);
     }
-    [Theory][InlineData("poster-box-pose-control","control")][InlineData("poster-box-pose-native","source-native")]
-    public void DiscoveredModesOnlyOptInToTwoScopedControls(string name,string variant)
+    [Theory][InlineData("poster-box-pose-control")][InlineData("poster-box-pose-native")]
+    public void SupersededOverlayModesAreNoLongerDiscovered(string name)
     {
-        var plan=NativeQa.NativeQaModes.Find(name).Plan;Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
-        Assert.Equal(variant,plan.EnvironmentOverrides[PosterBoxPoseProbe.Variable]);Assert.Equal("201202",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.Equal(2,plan.EnvironmentOverrides.Count);
-        Assert.Equal(HeadlessClient.PosterHuntFixture.SeedPrerequisites(110),plan.AfterHelpers[0]);Assert.DoesNotContain(201202,HeadlessClient.PosterHuntFixture.Prerequisites);
-        Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("poster-hunt-count")[PosterBoxPoseProbe.Variable]);
+        Assert.DoesNotContain(name,NativeQa.NativeQaModes.Names);
     }
 }

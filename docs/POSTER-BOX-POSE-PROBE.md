@@ -1,3 +1,5 @@
+> Historical diagnostic. Its serialization overlay and discovered mode/case registrations are retired by the shared open-floor resolver. The retained native/source results do not validate the new placement policy.
+
 # Poster Hunt Box pose/picking diagnostic
 
 **Diagnostic only.** This package compares two serialized poses for one existing Box 548 proxy. It does not implement a default placement fix or prove a retail Box pivot, model, picking or reach rule.

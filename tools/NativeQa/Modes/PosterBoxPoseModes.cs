@@ -1,3 +1,4 @@
+// Historical source-only diagnostic definitions; discovered overlays retired by shared open-floor admission.
 using hds;
 using HeadlessClient;
 namespace NativeQa.Modes;
@@ -10,14 +11,4 @@ internal static class PosterBoxPosePlans
         environmentOverrides:new(){["MXO_MISSION_SITE_QA_SEED"]="201202",["MXO_POSTER_BOX_POSE_PROBE"]=variant},
         extraQaMetadata:new(){["PosterBoxPoseDiagnostic"]=true,["PosterBoxPoseVariant"]=variant,["PosterBoxSourceKey"]="0d1003dc"},
         readyMessages:new[]{"DIAGNOSTIC "+variant+": CSR 110, normal Agent Gray Call > Poster Hunt > accept > ordinary elevator. Only first Box548 is overlaid; no model/Hidden/range/source-state change. Grounded approach24080/2095/15080. Compare visible model, hover/target, radial Open and C2S337/80c7. Control23940/2245/15050; source-native23940/2100/15050 with exact native quaternion. No completion required; no retail placement/picking claim. See docs/POSTER-BOX-POSE-PROBE.md."});
-}
-public sealed class PosterBoxPoseControlMode : NativeQaMode
-{
-    public override string Name=>"poster-box-pose-control";
-    public override NativeQaModePlan Plan {get;}=PosterBoxPosePlans.For("control");
-}
-public sealed class PosterBoxPoseNativeMode : NativeQaMode
-{
-    public override string Name=>"poster-box-pose-native";
-    public override NativeQaModePlan Plan {get;}=PosterBoxPosePlans.For("source-native");
 }
