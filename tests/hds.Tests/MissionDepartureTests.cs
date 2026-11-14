@@ -41,6 +41,35 @@ public class MissionDepartureTests
         }
         Assert.False(stamp.Current);Assert.False(p.HasGeneratedDeparture);
     }
+    [Fact] public void NestedTransportIsRejectedBeforePositionPanelDepartureOrOutputChanges()
+    {
+        var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new ClientData();c.messageQueue=new MessageQueue();
+        c.playerInstance=new PlayerCharacter();var p=Progress();c.playerData.missionProgress=p;
+        byte[] before=NumericalUtils.doublesToLtVector3d(10,2495,20);c.playerInstance.Position.setValue(before);
+        bool called=false;
+        using(var outer=MissionOutput.Begin(c.messageQueue))
+        {
+            Assert.False(MissionTransportState.Run(c,()=>{called=true;c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1,95,1));p.CommitGeneratedFloor(0,p.site,p.site.lobbyDoor);return true;}));
+            Assert.False(called);Assert.Equal(before,c.playerInstance.Position.getValue());Assert.False(p.HasGeneratedDeparture);
+            Assert.Equal(0,c.playerData.teleportCounter);Assert.Null(c.playerData.elevatorPanel);
+        }
+    }
+    [Fact] public void CapturedRideOutputIsBoundAndResetDropsItWithoutRunningOwnerWorkInPublicationGate()
+    {
+        var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new ClientData();c.messageQueue=new MessageQueue();c.Alive=true;
+        typeof(WorldClient).GetField("lastUsedTime",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,TimeUtils.getUnixTimeUint32());
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
+        c.playerData.missionProgress=Progress();var stamp=new MissionRideStamp(c,c.playerData.missionProgress);
+        using(var output=MissionOutput.Begin(c.messageQueue))
+        {
+            Assert.True(stamp.BindOutput());c.messageQueue.addRpcMessage(new byte[]{0x80,0xa0,1});
+            c.messageQueue.addObjectMessage(new byte[]{1,2,3},false);
+            c.TransportFence.PublishIncoming(true,()=>{});Assert.False(stamp.Current);
+            Assert.Throws<MissionCheckpointException>(()=>stamp.RequireCurrent());output.Commit();
+        }
+        Assert.False(c.playerData.missionProgress.HasGeneratedDeparture);
+        Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+    }
     [Fact] public void StationaryInteriorDoorDoesNotLeaveAndEscortPredicateRemainsUnchanged()
     {
         var p=Progress();Assert.True(p.waitingForExit);Assert.True(MissionRuntime.NeedsToLeave(p,p.Phase.missionObjectives[0],1200,2495,100));
@@ -71,8 +100,8 @@ public class MissionDepartureTests
         saved.DepartedPhase=0;saved.DepartedSite=Door(1,2545,x:1001);Assert.False(Restore(p,saved).HasGeneratedDeparture);
         saved.DepartedPhase=null;saved.DepartedSite=null;Assert.False(Restore(p,saved).HasGeneratedDeparture);
     }
-    [Theory][InlineData(false)][InlineData(true)]
-    public void TransportRollbackRestoresPositionPanelAndTeleportIdentity(bool commit)
+    [Theory][InlineData(false,false)][InlineData(true,false)][InlineData(false,true)]
+    public void TransportRollbackRestoresPositionPanelAndTeleportIdentity(bool commit,bool reset)
     {
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();
         typeof(WorldClient).GetField("<TransportFence>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
@@ -82,6 +111,7 @@ public class MissionDepartureTests
         {
             c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1000,95,0));
             c.playerData.elevatorPanel=Door(6,145);c.playerData.teleportCounter++;
+            if(reset)c.TransportFence.PublishIncoming(true,()=>{});
             if(commit)transport.Commit();
         }
         Assert.Equal(commit?8:7,c.playerData.teleportCounter);

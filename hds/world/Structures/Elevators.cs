@@ -84,7 +84,8 @@ namespace hds
         /// <summary>81 40 &lt;button u16&gt;: take the player to that floor of the shaft they used.</summary>
         public static void OnFloorChosen(WorldClient client, UInt16 button)
         {
-            MissionTransportState.Run(client, () => {ChooseFloor(client, button);return true;});
+            if(client.playerData.missionProgress==null)ChooseFloor(client,button); // ordinary nonmission behavior
+            else MissionTransportState.Run(client, () => {ChooseFloor(client, button);return true;});
         }
 
         private static void ChooseFloor(WorldClient client, UInt16 button)

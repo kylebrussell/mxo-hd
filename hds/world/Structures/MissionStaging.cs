@@ -702,11 +702,11 @@ namespace hds
             DelayedActions.AfterFor(client, 2, () =>
             {
                 Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
-                MissionTransportState.Run(client, () => client.TransportFence.TryRun(stamp.Transport, () =>
+                MissionTransportState.Run(client, () =>
                 {
-                    if(!stamp.Current)return;
-                    Ride(client, progress, target, site);
-                }));
+                    Ride(client, progress, target, site, stamp);
+                    return true;
+                }, stamp);
             });
             return true;
         }
@@ -714,7 +714,7 @@ namespace hds
         public const string ElevatorUpLine = "I've hacked into the elevator control system. Sending you to the right floor.";
         public const string ElevatorDownLine = "I've hacked into the elevator control system. Taking you back down to the street.";
 
-        private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site)
+        private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site, MissionRideStamp stamp)
         {
             Output.WriteDebugLog("[MISSION] Elevator callback for " + progress.mission.id + "; current " +
                 (client.playerData.missionProgress?.mission.id.ToString() ?? "none"));
@@ -738,6 +738,7 @@ namespace hds
             }
 
             Output.WriteDebugLog("[MISSION] Elevator navigation finished");
+            stamp.RequireCurrent();
             Teleport(client, x, y, z);
             progress.CommitGeneratedFloor(progress.phaseIndex, site, target);
             foreach (ushort id in progress.following)

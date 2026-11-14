@@ -14,27 +14,43 @@ namespace hds
         private readonly byte counter;
         private readonly int world,life;
         private readonly uint district;
-        private readonly long transport;
         private bool committed;
         internal MissionTransportState(WorldClient client)
         {
             this.client=client;data=client.playerData;player=client.playerInstance;
             position=(byte[])player.Position.getValue().Clone();panel=data.elevatorPanel;counter=data.teleportCounter;
-            world=data.worldGeneration;life=data.lifeGeneration;district=data.getDistrictId();transport=client.TransportFence.Capture();
+            world=data.worldGeneration;life=data.lifeGeneration;district=data.getDistrictId();
         }
         internal void Commit() => committed=true;
         public void Dispose()
         {
             if(committed || !ReferenceEquals(client.playerData,data) || !ReferenceEquals(client.playerInstance,player) ||
-                data.worldGeneration!=world || data.lifeGeneration!=life || data.getDistrictId()!=district ||
-                client.TransportFence.Capture()!=transport)return;
+                data.worldGeneration!=world || data.lifeGeneration!=life || data.getDistrictId()!=district)return;
             player.Position.setValue(position);data.elevatorPanel=panel;data.teleportCounter=counter;
         }
-        internal static void Run(WorldClient client, Func<bool> action)
+        internal static bool Run(WorldClient client, Func<bool> action, MissionRideStamp stamp = null)
         {
             lock(client.playerData.missionSync)
-            using(var state=new MissionTransportState(client))
-                if(MissionPersistence.Mutate(client,action))state.Commit();
+            {
+                // Nested batches belong to another SQL owner. Do not move or mint evidence before
+                // that owner commits; transport is retried as a separate ordinary operation.
+                if(MissionOutput.Buffered(client.messageQueue))return false;
+                stamp=stamp??new MissionRideStamp(client,client.playerData.missionProgress);
+                if(!stamp.Current)return false;
+                using(var state=new MissionTransportState(client))
+                {
+                    bool committed=MissionPersistence.Mutate(client,()=>
+                    {
+                        if(!stamp.Current)return false;
+                        if(!stamp.BindOutput())throw new MissionCheckpointException("Stale mission transport output");
+                        bool moved=action();
+                        stamp.RequireCurrent(); // final owner check immediately before Mutate saves
+                        return moved;
+                    });
+                    if(committed)state.Commit();
+                    return committed;
+                }
+            }
         }
     }
 
@@ -50,13 +66,18 @@ namespace hds
         internal readonly long Transport;
         internal MissionRideStamp(WorldClient client, MissionProgress progress)
         {
-            this.client=client;data=client.playerData;this.progress=progress;site=progress.site;
-            phase=progress.phaseIndex;world=data.worldGeneration;life=data.lifeGeneration;
+            this.client=client;data=client.playerData;this.progress=progress;site=progress?.site;
+            phase=progress?.phaseIndex??-1;world=data.worldGeneration;life=data.lifeGeneration;
             character=data.getCharID();district=data.getDistrictId();onWorld=data.getOnWorld();
             Transport=client.TransportFence.Capture();
         }
+        internal bool BindOutput() => MissionOutput.BindCurrent(client.messageQueue,client.TransportFence,Transport,world);
+        internal void RequireCurrent()
+        {
+            if(!Current)throw new MissionCheckpointException("Stale mission transport owner");
+        }
         internal bool Current => client.Alive && ReferenceEquals(client.playerData,data) &&
-            ReferenceEquals(data.missionProgress,progress) && progress.phaseIndex==phase && ReferenceEquals(progress.site,site) &&
+            ReferenceEquals(data.missionProgress,progress) && (progress==null || progress.phaseIndex==phase && ReferenceEquals(progress.site,site)) &&
             data.worldGeneration==world && data.lifeGeneration==life && data.getCharID()==character &&
             data.getDistrictId()==district && data.getOnWorld()==onWorld && !data.isDead && !data.worldChangePending &&
             !data.waitForRPCShutDown && client.TransportFence.Capture()==Transport;
