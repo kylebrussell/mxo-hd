@@ -65,6 +65,7 @@ namespace hds
             if (entry == null) return null;
             var mods = new List<TempMods.Mod>();
             float immunity = 0;
+            if(AbilityReverseBulldog.Markers(entry,out var reverseMarkers))return reverseMarkers;
             foreach (Modifier m in entry.Modifiers)
             {
                 if (m.Number("WhenEnabled", -1) != 2) continue;

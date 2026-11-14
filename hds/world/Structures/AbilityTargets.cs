@@ -71,10 +71,11 @@ namespace hds
         /// with the NPC (as when the client asks for close combat) if there isn't one, so the NPC fights back and
         /// its death, experience and loot go the usual way. Returns false when the view isn't a live NPC.
         /// </summary>
-        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityReverseBulldog.Cast reverseBulldog=null)
         {
+            if(reverseBulldog!=null && !reverseBulldog.Current)return false;
             Mob primary = FindMob(client, targetViewId, out _);
-            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin);
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin,reverseBulldog:reverseBulldog);
             if (primary.getIsDead() || primary.isFriendly) return false;
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
@@ -93,7 +94,7 @@ namespace hds
                             mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
                     }
             }
-            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener,origin);
+            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener,origin,reverseBulldog:reverseBulldog);
             // Area hostile abilities also reach players around the target that PvP rules allow
             if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
                 foreach (WorldClient player in AbilityHostile.PlayersInArea(client, primary.getXPos(), primary.getYPos(), primary.getZPos(), radius))
@@ -121,7 +122,7 @@ namespace hds
             return Math.Abs(dy) < 150 && dx * dx + dy * dy + dz * dz <= radius * radius;
         }
 
-        internal static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        internal static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityReverseBulldog.Cast reverseBulldog=null)
         {
             UInt16 abilityId = ability.getAbilityID();
             bool contest=FreeCastViralContest.Applies(abilityId,origin);
@@ -174,7 +175,7 @@ namespace hds
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
             damage = TypedAbilityResistance.Npc(client, mob, abilityId, damage);
-            TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
+            TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId,reverseBulldog);
             AbilityHostile.LandedOnMob(client, mob, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
             ConditionalThrownDamage.Npc(client,mob,targetViewId,abilityId,fx,conditionalFence);
