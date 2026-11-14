@@ -124,6 +124,8 @@ namespace hds
             Terminal,
             /// <summary>A periodic script callback (NegativeConditionSweepPulse) every Interval while it lasts (<see cref="AbilityHostile.Pulse"/>).</summary>
             Pulse,
+            /// <summary>Sever Artery341 sourced init/update state callback only.</summary>
+            SeverState,
         }
 
         public sealed class Mod
