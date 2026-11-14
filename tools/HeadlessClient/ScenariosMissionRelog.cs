@@ -103,11 +103,15 @@ public static partial class Scenarios
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid IN(6825,6820)"),"Abandon removes owned mission items");
         Check.Equal(0,player.World.Problems.Count,"Restored records readable");
     }
-    private static async Task MissionRelogObjectsAndRollback(ScenarioContext context)
+    private static Task MissionRelogObjectsAndRollback(ScenarioContext context) => MissionRelogObjectsAndRollbackCore(context,false);
+    private static Task MissionRelogObjectsAndRollback842(ScenarioContext context) => MissionRelogObjectsAndRollbackCore(context,true);
+    private static async Task MissionRelogObjectsAndRollbackCore(ScenarioContext context,bool exact842)
     {
+        ServerInstance? seededReturn=null;ServerInstance currentOwnedServer=context.Server;
         var proofActors=new List<HeadlessPlayer>();
         var proofServers=new List<(ServerInstance Server,int Pid,string Dll,string Hash,DateTime Mtime)>();
         var rawCheckpoints=new List<object>();var operations=new List<object>();
+        if(exact842)operations.Add(new{Step="exact842-reproduction",InitialRawSeed=Rollback842Fixture.InitialSeed,Phase1RawSeed=Rollback842Fixture.Phase1Seed,OriginalFailedSchema="mxotest_run_1_98d89a144c"});
         var clock=System.Diagnostics.Stopwatch.StartNew();string step="entry";Exception? failure=null;uint character=0;
         void TrackServer(ServerInstance server)
         {
@@ -128,6 +132,11 @@ public static partial class Scenarios
             step=label;operations.Add(new{Step=step,ElapsedMs=clock.ElapsedMilliseconds,RpcCursor=player.World.RpcSnapshot().Count,
                 CreationCursor=player.World.CreationSnapshot().Count,ViewCursor=player.World.ViewSnapshot().Count});
         }
+        void RequireExited(int pid)
+        {
+            bool exited;try{using var process=System.Diagnostics.Process.GetProcessById(pid);exited=process.HasExited;}catch(ArgumentException){exited=true;}
+            Check.That(exited,"Owned predecessor exited before successor starts");
+        }
         TrackServer(context.Server);
         try
         {
@@ -145,7 +154,7 @@ public static partial class Scenarios
             int mission=saved.GetProperty("Mission").GetInt32(),nextPhase=saved.GetProperty("Phase").GetInt32()+1;
             uint started=saved.GetProperty("Started").GetUInt32();
             int legacySeed=unchecked((int)character*7919+mission*31+(nextPhase+1)+(int)started);
-            string? rawQaSeed=Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED");
+            string? rawQaSeed=exact842?Rollback842Fixture.Phase1Seed.ToString():Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED");
             int? qaSeed=MissionStaging.QaSiteSeed("1",context.Database.Name,rawQaSeed,mission,nextPhase);
             operations.Add(new{Step="next-phase-source-inputs",ElapsedMs=clock.ElapsedMilliseconds,Character=character,Mission=mission,NextPhase=nextPhase,Started=started,
                 LegacyFallbackSeed=legacySeed,RawQaSeed=rawQaSeed,EffectiveNextPhaseSeed=qaSeed??legacySeed,
@@ -153,6 +162,34 @@ public static partial class Scenarios
         }
         catch(Exception decode){operations.Add(new{Step="next-phase-input-decode-failed",Failure=decode.ToString()});}
         var courier=await VisitMissionNpc(context,original,"Checkpoint Courier");
+        if(exact842)
+        {
+            step="exact842-save-before-cold-return";
+            var first=await Checkpoint(original);Rollback842Fixture.Phase0(first);
+            byte[] courierPose=courier.Attributes["Position"];
+            Rollback842Fixture.PreGet(new[]{BitConverter.ToDouble(courierPose)+100,BitConverter.ToDouble(courierPose,8),BitConverter.ToDouble(courierPose,16)});
+            original.SkipReceived();original.SendChat("?save");await original.WaitForRpcAsync("2e 07");
+            var savedPosition=(await context.Database.ScalarAsync($"SELECT x+0e0,y+0e0,z+0e0 FROM characters WHERE charId={character}"))
+                .Split('\t').Select(v=>double.Parse(v,System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+            operations.Add(new{Step="exact842-save-ack-db-position",SavedPosition=savedPosition});
+            Rollback842Fixture.PreGet(savedPosition);
+            string account=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={character}");
+            string identity=first.Identity;long started=first.Started;string rawBefore=await Raw("exact842-saved-phase0");
+            int oldPid=context.Server.ProcessId;original.Dispose();context.Server.Dispose();
+            bool exited;try{using var process=System.Diagnostics.Process.GetProcessById(oldPid);exited=process.HasExited;}catch(ArgumentException){exited=true;}
+            Check.That(exited,"Owned initial server exited before seeded successor starts");
+            seededReturn=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,
+                new Dictionary<string,string>(StillNpcs){["MXO_MISSION_SITE_QA_SEED"]=Rollback842Fixture.Phase1Seed.ToString()},"mission-persistence.xml");
+            currentOwnedServer=seededReturn;TrackServer(seededReturn);original=await HeadlessPlayer.LoginAsync(seededReturn.Address,account,original.Handle);proofActors.Add(original);
+            await original.EnterWorldAsync();await original.WaitForRpcAsync("80 9c");
+            var restored=await Checkpoint(original);Rollback842Fixture.Phase0(restored);Check.Equal(identity,restored.Identity,"Seed transition preserves acceptance identity");
+            Check.Equal(started,restored.Started,"Seed transition preserves Started");
+            byte[] self=original.World.CreationSnapshot().Single(c=>c.ViewId==2).Attributes["Position"];
+            var coldSelf=new[]{BitConverter.ToDouble(self),BitConverter.ToDouble(self,8),BitConverter.ToDouble(self,16)};
+            operations.Add(new{Step="exact842-cold-phase0",InitialSeed=Rollback842Fixture.InitialSeed,Phase1Seed=Rollback842Fixture.Phase1Seed,
+                PredecessorPid=oldPid,PredecessorExited=exited,SavedPosition=savedPosition,ColdSelf=coldSelf,RawBefore=rawBefore,RawAfter=await Raw("exact842-restored-phase0")});
+            Rollback842Fixture.PreGet(coldSelf);courier=await VisitMissionNpc(context,original,"Checkpoint Courier");
+        }
         Window("courier-get",original);
         var courierPosition=courier.Attributes["Position"];
         var positionBeforeGet=new[]{(double)(float)(BitConverter.ToDouble(courierPosition)+100),(double)(float)BitConverter.ToDouble(courierPosition,8),(double)(float)BitConverter.ToDouble(courierPosition,16)};
@@ -171,10 +208,20 @@ public static partial class Scenarios
         Window("await-next-phase-briefing",original);
         await original.WaitForTextAsync("Unlock the safe");
         await original.WaitForRpcAsync("80 9e 00");
-        await Raw("next-phase-briefing");Window("enter-safe-area",original);
-        await EnterMissionArea(context,original);
+        await Raw("next-phase-briefing");
+        if(exact842)Rollback842Fixture.Phase1(await Checkpoint(original));
+        Window("enter-safe-area",original);
+        int objectCursor=original.World.CreationSnapshot().Count;
+        await EnterMissionArea(currentOwnedServer,original);
         await ApproachMissionObjectFixture(context,original,1);
-        var safe=await MissionObjectView(context,original,"Safe");
+        ViewCreation safe;
+        if(exact842)
+        {
+            ushort concrete=(await Checkpoint(original)).Objects.Single(o=>o.Id==1).Goid;
+            await original.WaitUntilAsync(()=>original.World.CreationSnapshot().Skip(objectCursor).Any(v=>v.Goid==concrete),"Current admitted safe view",TimeSpan.FromSeconds(10));
+            safe=original.World.CreationSnapshot().Skip(objectCursor).Last(v=>v.Goid==concrete);
+        }
+        else safe=await MissionObjectView(context,original,"Safe");
         original.SendRpc($"80 c7 {MissionNpcId(safe)} 08 00");
         await original.WaitForRpcAsync(AbilityLine(0x7a000145));
         original.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");await original.WaitForRpcAsync("81 19");
@@ -185,7 +232,8 @@ public static partial class Scenarios
         Check.Equal(2,before.Items.Count,"Prior phase unused disk and current search disk owned");
         original.SendChat("?save");await original.WaitForRpcAsync("2e 07");
         string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={original.CharId}");
-        original.Dispose();context.Server.Dispose();
+        int currentPid=currentOwnedServer.ProcessId;original.Dispose();currentOwnedServer.Dispose();
+        if(exact842)RequireExited(currentPid);
         using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence.xml");
         TrackServer(server);
         using var p=await HeadlessPlayer.LoginAsync(server.Address,username,original.Handle);proofActors.Add(p);Window("cold-safe-restore",p);await p.EnterWorldAsync();
@@ -222,7 +270,8 @@ public static partial class Scenarios
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid IN(48125,6831,6786)"),"Owned cleanup and ticket commit");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=48134"),"Exactly one ticket reward");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_active_missions WHERE charId={p.CharId} AND payload IS NULL AND receipt IS NOT NULL"),"Durable completion receipt");
-        p.Dispose();server.Dispose();
+        int coldPid=server.ProcessId;p.Dispose();server.Dispose();
+        if(exact842)RequireExited(coldPid);
         using var last=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence.xml");
         TrackServer(last);
         using var again=await HeadlessPlayer.LoginAsync(last.Address,username,original.Handle);proofActors.Add(again);Window("completed-cold-return",again);await again.EnterWorldAsync();
@@ -255,7 +304,7 @@ public static partial class Scenarios
                 Console.WriteLine("MISSION RELOG OBJECT ROLLBACK evidence before teardown="+stem);
             }
             catch(Exception evidence){if(failure==null)throw;Console.Error.WriteLine("Rollback evidence failure; preserving primary: "+evidence);}
-            finally{foreach(var player in proofActors)player.Dispose();}
+            finally{foreach(var player in proofActors)player.Dispose();seededReturn?.Dispose();}
         }
     }
 
