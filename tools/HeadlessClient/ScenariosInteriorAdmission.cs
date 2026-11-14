@@ -8,7 +8,8 @@ public static partial class Scenarios
 {
     private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c)
     {
-        InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))));
+        var server=context.Server;ServerInstance? coldServer=null;var packetLogs=new List<object>();
+        InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(server.SourceAssembly))));
         var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
             X=c.X,Y=c.Y,Z=c.Z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,CompletedMissions=c.Prerequisites});
         var fields=new JsonSerializerOptions{IncludeFields=true};var proof=new List<object>();string step="prerequisites";Exception? failure=null;
@@ -32,16 +33,50 @@ public static partial class Scenarios
             var view=p.World.CreationSnapshot().Skip(initialViews).Last(Match);proof.Add(new{Step=step,Npc=id,Source=m,view.ViewId,view.SpawnId,Attributes=view.Attributes.ToDictionary(x=>x.Key,x=>Convert.ToHexString(x.Value))});return view;
         }
         uint Lobby(MissionProgress.SavedState s)=>InteriorAdmissionFixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),s.Exits.Single());
+        string PacketPath()=>Path.Combine(server.WorkingDirectory,"PacketLog.txt");
+        static bool Free(MissionProgress.SavedObject obj)=>obj.OpenFloor!=null&&obj.OpenFloor.SourceGoid!=obj.Goid;
+        static double[] Centre(MissionProgress.SavedObject obj)=>obj.OpenFloor!.Centre;
+        bool Body(MissionProgress.SavedObject obj,int cursor)=>InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),cursor,obj.Goid,Centre(obj))!=null;
+        void NoEarlyBody(MissionProgress.SavedState state)
+        {
+            foreach(var obj in state.Objects.Where(Free))Check.That(!Body(obj,initialViews),"No early free prop03 before this floor's arrival");
+        }
+        async Task ReceiptBodies(MissionProgress.SavedState state,int packetCursor,double[] root,int viewCursor)
+        {
+            var free=state.Objects.Where(Free).ToArray();if(free.Length==0)return;
+            // Stay stationary: no client position aid may satisfy the alternative walk-interest path here.
+            await p.WaitUntilAsync(()=>free.All(obj=>Body(obj,viewCursor)),"First prop03 after stationary actual arrival receipt",TimeSpan.FromSeconds(15));
+            string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());
+            foreach(var obj in free)
+            {
+                var receipt=InteriorAdmissionDeliveryProof.Require(raw,p.CharId,packetCursor,root,obj.Goid,Centre(obj));
+                proof.Add(new{Step=step,ArrivalReceipt=receipt,obj.Id,RawSource=obj.Spot,FixedPlacement=obj.OpenFloor,Stationary=true,ReceiptIsNotRoomReady=true});
+            }
+        }
+        void RetainPackets(string label)
+        {
+            string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());
+            string path=Path.Combine(Path.GetTempPath(),"mxo-"+c.Name+"-"+context.Database.Name+"-"+label+"-PacketLog.txt");File.WriteAllText(path,raw);
+            packetLogs.Add(new{Label=label,Path=path,server.ProcessId,Sha256=Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw)))});
+        }
         async Task Ride(bool enter,MissionProgress.SavedState? source=null)
         {
             var s=source??await Saved();var door=s.Waypoints.Single();var lobby=s.Exits.Single();
             double[] pose=enter?lobby:new[]{door.x,door.y,door.z};uint key=enter?Lobby(s):BitConverter.ToUInt32(Convert.FromHexString(door.doorHex),0);
             await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
-            int cursor=p.World.RpcSnapshot().Count,log=context.Server.DebugLog().Length;p.SkipReceived();string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
-            if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static-door ride commit",TimeSpan.FromSeconds(15));
-            var arrived=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            if(enter)NoEarlyBody(s);
+            int arrivalViews=p.World.CreationSnapshot().Count;
+            int packetCursor=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(ch=>ch==10);
+            int cursor=p.World.RpcSnapshot().Count,log=server.DebugLog().Length;p.SkipReceived();string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+            if(door.y!=lobby[1])await p.WaitUntilAsync(()=>server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static-door ride commit",TimeSpan.FromSeconds(15));
+            var arrived=Regex.Matches(server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(arrived!=null)actualRideRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrived.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
-            proof.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=context.Server.DebugLog()[log..]});
+            proof.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=server.DebugLog()[log..]});
+            if(enter&&s.Objects.Any(Free))
+            {
+                Check.That(arrived!=null&&actualRideRoot!=null,"Free-prop receipt case requires its actual ordinary Ride root");
+                await ReceiptBodies(s,packetCursor,actualRideRoot!,arrivalViews);
+            }
         }
         async Task InitialNpcs(MissionProgress.SavedState s)
         {
@@ -67,6 +102,7 @@ public static partial class Scenarios
             p.SendRpc($"80 98 06 00 {Le((ushort)index)} 01 02 00");await p.WaitForRpcAsync("80 99");initialViews=p.World.CreationSnapshot().Count;initialSections=p.World.ViewSnapshot().Count;
             p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");var accepted=await Saved();Check.Equal(0,accepted.Phase,"Normal acceptance begins first phase");
             proof.Add(new{Step=step,Origin=new[]{c.X,c.Y,c.Z},c.LayoutSeed,OriginalNativeDoor=c.OriginalDoor,OriginalNativeSource=c.OriginalSource,OfferCursor=offer,SelectedIndex=index,OfferRpcs=p.World.RpcSnapshot().Skip(offer).Select(r=>r.Hex).ToArray(),Qualification="Historical native tuple and current filtered acceptance remain separately attributed"});
+            NoEarlyBody(accepted);
             step="ordinary-first-floor-entry";await Ride(true);var firstSite=await Saved();await InitialNpcs(firstSite);
             if(c.TargetPhase>0)
             {
@@ -78,8 +114,9 @@ public static partial class Scenarios
                     var alpha=await Npc(1);cursor=p.World.RpcSnapshot().Count;nextViews=p.World.CreationSnapshot().Count;nextSections=p.World.ViewSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(alpha)} 09 00");await Goal(3,cursor);
                 }
                 step="ordinary-exit-to-admitted-second-phase";await Ride(false,firstSite);
-                await p.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[MISSION] Phase 2 at a"),"actual second phase staging",TimeSpan.FromSeconds(15));
+                await p.WaitUntilAsync(()=>server.DebugLog().Contains("[MISSION] Phase 2 at a"),"actual second phase staging",TimeSpan.FromSeconds(15));
                 initialViews=nextViews;initialSections=nextSections;var next=await Saved();Check.Equal(1,next.Phase,"Actual second phase admitted durably");
+                NoEarlyBody(next);
                 step="ordinary-second-floor-entry";await Ride(true);
             }
             step="target-initial-placements";var target=await Saved();Check.Equal(c.TargetPhase,target.Phase,"Actual target phase");await InitialNpcs(target);
@@ -91,6 +128,32 @@ public static partial class Scenarios
             string FixedSet(MissionProgress.SavedState s)=>JsonSerializer.Serialize(s.Objects.OrderBy(o=>o.Id).Select(o=>new{o.Id,o.Spot,o.Goid,o.OpenFloor}),fields);
             string SiteSet(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.Waypoints,s.Exits},fields);
             string originalSet=FixedSet(target),originalSite=SiteSet(target);
+            if(c.Mission==101209&&target.Objects.Any(Free))
+            {
+                step="zion-save-before-cold-restore";p.SkipReceived();p.SendChat("?save");await p.WaitForRpcAsync("2e 07");
+                var beforeCold=await Saved();string fixedBefore=FixedSet(beforeCold),siteBefore=SiteSet(beforeCold);
+                string rawBefore=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}");
+                string ownedBefore=JsonSerializer.Serialize(beforeCold.Items,fields);
+                long xpBefore=await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),infoBefore=await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
+                string account=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
+                string handle=p.Handle;int oldPid=server.ProcessId;RetainPackets("original");
+                proof.Add(new{Step="original-server-before-cold",server.ProcessId,SourceAssembly=server.SourceAssembly,Debug=server.DebugLog(),Output=server.FullOutput(),Rpc=p.World.RpcSnapshot().Select(v=>v.Hex).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray()});
+                Check.Equal(0,p.World.Problems.Count,"Original parser healthy before cold replacement");p.Dispose();server.Dispose();
+                coldServer=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,InteriorAdmissionFixture.Environment(c));server=coldServer;
+                InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(server.SourceAssembly))));
+                p=await HeadlessPlayer.LoginAsync(server.Address,account,handle);initialViews=0;initialSections=0;
+                step="zion-cold-stationary-introduction";await p.EnterWorldAsync();await p.WaitForRpcAsync("80 9c");
+                await ReceiptBodies(beforeCold,0,actualRideRoot!,0);
+                var afterCold=await Saved();
+                Check.Equal(beforeCold.Identity,afterCold.Identity,"Cold restore retains actual mission identity");Check.Equal(beforeCold.Started,afterCold.Started,"Cold restore retains start time");
+                Check.Equal(beforeCold.Phase,afterCold.Phase,"Cold restore retains phase");Check.Equal(beforeCold.Instance,afterCold.Instance,"Cold restore retains current instance");
+                Check.Equal(fixedBefore,FixedSet(afterCold),"Cold restore retains exact source/DTO/pose set");Check.Equal(siteBefore,SiteSet(afterCold),"Cold restore retains site and history");
+                Check.Equal(ownedBefore,JsonSerializer.Serialize(afterCold.Items,fields),"Cold restore retains item ownership");
+                Check.Equal(xpBefore,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"No cold restore XP award");Check.Equal(infoBefore,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No cold restore cash award");
+                proof.Add(new{Step=step,OldPid=oldPid,NewPid=server.ProcessId,RawBefore=rawBefore,RawAfter=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}"),ColdStationary=true});
+                target=afterCold;originalSet=FixedSet(target);originalSite=SiteSet(target);
+            }
+
             for(int objectId=1;objectId<=c.Objects;objectId++)
             {
             var obj=target.Objects.Single(x=>x.Id==objectId);
@@ -151,6 +214,7 @@ public static partial class Scenarios
             Check.That(!p.World.RpcSnapshot().Any(r=>r.Bytes.Length==10&&r.Bytes[0]==0x80&&r.Bytes[1]==0xe6&&BitConverter.ToUInt32(r.Bytes,6)==2),"No mission XP gain in narrow partial proof");
             Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId={c.Mission}"),"No selected receipt granted or falsely completed");
             long expectedKill=c.Mission==301203?19204:0;Check.Equal(baselineXp+expectedKill,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Only actual Fortuna kill XP, no mission award");Check.Equal(baselineInfo,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No pocket or mission information awarded");
+            if(coldServer!=null)Check.That(!new[]{"Packet handling failed","Visibility pass failed","Unhandled exception","[MISSION] Tick failed"}.SelectMany(server.OutputLines).Any(),"Cold replacement server has no unacknowledged harness diagnostics");
             Check.Equal(0,p.World.Problems.Count,"Admission proof healthy parser");proof.Add(new{Step=step,ObjectId=objectId,GoalCursor=goalCursor,AuthoredAction=action,Use=use,body.ViewId,body.SpawnId,InitialRawSource=originalSource,InitialWitness=originalWitness,WholeInitialSet=originalSet,InitialSite=originalSite,CurrentPhase=after.Phase,AutomaticPhaseAdvance=after.Phase!=c.TargetPhase,OwnedItems=after.Items,NarrowProofOnly=true});
             }
             step="complete";
@@ -158,18 +222,21 @@ public static partial class Scenarios
         catch(Exception ex){failure=ex;throw;}
         finally
         {
+            Exception? packetFailure=null;
+            try{RetainPackets(coldServer==null?"original":"cold");}catch(Exception packetError){packetFailure=packetError;proof.Add(new{PacketRetentionError=packetError.ToString()});}
             try
             {
-                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+c.Name+"-"+context.Database.Name);string dll=context.Server.SourceAssembly;
-                await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=failure==null,Step=step,Failure=failure?.ToString(),Case=c,Proof=proof,Database=context.Database.Name,context.Server.ProcessId,SourceAssembly=dll,
+                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+c.Name+"-"+context.Database.Name);string dll=server.SourceAssembly;
+                await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=failure==null&&packetFailure==null,Step=step,Failure=(failure??packetFailure)?.ToString(),Case=c,Proof=proof,Database=context.Database.Name,server.ProcessId,SourceAssembly=dll,
                     SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),SourceMtimeUtc=File.GetLastWriteTimeUtc(dll).ToString("O"),
-                    Rpc=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray(),Debug=context.Server.DebugLog(),Output=context.Server.FullOutput(),
+                    PacketLogs=packetLogs,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray(),Debug=server.DebugLog(),Output=server.FullOutput(),
                     FinalPayload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}"),NativeWalkingProven=false,NativePickingProven=false,FullMissionCompletionProven=false,
                     Aids="Existing QA movement; Merv Fortuna uses disclosed weaken1 plus ordinary protocol attack. No selected progress/item/reward injection; no source override or retries."},new JsonSerializerOptions{WriteIndented=true}));
                 Console.WriteLine("INTERIOR ADMISSION EVIDENCE "+stem+".json");
             }
             catch(Exception evidenceError){if(failure==null)throw;Console.Error.WriteLine("Admission evidence failed while retaining original error: "+evidenceError);}
-            finally{p.Dispose();}
+            finally{p.Dispose();coldServer?.Dispose();}
+            if(failure==null&&packetFailure!=null)throw packetFailure;
         }
     }
 }

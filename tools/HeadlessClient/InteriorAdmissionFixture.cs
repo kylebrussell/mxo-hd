@@ -20,7 +20,7 @@ public static class InteriorAdmissionFixture
         PosterHuntFixture.Prerequisites,0,1,0,0x0d1003bb,0x0d1003dc,17,3,new uint[]{0x0d1003dc,0x0d100314,0x0d1002f1});
     public static readonly InteriorAdmissionCase[] Cases={Machines,Merv,Zion,Posters};
     public static string Seed(InteriorAdmissionCase c,long character)=>"INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",c.Prerequisites.Select(id=>$"({character},{id})"));
-    public static IReadOnlyDictionary<string,string> Environment(InteriorAdmissionCase c)=>new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=c.LayoutSeed.ToString(System.Globalization.CultureInfo.InvariantCulture),["MXO_MOB_WANDER"]="0",["MXO_MOBS"]="test",["MXO_AGGRO"]="0"};
+    public static IReadOnlyDictionary<string,string> Environment(InteriorAdmissionCase c)=>new Dictionary<string,string>{["MXO_PACKET_LOG"]="1",["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=c.LayoutSeed.ToString(System.Globalization.CultureInfo.InvariantCulture),["MXO_MOB_WANDER"]="0",["MXO_MOBS"]="test",["MXO_AGGRO"]="0"};
     public static uint DoorAt(IEnumerable<string> rows,double[] pose)
     {
         var ids=rows.Where(l=>!string.IsNullOrWhiteSpace(l)&&char.IsDigit(l[0])).Select(l=>l.Split(','))
