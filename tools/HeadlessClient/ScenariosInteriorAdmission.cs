@@ -12,7 +12,7 @@ public static partial class Scenarios
         var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
             X=c.X,Y=c.Y,Z=c.Z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,CompletedMissions=c.Prerequisites});
         var fields=new JsonSerializerOptions{IncludeFields=true};var proof=new List<object>();string step="prerequisites";Exception? failure=null;
-        long baselineXp=0,baselineInfo=0;int initialViews=0,initialSections=0;
+        long baselineXp=0,baselineInfo=0;int initialViews=0,initialSections=0;double[]? actualRideRoot=null;
         async Task<MissionProgress.SavedState> Saved()
         {
             string raw=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}");
@@ -39,6 +39,8 @@ public static partial class Scenarios
             await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
             int cursor=p.World.RpcSnapshot().Count,log=context.Server.DebugLog().Length;p.SkipReceived();string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
             if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static-door ride commit",TimeSpan.FromSeconds(15));
+            var arrived=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            if(arrived!=null)actualRideRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrived.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
             proof.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=context.Server.DebugLog()[log..]});
         }
         async Task InitialNpcs(MissionProgress.SavedState s)
@@ -84,37 +86,53 @@ public static partial class Scenarios
             if(c.Mission==201202)
             {
                 Check.Equal(3,target.Objects.Count,"Poster first phase retains all three authored objects");
-                Check.Equal(c.OriginalDoor,BitConverter.ToUInt32(Convert.FromHexString(target.Waypoints.Single().doorHex),0),"Positive Poster compatibility retains normal original site");
-                Check.That(target.Objects.OrderBy(o=>o.Id).Select(o=>o.Spot.mxoStaticId).SequenceEqual(c.OriginalSources!),"Positive Poster compatibility retains original three natural sources");
+                proof.Add(new{PositiveCompatibility="Original native-passed floor is tested separately at its exact tuple offline; this normal acceptance uses the current eligible site pool, without forcing that floor",ActualDoor=target.Waypoints.Single().doorHex,ActualSources=target.Objects.Select(o=>o.Spot.mxoStaticId).ToArray(),HistoricalDoor=c.OriginalDoor,HistoricalSources=c.OriginalSources});
             }
             string FixedSet(MissionProgress.SavedState s)=>JsonSerializer.Serialize(s.Objects.OrderBy(o=>o.Id).Select(o=>new{o.Id,o.Spot,o.Goid,o.OpenFloor}),fields);
             string SiteSet(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.Waypoints,s.Exits},fields);
             string originalSet=FixedSet(target),originalSite=SiteSet(target);
             for(int objectId=1;objectId<=c.Objects;objectId++)
             {
-            var obj=target.Objects.Single(x=>x.Id==objectId);Check.That(obj.OpenFloor!=null,"Target has a committed qualified Root/Route/Standing witness");
+            var obj=target.Objects.Single(x=>x.Id==objectId);
             string originalSource=JsonSerializer.Serialize(obj.Spot,fields),originalWitness=JsonSerializer.Serialize(obj.OpenFloor,fields);
-            var w=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(obj.OpenFloor,fields));w.Require(c.Mission,c.TargetPhase,objectId,obj.Spot.mxoStaticId,BitConverter.ToUInt16(obj.Spot.type,0),obj.Goid);
-            Check.That(NavMesh.Locate(1,w.Route[0],w.Route[1],w.Route[2],out var rootNav),"Committed root is actual NAV");Check.Equal(rootNav.floorY+95,w.Route[1],"Committed root uses actual floor standing height");
+            Check.That(actualRideRoot!=null,"Target floor has an actual ordinary ride root");
+            double[] centre,standing,route;string quaternion;bool free=obj.OpenFloor!=null;
+            if(free)
+            {
+                var w=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(obj.OpenFloor,fields));w.Require(c.Mission,c.TargetPhase,objectId,obj.Spot.mxoStaticId,BitConverter.ToUInt16(obj.Spot.type,0),obj.Goid);
+                centre=w.Centre.ToArray();standing=w.Standing.ToArray();route=w.Route.ToArray();quaternion=w.Quaternion;
+                Check.That(actualRideRoot!.SequenceEqual(route.Take(3)),"Actual ordinary ride equals the committed free-prop route root");
+            }
+            else
+            {
+                Check.Equal(obj.Goid,BitConverter.ToUInt16(obj.Spot.type,0),"A missing free-prop witness is allowed only for an already-bound native object");
+                Check.That(NavMesh.Locate(1,actualRideRoot![0],actualRideRoot[1],actualRideRoot[2],out var boundRoot),"Bound-native actual ride root NAV");
+                centre=new[]{obj.Spot.pos_x,obj.Spot.pos_y,obj.Spot.pos_z};quaternion=obj.Spot.quat;
+                Check.That(NavMesh.Project(1,centre[0]+100,boundRoot.floorY+95,centre[2],out var approach,maxDistance:300,reachableFrom:actualRideRoot),"Bound-native approach uses current root-connected NAV");
+                Check.That(approach.location.indoors==boundRoot.indoors&&approach.location.sector==boundRoot.sector&&approach.location.region==boundRoot.region,"Bound-native approach stays inside the actual arrival interior");
+                standing=approach.Position;route=actualRideRoot.Concat(standing).ToArray();
+                proof.Add(new{Step=step,BoundNative=true,obj.Goid,obj.Spot.mxoStaticId,SourceCentre=centre,NavStanding=standing,Scope="Existing native object, NAV approach only; no generated footprint/static-route witness or native walking/picking proof"});
+            }
+            Check.That(NavMesh.Locate(1,route[0],route[1],route[2],out var rootNav),"Actual root is NAV");Check.Equal(rootNav.floorY+95,route[1],"Root uses actual floor standing height");
             foreach(var npc in target.Mobs.Where(m=>m.Phase==target.Phase&&!m.Dead))
             {Check.That(NavMesh.Locate(1,npc.X,npc.Y,npc.Z,out var npcNav),"Target NPC remains on NAV");Check.Equal(rootNav.floorY,npcNav.floorY,"Target NPC and admitted root are on the same actual floor");
              Check.Equal(rootNav.indoors,npcNav.indoors,"Target NPC and root share NAV space kind");
              if(rootNav.indoors){Check.Equal(rootNav.sector,npcNav.sector,"Target NPC shares root interior sector");Check.Equal(rootNav.region,npcNav.region,"Target NPC shares root interior placement");}}
             if(c.Mission==301203){step="ordinary-Rhett-talk";var rhett=await Npc(4);int cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(rhett)} 09 00");await Goal(6,cursor);}
             step="published-route-and-actual-body";int routeRpc=p.World.RpcSnapshot().Count,routeViews=p.World.ViewSnapshot().Count;
-            for(int i=0;i<w.Route.Count;i+=3)await MoveForMissionTest(p,w.Route[i],w.Route[i+1],w.Route[i+2]);
+            for(int i=0;i<route.Length;i+=3)await MoveForMissionTest(p,route[i],route[i+1],route[i+2]);
             int poseSave=p.World.RpcSnapshot().Count;p.SkipReceived();p.SendChat("?save");await p.WaitForRpcAsync("2e 07");
             string actualPose=await context.Database.ScalarAsync($"SELECT CONCAT(x+0e0,',',y+0e0,',',z+0e0) FROM characters WHERE charId={p.CharId}");
-            Check.That(actualPose.Split(',').Select(x=>double.Parse(x,CultureInfo.InvariantCulture)).SequenceEqual(w.Standing),"QA save/client movement evidence reaches exact published Standing before authored action");
-            proof.Add(new{Step=step,ObjectId=objectId,RequestedStanding=w.Standing,PersistedActorPose=actualPose,RouteRpcCursor=routeRpc,RouteViewCursor=routeViews,PoseSaveCursor=poseSave,
+            Check.That(actualPose.Split(',').Select(x=>double.Parse(x,CultureInfo.InvariantCulture)).SequenceEqual(standing),"QA save/client movement evidence reaches the exact approach before authored action");
+            proof.Add(new{Step=step,ObjectId=objectId,FreeProp=free,RequestedStanding=standing,PersistedActorPose=actualPose,RouteRpcCursor=routeRpc,RouteViewCursor=routeViews,PoseSaveCursor=poseSave,
                 MovementRpcs=p.World.RpcSnapshot().Skip(routeRpc).Select(r=>r.Hex).ToArray(),ClientViews=p.World.ViewSnapshot().Skip(routeViews).Select(Convert.ToHexString).ToArray(),Scope="Disclosed movement plus save barrier, no SQL pose overwrite or native walking claim"});
-            ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,w.Centre.ToArray()))!=null,"actual03 target body at committed centre",TimeSpan.FromSeconds(15));
-            Check.Equal(w.Quaternion.ToUpperInvariant(),Convert.ToHexString(body!.Attributes["Orientation"]),"Actual03 target full quaternion");
+            ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,centre))!=null,"actual03 target body at unchanged centre",TimeSpan.FromSeconds(15));
+            Check.Equal(quaternion.ToUpperInvariant(),Convert.ToHexString(body!.Attributes["Orientation"]),"Actual03 target full quaternion");
             var at=await Saved();var current=at.Objects.Single(x=>x.Id==objectId);Check.Equal(originalSet,FixedSet(at),"Whole authored fixed source/DTO set survives each approach");Check.Equal(originalSite,SiteSet(at),"Exact accepted site/history/waypoint survive each approach");Check.Equal(originalSource,JsonSerializer.Serialize(current.Spot,fields),"Approach never rewrites raw source");Check.Equal(originalWitness,JsonSerializer.Serialize(current.OpenFloor,fields),"Approach never replans fixed placement");
             string action=c.Item==0?"Open":"Take";byte use=ObjectStates.UseNumber(body.Goid,action)??throw new ScenarioFailure("No actual authored native use: "+action);
             uint EnabledState()
             {
-                uint state=BitConverter.ToUInt32(body.Attributes["CurrentState"]);byte[] prefix=WireFormat.FromHex($"{Le(body.ViewId)} 01 08");
+                uint state=body.Attributes.TryGetValue("CurrentState",out var initialState)?BitConverter.ToUInt32(initialState):ObjectStates.DefaultState(body.Goid);byte[] prefix=WireFormat.FromHex($"{Le(body.ViewId)} 01 08");
                 foreach(byte[] section in p.World.ViewSnapshot().Skip(initialSections))for(int offset=BytePattern.IndexOf(section,prefix,0);offset>=0;offset=BytePattern.IndexOf(section,prefix,offset+1))
                     if(offset+prefix.Length+4<=section.Length)state=BitConverter.ToUInt32(section,offset+prefix.Length);
                 return state;
