@@ -130,7 +130,7 @@ public class ReverseBulldogTests
     [Fact]public void PlayerGetsDistinctStateTimerRecordsBoundToCapturedLifetime()
     {
         using var f=new Fixture(true);f.Arm();f.Due(f.Now+.02);Assert.True(f.Subject.Effects.Has(102));Assert.False(f.Subject.Effects.Has(681));
-        Assert.Equal(2,f.Target!.messageQueue.RPCMessagesQueue.Count);f.Due(f.Now+.11);Assert.True(f.Subject.Effects.Has(681));Assert.Equal(3,f.Target.messageQueue.RPCMessagesQueue.Count);
+        Assert.Equal(3,f.Target!.messageQueue.RPCMessagesQueue.Count);f.Due(f.Now+.11);Assert.True(f.Subject.Effects.Has(681));Assert.Equal(5,f.Target.messageQueue.RPCMessagesQueue.Count);
         var stun=Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Target==102);Assert.True(stun.RecordId>0);Assert.True(stun.LinkedRecordId>0);Assert.Equal(8,stun.Seconds);
     }
     [Fact]public void ImmuneReapplicationKeepsThePreviouslyAppliedStunAndTimer()
@@ -145,6 +145,23 @@ public class ReverseBulldogTests
         f.Subject.Effects.Apply(77,new[]{new TimedEffects.Active {Kind=TempMods.KindStat,Target=575,Value=300,Seconds=90,Proc=TempMods.Proc.Stat}},f.Now);
         f.Arm();f.Due(f.Now+.2);Assert.Equal(3.128f,Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Target==102).Seconds,4);
         Assert.Equal(16,Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Parent==734).Seconds);AbilityPassives.SetLoaded(f.Source,Array.Empty<(ushort,ushort)>());
+    }
+    [Fact]public void SameCountersCannotAuthorizeAReplacementPlayerOwner()
+    {
+        using var f=new Fixture(true);f.Arm();var old=f.Target!.playerData;var replacement=new ClientData();
+        replacement.setCharID(old.getCharID());replacement.setEntityId(old.getEntityId());replacement.setDistrictId(old.getDistrictId());replacement.setOnWorld(true);
+        replacement.worldGeneration=old.worldGeneration;replacement.lifeGeneration=old.lifeGeneration;f.Target.playerData=replacement;
+        f.Due(f.Now+.2);Assert.False(f.Subject.Effects.Has(102));Assert.Empty(f.Target.messageQueue.RPCMessagesQueue);
+    }
+    [Fact]public void FixtureProfilesAreExplicitNormalLevel50WithoutRandomOrStateControls()
+    {
+        var source=HeadlessClient.ReverseBulldogFixture.Seed("BulldogUnit");var target=HeadlessClient.ReverseBulldogFixture.Seed("TargetUnit",true);
+        Assert.Equal((int)PlayerProgression.ExperienceForLevel(50),source.Experience);Assert.Equal(source.Experience,target.Experience);
+        Assert.Equal(HeadlessClient.ReverseBulldogFixture.Abilities,source.OwnedLoadedAbilities!.Select(a=>a.Ability));Assert.Equal(new ushort[]{2,17},target.OwnedLoadedAbilities!.Select(a=>a.Ability));
+        Assert.Equal(200,target.X-source.X);Assert.Equal(64,target.Rotation);Assert.Equal(2,target.Organization);Assert.Equal(10000,target.Health);
+        var mode=NativeQa.NativeQaModes.Find("reverse-bulldog-controls");Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.GmCharacter110);Assert.False(mode.Plan.FixedCallbackRolls);
+        Assert.Equal(8,mode.Plan.ExtraQaMetadata["RawStunSeconds"].GetInt32());Assert.Equal(16,mode.Plan.ExtraQaMetadata["ExplicitTimerSeconds"].GetInt32());
+        HeadlessClient.ReverseBulldogFixture.RequirePin(new string('a',64),new string('A',64));Assert.Throws<InvalidDataException>(()=>HeadlessClient.ReverseBulldogFixture.RequirePin(null,new string('a',64)));
     }
     [Fact]public void GuardFailureRollsBackOnlyItsExactUnpublishedReplacement()
     {

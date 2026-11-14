@@ -113,14 +113,15 @@ namespace hds
             if(!subject.Effects.AppendCallback(parent,child,now,Current,out var replaced))return;
             if(!Current()){subject.Effects.RollbackCallback(child,replaced);return;}
             // Output is bound to the captured world/transport, never owner work under that publication gate.
-            Publish(receipt,child,replaced,stun);
+            if(!Publish(receipt,child,replaced,stun))return;
             TimedEffects.Track(subject);
             Output.WriteDebugLog("[REVERSE-BULLDOG] source="+cast.Character+" view="+cast.View.ViewID+" spawn="+cast.Spawn+
                 " state="+child.Target+" seconds="+child.Seconds+" callback="+(stun?"ApplyStunEffect":"AddControlImmunityTimerVal"));
         }
-        private static void Publish(Receipt receipt,TimedEffects.Active child,List<TimedEffects.Active> replaced,bool stun)
+        private static bool Publish(Receipt receipt,TimedEffects.Active child,List<TimedEffects.Active> replaced,bool stun)
         {
             var cast=receipt.Cast;
+            if(!receipt.Current){receipt.Subject.Effects.RollbackCallback(child,replaced);return false;}
             if(cast.Player!=null)
             {
                 var target=cast.Player;child.RecordId=AbilityBuffs.NextRecordId(cast.TargetData);
@@ -132,12 +133,15 @@ namespace hds
                 }
                 target.messageQueue.AddWorldBoundRpc(PlayerEffects.Record(child,false),cast.TargetWorld,cast.TargetTransport);
                 if(stun)target.messageQueue.AddWorldBoundRpc(PlayerEffects.LinkedRecord(child,false),cast.TargetWorld,cast.TargetTransport);
+                uint targetLine=stun?AbilityMessages.StunTarget:AbilityMessages.ImmunityTarget;
+                target.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(targetLine,true,Ability,child.CasterName,
+                    TimedEffects.PlayerName(target),stun?0:(int)child.Seconds),cast.TargetWorld,cast.TargetTransport);
                 target.FlushQueue();
             }
             uint line=stun?AbilityMessages.CasterStateLine(TempMods.StunAbility,out _):AbilityMessages.ImmunityCaster;
             if(line!=0)cast.Source.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(line,true,Ability,child.CasterName,
-                cast.Mob?.getName()??TimedEffects.PlayerName(cast.Player),(int)child.Seconds),cast.Normal.World,cast.SourceTransport);
-            cast.Source.FlushQueue();
+                cast.Mob?.getName()??TimedEffects.PlayerName(cast.Player),stun?0:(int)child.Seconds),cast.Normal.World,cast.SourceTransport);
+            cast.Source.FlushQueue();return true;
         }
     }
 }
