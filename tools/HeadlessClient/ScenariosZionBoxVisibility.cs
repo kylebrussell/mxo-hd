@@ -51,6 +51,16 @@ DELETE FROM inventory WHERE charId=110;
             var original=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initial,548,w.Centre)!;
             Check.That(!original.Attributes["MissionKey"].SequenceEqual(new byte[4]),"Original retains actual mission authority");Check.That(!original.Attributes.ContainsKey("CurrentState"),"Original rawGOB Closed0x835 omitted");
             Check.Equal(ZionBoxVisibilityProbe.Identity,Convert.ToHexString(original.Attributes["Orientation"]),"Original exact quaternion");
+            step="durable-room-entry-baseline";var entryWatch=System.Diagnostics.Stopwatch.StartNew();MissionProgress.SavedState entered;
+            while(true)
+            {
+                entered=await Saved();
+                if(entered.Flags.TryGetValue("entered",out bool roomEntered)&&roomEntered)break;
+                Check.That(entryWatch.Elapsed<TimeSpan.FromSeconds(20),"Ordinary room entry durably observed before diagnostic baseline");
+                await Task.Delay(100);
+            }
+            Check.Equal(saved.Identity,entered.Identity,"Durable entry retains normally accepted mission identity");Check.Equal(0,entered.Phase,"Durable entry remains phase0");
+            probes.Add(new{EntryBaseline=true,Checkpoint=JsonSerializer.Serialize(entered,fields),ObservedEntered=true});
             before=await State();int diagnosticRpc=p.World.RpcSnapshot().Count;int diagnosticViews=p.World.ViewSnapshot().Count;
             probes.Add(new{Original=true,original.ViewId,original.SpawnId,Attributes=original.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value)),RideLog=context.Server.DebugLog()[rideLog..],Accepted=accepted});
             foreach(var control in new[]{("0",0,false),("same",0,true),("-50",-50,false),("-100",-100,false),("-150",-150,false),("-200",-200,false),("-300",-300,false)})
