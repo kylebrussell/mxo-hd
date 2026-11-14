@@ -29,14 +29,15 @@ public static partial class Scenarios
             int selected=MissionContactChoice.CriticalIndex(entries,"Disturbing Trends");p.SendRpc($"80 98 06 00 {Le((ushort)selected)} 01 02 00");await p.WaitForRpcAsync("80 99");p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
             Check.Equal(201201,(await Saved()).Mission,"Normal accepted definition, never granted");
             step="phase1-talk";await EnterMissionArea(context,p);var first=await Ophiuchi(1);p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");
-            step="phase2-admission";await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(30));
+            step="phase2-admission";int creationStart=p.World.CreationSnapshot().Count;
+            await LeaveMissionArea(p);await p.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(30));
             var before=await Saved();Check.Equal(1,before.Phase,"Operations post phase");
             var source=before.Objects.Single(o=>o.Id==1);Check.Equal((ushort)3,source.Goid,"Actual normal GO3");Check.Equal(0x0d1001edu,source.Spot.mxoStaticId,"Existing seed source unchanged");
             Check.Equal((29000d,1026d,13460d),(source.Spot.pos_x,source.Spot.pos_y,source.Spot.pos_z),"Unchanged raw source, separate from resolved placement");
             Check.That(source.OpenFloor!=null,"Current master must admit an open-floor Computer before the phase advances");
             var witness=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(source.OpenFloor,options));
             witness.Require(201201,1,1,0x0d1001ed,1407,3);
-            step="phase2-ride";int creationStart=p.World.CreationSnapshot().Count;
+            step="phase2-ride";
             var site=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
             double Number(int n)=>double.Parse(site.Groups[n].Value,CultureInfo.InvariantCulture);
             await MoveForMissionTest(p,Number(4),Number(5),Number(6));
