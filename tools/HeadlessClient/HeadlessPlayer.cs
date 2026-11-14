@@ -33,6 +33,15 @@ public sealed class HeadlessPlayer : IDisposable
     public IReadOnlyDictionary<byte, byte[]> CharacterData => margin.CharacterData;
     public byte[] MarginLoginReply => margin.LoginReply.ToArray();
 
+    /// <summary>Normal creation already authenticated/loaded on this Margin; reuse it for the first UDP session.</summary>
+    public static async Task<HeadlessPlayer> AttachCreatedAsync(ServerAddress server,string handle,uint charId,MarginSession margin)
+    {
+        using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var world=new WorldSession(server.Host,server.WorldPort);
+        try{world.SendSessionRequest(charId);await margin.WaitForUdpSessionAsync(timeout.Token);return new HeadlessPlayer(handle,charId,margin,world);}
+        catch{world.Dispose();throw;}
+    }
+
     /// <summary>Auth, margin, then the world session up to the point the real client would finish loading the map.</summary>
     public static async Task<HeadlessPlayer> LoginAsync(ServerAddress server, string username, string handle, string password = "x")
     {

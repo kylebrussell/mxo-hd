@@ -72,6 +72,16 @@ public sealed class ScenarioContext : IAsyncDisposable
         }
     }
 
+    /// <summary>Only an authenticated account fixture; normal Margin requests must create its character and RSI.</summary>
+    public async Task<string> AddCreationAccountAsync()
+    {
+        int id = Interlocked.Increment(ref nextId);
+        string username = "creation" + id;
+        await Database.ExecuteAsync($@"INSERT INTO users (userId,username,publicExponent,publicModulus,privateExponent,account_status,passwordmd5)
+SELECT {id},'{username}',publicExponent,publicModulus,privateExponent,0,passwordmd5 FROM users WHERE userId={TemplateUser}");
+        return username;
+    }
+
     /// <summary>Adds an account and character to the database, then logs in with it (not yet in the world).</summary>
     public async Task<HeadlessPlayer> AddPlayerAsync(CharacterSeed seed)
     {

@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     public interface IMarginDBHandler{
 
         Character GetCharInfo (int charId);
+        void EnsureCharacterCreationStorage();
+        bool CompleteCharacterCreation(uint character,uint account,CharacterCreation.InitialState state);
         List<MarginInventoryItem> LoadInventory(int charId);
         List<MarginAbilityItem> LoadAbilities(int charId);
         string LoadAllHardlines();

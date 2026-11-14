@@ -338,35 +338,21 @@ namespace hds
         /// <summary>Ability/AbilityLevelCap of all five attributes in gameobjects.pkb.</summary>
         public const UInt16 Cap = 30;
 
-        /// <summary>
-        /// A new character's shown value: the starting value with the archetype's shift. Retail shifted one attribute up 3
-        /// and one down 3. These are the shifts of the character block the margin sends everyone (Trinity's): the real
-        /// client offers level - 1 points with exactly these values, and fewer with 8 in all five. Which field of the block
-        /// carries the archetype is not known, so all characters share this one.
-        /// </summary>
-        public static UInt16 BaseValue(byte attribute)
-        {
-            switch (attribute)
-            {
-                case Perception: return 11;
-                case Belief: return 5;
-                default: return StartingValue;
-            }
-        }
+        /// <summary>Native class5 personality contribution; nullable legacy actors retain299.</summary>
+        public static UInt16 BaseValue(byte attribute,uint? trait=null)=>CharacterPersonality.Base(trait,attribute);
 
-        public static UInt16 SpentPoints(byte attribute, UInt16 value)
+        public static UInt16 SpentPoints(byte attribute,UInt16 value,uint? trait=null)
         {
-            UInt16 baseValue = BaseValue(attribute);
-            return value > baseValue ? (UInt16)(value - baseValue) : (UInt16)0;
+            UInt16 baseValue=BaseValue(attribute,trait);return value>baseValue?(UInt16)(value-baseValue):(UInt16)0;
         }
 
         /// <summary>
         /// The NewLevel of 80 b6 is the starting value plus points spent, without the shift: retail answered 9 to the first
         /// point in an attribute shown as 5 or 11, and the client adds the shift back (it showed 3 when told 6 for Belief).
         /// </summary>
-        public static byte NewLevelOf(byte attribute, UInt16 value)
+        public static byte NewLevelOf(byte attribute, UInt16 value,uint? trait=null)
         {
-            return (byte)(StartingValue + SpentPoints(attribute, value));
+            return (byte)(StartingValue + SpentPoints(attribute, value,trait));
         }
 
         /// <summary>The attribute's shown value, from its saved row or the old fixed value.</summary>
@@ -426,9 +412,9 @@ namespace hds
         /// attribute. The client takes the points it offers from this. Retail, level 17 Trinity with base 8/5/8:
         /// <c>03 51000000 0400 52000000 0b00 54000000 0100</c> (Reason 12, Belief 16, Vitality 9).
         /// </summary>
-        public static byte[] BuildSpentPoints(Dictionary<byte, UInt16> values)
+        public static byte[] BuildSpentPoints(Dictionary<byte, UInt16> values,uint? trait=null)
         {
-            if (values.Count == 0)
+            if (values.Count == 0 && trait==null)
             {
                 return LegacySpentPoints;
             }
@@ -436,11 +422,11 @@ namespace hds
             List<byte> list = new List<byte> { 0 };
             foreach (byte attribute in All)
             {
-                if (values.TryGetValue(attribute, out UInt16 value) && SpentPoints(attribute, value) > 0)
+                if (values.TryGetValue(attribute, out UInt16 value) && SpentPoints(attribute, value,trait) > 0)
                 {
                     list[0]++;
                     list.AddRange(new byte[] { attribute, 0, 0, 0 });
-                    UInt16 spent = SpentPoints(attribute, value);
+                    UInt16 spent = SpentPoints(attribute, value,trait);
                     list.Add((byte)spent);
                     list.Add((byte)(spent >> 8));
                 }

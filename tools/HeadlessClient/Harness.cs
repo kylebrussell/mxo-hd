@@ -98,6 +98,12 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemoveAttributeFailureAsync() => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS attribute_test_second_write");
 
+    public Task<string> InstallCreationFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER creation_test_late_write BEFORE INSERT ON char_abilities FOR EACH ROW BEGIN IF NEW.char_id={character} AND NEW.slot=604 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Creation deliberate final attribute failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveCreationFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS creation_test_late_write");
+
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 
     public async Task<long> LongAsync(string sql) => long.Parse(await ScalarAsync(sql), CultureInfo.InvariantCulture);

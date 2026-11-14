@@ -44,6 +44,7 @@ namespace hds{
 				Store.dbManager.WorldDbHandler.ResetOnlineStatus();
                 Store.dbManager.WorldDbHandler.EnsureTransactionalInventory();
                 Store.dbManager.WorldDbHandler.EnsureMissionPersistence();
+                Store.dbManager.MarginDbHandler.EnsureCharacterCreationStorage();
                 Store.dbManager.WorldDbHandler.EnsureVendorBuyback();
 
                 /* Initialize the scripting server */

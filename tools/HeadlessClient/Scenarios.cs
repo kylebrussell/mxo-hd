@@ -25,6 +25,8 @@ public static partial class Scenarios
     {
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("mission-open-floor-box", MissionOpenFloorBoxScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
+        new Scenario("character-creation-baseline", CharacterCreationBaseline, StillNpcs),
+        new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
         new Scenario("loaded-grant-membership", LoadedGrantMembership, StillNpcs),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
