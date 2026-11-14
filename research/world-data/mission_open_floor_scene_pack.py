@@ -149,6 +149,27 @@ def write_gzip_json(path, payload):
             f.write(canonical(payload) + b"\n")
 
 
+def source_model_lookup(catalog_path):
+    q = read_json(catalog_path)
+    assert q["sourceGobSha256"] == "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103"
+    entries = []
+    seen = set()
+    for row in sorted(q["templates"], key=lambda x: x["goid"]):
+        goid = row["goid"]
+        assert isinstance(goid, int) and 0 < goid <= 65535 and goid not in seen
+        seen.add(goid)
+        status = {"Model6Absent": "Model6Absent", "PositiveFiniteAuthoredBounds": "AuthoredStaticBounds"}.get(row["status"])
+        assert status is not None
+        types = sorted({c["type"] for c in row["components"]})
+        assert (6 in types) == (status == "AuthoredStaticBounds")
+        record = row["recordSha256"]
+        assert len(record) == 64 and len(bytes.fromhex(record)) == 32
+        entries.append(dict(goid=goid, status=status, recordSha256=record, componentTypes=types))
+    return dict(format=1, world=1, entries=entries,
+                sourceHashes={"gameobjects.gob": q["sourceGobSha256"], "catalog": digest_file(catalog_path),
+                              "catalogGeneratorNormalized": q["generatorNormalizedSha256"]})
+
+
 def pack(input_dir, sectors_csv, output_dir, selected=None):
     sectors = sectors_from_csv(sectors_csv)
     index = SectorIndex(sectors)
@@ -208,14 +229,33 @@ def pack(input_dir, sectors_csv, output_dir, selected=None):
 
 def main():
     a = argparse.ArgumentParser(description=__doc__)
-    a.add_argument("--inputs", type=Path, required=True, help="Directory of audited primary profile exports")
-    a.add_argument("--sectors", type=Path, required=True, help="data/sector_properties.csv")
+    a.add_argument("--inputs", type=Path, help="Directory of audited primary profile exports")
+    a.add_argument("--sectors", type=Path, help="data/sector_properties.csv")
     a.add_argument("--output", type=Path, required=True, help="data/mission_open_floor/1")
     a.add_argument("--only", help="Optional comma-separated sectors for an explicitly partial development pack")
+    a.add_argument("--source-model-catalog", type=Path, help="Optional complete GOB catalog for positive source-model presence/absence")
+    a.add_argument("--models-only", action="store_true", help="Write the small model lookup without rebuilding sector geometry")
     args = a.parse_args()
-    result = pack(args.inputs, args.sectors, args.output,
-                  None if args.only is None else [int(x) for x in args.only.split(",")])
-    print(f"Wrote {len(result['sectors'])} sector packs")
+    if args.models_only and args.source_model_catalog is None:
+        a.error("--models-only requires --source-model-catalog")
+    if not args.models_only:
+        if args.inputs is None or args.sectors is None:
+            a.error("sector packaging requires --inputs and --sectors")
+        result = pack(args.inputs, args.sectors, args.output,
+                      None if args.only is None else [int(x) for x in args.only.split(",")])
+        print(f"Wrote {len(result['sectors'])} sector packs")
+    if args.source_model_catalog is not None:
+        target = args.output.parent / "source_models_1.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        lookup = source_model_lookup(args.source_model_catalog)
+        target.write_bytes(json.dumps(lookup, sort_keys=True, indent=2).encode() + b"\n")
+        manifest_path = args.output / "manifest.json"
+        if manifest_path.exists():
+            manifest = read_json(manifest_path)
+            manifest["sourceModelLookup"] = dict(file="../source_models_1.json", sha256=digest_file(target))
+            manifest["packerSha256"] = digest_file(Path(__file__))
+            manifest_path.write_bytes(json.dumps(manifest, sort_keys=True, indent=2).encode() + b"\n")
+        print(f"Wrote {len(lookup['entries'])} source-model profiles")
 
 
 if __name__ == "__main__":

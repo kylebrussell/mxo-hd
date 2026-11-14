@@ -4,11 +4,28 @@ import math
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import mission_open_floor_scene_pack as P
 
 
 class ScenePackTests(unittest.TestCase):
+    def test_positive_source_model_presence_is_not_inferred_from_missing_obstacle(self):
+        q = dict(sourceGobSha256="3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+                 generatorNormalizedSha256="1"*64, templates=[
+                     dict(goid=1415, status="Model6Absent", recordSha256="2"*64, components=[dict(type=37), dict(type=5)]),
+                     dict(goid=1410, status="PositiveFiniteAuthoredBounds", recordSha256="3"*64, components=[dict(type=6)])])
+        with patch.object(P, "read_json", return_value=q), patch.object(P, "digest_file", return_value="4"*64):
+            out = P.source_model_lookup(Path("catalog.json"))
+            self.assertEqual([(x['goid'], x['status']) for x in out['entries']], [(1410, 'AuthoredStaticBounds'), (1415, 'Model6Absent')])
+            q['templates'][0]['components'].append(dict(type=6))
+            with self.assertRaises(AssertionError):
+                P.source_model_lookup(Path("catalog.json"))
+            q['templates'][0]['components'].pop()
+            q['templates'][0]['status'] = 'Unknown'
+            with self.assertRaises(AssertionError):
+                P.source_model_lookup(Path("catalog.json"))
+
     def test_exact_boundary_and_remote_source_overhang(self):
         idx = P.SectorIndex({1: [-1000, 0, -1000, 0], 2: [0, 1000, -1000, 0], 3: [9000, 10000, 9000, 10000]})
         self.assertEqual(idx.query([-20, 0, -500, 20, 100, -400]), [1, 2])
