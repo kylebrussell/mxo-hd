@@ -1,3 +1,11 @@
+## QA-only refresh on merged master2c
+
+Refreshed in a new isolated worktree onto `2c33c8847713c4bbcbecfc01d32d1245022421b0`; the old native worktree remains frozen. There is zero hds/data delta against master. The five existing missions301203-301207,22 earlier receipts, authored story/rewards and carried-NPC/relog checks are preserved. Shared admission remains root-owned and HOLD; no new fresh or native result is claimed.
+
+The opted-in follow-up driver now takes the current saved static doors through ordinary80c8, replacing its entry ?missionfloor and naked-teleport departure shortcuts. Test movement to a door/current phase and along a published route remains a disclosed headless aid, not native walking proof. Adopted props must have the current saved Root/Route/Standing witness, matching source identity, all three actual view coordinates and quaternion; no old log-coordinate fallback is allowed for them. Genuinely bound objects are separately qualified only by NAV-grounded ordinary-use range, with no claimed route, actor clearance, wall collision or native picking proof. Raw source/fixed witness DTOs must remain unchanged through the approach. No source/site/seed is forced or rerolled.
+
+These options default off in the shared Prima driver; master202's optional actorLevel is retained. This package explicitly selects level50 with matching XP and its five ordinary owned abilities. Existing exactly-one earned receipts, terminal payloadNULL and completed-relog unchanged EXP/cash/no-replay checks remain. They are not an independent kill/corpse-cash ledger or complete reward-amount oracle; none is added or claimed in this refresh. Historical source-coordinate tables and prior producer proofs below remain historical inventory/evidence, not current standing destinations.
+
 ## Current master refresh
 
 Refreshed onto cc8f5555 after the open-floor trio passed native QA and merged. Production hds/data are identical to current master. The five selected missions, exact earlier receipts, authored XML/default rewards, owned carry-token/current-NPC logic and NativeQa mode remain unchanged. Old dependency HOLD notes below are historical.
