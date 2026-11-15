@@ -53,7 +53,7 @@ public class MissionComputer1407SelectionTests
                 var client=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));client.playerData=new ClientData{missionInstanceCounter=47};client.viewMan=new ViewManager();
                 // Offline transport suppression only; source spot selection is the unchanged production picker.
                 client.viewMan.GetViewForEntityAndGo(987000047001UL,3).viewCreated=true;
-                place.Invoke(null,new object[]{client,progress,new Random(effective)});
+                place.Invoke(null,new object[]{client,progress,MissionStaging.PrepareObjectChoices(phase,site,new Random(effective))});
                 var state=progress.objects[1];if(MissionSites.Goid(state.spot)!=1407)continue;
                 Assert.Equal((ushort)3,state.goid);
                 result=new{Seed=seed,Mission=mission.id,Contact=contact.contactId,ContactName=contact.Contact.name,ContactOrg=contact.Contact.org,Approach=new[]{(double)approach.x,nav.floorY+95,approach.z},SourceSpot=state.spot,ConcreteGoid=state.goid,Site=site,
