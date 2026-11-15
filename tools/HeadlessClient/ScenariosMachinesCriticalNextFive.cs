@@ -234,7 +234,7 @@ public static partial class Scenarios
                                     var owned=(await Saved("missing-visible-current-hostile"))!;
                                     Check.That(owned.Mission==id&&owned.Phase==phase,"Reacquire only the current authored hostile stage");
                                     var absent=owned.Mobs.LastOrDefault(m=>MachinesCriticalNextFiveFixture.CurrentHostile(m,authoredCurrentStageIds));
-                                    if(absent!=null)await Reacquire(absent,owned,TimeSpan.FromSeconds(30));
+                                    if(absent!=null)await Reacquire(absent,owned,TimeSpan.FromSeconds(Math.Max(.001,30-window.Elapsed.TotalSeconds)));
                                 }
                                 await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(Math.Max(.001,30-window.Elapsed.TotalSeconds)));
                                 if(Done(number))break;
