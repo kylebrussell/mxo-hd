@@ -8,13 +8,25 @@ public class PrimaRewardLedgerTests
     static byte[][] Records()=>new[]{
         "80E5E803000000000000","80E46400000000000000",
         "80E61900000001000000","80E50104000001000000",
-        "81190000000010001E00000000000000010000000008AF1A0000","80E48200000000000000","81200C0000000000000000000000",
+        "81190000000010001E00000000000000010000000008AF1A0000","80E48200000000000000","81200C000000000000000000010000000008AF1A0000",
         "80A2000100000000000000320000006400000000000000000007",
         "80E66400000002000000","80E56504000002000000","80E4B400000002000000"}.Select(Convert.FromHexString).ToArray();
     static PrimaLedgerOperation[] Operations()=>new[]{new PrimaLedgerOperation("fight","Defeat",2,4),new("take","Loot",4,7),new("finish","Upload",7,11)};
     static PrimaRewardLedgerResult Parse(byte[][]? records=null,PrimaLedgerOperation[]? operations=null)=>
         PrimaRewardLedger.Reconcile(records??Records(),operations??Operations(),1000,100,new uint[]{100},new uint[]{50});
 
+    [Fact] public void ClaimedLootMustMatchTheCurrentWindowAndRemoveEverySelectedMissionIdentityExactlyOnce()
+    {
+        byte[] window=Records()[4],claim=Records()[6];
+        Assert.True(PrimaRewardLedger.ClaimedFromWindow(window,claim));
+        foreach(string wrong in new[]{"81200C0000000000000000000000","81200C000000000000000000010000000008B01A0000","81200C000000000000000000010000000007AF1A0000","81200C000000000000000000020000000008AF1A000000000008AF1A0000","81200C000100000000000000010000000008AF1A0000"})
+            Assert.False(PrimaRewardLedger.ClaimedFromWindow(window,Convert.FromHexString(wrong)));
+        Assert.False(PrimaRewardLedger.ClaimedFromWindow(window,claim[..^1]));
+        byte[] twice=Convert.FromHexString("81190000000010001E00000000000000020000000008AF1A000000000008AF1A0000");
+        Assert.False(PrimaRewardLedger.ClaimedFromWindow(twice,claim));
+        byte[] partial=Convert.FromHexString("81190000000010001E00000000000000020000000008AF1A000001000000B01A0000");
+        Assert.True(PrimaRewardLedger.ClaimedFromWindow(partial,claim));
+    }
     [Fact] public void LiteralLedgerKeepsMissionCombatAndLootSeparateAndReconcilesTotals()
     {
         var r=Parse();Assert.Equal((uint)1125,r.Experience);Assert.Equal((uint)180,r.Information);

@@ -10,6 +10,7 @@ public class ZionNextFiveTests
     {
         var seed=ZionNextFiveFixture.BeforeMargin(new CharacterSeed("QA"),ZionNextFiveFixture.Missions,ZionNextFiveFixture.Prerequisites);
         Assert.Equal(27,seed.CompletedMissions!.Count);
+        Assert.Equal("1",Scenarios.All.Single(s=>s.Name=="zion-critical-next-five").Environment!["MXO_PACKET_LOG"]);
         foreach(var bad in new[]{new[]{101208},new[]{101213},new[]{1,1},new[]{0}})
             Assert.Throws<InvalidOperationException>(()=>ZionNextFiveFixture.BeforeMargin(new CharacterSeed("QA"),ZionNextFiveFixture.Missions,bad));
     }

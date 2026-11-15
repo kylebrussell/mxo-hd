@@ -11,6 +11,17 @@ public sealed record PrimaRewardLedgerResult(uint BaselineExperience,uint Baseli
 /// <summary>Fixture-only, independent received-record accounting. No runtime builders or DB-derived expected deltas.</summary>
 public static class PrimaRewardLedger
 {
+    public static bool ClaimedFromWindow(byte[] window,byte[] removal)
+    {
+        if(window.Length<18||window[0]!=0x81||window[1]!=0x19||window.Length!=18+8*BitConverter.ToUInt16(window,16)||
+            removal.Length<14||removal[0]!=0x81||removal[1]!=0x20||removal[2]!=12||removal[3]!=0||
+            removal.AsSpan(4,8).IndexOfAnyExcept((byte)0)>=0||removal.Length!=14+8*BitConverter.ToUInt16(removal,12))return false;
+        var unclaimed=Enumerable.Range(0,BitConverter.ToUInt16(window,16)).Select(i=>Convert.ToHexString(window.AsSpan(18+i*8,8))).ToList();
+        foreach(int i in Enumerable.Range(0,BitConverter.ToUInt16(removal,12)))
+            if(!unclaimed.Remove(Convert.ToHexString(removal.AsSpan(14+i*8,8))))return false;
+        return !unclaimed.Any(identity=>Convert.FromHexString(identity)[3]==8);
+    }
+
     public static bool HasCompleteMissionAwards(IReadOnlyList<byte[]> records,int expected)
     {
         if(expected<=0)throw new ArgumentOutOfRangeException(nameof(expected));
@@ -124,7 +135,7 @@ public static class PrimaRewardLedger
                         Require(!consumedWindows.Contains(windowIndex),"NPC loot window already credited");
                         int nextWindow=Enumerable.Range(i+1,operation.RpcEnd-i-1).FirstOrDefault(n=>Op(records[n],0x81,0x19),operation.RpcEnd);
                         var accepted=Enumerable.Range(i+1,nextWindow-i-1).Where(n=>Op(records[n],0x81,0x20)).ToArray();
-                        Require(accepted.Length==1&&records[accepted[0]].AsSpan().SequenceEqual(Convert.FromHexString("81200C0000000000000000000000")),
+                        Require(accepted.Length==1&&ClaimedFromWindow(window!,records[accepted[0]]),
                             "one current acceptance required before next window/end");
                         Require(consumedAcceptances.Add(accepted[0]),"NPC loot acceptance already consumed");
                         consumedWindows.Add(windowIndex);npcWindowIndex=windowIndex;acceptanceIndex=accepted[0];
