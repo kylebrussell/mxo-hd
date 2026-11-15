@@ -40,11 +40,17 @@ public static partial class Scenarios
             var modifier=await actor.WaitForRpcAsync(r=>BytePattern.Parse(ModPattern(16,212)).IsMatch(r.Bytes)&&r.Bytes[17]==0,"Normal16 stat212 activation",TimeSpan.FromSeconds(8));
             Check.Equal(15,BitConverter.ToInt32(modifier.Bytes,13),"Actual stored16 grants15 once");
             stage="on-healthy";await Fire(15,false);
-            stage="on-offbalance";actor.SendRpc($"81 51 {Le(view.ViewId)} {view.SpawnId:x2}");actor.SendChat("?combatdepth offbalance 30");
+            stage="on-offbalance";target.SkipReceived();actor.SendRpc($"81 51 {Le(view.ViewId)} {view.SpawnId:x2}");actor.SendChat("?combatdepth offbalance 30");
             await actor.WaitForTextAsync("OffBalance fixture applied 885/200");await Fire(15,true);
+            // Observe the actual sourced removal, rather than racing16's existing0.5s duplicate-use guard.
+            // The30-second state expires naturally while the ordinary16 drain continues.
+            stage="natural-offbalance-expiry";
+            await target.WaitForRpcAsync(r=>BytePattern.Parse(ModPattern(885,200,true)).IsMatch(r.Bytes),"Natural885 OffBalance removal",TimeSpan.FromSeconds(40));
+            stage="on-healthy-after-expiry";await Fire(15,false);
             stage="normal16-off";actor.SkipReceived();Cast(actor,16,2);
             await actor.WaitForRpcAsync(r=>BytePattern.Parse(ModPattern(16,212,true)).IsMatch(r.Bytes),"Normal toggle removes16 stat212",TimeSpan.FromSeconds(8));
-            stage="off-offbalance";await Fire(0,true);
+            stage="off-offbalance";actor.SendChat("?combatdepth offbalance 30");
+            await actor.WaitForTextAsync("OffBalance fixture applied 885/200");await Fire(0,true);
             Check.Equal(0,actor.World.Problems.Count+target.World.Problems.Count,"Both session parsers clean");
             passed=true;stage="complete";
         }
