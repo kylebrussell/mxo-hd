@@ -169,7 +169,11 @@ public static partial class Scenarios
                             var key=(view.ViewId,view.SpawnId);
                             if(type=="Defeat" || type=="Loot" && !killed.Contains(key) &&
                                 (!view.Attributes.TryGetValue("IsDead",out var dead) || dead[0]==0))
-                            {await DefeatMissionNpc(p,view);killed.Add(key);}
+                            {
+                                if(type=="Loot"){End();Begin("Defeat");}
+                                await DefeatMissionNpc(p,view);killed.Add(key);
+                                if(type=="Loot"){await Barrier();End();Begin("Loot");}
+                            }
                             if(type=="Loot")
                             {
                                 // Select THIS corpse even when an earlier DefeatAll left another corpse window open.
