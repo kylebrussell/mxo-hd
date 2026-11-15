@@ -123,4 +123,73 @@ public class MissionProxyIntroductionTests:IDisposable
         MissionStaging.RestoreObjects(c,p);Assert.Empty(c.viewMan.Snapshot());Arrival(c);DispatchAndAck(c);TickIntroduction(c,p);Assert.Single(c.viewMan.Snapshot());
         state.spot.type=BitConverter.GetBytes((ushort)548);Assert.False(MissionProxyIntroduction.Deferred(state));state.OpenFloor=null;Assert.False(MissionProxyIntroduction.Deferred(state));
     }
+    private static readonly double[] MeasuredRoot={28413.453786483045,1695,14219.695388506345};
+    private const string MeasuredFingerprint="FE1A4A0FAD5BF68CC4633B517E0E855108E109A0FAB99E2D3B5C9BC31ABCAADA";
+    private static readonly Lazy<MissionSite> MeasuredSite=new(()=>
+    {
+        var rows=new List<StaticWorldObject>();
+        foreach(string file in new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"})
+        foreach(string line in File.ReadLines(Path.Combine(Repo,"data",file)).Where(l=>l.StartsWith("1,209,",StringComparison.Ordinal)))
+        {
+            var f=line.Split(',');double D(int i)=>double.Parse(f[i],System.Globalization.CultureInfo.InvariantCulture);
+            rows.Add(new StaticWorldObject{metrId=ushort.Parse(f[0]),sectorID=ushort.Parse(f[1]),mxoStaticId=BitConverter.ToUInt32(Convert.FromHexString(f[2])),
+                staticId=BitConverter.ToUInt32(Convert.FromHexString(f[3])),type=Convert.FromHexString(f[4][..4]),exterior=bool.Parse(f[5]),pos_x=D(6),pos_y=D(7),pos_z=D(8),rot=D(9),quat=f[10]});
+        }
+        return MissionSites.Build(rows,1).Single(site=>site.elevatorDoor.mxoStaticId==0x0d10001c&&MissionOpenFloorSite.CatalogFingerprint(site)==MeasuredFingerprint);
+    });
+    private static MissionProgress StageMeasured(WorldClient c,bool floatPosition=false)
+    {
+        var xml=new XmlDocument();xml.Load(Path.Combine(Repo,"data","missions","zion_1_2_16_fly_in_the_soup.xml"));
+        var mission=MissionXml.Parse(xml.DocumentElement!);var p=new MissionProgress(mission){phaseIndex=3};
+        c.playerData.missionInstanceCounter=50;c.playerData.activeMission=mission;c.playerData.missionProgress=p;
+        p.site=MeasuredSite.Value;p.sites.Add(p.site);p.openFloorResolvedPhase=3;
+        var source=p.site.objectSpots.Single(o=>o.mxoStaticId==0x0d1000d0);
+        Assert.Equal("2E90568E2604A4E33749454BC400F37C0F1B938F05E188575711DB03002ACF94",MissionOpenFloorPlacement.RawHash(source));
+        var choices=new[]{new MissionOpenFloorChoice(1,548,JsonSerializer.Serialize(source,MissionProgress.SaveJson))};
+        Assert.True(MissionElevatorPoses.TryCreate(p.site,choices,out var witness,out string why),why);Assert.NotNull(witness);
+        Assert.Equal(new[]{28500d,1745,14400},witness.Floor);Assert.Equal((ushort)46,witness.Region);
+        p.elevatorWitnesses.Add(MeasuredFingerprint,witness);
+        var pose=new MissionOpenFloorPlacement(4,1,101216,3,1,0x0d1000d0,1412,548,MissionOpenFloorPlacement.RawHash(source),
+            "A0FCD2C5D0AEEDA311010754F59CAFC424173F0751AC77C982BE9F7AF881A9F7","00000000F304353300000000FFFF7F3F",
+            new[]{28641.595703125,1640,14214.611328125},new[]{28543.166015625,1695,14214.611328125},
+            MeasuredRoot.Concat(new[]{28543.166015625,1695,14214.611328125}).ToArray(),new ushort[]{209,46,111},new ushort[]{209,46,111},new ushort[]{209,46,111});
+        p.objects[1]=new MissionObjectState{def=mission.phases[3].objects.Single(o=>o.id==1),spot=source,goid=548,entity=MissionStaging.EntityBase+50000UL+151UL,OpenFloor=pose};
+        var root=MeasuredRoot.Select(x=>floatPosition?(double)(float)x:x).ToArray();
+        c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(root[0],root[1],root[2]));return p;
+    }
+    private static void MeasuredArrival(WorldClient c)
+    {using var output=MissionOutput.Begin(c.messageQueue);MissionProxyIntroduction.Arrival(c,MeasuredRoot[0],MeasuredRoot[1],MeasuredRoot[2]);output.Commit();}
+    [Theory][InlineData(false)][InlineData(true)]
+    public void ExactFailedZionFourthAreaUsesMeasuredRoomForBothServerAndReceivedArrival(bool floatPosition)
+    {
+        var c=Client();Store.currentClient=c;var p=StageMeasured(c,floatPosition);var state=p.objects[1];
+        var root=MeasuredRoot.Select(x=>floatPosition?(double)(float)x:x).ToArray();var point=new NavPoint{x=root[0],y=root[1],z=root[2]};
+        Assert.False(MissionInteriorSites.Contains(p.site,point));Assert.False(MissionInteriorSites.Contains(p.site,point,null));
+        Assert.True(MissionInteriorSites.Contains(p.site,point,p.ElevatorFor(p.site)));
+        var legacy=new NavPoint{x=27996.574437386866,y=1695,z=13736.857707010036};
+        Assert.True(MissionInteriorSites.Contains(p.site,legacy)); // unchanged two-argument legacy component
+        string before=JsonSerializer.Serialize(new{state.spot,state.OpenFloor},MissionProgress.SaveJson);
+        MeasuredArrival(c);TickIntroduction(c,p);Assert.Empty(c.viewMan.Snapshot()); // no body until dispatched exact receipt
+        DispatchAndAck(c,false);TickIntroduction(c,p);Assert.Empty(c.viewMan.Snapshot());
+        DispatchAndAck(c);Assert.Empty(c.viewMan.Snapshot());TickIntroduction(c,p);
+        var introduced=Assert.Single(c.viewMan.Snapshot());Assert.Equal(state.entity,introduced.entityId);Assert.True(introduced.viewCreated);
+        Assert.Equal(before,JsonSerializer.Serialize(new{state.spot,state.OpenFloor},MissionProgress.SaveJson));
+        int count=c.messageQueue.ObjectMessagesQueue.Count;TickIntroduction(c,p);Assert.Equal(count,c.messageQueue.ObjectMessagesQueue.Count);
+    }
+    [Theory][InlineData("missing-witness")][InlineData("other-site-witness")][InlineData("owner")][InlineData("world")][InlineData("life")][InlineData("transport")]
+    public void MeasuredRoomDoesNotBorrowMissingHistoricalWitnessOrStaleArrivalOwner(string change)
+    {
+        var c=Client();Store.currentClient=c;var p=StageMeasured(c);MeasuredArrival(c);DispatchAndAck(c);
+        switch(change)
+        {
+            case "missing-witness":p.elevatorWitnesses.Clear();break;
+            case "other-site-witness":var w=p.elevatorWitnesses[MeasuredFingerprint];p.elevatorWitnesses.Clear();p.elevatorWitnesses.Add("another site",w);break;
+            case "owner":c.playerData=new ClientData();break;
+            case "world":c.playerData.worldGeneration++;break;
+            case "life":c.playerData.lifeGeneration++;break;
+            case "transport":c.TransportFence.PublishIncoming(true,()=>{});break;
+        }
+        TickIntroduction(c,p);Assert.Empty(c.viewMan.Snapshot());
+    }
+
 }

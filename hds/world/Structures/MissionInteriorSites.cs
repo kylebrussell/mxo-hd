@@ -96,6 +96,9 @@ namespace hds
         }
         internal static bool Contains(MissionSite site,NavPoint point)
             =>TryRegion(site,out var region,out _)&&region.Contains(new G.Position(point.x,point.y,point.z));
+        // The caller supplies its current persisted elevator context; the legacy overload stays unchanged.
+        internal static bool Contains(MissionSite site,NavPoint point,MissionElevatorWitness elevator)
+            =>TryRegion(site,out var region,out _,elevator)&&region.Contains(new G.Position(point.x,point.y,point.z));
         internal static NavPoint? Project(MissionSite site,double[] target,double radius)
         {
             return TryRegion(site,out var region,out _)?Project(region,site,target,radius):null;
