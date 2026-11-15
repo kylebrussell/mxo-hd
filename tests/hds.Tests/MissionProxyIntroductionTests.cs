@@ -25,7 +25,10 @@ public class MissionProxyIntroductionTests:IDisposable
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();
         c.messageQueue=new MessageQueue();c.viewMan=new ViewManager();c.Alive=true;c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
         c.playerData.missionInstanceCounter=47;c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(Root[0],Root[1],Root[2]));
-        typeof(WorldClient).GetField("lastUsedTime",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,TimeUtils.getUnixTimeUint32());
+        // This fixture tests geometry/receipt ownership, not real-time UDP inactivity. Slow CI
+        // graph construction must not silently expire its synthetic client before the ACK.
+        uint now=TimeUtils.getUnixTimeUint32();c.LivenessClock=()=>now;
+        typeof(WorldClient).GetField("lastUsedTime",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,now);
         typeof(WorldClient).GetField("lastFlushTick",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,long.MaxValue);
         typeof(WorldClient).GetField("<TransportFence>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());return c;
     }

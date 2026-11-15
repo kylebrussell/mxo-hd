@@ -98,10 +98,12 @@ namespace hds
                 site=site??MissionSites.Choose(sites,phase.site,x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
                     ??MissionSites.Choose(sites,"Any",x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
 
-                choices=site==null?Array.Empty<MissionOpenFloorChoice>():MissionStaging.SelectObjects(phase,site,rng).Select(MissionOpenFloorChoice.From).ToArray();
-                MissionElevatorWitness elevator=null;
-                if(choices.Any(c=>Target(c.Goid,c.ReadSpot())))MissionElevatorPoses.TryCreate(site,choices,out elevator,out _);
-                selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":null,elevator);
+                MissionStaging.SourcePools pools=null;
+                if(site!=null&&!MissionStaging.TrySourcePools(phase,site,requiredNpcs,out pools,out refusal))return false;
+                choices=site==null?Array.Empty<MissionOpenFloorChoice>():MissionStaging.SelectObjectsFromPools(phase,site,rng,pools).Select(MissionOpenFloorChoice.From).ToArray();
+                MissionElevatorWitness elevator=null;string elevatorRefusal=null;
+                if(choices.Any(c=>Target(c.Goid,c.ReadSpot())))MissionElevatorPoses.TryCreate(site,choices,out elevator,out elevatorRefusal);
+                selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":elevatorRefusal,elevator);
             }
             if(!Current()) {selected=null;refusal="StaleWorld";return false;}
             plan=new Plan(client,progress,phaseIndex,site,selected,new Dictionary<ushort,MissionOpenFloorPlacement>(),before,beforePhase,data,world,life,transport,character);
@@ -125,10 +127,16 @@ namespace hds
             }
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
             var elevator=pending?.Elevator;
+            if(elevator==null&&pending!=null)
+            {
+                // Diagnose this exact immutable pending selection; never acquire a replacement witness.
+                if(!MissionElevatorPoses.TryCreate(site,choices.ToArray(),out var required,out refusal))return false;
+                if(required!=null){refusal="MissingMissionElevatorWitness";return false;}
+            }
             if(elevator!=null&&!MissionElevatorPoses.Validate(site,choices.ToArray(),elevator,out refusal))return false;
             if(elevator!=null&&!MissionInteriorSites.TryAllocate(site,mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex]),out _,out refusal,elevator))return false;
             if(!MissionInteriorSites.SelectedSiteEligible(mission.phases[phaseIndex],site,out refusal,
-                mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex])))return false;
+                mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex]),elevator))return false;
             var inputs=new List<MissionOpenFloorPhasePlanner.Input>();
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
             {
@@ -222,7 +230,7 @@ namespace hds
                     throw new MissionPlacementRestoreException(progress,"Invalid fixed mission elevator witness:"+elevatorRefusal);
             }
             if(boxes.Length>0&&!MissionInteriorSites.SelectedSiteEligible(progress.Phase,progress.site,out string interiorRefusal,
-                progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
+                progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase),progress.ElevatorFor(progress.site)))
                 throw new MissionPlacementRestoreException(progress,"Invalid fixed interior site:"+interiorRefusal);
             if(boxes.Length>0&&progress.ElevatorFor(progress.site)==null)
             {
