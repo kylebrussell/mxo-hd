@@ -7,6 +7,7 @@ public static partial class Scenarios
 {
     private static async Task MachinesCriticalNextFive(ScenarioContext context)
     {
+        MachinesCriticalNextFiveFixture.RequirePin(Environment.GetEnvironmentVariable(MachinesCriticalNextFiveFixture.SourcePin),context.Server.SourceAssemblySha256);
         const string handle="MachinesNextFive", filePattern="machines_1_2_*.xml"; const byte org=2;
         var ids=MachinesCriticalNextFiveFixture.Missions;var prerequisites=MachinesCriticalNextFiveFixture.Prerequisites;
         var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),X=17000,Z=2300,Health=5000,MaxHealth=5000,
@@ -15,34 +16,28 @@ public static partial class Scenarios
         var actors=new List<HeadlessPlayer>{p};var checkpoints=new List<object>();var targets=new List<object>();var rewards=new List<object>();
         int missionCreationCursor=0;var followerIdentities=new Dictionary<int,string>();
         var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;
+        ServerInstance? coldServer=null;object? coldProof=null;int initialPid=context.Server.ProcessId;
+        string? retiredPackets=null,retiredDebug=null,retiredOutput=null;
         var fields=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
         async Task<MissionProgress.SavedState?> Saved(string label)
         {
-            string raw=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}");
-            checkpoints.Add(new{Step=step,Label=label,Payload=raw});
-            return string.IsNullOrEmpty(raw)||raw=="NULL"?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,fields);
+            string hex=await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");
+            string? raw=hex=="NULL"?null:MissionBoundCabinetFixture.DecodeCheckpointHex(hex);
+            checkpoints.Add(new{Step=step,Label=label,PayloadHex=hex,Payload=raw});
+            return MachinesCriticalNextFiveFixture.ReadCheckpointHex(hex);
         }
-        async Task Barrier(){p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");}
+        async Task Barrier(){int cursor=p.World.RpcSnapshot().Count;p.SendRpc("81 48");await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(cursor).Any(r=>BytePattern.Parse("81 49").IsMatch(r.Bytes)),"fresh same-session8149 barrier",TimeSpan.FromSeconds(10));}
         async Task<ViewCreation> MachineNpc(XElement definition,int cursor,bool introduced)
         {
             var state=(await Saved("npc-target-before"))!;int id=(int)definition.Attribute("id")!;
             var current=state.Mobs.Single(m=>m.Npc==id);
             await MoveForMissionTest(p,current.X+100,current.Y,current.Z);await Barrier();
             state=(await Saved("npc-target-current"))!;current=state.Mobs.Single(m=>m.Npc==id);
-            int ownCursor=introduced?cursor:missionCreationCursor;
-            bool Matches(ViewCreation v)=>v.Goid==599&&v.Name==current.Name&&
-                (v.Attributes.TryGetValue("DontAttack",out var friendly)&&friendly.Length==1&&friendly[0]==1)==current.Friendly&&
-                (v.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.Length==1&&enemy[0]!=0)==!current.Friendly&&
-                MachinesCriticalNextFiveFixture.NpcLevel(v.Attributes)==current.Level&&
-                (current.Friendly?v.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==current.Phase&&
-                BitConverter.ToUInt16(key,1)==state.Instance&&key[3]==2:!v.Attributes.ContainsKey("MissionKey"))&&
-                v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
-                Math.Abs(BitConverter.ToDouble(pos)-current.X)<0.001&&Math.Abs(BitConverter.ToDouble(pos,8)-current.Y)<0.001&&Math.Abs(BitConverter.ToDouble(pos,16)-current.Z)<0.001;
-            await p.WaitUntilAsync(()=>MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),ownCursor).Any(Matches),"Current saved NPC position/side/mission generation",TimeSpan.FromSeconds(15));
-            var view=MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),ownCursor).Last(Matches);
-            targets.Add(new{Role="NPC",state.Mission,state.Phase,state.Identity,state.Instance,CreationCursor=ownCursor,Definition=id,Current=current,view.ViewId,view.SpawnId,
+            ViewCreation? view=null;
+            await p.WaitUntilAsync(()=>(view=ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,current,state.Instance))!=null,"Current saved NPC identity/side/latest position",TimeSpan.FromSeconds(15));
+            targets.Add(new{Role="NPC",state.Mission,state.Phase,state.Identity,state.Instance,Definition=id,Current=current,view!.ViewId,view.SpawnId,
                 Attributes=view.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});
-            return view;
+            return view!;
         }
         async Task<MissionProgress.SavedState?> WaitSaved(Func<MissionProgress.SavedState?,bool> predicate,string label,int timeoutSeconds=20)
         {
@@ -53,28 +48,16 @@ public static partial class Scenarios
         string PacketPath()=>Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         async Task Ride(bool enter)
         {
-            var state=(await Saved(enter?"before-ride-entry":"before-ride-exit"))!;
-            var door=state.Waypoints.Single();var lobby=state.Exits.Single();
-            double[] pose=enter?lobby:new[]{door.x,door.y,door.z};
-            uint key=enter?InteriorAdmissionFixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}
-                .SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),lobby):BitConverter.ToUInt32(Convert.FromHexString(door.doorHex));
-            await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
-            var free=state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).ToArray();
-            if(enter)foreach(var obj in free)Check.That(InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),missionCreationCursor,obj.Goid,obj.OpenFloor!.Centre)==null,"No early free prop03 before ordinary floor arrival");
-            int views=p.World.CreationSnapshot().Count,packetCursor=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(c=>c=='\n'),log=context.Server.DebugLog().Length;
-            p.SkipReceived();p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00");
-            if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary saved-door Ride commit",TimeSpan.FromSeconds(15));
-            var arrived=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
-            if(enter&&free.Length>0)
-            {
-                Check.That(arrived!=null,"Free prop introduction requires actual normal Ride root, not a movement-aid substitute");
-                var root=Enumerable.Range(1,3).Select(i=>double.Parse(arrived!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
-                await p.WaitUntilAsync(()=>free.All(o=>InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),views,o.Goid,o.OpenFloor!.Centre)!=null),"Stationary first free prop03 after arrival receipt",TimeSpan.FromSeconds(15));
-                string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());
-                foreach(var obj in free)arrivalProofs.Add(new{state.Mission,state.Phase,state.Identity,obj.Id,InitialRawSource=obj.Spot,Placement=obj.OpenFloor,
-                    Receipt=InteriorAdmissionDeliveryProof.Require(raw,p.CharId,packetCursor,root,obj.Goid,obj.OpenFloor!.Centre),Stationary=true,ReceiptIsNotRoomReady=true});
-            }
-            if(enter)await WaitSaved(s=>s!=null&&s.Phase==state.Phase&&s.Flags.TryGetValue("entered",out bool entered)&&entered,"actual entered flag after ordinary Ride");
+            var before=(await Saved(enter?"before-entry":"before-exit"))!;
+            await MachinesNextRide(context,p,enter,arrivalProofs.Add);
+            if(enter)await WaitSaved(v=>v!=null&&v.Mission==before.Mission&&v.Phase==before.Phase&&v.Identity==before.Identity&&v.Flags.GetValueOrDefault("entered"),"actual entered flag after ordinary Ride");
+        }
+        async Task Upload()
+        {
+            await MoveForMissionTest(p,17000,495,2200);ViewCreation? booth=null;
+            await p.WaitUntilAsync(()=>(booth=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife()))!=null,"exact still-live current Mara booth",TimeSpan.FromSeconds(10));
+            targets.Add(new{Role="Upload booth",booth!.ViewId,booth.SpawnId,booth.RelatedStaticObjectId});
+            p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(booth)} 04 00");await p.WaitForRpcAsync("81 18");
         }
         async Task Claim(byte[] window)
         {
@@ -174,15 +157,8 @@ public static partial class Scenarios
                             byte use=ObjectStates.UseNumber(view.Goid,label) ?? throw new Exception($"No sourced {label} use for{view.Goid}");
                             if(computer)
                             {
-                                uint CurrentState()
-                                {
-                                    uint state=BitConverter.ToUInt32(view.Attributes["CurrentState"]);
-                                    byte[] prefix=WireFormat.FromHex($"{Le(view.ViewId)} 01 08");
-                                    foreach(byte[] section in p.World.ViewSnapshot().Skip(sectionsStart))
-                                        for(int at=BytePattern.IndexOf(section,prefix,0);at>=0;at=BytePattern.IndexOf(section,prefix,at+1))
-                                            if(at+prefix.Length+4<=section.Length)state=BitConverter.ToUInt32(section,at+prefix.Length);
-                                    return state;
-                                }
+                                var capability=NpcInteriorComputerState.Capture(p.World.CurrentOwnViewLife(),view).Capability;
+                                uint CurrentState()=>NpcInteriorComputerState.Read(p.World.CurrentOwnViewLife(),capability);
                                 await p.WaitUntilAsync(()=>ObjectStates.Offered(view.Goid,CurrentState()).Contains(use),
                                     $"actual enabled computer {label} use{use}",TimeSpan.FromSeconds(10));
                             }
@@ -211,33 +187,37 @@ public static partial class Scenarios
                                 {await MachineNpc(npc,viewsStart,true);await Task.Delay(800);}
                             }
                             string to=(string?)goal.Attribute("to")??"exit";
-                            if(to=="exit")await Ride(false);
-                            else if(to=="hardline")await ZionUpload(p);
+                            if(to=="exit")
+                            {
+                                var exitState=(await Saved("escort-current-owner"))!;var xml=new System.Xml.XmlDocument();xml.LoadXml(mission.ToString());
+                                int intent=p.World.RpcSnapshot().Count;
+                                await MachinesNextEscortExit(context,p,MissionXml.Parse(xml.DocumentElement!),number,exitState,intent,intent,targets.Add);
+                            }
+                            else if(to=="hardline")await Upload();
                             else if(to.StartsWith("npc:"))await MachineNpc(Npc(to[4..]),viewsStart,true);
                             else if(to.StartsWith("object:"))await MachinesNextObject(context,p,int.Parse(to[7..]),viewsStart,targets);
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
-                        case "Upload":await ZionUpload(p);break;
+                        case "Upload":await Upload();break;
                         case "DefeatAll":
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
                             foreach(var npc in mission.Elements("npc"))names.Add((string)npc.Attribute("handle")!);
                             var authoredCurrentStageIds=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>checked((ushort)(int)n.Attribute("id")!)).ToHashSet();
-                            List<ViewCreation> Targets()=>MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),viewsStart)
-                                .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
-                                    v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
-                                    (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();
+                            List<ViewCreation> Targets()
+                            {
+                                var owned=Saved("current-hostile-stage").GetAwaiter().GetResult()!;Check.That(owned.Mission==id&&owned.Phase==phase,"Exact current hostile mission/stage");
+                                return owned.Mobs.Where(m=>MachinesCriticalNextFiveFixture.CurrentHostile(m,authoredCurrentStageIds))
+                                    .Select(m=>ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,m,owned.Instance)).Where(v=>v!=null&&!killed.Contains((v.ViewId,v.SpawnId))).Select(v=>v!).ToList();
+                            }
                             for(int attempts=0;!Done(number) && attempts<100;attempts++)
                             {
                                 await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(30));
                                 if(Done(number))break;
                                 var currentState=(await Saved("wave-current-owner"))!;
                                 Check.Equal(phase,currentState.Phase,"DefeatAll remains in its authored current phase");
-                                var currentActors=currentState.Mobs.Where(m=>MachinesCriticalNextFiveFixture.CurrentHostile(m,authoredCurrentStageIds)).ToArray();
-                                var target=Targets().LastOrDefault(v=>currentActors.Any(m=>m.Name==v.Name&&
-                                    MachinesCriticalNextFiveFixture.NpcLevel(v.Attributes)==m.Level&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
-                                    BitConverter.ToDouble(pos)==m.X&&BitConverter.ToDouble(pos,8)==m.Y&&BitConverter.ToDouble(pos,16)==m.Z));
+                                var target=Targets().LastOrDefault();
                                 Check.That(target!=null,"Wave target is an actual live current saved actor, not a historical same-name view");
                                 p.SkipReceived();await DefeatMissionNpc(p,target!);killed.Add((target!.ViewId,target.SpawnId));
                             }
@@ -265,7 +245,10 @@ public static partial class Scenarios
                     if(id==201203&&phase==0&&number==2)
                     {
                         var carried=(await Saved("carry-before"))!;Check.That(carried.Items.ContainsKey(6796)&&!carried.Done.Contains(3),"Earned Flyer carried while Folder Search is pending");
-                        ushort slot=carried.Items[6796];string history=System.Text.Json.JsonSerializer.Serialize(new{carried.Objects,carried.SiteDoors,carried.OpenFloorCurrentSiteIndex,carried.OpenFloorSites},fields);
+                        ushort slot=carried.Items[6796];
+                        string itemRows=await context.Database.ExecuteAsync($"SELECT charId,goid,slot,`count` FROM inventory WHERE charId={p.CharId} AND goid=6796 ORDER BY slot");
+                        var itemBefore=MissionBoundCabinetFixture.RequireMissionInventory(itemRows,p.CharId,6796,slot);
+                        string history=System.Text.Json.JsonSerializer.Serialize(new{carried.Objects,carried.SiteDoors,carried.OpenFloorCurrentSiteIndex,carried.OpenFloorSites},fields);
                         long carryXp=await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),carryCash=await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
                         long carryReceipt=await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId={id}");Check.Equal(0L,carryReceipt,"No selected receipt before carry logout");
                         string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
@@ -276,10 +259,12 @@ public static partial class Scenarios
                             double.Parse(await context.Database.ScalarAsync($"SELECT y FROM characters WHERE charId={p.CharId}"),CultureInfo.InvariantCulture),
                             double.Parse(await context.Database.ScalarAsync($"SELECT z FROM characters WHERE charId={p.CharId}"),CultureInfo.InvariantCulture)};
                         await p.EnterWorldAsync();await p.WaitForRpcAsync("80 9c");await p.WaitForRpcAsync("80 9e 00");
+                        var own=p.World.CreationSnapshot().Last(v=>v.ViewId==2&&v.Goid==12);Check.That(own.Attributes.TryGetValue("Position",out var ownPosition)&&ownPosition.Length==24,"Actual carry self position");
+                        restoreRoot=Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(own.Attributes["Position"],i*8)).ToArray();
                         var freeCarry=carried.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).ToArray();
                         if(freeCarry.Length>0)
                         {
-                            await p.WaitUntilAsync(()=>freeCarry.All(o=>InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),restoreViews,o.Goid,o.OpenFloor!.Centre)!=null),"Stationary carry restore first free03",TimeSpan.FromSeconds(15));
+                            await p.WaitUntilAsync(()=>freeCarry.All(o=>ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,carried.Instance)!=null),"Stationary carry restore first free03",TimeSpan.FromSeconds(15));
                             string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());
                             foreach(var obj in freeCarry)arrivalProofs.Add(new{Role="CarryRestore",carried.Mission,carried.Phase,carried.Identity,obj.Id,
                                 Receipt=InteriorAdmissionDeliveryProof.Require(raw,p.CharId,restorePackets,restoreRoot,obj.Goid,obj.OpenFloor!.Centre),Stationary=true,ReceiptIsNotRoomReady=true});
@@ -289,11 +274,12 @@ public static partial class Scenarios
                         Check.Equal(carried.Phase,restored.Phase,"Same active phase");Check.Equal(slot,restored.Items[6796],"Exact earned Flyer slot");
                         Check.That(carried.Done.SequenceEqual(restored.Done)&&carried.EverDone.SequenceEqual(restored.EverDone),"Completed/pending goal history survives ordinary relog");
                         Check.Equal(history,System.Text.Json.JsonSerializer.Serialize(new{restored.Objects,restored.SiteDoors,restored.OpenFloorCurrentSiteIndex,restored.OpenFloorSites},fields),"Exact object raw spots/witnesses, site doors/current index/full history survive");
-                        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6796"),"Relog cannot duplicate earned Flyer");
+                        var itemAfter=MissionBoundCabinetFixture.RequireMissionInventory(await context.Database.ExecuteAsync($"SELECT charId,goid,slot,`count` FROM inventory WHERE charId={p.CharId} AND goid=6796 ORDER BY slot"),p.CharId,6796,slot);
+                        Check.Equal(itemBefore,itemAfter,"Relog preserves exact nonstackable Flyer inventory owner/goid/slot/raw-count");
                         Check.Equal(carryXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Relog grants no XP");
                         Check.Equal(carryCash,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Relog grants no information");
                         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId={id}"),"Relog grants no completion");
-                        carryProofs.Add(new{CarryXp=carryXp,CarryCash=carryCash,carried.Identity,carried.Started,carried.Phase,Item=6796,Slot=slot,Before=carried,After=restored});
+                        carryProofs.Add(new{CarryXp=carryXp,CarryCash=carryCash,carried.Identity,carried.Started,carried.Phase,Item=6796,Slot=slot,InventoryBefore=itemBefore,InventoryAfter=itemAfter,Before=carried,After=restored});
                         rpcStart=0;viewsStart=0;sectionsStart=0;nextCreationCursor=0;missionCreationCursor=0;completionCursor=0;
                     }
                 }
@@ -317,7 +303,7 @@ public static partial class Scenarios
             long afterXp=await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),afterCash=await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
             Check.Equal(beforeXp+allXp,afterXp,"Persistent XP equals actual kill and mission gain events exactly once");
             Check.Equal(beforeCash+lootedCash+expected.Info,afterCash,"Persistent information equals selected corpse windows plus one mission reward");
-            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE charId={p.CharId}"),"Completed mission has no active payload");
+            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')"),"Completed mission has no active payload");
             rewards.Add(new{Mission=id,Expected=expected,Summary=Convert.ToHexString(end),BeforeXp=beforeXp,AfterXp=afterXp,BeforeCash=beforeCash,AfterCash=afterCash,LootedCash=lootedCash,AllWireXp=allXp});
             Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId={id}"),"Selected chain completion earned exactly once");
             Check.Equal(0,p.World.Problems.Count,"Prima chain protocol problems");
@@ -326,7 +312,22 @@ public static partial class Scenarios
         p.SendRpc("80 94 05 00 02");await p.WaitForRpcAsync("80 97 05 00");
         var nextEntries=p.World.RpcSnapshot().Skip(nextOfferCursor).Select(r=>r.Bytes).Where(b=>b.Length>17&&b[0]==0x80&&b[1]==0x96&&BitConverter.ToUInt16(b,2)==5).ToArray();
         MissionContactChoice.CriticalIndex(nextEntries,"Coroner's Report");
-        foreach(var actor in actors)Check.Equal(0,actor.World.Problems.Count,"Every owned session parser clean");step="complete";
+        foreach(var actor in actors)Check.Equal(0,actor.World.Problems.Count,"Every owned session parser clean");
+        step="cold-process-receipt-check";string walletBefore=await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE charId={p.CharId}");
+        string coldUsername=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
+        p.SkipReceived();p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();
+        retiredPackets=InteriorAdmissionDeliveryProof.Read(PacketPath());retiredDebug=context.Server.DebugLog();retiredOutput=context.Server.FullOutput();
+        context.Server.Dispose();bool exited;try{using var process=System.Diagnostics.Process.GetProcessById(initialPid);exited=process.HasExited;}catch(ArgumentException){exited=true;}
+        Check.That(exited,"Owned old server exits before cold replacement");
+        coldServer=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,MachinesCriticalNextFiveFixture.Environment);
+        Check.Equal(context.Server.SourceAssemblySha256,coldServer.SourceAssemblySha256,"Cold replacement retains exact qualified source");
+        p=await HeadlessPlayer.LoginAsync(coldServer.Address,coldUsername,handle);actors.Add(p);await p.EnterWorldAsync();await Barrier();
+        string walletAfter=await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE charId={p.CharId}");Check.Equal(walletBefore,walletAfter,"Cold login grants no XP or information");
+        Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) AND completions=1"),"Cold process preserves all five earned receipts once");
+        Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')"),"Cold process cannot revive completed progress");
+        Check.That(!p.World.RpcSnapshot().Any(r=>r.Bytes.Length>1&&r.Bytes[0]==0x80&&r.Bytes[1]==0xa2),"Cold process emits no completion replay");Check.Equal(0,p.World.Problems.Count,"Cold parser clean");
+        coldProof=new{DisposedPid=initialPid,ExitedBeforeNext=exited,ReplacementPid=coldServer.ProcessId,Source=coldServer.SourceAssemblySha256,WalletBefore=walletBefore,WalletAfter=walletAfter,NoReplay=true};step="complete";
+
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
         }
         catch(Exception error) {scenarioFailure=error;throw;}
@@ -338,62 +339,24 @@ public static partial class Scenarios
                 string? receipts=null,receiptError=null;
                 try{receipts=await context.Database.ExecuteAsync($"SELECT missionId,completions FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) ORDER BY missionId");}
                 catch(Exception error){receiptError=error.ToString();}
-                string rawPackets=InteriorAdmissionDeliveryProof.Read(PacketPath());File.WriteAllText(stem+"-PacketLog.txt",rawPackets);
+                string rawPackets=retiredPackets??InteriorAdmissionDeliveryProof.Read(PacketPath());File.WriteAllText(stem+"-PacketLog.txt",rawPackets);
                 await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
                     Passed=step=="complete"&&scenarioFailure==null,Step=step,Failure=scenarioFailure?.ToString(),Database=context.Database.Name,
-                    ServerPid=context.Server.ProcessId,SourceAssembly=dll,SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
+                    ServerPid=initialPid,ColdRestart=coldProof,SourceAssembly=dll,SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
                     SelectedMissions=ids,Prerequisites=prerequisites,Checkpoints=checkpoints,Targets=targets,Rewards=rewards,Carry=carryProofs,Arrivals=arrivalProofs,RawPacketLogPath=stem+"-PacketLog.txt",RawPacketLogSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawPackets))),
                     Receipts=receipts,ReceiptCaptureError=receiptError,
+                    ColdServer=coldServer==null?null:new{Pid=coldServer.ProcessId,Source=coldServer.SourceAssemblySha256,Output=coldServer.FullOutput(),Debug=coldServer.DebugLog(),PacketLog=InteriorAdmissionDeliveryProof.Read(Path.Combine(coldServer.WorkingDirectory,"PacketLog.txt"))},
                     Sessions=actors.Select(a=>new{a.CharId,Rpc=a.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=a.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=a.World.Problems.ToArray()}),
                     NativeWalkingProven=false,NativePickingProven=false,MovementPolicy="Existing test-only movement and weaken1 helpers, aggro disabled. Every selected item/goal/receipt/reward earned over normal RPCs; no source override or replay grants."
                 },new System.Text.Json.JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
-                File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n--- Debug ---\n"+context.Server.DebugLog());
+                File.WriteAllText(stem+".log",(retiredOutput??context.Server.FullOutput())+"\n--- Debug ---\n"+(retiredDebug??context.Server.DebugLog()));
                 Console.WriteLine("MACHINES NEXT FIVE EVIDENCE="+stem);
             }
             catch(Exception proofError){if(scenarioFailure==null)throw;Console.Error.WriteLine("Evidence capture failed: "+proofError);}
-            finally{foreach(var actor in actors)actor.Dispose();}
+            finally{foreach(var actor in actors)actor.Dispose();coldServer?.Dispose();}
         }
     }
 
-    private static async Task<ViewCreation> MachinesNextObject(ScenarioContext context,HeadlessPlayer p,int id,int creationCursor,List<object> evidence)
-    {
-        var saved=await MissionCheckpoint(context,p);var source=saved.Objects.Single(o=>o.Id==id);
-        SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-        double[] centre;string quaternion;double[] standing;
-        if(source.OpenFloor!=null)
-        {
-            var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-            var witness=MissionOpenFloorWitness.Read(System.Text.Json.JsonSerializer.SerializeToElement(source.OpenFloor,options));
-            witness.Require(saved.Mission,saved.Phase,id,source.Spot.mxoStaticId,MissionSites.Goid(source.Spot),source.Goid);
-            centre=witness.Centre.ToArray();quaternion=witness.Quaternion;standing=witness.Standing.ToArray();
-            for(int i=0;i<witness.Route.Count;i+=3)await MoveForMissionTest(p,witness.Route[i],witness.Route[i+1],witness.Route[i+2]);
-            Check.That(NavMesh.Locate(1,standing[0],standing[1],standing[2],out var at)&&Math.Abs(at.floorY+95-standing[1])<1e-7,"Current persisted standing witness is grounded");
-        }
-        else
-        {
-            Check.That(MissionSites.Goid(source.Spot)==source.Goid,"Converted source requires an admitted current open-floor witness");
-            var pose=MissionObjectPoses.For(new MissionObjectState{spot=source.Spot,goid=source.Goid});centre=new[]{pose.X,pose.Y,pose.Z};quaternion=Convert.ToHexString(pose.Orientation);
-            double[]? qualified=null;
-            foreach(var delta in new[]{(100d,0d),(-100d,0d),(0d,100d),(0d,-100d),(0d,0d)})
-            {
-                double x=pose.X+delta.Item1,z=pose.Z+delta.Item2;
-                if(NavMesh.Locate(1,x,pose.Y,z,out var nav))
-                {
-                    var point=new[]{x,nav.floorY+95,z};
-                    if(ContainerActions.InReach(point.SelectMany(BitConverter.GetBytes).ToArray(),pose.X,pose.Y,pose.Z)){qualified=point;break;}
-                }
-            }
-            Check.That(qualified!=null,"Legacy bound object has an actual grounded in-range approach; no old anchor fallback");standing=qualified!;
-            await MoveForMissionTest(p,standing[0],standing[1],standing[2]);
-        }
-        bool Matches(ViewCreation v)=>v.Goid==source.Goid&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
-            Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==centre[i])&&
-            v.Attributes.TryGetValue("Orientation",out var q)&&q.SequenceEqual(Convert.FromHexString(quaternion));
-        await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(creationCursor).Any(Matches),"Current source-matched object view",TimeSpan.FromSeconds(15));
-        var view=p.World.CreationSnapshot().Skip(creationCursor).Last(Matches);
-        evidence.Add(new{saved.Mission,saved.Phase,ObjectId=id,Source=source.Spot,CanonicalSource=new{source.Spot.mxoStaticId,source.Spot.pos_x,source.Spot.pos_y,source.Spot.pos_z,source.Spot.quat},Concrete=source.Goid,OpenFloor=source.OpenFloor,Standing=standing,
-            CreationCursor=creationCursor,view.ViewId,view.SpawnId,Attributes=view.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});
-        return view;
-    }
+    private static Task<ViewCreation> MachinesNextObject(ScenarioContext context,HeadlessPlayer p,int id,int creationCursor,List<object> evidence)
+        =>MachinesNextObjectQualified(context,p,id,creationCursor,evidence.Add);
 }
-

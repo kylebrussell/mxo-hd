@@ -5,6 +5,19 @@ using NativeQa;
 namespace hds.Tests;
 public class MachinesCriticalNextFiveTests
 {
+
+    [Theory][InlineData(null)][InlineData("bad")][InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
+    public void WholeCaseRequiresExactFrozenSource(string? expected)=>Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.RequirePin(expected,new string('B',64)));
+    [Fact] public void MatchingFrozenSourcePinIsAccepted()=>MachinesCriticalNextFiveFixture.RequirePin(new string('B',64),new string('B',64));
+    [Theory][InlineData(1)][InlineData(2)]
+    public void MysqlHexRetainsEscapedNamesAndBothSavedVersions(int version)
+    {
+        string json=System.Text.Json.JsonSerializer.Serialize(new{Version=version,Mission=201203,Mobs=new[]{new{Name="A \"quoted\" \\ path"}}});
+        var state=MachinesCriticalNextFiveFixture.ReadCheckpointHex(Convert.ToHexString(System.Text.Encoding.UTF8.GetBytes(json)))!;
+        Assert.Equal(version,state.Version);Assert.Equal("A \"quoted\" \\ path",state.Mobs.Single().Name);Assert.Null(MachinesCriticalNextFiveFixture.ReadCheckpointHex("NULL"));
+    }
+    [Theory][InlineData("00")][InlineData("FF")][InlineData("bad")][InlineData("7B2256657273696F6E223A337D")]
+    public void MalformedOrUnknownCheckpointNeverBecomesAValidScope(string hex)=>Assert.ThrowsAny<Exception>(()=>MachinesCriticalNextFiveFixture.ReadCheckpointHex(hex));
     [Fact] public void CurrentHostilesIncludeNamedXmlActorsWithoutTreatingOldStageOrFriendlyActorsAsTargets()
     {
         var authored=new HashSet<ushort>{1};

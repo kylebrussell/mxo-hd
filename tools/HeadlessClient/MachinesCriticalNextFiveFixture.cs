@@ -6,6 +6,20 @@ public static class MachinesCriticalNextFiveFixture
     public static readonly int[] Prerequisites = {
         1201,1204,1203,1205,1206,1207,1208,
         2201,2202,2203,2204,2205,2206,2207,2208,2209,2210,201101,201102,201103,201201};
+    public const string SourcePin="MXO_MACHINES_NEXT_FIVE_SOURCE_SHA256";
+    public static void RequirePin(string? expected,string actual)
+    {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Exact Machines source pin required");}
+    public static MissionProgress.SavedState? ReadCheckpointHex(string hex)
+    {
+        if(hex=="NULL")return null;
+        var state=System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(MissionBoundCabinetFixture.DecodeCheckpointHex(hex),new System.Text.Json.JsonSerializerOptions{IncludeFields=true})??throw new InvalidDataException("Missing Machines checkpoint");
+        if(state.Version!=1&&state.Version!=2)throw new InvalidDataException("Unsupported Machines checkpoint version");return state;
+    }
+    public static byte[] ClientPosition(IReadOnlyList<double> root)
+    {
+        if(root.Count!=3||root.Any(v=>!double.IsFinite(v)||!float.IsFinite((float)v)))throw new ArgumentException("Invalid current root");
+        return new byte[]{2,0,1,8}.Concat(root.SelectMany(v=>BitConverter.GetBytes((float)v))).Concat(new byte[]{0,0}).ToArray();
+    }
     public const int NextMission = 201207, Seed = 201202;
     // Saved Hostile denotes generated progress.hostiles membership, not every enemy's side.
     public static bool CurrentHostile(MissionProgress.SavedMob actor,IReadOnlySet<ushort> authoredCurrentStageIds) =>

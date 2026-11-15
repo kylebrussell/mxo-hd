@@ -1,6 +1,8 @@
 # Machines critical next five after Disturbing Trends
 
-HOLD: QA-only refresh on master e11e4149. Current135 focused/schema tests and both actual builds/plans pass. Unchanged-seed current eligibility preflight passes all13 phases. Fresh normal-wire evidence remains pending. The original ed7583 package and historical source refusals remain separately attributed; no seed/source/geometry workaround is permitted.
+Current preparation reuses the stopped7fd producer through normal merges onto actual master08d and the qualified common runtime (249/250/251/253/254/255/256 plus general261 Format2 domains). hds/data match the qualified241 common union. Earlier135-focus/13-phase preflight and all failed actual runs remain historical; no new whole-five pass is claimed yet.
+
+The13-phase QA audit replaces raw mysql payload reads with strict HEX/UTF8, raw CSV lobby guesses with exact current/historical saved witnesses, stale phase-birth cursors with typed current-live NPC/free/bound/booth observations, and legacy bound poses with the audited effective pose. Followers retain identity and use actual latest positions at unchanged readiness/range thresholds. Computer/door state uses current-birth capabilities, including the exact retired-door reset control from qualified245 b3ade659. The original21 prior receipts, seed201202, all literal payouts, XML/transcripts and gameplay timers remain unchanged. The60s next-phase wait remains the previously disclosed QA synchronization limit; source preparation latency is not declared normal-client-safe.
 
 ## Actual order and prerequisites
 

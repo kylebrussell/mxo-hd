@@ -54,6 +54,11 @@ public static class NpcInteriorComputerState
                     if(shape!=null&&frame.Type==MervFollowupViewFrames.Kind.Attribute&&frame.Length==2+shape.Length&&
                         bytes.AsSpan(at+2,shape.Length-4).SequenceEqual(shape.AsSpan(0,shape.Length-4)))
                         target.State=BitConverter.ToUInt32(bytes,at+frame.Length-4);
+                    else if((MissionInteriorDoorTypes.IsSupported(target.View.Goid)||target.View.Goid==417||target.View.Goid==419)&&
+                        shape!=null&&shape.AsSpan(0,shape.Length-4).SequenceEqual(Convert.FromHexString("018002"))&&
+                        frame.Type==MervFollowupViewFrames.Kind.Attribute&&frame.Length==2+DoorLifecycle.BuildResetUpdate().Length&&
+                        bytes.AsSpan(at+2,frame.Length-2).SequenceEqual(DoorLifecycle.BuildResetUpdate()))
+                    {target.State=DoorLifecycle.StateClosed;target.Known=false;} // Reset zeroes pose; only this birth loses authority.
                     else throw new InvalidDataException("Computer received unsupported current-birth update");
                 }
                 at+=frame.Length;
