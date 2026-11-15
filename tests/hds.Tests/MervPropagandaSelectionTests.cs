@@ -34,7 +34,7 @@ public class MervPropagandaSelectionTests
             Assert.NotNull(site);used.Add(site);var progress=new MissionProgress(mission){phaseIndex=phaseIndex,site=site};
             var client=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));client.playerData=new(){missionInstanceCounter=47};client.viewMan=new();
             foreach(var def in phase.objects)client.viewMan.GetViewForEntityAndGo(987000047000UL+(ulong)(phaseIndex*50+def.id),548).viewCreated=true;
-            typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,phaseIndex==0?new Random(seed):rng});
+            typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,MissionStaging.PrepareObjectChoices(phase,site,phaseIndex==0?new Random(seed):rng)});
             Assert.Equal(phaseIndex==0?3:5,progress.objects.Count);
             Assert.Equal(progress.objects.Count,progress.objects.Values.Select(o=>o.spot.mxoStaticId).Distinct().Count());
             Assert.All(progress.objects.Values,o=>Assert.Equal((ushort)548,o.goid));
