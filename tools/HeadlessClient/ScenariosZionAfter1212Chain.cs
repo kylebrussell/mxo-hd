@@ -163,16 +163,15 @@ public static partial class Scenarios
                         case "Upload":
                             if(evidenceOptions?.FreshUploadBooth==true)
                             {
-                                // First use needs a newly received booth after the actual return. Consecutive
-                                // uploads reuse that successfully used handle without moving or requiring a fake recreation.
+                                // A valid booth may already be live after carry reentry. Reconcile its exact
+                                // current-life/static identity, without requiring or inventing another birth.
                                 if(currentUploadBooth==null)
                                 {
-                                    int uploadCreations=p.World.CreationSnapshot().Count;await MoveForMissionTest(p,17000,495,2200);
-                                    await p.WaitUntilAsync(()=>(currentUploadBooth=ZionAfter1212UploadBooth(p.World.CreationSnapshot(),uploadCreations))!=null,"newly received exact Mara booth after return",TimeSpan.FromSeconds(10));
+                                    await MoveForMissionTest(p,17000,495,2200);
+                                    await p.WaitUntilAsync(()=>(currentUploadBooth=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife()))!=null,"exact still-live current-own-life Mara booth after return",TimeSpan.FromSeconds(10));
                                 }
-                                var creations=p.World.CreationSnapshot();var latest=creations.Last(v=>v.ViewId==currentUploadBooth!.ViewId);
-                                Check.That(creations.FindLastIndex(v=>v.ViewId==latest.ViewId)>creations.FindLastIndex(v=>v.ViewId==2),"Upload booth belongs to the current own-view life");
-                                Check.That(latest.Goid==592&&latest.SpawnId==currentUploadBooth!.SpawnId&&latest.Attributes["Position"].SequenceEqual(currentUploadBooth.Attributes["Position"]),"Consecutive upload retains the actual current booth handle");
+                                var latest=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife())??throw new ScenarioFailure("Current upload booth was deleted");
+                                Check.That(latest.ViewId==currentUploadBooth!.ViewId&&latest.SpawnId==currentUploadBooth.SpawnId,"Consecutive upload retains the exact current booth generation");
                                 diagnostics?.Target("Upload booth",currentUploadBooth!);p.SkipReceived();
                                 p.SendRpc($"80 c7 {MissionNpcId(currentUploadBooth!)} 04 00");
                                 await p.WaitForRpcAsync("81 18");
@@ -249,12 +248,5 @@ public static partial class Scenarios
         }
     }
 
-    private static ViewCreation? ZionAfter1212UploadBooth(IReadOnlyList<ViewCreation> views,int cursor)
-    {
-        if(cursor<0 || cursor>views.Count)return null;
-        return views.Skip(cursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Goid==592 && v.ViewId>2 &&
-            v.Attributes.TryGetValue("Position",out var xyz) && xyz.Length==24 &&
-            BitConverter.ToDouble(xyz,0)==17000 && BitConverter.ToDouble(xyz,8)==530 && BitConverter.ToDouble(xyz,16)==2200);
-    }
 
 }
