@@ -746,11 +746,12 @@ namespace hds
             DelayedActions.AfterFor(client, 2, () =>
             {
                 Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
-                MissionTransportState.Run(client, () =>
+                bool committed=MissionTransportState.Run(client, () =>
                 {
                     Ride(client, progress, target, site, stamp);
                     return true;
                 }, stamp);
+                if(committed)MissionTickQaDiagnostics.Arm(client,progress);
             });
             return true;
         }
