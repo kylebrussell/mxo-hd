@@ -54,7 +54,8 @@ public static class MissionNpcInteriorProof
         var roles=choice.GetProperty("Actors").EnumerateArray().ToArray();var proofs=w.GetProperty("Actors").EnumerateArray().ToArray();
         Need(roles.Length==1&&proofs.Length==1&&roles[0].GetProperty("Kind").GetString()=="Npc"&&roles[0].GetProperty("Id").GetInt32()==expectedNpc&&roles[0].GetProperty("WirePhase").GetByte()==0&&proofs[0].GetProperty("Role").GetString()==$"Npc:{expectedNpc}:0","NPC current actual Ophiuchi role, not story stage as wire byte");
         var marker=Raw(roles[0].GetProperty("RawMarkerJson").GetString()!);var standing=Vector(roles[0],"Standing",4);var actor=s.Mobs.Single(m=>m.Npc==expectedNpc&&!m.Dead);
-        Need(marker.metrId==1&&BitConverter.ToUInt16(marker.type)==19&&new[]{marker.pos_x,marker.pos_y-50,marker.pos_z,marker.rot}.SequenceEqual(standing)&&new[]{actor.X,actor.Y,actor.Z}.SequenceEqual(standing.Take(3))&&actor.Friendly&&actor.Health>0,"NPC raw marker/planned prefix/current saved actor");
+        int rolePlan=choice.TryGetProperty("RolePlan",out var policy)?policy.GetInt32():0;Need(rolePlan==0||rolePlan==1,"NPC known role policy");
+        Need(marker.metrId==1&&BitConverter.ToUInt16(marker.type)==19&&(rolePlan==1?standing[3]==marker.rot:new[]{marker.pos_x,marker.pos_y-50,marker.pos_z,marker.rot}.SequenceEqual(standing))&&new[]{actor.X,actor.Y,actor.Z}.SequenceEqual(standing.Take(3))&&actor.Friendly&&actor.Health>0,"NPC raw marker/planned prefix/current saved actor");
         return new(s.Identity,s.Started,s.Phase,site.Fingerprint,e.GetRawText(),w.Clone(),floor,lobby);
     }
     public static Door[] RequiredDoors(Plan p)=>p.Witness.GetProperty("Doors").EnumerateArray().Select(d=>
@@ -103,6 +104,13 @@ public static class MissionNpcInteriorProof
         }
         var actor=p.Witness.GetProperty("Selection").GetProperty("Actors")[0];var marker=Raw(actor.GetProperty("RawMarkerJson").GetString()!);var markerGroup=root.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==marker.mxoStaticId);
         Need(markerGroup.GetProperty("Occurrences").EnumerateArray().Where(o=>o.GetProperty("Goid").GetInt32()==19).Select(o=>o.GetProperty("Region").GetInt32()).Distinct().SequenceEqual(new[]{R(nodes[^1])}),"NPC QA exact marker original room association");
+        var choice=p.Witness.GetProperty("Selection");
+        if(choice.TryGetProperty("RolePlan",out var policy)&&policy.GetInt32()==1)
+        {
+            Need(markerGroup.GetProperty("Legacy").EnumerateArray().Any(l=>{var sig=l.GetProperty("Signature");return sig.GetProperty("Goid").GetInt32()==19&&sig.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(new[]{marker.pos_x,marker.pos_y,marker.pos_z})&&sig.GetProperty("Rotation").GetDouble()==marker.rot&&string.Equals(sig.GetProperty("Quaternion").GetString(),marker.quat,StringComparison.OrdinalIgnoreCase);}),"NPC QA exact original marker signature");
+            var own=markerGroup.GetProperty("Occurrences").EnumerateArray().Where(o=>o.GetProperty("Goid").GetInt32()==19).ToArray();var at=Vector(actor,"Standing",4);
+            Need(own.Length>0&&own.All(o=>{var native=o.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).ToArray();return new[]{native[0],native[1]+95,native[2]}.SequenceEqual(at.Take(3));}),"NPC QA measured marker standing");
+        }
         var standing=Vector(actor,"Standing",4);var target=Polygon(nodes[^1]);var vertices=target.GetProperty("Edges").EnumerateArray().Select(e=>e.GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray()).ToArray();
         var crosses=vertices.Select((v,i)=>(vertices[(i+1)%vertices.Length][0]-v[0])*(standing[2]-v[2])-(vertices[(i+1)%vertices.Length][2]-v[2])*(standing[0]-v[0])).ToArray();
         var plane=target.GetProperty("Plane").EnumerateArray().Select(v=>v.GetDouble()).ToArray();Need((crosses.All(v=>v>=0)||crosses.All(v=>v<=0))&&standing[1]==-(plane[0]*standing[0]+plane[2]*standing[2]+plane[3])/plane[1]+95,"NPC QA exact actor standing inside original target polygon/floor");

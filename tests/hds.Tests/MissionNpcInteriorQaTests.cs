@@ -61,4 +61,11 @@ public partial class MissionNpcInteriorCheckpointTests
         rows=LiteralAwards();rows[1]=Wallet(0xe6,168043);Assert.Throws<InvalidDataException>(()=>MissionNpcInteriorProof.Awards(rows,2000000,1000));
         rows=LiteralAwards();rows.Insert(0,Wallet(0xe5,2000000,0));Assert.Throws<InvalidDataException>(()=>MissionNpcInteriorProof.Awards(rows,2000000,1000));MissionNpcInteriorProof.Awards(rows,2000000,1000,new HashSet<int>{0});
     }
+    [Fact] public void QaMeasuredActorCannotSlideInsideTheSameRoom()
+    {
+        var saved=QaState();var envelope=JsonNode.Parse(saved.NpcInterior.GetRawText())!;
+        var standing=envelope["Witnesses"]![0]!["Selection"]!["Actors"]![0]!["Standing"]!;standing[0]=standing[0]!.GetValue<double>()+1;saved.Mobs[0].X++;
+        saved.NpcInterior=JsonSerializer.Deserialize<JsonElement>(envelope.ToJsonString());
+        var plan=MissionNpcInteriorProof.Require(saved);Assert.Throws<InvalidDataException>(()=>MissionNpcInteriorProof.Route(Repo,plan));
+    }
 }
