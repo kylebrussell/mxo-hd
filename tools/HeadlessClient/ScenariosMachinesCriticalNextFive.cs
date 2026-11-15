@@ -287,7 +287,7 @@ public static partial class Scenarios
                     }
                 }
                 var endState=await WaitSaved(s=>s==null||s.Phase!=phase||(s.Flags.TryGetValue("waitingForExit",out bool waiting)&&waiting),"phase goals durably complete");
-                if(endState?.Phase==phase){nextCreationCursor=p.World.CreationSnapshot().Count;await Ride(false);}
+                if(endState?.Phase==phase&&!endState.Flags.GetValueOrDefault("leaveNotNeeded")){nextCreationCursor=p.World.CreationSnapshot().Count;await Ride(false);}
                 phaseCreationCursor=nextCreationCursor;phase++;
                 // Exact cold preparation at the retained actual exit takes28.58s. QA synchronization only:
                 // no authored, resolver/search, transport or RPC timer is changed by this bounded wait.
