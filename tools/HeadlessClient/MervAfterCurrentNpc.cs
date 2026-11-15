@@ -75,94 +75,47 @@ public static class MervAfterCurrentNpc
                 start = own.Offset + own.Length;
             }
             if (!ownBirthSeen) throw new InvalidDataException("Current own-view birth must precede carried objects");
-            var known = new List<(int Start, int End, WireFormat.CreationEvent? Birth, ushort? Deleted, bool OwnTeleport)>();
-            foreach (var creation in creations.Where(c => c.Offset >= start))
-                known.Add((creation.Offset, creation.Offset + creation.Length, creation, null, false));
-            // PacketsUtils.createTeleportPacket: own view2,01,1c, counter, NAV, yaw, XYZ-f32, time.
-            // Classify only at a current known frame boundary; a matching substring inside an unknown gap is not proof.
             int cursor=start;
             while(cursor<section.Length)
             {
                 var birth=creations.FirstOrDefault(c=>c.Offset==cursor);
-                if(birth!=null){cursor+=birth.Length;continue;}
-                if(cursor+28<=section.Length&&section.AsSpan(cursor,4).SequenceEqual(new byte[]{2,0,1,0x1c}))
-                {known.Add((cursor,cursor+28,null,null,true));cursor+=28;continue;}
-                if(cursor+7<=section.Length&&section.AsSpan(cursor,5).SequenceEqual(new byte[]{1,0,1,1,0}))
-                {cursor+=7;continue;}
-                if(cursor+18<=section.Length&&section[cursor+2]==2&&section[cursor+3]==0x0e)
-                {cursor+=18;continue;}
-                if(cursor+27<=section.Length&&section[cursor+2]==7&&section[cursor+3]==1&&section[cursor+4]==0x1d&&
-                    (BitConverter.ToUInt16(section,cursor+5)==13||BitConverter.ToUInt16(section,cursor+5)==5))
-                {cursor+=27;continue;}
-                break; // Never search unknown bytes for a plausible own teleport.
-            }
-            for (int at = start; at + 7 <= section.Length; at++)
-            {
-                if (creations.Any(c => at >= c.Offset && at < c.Offset + c.Length) ||
-                    known.Any(k=>k.OwnTeleport&&at>=k.Start&&at<k.End)) continue;
-                if (section[at] == 1 && section[at + 1] == 0 && section[at + 2] == 1 && section[at + 3] == 1 && section[at + 4] == 0)
+                if(birth!=null)
                 {
-                    known.Add((at, at + 7, null, BitConverter.ToUInt16(section, at + 5), false));
-                    at += 6;
+                    var view=birth.Creation;
+                    if(live.TryGetValue(view.ViewId,out var previous)&&previous.View.SpawnId==view.SpawnId&&
+                        previous.View.Goid==view.Goid&&previous.View.Attributes.Count==view.Attributes.Count&&
+                        previous.View.Attributes.All(a=>view.Attributes.TryGetValue(a.Key,out var bytes)&&bytes.SequenceEqual(a.Value)))
+                    {cursor+=birth.Length;continue;}
+                    if(previous!=null)retired.Add((previous.View.ViewId,previous.View.SpawnId));
+                    Point? position=view.Attributes.TryGetValue("Position",out var p)&&p.Length==24
+                        ?new(BitConverter.ToDouble(p),BitConverter.ToDouble(p,8),BitConverter.ToDouble(p,16)):null;
+                    live[view.ViewId]=new LiveView {View=view,Position=position,Birth=e.Section,PositionSection=e.Section,
+                        PositionBytes=p==null?"":Convert.ToHexString(p),DynamicBirth=section[cursor+2]==0x0c,
+                        Dead=view.Attributes.TryGetValue("IsDead",out var dead)&&dead.Length==1&&dead[0]!=0,
+                        GenerationKnown=!retired.Contains((view.ViewId,view.SpawnId))};
+                    cursor+=birth.Length;continue;
                 }
-            }
-            foreach (var record in known.OrderBy(k => k.Start))
-            {
-                if(record.OwnTeleport)continue;
-                if (record.Deleted.HasValue)
+                ushort? goid=cursor+2<=section.Length&&live.TryGetValue(BitConverter.ToUInt16(section,cursor),out var addressed)
+                    ?addressed.View.Goid:cursor+2<=section.Length&&BitConverter.ToUInt16(section,cursor)==2?(ushort)12:null;
+                if(!MervAfterCombatFrames.TryRead(section,cursor,goid,out var frame))
                 {
-                    if (live.Remove(record.Deleted.Value, out var removed)) retired.Add((removed.View.ViewId, removed.View.SpawnId));
-                    continue;
+                    // Unknown frame has no proven boundary or actor. Do not search its payload for IDs/births.
+                    foreach(var current in live.Values){current.GenerationKnown=false;current.Position=null;}
+                    break;
                 }
-                var view = record.Birth!.Creation;
-                if (live.TryGetValue(view.ViewId, out var previous) && previous.View.SpawnId == view.SpawnId &&
-                    previous.View.Goid == view.Goid && previous.View.Attributes.Count == view.Attributes.Count &&
-                    previous.View.Attributes.All(a => view.Attributes.TryGetValue(a.Key, out var bytes) && bytes.SequenceEqual(a.Value)))
-                    continue; // retransmitted identical birth is not a new generation or position
-                if (previous != null) retired.Add((previous.View.ViewId, previous.View.SpawnId));
-                Point? position = view.Attributes.TryGetValue("Position", out var p) && p.Length == 24
-                    ? new Point(BitConverter.ToDouble(p), BitConverter.ToDouble(p, 8), BitConverter.ToDouble(p, 16)) : null;
-                live[view.ViewId] = new LiveView { View=view, Position=position, Birth=e.Section,
-                    PositionSection=e.Section, PositionBytes=p == null ? "" : Convert.ToHexString(p),
-                    DynamicBirth=section[record.Birth.Offset+2]==0x0c,
-                    Dead=view.Attributes.TryGetValue("IsDead",out var dead)&&dead.Length==1&&dead[0]!=0,
-                    GenerationKnown=!retired.Contains((view.ViewId, view.SpawnId)) };
-            }
-            bool movements = start == 0 && section.Length > 0 && section.Length % 18 == 0 &&
-                Enumerable.Range(0, section.Length / 18).All(j => section[j * 18 + 2] == 2 && section[j * 18 + 3] == 0x0e);
-            if (movements)
-            {
-                for (int at = 0; at < section.Length; at += 18)
-                    if (live.TryGetValue(BitConverter.ToUInt16(section, at), out var current))
+                if(frame.Type==MervAfterCombatFrames.Kind.Delete)
+                {if(live.Remove(frame.View,out var removed))retired.Add((removed.View.ViewId,removed.View.SpawnId));}
+                else if(live.TryGetValue(frame.View,out var current))
+                {
+                    if(frame.PositionOffset>=0)
                     {
-                        current.Position = new Point(BitConverter.ToSingle(section, at + 6), BitConverter.ToSingle(section, at + 10), BitConverter.ToSingle(section, at + 14));
-                        current.PositionSection=e.Section; current.PositionBytes=Convert.ToHexString(section.AsSpan(at + 6, 12));
+                        int pos=cursor+frame.PositionOffset;
+                        current.Position=new(BitConverter.ToSingle(section,pos),BitConverter.ToSingle(section,pos+4),BitConverter.ToSingle(section,pos+8));
+                        current.PositionSection=e.Section;current.PositionBytes=Convert.ToHexString(section.AsSpan(pos,12));
                     }
-            }
-            else if(start==0&&section.Length==27&&section[2]==7&&section[3]==1&&section[4]==0x1d&&
-                (BitConverter.ToUInt16(section,5)==13||BitConverter.ToUInt16(section,5)==5))
-            {
-                if(live.TryGetValue(BitConverter.ToUInt16(section),out var current))
-                {current.Position=new(BitConverter.ToSingle(section,15),BitConverter.ToSingle(section,19),BitConverter.ToSingle(section,23));
-                 current.Dead=true;current.PositionSection=e.Section;current.PositionBytes=Convert.ToHexString(section.AsSpan(15,12));}
-            }
-            else
-            {
-                // Only unparsed gaps can invalidate position evidence; creation bytes are not movement records.
-                var gaps = new List<byte[]>(); int at = start;
-                foreach (var record in known.OrderBy(k => k.Start))
-                {
-                    if (record.Start > at) gaps.Add(section[at..record.Start]);
-                    at = Math.Max(at, record.End);
+                    if(frame.Type==MervAfterCombatFrames.Kind.Death)current.Dead=true;
                 }
-                if (at < section.Length) gaps.Add(section[at..]);
-                foreach (var current in live.Values)
-                    if (gaps.Any(g => BytePattern.IndexOf(g, BitConverter.GetBytes(current.View.ViewId), 0) >= 0))
-                    {
-                        current.Position=null; current.PositionSection=e.Section; current.PositionBytes="";
-                        if (gaps.Any(g => BytePattern.IndexOf(g, new byte[] { 1, 0, 0x0c }, 0) >= 0 ||
-                                          BytePattern.IndexOf(g, new byte[] { 1, 0, 8 }, 0) >= 0)) current.GenerationKnown=false;
-                    }
+                cursor+=frame.Length;
             }
         }
         if (!ownBirthSeen) throw new InvalidDataException("No current own-view birth");

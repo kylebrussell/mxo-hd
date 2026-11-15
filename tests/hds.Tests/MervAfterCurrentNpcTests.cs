@@ -51,7 +51,7 @@ public sealed class MervAfterCurrentNpcTests
     [Fact]public void CurrentDeathRecordUsesLatestCorpsePositionAndCannotAdoptAliveBirth()
     {
         var state=State();state.Mobs[0].Dead=true;state.Mobs[0].Health=0;
-        var death=Convert.FromHexString("090007011D0D000100002B00250000").Concat(new[]{100f,2095f,300f}.SelectMany(BitConverter.GetBytes)).ToArray();
+        var death=Convert.FromHexString("090007011D0D000101002B00250000").Concat(new[]{100f,2095f,300f}.SelectMany(BitConverter.GetBytes)).Concat(Convert.FromHexString("c202008080e0010000808003fd07000000000000")).ToArray();
         Assert.Equal((ushort)9,Observe(state,Own(),Birth(),death).View.ViewId);
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth()));
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(),death,Move(y:495)));
