@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using hds;
+using hds.shared;
 using NativeQa;
 using NativeQa.Modes;
 
@@ -104,3 +105,4 @@ public class MissionGeneratedEscortExitTests : IDisposable
         Assert.Equal("101208",mode.Plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);
     }
 }
+
