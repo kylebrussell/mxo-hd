@@ -377,26 +377,29 @@ namespace hds
                 }
                 if(result.LevelRefused) new ServerPackets().sendSystemChatMessage(client,"Your character level is too low to load that ability.","MODAL");
                 var remainingMembership=AbilityMemory.Membership(result.Loaded);
+                byte[] emittedShadowBase=null;
                 foreach(var owned in result.Accepted.GroupBy(r=>r.Ability).Select(g=>g.First()))
                 {
                     ushort ability=owned.Ability;
                     if(unload)
                     {
                         if(remainingMembership.Contains(ability)) continue;
-                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(ability));
+                        var ownedPacket=ServerPackets.BuildAbilityUnload(ability);client.messageQueue.addRpcMessage(ownedPacket);
+                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=ownedPacket;
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
                             if(!remainingMembership.Contains(grant) && !AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                     }
                     else
                     {
-                        client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot));
+                        var ownedPacket=ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot);client.messageQueue.addRpcMessage(ownedPacket);
+                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=ownedPacket;
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
                             if(!AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                                 AbilityProgression.GrantLevel(ability,owned.Level),AbilityProgression.HiddenSlot));
                     }
                 }
                 if(result.Accepted.Length==0) return;
-                AbilityPassives.SetLoaded(client,result.Loaded.Where(r=>AbilityMemory.IsAbility(r.Descriptor)).Select(r=>(r.Ability,r.Level)));
+                AbilityPassives.SetLoadedFromRows(client,result.Loaded,emittedShadowBase);
                 client.FlushQueue();
                 Output.WriteDebugLog("[ABILITY] "+(unload?"Unloaded ":"Loaded ")+result.Accepted.Length+" abilities; memory "+result.Used+"/"+result.Maximum);
             }
