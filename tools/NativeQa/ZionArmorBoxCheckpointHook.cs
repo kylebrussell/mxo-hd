@@ -33,10 +33,11 @@ public static class ZionArmorBoxCheckpointHook
             receipts=await Receipts();Check.That(receipts.Split((char[]?)null,StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).SequenceEqual(ZionArmorBoxCheckpoint.EarlierReceipts.Order()),"Only earlier receipts");beforeAccount=await Account();beforeItems=await Items();
             stage="ordinary-restore";actor=await HeadlessPlayer.LoginAsync(context.Address,"CSR_AbilityQA","CSR_Tester");Check.Equal(110u,actor.CharId,"Actual CSR110");await actor.EnterWorldAsync();
             await actor.WaitForRpcAsync("80 9c");Identity(await Payload());
+            var own=actor.World.CreationSnapshot().Single(v=>v.ViewId==2);
             Check.That(!actor.World.CreationSnapshot().Any(v=>v.Goid==548&&v.Attributes.TryGetValue("Position",out var p)&&p.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==pose.Centre[i])),"No early captured free548 before Ride");
             stage="ordinary-lobby-ride";string packetPath=Path.Combine(server.WorkingDirectory,"PacketLog.txt");int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c=='\n'),viewCursor=actor.World.CreationSnapshot().Count;
             actor.SendRpc("80 c8 "+WireFormat.ToHex(BitConverter.GetBytes(witness.LobbyKey))+" 03 00");
-            await actor.WaitUntilAsync(()=>actor.World.CreationSnapshot().Skip(viewCursor).Any(v=>v.Goid==548&&v.Attributes.TryGetValue("Position",out var p)&&p.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==pose.Centre[i])),"Captured548 after stationary ordinary Ride",TimeSpan.FromSeconds(15));
+            await actor.WaitUntilAsync(()=>ZionArmorBoxCheckpoint.CurrentBody(actor.World.CreationSnapshot(),viewCursor,own,pose)!=null,"Captured548 exact key/orientation/current-ownlife after stationary ordinary Ride",TimeSpan.FromSeconds(15));
             receipt=InteriorAdmissionDeliveryProof.Require(InteriorAdmissionDeliveryProof.Read(packetPath),110,packetCursor,pose.Route.Take(3).ToArray(),548,pose.Centre);
             Identity(await Payload());Check.Equal(receipts,await Receipts(),"No active/later receipt");Check.Equal(beforeItems,await Items(),"No probe item mutation");Check.Equal(beforeAccount,await Account(),"No reward/XP injection");
             stage="ordinary-exit";int exitCursor=server.DebugLog().Length;actor.SendRpc("80 c8 "+WireFormat.ToHex(BitConverter.GetBytes(witness.FloorKey))+" 03 00");

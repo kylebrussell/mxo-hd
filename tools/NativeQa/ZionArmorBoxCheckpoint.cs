@@ -53,4 +53,14 @@ public static class ZionArmorBoxCheckpoint
         RequireSource(Environment.GetEnvironmentVariable(SourcePin),context.ActualServer.SourceAssemblySha256);
         if(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.ActualServer.SourceAssembly)))!=context.ActualServer.SourceAssemblySha256)throw new InvalidDataException("Actual checkpoint assembly changed");
     }
+    public static ViewCreation? CurrentBody(IReadOnlyList<ViewCreation> creations,int after,ViewCreation own,MissionOpenFloorPlacement pose)
+    {
+        if(!ReferenceEquals(creations.LastOrDefault(v=>v.ViewId==2),own)||after<1||after>creations.Count)return null;
+        int ownIndex=-1;for(int i=0;i<creations.Count;i++)if(ReferenceEquals(creations[i],own))ownIndex=i;
+        if(ownIndex<0||after<=ownIndex)return null;
+        return creations.Skip(after).SingleOrDefault(v=>v.Goid==548&&v.ViewId!=2&&
+            v.Attributes.TryGetValue("Position",out var p)&&p.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==pose.Centre[i])&&
+            v.Attributes.TryGetValue("Orientation",out var q)&&q.SequenceEqual(Convert.FromHexString(pose.Quaternion))&&
+            v.Attributes.TryGetValue("MissionKey",out var key)&&key.SequenceEqual(Convert.FromHexString("FF320002")));
+    }
 }

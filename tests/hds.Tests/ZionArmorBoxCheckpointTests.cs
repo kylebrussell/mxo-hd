@@ -76,4 +76,23 @@ public class ZionArmorBoxCheckpointTests
         foreach(string name in NativeQaModes.Names)Assert.Same(NativeQaModes.Find(name).Plan,NativeQaModes.RequireKnown(name).Plan);
         Assert.Same(NativeQaModes.Find(""),NativeQaModes.Find("not-a-mode")); //legacy fallback API unchanged
     }
+    [Fact]
+    public void CapturedBodyRequiresExactKeyQuaternionAndCurrentOwnlifeBirth()
+    {
+        var pose=ZionArmorBoxCheckpoint.Verified().Objects.Single().OpenFloor;
+        var own=new ViewCreation(2,12,1,new Dictionary<string,byte[]>());
+        var attrs=new Dictionary<string,byte[]>{["Position"]=pose.Centre.SelectMany(BitConverter.GetBytes).ToArray(),["Orientation"]=Convert.FromHexString(pose.Quaternion),["MissionKey"]=Convert.FromHexString("FF320002")};
+        var body=new ViewCreation(23,548,21,attrs);Assert.Same(body,ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body},1,own,pose));
+        foreach(string field in new[]{"MissionKey","Orientation"})
+        {
+            var wrong=attrs.ToDictionary(p=>p.Key,p=>p.Value.ToArray());wrong[field][0]^=1;
+            Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,new ViewCreation(23,548,21,wrong)},1,own,pose));
+        }
+        //Even identical view/spawn counters cannot borrow a previous life's exact spatial alias.
+        var nextOwn=new ViewCreation(2,12,1,new Dictionary<string,byte[]>());
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body,nextOwn},3,own,pose));
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body,nextOwn},3,nextOwn,pose));
+        Assert.Same(body,ZionArmorBoxCheckpoint.CurrentBody(new[]{own,nextOwn,body},2,nextOwn,pose));
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body},0,own,pose));
+    }
 }
