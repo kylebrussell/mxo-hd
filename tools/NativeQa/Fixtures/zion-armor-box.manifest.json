@@ -1,0 +1,13 @@
+{
+  "Mode": "zion-armor-box-checkpoint",
+  "Mission": 101216,
+  "Phase": 3,
+  "RawCaseSha256": "6C1674B6AEA3F699A13D4958DDF93D315B4F696D771DF022F815C1540777CF1F",
+  "PayloadSha256": "349F3FA5F90F4323829F279271958A51CDBB1F3BEAB20A6B22AD5944C457031D",
+  "Identity": "d57dd5e3a9e9470cba8b369e6bb93eb8",
+  "Started": 1794736946,
+  "SourceProducer": "95ad004310aa92ddff1adacfd16da039f3c0c8b0",
+  "ItemsEmpty": true,
+  "CurrentMissionReceiptSeeded": false,
+  "NoPayloadEdits": true
+}

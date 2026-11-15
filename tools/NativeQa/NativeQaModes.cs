@@ -56,9 +56,11 @@ public sealed class NativeQaModePlan
 }
 
 public sealed record NativeQaBootstrapContext(string OutputDirectory, string[] HelperNames, Dictionary<string,HeadlessPlayer> Helpers,
-    ServerAddress? Server = null)
+    ServerAddress? Server = null, ThrowawayDatabase? OwnedDatabase = null, ServerInstance? ActualServer = null)
 {
     public ServerAddress Address => Server ?? new ServerAddress("127.0.0.1",11000,10000,10000);
+    public void Deconstruct(out string output,out string[] names,out Dictionary<string,HeadlessPlayer> helpers,out ServerAddress? server)
+    {output=OutputDirectory;names=HelperNames;helpers=Helpers;server=Server;}
 }
 public abstract class NativeQaMode
 {

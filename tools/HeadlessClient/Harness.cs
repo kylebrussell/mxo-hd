@@ -188,6 +188,7 @@ public sealed class ServerInstance : IDisposable
     public ServerAddress Address { get; }
     public string WorkingDirectory { get; }
     public string SourceAssemblySha256 { get; }
+    public string DatabaseName => process.StartInfo.Environment["MXO_DB_NAME"]!;
 
     private ServerInstance(Process process, ServerAddress address, string workingDirectory)
     {
