@@ -9,7 +9,7 @@ In client.dll SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f
 | TestFunction | Native selected stat | Server queued policy |
 |---|---|---|
 | 1 | 524 ranged | Existing `Attack(true)` including its established 996 convention |
-| 2 | 342 viral | General163 + capped direct342 + existing Blind penalty |
+| 2 | 342 viral | General163 + capped direct342 + OURS level-scaled1147 bonus + existing Blind penalty |
 | 3 | 522 melee | Existing `Attack(false)` exactly |
 | 4 | 1032 thrown | General163 + capped direct1032 + existing Blind penalty |
 | 6 | 1005 withdrawal | Existing `Attack(false)` fallback; withdrawal unchanged |
