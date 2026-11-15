@@ -170,6 +170,14 @@ namespace hds
                 client.playerData.missionPreview=null;client.playerData.missionPreviewFor=null;
             }
 
+            // No layout RNG is consumed between site choice and object placement. Materialize the
+            // same choices here so an unsupported bound record fails before any NPC/global mob exists.
+            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            if(prepared!=null)
+                foreach(var c in prepared.Selection.Choices)
+                    MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
+                        OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
+
             progress.site = site;
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
@@ -274,7 +282,7 @@ namespace hds
                 }
             }
 
-            if(prepared==null)PlaceObjects(client, progress, rng);
+            if(prepared==null)PlaceObjects(client, progress, objectChoices);
             else PlacePreparedObjects(client,progress,prepared);
 
             for (int i = 0; i < besideObjects.Count; i++)
@@ -363,8 +371,7 @@ namespace hds
             internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
             {Definition=definition;Spot=spot;Goid=goid;}
         }
-        // Shared exact chooser. The legacy iterator still yields between each spawn;
-        // only opt-in open-floor preflight materializes it before mutation.
+        // Shared exact chooser. Staging materializes it before publishing any phase entities.
         internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
         {
             List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
@@ -409,9 +416,16 @@ namespace hds
             }
         }
 
-        private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
+        internal static ObjectChoice[] PrepareObjectChoices(MissionPhase phase,MissionSite site,Random rng)
         {
-            foreach (ObjectChoice choice in SelectObjects(progress.Phase,progress.site,rng))
+            var choices=SelectObjects(phase,site,rng).ToArray();
+            foreach(var choice in choices)
+                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+            return choices;
+        }
+        private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
+        {
+            foreach (ObjectChoice choice in choices)
             {
                 MissionObjectDef def=choice.Definition;StaticWorldObject spot=choice.Spot;ushort goid=choice.Goid;
                 if (spot == null)
@@ -542,9 +556,7 @@ namespace hds
             ConfigureSourceBinding(obj,state);
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
-            var pose = MissionObjectPoses.For(state);
-            SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
-            SetAttribute(obj, "Orientation", pose.Orientation);
+            ApplyObjectPose(obj,state);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
             // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });
@@ -571,6 +583,13 @@ namespace hds
                 });
             }
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
+        }
+
+        internal static void ApplyObjectPose(GameObject obj,MissionObjectState state)
+        {
+            var pose=MissionObjectPoses.For(state);
+            SetAttribute(obj,"Position",NumericalUtils.doublesToLtVector3d(pose.X,pose.Y,pose.Z));
+            SetAttribute(obj,"Orientation",pose.Orientation);
         }
 
         private static void SetAttribute(GameObject obj, string name, byte[] value)
