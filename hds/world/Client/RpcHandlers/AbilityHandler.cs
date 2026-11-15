@@ -215,6 +215,7 @@ namespace hds
             }
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
+            var ghostStrike=GhostStrikeCallbacks.Capture(Store.currentClient,AbilityID,currentTargetViewId);
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
@@ -222,7 +223,9 @@ namespace hds
             else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
+            GhostStrikeCallbacks.Arm(ghostStrike);
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
+            GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -285,7 +288,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast, ghostStrike);
                 }
             }
             });
