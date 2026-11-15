@@ -1,0 +1,503 @@
+{
+  "RawProofSha256": "9DFB2646AA02EBA10DFCC218605028C40AEAA417414092D7C7B1C1100C16158B",
+  "SourceSha256": "DB5D808AF11EBBC1D607A4C7463579260FF587B881C5A23D01E584B8215418BE",
+  "State": {
+    "Version": 2,
+    "Identity": "7cae704b05d54b9ab11ffb678662c62d",
+    "Mission": 301204,
+    "Instance": 48,
+    "Started": 1794752703,
+    "Phase": 1,
+    "Kills": 2,
+    "Flags": {
+      "waitingForExit": false,
+      "entered": true,
+      "failed": false,
+      "inventoryFullNotice": false,
+      "completionNotice": false,
+      "entryItemExchanged": false,
+      "goalsCompleteSent": false,
+      "leaveNotNeeded": false
+    },
+    "Done": [
+      1
+    ],
+    "EverDone": [
+      1,
+      2
+    ],
+    "Fired": [],
+    "Arrived": [],
+    "Killed": [
+      1,
+      2
+    ],
+    "Following": [],
+    "Waves": [],
+    "PendingNpcs": [],
+    "PendingWaves": [],
+    "JustArrived": [],
+    "WavesJustArrived": [],
+    "JustSwitched": [],
+    "Sides": {},
+    "Items": {
+      "6791": 1,
+      "6855": 2,
+      "6782": 3
+    },
+    "Reserved": {},
+    "ReservedWaves": {
+      "0": [
+        [
+          40260,
+          1695,
+          11405,
+          -1
+        ],
+        [
+          40260,
+          1695,
+          10915.4853515625,
+          -1
+        ],
+        [
+          40260,
+          1695,
+          10800,
+          -1
+        ],
+        [
+          40260,
+          1695,
+          10684.5146484375,
+          -1
+        ]
+      ]
+    },
+    "NpcElapsed": {},
+    "WaveElapsed": {},
+    "GoalElapsed": {},
+    "Waypoints": [
+      {
+        "x": 40500,
+        "y": 1745,
+        "z": 10600,
+        "doorHex": "3e00e045"
+      }
+    ],
+    "Exits": [
+      [
+        40500,
+        145,
+        10600
+      ]
+    ],
+    "SiteDoors": [
+      {
+        "exterior": false,
+        "pos_x": 27800,
+        "pos_y": 1745,
+        "pos_z": 13700,
+        "rot": 1.1620496565e-05,
+        "quat": "00000000f20435bf00000000f304353f",
+        "sectorID": 209,
+        "metrId": 1,
+        "mxoStaticId": 219152412,
+        "staticId": 28,
+        "type": "owE=",
+        "strType": null
+      },
+      {
+        "exterior": false,
+        "pos_x": 40200,
+        "pos_y": 1745,
+        "pos_z": 10300,
+        "rot": 1.1620496565e-05,
+        "quat": "00000000f20435bf00000000f304353f",
+        "sectorID": 1118,
+        "metrId": 1,
+        "mxoStaticId": 1172308030,
+        "staticId": 62,
+        "type": "owE=",
+        "strType": null
+      }
+    ],
+    "Objects": [
+      {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 39095,
+          "pos_y": 1747,
+          "pos_z": 11640,
+          "rot": -1,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308091,
+          "staticId": 123,
+          "type": "RgE=",
+          "strType": null
+        },
+        "Goid": 326,
+        "Unlocked": false,
+        "State": 0
+      },
+      {
+        "Id": 2,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 41700,
+          "pos_y": 1746,
+          "pos_z": 11900,
+          "rot": 88.9999883795,
+          "quat": "00000000f204353f00000000f304353f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308011,
+          "staticId": 43,
+          "type": "ggU=",
+          "strType": null
+        },
+        "Goid": 552,
+        "Unlocked": false,
+        "State": 0,
+        "OpenFloor": {
+          "Policy": 4,
+          "World": 1,
+          "Mission": 301204,
+          "Phase": 1,
+          "ObjectId": 2,
+          "SourceKey": 1172308011,
+          "SourceGoid": 1410,
+          "ConcreteGoid": 552,
+          "RawFingerprint": "5655AAF5002F91A26016C2172D51D1F5F065018A83D33732D2CF3BC0F5223057",
+          "InputFingerprint": "932F57D310825564C3A87A0B151D5203451B6DD4DD84F40071E5CA40A405BD30",
+          "Quaternion": "00000000F30435B300000000FFFF7F3F",
+          "Centre": [
+            40496.59765625,
+            1650,
+            10651.3583984375
+          ],
+          "Standing": [
+            40536.0078125,
+            1695,
+            10651.3583984375
+          ],
+          "Route": [
+            40350.342586904524,
+            1695,
+            10732.675011609463,
+            40400,
+            1695,
+            10800,
+            40568.00390625,
+            1695,
+            10800,
+            40568.00390625,
+            1695,
+            10660,
+            40536.0078125,
+            1695,
+            10651.3583984375
+          ],
+          "Surface": [
+            1118,
+            36,
+            104
+          ],
+          "RootSurface": [
+            1118,
+            36,
+            106
+          ],
+          "RouteSurfaces": [
+            1118,
+            36,
+            106,
+            1118,
+            36,
+            94,
+            1118,
+            36,
+            106,
+            1118,
+            36,
+            104
+          ]
+        }
+      }
+    ],
+    "OpenFloorCurrentSiteIndex": 1,
+    "OpenFloorPhase": 1,
+    "OpenFloorSites": [
+      {
+        "District": 1,
+        "DoorKey": 219152412,
+        "DoorX": 27800,
+        "DoorY": 1745,
+        "DoorZ": 13700,
+        "Fingerprint": "FE1A4A0FAD5BF68CC4633B517E0E855108E109A0FAB99E2D3B5C9BC31ABCAADA"
+      },
+      {
+        "District": 1,
+        "DoorKey": 1172308030,
+        "DoorX": 40200,
+        "DoorY": 1745,
+        "DoorZ": 10300,
+        "Fingerprint": "970D854E634A4E3548B93CB0420488C97A9BB5AC79E0B575230E4B8B81337197"
+      }
+    ],
+    "ElevatorWitnesses": [
+      {
+        "Version": 1,
+        "SiteFingerprint": "970D854E634A4E3548B93CB0420488C97A9BB5AC79E0B575230E4B8B81337197",
+        "Region": 36,
+        "LobbyRegion": 40,
+        "FloorKey": 1172308030,
+        "LobbyKey": 1172308520,
+        "Floor": [
+          40500,
+          1745,
+          10600
+        ],
+        "Lobby": [
+          40500,
+          145,
+          10600
+        ],
+        "FloorQuaternion": "00000000ffff7fbf00000000f3043533",
+        "LobbyQuaternion": "00000000ffff7fbf00000000f3043533",
+        "Evidence": "original-elevator-group:45e0003e:legacy:FC1E136A4FD345BCE2165F1317653CB9081F0A50F3FE1740812BC28990A70720:selected-record:4266F4D8F3C7D6A9DE91D2A36C2BD9B830667213B58157C6FF6A8C1796238336;original-elevator-group:45e00228:legacy:2441FFC10E5E06F839CFF73532EE83F2D7F04925582ED51D7DEFF9A2FF188115:selected-record:2D39C075C8D11C044FD5C128B3CDA8FA4756FCAB8CE186093E8BF62F1B4F7D48",
+        "Sources": [
+          "{\"exterior\":false,\"pos_x\":39095,\"pos_y\":1747,\"pos_z\":11640,\"rot\":-1,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":1118,\"metrId\":1,\"mxoStaticId\":1172308091,\"staticId\":123,\"type\":\"RgE=\",\"strType\":null}",
+          "{\"exterior\":false,\"pos_x\":41700,\"pos_y\":1746,\"pos_z\":11900,\"rot\":88.9999883795,\"quat\":\"00000000f204353f00000000f304353f\",\"sectorID\":1118,\"metrId\":1,\"mxoStaticId\":1172308011,\"staticId\":43,\"type\":\"ggU=\",\"strType\":null}"
+        ]
+      }
+    ],
+    "Mobs": [
+      {
+        "Identity": "f952275ad5a84e17ac66eed880a1117a",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 0,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 1,
+        "Phase": 0,
+        "Name": "Zion Ballista",
+        "Rsi": "c9020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29150,
+        "Y": 1695,
+        "Z": 13450,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "6eaf32c9f28f477ea2b9ba85d86ea6aa",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1050,
+        "Phase": 0,
+        "Name": "Zion Soldier",
+        "Rsi": "60010058",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 2564,
+        "Rotation": 0,
+        "X": 28650,
+        "Y": 1695,
+        "Z": 13220,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "cb1989cc2e9447e99f20082484b90463",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1051,
+        "Phase": 0,
+        "Name": "Zion Soldier",
+        "Rsi": "60010058",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 2564,
+        "Rotation": 0,
+        "X": 28650,
+        "Y": 1695,
+        "Z": 13950,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "708128dbec0743afb46ee74a28f6f9f9",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1052,
+        "Phase": 0,
+        "Name": "Zion Soldier",
+        "Rsi": "60010058",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 2564,
+        "Rotation": 0,
+        "X": 27650,
+        "Y": 1695,
+        "Z": 12850,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "1c8f6c552e0249819dfa4313bc66d02b",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1053,
+        "Phase": 0,
+        "Name": "Zion Soldier",
+        "Rsi": "60010058",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 2564,
+        "Rotation": 0,
+        "X": 27980,
+        "Y": 1695,
+        "Z": 13020,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "193f7f9de3a84f77b4d1203634496501",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 0,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 2,
+        "Phase": 0,
+        "Name": "Agent",
+        "Rsi": "3600004e",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 39800,
+        "Y": 1695,
+        "Z": 11140,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "1bf53c1bd27c4102b5eae724ddf701a6",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 3,
+        "Phase": 0,
+        "Name": "Darleen Anselm",
+        "Rsi": "5a000040",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 0,
+        "Rotation": 0,
+        "X": 39684.515625,
+        "Y": 1695,
+        "Z": 11184.9912109375,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": true,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "4736b553529341b7bc564ab966070189",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 4,
+        "Phase": 0,
+        "Name": "Adrian Quay",
+        "Rsi": "38000024",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 0,
+        "Rotation": 0,
+        "X": 40140,
+        "Y": 1695,
+        "Z": 11050,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": true,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      }
+    ]
+  },
+  "ActualRoot": [
+    40350.342586904524,
+    1695,
+    10732.675011609463
+  ],
+  "OwnBirthBase64": "AQAMDAABzasViExhc3QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkEZpcnN0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgJiIEwGE0AfGAABNZXJ2Rm9sbG93dXAAAAAAAAAAAAAAAAAAAAAAAAAAAIgT6QIAAADpAwAAFgADAAAAAAAEAAAAAAAAmAi9AAAAAACa0EAAAAAAAPB+QAAAAAAA+KFAAAAyIgAAwAAQAACIABQDAAACAAA="
+}
