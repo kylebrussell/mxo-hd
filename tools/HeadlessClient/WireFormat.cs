@@ -173,9 +173,11 @@ public static class WireFormat
     /// record's start and its `cd ab` mark, then reads the attributes by the object's definition. Records of objects we
     /// have no definition for are skipped.
     /// </summary>
-    public static List<ViewCreation> FindCreations(byte[] section)
+    public sealed record CreationEvent(int Offset, int Length, ViewCreation Creation);
+    public static List<ViewCreation> FindCreations(byte[] section) => FindCreationEvents(section).Select(e => e.Creation).ToList();
+    public static List<CreationEvent> FindCreationEvents(byte[] section)
     {
-        List<ViewCreation> found = new();
+        List<CreationEvent> found = new();
         for (int i = 0; i + 8 < section.Length; i++)
         {
             if (section[i] != 0x01 || section[i + 1] != 0x00 || (section[i + 2] != 0x0c && section[i + 2] != 0x08))
@@ -199,7 +201,7 @@ public static class WireFormat
                 offset + 3 <= section.Length && section[offset + 2] == 0x00)
             {
                 ushort viewId = (ushort)(section[offset] | (section[offset + 1] << 8));
-                found.Add(new ViewCreation(viewId, goid, spawnId, attributes));
+                found.Add(new CreationEvent(i, offset + 3 - i, new ViewCreation(viewId, goid, spawnId, attributes)));
                 i = offset + 2;
             }
         }
