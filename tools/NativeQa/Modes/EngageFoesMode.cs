@@ -15,7 +15,7 @@ public sealed class EngageFoesMode:NativeQaMode
         readyMessages:new[]{"Engage Foes: QAFriend uses ordinary Block/interlock on WinterFrost (opening may deal1). CSR110 uses ordinary radial Close Combat on WinterFrost with default Speed (Block not required), then plainclick the separate Trainman3m sideways at500/500 and use Actions→Coder→Utility Technician→Engage Foes in Coder Style. Expect50IS/2s/30s and WinterFrost existing-fight diversion from QAFriend to CSR110 and WinterFrost round attribution to CSR110. Existing target-centred6m area is retained; this case proves ownership/round diversion, not radius centre. No RNG override or NPC HP/aggro injection. See docs/ABILITY-ENGAGE-FOES.md."});
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        var a=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),"QAFriend","QAFriend");context.Helpers.Add("QAFriend",a);
+        var a=await HeadlessPlayer.LoginAsync(context.Address,"QAFriend","QAFriend");context.Helpers.Add("QAFriend",a);
         await a.EnterWorldAsync();var npc=await EngageFoesFixture.BlockNpcAsync(a);
         await a.WaitUntilAsync(()=>EngageFoesFixture.CurrentNpc(a.World.CreationSnapshot(),"Trainman")!=null,"actual healthy-primary Trainman view",TimeSpan.FromSeconds(15));
         var primary=EngageFoesFixture.CurrentNpc(a.World.CreationSnapshot(),"Trainman")!;

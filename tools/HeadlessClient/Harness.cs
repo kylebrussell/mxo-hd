@@ -26,12 +26,21 @@ public sealed class ThrowawayDatabase : IDisposable
     {
         string name = Prefix + label + "_" + Guid.NewGuid().ToString("N")[..10];
         ThrowawayDatabase database = new(name);
+        try
+        {
         await RunInContainerAsync(
             "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot -e \"CREATE DATABASE \\`$1\\` CHARACTER SET latin1; " +
             "GRANT ALL PRIVILEGES ON \\`mxotest\\\\_%\\`.* TO \\`$MYSQL_USER\\`@\\`%\\`;\"", name, null);
         string schema = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "SQL", "reality_hd.sql"));
         await RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"", name, schema);
         return database;
+        }
+        catch (Exception original)
+        {
+            try { database.Dispose(); }
+            catch (Exception cleanup) { throw new AggregateException("Disposable schema setup and cleanup failed.", original, cleanup); }
+            throw;
+        }
     }
 
     /// <summary>Runs SQL as the app user, in this database. Returns tab-separated rows without a header.</summary>
@@ -178,12 +187,14 @@ public sealed class ServerInstance : IDisposable
 
     public ServerAddress Address { get; }
     public string WorkingDirectory { get; }
+    public string SourceAssemblySha256 { get; }
 
     private ServerInstance(Process process, ServerAddress address, string workingDirectory)
     {
         this.process = process;
         Address = address;
         WorkingDirectory = workingDirectory;
+        SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(SourceAssembly)));
     }
 
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,

@@ -41,6 +41,25 @@ public class EngageFoesNativeFixtureTests
         }
         finally{Directory.Delete(dir,true);}
     }
+    [Fact]public void NativeSnapshotWithoutTopLevelDataUsesTheActuallySelectedServerOutput()
+    {
+        string dir=Path.Combine(Path.GetTempPath(),"engage-snapshot-unit-"+Guid.NewGuid().ToString("N"));string snapshot=Path.Combine(dir,"snapshot"),work=Path.Combine(dir,"owned");
+        string outputDir=Path.Combine(snapshot,"hds","bin","Debug","net8.0");Directory.CreateDirectory(Path.Combine(outputDir,"data"));
+        try
+        {
+            File.WriteAllBytes(Path.Combine(outputDir,"hds.dll"),new byte[]{1});File.WriteAllText(Path.Combine(outputDir,"hds.runtimeconfig.json"),"{}");File.Copy(Path.Combine(Root(),"data","mob_just_some_and_winter.csv"),Path.Combine(outputDir,"data","mob_just_some_and_winter.csv"));
+            string selected=(string)typeof(ServerInstance).GetMethod("FindServerDll",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.Invoke(null,new object[]{snapshot})!;
+            Assert.Equal(Path.Combine(outputDir,"hds.dll"),selected);Assert.False(Directory.Exists(Path.Combine(snapshot,"data")));
+            string proof=EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(selected)!,work,"mxotest_snapshot_unit",EngageFoesFixture.Environment)!;
+            using var manifest=JsonDocument.Parse(File.ReadAllText(proof));Assert.Equal(Path.Combine(outputDir,"data","mob_just_some_and_winter.csv"),manifest.RootElement.GetProperty("Source").GetString());
+            Assert.True(File.Exists(Path.Combine(work,"data","mob_just_some_and_winter.csv")));
+        }
+        finally
+        {
+            if(!Path.GetFullPath(dir).StartsWith(Path.Combine(Path.GetTempPath(),"engage-snapshot-unit-"),StringComparison.OrdinalIgnoreCase))throw new InvalidOperationException("Unsafe owned test cleanup");
+            Directory.Delete(dir,true);
+        }
+    }
     private static ViewCreation Npc(ushort view,double x,double y,double z,bool enemy=true,ushort health=500)=>new(view,599,1,new Dictionary<string,byte[]>{
         ["Position"]=BitConverter.GetBytes(x).Concat(BitConverter.GetBytes(y)).Concat(BitConverter.GetBytes(z)).ToArray(),["Health"]=BitConverter.GetBytes(health),["IsEnemy"]=new[]{(byte)(enemy?1:0)}});
     [Fact]public void RecipientsComeFromLatestActualPosesAndIndependentSixMetreGeometry()
