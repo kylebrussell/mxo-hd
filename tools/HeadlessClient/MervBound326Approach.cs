@@ -27,11 +27,13 @@ public static class MervBound326Approach
         uint key;try{var bytes=Convert.FromHexString(state.Waypoints[0].doorHex);if(bytes.Length!=4)throw new FormatException();key=BitConverter.ToUInt32(bytes);}catch(Exception e)when(e is FormatException or ArgumentNullException){throw new InvalidDataException("Invalid current door key",e);}
         int index=state.Version==2?state.OpenFloorCurrentSiteIndex??-1:state.SiteDoors.Length-1;
         if(index<0||index>=state.SiteDoors.Length||state.SiteDoors[index]?.mxoStaticId!=key||state.SiteDoors[index].metrId!=1||!new ushort[]{417,419}.Contains(MissionSites.Goid(state.SiteDoors[index])))throw new InvalidDataException("Wrong current raw site door");
+        void RequireRawFloor()
+        {var raw=state.SiteDoors[index];if(!new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z}.SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z}))throw new InvalidDataException("Nonlegacy floor pose lacks measured witness");}
         bool adopted=state.OpenFloorPhase==state.Phase||state.Objects.Any(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid);
         if(state.Version==1)
         {
             if(state.ElevatorWitnesses!=null||state.OpenFloorSites!=null||state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorLegacyPhase.HasValue||adopted)throw new InvalidDataException("Legacy state carries measured metadata");
-            return ProofScope.Legacy;
+            RequireRawFloor();return ProofScope.Legacy;
         }
         if(state.Version!=2||state.OpenFloorSites==null||index>=state.OpenFloorSites.Length)throw new InvalidDataException("Missing current selected site");
         var site=state.OpenFloorSites[index];var raw=state.SiteDoors[index];
@@ -50,9 +52,15 @@ public static class MervBound326Approach
             }
         }
         var current=witnesses.Where(w=>w.SiteFingerprint==site.Fingerprint).ToArray();if(current.Length>1)throw new InvalidDataException("Duplicate current measured witnesses");
-        if(current.Length==0){if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");return ProofScope.Legacy;}
+        if(current.Length==0){if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");RequireRawFloor();return ProofScope.Legacy;}
         var w=current[0];if(w.FloorKey!=key||!w.Floor.SequenceEqual(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!w.Lobby.SequenceEqual(state.Exits[0])||w.LobbyKey==0)throw new InvalidDataException("Current measured witness differs from selected door");
         return ProofScope.Measured;
+    }
+    public static void RequireLegacy(MissionProgress.SavedState state,Arrival? latest)
+    {
+        if(Classify(state)!=ProofScope.Legacy)throw new InvalidDataException("Measured state cannot enter legacy branch");
+        if(latest?.VerifiedMeasured==true&&latest.Mission==state.Mission&&latest.Phase==state.Phase&&latest.Instance==state.Instance&&latest.Identity==state.Identity&&latest.Started==state.Started)
+            throw new InvalidDataException("Verified current measured arrival cannot downgrade to legacy");
     }
     public static Arrival Capture(MissionProgress.SavedState state,double[] root,NavLocation nav,OwnViewLifeSnapshot life,bool verifiedMeasured=false)
     {

@@ -59,4 +59,25 @@ public class MervBound326ScopeTests
         Assert.Throws<InvalidDataException>(()=>MervBound326Approach.RequireScope(s,1,arrival,log.Snapshot()));
         Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Capture(State(true),arrival.Root,new(){sector=1120,region=26,floorY=2000},log.Snapshot(),true));
     }
+    [Fact] public void StrippingEveryAdoptionMarkerCannotBlessCorrectedCoordinatesAsLegacy()
+    {
+        var s=State(false);s.ElevatorWitnesses=null!;s.OpenFloorPhase=null;s.Objects=s.Objects.Where(o=>o.Goid==326).ToList();
+        Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Classify(s));
+        s.Version=1;s.OpenFloorSites=null!;s.OpenFloorCurrentSiteIndex=null;s.OpenFloorLegacyPhase=null;
+        Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Classify(s));
+    }
+    [Fact] public void RewritingToRawAfterVerifiedMeasuredArrivalCannotDowngradeTheSameAcceptancePhase()
+    {
+        var s=State(false);using var doc=JsonDocument.Parse(File.ReadAllText(Path.Combine(Repo,"tests/hds.Tests/Fixtures/MervBound326-4e46e554.json")));
+        byte[] own=doc.RootElement.GetProperty("OwnBirthBase64").GetBytesFromBase64();var log=new OwnViewLifeLog();log.Observe(false,own,0,WireFormat.FindCreations(own));
+        var verified=MervBound326Approach.Capture(s,new[]{40350.342586904524,1695,10732.675011609463},new(){sector=1118,region=36,polygon=106,floorY=1600},log.Snapshot(),true);
+        s.ElevatorWitnesses=null!;s.OpenFloorPhase=null;s.Objects=s.Objects.Where(o=>o.Goid==326).ToList();var raw=s.SiteDoors[s.OpenFloorCurrentSiteIndex!.Value];s.Waypoints[0].x=raw.pos_x;s.Waypoints[0].y=raw.pos_y;s.Waypoints[0].z=raw.pos_z;
+        Assert.Equal(MervBound326Approach.ProofScope.Legacy,MervBound326Approach.Classify(s));
+        Assert.Throws<InvalidDataException>(()=>MervBound326Approach.RequireLegacy(s,verified));
+        // A different acceptance/phase is historical evidence, not a current measured proof.
+        MervBound326Approach.RequireLegacy(s,verified with{Phase=verified.Phase-1});
+        MervBound326Approach.RequireLegacy(s,verified with{Identity=new string('c',32)});
+        MervBound326Approach.RequireLegacy(s,null);
+    }
+
 }
