@@ -4,6 +4,16 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class ViralAccuracyConsumerTests
 {
+    [Fact]
+    public void RegisteredScenarioActuallyCapturesItsNpcAndScopedDrawEnvironment()
+    {
+        var scenario=HeadlessClient.Scenarios.All.Single(s=>s.Name=="viral-accuracy-bonus");
+        Assert.NotNull(scenario.Environment);
+        Assert.Equal("test",scenario.Environment["MXO_MOBS"]);
+        Assert.Equal("0",scenario.Environment["MXO_AGGRO"]);
+        Assert.Equal("17000",scenario.Environment["MXO_FREECAST_VIRAL_QA_ATTACK15"]);
+        Assert.Equal("17000",scenario.Environment["MXO_FREECAST_VIRAL_QA_DEFENSE15"]);
+    }
     static WorldClient Client(byte level)
     {
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static readonly IReadOnlyDictionary<string,string> ViralAccuracyBonusEnvironment=new Dictionary<string,string>(FreeCastViralEnvironment(true))
+    private static IReadOnlyDictionary<string,string> ViralAccuracyBonusEnvironment()=>new Dictionary<string,string>(FreeCastViralEnvironment(true))
     {
         ["MXO_FREECAST_VIRAL_QA_ATTACK15"]="17000",["MXO_FREECAST_VIRAL_QA_DEFENSE15"]="17000"
     };
