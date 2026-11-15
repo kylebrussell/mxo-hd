@@ -196,8 +196,7 @@ public static partial class Scenarios
         ViewCreation? Current()
         {
             if(owned.OpenFloor!=null)return ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),owned,saved.Instance);
-            var scope=MervAfterCurrentBoundBody.Capture(saved,(ushort)id);
-            try{return MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,MervFollowupCheckpoint(context,p).GetAwaiter().GetResult()).View;}catch(InvalidDataException){return null;}
+            try{var current=MervFollowupCheckpoint(context,p).GetAwaiter().GetResult();var scope=MervAfterCurrentBoundBody.CaptureAfterApproach(saved,current,(ushort)id);return MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,current).View;}catch(InvalidDataException){return null;}
         }
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
         var after=await MervFollowupCheckpoint(context,p);

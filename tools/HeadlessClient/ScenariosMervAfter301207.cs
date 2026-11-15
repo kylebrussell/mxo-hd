@@ -115,8 +115,9 @@ public static partial class Scenarios
             var view=await MervFollowupObject(context,p,id,start,evidence);
             if(owned.OpenFloor!=null)return view;
             // Native bound sources use their actual source binding/current life, never a fabricated free witness.
-            var scope=MervAfterCurrentBoundBody.Capture(checkpoint,(ushort)id);
-            var current=MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,await Saved());
+            var afterApproach=await Saved();Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,afterApproach),"Object approach keeps accepted owner");
+            var scope=MervAfterCurrentBoundBody.CaptureAfterApproach(checkpoint,afterApproach,(ushort)id);
+            var current=MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,afterApproach);
             evidence.Add(new{Step=step,Operation="current-bound-body",Scope=scope,Observed=current});return current.View;
         }
         Exception? scenarioFailure=null;

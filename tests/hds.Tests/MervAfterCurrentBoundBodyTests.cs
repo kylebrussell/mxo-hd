@@ -22,7 +22,19 @@ public sealed class MervAfterCurrentBoundBodyTests
     static byte[] Delete(ushort view=9)=>new byte[]{1,0,1,1,0}.Concat(BitConverter.GetBytes(view)).ToArray();
     static OwnViewLifeSnapshot Stream(params byte[][] sections){var log=new OwnViewLifeLog();for(int i=0;i<sections.Length;i++)log.Observe(false,sections[i],i,WireFormat.FindCreations(sections[i]));return log.Snapshot();}
     static MervAfterCurrentBoundBody.Result Observe(params byte[][] sections){var s=State();return MervAfterCurrentBoundBody.Require(Stream(sections),MervAfterCurrentBoundBody.Capture(s,1),s);}
-    [Theory][InlineData(1)][InlineData(2)]public void NativeBoundPresentationRemainsBoundAcrossSupportedCheckpointVersions(int version)
+    [Fact]public void BoundApproachRefreshRequiresSameOwnerSourceAndSiteButUsesCommittedEnteredFlag()
+    {
+        var before=State();before.Flags["entered"]=false;var after=State();
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentBoundBody.Capture(before,1));
+        var scope=MervAfterCurrentBoundBody.CaptureAfterApproach(before,after,1);
+        Assert.Equal(Source,MervAfterCurrentBoundBody.Require(Stream(Own(),Birth()),scope,after).StaticBinding);
+        foreach(var change in new[]{"phase","owner","source","entered"})
+        {
+            after=State();switch(change){case "phase":after.Phase++;break;case "owner":after.Identity=new string('c',32);break;
+            case "source":after.Objects[0].Spot.pos_x++;break;case "entered":after.Flags["entered"]=false;break;}
+            Assert.Throws<InvalidDataException>(()=>MervAfterCurrentBoundBody.CaptureAfterApproach(before,after,1));
+        }
+    }    [Theory][InlineData(1)][InlineData(2)]public void NativeBoundPresentationRemainsBoundAcrossSupportedCheckpointVersions(int version)
     {
         var state=State();state.Version=version;string raw=System.Text.Json.JsonSerializer.Serialize(state,new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
         var current=MervAfterCurrentBoundBody.Require(Stream(Own(),Birth()),MervAfterCurrentBoundBody.Capture(state,1),state);

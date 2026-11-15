@@ -30,7 +30,8 @@ public static class MervAfterCurrentNpc
             before.Mobs.Single(m=>m.Npc==npc).Identity!=current.Mobs.Single(m=>m.Npc==npc).Identity)
             throw new InvalidDataException("NPC approach changed accepted phase or actor UUID");
         return Capture(current,npc);
-    }    public static Scope Capture(MissionProgress.SavedState state,ushort npc)
+    }
+    public static Scope Capture(MissionProgress.SavedState state,ushort npc)
     {
         var actor=Owned(state,npc);
         return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,npc,

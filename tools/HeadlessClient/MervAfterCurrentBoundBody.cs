@@ -28,6 +28,13 @@ public static class MervAfterCurrentBoundBody
             throw new InvalidDataException("Current bound native source required; missing free witness is never admissible");
         _=Convert.FromHexString(o.Spot.quat);return o;
     }
+    public static Scope CaptureAfterApproach(MissionProgress.SavedState before,MissionProgress.SavedState current,ushort id)
+    {
+        if(before.Mission!=current.Mission||before.Phase!=current.Phase||before.Instance!=current.Instance||before.Identity!=current.Identity||
+            before.Started!=current.Started||Site(before)!=Site(current)||Descriptor(before.Objects.Single(o=>o.Id==id))!=Descriptor(current.Objects.Single(o=>o.Id==id)))
+            throw new InvalidDataException("Bound approach changed accepted phase/source/site");
+        return Capture(current,id);
+    }
     public static Scope Capture(MissionProgress.SavedState state,ushort id)
     {var o=Bound(state,id);return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,id,Descriptor(o),Site(state));}
 
