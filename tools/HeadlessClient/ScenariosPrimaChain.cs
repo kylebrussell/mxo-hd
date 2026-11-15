@@ -193,7 +193,9 @@ public static partial class Scenarios
                                 {
                                     int observed=p.World.CreationSnapshot().Count;
                                     var saved=await ZionNextFiveCheckpoint(context,p);
-                                    var targets=ZionNextFiveFixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,saved,id,phase)
+                                    diagnostics!.Note(new{Kind="Current hostile creation cursor",Mission=id,Phase=phase,CreationCursor=viewsStart,CurrentCreationCount=p.World.CreationSnapshot().Count,
+                                        SavedStage=saved.Phase,SavedActors=saved.Mobs.Select(m=>new{m.Npc,WirePhase=m.Phase,m.Friendly,m.Dead,m.Health,m.X,m.Y,m.Z}).ToArray()});
+                                    var targets=ZionNextFiveFixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,saved,id,phase,mission)
                                         .Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToArray();
                                     if(Done(number))break;
                                     if(targets.Length==0)

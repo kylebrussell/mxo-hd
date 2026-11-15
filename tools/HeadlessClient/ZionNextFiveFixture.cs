@@ -41,16 +41,38 @@ public static class ZionNextFiveFixture
             // Friendly mission actors omit IsEnemy and publish DontAttack=1 (Mob.toObject).
             return (!present||side![0]==0)&&v.Attributes.TryGetValue("DontAttack",out var safe)&&safe.Length==1&&safe[0]==1;
         }
-        return views.Skip(cursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Goid==599&&v.Name==mob.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
+        int ownLife=0;for(int i=0;i<views.Count;i++)if(views[i].ViewId==2)ownLife=i+1;
+        return views.Skip(Math.Max(cursor,ownLife)).GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Goid==599&&v.Name==mob.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
             Math.Abs(BitConverter.ToDouble(pos)-mob.X)<1&&Math.Abs(BitConverter.ToDouble(pos,8)-mob.Y)<1&&Math.Abs(BitConverter.ToDouble(pos,16)-mob.Z)<1&&
             Side(v));
     }
-    public static IReadOnlyList<ViewCreation> CurrentHostiles(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedState saved,int mission,int phase)
+    public static IReadOnlyDictionary<ushort,byte> HostileWirePhases(System.Xml.Linq.XElement definition,int mission,int phase)
+    {
+        var xml=new System.Xml.XmlDocument();xml.LoadXml(definition.ToString());var parsed=hds.MissionXml.Parse(xml.DocumentElement!);
+        if(parsed.id!=mission||phase<0||phase>=parsed.phases.Count)throw new InvalidDataException("Wrong authored current hostile mission/phase");
+        // MissionNpc.phase is the authored MissionKey byte, independent of its at/stage (MissionXml.ParseNpc).
+        var result=parsed.npcs.Where(n=>n.at==0||n.at==phase+1).ToDictionary(n=>n.id,n=>n.phase);
+        var area=parsed.phases[phase];int count=checked(area.enemies+area.waves.Sum(w=>w.count));
+        if(area.enemies<0||area.waves.Any(w=>w.count<0)||count>=50)throw new InvalidDataException("Generated hostile count leaves its current-stage ID domain");
+        // SpawnWave uses1000+(phaseIndex+1)*50+progress.hostiles.Count and leaves MissionNpc.phase at0.
+        int start=checked(1000+(phase+1)*50);
+        for(int i=0;i<count;i++)
+        {
+            ushort id=checked((ushort)(start+i));if(result.ContainsKey(id))throw new InvalidDataException("Authored/generated hostile identity collision");
+            result.Add(id,0);
+        }
+        return result;
+    }
+    public static IReadOnlyList<ViewCreation> CurrentHostiles(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedState saved,int mission,int phase,System.Xml.Linq.XElement definition)
     {
         if(saved.Mission!=mission||saved.Phase!=phase)throw new InvalidDataException("Wrong current hostile mission/phase");
-        return saved.Mobs.Where(m=>m.Phase==phase&&!m.Friendly&&!m.Dead&&m.Health>0)
-            .Select(m=>CurrentNpc(views,cursor,m)).Where(v=>v!=null&&(!v.Attributes.TryGetValue("IsDead",out var dead)||dead.Length==1&&dead[0]==0))
-            .Select(v=>v!).DistinctBy(v=>(v.ViewId,v.SpawnId)).ToArray();
+        var expected=HostileWirePhases(definition,mission,phase);
+        bool OwnerKey(ViewCreation view,hds.MissionProgress.SavedMob mob)=>!view.Attributes.TryGetValue("MissionKey",out var key)||
+            key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==saved.Instance&&key[3]==2;
+        return saved.Mobs.Where(m=>expected.TryGetValue(m.Npc,out byte wirePhase)&&m.Phase==wirePhase&&!m.Friendly&&!m.Dead&&m.Health>0)
+            .Select(m=>(Mob:m,View:CurrentNpc(views,cursor,m))).Where(pair=>pair.View!=null&&OwnerKey(pair.View,pair.Mob)&&
+                (!pair.View.Attributes.TryGetValue("IsDead",out var dead)||dead.Length==1&&dead[0]==0))
+            .Select(pair=>pair.View!).DistinctBy(v=>(v.ViewId,v.SpawnId)).ToArray();
     }
     public static uint DoorAt(IEnumerable<string> rows,double[] pose)
     {

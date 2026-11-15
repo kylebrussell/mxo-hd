@@ -115,15 +115,16 @@ public class ZionNextFiveTests
     }
     [Fact] public void ReusedViewCannotResurrectHistoricalNpcAndDefeatAllRequiresCurrentSavedHostile()
     {
-        var mob=new MissionProgress.SavedMob{Name="Enemy",X=1,Y=95,Z=2,Friendly=false,Hostile=false,Health=100,Phase=1};
+        var mob=new MissionProgress.SavedMob{Name="Enemy",X=1,Y=95,Z=2,Friendly=false,Hostile=false,Health=100,Phase=0,Npc=1100};
         ViewCreation Body(string name,byte spawn,double x=1)=>new(42,599,spawn,new Dictionary<string,byte[]>{{"CharacterName",System.Text.Encoding.UTF8.GetBytes(name+"\0")},{"IsEnemy",new byte[]{1}},{"Position",BitConverter.GetBytes(x).Concat(BitConverter.GetBytes(95d)).Concat(BitConverter.GetBytes(2d)).ToArray()}});
         var original=Body("Enemy",1);var reused=Body("Other",2);
         Assert.Null(ZionNextFiveFixture.CurrentNpc(new[]{original,reused},0,mob));
         var state=new MissionProgress.SavedState{Mission=101209,Phase=1,Mobs=new(){mob}};
-        Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused},0,state,101209,1));
-        var actual=Body("Enemy",3);Assert.Same(actual,Assert.Single(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused,actual},0,state,101209,1)));
-        foreach(var change in new Action[]{()=>mob.Friendly=true,()=>{mob.Friendly=false;mob.Dead=true;},()=>{mob.Dead=false;mob.Health=0;},()=>{mob.Health=100;mob.Phase=0;}})
-        {change();Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101209,1));}
-        Assert.Throws<InvalidDataException>(()=>ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101208,1));
+        var definition=System.Xml.Linq.XElement.Parse("<mission id='101209' title='Hostiles'><phase/><phase enemies='1'/></mission>");
+        Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused},0,state,101209,1,definition));
+        var actual=Body("Enemy",3);Assert.Same(actual,Assert.Single(ZionNextFiveFixture.CurrentHostiles(new[]{original,reused,actual},0,state,101209,1,definition)));
+        foreach(var change in new Action[]{()=>mob.Friendly=true,()=>{mob.Friendly=false;mob.Dead=true;},()=>{mob.Dead=false;mob.Health=0;},()=>{mob.Health=100;mob.Phase=1;}})
+        {change();Assert.Empty(ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101209,1,definition));}
+        Assert.Throws<InvalidDataException>(()=>ZionNextFiveFixture.CurrentHostiles(new[]{actual},0,state,101208,1,definition));
     }
 }
