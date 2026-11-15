@@ -227,6 +227,7 @@ namespace hds
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
             GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
             var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
+            var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -290,7 +291,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,ghostStrike:ghostStrike);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
                 }
             }
             });
