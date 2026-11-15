@@ -37,6 +37,14 @@ public class DisturbingTrendsTests
         item.State=2401;Assert.Equal(fixedPlacement,DisturbingTrendsFixture.FixedDescriptor(item));
         item.Goid=548;Assert.NotEqual(fixedPlacement,DisturbingTrendsFixture.FixedDescriptor(item));
     }
+    [Fact] public void AuthoredStageIsIndependentOfTheNpcMissionKeyPhaseByte()
+    {
+        var state=new MissionProgress.SavedState{Mission=201201,Phase=1,Mobs=new(){
+            new(){Npc=1,Phase=0,Health=100},new(){Npc=2,Phase=0,Health=100},new(){Npc=3,Phase=0,Health=100},new(){Npc=4,Phase=0,Health=100},new(){Npc=5,Phase=0,Health=100}}};
+        Assert.Equal(new ushort[]{2,3,4,5},DisturbingTrendsFixture.StageNpcs(state,Load()).Select(m=>m.Npc));
+        state.Phase=2;state.Mobs.Add(new(){Npc=6,Phase=0,Health=100});
+        Assert.Equal((ushort)6,Assert.Single(DisturbingTrendsFixture.StageNpcs(state,Load())).Npc);
+    }
     [Fact] public void DoorLookupUsesExactCurrentPoseAndRejectsAmbiguity()
     {
         string Row(string key,string x)=>"1,0,"+key+",0,A301,0,"+x+",495,2300,0,0";

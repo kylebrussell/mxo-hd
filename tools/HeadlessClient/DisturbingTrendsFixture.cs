@@ -19,6 +19,12 @@ public static class DisturbingTrendsFixture
         if(root.Count!=3||root.Any(v=>!double.IsFinite(v)||!float.IsFinite((float)v)))throw new ArgumentException("Invalid published root");
         return new byte[]{2,0,1,8}.Concat(root.SelectMany(v=>BitConverter.GetBytes((float)v))).Concat(new byte[]{0,0}).ToArray();
     }
+    // SavedMob.Phase is the authored MissionKey wire byte, independent of the active mission stage.
+    public static hds.MissionProgress.SavedMob[] StageNpcs(hds.MissionProgress.SavedState state,hds.Mission authored)
+    {
+        var definitions=authored.npcs.Where(n=>n.at==state.Phase+1).ToArray();
+        return definitions.Select(n=>state.Mobs.Single(m=>m.Npc==n.id&&!m.Dead&&m.Health>0)).ToArray();
+    }
     public static ViewCreation? CurrentNpc(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedMob mob,int phase,int instance)
     {
         if(cursor<0||cursor>views.Count||mob.Phase!=phase||mob.Dead||mob.Health==0)return null;

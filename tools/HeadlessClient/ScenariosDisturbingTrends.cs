@@ -8,6 +8,8 @@ public static partial class Scenarios
 {
     private static async Task MachinesDisturbingTrends(ScenarioContext context)
     {
+        var definitionDocument=new System.Xml.XmlDocument();definitionDocument.Load(Path.Combine(context.RepositoryRoot,"data","missions","machines_1_2_1_disturbing_trends.xml"));
+        var authored=MissionXml.Parse(definitionDocument.DocumentElement!);
         var p=await context.AddPlayerAsync(DisturbingTrendsFixture.BeforeMargin(new CharacterSeed("DisturbingTrends"){Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=2,
             X=17000,Y=495,Z=2300,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,CompletedMissions=DisturbingTrendsFixture.Prerequisites}));
         uint id=p.CharId;string handle=p.Handle,step="world-entry";Exception? primary=null;var checkpoints=new List<object>();var sessions=new List<object>();var npcs=new List<object>();
@@ -57,9 +59,10 @@ public static partial class Scenarios
         }
         async Task<ViewCreation> Ophiuchi(int number)
         {
-            var state=await Saved();var mob=state.Mobs.Single(m=>m.Npc==number&&m.Phase==state.Phase&&!m.Dead);
+            var state=await Saved();var npcDefinition=authored.npcs.Single(n=>n.id==number);Check.Equal(state.Phase+1,npcDefinition.at,"Requested authored NPC belongs to current stage");
+            var mob=DisturbingTrendsFixture.StageNpcs(state,authored).Single(m=>m.Npc==number);
             await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
-            ViewCreation? Current()=>DisturbingTrendsFixture.CurrentNpc(p.World.CreationSnapshot(),0,mob,state.Phase,state.Instance);
+            ViewCreation? Current()=>DisturbingTrendsFixture.CurrentNpc(p.World.CreationSnapshot(),0,mob,mob.Phase,state.Instance);
             await p.WaitUntilAsync(()=>Current()!=null,"Exact current Ophiuchi pose/side/phase",TimeSpan.FromSeconds(15));
             var v=Current()!;npcs.Add(new{Definition=number,Step=step,Source=mob,v.ViewId,v.SpawnId,v.Name,Attributes=v.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});return v;
         }
@@ -87,13 +90,13 @@ public static partial class Scenarios
             Check.That(NavMesh.Locate(1,witness.Standing[0],witness.Standing[1],witness.Standing[2],out var standingNav),"Published standing point is on the actual NAV floor");
             Check.Equal(standingNav.floorY+95,witness.Standing[1],"Actual standing height");
             Check.That(NavMesh.Locate(1,witness.Route[0],witness.Route[1],witness.Route[2],out var rootNav)&&rootNav.indoors,"Ride root is inside actual NAV");
-            foreach(var mob in before.Mobs.Where(m=>m.Phase==1&&!m.Dead))
+            foreach(var mob in DisturbingTrendsFixture.StageNpcs(before,authored))
             {
                 Check.That(NavMesh.Locate(1,mob.X,mob.Y,mob.Z,out var nav),"Admitted NPC actual NAV: "+mob.Name);
                 Check.Equal(nav.floorY+95,mob.Y,"NPC actual standing height");
                 Check.That(nav.indoors&&nav.sector==rootNav.sector&&nav.region==rootNav.region,"NPC shares actual root interior: "+mob.Name);
                 await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
-                ViewCreation? Current()=>DisturbingTrendsFixture.CurrentNpc(p.World.CreationSnapshot(),creationStart,mob,before.Phase,before.Instance);
+                ViewCreation? Current()=>DisturbingTrendsFixture.CurrentNpc(p.World.CreationSnapshot(),creationStart,mob,mob.Phase,before.Instance);
                 await p.WaitUntilAsync(()=>Current()!=null,"Actual admitted NPC creation: "+mob.Name,TimeSpan.FromSeconds(15));
                 var view=Current()!;
                 npcs.Add(new{Step=step,Source=mob,Nav=nav,view.ViewId,view.SpawnId,Attributes=view.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});
