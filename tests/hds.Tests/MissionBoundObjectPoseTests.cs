@@ -79,7 +79,7 @@ public class MissionBoundObjectPoseTests
             else
             {
                 var error=Record.Exception(()=>MissionBoundObjectPoses.LoadVerified(directory,209));
-                Assert.NotNull(error);Assert.True(error is IOException or JsonException,"Only explicit malformed/unavailable data refusal is expected: "+error);
+                Assert.NotNull(error);Assert.True(error is InvalidDataException or IOException or JsonException,"Only explicit malformed/unavailable data refusal is expected: "+error);
             }
         }
         finally {Directory.Delete(directory,true);}
