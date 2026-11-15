@@ -24,7 +24,7 @@ Original1111 has no stored RequiresTool, explicit CastValidTarget0, and Discipli
 
 Discovered mode/headless filter: `sneak-scaled-grant`. Real prerequisite closure2/113/130/143/151/185 costs17/100 memory at character50. The native fixture sets only its already owned151 to learned17 before Margin;1111/1112 are never seeded. The test NPC list's nearest authored row is8405.94 units from17000/495/2300, beyond the unchanged maximum2300 detection range. Aggro/wander are disabled and disclosed; no detection rule or random result is overridden. `MXO_MOBS=none` is not used: that setting would load the whole world.
 
-The proposed normal-wire case uses character50/learned2,17,50 owners, actual base/membership/209 records, ordinary151 unload/reload and normal logout/relog with33s reservation cleanup. It records typed archive ownership, parser/source/raw packet evidence and no hidden archive acquisition. It requires the exact source pin `MXO_SNEAK_GRANT_SOURCE_SHA256`. A0.6s interrequest gap exceeds the existing0.5s duplicate-use guard; no cast/reuse timer is shortened. The mode's inherited/no-op hook must also be executed on an authenticated disposable server when separately granted; neither local source nor a plan is that proof.
+The normal-wire case uses character50/learned2,17,50 owners, actual base/membership/209 records, ordinary151 unload/reload and normal logout/relog with33s reservation cleanup. It records typed archive ownership, parser/source/raw packet evidence and no hidden archive acquisition. It requires the exact source pin `MXO_SNEAK_GRANT_SOURCE_SHA256`. A0.6s interrequest gap exceeds the existing0.5s duplicate-use guard; no cast/reuse timer is shortened. The separately granted actual mode bootstrap executed its inherited/no-op hook on an authenticated disposable server; results follow below.
 
 ## Claude-only one pass
 
@@ -34,4 +34,20 @@ The proposed normal-wire case uses character50/learned2,17,50 owners, actual bas
 4. Quit/relog normally, then inspect and activate again without a reload-first workaround. Hidden1111 must not become an owned archive row. No mission/reward claim is involved.
 5. Perform the standard CSR110 reset to Mara/full health/pvp0/mission986 and release the native lock. Claude alone controls the real client, lock, main reset and merge.
 
-Source checkpoint only: builds, focused/full tests, normal-wire execution, actual mode bootstrap and native observations are pending coordinator grants. No READY/native claim is made.
+## Validation and producer attribution
+
+Frozen producer `7c7eceaae28b613ed377596c182dba43461dcc2d` is based on master c305. It passed195 focused tests (4s), the full5703-test Release suite (1m53s), actual NativeQa Debug/Release builds (19.85s/3.40s), both configurations' mode/default/loaded-grant plans and build-info, and exact-one headless discovery. The later publication tree mechanically merges native-validated master426ca4cc and this proof text; it has no new local gameplay/full-build claim. The separate175 tool relation was not imported, and the historical25 zero-relation manifest is unchanged.
+
+Exactly ONE normal-wire case passed73.5s/exit0. Character50 owners learned2/17/50 received matching bases/memberships and actual on-use Type15 Stealth209 values2/17/50. Membership remains Type45. Ordinary151 unload/reload removed/re-added17; normal logout,33s reservation cleanup and same-character relog restored17 without a reload workaround. All four sessions had0 parser problems. Actual archive rows remained the six real parents, with no1111; XP296082500/cash1000 remained unchanged. Exact schema `mxotest_run_1_27a9a7935e` independently counted0, and all9 recorded canonical-UTC process identities were gone, including driver29548/server57672.
+
+Exactly ONE actual authenticated mode bootstrap passed17.38s/exit0: inherited/no-op hook,0 helpers and state serialization. It was not a gameplay replay or an all-mode runtime matrix. Exact schema `mxotest_bootstrap_853c862af1` independently counted0; all8 recorded identities were gone, including driver38544/server43180. Process creation strings were captured in memory and reloaded with `ConvertFrom-Json -DateKind String`.
+
+Both earlier failures remain retained:24e's test declaration CS0819 (no tests ran), and406bd's194-pass/1-fail real-encoder check exposing the QA active-stat decoder's wrong Type45 assumption. The correction reads actual on-use Type15 while retaining separate grant-membership Type45; runtime production code was unchanged by those corrections.
+
+Producer pins:
+
+- Actual newest Debug hds: `E5D2472F58CA816660E8AB82959D77AEA882D74A21E59C6F6C524B811207FE58`
+- Release driver: `702482CF2D6E93D0F040DDE796CE6D92F48BED34CAA6ACEE553166271C9340A2`
+- Release NativeQa: `B1F1CED9067EA6B9B4CA42822528A655F592B5D3051095FE9C150D40E676D672`
+
+Local complete proof is `Temp/mxo-sneak-grant-primary-20261115/final-7c7eceaa-proof.json` (SHA256 `9d026de2efbb7deb5506b5b4c893e558afc1419fecaac23a4c86413472a93e4d`). Wire raw JSON SHA256 is `50d95b6381d70aedcc7827835060738bbb5dfe64dde726af2659c7e0582cb310`; each run retains a raw-hashes manifest and independent exact cleanup record. Native Actions listing, native activation and complete stealth parity remain unproved. Coordinator review and new-head green CI control readiness; Claude alone performs native QA/merge.
