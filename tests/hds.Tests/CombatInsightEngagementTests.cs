@@ -38,6 +38,7 @@ public class CombatInsightEngagementTests
         {
             Source.playerData.combatTactic=CombatTactic.Power;Target.playerData.combatTactic=CombatTactic.Speed;
             View=Source.viewMan.addView(Target.playerData.getEntityId(),12);View.viewCreated=true;View.spawnId=7;
+            AbilityPassives.SetLoaded(Source,new (ushort,ushort)[]{(2,50)});
             AbilityPassives.SetLoaded(Target,new (ushort,ushort)[]{(2,50),(217,50),(49,50)});
             Assert.True(AbilityBuffs.Apply(Target,217));
         }
@@ -58,6 +59,7 @@ public class CombatInsightEngagementTests
     [Fact]public void RealLoaded113AndStored49ProduceTheFourBeforeAfterScores()
     {
         using var f=new Fixture();
+        int unchangedAccuracy=AbilityStats.Player(f.Source,522);
         Assert.False(CombatInsightEngagement.Allows(f.Source,f.Target,f.Handle,out var before));Assert.Equal(100,before.Force);
         AbilityPassives.SetLoaded(f.Source,new (ushort,ushort)[]{(2,50),(113,50)});
         Assert.Equal(10,AbilityStats.Player(f.Source,1048));
@@ -67,7 +69,7 @@ public class CombatInsightEngagementTests
         f.Source.playerData.combatTactic=CombatTactic.Grab;
         Assert.True(CombatInsightEngagement.Allows(f.Source,f.Target,f.Handle,out var grabbed));Assert.Equal(220,grabbed.Force);
         //The consumer never turns1048 into an attack/defence stat.
-        Assert.Equal(0,AbilityStats.Player(f.Source,519));Assert.Equal(0,AbilityStats.Player(f.Source,522));
+        Assert.Equal(0,AbilityStats.Player(f.Source,519));Assert.Equal(unchangedAccuracy,AbilityStats.Player(f.Source,522));
     }
 
     [Fact]public void Positive520NeverRecreatesRemovedOrSuppressed217()
