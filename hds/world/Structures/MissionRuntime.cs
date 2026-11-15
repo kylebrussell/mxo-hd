@@ -47,7 +47,14 @@ namespace hds
                 StartCore(client,progress.mission,transaction,progress,plan);return true;
             },true);
 
-        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null)
+        internal static bool StartNpcInterior(WorldClient client,MissionProgress progress,MissionNpcInteriorAdmission.Plan plan,ushort transaction) =>
+            MissionPersistence.Mutate(client,()=>
+            {
+                if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;
+                StartCore(client,progress.mission,transaction,progress,null,plan);plan.RequirePublished(client);return true;
+            },true);
+
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null,MissionNpcInteriorAdmission.Plan npcPrepared=null)
         {
             lock (client.playerData.missionSync)
             {
@@ -74,10 +81,12 @@ namespace hds
                     }
                 }
 
-                if(prepared==null)MissionStaging.Stage(client, progress);
+                if(npcPrepared!=null)MissionStaging.StageNpcPrepared(client,progress,npcPrepared);
+                else if(prepared==null)MissionStaging.Stage(client, progress);
                 else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
                 SendPhase(client, progress);
                 EnsureTimer();
+                if(npcPrepared!=null)npcPrepared.RequirePublished(client);
                 MissionPersistence.Save(client);
             }
         }
@@ -958,7 +967,7 @@ namespace hds
                 Mob mob;
                 if (npc.arrival.at == null && progress.reservedSpots.TryGetValue(npc.id, out double[] spot))
                 {
-                    mob = SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2], level, friendly);
+                    mob = SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2], level, friendly,placement:MissionNpcInteriorAdmission.ActorPoint(progress,"Npc",npc.id,0,spot));
                 }
                 else if (npc.arrival.at == null && placedByData)
                 {
@@ -1440,7 +1449,7 @@ namespace hds
                     Finish(client, progress);
                     return;
                 }
-                MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                MissionOpenFloorAdmission.Plan openFloorPlan=null;MissionNpcInteriorAdmission.Plan npcPlan=null;
                 if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
                 {
                     if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
@@ -1464,14 +1473,33 @@ namespace hds
                         if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
                     }
                 }
+                else if(MissionNpcInteriorAdmission.Candidate(progress.mission.phases[progress.phaseIndex+1]))
+                {
+                    bool prepared=MissionNpcInteriorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,out npcPlan,out string refusal);
+                    if(npcPlan==null||!npcPlan.BeforeCurrent(client))return;
+                    if(npcPlan.Pending!=null)
+                    {
+                        // Same accepted owner only: preserve current phase/items while making the exact choice durable.
+                        progress.npcInteriorPending=npcPlan.Pending;MissionPersistence.Save(client);
+                        if(!MissionNpcInteriorAdmission.PendingDurable(client.playerData,npcPlan.Pending)||!npcPlan.BeforeCurrent(client))return;
+                    }
+                    if(!prepared){Output.WriteDebugLog("[MISSION] NPC next-phase refused: "+refusal);return;}
+                }
                 if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
+                if(npcPlan!=null&&!npcPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
                 progress.pendingOpenFloor=null;
                 Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                if(openFloorPlan==null)MissionStaging.Stage(client, progress);
+                if(npcPlan!=null)
+                {
+                    npcPlan.RequireStaging(client);MissionStaging.StageNpcPrepared(client,progress,npcPlan);npcPlan.RequirePublished(client);progress.npcInteriorPending=null;
+                }
+                else if(openFloorPlan==null)MissionStaging.Stage(client, progress);
                 else {if(openFloorPlan.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,openFloorPlan);}
                 SendPhase(client, progress);
+
+                if(npcPlan!=null)npcPlan.RequirePublished(client);
 
                 return;
             }
@@ -1698,6 +1726,9 @@ namespace hds
             double sx = double.IsNaN(x) ? npc.x : x;
             double sy = double.IsNaN(y) ? npc.y : y;
             double sz = double.IsNaN(z) ? npc.z : z;
+            var certifiedNpc=MissionNpcInteriorAdmission.Current(client.playerData.missionProgress);
+            if(!placement.HasValue&&certifiedNpc!=null&&certifiedNpc.Selection.Actors.Any(a=>a.Kind=="Npc"&&a.Id==npc.id))
+                placement=MissionNpcInteriorAdmission.ActorPoint(client.playerData.missionProgress,"Npc",npc.id,0,new[]{sx,sy,sz});
             NavPoint onFloor;
             if (placement.HasValue) onFloor = placement.Value;
             else if (!MissionPlacement.ForSpawn(client, sx, sy, sz, npc.arrival.AtPlayer && !sideChange, out onFloor,

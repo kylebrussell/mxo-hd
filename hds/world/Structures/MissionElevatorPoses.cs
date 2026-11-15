@@ -70,6 +70,7 @@ namespace hds
         internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw,MissionElevatorAnchors.Dataset dataset=null)
         {
             if(progress==null||raw==null)return new Overlay(OverlayKind.Legacy);
+            var npc=MissionNpcInteriorAdmission.Overlay(progress,raw);if(npc!=null)return npc;
             Overlay resolved=null;
             foreach(var site in progress.sites)
             {
@@ -115,17 +116,35 @@ namespace hds
                 if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
                 var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw,dataset);
                 if(!ReferenceEquals(client.playerData,owner)||!ReferenceEquals(owner.missionProgress,progress))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorProgress");
+                if(snapshot.Kind!=OverlayKind.Refused&&MissionNpcInteriorAdmission.OwnsDoor(progress,raw))
+                {
+                    var stamp=new MissionRideStamp(client,progress);
+                    if(!stamp.Current)return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorLifetime");
+                    if(MissionOutput.Buffered(client.messageQueue))
+                    {
+                        if(!stamp.BindOutput())return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorOutput");
+                        publish(snapshot);stamp.RequireCurrent();return snapshot;
+                    }
+                    using(var output=MissionOutput.Begin(client.messageQueue))
+                    {
+                        if(!stamp.BindOutput())return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorOutput");
+                        publish(snapshot);stamp.RequireCurrent();output.Commit();client.FlushQueue();return snapshot;
+                    }
+                }
                 if(snapshot.Kind!=OverlayKind.Refused)publish(snapshot);
                 return snapshot;
             }
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,StaticWorldObject used)
         {
+            if(MissionNpcInteriorAdmission.ForSite(progress,site)!=null)return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
             if(progress.ElevatorFor(site)==null)return MissionSites.InShaft(site,used);
             return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,double x,double z)
         {
+            var npc=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npc!=null)return new[]{npc.Floor.Position,npc.Lobby.Position}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
             var witness=progress.ElevatorFor(site);if(witness==null)return MissionSites.InShaft(site,x,z);
             // Preserve the existing900-unit threshold, measured from the witnessed doors.
             return new[]{witness.Floor,witness.Lobby}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
