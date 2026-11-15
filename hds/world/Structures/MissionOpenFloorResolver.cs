@@ -497,7 +497,9 @@ namespace hds
             string key=Hash(new{World=world,Start=start.Identity,Surfaces=surfaces.OrderBy(s=>s.Identity).ToArray()});
             return topologyCache.GetOrAdd(key,_=>new Lazy<Surface[]>(()=>
             {
-                var all=surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();
+                // Every portal edge already requires this equivalence class. Other rooms
+                // cannot join the component, and need not participate in its pair scan.
+                var all=surfaces.Where(s=>s.Flat&&s.FloorC==start.FloorC&&SameSpace(start,s)&&Convex(s.Vertices)).OrderBy(s=>s.Identity).ToArray();
                 var found=new HashSet<Id>{start.Identity};var queue=new Queue<Surface>();queue.Enqueue(start);
                 while(queue.Count>0){var current=queue.Dequeue();foreach(var surface in all)if(!found.Contains(surface.Identity)&&Portal(current,surface).HasValue){found.Add(surface.Identity);queue.Enqueue(surface);}}
                 return all.Where(s=>found.Contains(s.Identity)).ToArray();
