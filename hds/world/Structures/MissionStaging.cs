@@ -135,8 +135,12 @@ namespace hds
         // The original chooser, factored once. Preview clearing belongs to successful Stage, not failed admission.
         internal static SiteSelection ChooseSite(WorldClient client,MissionProgress progress,int phaseIndex)
         {
-            var mission=progress.mission;var phase=mission.phases[phaseIndex];int at=phaseIndex+1;
             double px=0,py=0,pz=0;NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
+            return ChooseSiteAt(client,progress,phaseIndex,px,pz);
+        }
+        private static SiteSelection ChooseSiteAt(WorldClient client,MissionProgress progress,int phaseIndex,double px,double pz)
+        {
+            var mission=progress.mission;var phase=mission.phases[phaseIndex];int at=phaseIndex+1;
             var rng=LayoutRandom(mission.id,phaseIndex,unchecked((int)client.playerData.getCharID()*7919+mission.id*31+at+(int)progress.startedAt));
             List<MissionSite> sites=MissionSites.For(mission.district);
             var site=phaseIndex==0&&client.playerData.missionPreviewFor==mission?client.playerData.missionPreview:null;
@@ -157,6 +161,8 @@ namespace hds
                 return false;
             }
 
+            double px=0,py=0,pz=0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
             int at = progress.phaseIndex + 1;
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
@@ -165,7 +171,7 @@ namespace hds
             if(prepared==null)
             {
                 if(npcPrepared!=null)npcPrepared.RequireStaging(client);
-                var selected=npcPrepared?.Selected??ChooseSite(client,progress,progress.phaseIndex);rng=selected.Random;site=selected.Site;
+                var selected=npcPrepared?.Selected??ChooseSiteAt(client,progress,progress.phaseIndex,px,pz);rng=selected.Random;site=selected.Site;
                 client.playerData.missionPreview = null;
                 client.playerData.missionPreviewFor = null;
                 if (site == null)
