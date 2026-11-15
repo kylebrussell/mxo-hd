@@ -5,6 +5,21 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using NativeQa;
 
+// Reject mistyped inspection flags before even resolving a fixture mode or creating a path.
+if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
+{
+    Console.WriteLine("NativeQa --fixture-plan [mode] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
+    Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids]");
+    return;
+}
+if (args.Length > 0 && args[0].StartsWith('-') &&
+    args[0] != "--fixture-plan" && args[0] != "--build-info" && args[0] != "--bootstrap-checks")
+{
+    Console.Error.WriteLine("Unknown NativeQa option: " + args[0] + ". Use --help for supported commands.");
+    Environment.ExitCode = 2;
+    return;
+}
+
 #if DEBUG
 const string configuration = "Debug";
 #else
@@ -44,6 +59,12 @@ if (args.Length > 0 && args[0] == "--build-info")
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
 var fixtureMode=NativeQaModes.RequireKnown(args.Length > 3 ? args[3] : "");
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
+if (!File.Exists(Path.Combine(root,"SQL","reality_hd.sql")))
+{
+    Console.Error.WriteLine("NativeQa repository must contain SQL/reality_hd.sql: " + root);
+    Environment.ExitCode = 2;
+    return;
+}
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
 // Optional fifth argument keeps a focused native checklist small enough to avoid legacy UI scrolling.
