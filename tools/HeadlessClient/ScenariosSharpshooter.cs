@@ -16,12 +16,7 @@ public static partial class Scenarios
         try
         {
             foreach(var p in players)await PvpOpponentsFixture.EnterAsync(p);
-            async Task Equip(HeadlessPlayer p)
-            {
-                p.SkipReceived();p.SendRpc("63 0a 69");await p.WaitForRpcAsync("65 0a 00 69 00 00");
-                Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot=105 AND goid=537"),"Owned normal pistol equip SQL");
-            }
-            await Equip(shooter);await Equip(gun);shooter.SendRpc("3f 69 00 10 00 00 00");
+            await SharpshooterFixture.EquipPistol(shooter,context.Database);await SharpshooterFixture.EquipPistol(gun,context.Database);shooter.SendRpc("3f 69 00 10 00 00 00");
             string parents=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={shooter.CharId} AND ability_id<>2147635200 ORDER BY slot,id");
             async Task Loaded(bool on)
             {

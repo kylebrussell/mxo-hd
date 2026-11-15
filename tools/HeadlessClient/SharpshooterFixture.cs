@@ -15,6 +15,13 @@ public static class SharpshooterFixture
         OwnedLoadedAbilities=(shooter?Abilities:new ushort[]{2,17}).Select(id=>(id,(ushort)50)).ToArray(),
         Items=shooter||gun?new[]{(10,Pistol,1)}:Array.Empty<(int,uint,int)>()
     };
+    public static async Task<byte[]> EquipPistol(HeadlessPlayer player,ThrowawayDatabase database)
+    {
+        player.SkipReceived();player.SendRpc("63 0a 69");var reply=await player.WaitForRpcAsync("65 0a 00 69 00 00");
+        Check.Equal(1L,await database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND slot=105 AND goid=537"),"Owned normal pistol equip SQL");
+        Check.Equal(0L,await database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND slot=10"),"Normal equip moved the owned bag item");
+        return reply.Bytes;
+    }
     public sealed record Input(byte Class,bool DefenderGun,string Metres,int Opponents,bool CountSampled,bool Loaded,int Modifier,int Before,int After);
     public static Input? ReadInput(string line,string actor)
     {
