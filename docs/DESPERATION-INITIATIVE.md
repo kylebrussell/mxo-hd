@@ -16,3 +16,11 @@ Use mode `desperation-initiative`, CSR_Tester110 only, normal client lock/reset 
 4. Optional lower-health control after the real cooldown, or a fresh fixture: use `?health` to set half the current maximum, cast normally and expect a50-point snapshot. Do not claim native turn-order or retail chance parity.
 
 Headless case `desperation-initiative` checks a normal half-health cast, the read-only before/after diagnostic, actual ordinary PvP interlock consumption and natural expiry. Unit tests cover the real producer/cap/unload, health snapshot stability, escape exclusion, unchanged free-fire accuracy and identical isolated roll sequences. Native rendering and NPC live consumption remain separate from that PvP proof.
+
+## Qualified results
+
+Runtime539a442a and test-only childb2580f1e passed80 focused tests and5912 full Release tests. Debug/Release builds, exact-one case discovery and the actual mode plan passed. The first full run had5911 passes and one fixture-scope failure: its old assertion allowed health hold only for the earlier Desperation profile. The corrected assertion includes the two dedicated profiles and keeps every other profile excluded; gameplay was unchanged.
+
+One normal-wire case passed39.3s with held exit0. Actual half-health cast produced Initiative+50; current interlock input changed0→50, and the isolated seed731 diagnostic changed716→881 hits/1000. Ordinary PvP rounds used that input with no live RNG override. Natural20s expiry restored input0 and716/1000; ordinary paired withdrawal ended the fight. Both parsers were clean. The raw proof is `Temp/mxo-desperation-initiative-mxotest_run_1_230e10bb3b.json`; exact schema count0 and all seven recorded process identities gone.
+
+The actual `desperation-initiative` mode bootstrap passed separately against its own seeded server and inherited no-op hook. It checks startup/authentication/state serialization, not native gameplay. Schema37d77a5d8e count0 and all seven recorded identities gone. Raw retained proof and binaries are associated with `Temp/mxo-desperation-initiative-consumer-20261115`; process observation is sampled. The audit review bundle is generated externally; no historical coverage snapshot is committed.
