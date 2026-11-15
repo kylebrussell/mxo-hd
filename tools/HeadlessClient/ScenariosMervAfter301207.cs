@@ -173,7 +173,7 @@ public static partial class Scenarios
                     var beforeRows=await ItemRows(6827);var ownedBefore=MervAfterProgressProof.RequireOwnedItem(beforeRows,p.CharId,6827,before.Items[6827]);
                     evidence.Add(new{Step=step,Operation="actual-owned-parts-before-logout",Rows=beforeRows,Owned=ownedBefore});
                     string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
-                    var account=await Account();Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();var carryWait=System.Diagnostics.Stopwatch.StartNew();await Task.Delay(TimeSpan.FromSeconds(33));double carryWaitSeconds=carryWait.Elapsed.TotalSeconds;
+                    var account=await Account();Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();var partsCarryWait=System.Diagnostics.Stopwatch.StartNew();await Task.Delay(TimeSpan.FromSeconds(33));double partsCarryWaitSeconds=partsCarryWait.Elapsed.TotalSeconds;
                     p=await HeadlessPlayer.LoginAsync(context.Server.Address,username,handle);sessions.Add(p);await p.EnterWorldAsync();p.SendRpc("0c 01");p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
                     CaptureRestoredBaselines();var after=await Saved();Check.Equal(before.Identity,after.Identity,"Carry identity survives relog");Check.Equal(before.Started,after.Started,"Carry Started survives relog");
                     Check.Equal(before.Mission,after.Mission,"Selected carry mission survives relog");
@@ -182,7 +182,7 @@ public static partial class Scenarios
                     Check.That(MervAfterProgressProof.Owns(acceptance!,after),"Restored carry retains actual acceptance instance too");
                     var afterRows=await ItemRows(6827);var ownedAfter=MervAfterProgressProof.RequireOwnedItem(afterRows,p.CharId,6827,after.Items[6827]);
                     Check.Equal(ownedBefore,ownedAfter,"Actual inventory character/item/slot/count survives relog");
-                    evidence.Add(new{Step=step,Operation="actual-owned-parts-after-login",WaitSeconds=carryWaitSeconds,Rows=afterRows,Owned=ownedAfter});
+                    evidence.Add(new{Step=step,Operation="actual-owned-parts-after-login",WaitSeconds=partsCarryWaitSeconds,Rows=afterRows,Owned=ownedAfter});
                     Check.Equal(System.Text.Json.JsonSerializer.Serialize(before.Objects,fields),System.Text.Json.JsonSerializer.Serialize(after.Objects,fields),"Admitted fixed witnesses survive relog");
                     await Barrier();End();
                     carryRelogged=true;rpcStart=0;viewsStart=0;sectionsStart=0;listStart=0;ends=0;
