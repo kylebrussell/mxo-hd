@@ -384,6 +384,7 @@ namespace hds
                     else
                     {
                         bool dispatched=sendPacket(encryptedData);
+                        if(dispatched)thePacket.RecordDispatchedObjectReceipts(messageQueue);
                         if(dispatched && ScaleDiagnostics.Enabled)
                         {
                             foreach(var message in thePacket.RPCMessages)message.RecordScaleFirstSend(false);
@@ -433,6 +434,7 @@ namespace hds
 
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
+            messageQueue.ObserveObjectReceipts(ackSeq,playerData.getPss());
             // First identify which messages needs to be deleted from queue
             ArrayList ackedObjectMessages = new ArrayList();
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
@@ -607,7 +609,8 @@ namespace hds
                                 ts.TotalMilliseconds.ToString(), "DECRYPT");
                         }
 
-                        protocolManager.Parse(encrypted, processedPacket);
+                        using(MissionProxyIntroduction.Incoming(this,encrypted && (processedPacket[0]&0x40)==0))
+                            protocolManager.Parse(encrypted, processedPacket);
                         FlushQueue();
                     }
                 }
