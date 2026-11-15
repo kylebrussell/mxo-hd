@@ -35,6 +35,7 @@ public static partial class Scenarios
             await p.WaitForRpcAsync("80 bd 05 57 04 00 00 00 00 00 01");
             var active=p.World.RpcSnapshot().Skip(cursor).Select(r=>Convert.ToHexString(r.Bytes)).ToArray();
             Check.Equal(1,p.World.RpcSnapshot().Skip(cursor).Count(r=>SneakScaledGrantFixture.Stealth209(r.Bytes,level)),"One sourced209 activation record");
+            await Task.Delay(TimeSpan.FromSeconds(AbilityHandler.DuplicateAbilityWindowSeconds+.1));
             p.SkipReceived();Cast(p,1111);await p.WaitForRpcAsync("80 bd 05 57 04 00 00 00 00 00 00");
             await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(cursor).Any(r=>SneakScaledGrantFixture.Stealth209(r.Bytes,level,true)),"Actual209 removal keeps sourced snapshot",TimeSpan.FromSeconds(15));
             proofs.Add(new{Stage=stage,p.CharId,CharacterLevel=50,LearnedLevel=level,ActualActivationRpcs=active});
