@@ -1,7 +1,7 @@
 """Primary counted interior topology and GO-specific door evidence. No runtime adoption.
 Explicit world/sector selection; original ordinals survive missing resources. See docs/MISSION-NPC-MEASURED-ELEVATORS.md.
 """
-import argparse, collections, csv, gzip, hashlib, itertools, json, struct, sys
+import argparse, collections, csv, gzip, hashlib, itertools, json, re, struct, sys
 from pathlib import Path
 import mission_open_floor_world_bounds as B
 
@@ -19,7 +19,16 @@ def export(tools, world, sectors, output):
     parents = {x['sector']: x for x in B.M.read_metr(str(metr), include_resource_refs=True)}
     files = sorted(Path('data').glob('staticObjects_' + ('slums' if world == 1 else 'dt') + '_*.csv'))
     legacy = collections.defaultdict(list)
-    family = {19, 343, 346, 417, 419}
+    # Same typed class catalog used by MissionInteriorDoorTypes; independent original-GOB proof guards drift.
+    repository = Path(__file__).resolve().parents[2]
+    catalog = repository / 'hds/resources/gameobjects/definitions/GameObjectDefinitions.cs'
+    doors = {int(value) for value in re.findall(r'public AttributeClass364 Object(\d+)\s*=', catalog.read_text())}
+    proof = json.loads((repository / 'tests/hds.Tests/Fixtures/Class364DoorContracts.json').read_text())
+    if proof['SourceGobSha256'].lower() != B.GOB_SHA256.lower() or doors != {r['Goid'] for r in proof['Rows']}:
+        raise ValueError('Class364 catalog disagrees with original GOB')
+    if any(r['Fields'].get('OpenUsage/ClientRuleID') != 4004 or r['Fields'].get('OpenUsage/ExecuteRuleID') != 4004 or r['Fields'].get('OpenUsage/Defaultable') != 1 for r in proof['Rows']):
+        raise ValueError('Unsupported class364 ordinary Open contract')
+    family = {19, 417, 419} | doors
     for f in files:
         for line, row in enumerate(csv.DictReader(f.open()), 2):
             sector = int(row['sector_id']); goid = int.from_bytes(bytes.fromhex(row['type']), 'little')
@@ -82,7 +91,7 @@ def export(tools, world, sectors, output):
             (x,z),(tx,tz)=link['Endpoints']; dx,dz=tx-x,tz-z
             for key, occurrences in native.items():
                 for o in occurrences:
-                    if o['Goid'] not in (343,346,417,419) or o['Region'] not in (link['SourceRegion'],link['TargetRegion']): continue
+                    if o['Goid'] not in (doors | {417,419}) or o['Region'] not in (link['SourceRegion'],link['TargetRegion']): continue
                     px,pz=o['Position'][0],o['Position'][2]
                     if (px-x)*dz==(pz-z)*dx and min(x,tx)<=px<=max(x,tx) and min(z,tz)<=pz<=max(z,tz):link['DoorKeys'].append(key)
             link['DoorKeys']=sorted(set(link['DoorKeys']))
@@ -92,9 +101,10 @@ def export(tools, world, sectors, output):
         payload=encode(doc); path=output/(str(sector)+'.json.gz')
         with path.open('wb') as f:
             with gzip.GzipFile(filename='',mode='wb',fileobj=f,mtime=0) as gz:gz.write(payload)
-        manifest.append(dict(Sector=sector,Sha256=digest(path.read_bytes()),Regions=len(regions),Portals=len(portals),Groups=len(groups)))
+        manifest.append(dict(Sector=sector,Digest=digest(payload).upper(),Sha256=digest(path.read_bytes()),Regions=len(regions),Portals=len(portals),Groups=len(groups)))
     (output/'manifest.json').write_text(json.dumps(dict(Format=1,World=world,ClientSha256=B.CLIENT_SHA256,GobSha256=B.GOB_SHA256,
         MetrSha256=digest(metr.read_bytes()),TransformSha256=digest(Path(B.T.__file__).read_bytes()),
+        DoorCatalog=dict(Class=364,Goids=sorted(doors),Source='hds/resources/gameobjects/definitions/GameObjectDefinitions.cs'),
         LegacyFiles=[dict(File=str(f).replace('\\','/'),Sha256=digest(f.read_bytes())) for f in files],Sectors=manifest),indent=2)+'\n')
     return manifest
 

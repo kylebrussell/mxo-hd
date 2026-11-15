@@ -44,9 +44,12 @@ namespace hds
             public int SidiBufferOffset { get; set; } public int SidiBufferLength { get; set; } public string NavSha256 { get; set; }
             public Region[] Regions { get; set; } public Portal[] Portals { get; set; } public Group[] Groups { get; set; }
         }
-        internal sealed class Declaration { public ushort Sector { get; set; } public string Sha256 { get; set; } public int Regions { get; set; } public int Portals { get; set; } public int Groups { get; set; } }
+        internal sealed class Declaration { public ushort Sector { get; set; } public string Digest { get; set; } public string Sha256 { get; set; } public int Regions { get; set; } public int Portals { get; set; } public int Groups { get; set; } }
         internal sealed class Manifest { public int Format { get; set; } public ushort World { get; set; } public Declaration[] Sectors { get; set; } }
-        internal const string ManifestSha256 = "DD15FBEEE0B0359245EB4147C772FEE926E8257759ABE019A797EA3EA3FED8F4";
+        internal const string ManifestSha256 = "671D26F7CEB09121CF73B00AAC414303640F0040A313ADFD71FC732F8B270D1A";
+        internal sealed class HistoricalDeclaration { public ushort Sector { get; set; } public string Digest { get; set; } public string Sha256 { get; set; } public string File { get; set; } }
+        internal sealed class HistoricalManifest { public int Format { get; set; } public ushort World { get; set; } public HistoricalDeclaration[] Versions { get; set; } }
+        internal const string HistoricalManifestSha256 = "CD560A7631E49D76823ACE2DD872C0559FF549FCF271F5DFFC88C84CB697D79A";
         private readonly Document document;
         private readonly Dictionary<ushort, Region> regions;
         private readonly Dictionary<uint, Group> groups;
@@ -85,7 +88,7 @@ namespace hds
         { document = doc; Digest = digest; regions = doc.Regions.ToDictionary(r => r.Id); groups = doc.Groups.ToDictionary(g => g.Key); Validate(); }
         private static bool Hex(string s, int n) => s != null && s.Length == n && s.All(Uri.IsHexDigit);
         private static bool Vector(double[] a, int n) => a != null && a.Length == n && a.All(double.IsFinite);
-        private static bool Family(ushort g) => g == 19 || g == 343 || g == 346 || g == 417 || g == 419;
+        private static bool Family(ushort g) => g == 19 || MissionInteriorDoorTypes.IsSupported(g) || g == 417 || g == 419;
         private static bool Quaternion(string q) => Hex(q, 32) && Enumerable.Range(0, 4).All(i => float.IsFinite(BitConverter.ToSingle(Convert.FromHexString(q), i * 4)));
         private static void Require(bool valid, string why) { if (!valid) throw new InvalidDataException(why); }
         private static G.Position Point(double[] a) => new G.Position(a[0], a[1], a[2]);
@@ -210,6 +213,31 @@ namespace hds
             Require(index.document.Regions.Length == row.Regions && index.document.Portals.Length == row.Portals && index.document.Groups.Length == row.Groups, "InteriorEvidenceManifestCounts");
             return index;
         }
+        internal static MissionInteriorEvidence LoadForDigest(string directory, ushort world, ushort sector, string digest)
+        {
+            Require(Hex(digest,64), "InvalidSavedInteriorDigest");
+            Manifest active = null;
+            try { active = AuditedManifest(directory,world); }
+            catch(Exception ex) when(ex is IOException || ex is InvalidDataException || ex is UnauthorizedAccessException || ex is JsonException) { }
+            Declaration current = active?.Sectors.SingleOrDefault(s => s.Sector == sector);
+            if(current != null && string.Equals(current.Digest,digest,StringComparison.OrdinalIgnoreCase))
+            {
+                MissionInteriorEvidence index = LoadAudited(directory,world,sector);
+                Require(index.Digest.Equals(digest,StringComparison.OrdinalIgnoreCase),"SavedInteriorActiveDigestMismatch"); return index;
+            }
+            string history = Path.Combine(directory,"history");
+            byte[] bytes = File.ReadAllBytes(Path.Combine(history,"manifest.json"));
+            string normalized = new UTF8Encoding(false,true).GetString(bytes).Replace("\r\n","\n");
+            Require(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).Equals(HistoricalManifestSha256,StringComparison.OrdinalIgnoreCase),"HistoricalInteriorManifestHash");
+            HistoricalManifest manifest = JsonSerializer.Deserialize<HistoricalManifest>(bytes);
+            Require(manifest != null && manifest.Format == 1 && manifest.World == world && manifest.Versions != null && manifest.Versions.All(v => v != null && Hex(v.Digest,64) && Hex(v.Sha256,64)) &&
+                manifest.Versions.Select(v=>v.Sector+":"+v.Digest.ToUpperInvariant()).Distinct().Count()==manifest.Versions.Length,"HistoricalInteriorManifestIdentity");
+            HistoricalDeclaration row = manifest.Versions.SingleOrDefault(v=>v.Sector==sector&&v.Digest.Equals(digest,StringComparison.OrdinalIgnoreCase));
+            Require(row != null,"UnknownSavedInteriorDigest");
+            string expected = sector+"-"+digest.ToUpperInvariant()+".json.gz";Require(row.File==expected,"HistoricalInteriorFilename");
+            MissionInteriorEvidence saved = LoadVerified(File.ReadAllBytes(Path.Combine(history,expected)),row.Sha256,world,sector);
+            Require(saved.Digest.Equals(digest,StringComparison.OrdinalIgnoreCase),"HistoricalInteriorDigestMismatch");return saved;
+        }
         private bool Raw(StaticWorldObject raw, out Group group)
         {
             group = null;
@@ -229,7 +257,7 @@ namespace hds
             pose = null;
             if (!Position(raw, out Group group, out _, out refusal)) return false;
             ushort goid = MissionSites.Goid(raw);
-            if (goid != 343 && goid != 346) { refusal = "UnsupportedInteriorWoodDoorType"; return false; }
+            if (!MissionInteriorDoorTypes.IsSupported(goid)) { refusal = "UnsupportedInteriorWoodDoorType"; return false; }
             Occurrence[] own = group.Occurrences.Where(o => o.Goid == goid).ToArray();
             if (own.Length == 0 || own.Any(o => o.Quaternion != own[0].Quaternion)) { refusal = "AmbiguousOwnGoidDoorOrientation"; return false; }
             if (own.Any(o => !Available(o.Region))) { refusal = "MissingOwnGoidDoorPrefabEvidence"; return false; }

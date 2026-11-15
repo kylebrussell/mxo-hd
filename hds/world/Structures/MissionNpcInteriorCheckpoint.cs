@@ -94,7 +94,7 @@ namespace hds
             foreach (MissionNpcInteriorDoor door in witness.Doors)
             {
                 StaticWorldObject raw = MissionNpcInteriorPlanning.ReadRaw(door.RawDoorJson);
-                Require(Vector(door.Position, 3) && Quaternion(door.Quaternion) && (door.Goid == 343 || door.Goid == 346) && MissionNpcInteriorPlanning.RawShape(raw, p.mission.district, site.elevatorDoor.sectorID, door.Goid) && raw.mxoStaticId == door.Key, "NpcWitnessOwnGoidDoor");
+                Require(Vector(door.Position, 3) && Quaternion(door.Quaternion) && MissionInteriorDoorTypes.IsSupported(door.Goid) && MissionNpcInteriorPlanning.RawShape(raw, p.mission.district, site.elevatorDoor.sectorID, door.Goid) && raw.mxoStaticId == door.Key, "NpcWitnessOwnGoidDoor");
             }
         }
         internal static MissionNpcInteriorEnvelope PrepareRestore(MissionProgress p, MissionProgress.SavedState state, IReadOnlyList<MissionSite> catalog)
@@ -153,7 +153,7 @@ namespace hds
         private static void Geometry(MissionProgress p, MissionNpcInteriorWitness witness, IMissionNpcInteriorEvidenceProvider provider)
         {
             StaticWorldObject floorRaw = MissionNpcInteriorPlanning.ReadRaw(witness.Floor.RawDoorJson), lobbyRaw = MissionNpcInteriorPlanning.ReadRaw(witness.Lobby.RawDoorJson);
-            E floor = provider.Evidence(p.mission.district, floorRaw.sectorID), lobby = provider.Evidence(p.mission.district, lobbyRaw.sectorID);
+            E floor = provider.SavedEvidence(p.mission.district, floorRaw.sectorID,witness.Floor.EvidenceDigest), lobby = provider.SavedEvidence(p.mission.district, lobbyRaw.sectorID,witness.Lobby.EvidenceDigest);
             E.Entry entry = SavedEntry(floor, witness.Floor); SavedEntry(lobby, witness.Lobby);
             StaticWorldObject[] markers = provider.Markers(p.mission.district, floorRaw.sectorID); Dictionary<uint, MissionNpcInteriorDoor> expectedDoors = new Dictionary<uint, MissionNpcInteriorDoor>();
             for (int i = 0; i < witness.Selection.Actors.Length; i++)
@@ -178,7 +178,7 @@ namespace hds
                 Geometry(p, witness, provider);
                 StaticWorldObject expectedRaw = MissionNpcInteriorPlanning.ReadRaw(entry != null ? entry.RawDoorJson : wood.RawDoorJson);
                 Require(raw.metrId == expectedRaw.metrId && raw.sectorID == expectedRaw.sectorID && raw.mxoStaticId == expectedRaw.mxoStaticId && MissionSites.Goid(raw) == MissionSites.Goid(expectedRaw), "ChangedNpcDoorRawIdentityOrGoid");
-                E index = provider.Evidence(expectedRaw.metrId, expectedRaw.sectorID);
+                E index = provider.SavedEvidence(expectedRaw.metrId, expectedRaw.sectorID,entry != null ? entry.EvidenceDigest : witness.Floor.EvidenceDigest);
                 if (entry != null) SavedEntry(index, entry, raw);
                 else
                 {

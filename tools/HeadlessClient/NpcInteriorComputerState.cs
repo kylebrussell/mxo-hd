@@ -7,7 +7,7 @@ public static class NpcInteriorComputerState
     public sealed record Observation(Capability Capability,uint State);
     public sealed record DoorObservation(ViewCreation View,Capability Capability,uint State);
     public sealed record Teleport(long Life,int Section,int Offset,byte Id,ushort Sector,ushort Region,ushort Polygon,float X,float Y,float Z,string Raw);
-    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||new ushort[]{343,346,417,419}.Contains(goid);
+    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||(MissionInteriorDoorTypes.IsSupported(goid)||goid==417||goid==419);
     sealed class Live
     {
         public required ViewCreation View;public required string Raw;public int Birth;public uint State;public bool Known=true;
@@ -78,7 +78,7 @@ public static class NpcInteriorComputerState
     }
     public static DoorObservation CurrentDoor(OwnViewLifeSnapshot stream,MissionNpcInteriorProof.Door expected)
     {
-        if(!new ushort[]{343,346,417,419}.Contains(expected.Goid)||expected.Position.Length!=3||expected.Position.Any(v=>!double.IsFinite(v)))throw new InvalidDataException("Expected certified door schema/pose");
+        if(!(MissionInteriorDoorTypes.IsSupported(expected.Goid)||expected.Goid==417||expected.Goid==419)||expected.Position.Length!=3||expected.Position.Any(v=>!double.IsFinite(v)))throw new InvalidDataException("Expected certified door schema/pose");
         var matches=Reduce(stream).Values.Where(v=>v.View.RelatedStaticObjectId==expected.Key).ToArray();
         if(matches.Length!=1||!matches[0].Known)throw new InvalidDataException("Missing/ambiguous/deleted/reused current door key");var chosen=matches[0];var view=chosen.View;
         if(chosen.State!=0x834||view.Goid!=expected.Goid||!view.Attributes.TryGetValue("Position",out var pos)||pos.Length!=24||Enumerable.Range(0,3).Any(i=>BitConverter.ToDouble(pos,i*8)!=expected.Position[i])||

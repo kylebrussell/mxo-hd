@@ -11,6 +11,7 @@ namespace hds
     internal interface IMissionNpcInteriorEvidenceProvider
     {
         E Evidence(ushort world, ushort sector);
+        E SavedEvidence(ushort world, ushort sector, string digest) => Evidence(world,sector);
         StaticWorldObject[] Markers(ushort world, ushort sector);
         StaticWorldObject Door(ushort world, uint key);
         MissionOpenFloorEntry.Result Entry(ushort world, G.Position door, double centreX, double centreZ, string evidence);
@@ -19,6 +20,7 @@ namespace hds
     {
         internal static readonly MissionNpcInteriorEvidenceProvider Instance = new MissionNpcInteriorEvidenceProvider();
         public E Evidence(ushort world, ushort sector) => E.LoadAudited(DataLoader.DataPath("mission_interior_evidence", world.ToString(System.Globalization.CultureInfo.InvariantCulture)), world, sector);
+        public E SavedEvidence(ushort world, ushort sector, string digest) => E.LoadForDigest(DataLoader.DataPath("mission_interior_evidence",world.ToString(System.Globalization.CultureInfo.InvariantCulture)),world,sector,digest);
         public StaticWorldObject[] Markers(ushort world, ushort sector) => DataLoader.getInstance().WorldObjectsDB.Where(o => o.metrId == world && o.sectorID == sector && o.type != null && o.type.Length >= 2 && MissionSites.Goid(o) == 19).ToArray();
         public StaticWorldObject Door(ushort world, uint key) => DataLoader.getInstance().getObjectValues(key, world);
         public MissionOpenFloorEntry.Result Entry(ushort world, G.Position door, double centreX, double centreZ, string evidence) => MissionOpenFloorEntry.Calculate(world, door, centreX, centreZ, evidence);
