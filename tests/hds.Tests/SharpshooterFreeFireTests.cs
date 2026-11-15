@@ -108,6 +108,16 @@ public class SharpshooterFreeFireTests
         Assert.Equal(100,loaded.AddToAttack(100,537));Assert.Equal(0,scans);
     }
     private sealed class TrackingRandom:Random
+    [Fact]public void DefenderUsesCurrentEquippedWeaponNotAStaleFreeFirePick()
+    {
+        var a=Client();var b=Client();b.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(220,495,100));
+        b.playerData.freeFireWeaponGoid=537;b.playerInstance.EquippedItemID.setValue((uint)0);
+        var fists=SharpshooterFreeFire.AgainstPlayer(a,b,537);Assert.True(fists.CountSampled);Assert.Equal(95,fists.AddToAttack(100,537));
+        b.playerInstance.EquippedItemID.setValue((uint)537);
+        var gun=SharpshooterFreeFire.AgainstPlayer(a,b,537);Assert.False(gun.CountSampled);Assert.Equal(100,gun.AddToAttack(100,537));
+        b.playerInstance.EquippedItemID.setValue((uint)0);Assert.Equal(100,gun.AddToAttack(100,537));
+    }
+    private sealed class TrackingRandom:Random
     {
         public List<(int Min,int Max,int Value)> Draws=new();public List<double> Doubles=new();public TrackingRandom(int seed):base(seed){}
         public override double NextDouble(){double value=base.NextDouble();Doubles.Add(value);return value;}

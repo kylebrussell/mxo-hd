@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using hds.shared;
 namespace hds
 {
     /// <summary>Recovered gun-vs-fists math, OURS ordinary-free-fire caller/distance/opponent policy.
@@ -11,6 +12,11 @@ namespace hds
             !c.playerData.isDead&&!c.playerData.duelDeath&&!c.playerData.worldChangePending;
         internal static bool Live(Mob m)=>m!=null&&!m.getIsDead()&&m.getHealthC()>0&&m.getIsSpawned();
         private static string Name(WorldClient c)=>c?.playerInstance==null?"":PvpFlag.Name(c);
+        internal static uint EquippedWeapon(WorldClient c)
+        {
+            byte[] bytes=c?.playerInstance?.EquippedItemID?.getValue();
+            return bytes!=null&&bytes.Length>=4?NumericalUtils.ByteArrayToUint32(bytes,1):0;
+        }
         private static Func<bool> Stamp(WorldClient c)
         {
             if(c?.playerData==null)return ()=>false;
@@ -98,14 +104,14 @@ namespace hds
         {
             var a=Stamp(source);var b=Stamp(target);
             return new Shot(()=>a()&&b()&&source.playerData.getDistrictId()==target.playerData.getDistrictId(),
-                ()=>PvpCombat.MetresBetween(source,target),()=>PvpGunfire.GunOf(target),source,weapon,()=>PlayerOpponents(target,source),Name(source));
+                ()=>PvpCombat.MetresBetween(source,target),()=>EquippedWeapon(target),source,weapon,()=>PlayerOpponents(target,source),Name(source));
         }
         public static Shot FromNpc(Mob source,WorldClient target,uint weapon)
         {
             var a=Stamp(source);var b=Stamp(target);
             return new Shot(()=>a()&&b()&&source.getDistrict()==target.playerData.getDistrictId(),
                 ()=>CombatCalculator.CalculateDistanceMetres(target.playerInstance.Position.getValue(),source.getXPos(),source.getYPos(),source.getZPos()),
-                ()=>PvpGunfire.GunOf(target),null,weapon,()=>PlayerOpponents(target,currentNpc:source),source?.getName()??"");
+                ()=>EquippedWeapon(target),null,weapon,()=>PlayerOpponents(target,currentNpc:source),source?.getName()??"");
         }
     }
 }

@@ -1,0 +1,24 @@
+# Sharpshooter 148 — ordinary free-fire penalty consumer
+
+The shipped loaded callbacks in `tempmods.py` 41–60 disable firing-into-melee and firing-at-melee-range penalties; their termination reenables them. Catalog 148 has exactly those two while-enabled callbacks and costs one memory. The existing recovered `CombatRules.GunAgainstFistsModifier` was tested but unused. This package wires it into ordinary free fire with explicitly **OURS** caller, distance and opponent policies; the retail caller/default distance boundary remains unresolved.
+
+The source gun is the actual weapon passed to ordinary firing; a player defender uses its current EquippedItemID, not a possibly stale stored Free Fire pick. For an actual gun against a target without a gun, the recovered edge is pistol/dual pistol 5, SMG 10, rifle 15 (other classes retain the existing helper's values). At short range the edge is negative; otherwise positive. More than one opponent costs another 15. Loaded 148 removes the short-range and into-melee penalties, but retains the long-range edge. Gun-vs-gun and unknown/non-gun source class retain zero modifier. No Multi-Fighting 140 or interlock attack/defense consumer is added.
+
+OURS integration adds the modifier once to the existing attack input at all three ordinary `FreeAttacks.Fire` callers: player→NPC, NPC→player and player→player. Short range uses the existing `InMeleeReach` boundary of 3 metres; weapon reach, damage, tactics, recipient gates, RNG order and natural rolls are unchanged. No character base stats or accuracy percentages are invented. The loaded boolean is derived from current owned/loaded membership, including level-zero rows, not a sticky callback flag. Normal unload and new-world loadout rebuilds therefore apply automatically.
+
+Opponent counts are per-shot snapshots of distinct live current participants: the NPC's combatants, or actual player interlock links and active gunfire plus NPCs currently attacking that player. Ended, dead/zero-health, off-world, pending-world-change, other-district and unrelated-target participants are excluded; the current shooter is included once. Snapshot registry locks are released before fight snapshots; PvP captures precede its shot lock. No new registry/cache is introduced. Applicable unloaded gun-vs-fists counts remain linear in current handler/NPC populations. Invalid shots, non-gun sources, gun targets and loaded 148 bypass count scans because the formula cannot depend on them. Such captures fence exact target weapon and loaded state before use; changes neutralize that shot's modifier and the next shot resnapshots. `countSampled=false` is not a claim of zero actual opponents.
+
+## Normal proof setup
+
+Case/mode `sharpshooter-freefire` owns the complete 148 prerequisite graph before Margin and changes only 148's normal loaded state. Parent SQL rows remain fixed. The shooter equips its owned Revolver1 537 through ordinary inventory 63/65 requests and uses normal Free Fire 3f/41 and holster 3d. Seeded level/positions/owned gear and hostile-server entry are aids. There are no damage, hit or global RNG controls. Natural hits/misses and damage are retained as exact complete 8168 records for both actors; deterministic input changes are separately labelled diagnostics, not fixed damage promises.
+
+The case compares close pistol off/on/unload (-5/0/-5), gun target (0), long-range edge (+5), and a genuinely created ordinary helper interlock before firing into it (-20/0). Rifle/SMG and lifetime/count/race behavior have direct controls. No headless movement/teleport aid or forced NPC combat state is needed.
+
+## One-pass native checklist
+
+1. Mode `sharpshooter-freefire`, CSR110 only. Equip the owned Revolver1 from bag 10 using the actual inventory menu. 148 starts owned/unloaded; keep parents fixed. QAEnemy is unarmed nearby. Use normal Free Fire and inspect actual shots/logs; short-range diagnostic modifier is -5. Holster normally.
+2. Load 148 through ordinary Hardline/Loading Area UI, return and repeat with the same weapon/target/range: modifier 0. Unload normally and confirm -5 again. Natural attack rolls/hits/damage may differ; no fixed health-loss comparison is claimed.
+3. Optional actual multi-opponent check: request QAFriend's ordinary melee on QAEnemy, then fire normally into that fight. Off gives -20, loaded gives 0. Stop firing and end the helper fight with ordinary withdrawal; never inject combatants or states.
+4. Check a genuinely armed target gives 0 and a target beyond 3 metres retains the pistol +5 edge. Rifle/SMG controls retain their recovered 15/10 edge values; do not change reach to manufacture a comparison.
+
+The dedicated custom bootstrap logs QAEnemy and QAFriend in through their real mode profile but does not start a fight. Source/unit/headless evidence is not native visibility, damage-parity or full interlock parity proof.
