@@ -5,7 +5,7 @@ namespace hds
 {
     internal static class MissionOpenFloorRequests
     {
-        internal static bool TryCreate(StaticWorldObject raw,ushort concrete,MissionSite site,ushort world,out G.Request request,out string refusal,MissionPhase phase=null,ushort objectId=0)
+        internal static bool TryCreate(StaticWorldObject raw,ushort concrete,MissionSite site,ushort world,out G.Request request,out string refusal,MissionPhase phase=null,ushort objectId=0,MissionElevatorWitness elevator=null)
         {
             request=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSpot(raw)||!MissionOpenFloorAdmission.ValidSite(site)||raw.metrId!=world||site.metrId!=world||!MissionOpenFloorAdmission.Target(concrete,raw))
@@ -14,13 +14,20 @@ namespace hds
             if(!MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out string anchorEvidence)){refusal="MissingOrAmbiguousAuditedAnchor";return false;}
             if(!MissionOpenFloorSourceModels.TryGet(world,MissionSites.Goid(raw),out var presence,out string modelEvidence)){refusal="MissingSourceModelEvidence";return false;}
             if(!MissionOpenFloorProfiles.TryModel(concrete,out var model)||!MissionOpenFloorProfiles.TryUsable(concrete,out var usable)){refusal="UnprovenProxyProfile";return false;}
-            if(concrete==3)
+            if(concrete==3||concrete==357)
             {
                 if(!TryComputerActions(phase,objectId,out byte[] actions)){refusal="UnprovenComputerActions";return false;}
-                usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(actions,usable.HalfExtents,"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; "+
+                usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(concrete,actions,usable.HalfExtents,(concrete==3?"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; ":"GO357 sameclass20 Usable5 Hack4/Get5/Put8 omitted MaxDistance; native initial configurable fallback400; ")+
                     (phase.missionObjectives.Any(o=>o.objectId==objectId)?"actions required by existing phase goals":"no direct goal: sourced all3 geometric owner profile only, no offered actions inferred"));
             }
-            var entry=MissionOpenFloorEntry.Calculate(world,new G.Position(site.elevatorDoor.pos_x,site.elevatorDoor.pos_y,site.elevatorDoor.pos_z),site.CentreX,site.CentreZ,"unchanged normal Ride entry at exact selected site");
+            // Default is an exact legacy replay. Only an explicit selected/saved witness changes entry.
+            var data=MissionElevatorAnchors.Current(site.elevatorDoor);
+            if(data.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=data.Refusal;return false;}
+            if(elevator!=null&&(elevator.Version!=1||elevator.SiteFingerprint!=MissionOpenFloorSite.CatalogFingerprint(site)||
+                elevator.Floor?.Length!=3||elevator.Floor.Any(v=>!double.IsFinite(v))||elevator.Sources==null||
+                !elevator.Sources.Select(j=>new MissionOpenFloorChoice(0,0,j).ReadSpot()).Any(s=>MissionOpenFloorSite.SpotFingerprint(s)==MissionOpenFloorSite.SpotFingerprint(raw))))
+            {refusal="InvalidExplicitMissionElevatorContext";return false;}
+            var entry=MissionOpenFloorEntry.Calculate(world,MissionElevatorPoses.Floor(site,elevator),site.CentreX,site.CentreZ,elevator?.Evidence??"unchanged normal Ride entry at exact selected site");
             if(entry.Root==null){refusal=entry.Refusal;return false;}
             if(!MissionOpenFloorScenes.TryLoad(world,raw.sectorID,out var scene,out refusal))return false;
             ushort[] sectors=new[]{raw.sectorID,entry.Root.Surface.Sector}.Distinct().OrderBy(s=>s).ToArray();

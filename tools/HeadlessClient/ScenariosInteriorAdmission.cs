@@ -6,8 +6,9 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c)
+    private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c,bool verifyMeasuredExit=false)
     {
+        InteriorAdmissionFixture.ValidateReceipts(c); // Before AddPlayerAsync or any fixture SQL mutation.
         var server=context.Server;ServerInstance? coldServer=null;var packetLogs=new List<object>();
         InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(server.SourceAssembly))));
         var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
@@ -32,7 +33,7 @@ public static partial class Scenarios
             await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(initialViews).Any(Match),"exact current NPC "+id,TimeSpan.FromSeconds(15));
             var view=p.World.CreationSnapshot().Skip(initialViews).Last(Match);proof.Add(new{Step=step,Npc=id,Source=m,view.ViewId,view.SpawnId,Attributes=view.Attributes.ToDictionary(x=>x.Key,x=>Convert.ToHexString(x.Value))});return view;
         }
-        uint Lobby(MissionProgress.SavedState s)=>InteriorAdmissionFixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),s.Exits.Single());
+        uint Lobby(MissionProgress.SavedState s)=>verifyMeasuredExit&&s.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==s.OpenFloorSites![s.OpenFloorCurrentSiteIndex!.Value].Fingerprint) is MissionElevatorWitness elevator?elevator.LobbyKey:InteriorAdmissionFixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),s.Exits.Single());
         string PacketPath()=>Path.Combine(server.WorkingDirectory,"PacketLog.txt");
         static bool Free(MissionProgress.SavedObject obj)=>obj.OpenFloor!=null&&obj.OpenFloor.SourceGoid!=obj.Goid;
         static double[] Centre(MissionProgress.SavedObject obj)=>obj.OpenFloor!.Centre;
@@ -72,6 +73,19 @@ public static partial class Scenarios
             var arrived=Regex.Matches(server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(arrived!=null)actualRideRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrived.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
             proof.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=server.DebugLog()[log..]});
+            if(verifyMeasuredExit&&s.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==s.OpenFloorSites![s.OpenFloorCurrentSiteIndex!.Value].Fingerprint) is MissionElevatorWitness measured)
+            {
+                var expected=enter?measured.Lobby:measured.Floor;string quaternion=enter?measured.LobbyQuaternion:measured.FloorQuaternion;
+                ViewCreation? overlay=null;
+                await p.WaitUntilAsync(()=>(overlay=p.World.CreationSnapshot().Skip(arrivalViews).LastOrDefault(v=>new ushort[]{417,419}.Contains(v.Goid)&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==expected[i])))!=null,"ordinary requested measured door03 overlay",TimeSpan.FromSeconds(15));
+                Check.Equal(quaternion.ToUpperInvariant(),Convert.ToHexString(overlay!.Attributes["Orientation"]),"Ordinary door overlay uses the selected-region quaternion");
+                if(enter)
+                {
+                    var route=s.Objects.First(o=>o.OpenFloor!=null).OpenFloor!.Route;
+                    Check.That(actualRideRoot!=null&&actualRideRoot.SequenceEqual(route.Take(3)),"Actual ordinary entry equals immutable planner Root");
+                }
+                proof.Add(new{Step=step,MeasuredDoor=measured,ActualRequestedKey=key,ActualDoorView=overlay.ViewId,ActualDoorSpawn=overlay.SpawnId,ActualDoorAttributes=overlay.Attributes.ToDictionary(x=>x.Key,x=>Convert.ToHexString(x.Value)),ActualRideRoot=actualRideRoot});
+            }
             if(enter&&s.Objects.Any(Free))
             {
                 Check.That(arrived!=null&&actualRideRoot!=null,"Free-prop receipt case requires its actual ordinary Ride root");
@@ -81,7 +95,7 @@ public static partial class Scenarios
         async Task InitialNpcs(MissionProgress.SavedState s)
         {
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-            foreach(var m in s.Mobs.Where(m=>m.Phase==s.Phase&&!m.Dead))
+            foreach(var m in s.Mobs.Where(m=>(verifyMeasuredExit ? m.Hostile||(s.Phase==0?m.Npc==1:new ushort[]{2,3,4,5}.Contains(m.Npc)) : c==InteriorAdmissionFixture.ZionSourceDomain ? s.Phase==1&&(m.Hostile||m.Npc==1) : m.Phase==s.Phase)&&!m.Dead))
             {
                 Check.That(NavMesh.Locate(1,m.X,m.Y,m.Z,out var nav),"Initial admitted NPC is on actual NAV: "+m.Name);
                 Check.Equal(nav.floorY+95,m.Y,"Initial NPC standing height uses its actual NAV floor");
@@ -89,7 +103,7 @@ public static partial class Scenarios
                 await p.WaitUntilAsync(()=>(initialBody=p.World.CreationSnapshot().Skip(initialViews).LastOrDefault(v=>v.Goid==599&&v.Name==m.Name&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==new[]{m.X,m.Y,m.Z}[i])))!=null,"actual03 initial NPC at saved NAV pose: "+m.Name,TimeSpan.FromSeconds(15));
                 proof.Add(new{Step=step,InitialNpc=m,NavFloor=nav.floorY,InitialView=initialBody!.ViewId,InitialSpawn=initialBody.SpawnId,Attributes=initialBody.Attributes.ToDictionary(x=>x.Key,x=>Convert.ToHexString(x.Value)),Scope="Saved and actual03 initial NPC position/NAV; native rendering/clearance unproven"});
             }
-            if(c==InteriorAdmissionFixture.Machines&&s.Phase==1)Check.That(new ushort[]{3,5}.All(id=>s.Mobs.Any(m=>m.Npc==id)),"Wong and Park are in actual admitted checkpoint");
+            if((c==InteriorAdmissionFixture.Machines||verifyMeasuredExit)&&s.Phase==1)Check.That(new ushort[]{3,5}.All(id=>s.Mobs.Any(m=>m.Npc==id)),"Wong and Park are in actual admitted checkpoint");
             await Task.CompletedTask;
         }
         try
@@ -106,8 +120,25 @@ public static partial class Scenarios
             step="ordinary-first-floor-entry";await Ride(true);var firstSite=await Saved();await InitialNpcs(firstSite);
             if(c.TargetPhase>0)
             {
-                step="ordinary-first-phase-goals";var first=await Npc(1);int cursor=p.World.RpcSnapshot().Count;
-                int nextViews=p.World.CreationSnapshot().Count,nextSections=p.World.ViewSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await Goal(1,cursor);
+                step="ordinary-first-phase-goals";int cursor=p.World.RpcSnapshot().Count;
+                int nextViews=p.World.CreationSnapshot().Count,nextSections=p.World.ViewSnapshot().Count;
+                if(c==InteriorAdmissionFixture.ZionSourceDomain)
+                {
+                    var obj=firstSite.Objects.Single();Check.That(obj.OpenFloor!=null,"First junction has its committed witness");
+                    var witness=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(obj.OpenFloor,fields));
+                    witness.Require(c.Mission,0,1,obj.Spot.mxoStaticId,BitConverter.ToUInt16(obj.Spot.type,0),obj.Goid);
+                    var route=witness.Route.ToArray();for(int i=0;i<route.Length;i+=3)await MoveForMissionTest(p,route[i],route[i+1],route[i+2]);
+                    ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,witness.Centre.ToArray()))!=null,"current first junction body",TimeSpan.FromSeconds(15));
+                    byte use=ObjectStates.UseNumber(obj.Goid,"Open")??throw new ScenarioFailure("No normal Box Open");
+                    cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(body!)} {use:x2} 00");await Goal(1,cursor);
+                    var done=await Saved();Check.Equal(0,done.Phase,"First junction waits for actual exit");Check.That(done.Done.Contains(1),"First junction goal persisted");
+                    proof.Add(new{Step=step,FirstSource=obj.Spot,FirstPlacement=obj.OpenFloor,FirstCheckpoint=done,GoalCursor=cursor});
+                }
+                else
+                {
+                    var first=await Npc(1);cursor=p.World.RpcSnapshot().Count;
+                    p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await Goal(1,cursor);
+                }
                 if(c.Mission==301203)
                 {
                     var fortuna=await Npc(2);cursor=p.World.RpcSnapshot().Count;await DefeatMissionNpc(p,fortuna);await Goal(2,cursor);
@@ -120,6 +151,11 @@ public static partial class Scenarios
                 step="ordinary-second-floor-entry";await Ride(true);
             }
             step="target-initial-placements";var target=await Saved();Check.Equal(c.TargetPhase,target.Phase,"Actual target phase");await InitialNpcs(target);
+            if(c==InteriorAdmissionFixture.ZionSourceDomain)
+            {
+                Check.Equal(4,target.Mobs.Count(m=>m.Hostile&&!m.Dead),"Actual current second-junction hostile membership");
+                Check.Equal(1,target.Mobs.Count(m=>m.Npc==1&&!m.Dead),"Actual current Dick Lange");
+            }
             if(c.Mission==201202)
             {
                 Check.Equal(3,target.Objects.Count,"Poster first phase retains all three authored objects");
@@ -154,6 +190,15 @@ public static partial class Scenarios
                 target=afterCold;originalSet=FixedSet(target);originalSite=SiteSet(target);
             }
 
+            int mainframeGoalCursor=p.World.RpcSnapshot().Count;
+            if(c.Mission==301206)
+            {
+                Check.That(c.Prerequisites.All(id=>id!=301206)&&c.Prerequisites.Distinct().Count()==c.Prerequisites.Length,"Mainframe only earlier unique receipts");
+                step="mainframe-normal-talk-give";var npc=await Npc(1);int cursor=p.World.RpcSnapshot().Count;
+                p.SendRpc($"80 c7 {MissionNpcId(npc)} 09 00");await Goal(1,cursor);
+                npc=await Npc(1);Check.That(npc.Attributes.TryGetValue("TakerActiveTracker",out var tracker)&&tracker.Any(x=>x!=0),"Churyumov offers ordinary Give");
+                cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(npc)} 0e 00");await Goal(2,cursor);
+            }
             for(int objectId=1;objectId<=c.Objects;objectId++)
             {
             var obj=target.Objects.Single(x=>x.Id==objectId);
@@ -177,7 +222,7 @@ public static partial class Scenarios
                 proof.Add(new{Step=step,BoundNative=true,obj.Goid,obj.Spot.mxoStaticId,SourceCentre=centre,NavStanding=standing,Scope="Existing native object, NAV approach only; no generated footprint/static-route witness or native walking/picking proof"});
             }
             Check.That(NavMesh.Locate(1,route[0],route[1],route[2],out var rootNav),"Actual root is NAV");Check.Equal(rootNav.floorY+95,route[1],"Root uses actual floor standing height");
-            foreach(var npc in target.Mobs.Where(m=>m.Phase==target.Phase&&!m.Dead))
+            foreach(var npc in target.Mobs.Where(m=>(c==InteriorAdmissionFixture.ZionSourceDomain ? target.Phase==1&&(m.Hostile||m.Npc==1) : m.Phase==target.Phase)&&!m.Dead))
             {Check.That(NavMesh.Locate(1,npc.X,npc.Y,npc.Z,out var npcNav),"Target NPC remains on NAV");Check.Equal(rootNav.floorY,npcNav.floorY,"Target NPC and admitted root are on the same actual floor");
              Check.Equal(rootNav.indoors,npcNav.indoors,"Target NPC and root share NAV space kind");
              if(rootNav.indoors){Check.Equal(rootNav.sector,npcNav.sector,"Target NPC shares root interior sector");Check.Equal(rootNav.region,npcNav.region,"Target NPC shares root interior placement");}}
@@ -192,6 +237,23 @@ public static partial class Scenarios
             ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,centre))!=null,"actual03 target body at unchanged centre",TimeSpan.FromSeconds(15));
             Check.Equal(quaternion.ToUpperInvariant(),Convert.ToHexString(body!.Attributes["Orientation"]),"Actual03 target full quaternion");
             var at=await Saved();var current=at.Objects.Single(x=>x.Id==objectId);Check.Equal(originalSet,FixedSet(at),"Whole authored fixed source/DTO set survives each approach");Check.Equal(originalSite,SiteSet(at),"Exact accepted site/history/waypoint survive each approach");Check.Equal(originalSource,JsonSerializer.Serialize(current.Spot,fields),"Approach never rewrites raw source");Check.Equal(originalWitness,JsonSerializer.Serialize(current.OpenFloor,fields),"Approach never replans fixed placement");
+            if(c.Mission==301206)
+            {
+                step="mainframe-authored-escort";
+                double D2(double[] point)=>Enumerable.Range(0,3).Sum(i=>(point[i]-centre[i])*(point[i]-centre[i]));
+                Check.That(D2(standing)<=MissionRuntime.EscortArrivalUnits*MissionRuntime.EscortArrivalUnits,"Published standing satisfies actual object escort radius700, independently of usable400");
+                await Goal(3,mainframeGoalCursor);var arrived=await Saved();var follower=arrived.Mobs.Single(m=>m.Npc==1&&!m.Dead);
+                Check.That(D2(new[]{follower.X,follower.Y,follower.Z})<=MissionRuntime.EscortArrivalUnits*MissionRuntime.EscortArrivalUnits,"Living Churyumov also reaches actual object escort radius700");
+                Check.Equal(originalSource,JsonSerializer.Serialize(arrived.Objects.Single(o=>o.Id==objectId).Spot,fields),"Escort preserves source");
+                Check.Equal(originalWitness,JsonSerializer.Serialize(arrived.Objects.Single(o=>o.Id==objectId).OpenFloor,fields),"Escort preserves witness");
+                Check.Equal(1,p.World.RpcSnapshot().Skip(mainframeGoalCursor).Count(r=>BytePattern.Parse("80 a0 03 06 00 01").IsMatch(r.Bytes)),"Escort goal emitted exactly once");
+                Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId=301206"),"Narrow escort proof stops before ordinary exit, no mission receipt");
+                Check.Equal(baselineXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"No mission or kill XP in narrow escort proof");
+                Check.Equal(baselineInfo,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No mission or corpse cash in narrow escort proof");
+                Check.Equal(0,p.World.Problems.Count,"Mainframe parser healthy");
+                proof.Add(new{Step=step,PublishedStanding=standing,Centre=centre,EscortRadius=MissionRuntime.EscortArrivalUnits,Follower=new[]{follower.X,follower.Y,follower.Z},RawSource=originalSource,Witness=originalWitness,body.ViewId,body.SpawnId,NativeWalkProven=false});
+                continue;
+            }
             string action=c.Item==0?"Open":"Take";byte use=ObjectStates.UseNumber(body.Goid,action)??throw new ScenarioFailure("No actual authored native use: "+action);
             uint EnabledState()
             {
@@ -216,6 +278,23 @@ public static partial class Scenarios
             long expectedKill=c.Mission==301203?19204:0;Check.Equal(baselineXp+expectedKill,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Only actual Fortuna kill XP, no mission award");Check.Equal(baselineInfo,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No pocket or mission information awarded");
             if(coldServer!=null)Check.That(!new[]{"Packet handling failed","Visibility pass failed","Unhandled exception","[MISSION] Tick failed"}.SelectMany(server.OutputLines).Any(),"Cold replacement server has no unacknowledged harness diagnostics");
             Check.Equal(0,p.World.Problems.Count,"Admission proof healthy parser");proof.Add(new{Step=step,ObjectId=objectId,GoalCursor=goalCursor,AuthoredAction=action,Use=use,body.ViewId,body.SpawnId,InitialRawSource=originalSource,InitialWitness=originalWitness,WholeInitialSet=originalSet,InitialSite=originalSite,CurrentPhase=after.Phase,AutomaticPhaseAdvance=after.Phase!=c.TargetPhase,OwnedItems=after.Items,NarrowProofOnly=true});
+            }
+            if(verifyMeasuredExit)
+            {
+                step="measured-ordinary-operations-post-exit";var beforeExit=await Saved();
+                Check.Equal(c.TargetPhase,beforeExit.Phase,"Take waits for real operations-post departure");
+                var measured=beforeExit.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==beforeExit.OpenFloorSites![beforeExit.OpenFloorCurrentSiteIndex!.Value].Fingerprint);
+                Check.That(measured!=null,"Normal offer selected an audited corrected pose; no source or site was forced");
+                string rawSet=JsonSerializer.Serialize(beforeExit.Objects,fields);string rawSites=JsonSerializer.Serialize(beforeExit.OpenFloorSites,fields);
+                int exitCursor=p.World.RpcSnapshot().Count;await Ride(false,beforeExit);
+                await p.WaitUntilAsync(()=>server.DebugLog().Contains("[MISSION] Phase 3"),"normal operations-post exit advances delivery phase",TimeSpan.FromSeconds(20));
+                var afterExit=await Saved();Check.Equal(c.TargetPhase+1,afterExit.Phase,"Actual measured door exit advances one authored phase");
+                Check.Equal(rawSites,JsonSerializer.Serialize(afterExit.OpenFloorSites?.Take(beforeExit.OpenFloorSites!.Length).ToArray(),fields),"Exit preserves exact raw source site history");
+                Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId={c.Mission}"),"Partial elevator proof creates no selected receipt");
+                Check.Equal(baselineXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"No mission XP on partial elevator proof");
+                Check.Equal(baselineInfo,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No mission information on partial elevator proof");
+                Check.Equal(0,p.World.Problems.Count,"Parser remains healthy after measured exit");
+                proof.Add(new{Step=step,BeforeExitRawObjects=rawSet,RawSites=rawSites,Measured=measured,ExitCursor=exitCursor,AfterExit=afterExit,NativeHoverProven=false,FullMissionCompletionProven=false});
             }
             step="complete";
         }

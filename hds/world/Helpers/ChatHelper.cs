@@ -22,6 +22,7 @@ namespace hds
             if (SafeFloorProbe.Dev(Store.currentClient, commands)) return;
             if (PosterBoxFloorProbe.Dev(Store.currentClient, commands)) return;
             if (MissionRuntime.DevPresentation(Store.currentClient, commands)) return;
+            if (IngressLivenessQa.Dev(Store.currentClient, commands)) return;
 
             try
             {
@@ -458,6 +459,7 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if(command.Equals("?ghoststrike"))new ServerPackets().sendSystemChatMessage(Store.currentClient,GhostStrikeCallbacks.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
                 if(command.Equals("?severstate"))new ServerPackets().sendSystemChatMessage(Store.currentClient,AbilitySeverArteryStates.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
 
                 if (command.Equals("?combatdepth"))

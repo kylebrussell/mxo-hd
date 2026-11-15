@@ -19,12 +19,17 @@ namespace hds
         }
         private static readonly ConditionalWeakTable<MissionSite,Cached> cache=new ConditionalWeakTable<MissionSite,Cached>();
         internal static bool Eligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
+            =>CheckSite(phase,site,out refusal,npcCount,true);
+        // A committed choice is proved by its exact request/fixed witness, not unused pool rows.
+        internal static bool SelectedSiteEligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
+            =>CheckSite(phase,site,out refusal,npcCount,false);
+        private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool)
         {
             refusal=null;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
             // With no runtime actors and enough same-kind native objects, SelectObjects never
             // creates a free prop. Preserve that existing bound-only path without a new NAV proof.
-            if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
+            if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
                 .GroupBy(o=>o.kind,StringComparer.OrdinalIgnoreCase).All(g=>site.realObjects.Count(s=>
                     MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
             if(!TryAllocate(site,npcCount,out _,out refusal))return false;
@@ -40,33 +45,35 @@ namespace hds
                     OpenFloorOrientation orientation;try{orientation=new OpenFloorOrientation(s.quat);}catch(ArgumentException){return true;}
                     return nativeRegion.CouldReachNative(new G.Position(s.pos_x,s.pos_y,s.pos_z),usable,orientation);
                 }
-                if(bound.Any(Possible))return true;
+                // SelectObjects binds the first matching native row deterministically.
+                if(Possible(bound[0]))return true;
                 refusal="NoInteriorNativeUse:"+first.kind;return false;
             }
+            if(!checkSourcePool)return true;
             var matching=site.objectSpots.Where(s=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.
             var sources=matching.Length>0?matching:site.objectSpots.Count>0?site.objectSpots.ToArray():site.containers.ToArray();
             if(!TryRegion(site,out var region,out refusal))return false;
-            bool known=false;
             foreach(var raw in sources)
             {
                 ushort goid=MissionStaging.ExpectedConcrete(first,raw);
                 if(!MissionOpenFloorAdmission.Target(goid,raw)||!MissionOpenFloorProfiles.TryModel(goid,out var model)||
-                    !MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))return true; // not proven by this necessary check
+                    !MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))continue; // unknown cannot hide another proved impossible source
                 OpenFloorOrientation orientation;
-                try{orientation=new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation));}catch(ArgumentException){return true;}
-                if(!orientation.YawOnly)return true;
-                known=true;
-                if(region.CanFit(model,orientation,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ)))return true;
+                try{orientation=new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation));}catch(ArgumentException){continue;}
+                if(!orientation.YawOnly)continue;
+                // The ordinary shuffle may choose ANY row in this priority pool. A fitting
+                // alternative does not authorize committing a different, impossible row.
+                if(!region.CanFit(model,orientation,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ)))
+                {refusal="NoInteriorFootprint:"+first.kind;return false;}
             }
-            if(known){refusal="NoInteriorFootprint:"+first.kind;return false;}
             return true;
         }
-        internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal)
+        internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal,MissionElevatorWitness elevator=null)
         {
             spots=Array.Empty<double[]>();
-            if(!TryRegion(site,out var region,out refusal))return false;
+            if(!TryRegion(site,out var region,out refusal,elevator))return false;
             if(count<0){refusal="InvalidInteriorNpcCount";return false;}
             var markers=site.npcSpots.Where(s=>s!=null&&s.Length>=4&&s.Take(4).All(double.IsFinite))
                 .OrderByDescending(s=>Math.Pow(s[0]-site.elevatorDoor.pos_x,2)+Math.Pow(s[2]-site.elevatorDoor.pos_z,2)).ToArray();
@@ -99,11 +106,12 @@ namespace hds
                 !NavMesh.Locate(site.metrId,p.X,p.Y,p.Z,out var at)||!region.SameSpace(at))return null;
             return new NavPoint{x=p.X,y=p.Y,z=p.Z,location=at};
         }
-        internal static bool TryRegion(MissionSite site,out G.ReachableRegion region,out string refusal)
+        internal static bool TryRegion(MissionSite site,out G.ReachableRegion region,out string refusal,MissionElevatorWitness elevator=null)
         {
             region=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSite(site)||site.metrId!=1){refusal="UnsupportedInteriorSite";return false;}
             string key=NavMesh.SnapshotRevision+":"+DataLoader.DataPath("mission_open_floor")+":"+MissionOpenFloorSite.CatalogFingerprint(site);
+            if(elevator!=null)return Build(site,out region,out refusal,elevator);
             var entry=cache.GetOrCreateValue(site);
             lock(entry)
             {
@@ -114,12 +122,12 @@ namespace hds
                 region=entry.Region;refusal=entry.Refusal;return entry.Result;
             }
         }
-        private static bool Build(MissionSite site,out G.ReachableRegion region,out string refusal)
+        private static bool Build(MissionSite site,out G.ReachableRegion region,out string refusal,MissionElevatorWitness elevator=null)
         {
             region=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSite(site)||site.metrId!=1){refusal="UnsupportedInteriorSite";return false;}
             var door=site.elevatorDoor;
-            var entry=MissionOpenFloorEntry.Calculate(site.metrId,new G.Position(door.pos_x,door.pos_y,door.pos_z),site.CentreX,site.CentreZ,
+            var entry=MissionOpenFloorEntry.Calculate(site.metrId,MissionElevatorPoses.Floor(site,elevator),site.CentreX,site.CentreZ,
                 "normal Ride entry for generated interior admission");
             if(entry.Root==null){refusal=entry.Refusal;return false;}
             if(!NavMesh.Locate(site.metrId,entry.Root.Standing.X,entry.Root.Standing.Y,entry.Root.Standing.Z,out var rootNav)||!rootNav.indoors)

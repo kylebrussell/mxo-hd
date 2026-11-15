@@ -37,7 +37,7 @@ public class MissionOpenFloorAdmissionRegressionTests
         site.containers.AddRange(Read<StaticWorldObject[]>(j.GetProperty("containers")));site.realObjects.AddRange(Read<StaticWorldObject[]>(j.GetProperty("realObjects")));
         return(site,Read<StaticWorldObject>(c.GetProperty("Object").GetProperty("Spot")));
     }
-    private static readonly Lazy<string> QualifiedCase=new(()=>
+    private static readonly Lazy<List<MissionSite>> Catalog=new(()=>
     {
         // Reconstruct the exact normal catalog once. This object-only floor is the PR203 native
         // compatibility case at the ordinary Ride root Y2095. Claude retracted the PR202 Y2145
@@ -52,8 +52,11 @@ public class MissionOpenFloorAdmissionRegressionTests
                 staticId=NumericalUtils.ByteArrayToUint32(Convert.FromHexString(f[3]),1),type=Convert.FromHexString(f[4][..4]),exterior=bool.Parse(f[5]),
                 pos_x=D(6),pos_y=D(7),pos_z=D(8),rot=D(9),quat=f[10]});
         }
-        var sites=MissionSites.Build(statics,1);
-        var site=Assert.Single(sites.Where(s=>s.elevatorDoor!=null&&s.elevatorDoor.mxoStaticId==0x0d1003bb&&s.elevatorDoor.pos_y==2145&&
+        return MissionSites.Build(statics,1);
+    });
+    private static readonly Lazy<string> QualifiedCase=new(()=>
+    {
+        var site=Assert.Single(Catalog.Value.Where(s=>s.elevatorDoor!=null&&s.elevatorDoor.mxoStaticId==0x0d1003bb&&s.elevatorDoor.pos_y==2145&&
             s.objectSpots.Concat(s.containers).Concat(s.realObjects).Any(o=>o.mxoStaticId==0x0d1003dc&&o.pos_x==23940&&o.pos_y==2245&&o.pos_z==15050)));
         var source=Assert.Single(site.objectSpots.Concat(site.containers).Concat(site.realObjects).Where(o=>o.mxoStaticId==0x0d1003dc));
         return JsonSerializer.Serialize(new{Site=site,Object=new{Spot=source}},Fields);
@@ -61,6 +64,119 @@ public class MissionOpenFloorAdmissionRegressionTests
     private static (MissionSite Site,StaticWorldObject Source) QualifiedScene()
     {
         using var doc=JsonDocument.Parse(QualifiedCase.Value);return ReadScene(doc.RootElement);
+    }
+    private static MissionSite ExactMixedSourceSite()
+    {
+        var site=Assert.Single(Catalog.Value.Where(s=>s.elevatorDoor?.mxoStaticId==0x47e00161&&s.elevatorDoor.pos_x==46500&&s.elevatorDoor.pos_z==-12000&&s.floorY==2145&&
+            s.objectSpots.Any(o=>o.mxoStaticId==0x47e00167)));
+        using var doc=JsonDocument.Parse(JsonSerializer.Serialize(new{Site=site,Object=new{Spot=site.objectSpots[0]}},Fields));
+        return ReadScene(doc.RootElement).Site;
+    }
+    private static Mission HardlineHunter()
+    {
+        var xml=new XmlDocument();xml.Load(Directory.GetFiles(Path.Combine(Repo,"data","missions"),"zion_1_2_9*").Single());
+        return MissionXml.Parse(xml.DocumentElement!);
+    }
+    [Fact] public void ExactHardlineHunterMixedSourcePoolRejectsBeforeOrdinarySelection()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var phase=HardlineHunter().phases[1];
+        Assert.Equal(4,MissionStaging.SpotsForWaves(phase));
+        Assert.True(MissionInteriorSites.TryAllocate(site,5,out _,out string allocation),allocation);
+        Assert.True(MissionInteriorSites.TryRegion(site,out var region,out string why),why);
+        var results=new Dictionary<uint,bool>();
+        foreach(var raw in site.objectSpots.Where(s=>MissionSites.Goid(s)==1412))
+        {
+            Assert.True(MissionOpenFloorRequests.TryCreate(raw,548,site,1,out var request,out why,phase,1),why);
+            results.Add(raw.mxoStaticId,region.CanFit(request.Model,new(request.Anchor.QuaternionHex),request.SiteBounds));
+        }
+        Assert.Equal(4,results.Count);Assert.False(results[0x47e00167]);Assert.Equal(3,results.Count(x=>x.Value));
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out why,5));Assert.Equal("NoInteriorFootprint:Box",why);
+        // Chooser semantics remain unchanged: the impossible row is still normally selectable.
+        Assert.Contains(Enumerable.Range(0,64).Select(seed=>MissionStaging.SelectObjects(phase,site,new Random(seed)).Single().Spot.mxoStaticId),id=>id==0x47e00167);
+    }
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void UnknownSourceAndFittingAlternativeCannotHideProvedImpossibleChoice(bool reverse)
+    {
+        LoadNav();var site=ExactMixedSourceSite();var phase=HardlineHunter().phases[1];
+        // Audit fingerprint no longer matches: this row is unknown, not a negative proof.
+        var unknown=site.objectSpots.First(o=>o.mxoStaticId==0x47e00377);unknown.pos_x+=1;
+        if(reverse)site.objectSpots.Reverse();
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out var why,5));Assert.Equal("NoInteriorFootprint:Box",why);
+        site.objectSpots.RemoveAll(o=>o.mxoStaticId==0x47e00167);
+        Assert.True(MissionInteriorSites.Eligible(phase,site,out why,5),why);
+    }
+    [Fact] public void CommittedImpossiblePendingChoiceRemainsExactAndRefusedOnRetry()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var p=new MissionProgress(m){startedAt=100,persistenceId="retained-mixed-source"};
+        p.Complete(p.Phase.missionObjectives.Single());p.waitingForExit=true;
+        var choice=Choice(m,site.objectSpots.Single(o=>o.mxoStaticId==0x47e00167),1);
+        p.pendingOpenFloor=new(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),new[]{choice},"NoGeometricBodyCandidates");
+        var c=Client();c.playerData.missionProgress=p;var pending=p.pendingOpenFloor;string raw=JsonSerializer.Serialize(pending,Fields);
+        Assert.True(MissionOpenFloorAdmission.PendingValid(p,pending,new[]{site}));
+        for(int retry=0;retry<2;retry++)
+        {
+            Assert.False(MissionOpenFloorAdmission.TryPrepare(c,p,1,p,out var plan,out var selected,out var why,new[]{site}));
+            Assert.Equal("NoGeometricBodyCandidates",why);Assert.Same(pending,selected);Assert.Same(pending,plan.Selection);
+            Assert.Same(pending,p.pendingOpenFloor);Assert.Equal(raw,JsonSerializer.Serialize(selected,Fields));Assert.Equal(0,p.phaseIndex);
+        }
+    }
+    [Fact] public void LegacyExactSourceGeometryReplaysDespiteImpossibleUnusedAlternative()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();
+        Assert.False(MissionInteriorSites.Eligible(m.phases[1],site,out _,5));
+        var source=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00377);var choice=Choice(m,source,1);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out var poses,out string why),why);
+        var p=new MissionProgress(m){phaseIndex=1,site=site,openFloorCheckpoint=true,openFloorResolvedPhase=1,startedAt=100,persistenceId="valid-mixed-source"};
+        p.sites.Add(site);p.objects.Add(1,new(){def=m.phases[1].objects.Single(),spot=source,goid=548,entity=123,OpenFloor=poses[1]});
+        var saved=RoundTrip(p);string before=JsonSerializer.Serialize(saved,Fields);
+        Assert.True(MissionOpenFloorRequests.TryCreate(source,548,site,1,out var request,out why,m.phases[1],1),why);
+        Assert.True(poses[1].TryReplay(request,m.id,1,p.objects[1],out _,out why),why);
+        Assert.Equal(before,JsonSerializer.Serialize(saved,Fields));Assert.Equal(0x47e00377u,p.objects[1].spot.mxoStaticId);
+    }
+    [Fact] public void PositiveGeometryOldPendingStillRefusesMissingWitnessBeforeAdoption()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var p=new MissionProgress(m){startedAt=100,persistenceId="old-positive-pending"};
+        p.Complete(p.Phase.missionObjectives.Single());p.waitingForExit=true;
+        var choice=Choice(m,site.objectSpots.Single(o=>o.mxoStaticId==0x47e00377),1);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out var legacy,out string why),why);Assert.NotEmpty(legacy);
+        var pending=new MissionOpenFloorPendingAdmission(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),new[]{choice},null);p.pendingOpenFloor=pending;
+        string before=JsonSerializer.Serialize(pending,Fields);var c=Client();c.playerData.missionProgress=p;
+        for(int retry=0;retry<2;retry++)
+        {
+            Assert.False(MissionOpenFloorAdmission.TryPrepare(c,p,1,p,out var plan,out var selected,out why,new[]{site}));
+            Assert.Equal("MissingMissionElevatorWitness",why);Assert.Same(pending,selected);Assert.Empty(plan.Poses);Assert.Equal(0,p.phaseIndex);
+            Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Null(pending.Elevator);
+        }
+    }
+    [Fact] public void LegacyFixedCorrectedDoorWithoutWitnessRefusesRestoreAndPublication()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var source=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00377);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{Choice(m,source,1)},out var poses,out string why),why);
+        var p=new MissionProgress(m){phaseIndex=1,site=site,openFloorCheckpoint=true,openFloorResolvedPhase=1,startedAt=100,persistenceId="old-fixed-missing-door"};
+        p.sites.Add(site);p.objects.Add(1,new(){def=m.phases[1].objects.Single(),spot=source,goid=548,entity=123,OpenFloor=poses[1]});p.itemSlots[6783]=6;
+        var saved=RoundTrip(p);string before=JsonSerializer.Serialize(saved,Fields);
+        var refused=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,saved,new[]{site}));Assert.Equal("MissingMissionElevatorWitness",refused.Message);
+        Assert.Equal((ushort)6,refused.Progress.itemSlots[6783]);Assert.Equal(before,JsonSerializer.Serialize(saved,Fields));
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(refused.Progress,site.elevatorDoor).Kind);
+    }
+    [Fact] public void LowerPriorityImpossibleFurnitureIsNotInTheMatchingSpawnerPool()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var phase=HardlineHunter().phases[1];
+        var impossible=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00167);site.objectSpots.Remove(impossible);site.containers.Add(impossible);
+        Assert.True(MissionInteriorSites.Eligible(phase,site,out var why,5),why);
+        Assert.All(Enumerable.Range(0,16),seed=>Assert.NotEqual(impossible.mxoStaticId,MissionStaging.SelectObjects(phase,site,new Random(seed)).Single().Spot.mxoStaticId));
+    }
+    [Fact] public void NativeFirstChoiceIsDeterministicRatherThanAnyReachableAlternative()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=Definition();m.phases[0].objects.Single().kind="Computer";
+        Assert.True(MissionInteriorSites.TryRegion(site,out var region,out string why),why);
+        var far=new StaticWorldObject{type=BitConverter.GetBytes((ushort)3),quat="0000000000000000000000000000803f",pos_x=1e9,pos_y=2095,pos_z=1e9};
+        var near=new StaticWorldObject{type=BitConverter.GetBytes((ushort)3),quat=far.quat,pos_x=46323.223304703366,pos_y=2095,pos_z=-12176.776695296638};
+        site.realObjects.Clear();site.realObjects.AddRange(new[]{far,near});
+        Assert.False(MissionInteriorSites.Eligible(m.phases[0],site,out why,1));Assert.Equal("NoInteriorNativeUse:Computer",why);
+        Assert.Same(far,MissionStaging.SelectObjects(m.phases[0],site,new Random(1)).Single().Spot);
+        site.realObjects.Reverse();Assert.True(MissionInteriorSites.Eligible(m.phases[0],site,out why,1),why);
+        Assert.Same(near,MissionStaging.SelectObjects(m.phases[0],site,new Random(1)).Single().Spot);
     }
     private static MissionOpenFloorChoice Choice(Mission m,StaticWorldObject source,int phase=0) =>
         new(1,548,JsonSerializer.Serialize(source,Fields));
