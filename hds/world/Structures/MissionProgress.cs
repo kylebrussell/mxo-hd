@@ -32,6 +32,8 @@ namespace hds
         internal int? openFloorLegacyPhase;
         // Runtime-only quarantine: retain the durable checkpoint and owned items for explicit abort.
         internal string restoreRefusal;
+        internal readonly Dictionary<string,MissionElevatorWitness> elevatorWitnesses=new Dictionary<string,MissionElevatorWitness>();
+        internal MissionElevatorWitness ElevatorFor(MissionSite value)=>value!=null&&elevatorWitnesses.TryGetValue(MissionOpenFloorSite.CatalogFingerprint(value),out var witness)?witness:null;
         public readonly List<MissionSite> sites = new List<MissionSite>();         // every site used so far, in phase order
         public List<MissionWaypoint> waypoints = new List<MissionWaypoint>();      // this phase's, as sent
         public readonly List<double[]> exits = new List<double[]>();              // other places that count as leaving

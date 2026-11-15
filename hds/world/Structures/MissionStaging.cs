@@ -170,18 +170,29 @@ namespace hds
                 client.playerData.missionPreview=null;client.playerData.missionPreviewFor=null;
             }
 
+            // No layout RNG is consumed between site choice and object placement. Materialize the
+            // same choices here so an unsupported bound record fails before any NPC/global mob exists.
+            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            if(prepared!=null)
+                foreach(var c in prepared.Selection.Choices)
+                    MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
+                        OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
+
             progress.site = site;
+            if(prepared?.Selection.Elevator!=null)progress.elevatorWitnesses[MissionOpenFloorSite.CatalogFingerprint(site)]=prepared.Selection.Elevator;
+            var elevatorWitness=progress.ElevatorFor(site);var floorDoor=MissionElevatorPoses.Floor(site,elevatorWitness);
+            var lobbyDoor=elevatorWitness==null?new MissionOpenFloorResolver.Position(site.lobbyDoor.pos_x,site.lobbyDoor.pos_y,site.lobbyDoor.pos_z):MissionElevatorPoses.Position(elevatorWitness.Lobby);
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
             {
                 new MissionWaypoint
                 {
-                    x = site.elevatorDoor.pos_x, y = site.elevatorDoor.pos_y, z = site.elevatorDoor.pos_z,
+                    x = floorDoor.X, y = floorDoor.Y, z = floorDoor.Z,
                     doorHex = MissionSites.DoorHex(site.elevatorDoor)
                 }
             };
             progress.exits.Clear();
-            progress.exits.Add(new[] { site.lobbyDoor.pos_x, site.lobbyDoor.pos_y, site.lobbyDoor.pos_z });
+            progress.exits.Add(new[] { lobbyDoor.X,lobbyDoor.Y,lobbyDoor.Z });
             Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor in " + site.neighbourhood + " (" + site.CentreX + "," + site.floorY + "," +
                                  site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
 
@@ -190,7 +201,7 @@ namespace hds
             if(MissionOpenFloorAdmission.Requires(phase)&&placed.Count+SpotsForWaves(phase)>0)
             {
                 int count=placed.Count+SpotsForWaves(phase);
-                if(!MissionInteriorSites.TryAllocate(site,count,out var allocated,out string why))throw new MissionCheckpointException("Interior NPC admission changed: "+why);
+                if(!MissionInteriorSites.TryAllocate(site,count,out var allocated,out string why,elevatorWitness))throw new MissionCheckpointException("Interior NPC admission changed: "+why);
                 if(allocated.Length>0)sourceSpots=allocated;
             }
             List<double[]> spots = sourceSpots
@@ -274,7 +285,7 @@ namespace hds
                 }
             }
 
-            if(prepared==null)PlaceObjects(client, progress, rng);
+            if(prepared==null)PlaceObjects(client, progress, objectChoices);
             else PlacePreparedObjects(client,progress,prepared);
 
             for (int i = 0; i < besideObjects.Count; i++)
@@ -363,8 +374,7 @@ namespace hds
             internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
             {Definition=definition;Spot=spot;Goid=goid;}
         }
-        // Shared exact chooser. The legacy iterator still yields between each spawn;
-        // only opt-in open-floor preflight materializes it before mutation.
+        // Shared exact chooser. Staging materializes it before publishing any phase entities.
         internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
         {
             List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
@@ -409,9 +419,16 @@ namespace hds
             }
         }
 
-        private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
+        internal static ObjectChoice[] PrepareObjectChoices(MissionPhase phase,MissionSite site,Random rng)
         {
-            foreach (ObjectChoice choice in SelectObjects(progress.Phase,progress.site,rng))
+            var choices=SelectObjects(phase,site,rng).ToArray();
+            foreach(var choice in choices)
+                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+            return choices;
+        }
+        private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
+        {
+            foreach (ObjectChoice choice in choices)
             {
                 MissionObjectDef def=choice.Definition;StaticWorldObject spot=choice.Spot;ushort goid=choice.Goid;
                 if (spot == null)
@@ -542,9 +559,7 @@ namespace hds
             ConfigureSourceBinding(obj,state);
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
-            var pose = MissionObjectPoses.For(state);
-            SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
-            SetAttribute(obj, "Orientation", pose.Orientation);
+            ApplyObjectPose(obj,state);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
             // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });
@@ -571,6 +586,13 @@ namespace hds
                 });
             }
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
+        }
+
+        internal static void ApplyObjectPose(GameObject obj,MissionObjectState state)
+        {
+            var pose=MissionObjectPoses.For(state);
+            SetAttribute(obj,"Position",NumericalUtils.doublesToLtVector3d(pose.X,pose.Y,pose.Z));
+            SetAttribute(obj,"Orientation",pose.Orientation);
         }
 
         private static void SetAttribute(GameObject obj, string name, byte[] value)
@@ -700,7 +722,7 @@ namespace hds
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
 
-            MissionSite site = progress.sites.LastOrDefault(s => used != null ? MissionSites.InShaft(s, used) : MissionSites.InShaft(s, x, z));
+            MissionSite site = progress.sites.LastOrDefault(s => used != null ? MissionElevatorPoses.InShaft(progress,s,used) : MissionElevatorPoses.InShaft(progress,s,x,z));
             if (site == null)
             {
                 return false;
@@ -708,7 +730,9 @@ namespace hds
 
             bool current = site == progress.site && !progress.waitingForExit;
             StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
-            if (Math.Abs(py - target.pos_y) < 200)
+            var targetWitness=progress.ElevatorFor(site);
+            double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
+            if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
             }
@@ -716,7 +740,7 @@ namespace hds
             client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(0x28000a70, 0x26000014, 0, 1, 0, "",
                 current ? ElevatorUpLine : ElevatorDownLine));
             client.FlushQueue();
-            Output.WriteDebugLog("[MISSION] Elevator: to " + target.pos_y);
+            Output.WriteDebugLog("[MISSION] Elevator: to " + targetY);
             var rideRequested = System.Diagnostics.Stopwatch.StartNew();
             var stamp=new MissionRideStamp(client,progress);
             DelayedActions.AfterFor(client, 2, () =>
@@ -746,15 +770,18 @@ namespace hds
 
             // Into the car at the other floor, as the street door's car is: a couple of metres from its door towards the
             // middle of the building. Retail stood players 50 units below a floor after a ride (y 2495 on floor 2545).
-            double dx = site.CentreX - target.pos_x, dz = site.CentreZ - target.pos_z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
-            double x = target.pos_x + dx / length * 200, y = target.pos_y - 50, z = target.pos_z + dz / length * 200;
+            var witness=progress.ElevatorFor(site);
+            var measured=witness==null?new MissionOpenFloorResolver.Position(target.pos_x,target.pos_y,target.pos_z):
+                MissionElevatorPoses.Position(ReferenceEquals(target,site.elevatorDoor)?witness.Floor:witness.Lobby);
+            double dx = site.CentreX - measured.X, dz = site.CentreZ - measured.Z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
+            double x = measured.X + dx / length * 200, y = measured.Y - 50, z = measured.Z + dz / length * 200;
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
             Output.WriteDebugLog("[MISSION] Elevator navigation start");
-            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), target.pos_x, y, target.pos_z, out NavLocation car) &&
+            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
-                x = NearestOnMesh(client, target.pos_x, y, target.pos_z, out z);
+                x = NearestOnMesh(client, measured.X, y, measured.Z, out z);
             }
 
             Output.WriteDebugLog("[MISSION] Elevator navigation finished");

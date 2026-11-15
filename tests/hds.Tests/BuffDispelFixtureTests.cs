@@ -100,12 +100,25 @@ public class BuffDispelFixtureTests:IDisposable
     {
         WithEnvironment("1","mxotest_dispel","0",()=>
         {
+            var previousWorld=Store.world;var previousClients=WorldServer.Clients;
             var caster=Client();var target=Client();
-            Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
-            AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
-            Assert.True(AbilityBuffs.IsActive(target,49));
-            AbilityHostile.LandedOnPlayer(caster,target,261);
-            Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
+            // Exercise the normal watcher publication path against an owned empty world,
+            // independent of whichever static world/client table another test restored.
+            WorldServer.Clients=new Dictionary<string,WorldClient>();
+            Store.world=(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            try
+            {
+                Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
+                AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
+                Assert.True(AbilityBuffs.IsActive(target,49));
+                AbilityHostile.LandedOnPlayer(caster,target,261);
+                Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
+            }
+            finally
+            {
+                try {AbilityBuffs.RemoveAll(target);AbilityBuffs.RemoveAll(caster);}
+                finally {Store.world=previousWorld;WorldServer.Clients=previousClients;}
+            }
         });
     }
 

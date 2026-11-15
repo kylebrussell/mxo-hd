@@ -12,6 +12,7 @@ public static class InteriorAdmissionFixture
     static readonly int[] Common={1201,1204,1203,1205,1206,1207,1208};
     public static readonly InteriorAdmissionCase Machines=new("interior-admission-machines",201201,"Disturbing Trends",2,201101,17000,495,2300,
         Common.Concat(Enumerable.Range(2201,10)).Concat(new[]{201101,201102,201103}).ToArray(),1,1,6783,0x0d100024,0x0d1001ed);
+    public static readonly InteriorAdmissionCase ElevatorNativePose=Machines with {Name="mission-elevator-native-pose"};
     public static readonly InteriorAdmissionCase Merv=new("interior-admission-merv",301203,"Turf of Vengeance",3,301203,17000,495,2300,
         MervPropagandaFixture.Prerequisites.Concat(new[]{301202}).ToArray(),1,7,6832,0x0ee00271,0x0ee0004b);
     public static readonly InteriorAdmissionCase Zion=new("interior-admission-zion",101209,"Hardline Hunter",1,101208,7800,95,13795,
