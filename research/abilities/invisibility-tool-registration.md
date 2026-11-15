@@ -1,0 +1,15 @@
+# Invisibility Belt live registration
+
+The shipped client.dll SHA256 is cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a. The original gameobjects.gob SHA256 is 3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103. No client resource is modified.
+
+GO460 is a Tool with ReqAbilityID 2148626432, decoded to1116. Loaded parent175 (InvisibilityAbility) has the stored while-enabled TargetAbilityGrant1116, DurationType2 and WhenEnabled0. ValueFunction/MinValue/MaxValue are omitted and remain the catalog's zero-valued grant contract. Parent175 is a real archived ability;1116 is its derived grant, not a separately owned row. Its absence from Actions > Abilities is also expected from RequiresTool1; that is not by itself evidence of an unloaded parent.
+
+The native Tools double-click route6205a794→621ed630 calls621d84d0. The latter calls621d8380, which extracts ReqAbilityID via621d09f0 (literal ReqAbilityID at62871018). At621d8406 it passes that1116 to62024870. This calls621d5ad0 with four null output pointers. In an active world,621d5b43..5b5d checks the live actor's625c2720 with1116 and flag0, returning15000065 on failure. The tool wrapper turns this into the local missing-required-ability refusal150000cb. It does not send a tool request in that branch.
+
+625c2720 reads the live actor's ability map at+110 and the disabled-ability set at+134. The pre-world Margin archive map checked on621d5bb8's alternate path is different. A database is_loaded row and receipt of a base80b2 are therefore insufficient proof that the active actor passes this predicate.
+
+The already established native80bc dispatcher621e10a0→625fd730→625ebb90 uses locator low byte3 for AddAbilityGrant625e97e0 or RmvAbilityGrant625e95a0. Arguments are target:u16, source:u32, grantLevel:i32, duration:f32, type:u8. These are the same consumer and lifecycle used by native-validated356→1087 and the25 captured relations in research/protocol/loaded-grant-membership.json. The new175→1116 relation is qualified by the stored template and this native tool consumer; it is **not** claimed as an additional captured retail sample. Existing25 capture records/counts remain unchanged.
+
+Proposed normal registration: after actual0c01 avatar-ready, base80b25c0400000802 then80bc45035c0400af0000005c04000000000000000000. Unload uses80b35c04 then matching membership removal; duplicate readiness is idempotent; a new world waits for readiness again. The record's zero level preserves the existing GrantLevel policy. This applies only to175→1116; other tools, scaled151 grants, archive ownership and memory rules remain unchanged.
+
+Claude's nativec0098827 test positively established Tools listing and a local refusal without1116; the received live registry was not dumped. The missing registration is the source-backed explanation and proposed fix. Native success must still be observed; no local client has been run to validate it. Reproduce primary checks with inspect_invisibility_tool_registration.py. Temporary expanded address dumps are retained in mxo-invisibility-loaded-primary-20261115.

@@ -70,10 +70,10 @@ namespace hds
             }
             return true;
         }
-        internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal)
+        internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal,MissionElevatorWitness elevator=null)
         {
             spots=Array.Empty<double[]>();
-            if(!TryRegion(site,out var region,out refusal))return false;
+            if(!TryRegion(site,out var region,out refusal,elevator))return false;
             if(count<0){refusal="InvalidInteriorNpcCount";return false;}
             var markers=site.npcSpots.Where(s=>s!=null&&s.Length>=4&&s.Take(4).All(double.IsFinite))
                 .OrderByDescending(s=>Math.Pow(s[0]-site.elevatorDoor.pos_x,2)+Math.Pow(s[2]-site.elevatorDoor.pos_z,2)).ToArray();
@@ -106,11 +106,12 @@ namespace hds
                 !NavMesh.Locate(site.metrId,p.X,p.Y,p.Z,out var at)||!region.SameSpace(at))return null;
             return new NavPoint{x=p.X,y=p.Y,z=p.Z,location=at};
         }
-        internal static bool TryRegion(MissionSite site,out G.ReachableRegion region,out string refusal)
+        internal static bool TryRegion(MissionSite site,out G.ReachableRegion region,out string refusal,MissionElevatorWitness elevator=null)
         {
             region=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSite(site)||site.metrId!=1){refusal="UnsupportedInteriorSite";return false;}
             string key=NavMesh.SnapshotRevision+":"+DataLoader.DataPath("mission_open_floor")+":"+MissionOpenFloorSite.CatalogFingerprint(site);
+            if(elevator!=null)return Build(site,out region,out refusal,elevator);
             var entry=cache.GetOrCreateValue(site);
             lock(entry)
             {
@@ -121,12 +122,12 @@ namespace hds
                 region=entry.Region;refusal=entry.Refusal;return entry.Result;
             }
         }
-        private static bool Build(MissionSite site,out G.ReachableRegion region,out string refusal)
+        private static bool Build(MissionSite site,out G.ReachableRegion region,out string refusal,MissionElevatorWitness elevator=null)
         {
             region=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSite(site)||site.metrId!=1){refusal="UnsupportedInteriorSite";return false;}
             var door=site.elevatorDoor;
-            var entry=MissionOpenFloorEntry.Calculate(site.metrId,new G.Position(door.pos_x,door.pos_y,door.pos_z),site.CentreX,site.CentreZ,
+            var entry=MissionOpenFloorEntry.Calculate(site.metrId,MissionElevatorPoses.Floor(site,elevator),site.CentreX,site.CentreZ,
                 "normal Ride entry for generated interior admission");
             if(entry.Root==null){refusal=entry.Refusal;return false;}
             if(!NavMesh.Locate(site.metrId,entry.Root.Standing.X,entry.Root.Standing.Y,entry.Root.Standing.Z,out var rootNav)||!rootNav.indoors)

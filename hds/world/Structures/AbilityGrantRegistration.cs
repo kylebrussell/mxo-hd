@@ -59,7 +59,7 @@ namespace hds
         }
         private sealed class Holder { internal readonly Presentation State=new Presentation(); }
         private static readonly ConditionalWeakTable<WorldClient,Holder> holders=new ConditionalWeakTable<WorldClient,Holder>();
-        // Exact capture-qualified pairs; legacy and scaled grants keep their existing paths.
+        // Exact capture-qualified pairs; keep this set distinct from native-consumer-qualified tools.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedPairs { get; } = Array.AsReadOnly(new (ushort Source,ushort Target)[] {
             (51,1094),
             (64,1078),
@@ -87,10 +87,15 @@ namespace hds
             (490,1091),
             (533,1066)
         });
+        // Stored175 grants1116; native tool admission reads the live actor's grant registry, not Margin alone.
+        // Primary contract: research/abilities/invisibility-tool-registration.md. No new level formula.
+        internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
+            Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
+        internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs => ObservedPairs.Concat(NativeToolPairs);
         public static bool Handles(ushort parent,ushort child)
         {
             parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
-            if(!ObservedPairs.Any(p=>p.Source==parent && p.Target==child))return false;
+            if(!RegisteredPairs.Any(p=>p.Source==parent && p.Target==child))return false;
             var modifiers=AbilityCatalog.Find(parent)?.Modifiers.Where(m=>
                 AbilityCatalog.IdOf((uint)m.Number("TargetAbilityGrant"))==child &&
                 m.Number("WhenEnabled",-1)==0 && m.Number("DurationType",-1)==2).ToArray();
@@ -126,7 +131,7 @@ namespace hds
                        data.waitForRPCShutDown || data.DistrictIsLA())return;
                     lock(data.passives)
                     {
-                        var desired=ObservedPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
+                        var desired=RegisteredPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
                             .Select(p=>new Relation(p.Source,p.Target,0));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                     }
