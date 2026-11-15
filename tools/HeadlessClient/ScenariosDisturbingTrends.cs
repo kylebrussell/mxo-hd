@@ -99,6 +99,26 @@ public static partial class Scenarios
         async Task<ViewCreation> CurrentActor(ushort number,int expectedPhase)
         {
             var before=await Saved();Check.Equal(expectedPhase,before.Phase,"NPC selected from expected story phase");var actor=DisturbingTrendsFixture.StageNpcs(before,authored).Single(m=>m.Npc==number);
+            var npcPlan=MissionNpcInteriorRide.ForSite(before);
+            if(npcPlan!=null&&npcPlan.Witness.GetProperty("Selection").GetProperty("Phase").GetInt32()==before.Phase)
+            {
+                var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,npcPlan);var doors=MissionNpcInteriorProof.RequiredDoors(npcPlan);var opened=new HashSet<uint>();
+                foreach(var point in route.Skip(1))
+                {
+                    foreach(uint key in point.Doors)
+                    {
+                        if(!opened.Add(key))continue;var expected=doors.Single(d=>d.Key==key);NpcInteriorComputerState.DoorObservation? actual=null;
+                        await p.WaitUntilAsync(()=>{try{actual=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),expected);return true;}catch(InvalidDataException){return false;}},
+                            "Current certified own-GO portal door before Open",TimeSpan.FromSeconds(15));
+                        string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                        await p.WaitUntilAsync(()=>NpcInteriorComputerState.Read(p.World.CurrentOwnViewLife(),actual!.Capability)!=0x834,
+                            "Ordinary portal door leaves its closed state",TimeSpan.FromSeconds(15));
+                        checkpoints.Add(new{Step=step,Operation="owned-npc-portal-open",Door=expected,Current=actual,Request=request,NativePassageProven=false});
+                    }
+                    await MoveForMissionTest(p,point.Standing[0],point.Standing[1],point.Standing[2]);
+                }
+                checkpoints.Add(new{Step=step,Operation="owned-npc-certified-route",Plan=npcPlan,Route=route,NativeWalkingProven=false});
+            }
             await MoveForMissionTest(p,actor.X+100,actor.Y,actor.Z);DisturbingTrendsCurrentNpc.CurrentView? observed=null;
             await p.WaitUntilAsync(()=>{var current=Saved().GetAwaiter().GetResult();Check.Equal(expectedPhase,current.Phase,"NPC poll remains expected accepted stage");
                 var now=DisturbingTrendsFixture.StageNpcs(current,authored).Single(m=>m.Npc==number);Check.Equal(actor.Identity,now.Identity,"Selected owned NPC UUID unchanged");
