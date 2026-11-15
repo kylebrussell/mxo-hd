@@ -13,7 +13,7 @@ public sealed class TransmitCodeMode:NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"]="32766",["MXO_FREECAST_VIRAL_QA_DEFENSE15"]="0"},
         extraQaMetadata:new(){["TransmitCodePolicy"]="OURS1146/1148 percent to points on4*level+20, once through existing typed curve; no retail coefficient claim",
             ["Native593InitiallyLoaded"]=false,["CasterLoadout"]=string.Join(",",TypedResistanceFixture.Abilities),["ScopedControls"]="Existing1135raw65 and eligible TF2attack32766/defense0 only; no global combat/callback RNG"},
-        readyMessages:new[]{"OURS Transmit Code593: normal Hardline/LA load/unload; all prerequisite parents remain fixed. QAEnemy normal Hacker-style330 baseline424, loaded593401; Spy-style1135 baseline83, loaded59378. Loaded50 gives1146/1148+10 each =>22points. Helper474 DOT also uses current bonus. Existing scoped controls only. See docs/ABILITY-TRANSMIT-CODE.md."});
+        readyMessages:new[]{"OURS Transmit Code593: normal Hardline/LA load/unload; all prerequisite parents remain fixed. QAEnemy normal Hacker-style330 baseline538, loaded593510; Spy-style1135 baseline83, loaded59378. Loaded50 gives1146/1148+10 each =>22points. Helper474 DOT also uses current bonus. Existing scoped controls only. See docs/ABILITY-TRANSMIT-CODE.md."});
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var caster=await HeadlessPlayer.LoginAsync(context.Address,"QAEnemy","QAEnemy");context.Helpers.Add("QAEnemy",caster);
