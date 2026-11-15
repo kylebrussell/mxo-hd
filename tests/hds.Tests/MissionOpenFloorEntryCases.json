@@ -1,0 +1,148 @@
+{
+  "Cases": [
+    {
+      "Name": "51e509462f/phase1",
+      "Centre": [
+        25132.5,
+        14302.5
+      ],
+      "Door": [
+        25700,
+        3345,
+        13800
+      ],
+      "Expected": [
+        25550.263656786137,
+        3295,
+        13932.585925048399
+      ],
+      "RootId": [
+        209,
+        60,
+        3
+      ],
+      "Fallback": false,
+      "Proof": "Actual retained live checkpoint door+XYZ and unique selected source membership; offline reconstructed normal entry only"
+    },
+    {
+      "Name": "51e509462f/phase2",
+      "Centre": [
+        40550.0,
+        14350.0
+      ],
+      "Door": [
+        40900,
+        545,
+        15400
+      ],
+      "Expected": [
+        40970.71067811865,
+        495,
+        15470.710678118654
+      ],
+      "RootId": [
+        1118,
+        52,
+        8
+      ],
+      "Fallback": true,
+      "Proof": "Actual retained live checkpoint door+XYZ and unique selected source membership; offline reconstructed normal entry only"
+    },
+    {
+      "Name": "cae96c70b5/phase1",
+      "Centre": [
+        30137.5,
+        -8325.0
+      ],
+      "Door": [
+        30300,
+        545,
+        -6800
+      ],
+      "Expected": [
+        30278.80849421055,
+        495,
+        -6998.874131254861
+      ],
+      "RootId": [
+        555,
+        41,
+        3
+      ],
+      "Fallback": false,
+      "Proof": "Actual retained live checkpoint door+XYZ and unique selected source membership; offline reconstructed normal entry only"
+    },
+    {
+      "Name": "cae96c70b5/phase2",
+      "Centre": [
+        35300.0,
+        -21000.0
+      ],
+      "Door": [
+        35900,
+        1345,
+        -20600
+      ],
+      "Expected": [
+        35970.71067811865,
+        1295,
+        -20529.289321881344
+      ],
+      "RootId": [
+        298,
+        63,
+        8
+      ],
+      "Fallback": true,
+      "Proof": "Actual retained live checkpoint door+XYZ and unique selected source membership; offline reconstructed normal entry only"
+    },
+    {
+      "Name": "original-offline/phase1",
+      "Centre": [
+        31387.5,
+        -6597.5
+      ],
+      "Door": [
+        30300,
+        1345,
+        -6800
+      ],
+      "Expected": [
+        30350,
+        1295,
+        -6800
+      ],
+      "RootId": [
+        555,
+        45,
+        13
+      ],
+      "Fallback": true,
+      "Proof": "Named original offline selected site only; different from four actual live contexts"
+    },
+    {
+      "Name": "original-offline/phase2",
+      "Centre": [
+        7175,
+        15300
+      ],
+      "Door": [
+        7700,
+        945,
+        15400
+      ],
+      "Expected": [
+        7750,
+        895,
+        15400
+      ],
+      "RootId": [
+        1214,
+        65,
+        3
+      ],
+      "Fallback": true,
+      "Proof": "Named original offline selected site only; different from four actual live contexts"
+    }
+  ]
+}

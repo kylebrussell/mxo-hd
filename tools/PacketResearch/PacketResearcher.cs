@@ -22019,7 +22019,10 @@ public static partial class PacketResearcher
                 ReadUInt16LittleEndian(block.Payload, 2),
                 FormatPayloadWord(block.Payload, 4),
                 ReadUInt16LittleEndian(block.Payload, 4),
-                FormatHeader(block.Payload));
+                FormatHeader(block.Payload))
+            {
+                NativeFields = ManageBonusRecord.TryDecodePayload(block.Payload.ToArray(), out var native) ? native : null
+            };
         }
     }
 
@@ -22087,7 +22090,10 @@ public static partial class PacketResearcher
                 ReadUInt16LittleEndian(block.Payload, 2),
                 FormatPayloadWord(block.Payload, 4),
                 ReadUInt16LittleEndian(block.Payload, 4),
-                FormatHeader(block.Payload));
+                FormatHeader(block.Payload))
+            {
+                NativeFields = BaseAttributeRecord.TryDecodePayload(block.Payload.ToArray(),out var native) ? native : null
+            };
         }
     }
 

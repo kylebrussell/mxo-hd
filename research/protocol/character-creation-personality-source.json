@@ -1,0 +1,1423 @@
+{
+  "RepositoryBase": "c31c9d8b9c44cb436cb5c545624f05ed7969c1b0",
+  "ClientDllSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "TraitTable": [
+    308,
+    304,
+    303,
+    306,
+    305,
+    302,
+    307,
+    299,
+    301,
+    300
+  ],
+  "TraitTableBytes": "34010000300100002f01000032010000310100002e010000330100002b0100002d0100002c010000",
+  "VtableBase": "628cae28",
+  "Vtable": {
+    "0xbc": "0x6252a990",
+    "0xc0": "0x6252a9a0",
+    "0x120": "0x62527220"
+  },
+  "Type2JumpTargets": {
+    "Existing": "0x62541d4e",
+    "New": "0x62542738"
+  },
+  "Slices": {
+    "ui_choice_to_trait": {
+      "VA": "0x62054cb7",
+      "Length": 102,
+      "Bytes": "8b83dc0500008b0db01c9e6283c41883f80a898d4cfaffff730f8b148500068762899594faffffeb0ac78594faffff00100000b908000000be7ca69e628dbd54fafffff3a5b908000000be9ca69e628dbd74fafffff3a58b0df0f79d628b018d9528faffff52",
+      "Disassembly": [
+        "62054cb7 mov eax, dword ptr [ebx + 0x5dc]",
+        "62054cbd mov ecx, dword ptr [0x629e1cb0]",
+        "62054cc3 add esp, 0x18",
+        "62054cc6 cmp eax, 0xa",
+        "62054cc9 mov dword ptr [ebp - 0x5b4], ecx",
+        "62054ccf jae 0x62054ce0",
+        "62054cd1 mov edx, dword ptr [eax*4 + 0x62870600]",
+        "62054cd8 mov dword ptr [ebp - 0x56c], edx",
+        "62054cde jmp 0x62054cea",
+        "62054ce0 mov dword ptr [ebp - 0x56c], 0x1000",
+        "62054cea mov ecx, 8",
+        "62054cef mov esi, 0x629ea67c",
+        "62054cf4 lea edi, [ebp - 0x5ac]",
+        "62054cfa rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62054cfc mov ecx, 8",
+        "62054d01 mov esi, 0x629ea69c",
+        "62054d06 lea edi, [ebp - 0x58c]",
+        "62054d0c rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62054d0e mov ecx, dword ptr [0x629df7f0]",
+        "62054d14 mov eax, dword ptr [ecx]",
+        "62054d16 lea edx, [ebp - 0x5d8]",
+        "62054d1c push edx"
+      ]
+    },
+    "mediator_creation_setter": {
+      "VA": "0x62527267",
+      "Length": 59,
+      "Bytes": "8b550889b32c0100008d772c8dbb34010000b908000000f3a58d724c8dbb54010000b908000000f3a58b426c8d8b080100002bca8983740100008b",
+      "Disassembly": [
+        "62527267 mov edx, dword ptr [ebp + 8]",
+        "6252726a mov dword ptr [ebx + 0x12c], esi",
+        "62527270 lea esi, [edi + 0x2c]",
+        "62527273 lea edi, [ebx + 0x134]",
+        "62527279 mov ecx, 8",
+        "6252727e rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62527280 lea esi, [edx + 0x4c]",
+        "62527283 lea edi, [ebx + 0x154]",
+        "62527289 mov ecx, 8",
+        "6252728e rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62527290 mov eax, dword ptr [edx + 0x6c]",
+        "62527293 lea ecx, [ebx + 0x108]",
+        "62527299 sub ecx, edx",
+        "6252729b mov dword ptr [ebx + 0x174], eax",
+        "625272a1 .byte 0x8b"
+      ]
+    },
+    "native_creation_sender": {
+      "VA": "0x6253e8e7",
+      "Length": 25,
+      "Bytes": "8b46588b4ddc8941298b566c8b45dc8d4e70518d4dcc895041",
+      "Disassembly": [
+        "6253e8e7 mov eax, dword ptr [esi + 0x58]",
+        "6253e8ea mov ecx, dword ptr [ebp - 0x24]",
+        "6253e8ed mov dword ptr [ecx + 0x29], eax",
+        "6253e8f0 mov edx, dword ptr [esi + 0x6c]",
+        "6253e8f3 mov eax, dword ptr [ebp - 0x24]",
+        "6253e8f6 lea ecx, [esi + 0x70]",
+        "6253e8f9 push ecx",
+        "6253e8fa lea ecx, [ebp - 0x34]",
+        "6253e8fd mov dword ptr [eax + 0x41], edx"
+      ]
+    },
+    "request_fixed_constructor": {
+      "VA": "0x6253c6a0",
+      "Length": 167,
+      "Bytes": "8b4110c6000c8b511033c08942018b51108942058b51108942098b511089420d8b51108942118b51108942158b51108942198b511089421d8b51108942218b51108942258b51108942298b511089422d8b51108942318b51108942358b51108942398b511089423d8b51108942418b5110668942458b511089411466894118668942478b511089411c66894120668942498b5110894124668941286689424b89412c66894130c3",
+      "Disassembly": [
+        "6253c6a0 mov eax, dword ptr [ecx + 0x10]",
+        "6253c6a3 mov byte ptr [eax], 0xc",
+        "6253c6a6 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6a9 xor eax, eax",
+        "6253c6ab mov dword ptr [edx + 1], eax",
+        "6253c6ae mov edx, dword ptr [ecx + 0x10]",
+        "6253c6b1 mov dword ptr [edx + 5], eax",
+        "6253c6b4 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6b7 mov dword ptr [edx + 9], eax",
+        "6253c6ba mov edx, dword ptr [ecx + 0x10]",
+        "6253c6bd mov dword ptr [edx + 0xd], eax",
+        "6253c6c0 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6c3 mov dword ptr [edx + 0x11], eax",
+        "6253c6c6 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6c9 mov dword ptr [edx + 0x15], eax",
+        "6253c6cc mov edx, dword ptr [ecx + 0x10]",
+        "6253c6cf mov dword ptr [edx + 0x19], eax",
+        "6253c6d2 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6d5 mov dword ptr [edx + 0x1d], eax",
+        "6253c6d8 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6db mov dword ptr [edx + 0x21], eax",
+        "6253c6de mov edx, dword ptr [ecx + 0x10]",
+        "6253c6e1 mov dword ptr [edx + 0x25], eax",
+        "6253c6e4 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6e7 mov dword ptr [edx + 0x29], eax",
+        "6253c6ea mov edx, dword ptr [ecx + 0x10]",
+        "6253c6ed mov dword ptr [edx + 0x2d], eax",
+        "6253c6f0 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6f3 mov dword ptr [edx + 0x31], eax",
+        "6253c6f6 mov edx, dword ptr [ecx + 0x10]",
+        "6253c6f9 mov dword ptr [edx + 0x35], eax",
+        "6253c6fc mov edx, dword ptr [ecx + 0x10]",
+        "6253c6ff mov dword ptr [edx + 0x39], eax",
+        "6253c702 mov edx, dword ptr [ecx + 0x10]",
+        "6253c705 mov dword ptr [edx + 0x3d], eax",
+        "6253c708 mov edx, dword ptr [ecx + 0x10]",
+        "6253c70b mov dword ptr [edx + 0x41], eax",
+        "6253c70e mov edx, dword ptr [ecx + 0x10]",
+        "6253c711 mov word ptr [edx + 0x45], ax",
+        "6253c715 mov edx, dword ptr [ecx + 0x10]",
+        "6253c718 mov dword ptr [ecx + 0x14], eax",
+        "6253c71b mov word ptr [ecx + 0x18], ax",
+        "6253c71f mov word ptr [edx + 0x47], ax",
+        "6253c723 mov edx, dword ptr [ecx + 0x10]",
+        "6253c726 mov dword ptr [ecx + 0x1c], eax",
+        "6253c729 mov word ptr [ecx + 0x20], ax",
+        "6253c72d mov word ptr [edx + 0x49], ax",
+        "6253c731 mov edx, dword ptr [ecx + 0x10]",
+        "6253c734 mov dword ptr [ecx + 0x24], eax",
+        "6253c737 mov word ptr [ecx + 0x28], ax",
+        "6253c73b mov word ptr [edx + 0x4b], ax",
+        "6253c73f mov dword ptr [ecx + 0x2c], eax",
+        "6253c742 mov word ptr [ecx + 0x30], ax",
+        "6253c746 ret "
+      ]
+    },
+    "trait_named_printer": {
+      "VA": "0x62540ac2",
+      "Length": 29,
+      "Bytes": "8b4e108b594168282688628bcfe8ecceadff5357e8e5d0adff83c40868",
+      "Disassembly": [
+        "62540ac2 mov ecx, dword ptr [esi + 0x10]",
+        "62540ac5 mov ebx, dword ptr [ecx + 0x41]",
+        "62540ac8 push 0x62882628",
+        "62540acd mov ecx, edi",
+        "62540acf call 0x6201d9c0",
+        "62540ad4 push ebx",
+        "62540ad5 push edi",
+        "62540ad6 call 0x6201dbc0",
+        "62540adb add esp, 8",
+        "62540ade .byte 0x68"
+      ]
+    },
+    "existing_type2_decode": {
+      "VA": "0x62541d37",
+      "Length": 59,
+      "Bytes": "0fb6460d83c0fe83f80d0f87e7050000ff24854024546266817dec85048b45e88d7b2cb9080000008bf0f3a58d70208d7b6cb919010000f3a5a476",
+      "Disassembly": [
+        "62541d37 movzx eax, byte ptr [esi + 0xd]",
+        "62541d3b add eax, -2",
+        "62541d3e cmp eax, 0xd",
+        "62541d41 ja 0x6254232e",
+        "62541d47 jmp dword ptr [eax*4 + 0x62542440]",
+        "62541d4e cmp word ptr [ebp - 0x14], 0x485",
+        "62541d54 mov eax, dword ptr [ebp - 0x18]",
+        "62541d57 lea edi, [ebx + 0x2c]",
+        "62541d5a mov ecx, 8",
+        "62541d5f mov esi, eax",
+        "62541d61 rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62541d63 lea esi, [eax + 0x20]",
+        "62541d66 lea edi, [ebx + 0x6c]",
+        "62541d69 mov ecx, 0x119",
+        "62541d6e rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62541d70 movsb byte ptr es:[edi], byte ptr [esi]",
+        "62541d71 .byte 0x76"
+      ]
+    },
+    "new_type2_decode": {
+      "VA": "0x6254271e",
+      "Length": 124,
+      "Bytes": "8b55f00fb6420d83c0fe83f80b0f874b020000ff24852c2a54628b75f48b0689436c8b8e44040000898bb00400008b96480400008993b40400008d46048d53702bd08a08880c024084c975f68d46248d93900000002bd08a08880c024084c975f68d46448d93b00000002bd08d9b000000008a08880c024084c975f6",
+      "Disassembly": [
+        "6254271e mov edx, dword ptr [ebp - 0x10]",
+        "62542721 movzx eax, byte ptr [edx + 0xd]",
+        "62542725 add eax, -2",
+        "62542728 cmp eax, 0xb",
+        "6254272b ja 0x6254297c",
+        "62542731 jmp dword ptr [eax*4 + 0x62542a2c]",
+        "62542738 mov esi, dword ptr [ebp - 0xc]",
+        "6254273b mov eax, dword ptr [esi]",
+        "6254273d mov dword ptr [ebx + 0x6c], eax",
+        "62542740 mov ecx, dword ptr [esi + 0x444]",
+        "62542746 mov dword ptr [ebx + 0x4b0], ecx",
+        "6254274c mov edx, dword ptr [esi + 0x448]",
+        "62542752 mov dword ptr [ebx + 0x4b4], edx",
+        "62542758 lea eax, [esi + 4]",
+        "6254275b lea edx, [ebx + 0x70]",
+        "6254275e sub edx, eax",
+        "62542760 mov cl, byte ptr [eax]",
+        "62542762 mov byte ptr [edx + eax], cl",
+        "62542765 inc eax",
+        "62542766 test cl, cl",
+        "62542768 jne 0x62542760",
+        "6254276a lea eax, [esi + 0x24]",
+        "6254276d lea edx, [ebx + 0x90]",
+        "62542773 sub edx, eax",
+        "62542775 mov cl, byte ptr [eax]",
+        "62542777 mov byte ptr [edx + eax], cl",
+        "6254277a inc eax",
+        "6254277b test cl, cl",
+        "6254277d jne 0x62542775",
+        "6254277f lea eax, [esi + 0x44]",
+        "62542782 lea edx, [ebx + 0xb0]",
+        "62542788 sub edx, eax",
+        "6254278a lea ebx, [ebx]",
+        "62542790 mov cl, byte ptr [eax]",
+        "62542792 mov byte ptr [edx + eax], cl",
+        "62542795 inc eax",
+        "62542796 test cl, cl",
+        "62542798 jne 0x62542790"
+      ]
+    },
+    "mediator_accessors": {
+      "VA": "0x6252a990",
+      "Length": 23,
+      "Bytes": "8d81480f0000c3cccccccccccccccccc8d81880f0000c3",
+      "Disassembly": [
+        "6252a990 lea eax, [ecx + 0xf48]",
+        "6252a996 ret ",
+        "6252a997 int3 ",
+        "6252a998 int3 ",
+        "6252a999 int3 ",
+        "6252a99a int3 ",
+        "6252a99b int3 ",
+        "6252a99c int3 ",
+        "6252a99d int3 ",
+        "6252a99e int3 ",
+        "6252a99f int3 ",
+        "6252a9a0 lea eax, [ecx + 0xf88]",
+        "6252a9a6 ret "
+      ]
+    },
+    "inventory_selector_copy": {
+      "VA": "0x62198fd0",
+      "Length": 48,
+      "Bytes": "8b0df0f79d628bf08b01ff90c00000008bd8b908000000bf7ca69e62f3a58b0b890d48a69e628b934404000052b9e8a4",
+      "Disassembly": [
+        "62198fd0 mov ecx, dword ptr [0x629df7f0]",
+        "62198fd6 mov esi, eax",
+        "62198fd8 mov eax, dword ptr [ecx]",
+        "62198fda call dword ptr [eax + 0xc0]",
+        "62198fe0 mov ebx, eax",
+        "62198fe2 mov ecx, 8",
+        "62198fe7 mov edi, 0x629ea67c",
+        "62198fec rep movsd dword ptr es:[edi], dword ptr [esi]",
+        "62198fee mov ecx, dword ptr [ebx]",
+        "62198ff0 mov dword ptr [0x629ea648], ecx",
+        "62198ff6 mov edx, dword ptr [ebx + 0x444]",
+        "62198ffc push edx",
+        "62198ffd .byte 0xb9",
+        "62198ffe .byte 0xe8",
+        "62198fff movsb byte ptr es:[edi], byte ptr [esi]"
+      ]
+    },
+    "mediator_initializer": {
+      "VA": "0x62525e39",
+      "Length": 24,
+      "Bytes": "8bc8898680060000e87ad501008935908db062e8af7c0100",
+      "Disassembly": [
+        "62525e39 mov ecx, eax",
+        "62525e3b mov dword ptr [esi + 0x680], eax",
+        "62525e41 call 0x625433c0",
+        "62525e46 mov dword ptr [0x62b08d90], esi",
+        "62525e4c call 0x6253db00"
+      ]
+    },
+    "mediator_constructor": {
+      "VA": "0x6252a680",
+      "Length": 16,
+      "Bytes": "558bec515333db568bf1c70628ae8c62",
+      "Disassembly": [
+        "6252a680 push ebp",
+        "6252a681 mov ebp, esp",
+        "6252a683 push ecx",
+        "6252a684 push ebx",
+        "6252a685 xor ebx, ebx",
+        "6252a687 push esi",
+        "6252a688 mov esi, ecx",
+        "6252a68a mov dword ptr [esi], 0x628cae28"
+      ]
+    },
+    "interface_registration": {
+      "VA": "0x627c3bd0",
+      "Length": 48,
+      "Bytes": "6a0168a0888662b9e8f89d62e84f9badffc705e8f89d62b8af8662c705f4f89d62f0f79d62c705f0f79d6200000000e8",
+      "Disassembly": [
+        "627c3bd0 push 1",
+        "627c3bd2 push 0x628688a0",
+        "627c3bd7 mov ecx, 0x629df8e8",
+        "627c3bdc call 0x6229d730",
+        "627c3be1 mov dword ptr [0x629df8e8], 0x6286afb8",
+        "627c3beb mov dword ptr [0x629df8f4], 0x629df7f0",
+        "627c3bf5 mov dword ptr [0x629df7f0], 0",
+        "627c3bff .byte 0xe8"
+      ]
+    }
+  },
+  "SourceFiles": {
+    "hds/margin/MarginClient.cs": "a7405c0f7972d5fe8aa7fc2d92c7705cf3aecee54fb20e80c94389039573c0fa",
+    "hds/databases/mysql/MyMarginDBAccess.cs": "0c9cbe2f4f470a30ba1d0a75caa9ebda87c186d069572ca55680b92a7aa8f0a2",
+    "hds/databases/mysql/MyWorldDbAccess.cs": "f53fadc63270a56417bed1265fcffddd53d4c0041b8751a25f01ef96bb3edcc2",
+    "hds/world/Structures/PlayerProgression.cs": "9542cf88e50a94b96c372370ed01c67b70faaa601eab020216c42808c4fce812",
+    "hds/world/Structures/AttributeAllocation.cs": "f0339f42dc9df24cf1f8a7fddfc1bddb79800dff5db1ae6af56a0a11fbfa73d1",
+    "hds/databases/Entities/Character.cs": "47114f7375e86726ee3c23aa8eae356d9ff7eaf29365f834a652d544149b35ce",
+    "hds/databases/Entities/MatrixDbContext.cs": "7fdb5d5e3a5f2dab6727cf2d1332109e19d6a21c8864eb0209f0467d48a67cfc",
+    "tools/HeadlessClient/MarginSession.cs": "d87f285cf20b61b5957539a0656c0561d1b3720d9809315313ee2b9061239b9a",
+    "tools/HeadlessClient/Scenario.cs": "947d30f8dc317bba14275794d2b308758fd24a47923a39f8620884989d72e210"
+  },
+  "AppearancePrinter": {
+    "Function": "62540820",
+    "Fields": {
+      "body+9": "HeadID literal628ce9ac",
+      "body+25": "FacialHairID literal628ce978",
+      "body+29": "FacialHairColorID literal628ce964"
+    },
+    "BaselineQualification": "0743a8ee followed old server offsets; appearance was not native-correct. Missing RSI and wrong-trait observations remain valid."
+  },
+  "AppearanceFixtureSources": {
+    "StartingCharacterDataPath": "resource/misc/StartingCharacterData.xml",
+    "StartingCharacterDataSha256": "d97c45883787c0c933d83aee313d042ada2441ee3a3048e021fdf4a606d22e81",
+    "MaleSelectedClothing": [
+      1030,
+      987,
+      5907,
+      6727,
+      922,
+      6386,
+      1258
+    ],
+    "TypedNewRsiDescriptors": {
+      "BODY": 106,
+      "HEAD": 103,
+      "HAIR": 105
+    },
+    "NewRsiCsvSha256": "3519b35594c516ab3c8e3f375ecf558994f8731c3dff2340e969b3df62c63dab",
+    "ClothingCsvSha256": "23b9bcf5933333985a317f4f1c506dc968563ad4da246f2656861eda6ad00125",
+    "OriginalNewRsiCsvSha256": "b057692cb8d10b1adc6d33b1537cf1358d42c0d52ea1f4b659513626fe2c19d0"
+  },
+  "CreationClothingWhitelist": [
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_HAT_OPTIONS",
+      "Required": false,
+      "Slot": 97,
+      "Goids": [
+        1030
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_GLASSES_OPTIONS",
+      "Required": false,
+      "Slot": 98,
+      "Goids": [
+        987,
+        989,
+        1003
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_SHIRT_OPTIONS",
+      "Required": true,
+      "Slot": 99,
+      "Goids": [
+        5907,
+        1246,
+        1203,
+        1206,
+        5918,
+        1243
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_GLOVES_OPTIONS",
+      "Required": false,
+      "Slot": 100,
+      "Goids": [
+        6727
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_COAT_OPTIONS",
+      "Required": false,
+      "Slot": 101,
+      "Goids": [
+        922,
+        936
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_PANTS_OPTIONS",
+      "Required": true,
+      "Slot": 102,
+      "Goids": [
+        6386,
+        1109,
+        1101,
+        6388,
+        1061,
+        1104
+      ]
+    },
+    {
+      "Gender": 0,
+      "XmlGroup": "MALE_SHOES_OPTIONS",
+      "Required": true,
+      "Slot": 104,
+      "Goids": [
+        1258,
+        1260,
+        1263
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_HAT_OPTIONS",
+      "Required": false,
+      "Slot": 97,
+      "Goids": [
+        737
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_GLASSES_OPTIONS",
+      "Required": false,
+      "Slot": 98,
+      "Goids": [
+        671,
+        704
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_SHIRT_OPTIONS",
+      "Required": true,
+      "Slot": 99,
+      "Goids": [
+        842,
+        845,
+        834,
+        835
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_GLOVES_OPTIONS",
+      "Required": false,
+      "Slot": 100,
+      "Goids": [
+        726
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_COAT_OPTIONS",
+      "Required": false,
+      "Slot": 101,
+      "Goids": [
+        5621,
+        5602
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_PANTS_OPTIONS",
+      "Required": true,
+      "Slot": 102,
+      "Goids": [
+        748,
+        772,
+        5667,
+        801,
+        770,
+        5669,
+        5723
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_TIGHTS_OPTIONS",
+      "Required": false,
+      "Slot": 103,
+      "Goids": [
+        743
+      ]
+    },
+    {
+      "Gender": 1,
+      "XmlGroup": "FEMALE_SHOES_OPTIONS",
+      "Required": true,
+      "Slot": 104,
+      "Goids": [
+        6734,
+        905,
+        908
+      ]
+    }
+  ],
+  "KnownRsiAmbiguity": {
+    "Type": "HEAD",
+    "Id": 112,
+    "File": "data/newrsiIDs.csv",
+    "Rows": [
+      "RSIFHead001,112,0,HEAD,1",
+      "RSIFHead006,112,5,HEAD,1"
+    ],
+    "Policy": "Refuse only the selected ambiguous key; do not repair or guess its internal model.",
+    "ResolvedByPrimarySource": "One default CSV row corrected112->100. Native100 is ordinal0;112 remains5. Other19 existing legacy head-index mismatches remain explicitly outside this correction."
+  },
+  "NativeHeadDefaultGate": {
+    "Resource": "resource/characters/rsi/library.rsia",
+    "ResourceSha256": "d2e93160ea23f8a48987386c14ba3efaa46e449229794bd9aa825079955891ff",
+    "Heads": {
+      "0": {
+        "CategoryOffset": 4267,
+        "WidthBits": 5,
+        "Entries": [
+          {
+            "Index": 0,
+            "Id": 103,
+            "Label": "Male Head 1",
+            "Offset": 4279,
+            "RawHex": "67000b004d616c6520486561642031"
+          },
+          {
+            "Index": 1,
+            "Id": 104,
+            "Label": "Male Head 2",
+            "Offset": 4306,
+            "RawHex": "68000b004d616c6520486561642032"
+          },
+          {
+            "Index": 2,
+            "Id": 107,
+            "Label": "Male Head 3",
+            "Offset": 4333,
+            "RawHex": "6b000b004d616c6520486561642033"
+          },
+          {
+            "Index": 3,
+            "Id": 109,
+            "Label": "Male Head 4",
+            "Offset": 4360,
+            "RawHex": "6d000b004d616c6520486561642034"
+          },
+          {
+            "Index": 4,
+            "Id": 111,
+            "Label": "Male Head 5",
+            "Offset": 4387,
+            "RawHex": "6f000b004d616c6520486561642035"
+          },
+          {
+            "Index": 5,
+            "Id": 113,
+            "Label": "Male Head 6",
+            "Offset": 4414,
+            "RawHex": "71000b004d616c6520486561642036"
+          },
+          {
+            "Index": 6,
+            "Id": 116,
+            "Label": "Male Head 7",
+            "Offset": 4441,
+            "RawHex": "74000b004d616c6520486561642037"
+          },
+          {
+            "Index": 7,
+            "Id": 117,
+            "Label": "Male Head 8",
+            "Offset": 4468,
+            "RawHex": "75000b004d616c6520486561642038"
+          },
+          {
+            "Index": 8,
+            "Id": 119,
+            "Label": "Male Head 9",
+            "Offset": 4495,
+            "RawHex": "77000b004d616c6520486561642039"
+          },
+          {
+            "Index": 9,
+            "Id": 118,
+            "Label": "Male Head 10",
+            "Offset": 4522,
+            "RawHex": "76000c004d616c652048656164203130"
+          },
+          {
+            "Index": 10,
+            "Id": 131,
+            "Label": "Male Head 13",
+            "Offset": 4550,
+            "RawHex": "83000c004d616c652048656164203133"
+          },
+          {
+            "Index": 11,
+            "Id": 132,
+            "Label": "Male Head 11",
+            "Offset": 4578,
+            "RawHex": "84000c004d616c652048656164203131"
+          },
+          {
+            "Index": 12,
+            "Id": 134,
+            "Label": "Male Head 12",
+            "Offset": 4606,
+            "RawHex": "86000c004d616c652048656164203132"
+          },
+          {
+            "Index": 13,
+            "Id": 135,
+            "Label": "Male Head 14",
+            "Offset": 4634,
+            "RawHex": "87000c004d616c652048656164203134"
+          },
+          {
+            "Index": 14,
+            "Id": 133,
+            "Label": "Male Head 15",
+            "Offset": 4662,
+            "RawHex": "85000c004d616c652048656164203135"
+          },
+          {
+            "Index": 15,
+            "Id": 136,
+            "Label": "Male Head 16",
+            "Offset": 4690,
+            "RawHex": "88000c004d616c652048656164203136"
+          },
+          {
+            "Index": 16,
+            "Id": 139,
+            "Label": "Male Head 17",
+            "Offset": 4718,
+            "RawHex": "8b000c004d616c652048656164203137"
+          },
+          {
+            "Index": 17,
+            "Id": 140,
+            "Label": "Male Head 19",
+            "Offset": 4746,
+            "RawHex": "8c000c004d616c652048656164203139"
+          },
+          {
+            "Index": 18,
+            "Id": 137,
+            "Label": "Male Head 20",
+            "Offset": 4774,
+            "RawHex": "89000c004d616c652048656164203230"
+          },
+          {
+            "Index": 19,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4802,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 20,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4818,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 21,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4834,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 22,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4850,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 23,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4866,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 24,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4882,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 25,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4898,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 26,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4914,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 27,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4930,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 28,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4946,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 29,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4962,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 30,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4978,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 31,
+            "Id": 0,
+            "Label": "",
+            "Offset": 4994,
+            "RawHex": "00000000"
+          }
+        ]
+      },
+      "1": {
+        "CategoryOffset": 14557,
+        "WidthBits": 5,
+        "Entries": [
+          {
+            "Index": 0,
+            "Id": 100,
+            "Label": "Female Head1",
+            "Offset": 14569,
+            "RawHex": "64000c0046656d616c65204865616431"
+          },
+          {
+            "Index": 1,
+            "Id": 101,
+            "Label": "Female Head2",
+            "Offset": 14597,
+            "RawHex": "65000c0046656d616c65204865616432"
+          },
+          {
+            "Index": 2,
+            "Id": 102,
+            "Label": "Female Head3",
+            "Offset": 14625,
+            "RawHex": "66000c0046656d616c65204865616433"
+          },
+          {
+            "Index": 3,
+            "Id": 108,
+            "Label": "Female Head4",
+            "Offset": 14653,
+            "RawHex": "6c000c0046656d616c65204865616434"
+          },
+          {
+            "Index": 4,
+            "Id": 110,
+            "Label": "Female Head5",
+            "Offset": 14681,
+            "RawHex": "6e000c0046656d616c65204865616435"
+          },
+          {
+            "Index": 5,
+            "Id": 112,
+            "Label": "Female Head6",
+            "Offset": 14709,
+            "RawHex": "70000c0046656d616c65204865616436"
+          },
+          {
+            "Index": 6,
+            "Id": 114,
+            "Label": "Female Head7",
+            "Offset": 14737,
+            "RawHex": "72000c0046656d616c65204865616437"
+          },
+          {
+            "Index": 7,
+            "Id": 115,
+            "Label": "Female Head8",
+            "Offset": 14765,
+            "RawHex": "73000c0046656d616c65204865616438"
+          },
+          {
+            "Index": 8,
+            "Id": 130,
+            "Label": "Female Head9",
+            "Offset": 14793,
+            "RawHex": "82000c0046656d616c65204865616439"
+          },
+          {
+            "Index": 9,
+            "Id": 120,
+            "Label": "Female Head10",
+            "Offset": 14821,
+            "RawHex": "78000d0046656d616c6520486561643130"
+          },
+          {
+            "Index": 10,
+            "Id": 121,
+            "Label": "Female Head11",
+            "Offset": 14850,
+            "RawHex": "79000d0046656d616c6520486561643131"
+          },
+          {
+            "Index": 11,
+            "Id": 122,
+            "Label": "Female Head12",
+            "Offset": 14879,
+            "RawHex": "7a000d0046656d616c6520486561643132"
+          },
+          {
+            "Index": 12,
+            "Id": 123,
+            "Label": "Female Head13",
+            "Offset": 14908,
+            "RawHex": "7b000d0046656d616c6520486561643133"
+          },
+          {
+            "Index": 13,
+            "Id": 124,
+            "Label": "Female Head14",
+            "Offset": 14937,
+            "RawHex": "7c000d0046656d616c6520486561643134"
+          },
+          {
+            "Index": 14,
+            "Id": 125,
+            "Label": "Female Head15",
+            "Offset": 14966,
+            "RawHex": "7d000d0046656d616c6520486561643135"
+          },
+          {
+            "Index": 15,
+            "Id": 126,
+            "Label": "Female Head16",
+            "Offset": 14995,
+            "RawHex": "7e000d0046656d616c6520486561643136"
+          },
+          {
+            "Index": 16,
+            "Id": 127,
+            "Label": "Female Head17",
+            "Offset": 15024,
+            "RawHex": "7f000d0046656d616c6520486561643137"
+          },
+          {
+            "Index": 17,
+            "Id": 128,
+            "Label": "Female Head18",
+            "Offset": 15053,
+            "RawHex": "80000d0046656d616c6520486561643138"
+          },
+          {
+            "Index": 18,
+            "Id": 129,
+            "Label": "Female Head19",
+            "Offset": 15082,
+            "RawHex": "81000d0046656d616c6520486561643139"
+          },
+          {
+            "Index": 19,
+            "Id": 138,
+            "Label": "Female Head20",
+            "Offset": 15111,
+            "RawHex": "8a000d0046656d616c6520486561643230"
+          },
+          {
+            "Index": 20,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15140,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 21,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15156,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 22,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15172,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 23,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15188,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 24,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15204,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 25,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15220,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 26,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15236,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 27,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15252,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 28,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15268,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 29,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15284,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 30,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15300,
+            "RawHex": "00000000"
+          },
+          {
+            "Index": 31,
+            "Id": 0,
+            "Label": "",
+            "Offset": 15316,
+            "RawHex": "00000000"
+          }
+        ]
+      }
+    },
+    "NativeCalls": {
+      "Default": "620523c1..62052464: femaleHead100/male103/Hair0;62054a44 carriesHead to0c",
+      "Load": "6267fb6a female;6267fc08..6267fc6a readsIDu16 in order;62687140 stores vector+C8",
+      "Pack": "62686bc7..62686c0a scansID and writesordinal; zeroID branch62686bd3 leavesordinal0",
+      "Unpack": "62686dff..62686e2f readsordinal and indexes samevector"
+    },
+    "ExistingHeadCsvMismatches": [
+      {
+        "Csv": {
+          "Name": "RSIMHead009",
+          "NewRSIID": "118",
+          "InternalID": "8",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 9,
+            "Id": 118,
+            "Label": "Male Head 10",
+            "Offset": 4522,
+            "RawHex": "76000c004d616c652048656164203130"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead010",
+          "NewRSIID": "119",
+          "InternalID": "9",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 8,
+            "Id": 119,
+            "Label": "Male Head 9",
+            "Offset": 4495,
+            "RawHex": "77000b004d616c6520486561642039"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead013",
+          "NewRSIID": "133",
+          "InternalID": "12",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 14,
+            "Id": 133,
+            "Label": "Male Head 15",
+            "Offset": 4662,
+            "RawHex": "85000c004d616c652048656164203135"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead014",
+          "NewRSIID": "134",
+          "InternalID": "13",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 12,
+            "Id": 134,
+            "Label": "Male Head 12",
+            "Offset": 4606,
+            "RawHex": "86000c004d616c652048656164203132"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead015",
+          "NewRSIID": "135",
+          "InternalID": "14",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 13,
+            "Id": 135,
+            "Label": "Male Head 14",
+            "Offset": 4634,
+            "RawHex": "87000c004d616c652048656164203134"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead017",
+          "NewRSIID": "137",
+          "InternalID": "16",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 18,
+            "Id": 137,
+            "Label": "Male Head 20",
+            "Offset": 4774,
+            "RawHex": "89000c004d616c652048656164203230"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead018",
+          "NewRSIID": "139",
+          "InternalID": "17",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 16,
+            "Id": 139,
+            "Label": "Male Head 17",
+            "Offset": 4718,
+            "RawHex": "8b000c004d616c652048656164203137"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIMHead019",
+          "NewRSIID": "140",
+          "InternalID": "18",
+          "Type": "HEAD",
+          "Gender": "0"
+        },
+        "Native": [
+          {
+            "Index": 17,
+            "Id": 140,
+            "Label": "Male Head 19",
+            "Offset": 4746,
+            "RawHex": "8c000c004d616c652048656164203139"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead001",
+          "NewRSIID": "112",
+          "InternalID": "0",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 5,
+            "Id": 112,
+            "Label": "Female Head6",
+            "Offset": 14709,
+            "RawHex": "70000c0046656d616c65204865616436"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead009",
+          "NewRSIID": "120",
+          "InternalID": "8",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 9,
+            "Id": 120,
+            "Label": "Female Head10",
+            "Offset": 14821,
+            "RawHex": "78000d0046656d616c6520486561643130"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead010",
+          "NewRSIID": "121",
+          "InternalID": "9",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 10,
+            "Id": 121,
+            "Label": "Female Head11",
+            "Offset": 14850,
+            "RawHex": "79000d0046656d616c6520486561643131"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead011",
+          "NewRSIID": "122",
+          "InternalID": "10",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 11,
+            "Id": 122,
+            "Label": "Female Head12",
+            "Offset": 14879,
+            "RawHex": "7a000d0046656d616c6520486561643132"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead012",
+          "NewRSIID": "123",
+          "InternalID": "11",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 12,
+            "Id": 123,
+            "Label": "Female Head13",
+            "Offset": 14908,
+            "RawHex": "7b000d0046656d616c6520486561643133"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead013",
+          "NewRSIID": "124",
+          "InternalID": "12",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 13,
+            "Id": 124,
+            "Label": "Female Head14",
+            "Offset": 14937,
+            "RawHex": "7c000d0046656d616c6520486561643134"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead014",
+          "NewRSIID": "125",
+          "InternalID": "13",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 14,
+            "Id": 125,
+            "Label": "Female Head15",
+            "Offset": 14966,
+            "RawHex": "7d000d0046656d616c6520486561643135"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead015",
+          "NewRSIID": "126",
+          "InternalID": "14",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 15,
+            "Id": 126,
+            "Label": "Female Head16",
+            "Offset": 14995,
+            "RawHex": "7e000d0046656d616c6520486561643136"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead016",
+          "NewRSIID": "127",
+          "InternalID": "15",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 16,
+            "Id": 127,
+            "Label": "Female Head17",
+            "Offset": 15024,
+            "RawHex": "7f000d0046656d616c6520486561643137"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead017",
+          "NewRSIID": "128",
+          "InternalID": "16",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 17,
+            "Id": 128,
+            "Label": "Female Head18",
+            "Offset": 15053,
+            "RawHex": "80000d0046656d616c6520486561643138"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead018",
+          "NewRSIID": "129",
+          "InternalID": "17",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 18,
+            "Id": 129,
+            "Label": "Female Head19",
+            "Offset": 15082,
+            "RawHex": "81000d0046656d616c6520486561643139"
+          }
+        ]
+      },
+      {
+        "Csv": {
+          "Name": "RSIFHead019",
+          "NewRSIID": "130",
+          "InternalID": "18",
+          "Type": "HEAD",
+          "Gender": "1"
+        },
+        "Native": [
+          {
+            "Index": 8,
+            "Id": 130,
+            "Label": "Female Head9",
+            "Offset": 14793,
+            "RawHex": "82000c0046656d616c65204865616439"
+          }
+        ]
+      }
+    ],
+    "ByteSlices": [
+      {
+        "VA": "0x620523c1",
+        "Size": 165,
+        "Hex": "33c08945f089459089459c8945a08945a48945a88945acc78564ffffff01000000c78568ffffff08000000c7856cffffff0a000000898570ffffffc78574ffffff07000000c78578ffffff03000000c7857cffffff02000000c7458006000000c7458404000000c7458809000000c7458c050000008b45f08bd0f7da1bd283c2678bc8f7d91bc96bc02283e1fd83c167894d98895594b9080000008d7590bf7ca69e62f3a5",
+        "Sha256": "4793379fd4ff5b488c721ebe851d7933cb76b64f77372bff4201bb45382db309"
+      },
+      {
+        "VA": "0x62054a17",
+        "Size": 129,
+        "Hex": "b908000000be7ca69e628d7db4f3a58b8b140400008bc16bc0220fb79418d800000003c383c1078955b86bc9220fb790dc0000000fb70c198955bc0fb790ea0000008955c00fb690f9000000894dcc0fb688f60000008955d00fb690f50000000fb680f8000000894db48945c833c08955c4b9080000008d75b4bf7ca69e62f3a5",
+        "Sha256": "a6939256572e46969915624500a3992ef073559bc252a041cecacd61c11e09f1"
+      },
+      {
+        "VA": "0x6267fbc8",
+        "Size": 170,
+        "Hex": "ff003bd80f833001000033f68975e08975e48975e856538bcfc745fc01000000e8c3fac2ff8bf8908b47088bd0c1ea1ff6d2f6c201745e25ffffff003bf073556a00568bcfe89efac2ff6a028d4df0518bc8c745f000000000e8da3eb4ff8b45e43b45e8741785c0740a668b55f06689108b45e483c0028945e446ebab6a016a018d4def518d55f052508d4de0e8e62399ff46eb938b4c9dac8d45e05053518b4d0ce8d17400008b75e0",
+        "Sha256": "f38d01be12d60d6c9bced04b9deb2e167684042b9c4779a4f8631f90ccccd22d"
+      },
+      {
+        "VA": "0x62687140",
+        "Size": 47,
+        "Hex": "558bec568b750c83fe0c578bf9741c8b45108b97c80000008d0c76508d0c8ae83c6bc8ff8b45088944b7345f5e5dc2",
+        "Sha256": "b51bbc8f86c8dfb268f697067cbfd8f3578e9f458e023f59cab81b2d286ab74a"
+      },
+      {
+        "VA": "0x62686bc7",
+        "Size": 72,
+        "Hex": "84db74478b4d08668b7c71026685ffc645f80074268b108b40042bc2d1f833c985c07617eb038d490066393a740a4183c2023bc872f3eb03884df88b55f853528d4de8e891f8ffff",
+        "Sha256": "53b77c3dc805e6119c7d26722fe9dbad58a3741650980fcd2e000cb8a039d29d"
+      },
+      {
+        "VA": "0x62686dff",
+        "Size": 53,
+        "Hex": "84c07431508d4d0b518d4df4c6450b00e87cf7ffff8b078b57040fb64d0b2bd0d1fa3bca8b55fc730c668b04488b4d0c6689447102",
+        "Sha256": "b2fa152e401bf97f78c64459b349c4d9f13978dc60fa2d2905920747faf0800e"
+      },
+      {
+        "VA": "0x620a86d8",
+        "Size": 36,
+        "Hex": "8b97f00100008b3a8d4d94e8f8f9f5ff8d459450578d4d08e8bb14f6ff8bc8e844335d00",
+        "Sha256": "87d4edb1dd37f9d45094d755e1c9c124f398a5e3572b34cc70dce86bf3586ec7"
+      }
+    ],
+    "LooseOverridePresent": false
+  }
+}

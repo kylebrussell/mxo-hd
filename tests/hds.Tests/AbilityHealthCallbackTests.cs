@@ -24,6 +24,85 @@ public class AbilityHealthCallbackTests
         return BitConverter.ToUInt16(bytes,7);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void ZenDropsQueuedListenerIfWorldLifeOrLoadGenerationChanges(int change)
+    {
+        var c=Client();var random=AbilityHealthCallbacks.Random100;
+        try
+        {
+            AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityHealthCallbacks.Random100=()=>
+            {
+                if(change==0)c.playerData.worldGeneration++;
+                else if(change==1)c.playerData.lifeGeneration++;
+                else AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+                return 0;
+            };
+            AbilityHealthCallbacks.HealthChanged(c,1,true);
+            Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
+        }
+        finally {AbilityHealthCallbacks.Random100=random;}
+    }
+
+    [Fact]
+    public void ZenParentRunsOnceAcrossNestedHealingAndStopsAfterWorldReload()
+    {
+        var c=Client();var random=AbilityHealthCallbacks.Random100;var sample=AbilityHealthCallbacks.Random15;int calls=0;
+        try
+        {
+            AbilityHealthCallbacks.Random100=()=>{calls++;return 0;};AbilityHealthCallbacks.Random15=()=>0;
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            AbilityBuffs.Apply(c,196);PvpCombat.Damage(c,1);
+            Assert.Equal(1,calls);Assert.Equal(105,AbilityHandler.CurrentInnerStrength(c));
+            c.playerData.worldGeneration++;
+            AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>(),newWorld:true);
+            PvpCombat.Damage(c,1);Assert.Equal(1,calls);Assert.Equal(105,AbilityHandler.CurrentInnerStrength(c));
+            AbilityPassives.SetLoaded(c,new[]{((ushort)872,(ushort)30)});
+            PvpCombat.Damage(c,1);Assert.Equal(1,calls); // owning child alone is not ownership of parent
+        }
+        finally {AbilityHealthCallbacks.Random100=random;AbilityHealthCallbacks.Random15=sample;AbilityBuffs.RemoveAll(c);}
+    }
+
+    [Fact]
+    public void ZenMasterUsesLoadedParentHealthEventsChanceAndVitalCap()
+    {
+        var c=Client();var original=AbilityHealthCallbacks.Random100;
+        try
+        {
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)180);
+            AbilityHealthCallbacks.Random100=()=>0;
+            PvpCombat.Damage(c,1);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            AbilityHealthCallbacks.Reapply(c,872);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            AbilityHealthCallbacks.Random100=()=>15;
+            PvpCombat.Damage(c,1);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            AbilityHealthCallbacks.Random100=()=>14;
+            PvpCombat.Damage(c,1);Assert.Equal(185,AbilityHandler.CurrentInnerStrength(c));
+            AbilityHandler.HealSelf(c,1);Assert.Equal(190,AbilityHandler.CurrentInnerStrength(c));
+            AbilityHealthCallbacks.HealthChanged(c,0,true);Assert.Equal(190,AbilityHandler.CurrentInnerStrength(c));
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)198);
+            PvpCombat.Damage(c,1);Assert.Equal(200,AbilityHandler.CurrentInnerStrength(c));
+            AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+            c.playerInstance.InnerStrengthAvailable.setValue((ushort)180);
+            AbilityHealthCallbacks.Reapply(c,872);PvpCombat.Damage(c,1);
+            Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            AbilityPassives.SetLoaded(c,new[]{((ushort)871,(ushort)30)});
+            c.playerData.isDead=true;AbilityHealthCallbacks.HealthChanged(c,1,true);
+            Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            c.playerData.isDead=false;c.playerData.duelDeath=true;
+            AbilityHealthCallbacks.HealthChanged(c,1,true);Assert.Equal(180,AbilityHandler.CurrentInnerStrength(c));
+            Assert.True(AbilityHealthCallbacks.InternalEffect(872));
+            Assert.Equal(99,AbilityCatalog.Find(871).Number("CharStatsPrerequisite/ReqCharLevel"));
+            Assert.Empty(AbilityProgression.GrantsOf(871));
+        }
+        finally {AbilityHealthCallbacks.Random100=original;AbilityBuffs.RemoveAll(c);}
+    }
+
     [Fact]
     public void HealthWritersPresentAndReturnTheCompletedCallbackResult()
     {

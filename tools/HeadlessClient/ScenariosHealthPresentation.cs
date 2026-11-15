@@ -50,6 +50,7 @@ public static partial class Scenarios
         await p.EnterWorldAsync();await enemy.EnterWorldAsync();var view=await enemy.WaitForViewNamedAsync(p.Handle);
         foreach(var actor in new[]{p,enemy}) {actor.SendChat("?pvpflag on");await actor.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
         Cast(p,196);await p.WaitForRpcAsync(ModPattern(196,196));
+        await PrepareFreeCastViralFixture(context,enemy,474);
         Cast(enemy,474,view.ViewId);await p.WaitForRpcAsync(ModPattern(474,1157));
         await p.WaitForViewUpdateAsync(2,"02 80 80 80 c0 ?? ?? 30 30 04 00 28 ??",TimeSpan.FromSeconds(6));
         await AssertPresentedHealth(p,enemy,view.ViewId,"Damage over time");

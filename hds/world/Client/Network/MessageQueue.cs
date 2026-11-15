@@ -13,6 +13,38 @@ namespace hds
         public ArrayList rawMessages;
         public ArrayList worldPackets; // These are final worldPackets to be resend
         public int ackOnlyCount = 0;
+        private readonly object receiptSync=new object();
+        private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
+        private bool receiptSequenceKnown;
+        private ushort receiptLastSequence;
+        private long receiptLogicalSequence;
+        internal int ObjectReceiptCount {get{lock(receiptSync)return receipts.Count;}}
+        // Optional observer only: every SUCCESSFULLY dispatched packet advances the unambiguous 12-bit window.
+        internal void RecordDispatchedReceipts(ushort sequence,System.Collections.Generic.IEnumerable<SequencedMessage> messages)
+        {
+            sequence=(ushort)(sequence&0xfff);
+            lock(receiptSync)
+            {
+                if(receiptSequenceKnown)
+                {
+                    int delta=(sequence-receiptLastSequence)&0xfff;
+                    if(delta==0){receipts.RemoveWhere(r=>r.Finished);return;}
+                    if(delta>=0x800){foreach(var r in receipts)r.Cancel();receipts.Clear();receiptLogicalSequence=0;}
+                    else receiptLogicalSequence+=delta;
+                }
+                receiptSequenceKnown=true;receiptLastSequence=sequence;
+                foreach(var r in receipts)r.Advance(receiptLogicalSequence);
+                foreach(var message in messages)message.ObjectReceipt?.Dispatched(sequence,receiptLogicalSequence);
+                receipts.RemoveWhere(r=>r.Finished);
+            }
+        }
+        internal void ObserveObjectReceipts(ushort ack,ushort bits)
+        {
+            var exact=SequencedMessage.AckedSequences(ack,bits);
+            lock(receiptSync){foreach(var receipt in receipts)receipt.Observe(exact);receipts.RemoveWhere(r=>r.Finished);}
+        }
+        internal void CancelObjectReceipts()
+        {lock(receiptSync){foreach(var receipt in receipts)receipt.Cancel();receipts.Clear();receiptSequenceKnown=false;receiptLogicalSequence=0;}}
 
         public MessageQueue()
         {
@@ -27,6 +59,14 @@ namespace hds
          */
         public void addRpcMessage(byte[] messageBlock)
         {
+            if(MissionOutput.Stage(this,messageBlock,false,false))return;
+            QueueRpc(messageBlock,null,0);
+        }
+
+        // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
+        internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
+        private void QueueRpc(byte[] messageBlock,int? world,long transport)
+        {
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
             {
@@ -40,7 +80,7 @@ namespace hds
             content.append(rpcSizeByte);
             content.append(messageBlock);
 
-            SequencedMessage message = new SequencedMessage(content.getBytes());
+            SequencedMessage message = new SequencedMessage(content.getBytes()) { RpcWorldGeneration=world, RpcTransportEpoch=transport };
             // Same lock as the flush and ack code: the flush thread enumerates this list while packet
             // handlers add to it, and an unlocked Add crashed the server ("Collection was modified").
             lock (RPCMessagesQueue.SyncRoot)
@@ -49,9 +89,24 @@ namespace hds
             }
         }
 
+        // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.
+        internal void PruneUnassignedWorldRpcs(int world,long transport)
+        {
+            lock(RPCMessagesQueue.SyncRoot)
+                for(int i=RPCMessagesQueue.Count-1;i>=0;i--)
+                    if(((SequencedMessage)RPCMessagesQueue[i]).DiscardUnassignedWorldRpc(world,transport)) RPCMessagesQueue.RemoveAt(i);
+        }
+
         public void addObjectMessage(byte[]messageBlock,bool isTimed)
         {
-            SequencedMessage message = new SequencedMessage(messageBlock);
+            AddObject(messageBlock,isTimed,null);
+        }
+        internal void AddTrackedObject(byte[] messageBlock,ObjectMessageReceipt receipt)=>AddObject(messageBlock,false,receipt);
+        private void AddObject(byte[] messageBlock,bool isTimed,ObjectMessageReceipt receipt)
+        {
+            if(MissionOutput.Stage(this,messageBlock,true,isTimed,receipt))return;
+            if(receipt!=null)lock(receiptSync){receipts.RemoveWhere(r=>r.Finished);receipts.Add(receipt);}
+            SequencedMessage message = new SequencedMessage(messageBlock) {ObjectReceipt=receipt};
             message.isTimed = isTimed;
             lock (ObjectMessagesQueue.SyncRoot)
             {
@@ -73,6 +128,13 @@ namespace hds
                     }
                 }
             }
+        }
+
+        /// <summary>The client discarded every old-world view at comm reset, including unacked creations.</summary>
+        public void ForgetWorldObjects()
+        {
+            lock (ObjectMessagesQueue.SyncRoot) ObjectMessagesQueue.Clear();
+            CancelObjectReceipts();
         }
 
         public void addRawMessage(byte[] messageBlock)

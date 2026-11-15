@@ -1,0 +1,21 @@
+{
+  "policy": "OURS Sati-only arrival/returner placement, not a recovered retail arrival",
+  "nativePickingProven": false,
+  "navDecompressedSha256": "2af0a19c11c77af5dfa6a388739061a1ef2ebd1880a651bd78813cb36b31f930",
+  "map": 9,
+  "sector": 2,
+  "region": 3,
+  "polygon": 6,
+  "floorY": 0,
+  "polygonXZ": [[14400,-4050],[14050,-4050],[14050,-5050],[14050,-6000],[14400,-6000],[14400,-4400]],
+  "oldCoincidentArrivalAndReturner": [14070,95,-4070],
+  "arrival": [14225,95,-5225],
+  "generatedReturnerCentre": [14225,95,-4925],
+  "separationWorldUnits": 300,
+  "returnerGoidForZion": 38271,
+  "unchangedRawGobModelHalfExtents": [25,95,95],
+  "returnerFootprintXZ": [[14200,-5020],[14200,-4830],[14250,-5020],[14250,-4830]],
+  "oldOffFloorFootprintCornersXZ": [[14045,-4165],[14045,-3975],[14095,-3975]],
+  "unchanged": ["Goid/organization selection", "rule9007", "native default bounds/components", "0c unbound view", "identity orientation", "source CSV and four unbound47267 proxies", "other archive layouts", "owned-book authority and exact city-origin return"],
+  "nativeFailureObservation": "Claude reported hover-only returner/no80c7; retained c95 logs contain337zero. Actual old proxy pose and default bounds are source-implied, not observed client memory. Separation/edge is a concrete source layout defect; native picking cause is not proven."
+}

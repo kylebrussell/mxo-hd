@@ -1,0 +1,30 @@
+# Native QA fixture modes
+
+Each sealed `NativeQaMode` subclass is discovered from this assembly and owns one mode name, an immutable `NativeQaModePlan`, and an optional after-start hook. Add a file here for a new mode; the registry and shared Program require no mode-list edit. Names are ordinal and case-sensitive as before. Unknown names use DefaultMode, with dev commands off, no GM, no forced callback rolls and the default spawn/loadout.
+
+The plan owns ability IDs, X/Z spawn, environment privilege flags and ordered SQL stages: BeforeLoadout, AfterLoadout, AfterHelpers. Program still owns custom-loadout validation, discipline ancestors, common helper creation, snapshot copying, source/snapshot SHA equality, configured Debug/Release paths, client-lock lifecycle and shutdown. Moving these stages does not authorize running native setup. Read-only `--fixture-plan <mode>` serializes the actual environment and full plan before any setup; `--build-info` retains its provenance contract.
+
+`StealthShieldsMode.AfterStartAsync` retains the existing bootstrap217 activation and acknowledgement output. Do not replace it with assumed server state. Its native lifecycle remains Claude-only.
+
+When porting pending writer or Zen Master, merge updated master first, add a uniquely named mode file, and move that branch's exact loadout/environment/SQL or bootstrap into the appropriate plan/hook. Preserve default/unknown behavior and avoid granting dev/GM/fixed rolls to unrelated modes. If a mode needs existing values, use explicit source helpers rather than inventing defaults. Compile-items already retains PR135's compiler bag1, ordinary2399 archive307072/level1 and separate IS refill; Disguise slot1 replacement is scoped to remaining/health-callbacks. Do not import unmerged gameplay implementations while porting fixture configuration.
+
+`tests/hds.Tests/NativeQaLegacyPlans.json` records the21 pre-refactor plans from master ac2d878 (20 named/default configurations plus unknown fallback). Environments and metadata came from executing only the original read-only CLI; loadouts, spawn and ordered SQL came from running extracted original pure selection logic with a recording executor, never a database. Tests execute the new read-only CLI from an empty directory and compare all baseline fields. SQL literal line endings alone normalize for Windows/Linux checkout differences; SQL contents and stage ordering must match. New modes should have their own focused plan/CLI assertions rather than silently modifying the historical baseline.
+
+Generated shared table policy and pending-branch steps: [ABILITY-AUDIT.md](../../../docs/ABILITY-AUDIT.md).
+
+Per-profile `environmentOverrides` extends server environment fields without editing Program or the shared environment schema. Absent extension fields are serialized/passed as empty strings for every other profile, including unknown/default. Desperation alone sets `MXO_DESPERATION_QA_HOLD_HEALTH=1`; its loaded1149 and native callback fixture remain unchanged.
+
+Optional `extraQaMetadata` is an immutable primitive dictionary for additional state.json fields (for example boolean WriteCodeQa or integer ZenMasterForcedLevel). Constructor values are copied into immutable JsonElements; mutable objects are rejected. `StateWithMetadata` appends these after standard fields and throws on any key collision, so a mode cannot override character/provenance/standard flags. Old modes default to an empty map and retain the same state serialization. Optional `readyMessages` similarly belongs to the mode file, preserving existing health-callback notices without shared Program mode conditions. Both parameters append to the constructor for compatibility.
+
+`zion-chain` seeds only the ten Tyndall prerequisites before2304, starts at Mara for the remote contact and uses strict disposable site/layout-only seed230410. No combat/callback RNG override or health hold. Existing `?weaken 1` plus normal combat/UI actions are explicit in [ZION-PRIMA-CHAIN.md](../../../docs/ZION-PRIMA-CHAIN.md).
+
+`mission-presentation` seeds The Internuncio prerequisites1201/1204, starts near its bodies and enables the strict CSR110/mxotest fixed QA speech diagnostic. No forced RNG or health hold. Accept the actual mission through its UI before the diagnostic; see [MISSION-PRESENTATION.md](../../../docs/MISSION-PRESENTATION.md).
+
+`resist-damage` loads74/371 and owns deterministic6/8/9m helper boundaries through the shared disposable SQL builder. It enables existing health-reset dev commands, with no GM, forced roll or health hold. Team invites/native acceptance and health resets before each case are explicit in [ABILITY-RESIST-DAMAGE.md](../../../docs/ABILITY-RESIST-DAMAGE.md).
+
+`merv-chain`: Flood Prima2101â€“2110 (25 phases), prerequisite-only grants and strict site-only seed210110; see docs/MERV-PRIMA-CHAIN.md.
+
+mission-relog seeds Agent Gray mission2201 and uses the strict fixed ?missionpersist start control to accept2202 normally. It never fabricates active actors or overrides RNG. See [MISSION-PERSISTENCE.md](../../../docs/MISSION-PERSISTENCE.md) for the exact Get/relog/Loading Area/abort checklist.
+
+`protocol-family` loads Consistent Technique6 for a normal20-second modifier and nearby helper creation diagnostic. No dev/GM/forced RNG. See [PROTOCOL-FAMILY-DECODERS.md](../../../docs/PROTOCOL-FAMILY-DECODERS.md).
+`machines-chain` seeds only the seven Tyndall intro receipts and exposes Agent Gray's ten Prima missions2201–2210 at level50. Site-only seed220110 is guarded by exact dev/disposable DB checks; no combat/callback RNG or selected completion grants. [Route and source limits](../../../docs/MACHINES-PRIMA-CHAIN.md).

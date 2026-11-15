@@ -9,6 +9,13 @@ namespace hds
 {
     class InventoryHandler
     {
+        private sealed class ItemCast { }
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<WorldClient, ItemCast> itemCasts =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<WorldClient, ItemCast>();
+
+        private static bool ItemReady(WorldClient client) => client.Alive && client.playerData.getOnWorld() &&
+            !client.playerData.worldChangePending && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client);
+
         public void processItemMove(ref byte[] packet)
         {
             byte[] sourceSlot = {packet[0], packet[1]};
@@ -16,8 +23,12 @@ namespace hds
 
             UInt16 fromSlot =  NumericalUtils.ByteArrayToUint16(sourceSlot,1);
             UInt16 toSlot   = NumericalUtils.ByteArrayToUint16(destSlot,1);
-            Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
-            MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+            if(PrisonDevices.Equipment(Store.currentClient,fromSlot,toSlot)) return;
+            if(!MissionPersistence.MoveItem(Store.currentClient,fromSlot,toSlot))
+            {
+                Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
+                MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+            }
             TutorialMission.Of(Store.currentClient)?.OnInventoryItemMoved(fromSlot, toSlot);
 
             ServerPackets pak = new ServerPackets();
@@ -99,47 +110,34 @@ namespace hds
 
         public void processItemDelete(ref byte[] packet)
         {
-            if (packet.Length < 2)
+            WorldClient client=Store.currentClient;
+            if(!VendorTrading.TryRecycleRequest(packet,out UInt16 slot,out bool personal,out bool recycle))return;
+            // No current native UI producer of RecycleItem0 has been recovered. Refuse rather than guess destructive semantics.
+            if(!recycle){ClientActionsHandler.Notice(client,"Non-recycle removal is not supported.");return;}
+            lock(client.playerData.craftingSync)
             {
-                Output.WriteDebugLog("[INVENTORY] Item delete/recycle packet too short.");
-                return;
+                if(!personal){CentralStorageHandler.ProcessRecycle(client,slot);return;}
+                var db=Store.dbManager.WorldDbHandler;
+                Crafting.InventoryItem item=db.GetInventoryItems(client.playerData.getCharID()).Find(i=>i.Slot==slot);
+                if(item.Goid==0){ClientActionsHandler.Notice(client,"There is nothing to recycle in that slot.");return;}
+                UInt32 quote=VendorPricing.GetRecyclePrice(item.Goid,item.Count);
+                try
+                {
+                    InventoryPayout result=db.ExchangeInventoryForInfo(client.playerData.getCharID(),slot,item.Goid,item.Count,quote);
+                    if(result==null){ClientActionsHandler.Notice(client,"That inventory item changed; try again.");return;}
+                    client.playerData.setInfo(result.Cash);
+                    var packets=new ServerPackets();
+                    packets.SendInfoDelta(client,result.Credited,ServerPackets.InfoReasonRecycle);
+                    packets.SendInfoCurrent(client,result.Cash,ServerPackets.InfoReasonRecycle);
+                    packets.sendInventoryItemDelete(slot,client);
+                }
+                catch(Exception e)
+                {
+                    Output.WriteDebugLog("[INVENTORY] Recycle rolled back: "+e.Message);
+                    ClientActionsHandler.Notice(client,"The recycle could not be completed. Your item and information were kept.");
+                }
             }
-
-            // CLIENT_ITEM_RECYCLE (5d) body: slot u16 little-endian, then 01 01. Confirmed with the
-            // real client: recycling the item in slot 10 sent "0a 00 01 01"; retail "5d 04 00 01 01".
-            byte[] slotBytes = {packet[0], packet[1]};
-            UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
-
-            // 5d <slot u16> <PersonalInventoryItem u8> <RecycleItem u8>: 0 is a central storage entry (0x621d4ae0)
-            if (packet.Length >= 3 && packet[2] == 0)
-            {
-                CentralStorageHandler.ProcessRecycle(Store.currentClient, slot);
-                return;
-            }
-
-            UInt32 charId = Store.currentClient.playerData.getCharID();
-            UInt32 itemGoId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-            ServerPackets pak = new ServerPackets();
-            if (itemGoId == 0)
-            {
-                pak.sendSystemChatMessage(Store.currentClient, "There is nothing to recycle in that slot.", "MODAL");
-                return;
-            }
-
-            // Retail order: 80 e7 (+value, reason 0x0f) -> 80 e4 (new cash, 0x0f) -> 5f (remove slot).
-            long currentCash = Store.currentClient.playerData.getInfo();
-            UInt32 value = VendorPricing.GetRecyclePrice(itemGoId);
-            UInt32 newCash = (UInt32)Math.Min(Math.Max(currentCash, 0) + (long)value, UInt32.MaxValue);
-
-            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
-            Store.currentClient.playerData.setInfo(newCash);
-
-            pak.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonRecycle);
-            pak.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonRecycle);
-            pak.sendInventoryItemDelete(slot, Store.currentClient);
         }
-
 
         /// <summary>
         /// Uses the consumable in a bag slot, asked for with the item's ability in a 80 b9 request. Retail order
@@ -152,80 +150,116 @@ namespace hds
         {
             WorldClient client = Store.currentClient;
             ClientData data = client.playerData;
-            ServerPackets pak = new ServerPackets();
-            UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-
-            if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
-                consumable.AbilityId != abilityId)
+            lock (data.craftingSync)
             {
-                return false;
-            }
-
-            if (!ConsumableItems.IsUsable(consumable))
-            {
-                pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
-                return true;
-            }
-
-            double now = TimeUtils.GetSimTimeSeconds();
-            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
-                (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
-            {
-                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");
-                // Answered like retail's refused uses, so the client doesn't wait on it
-                client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(abilityId, AbilityCooldowns.DeniedTimerRunning));
-                client.FlushQueue();
-                return true;
-            }
-
-            AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
-            float castTime = ability != null ? ability.getCastingTime() : 0;
-            UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
-
-            // Block a second use while this one is still casting.
-            lock (data.cooldownEndsAt)
-            {
-                data.cooldownEndsAt[(UInt16)goid] = now + castTime + consumable.Seconds;
-            }
-
-            if (castTime > 0)
-            {
-                pak.SendCastAbilityBar(abilityId, castTime);
-                client.FlushQueue();
-            }
-
-            DelayedActions.AfterFor(client, castTime, () =>
-            {
-                // The item may have been moved or listed during the cast: then nothing is used up and nothing happens
-                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                ServerPackets pak = new ServerPackets();
+                UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+                if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
+                    return false;
+                if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
+                if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
+                if (!ConsumableItems.IsUsable(consumable))
                 {
-                    lock (data.cooldownEndsAt)
+                    pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
+                    return true;
+                }
+                if (client.playerInstance.Level.getValue()[0] < ConsumableItems.RequiredLevel(goid))
+                {
+                    pak.sendSystemChatMessage(client, "Your character level is too low to use this item.", "MODAL");
+                    return true;
+                }
+                double now = TimeUtils.GetSimTimeSeconds();
+                bool busy = !ItemReady(client) || itemCasts.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now);
+                if (busy || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+                    (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
+                {
+                    client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(abilityId,
+                        busy ? AbilityCooldowns.DeniedBusy : AbilityCooldowns.DeniedTimerRunning));
+                    client.FlushQueue();
+                    return true;
+                }
+
+                // Both inventory paths interrupt compiling only after the pill passes its eligibility checks.
+                CraftingSession.End(client);
+                AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
+                float castTime = ability != null ? ability.getCastingTime() : 0;
+                UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
+                int world = data.worldGeneration, life = data.lifeGeneration;
+                var token = new ItemCast();
+                itemCasts.Add(client, token);
+                AbilityCooldowns.StartCast(data, now, castTime);
+                double castEnd = data.castEndsAt;
+                double reservedUntil = now + castTime + consumable.Seconds;
+                lock (data.cooldownEndsAt)
+                {
+                    data.cooldownEndsAt[(UInt16)goid] = reservedUntil;
+                    if (consumable.Group != 0) data.cooldownEndsAt[consumable.Group] = reservedUntil;
+                }
+                if (castTime > 0)
+                {
+                    pak.SendCastAbilityBar(abilityId, castTime);
+                    client.FlushQueue();
+                }
+                DelayedActions.AfterFor(client, castTime, () =>
+                {
+                    lock (data.craftingSync)
                     {
-                        data.cooldownEndsAt.Remove((UInt16)goid);
+                        if (!itemCasts.TryGetValue(client, out var current) || current != token) return;
+                        itemCasts.Remove(client);
+                        if (client.playerData != data || !ItemReady(client) ||
+                            !ConsumableItems.CastMatches(data, world, life, castEnd) ||
+                            Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                        {
+                            lock (data.cooldownEndsAt)
+                            {
+                                if (data.cooldownEndsAt.TryGetValue((UInt16)goid, out double itemEnd) && itemEnd == reservedUntil)
+                                    data.cooldownEndsAt.Remove((UInt16)goid);
+                                if (consumable.Group != 0 && data.cooldownEndsAt.TryGetValue(consumable.Group, out double groupEnd) && groupEnd == reservedUntil)
+                                    data.cooldownEndsAt.Remove(consumable.Group);
+                            }
+                            Output.WriteDebugLog("[INVENTORY] Item " + goid + " cast cancelled (slot, life, control, cast or world changed); not used");
+                            return;
+                        }
+                        AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
+                        RemoveOne(client, slot);
+                        client.FlushQueue();
+                        if (consumable.Effect == ConsumableItems.Effect.Heal)
+                            AbilityHandler.HealSelf(client, amount);
+                        else if (consumable.Effect == ConsumableItems.Effect.Cure || consumable.Effect == ConsumableItems.Effect.ConditionSweep)
+                            // The item grants a canonical ability; its modifier is ability-owned, not an equipped item modifier.
+                            AbilityHostile.ApplySweep(client, client, abilityId);
+                        Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
                     }
-                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " left slot " + slot + " during the cast; not used");
-                    return;
-                }
+                });
+                return true;
+            }
+        }
 
-                AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
-                    TimeUtils.GetSimTimeSeconds());
-                RemoveOne(client, slot);
-                client.FlushQueue();
-                if (consumable.Effect == ConsumableItems.Effect.Heal)
-                {
-                    AbilityHandler.HealSelf(client, amount);
-                }
-                Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
-            });
-            return true;
+        private static void RefuseEquipment(byte[] request)
+        {
+            var client = Store.currentClient;
+            client.messageQueue.addRpcMessage(ServerPackets.BuildEquipmentRefusal(request));
+            new ServerPackets().sendSystemChatMessage(client,
+                "That item cannot be equipped there. To use a tool, right-click it and choose Activate Item.", "SYSTEM");
+            client.FlushQueue();
         }
 
         public void processUnmountItem(ref byte[] rpcData)
         {
+            if (rpcData == null || rpcData.Length != 2 || rpcData[0] < 0x61 || rpcData[0] > 0x6a ||
+                rpcData[1] > 96) { RefuseEquipment(rpcData); return; }
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
-            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
+            if (PrisonDevices.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
+            if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
+            {
+                uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+                PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot);
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot) == before)
+                    RefuseEquipment(rpcData);
+                return;
+            }
 
             if (sourceSlot == WeaponSlot)
             {
@@ -373,19 +407,30 @@ namespace hds
 
         public void processMountItem(ref byte[] rpcData)
         {
+            if (rpcData == null || rpcData.Length != 2 || rpcData[0] < 1 || rpcData[0] > 96 ||
+                rpcData[1] < 0x61 || rpcData[1] > 0x6b) { RefuseEquipment(rpcData); return; }
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
-            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
-
-            if (destSlot == WeaponSlot)
+            if (PrisonDevices.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
+            if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
             {
+                uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+                PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot);
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot) == before)
+                    RefuseEquipment(rpcData);
+                return;
+            }
+
+            UInt32 sourceItem = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+            if (destSlot == WeaponSlot || destSlot == 0x6b && RangedWeapons.IsGun(sourceItem))
+            {
+                if (!RangedWeapons.IsGun(sourceItem)) { RefuseEquipment(rpcData); return; }
                 EquipWeapon(sourceSlot);
                 return;
             }
 
             UInt32 clothingItemId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(rpcData[0]);
-            TutorialMission.Of(Store.currentClient)?.OnItemEquipped(clothingItemId);
             DataLoader dataLoader = DataLoader.getInstance();
             ClothingItem item = dataLoader.getItemValues(clothingItemId);
 
@@ -423,7 +468,7 @@ namespace hds
                     toRealSlotId = 0x64;
                     partModel = "gloves";
                     break;
-                    
+
                 case "2001682761":
                 case "FEMALE COAT":
                 case "MALE COAT":
@@ -453,14 +498,16 @@ namespace hds
 
             }
 
-            if (toRealSlotId == 0)
+            if (toRealSlotId == 0 || destSlot != 0x6b && destSlot != toRealSlotId)
             {
                 // Not a known clothing item. This used to carry on and move the item to inventory slot 0.
                 Output.WriteDebugLog("[INVENTORY] Mount request for item " + clothingItemId + " from slot " +
-                                     sourceSlot + " to " + destSlot + " ignored: not a known clothing item");
+                                     sourceSlot + " to " + destSlot + " refused: not a matching clothing item");
+                RefuseEquipment(rpcData);
                 return;
             }
 
+            TutorialMission.Of(Store.currentClient)?.OnItemEquipped(clothingItemId);
             if (partModel != null)
             {
                 Store.dbManager.WorldDbHandler.UpdateRsiPartValue(partModel,item.getModelId(), Store.currentClient.playerData.getCharID());

@@ -15,79 +15,19 @@ namespace hds
         private List<JumpStep> Steps = new List<JumpStep>();
 
 
-        public void ProcessUpgradeAbility(ref byte[] packet)
-        {
-            AbilityProgression.UpgradeRequest? parsed = AbilityProgression.ParseUpgrade(packet);
-            if (!parsed.HasValue)
-            {
-                return;
-            }
+        public void ProcessUpgradeAbility(ref byte[] packet) => AbilityTraining.Handle(Store.currentClient, packet);
 
-            AbilityProgression.UpgradeRequest request = parsed.Value;
-            WorldClient client = Store.currentClient;
-            UInt32 charId = client.playerData.getCharID();
-            ServerPackets packets = new ServerPackets();
-
-            AbilityItem abilityItem = DataLoader.getInstance().getAbilityByID(request.Ability);
-            int? owned = Store.dbManager.WorldDbHandler.GetAbilityLevelAtSlot(charId, request.Slot, abilityItem.getGOID());
-            if (!owned.HasValue)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " in slot " + request.Slot + " refused: not owned");
-                return;
-            }
-
-            int newLevel = owned.Value + request.Levels;
-            int characterLevel = client.playerInstance.Level.getValue()[0];
-            if (request.Levels == 0 || newLevel > characterLevel)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " to " + newLevel + " refused at character level " + characterLevel);
-                packets.sendSystemChatMessage(client, "Your character level is too low for that ability level.", "MODAL");
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
-                client.FlushQueue();
-                return;
-            }
-
-            UInt32 cost = AbilityProgression.UpgradeCost(request.Ability, owned.Value, request.Levels);
-            long cash = client.playerData.getInfo();
-            if (cash < cost)
-            {
-                Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " refused: costs " + cost + ", has " + cash);
-                packets.sendSystemChatMessage(client, "You do not have enough information for that upgrade.", "MODAL");
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
-                client.FlushQueue();
-                return;
-            }
-
-            long newCash = cash - cost;
-            Store.dbManager.WorldDbHandler.SaveInfo(client, newCash);
-            client.playerData.setInfo(newCash);
-            Store.dbManager.WorldDbHandler.SetAbilityLevel(charId, request.Slot, newLevel);
-            AbilityPassives.Load(client);
-
-            // Retail order: 80 e7 (-cost), 80 e4 (new cash), the hidden ability again at its new level, 80 b8.
-            packets.SendInfoDelta(client, -(long)cost, ServerPackets.InfoReasonAbilityUpgrade);
-            packets.SendInfoCurrent(client, (UInt32)newCash, ServerPackets.InfoReasonAbilityUpgrade);
-            foreach (UInt16 grant in AbilityProgression.GrantsOf(request.Ability))
-            {
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
-                    AbilityProgression.GrantLevel(request.Ability, (UInt16)newLevel), AbilityProgression.HiddenSlot));
-            }
-            client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)newLevel));
-            client.FlushQueue();
-
-            Output.WriteDebugLog("[ABILITY] Upgraded " + request.Ability + " to level " + newLevel + " for " + cost + " info");
-        }
-        
         public void ProcessAbility(ref byte[] packet)
         {
             PacketReader reader = new PacketReader(packet);
             UInt16 AbilityID = reader.ReadUInt16(1);
             AbilityID = AbilityCatalog.Canonical(AbilityID);
+            if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
 
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
+            if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
@@ -95,19 +35,37 @@ namespace hds
             var definition = AbilityCatalog.Find(AbilityID);
             if (definition?.Has("Ability/CastingTime") == true) currentAbility.setCastingTime(definition.CastSeconds);
 
+            // Old1124 still requires an exact matching inventory tool. Tool470 names1125, not1124.
+            // Refuse before duplicate/cast/cost/cooldown state; never route this template to passive384.
+            if (AbilityID == DisruptConnectionEligibility.Ability && DisruptConnectionEligibility.Refused(AbilityID,
+                Store.dbManager.WorldDbHandler.GetInventoryItems(Store.currentClient.playerData.getCharID())))
+            {
+                Deny(AbilityID, "A matching tool is required to activate this ability.");
+                return;
+            }
+
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
                                  currentTargetViewId);
 
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             double now = TimeUtils.GetSimTimeSeconds();
-            if (AbilityID != CompileSession.Ability && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
+            if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
             {
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
             }
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
+
+            // CanUseWhileStunned belongs to the owned AntiStun item, never a free971/972 request.
+            if (AntiStunPills.Handles(AbilityID))
+            {
+                var antiSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
+                if (!antiSlot.HasValue || !new InventoryHandler().UseItem(antiSlot.Value, AbilityID))
+                    AntiStunPills.Deny(Store.currentClient, AbilityID);
+                return;
+            }
 
             if (data.isDead || data.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(Store.currentClient).Effects))
             {
@@ -120,7 +78,7 @@ namespace hds
                 return;
             }
 
-            if (AbilityID != CompileSession.Ability) CompileSession.End(Store.currentClient);
+            if (!CraftingSession.Handles(AbilityID)) CraftingSession.End(Store.currentClient);
 
             // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
             if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
@@ -130,8 +88,8 @@ namespace hds
             }
 
             // Tool activation and window close are a distinct flag-bearing 80 b9 path.
-            if (AbilityID == CompileSession.Ability)
-            { CompileSession.Process(Store.currentClient, packet); return; }
+            if (CraftingSession.Handles(AbilityID))
+            { CraftingSession.Process(Store.currentClient, packet); return; }
 
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
@@ -139,6 +97,10 @@ namespace hds
             {
                 return;
             }
+
+            // Internal pill abilities require their owned bag item, even if an ability was loaded.
+            if (HealthBoostPills.Handles(AbilityID))
+            { HealthBoostPills.Deny(Store.currentClient, AbilityID); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
@@ -156,6 +118,8 @@ namespace hds
                 Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
                 return;
             }
+            if (AbilityID == ProxyTechnician.Ability && ProxyTechnician.Refusal(Store.currentClient) is string proxyRefusal)
+            { Deny(AbilityID,proxyRefusal); return; }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded
@@ -207,10 +171,16 @@ namespace hds
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "You do not have enough Inner Strength.");
-                return;
+                // Snapshot the same existing admission inputs once; the response reports their exact positive deficit.
+                UInt16 available=CurrentInnerStrength(Store.currentClient);
+                UInt16 effective=AbilityCosts.Effective(Store.currentClient, AbilityID);
+                if(available<effective)
+                {
+                    Deny(AbilityID,"You do not have enough Inner Strength.",AbilityRefusals.InsufficientInnerStrength,(uint)(effective-available));
+                    return;
+                }
             }
 
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
@@ -245,6 +215,7 @@ namespace hds
             }
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
+            var ghostStrike=GhostStrikeCallbacks.Capture(Store.currentClient,AbilityID,currentTargetViewId);
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
@@ -252,6 +223,11 @@ namespace hds
             else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
+            GhostStrikeCallbacks.Arm(ghostStrike);
+            var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
+            GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
+            var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
+            var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -261,7 +237,7 @@ namespace hds
             AbilityItem ability = currentAbility;
             WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
             int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
-            DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
+            AbilityCastInterrupts.After(normalCast, () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
@@ -273,56 +249,59 @@ namespace hds
                     if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
                     else CoderPets.Land(client, AbilityID, currentTargetViewId);
                 }
+                if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
-            });
 
             if (stealth)
             {
                 UInt16 stealthTarget = currentTargetViewId;
-                DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
-                {
-                    if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
-                });
+                if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
                 return;
             }
 
             if(freeStealth!=null)
             {
                 ushort target=currentTargetViewId;
-                DelayedActions.AfterFor(client,ability.getCastingTime(),()=>StealthShieldAbilities.Execute(client,ability,target,freeStealth));
+                StealthShieldAbilities.Execute(client,ability,target,freeStealth);
+                return;
+            }
+            if (CasterHostileArea.Handles(AbilityID))
+            {
+                CasterHostileArea.Land(client, ability);
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
-                (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+            ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (hostileView > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
-                UInt16 targetView = currentTargetViewId;
+                UInt16 targetView = hostileView;
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    DelayedActions.AfterFor(client, ability.getCastingTime(),
-                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener); });
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
                 }
             }
+            });
         }
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
 
-        private static void Deny(UInt16 id, string message)
+        private static void Deny(UInt16 id, string message,uint reason=AbilityRefusals.LegacyAmbiguous,uint deficit=0)
         {
-            Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(id, AbilityCooldowns.DeniedBusy));
+            Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(id,reason,deficit)));
             new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);
@@ -360,7 +339,7 @@ namespace hds
         /// Damage of an attack ability. The data's ValueFrom/ValueTo are used when set; most combat abilities
         /// (Cheap Shot, Head Butt, ...) have none, so they hit for about twice a normal round (~30).
         /// </summary>
-        public static UInt16 AbilityDamage(AbilityItem ability, Random random)
+        public static UInt16 AbilityDamage(AbilityItem ability, Random random, bool allowTypedResistanceQa = false)
         {
             var source = AbilityCatalog.Find(ability.getAbilityID());
             if (source != null && !source.DirectDamage) return 0;
@@ -370,7 +349,8 @@ namespace hds
             {
                 return (UInt16)random.Next(from, to + 1);
             }
-            return (UInt16)random.Next(50, 81);
+            int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
+            return (UInt16)(fixture ?? random.Next(50, 81));
         }
 
         /// <summary>Inner Strength cost of abilities without a retail measurement; see AbilityCosts.</summary>
@@ -469,11 +449,6 @@ namespace hds
                 pak.sendISCurrent(Store.currentClient, innerStrength);
             }
 
-            if (currentAbility.getAbilityID() == 970)
-            {
-                // Spawn Code Write Window
-                pak.SendCodeWriterWindow();
-            }
         }
 
         public void processCharacterAnimationSelf(UInt16 abilityID)

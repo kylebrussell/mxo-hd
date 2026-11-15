@@ -14,6 +14,9 @@ namespace hds
         public void ProcessRegionLoaded(ref byte[] packet)
         {
 
+            // Client 621b3f00: ObjID u32 and ObjPos 3xf32 (opcode already removed).
+            if (packet == null || packet.Length < 16) return;
+
             byte[] objectIDBytes = new byte[4];
             byte[] sectorIDBytes = new byte[2];
             ArrayUtils.copyTo(packet, 0, objectIDBytes, 0, 4);
@@ -30,6 +33,13 @@ namespace hds
             StaticWorldObject objectValues = objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectIDBytes,1),
                 (UInt16)Store.currentClient.playerData.getDistrictId());
 
+            // Omitted or unknown source keys have no authoritative object to spawn.
+            // Keep the existing unsupported-object no-reply behavior; never trust ObjPos as a replacement.
+            if (objectValues?.type == null || objectValues.type.Length < 2)
+            {
+                Output.WriteDebugLog("[REGION] Unavailable source object; request ignored");
+                return;
+            }
             UInt16 goId = NumericalUtils.ByteArrayToUint16(objectValues.type, 1);
             
             ServerPackets pak = new ServerPackets();

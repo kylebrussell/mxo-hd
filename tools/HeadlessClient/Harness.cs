@@ -26,12 +26,21 @@ public sealed class ThrowawayDatabase : IDisposable
     {
         string name = Prefix + label + "_" + Guid.NewGuid().ToString("N")[..10];
         ThrowawayDatabase database = new(name);
+        try
+        {
         await RunInContainerAsync(
             "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot -e \"CREATE DATABASE \\`$1\\` CHARACTER SET latin1; " +
             "GRANT ALL PRIVILEGES ON \\`mxotest\\\\_%\\`.* TO \\`$MYSQL_USER\\`@\\`%\\`;\"", name, null);
         string schema = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "SQL", "reality_hd.sql"));
         await RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"", name, schema);
         return database;
+        }
+        catch (Exception original)
+        {
+            try { database.Dispose(); }
+            catch (Exception cleanup) { throw new AggregateException("Disposable schema setup and cleanup failed.", original, cleanup); }
+            throw;
+        }
     }
 
     /// <summary>Runs SQL as the app user, in this database. Returns tab-separated rows without a header.</summary>
@@ -39,6 +48,77 @@ public sealed class ThrowawayDatabase : IDisposable
     {
         return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_PASSWORD\" exec mysql -u\"$MYSQL_USER\" -N -B \"$1\"", Name, sql);
     }
+
+    /// <summary>Fixed failure DDL only inside this harness-owned mxotest database; never changes server security settings.</summary>
+    public Task<string> InstallMissionRollbackTriggerAsync(bool completing, bool accepting = false)
+    {
+        string condition=accepting?"OLD.payload IS NULL AND NEW.payload IS NOT NULL":completing?"NEW.payload IS NULL AND OLD.payload IS NOT NULL":
+            "NEW.payload IS NOT NULL AND JSON_CONTAINS(JSON_EXTRACT(NEW.payload,'$.Done'),'1') AND NOT JSON_CONTAINS(JSON_EXTRACT(OLD.payload,'$.Done'),'1')";
+        string sql="DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF "+condition+
+            " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
+    /// <summary>Reject only the first newly recorded generated departure in this owned schema.</summary>
+    public Task<string> InstallMissionDepartureRollbackTriggerAsync()
+    {
+        if(!Name.StartsWith(Prefix,StringComparison.Ordinal))throw new InvalidOperationException("Departure fault requires owned mxotest schema");
+        const string sql="DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF NEW.payload IS NOT NULL AND JSON_EXTRACT(NEW.payload,'$.DepartedSite') IS NOT NULL AND (OLD.payload IS NULL OR JSON_EXTRACT(OLD.payload,'$.DepartedSite') IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate departure rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
+    /// <summary>Fixed failure point only in this harness-owned database, never a production setting.</summary>
+    public Task<string> InstallAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+            "DELIMITER $$\nCREATE TRIGGER ability_test_rollback BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF NEW.slot=502 AND NEW.is_loaded=1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='deliberate ability rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAbilityRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER ability_test_rollback");
+
+    public Task<string> RemoveMissionRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
+
+    // Fixed receipt failure points only in this harness-owned disposable database.
+    public Task<string> InstallVendorBuybackFailureAsync(uint character,bool buying) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        "DELIMITER $$\nCREATE TRIGGER vendor_buyback_test_"+(buying?"consume BEFORE DELETE":"sale BEFORE INSERT")+
+        " ON vendor_last_sale FOR EACH ROW BEGIN IF "+(buying?"OLD":"NEW")+".char_id="+character+
+        " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Vendor deliberate late receipt failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveVendorBuybackFailureAsync(bool buying) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS vendor_buyback_test_"+(buying?"consume":"sale"));
+
+    //Fixed late-mutation failure only in this harness-owned database; never changes server settings.
+    public Task<string> InstallTrainingChargeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER training_test_charge_failure BEFORE UPDATE ON characters FOR EACH ROW BEGIN IF OLD.charId={character} AND NEW.cash<OLD.cash THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Training deliberate late charge failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveTrainingChargeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS training_test_charge_failure");
+    public Task<string> InstallPrisonMoveFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        "DELIMITER $$\nCREATE TRIGGER prison_move_rollback BEFORE UPDATE ON inventory FOR EACH ROW BEGIN IF NEW.charId="+character+
+        " AND NEW.slot=106 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Prison deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemovePrisonMoveFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER prison_move_rollback");
+
+    /// <summary>Fixed late ability-insert failure inside this owned mxotest database; no table rebuild or mode change.</summary>
+    public Task<string> InstallAcquisitionRollbackTriggerAsync(uint character,int descriptor)
+    {
+        if(character==0||character==2)throw new ArgumentException("Acquisition rollback requires the owned fixture character.");
+        string sql="DELIMITER $$\nCREATE TRIGGER ability_acquisition_test_rollback BEFORE INSERT ON char_abilities FOR EACH ROW BEGIN IF NEW.char_id="+character+
+            " AND NEW.ability_id="+descriptor+" THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Acquisition deliberate late archive rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
+    public Task<string> RemoveAcquisitionRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS ability_acquisition_test_rollback");
+    //Fixed late second-write failure only inside this harness-owned database; no settings/schema migration.
+    public Task<string> InstallAttributeFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER attribute_test_second_write BEFORE UPDATE ON char_abilities FOR EACH ROW BEGIN IF OLD.char_id={character} AND OLD.slot=601 AND NEW.level<>OLD.level THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Attribute deliberate second-write failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveAttributeFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS attribute_test_second_write");
+
+    public Task<string> InstallCreationFailureAsync(uint character) => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,
+        $"DELIMITER $$\nCREATE TRIGGER creation_test_late_write BEFORE INSERT ON char_abilities FOR EACH ROW BEGIN IF NEW.char_id={character} AND NEW.slot=604 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Creation deliberate final attribute failure'; END IF; END$$\nDELIMITER ;\n");
+    public Task<string> RemoveCreationFailureAsync() => RunInContainerAsync(
+        "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER IF EXISTS creation_test_late_write");
 
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 
@@ -107,12 +187,14 @@ public sealed class ServerInstance : IDisposable
 
     public ServerAddress Address { get; }
     public string WorkingDirectory { get; }
+    public string SourceAssemblySha256 { get; }
 
     private ServerInstance(Process process, ServerAddress address, string workingDirectory)
     {
         this.process = process;
         Address = address;
         WorkingDirectory = workingDirectory;
+        SourceAssemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(SourceAssembly)));
     }
 
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
@@ -121,6 +203,7 @@ public sealed class ServerInstance : IDisposable
         string serverDll = FindServerDll(repositoryRoot);
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
+        EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(serverDll)!,workingDirectory,databaseName,extraEnvironment);
         if (missionFixture != null)
         {
             // A fixture replaces only this disposable server's mission catalog. Production data stays untouched.
@@ -128,6 +211,20 @@ public sealed class ServerInstance : IDisposable
             Directory.CreateDirectory(missions);
             File.Copy(Path.Combine(repositoryRoot, "tools", "HeadlessClient", "Fixtures", missionFixture),
                 Path.Combine(missions, missionFixture));
+        }
+
+        if (extraEnvironment != null && extraEnvironment.TryGetValue("HEADLESS_HARDLINE_UPLOAD_REQUIRED",out string upload))
+        {
+            // Only an isolated ordinary file in this new GUID directory, never the source/output config.
+            string target=Path.GetFullPath(Path.Combine(workingDirectory,"WorldConfig.xml"));
+            if(!target.StartsWith(Path.GetFullPath(workingDirectory)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase) || File.Exists(target))
+                throw new InvalidOperationException("Unsafe fixture config target");
+            string source=Path.Combine(repositoryRoot,"WorldConfig.xml.dist");
+            File.Copy(source,target);
+            var xml=new System.Xml.XmlDocument();xml.Load(target);
+            var node=xml.SelectSingleNode("//HardlineUploadRequired");
+            if(node==null){node=xml.CreateElement("HardlineUploadRequired");xml.DocumentElement!.AppendChild(node);}
+            node.InnerText=upload=="1"?"true":"false";xml.Save(target);
         }
 
         ServerAddress address = new(Host, FreeTcpPort(), FreeTcpPort(), FreeUdpPort());
@@ -153,10 +250,11 @@ public sealed class ServerInstance : IDisposable
         {
             foreach ((string key, string value) in extraEnvironment)
             {
-                start.Environment[key] = value;
+                if(key!="HEADLESS_HARDLINE_UPLOAD_REQUIRED" && key!=EngageFoesFixture.InitialNpcsEnvironment)start.Environment[key] = value;
             }
         }
 
+        start.Environment.Remove(EngageFoesFixture.InitialNpcsEnvironment);
         Process process = new() { StartInfo = start };
         ServerInstance server = new(process, address, workingDirectory);
         process.OutputDataReceived += (_, line) => server.Capture(line.Data);
@@ -198,6 +296,8 @@ public sealed class ServerInstance : IDisposable
         }
     }
 
+    public string SourceAssembly => process.StartInfo.ArgumentList[0];
+    public int ProcessId => process.Id; // Read-only metrics for this harness-owned process.
     public bool HasExited => process.HasExited;
 
     public string OutputTail(int lines)

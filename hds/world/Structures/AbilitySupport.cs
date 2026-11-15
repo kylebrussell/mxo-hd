@@ -24,6 +24,9 @@ namespace hds
             return target == null || !target.viewCreated ? null : SocialHandler.OnlineWhere(c => c.playerData.getEntityId() == target.entityId).FirstOrDefault();
         }
 
+        public static bool FriendlyRecipient(WorldClient caster, WorldClient target) =>
+            target == caster || PvpCombat.Check(caster,target) != PvpRules.Verdict.Allowed;
+
         private static bool InRange(WorldClient a, WorldClient b, double metres)
         {
             if (a.playerData.getDistrictId() != b.playerData.getDistrictId() || b.playerData.isDead || b.playerData.duelDeath) return false;
@@ -46,7 +49,7 @@ namespace hds
             if (group)
             {
                 var team = SocialGroups.Instance.FindTeamOf(caster.playerData.getCharID());
-                double radius = entry.Number("Ability/RadiusOfEffect");
+                double radius = AbilityRadius.Metres(caster, id);
                 return SocialHandler.OnlineWhere(c => (c == caster || team?.HasMember(c.playerData.getCharID()) == true) &&
                     InRange(caster, c, radius)).ToList();
             }
@@ -54,7 +57,7 @@ namespace hds
             bool selfOnly = entry?.Number("Ability/CastDirectObjects") == 1;
             WorldClient target = !selfOnly && (entry?.FriendlyTarget == true || entry?.Healing == true)
                 ? PlayerInView(caster, view) : caster;
-            return target != null && (target == caster || PvpCombat.Check(caster, target) != PvpRules.Verdict.Allowed) &&
+            return target != null && FriendlyRecipient(caster,target) &&
                 InRange(caster, target, entry?.Number("Ability/SelectionRange", 20) ?? 20)
                 ? new List<WorldClient> { target } : new List<WorldClient>();
         }
@@ -79,7 +82,11 @@ namespace hds
                         } } };
                         TimedEffects.Apply(TimedEffects.ForPlayer(target), effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
                     }
-                    else AbilityHandler.HealSelf(target, amount);
+                    else
+                    {
+                        var mobius=HealImmediate(caster,target,id,()=>AbilityHandler.HealSelf(target,amount));
+                        MobiusCode.Land(mobius);
+                    }
                     Output.WriteDebugLog("[ABILITY] Heal " + id + " -> " + TimedEffects.PlayerName(target) + " for " + amount);
                 }
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
@@ -88,6 +95,14 @@ namespace hds
                 AbilityHostile.ApplySweep(caster, target, id);
                 target.FlushQueue();
             }
+        }
+
+        // HealSelf synchronously invokes health-change callbacks. Capture before they can change lifecycle/removal.
+        internal static MobiusCode.Invocation HealImmediate(WorldClient caster,WorldClient target,ushort id,Action heal)
+        {
+            var mobius=MobiusCode.CaptureForHeal(caster,target,id);
+            heal();
+            return mobius;
         }
     }
 }

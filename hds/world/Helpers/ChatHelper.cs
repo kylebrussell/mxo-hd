@@ -16,6 +16,13 @@ namespace hds
 
             string command = commands[0].ToLower();
             if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
+            if (QaLoadout.Dev(Store.currentClient, commands)) return;
+            if (AbilityAcquisitionQa.Dev(Store.currentClient, commands)) return;
+            if (AbilityRefusalQa.Dev(Store.currentClient, commands)) return;
+            if (SafeFloorProbe.Dev(Store.currentClient, commands)) return;
+            if (PosterBoxFloorProbe.Dev(Store.currentClient, commands)) return;
+            if (MissionRuntime.DevPresentation(Store.currentClient, commands)) return;
+            if (IngressLivenessQa.Dev(Store.currentClient, commands)) return;
 
             try
             {
@@ -156,6 +163,11 @@ namespace hds
                         Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)at.x, (float)at.y, (float)at.z), false);
                     }
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                }
+
+                if (command.Equals("?missionpersist"))
+                {
+                    MissionPersistence.Dev(Store.currentClient,commands);
                 }
 
                 if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
@@ -447,6 +459,9 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if(command.Equals("?ghoststrike"))new ServerPackets().sendSystemChatMessage(Store.currentClient,GhostStrikeCallbacks.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
+                if(command.Equals("?severstate"))new ServerPackets().sendSystemChatMessage(Store.currentClient,AbilitySeverArteryStates.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
+
                 if (command.Equals("?combatdepth"))
                     new ServerPackets().sendSystemChatMessage(Store.currentClient,
                         CombatDepthDev.Run(Store.currentClient, commands.Skip(1).ToArray()), "BROADCAST");
@@ -563,8 +578,8 @@ namespace hds
                     CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
                 }
 
-                if (command.Equals("?compilesession"))
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, CompileSession.Dev(Store.currentClient, commands), "SYSTEM");
+                if (command.Equals("?compilesession") || command.Equals("?writersession"))
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, CraftingSession.Dev(Store.currentClient, commands), "SYSTEM");
 
                 if (command.Equals("?compile") && commands.Length == 2)
                 {

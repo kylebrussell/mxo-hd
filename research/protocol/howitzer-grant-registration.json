@@ -1,0 +1,72 @@
+{
+  "FileSha256": "EBCC5932F75B6BF9F45B9AF5F398A56798E65641B4239B6708A36579B04C1A30",
+  "Records": [
+    {
+      "Line": 886,
+      "Type": 69,
+      "Locator": 278275,
+      "Source": 356,
+      "Target": 1087,
+      "Value": 0,
+      "Operation": 1,
+      "Duration": 0.0,
+      "Payload": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 01 00 00 00 00"
+    },
+    {
+      "Line": 886,
+      "Type": 69,
+      "Locator": 278275,
+      "Source": 356,
+      "Target": 1087,
+      "Value": 0,
+      "Operation": 0,
+      "Duration": 0.0,
+      "Payload": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00"
+    },
+    {
+      "Line": 1040,
+      "Type": 69,
+      "Locator": 278275,
+      "Source": 356,
+      "Target": 1087,
+      "Value": 0,
+      "Operation": 0,
+      "Duration": 0.0,
+      "Payload": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00"
+    },
+    {
+      "Line": 9382,
+      "Type": 69,
+      "Locator": 278275,
+      "Source": 356,
+      "Target": 1087,
+      "Value": 0,
+      "Operation": 0,
+      "Duration": 0.0,
+      "Payload": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00"
+    }
+  ],
+  "File": "research/packet-dumps/community-intake/20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector26_manythings_4bill_upgradeabilitie_buyzionkey_start_keymission_gotowhite.log.txt",
+  "Scope": "Only reviewed356 to1087; no legacy grant/general level policy inferred",
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "Consumer": {
+    "Dispatch": "621e10a0 ->625fd730 ->625ebb90(locator low byte3)",
+    "Add": "625e97e0/AddAbilityGrant",
+    "Remove": "625e95a0/RmvAbilityGrant",
+    "Arguments": [
+      "target:u16",
+      "source:u32",
+      "grantLevel:i32",
+      "duration:f32",
+      "type:u8"
+    ],
+    "Ready": "6216c988 active;6216c9a9 inventory;6216c9f4 avatar;6216cc56 opcode0c/6216cc75 status1/6216cc78 send"
+  },
+  "HistoricalCorpus": {
+    "Files": 278,
+    "BaseRecords": 1535,
+    "1087LoadObservations": 61,
+    "1087BasePayload": "3f0400000802",
+    "IndependentEvents": false
+  }
+}

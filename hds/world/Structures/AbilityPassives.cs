@@ -11,6 +11,7 @@ namespace hds
         public const ushort Kind = 0x45; // retail's while-enabled stat records: 80 bc 45 00 (active buffs use 0x15)
         public sealed class State
         {
+            internal int Generation;
             internal readonly Dictionary<ushort, ushort> Loaded = new Dictionary<ushort, ushort>();
             internal readonly Dictionary<string, Active> Records = new Dictionary<string, Active>();
             internal Dictionary<ushort, int> Totals = new Dictionary<ushort, int>();
@@ -45,15 +46,18 @@ namespace hds
         public static void Load(WorldClient client, bool newWorld = false)
         {
             var rows = Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID());
-            SetLoaded(client, rows.Where(r => r.getLoaded()).Select(r =>
-                (AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())), r.getLevel())), newWorld);
+            SetLoaded(client, LoadedArchiveAbilities(rows), newWorld);
         }
+
+        internal static IEnumerable<(ushort Ability,ushort Level)> LoadedArchiveAbilities(IEnumerable<MarginAbilityItem> rows) =>
+            rows.Where(r=>r.getLoaded() && (unchecked((uint)r.getAbilityID()) & 0xfc000000u) == CodeStorage.AbilityFlag).Select(r=>(AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())),r.getLevel()));
 
         public static void SetLoaded(WorldClient client, IEnumerable<(ushort Ability, ushort Level)> loaded, bool newWorld = false)
         {
             State state = client.playerData.passives;
             lock (state)
             {
+                state.Generation++;
                 state.Loaded.Clear();
                 foreach (var row in loaded)
                 {
@@ -78,10 +82,13 @@ namespace hds
                 }
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
-            if (newWorld) CompileSession.End(client, false);
-            else CompileSession.Check(client);
+            if (newWorld) CraftingSession.End(client, false);
+            else CraftingSession.Check(client);
             Refresh(client, !newWorld);
             EvasionShield.LoadoutChanged(client);
+            AbilityDesperation.LoadoutChanged(client);
+            ProxyTechnician.LoadoutChanged(client);
+            AbilityGrantRegistration.LoadedChanged(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker

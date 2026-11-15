@@ -10,6 +10,14 @@ namespace hds
     {
         // Place Methods here for Inventory
 
+        // Same-slot swap is lossless in client.dll 621e1960 and clears the pending inventory cursor.
+        // This is our refusal acknowledgement policy, not a recovered retail error opcode.
+        internal static byte[] BuildEquipmentRefusal(byte[] request)
+        {
+            byte slot = request != null && request.Length > 0 && request[0] < 0x6b ? request[0] : (byte)0;
+            return new byte[] { 0x65, slot, 0, slot, 0, 0 };
+        }
+
         public void sendInventoryItemMove(UInt16 sourceSlot, UInt16 destSlot, WorldClient client)
         {
             PacketContent pak = new PacketContent();

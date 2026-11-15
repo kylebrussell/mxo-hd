@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Retail capture: Welcome to the Matrix (luizoe, Recursion log, 2009-07-05). Text, NPCs, positions, goals and rewards as sent. Which event sets off each line, and the trigger radii, are our fit to where the player stood. -->
-<mission id="1201" title="Welcome to the Matrix" description="Your introduction assignment inside the Matrix." plot="1" order="1" exp="5500" info="21000">
+<mission id="1201" title="Welcome to the Matrix" description="Your introduction assignment inside the Matrix." plot="1" order="1" exp="5500" info="21000" rewardLevel="2">
   <npc id="1" handle="Abalakin" type="FRIENDLY" x="58102.4" y="2495.0" z="31390.6" rsi="d8040058" level="3" maxHP="250" />
   <npc id="2" handle="Rigel" type="FRIENDLY" x="59421.0" y="2495.0" z="31581.5" rsi="59010058" level="3" maxHP="250" weapon="692" />
   <npc id="3" handle="Crow" type="FRIENDLY" x="58517.0" y="2495.0" z="32242.0" rsi="b50000b4" level="3" maxHP="250" weapon="692" />

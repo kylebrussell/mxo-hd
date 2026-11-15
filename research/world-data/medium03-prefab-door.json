@@ -1,0 +1,42 @@
+{
+  "world": 16,
+  "sector": 33,
+  "localId": 1380,
+  "goid": 580,
+  "sourceSidi": "medium03_25.sidi",
+  "prefabRid": "0x38005f6f",
+  "rotation": 3,
+  "pivot": [
+    560,
+    240,
+    420
+  ],
+  "localPosition": [
+    1000,
+    0,
+    300
+  ],
+  "nativePosition": [
+    25300,
+    2400,
+    43200
+  ],
+  "serverPosition": [
+    25300,
+    2545,
+    43200
+  ],
+  "standing": [
+    25300,
+    2495,
+    43100
+  ],
+  "expectedQuaternionBytes": "00000000f30435b300000000ffff7f3f",
+  "modelDescriptionId": "0x6800001a",
+  "modelPath": "resource/GameObjects/Doors/Rotating/single_push/sl_push_knob_fadedgreen02.moa",
+  "modelBytes": 897,
+  "modelSha256": "90db89864a6c3990a6e1f8d00186bc5074154e8c211aec99b2a0f2197d8db786",
+  "gobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "sourceContract": "GO580 schema364/Open3/4004:834 ->838 after20s ->835 after1s; no manual Close",
+  "nativeRenderingPending": true
+}

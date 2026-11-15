@@ -101,11 +101,14 @@ namespace hds
         /// </summary>
         public static Shot Fire(Random rng, int attackerLevel, CombatTactic attackerTactic, CombatTacticType attackerType,
             int defenderLevel, CombatTactic defenderTactic, UInt32 weaponGoid, int attackBonus = 0, int defenseBonus = 0,
-            int damageBonus = 0, double damageInfluence = 0, int toughness = 0)
+            int damageBonus = 0, double damageInfluence = 0, int toughness = 0, Func<bool> canBeFreeAttacked = null)
         {
             Shot shot = new Shot();
             shot.Hit = CombatInterlock.RollHit(rng, attackerTactic, attackerLevel, defenderTactic, defenderLevel,
                 out shot.AttackRoll, out shot.DefenseRoll, attackerType, attackBonus, defenseBonus);
+            // Original PerformWeaponFreeAttack tests the recipient gate after contest rolls.
+            bool recipientAllowed = canBeFreeAttacked?.Invoke() ?? true;
+            shot.Hit = shot.Hit && recipientAllowed;
             if (!shot.Hit)
             {
                 return shot;

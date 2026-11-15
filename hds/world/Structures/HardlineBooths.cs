@@ -23,6 +23,22 @@ namespace hds
         public const byte ActionJackOut = 0x03;
         public const byte ActionUpload = 0x04;
         public const byte ActionExitToLoadingArea = 0x05;
+        public const byte ActionSynchronize = 0x08;
+
+        /// <summary>80 fa ConstructID/u32, HardlineID/u32, MakeActive/u8: native incremental discovery.
+        /// Retail sync: Rajko AgentsAndIntPortingSyncHardline 02:38:41, 80fa030000001100000001.
+        /// Uses the Margin09 ordinal, never the internal database/world map number.</summary>
+        public static byte[] BuildSynchronized(ushort map, ushort hardline)
+        {
+            if (hardline == 0 || HardlineNetwork.Get(map, hardline) == null ||
+                !HardlineRegistration.TryLogical(map, out byte logical)) return null;
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80fa");
+            pak.AddUint32(logical, 1);
+            pak.AddUint32(hardline, 1);
+            pak.AddByte(1);
+            return pak.ReturnFinalPacket();
+        }
 
         public static bool IsBooth(UInt32 typeId)
         {

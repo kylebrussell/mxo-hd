@@ -2,7 +2,7 @@ using System.Text.Json;
 using hds;
 
 // Inventory the actual executable support, rather than matching source comments or CSV flags.
-string output = args.Length > 0 ? args[0] : "research/abilities/server_coverage.json";
+string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
     204 => "stealth detection",
@@ -10,18 +10,33 @@ static string Consumer(ushort stat) => stat switch
     106 or 109 or 1056 or 1057 => "maximum vital",
     112 or 114 or 1058 or 1059 => "regeneration",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
+    1032 => "OURS queued-special direct thrown accuracy (native UI selector inference)",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",
+    1011 or 1029 or 1030 => "typed combat-special defence in interlock",
+    183 => "typed combat-special defence and PARTIAL modeled free-cast viral defence (NPC neutral tactic)",
+    342 => "PARTIAL modeled primary TF2 free-cast viral attack; native base/link totals unresolved",
+    637 => "PARTIAL modern free-cast viral consistency; native table with OURS settings/64-significand policy",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
+    157 or 1033 => "OURS normalized typed ability health damage/DOT resistance; native caller/base unresolved",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
+    564 => "Concentration cast-through for explicit interruptible templates (partial)",
+    177 => "direct UDB0 caster area radius percent (AbilityTargets and reviewed caster-area97/38 NPC/PvP only; linked1055 unresolved)",
+    127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
+    954 or 955 => "native client Compile60 IC timer; OURS server scheduling, known CBB IC prototypes only; [evidence](COMPILE-ORDINARY-IC.md)",
     _ => "total only"
 };
 static string UtilityCoverage(ushort id) => id switch
 {
-    CompileSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
+    971 or 972 => "owned AntiStun pill only: exact42763/42764, CanUseWhileStunned;1s cast, stored own900/600s and shared973600s; removes Stun/Mez tuples, halves actual remaining immunity when half>=1s; item/life/world/cast revalidation; [docs/ANTI-STUN-PILLS.md](ANTI-STUN-PILLS.md)",
+    345 => "direct stat177 existing captured+21/30s UDB0 target-centred NPC/PvP area radius consumer; linked75/1055 unresolved; [evidence](ABILITY-DEBUFF-RADIUS.md)",
+    38 => "PARTIAL caster-centred hostile area; strict reviewed97/38 producer, source3s stun and8s immunity input, ordinary TF2 contest; completion centre/server relationship policy OURS; [evidence](ABILITY-AREA-DISRUPTION.md)",
+    74 => "UBF0 caster area radius percent via stat127; group support and friendly944 only; SweepBonus1052 consumer unresolved; [evidence](ABILITY-RESIST-DAMAGE.md)",
+    CraftingSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
+    CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; code synthesis outputs/economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.DisarmTraps => "Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
     UtilityAbilities.OpenLocks => "Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked=\"1\"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
@@ -33,6 +48,8 @@ static string UtilityCoverage(ushort id) => id switch
     UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.FindDataNode => "distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.LocateDataNode => "base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)",
+    AbilityEmpBlast.Ability => "script neutral0/5000 gated by explicit NPC1026 grant; caster-radius10, cast1s, reuse30s, NPC HP/death; production grant owners, item consumption, exact eligibility/TestFunction2 and cost default unresolved; [evidence](ABILITY-EMP-BLAST.md)",
+    187 or 188 or 189 or 672 or 673 => "owned bag health boost, stored level gate, cast/life/world authority, stat106 timed600s +100/200/300/400 and expiry/currentHP cap; own30s cooldown, no stored shared family; exact casting animation/stack priority remain unverified; [evidence](HEALTH-BOOST-PILLS.md)",
     _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
@@ -43,14 +60,18 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     bool hit = AbilityTargets.Retail.TryGetValue(e.Id, out var damage);
     return new
     {
-        id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = e.Id == CompileSession.Ability ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
+        id = e.Id, cost = HealthBoostPills.Handles(e.Id) ? 0 : AbilityCosts.Cost(e.Id), cost_source = HealthBoostPills.Handles(e.Id) ? "owned item path" : CraftingSession.Handles(e.Id) ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
             e.Has("Ability/AbilityInnerStrengthCost") ? "stored" : "fallback",
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        conditional_stun = AbilityConditionalControls.Handles(e.Id),
+        registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
+        conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
+        conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),
         tactical_toggle = e.Id == 9 || e.Id == 15,
         buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
-            AbilityHealthCallbacks.Template(e.Id) || AbilityBuffs.Scripted.ContainsKey(e.Id) || AbilityScaledBuffs.TryScriptedTimed(e.Id,50,out _) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
+            e.Id == 1149 || AbilityHealthCallbacks.Template(e.Id) || AbilityBuffs.Scripted.ContainsKey(e.Id) || AbilityScaledBuffs.TryScriptedTimed(e.Id,50,out _) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
         buff_drain = buff && b.DrainAmount > 0 ? new { amount=b.DrainAmount, interval=b.DrainSeconds } : null,
         buff_term = buff ? new { refund_is=b.RefundIS, heal=b.TermHeal, bits=b.DissemblingType } : null,
         buff_stats = buff ? b.Modifiers.Select(m => new { stat = m.Stat, value = m.Value, consumer = Consumer(m.Stat) }).ToArray() : null,
@@ -71,7 +92,12 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         grants = AbilityProgression.GrantsOf(e.Id),
         aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
+        consumable_sweep = ConsumableItems.Items.Any(p => p.Value.AbilityId == e.Id && ConsumableItems.IsUsable(p.Value) &&
+            (p.Value.Effect == ConsumableItems.Effect.Cure || p.Value.Effect == ConsumableItems.Effect.ConditionSweep)),
         instant_hostile = AbilityHostile.Lands(e.Id),
+        buff_dispel = e.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&
+            (m.Text("StatModInitFunc") == "RemoveRandomBuff" || m.Text("StatModInitFunc") == "UpgradeSweepPulse"))
+            .Select(m => new { callback=m.Text("StatModInitFunc"), chance=m.Number("ProcTriggerChance",1) }).ToArray(),
         catalog_debuff = AbilityHostile.Catalog(e.Id) != null,
         // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
@@ -80,9 +106,17 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         sneak_bonus = SneakAttacks.Bonus(e.Id,true),
         special_animation = CombatAnimations.Special(e.Id,true,CombatTactic.Speed)?.Id,
         stealth_shield = StealthShieldAbilities.Describe(e.Id),
+        proxy_technician = ProxyTechnician.Describe(e.Id),
         special = CombatSpecials.Describe(e.Id)
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(row))) + "\n]\n");
+// Optional inventory evidence is emitted only for its actual producers.
+File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
+    JsonSerializer.SerializeToElement(row).EnumerateObject()
+        .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
+        .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
+        .Where(p => p.Name != "proxy_technician" || p.Value.GetString() != "")
+        .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);

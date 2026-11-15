@@ -54,6 +54,35 @@ namespace hds
             }
         }
 
+        private static bool CanonicalKey(int id, out MissionContact contact, out MissionContactSpot spot, out int kind)
+        {
+            contact = null; spot = null; kind = 0;
+            long delta = (long)id - IdBase;
+            if (delta < 0) return false;
+            uint contactId = (uint)(delta / 10);
+            kind = (int)(delta % 10);
+            if (kind < 1 || kind > 3) return false;
+            var contacts = MissionContacts.All.Where(c => c.id == contactId).Take(2).ToArray();
+            var spots = MissionContactNpcs.All.Where(s => s.contactId == contactId).Take(2).ToArray();
+            if (contacts.Length != 1 || !contacts[0].IsNeighbourhood || spots.Length != 1 ||
+                IdBase + (long)contactId * 10 + kind != id) return false;
+            contact = contacts[0]; spot = spots[0]; return true;
+        }
+
+        internal static bool HasCanonicalId(int id) => CanonicalKey(id, out _, out _, out _);
+
+        /// <summary>Only the existing stable identities of actually placed neighbourhood contacts are recoverable.</summary>
+        internal static Mission FindCanonical(int id)
+        {
+            if (!CanonicalKey(id, out MissionContact contact, out MissionContactSpot spot, out int kind)) return null;
+            // Reuse the exact known spot/cache. An invalid cached definition never falls back to another template.
+            var definitions = Generic(contact);
+            if (definitions.Count != 3) return null;
+            Mission mission = definitions[kind - 1];
+            return mission.id == id && !mission.plot && mission.org == 0 && mission.generated &&
+                mission.contact == contact.name && mission.district == spot.metrId ? mission : null;
+        }
+
         public static List<Mission> Build(MissionContact contact, MissionContactSpot spot)
         {
             UInt16 district = spot?.metrId ?? 1;

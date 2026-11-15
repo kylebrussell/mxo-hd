@@ -551,49 +551,53 @@ namespace hds.databases{
 		
 		public void SetPlayerValues()
 		{
+            IDataReader reader = null;
+            try
+            {
 			OpenConnection();
             UInt32 charID = Store.currentClient.playerData.getCharID();
-			string sqlQuery="Select handle,x,y,z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
+			// Promote FLOAT positions before text-protocol conversion so loading preserves their stored binary values.
+			string sqlQuery="Select handle,x+0e0 AS x,y+0e0 AS y,z+0e0 AS z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
 			queryExecuter= conn.CreateCommand();
 			queryExecuter.CommandText = sqlQuery;					
-			dr= queryExecuter.ExecuteReader();
+			reader= queryExecuter.ExecuteReader();
 			
-			while(dr.Read()){
+			while(reader.Read()){
 				
 				Store.currentClient.playerInstance.CharacterID.setValue(charID);
-				Store.currentClient.playerInstance.CharacterName.setValue(dr.GetString(0));
+				Store.currentClient.playerInstance.CharacterName.setValue(reader.GetString(0));
 
-				double x = dr.GetDouble(1);
-				double y = dr.GetDouble(2);
-				double z = dr.GetDouble(3);
+				double x = reader.GetDouble(1);
+				double y = reader.GetDouble(2);
+				double z = reader.GetDouble(3);
 
 				Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x,y,z));
-				Store.currentClient.playerInstance.YawInterval.setValue((byte)Convert.ToDecimal(dr.GetValue(4)));	
-				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(dr.GetValue(5)));	
-				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(dr.GetValue(6)));	
+				Store.currentClient.playerInstance.YawInterval.setValue(PersistedYawInterval(reader.GetValue(4)));
+				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(reader.GetValue(5)));
+				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(reader.GetValue(6)));
 				
-				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(dr.GetValue(7)));	
-				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(dr.GetValue(8)));	
+				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(reader.GetValue(7)));
+				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(reader.GetValue(8)));
 				
-				Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(dr.GetValue(9)));
+				Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(reader.GetValue(9)));
 				
-   				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(dr.GetValue(10)));
-				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(dr.GetValue(11)));
+				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(reader.GetValue(10)));
+				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(reader.GetValue(11)));
 
 				// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
-				Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(dr.GetValue(12)) != 0;
-				Store.currentClient.playerInstance.RealFirstName.setValue(dr.GetString(13));
-				Store.currentClient.playerInstance.RealLastName.setValue(dr.GetString(14));
+				Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(reader.GetValue(12)) != 0;
+				Store.currentClient.playerInstance.RealFirstName.setValue(reader.GetString(13));
+				Store.currentClient.playerInstance.RealLastName.setValue(reader.GetString(14));
 
-				Store.currentClient.playerData.setExperience((long)Convert.ToDecimal(dr.GetValue(15)));
-				Store.currentClient.playerData.setInfo((long)Convert.ToDecimal(dr.GetValue(16)));
-				Store.currentClient.playerData.setDistrict(dr.GetString(17));
-                Store.currentClient.playerData.setDistrictId((uint)dr.GetInt16(18));
+				Store.currentClient.playerData.setExperience((long)Convert.ToDecimal(reader.GetValue(15)));
+				Store.currentClient.playerData.setInfo((long)Convert.ToDecimal(reader.GetValue(16)));
+				Store.currentClient.playerData.setDistrict(reader.GetString(17));
+                Store.currentClient.playerData.setDistrictId((uint)reader.GetInt16(18));
                 
                 
                 
-				UInt32 factionId = (uint) dr.GetInt16(19);
-				UInt32 crewId = (uint) dr.GetInt16(20);
+				UInt32 factionId = (uint) reader.GetInt16(19);
+				UInt32 crewId = (uint) reader.GetInt16(20);
 
 				Store.currentClient.playerInstance.FactionID.enable();
 				Store.currentClient.playerInstance.FactionID.setValue(factionId);
@@ -602,19 +606,24 @@ namespace hds.databases{
 				Store.currentClient.playerInstance.CrewID.setValue(crewId);
 
 				// Reputation attributes carry the two's-complement bytes of the signed standings.
-				Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)dr.GetInt32(21)));
-				Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)dr.GetInt32(22)));
-				Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)dr.GetInt32(23)));
-				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)dr.GetInt32(24)));
-				Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)dr.GetInt32(25)));
-				Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)dr.GetInt32(26)));
-				Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)dr.GetInt32(27)));
+				Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)reader.GetInt32(21)));
+				Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)reader.GetInt32(22)));
+				Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)reader.GetInt32(23)));
+				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)reader.GetInt32(24)));
+				Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)reader.GetInt32(25)));
+				Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)reader.GetInt32(26)));
+				Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)reader.GetInt32(27)));
 				
 
 			}
 			
-			dr.Close();
-			CloseConnection();
+            }
+            finally
+            {
+                // Conversion/query failures must not poison this thread's next login.
+                try { reader?.Close(); }
+                finally { CloseConnection(); }
+            }
 			
 		}
 
@@ -1314,6 +1323,14 @@ namespace hds.databases{
             connection.Open();
             EnsureTransactionalInventory(connection);
             using MySqlTransaction transaction = connection.BeginTransaction();
+            CollectorExchange result=ExchangeCollectorItems(connection,transaction,charId,requiredItem,quantity,rewardItem,uniqueReward);
+            if(result!=null)transaction.Commit();
+            return result;
+        }
+
+        private CollectorExchange ExchangeCollectorItems(MySqlConnection connection, MySqlTransaction transaction,
+            UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false)
+        {
             using MySqlCommand command = connection.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char ORDER BY slot FOR UPDATE";
@@ -1374,7 +1391,6 @@ namespace hds.databases{
             command.Parameters.AddWithValue("@reward", rewardItem);
             command.Parameters.AddWithValue("@slot", rewardSlot);
             command.ExecuteNonQuery();
-            transaction.Commit();
             return new CollectorExchange(rewardSlot, changes.ConvertAll(change => (change.Slot, change.Remaining)));
         }
 
@@ -1533,22 +1549,15 @@ namespace hds.databases{
 		                          "', innerStrC = '" + innerStrength + "', innerStrM = '" + maxInnerStrength + "' WHERE charId = '" + charId + "' LIMIT 1");
 	    }
 
-	    public Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId)
-	    {
-		    OpenConnection();
-		    queryExecuter = conn.CreateCommand();
-		    queryExecuter.CommandText = "SELECT slot, level FROM char_abilities WHERE char_id = '" + charId + "' AND slot >= " + CharacterAttributes.FirstSlot;
-		    dr = queryExecuter.ExecuteReader();
-
-		    Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
-		    while (dr.Read())
-		    {
-			    attributes[(byte)(Convert.ToInt32(dr.GetValue(0)) - CharacterAttributes.FirstSlot)] = Convert.ToUInt16(dr.GetValue(1));
-		    }
-		    dr.Close();
-		    CloseConnection();
-		    return attributes;
-	    }
+        public Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId)
+        {
+            using var connection=new MySqlConnection(connectionString);connection.Open();using var command=connection.CreateCommand();
+            command.Parameters.AddWithValue("@character",charId);
+            command.CommandText="SELECT id,slot,ability_id,level FROM char_abilities WHERE char_id=@character AND slot IN (598,599,601,602,604) ORDER BY id";
+            using var reader=command.ExecuteReader();var rows=new List<AttributeAllocation.Row>();
+            while(reader.Read())rows.Add(new AttributeAllocation.Row(reader.GetUInt32(0),reader.GetInt32(1),reader.GetInt64(2),reader.GetInt64(3)));
+            return AttributeAllocation.ReadValues(rows);
+        }
 
 	    public void SetCharacterAttribute(UInt32 charId, byte attribute, UInt16 value)
 	    {

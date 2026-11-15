@@ -14,20 +14,23 @@ namespace hds
             ClientView staticObjectView = client.viewMan.GetViewForEntityAndGo(entityID,NumericalUtils.ByteArrayToUint16(creationObjectData.GetGoid(),1));
             if (staticObjectView.viewCreated == false)
             {
-                PacketContent pak = new PacketContent();
-
-                pak.AddUint16(1, 1);
                 byte spawnId = client.playerData.assignSpawnIdCounter();
-                staticObjectView.spawnId = spawnId; // interactions must match the same handle the client received
-                pak.AddByteArray(Store.world.objMan.GenerateCreationPacket(creationObjectData, 0x0000, spawnId).getBytes());
-                pak.AddUint16(staticObjectView.ViewID, 1);
-                pak.AddByte(0x00);
- 
-                client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+                staticObjectView.spawnId = spawnId;
+                byte[] creation = BuildSpawnGameObject(creationObjectData,staticObjectView.ViewID,spawnId);
+                MissionComputer1407Qa.Spawn(client, creationObjectData, staticObjectView, creation);
+                client.messageQueue.addObjectMessage(creation, false);
                 client.FlushQueue();
                 staticObjectView.viewCreated = true;
             }
 
+        }
+
+        // Pure dynamic-object creation codec; never queues or flushes.
+        internal static byte[] BuildSpawnGameObject(GameObject obj,ushort view,byte spawn)
+        {
+            var pak=new PacketContent();pak.AddUint16(1,1);
+            pak.AddByteArray(Store.world.objMan.GenerateCreationPacket(obj,0,spawn).getBytes());
+            pak.AddUint16(view,1);pak.AddByte(0);return pak.ReturnFinalPacket();
         }
 
         public void SendUpdateViewStatePacket(WorldClient client, UInt16 viewId, byte[] updateData)

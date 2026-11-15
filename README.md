@@ -264,6 +264,8 @@ Please check the repository for license information. This is a fan preservation 
 
 ## Resources
 
+- [Current ability audit, historical snapshot and review artifacts](docs/ABILITY-AUDIT.md)
+
 - **This Fork:** https://github.com/kylebrussell/mxo-hd
 - **Original Project:** https://github.com/hdneo/mxo-hd
 - **Community:** http://www.mxoemu.com

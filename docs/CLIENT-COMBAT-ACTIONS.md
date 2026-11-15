@@ -22,7 +22,7 @@ Binary evidence:
 - `80 bb`: constructor `6205e190`, sender `6205e290`; `62517780` negates CanNOTRemoveBuff; `62515ef0` checks UBF0, whereas `62515f30` checks UDB0. The UI handler `6205e350` requires eventFourCC `0x6c43524d` (`MRCl`, right click) and virtual key`0x10` (Shift). Helper `6235f9e0` calls USER32.GetAsyncKeyState at IAT`628685f0` and checks its high bit. Thus the producer gesture is **Shift + right click** on the selected buff control; the exact row/icon location still needs native confirmation.
 - `81 21/22`: drop handler `620a045b`, reply `6214176c/621549a0`. Reply fields are ObjectID u32, InstanceData u32, Status u32.
 - `81 2e`: constructor `62087ae0`, array setter `62087c80`. Offset includes the two opcode bytes. `6208c13d..c169` decodes SourceCode as ability GOID `80000000|(source&003ffc00)` or item `(source>>7)&7ffff`.
-- `81 31`: constructor `621d3b00`, producer `621ed223`. Its first field is a base **ability ID**, not an item recipe GOID.
+- `81 31`: constructor `621d3b00`, producer `621ed223`. Its first field is a base **ability ID**, not an item recipe GOID. The branch at `621ed177..621ed193` requires `CastValidTarget == 7`; Write Code970 stores0 and activates through the full `80 b9` tool toggle instead. See [the primary writer evidence](WRITE-CODE.md).
 - `81 2f`: constructor `6214225d`, UI `6208cad8`: result u8, slot u8, TypeID u32, XP float. `81 30` constructor `621423dc`: ObjectID u32, Complexity u8, Category u32.
 - Compile cost multiplier `.12`: `6269fd01..fd70`, immediate `3df5c28f`. `crafting_server.py` supplies cost discount, Gaussian roll (mean50, deviation16, clamp0..100), strict `4*(skill+specialization/10)+roll > 4*complexity+50`. Missing stored complexity is refused.
 

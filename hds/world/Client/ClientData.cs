@@ -74,6 +74,11 @@ namespace hds
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
         public readonly object upgradeSync = new object();
+        public readonly object loadoutSync = new object();
+        public readonly object attributeSync = new object();
+        public int attributeGeneration;
+        public readonly object trainingSync = new object();
+        public int trainingGeneration;
         // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
         public int buffHealthMaximumDelta, buffISMaximumDelta;
         public readonly AbilityPassives.State passives = new AbilityPassives.State();
@@ -84,7 +89,7 @@ namespace hds
         public UInt16 combatStyle = AbilityProgression.SelfDefenseAbility;
         public UInt16 martialArt;
         public readonly object craftingSync = new object();
-        public CompileSession.State compileSession;
+        public CraftingSession.State craftingSession;
         public float deathPenalty = 1;
         public double deathPenaltyAt, deathPenaltySentAt;
         public bool deathPenaltyLoaded;
@@ -120,6 +125,8 @@ namespace hds
 
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
+        internal string missionCheckpoint;
+        internal bool missionCheckpointLoaded;
         public readonly object missionSync = new object();
 		public TutorialMission tutorial;
 		public MissionSite missionPreview; public Mission missionPreviewFor; // a generated mission's first site, picked for its info

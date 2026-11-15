@@ -30,6 +30,7 @@ public sealed class MarginSession : IDisposable
 
     /// <summary>The world session key the server sent under the account's key (which is what WorldEncryption defaults to).</summary>
     public byte[]? SessionKey { get; private set; }
+    public byte[] LoginReply { get; private set; } = Array.Empty<byte>();
 
     public async Task ConnectAsync(string host, int port, AuthTicket ticket, CancellationToken cancel)
     {
@@ -71,9 +72,15 @@ public sealed class MarginSession : IDisposable
         BitConverter.GetBytes(charId).CopyTo(request, 1);
         await SendAsync(request, cancel);
 
+        await ReadCharacterDataAsync(charId, cancel);
+    }
+
+    private async Task ReadCharacterDataAsync(uint charId, CancellationToken cancel)
+    {
         while (true)
         {
             byte[] reply = await ReadEncryptedAsync(cancel);
+            if(CreationTranscript.Count>0) CreationTranscript.Add(("S2C",reply.ToArray()));
             if (reply[0] != CharacterReply)
             {
                 throw new InvalidDataException("Expected character data, got " + WireFormat.ToHex(reply));
@@ -104,6 +111,31 @@ public sealed class MarginSession : IDisposable
         }
     }
 
+    /// <summary>Only creation/name bodies, never certificates, tickets or account private keys.</summary>
+    public List<(string Direction, byte[] Body)> CreationTranscript { get; } = new();
+
+    public async Task<uint> ReserveCharacterAsync(string handle, CancellationToken cancel)
+    {
+        byte[] body = CharacterCreationWire.Reserve(handle);
+        CreationTranscript.Add(("C2S",body.ToArray()));
+        await SendAsync(body,cancel);
+        byte[] reply = await ReadEncryptedAsync(cancel);
+        CreationTranscript.Add(("S2C",reply.ToArray()));
+        if(reply.Length<11 || reply[0]!=0x0b || reply[3]!=0 || reply[6]!=0)
+            throw new InvalidDataException("Character reservation refused: "+Convert.ToHexString(reply));
+        uint id=BitConverter.ToUInt32(reply,7);
+        if(id==0)throw new InvalidDataException("Zero character reservation");
+        return id;
+    }
+
+    public async Task CreateCharacterAsync(uint reservedId, byte[] body, CancellationToken cancel)
+    {
+        if(body.Length<77 || body[0]!=0x0c)throw new ArgumentException("Expected full creation body");
+        CreationTranscript.Add(("C2S",body.ToArray()));
+        await SendAsync(body,cancel);
+        await ReadCharacterDataAsync(reservedId,cancel);
+    }
+
     /// <summary>The 0x11 the margin sends once the world has our UDP packet.</summary>
     public async Task WaitForUdpSessionAsync(CancellationToken cancel)
     {
@@ -118,6 +150,7 @@ public sealed class MarginSession : IDisposable
     {
         await SendAsync(request, cancel);
         byte[] reply = await ReadEncryptedAsync(cancel);
+        if (expectedReply == ConnectResponse) LoginReply = reply.ToArray();
         if (reply[0] != expectedReply)
         {
             throw new InvalidDataException($"Expected margin {expectedReply:x2}, got " + WireFormat.ToHex(reply));

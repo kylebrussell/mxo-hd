@@ -65,11 +65,12 @@ namespace hds
         public static TempMods.Mod ModOf(ushort ability, AbilityCatalog.Modifier m)
         {
             if (m.Number("WhenEnabled", -1) != 2 || m.State != 0 || !Timed(m)) return null;
+            if(AbilitySeverArteryStates.Modifier(ability,m))return new TempMods.Mod { Kind=TempMods.KindFx,Target=710,MinValue=10,MaxValue=10,Seconds=30,Interval=2.5,Proc=TempMods.Proc.SeverState };
             float seconds = (float)m.Number("Duration");
             int value = (int)m.Number("MinValue");
             if (m.Text("StatModUpdateFunc").EndsWith("DOT", StringComparison.Ordinal) && !Scripted(m, true) && Fixed(m))
                 return new TempMods.Mod { Kind = TempMods.KindLinked, Target = TempMods.DOTPlaceHolderAbility, MinValue = value, MaxValue = value,
-                    Seconds = seconds, Proc = TempMods.Proc.Dot, Interval = m.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds) };
+                    Seconds = seconds, Proc = TempMods.Proc.Dot, Interval = m.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds), DamageType = TypedAbilityResistance.ModifierType(m,true) };
             // BufferOverflowInit/Update/Term fill the target's native buff buffer; the tempmod and its record are kept here
             if (m.Text("StatModInitFunc") == "BufferOverflowInit" && Fixed(m))
                 return new TempMods.Mod { Kind = TempMods.KindFx, Target = ability, MinValue = value, MaxValue = value, Seconds = seconds,
@@ -144,7 +145,8 @@ namespace hds
         /// <summary>The hostile ability has landed on another player (after its tempmods).</summary>
         public static void LandedOnPlayer(WorldClient caster, WorldClient target, ushort id, Random rng = null)
         {
-            rng ??= random;
+            // Existing disposable dev-fixture guard only; ordinary servers retain this exact random object/path.
+            rng = DispelCallbackRandom(rng);
             foreach (var m in Enabled(id))
             {
                 // Destroy Resolve: Current Inner Strength -58, DurationType 1 (instant)
@@ -157,15 +159,48 @@ namespace hds
                     Output.WriteDebugLog("[HOSTILE] " + id + " IS " + current + " -> " + next + " on " + TimedEffects.PlayerName(target));
                 }
             }
-            if (HasInit(id, "RemoveRandomBuff")) RemoveRandomBuff(caster, target, id, rng);
-            var sweep = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "UpgradeSweepPulse");
-            if (sweep != null) UpgradeSweep(caster, target, id, (int)sweep.Number("MinValue"), rng);
+            foreach (var m in Enabled(id))
+            {
+                string callback = m.Text("StatModInitFunc");
+                if (callback != "RemoveRandomBuff" && callback != "UpgradeSweepPulse") continue;
+                // Machinegun Fist Combo 261 explicitly stores 0.2. Use the same probability convention
+                // as TimedEffects.Apply; omitted ProcTriggerChance retains the existing always-on policy.
+                if (!DispelProcs(m, rng)) continue;
+                if (callback == "RemoveRandomBuff") RemoveRandomBuff(caster, target, id, rng);
+                else UpgradeSweep(caster, target, id, (int)m.Number("MinValue"), rng);
+            }
         }
 
-        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so the removal scripts fail.</summary>
-        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id)
+        // This override belongs only to positive dispel callbacks. It never reaches combat rolls,
+        // special-move contests, health callbacks or negative-condition term sweeps.
+        internal static Random DispelCallbackRandom(Random supplied = null)
         {
-            if (!HasInit(id, "RemoveRandomBuff") || caster?.messageQueue == null) return;
+            if (supplied != null) return supplied;
+            if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                (Environment.GetEnvironmentVariable("MXO_DB_NAME") ?? "").StartsWith("mxotest_",StringComparison.Ordinal) &&
+                int.TryParse(Environment.GetEnvironmentVariable("MXO_BUFF_DISPEL_QA_ROLL100"),out int roll) && roll >= 0 && roll <= 99)
+                return new DispelQaRandom(roll);
+            return random;
+        }
+        private sealed class DispelQaRandom : Random
+        {
+            private readonly int roll;
+            public DispelQaRandom(int roll) { this.roll=roll; }
+            public override double NextDouble()=>roll/100.0;
+            public override int Next(int maximum)=>Math.Min(roll,Math.Max(0,maximum-1));
+        }
+
+        private static bool DispelProcs(AbilityCatalog.Modifier modifier, Random rng)
+        {
+            double chance = modifier.Number("ProcTriggerChance", 1);
+            lock (rng) return chance >= 1 || rng.NextDouble() < chance;
+        }
+
+        /// <summary>The hostile ability has landed on an NPC. NPCs carry no removable buffs here, so a triggered removal script fails.</summary>
+        public static void LandedOnMob(WorldClient caster, Mob mob, ushort id, Random rng = null)
+        {
+            var modifier = Enabled(id).FirstOrDefault(m => m.Text("StatModInitFunc") == "RemoveRandomBuff");
+            if (modifier == null || caster?.messageQueue == null || !DispelProcs(modifier, DispelCallbackRandom(rng))) return;
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(CancelUpgradeFailCaster, true, id, TimedEffects.PlayerName(caster), mob.getName() ?? "", 0));
             caster.FlushQueue();
         }
@@ -263,13 +298,15 @@ namespace hds
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
             TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
+            if (m.Text("StatModInitFunc") == "NegativeConditionSweepPulse")
+                Pulse(subject, new TimedEffects.Active { Parent = id, Value = value });
             return true;
         }
 
         public static Random PulseRandom = random;
 
         /// <summary>tempmods.NegativeConditionSweepPulse on one subject.</summary>
-        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null)
+        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null, Action<string> removedLog=null)
         {
             var parents = subject.Effects.Snapshot().Select(a => a.Parent).Distinct().Where(Cleansable).ToList();
             WorldClient client = subject is PlayerEffects ? subject.Context : null;
@@ -277,8 +314,10 @@ namespace hds
             foreach (ushort parent in parents)
             {
                 if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
-                TimedEffects.RemoveParent(subject, parent);
-                Output.WriteDebugLog("[HOSTILE] sweep " + pulse.Parent + " removes debuff " + parent + (client != null ? " from " + name : ""));
+                bool live = subject.Effects.Snapshot().Any(m => m.Parent == parent && m.Expires > TimeUtils.GetSimTimeSeconds());
+                if (!TimedEffects.RemoveParent(subject, parent)) continue;
+                string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
+                if (live) (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
                 if (client == null) continue;
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(RemoveDebuffTarget, false, pulse.Parent, name, name,
                     unchecked((int)AbilityMessages.AbilityGameObject(parent))));
@@ -293,15 +332,35 @@ namespace hds
         /// <summary>Other players inside an area who are legal hostile targets (PvP rules) and visible to the caster.</summary>
         public static List<WorldClient> PlayersInArea(WorldClient caster, double x, double y, double z, double radiusMetres, WorldClient skip = null)
         {
-            uint district = caster.playerData.getDistrictId();
-            return SocialHandler.OnlineWhere(c =>
+            var trace=AreaTargetDiagnostics.Enabled?new List<string>():null;
+            var found=SocialHandler.OnlineWhere(c=>
             {
-                if (c == caster || c == skip || c.playerData.isDead || c.playerData.duelDeath || c.playerData.getDistrictId() != district) return false;
-                double tx = 0, ty = 0, tz = 0;
-                NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref tx, ref ty, ref tz);
-                return AbilityTargets.WithinArea(x, y, z, tx, ty, tz, radiusMetres) && caster.viewMan.FindViewForEntity(c.playerData.getEntityId()) != null &&
-                    PvpCombat.Check(caster, c) == PvpRules.Verdict.Allowed;
+                string reason=PlayerAreaReason(caster,c,x,y,z,radiusMetres,skip,out var verdict);
+                if(trace!=null)trace.Add(AreaTargetDiagnostics.Describe(caster,c,reason,verdict,x,y,z,radiusMetres));
+                return reason=="included";
             });
+            // OnlineWhere holds the client-list lock; keep diagnostic I/O outside it.
+            if(trace!=null)foreach(string line in trace)AreaTargetDiagnostics.Write(line);
+            return found;
+        }
+
+        /// <summary>The original area predicate, in its original short-circuit order; no PvP override.</summary>
+        public static string PlayerAreaReason(WorldClient caster,WorldClient candidate,double x,double y,double z,
+            double radiusMetres,WorldClient skip,out PvpRules.Verdict? verdict)
+        {
+            verdict=null;
+            if(candidate==caster)return "caster";
+            if(candidate==skip)return "primary";
+            if(candidate.playerData.isDead)return "dead";
+            if(candidate.playerData.duelDeath)return "duel-death";
+            if(candidate.playerData.getDistrictId()!=caster.playerData.getDistrictId())return "district";
+            double tx=0,ty=0,tz=0;
+            NumericalUtils.LtVector3dToDoubles(candidate.playerInstance.Position.getValue(),ref tx,ref ty,ref tz);
+            if(!AbilityTargets.WithinArea(x,y,z,tx,ty,tz,radiusMetres))
+                return Math.Abs(ty-y)>=150?"floor":"radius";
+            if(caster.viewMan.FindViewForEntity(candidate.playerData.getEntityId())==null)return "invisible";
+            verdict=PvpCombat.Check(caster,candidate);
+            return verdict==PvpRules.Verdict.Allowed?"included":"pvp-"+verdict.Value;
         }
 
         /// <summary>Hostile live NPCs inside an area that the caster can see, with their view ids.</summary>

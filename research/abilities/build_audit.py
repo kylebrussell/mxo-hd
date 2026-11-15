@@ -3,6 +3,8 @@
 dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 """
+from audit_links import rebase_links
+import argparse
 import collections
 import csv
 import hashlib
@@ -11,9 +13,22 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output-dir', type=Path, help='Write the current Markdown, CSV and coverage review bundle here')
+parser.add_argument('--source-base-url', help='Pinned HTTPS repository blob URL for portable artifact evidence links')
+parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: ignored artifacts/ability-audit/server_coverage.json)')
+parser.add_argument('--update-markdown-snapshot', action='store_true', help='Explicit docs-only historical snapshot refresh')
+args=parser.parse_args()
+if args.output_dir and args.update_markdown_snapshot:
+    parser.error('--output-dir and --update-markdown-snapshot are separate workflows')
+artifact_dir=args.output_dir or ROOT / 'artifacts/ability-audit'
+coverage_path = args.coverage or ROOT / 'artifacts/ability-audit/server_coverage.json'
+if not coverage_path.is_file():
+    parser.error(f'Executable coverage not found: {coverage_path}. Run dotnet run --project tools/AbilityAudit first, or pass --coverage with a freshly generated inventory. The tracked historical inventory is not a current fallback.')
+artifact_dir.mkdir(parents=True,exist_ok=True)
+
 catalog = json.loads((ROOT / 'data/ability_catalog.json').read_text())
 abilities = {r['id']: r for r in catalog['abilities']}
-coverage_path = ROOT / 'research/abilities/server_coverage.json'
 coverage = {r['id']: r for r in json.loads(coverage_path.read_text())}
 assert set(coverage) == set(abilities)
 
@@ -148,6 +163,7 @@ UTILITY_NOTES = {538: 'presentation only; no effect executor; prerequisite tier 
 
 # Data-mining overrides; all other executors retain their runtime inventory and sourced notes.
 DATA_MINING = {
+    345: ('direct stat177 existing captured+21/30s UDB0 target-centred NPC/PvP radius; native owner/UI formula, server landing policy follows74; linked75/1055 unresolved; [evidence](ABILITY-DEBUFF-RADIUS.md)', 'partial'),
     215: ('base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     44: ('retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     538: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
@@ -177,12 +193,16 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 
 def server(i):
+    if i == 1149:
+        return "COSMETIC:20s health/InitiativeBonus snapshot1044; IS10/reuse90/buffer10; expiry/death/unload cleanup; no recovered combat consumer; [source boundary](DESPERATION.md)"
     if i == 7:
         return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
     r, f = coverage[i], fields(i)
     parts = []
+    if i == 1124:
+        parts.append('exact native tool prerequisite enforced before cost/cast; none of869 shipped component10 tools names1124 (470 names1125); effect remains unresolved, no alias to384; [evidence](ABILITY-1124.md)')
     if r.get('stealth'):
         parts.append('stealth state, visibility and detection executor; script tests/drains; [details and limits](STEALTH.md)')
     if r.get('utility'):
@@ -203,6 +223,14 @@ def server(i):
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r.get('resurrection'):
         parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
+    if r.get('registered_grants'):
+        parts.append('captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
+    if r.get('conditional_thrown_damage'):
+        parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
+    if r.get('conditional_powerless'):
+        parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
+    if r.get('conditional_stun'):
+        parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
     if r.get('health_callback'):
         parts.append(r['health_callback'])
     if r['healing'] and not r.get('health_callback'):
@@ -239,7 +267,9 @@ def server(i):
             parts.append(', '.join(states))
         if any(m['stat'] for m in r['timed']):
             parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
-    if r.get('aura'):
+    if r.get('proxy_technician'):
+        parts.append(r['proxy_technician'])
+    if r.get('aura') and not r.get('proxy_technician'):
         a = r['aura']
         parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
     if r.get('sweep'):
@@ -248,6 +278,8 @@ def server(i):
         parts.append('native script buffer reservation min(Value,free); baseline100+4level is OURS; refuses new upgrades until removal/expiry')
     if r.get('instant_hostile'):
         parts.append('instant script: removable buffs (UBF0) / current IS on landing')
+    if r.get('buff_dispel'):
+        parts.append('buff dispel on landing: ' + ', '.join(f"{m['callback']} {m['chance'] * 100:g}% proc" for m in r['buff_dispel']) + ' (existing server RNG policy; native sequence unverified)')
     if r['grants']:
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     style = [m for m in r.get('style', []) if m['level50'] is not None]
@@ -278,10 +310,10 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
-    if i in PETS:
+    if i in PETS or r.get('proxy_technician'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if i == 49 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
+    if i in (49, 1149) or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
     if r.get('stealth_shield') or r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'
@@ -332,6 +364,8 @@ Friendly direct/group heals and HOTs use each shipped template's deterministic b
 
 Combat styles (Self Defense, Aikido, Karate, Kung-Fu, Hacker/Coder/Spy Style) become active through `3e`. The active style's while-enabled modifiers join the passive totals, and its ILDB exchange set drives the interlock moves all viewers see. `CombatSpecialMove` abilities need their stored stance: a loaded style is switched to, an unloaded one refuses the move. Thrown DOTs, Berserker/Side Roll caster buffs, Taunt aggro and the Exile weapons have executors. Their inferences and gaps (RandomCombatStateChance, weakness by NPC name, unmapped special choreography) are in [COMBAT-STYLES.md](COMBAT-STYLES.md). `43` MartialArt is unreachable in 7.6005.
 
+Concentration564 now consumes loaded modifiers for damage cast-through on explicit stored interruptible templates only; native integer-division/typed-argument evidence, absent-flag boundary and server input policy are in [ABILITY-CONCENTRATION.md](ABILITY-CONCENTRATION.md).
+
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 
 ## Per-ability table
@@ -359,19 +393,29 @@ classes = {1: 'core attribute', 2: 'engine stat', 4: 'engine state', 5: 'persona
 for i, ability in abilities.items():
     if i not in player:
         scope = 'NPC' if ability['name'].startswith('NPC') else classes.get(fields(i).get('Ability/AbilityClass'), 'item / event / internal / unproven loadability')
+        if coverage[i].get('consumable_sweep'):
+            scope = 'item-triggered ability; cast/stack/shared timer/level checks; ' + ('initial + periodic' if i != 659 else 'periodic') + ' negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md)'
         appendix += f"| {i} | {ability['name']} | {scope} |\n"
 footer = '''
 ## Reproduction and checks
 
 1. `python research/abilities/extract_catalog.py --client <read-only MxO folder>`
 2. `dotnet run --project tools/AbilityAudit`
-3. `python research/abilities/build_audit.py`
+3. `python research/abilities/build_audit.py` (current Markdown in `artifacts/ability-audit`; see [audit policy](ABILITY-AUDIT.md))
 
-The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `AbilityBuffs`, `TempMods`, `AbilityTargets` and grant lookup, rather than searching comments. The generated [CSV](ABILITY-PARITY.csv) is filterable by archetype, tree and status. Ability changes have unit coverage in `AbilityParityTests.cs` and four fresh-server `ability-parity-*` scenarios for support, controls, area effects and IS denial. Native ability checks are in [ABILITY-PARITY-QA.md](ABILITY-PARITY-QA.md) and the handoff file; this ability task does not acquire the client lock. The earlier PR94 native validation is separately recorded in `PVP.md`.
+The runtime inventory calls the real `AbilityCosts`, `AbilityCooldowns`, `AbilityBuffs`, `TempMods`, `AbilityTargets` and grant lookup, rather than searching comments. The [runtime inventory](../research/abilities/server_coverage.json) records the executable coverage. The generated [CSV](ABILITY-PARITY.csv) is filterable by archetype, tree and status. Ability changes have unit coverage in `AbilityParityTests.cs` and four fresh-server `ability-parity-*` scenarios for support, controls, area effects and IS denial. Native ability checks are in [ABILITY-PARITY-QA.md](ABILITY-PARITY-QA.md) and the handoff file; this ability task does not acquire the client lock. The earlier PR94 native validation is separately recorded in `PVP.md`.
 '''
-(ROOT / 'docs/ABILITY-PARITY.md').write_text(header + table + appendix + footer, encoding='utf-8')
-with (ROOT / 'docs/ABILITY-PARITY.csv').open('w', newline='', encoding='utf-8') as stream:
-    writer = csv.writer(stream, lineterminator='\n')
+markdown_path=ROOT / 'docs/ABILITY-PARITY.md' if args.update_markdown_snapshot else artifact_dir / 'ABILITY-PARITY.md'
+markdown=rebase_links(header + table + appendix + footer,ROOT,markdown_path.parent,
+    args.source_base_url,bundled=not args.update_markdown_snapshot)
+markdown_path.write_text(markdown, encoding='utf-8', newline='\r\n')
+csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv'
+with csv_path.open('w', newline='', encoding='utf-8') as stream:
+    writer = csv.writer(stream, lineterminator='\r\n')
     writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status'])
     writer.writerows(rows)
+if not args.update_markdown_snapshot:
+    if csv_path.resolve() != (artifact_dir / 'ABILITY-PARITY.csv').resolve():
+        (artifact_dir / 'ABILITY-PARITY.csv').write_text(csv_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
+    (artifact_dir / 'server_coverage.json').write_text(coverage_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
 print(f'{len(player)} player candidates/grants, {len(abilities) - len(player)} other templates; {dict(counts)}')

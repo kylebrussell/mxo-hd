@@ -26,11 +26,15 @@ namespace hds
         public static void Pill(WorldClient client, byte[] body)
         {
             if (body?.Length != 2) return;
-            if (client.playerData.isDead || client.playerData.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects)) return;
             ushort slot = BitConverter.ToUInt16(body, 0);
             if (slot < 1 || slot > 96) return;
             uint goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-            if (ConsumableItems.TryGet(goid, out var pill)) new InventoryHandler().UseItem(slot, pill.AbilityId);
+            if (ConsumableItems.TryGet(goid, out var pill))
+            {
+                if (pill.Effect != ConsumableItems.Effect.AntiStun && (client.playerData.isDead || client.playerData.duelDeath ||
+                    ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects))) return;
+                new InventoryHandler().UseItem(slot, pill.AbilityId);
+            }
             else Notice(client, "That slot does not contain a usable pill.");
         }
         public static void CloseCollector(WorldClient client, byte[] body)
@@ -48,6 +52,8 @@ namespace hds
         public static void CloseContainer(WorldClient client, byte[] body)
         {
             if (body?.Length != 0) return;
+            //62087e20 writer-close also emits empty811a; never closes an unrelated compiler session.
+            CraftingSession.End(client, ability: CraftingSession.WriterAbility);
             TutorialMission.Of(client)?.CloseContainer();
             lock (client.playerData.missionSync)
             {
@@ -139,10 +145,11 @@ namespace hds
             lock (client.playerData.craftingSync)
             {
                 var r = ClientActionRequests.ParseStoredCompile(body);
+                if (OrdinaryItemCompile.TryStart(client, r)) return;
                 byte result = 1;
                 var db = Store.dbManager.WorldDbHandler;
                 if (r != null && !client.playerData.isDead && !client.playerData.duelDeath && !client.playerData.worldChangePending &&
-                    (r.FromCrafting ? CompileSession.Authorized(client, r.Tool) && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client) &&
+                    (r.FromCrafting ? CraftingSession.Authorized(client, r.Tool) && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client) &&
                         !CombatManager.GetHandler(client).isCombatRunning &&
                         CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) &&
                         db.GetInventoryItems(client.playerData.getCharID()).Any(i => i.Slot == r.Tool && i.Goid == 1271)

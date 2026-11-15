@@ -61,6 +61,20 @@ namespace hds
             loadWorldObjectsDb(DataPath("staticObjects_it.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_dt_1.csv"));
             loadWorldObjectsDb(DataPath("staticObjects_dt_2.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_small03.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_large01.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_large02.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_widowsmoor.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_medium01.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_medium02.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_medium03.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive01.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_yuki.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive02.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive_ashencourte.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_datamine.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive_sakura.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_archive_sati.csv"));
         }
 
         public void LoadMissions()
@@ -91,7 +105,15 @@ namespace hds
         /// Only Zion's early missions exist so far, so every organisation is offered them.</summary>
         public List<Mission> FindMissions(MissionContact contact, HashSet<int> completed)
         {
-            return ContactOffer(missions.FindAll(m => MissionContacts.Offers(contact, m)), completed);
+            return ContactOfferWithStandards(missions.FindAll(m => MissionContacts.Offers(contact, m)), completed);
+        }
+
+        // Stored standard missions are independently repeatable; they never enter the ordered story selection.
+        public static List<Mission> ContactOfferWithStandards(List<Mission> missions, HashSet<int> completed)
+        {
+            List<Mission> result = ContactOffer(missions.FindAll(m => m.plot), completed);
+            result.AddRange(missions.Where(m => !m.plot).OrderBy(m => m.id));
+            return result;
         }
 
         public static List<Mission> ContactOffer(List<Mission> missions, HashSet<int> completed)

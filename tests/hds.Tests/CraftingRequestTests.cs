@@ -43,6 +43,18 @@ public class CraftingRequestTests
     }
 
     [Fact]
+    public void InventoryProducerRequiresTargetSevenAndCannotActivateTheWriterOrItsParent()
+    {
+        Assert.True(CraftingRequests.IsInventoryTargetAbility(276));
+        Assert.False(CraftingRequests.IsInventoryTargetAbility(970));
+        Assert.False(CraftingRequests.IsInventoryTargetAbility(37));
+        Assert.False(CraftingRequests.IsInventoryTargetAbility(65536u + 276));
+        Assert.Equal((ushort)970, AbilityProgression.GrantOf(37));
+        Assert.Equal((ushort)37, AbilityCatalog.IdOf((uint)AbilityCatalog.Find(970).Number("Ability/AbilityID")));
+        Assert.Equal((ushort)970, AbilityCatalog.IdOf(CraftingRules.Find(531).ToolAbility));
+    }
+
+    [Fact]
     public void StoredItemRulesAndCompileCostMatchTheScriptAndBinary()
     {
         var pill = CraftingRules.Find(2399);

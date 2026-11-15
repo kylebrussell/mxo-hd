@@ -1,0 +1,148 @@
+{
+  "world": 16,
+  "sectorCount": 60,
+  "navSectorCount": 60,
+  "hardlineNextId": 3,
+  "hardlineHid": 2,
+  "hardlineRawFields": {
+    "0": [
+      2
+    ],
+    "1": [
+      "4e8fc89c20261048ab19dafe6374fa64"
+    ],
+    "2": [
+      [
+        37800.0,
+        400.0,
+        31700.0
+      ]
+    ],
+    "3": [
+      [
+        -99.99999237060547,
+        95.0,
+        5.9604644775390625e-06
+      ]
+    ],
+    "4": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "5": [
+      0
+    ],
+    "6": [
+      0
+    ],
+    "7": [
+      0
+    ],
+    "8": [
+      0
+    ]
+  },
+  "hardlineCooked": [
+    {
+      "sector": 52,
+      "GUID": 1,
+      "RTID": 592,
+      "NAME": "467 Reitman Road",
+      "SPOS": [
+        7800.0,
+        400.0,
+        1700.0
+      ],
+      "FWRD": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "OFFS": 100.0
+    }
+  ],
+  "arrival": [
+    37700.0,
+    495.0,
+    31700.0
+  ],
+  "arrivalNav": [
+    {
+      "region": 7,
+      "polygon": 4,
+      "floorY": 400.0
+    }
+  ],
+  "transportGroups": 5,
+  "transportSpaces": 59,
+  "subwayCnetCount": 0,
+  "elevatorMapping": "Static panels only. No proven native-key to TransportSpace mapping exported.",
+  "sourceSha256": {
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_1.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_45.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_49.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_57.nav": "46b805c68c558216c45b0e30281049cf6808ce33536cfb2d58ad9fcedc2b3669",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_46.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_21.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_14.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_12.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_3.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_19.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_7.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_47.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_50.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_38.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_35.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_51.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_17.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_23.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_42.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_52.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_36.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_48.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_34.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_40.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_29.nav": "abdc858a79679d721f999ffd967413d2de287beb1fc3eda62c17f1921fbcf2b4",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_32.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_13.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_58.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_44.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_6.nav": "36a198e5c72761a55344502626175625168c94f581def82feb8e87fb17efbf55",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_2_1.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_28.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_24.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_25.nav": "6325f71a800398ea522f6a7b278791ac649753c90cccc3170d0661458f060dba",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_15.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_22.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_20.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_53.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_41.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_10.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_0.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_55.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_43.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_26.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_27.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_2_0.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_18.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_37.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_39.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_30.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_56.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_31.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_11.nav": "cbaacc393164720d73ea48844bd5d8718a6cf05ab7ac46cdd663ee2ec1477e85",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_9.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_16.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_33.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_8.nav": "26eda3328b1b9411a48c555a9af8e2b244c2856cbf93524ae968e70e49f23769",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_54.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_4.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03_5.nav": "1cd02eacb2b841b276f7193f0e9b0beaf0a4b6b0e765315964f0131aa69fcd6b",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03.hdl": "f8b60c8e2abd4f5e36aa0d6d56c319f338ac652860d1261190d92b257fdc2124",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03.cooked_cod": "d750a0656511086d150c8fa50dc47018605fe5532a9db6cb8fa248d6d2f5b6cf",
+    "resource/worlds/final_world/constructs/medium/medium03/medium03.metr": "dab00405f4f681d020c8cdca2880390102a787adca507ab73d227272cb56ba35"
+  }
+}

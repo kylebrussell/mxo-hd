@@ -38,16 +38,26 @@ namespace hds
         private static readonly object timerLock = new object();
         private static Timer timer;
 
-        public static void Start(WorldClient client, Mission mission)
+        public static bool Start(WorldClient client, Mission mission, ushort transaction = 0) => MissionPersistence.Mutate(client,()=>{StartCore(client,mission,transaction);return true;},true);
+
+        internal static bool StartOpenFloor(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan,ushort transaction) =>
+            MissionPersistence.Mutate(client,()=>
+            {
+                if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;
+                StartCore(client,progress.mission,transaction,progress,plan);return true;
+            },true);
+
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null)
         {
             lock (client.playerData.missionSync)
             {
-                End(client);
+                EndCore(client,false);
 
                 ClientData data = client.playerData;
-                MissionProgress progress = new MissionProgress(mission);
+                MissionProgress progress = preparedProgress ?? new MissionProgress(mission);
                 data.activeMission = mission;
                 data.missionProgress = progress;
+                new ServerPackets().sendMissionAccept(client,transaction,data.missionInstanceCounter,mission);
 
                 foreach (MissionNpc npc in mission.npcs)
                 {
@@ -64,9 +74,11 @@ namespace hds
                     }
                 }
 
-                MissionStaging.Stage(client, progress);
+                if(prepared==null)MissionStaging.Stage(client, progress);
+                else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
                 SendPhase(client, progress);
                 EnsureTimer();
+                MissionPersistence.Save(client);
             }
         }
 
@@ -90,7 +102,9 @@ namespace hds
         }
 
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
-        public static void End(WorldClient client)
+        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;},abortBlocked:true);
+
+        private static void EndCore(WorldClient client, bool clearPersistent = true)
         {
             lock (client.playerData.missionSync)
             {
@@ -107,21 +121,53 @@ namespace hds
                     Despawn(data, mob);
                 }
 
-                // Mission items don't outlive the mission (an abort, or leaving before handing them over).
                 MissionProgress progress = data.missionProgress;
                 if (progress != null)
                 {
                     MissionStaging.DespawnObjects(client, progress);
-                    foreach (UInt32 item in new List<UInt32>(progress.itemSlots.Keys))
-                    {
-                        TakeItem(client, progress, item);
-                    }
+                    foreach(var slot in progress.itemSlots.Values)new ServerPackets().sendInventoryItemDelete(slot,client);
                 }
-
                 data.activeMission = null;
                 data.missionProgress = null;
+                if(clearPersistent)MissionPersistence.Save(client,true);
             }
 
+        }
+
+        internal static void Detach(WorldClient client)
+        {
+            lock(client.playerData.missionSync)
+            {
+                var data=client.playerData;
+                lock(data.missionMobs)
+                {
+                    foreach(var mob in data.missionMobs.ToArray()) Despawn(data,mob);
+                    data.missionMobs.Clear();
+                }
+                if(data.missionProgress!=null)MissionStaging.DespawnObjects(client,data.missionProgress);
+                data.activeMission=null;data.missionProgress=null;
+            }
+        }
+        internal static void Reannounce(WorldClient client)
+        {
+            var progress=client.playerData.missionProgress;
+            if(progress==null)return;
+            if(progress.restoreRefusal!=null)
+            {
+                new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
+                MissionObjectiveReplay.Arm(client,progress);
+                foreach(var item in progress.itemSlots)
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value,item.Key,ItemElement(progress,item.Key),client.playerData.missionInstanceCounter));
+                new ServerPackets().sendSystemChatMessage(client,"Your saved mission area is no longer safe to restore. Abort this mission from Mission Status before accepting another.","BROADCAST");
+                return; // Never publish unsafe objects, actors, waypoints or automatic goal/item grants.
+            }
+            EnsureTimer();
+            if(client.playerData.getDistrictId()!=progress.mission.district)return;
+            new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
+            MissionStaging.RestoreObjects(client,progress);
+            SendPhase(client,progress,false,true);
+            foreach(var item in progress.itemSlots)
+                client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value,item.Key,ItemElement(progress,item.Key),client.playerData.missionInstanceCounter));
         }
 
         /// <summary>Takes a mission NPC out of the world and off the clients that have it.</summary>
@@ -156,6 +202,11 @@ namespace hds
         /// <summary>The player double-clicked a mission NPC (80 c7 ... 09). Returns false if it isn't one.</summary>
         public static bool OnTalk(WorldClient client, Mob npc)
         {
+            return MissionPersistence.Mutate(client,()=>OnTalkCore(client, npc));
+        }
+
+        private static bool OnTalkCore(WorldClient client, Mob npc)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             if (npc == null || npc.missionNpcId == 0 || progress == null)
             {
@@ -165,7 +216,7 @@ namespace hds
             MissionObjective objective = progress.FindOpenFor(npc.missionNpcId);
             if (objective != null && objective.talkLines.Count > 0)
             {
-                Say(client, objective.talkLines);
+                Say(client, objective.talkLines, interactive:true);
             }
 
             if (objective != null && objective.type == MissionGoalType.Talk)
@@ -183,7 +234,7 @@ namespace hds
                 MissionLine line = LatestLine(progress, npc.missionNpcId);
                 if (line != null)
                 {
-                    Say(client, new List<MissionLine> { line });
+                    Say(client, new List<MissionLine> { line }, interactive:true);
                 }
             }
 
@@ -193,6 +244,11 @@ namespace hds
 
         /// <summary>Right-click Get on an NPC (80 c7 ... 0d): it hands over the objective's item.</summary>
         public static bool OnGet(WorldClient client, Mob npc)
+        {
+            return MissionPersistence.Mutate(client,()=>OnGetCore(client, npc));
+        }
+
+        private static bool OnGetCore(WorldClient client, Mob npc)
         {
             MissionProgress progress = client.playerData.missionProgress;
             MissionObjective objective = npc == null ? null : progress?.FindOpen(MissionGoalType.Get, npc.missionNpcId);
@@ -213,6 +269,11 @@ namespace hds
         /// <summary>Right-click Give on an NPC (80 c7 ... 0e): the player hands over the objective's item.</summary>
         public static bool OnGive(WorldClient client, Mob npc)
         {
+            return MissionPersistence.Mutate(client,()=>OnGiveCore(client, npc));
+        }
+
+        private static bool OnGiveCore(WorldClient client, Mob npc)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             MissionObjective objective = npc == null ? null : progress?.FindOpen(MissionGoalType.Give, npc.missionNpcId);
             if (objective == null)
@@ -231,6 +292,11 @@ namespace hds
 
         /// <summary>A mob the player fought died. Completes a Defeat objective for it.</summary>
         public static void OnMobDefeated(WorldClient client, Mob mob)
+        {
+            MissionPersistence.Mutate(client,()=>OnMobDefeatedCore(client, mob));
+        }
+
+        private static void OnMobDefeatedCore(WorldClient client, Mob mob)
         {
             TutorialMission.Of(client)?.OnMobDied(mob);
             MissionProgress progress = client.playerData.missionProgress;
@@ -337,6 +403,11 @@ namespace hds
         /// <summary>A protected NPC died: the mission is over.</summary>
         public static void Fail(WorldClient client, MissionProgress progress, string reason)
         {
+            MissionPersistence.Mutate(client,()=>FailCore(client, progress, reason));
+        }
+
+        private static void FailCore(WorldClient client, MissionProgress progress, string reason)
+        {
             if (progress.failed)
             {
                 return;
@@ -352,6 +423,11 @@ namespace hds
 
         /// <summary>A mission object was used (80 c7 on its view). Returns true if it's one of the mission's.</summary>
         public static bool OnViewUse(WorldClient client, UInt64 entity)
+        {
+            return MissionPersistence.Mutate(client,()=>OnViewUseCore(client, entity));
+        }
+
+        private static bool OnViewUseCore(WorldClient client, UInt64 entity)
         {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
@@ -447,13 +523,19 @@ namespace hds
         /// <summary>81 21: only the mission item expected by the currently open, nearby Put container is accepted.</summary>
         public static bool OnPutItem(WorldClient client, byte slot)
         {
+            return MissionPersistence.Mutate(client,()=>OnPutItemCore(client, slot));
+        }
+
+        private static bool OnPutItemCore(WorldClient client, byte slot)
+        {
             lock (client.playerData.missionSync)
             {
                 MissionProgress progress = client.playerData.missionProgress;
                 if (progress == null || progress.failed || client.playerData.loot.WindowOpen) return false;
                 MissionObjectState state = progress.objects.Values.FirstOrDefault(o => o.putOpen);
-                if (state?.spot == null || !ContainerActions.InReach(client.playerInstance.Position.getValue(),
-                    state.spot.pos_x, state.spot.pos_y, state.spot.pos_z)) return false;
+                if (state?.spot == null) return false;
+                var pose = MissionObjectPoses.For(state);
+                if (!ContainerActions.InReach(client.playerInstance.Position.getValue(), pose.X, pose.Y, pose.Z)) return false;
                 MissionObjective objective = progress.OpenObjectives().FirstOrDefault(o => o.type == MissionGoalType.Put &&
                     o.objectId == state.def.id && progress.itemSlots.TryGetValue(o.item, out ushort ownedSlot) && ownedSlot == slot);
                 if (objective == null || !TakeItem(client, progress, objective.item)) return false;
@@ -470,6 +552,20 @@ namespace hds
         /// <summary>Take All (81 1f) on a mission object's loot window. Returns true if it was one.</summary>
         public static bool OnTakeAll(WorldClient client)
         {
+            lock (client.playerData.missionSync)
+            {
+                if (client.playerData.missionProgress?.objects.Values.Any(o => o.lootOpen) != true) return false;
+                var owner = new MissionContainerRetry.Owner(client);
+                bool committed = MissionPersistence.Mutate(client,()=>MissionPersistence.DeferContainerCheckpoint(client,()=>OnTakeAllCore(client)));
+                // A failed mutation removes no client items and must still release Take All's pending cursor.
+                // Never fall through to another loot owner or publish into a switched world/life/transport.
+                if (!committed && MissionContainerRetry.Acknowledge(client, owner) && owner.Current(client)) client.FlushQueue();
+                return true;
+            }
+        }
+
+        private static bool OnTakeAllCore(WorldClient client)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
             {
@@ -483,31 +579,15 @@ namespace hds
                     continue;
                 }
 
-                foreach (MissionObjective objective in new List<MissionObjective>(progress.OpenObjectives()))
-                {
-                    if (objective.type == MissionGoalType.Search && objective.objectId == state.def.id)
+                return MissionContainerClaim.Take(state, progress.OpenObjectives(), client.playerData.missionInstanceCounter,
+                    item => GiveItem(client, progress, item, reservePending: true),
+                    (claimed, empty) =>
                     {
-                        if (objective.item != 0 && !GiveItem(client, progress, objective.item))
-                        {
-                            ushort instance = client.playerData.missionInstanceCounter;
-                            new ServerPackets().SendLootAccepted(client, new[]
-                            {
-                                (new byte[] { 0, (byte)instance, (byte)(instance >> 8), 0x82 }, objective.item)
-                            });
-                            return true;
-                        }
-
-                        Complete(client, progress, objective);
-                    }
-                }
-
-                state.lootOpen = false;
-                // Emptied: the container goes to the state retail's Open leads to (OpenedState, 0x834), which plays its
-                // opening and takes Open off its menu
-                ObjectStates.ShowOpened(client, state.entity, state.goid);
-                new ServerPackets().SendLootAccepted(client);
-                client.FlushQueue();
-                return true;
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildLootAccepted(claimed));
+                        if (empty) client.messageQueue.addRpcMessage(ServerPackets.BuildLootClosed());
+                    },
+                    () => ObjectStates.ShowOpened(client, state.entity, state.goid),
+                    objective => Complete(client, progress, objective));
             }
 
             return false;
@@ -515,6 +595,11 @@ namespace hds
 
         /// <summary>The player used a hardline booth: Upload goals for what they carry, and NPCs escorted to a hardline.</summary>
         public static void OnHardline(WorldClient client, bool upload)
+        {
+            MissionPersistence.Mutate(client,()=>OnHardlineCore(client, upload));
+        }
+
+        private static void OnHardlineCore(WorldClient client, bool upload)
         {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
@@ -555,8 +640,9 @@ namespace hds
         {
             if (place.StartsWith("object:"))
             {
-                return ushort.TryParse(place.Substring(7), out ushort objectId) && progress.objects.TryGetValue(objectId, out MissionObjectState state) &&
-                       state.spot != null && Distance2(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z, x, y, z) <= radius * radius;
+                if (!ushort.TryParse(place.Substring(7), out ushort objectId) || !progress.objects.TryGetValue(objectId, out MissionObjectState state) || state.spot == null) return false;
+                var pose = MissionObjectPoses.For(state);
+                return Distance2(pose.X, pose.Y, pose.Z, x, y, z) <= radius * radius;
             }
 
             if (place.StartsWith("npc:"))
@@ -600,6 +686,11 @@ namespace hds
         /// <summary>Returns false when the mission item needs more bag space, so the loot can be retried.</summary>
         public static bool OnMissionItemLooted(WorldClient client, UInt32 itemGoId)
         {
+            return MissionPersistence.Mutate(client,()=>OnMissionItemLootedCore(client, itemGoId));
+        }
+
+        private static bool OnMissionItemLootedCore(WorldClient client, UInt32 itemGoId)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
             {
@@ -640,9 +731,12 @@ namespace hds
             return chosen;
         }
 
-        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId)
+        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId, bool reservePending = false)
         {
-            UInt16 slot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            if(progress.itemSlots.ContainsKey(goId))return true;
+            UInt16 slot = reservePending
+                ? MissionContainerClaim.FreeSlot(Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()).Select(i => (int)i.Slot), progress.itemSlots.Values)
+                : Store.dbManager.WorldDbHandler.GetFirstNewSlot();
             if (slot == 0)
             {
                 if (!progress.inventoryFullNotice)
@@ -653,11 +747,13 @@ namespace hds
                 }
                 return false;
             }
-            Store.dbManager.WorldDbHandler.AddItemToInventory(slot, goId);
-            client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(slot, goId, ItemElement(progress, goId),
-                client.playerData.missionInstanceCounter));
+
             progress.itemSlots[goId] = slot;
             progress.inventoryFullNotice = false;
+            try { MissionPersistence.Save(client); }
+            catch { progress.itemSlots.Remove(goId); throw; }
+            client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(slot, goId, ItemElement(progress, goId),
+                client.playerData.missionInstanceCounter));
             return true;
         }
 
@@ -680,6 +776,11 @@ namespace hds
 
         public static void OnInventoryItemMoved(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
         {
+            MissionPersistence.Mutate(client,()=>OnInventoryItemMovedCore(client, fromSlot, toSlot));
+        }
+
+        private static void OnInventoryItemMovedCore(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
             {
@@ -692,6 +793,7 @@ namespace hds
                     progress.itemSlots[item.Key] = toSlot;
                 }
             }
+            MissionPersistence.Save(client);
         }
 
         private static bool TakeItem(WorldClient client, MissionProgress progress, UInt32 goId)
@@ -701,7 +803,7 @@ namespace hds
                 UInt32 charId = client.playerData.getCharID();
                 if (Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Any(item => item.Slot == slot && item.Goid == goId))
                 {
-                    Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+
                     new ServerPackets().sendInventoryItemDelete(slot, client);
                     progress.itemSlots.Remove(goId);
                     return true;
@@ -717,6 +819,7 @@ namespace hds
                 if (client.playerData.missionProgress == progress)
                 {
                     CompleteGoal(client, progress, objective);
+                    MissionPersistence.Save(client);
                 }
             }
         }
@@ -911,8 +1014,8 @@ namespace hds
             if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
             {
                 // Object origins may be on a desk or cabinet. NPC height belongs to the floor, as site NPC spots do.
-                return Beside(state.spot.pos_x, progress.site == null ? state.spot.pos_y : progress.site.floorY - 50,
-                    state.spot.pos_z, index);
+                var pose = MissionObjectPoses.For(state);
+                return Beside(pose.X, state.OpenFloor!=null ? state.OpenFloor.Standing[1] : progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
             }
 
             return BesidePlayer(px, py, pz, index);
@@ -985,7 +1088,7 @@ namespace hds
             }
         }
 
-        private static void SendPhase(WorldClient client, MissionProgress progress)
+        private static void SendPhase(WorldClient client, MissionProgress progress, bool provideItems = true, bool restoring = false)
         {
             MissionPhase phase = progress.Phase;
             ServerPackets packets = new ServerPackets();
@@ -1001,7 +1104,9 @@ namespace hds
                     header = header ?? "30000100" + ((byte)sector).ToString("x2") + ((byte)(sector >> 8)).ToString("x2") +
                              "01000000000000003c00";
                     // The area points are its street entrance, as retail's were
-                    areaA = new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z };
+                    var elevator=progress.ElevatorFor(site);
+                    areaA = elevator==null?new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z }:
+                        elevator.Lobby.Select(v=>(float)v).ToArray();
                     areaB = areaA;
                 }
 
@@ -1015,13 +1120,31 @@ namespace hds
                 client.messageQueue.addRpcMessage(ServerPackets.BuildMissionWaypoint(door.x, door.y, door.z, (byte)i, door.doorHex));
             }
 
-            foreach (MissionObjective objective in progress.OpenObjectives())
-            {
-                packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
-            }
+            SendObjectives(client, progress, restoring);
 
-            GiveProvidedItems(client, progress);
+            if(provideItems) GiveProvidedItems(client, progress);
             client.FlushQueue();
+        }
+
+        /// <summary>A new native HUD needs each row created before its completed-state update.
+        /// Replay only this phase's completed or currently open goals; a locked goal stays hidden.</summary>
+        internal static void SendObjectives(WorldClient client, MissionProgress progress, bool restoring)
+        {
+            if(restoring){MissionObjectiveReplay.Arm(client,progress);return;}
+            SendObjectiveRows(client,progress,false);
+        }
+        internal static void SendObjectiveRows(WorldClient client, MissionProgress progress, bool restoring)
+        {
+            ServerPackets packets = new ServerPackets();
+            foreach (MissionObjective objective in progress.Phase.missionObjectives)
+                if (progress.IsOpen(objective) || restoring && progress.IsDone(objective.goal))
+                    packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
+        }
+        internal static void SendObjectiveCompletions(WorldClient client, MissionProgress progress)
+        {
+            ServerPackets packets = new ServerPackets();
+            foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
+                packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
         }
 
         // Items the briefing provides, including a retry when the bag was full at the start of this phase.
@@ -1047,10 +1170,32 @@ namespace hds
 
         private static void Finish(WorldClient client, MissionProgress progress)
         {
-            if (!MissionTickets.Complete(client, progress))
+            MissionPersistence.Save(client);
+            // Quote both rewards once, before transactional XP can change the level.
+            var payout=MissionRewards.Calculate(progress.mission,client.playerInstance.Level.getValue()[0]);
+            uint experience=payout.Experience, info=payout.Info;
+            MissionCompletion committed;
+            try
             {
+                committed=Store.dbManager.WorldDbHandler.CompleteActiveMission(client.playerData.getCharID(),
+                    client.playerData.missionCheckpoint,experience,info);
+            }
+            catch(Exception ex)
+            {
+                // The business transaction rolled back. Keep the phase, owned items and unpaid receipt for a retry.
+                Output.WriteLine("[MISSION] Completion transaction deferred: "+ex.Message);
                 return;
             }
+            if(committed==null)
+            {
+                if(!progress.completionNotice)
+                {
+                    new ServerPackets().sendSystemChatMessage(client,"Keep the mission ticket in your backpack and make room for the completion reward.","BROADCAST");
+                    progress.completionNotice=true;
+                }
+                return;
+            }
+            client.playerData.missionCheckpoint=null;
             Mission mission = progress.mission;
             ServerPackets packets = new ServerPackets();
             if (!string.IsNullOrEmpty(mission.finishLine))
@@ -1062,18 +1207,48 @@ namespace hds
 
             // Retail order: the mission-end message (status 00 = complete), then the rewards.
             UInt32 seconds = (UInt32)Math.Max(0, TimeUtils.getUnixTimeUint32() - progress.startedAt);
-            packets.SendMissionComplete(client, (UInt32)Math.Max(0, mission.exp), (UInt32)Math.Max(0, mission.info),
+            packets.SendMissionComplete(client, committed.ExperienceCredited, committed.InfoCredited,
                 (UInt16)Math.Min(progress.kills, UInt16.MaxValue), seconds);
-            PlayerRewards.GrantExperience(client, (UInt32)Math.Max(0, mission.exp), ServerPackets.ExpGainMission);
-            PlayerRewards.GrantInfo(client, (UInt32)Math.Max(0, mission.info), MissionRewardInfoReason);
-            Store.dbManager.WorldDbHandler.SaveMissionCompleted(client.playerData.getCharID(), mission.id);
+            if(!committed.AlreadyCommitted)
+            {
+                if(committed.Exchange!=null)CollectorHandler.NotifyExchange(client,committed.Exchange,mission.completionItem);
+                client.playerData.setExperience(committed.ExperienceTotal);client.playerData.setInfo(committed.InfoTotal);
+                if(experience>0)
+                {
+                    packets.SendEXPGain(client,committed.ExperienceCredited,ServerPackets.ExpGainMission);
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildEXPTotal((uint)committed.ExperienceTotal,ServerPackets.ExpGainMission));
+                    PlayerProgression.ApplyLevelUps(client);
+                }
+                if(info>0)packets.SendInfoCurrent(client,(uint)committed.InfoTotal,MissionRewardInfoReason);
+            }
             client.playerData.completedMissions?.Add(mission.id);
             Output.WriteDebugLog("[MISSION] Completed '" + mission.title + "'");
             End(client);
             client.FlushQueue();
         }
 
-        private static void Say(WorldClient client, List<MissionLine> lines)
+        /// <summary>Strict disposable native fixture: no arbitrary NPC, text or mission mutation.</summary>
+        public static bool DevPresentation(WorldClient client,string[] words)
+        {
+            if(words.Length==0 || words[0]!="?missionpresentation") return false;
+            bool allowed=ReferenceEquals(client,Store.currentClient) && client.Alive &&
+                MissionPresentation.QaAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                    Store.config?.dbParams?.DatabaseName,client.playerData.getCharID(),client.playerData.getOnWorld(),
+                    client.playerData.isDead || client.playerData.duelDeath || client.playerData.worldChangePending || client.playerData.DistrictIsLA());
+            lock(client.playerData.missionSync)
+            {
+                var data=client.playerData;
+                Mob source=allowed && words.Length==2 && words[1]=="speech" && data.activeMission?.id==1203 && data.missionProgress!=null
+                    ? data.missionMobs.FirstOrDefault(m=>m.ScriptedCorpse && m.getIsDead() && !m.isFriendly &&
+                        m.missionInstance==data.missionInstanceCounter && client.viewMan.FindViewForEntity(m.getEntityId())?.viewCreated==true) : null;
+                if(source==null) new ServerPackets().sendSystemChatMessage(client,"Mission presentation QA refused: requires CSR110, dev1, mxotest_, live Internuncio and a visible owned hostile body.","SYSTEM");
+                else Say(client,new List<MissionLine>{new MissionLine {speaker=MissionSpeaker.Npc,npcId=source.missionNpcId,
+                    display=5,text="[QA] Hostile mission presentation diagnostic."}});
+            }
+            client.FlushQueue();return true;
+        }
+
+        private static void Say(WorldClient client, List<MissionLine> lines, bool interactive=false)
         {
             foreach (MissionLine line in lines)
             {
@@ -1086,6 +1261,8 @@ namespace hds
                         client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(
                             npc != null && !friendly ? HostileNpcImage : FriendlyNpcImage, 0, 0, line.display, 0,
                             npc?.handle ?? "", text));
+                        string echo=MissionPresentation.ChatFallback(!friendly,interactive,npc?.handle ?? "",text);
+                        if(echo!=null) new ServerPackets().sendSystemChatMessage(client,echo,"SYSTEM");
                         break;
                     case MissionSpeaker.Contact:
                         var contact = MissionContacts.For(client.playerData.activeMission?.contact);
@@ -1157,7 +1334,8 @@ namespace hds
         {
             lock (client.playerData.missionSync)
             {
-                TickMission(client);
+                if(!client.Alive || !client.playerData.getOnWorld() || client.playerData.worldChangePending || client.playerData.getDistrictId()!=client.playerData.activeMission?.district)return;
+                MissionPersistence.Mutate(client,()=>TickMission(client));
             }
         }
 
@@ -1173,6 +1351,7 @@ namespace hds
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
+            MissionStaging.IntroduceDeferredObjects(client,progress);
             bool sent = GiveProvidedItems(client, progress);
             SwitchSides(client, progress); // Retry a side change that was waiting for a safe placement.
             MissionStaging.Follow(client, progress, x, y, z);
@@ -1261,10 +1440,37 @@ namespace hds
                     Finish(client, progress);
                     return;
                 }
+                MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
+                {
+                    if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
+                    {
+                        if(selected!=null&&openFloorPlan?.BeforeCurrent(client)==true)
+                        {
+                            bool changed=progress.pendingOpenFloor==null||progress.pendingOpenFloor.Refusal!=refusal;
+                            progress.pendingOpenFloor=selected.WithRefusal(refusal);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                            if(changed) {Output.WriteDebugLog("[MISSION] Box next-phase admission deferred: "+refusal);
+                                client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(MissionOpenFloorAdmission.UnavailableMessage,"BROADCAST"));}
+                        }
+                        return;
+                    }
+                    if(!openFloorPlan.BeforeCurrent(client))return;
+                    // Admit the exact choice durably before tearing down the old phase.
+                    // A later staging/SQL rollback restores this same pending choice.
+                    if(openFloorPlan.Adopted)
+                    {
+                        progress.pendingOpenFloor=openFloorPlan.Selection.WithRefusal(null);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                        MissionPersistence.Save(client);
+                        if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
+                    }
+                }
+                if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
+                progress.pendingOpenFloor=null;
                 Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                MissionStaging.Stage(client, progress);
+                if(openFloorPlan==null)MissionStaging.Stage(client, progress);
+                else {if(openFloorPlan.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,openFloorPlan);}
                 SendPhase(client, progress);
 
                 return;
@@ -1294,8 +1500,9 @@ namespace hds
                     continue;
                 }
 
-                double dx = state.spot.pos_x - x, dz = state.spot.pos_z - z;
-                if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(state.spot.pos_y - y) > 300)
+                var pose = MissionObjectPoses.For(state);
+                double dx = pose.X - x, dz = pose.Z - z;
+                if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(pose.Y - y) > 300)
                 {
                     continue;
                 }
@@ -1454,7 +1661,8 @@ namespace hds
         private static bool AtObject(WorldClient client, MissionProgress progress, MissionObjective objective, MissionObjectState state,
             double x, double y, double z)
         {
-            double ox = state.spot.pos_x, oy = state.spot.pos_y, oz = state.spot.pos_z;
+            var pose = MissionObjectPoses.For(state);
+            double ox = pose.X, oy = pose.Y, oz = pose.Z;
             bool arrived = Distance2(ox, oy, oz, x, y, z) <= EscortArrivalUnits * EscortArrivalUnits;
             foreach (ushort id in objective.Npcs)
             {
@@ -1528,6 +1736,7 @@ namespace hds
             mob.zBase = npc.z;
             mob.setRotation(0);
             mob.setIsDead(npc.dead);
+            mob.ScriptedCorpse = npc.dead;
             mob.setIsLootable(false);
             mob.setWeapon(npc.weapon);
             mob.isFriendly = npc.friendly;

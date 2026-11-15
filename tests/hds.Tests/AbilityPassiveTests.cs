@@ -27,6 +27,51 @@ public class AbilityPassiveTests
     private static AbilityCatalog.Modifier Modifier(ushort id, ushort stat) => AbilityPassives.Modifiers(id).Single(m => m.Target == stat);
 
     [Fact]
+    public void DirectDebuffRadiusUsesCaster177WhileUnproven75LinkStaysExcluded()
+    {
+        var caster=Client();var target=Client();
+        Assert.Equal(4,AbilityRadius.TargetMetres(caster,333));
+        Assert.True(AbilityBuffs.Apply(caster,345));
+        Assert.Equal(21,AbilityStats.Player(caster,177));
+        Assert.Equal(4,AbilityRadius.Metres(caster,333)); // existing friendly callers do not opt in
+        Assert.Equal(4*(1+(double)(float).21),AbilityRadius.TargetMetres(caster,333));
+        Assert.Equal(AbilityRadius.TargetMetres(caster,333),AbilityRadius.TargetMetres(caster,4429));
+        Assert.Equal(4,AbilityRadius.TargetMetres(target,333));
+        Assert.True(AbilityTargets.WithinArea(1000,495,0,1420,495,0,AbilityRadius.TargetMetres(caster,333)));
+        Assert.False(AbilityTargets.WithinArea(1000,495,0,1500,495,0,AbilityRadius.TargetMetres(caster,333)));
+        Assert.False(AbilityTargets.WithinArea(1000,495,0,1000,645,0,AbilityRadius.TargetMetres(caster,333)));
+        Assert.Equal(14,AbilityRadius.Metres(caster,72)); // UBF0 remains separate
+        Assert.True(AbilityBuffs.Remove(caster,345));Assert.Equal(4,AbilityRadius.TargetMetres(caster,333));
+        AbilityPassives.SetLoaded(caster,new (ushort,ushort)[]{(75,50)});
+        Assert.Equal(25,AbilityStats.Player(caster,1055));Assert.Equal(0,AbilityStats.Player(caster,177));
+        Assert.Equal(4,AbilityRadius.TargetMetres(caster,333)); // do not invent linked stat aggregation
+        // Effects.Total uses the real clock, so use a source-current timestamp for an active signed modifier.
+        TimedEffects.ForPlayer(caster).Effects.Apply(123,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=177,Value=-25,Seconds=10}},TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(3,AbilityRadius.TargetMetres(caster,333));
+        TimedEffects.ForPlayer(caster).Effects.Apply(123,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=177,Value=150,Seconds=10}},TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(100,AbilityStats.Player(caster,177));Assert.Equal(8,AbilityRadius.TargetMetres(caster,333));
+    }
+
+    [Fact]
+    public void ResistDamageRadiusUsesLoadedCasterPercentAndExactFriendlyStatusCategory()
+    {
+        var caster=Client();
+        Assert.Equal(14,AbilityRadius.Metres(caster,72));
+        double hostile=AbilityRadius.Metres(caster,942);
+        AbilityPassives.SetLoaded(caster,new (ushort,ushort)[]{(74,50)});
+        Assert.Equal(24,AbilityStats.Player(caster,127));
+        Assert.Equal(17.36,AbilityRadius.Metres(caster,72),6);
+        Assert.Equal(AbilityRadius.Metres(caster,72),AbilityRadius.Metres(caster,4168));
+        Assert.False(AbilityTargets.WithinArea(0,495,0,1600,495,0,14));
+        Assert.True(AbilityTargets.WithinArea(0,495,0,1600,495,0,AbilityRadius.Metres(caster,72)));
+        Assert.False(AbilityTargets.WithinArea(0,495,0,1800,495,0,AbilityRadius.Metres(caster,72)));
+        Assert.Equal(hostile,AbilityRadius.Metres(caster,942));
+        Assert.Equal(AbilityCatalog.Find(944).Number("Ability/RadiusOfEffect")*1.24,AbilityRadius.Metres(caster,944),6);
+        AbilityPassives.SetLoaded(caster,Array.Empty<(ushort,ushort)>());
+        Assert.Equal(14,AbilityRadius.Metres(caster,72));
+    }
+
+    [Fact]
     public void NativeLevelFunctionsTruncateScaleThenApplyTheCap()
     {
         Assert.Equal((ushort)0x45, AbilityPassives.Kind);

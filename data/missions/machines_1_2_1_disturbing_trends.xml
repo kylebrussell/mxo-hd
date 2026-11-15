@@ -5,12 +5,14 @@
      description, the objective texts (the Objectives tab was never opened), the sites (Ophiuchi's buildings: Normal;
      the Machine operations post: Office) and the looks. Item stand-in: the info node Map Disk is Map_Disk (6783).
      Rewards: the 54,871 experience and 45,339 information shown right after this mission completed.
+     Reward reference: the archived replay shows post-completion HUD level 17. This anchors the existing OURS
+     scaling policy, not a recovered pre-award level, normal retail difficulty or reward curve.
      Gaps: Ophiuchi is met in one building and found again in another, so she is two NPCs of one name, one in phase 1
      and one in phase 3. The operator's "The Map Disk is accessible from a computer in this room." came on walking
      into the computer's room; it is the second enter line of phase 2. The four friendly Agents at the operations post
      only bark. No fighting: the Truce forbids force against humans and the post's Agents expect the player. -->
 <mission id="201201" title="Disturbing Trends" description="Find out where Morpheus is from one of his friends." plot="1"
-         order="1201" org="2" contact="Agent Gray" exp="54871" info="45339">
+         order="1201" org="2" contact="Agent Gray" rewardLevel="17" exp="54871" info="45339">
   <npc id="1" handle="Ophiuchi" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
     <say>Bring me the Machines' info node map, then maybe I'll know I can trust you.</say>
   </npc>

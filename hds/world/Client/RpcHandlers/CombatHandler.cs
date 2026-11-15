@@ -295,7 +295,7 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
+                    AbilityStats.SpecialAttack(player, ability), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
@@ -466,7 +466,7 @@ namespace hds
             session.OnCombatEnd += HandleCombatEnd;
             client.playerData.combatGeneration++;
             rangedOutOfRangeTicks = 0;
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             FaceThePlayer(session);
@@ -688,7 +688,7 @@ namespace hds
 
             // Start combat session
             currentSession.Start(CombatInterlock.RoundMs);
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             // Retail resolved the opening move as the starter's opportunity attack straight away (tutorial 13:28:32: the
@@ -949,6 +949,12 @@ namespace hds
 
         private static void RewardNpcDefeat(WorldClient attacker, Mob mob)
         {
+            if(attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob))
+                MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob));
+            else RewardNpcDefeatCore(attacker,mob);
+        }
+        private static void RewardNpcDefeatCore(WorldClient attacker, Mob mob)
+        {
             // Award experience
             // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
             UInt16 mobLevel = mob.getLevel();
@@ -956,12 +962,14 @@ namespace hds
             UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
             // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
             bool inTutorial = TutorialMission.Of(attacker) != null;
+            bool ownedMission=attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob);
             if (!inTutorial)
             {
-                PlayerRewards.GrantExperience(attacker, expGained);
+                if(ownedMission)mob.MissionRewardExperience=expGained;
+                else PlayerRewards.GrantExperience(attacker, expGained);
             }
 
-            Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
+            Output.WriteDebugLog(ownedMission?$"[COMBAT] Mission kill quoted {expGained} experience (checkpoint applies signed INT cap)":$"[COMBAT] Awarded {expGained} experience");
 
             MissionRuntime.OnMobDefeated(attacker, mob);
             UInt32 missionItem = MissionRuntime.LootItemFor(attacker.playerData, mob);
@@ -1074,7 +1082,7 @@ namespace hds
             rangedOutOfRangeTicks = 0;
 
             // First shot now, then one per tick.
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
             bool killed = ResolveRangedShot(currentSession, true);
             client.FlushQueue();
@@ -1293,7 +1301,7 @@ namespace hds
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
                 playerLevel, session.AttackerTactic, mob.getWeapon(), AbilityStats.Attack(mob, true), AbilityStats.Defense(player, true),
-                AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true));
+                AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true), () => !MobiusCode.PreventsFreeAttack(player));
             bool hit = shot.Hit;
 
             mob.rangedActionCounter++;

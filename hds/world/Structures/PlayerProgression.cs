@@ -180,9 +180,6 @@ namespace hds
         public const UInt16 AwakenedAbility = 2;
         public const UInt16 SelfDefenseAbility = 17;
 
-        /// <summary>WriteCode and HackerCombatStyle cost half: retail charged 2,900 instead of 5,800 for levels 2 to 4.</summary>
-        private static readonly HashSet<UInt16> HalfPrice = new HashSet<UInt16> { 37, 1006 };
-
         /// <summary>
         /// Abilities that come with a hidden second one (80 b2 ... 08 02 next to the load, 80 b3 next to the unload).
         /// Retail: WriteCode -> Write Code (970), Compile -> Compile Activate (969), Awakened -> Self Defense (17),
@@ -221,15 +218,9 @@ namespace hds
             return (UInt32)(200 * level * level);
         }
 
-        public static UInt32 UpgradeCost(UInt16 ability, int fromLevel, int levels)
-        {
-            UInt32 total = 0;
-            for (int level = fromLevel + 1; level <= fromLevel + levels; level++)
-            {
-                total += LevelPrice(level);
-            }
-            return HalfPrice.Contains(ability) ? total / 2 : total;
-        }
+        public static UInt32 UpgradeCost(UInt16 ability, int fromLevel, int levels) =>
+            AbilityTraining.TryCost(ability, fromLevel, levels, out uint cost) ? cost :
+            throw new ArgumentException("Invalid ordinary ability training quote");
 
         public static UInt16? GrantOf(UInt16 ability)
         {
@@ -252,9 +243,10 @@ namespace hds
             return grants;
         }
 
-        /// <summary>Only Awakened's hidden ability follows its level; the others stayed at 0 in retail.</summary>
+        /// <summary>Awakened and the separately proved function-2 Sneak grant follow their sourced levels.</summary>
         public static UInt16 GrantLevel(UInt16 ability, UInt16 abilityLevel)
         {
+            if(AbilitySneakGrant.TryLevel(ability,AbilitySneakGrant.Child,abilityLevel,out ushort sneak))return sneak;
             return ability == AwakenedAbility ? abilityLevel : (UInt16)0;
         }
 
@@ -268,7 +260,7 @@ namespace hds
         /// <summary>Client 80 b7: ability u16, slot u16, levels to add u8 (retail <c>80 b7 dd 01 37 01 01</c>).</summary>
         public static UpgradeRequest? ParseUpgrade(byte[] rpcData)
         {
-            if (rpcData == null || rpcData.Length < 5)
+            if (rpcData == null || rpcData.Length != 5 || rpcData[4] == 0)
             {
                 return null;
             }
@@ -347,35 +339,21 @@ namespace hds
         /// <summary>Ability/AbilityLevelCap of all five attributes in gameobjects.pkb.</summary>
         public const UInt16 Cap = 30;
 
-        /// <summary>
-        /// A new character's shown value: the starting value with the archetype's shift. Retail shifted one attribute up 3
-        /// and one down 3. These are the shifts of the character block the margin sends everyone (Trinity's): the real
-        /// client offers level - 1 points with exactly these values, and fewer with 8 in all five. Which field of the block
-        /// carries the archetype is not known, so all characters share this one.
-        /// </summary>
-        public static UInt16 BaseValue(byte attribute)
-        {
-            switch (attribute)
-            {
-                case Perception: return 11;
-                case Belief: return 5;
-                default: return StartingValue;
-            }
-        }
+        /// <summary>Native class5 personality contribution; nullable legacy actors retain299.</summary>
+        public static UInt16 BaseValue(byte attribute,uint? trait=null)=>CharacterPersonality.Base(trait,attribute);
 
-        public static UInt16 SpentPoints(byte attribute, UInt16 value)
+        public static UInt16 SpentPoints(byte attribute,UInt16 value,uint? trait=null)
         {
-            UInt16 baseValue = BaseValue(attribute);
-            return value > baseValue ? (UInt16)(value - baseValue) : (UInt16)0;
+            UInt16 baseValue=BaseValue(attribute,trait);return value>baseValue?(UInt16)(value-baseValue):(UInt16)0;
         }
 
         /// <summary>
         /// The NewLevel of 80 b6 is the starting value plus points spent, without the shift: retail answered 9 to the first
         /// point in an attribute shown as 5 or 11, and the client adds the shift back (it showed 3 when told 6 for Belief).
         /// </summary>
-        public static byte NewLevelOf(byte attribute, UInt16 value)
+        public static byte NewLevelOf(byte attribute, UInt16 value,uint? trait=null)
         {
-            return (byte)(StartingValue + SpentPoints(attribute, value));
+            return (byte)(StartingValue + SpentPoints(attribute, value,trait));
         }
 
         /// <summary>The attribute's shown value, from its saved row or the old fixed value.</summary>
@@ -435,9 +413,9 @@ namespace hds
         /// attribute. The client takes the points it offers from this. Retail, level 17 Trinity with base 8/5/8:
         /// <c>03 51000000 0400 52000000 0b00 54000000 0100</c> (Reason 12, Belief 16, Vitality 9).
         /// </summary>
-        public static byte[] BuildSpentPoints(Dictionary<byte, UInt16> values)
+        public static byte[] BuildSpentPoints(Dictionary<byte, UInt16> values,uint? trait=null)
         {
-            if (values.Count == 0)
+            if (values.Count == 0 && trait==null)
             {
                 return LegacySpentPoints;
             }
@@ -445,11 +423,11 @@ namespace hds
             List<byte> list = new List<byte> { 0 };
             foreach (byte attribute in All)
             {
-                if (values.TryGetValue(attribute, out UInt16 value) && SpentPoints(attribute, value) > 0)
+                if (values.TryGetValue(attribute, out UInt16 value) && SpentPoints(attribute, value,trait) > 0)
                 {
                     list[0]++;
                     list.AddRange(new byte[] { attribute, 0, 0, 0 });
-                    UInt16 spent = SpentPoints(attribute, value);
+                    UInt16 spent = SpentPoints(attribute, value,trait);
                     list.Add((byte)spent);
                     list.Add((byte)(spent >> 8));
                 }
@@ -475,12 +453,15 @@ namespace hds
                 return raises;
             }
 
-            int count = rpcData[2] | rpcData[3] << 8;
-            const int entrySize = 6;
-            for (int i = 0; i < count && 4 + (i + 1) * entrySize <= rpcData.Length; i++)
+            if(rpcData[0]!=4 || rpcData[1]!=0)return raises;
+            int count=rpcData[2]|rpcData[3]<<8;
+            if(count<1 || count>All.Length || rpcData.Length!=4+count*6)return raises;
+            var seen=new HashSet<byte>();
+            for(int i=0;i<count;i++)
             {
-                int p = 4 + i * entrySize;
-                raises.Add(new Raise { Attribute = rpcData[p + 1], Points = rpcData[p + 5] });
+                int p=4+i*6;uint attribute=BitConverter.ToUInt32(rpcData,p+1);
+                if(rpcData[p]!=0 || !AttributeAllocation.Known(attribute) || rpcData[p+5]==0 || !seen.Add((byte)attribute))return new List<Raise>();
+                raises.Add(new Raise{Attribute=(byte)attribute,Points=rpcData[p+5]});
             }
             return raises;
         }

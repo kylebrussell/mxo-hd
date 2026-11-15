@@ -1,0 +1,162 @@
+{
+  "112": [
+    {
+      "field": "Ability/AbilityClass",
+      "type": 68,
+      "offset": 0,
+      "flag": 0
+    },
+    {
+      "field": "Ability/AbilityRank",
+      "type": 31,
+      "offset": 5,
+      "flag": 0
+    },
+    {
+      "field": "Ability/BuffBonusCapScale",
+      "type": 1,
+      "offset": 14,
+      "flag": 0
+    },
+    {
+      "field": "Ability/TotalMaxBuffValue",
+      "type": 7,
+      "offset": 27,
+      "flag": 0
+    },
+    {
+      "field": "Ability/ValueType",
+      "type": 66,
+      "offset": 29,
+      "flag": 0
+    },
+    {
+      "field": "AbilityAttributeLink/AttributeLevelBonusScale",
+      "type": 1,
+      "offset": 6,
+      "flag": 0
+    },
+    {
+      "field": "AbilityAttributeLink/AttributeLink",
+      "type": 30,
+      "offset": 10,
+      "flag": 0
+    },
+    {
+      "field": "AbilityClass",
+      "type": 68,
+      "offset": 0,
+      "flag": 0
+    },
+    {
+      "field": "AbilityRank",
+      "type": 31,
+      "offset": 5,
+      "flag": 0
+    },
+    {
+      "field": "AttributeLevelBonusScale",
+      "type": 1,
+      "offset": 6,
+      "flag": 0
+    },
+    {
+      "field": "AttributeLink",
+      "type": 30,
+      "offset": 10,
+      "flag": 0
+    },
+    {
+      "field": "BuffBonusCapScale",
+      "type": 1,
+      "offset": 14,
+      "flag": 0
+    },
+    {
+      "field": "TotalMaxBuffValue",
+      "type": 7,
+      "offset": 27,
+      "flag": 0
+    },
+    {
+      "field": "ValueType",
+      "type": 66,
+      "offset": 29,
+      "flag": 0
+    }
+  ],
+  "315": [
+    {
+      "field": "Ability/AbilityClass",
+      "type": 68,
+      "offset": 0,
+      "flag": 0
+    },
+    {
+      "field": "Ability/AbilityRank",
+      "type": 31,
+      "offset": 5,
+      "flag": 0
+    },
+    {
+      "field": "Ability/BuffBonusCapScale",
+      "type": 1,
+      "offset": 48,
+      "flag": 0
+    },
+    {
+      "field": "Ability/TotalMaxBuffValue",
+      "type": 7,
+      "offset": 19,
+      "flag": 0
+    },
+    {
+      "field": "Ability/ValueType",
+      "type": 66,
+      "offset": 21,
+      "flag": 0
+    },
+    {
+      "field": "AbilityAttributeLink/AttributeLevelBonusScale",
+      "type": 1,
+      "offset": 229,
+      "flag": 0
+    },
+    {
+      "field": "AbilityAttributeLink/AttributeLink",
+      "type": 30,
+      "offset": 6,
+      "flag": 0
+    },
+    {
+      "field": "AbilityClass",
+      "type": 68,
+      "offset": 0,
+      "flag": 0
+    },
+    {
+      "field": "AbilityRank",
+      "type": 31,
+      "offset": 5,
+      "flag": 0
+    },
+    {
+      "field": "AttributeLink",
+      "type": 30,
+      "offset": 6,
+      "flag": 0
+    },
+    {
+      "field": "TotalMaxBuffValue",
+      "type": 7,
+      "offset": 19,
+      "flag": 0
+    },
+    {
+      "field": "ValueType",
+      "type": 66,
+      "offset": 21,
+      "flag": 0
+    }
+  ]
+}

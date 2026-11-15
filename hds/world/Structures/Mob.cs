@@ -29,8 +29,17 @@ namespace hds
         private uint weapon;
         private int state; // 0= nothing, 1=rotating (just an example - must check this near from the npc class)
         private bool is_dead;
+        public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
         private bool is_lootable;
         private bool is_spawned = true;
+        // Explicit server-owned NPC grants; never inferred from a name or accepted in an ability request.
+        private readonly System.Collections.Generic.HashSet<ushort> abilityGrants = new System.Collections.Generic.HashSet<ushort>();
+        public bool HasAbility(ushort ability) { lock (abilityGrants) return abilityGrants.Contains(ability); }
+        public void SetAbilityGrant(ushort ability, bool granted)
+        {
+            lock (abilityGrants) { if (granted) abilityGrants.Add(ability); else abilityGrants.Remove(ability); }
+        }
+
         public int DeathGeneration { get; private set; }
         public bool isUpdateable = false;
 
@@ -40,6 +49,9 @@ namespace hds
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
         public byte missionPhase = 0;
+        internal string MissionPersistenceId;
+        internal uint MissionRewardExperience;
+        internal bool MissionDeathSettled;
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
@@ -72,6 +84,7 @@ namespace hds
 
         // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
         private UInt32 conditionFlags = 0;
+        internal uint ConditionFlags { get { lock (conditionTokens) return conditionFlags; } }
         private readonly System.Collections.Generic.Dictionary<UInt32, int> conditionTokens =
             new System.Collections.Generic.Dictionary<UInt32, int>();
 
@@ -474,7 +487,7 @@ namespace hds
             themob.CombatantMode.setValue(0x22);
             themob.Position.setValue(NumericalUtils.doublesToLtVector3d(getXPos(), getYPos(), getZPos()));
             themob.YawInterval.setValue((byte) getRotation());
-            themob.IsDead.setValue(false);
+            themob.IsDead.setValue(getIsDead());
             themob.IsEnemy.setValue(true);
             themob.IsFriendly.setValue(false);
 
@@ -521,7 +534,7 @@ namespace hds
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
-            themob.CurrentState.setValue(StringUtils.hexStringToBytes("06080000"));
+            themob.CurrentState.setValue(StringUtils.hexStringToBytes(getIsDead() ? "fd070000" : "06080000"));
 
             if (RangedWeapons.IsGun(getWeapon()))
             {
@@ -651,6 +664,16 @@ namespace hds
                 mobUpdateTimer = new Timer(DoMobUpdate, this, nextMoveTime * 1000, 0);
             }
             
+        }
+
+        // A deflection effect is not a damage/aggro event. Reuse the established view attributes and counter under its lock.
+        internal byte[] BuildAbilityEffect(uint effect)
+        {
+            lock(hitSync)
+            {
+                if(is_dead || healthC==0)return null;
+                return BuildHitUpdate(healthC,effect,(byte)++hitCounter);
+            }
         }
 
         public void HitEnemyWithDamage(ushort hitValue, uint hitFxId)
@@ -806,7 +829,7 @@ namespace hds
             // Update player's health attribute
             victim.playerInstance.Health.setValue(newHealth);
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
-                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
+                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1), damageEvent:true);
 
             newHealth = PvpCombat.HealthOf(victim); // callbacks may heal or cause another health change
 
