@@ -78,24 +78,31 @@ public static partial class Scenarios
             if(enter)NoEarlyBody(s);
             int arrivalViews=p.World.CreationSnapshot().Count;
             int packetCursor=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(ch=>ch==10);
-            int cursor=p.World.RpcSnapshot().Count,log=server.DebugLog().Length;p.SkipReceived();string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+            int cursor=p.World.RpcSnapshot().Count,log=server.DebugLog().Length,requestViews=verifyNpcInterior?p.World.ViewSnapshot().Count:0;var requestLife=verifyNpcInterior?p.World.CurrentOwnViewLife():null;
+            p.SkipReceived();string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
             if(door.y!=lobby[1])await p.WaitUntilAsync(()=>server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static-door ride commit",TimeSpan.FromSeconds(15));
             var arrived=Regex.Matches(server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(arrived!=null)actualRideRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrived.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
             proof.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=server.DebugLog()[log..]});
             if(npc!=null)
             {
-                var requested=enter?npc.Lobby:npc.Floor;var destination=enter?npc.Floor:npc.Lobby;ViewCreation? overlay=null;
-                await p.WaitUntilAsync(()=>(overlay=p.World.CreationSnapshot().Skip(arrivalViews).LastOrDefault(v=>v.RelatedStaticObjectId==key&&v.Goid==requested.Goid&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==requested.Position[i])))!=null,"actual requested own-GO NPC door overlay",TimeSpan.FromSeconds(15));
-                Check.Equal(requested.Quaternion.ToUpperInvariant(),Convert.ToHexString(overlay!.Attributes["Orientation"]),"NPC ordinary door has own selected orientation");
+                var requested=enter?npc.Lobby:npc.Floor;var destination=enter?npc.Floor:npc.Lobby;NpcInteriorComputerState.DoorObservation? overlay=null;NpcInteriorComputerState.Teleport? teleport=null;
+                await p.WaitUntilAsync(()=>{try{var life=p.World.CurrentOwnViewLife();overlay=NpcInteriorComputerState.CurrentDoor(life,requested);teleport=NpcInteriorComputerState.FreshTeleport(life,requestLife!,requestViews,destination.Standing!);return true;}catch(InvalidDataException){return false;}},"current typed own-GO NPC door plus fresh same-target teleport",TimeSpan.FromSeconds(15));
                 Check.That(actualRideRoot!=null&&actualRideRoot.SequenceEqual(destination.Standing!),"Actual ordinary NPC ride equals exact saved opposite Standing");
-                proof.Add(new{Step=step,NpcWitness=npc,Requested=requested,Destination=destination,Overlay=overlay,ActualRideRoot=actualRideRoot,NativeHoverProven=false});
+                proof.Add(new{Step=step,NpcWitness=npc,Requested=requested,Destination=destination,Overlay=overlay,Preexisting=overlay!.Capability.Birth<requestViews,FreshTeleport=teleport,RequestSectionCursor=requestViews,ActualRideRoot=actualRideRoot,NativeHoverProven=false});
             }
             if(verifyMeasuredExit&&s.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==s.OpenFloorSites![s.OpenFloorCurrentSiteIndex!.Value].Fingerprint) is MissionElevatorWitness measured)
             {
                 var expected=enter?measured.Lobby:measured.Floor;string quaternion=enter?measured.LobbyQuaternion:measured.FloorQuaternion;
                 ViewCreation? overlay=null;
-                await p.WaitUntilAsync(()=>(overlay=p.World.CreationSnapshot().Skip(arrivalViews).LastOrDefault(v=>new ushort[]{417,419}.Contains(v.Goid)&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==expected[i])))!=null,"ordinary requested measured door03 overlay",TimeSpan.FromSeconds(15));
+                if(verifyNpcInterior)
+                {
+                    ushort goid=enter?MissionNpcInteriorProof.RawGoidForKnownKey(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),key):BitConverter.ToUInt16(s.SiteDoors[s.OpenFloorCurrentSiteIndex!.Value].type);
+                    var selected=new MissionNpcInteriorProof.Door(key,goid,expected,quaternion,null,"");NpcInteriorComputerState.DoorObservation? current=null;NpcInteriorComputerState.Teleport? teleport=null;
+                    await p.WaitUntilAsync(()=>{try{var life=p.World.CurrentOwnViewLife();current=NpcInteriorComputerState.CurrentDoor(life,selected);if(actualRideRoot==null)return false;teleport=NpcInteriorComputerState.FreshTeleport(life,requestLife!,requestViews,actualRideRoot);return true;}catch(InvalidDataException){return false;}},"current typed measured door plus fresh same-target teleport",TimeSpan.FromSeconds(15));
+                    overlay=current!.View;proof.Add(new{Step=step,CurrentMeasuredDoor=current,Preexisting=current.Capability.Birth<requestViews,FreshTeleport=teleport,RequestSectionCursor=requestViews});
+                }
+                else await p.WaitUntilAsync(()=>(overlay=p.World.CreationSnapshot().Skip(arrivalViews).LastOrDefault(v=>new ushort[]{417,419}.Contains(v.Goid)&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(pos,i*8)==expected[i])))!=null,"ordinary requested measured door03 overlay",TimeSpan.FromSeconds(15));
                 Check.Equal(quaternion.ToUpperInvariant(),Convert.ToHexString(overlay!.Attributes["Orientation"]),"Ordinary door overlay uses the selected-region quaternion");
                 if(enter)
                 {

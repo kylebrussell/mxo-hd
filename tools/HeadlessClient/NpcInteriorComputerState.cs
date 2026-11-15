@@ -5,6 +5,8 @@ public static class NpcInteriorComputerState
 {
     public sealed record Capability(long Life,int Birth,ushort View,byte Spawn,ushort Goid,string RawCreation);
     public sealed record Observation(Capability Capability,uint State);
+    public sealed record DoorObservation(ViewCreation View,Capability Capability,uint State);
+    public sealed record Teleport(long Life,int Section,int Offset,byte Id,ushort Sector,ushort Region,ushort Polygon,float X,float Y,float Z,string Raw);
     static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||new ushort[]{343,346,417,419}.Contains(goid);
     sealed class Live
     {
@@ -13,8 +15,10 @@ public static class NpcInteriorComputerState
     static uint InitialState(ViewCreation view)=>view.Attributes.TryGetValue("CurrentState",out var state)?state.Length==4?BitConverter.ToUInt32(state):throw new InvalidDataException("Malformed initial Computer state"):ObjectStates.DefaultState(view.Goid);
     static bool Equal(ViewCreation a,ViewCreation b)=>a.ViewId==b.ViewId&&a.SpawnId==b.SpawnId&&a.Goid==b.Goid&&
         a.Attributes.Count==b.Attributes.Count&&a.Attributes.All(x=>b.Attributes.TryGetValue(x.Key,out var bytes)&&x.Value.SequenceEqual(bytes));
-    static Dictionary<ushort,Live> Reduce(OwnViewLifeSnapshot stream)
+    static Dictionary<ushort,Live> Reduce(OwnViewLifeSnapshot stream)=>Reduce(stream,out _);
+    static Dictionary<ushort,Live> Reduce(OwnViewLifeSnapshot stream,out List<Teleport> teleports)
     {
+        teleports=new();
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for computer state");
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool ownSeen=false;
         foreach(var e in stream.Events)
@@ -39,6 +43,9 @@ public static class NpcInteriorComputerState
                     ?addressed.View.Goid:at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
                 if(!MervFollowupViewFrames.TryRead(bytes,at,goid,out var frame))
                     throw new InvalidDataException($"Unknown/truncated computer current-life frame at section{e.Section} offset{at}");
+                if(frame.Type==MervFollowupViewFrames.Kind.OwnTeleport)
+                    teleports.Add(new(stream.Life,e.Section,at,bytes[at+4],BitConverter.ToUInt16(bytes,at+5),BitConverter.ToUInt16(bytes,at+7),BitConverter.ToUInt16(bytes,at+9),
+                        BitConverter.ToSingle(bytes,at+12),BitConverter.ToSingle(bytes,at+16),BitConverter.ToSingle(bytes,at+20),Convert.ToHexString(bytes.AsSpan(at,frame.Length))));
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
                 else if(live.TryGetValue(frame.View,out var target)&&Tracked(target.View.Goid))
@@ -68,5 +75,22 @@ public static class NpcInteriorComputerState
         if(!live.TryGetValue(scope.View,out var current)||!current.Known||current.Birth!=scope.Birth||current.Raw!=scope.RawCreation||
             current.View.SpawnId!=scope.Spawn||current.View.Goid!=scope.Goid||!stream.Current)throw new InvalidDataException("Computer deleted/replaced or unsupported state framing");
         return current.State;
+    }
+    public static DoorObservation CurrentDoor(OwnViewLifeSnapshot stream,MissionNpcInteriorProof.Door expected)
+    {
+        if(!new ushort[]{343,346,417,419}.Contains(expected.Goid)||expected.Position.Length!=3||expected.Position.Any(v=>!double.IsFinite(v)))throw new InvalidDataException("Expected certified door schema/pose");
+        var matches=Reduce(stream).Values.Where(v=>v.View.RelatedStaticObjectId==expected.Key).ToArray();
+        if(matches.Length!=1||!matches[0].Known)throw new InvalidDataException("Missing/ambiguous/deleted/reused current door key");var chosen=matches[0];var view=chosen.View;
+        if(chosen.State!=0x834||view.Goid!=expected.Goid||!view.Attributes.TryGetValue("Position",out var pos)||pos.Length!=24||Enumerable.Range(0,3).Any(i=>BitConverter.ToDouble(pos,i*8)!=expected.Position[i])||
+            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(Convert.FromHexString(expected.Quaternion))||!stream.Current)throw new InvalidDataException("Current door own GO/pose/quaternion/life differs");
+        return new(view,new(stream.Life,chosen.Birth,view.ViewId,view.SpawnId,view.Goid,chosen.Raw),chosen.State);
+    }
+    public static Teleport FreshTeleport(OwnViewLifeSnapshot stream,OwnViewLifeSnapshot expectedLife,int sectionCursor,double[] expected)
+    {
+        if(!ReferenceEquals(stream.Owner,expectedLife.Owner)||stream.Life!=expectedLife.Life||!expectedLife.Current||!stream.Current||sectionCursor<0||expected.Length!=3||expected.Any(v=>!double.IsFinite(v)||!float.IsFinite((float)v)))throw new InvalidDataException("Teleport requires the captured current life/cursor/target");
+        Reduce(stream,out var teleports);
+        var actual=teleports.LastOrDefault(t=>t.Section>=sectionCursor&&BitConverter.SingleToInt32Bits(t.X)==BitConverter.SingleToInt32Bits((float)expected[0])&&
+            BitConverter.SingleToInt32Bits(t.Y)==BitConverter.SingleToInt32Bits((float)expected[1])&&BitConverter.SingleToInt32Bits(t.Z)==BitConverter.SingleToInt32Bits((float)expected[2]));
+        if(actual==null||!stream.Current)throw new InvalidDataException("No fresh same-target typed own teleport after request cursor");return actual;
     }
 }

@@ -29,9 +29,10 @@ public partial class MissionNpcInteriorCheckpointTests
         var delete=Convert.FromHexString("01000101000700");log=QaLife(QaOwn(),QaNpc(s),delete,QaNpc(s));Assert.Throws<InvalidDataException>(()=>NpcInteriorCurrentNpc.Require(log.Snapshot(),scope,s));
         log=QaLife(QaOwn(),QaNpc(s));s.Mobs[0].Identity="44444444444444444444444444444444";Assert.Throws<InvalidDataException>(()=>NpcInteriorCurrentNpc.Require(log.Snapshot(),scope,s));
     }
-    static byte[] QaDoor()
+    const string QaDoorQuaternion="00000000F30435B300000000FFFF7F3F";
+    static byte[] QaDoor(ushort view=9,byte spawn=5,uint state=0x835)
     {
-        var obj=new AttributeClass364("Door",346);obj.SetRelatedStaticObjId(0x2260056b);obj.DisableAllAttributes();obj.Position.enable();obj.Position.setValue(new[]{38500d,6145,25800}.SelectMany(BitConverter.GetBytes).ToArray());obj.CurrentState.enable();obj.CurrentState.setValue(BitConverter.GetBytes(0x835u));return QaEncode(obj,9,5);
+        var obj=new AttributeClass364("Door",346);obj.SetRelatedStaticObjId(0x2260056b);obj.DisableAllAttributes();obj.Position.enable();obj.Position.setValue(new[]{38500d,6145,25800}.SelectMany(BitConverter.GetBytes).ToArray());obj.Orientation.enable();obj.Orientation.setValue(Convert.FromHexString(QaDoorQuaternion));obj.CurrentState.enable();obj.CurrentState.setValue(BitConverter.GetBytes(state));return QaEncode(obj,view,spawn);
     }
     [Fact] public void CurrentCertifiedDoorStateUsesOwnSchemaAndCannotBorrowNpcOrUnknownSuffix()
     {

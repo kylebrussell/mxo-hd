@@ -30,6 +30,13 @@ public static class MissionNpcInteriorProof
         return new(source.mxoStaticId,goid,Vector(e,"Position",3),q,Vector(e,"Standing",3),raw);
     }
     public static bool HasCurrent(MissionProgress.SavedState s)=>s.NpcInterior.ValueKind==JsonValueKind.Object&&s.NpcInterior.TryGetProperty("CurrentPhase",out var phase)&&phase.ValueKind==JsonValueKind.Number&&phase.GetInt32()==s.Phase;
+    // DataLoader's first raw identity for a key already owned by the persisted v1 witness. Never pose-to-key recovery.
+    public static ushort RawGoidForKnownKey(IEnumerable<string> rows,uint key)
+    {
+        var found=rows.Where(l=>!string.IsNullOrWhiteSpace(l)&&char.IsDigit(l[0])).Select(l=>l.Split(',')).FirstOrDefault(f=>f.Length>=11&&f[0]=="1"&&BitConverter.ToUInt32(Convert.FromHexString(f[2]))==key);
+        if(found==null)throw new InvalidDataException("Known persisted lobby key is absent from raw catalog");ushort goid=BitConverter.ToUInt16(Convert.FromHexString(found[4]));
+        if(!new ushort[]{417,419}.Contains(goid))throw new InvalidDataException("Known persisted lobby key selected a non-elevator raw type");return goid;
+    }
     public static Plan Require(MissionProgress.SavedState s,int expectedPhase=2,ushort expectedNpc=6)
     {
         Need(s.Version==2&&s.Mission==201201&&s.Phase==expectedPhase&&Guid.TryParseExact(s.Identity,"N",out _)&&s.Started>0,"NPC actual accepted201201 current phase identity");

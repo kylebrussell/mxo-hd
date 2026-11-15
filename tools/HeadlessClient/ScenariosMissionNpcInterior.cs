@@ -31,14 +31,11 @@ public static partial class Scenarios
             foreach(uint key in step.Doors)
             {
                 if(!opened.Add(key))continue;var door=doors.Single(d=>d.Key==key);int cursor=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SkipReceived();p.SendRpc(request);
-                ViewCreation? view=null;await p.WaitUntilAsync(()=>
+                NpcInteriorComputerState.DoorObservation? observed=null;await p.WaitUntilAsync(()=>
                 {
-                    view=p.World.CreationSnapshot().GroupBy(v=>v.ViewId).Select(g=>g.Last()).SingleOrDefault(v=>v.RelatedStaticObjectId==key&&v.Goid==door.Goid&&v.Attributes.TryGetValue("Position",out var at)&&at.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(at,i*8)==door.Position[i]));
-                    if(view==null)return false;
-                    try{return NpcInteriorComputerState.Capture(p.World.CurrentOwnViewLife(),view).State==0x834;}catch(InvalidDataException){return false;}
+                    try{observed=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door);return true;}catch(InvalidDataException){return false;}
                 },"actual certified own-GO wooden door Open",TimeSpan.FromSeconds(15));
-                Check.Equal(door.Quaternion.ToUpperInvariant(),Convert.ToHexString(view!.Attributes["Orientation"]),"Wooden door keeps own-GO native orientation");
-                proof.Add(new{Step="npc-v2-required-portal-open",Door=door,Request=request,RpcCursor=cursor,View=view,TopologyOnly=true,NativePassageProven=false});
+                proof.Add(new{Step="npc-v2-required-portal-open-request",Door=door,Request=request,RpcCursor=cursor,CurrentDoor=observed,TopologyOnly=true,NativePassageProven=false});
             }
             await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
         }
