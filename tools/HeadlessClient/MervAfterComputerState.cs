@@ -33,20 +33,21 @@ public static class MervAfterComputerState
                     }
                     at+=birth.Length;continue;
                 }
-                if(at+7<=bytes.Length&&bytes.AsSpan(at,5).SequenceEqual(new byte[]{1,0,1,1,0}))
-                {if(live.Remove(BitConverter.ToUInt16(bytes,at+5),out var old))retired.Add((old.View.ViewId,old.View.SpawnId));at+=7;continue;}
-                if(at+28<=bytes.Length&&bytes.AsSpan(at,4).SequenceEqual(new byte[]{2,0,1,0x1c})){at+=28;continue;}
-                if(at+18<=bytes.Length&&bytes[at+2]==2&&bytes[at+3]==0x0e)
-                {if(live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var moving)&&MissionStaging.IsComputer(moving.View.Goid))moving.Known=false;at+=18;continue;}
-                if(at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var target))
+                ushort? goid=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)
+                    ?addressed.View.Goid:at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                if(!MervAfterCombatFrames.TryRead(bytes,at,goid,out var frame))
+                    throw new InvalidDataException($"Unknown/truncated computer current-life frame at section{e.Section} offset{at}");
+                if(frame.Type==MervAfterCombatFrames.Kind.Delete)
+                {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
+                else if(live.TryGetValue(frame.View,out var target)&&MissionStaging.IsComputer(target.View.Goid))
                 {
                     var shape=ObjectStates.BuildStateUpdate(target.View.Goid,0);
-                    if(shape!=null&&shape.Length>=4&&at+2+shape.Length<=bytes.Length&&bytes.AsSpan(at+2,shape.Length-4).SequenceEqual(shape.AsSpan(0,shape.Length-4)))
-                    {target.State=BitConverter.ToUInt32(bytes,at+2+shape.Length-4);at+=2+shape.Length;continue;}
+                    if(shape!=null&&frame.Type==MervAfterCombatFrames.Kind.Attribute&&frame.Length==2+shape.Length&&
+                        bytes.AsSpan(at+2,shape.Length-4).SequenceEqual(shape.AsSpan(0,shape.Length-4)))
+                        target.State=BitConverter.ToUInt32(bytes,at+frame.Length-4);
+                    else throw new InvalidDataException("Computer received unsupported current-birth update");
                 }
-                int next=births.Where(c=>c.Offset>at).Select(c=>c.Offset).DefaultIfEmpty(bytes.Length).Min();var gap=bytes[at..next];
-                foreach(var v in live.Values)if(BytePattern.IndexOf(gap,BitConverter.GetBytes(v.View.ViewId),0)>=0)v.Known=false;
-                at=next;
+                at+=frame.Length;
             }
         }
         if(!ownSeen||!stream.Current)throw new InvalidDataException("Computer own life changed");return live;
