@@ -9,6 +9,7 @@ public class SharpshooterFreeFireTests
     private static WorldClient Client(int district=1)
     {
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();c.messageQueue=new MessageQueue();
+        typeof(WorldClient).GetField("lastUsedTime",BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(c,TimeUtils.getUnixTimeUint32());
         c.Alive=true;c.playerData.setOnWorld(true);c.playerData.setDistrictId((ushort)district);c.playerInstance.Level.setValue((byte)50);
         c.playerInstance.Health.setValue((ushort)1000);c.playerInstance.MaxHealth.setValue((ushort)1000);
         c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(100,495,100));typeof(WorldClient).GetField("lastFlushTick",BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(c,long.MaxValue);return c;
@@ -45,6 +46,7 @@ public class SharpshooterFreeFireTests
     [Fact]public void PlayerCountsDeduplicateLiveGunfireAndRejectEndedDeadOffworldOrOtherTargets()
     {
         var target=Client();var other=Client();var a=Client();var b=Client();var unrelated=Client();var handlers=new List<CombatHandler>();
+        var previous=WorldServer.Clients;WorldServer.Clients=new Dictionary<string,WorldClient>();
         void Fire(WorldClient source,WorldClient victim)
         {var h=CombatManager.GetHandler(source);handlers.Add(h);var f=(PvpGunfire)RuntimeHelpers.GetUninitializedObject(typeof(PvpGunfire));Set(f,"<Shooter>k__BackingField",source);Set(f,"<Target>k__BackingField",victim);Set(f,"<IsActive>k__BackingField",true);h.pvpGunfire=f;}
         try
@@ -55,7 +57,7 @@ public class SharpshooterFreeFireTests
             b.playerData.isDead=false;b.playerData.setOnWorld(false);Assert.Equal(1,SharpshooterFreeFire.PlayerOpponents(target,a));
             target.playerData.isDead=true;Assert.Equal(0,SharpshooterFreeFire.PlayerOpponents(target,a));
         }
-        finally{foreach(var h in handlers)h.pvpGunfire=null;foreach(var c in new[]{a,b,unrelated}){c.Alive=false;CombatManager.RemoveClient(c);}}
+        finally{try{foreach(var h in handlers)h.pvpGunfire=null;foreach(var c in new[]{a,b,unrelated}){c.Alive=false;CombatManager.RemoveClient(c);}}finally{WorldServer.Clients=previous;}}
     }
     [Fact]public void CurrentInterlockOpponentsAreActualLinksNotWholeFighterCount()
     {
