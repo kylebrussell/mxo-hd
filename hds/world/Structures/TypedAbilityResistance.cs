@@ -35,7 +35,6 @@ namespace hds
         }
         public static ushort Player(WorldClient caster,WorldClient victim,ushort ability,int raw,int type=-2)
         {
-            raw=PunishingBlows.Player(caster,victim,raw);
             if(type==-2)type=StoredType(ability);
             ushort stat=Stat(type);
             if(caster==null || victim==null || caster==victim || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
@@ -44,7 +43,6 @@ namespace hds
         }
         public static ushort Npc(WorldClient caster,Mob victim,ushort ability,int raw,int type=-2)
         {
-            raw=PunishingBlows.Npc(caster,victim,raw);
             if(type==-2)type=StoredType(ability);
             ushort stat=Stat(type);
             if(caster==null || victim==null || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);

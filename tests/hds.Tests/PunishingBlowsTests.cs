@@ -56,6 +56,7 @@ public class PunishingBlowsTests
     {
         var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
         client.playerData=new ClientData();client.playerInstance=new PlayerCharacter();client.messageQueue=new MessageQueue();
+        typeof(WorldClient).GetField("lastUsedTime",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(client,TimeUtils.getUnixTimeUint32());
         client.Alive=true;client.playerData.setOnWorld(true);client.playerData.setDistrictId(district);
         client.playerInstance.Level.setValue((byte)50);client.playerInstance.Health.setValue((ushort)1000);
         client.playerInstance.MaxHealth.setValue((ushort)1000);client.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
