@@ -8,7 +8,7 @@ using S=hds.MissionStreetAccessData;
 using G=hds.MissionOpenFloorResolver;
 namespace hds.Tests;
 
-public sealed class MissionStreetAccessTests
+public sealed partial class MissionStreetAccessTests
 {
     static string Repo{get{string p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;}}
     static string DirectoryFor(string name)=>Path.Combine(Repo,"data",name,"1");

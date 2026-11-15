@@ -52,38 +52,50 @@ namespace hds
         internal sealed class Declaration
         {public ushort Sector {get;set;}public string Digest {get;set;}public string Sha256 {get;set;}public uint[] Keys {get;set;}}
         internal sealed class Index
-        {public int Format {get;set;}public ushort World {get;set;}public Declaration[] Sectors {get;set;}}
+        {public int Format {get;set;}public ushort World {get;set;}public Declaration[] Sectors {get;set;}internal string Identity;}
         private static Index ReadIndex()
         {
             using(var stream=typeof(MissionPublicDoors).Assembly.GetManifestResourceStream("hds.MissionPublicDoors.Index"))
             {
-                var index=JsonSerializer.Deserialize<Index>(stream??throw new InvalidDataException("MissingPublicDoorIndex"));
+                if(stream==null)throw new InvalidDataException("MissingPublicDoorIndex");
+                using var reader=new StreamReader(stream,new System.Text.UTF8Encoding(false,true));string text=reader.ReadToEnd().Replace("\r\n","\n");
+                var index=JsonSerializer.Deserialize<Index>(text);
                 if(index==null||index.Format!=1||index.World!=1||index.Sectors==null||index.Sectors.Select(r=>r?.Sector).Distinct().Count()!=index.Sectors.Length||
                     index.Sectors.Any(r=>r==null||r.Keys==null||r.Keys.Distinct().Count()!=r.Keys.Length||r.Keys.Any(k=>(k>>20)!=r.Sector)||
                     !Hash(r.Digest)||!Hash(r.Sha256)))throw new InvalidDataException("InvalidPublicDoorIndex");
-                return index;
+                index.Identity=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)));return index;
             }
         }
         private static bool Hash(string s)=>s!=null&&s.Length==64&&s.All(Uri.IsHexDigit);
         private static readonly Index committed=ReadIndex();
+        internal static string IndexIdentity=>committed.Identity;
         private static readonly HashSet<uint> committedKeys=new HashSet<uint>(committed.Sectors.SelectMany(row=>row.Keys));
         internal sealed class Dataset
         {
             private readonly string street,interior;private readonly Index index;private readonly Dictionary<uint,Declaration> keys;
             private readonly ConcurrentDictionary<ushort,Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>> scenes=new ConcurrentDictionary<ushort,Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>>();
             internal Dataset(string street,string interior,Index index=null){this.street=Path.GetFullPath(street);this.interior=Path.GetFullPath(interior);this.index=index??committed;keys=this.index.Sectors.SelectMany(row=>row.Keys.Select(key=>new KeyValuePair<uint,Declaration>(key,row))).ToDictionary(pair=>pair.Key,pair=>pair.Value);}
+            private Tuple<MissionInteriorEvidence,MissionStreetAccessData> Scene(Declaration row)=>scenes.GetOrAdd(row.Sector,sector=>new Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>(()=>
+            {
+                var evidence=MissionInteriorEvidence.LoadActive(interior,index.World,sector);
+                var data=MissionStreetAccessData.Read(File.ReadAllBytes(Path.Combine(street,sector+".json.gz")),row.Sha256,row.Digest,evidence);
+                return Tuple.Create(evidence,data);
+            })).Value;
+            internal bool TryScene(ushort world,ushort sector,out MissionInteriorEvidence evidence,out MissionStreetAccessData data,out string refusal)
+            {
+                evidence=null;data=null;refusal="UndeclaredStreetScene";if(world!=index.World)return false;
+                Declaration row=index.Sectors.SingleOrDefault(r=>r.Sector==sector);if(row==null)return false;
+                try {var scene=Scene(row);evidence=scene.Item1;data=scene.Item2;refusal=null;return true;}
+                catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is UnauthorizedAccessException||ex is ArgumentException||ex is FormatException||ex is OverflowException)
+                {refusal="UnavailableDeclaredStreetScene:"+ex.GetType().Name+":"+ex.Message;return false;}
+            }
             internal Result Resolve(StaticWorldObject raw)
             {
                 if(raw==null||raw.metrId!=index.World)return new Result(Kind.Legacy);
                 if(!keys.TryGetValue(raw.mxoStaticId,out Declaration row))return new Result(Kind.Legacy);
                 try
                 {
-                    var scene=scenes.GetOrAdd(row.Sector,sector=>new Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>(()=>
-                    {
-                        var evidence=MissionInteriorEvidence.LoadActive(interior,index.World,sector);
-                        var data=MissionStreetAccessData.Read(File.ReadAllBytes(Path.Combine(street,sector+".json.gz")),row.Sha256,row.Digest,evidence);
-                        return Tuple.Create(evidence,data);
-                    })).Value;
+                    var scene=Scene(row);
                     return scene.Item1.TryCanonicalPublicDoor(scene.Item2,raw,out var pose,out string why)?new Result(Kind.Resolved,pose,rawSignature:MissionNpcInteriorPlanning.RawJson(raw)):new Result(Kind.Refused,refusal:why);
                 }
                 catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is UnauthorizedAccessException||ex is ArgumentException||ex is FormatException||ex is OverflowException)
