@@ -36,6 +36,7 @@ namespace hds
         {
             public UInt16 Parent;
             internal Action<Subject, Active> OnExpired;
+            internal Action<Subject, Active,double> OnExpiredAt;
             internal Func<bool> CallbackCurrent,CallbackStateCurrent;
             public UInt16 Kind;
             public UInt16 Target;
@@ -111,6 +112,31 @@ namespace hds
                         active.Add(m);
                     }
                     return replaced;
+                }
+            }
+
+            // Callback-specific append: observations must be pure and never take the publication gate.
+            internal bool AppendCallback(ushort parent,Active candidate,double now,Func<bool> current,out List<Active> replaced)
+            {
+                lock(active)
+                {
+                    replaced=new List<Active>();
+                    if(!current())return false;
+                    var previous=active.FindAll(a=>a.Parent==parent && a.Target==candidate.Target);
+                    replaced=previous;active.RemoveAll(a=>previous.Contains(a));
+                    candidate.Parent=parent;candidate.Start=now;candidate.Expires=now+candidate.Seconds;candidate.Ticks=0;active.Add(candidate);
+                    if(current())return true;
+                    RollbackCallback(candidate,replaced,now);
+                    return false;
+                }
+            }
+            internal void RollbackCallback(Active candidate,List<Active> replaced,double now)
+            {
+                lock(active)
+                {
+                    // A clear/newer replacement wins. Never resurrect records after ours disappeared.
+                    if(!active.Remove(candidate))return;
+                    if(!active.Any(a=>a.Parent==candidate.Parent && a.Target==candidate.Target))active.AddRange(replaced.Where(old=>old.Expires>now));
                 }
             }
 
@@ -374,6 +400,7 @@ namespace hds
             foreach (Active mod in expired)
             {
                 mod.OnExpired?.Invoke(subject, mod);
+                mod.OnExpiredAt?.Invoke(subject,mod,now);
                 AbilityConditionalControls.Term(subject, mod, now);
             }
             if (expired.Count > 0)
@@ -471,7 +498,8 @@ namespace hds
             Active unmitigatedImmunity = originalControl == null ? null : ImmunityFor(effect, originalControl);
             if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
                 foreach (Active m in mods)
-                    m.Seconds = AbilityControlDurations.Mitigate(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination);
+                    if(effect.Ability!=AbilityReverseBulldog.Ability || m.Proc!=TempMods.Proc.Terminal)
+                        m.Seconds = AbilityControlDurations.Mitigate(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination);
 
             Active immunity = null;
             if (subject.Effects.Has(TempMods.ISDrainTargetAbility))
@@ -500,7 +528,7 @@ namespace hds
                 return mods;
             }
 
-            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion);
+            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion || effect.Ability==AbilityReverseBulldog.Ability);
             if (immunity != null)
             {
                 subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);
@@ -518,6 +546,7 @@ namespace hds
         public static void Clear(Subject subject)
         {
             if (subject is PlayerEffects player) { CraftingSession.End(player.Context); Stealth.Cleared(player.Context); }
+            AbilityReverseBulldog.Cancel(subject);
             List<Active> removed = subject.Effects.RemoveAll();
             if (removed.Count > 0)
             {
@@ -528,6 +557,7 @@ namespace hds
         /// <summary>Remove one parent ability and send every linked modifier/state's off record.</summary>
         public static bool RemoveParent(Subject subject, UInt16 parent)
         {
+            if(parent==AbilityReverseBulldog.Ability)AbilityReverseBulldog.Cancel(subject);
             List<Active> removed = subject.Effects.RemoveParent(parent);
             if (removed.Count > 0) WithClient(subject.Context, () => {
                 foreach (Active mod in removed) AbilityConditionalControls.Term(subject, mod, TimeUtils.GetSimTimeSeconds());
@@ -572,25 +602,27 @@ namespace hds
         }
 
         /// <summary>The ability lands on an NPC: its tempmods go on (<see cref="TempMods.Retail"/>). False when it has none.</summary>
-        public static bool ApplyToMob(WorldClient caster, Mob mob, UInt16 targetView, UInt16 abilityId)
+        public static bool ApplyToMob(WorldClient caster, Mob mob, UInt16 targetView, UInt16 abilityId,AbilityReverseBulldog.Cast reverseBulldog=null)
         {
             if (!TempMods.TryGet(abilityId, out TempMods.Effect effect) || mob == null || mob.getIsDead())
             {
                 return false;
             }
-            Apply(ForMob(mob), effect, TimeUtils.GetSimTimeSeconds(), caster, PlayerName(caster), targetView);
+            var subject=ForMob(mob);
+            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, PlayerName(caster), targetView,configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId));
             return true;
         }
 
         /// <summary>An ability (an NPC's, another player's) lands on a player: its records go to them.</summary>
-        public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName, WorldClient caster = null)
+        public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName, WorldClient caster = null,AbilityReverseBulldog.Cast reverseBulldog=null)
         {
             if (!TempMods.TryGet(abilityId, out TempMods.Effect effect))
             {
                 return false;
             }
             // The casting player, when there is one, is who a death by the damage over time is owed to (PvpCombat)
-            Apply(ForPlayer(client), effect, TimeUtils.GetSimTimeSeconds(), caster, casterName);
+            var subject=ForPlayer(client);
+            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId));
             return true;
         }
 
