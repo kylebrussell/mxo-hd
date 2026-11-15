@@ -90,25 +90,28 @@ public class BuffDispelFixtureTests
     [InlineData(true)]
     public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture(bool worldPresent)
     {
-        var oldWorld=Store.world;
-        var oldClients=WorldServer.Clients;
-        try
+        WithEnvironment("1","mxotest_dispel","0",()=>
         {
-            // This callback test owns its watcher context; other tests may leave a world
-            // instance with the previous (possibly null) endpoint registry restored.
+            var previousWorld=Store.world;var previousClients=WorldServer.Clients;
+            var caster=Client();var target=Client();
+            // Exercise the normal watcher publication path against an owned empty world,
+            // independent of whichever static world/client table another test restored.
+            WorldServer.Clients=new Dictionary<string,WorldClient>();
             Store.world=worldPresent?(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer)):null;
-            WorldServer.Clients=new();
-            WithEnvironment("1","mxotest_dispel","0",()=>
+            try
             {
-                var caster=Client();var target=Client();
                 Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
                 AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
                 Assert.True(AbilityBuffs.IsActive(target,49));
                 AbilityHostile.LandedOnPlayer(caster,target,261);
                 Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
-            });
-        }
-        finally{Store.world=oldWorld;WorldServer.Clients=oldClients;}
+            }
+            finally
+            {
+                try {AbilityBuffs.RemoveAll(target);AbilityBuffs.RemoveAll(caster);}
+                finally {Store.world=previousWorld;WorldServer.Clients=previousClients;}
+            }
+        });
     }
 
     [Theory]
