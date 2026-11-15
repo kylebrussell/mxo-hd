@@ -41,5 +41,7 @@ public class MervAfter301207Tests
         Assert.Equal("301208",Assert.Single(p.EnvironmentOverrides).Value);Assert.Equal((17000,2300),(p.X,p.Z));Assert.Equal(new ushort[]{2,17,1006,77},p.Abilities);
         Assert.DoesNotContain(p.AfterHelpers,s=>s.Contains("char_active_missions")||s.Contains("INSERT INTO inventory"));
         Assert.Single(Scenarios.All,s=>s.Name==mode.Name);
+        Assert.Equal("c7984328d5f8af46c0e57c218ff1d4ab9a061a46",p.ExtraQaMetadata["QaBaseMaster"].GetString());
+        Assert.Equal("PR241 measured-introduction (MissionInteriorSites/MissionProxyIntroduction)",p.ExtraQaMetadata["CombinedCoreDependency"].GetString());
     }
 }

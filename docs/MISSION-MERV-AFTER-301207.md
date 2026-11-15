@@ -1,6 +1,6 @@
 # Flood critical wave after A Special Case
 
-Status: DRAFT / HOLD for unmerged PR235 and PR213 dependencies and Claude-only native acceptance. The publication candidate combines the original c305 + reviewed PR213 a136f4c3 + Mainframe357 core3bcdc ancestry with master426ca (including PR243). No gameplay, XML, source selection or RNG policy is added by this QA package. The gameplay and bootstrap proofs below remain attributed to frozen cc1e58ea before this mechanical composition; they are not master426ca-only, native or unaided proofs.
+Status: DRAFT / HOLD pending current-source qualification, root review and native acceptance. Current base is master c7984328d5f8af46c0e57c218ff1d4ab9a061a46; PvP/Shadow and data are preserved. PR235 is merged and original213-only story files are omitted. The exact unmerged dependency is PR241 measured-introduction in MissionInteriorSites/MissionProxyIntroduction. Historical proofs below remain source-qualified; none is relabeled as a current c798 run.
 
 The actual ordered ContactOffer output selects Necessary Action301208(order1208), New Concerns301209(1209), Into the Hive301210(1210), The Black Box301211(1211), Researching the Black Arts301212(1212), then Mod Box301214. Unit tests advance actual contact history one earned receipt at a time and assert each offer. An initial filename-based chapter-boundary inference was wrong; the failed preflight was retained in Temp and corrected before any fresh run. No301301-303 story is included.
 
@@ -92,6 +92,15 @@ A separate granted `--bootstrap-checks <repo> <proofdir> merovingian-after-30120
 
 Runner5860 exited0; server46272 and schema `mxotest_bootstrap_f2b42a4067` were owned. Independent cleanup confirmed COUNT0 and all eight recorded creation identities gone. Summary SHA256 `E9B405F63B4D85E10278077D4E2CD88014882255DC37B6CDD236B44B93AB51C0`; cleanup SHA256 `5C07DB816C5C664923505E2FB7D449F896D918A8EFF58838F93466A08AD1890E`. Frozen gameplay/bootstrap sources and prior failure artifacts remain untouched.
 
-## Publication composition
+## Historical publication composition
 
-The final source candidate merges master426ca (including PR243) without dropping the unmerged235/213 ancestry. The sole restore conflict preserves V1 free357 no-witness quarantine, then master MissionBoundObjectPoses.ValidateRestored, then V2 OpenFloor validation. This is the accepted PR235 composition, not a new policy or replay migration. CI validates this final tree; the gameplay and bootstrap results above remain attributed only to cc1e58ea. Draft/HOLD remains until root review, green CI and the explicit PR235/213 dependency/native decision.
+The historical e5 candidate merged master426ca (including PR243) without dropping the unmerged235/213 ancestry. The sole restore conflict preserves V1 free357 no-witness quarantine, then master MissionBoundObjectPoses.ValidateRestored, then V2 OpenFloor validation. This is the accepted PR235 composition, not a new policy or replay migration. CI validates this final tree; the gameplay and bootstrap results above remain attributed only to cc1e58ea. Draft/HOLD remains until root review, green CI and the explicit PR235/213 dependency/native decision.
+
+
+## Current refresh and historical87f proof
+
+The c798 refresh preserves the six mission production deltas and shared245 QA helpers, omitting original213-only scenario/mode/docs/tests and keeping masterPrima unchanged. Receipt validation and seed copying are extracted unchanged into MissionReceiptSeedGuard. Current dependency is only the two-file PR241 measured-introduction fix; historical references to unmerged235/213 above describe their original producers.
+
+Frozen87f9a09344f3d2f3adb5dc759325caf83ca46f16 passed the whole five in297.2s with actual held driver exit0. Actual Debug DF59A26E7BE8449C76051C276E7AB813007C58760C22841A21290F1206B63A6D, Release driver8E43D92F3ABA191D738F5D89C79E1A2B750FD10ACC4CB0CBB3259A61FC8C9163. Five receipts1/payloadNULL/next301214; baseline296082500XP/1000Info became296618290XP/489000Info: mission343750XP/455000Info, observed fighting192040XP and advertised accepted NPC cash33000. No zero-refresh occurred. Parts6827 char1001/slot2/rawCount0 persisted across same-server relog then was removed by Give.681RPC/296view sections/0parser problems;30 goals/11 advances/22doors/four receipt-before-birth proofs. This is wire/window/SQL arithmetic, not independent combat/corpse formulas, cold-process or native proof. TP/weaken/StillNpcs/dev1/layout-seed aids remain.
+
+Raw mxo-merv-after-301207-mxotest_run_1_9c8f53d3cd.json SHA2565E9D9E59C3B889040F5086264F9CD83CDECACB9FF6ED548C61917A9C7B54FD4E; summary whole-case-summary-87f9a093.json SHA256A1D441F2903E0B436195795F48126E2A6CB8C71224D5F72C2DE0A97E875A390B. Exact schemaCOUNT0/all216 recorded identities gone. Correct actual245 bootstrap separately passed its own mode plan/auth/inherited no-op hook, schemaCOUNT0/all11 gone; no matrix/game/native claim. Mistyped213 native attempt/old plan claims stay invalidated; original213 generated1408-to1416 HOLD is separate.
