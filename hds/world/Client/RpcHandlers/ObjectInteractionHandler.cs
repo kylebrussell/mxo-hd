@@ -106,7 +106,7 @@ namespace hds
         public void processObjectInteraction(StaticWorldObject staticWorldObject, GameObjectItem item)
         {
             ushort type=MissionSites.Goid(staticWorldObject);
-            if(type==417||type==419||type==343||type==346)
+            if(type==417||type==419||MissionInteriorDoorTypes.IsSupported(type))
             {
                 var decision=MissionElevatorPoses.WithDoorOwner(Store.currentClient,staticWorldObject,
                     snapshot=>ProcessObjectInteractionCore(staticWorldObject,item,snapshot));

@@ -62,4 +62,17 @@ public partial class MissionNpcInteriorCheckpointTests
         var own=group.Occurrences.Single(o=>o.Goid==goid);Assert.Equal(own.Quaternion,pose.Quaternion);
         raw.pos_x++;Assert.False(index.TryWoodDoor(raw,out _,out _));Assert.False(MissionInteriorDoorTypes.IsSupported(417));
     }
+    [Fact] public void PairedClass364ModelsNeverBorrowOneAnothersPositionOrYaw()
+    {
+        var index=E.LoadAudited(SceneDirectory,1,842);using var f=File.OpenRead(Path.Combine(SceneDirectory,"842.json.gz"));using var z=new System.IO.Compression.GZipStream(f,System.IO.Compression.CompressionMode.Decompress);var doc=JsonSerializer.Deserialize<E.Document>(z)!;
+        var group=doc.Groups.Single(g=>g.Key==0x34a0028a);
+        foreach(ushort goid in new ushort[]{6958,6959})
+        {
+            var s=group.Legacy.Single(l=>l.Signature.Goid==goid).Signature;var raw=Raw(group.Key,goid,s.Position[0],s.Position[1],s.Position[2],s.Rotation,s.Quaternion);
+            Assert.True(index.TryWoodDoor(raw,out var pose,out var why),why);var own=group.Occurrences.Single(o=>o.Goid==goid);
+            Assert.Equal(own.ModelPosition,new[]{pose.Position.X,pose.Position.Y,pose.Position.Z});Assert.Equal(own.Quaternion,pose.Quaternion);
+        }
+        var ambiguous=doc.Groups.Single(g=>g.Key==0x34a00268);var signature=ambiguous.Legacy[0].Signature;
+        Assert.False(index.TryWoodDoor(Raw(ambiguous.Key,6958,signature.Position[0],signature.Position[1],signature.Position[2],signature.Rotation,signature.Quaternion),out _,out _));
+    }
 }

@@ -195,10 +195,15 @@ namespace hds
             using var input = new MemoryStream(compressed); using var gzip = new GZipStream(input, CompressionMode.Decompress); using var output = new MemoryStream(); gzip.CopyTo(output);
             return Read(output.ToArray(), world, sector);
         }
+        private static string NormalizeManifest(byte[] bytes)
+        {
+            try { return new UTF8Encoding(false,true).GetString(bytes).Replace("\r\n","\n"); }
+            catch(DecoderFallbackException ex) { throw new InvalidDataException("InteriorEvidenceManifestUtf8",ex); }
+        }
         private static Manifest AuditedManifest(string directory, ushort world)
         {
             byte[] bytes = File.ReadAllBytes(Path.Combine(directory, "manifest.json"));
-            string normalized = new UTF8Encoding(false, true).GetString(bytes).Replace("\r\n", "\n");
+            string normalized = NormalizeManifest(bytes);
             Require(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).Equals(ManifestSha256, StringComparison.OrdinalIgnoreCase), "InteriorEvidenceManifestHash");
             Manifest m = JsonSerializer.Deserialize<Manifest>(bytes);
             Require(m != null && m.Format == 1 && m.World == world && m.Sectors != null && m.Sectors.All(s => s != null) && m.Sectors.Select(s => s.Sector).Distinct().Count() == m.Sectors.Length, "InteriorEvidenceManifestWorld");
@@ -227,7 +232,7 @@ namespace hds
             }
             string history = Path.Combine(directory,"history");
             byte[] bytes = File.ReadAllBytes(Path.Combine(history,"manifest.json"));
-            string normalized = new UTF8Encoding(false,true).GetString(bytes).Replace("\r\n","\n");
+            string normalized = NormalizeManifest(bytes);
             Require(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).Equals(HistoricalManifestSha256,StringComparison.OrdinalIgnoreCase),"HistoricalInteriorManifestHash");
             HistoricalManifest manifest = JsonSerializer.Deserialize<HistoricalManifest>(bytes);
             Require(manifest != null && manifest.Format == 1 && manifest.World == world && manifest.Versions != null && manifest.Versions.All(v => v != null && Hex(v.Digest,64) && Hex(v.Sha256,64)) &&
@@ -255,11 +260,12 @@ namespace hds
         internal bool TryWoodDoor(StaticWorldObject raw, out DoorPose pose, out string refusal)
         {
             pose = null;
-            if (!Position(raw, out Group group, out _, out refusal)) return false;
+            refusal = "UncertifiedInteriorDoorSignature";
+            if (!Raw(raw, out Group group)) return false;
             ushort goid = MissionSites.Goid(raw);
             if (!MissionInteriorDoorTypes.IsSupported(goid)) { refusal = "UnsupportedInteriorWoodDoorType"; return false; }
             Occurrence[] own = group.Occurrences.Where(o => o.Goid == goid).ToArray();
-            if (own.Length == 0 || own.Any(o => o.Quaternion != own[0].Quaternion)) { refusal = "AmbiguousOwnGoidDoorOrientation"; return false; }
+            if (own.Length == 0 || own.Any(o => o.Quaternion != own[0].Quaternion || !o.ModelPosition.SequenceEqual(own[0].ModelPosition))) { refusal = "AmbiguousOwnGoidDoorOrientation"; return false; }
             if (own.Any(o => !Available(o.Region))) { refusal = "MissingOwnGoidDoorPrefabEvidence"; return false; }
             pose = new DoorPose(raw.mxoStaticId, own[0]); refusal = null; return true;
         }

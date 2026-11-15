@@ -97,7 +97,7 @@ public partial class MissionNpcInteriorCheckpointTests
         foreach(var marker in markers)site.npcSpots.Add(new[]{marker.pos_x,marker.pos_y-50,marker.pos_z,marker.rot});
         Assert.True(MissionNpcRoomRoles.Select(progress,2,site,markers,evidence,entry,new SceneProvider(doors),out var selected,out why),why);
         Assert.Equal(new[]{6,7,8},selected.Actors.Select(a=>a.Id));Assert.Equal(3,selected.Actors.Select(a=>string.Join("|",a.Standing.Take(3))).Distinct().Count());
-        var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryMeasuredNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
+        var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryMeasuredNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);Assert.NotEmpty(route.RequiredDoors);Assert.All(route.RequiredDoors,d=>Assert.True(MissionInteriorDoorTypes.IsSupported(d.Goid)));return route.Target.Region;}).Distinct();Assert.Single(rooms);
     }
     [Fact] public void RoomModeStartsFreshCriticalOfferWithOnlyEarlierReceipts()
     {
