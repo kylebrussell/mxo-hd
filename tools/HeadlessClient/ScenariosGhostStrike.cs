@@ -44,9 +44,9 @@ public static partial class Scenarios
                 Check.That((observerBaseline.Flags&PvpFlag.PvpBit)!=0,"Current observer baseline retains normal PvP flag");
                 uint observerOn=GhostStrikeObserverFlags.Expected(observerBaseline.Flags,true),observerOff=GhostStrikeObserverFlags.Expected(observerBaseline.Flags,false);
                 proof.Add(new{Stage=stage+"-observer-baseline",Observed=observerBaseline,ExpectedOn=observerOn,ExpectedOff=observerOff});
-                observer.SkipReceived();Cast(caster,1116);var initial=await caster.WaitForRpcAsync(ModPattern(1116,115));
+                observer.SkipReceived();var toolGrant=await GhostStrikeInvisibilityTool.ActivateAsync(caster);var initial=Convert.FromHexString(toolGrant.Modifier);
                 await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,observerOn)));
-                double originalDuration=BitConverter.ToSingle(initial.Bytes,18);int cursor=caster.World.RpcSnapshot().Count;
+                double originalDuration=toolGrant.Duration;int cursor=caster.World.RpcSnapshot().Count;
                 int log=context.Server.DebugLog().Length,sourceViews=caster.World.ViewSnapshot().Count,targetViews=victim.World.ViewSnapshot().Count;
                 var before=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")};
                 DateTime start=DateTime.UtcNow;Cast(caster,365,target.ViewId);
@@ -64,13 +64,13 @@ public static partial class Scenarios
                 if(roll==8)
                 {
                     float remaining=BitConverter.ToSingle(restorations.Single().Bytes,18);
-                    Check.That(remaining>0&&remaining<originalDuration-1,"Restoration uses remaining original duration, never a fresh130s grant");
+                    Check.That(remaining>0&&remaining<originalDuration-1,"Restoration uses remaining original duration, never a fresh grant based on a hardcoded duration");
                     Check.Equal(1,System.Text.RegularExpressions.Regex.Matches(context.Server.DebugLog()[log..],@"\[GHOST-STRIKE\] accepted callback").Count,"Once per accepted cast");
                     await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,observerOn)));
                     // Turning the normal restored grant off uses its own standard activation path.
-                    Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115,true));
+                    await GhostStrikeInvisibilityTool.DeactivateAsync(caster);
                 }
-                proof.Add(new{stage,roll,Started=start,Original=Convert.ToHexString(initial.Bytes),Restorations=restorations.Select(r=>Convert.ToHexString(r.Bytes)),BeforeWire=before,
+                proof.Add(new{stage,roll,Started=start,ToolGrant=toolGrant,Original=Convert.ToHexString(initial),Restorations=restorations.Select(r=>Convert.ToHexString(r.Bytes)),BeforeWire=before,
                     SourceIsUpdates=sourceIsUpdates,TargetHealthUpdates=targetHealthUpdates,
                     AfterWire=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")},
                     SourceFreshViews=caster.World.ViewSnapshot().Skip(sourceViews).Select(Convert.ToHexString),TargetFreshViews=victim.World.ViewSnapshot().Skip(targetViews).Select(Convert.ToHexString),Log=context.Server.DebugLog()[log..]});
@@ -78,12 +78,12 @@ public static partial class Scenarios
             }
             stage="npc-accepted";caster.SkipReceived();caster.SendChat("?ghoststrike 8");await caster.WaitForTextAsync("callback roll=8");
             var npc=await caster.WaitForViewNamedAsync("Trainman");
-            Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115));int npcLog=context.Server.DebugLog().Length;
+            var npcGrant=await GhostStrikeInvisibilityTool.ActivateAsync(caster);int npcLog=context.Server.DebugLog().Length;
             Cast(caster,365,npc.ViewId);await caster.WaitForRpcAsync(ModPattern(1116,115,true));await caster.WaitForRpcAsync(ModPattern(1116,115));
             Check.That(context.Server.DebugLog()[npcLog..].Contains("[ABILITY] 365 lands"),"NPC ordinary accepted-hit path invokes source callback");
-            proof.Add(new{stage,NpcView=npc.ViewId,NpcSpawn=npc.SpawnId,Log=context.Server.DebugLog()[npcLog..]});
-            Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115,true));await Task.Delay(31000);
-            stage="actual-world-departure";Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115));
+            proof.Add(new{stage,ToolGrant=npcGrant,NpcView=npc.ViewId,NpcSpawn=npc.SpawnId,Log=context.Server.DebugLog()[npcLog..]});
+            await GhostStrikeInvisibilityTool.DeactivateAsync(caster);await Task.Delay(31000);
+            stage="actual-world-departure";var departureGrant=await GhostStrikeInvisibilityTool.ActivateAsync(caster);
             int cancelLog=context.Server.DebugLog().Length,cancelRpc=caster.World.RpcSnapshot().Count;
             var clock=System.Diagnostics.Stopwatch.StartNew();Cast(caster,365,target.ViewId);
             var bar=await caster.WaitForRpcAsync("80 ac 6d 01");float seconds=BitConverter.ToSingle(bar.Bytes,bar.Bytes.Length-4);
@@ -94,7 +94,7 @@ public static partial class Scenarios
             caster.SendRpc("81 08");await caster.WaitForRpcAsync("81 09");caster.SendRpc("05");
             await caster.WaitUntilAsync(()=>caster.World.RpcSnapshot().Skip(cancelRpc).Any(r=>BytePattern.IndexOf(r.Bytes,System.Text.Encoding.UTF8.GetBytes("la.metr"),0)>=0),"Actual LA world command",TimeSpan.FromSeconds(4));
             await Task.Delay(2000);Check.That(!context.Server.DebugLog()[cancelLog..].Contains("[GHOST-STRIKE] accepted callback"),"Actual departure cancels callback");
-            proof.Add(new{stage,seconds,boundaryMs,CastBar=bar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelLog..]});
+            proof.Add(new{stage,ToolGrant=departureGrant,seconds,boundaryMs,CastBar=bar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelLog..]});
             Check.Equal(0,caster.World.Problems.Count+victim.World.Problems.Count+observer.World.Problems.Count,"Protocol parsing");passed=true;
         }
         catch(Exception error){failure=error.ToString();throw;}
