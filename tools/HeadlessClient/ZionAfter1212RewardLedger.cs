@@ -117,10 +117,14 @@ public static class ZionAfter1212RewardLedger
                 {Require(total==info,"restored cash baseline differs from earned ledger");kind="Restored cash baseline";}
                 else
                 {
-                    amount=(long)total-info;Require(amount>0,"unexplained spend/duplicate cash total");
+                    amount=(long)total-info;
+                    // 80e4 is an absolute balance, not a credit. NpcLoot sends it
+                    // even for a zero-cash current corpse claim. Such a refresh
+                    // still needs the same window/unique acceptance proof below.
+                    Require(amount>=0,"unexplained spend cash total");
                     if(type==2)
                     {
-                        Require(missionCash<missionInformation.Count&&missionCash<missionGains&&amount==missionInformation[missionCash],"ordered literal mission cash credit");
+                        Require(amount>0&&missionCash<missionInformation.Count&&missionCash<missionGains&&amount==missionInformation[missionCash],"ordered literal mission cash credit");
                         missionCash++;missionInfo+=amount;kind="Mission cash";
                     }
                     else
@@ -137,7 +141,7 @@ public static class ZionAfter1212RewardLedger
                             "one current acceptance required before next window/end");
                         Require(consumedAcceptances.Add(accepted[0]),"NPC loot acceptance already consumed");
                         consumedWindows.Add(windowIndex);npcWindowIndex=windowIndex;acceptanceIndex=accepted[0];
-                        lootInfo+=amount;kind="NPC loot cash";
+                        lootInfo+=amount;kind=amount==0?"NPC zero-cash balance refresh":"NPC loot cash";
                     }
                 }
                 info=total;
