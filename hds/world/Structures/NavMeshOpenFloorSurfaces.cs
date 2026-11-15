@@ -33,7 +33,7 @@ namespace hds
                 {
                     SectorInfo info=SectorProperties.Get(district,id);
                     if(info==null||!data.sectors.TryGetValue(id,out Sector sector)) {refusal="MissingSectorOrOrigin";return false;}
-                    void Add(Polygon polygon,int region,int index,double x,double y,double z,int rotation)
+                    void Add(Polygon polygon,int region,int index,double x,double y,double z,int rotation,bool indoors)
                     {
                         if(polygon.xz.Length<6)return;
                         if(!double.IsFinite(polygon.a)||!double.IsFinite(polygon.b)||!double.IsFinite(polygon.c)||!double.IsFinite(polygon.d)||polygon.b==0||rotation<0||rotation>3)
@@ -50,16 +50,16 @@ namespace hds
                         double fx=(double)(rotation==1?-polygon.c:rotation==2?polygon.a:rotation==3?polygon.c:-polygon.a)/polygon.b;
                         double fz=(double)(rotation==1?polygon.a:rotation==2?polygon.c:rotation==3?-polygon.a:-polygon.c)/polygon.b;
                         result.Add(new MissionOpenFloorResolver.Surface(new MissionOpenFloorResolver.Id(id,checked((ushort)region),checked((ushort)index)),
-                            points,fx,fz,y-(double)polygon.d/polygon.b-fx*x-fz*z));
+                            points,fx,fz,y-(double)polygon.d/polygon.b-fx*x-fz*z,indoors));
                     }
                     for(int g=0;g<sector.regions.Length;g++)for(int p=0;p<sector.regions[g].Count;p++)
-                        Add(sector.regions[g][p],g,p,info.minX,0,info.minZ,0);
+                        Add(sector.regions[g][p],g,p,info.minX,0,info.minZ,0,false);
                     for(int k=0;k<sector.placements.Length;k++)
                     {
                         Placement pl=sector.placements[k];
                         if(pl.prefab<0||pl.prefab>=data.prefabs.Length||pl.rotation<0||pl.rotation>3)throw new InvalidDataException("Missing open-floor NAV prefab");
                         for(int p=0;p<data.prefabs[pl.prefab].Count;p++)
-                            Add(data.prefabs[pl.prefab][p],sector.regions.Length+k,p,info.minX+pl.pivotX,pl.pivotY,info.minZ+pl.pivotZ,pl.rotation);
+                            Add(data.prefabs[pl.prefab][p],sector.regions.Length+k,p,info.minX+pl.pivotX,pl.pivotY,info.minZ+pl.pivotZ,pl.rotation,true);
                     }
                 }
                 surfaces=Array.AsReadOnly(result.ToArray());return true;

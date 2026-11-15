@@ -42,15 +42,15 @@ public class MissionOpenFloorSingleTests
         Assert.False(P.TryPlan(new[]{new P.Input(1,Input(true))},out _,out string why,out var work,new P.Limits(1,32)));
         Assert.Equal("SearchExhausted:BodyNodes",why);Assert.Equal(1,work.BodyNodes);Assert.Equal(1,work.RouteGraphs);
     }
-    [Fact] public void PositiveDirectPolicyMayKeepANearerBodyAcrossAStaticPartitionWhenStandingRouteAndRangeAreValid()
+    [Fact] public void DirectAndExpandedPoliciesBothKeepTheBodyOnTheReachableSideOfAPartition()
     {
         var r=Input();G.Point[] wall={new(-20,-500),new(20,-500),new(20,500),new(-20,500)};
         var scene=new G.StaticScene(1,true,r.Scene.Coverage,-100,1000,new[]{new G.StaticObstacle("literal-partition",null,null,0,200,wall,"literal closed wall")},"literal complete scene");
         var across=new G.Request(r.World,r.SourceModel,r.SourceModelEvidence,r.RawSource,new(new(100,0,0),Q,1,1415),r.AnchorEvidence,r.Model,r.Usable,r.Surfaces,r.Entry,r.SiteBounds,scene);
-        Assert.True(P.TryPlan(new[]{new P.Input(1,across)},out var direct,out string why),why);Assert.True(direct.DirectSingle);Assert.Equal(100,direct.Results[1].Centre.X);
+        Assert.True(P.TryPlan(new[]{new P.Input(1,across)},out var direct,out string why),why);Assert.True(direct.Results[1].Centre.X< -20);
         Assert.True(P.TryPlan(new[]{new P.Input(1,across)},out var expanded,out why,out _,P.Limits.Default,false),why);Assert.True(expanded.Results[1].Centre.X<0);
         Assert.True(G.ValidateSet(direct.Results.Values.ToArray(),out why),why);Assert.True(G.ValidateSet(expanded.Results.Values.ToArray(),out why),why);
         Assert.All(direct.Results[1].Route,p=>Assert.True(p.X< -20));
-        // This is positive direct-first computational policy, not universal old-selection identity or native LOS/picking proof.
+        // Being in range through the wall cannot qualify the nearer body on the other side.
     }
 }

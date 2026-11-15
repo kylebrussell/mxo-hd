@@ -23,6 +23,11 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
+        new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),
+        new Scenario("interior-admission-merv",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Merv),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Merv)),
+        new Scenario("interior-admission-posters",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Posters),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Posters)),
+        new Scenario("interior-admission-zion",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Zion),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("mission-open-floor-box", MissionOpenFloorBoxScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("mission-standing-interior", MissionStandingInteriorScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
@@ -138,6 +143,8 @@ public static partial class Scenarios
         new Scenario("ability-passive-damage", AbilityPassiveDamage, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
+        new Scenario("mobius-free-attack-positive", MobiusPositive, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
+        new Scenario("mobius-free-attack-negative", MobiusNegative, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),

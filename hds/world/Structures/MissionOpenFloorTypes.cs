@@ -37,6 +37,21 @@ namespace hds
                 (float)((double)x*basis[3]+(double)y*basis[4]+(double)z*basis[5]),
                 (float)((double)x*basis[6]+(double)y*basis[7]+(double)z*basis[8])};
         }
+        internal bool TryNativeWorldRadius(double localRadius,out double worldRadius)
+        {
+            // The stored native float basis is not exactly orthonormal, even for accepted
+            // near-unit quaternions. ||B'B-I||2 <= its Frobenius norm supplies a conservative
+            // lower singular-value bound; never shrink the inverse-image sphere to ideal rotation.
+            double error2=0;
+            for(int i=0;i<3;i++)for(int j=0;j<3;j++)
+            {
+                double dot=0;for(int k=0;k<3;k++)dot+=(double)basis[k*3+i]*basis[k*3+j];
+                double error=dot-(i==j?1:0);error2+=error*error;
+            }
+            double errorNorm=Math.Sqrt(error2);
+            worldRadius=errorNorm<1?localRadius/Math.Sqrt(1-errorNorm):double.PositiveInfinity;
+            return double.IsFinite(worldRadius)&&localRadius>=0;
+        }
     }
     internal sealed class OpenFloorModelBounds
     {

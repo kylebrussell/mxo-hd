@@ -59,6 +59,9 @@ namespace hds.world.Structures
         }
 
         public void DecreaseSeconds(Object source, ElapsedEventArgs e)
+            => AdvanceCountdown(UpdateSubwayState);
+
+        internal void AdvanceCountdown(Action publish)
         {
             secondsLeft--;
             if (secondsLeft <= 0)
@@ -72,17 +75,16 @@ namespace hds.world.Structures
                         currentState = SUBWAY_STATE.IDLE_CLOSE_DOORS;
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
                     case SUBWAY_STATE.IDLE_CLOSE_DOORS:
                         stateByte = 0xbe;
                         secondsLeft = secondsDriveOut;
                         currentState = SUBWAY_STATE.DRIVE_OUT;
-                        UpdateSubwayState();
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
                     case SUBWAY_STATE.DRIVE_OUT:
@@ -91,7 +93,7 @@ namespace hds.world.Structures
                         currentState = SUBWAY_STATE.STAY;
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
                     case SUBWAY_STATE.STAY:
@@ -100,7 +102,7 @@ namespace hds.world.Structures
                         currentState = SUBWAY_STATE.DRIVE_IN;
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
                     case SUBWAY_STATE.DRIVE_IN:
@@ -109,7 +111,7 @@ namespace hds.world.Structures
                         secondsLeft = secondsOpenDoors;
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
                     case SUBWAY_STATE.IDLE_OPEN_DOORS:
@@ -118,7 +120,7 @@ namespace hds.world.Structures
                         secondsLeft = secondsWaitForPassengers;
                         if (currentStateByte != stateByte)
                         {
-                            UpdateSubwayState();    
+                            publish();
                         }
                         break;
 
@@ -137,14 +139,15 @@ namespace hds.world.Structures
         public void UpdateSubwayState()
         {
             var pak = new PacketContent();
-            pak.AddByte(0x01);
-            pak.AddByte(0x02);
-            pak.AddByte(stateByte);
-            pak.AddByteArray(new byte[] {0x0b, 0x00, 0x00, 0x00, 0x00});
-            // 02 03 03 00 01 02 be 0b 00 00 00 00
+            // CurrentState is update attribute 1, a four-byte state. The enclosing
+            // WorldPacket owns the sole view-list terminator; padding here ended
+            // the list before another queued view (native failures, 2026-11-14).
+            pak.AddByteArray(BuildStateUpdate(stateByte));
             // The state is for the debug log only: it used to go to every player in range as system chat
             Output.WriteDebugLog("[SUBWAY] Car " + worldObject.mxoStaticId + " in district " + worldObject.metrId + " now " + currentState);
             Store.world.SendViewUpdateToClientWhoHasStaticObjectSpawned(pak, worldObject, EntityId(worldObject));
         }
+
+        internal static byte[] BuildStateUpdate(byte state) => ObjectStates.BuildStateUpdate(6568, 0x0b00u | state);
     }
 }

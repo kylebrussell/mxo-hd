@@ -138,6 +138,7 @@ namespace hds
             {
                 lock (active)
                 {
+                    if (parent == MobiusCode.Ability) MobiusCode.Removed(this);
                     List<Active> removed = active.FindAll(a => a.Parent == parent);
                     active.RemoveAll(a => a.Parent == parent);
                     return removed;
@@ -156,6 +157,7 @@ namespace hds
             {
                 lock (active)
                 {
+                    MobiusCode.Removed(this);
                     List<Active> removed = new List<Active>(active);
                     active.Clear();
                     return removed;
