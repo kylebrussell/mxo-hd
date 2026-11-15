@@ -9,7 +9,7 @@ public class ZionCurrentFixedBodyTests
     {
         var values=new Dictionary<string,byte[]>{{"Position",new[]{1d,2,3}.SelectMany(BitConverter.GetBytes).ToArray()},{"Orientation",Convert.FromHexString(Q)},{"MissionKey",new byte[]{255,42,0,2}}};
         var definition=ObjectDefinitions.CreationAttributes(548)!;var bytes=new List<byte>{1,0,0x0c,0x24,2};bytes.AddRange(new byte[]{spawn,0xcd,0xab,2});
-        int last=Enumerable.Range(0,definition.Count).Where(i=>values.ContainsKey(definition[i].getName())).Max()/7;
+        int last=Enumerable.Range(0,definition.Count).Where(i=>values.ContainsKey(definition[i].getName())).Max()/7;bytes[^1]=checked((byte)(last+1));
         for(int group=0;group<=last;group++)
         {
             var present=Enumerable.Range(group*7,Math.Min(7,definition.Count-group*7)).Where(i=>values.ContainsKey(definition[i].getName())).ToArray();
