@@ -11,7 +11,7 @@ using G = hds.MissionOpenFloorResolver;
 namespace hds
 {
     /// <summary>Audited original interior evidence only. No runtime admission/restore/door call sites.</summary>
-    internal sealed class MissionInteriorEvidence
+    internal sealed partial class MissionInteriorEvidence
     {
         internal sealed class Signature { public ushort Goid { get; set; } public double[] Position { get; set; } public string Quaternion { get; set; } public double Rotation { get; set; } }
         internal sealed class Legacy { public Signature Signature { get; set; } public string File { get; set; } public int Line { get; set; } }
@@ -23,19 +23,21 @@ namespace hds
             public int RecordOffset { get; set; } public string RecordSha256 { get; set; } public string Raw { get; set; }
         }
         internal sealed class Group { public uint Key { get; set; } public Legacy[] Legacy { get; set; } public Occurrence[] Occurrences { get; set; } }
-        internal sealed class Edge { public ushort RegionTag { get; set; } public ushort Neighbor { get; set; } public double[] Vertex { get; set; } public int SourceOffset { get; set; } }
-        internal sealed class Polygon { public int Index { get; set; } public double[] Plane { get; set; } public Edge[] Edges { get; set; } }
+        internal sealed class Edge { public ushort RegionTag { get; set; } public ushort Neighbor { get; set; } public double[] Vertex { get; set; } public int SourceOffset { get; set; } public string Raw { get; set; } public string Reference { get; set; } }
+        internal sealed class Polygon { public int Index { get; set; } public double[] Plane { get; set; } public Edge[] Edges { get; set; } public int SourceOffset { get; set; } public string RawHeader { get; set; } internal Region Owner; internal double[] LocalPlane; internal double[][] LocalVertices; }
         internal sealed class Region
         {
             public ushort Id { get; set; } public int Ordinal { get; set; } public uint PrefabRid { get; set; } public string PrefabSha256 { get; set; }
             public bool Available { get; set; } public string Refusal { get; set; } public int[] Pivot { get; set; } public int Rotation { get; set; } public Polygon[] Polygons { get; set; }
+            public int PrefabLength { get; set; } public int InavOffset { get; set; } public string RawInavHeader { get; set; }
+            public int PortalCountOffset { get; set; } public int PortalCount { get; set; } public string RawPortalCount { get; set; } internal double[] Translation;
         }
         internal sealed class Portal
         {
             public ushort SourceRegion { get; set; } public ushort SourcePolygon { get; set; } public byte SourceEdge { get; set; }
             public ushort TargetRegion { get; set; } public ushort TargetPolygon { get; set; } public byte TargetEdge { get; set; }
             public double[][] Endpoints { get; set; } public int CountOffset { get; set; } public int Count { get; set; }
-            public int RecordOffset { get; set; } public string RecordSha256 { get; set; } public string Raw { get; set; } public uint[] DoorKeys { get; set; }
+            public int RecordOffset { get; set; } public string RecordSha256 { get; set; } public string Raw { get; set; } public uint[] DoorKeys { get; set; } public string Transition { get; set; }
         }
         internal sealed class Document
         {
@@ -93,15 +95,21 @@ namespace hds
         private static void Require(bool valid, string why) { if (!valid) throw new InvalidDataException(why); }
         private static G.Position Point(double[] a) => new G.Position(a[0], a[1], a[2]);
         private static bool Same(double a, double b) => Math.Abs(a - b) <= G.Epsilon;
-        private static double Floor(Polygon p, double x, double z) => -(p.Plane[0] * x + p.Plane[2] * z + p.Plane[3]) / p.Plane[1];
+        private static double Floor(Polygon p, double x, double z)
+        {
+            if (p.LocalPlane == null) return -(p.Plane[0] * x + p.Plane[2] * z + p.Plane[3]) / p.Plane[1];
+            double[] local = LocalPoint(p.Owner,x,z); double[] plane=p.LocalPlane;
+            return -(plane[0]*local[0]+plane[2]*local[1]+plane[3])/plane[1]+p.Owner.Translation[1];
+        }
         private static double[] Turn(double x, double y, double z, int turn)
         {
             x = (float)x; y = (float)y; z = (float)z;
             switch (turn) { case 0: return new double[] { x, y, z }; case 1: return new double[] { z, y, -x }; case 2: return new double[] { -x, y, -z }; default: return new double[] { -z, y, x }; }
         }
-        private double[] NativePoint(byte[] raw, int offset, Region region)
+        private double[] NativePoint(byte[] raw, int offset, Region region) => NativePointValues(BitConverter.ToSingle(raw,offset),BitConverter.ToSingle(raw,offset+4),BitConverter.ToSingle(raw,offset+8),region);
+        private double[] NativePointValues(double x,double y,double z,Region region)
         {
-            double[] v = Turn(BitConverter.ToSingle(raw, offset), BitConverter.ToSingle(raw, offset + 4), BitConverter.ToSingle(raw, offset + 8), region.Rotation);
+            double[] v = Turn(x,y,z,region.Rotation);
             // Native624685b0/62045e10 stores the composed translation BEFORE62111670/624cf0cb
             // adds the rotated point. Reassociation changes noninteger source positions by one float ULP.
             return Enumerable.Range(0, 3).Select(i => (double)(float)((float)v[i] + (float)((float)(region.Pivot[i] * 10) + (float)document.ParentCorner[i]))).ToArray();
@@ -129,17 +137,19 @@ namespace hds
         private void Validate()
         {
             Document d = document;
-            Require(d.Format == 1 && d.World > 0 && d.World <= 2 && d.Sector <= 0x7ff && d.OutdoorRegions >= 0 && d.SourceRid != 0 && Vector(d.ParentCorner, 3) && d.ParentCorner[1] == 0 &&
+            Require((d.Format == 1 || d.Format == 2) && d.World > 0 && d.World <= 2 && d.Sector <= 0x7ff && d.OutdoorRegions >= 0 && d.SourceRid != 0 && Vector(d.ParentCorner, 3) && d.ParentCorner[1] == 0 &&
                 Hex(d.MetrSha256, 64) && Hex(d.SidiSha256, 64) && Hex(d.NavSha256, 64) && d.SidiBufferOffset >= 0 && d.SidiBufferLength > 0, "InteriorEvidenceHeader");
             Require(d.Regions.Select(r => r.Ordinal).OrderBy(i => i).SequenceEqual(Enumerable.Range(0, d.Regions.Length)), "InteriorOriginalOrdinals");
             foreach (Region r in d.Regions)
             {
                 Require(r.Id == d.OutdoorRegions + r.Ordinal && r.PrefabRid != 0 && r.Pivot != null && r.Pivot.Length == 3 && r.Rotation >= 0 && r.Rotation < 4 && r.Polygons != null, "InteriorRegionIdentity");
                 if (!r.Available) { Require(!string.IsNullOrWhiteSpace(r.Refusal) && r.Polygons.Length == 0, "InteriorMissingResourceEvidence"); continue; }
-                Require(Hex(r.PrefabSha256, 64) && r.Polygons.Length > 0 && r.Polygons.Select(p => p.Index).SequenceEqual(Enumerable.Range(0, r.Polygons.Length)), "InteriorPolygonIdentity");
+                Require(Hex(r.PrefabSha256, 64) && (d.Format==2 || r.Polygons.Length > 0) && r.Polygons.All(p => p != null) && r.Polygons.Select(p => p.Index).SequenceEqual(Enumerable.Range(0, r.Polygons.Length)), "InteriorPolygonIdentity");
+                if(d.Format==2) ValidateFormat2Region(r);
                 foreach (Polygon p in r.Polygons)
                 {
                     Require(Vector(p.Plane, 4) && Math.Abs(p.Plane[1]) > G.Epsilon && p.Edges != null && p.Edges.Length >= 3, "InteriorPolygonPlane");
+                    if(d.Format==2) { ValidateFormat2Polygon(r,p); continue; }
                     foreach (Edge e in p.Edges)
                         Require(Vector(e.Vertex, 3) && e.SourceOffset >= 0 && e.RegionTag == 0xffff && (e.Neighbor == 0xffff || e.Neighbor < r.Polygons.Length) &&
                             (float)e.Vertex[1] == (float)Floor(p, e.Vertex[0], e.Vertex[2]), "InteriorINAVReference");
@@ -160,17 +170,24 @@ namespace hds
                     Require(Enumerable.Range(0, 3).All(i => (double)((float)((float)o.Minimum[i] + (float)o.Maximum[i]) * .5f) == o.ModelPosition[i]), "InteriorNativeBoundMidpoint");
                 }
             }
+            Require(d.Portals.All(p => p != null), "InteriorPortalIdentity");
+            if(d.Format==2) ValidateFormat2Tables();
             foreach (var table in d.Portals.GroupBy(p => p.CountOffset))
                 Require(table.All(p => p.Count == table.First().Count && p.SourceRegion == table.First().SourceRegion) &&
                     table.Count() == table.First().Count && table.Select(p => p.RecordOffset).OrderBy(i => i)
                     .SequenceEqual(Enumerable.Range(0, table.First().Count).Select(i => table.Key + 4 + i * 26)), "InteriorPortalCount");
             foreach (Portal p in d.Portals)
             {
-                Require(p != null && Known(p.SourceRegion) && Known(p.TargetRegion) && p.Endpoints != null && p.Endpoints.Length == 2 && p.Endpoints.All(v => Vector(v, 2)) && !EqualPoint(p.Endpoints[0], p.Endpoints[1]) && p.DoorKeys != null && p.DoorKeys.Distinct().Count() == p.DoorKeys.Length, "InteriorPortalIdentity");
+                Require(p != null && Known(p.SourceRegion) && Known(p.TargetRegion) && p.Endpoints != null && p.Endpoints.Length == 2 && p.Endpoints.All(v => Vector(v, 2)) && (d.Format==2 || !EqualPoint(p.Endpoints[0], p.Endpoints[1])) && p.DoorKeys != null && p.DoorKeys.Distinct().Count() == p.DoorKeys.Length, "InteriorPortalIdentity");
                 Require(p.Count > 0 && p.CountOffset >= 0 && (long)p.CountOffset + 4 + 26L * p.Count <= d.SidiBufferLength && p.RecordOffset >= p.CountOffset + 4 && (p.RecordOffset - p.CountOffset - 4) % 26 == 0 && p.RecordOffset < p.CountOffset + 4 + 26L * p.Count && Hex(p.Raw, 52) && Hex(p.RecordSha256, 64), "InteriorPortalTableBounds");
                 byte[] b = Convert.FromHexString(p.Raw);
                 Require(Convert.ToHexString(SHA256.HashData(b)).Equals(p.RecordSha256, StringComparison.OrdinalIgnoreCase) && BitConverter.ToUInt16(b, 0) == p.SourceRegion && BitConverter.ToUInt16(b, 2) == p.SourcePolygon && b[4] == p.SourceEdge && BitConverter.ToUInt16(b, 5) == p.TargetRegion && BitConverter.ToUInt16(b, 7) == p.TargetPolygon && b[9] == p.TargetEdge &&
                     p.Endpoints[0][0] == d.ParentCorner[0] + BitConverter.ToSingle(b, 10) && p.Endpoints[0][1] == d.ParentCorner[2] + BitConverter.ToSingle(b, 14) && p.Endpoints[1][0] == d.ParentCorner[0] + BitConverter.ToSingle(b, 18) && p.Endpoints[1][1] == d.ParentCorner[2] + BitConverter.ToSingle(b, 22), "InteriorPortalRecordIdentity");
+                if(d.Format==2)
+                {
+                    Require(p.Transition==ClassifyPortal(p),"InteriorPortalClassification");
+                    ValidatePortalDoors(p); continue;
+                }
                 // Missing declared prefab or exterior evidence is retained, never promoted to a walk edge.
                 if (!Available(p.SourceRegion) || !Available(p.TargetRegion)) continue;
                 Require(d.Portals.Count(q => q.SourceRegion == p.TargetRegion && q.SourcePolygon == p.TargetPolygon && q.SourceEdge == p.TargetEdge && q.TargetRegion == p.SourceRegion && q.TargetPolygon == p.SourcePolygon && q.TargetEdge == p.SourceEdge) == 1, "InteriorPortalReciprocal");
@@ -293,6 +310,10 @@ namespace hds
         }
         private static bool Inside(Polygon polygon, G.Position point)
         {
+            if(polygon.LocalVertices!=null)
+            {
+                double[] at=LocalPoint(polygon.Owner,point.X,point.Z);return InsideLocal(polygon.LocalVertices,at[0],at[1]);
+            }
             bool positive = true, negative = true;
             for (int i = 0; i < polygon.Edges.Length; i++)
             {
@@ -320,8 +341,8 @@ namespace hds
             while (queue.Count != 0)
             {
                 Node n = queue.Dequeue();
-                foreach (Edge edge in Poly(n).Edges) if (edge.Neighbor != 0xffff) Add(new Node(n.Region, edge.Neighbor));
-                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == n.Region && p.SourcePolygon == n.Polygon && !p.DoorKeys.Contains(excludedShaft)))
+                foreach (Edge edge in Poly(n).Edges) if (LocalReference(edge)) Add(new Node(n.Region, edge.Neighbor));
+                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == n.Region && p.SourcePolygon == n.Polygon && !p.DoorKeys.Contains(excludedShaft) && PortalUsable(p)))
                     Add(new Node(portal.TargetRegion, portal.TargetPolygon));
             }
             void Add(Node n) { if (Level(n, floor) && found.Add(n)) queue.Enqueue(n); }
@@ -329,7 +350,7 @@ namespace hds
         }
         private Portal ShaftPortal(Occurrence occurrence, uint key, double floor)
         {
-            Portal[] matching = document.Portals.Where(p => p.SourceRegion == occurrence.Region && p.DoorKeys.Contains(key) && Level(new Node(p.SourceRegion,p.SourcePolygon),floor)).ToArray();
+            Portal[] matching = document.Portals.Where(p => p.SourceRegion == occurrence.Region && p.DoorKeys.Contains(key) && PortalUsable(p) && Level(new Node(p.SourceRegion,p.SourcePolygon),floor)).ToArray();
             return matching.Length == 1 ? matching[0] : null;
         }
         private bool ContextEntry(StaticWorldObject raw, G.Position position, Occurrence context, Func<G.Position,double,double,MissionOpenFloorEntry.Result> calculate, out Entry entry, out string refusal)
@@ -425,8 +446,8 @@ namespace hds
                 Node node = queue.Dequeue(); if (node.Equals(end)) break;
                 if (!Level(node, floor)) continue;
                 foreach (Edge e in Poly(node).Edges)
-                    if (e.Neighbor != 0xffff) Add(new Node(node.Region, e.Neighbor), null, node);
-                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == node.Region && p.SourcePolygon == node.Polygon))
+                    if (LocalReference(e)) Add(new Node(node.Region, e.Neighbor), null, node);
+                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == node.Region && p.SourcePolygon == node.Polygon && PortalUsable(p)))
                     if (Available(portal.TargetRegion)) Add(new Node(portal.TargetRegion, portal.TargetPolygon), portal, node);
             }
             void Add(Node next, Portal portal, Node before) { if (!previous.ContainsKey(next) && Level(next, floor)) { previous.Add(next, new Step(before, portal)); queue.Enqueue(next); } }
