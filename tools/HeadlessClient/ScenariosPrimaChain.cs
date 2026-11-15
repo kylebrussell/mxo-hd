@@ -14,16 +14,24 @@ public static partial class Scenarios
     }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,int? actorLevel=null)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,int? actorLevel=null,PrimaChainEvidenceOptions? evidenceOptions=null)
     {
-        var p=await context.AddPlayerAsync(PrimaActorSeed(handle,org,startX,startZ,actorLevel));
+        var seed=PrimaActorSeed(handle,org,startX,startZ,actorLevel);
+        if(evidenceOptions?.StartingExperience is int experience)seed=seed with {Experience=experience};
+        if(evidenceOptions?.ExactZionNextFive==true)seed=ZionNextFiveFixture.BeforeMargin(seed,ids,prerequisites);
+        var p=await context.AddPlayerAsync(seed);
+        if(evidenceOptions?.ExactZionNextFive!=true)
+        {
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
+        }
+        using var diagnostics=evidenceOptions==null?null:new PrimaChainEvidence(context,p,ids,evidenceOptions);
         Exception? scenarioFailure=null;
         try
         {
         await p.EnterWorldAsync();
+        if(diagnostics!=null)await diagnostics.BaselineAsync();
         foreach(int id in ids)
         {
             var mission=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
@@ -44,9 +52,15 @@ public static partial class Scenarios
             foreach(var area in mission.Elements("phase"))
             {
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
-                var killed=new HashSet<(ushort,byte)>();
-                bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
-                await EnterMissionArea(context,p);
+                var killed=new HashSet<(ushort,byte)>();var restoredDone=new HashSet<int>();
+                bool Done(int n)=>restoredDone.Contains(n)||p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
+                if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveRide(context,p,true,diagnostics!.Note);else await EnterMissionArea(context,p);
+                if(evidenceOptions?.ExactZionNextFive==true)
+                {
+                    var next=await diagnostics!.CarryRelogAsync(id);
+                    if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await MissionCheckpoint(context,p)).Done);}
+                }
+                if(diagnostics!=null)await diagnostics.PhaseAsync(id,phase);
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
                 while(goals.Any(g=>!Done((int)g.Attribute("goal")!)))
                 {
@@ -55,6 +69,7 @@ public static partial class Scenarios
                         .OrderBy(g=>(int?)g.Attribute("optional")==1?0:1).FirstOrDefault();
                     Check.That(goal!=null,$"Mission{id} phase{phase+1} has an eligible remaining goal");
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;
+                    diagnostics?.Begin(id,phase,number,type);
                     Console.WriteLine($"  Prima{id} phase{phase+1} goal{number} {type}");
                     XElement Npc(string key)=>mission.Elements("npc").Single(n=>(string)n.Attribute("id")! == key);
                     switch(type)
@@ -63,12 +78,17 @@ public static partial class Scenarios
                         {
                             string reference=(string)goal.Attribute("npc")!;
                             var npc=Npc(type=="Loot"?reference.Split(',')[0]:reference);
-                            var view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1);
+                            var view=evidenceOptions?.ExactZionNextFive==true?await ZionNextFiveNpc(context,p,npc,viewsStart):await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1);
+                            diagnostics?.Target(type,view);
                             bool hostile=view.Attributes.TryGetValue("IsEnemy",out var enemy) && enemy[0]!=0;
                             var key=(view.ViewId,view.SpawnId);
                             if(type=="Defeat" || type=="Loot" && !killed.Contains(key) &&
                                 (!view.Attributes.TryGetValue("IsDead",out var dead) || dead[0]==0))
-                            {await DefeatMissionNpc(p,view);killed.Add(key);}
+                            {
+                                if(type=="Loot"&&evidenceOptions?.ExactZionNextFive==true){diagnostics!.End();diagnostics.Begin(id,phase,number,"Defeat");}
+                                if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveDefeat(p,view);else await DefeatMissionNpc(p,view);killed.Add(key);
+                                if(type=="Loot"&&evidenceOptions?.ExactZionNextFive==true){diagnostics!.End();diagnostics.Begin(id,phase,number,"Loot");}
+                            }
                             if(type=="Loot")
                             {
                                 // Select THIS corpse even when an earlier DefeatAll left another corpse window open.
@@ -89,7 +109,7 @@ public static partial class Scenarios
                         case "Search":case "Use":case "Put":
                         {
                             int objectId=(int)goal.Attribute("object")!;uint item=(uint?)goal.Attribute("item")??0;
-                            var view=await ZionObject(context,p,objectId);
+                            var view=evidenceOptions?.ExactZionNextFive==true?await ZionNextFiveObject(context,p,objectId,viewsStart,diagnostics!.Note):await ZionObject(context,p,objectId);diagnostics?.Target(type,view);
                             if(!MissionStaging.IsClickable(view.Goid))
                             {await p.WaitUntilAsync(()=>Done(number),"nonclickable mission object proximity",TimeSpan.FromSeconds(10));break;}
                             bool computer=MissionStaging.IsComputer(view.Goid);
@@ -130,18 +150,35 @@ public static partial class Scenarios
                             foreach(string key in ((string)goal.Attribute("npc")!).Split(','))
                             {
                                 var npc=Npc(key);
+                                if(evidenceOptions?.ExactZionNextFive==true&&(await MissionCheckpoint(context,p)).Following.Contains(ushort.Parse(key)))continue;
                                 if((int?)npc.Attribute("at")==phase+1)
-                                {await PrimaNpc(context,p,npc,viewsStart,true);await Task.Delay(800);}
+                                {var recruit=evidenceOptions?.ExactZionNextFive==true?await ZionNextFiveNpc(context,p,npc,viewsStart):await PrimaNpc(context,p,npc,viewsStart,true);diagnostics?.Target("Escort recruitment",recruit);await Task.Delay(800);}
                             }
                             string to=(string?)goal.Attribute("to")??"exit";
-                            if(to=="exit")await LeaveMissionArea(p);
+                            if(to=="exit"){if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveExit(context,p,diagnostics!.Note);else await LeaveMissionArea(p);}
                             else if(to=="hardline")await ZionUpload(p);
-                            else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);
-                            else if(to.StartsWith("object:"))await ZionObject(context,p,int.Parse(to[7..]));
+                            else if(to.StartsWith("npc:")){var destination=evidenceOptions?.ExactZionNextFive==true?await ZionNextFiveNpc(context,p,Npc(to[4..]),viewsStart):await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);diagnostics?.Target("Escort destination",destination);}
+                            else if(to.StartsWith("object:")){if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveObject(context,p,int.Parse(to[7..]),viewsStart,diagnostics!.Note);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
-                        case "Upload":await ZionUpload(p);break;
+                        case "Upload":
+                            if(evidenceOptions?.FreshUploadBooth==true)
+                            {
+                                // Opt-in218: historical creations can name a removed pre-mission booth.
+                                // Capture BEFORE movement; already-in-range/no-new-creation fails closed.
+                                int uploadCreations=p.World.CreationSnapshot().Count;
+                                await MoveForMissionTest(p,17000,495,2200);
+                                ViewCreation? uploadBooth=null;
+                                await p.WaitUntilAsync(()=>(uploadBooth=FreshPrimaUploadBooth(p.World.CreationSnapshot(),uploadCreations))!=null,
+                                    "newly received exact Mara booth after mission return (historical/currentness not inferred)",TimeSpan.FromSeconds(10));
+                                diagnostics?.Target("Upload booth",uploadBooth!);
+                                p.SkipReceived();
+                                p.SendRpc($"80 c7 {MissionNpcId(uploadBooth!)} 04 00");
+                                await p.WaitForRpcAsync("81 18");
+                            }
+                            else await ZionUpload(p);
+                            break;
                         case "DefeatAll":
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
@@ -150,21 +187,58 @@ public static partial class Scenarios
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
                                     (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();
+                            if(evidenceOptions?.ExactZionNextFive==true)
+                            {
+                                for(int attempts=0;!Done(number)&&attempts<100;attempts++)
+                                {
+                                    int observed=p.World.CreationSnapshot().Count;
+                                    var saved=await MissionCheckpoint(context,p);
+                                    var targets=ZionNextFiveFixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,saved,id,phase)
+                                        .Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToArray();
+                                    if(Done(number))break;
+                                    if(targets.Length==0)
+                                    {
+                                        await p.WaitUntilAsync(()=>Done(number)||p.World.CreationSnapshot().Count>observed,"new current hostile creation or actual wave completion",TimeSpan.FromSeconds(30));
+                                        continue;
+                                    }
+                                    var target=targets.Last();diagnostics!.Target("Current saved hostile",target);
+                                    await ZionNextFiveDefeat(p,target);killed.Add((target.ViewId,target.SpawnId));
+                                }
+                            }
+                            else
+                            {
                             for(int attempts=0;!Done(number) && attempts<100;attempts++)
                             {
                                 await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(30));
                                 if(Done(number))break;
-                                var target=Targets().Last();await DefeatMissionNpc(p,target);killed.Add((target.ViewId,target.SpawnId));
+                                var target=Targets().Last();if(evidenceOptions?.ExactZionNextFive==true)await ZionNextFiveDefeat(p,target);else await DefeatMissionNpc(p,target);killed.Add((target.ViewId,target.SpawnId));
+                            }
                             }
                             break;
                         }
                         default:throw new Exception("Unsupported Prima goal "+type);
                     }
                     await p.WaitUntilAsync(()=>Done(number),$"Prima{id} phase{phase+1} actual goal{number} done",TimeSpan.FromSeconds(20));
+                    diagnostics?.End();
+                    if(evidenceOptions?.ExactZionNextFive==true)
+                    {
+                        var next=await diagnostics!.CarryRelogAsync(id);
+                        if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await MissionCheckpoint(context,p)).Done);}
+                    }
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))await LeaveMissionArea(p);
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))
+                {
+                    if(evidenceOptions?.ExactZionNextFive==true)
+                    {
+                        string raw=await context.Database.ScalarAsync($"SELECT IFNULL(payload,'') FROM char_active_missions WHERE charId={p.CharId}");
+                        var actual=string.IsNullOrWhiteSpace(raw)?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
+                        if(actual?.Phase==phase)await ZionNextFiveExit(context,p,diagnostics!.Note);
+                        else diagnostics!.Note(new{Kind="Legacy automatic advance before explicit exit",Mission=id,CompletedPhase=phase,ActualPhase=actual?.Phase,CurrentCheckpoint=raw});
+                    }
+                    else await LeaveMissionArea(p);
+                }
                 phase++;
                 if(phase<mission.Elements("phase").Count())
                     await p.WaitUntilAsync(()=>Regex.Matches(Log(),@"\[MISSION\] Phase \d+ at a").Count>phase,"next phase staged",TimeSpan.FromSeconds(15));
@@ -172,13 +246,21 @@ public static partial class Scenarios
             }
             Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId={id}"),"Selected chain completion earned exactly once");
             Check.Equal(0,p.World.Problems.Count,"Prima chain protocol problems");
+            if(diagnostics!=null)await diagnostics.AwardAsync(id);
         }
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
+        if(evidenceOptions?.ExactZionNextFive==true)
+        {
+            int nextCursor=p.World.RpcSnapshot().Count;p.SkipReceived();p.SendRpc("80 94 05 00 01");await p.WaitForRpcAsync("80 97 05 00");
+            MissionContactChoice.CriticalIndex(p.World.RpcSnapshot().Skip(nextCursor).Select(r=>r.Bytes),ZionNextFiveFixture.NextTitle);
+        }
+        if(diagnostics!=null)await diagnostics.FinishAsync();
         }
         catch(Exception error) {scenarioFailure=error;throw;}
         finally
         {
-            if(evidenceLabel!=null)
+            if(diagnostics!=null)await diagnostics.SaveAsync(evidenceLabel??handle,scenarioFailure,prerequisites);
+            else if(evidenceLabel!=null)
             try
             {
                 string stem=Path.Combine(Path.GetTempPath(),"mxo-"+evidenceLabel+"-"+context.Database.Name);
@@ -218,4 +300,12 @@ public static partial class Scenarios
         await p.WaitUntilAsync(()=>Candidates().Count>0,name+" current source-side view",TimeSpan.FromSeconds(15));
         return Candidates().Last();
     }
+    private static ViewCreation? FreshPrimaUploadBooth(IReadOnlyList<ViewCreation> views,int cursor)
+    {
+        if(cursor<0 || cursor>views.Count)return null;
+        return views.Skip(cursor).LastOrDefault(v=>v.Goid==592 && v.ViewId>2 &&
+            v.Attributes.TryGetValue("Position",out var xyz) && xyz.Length==24 &&
+            BitConverter.ToDouble(xyz,0)==17000 && BitConverter.ToDouble(xyz,8)==530 && BitConverter.ToDouble(xyz,16)==2200);
+    }
+
 }
