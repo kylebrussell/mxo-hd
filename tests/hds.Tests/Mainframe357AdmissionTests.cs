@@ -43,14 +43,24 @@ public class Mainframe357AdmissionTests
         var site=MissionSites.Choose(Sites.Value,phase.site,17000,2300,npcs,MissionStaging.PlacesNeeded(phase),random,admissible:s=>MissionInteriorSites.Eligible(phase,s,out _,npcs))
             ??MissionSites.Choose(Sites.Value,"Any",17000,2300,npcs,MissionStaging.PlacesNeeded(phase),random,admissible:s=>MissionInteriorSites.Eligible(phase,s,out _,npcs));Assert.NotNull(site);
         var choices=MissionStaging.SelectObjects(phase,site!,random).Select(MissionOpenFloorChoice.From).ToArray();Assert.Equal((ushort)357,Assert.Single(choices).Goid);
-        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,0,site!,choices,out var poses,out string why),why);var fixedPose=Assert.Single(poses).Value;
+        // Mirror normal TryPrepare's selected elevator context, without changing chooser/source/RNG.
+        Assert.True(MissionElevatorPoses.TryCreate(site!,choices,out var elevator,out string why),why);Assert.NotNull(elevator);
+        var selected=new MissionOpenFloorPendingAdmission(1,m.id,"mainframe-fixed",0,100,MissionOpenFloorSite.From(site!),choices,null,elevator);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,0,site!,choices,out var poses,out why,selected),why);var fixedPose=Assert.Single(poses).Value;
         var state=new MissionObjectState{def=phase.objects[0],spot=choices[0].ReadSpot(),goid=357,OpenFloor=fixedPose};
-        Assert.True(MissionOpenFloorRequests.TryCreate(state.spot,357,site!,1,out var request,out why,phase,1),why);Assert.True(fixedPose.Replay(request,301206,0,state,out why),why);
+        Assert.True(MissionOpenFloorRequests.TryCreate(state.spot,357,site!,1,out var request,out why,phase,1,elevator),why);Assert.True(fixedPose.Replay(request,301206,0,state,out why),why);
         var at=MissionObjectPoses.For(state);double d2=Enumerable.Range(0,3).Sum(i=>Math.Pow(fixedPose.Standing[i]-fixedPose.Centre[i],2));Assert.True(d2<=MissionRuntime.EscortArrivalUnits*MissionRuntime.EscortArrivalUnits);
         var surface=request.Surfaces.Single(s=>s.Identity.Equals(new G.Id(fixedPose.Surface[0],fixedPose.Surface[1],fixedPose.Surface[2])));
         Assert.Equal(surface.FloorX*at.X+surface.FloorZ*at.Z+surface.FloorC,request.Model.SupportMinY+at.Y,6);
         var p=new MissionProgress(m){site=site,openFloorCheckpoint=true,openFloorResolvedPhase=0,persistenceId="mainframe-fixed",startedAt=100};p.sites.Add(site!);p.objects.Add(1,state);
-        var saved=p.Capture(23,Array.Empty<Mob>());var before=JsonSerializer.Serialize(saved,Fields);var restored=MissionProgress.RestoreFromCatalog(m,saved,new[]{site!});Assert.Equal(before,JsonSerializer.Serialize(restored.Capture(23,Array.Empty<Mob>()),Fields));
+        // MissionStaging.Stage stores this same selected witness before Capture/restore.
+        p.elevatorWitnesses.Add(elevator!.SiteFingerprint,elevator);
+        var saved=p.Capture(23,Array.Empty<Mob>());Assert.Single(saved.ElevatorWitnesses!);
+        var missing=JsonSerializer.Deserialize<MissionProgress.SavedState>(JsonSerializer.Serialize(saved,Fields),Fields)!;missing.ElevatorWitnesses=null;
+        var missingBefore=JsonSerializer.Serialize(missing,Fields);
+        var missingError=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,missing,new[]{site!}));
+        Assert.Contains("MissingMissionElevatorWitness",missingError.Message);Assert.Equal(missingBefore,JsonSerializer.Serialize(missing,Fields));
+        var before=JsonSerializer.Serialize(saved,Fields);var restored=MissionProgress.RestoreFromCatalog(m,saved,new[]{site!});Assert.Equal(before,JsonSerializer.Serialize(restored.Capture(23,Array.Empty<Mob>()),Fields));
     }
     [Theory][InlineData(false)][InlineData(true)] public void LegacyFree357FailsClosedWithoutChangingEnteredStateOrItems(bool entered)
     {
