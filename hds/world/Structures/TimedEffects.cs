@@ -36,6 +36,7 @@ namespace hds
         {
             public UInt16 Parent;
             internal Action<Subject, Active> OnExpired;
+            internal Func<bool> CallbackCurrent,CallbackStateCurrent;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -66,7 +67,7 @@ namespace hds
                 get
                 {
                     double at = (Ticks + 1) * Interval;
-                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot || Proc == TempMods.Proc.Pulse) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
+                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot || Proc == TempMods.Proc.Pulse || Proc == TempMods.Proc.SeverState) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
             }
         }
@@ -113,6 +114,26 @@ namespace hds
                 }
             }
 
+            internal bool ApplyCallback(Active owner,Active child,double now,out List<Active> replaced)
+            {
+                lock(active)
+                {
+                    replaced=null;
+                    if(!active.Contains(owner)||now>=owner.Expires||owner.CallbackStateCurrent?.Invoke()!=true)return false;
+                    if(!active.Contains(owner))return false;
+                    replaced=Apply(owner.Parent,new[]{child},now,preserveOtherTargets:true);return true;
+                }
+            }
+            internal void RollbackCallback(Active owner,Active child,IEnumerable<Active> replaced,double now)
+            {
+                lock(active)
+                {
+                    // Another apply/clear may already have retired this exact unpublished child.
+                    if(!active.Remove(child)||!active.Contains(owner))return;
+                    foreach(var old in replaced)
+                        if(old.Expires>now&&!active.Any(a=>a.Parent==old.Parent&&a.Target==old.Target))active.Add(old);
+                }
+            }
             public List<Active> RemoveParent(UInt16 parent)
             {
                 lock (active)
@@ -338,7 +359,7 @@ namespace hds
                 {
                     continue;
                 }
-                if (!subject.Ticked(tick, tick.TickDamage))
+                if (!(tick.Proc==TempMods.Proc.SeverState?AbilitySeverArteryStates.Execute(subject,tick,now):subject.Ticked(tick, tick.TickDamage)))
                 {
                     dropped.Add(tick);
                     bool wasOn = subject.Effects.Remove(tick) | expired.Remove(tick);
@@ -438,6 +459,7 @@ namespace hds
                 m.CasterName = casterName;
                 m.TargetView = targetView;
                 configure?.Invoke(m);
+                if(m.Proc==TempMods.Proc.SeverState)AbilitySeverArteryStates.Bind(subject,m);
             }
 
             // Native 625ec407..47c: positive duration, on-use (mask 4), UDB0 debuff, non-self target.
@@ -484,6 +506,7 @@ namespace hds
             Register(subject);
             foreach (Active old in replaced) AbilityConditionalControls.Term(subject, old, now);
             subject.Applied(effect, mods, immunity, replaced);
+            foreach(var marker in mods.Where(m=>m.Proc==TempMods.Proc.SeverState))AbilitySeverArteryStates.Execute(subject,marker,now);
             if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
                 EvasionShield.Refresh(shieldTarget.Context);
             return mods;

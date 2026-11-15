@@ -15,7 +15,7 @@ public abstract class UiLagAreaMode:NativeQaMode
         var evidence=new List<object>();
         foreach(string name in context.HelperNames)
         {
-            var p=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),name,name);
+            var p=await HeadlessPlayer.LoginAsync(context.Address,name,name);
             context.Helpers.Add(name,p);evidence.Add(await DebuffRadiusFixture.EnterFlaggedAsync(p));
         }
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"ui-lag-helpers.json"),JsonSerializer.Serialize(evidence,new JsonSerializerOptions{WriteIndented=true}));

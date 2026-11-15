@@ -181,7 +181,7 @@ public class CombatStyleTests
         foreach (ushort stat in new ushort[] { 115, 877, 878 })
             Assert.Equal((-50, 30f), (sever.Mods.Single(m => m.Target == stat).MinValue, sever.Mods.Single(m => m.Target == stat).Seconds));
         Assert.Equal(-10, sever.Mods.Single(m => m.Target == 519).MinValue);
-        Assert.DoesNotContain(sever.Mods, m => m.Target == 710); // RandomCombatStateChance is not modelled
+        var callback=Assert.Single(sever.Mods,m=>m.Target==710);Assert.Equal((TempMods.Proc.SeverState,10,30f,2.5),(callback.Proc,callback.MinValue,callback.Seconds,callback.Interval));
     }
 
     [Fact]

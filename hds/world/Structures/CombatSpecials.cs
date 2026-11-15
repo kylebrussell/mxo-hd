@@ -51,7 +51,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             if (thrownDots.Contains(id)) return id == SeverArtery
-                ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; RandomCombatStateChance missing"
+                ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
             if (id == BerserkerAttack) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
             if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
@@ -71,7 +71,7 @@ namespace hds
 
         // ---- timed effects on the target ----
         // The thrown DOTs' stored ThrownDOT and fixed debuffs are UDB0 catalog debuffs: AbilityHostile.Catalog executes
-        // them through TempMods.TryGet (RandomCombatStateChance's periodic random state is not modelled).
+        // them through TempMods.TryGet (including the explicitly scoped341 random-state callback).
 
         // ---- buffs on the caster ----
 
