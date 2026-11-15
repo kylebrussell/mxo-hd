@@ -56,6 +56,12 @@ public static class ZionAfter1212Fixture
             .Select(m=>CurrentNpc(views,cursor,m)).Where(v=>v!=null&&(!v.Attributes.TryGetValue("IsDead",out var dead)||dead.Length==1&&dead[0]==0))
             .Select(v=>v!).DistinctBy(v=>(v.ViewId,v.SpawnId)).ToArray();
     }
+    public static IReadOnlyList<ViewCreation> CurrentHostiles(OwnViewLifeSnapshot stream,string handle,hds.MissionProgress.SavedState saved,int mission,int phase,IReadOnlySet<ushort> currentAuthoredNpcs)
+    {
+        if(saved.Mission!=mission||saved.Phase!=phase)throw new InvalidDataException("Wrong current hostile mission/phase");
+        return saved.Mobs.Where(m=>(m.Hostile||currentAuthoredNpcs.Contains(m.Npc))&&!m.Friendly&&!m.Dead&&m.Health>0)
+            .Select(m=>ZionAfter1212FollowerReadiness.CurrentNpc(stream,handle,m,saved.Instance)).Where(v=>v!=null).Select(v=>v!).DistinctBy(v=>(v.ViewId,v.SpawnId)).ToArray();
+    }
     public static IReadOnlyList<byte[]> CompletionSummaries(IReadOnlyList<byte[]> previousSessions,IReadOnlyList<byte[]> currentSession,int cursor)
     {
         var records=previousSessions.Concat(currentSession).ToArray();if(cursor<0||cursor>records.Length)throw new ArgumentOutOfRangeException(nameof(cursor));

@@ -181,7 +181,7 @@ public static partial class Scenarios
                         case "DefeatAll":
                         {
                             var currentAuthoredNpcs=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>checked((ushort)(int)n.Attribute("id")!)).ToHashSet();
-                            List<ViewCreation> Targets()=>ZionAfter1212Fixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,ZionAfter1212Checkpoint(context,p).GetAwaiter().GetResult(),id,phase,currentAuthoredNpcs).Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToList();
+                            List<ViewCreation> Targets()=>ZionAfter1212Fixture.CurrentHostiles(p.World.CurrentOwnViewLife(),p.Handle,ZionAfter1212Checkpoint(context,p).GetAwaiter().GetResult(),id,phase,currentAuthoredNpcs).Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToList();
                             for(int attempts=0;!Done(number) && attempts<100;attempts++)
                             {
                                 await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(30));
