@@ -22,6 +22,7 @@ if (args.Length > 0 && args[0] == "--bootstrap-checks")
 if (args.Length > 0 && args[0] == "--fixture-plan")
 {
     string mode = args.Length > 1 ? args[1] : "";
+    NativeQaModes.RequireKnown(mode);
     Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode), Plan=NativeQaModes.Find(mode).Plan, SeedDisguiseTool=NativeQaFixturePlan.SeedDisguiseTool(mode), CompileArchiveValue=NativeQaFixturePlan.CompileArchiveValue },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
@@ -41,6 +42,7 @@ if (args.Length > 0 && args[0] == "--build-info")
 }
 
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
+var fixtureMode=NativeQaModes.RequireKnown(args.Length > 3 ? args[3] : "");
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
@@ -50,7 +52,6 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
     : Array.Empty<ushort>();
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
-var fixtureMode=NativeQaModes.Find(args.Length > 3 ? args[3] : "");
 var fixturePlan=fixtureMode.Plan;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -90,7 +91,7 @@ try
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
-    byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers,server.Address,database,server));
+    byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers,OwnedDatabase:database,ActualServer:server));
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,

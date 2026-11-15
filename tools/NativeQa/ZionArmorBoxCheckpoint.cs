@@ -49,7 +49,7 @@ public static class ZionArmorBoxCheckpoint
     {
         if(context.OwnedDatabase==null||context.ActualServer==null)throw new InvalidDataException("Owned live checkpoint context required");
         RequireOwnedSchema(context.OwnedDatabase.Name);
-        if(context.ActualServer.DatabaseName!=context.OwnedDatabase.Name||context.ActualServer.Address!=context.Address||context.ActualServer.HasExited)throw new InvalidDataException("Checkpoint server identity differs");
+        if(context.ActualServer.DatabaseName!=context.OwnedDatabase.Name||context.ActualServer.ConfiguredAddress!=context.Address||context.ActualServer.HasExited)throw new InvalidDataException("Checkpoint server identity differs");
         RequireSource(Environment.GetEnvironmentVariable(SourcePin),context.ActualServer.SourceAssemblySha256);
         if(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.ActualServer.SourceAssembly)))!=context.ActualServer.SourceAssemblySha256)throw new InvalidDataException("Actual checkpoint assembly changed");
     }

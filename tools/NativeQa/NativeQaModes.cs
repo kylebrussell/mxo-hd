@@ -75,6 +75,8 @@ public static class NativeQaModes
         typeof(NativeQaMode).Assembly.GetTypes().Where(t=>!t.IsAbstract && typeof(NativeQaMode).IsAssignableFrom(t))
         .Select(t=>(NativeQaMode)Activator.CreateInstance(t)!).ToDictionary(m=>m.Name,StringComparer.Ordinal));
     public static NativeQaMode Find(string name) => modes.TryGetValue(name,out var mode)?mode:modes[""];
+    public static NativeQaMode RequireKnown(string name) => modes.TryGetValue(name,out var mode)?mode:
+        throw new ArgumentException("Unknown NativeQa mode: "+name,nameof(name));
     public static IEnumerable<string> EnvironmentKeys => modes.Values.SelectMany(m=>m.Plan.EnvironmentOverrides.Keys).Distinct(StringComparer.Ordinal);
     public static IEnumerable<string> Names => modes.Keys.Order(StringComparer.Ordinal);
 }

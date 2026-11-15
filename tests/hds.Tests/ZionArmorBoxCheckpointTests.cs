@@ -54,4 +54,26 @@ public class ZionArmorBoxCheckpointTests
         var mode=new NativeQa.Modes.ZionArmorBoxCheckpointMode();Assert.True(NativeQaBootstrapChecks.HasCustomHook(mode));Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.GmCharacter110);
         Assert.Equal(28500,mode.Plan.X);Assert.Equal(14400,mode.Plan.Z);Assert.Empty(mode.Plan.AfterHelpers);
     }
+    [Fact]
+    public void ConfiguredEndpointObservesNativeOverridesWithoutChangingAllocatedAddress()
+    {
+        var server=(ServerInstance)RuntimeHelpers.GetUninitializedObject(typeof(ServerInstance));
+        using var process=new System.Diagnostics.Process{StartInfo=new System.Diagnostics.ProcessStartInfo("unused")};
+        typeof(ServerInstance).GetField("process",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(server,process);
+        var allocated=new ServerAddress("127.0.0.1",21000,22000,23000);
+        typeof(ServerInstance).GetField("<Address>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(server,allocated);
+        var env=process.StartInfo.Environment;env["MXO_BIND_ADDRESS"]="127.0.0.1";env["MXO_AUTH_PORT"]="11000";env["MXO_MARGIN_PORT"]="10000";env["MXO_WORLD_PORT"]="10000";
+        var native=new NativeQaBootstrapContext("proof",Array.Empty<string>(),new());
+        Assert.Equal(native.Address,server.ConfiguredAddress);Assert.Same(allocated,server.Address);
+        env["MXO_AUTH_PORT"]="21000";env["MXO_MARGIN_PORT"]="22000";env["MXO_WORLD_PORT"]="23000";
+        Assert.Equal((native with {Server=allocated}).Address,server.ConfiguredAddress);Assert.NotEqual(native.Address,server.ConfiguredAddress);
+    }
+    [Fact]
+    public void StrictModeLookupRejectsUnknownButPreservesOmittedAndEveryKnownPlan()
+    {
+        Assert.Throws<ArgumentException>(()=>NativeQaModes.RequireKnown("merv-critical-followup"));
+        Assert.Same(NativeQaModes.Find(""),NativeQaModes.RequireKnown(""));
+        foreach(string name in NativeQaModes.Names)Assert.Same(NativeQaModes.Find(name).Plan,NativeQaModes.RequireKnown(name).Plan);
+        Assert.Same(NativeQaModes.Find(""),NativeQaModes.Find("not-a-mode")); //legacy fallback API unchanged
+    }
 }
