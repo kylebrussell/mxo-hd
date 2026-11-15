@@ -58,7 +58,7 @@ public static partial class Scenarios
                 if(evidenceOptions?.ExactZionNextFive==true)
                 {
                     var next=await diagnostics!.CarryRelogAsync(id);
-                    if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
+                    if(!ReferenceEquals(next,p)){p=next;ends=p.Received("80 a2 00").Count;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
                 }
                 if(diagnostics!=null)await diagnostics.PhaseAsync(id,phase);
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
@@ -225,7 +225,7 @@ public static partial class Scenarios
                     if(evidenceOptions?.ExactZionNextFive==true)
                     {
                         var next=await diagnostics!.CarryRelogAsync(id);
-                        if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
+                        if(!ReferenceEquals(next,p)){p=next;ends=p.Received("80 a2 00").Count;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
                     }
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
