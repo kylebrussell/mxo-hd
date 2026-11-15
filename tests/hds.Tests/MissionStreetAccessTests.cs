@@ -1,0 +1,95 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using hds;
+using E=hds.MissionInteriorEvidence;
+using S=hds.MissionStreetAccessData;
+using G=hds.MissionOpenFloorResolver;
+namespace hds.Tests;
+
+public sealed class MissionStreetAccessTests
+{
+    static string Repo{get{string p=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!;return p;}}
+    static string DirectoryFor(string name)=>Path.Combine(Repo,"data",name,"1");
+    static (E Evidence,S Outdoor,JsonObject Raw,JsonElement Interior) Load(ushort sector)
+    {
+        E evidence=E.LoadActive(DirectoryFor("mission_interior_evidence_v2"),1,sector);
+        using var manifest=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(DirectoryFor("mission_street_access"),"manifest.json")));
+        var row=manifest.RootElement.GetProperty("Sectors").EnumerateArray().Single(r=>r.GetProperty("Sector").GetUInt16()==sector);
+        byte[] packed=File.ReadAllBytes(Path.Combine(DirectoryFor("mission_street_access"),sector+".json.gz"));
+        var outside=S.Read(packed,row.GetProperty("Sha256").GetString()!,row.GetProperty("Digest").GetString()!,evidence);
+        byte[] Decode(byte[] value){using var input=new MemoryStream(value);using var zip=new GZipStream(input,CompressionMode.Decompress);using var output=new MemoryStream();zip.CopyTo(output);return output.ToArray();}
+        var raw=JsonNode.Parse(Decode(packed))!.AsObject();using var interior=JsonDocument.Parse(Decode(File.ReadAllBytes(Path.Combine(DirectoryFor("mission_interior_evidence_v2"),sector+".json.gz"))));
+        return(evidence,outside,raw,interior.RootElement.Clone());
+    }
+    static StaticWorldObject Raw(JsonObject document,uint key)
+    {
+        var row=document["Legacy"]!.AsArray().Single(g=>g!["Key"]!.GetValue<uint>()==key)!["Rows"]![0]!["Signature"]!;
+        return new(){metrId=1,sectorID=document["Sector"]!.GetValue<ushort>(),mxoStaticId=key,staticId=key&0xfffff,type=BitConverter.GetBytes((uint)row["Goid"]!.GetValue<ushort>()),
+            exterior=row["Exterior"]!.GetValue<bool>(),pos_x=row["Position"]![0]!.GetValue<double>(),pos_y=row["Position"]![1]!.GetValue<double>(),pos_z=row["Position"]![2]!.GetValue<double>(),
+            rot=row["Rotation"]!.GetValue<double>(),quat=row["Quaternion"]!.GetValue<string>()};
+    }
+    static E.Entry Lobby(E evidence,JsonElement interior,uint key,ushort region,ushort polygon,double x,double y,double z)
+    {
+        var group=interior.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==key);
+        var own=group.GetProperty("Occurrences").EnumerateArray().Single(o=>o.GetProperty("Region").GetUInt16()==region);
+        var occurrence=JsonSerializer.Deserialize<E.Occurrence>(own.GetRawText())!;
+        return new(evidence,new E.DoorPose(key,occurrence),new E.Node(region,polygon),new G.Position(x,y,z));
+    }
+    [Theory][InlineData((ushort)209)][InlineData((ushort)879)]
+    public void OriginalPublicApproachReachesTheCapturedLobbyWithoutSendingFrontDoorToFloor(ushort sector)
+    {
+        var c=Load(sector);string before=c.Raw.ToJsonString();bool mara=sector==209;uint shaft=mara?0x0d100028u:0x36f00469u;
+        // Verbatim Claude261 pre-entry checkpoint; this is an offline diagnostic, not an earned mission replay.
+        var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(File.ReadAllText(Path.Combine(Repo,"tests","hds.Tests","Fixtures","Native261FirstDoorCheckpoint.json")),new JsonSerializerOptions{IncludeFields=true})!;
+        var captured=saved.NpcInterior.GetProperty("Witnesses")[0].GetProperty("Lobby");var at=captured.GetProperty("Standing");var node=captured.GetProperty("Node");
+        var lobby=mara?Lobby(c.Evidence,c.Interior,shaft,node.GetProperty("Region").GetUInt16(),node.GetProperty("Polygon").GetUInt16(),at[0].GetDouble(),at[1].GetDouble(),at[2].GetDouble()):Lobby(c.Evidence,c.Interior,shaft,35,10,-2600,95,-17300);
+        E.Node publicStart=mara?new(13,0):new(14,22);
+        Assert.True(c.Evidence.TryStreetAccess(c.Outdoor,lobby,publicStart,shaft,key=>Raw(c.Raw,key),out var proof,out var why),why);
+        Assert.Equal("OriginalPublicDoor",proof.Kind);Assert.NotNull(proof.Door);Assert.True(MissionInteriorDoorTypes.IsSupported(proof.Door.Goid));
+        Assert.NotEqual(shaft,proof.Door.Key);Assert.DoesNotContain(proof.Door.Goid,new ushort[]{417,419});
+        Assert.Equal(publicStart,proof.OutsidePath[0]);Assert.Equal(lobby.Node,proof.InsidePath[^1]);Assert.Equal(c.Evidence.Digest,proof.InteriorDigest);
+        Assert.Equal(mara?545:145,proof.Door.Position.Y); // Public ground-floor door, never the mission's upper-floor target.
+        if(mara)Assert.NotEqual(MissionSites.Goid(Raw(c.Raw,proof.Door.Key)),proof.Door.Goid); // Captured359/416 aliases must not select the created schema.
+        else Assert.Equal((ushort)365,proof.Door.Goid);
+        Assert.Equal(before,c.Raw.ToJsonString());Assert.Equal(101213,saved.Mission);Assert.False(saved.Flags["entered"]);Assert.Empty(saved.Items);
+    }
+    [Fact]public void UnknownRawSignatureOtherWorldOtherFloorAndMissingPublicNodeCannotSupplyAccess()
+    {
+        var c=Load(209);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
+        Assert.False(c.Evidence.TryStreetAccess(c.Outdoor,lobby,new E.Node(65000,0),0x0d100028,key=>Raw(c.Raw,key),out _,out _));
+        Assert.False(c.Evidence.TryStreetAccess(c.Outdoor,new E.Entry(c.Evidence,lobby.Door,lobby.Node,new G.Position(28500,895,14200)),new E.Node(13,0),0x0d100028,key=>Raw(c.Raw,key),out _,out _));
+        Assert.False(c.Evidence.TryStreetAccess(c.Outdoor,lobby,new E.Node(13,0),0x0d100028,key=>{var raw=Raw(c.Raw,key);raw.pos_x++;return raw;},out _,out _));
+        Assert.False(c.Evidence.TryStreetAccess(c.Outdoor,lobby,new E.Node(13,0),0x0d100028,key=>{var raw=Raw(c.Raw,key);raw.metrId=2;return raw;},out _,out _));
+    }
+    static S Modified(JsonObject document,E evidence)
+    {
+        byte[] raw=JsonSerializer.SerializeToUtf8Bytes(document);using var output=new MemoryStream();using(var zip=new GZipStream(output,CompressionLevel.Optimal,true))zip.Write(raw);
+        byte[] packed=output.ToArray();return S.Read(packed,Convert.ToHexString(SHA256.HashData(packed)),Convert.ToHexString(SHA256.HashData(raw)),evidence);
+    }
+    [Theory][InlineData("world")][InlineData("interior")][InlineData("nav")][InlineData("ordinal")][InlineData("count")][InlineData("offset")][InlineData("native")][InlineData("dropDoor")]
+    public void RawCountSourceIndexAndNativeSchemaChangesRefuse(string change)
+    {
+        var c=Load(209);var d=c.Raw;var region=d["Outdoor"]!["Regions"]![16]!;var polygon=region["Polygons"]![18]!;
+        switch(change)
+        {
+            case "world":d["World"]=2;break;case "interior":d["InteriorDigest"]=new string('A',64);break;case "nav":d["NavSha256"]=new string('A',64);break;
+            case "ordinal":polygon["Index"]=19;break;case "count":polygon["RawHeader"]="00000000000080bf000000800000c84305000000";break;
+            case "offset":polygon["SourceOffset"]=int.MaxValue;break;case "native":d["NativeDoors"]![0]!["Goid"]=d["NativeDoors"]![0]!["Goid"]!.GetValue<int>()+1;break;
+            case "dropDoor":d["NativeDoors"]!.AsArray().RemoveAt(0);break;
+        }
+        Assert.Throws<InvalidDataException>(()=>Modified(d,c.Evidence));
+    }
+    [Fact]public void MissingOriginalReverseLinksCannotBeTreatedAsDoorlessOpenings()
+    {
+        var c=Load(209);
+        foreach(var region in c.Raw["Outdoor"]!["Regions"]!.AsArray())foreach(var polygon in region!["Polygons"]!.AsArray())foreach(var edge in polygon!["Edges"]!.AsArray())
+        {
+            byte[] raw=Convert.FromHexString(edge!["Raw"]!.GetValue<string>());ushort target=BitConverter.ToUInt16(raw);
+            if(target>=38&&target<88){Array.Fill(raw,(byte)255,0,4);edge["Raw"]=Convert.ToHexString(raw);}
+        }
+        var outside=Modified(c.Raw,c.Evidence);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
+        Assert.False(c.Evidence.TryStreetAccess(outside,lobby,new E.Node(13,0),0x0d100028,key=>Raw(c.Raw,key),out _,out _));
+    }
+}
