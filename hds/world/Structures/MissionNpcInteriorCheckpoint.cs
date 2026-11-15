@@ -159,7 +159,7 @@ namespace hds
                 foreach (MissionNpcInteriorWitness witness in envelope.Witnesses) Geometry(p, witness, provider);
                 if (envelope.Pending?.Witness != null) Geometry(p, envelope.Pending.Witness, provider);
             }
-            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
+            catch (Exception ex) when (ex is InvalidDataException || ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
             { throw new MissionPlacementRestoreException(p, "Invalid fixed NPC-v2 evidence:" + ex.Message); }
         }
     }
