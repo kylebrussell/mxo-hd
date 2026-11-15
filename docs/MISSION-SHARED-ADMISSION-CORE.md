@@ -1,0 +1,13 @@
+# Shared measured-floor admission
+
+Generated missions must choose source pools that can be proved against the actual ordinary elevator arrival floor before consuming the original source shuffle. The static CSV cluster alone can describe another room. This package extracts the shared runtime changes from the longer Merovingian and Zion mission qualification branches; it does not depend on either whole-chain checklist passing.
+
+The six runtime files are byte-identical to frozen `e9c13512940bede1c376d7af04551fc9dd616e2f`. All other runtime files, data, and QA drivers remain master `2ef80a114bb5837ad0bb369e3c466e0e9e519e7a`. The separate diagnostic tick hooks are omitted. The two proxy-introduction changes overlap PR248 deliberately; this branch does not include its earned-checkpoint mode.
+
+The measured elevator context follows eligibility, NPC allocation, source compatibility and selected geometry. The per-site pure region cache includes the full current witness, NAV revision, data path and catalog fingerprint. Generic generated Safe objects reserve supported source1410 to GO552 while preserving same-kind native binding, the original shuffle draw count and order, and immutable committed pending choices. No static is moved, hidden or removed. No use range, geometry budget, timeout, mission seed, target identity or authored reward changes.
+
+Tests include the original failed source and immutable pending restore, actual chooser/witness/geometry flow, generated Safe matching and capacity, measured-room cache invalidation and admission-aware proxy introduction. The exact later Zion regression retains decimal door1205862983 (`47e00247`) and source1205862697 (`47e00129`); older narrative hex labels were wrong, and original raw payloads are unchanged.
+
+Validation for this extracted branch is pending. Historical partial chain evidence is separately attributed in the handoff. It is not a READY or native PASS declaration.
+
+For Claude's native pass, use the existing `interior-admission-machines`, `interior-admission-merv`, `interior-admission-source-domain` and `interior-admission-posters` modes, CSR_Tester110 only. Inspect the exact read-only fixture plan first. The modes disclose stationary mobs, disabled ambient aggro, earlier receipt seeds, high disposable health and movement aids. Use ordinary elevator and object/NPC radial interactions; inspect the prop model before use. The checklist stops at its specified authored interaction and makes no whole-mission, payout or unaided combat claim. Keep the exact runtime source pin required by the existing headless admission cases. Claude alone handles the native client lock, reset and merge.
