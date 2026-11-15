@@ -203,6 +203,7 @@ public sealed class ServerInstance : IDisposable
         string serverDll = FindServerDll(repositoryRoot);
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
+        EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(serverDll)!,workingDirectory,databaseName,extraEnvironment);
         if (missionFixture != null)
         {
             // A fixture replaces only this disposable server's mission catalog. Production data stays untouched.
@@ -249,10 +250,11 @@ public sealed class ServerInstance : IDisposable
         {
             foreach ((string key, string value) in extraEnvironment)
             {
-                if(key!="HEADLESS_HARDLINE_UPLOAD_REQUIRED")start.Environment[key] = value;
+                if(key!="HEADLESS_HARDLINE_UPLOAD_REQUIRED" && key!=EngageFoesFixture.InitialNpcsEnvironment)start.Environment[key] = value;
             }
         }
 
+        start.Environment.Remove(EngageFoesFixture.InitialNpcsEnvironment);
         Process process = new() { StartInfo = start };
         ServerInstance server = new(process, address, workingDirectory);
         process.OutputDataReceived += (_, line) => server.Capture(line.Data);
