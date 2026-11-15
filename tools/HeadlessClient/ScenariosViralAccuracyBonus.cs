@@ -18,7 +18,7 @@ public static partial class Scenarios
             OwnedLoadedAbilities=ViralAccuracyBonusFixture.Abilities.Select(id=>(id,(ushort)50)).ToArray()});
         var enemy=await context.AddPlayerAsync(NearNpc("ViralBonusEnemy",1100) with{Level=50,Organization=2,Health=5000,MaxHealth=5000});
         HeadlessPlayer actor=caster; // Keep NPC retaliation/interlock separate from the legal PvP cast test.
-        var observations=new List<object>();bool passed=false;
+        var observations=new List<object>();var defenses=new Dictionary<string,int>();bool passed=false;
         try
         {
             await caster.EnterWorldAsync();await pvp.EnterWorldAsync();await enemy.EnterWorldAsync();
@@ -40,10 +40,15 @@ public static partial class Scenarios
             {
                 int log=context.Server.DebugLog().Length;actor.SkipReceived();
                 Cast(actor,33,target.ViewId);await actor.WaitForRpcAsync("80 ac 21 00");
-                await actor.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[FREECAST-VIRAL] ability=33 source="+actor.Handle+" target="+name+" inputs="+expectedInput+"/0"),
+                await actor.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[FREECAST-VIRAL] ability=33 source="+actor.Handle+" target="+name+" inputs="+expectedInput+"/"),
                     "Normal free-cast consumes the expected accuracy input",TimeSpan.FromSeconds(8));
                 var line=context.Server.DebugLog()[log..].Split('\n').Single(l=>l.Contains("[FREECAST-VIRAL] ability=33 source="+actor.Handle+" target="+name));
-                observations.Add(new{Target=name,Input=expectedInput,Line=line});
+                var totals=Regex.Match(line,@"inputs=(-?\d+)/(-?\d+) rolls=(-?\d+)/(-?\d+)");
+                Check.That(totals.Success,"Production attack and defense totals are explicit");
+                int defense=int.Parse(totals.Groups[2].Value);
+                if(defenses.TryGetValue(name,out int prior))Check.Equal(prior,defense,"The target's actual defense is unchanged by caster loadout");
+                else defenses.Add(name,defense);
+                observations.Add(new{Target=name,Input=expectedInput,Defense=defense,Line=line});
                 await actor.WaitForRpcAsync("80 bd 01 aa 02 00 00 00 80 40 00",TimeSpan.FromSeconds(10));
                 await actor.WaitForRpcAsync("80 bd 01 21 00 04 00 00 c0 40 00",TimeSpan.FromSeconds(10));
             }
