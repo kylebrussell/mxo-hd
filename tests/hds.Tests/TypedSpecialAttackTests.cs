@@ -39,12 +39,12 @@ public class TypedSpecialAttackTests
         Assert.Equal(ordinary,AbilityStats.Attack(c,false));
     }
     [Fact]
-    public void DirectCapturedViralBuffWorksWithoutInventingRunProgramLinkMath()
+    public void DirectViralBuffAndOursPercentageConsumerRemainSeparateFromMelee()
     {
         var c=Client();Assert.True(AbilityBuffs.Apply(c,314));
         Assert.Equal(108,AbilityStats.SpecialAttack(c,Move(33)));
-        Stat(c,1147,100);Assert.Equal(108,AbilityStats.SpecialAttack(c,Move(33)));
-        Stat(c,342,10000);Assert.Equal(259,AbilityStats.SpecialAttack(c,Move(33)));
+        Stat(c,1147,100);Assert.Equal(158,AbilityStats.SpecialAttack(c,Move(33)));
+        Stat(c,342,10000);Assert.Equal(309,AbilityStats.SpecialAttack(c,Move(33)));
         Assert.Equal(0,AbilityStats.Attack(c,false));
         Assert.True(AbilityCatalog.Find(33)!.CastSeconds>0); // admission deliberately remains non-queued
     }
