@@ -38,3 +38,12 @@ Frozen source `4daec74b5ce5466ebc20268a18e1e98beab6d7ef` passed `pvp-opponents-e
 The ordinary opening round dealt 40 damage from 5000 HP. Victim, attacker and observer each received the corresponding current-operation 4960 HP value. Same-organization refusal, ordinary paired withdrawal, absence of duel events, unchanged database flags zero and clean parsing passed. The three sessions retained 50/47/34 RPCs and 10/9/8 view lists, with zero parser problems each. These are observed results, not fixed future damage expectations.
 
 Raw proof: `C:/Users/russe/AppData/Local/Temp/mxo-pvp-opponents-mxotest_run_1_0a4105b2b2.json`, SHA256 `45F803158ACC34A68CF1267D11CBD3E46FACE1EFA89343A51BC3DEADB265771F`. Driver output: `mxo-pvp-opponents-4daec74b-driver.log` in the same directory. Both server and disposable database exited through the harness disposal path; no owned server process remained. Native CSR entry, menu availability and UI observation remain pending.
+## Current master refresh (2026-11-15)
+
+Frozen producer `cf4d02229c815d38ff6b49e9b38d0d98a2d9dfd6` uses the bootstrap context's actual server address. The former fixed-port login is gone. On master `93b5033d`, 6 focused tests and all 5,836 tests passed, with actual Debug/Release builds and read-only plans/provenance.
+
+One actual `AfterStartAsync` run passed in 25.10 seconds, held exit 0, against dynamic ports 51777/51778/62901. All four helpers entered and their opponent observations were written. One separate `pvp-opponents-entry` scenario passed in 38.5 seconds, held exit 0: same-organisation refusal, ordinary non-duel opening damage of 50 (5000 to 4950 in victim/attacker histories), and normal paired withdrawal. All three parsers reported no problems. Native CSR entry and client menus remain for Claude.
+
+Actual Debug source SHA256 `D3217307089FCF518614FEA4C4581DC53D1EEEBDA1913B1022D9BA42E7639A2F`; Release driver `BD4E277C4E50B627B9F858321086456D783C78A3812A5517F94F8CE472DFE805`; Release NativeQa `DC11FE074450671F12DD0DED9F41E85E8745B0EF8DEFFAA30F0CE6FF51C8DF91`. Raw scenario proof SHA256 `1CB1583F788DB7B0F4D965948F262658EF708D535C43889CBAD3E350C65D1109`.
+
+Proof and source guards are under `Temp/mxo-pr-triage-20261115`. Exact schemas `mxotest_bootstrap_45e15b5499` and `mxotest_run_1_09ca72bb62` are absent. Independent checks found all 9 + 9 recorded process creation identities gone, with no PID reuse; polling cannot establish complete short-lived process history. No client lock, native launch, main-database reset or full current-mode matrix was performed by these checks.
