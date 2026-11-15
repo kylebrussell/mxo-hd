@@ -27,14 +27,16 @@ namespace hds
             {Source=RangeSource.InitialClientFallback;StoredMaxDistance=0;}
             public static Profile InitialClient400(ushort goid,byte use,OpenFloorPoint half,string evidence)
             {
-                if(goid!=3||(use!=4&&use!=5&&use!=8))throw new ArgumentException("UnprovenInitialFallbackProfile");
+                if((goid!=3&&goid!=357)||(use!=4&&use!=5&&use!=8))throw new ArgumentException("UnprovenInitialFallbackProfile");
                 return new Profile(goid,use,half,evidence);
             }
             public static Profile InitialComputerActions(IEnumerable<byte> uses,OpenFloorPoint half,string evidence)
+                =>InitialComputerActions(3,uses,half,evidence);
+            public static Profile InitialComputerActions(ushort goid,IEnumerable<byte> uses,OpenFloorPoint half,string evidence)
             {
                 byte[] actions=(uses??Array.Empty<byte>()).Distinct().OrderBy(x=>x).ToArray();
                 if(actions.Length==0||actions.Any(x=>x!=4&&x!=5&&x!=8))throw new ArgumentException("UnprovenComputerActionProfile");
-                var result=InitialClient400(3,actions[0],half,evidence);result.Uses=Array.AsReadOnly(actions);return result;
+                var result=InitialClient400(goid,actions[0],half,evidence);result.Uses=Array.AsReadOnly(actions);return result;
             }
             public float LowerBound=>Source==RangeSource.InitialClientFallback?400f:Math.Max(StoredMaxDistance,(float)((float)HalfExtents.Z+65f));
         }

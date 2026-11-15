@@ -8,8 +8,8 @@ namespace hds
     internal static class MissionOpenFloorAdmission
     {
         internal const string UnavailableMessage="The next mission area cannot be placed safely. Retry the exit or abort the mission.";
-        internal static bool Requires(MissionPhase phase) => phase?.site!=null&&phase.objects.Any(o=>new[]{"Box","Computer","Safe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase));
-        internal static bool Target(ushort goid,StaticWorldObject raw) => raw?.type!=null&&raw.type.Length>=2&&(goid==3||goid==548||goid==552)&&MissionSites.Goid(raw)!=0&&MissionSites.Goid(raw)!=goid;
+        internal static bool Requires(MissionPhase phase) => phase?.site!=null&&phase.objects.Any(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase));
+        internal static bool Target(ushort goid,StaticWorldObject raw) => raw?.type!=null&&raw.type.Length>=2&&(goid==3||goid==357||goid==548||goid==552)&&MissionSites.Goid(raw)!=0&&MissionSites.Goid(raw)!=goid;
         internal static string MeshFingerprint(IReadOnlyList<MissionOpenFloorResolver.Surface> surfaces) => MissionOpenFloorSite.Hash(JsonSerializer.Serialize(
             surfaces.OrderBy(s=>s.Identity).Select(s=>new {s.Identity.Sector,s.Identity.Region,s.Identity.Polygon,s.FloorX,s.FloorZ,s.FloorC,
                 Points=s.Vertices.Select(p=>new[]{p.X,p.Z}).ToArray()}).ToArray()));

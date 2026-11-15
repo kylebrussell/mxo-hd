@@ -14,10 +14,10 @@ namespace hds
             if(!MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out string anchorEvidence)){refusal="MissingOrAmbiguousAuditedAnchor";return false;}
             if(!MissionOpenFloorSourceModels.TryGet(world,MissionSites.Goid(raw),out var presence,out string modelEvidence)){refusal="MissingSourceModelEvidence";return false;}
             if(!MissionOpenFloorProfiles.TryModel(concrete,out var model)||!MissionOpenFloorProfiles.TryUsable(concrete,out var usable)){refusal="UnprovenProxyProfile";return false;}
-            if(concrete==3)
+            if(concrete==3||concrete==357)
             {
                 if(!TryComputerActions(phase,objectId,out byte[] actions)){refusal="UnprovenComputerActions";return false;}
-                usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(actions,usable.HalfExtents,"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; "+
+                usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(concrete,actions,usable.HalfExtents,(concrete==3?"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; ":"GO357 sameclass20 Usable5 Hack4/Get5/Put8 omitted MaxDistance; native initial configurable fallback400; ")+
                     (phase.missionObjectives.Any(o=>o.objectId==objectId)?"actions required by existing phase goals":"no direct goal: sourced all3 geometric owner profile only, no offered actions inferred"));
             }
             var entry=MissionOpenFloorEntry.Calculate(world,new G.Position(site.elevatorDoor.pos_x,site.elevatorDoor.pos_y,site.elevatorDoor.pos_z),site.CentreX,site.CentreZ,"unchanged normal Ride entry at exact selected site");

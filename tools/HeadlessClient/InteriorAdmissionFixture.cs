@@ -18,8 +18,17 @@ public static class InteriorAdmissionFixture
         ZionFollowupFixture.Prerequisites.Concat(ZionFollowupFixture.Missions).Concat(new[]{101208}).ToArray(),0,1,0,0x0d100401,0x0d100402);
     public static readonly InteriorAdmissionCase Posters=new("interior-admission-posters",201202,"Poster Hunt",2,201202,17000,495,2300,
         PosterHuntFixture.Prerequisites,0,1,0,0x0d1003bb,0x0d1003dc,17,3,new uint[]{0x0d1003dc,0x0d100314,0x0d1002f1});
-    public static readonly InteriorAdmissionCase[] Cases={Machines,Merv,Zion,Posters};
-    public static string Seed(InteriorAdmissionCase c,long character)=>"INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",c.Prerequisites.Select(id=>$"({character},{id})"));
+    public static readonly InteriorAdmissionCase Mainframe=new("interior-admission-mainframe357",301206,"Electromagnetic",3,301101,17000,495,2300,
+        Merv.Prerequisites.Concat(new[]{301203,301204,301205}).ToArray(),0,3,0,0,0x22601fcb);
+    public static readonly InteriorAdmissionCase[] Cases={Machines,Merv,Zion,Posters,Mainframe};
+    public static void ValidateReceipts(InteriorAdmissionCase c)
+    {
+        if(c.Prerequisites.Length==0||c.Prerequisites.Any(x=>x<=0)||c.Prerequisites.Contains(c.Mission)||c.Prerequisites.Distinct().Count()!=c.Prerequisites.Length)throw new InvalidDataException("Only unique earlier receipts may be seeded");
+    }
+    public static string Seed(InteriorAdmissionCase c,long character)
+    {
+        ValidateReceipts(c);return "INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",c.Prerequisites.Select(id=>$"({character},{id})"));
+    }
     public static IReadOnlyDictionary<string,string> Environment(InteriorAdmissionCase c)=>new Dictionary<string,string>{["MXO_PACKET_LOG"]="1",["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=c.LayoutSeed.ToString(System.Globalization.CultureInfo.InvariantCulture),["MXO_MOB_WANDER"]="0",["MXO_MOBS"]="test",["MXO_AGGRO"]="0"};
     public static uint DoorAt(IEnumerable<string> rows,double[] pose)
     {

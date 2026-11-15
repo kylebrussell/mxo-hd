@@ -8,6 +8,7 @@ public static partial class Scenarios
 {
     private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c)
     {
+        InteriorAdmissionFixture.ValidateReceipts(c); // Before AddPlayerAsync or any fixture SQL mutation.
         var server=context.Server;ServerInstance? coldServer=null;var packetLogs=new List<object>();
         InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(server.SourceAssembly))));
         var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
@@ -154,6 +155,15 @@ public static partial class Scenarios
                 target=afterCold;originalSet=FixedSet(target);originalSite=SiteSet(target);
             }
 
+            int mainframeGoalCursor=p.World.RpcSnapshot().Count;
+            if(c.Mission==301206)
+            {
+                Check.That(c.Prerequisites.All(id=>id!=301206)&&c.Prerequisites.Distinct().Count()==c.Prerequisites.Length,"Mainframe only earlier unique receipts");
+                step="mainframe-normal-talk-give";var npc=await Npc(1);int cursor=p.World.RpcSnapshot().Count;
+                p.SendRpc($"80 c7 {MissionNpcId(npc)} 09 00");await Goal(1,cursor);
+                npc=await Npc(1);Check.That(npc.Attributes.TryGetValue("TakerActiveTracker",out var tracker)&&tracker.Any(x=>x!=0),"Churyumov offers ordinary Give");
+                cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(npc)} 0e 00");await Goal(2,cursor);
+            }
             for(int objectId=1;objectId<=c.Objects;objectId++)
             {
             var obj=target.Objects.Single(x=>x.Id==objectId);
@@ -192,6 +202,23 @@ public static partial class Scenarios
             ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,centre))!=null,"actual03 target body at unchanged centre",TimeSpan.FromSeconds(15));
             Check.Equal(quaternion.ToUpperInvariant(),Convert.ToHexString(body!.Attributes["Orientation"]),"Actual03 target full quaternion");
             var at=await Saved();var current=at.Objects.Single(x=>x.Id==objectId);Check.Equal(originalSet,FixedSet(at),"Whole authored fixed source/DTO set survives each approach");Check.Equal(originalSite,SiteSet(at),"Exact accepted site/history/waypoint survive each approach");Check.Equal(originalSource,JsonSerializer.Serialize(current.Spot,fields),"Approach never rewrites raw source");Check.Equal(originalWitness,JsonSerializer.Serialize(current.OpenFloor,fields),"Approach never replans fixed placement");
+            if(c.Mission==301206)
+            {
+                step="mainframe-authored-escort";
+                double D2(double[] point)=>Enumerable.Range(0,3).Sum(i=>(point[i]-centre[i])*(point[i]-centre[i]));
+                Check.That(D2(standing)<=MissionRuntime.EscortArrivalUnits*MissionRuntime.EscortArrivalUnits,"Published standing satisfies actual object escort radius700, independently of usable400");
+                await Goal(3,mainframeGoalCursor);var arrived=await Saved();var follower=arrived.Mobs.Single(m=>m.Npc==1&&!m.Dead);
+                Check.That(D2(new[]{follower.X,follower.Y,follower.Z})<=MissionRuntime.EscortArrivalUnits*MissionRuntime.EscortArrivalUnits,"Living Churyumov also reaches actual object escort radius700");
+                Check.Equal(originalSource,JsonSerializer.Serialize(arrived.Objects.Single(o=>o.Id==objectId).Spot,fields),"Escort preserves source");
+                Check.Equal(originalWitness,JsonSerializer.Serialize(arrived.Objects.Single(o=>o.Id==objectId).OpenFloor,fields),"Escort preserves witness");
+                Check.Equal(1,p.World.RpcSnapshot().Skip(mainframeGoalCursor).Count(r=>BytePattern.Parse("80 a0 03 06 00 01").IsMatch(r.Bytes)),"Escort goal emitted exactly once");
+                Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId=301206"),"Narrow escort proof stops before ordinary exit, no mission receipt");
+                Check.Equal(baselineXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"No mission or kill XP in narrow escort proof");
+                Check.Equal(baselineInfo,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"No mission or corpse cash in narrow escort proof");
+                Check.Equal(0,p.World.Problems.Count,"Mainframe parser healthy");
+                proof.Add(new{Step=step,PublishedStanding=standing,Centre=centre,EscortRadius=MissionRuntime.EscortArrivalUnits,Follower=new[]{follower.X,follower.Y,follower.Z},RawSource=originalSource,Witness=originalWitness,body.ViewId,body.SpawnId,NativeWalkProven=false});
+                continue;
+            }
             string action=c.Item==0?"Open":"Take";byte use=ObjectStates.UseNumber(body.Goid,action)??throw new ScenarioFailure("No actual authored native use: "+action);
             uint EnabledState()
             {
