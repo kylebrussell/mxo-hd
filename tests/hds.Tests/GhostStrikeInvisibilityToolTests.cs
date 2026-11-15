@@ -20,8 +20,11 @@ public class GhostStrikeInvisibilityToolTests
     }
     [Fact] public void CurrentOwnedBeltSlotIsDecodedFromMarginInventoryAndAmbiguityIsRejected()
     {
-        var row=new byte[10];BitConverter.GetBytes((ushort)40).CopyTo(row,0);BitConverter.GetBytes(460u).CopyTo(row,2);
+        //Literal actual source-wire row: slot1 + GOID4 + descriptor4; not a decoder-shaped mock.
+        var row=Convert.FromHexString("28CC0100000000000C");
+        Assert.Equal(NumericalUtils.uint16ToByteArrayShort(40).Concat(BitConverter.GetBytes(460u)).Concat(new byte[]{0,0,0,0x0c}),row);
         Assert.Equal((byte)40,GhostStrikeInvisibilityTool.OwnedSlot(row));
+        Assert.Throws<InvalidDataException>(()=>GhostStrikeInvisibilityTool.OwnedSlot(new byte[10]));
         Assert.Throws<InvalidDataException>(()=>GhostStrikeInvisibilityTool.OwnedSlot(row[..^1]));
         Assert.Throws<ScenarioFailure>(()=>GhostStrikeInvisibilityTool.OwnedSlot(row.Concat(row).ToArray()));
         row[0]=41;Assert.Throws<ScenarioFailure>(()=>GhostStrikeInvisibilityTool.OwnedSlot(row));

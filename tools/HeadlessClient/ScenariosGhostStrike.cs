@@ -24,6 +24,7 @@ public static partial class Scenarios
         try
         {
             await caster.EnterWorldAsync();await victim.EnterWorldAsync();await observer.EnterWorldAsync();
+            proof.Add(new{Stage="margin-before-tool-validation",Actors=new[]{caster,victim,observer}.Select(p=>new{p.CharId,CharacterData=p.CharacterData.ToDictionary(k=>(int)k.Key,v=>Convert.ToHexString(v.Value))}).ToArray()});
             var target=await caster.WaitForViewNamedAsync(victim.Handle);var observed=await observer.WaitForViewNamedAsync(caster.Handle);
             int observerFlagCursor=observer.World.ViewSnapshot().Count;
             foreach(var p in new[]{caster,victim}){p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
@@ -106,7 +107,7 @@ public static partial class Scenarios
             catch(Exception error){persistenceFailure=error.ToString();}
             await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{passed,stage,failure,SeedProfiles=profiles,owned,proof,Database=context.Database.Name,ServerPid=context.Server.ProcessId,
                 SourceAssembly=context.Server.SourceAssembly,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))),Environment=GhostStrikeFixture.Environment,
-                Actors=new[]{caster,victim,observer}.Select(p=>new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray()}),FinalPersistence=finalPersistence,PersistenceFailure=persistenceFailure,
+                Actors=new[]{caster,victim,observer}.Select(p=>new{p.Handle,p.CharId,CharacterData=p.CharacterData.ToDictionary(k=>(int)k.Key,v=>Convert.ToHexString(v.Value)),Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray()}),FinalPersistence=finalPersistence,PersistenceFailure=persistenceFailure,
                 Debug=context.Server.DebugLog()},new JsonSerializerOptions{WriteIndented=true}));
             await File.WriteAllTextAsync(stem+".log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
         }

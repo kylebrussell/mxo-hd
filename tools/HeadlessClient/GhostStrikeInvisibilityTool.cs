@@ -15,9 +15,10 @@ public static class GhostStrikeInvisibilityTool
     }
     public static byte OwnedSlot(byte[] inventory)
     {
-        if(inventory.Length%10!=0)throw new InvalidDataException("Malformed Margin inventory rows");
-        var slots=Enumerable.Range(0,inventory.Length/10).Where(i=>BitConverter.ToUInt32(inventory,i*10+2)==Goid)
-            .Select(i=>BitConverter.ToUInt16(inventory,i*10)).ToArray();
+        //MarginClient.loadInventory uses uint16ToByteArrayShort: one slot byte, GOID4, descriptor4.
+        if(inventory.Length%9!=0)throw new InvalidDataException("Malformed Margin inventory rows");
+        var slots=Enumerable.Range(0,inventory.Length/9).Where(i=>BitConverter.ToUInt32(inventory,i*9+1)==Goid)
+            .Select(i=>(ushort)inventory[i*9]).ToArray();
         Check.That(slots.Length==1&&slots[0]==Slot,"Exactly one current owned belt at the declared ordinary bag slot");return Slot;
     }
     public static byte[] Request(byte slot)

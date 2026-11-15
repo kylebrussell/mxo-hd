@@ -17,7 +17,10 @@ public sealed class GhostStrikeMode:NativeQaMode
         // Prove the identical ordinary owned-tool path on QAFriend before a hostile logs in.
         // CSR remains reserved for native login; the observer is toggled off before ready.
         var observer=await HeadlessPlayer.LoginAsync(context.Address,"QAFriend","QAFriend");
-        context.Helpers.Add("QAFriend",observer);await observer.EnterWorldAsync();
+        context.Helpers.Add("QAFriend",observer);
+        await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"QAFriend-margin-before-validation.json"),System.Text.Json.JsonSerializer.Serialize(
+            observer.CharacterData.ToDictionary(k=>(int)k.Key,v=>Convert.ToHexString(v.Value)),new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        await observer.EnterWorldAsync();
         var grant=await GhostStrikeInvisibilityTool.ActivateAsync(observer);
         await GhostStrikeInvisibilityTool.DeactivateAsync(observer);
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"invisibility-belt-ready.json"),System.Text.Json.JsonSerializer.Serialize(new{
