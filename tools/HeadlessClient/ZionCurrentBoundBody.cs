@@ -85,10 +85,12 @@ public static class ZionCurrentBoundBody
         var candidates=live.Values.Where(v=>v.Binding==o.Spot.mxoStaticId).ToArray();
         if(candidates.Length!=1)throw new InvalidDataException("Expected exactly one live current source binding");
         var selected=candidates[0];var view=selected.View;
-        byte[] expectedPosition=new[]{o.Spot.pos_x,o.Spot.pos_y,o.Spot.pos_z}.SelectMany(BitConverter.GetBytes).ToArray();
+        // The raw source stays immutable; native bound326 creation uses its audited bounds centre.
+        var pose=MissionObjectPoses.For(new MissionObjectState{goid=o.Goid,spot=o.Spot});
+        byte[] expectedPosition=new[]{pose.X,pose.Y,pose.Z}.SelectMany(BitConverter.GetBytes).ToArray();
         byte[] expectedKey={0xff,(byte)scope.Instance,(byte)(scope.Instance>>8),2};
         if(!selected.Known||view.Goid!=o.Goid||!view.Attributes.TryGetValue("Position",out var p)||!p.SequenceEqual(expectedPosition)||
-            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(Convert.FromHexString(o.Spot.quat))||
+            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(pose.Orientation)||
             !view.Attributes.TryGetValue("MissionKey",out var key)||!key.SequenceEqual(expectedKey)||!stream.Current)
             throw new InvalidDataException("Current live bound body pose/key/generation mismatch");
         return new(view,stream.Life,selected.Birth,selected.Binding!.Value,selected.Raw);

@@ -85,4 +85,16 @@ public sealed class ZionCurrentBoundBodyTests
         _=ZionCurrentBoundBody.Require(Stream(Own(),birth),ZionCurrentBoundBody.Capture(state,1),state);
         Assert.Equal(raw,birth);Assert.Equal(source,JsonSerializer.Serialize(state,new JsonSerializerOptions{IncludeFields=true}));
     }
+
+    [Fact] public void ActualNative326BoundsCentreMatchesWithoutChangingRawDescriptor()
+    {
+        var state=State();var obj=state.Objects.Single();obj.Goid=326;obj.Spot=new(){metrId=1,sectorID=209,mxoStaticId=219153140,staticId=756,type=BitConverter.GetBytes((ushort)326),pos_x=25430,pos_y=2145,pos_z=15750,rot=180,quat="0000000000000000000000000000803f"};
+        string before=JsonSerializer.Serialize(state,MissionProgress.SaveJson);
+        byte[] actual=Convert.FromHexString("0100084601F402100D16CDAB04C601000000000000803F00000000000000000000000080D5D840000000000040A0400000000000C3CE4004FF320002180000");
+        var scope=ZionCurrentBoundBody.Capture(state,1);var found=ZionCurrentBoundBody.Require(Stream(Own(),actual),scope,state);Assert.Equal((ushort)24,found.View.ViewId);Assert.Equal((byte)22,found.View.SpawnId);
+        Assert.Equal(2080d,BitConverter.ToDouble(found.View.Attributes["Position"],8));Assert.Equal("000000000000803F0000000000000000",Convert.ToHexString(found.View.Attributes["Orientation"]));
+        Assert.Equal(before,JsonSerializer.Serialize(state,MissionProgress.SaveJson));
+        byte[] wrong=(byte[])actual.Clone();int y=wrong.AsSpan().IndexOf(found.View.Attributes["Position"])+8;BitConverter.GetBytes(2145d).CopyTo(wrong,y);
+        Assert.Throws<InvalidDataException>(()=>ZionCurrentBoundBody.Require(Stream(Own(),wrong),scope,state));
+    }
 }
