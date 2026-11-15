@@ -6,6 +6,15 @@ using NativeQa.Modes;
 namespace hds.Tests;
 public class ZionNextFiveTests
 {
+    [Fact] public void KillOracleReadsTheActualNpcSingleByteLevelAndRejectsMalformedWidths()
+    {
+        ViewCreation Body(ushort goid,byte[] level)=>new(8,goid,6,new Dictionary<string,byte[]>{{"Level",level}});
+        Assert.Equal(50,ZionNextFiveFixture.NpcLevel(Body(599,new byte[]{0x32})));
+        Assert.Equal(60,ZionNextFiveFixture.NpcLevel(Body(599,new byte[]{0x3c})));
+        foreach(var level in new[]{Array.Empty<byte>(),new byte[]{0},new byte[]{50,0}})
+            Assert.Throws<InvalidDataException>(()=>ZionNextFiveFixture.NpcLevel(Body(599,level)));
+        Assert.Throws<InvalidDataException>(()=>ZionNextFiveFixture.NpcLevel(Body(12,new byte[]{50})));
+    }
     [Fact] public void ExactProfileSeedsEarlierReceiptsBeforeMarginAndRejectsSelectedOrNextGrants()
     {
         var seed=ZionNextFiveFixture.BeforeMargin(new CharacterSeed("QA"),ZionNextFiveFixture.Missions,ZionNextFiveFixture.Prerequisites);

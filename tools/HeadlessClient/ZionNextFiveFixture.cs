@@ -23,6 +23,12 @@ public static class ZionNextFiveFixture
             v.Attributes.TryGetValue("Orientation",out var orientation)&&Convert.ToHexString(orientation)==obj.OpenFloor.Quaternion);
     }
     public const string NextTitle="It's Hard To Find Good Help";
+    public static byte NpcLevel(ViewCreation view)
+    {
+        if(view.Goid!=599||!view.Attributes.TryGetValue("Level",out var level)||level.Length!=1||level[0]==0)
+            throw new InvalidDataException("Expected the NPC03 one-byte nonzero Level field");
+        return level[0];
+    }
     public static uint ExpectedKill(int npcLevel)=>(uint)(67d*5d*49d*Math.Pow(3d,(1d+npcLevel-50d)/7d));
     public static ViewCreation? CurrentNpc(IReadOnlyList<ViewCreation> views,int cursor,hds.MissionProgress.SavedMob mob)
     {

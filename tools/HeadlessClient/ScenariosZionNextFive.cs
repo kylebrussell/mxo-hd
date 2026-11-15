@@ -52,7 +52,7 @@ public static partial class Scenarios
     }
     private static async Task ZionNextFiveDefeat(HeadlessPlayer p,ViewCreation target)
     {
-        int cursor=p.World.RpcSnapshot().Count;int npcLevel=BitConverter.ToUInt16(target.Attributes["Level"],0);
+        int cursor=p.World.RpcSnapshot().Count;int npcLevel=ZionNextFiveFixture.NpcLevel(target);
         uint expected=ZionNextFiveFixture.ExpectedKill(npcLevel);
         await DefeatMissionNpc(p,target);
         await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(cursor).Any(r=>r.Bytes.Length==10&&r.Bytes[0]==0x80&&r.Bytes[1]==0xe6&&BitConverter.ToUInt32(r.Bytes,6)==1),"actual fighting XP after normal combat",TimeSpan.FromSeconds(10));
