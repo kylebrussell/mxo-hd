@@ -1,6 +1,6 @@
 # QA-only refresh on merged admission core
 
-This QA-only refresh is based on actual master `eb7714ce501c8c3f2fa70e870b007e137b3646eb`. Shared admission and first-introduction PR227 passed native and is merged. This five-mission refresh still requires its own newly pinned whole-chain proof, green CI and Claude native QA before READY. Production hds/data and original source seed/start are unchanged.
+This QA-only refresh is based on actual master `0490bff8fd8c75264be5ec8c9242e9e72fb0bfbe`. Shared admission and first-introduction PR227 passed native and is merged. This five-mission refresh still requires its own newly pinned whole-chain proof, green CI and Claude native QA before READY. Production hds/data and original source seed/start are unchanged.
 
 Exactly27 earlier receipts are seeded before Margin login; selected101208..101212 and next101213 are refused as prior receipts. First free bodies are awaited before route/NPC movement, with independent exact arrival ACK/body ordering where an ordinary ride occurs. Same-floor actual position interest is disclosed separately and does not prove native rendering. Ordinary exits wait for the persisted phase change before reading the next door. Both server packet logs and exact source/process identities are retained.
 
