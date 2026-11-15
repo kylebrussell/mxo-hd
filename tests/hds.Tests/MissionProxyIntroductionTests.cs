@@ -135,7 +135,7 @@ public class MissionProxyIntroductionTests:IDisposable
             rows.Add(new StaticWorldObject{metrId=ushort.Parse(f[0]),sectorID=ushort.Parse(f[1]),mxoStaticId=BitConverter.ToUInt32(Convert.FromHexString(f[2])),
                 staticId=BitConverter.ToUInt32(Convert.FromHexString(f[3])),type=Convert.FromHexString(f[4][..4]),exterior=bool.Parse(f[5]),pos_x=D(6),pos_y=D(7),pos_z=D(8),rot=D(9),quat=f[10]});
         }
-        return MissionSites.Build(rows,1).Single(site=>site.elevatorDoor.mxoStaticId==0x0d10001c&&MissionOpenFloorSite.CatalogFingerprint(site)==MeasuredFingerprint);
+        return MissionSites.Build(rows,1).Single(site=>site.elevatorDoor?.mxoStaticId==0x0d10001c&&MissionOpenFloorSite.CatalogFingerprint(site)==MeasuredFingerprint);
     });
     private static MissionProgress StageMeasured(WorldClient c,bool floatPosition=false)
     {
