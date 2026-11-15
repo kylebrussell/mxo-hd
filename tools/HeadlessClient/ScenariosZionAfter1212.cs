@@ -175,7 +175,7 @@ public static partial class Scenarios
         var mob=state.Mobs.Single(m=>m.Npc==id);
         await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
         ViewCreation? current=null;
-        await p.WaitUntilAsync(()=>(current=ZionAfter1212Fixture.CurrentNpc(p.World.CreationSnapshot(),creationStart,mob))!=null,"actual saved NPC identity/position for "+id,TimeSpan.FromSeconds(15));
+        await p.WaitUntilAsync(()=>(current=ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,mob,state.Instance))!=null,"actual current-life saved NPC identity/position for "+id,TimeSpan.FromSeconds(15));
         return current!;
     }
     private static async Task<ViewCreation> ZionAfter1212Object(ScenarioContext context,HeadlessPlayer p,int objectId,int creationStart,Action<object>? note=null)

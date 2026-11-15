@@ -63,4 +63,12 @@ public class ZionAfter1212FollowerReadinessTests
         var state=State();Assert.Equal(new ushort[]{1},ZionAfter1212FollowerReadiness.OpenFollowers(xml,state));
         state.Done=Array.Empty<int>();Assert.Empty(ZionAfter1212FollowerReadiness.OpenFollowers(xml,state));state.Done=new[]{1,2};Assert.Empty(ZionAfter1212FollowerReadiness.OpenFollowers(xml,state));
     }
+
+    [Fact] public void NpcLookupUsesActualLatestMovementNotANewPhaseBirth()
+    {var log=Log(Own,Maynard,Far,Near);var state=State(53234.16015625,-16114.6416015625);var view=ZionAfter1212FollowerReadiness.CurrentNpc(log.Snapshot(),"ZionNextFive",state.Mobs.Single(),49);Assert.NotNull(view);Assert.Equal(53234.16015625,BitConverter.ToDouble(view.Attributes["Position"]));}
+    [Theory][InlineData("phase")][InlineData("level")][InlineData("position")][InlineData("dead")][InlineData("side")]
+    public void NpcLookupCannotBorrowWrongSavedMetadata(string change)
+    {var log=Log(Own,Maynard);var mob=State().Mobs.Single();if(change=="phase")mob.Phase=1;if(change=="level")mob.Level=49;if(change=="position")mob.X++;if(change=="dead")mob.Dead=true;if(change=="side")mob.Friendly=false;Assert.Null(ZionAfter1212FollowerReadiness.CurrentNpc(log.Snapshot(),"ZionNextFive",mob,49));}
+    [Fact] public void NpcLookupRejectsForeignInstanceAndPreviousOwner()
+    {var log=Log(Own,Maynard);Assert.Null(ZionAfter1212FollowerReadiness.CurrentNpc(log.Snapshot(),"ZionNextFive",State().Mobs.Single(),50));var old=log.Snapshot();log.Observe(true,null,2,Array.Empty<ViewCreation>());Assert.Throws<InvalidDataException>(()=>ZionAfter1212FollowerReadiness.CurrentNpc(old,"ZionNextFive",State().Mobs.Single(),49));}
 }

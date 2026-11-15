@@ -22,6 +22,31 @@ public static class ZionAfter1212FollowerReadiness
         if(!stream.Current||!stream.OwnViewReady||stream.Life!=expectedLife||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life)||
             player.Length!=3||player.Any(v=>!double.IsFinite(v))||!SameEntry(before,current)||followers.Count==0)
             throw new InvalidDataException("Wrong current escort owner/life/site");
+        var live=Read(stream,handle);
+        var result=new List<Observation>();
+        foreach(ushort id in followers)
+        {
+            var old=before.Mobs.Single(m=>m.Npc==id);var mobs=current.Mobs.Where(m=>m.Npc==id).ToArray();
+            if(mobs.Length!=1||!current.Following.Contains(id)||!Guid.TryParseExact(old.Identity,"N",out _)||mobs[0].Identity!=old.Identity||mobs[0].Dead||mobs[0].Health==0||
+                mobs[0].Name!=old.Name||mobs[0].Friendly!=old.Friendly||mobs[0].Phase!=old.Phase)throw new InvalidDataException("Wrong live following identity");
+            var mob=mobs[0];bool Match(Live v)=>v.View.Goid==599&&v.View.Name==mob.Name&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
+                v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
+                (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
+                    v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
+            var matches=live.Values.Where(Match).ToArray();
+            if(matches.Length!=1||!matches[0].Known||matches[0].Dead||matches[0].Position==null)throw new InvalidDataException("No unique current live escort view");
+            var chosen=matches[0];var position=chosen.Position!;double[] saved={mob.X,mob.Y,mob.Z};
+            if(position.Any(v=>!double.IsFinite(v))||Enumerable.Range(0,3).Any(i=>Math.Abs(position[i]-saved[i])>=1)||
+                Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d||
+                Enumerable.Range(0,3).Sum(i=>Math.Pow(saved[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
+            result.Add(new(id,chosen.View.ViewId,chosen.View.SpawnId,stream.Life,chosen.Birth,chosen.PositionSection,position));
+        }
+        if(!stream.Current)throw new InvalidDataException("Escort own life changed");return result;
+    }
+
+    private static Dictionary<ushort,Live> Read(OwnViewLifeSnapshot stream,string handle)
+    {
+        if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("Wrong current NPC own life");
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool own=false;
         foreach(var e in stream.Events)
         {
@@ -60,24 +85,27 @@ public static class ZionAfter1212FollowerReadiness
                 at+=frame.Length;
             }
         }
-        var result=new List<Observation>();
-        foreach(ushort id in followers)
+        if(!stream.Current)throw new InvalidDataException("NPC own life changed");return live;
+    }
+    public static ViewCreation? CurrentNpc(OwnViewLifeSnapshot stream,string handle,MissionProgress.SavedMob mob,ushort instance)
+    {
+        if(instance==0||!Guid.TryParseExact(mob.Identity,"N",out _)||mob.Level<=0||mob.Level>255)throw new InvalidDataException("Current saved NPC identity required");
+        bool Match(Live v)
         {
-            var old=before.Mobs.Single(m=>m.Npc==id);var mobs=current.Mobs.Where(m=>m.Npc==id).ToArray();
-            if(mobs.Length!=1||!current.Following.Contains(id)||!Guid.TryParseExact(old.Identity,"N",out _)||mobs[0].Identity!=old.Identity||mobs[0].Dead||mobs[0].Health==0||
-                mobs[0].Name!=old.Name||mobs[0].Friendly!=old.Friendly||mobs[0].Phase!=old.Phase)throw new InvalidDataException("Wrong live following identity");
-            var mob=mobs[0];bool Match(Live v)=>v.View.Goid==599&&v.View.Name==mob.Name&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
-                v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
-                (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
-                    v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
-            var matches=live.Values.Where(Match).ToArray();
-            if(matches.Length!=1||!matches[0].Known||matches[0].Dead||matches[0].Position==null)throw new InvalidDataException("No unique current live escort view");
-            var chosen=matches[0];var position=chosen.Position!;double[] saved={mob.X,mob.Y,mob.Z};
-            if(position.Any(v=>!double.IsFinite(v))||Enumerable.Range(0,3).Any(i=>Math.Abs(position[i]-saved[i])>=1)||
-                Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d||
-                Enumerable.Range(0,3).Sum(i=>Math.Pow(saved[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
-            result.Add(new(id,chosen.View.ViewId,chosen.View.SpawnId,stream.Life,chosen.Birth,chosen.PositionSection,position));
+            if(v.View.Goid!=599||v.View.Name!=mob.Name||!v.Known||v.Position==null||v.Dead!=mob.Dead||
+                !v.View.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new[]{(byte)mob.Level}))return false;
+            bool keyPresent=v.View.Attributes.TryGetValue("MissionKey",out var key);
+            if((mob.Friendly&&!keyPresent)||keyPresent&&(key!.Length!=4||key[0]!=mob.Phase||BitConverter.ToUInt16(key,1)!=instance||key[3]!=2))return false;
+            bool enemy=v.View.Attributes.TryGetValue("IsEnemy",out var side);
+            if(mob.Friendly?(!v.View.Attributes.TryGetValue("DontAttack",out var safe)||!safe.SequenceEqual(new byte[]{1})||enemy&&!side!.SequenceEqual(new byte[]{0})):
+                (!enemy||!side!.SequenceEqual(new byte[]{1})))return false;
+            return Enumerable.Range(0,3).All(i=>Math.Abs(v.Position[i]-new[]{mob.X,mob.Y,mob.Z}[i])<1);
         }
-        if(!stream.Current)throw new InvalidDataException("Escort own life changed");return result;
+        var matches=Read(stream,handle).Values.Where(Match).ToArray();if(matches.Length==0)return null;
+        if(matches.Length!=1)throw new InvalidDataException("Ambiguous current saved NPC view");var chosen=matches[0];
+        var attributes=chosen.View.Attributes.ToDictionary(p=>p.Key,p=>(byte[])p.Value.Clone());
+        attributes["Position"]=chosen.Position!.SelectMany(BitConverter.GetBytes).ToArray();attributes["IsDead"]=new[]{(byte)(chosen.Dead?1:0)};
+        if(!stream.Current)throw new InvalidDataException("NPC own life changed");
+        return new(chosen.View.ViewId,chosen.View.Goid,chosen.View.SpawnId,attributes){RelatedStaticObjectId=chosen.View.RelatedStaticObjectId};
     }
 }
