@@ -13,9 +13,42 @@ namespace hds
         internal enum Kind { Legacy,Resolved,Refused }
         internal sealed class Result
         {
-            internal readonly Kind State;internal readonly MissionInteriorEvidence.DoorPose Pose;internal readonly string Refusal;
-            internal Result(Kind state,MissionInteriorEvidence.DoorPose pose=null,string refusal=null){State=state;Pose=pose;Refusal=refusal;}
+            internal readonly Kind State;internal readonly MissionInteriorEvidence.DoorPose Pose;internal readonly string Refusal,RawSignature;
+            internal Result(Kind state,MissionInteriorEvidence.DoorPose pose=null,string refusal=null,string rawSignature=null){State=state;Pose=pose;Refusal=refusal;RawSignature=rawSignature;}
         }
+        // Request lifetime only, not a mission/public-door ownership lease. Capture BEFORE lazy scene resolution.
+        internal sealed class Request
+        {
+            private readonly WorldClient client;private readonly ClientData owner;private readonly int world,life;private readonly uint character,district;private readonly long transport;
+            internal Request(WorldClient client)
+            {
+                this.client=client;owner=client?.playerData;world=owner?.worldGeneration??-1;life=owner?.lifeGeneration??-1;
+                character=owner?.getCharID()??0;district=owner?.getDistrictId()??0;transport=client?.TransportFence?.Capture()??-1;
+            }
+            internal bool Current=>owner!=null&&ReferenceEquals(client.playerData,owner)&&client.Alive&&owner.getOnWorld()&&!owner.isDead&&!owner.worldChangePending&&
+                !owner.waitForRPCShutDown&&owner.worldGeneration==world&&owner.lifeGeneration==life&&owner.getCharID()==character&&owner.getDistrictId()==district&&client.TransportFence!=null&&client.TransportFence.IsCurrent(transport);
+            private void RequireCurrent(){if(!Current)throw new MissionCheckpointException("Stale public door request lifetime");}
+            internal bool Publish(StaticWorldObject raw,Result result,Action publish)
+            {
+                if(owner==null||raw==null||result?.State!=Kind.Resolved||result.Pose==null||raw.metrId!=district||raw.mxoStaticId!=result.Pose.Key||
+                    result.RawSignature!=MissionNpcInteriorPlanning.RawJson(raw))return false;
+                lock(owner.missionSync)
+                {
+                    if(!Current)return false;
+                    if(MissionOutput.Buffered(client.messageQueue))
+                    {
+                        if(!MissionOutput.BindCurrent(client.messageQueue,client.TransportFence,transport,world))return false;
+                        publish();RequireCurrent();return true;
+                    }
+                    using(var output=MissionOutput.Begin(client.messageQueue))
+                    {
+                        if(!MissionOutput.BindCurrent(client.messageQueue,client.TransportFence,transport,world))return false;
+                        publish();RequireCurrent();output.Commit();return true;
+                    }
+                }
+            }
+        }
+        internal static Request CaptureRequest(WorldClient client)=>new Request(client);
         internal sealed class Declaration
         {public ushort Sector {get;set;}public string Digest {get;set;}public string Sha256 {get;set;}public uint[] Keys {get;set;}}
         internal sealed class Index
@@ -51,7 +84,7 @@ namespace hds
                         var data=MissionStreetAccessData.Read(File.ReadAllBytes(Path.Combine(street,sector+".json.gz")),row.Sha256,row.Digest,evidence);
                         return Tuple.Create(evidence,data);
                     })).Value;
-                    return scene.Item1.TryCanonicalPublicDoor(scene.Item2,raw,out var pose,out string why)?new Result(Kind.Resolved,pose):new Result(Kind.Refused,refusal:why);
+                    return scene.Item1.TryCanonicalPublicDoor(scene.Item2,raw,out var pose,out string why)?new Result(Kind.Resolved,pose,rawSignature:MissionNpcInteriorPlanning.RawJson(raw)):new Result(Kind.Refused,refusal:why);
                 }
                 catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is UnauthorizedAccessException||ex is ArgumentException||ex is FormatException||ex is OverflowException)
                 {return new Result(Kind.Refused,refusal:"UnavailableDeclaredPublicDoor:"+ex.GetType().Name);}

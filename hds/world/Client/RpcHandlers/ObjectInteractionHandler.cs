@@ -105,6 +105,7 @@ namespace hds
 
         public void processObjectInteraction(StaticWorldObject staticWorldObject, GameObjectItem item)
         {
+            var publicRequest=MissionPublicDoors.CaptureRequest(Store.currentClient);
             var publicDoor=MissionPublicDoors.Resolve(staticWorldObject);
             if(publicDoor.State==MissionPublicDoors.Kind.Refused)
             {Output.WriteDebugLog("[DOOR] Declared public door refused: "+publicDoor.Refusal);return;}
@@ -112,7 +113,7 @@ namespace hds
             {
                 // Select the original native schema before constructing or opening this SAME static key.
                 var pose=publicDoor.Pose;
-                ProcessObjectInteractionCore(staticWorldObject,item,new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Resolved,pose.Position,pose.Quaternion),pose.Goid);
+                publicRequest.Publish(staticWorldObject,publicDoor,()=>ProcessObjectInteractionCore(staticWorldObject,item,new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Resolved,pose.Position,pose.Quaternion),pose.Goid));
                 return;
             }
             ushort type=MissionSites.Goid(staticWorldObject);

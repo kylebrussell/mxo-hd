@@ -98,6 +98,48 @@ public sealed class MissionStreetAccessTests
         var ambiguous=Modified(c.Raw,c.Evidence);Assert.False(ambiguous.UniqueNativeKey(key));
         Assert.False(c.Evidence.TryCanonicalPublicDoor(ambiguous,Raw(c.Raw,key),out _,out _));
     }
+    static WorldClient ActivePublicClient()
+    {
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData=new ClientData();client.playerData.setCharID(123);client.playerData.setDistrictId(1);client.playerData.setOnWorld(true);client.messageQueue=new MessageQueue();client.Alive=true;
+        typeof(WorldClient).GetField("lastUsedTime",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(client,TimeUtils.getUnixTimeUint32());
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(client,new WorldSendFence());return client;
+    }
+    [Theory][InlineData("world")][InlineData("life")][InlineData("owner")][InlineData("transport")][InlineData("district")][InlineData("character")][InlineData("dead")][InlineData("pending")]
+    public void CapturedPublicRequestCannotPublishAfterItsLazyResolutionOutlivesTheClient(string change)
+    {
+        var c=Load(209);var raw=Raw(c.Raw,0x0d100003);var client=ActivePublicClient();var request=MissionPublicDoors.CaptureRequest(client);Assert.True(request.Current);
+        var result=new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")).Resolve(raw);
+        Assert.Equal(MissionPublicDoors.Kind.Resolved,result.State);
+        switch(change){case "world":client.playerData.worldGeneration++;break;case "life":client.playerData.lifeGeneration++;break;
+            case "owner":client.playerData=new ClientData();break;case "transport":client.TransportFence.PublishIncoming(true,()=>{});break;
+            case "district":client.playerData.setDistrictId(2);break;case "character":client.playerData.setCharID(124);break;
+            case "dead":client.playerData.isDead=true;break;case "pending":client.playerData.worldChangePending=true;break;}
+        bool published=false;Assert.False(request.Publish(raw,result,()=>published=true));Assert.False(published);
+        Assert.Empty(client.messageQueue.ObjectMessagesQueue);Assert.Empty(client.messageQueue.RPCMessagesQueue);
+    }
+    [Fact]public void PublicOutputUsesExistingBatchLifetimeAndResetCancelsItsUnpublishedMessages()
+    {
+        var c=Load(209);var raw=Raw(c.Raw,0x0d100003);var result=new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")).Resolve(raw);
+        var client=ActivePublicClient();var request=MissionPublicDoors.CaptureRequest(client);
+        using(var output=MissionOutput.Begin(client.messageQueue))
+        {
+            Assert.True(request.Publish(raw,result,()=>{Assert.True(System.Threading.Monitor.IsEntered(client.playerData.missionSync));client.messageQueue.addObjectMessage(new byte[]{1,2,3},false);client.messageQueue.addRpcMessage(new byte[]{0x80,0xa0,1});}));
+            client.TransportFence.PublishIncoming(true,()=>{});output.Commit();
+        }
+        Assert.Empty(client.messageQueue.ObjectMessagesQueue);Assert.Empty(client.messageQueue.RPCMessagesQueue);
+        client=ActivePublicClient();request=MissionPublicDoors.CaptureRequest(client);
+        Assert.Throws<MissionCheckpointException>(()=>request.Publish(raw,result,()=>{client.messageQueue.addObjectMessage(new byte[]{1,2,3},false);client.TransportFence.PublishIncoming(true,()=>{});}));
+        Assert.Empty(client.messageQueue.ObjectMessagesQueue);Assert.Empty(client.messageQueue.RPCMessagesQueue);
+    }
+    [Fact]public async Task PublicRequestRejectsOwnerReplacedWhileWaitingForPublicationLock()
+    {
+        var c=Load(209);var raw=Raw(c.Raw,0x0d100003);var result=new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")).Resolve(raw);
+        var client=ActivePublicClient();var request=MissionPublicDoors.CaptureRequest(client);var owner=client.playerData;bool published=false;
+        using var started=new System.Threading.ManualResetEventSlim();Task<bool> waiting;
+        lock(owner.missionSync){waiting=Task.Run(()=>{started.Set();return request.Publish(raw,result,()=>published=true);});Assert.True(started.Wait(TimeSpan.FromSeconds(30)));client.playerData=new ClientData();}
+        Assert.False(await waiting.WaitAsync(TimeSpan.FromSeconds(30)));Assert.False(published);
+    }
     [Fact]public void DeclaredPublicPayloadMissingTruncatedOrReplacedNeverFallsBackToLegacy()
     {
         var c=Load(209);var raw=Raw(c.Raw,0x0d100003);string temp=Path.Combine(Path.GetTempPath(),"mxo-public-door-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(temp);
