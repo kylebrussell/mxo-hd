@@ -5,10 +5,9 @@ namespace hds
     /// The retail bonus coefficient is unresolved. Existing raw575 mitigation and total33% floor remain.</summary>
     public static class DeflectCode
     {
-        public static bool KnownControl(ushort state) => state == TempMods.MezAbility || state == TempMods.BlindAbility or
-            TempMods.ConfuseAbility || state == TempMods.EnrageAbility || state == TempMods.PowerlessAbility || state == TempMods.RootedAbility or
-            TempMods.StunAbility || state == TempMods.DazeAbility || state == TempMods.OffBalanceAbility || state == TempMods.StaggeredAbility || state == TempMods.DisarmedAbility;
-
+        public static bool KnownControl(ushort state) => state==TempMods.MezAbility || state==TempMods.BlindAbility ||
+            state==TempMods.ConfuseAbility || state==TempMods.EnrageAbility || state==TempMods.PowerlessAbility || state==TempMods.RootedAbility ||
+            state==TempMods.StunAbility || state==TempMods.DazeAbility || state==TempMods.OffBalanceAbility || state==TempMods.StaggeredAbility || state==TempMods.DisarmedAbility;
         public static int CappedBonus(int value) => Math.Clamp(value,0,(int)AbilityCatalog.Find(1047).Number("Ability/TotalMaxBuffValue",130));
         public static int PlayerBonus(WorldClient target) => Math.Max(0,AbilityStats.Player(target,1047));
 
