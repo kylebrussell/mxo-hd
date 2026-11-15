@@ -458,6 +458,8 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if(command.Equals("?severstate"))new ServerPackets().sendSystemChatMessage(Store.currentClient,AbilitySeverArteryStates.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
+
                 if (command.Equals("?combatdepth"))
                     new ServerPackets().sendSystemChatMessage(Store.currentClient,
                         CombatDepthDev.Run(Store.currentClient, commands.Skip(1).ToArray()), "BROADCAST");

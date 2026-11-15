@@ -435,6 +435,7 @@ namespace hds
             phaseIndex++;
             openFloorResolvedPhase=null;openFloorLegacyPhase=null;
             waitingForExit = false;
+            departedSite = null;
             goalsCompleteSent = false;
             leaveNotNeeded = false;
             wavesArrived.Clear();
@@ -470,7 +471,7 @@ namespace hds
 
         public bool IsExiting(double x, double y, double z)
         {
-            return waitingForExit && Phase != null && (leaveNotNeeded || MissionExit.HasLeft(waypoints, exits, x, y, z));
+            return waitingForExit && Phase != null && (leaveNotNeeded || (UsesGeneratedDeparture ? HasGeneratedDeparture || MissionExit.IsOutside(waypoints, exits, x, y, z) : MissionExit.HasLeft(waypoints, exits, x, y, z)));
         }
 
         /// <summary>Whether (x, y, z) is at one of the phase's ways out, whether or not its goals are done.</summary>

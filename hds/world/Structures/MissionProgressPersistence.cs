@@ -18,6 +18,8 @@ namespace hds
             public long Started { get; set; }
             public int Phase { get; set; }
             public int Kills { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public StaticWorldObject DepartedSite { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? DepartedPhase { get; set; }
             public Dictionary<string, bool> Flags { get; set; } = new Dictionary<string, bool>();
             public int[] Done { get; set; } = Array.Empty<int>();
             public int[] EverDone { get; set; } = Array.Empty<int>();
@@ -104,6 +106,7 @@ namespace hds
                 WavesJustArrived=wavesJustArrived.Select(w=>w.id).ToArray(), JustSwitched=justSwitched.ToArray(),
                 Sides=new Dictionary<ushort, bool>(sides), Items=new Dictionary<uint, ushort>(itemSlots), Reserved=new Dictionary<ushort, double[]>(reservedSpots), ReservedWaves=new Dictionary<int, List<double[]>>(reservedWaveSpots),
                 NpcElapsed=npcTriggered.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)), WaveElapsed=waveTriggered.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)),
+                DepartedSite=HasGeneratedDeparture ? departedSite : null, DepartedPhase=HasGeneratedDeparture ? phaseIndex : (int?)null,
                 GoalElapsed=goalClock.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)), Waypoints=waypoints.ToArray(), Exits=exits.ToArray(),
                 SiteDoors=sites.Select(s=>s.elevatorDoor).ToArray(),
                 Objects=objects.Values.Select(o=>new SavedObject { Id=o.def.id, Spot=o.spot, Goid=o.goid, Unlocked=o.unlockedOnce, State=o.shownState, OpenFloor=o.OpenFloor }).ToList() };
@@ -187,6 +190,8 @@ namespace hds
                 }
             }
             p.site=state.Version==1?p.sites.LastOrDefault():state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            if(p.UsesGeneratedDeparture && state.DepartedPhase==p.phaseIndex && SameDepartureDoor(state.DepartedSite,p.site.elevatorDoor))
+            {p.departedSite=p.site.elevatorDoor;p.departedPhase=p.phaseIndex;}
             foreach(var o in state.Objects)
             {
                 var def=p.Phase.objects.Find(d=>d.id==o.Id);

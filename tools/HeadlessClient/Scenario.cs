@@ -27,6 +27,8 @@ public sealed record CharacterSeed(string Handle)
     /// <summary>Bag or worn items: slot, goid, and a stack count where it matters.</summary>
     public IReadOnlyList<(int Slot, uint Goid, int Count)> Items { get; init; } = Array.Empty<(int, uint, int)>();
     public IReadOnlyList<(ushort Ability, ushort Level)>? OwnedLoadedAbilities { get; init; }
+    /// <summary>Optional earlier receipts installed before Margin login, never active progress.</summary>
+    public IReadOnlyList<int>? CompletedMissions { get; init; }
     /// <summary>Optional exact attribute rows installed before Margin/initial UDP; null preserves the legacy seed.</summary>
     public IReadOnlyDictionary<byte,ushort>? AttributeValues { get; init; }
 }
@@ -119,6 +121,12 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
             sql+=$"DELETE FROM char_abilities WHERE char_id={id} AND slot IN (598,599,601,602,604);\n";
             foreach(var value in seed.AttributeValues.OrderBy(v=>v.Key))
                 sql+=$"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({id},{hds.CharacterAttributes.SlotOf(value.Key)},{hds.CharacterAttributes.RowValueOf(value.Key)},{value.Value},0);\n";
+        }
+        if (seed.CompletedMissions != null)
+        {
+            if (seed.CompletedMissions.Any(id=>id<=0)) throw new ArgumentException("Invalid prior mission receipt");
+            foreach (int mission in seed.CompletedMissions.Distinct())
+                sql += $"INSERT IGNORE INTO char_missions(charId,missionId) VALUES({id},{mission});\n";
         }
         await Database.ExecuteAsync(sql);
 
