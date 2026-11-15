@@ -358,7 +358,8 @@ namespace hds
             // GO19 is the original floor marker, not a rendered model midpoint. NPC standing uses the existing +95 contract.
             double[] native = own[0].Position;
             standing = new double[] { native[0], native[1] + 95, native[2], raw.rot };
-            if (!regions[own[0].Region].Polygons.Any(p => Contains(p, Point(standing)))) { standing = null; return false; }
+            G.Position published = Point(standing);
+            if (!regions[own[0].Region].Polygons.Any(p => Contains(p, published))) { standing = null; return false; }
             refusal = null; return true;
         }
         internal bool TryNpcRoute(Entry entry, StaticWorldObject marker, double[] planned, Func<uint, StaticWorldObject> selectedDoor, out NpcRoute proof, out string refusal) =>
@@ -409,3 +410,4 @@ namespace hds
         }
     }
 }
+
