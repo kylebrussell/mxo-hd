@@ -4,12 +4,21 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    private static ushort GhostWireVital(HeadlessPlayer player,string attribute,string update)
+    {
+        var values=ViewUpdateValues(player,2,update);
+        return values.Count>0?values.Last():BitConverter.ToUInt16(player.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes[attribute]);
+    }
+    private static int GhostDebits(ushort before,IReadOnlyList<ushort> values,int? exact=null)
+    {
+        int count=0,previous=before;foreach(ushort value in values){if(previous>value&&(!exact.HasValue||previous-value==exact.Value))count++;previous=value;}return count;
+    }
     private static async Task GhostStrikeCallback(ScenarioContext context)
     {
         using var caster=await GhostStrikeFixture.CsrAsync(context);
         var victim=await context.AddPlayerAsync(GhostStrikeFixture.Seed("GhostEnemy",true));
-        var observer=await context.AddPlayerAsync(GhostStrikeFixture.Seed("GhostFriend") with{X=24900});
-        var proof=new List<object>();bool passed=false;string stage="entry";
+        var observer=await context.AddPlayerAsync(GhostStrikeFixture.Seed("GhostFriend") with{Z=GhostStrikeFixture.FriendZ});
+        var proof=new List<object>();bool passed=false;string stage="entry";string? failure=null;
         string profiles=await context.Database.ExecuteAsync($"SELECT charId,level,alignment,x,y,z,healthC,innerStrC FROM characters WHERE charId IN (110,{victim.CharId},{observer.CharId}) ORDER BY charId");
         string owned=await context.Database.ExecuteAsync("SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id=110 ORDER BY slot,id");
         try
@@ -28,12 +37,18 @@ public static partial class Scenarios
                 observer.SkipReceived();Cast(caster,1116);var initial=await caster.WaitForRpcAsync(ModPattern(1116,115));
                 await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,Stealth.StealthedFlag)));
                 double originalDuration=BitConverter.ToSingle(initial.Bytes,18);int cursor=caster.World.RpcSnapshot().Count;
-                int log=context.Server.DebugLog().Length;var before=await context.Database.ExecuteAsync("SELECT healthC,innerStrC FROM characters WHERE charId=110");
+                int log=context.Server.DebugLog().Length,sourceViews=caster.World.ViewSnapshot().Count,targetViews=victim.World.ViewSnapshot().Count;
+                var before=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")};
                 DateTime start=DateTime.UtcNow;Cast(caster,365,target.ViewId);
                 await caster.WaitForRpcAsync(ModPattern(1116,115,true)); // this cast keeps the ordinary break
                 await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(0,0)));
                 await caster.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains(" lands on GhostEnemy for "),"accepted ordinary365 hit",TimeSpan.FromSeconds(6));
+                await victim.WaitUntilAsync(()=>ViewUpdateValues(victim,2,"02 80 80 80 40",targetViews).Count>0,"fresh target own03 health update",TimeSpan.FromSeconds(3));
                 await Task.Delay(500);
+                var sourceIsUpdates=ViewUpdateValues(caster,2,"02 80 80 80 10",sourceViews);
+                var targetHealthUpdates=ViewUpdateValues(victim,2,"02 80 80 80 40",targetViews);
+                Check.Equal(1,GhostDebits(before.SourceIS,sourceIsUpdates,60),"Exactly one actual wire60IS cast debit, separate from positive regen updates");
+                Check.Equal(1,GhostDebits(before.TargetHealth,targetHealthUpdates),"One ordinary health-loss update; the callback adds no second damage write");
                 var restorations=caster.World.RpcSnapshot().Skip(cursor).Where(r=>BytePattern.Parse(ModPattern(1116,115)).IsMatch(r.Bytes)).ToArray();
                 Check.Equal(roll==8?1:0,restorations.Length,"Only successful callback creates one normal1116 modifier");
                 if(roll==8)
@@ -45,8 +60,10 @@ public static partial class Scenarios
                     // Turning the normal restored grant off uses its own standard activation path.
                     Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115,true));
                 }
-                proof.Add(new{stage,roll,Started=start,Original=Convert.ToHexString(initial.Bytes),Restorations=restorations.Select(r=>Convert.ToHexString(r.Bytes)),Before=before,
-                    After=await context.Database.ExecuteAsync("SELECT healthC,innerStrC FROM characters WHERE charId=110"),Log=context.Server.DebugLog()[log..]});
+                proof.Add(new{stage,roll,Started=start,Original=Convert.ToHexString(initial.Bytes),Restorations=restorations.Select(r=>Convert.ToHexString(r.Bytes)),BeforeWire=before,
+                    SourceIsUpdates=sourceIsUpdates,TargetHealthUpdates=targetHealthUpdates,
+                    AfterWire=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")},
+                    SourceFreshViews=caster.World.ViewSnapshot().Skip(sourceViews).Select(Convert.ToHexString),TargetFreshViews=victim.World.ViewSnapshot().Skip(targetViews).Select(Convert.ToHexString),Log=context.Server.DebugLog()[log..]});
                 await Task.Delay(31000); // normal1116 term cooldown30s and365 reuse10s; no timer injection
             }
             stage="npc-accepted";caster.SkipReceived();caster.SendChat("?ghoststrike 8");await caster.WaitForTextAsync("callback roll=8");
@@ -70,12 +87,16 @@ public static partial class Scenarios
             proof.Add(new{stage,seconds,boundaryMs,CastBar=bar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelLog..]});
             Check.Equal(0,caster.World.Problems.Count+victim.World.Problems.Count+observer.World.Problems.Count,"Protocol parsing");passed=true;
         }
+        catch(Exception error){failure=error.ToString();throw;}
         finally
         {
             string stem=Path.Combine(Path.GetTempPath(),"mxo-ghost-strike-"+context.Database.Name);
-            await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{passed,stage,profiles,owned,proof,Database=context.Database.Name,ServerPid=context.Server.ProcessId,
+            string? finalPersistence=null,persistenceFailure=null;
+            try{finalPersistence=await context.Database.ExecuteAsync("SELECT charId,healthC,innerStrC,exp,cash FROM characters WHERE charId=110");}
+            catch(Exception error){persistenceFailure=error.ToString();}
+            await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{passed,stage,failure,SeedProfiles=profiles,owned,proof,Database=context.Database.Name,ServerPid=context.Server.ProcessId,
                 SourceAssembly=context.Server.SourceAssembly,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(context.Server.SourceAssembly))),Environment=GhostStrikeFixture.Environment,
-                Actors=new[]{caster,victim,observer}.Select(p=>new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString)}),Final=await context.Database.ExecuteAsync("SELECT charId,healthC,innerStrC,exp,cash FROM characters WHERE charId=110"),
+                Actors=new[]{caster,victim,observer}.Select(p=>new{p.Handle,p.CharId,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems.ToArray()}),FinalPersistence=finalPersistence,PersistenceFailure=persistenceFailure,
                 Debug=context.Server.DebugLog()},new JsonSerializerOptions{WriteIndented=true}));
             await File.WriteAllTextAsync(stem+".log",context.Server.FullOutput()+"\n"+context.Server.DebugLog());
         }

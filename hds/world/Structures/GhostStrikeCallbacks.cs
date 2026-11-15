@@ -11,7 +11,7 @@ namespace hds
         private static readonly Random random=new Random();
         private sealed class Setting {internal int Roll;internal Func<bool> Current;}
         private static readonly ConditionalWeakTable<WorldClient,Setting> settings=new ConditionalWeakTable<WorldClient,Setting>();
-        private static Func<bool> Lifetime(WorldClient client)
+        internal static Func<bool> Lifetime(WorldClient client)
         {
             var current=AbilitySeverArteryStates.Lifetime(client);uint district=client.playerData.getDistrictId();
             return ()=>current()&&client.playerData.getDistrictId()==district&&PvpCombat.HealthOf(client)>0;

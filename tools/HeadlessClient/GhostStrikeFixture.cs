@@ -2,10 +2,11 @@ using hds;
 namespace HeadlessClient;
 public static class GhostStrikeFixture
 {
+    public const int CsrX=24800,FloorY=495,CsrZ=-1498,EnemyX=25200,FriendZ=-1098;
     public static ushort[] Abilities=>new ushort[]{2,17,1112,1116,365};
     public static Dictionary<string,string> Environment=>new(){["MXO_DEV_COMMANDS"]="1",["MXO_MOBS"]="test",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0",
         ["MXO_GHOST_STRIKE_QA"]="1",["MXO_GHOST_STRIKE_QA_ROLL"]="",["MXO_PACKET_LOG"]="1"};
-    public static CharacterSeed Seed(string name,bool enemy=false)=>new(name){X=24800+(enemy?-200:0),Y=495,Z=-1498,Level=50,
+    public static CharacterSeed Seed(string name,bool enemy=false)=>new(name){X=enemy?EnemyX:CsrX,Y=FloorY,Z=CsrZ,Level=50,
         Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=enemy?2:1,Health=5000,MaxHealth=5000,
         InnerStrength=2000,MaxInnerStrength=2000,OwnedLoadedAbilities=Abilities.Select(a=>(a,(ushort)50)).ToArray()};
     // Local disposable schema only. Keep the control's actual CSR110 restriction identical to NativeQa.
