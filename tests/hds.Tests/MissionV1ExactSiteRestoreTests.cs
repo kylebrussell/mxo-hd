@@ -61,12 +61,25 @@ public class MissionV1ExactSiteRestoreTests
         var exact=new MissionSite{metrId=door.metrId,elevatorDoor=Copy(door)};
         Assert.Same(exact,MissionProgress.FindSavedSite(new[]{other,exact},door));Assert.Same(exact,MissionProgress.FindSavedSite(new[]{exact,other},door));
     }
-    [Fact] public void MissingExactCatalogRowDoesNotSelectTheSameKeyAtAnotherPose()
+    [Fact] public void MissingExactCurrentRowQuarantinesWithoutPromotingAnOlderHistorySiteOrLosingItems()
     {
-        var saved=Saved();var door=saved.SiteDoors.Single();var aliases=Catalog.Value.Where(s=>s.elevatorDoor?.mxoStaticId==door.mxoStaticId&&!Exact(s.elevatorDoor,door)).ToArray();Assert.NotEmpty(aliases);
-        Assert.Null(MissionProgress.FindSavedSite(aliases,door));var restored=MissionProgress.RestoreFromCatalog(Definition(),saved,aliases);
-        Assert.Null(restored.site);Assert.Empty(restored.sites);Assert.Equal(54200,restored.waypoints.Single().x);Assert.Equal(54200,restored.exits.Single()[0]);
-        Assert.Equal(new ushort[]{1},restored.following);Assert.Equal(new[]{1},restored.Capture(saved.Instance,Array.Empty<Mob>()).Done);
+        var saved=Saved();var door=saved.SiteDoors.Single();var prior=Catalog.Value.First(s=>s.elevatorDoor!=null&&s.elevatorDoor.mxoStaticId!=door.mxoStaticId);
+        saved.SiteDoors=new[]{Copy(prior.elevatorDoor),door};saved.Items[6796]=7;
+        var aliases=Catalog.Value.Where(s=>s.elevatorDoor?.mxoStaticId==door.mxoStaticId&&!Exact(s.elevatorDoor,door)).Prepend(prior).ToArray();Assert.True(aliases.Length>1);
+        string input=JsonSerializer.Serialize(saved,Fields);Assert.Null(MissionProgress.FindSavedSite(aliases,door));
+        var exception=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(Definition(),saved,aliases));
+        Assert.Equal("MissingExactLegacyMissionSite",exception.Message);Assert.Null(exception.Progress.site);Assert.Same(prior,Assert.Single(exception.Progress.sites));
+        Assert.Equal((ushort)7,exception.Progress.itemSlots[6796]);Assert.Equal(54200,exception.Progress.waypoints.Single().x);Assert.Equal(new ushort[]{1},exception.Progress.following);
+        var quarantined=MissionPersistence.RestoreForWorld(Definition(),saved,aliases);
+        Assert.Equal("MissingExactLegacyMissionSite",quarantined.restoreRefusal);Assert.Null(quarantined.site);Assert.Equal((ushort)7,quarantined.itemSlots[6796]);
+        Assert.Equal(input,JsonSerializer.Serialize(saved,Fields));
+    }
+    [Fact] public void MissingOlderHistoryDoesNotBlockTheExactPresentCurrentDoor()
+    {
+        var saved=Saved();var door=saved.SiteDoors.Single();var current=Catalog.Value.First(s=>Exact(s.elevatorDoor,door));var missing=Copy(door);missing.mxoStaticId++;
+        saved.SiteDoors=new[]{missing,door};var restored=MissionProgress.RestoreFromCatalog(Definition(),saved,new[]{current});
+        Assert.Same(current,restored.site);Assert.Same(current,Assert.Single(restored.sites));Assert.Null(restored.restoreRefusal);
+        Assert.Equal(54200,restored.waypoints.Single().x);Assert.Equal(saved.Following,restored.Capture(saved.Instance,Array.Empty<Mob>()).Following);
     }
     [Fact] public void IdenticalRawDoorClustersRetainTheExistingLegacyFirstOrder()
     {

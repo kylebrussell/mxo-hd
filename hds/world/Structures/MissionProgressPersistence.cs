@@ -187,8 +187,13 @@ namespace hds
             p.justArrived.AddRange(mission.npcs.Where(n=>state.JustArrived.Contains(n.id)));
             p.wavesJustArrived.AddRange(p.Phase.Waves().Where(w=>state.WavesJustArrived.Contains(w.id)));p.justSwitched.AddRange(state.JustSwitched);
             p.waypoints=state.Waypoints.ToList();p.exits.AddRange(state.Exits);
+            MissionSite legacyCurrent=null;
             if(state.Version==1)
-                foreach(var door in state.SiteDoors) { var site=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door); if(site!=null)p.sites.Add(site); }
+                foreach(var door in state.SiteDoors)
+                {
+                    legacyCurrent=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door);
+                    if(legacyCurrent!=null)p.sites.Add(legacyCurrent);
+                }
             else
             {
                 p.openFloorCheckpoint=true;p.pendingOpenFloor=state.PendingOpenFloor;p.openFloorResolvedPhase=state.OpenFloorPhase;p.openFloorLegacyPhase=state.OpenFloorLegacyPhase;
@@ -199,7 +204,11 @@ namespace hds
                     p.sites.Add(site);
                 }
             }
-            p.site=state.Version==1?p.sites.LastOrDefault():state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            p.site=state.Version==1?legacyCurrent:state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            // Never promote an older history entry into the missing current area. Items are
+            // already restored so the existing typed quarantine retains ownership and payload.
+            if(state.Version==1&&state.SiteDoors.Length>0&&legacyCurrent==null)
+                throw new MissionPlacementRestoreException(p,"MissingExactLegacyMissionSite");
             if(p.UsesGeneratedDeparture && state.DepartedPhase==p.phaseIndex && SameDepartureDoor(state.DepartedSite,p.site.elevatorDoor))
             {p.departedSite=p.site.elevatorDoor;p.departedPhase=p.phaseIndex;}
             foreach(var o in state.Objects)
