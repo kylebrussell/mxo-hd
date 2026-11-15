@@ -215,12 +215,17 @@ namespace hds
             }).OrderBy(v=>Distance(v,q)).ThenBy(v=>v.X).ThenBy(v=>v.Z).First();
         }
         private static Point? Portal(Surface a,Surface b)
+            =>Portal(a.Identity,a.Vertices,a.FloorC,a.Indoors,b.Identity,b.Vertices,b.FloorC,b.Indoors);
+        // Cell polygons are already owned by the synchronous graph builder. Reading them
+        // directly preserves the contact calculation without two frozen Surface copies per pair.
+        private static Point? Portal(Id aId,IReadOnlyList<Point> aVertices,double aFloor,bool aIndoors,
+            Id bId,IReadOnlyList<Point> bVertices,double bFloor,bool bIndoors)
         {
-            if(a.FloorC!=b.FloorC||!SameSpace(a,b))return null;
-            foreach(var e in Edges(a.Vertices))
+            if(aFloor!=bFloor||aIndoors!=bIndoors||(aIndoors&&(aId.Sector!=bId.Sector||aId.Region!=bId.Region)))return null;
+            foreach(var e in Edges(aVertices))
             {
                 Point d=Sub(e.B,e.A);double length=Distance(e.A,e.B),n=length*length;
-                foreach(var f in Edges(b.Vertices))
+                foreach(var f in Edges(bVertices))
                 {
                     Point u=Sub(f.A,e.A),v=Sub(f.B,e.A);
                     if(Math.Abs(Cross(d,u))>Epsilon*length||Math.Abs(Cross(d,v))>Epsilon*length)continue;
@@ -327,7 +332,8 @@ namespace hds
         }
         private static Point? CellPortal(Cell a,Cell b)
         {
-            return Portal(new Surface(a.Surface.Identity,a.Polygon,0,0,a.Surface.FloorC,a.Surface.Indoors),new Surface(b.Surface.Identity,b.Polygon,0,0,b.Surface.FloorC,b.Surface.Indoors));
+            return Portal(a.Surface.Identity,a.Polygon,a.Surface.FloorC,a.Surface.Indoors,
+                b.Surface.Identity,b.Polygon,b.Surface.FloorC,b.Surface.Indoors);
         }
         private sealed class StandingGraph
         {
