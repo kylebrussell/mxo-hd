@@ -223,6 +223,7 @@ namespace hds
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
+            var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -271,21 +272,22 @@ namespace hds
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
-                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+            ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (hostileView > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
-                UInt16 targetView = currentTargetViewId;
+                UInt16 targetView = hostileView;
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes);
                 }
             }
             });
