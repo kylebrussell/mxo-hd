@@ -505,6 +505,14 @@ namespace hds
                 AbilityCatalog.Find(other)?.Number("Ability/StackingType")==stacking).ToList()) TimedEffects.RemoveParent(subject,other);
         }
 
+        // Confirmed quit ends existing drain capabilities even while the UDP endpoint remains reserved.
+        internal static void CancelDrains(WorldClient client)
+        {
+            var data=client?.playerData;if(data==null)return;
+            lock(data.activeBuffs)foreach(var active in data.activeBuffs.Values)
+                if(active.Drain!=null)active.Drain.Cancelled=true;
+        }
+
         private static void ScheduleDrain(WorldClient client, Active active)
         {
             if(active.Drain==null || !active.Drain.Current)return;
@@ -548,6 +556,7 @@ namespace hds
                     RemoveCore(client,active.AbilityId,true,false,active.Generation,false,active);client.FlushQueue();return;
                 }
                 new ServerPackets().sendISCurrent(client,remaining);
+                Output.WriteDebugLog($"[BUFF-DRAIN] char{data.getCharID()} ability{active.AbilityId} generation{active.Generation} amount{active.Definition.DrainAmount} remaining{remaining}");
                 if(lease.Current)ScheduleDrain(client,active);
             }
         }

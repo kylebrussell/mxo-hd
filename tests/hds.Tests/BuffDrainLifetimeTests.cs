@@ -49,6 +49,16 @@ public class BuffDrainLifetimeTests
         AbilityBuffs.TickActiveDrain(c,fresh);Assert.Equal(99,AbilityHandler.CurrentInnerStrength(c));
         AbilityBuffs.Remove(c,16);AbilityBuffs.TickActiveDrain(c,fresh);Assert.Equal(99,AbilityHandler.CurrentInnerStrength(c));
     }
+    [Fact]public void ConfirmedQuitCancelsTheStillMappedLiveEndpointsScheduledDrain()
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);var active=On(c);
+        Assert.True(c.Alive);Assert.True(c.playerData.getOnWorld());Assert.True(c.IsCurrentEndpointOwner);
+        AbilityBuffs.CancelDrains(c);
+        DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds()+1.01);
+        Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));Assert.True(active.Drain.Cancelled);
+        // Restoring an old activation snapshot cannot undo terminal cancellation.
+        c.playerData.activeBuffs[16]=active;AbilityBuffs.TickActiveDrain(c,active);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
+    }
     [Theory][InlineData("world")][InlineData("life")][InlineData("owner")][InlineData("character")][InlineData("player")]
     [InlineData("endpoint")][InlineData("registry")][InlineData("transport")][InlineData("drop")][InlineData("logout")]
     public void InvalidatedLifetimeNeverChargesSendsOrReschedules(string change)
