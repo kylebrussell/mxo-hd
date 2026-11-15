@@ -217,6 +217,7 @@ namespace hds
                 return;
             }
 
+            AbilityBuffs.CancelDrains(client); // 80fe00: quit confirmed; the endpoint may linger until normal reap.
             Store.dbManager.WorldDbHandler.SetOnlineStatus(client.playerData.getCharID(), 0);
             ServerPackets packets = new ServerPackets();
             packets.sendExitGame(client);

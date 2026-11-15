@@ -69,6 +69,7 @@ public class PunishingBlowsTests
     public void Real16ToggleDrainShortfallAndRemovalControlTheExistingStatConsumer()
     {
         var source=Client();var target=Client();target.playerData.conditionStateFlags=4;
+        using var owner=new BuffDrainTestOwner(source);
         AbilityPassives.SetLoaded(source,new[]{((ushort)16,(ushort)50)},true);
         Assert.Equal(100,PunishingBlows.Player(source,target,100));
         Assert.True(AbilityBuffs.Apply(source,16));

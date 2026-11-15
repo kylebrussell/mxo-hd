@@ -82,6 +82,7 @@ public static partial class Scenarios
         new Scenario("sever-artery-states",SeverArteryStates,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_SEVER_STATE_QA"]="1"}),
         new Scenario("combat-insight-engagement",CombatInsightWire,CombatInsightFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("punishing-blows",PunishingBlowsWire,PunishingBlowsFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
+        new Scenario("buff-drain-lifetime",BuffDrainLifetimeWire,BuffDrainLifetimeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("conditional-thrown-damage",ConditionalThrownDamageWire,ConditionalThrowFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("reverse-bulldog-controls", ReverseBulldogControls, ReverseBulldogFixture.Environment),
         new Scenario("ghost-strike-callback",GhostStrikeCallback,GhostStrikeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
