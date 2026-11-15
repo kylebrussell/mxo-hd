@@ -14,6 +14,8 @@ public class Class364DoorsModeTests
         Assert.Equal(fixture.X,plan.X);Assert.Equal(fixture.Z,plan.Z);
         Assert.True(plan.ExtraQaMetadata["NaturalClosingOnly"].GetBoolean());
         Assert.False(plan.ExtraQaMetadata["WalkRouteProven"].GetBoolean());
+        Assert.Equal("1",plan.EnvironmentOverrides["MXO_PACKET_LOG"]);
+        Assert.False(NativeQaModes.Find("medium03-prefab-door").Plan.EnvironmentOverrides.ContainsKey("MXO_PACKET_LOG"));
         Assert.Contains(plan.ReadyMessages,s=>s.Contains("Right-click Open")&&s.Contains("direct start"));
     }
 }

@@ -3,10 +3,11 @@ namespace NativeQa.Modes;
 
 internal static class WorldDoorModePlan
 {
-    internal static NativeQaModePlan Create(NativeWorldDoorFixture f) => new(new ushort[] { 2, 17 }, f.X, f.Z,
+    internal static NativeQaModePlan Create(NativeWorldDoorFixture f,bool packetLog=false) => new(new ushort[] { 2, 17 }, f.X, f.Z,
         Array.Empty<string>(),
         new[] { $"UPDATE characters SET district='{f.District}',districtId={f.World},y={f.Y},rotation={f.Heading} WHERE charId=110" },
         Array.Empty<string>(),
+        environmentOverrides:packetLog?new(){["MXO_PACKET_LOG"]="1"}:null,
         extraQaMetadata: new()
         {
             ["WorldDoorDiagnostic"] = true, ["WorldMap"] = f.World, ["DoorGoid"] = f.Goid,
