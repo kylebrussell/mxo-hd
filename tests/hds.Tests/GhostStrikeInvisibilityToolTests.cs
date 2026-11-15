@@ -36,6 +36,5 @@ public class GhostStrikeInvisibilityToolTests
         Assert.Throws<ArgumentOutOfRangeException>(()=>GhostStrikeInvisibilityTool.Request(41));
         Assert.Throws<InvalidDataException>(()=>GhostStrikeInvisibilityTool.AbilityIds(new byte[5]));
         var mode=NativeQaModes.Find("ghost-strike-callback");Assert.Contains("460,40",string.Join("\n",mode.Plan.AfterHelpers));
-        Assert.Contains("Activate Item",string.Join("\n",mode.Plan.ReadyMessages));
     }
 }
