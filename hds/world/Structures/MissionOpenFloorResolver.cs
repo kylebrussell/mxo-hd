@@ -222,11 +222,13 @@ namespace hds
             Id bId,IReadOnlyList<Point> bVertices,double bFloor,bool bIndoors)
         {
             if(aFloor!=bFloor||aIndoors!=bIndoors||(aIndoors&&(aId.Sector!=bId.Sector||aId.Region!=bId.Region)))return null;
-            foreach(var e in Edges(aVertices))
+            for(int i=0;i<aVertices.Count;i++)
             {
+                var e=(A:aVertices[i],B:aVertices[(i+1)%aVertices.Count]);
                 Point d=Sub(e.B,e.A);double length=Distance(e.A,e.B),n=length*length;
-                foreach(var f in Edges(bVertices))
+                for(int j=0;j<bVertices.Count;j++)
                 {
+                    var f=(A:bVertices[j],B:bVertices[(j+1)%bVertices.Count]);
                     Point u=Sub(f.A,e.A),v=Sub(f.B,e.A);
                     if(Math.Abs(Cross(d,u))>Epsilon*length||Math.Abs(Cross(d,v))>Epsilon*length)continue;
                     double du=(u.X*d.X+u.Z*d.Z)/n,dv=(v.X*d.X+v.Z*d.Z)/n;
