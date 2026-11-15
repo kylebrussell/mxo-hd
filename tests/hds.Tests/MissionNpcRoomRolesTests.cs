@@ -55,4 +55,9 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(new[]{6,9,9},roles.Select(r=>r.Id));Assert.Equal(new[]{0,0,1},roles.Select(r=>r.Index));
         Assert.All(MissionNpcRoomRoles.Allocate(new[]{RoomCandidate(1,1,0),RoomCandidate(2,2,1),RoomCandidate(2,3,2),RoomCandidate(2,4,3)},roles.Length),c=>Assert.Equal((ushort)2,c.Route.Target.Region));
     }
+    [Fact] public void DifferentYawDoesNotMakeAnOccupiedPositionAvailableAgain()
+    {
+        var first=RoomCandidate(1,2,0);var rotated=new MissionNpcRoomRoles.Candidate(first.Marker,new[]{first.Standing[0],first.Standing[1],first.Standing[2],90d},first.Route,1);
+        Assert.Single(MissionNpcRoomRoles.Allocate(new[]{first,rotated},2));
+    }
 }

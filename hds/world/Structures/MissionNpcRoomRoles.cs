@@ -16,9 +16,11 @@ namespace hds
             internal Candidate(StaticWorldObject marker, double[] standing, E.NpcRoute route, int order)
             { Marker = marker; Standing = (double[])standing.Clone(); Route = route; Order = order; }
         }
+        private static string PositionKey(double[] point) => string.Join("|", point.Take(3).Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture)));
         internal static Candidate[] Allocate(IEnumerable<Candidate> candidates, int count)
         {
-            var rooms = candidates.GroupBy(c => c.Route.Target.Region).OrderBy(g => g.Min(c => c.Route.Nodes.Length)).ThenBy(g => g.Key).ToArray();
+            var unique = candidates.GroupBy(c => PositionKey(c.Standing)).Select(g => g.OrderBy(c => c.Order).First());
+            var rooms = unique.GroupBy(c => c.Route.Target.Region).OrderBy(g => g.Min(c => c.Route.Nodes.Length)).ThenBy(g => g.Key).ToArray();
             var complete = rooms.FirstOrDefault(g => g.Count() >= count);
             return (complete != null ? complete.OrderBy(c => c.Order) : rooms.SelectMany(g => g.OrderBy(c => c.Order))).Take(count).ToArray();
         }
@@ -32,7 +34,7 @@ namespace hds
             for (int i = 0; i < spots.Length; i++)
             {
                 double[] spot = spots[i];
-                if (candidates.Any(c => c.Standing.SequenceEqual(spot))) continue;
+                if (candidates.Any(c => c.Standing.Take(3).SequenceEqual(spot.Take(3)))) continue;
                 var matching = markers.Where(m => MissionNpcInteriorPlanning.RawShape(m, site.metrId, site.elevatorDoor.sectorID, 19) &&
                     m.pos_x == spot[0] && m.pos_y-50 == spot[1] && m.pos_z == spot[2] && m.rot == spot[3])
                     .GroupBy(m => MissionNpcInteriorPlanning.RawJson(m)).Select(g => g.First()).ToArray();
@@ -54,7 +56,7 @@ namespace hds
                 var actor=selection.Actors[i]; if(!roles[i].Matches(actor))return false;
                 var raw=MissionNpcInteriorPlanning.ReadRaw(actor.RawMarkerJson);
                 if(!MissionNpcInteriorPlanning.RawShape(raw,site.metrId,site.elevatorDoor.sectorID,19) || !actor.Standing.SequenceEqual(new double[]{raw.pos_x,raw.pos_y-50,raw.pos_z,raw.rot}) ||
-                    !site.npcSpots.Any(s=>s.SequenceEqual(actor.Standing)) || !used.Add(string.Join("|",actor.Standing.Select(v=>v.ToString("R",System.Globalization.CultureInfo.InvariantCulture)))))return false;
+                    !site.npcSpots.Any(s=>s.SequenceEqual(actor.Standing)) || !used.Add(PositionKey(actor.Standing)))return false;
             }
             return true;
         }
