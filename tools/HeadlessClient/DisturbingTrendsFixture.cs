@@ -51,6 +51,8 @@ public static class DisturbingTrendsFixture
     // Use the committed selected-site measured identity; never reverse-look-up a corrected pose in raw CSV.
     public static uint LobbyKey(hds.MissionProgress.SavedState state,IEnumerable<string> rawRows)
     {
+        var npc=MissionNpcInteriorRide.ForSite(state);
+        if(npc!=null)return npc.Lobby.Key;
         hds.MissionElevatorWitness? witness=null;
         if(state.OpenFloorCurrentSiteIndex is int index&&index>=0&&state.OpenFloorSites!=null&&index<state.OpenFloorSites.Length)
             witness=state.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==state.OpenFloorSites[index].Fingerprint);

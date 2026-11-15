@@ -28,8 +28,10 @@ public static partial class Scenarios
         async Task Ride(bool enter,MissionProgress.SavedState? original=null)
         {
             var state=original??await Saved();var door=state.Waypoints.Single();var lobby=state.Exits.Single();
+            var npcPlan=MissionNpcInteriorRide.ForSite(state);var npcDoor=enter?npcPlan?.Lobby:npcPlan?.Floor;
             uint key=enter?DisturbingTrendsFixture.LobbyKey(state,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f)))):BitConverter.ToUInt32(Convert.FromHexString(door.doorHex),0);
-            var owner=DisturbingTrendsProgressProof.Capture(state);var pose=enter?lobby:new[]{door.x,door.y,door.z};await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+            var owner=DisturbingTrendsProgressProof.Capture(state);var pose=enter?lobby:new[]{door.x,door.y,door.z};
+            var approach=npcDoor?.Standing??new[]{pose[0],pose[1]-50,pose[2]};await MoveForMissionTest(p,approach[0],approach[1],approach[2]);
             var now=await Current();
             if(!DisturbingTrendsProgressProof.Owns(owner,now)||now!.Phase!=state.Phase)
             {
@@ -41,6 +43,7 @@ public static partial class Scenarios
             uint currentKey=enter?DisturbingTrendsFixture.LobbyKey(now!,rawRows):BitConverter.ToUInt32(Convert.FromHexString(now!.Waypoints.Single().doorHex));
             Check.Equal(key,currentKey,"Requested ordinary door still belongs to selected accepted witness after movement");
             Check.Equal(JsonSerializer.Serialize(new{state.Waypoints,state.Exits,state.ElevatorWitnesses},options),JsonSerializer.Serialize(new{now.Waypoints,now.Exits,now.ElevatorWitnesses},options),"Exact selected measured/raw door history unchanged before request");
+            Check.Equal(npcPlan?.Raw,MissionNpcInteriorRide.ForSite(now)?.Raw,"Owned NPC entry witness unchanged before request");
             Check.That(state.Objects.OrderBy(o=>o.Id).Select(DisturbingTrendsFixture.FixedDescriptor).SequenceEqual(now.Objects.OrderBy(o=>o.Id).Select(DisturbingTrendsFixture.FixedDescriptor)),"Immutable current object sources/DTOs unchanged before request");
             var free=enter?state.Objects.Where(o=>o.OpenFloor!=null).ToArray():Array.Empty<MissionProgress.SavedObject>();
             bool Body(MissionProgress.SavedObject o)
@@ -50,10 +53,21 @@ public static partial class Scenarios
             var pending=free.Where(o=>!Body(o)).ToArray();
             int packetCursor=InteriorAdmissionDeliveryProof.Read(Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt")).Count(ch=>ch==10);
             int cursor=p.World.RpcSnapshot().Count,log=context.Server.DebugLog().Length;p.SkipReceived();
+            var ownLife=p.World.CurrentOwnViewLife();int sectionCursor=ownLife.Events.Count==0?ownLife.OwnBirthSection+1:ownLife.Events.Max(e=>e.Section)+1;
+            NpcInteriorComputerState.DoorObservation? observedDoor=null;
+            if(npcDoor!=null)await p.WaitUntilAsync(()=>{try{observedDoor=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),npcDoor);return true;}catch(InvalidDataException){return false;}},
+                "Actual current owned NPC elevator key/own-GO/pose/quaternion",TimeSpan.FromSeconds(15));
             string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
             if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static elevator door ride",TimeSpan.FromSeconds(15));
             string rideLog=context.Server.DebugLog()[log..];
-            checkpoints.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=rideLog});
+            NpcInteriorComputerState.Teleport? npcArrival=null;
+            if(npcPlan!=null)
+            {
+                var expected=(enter?npcPlan.Floor:npcPlan.Lobby).Standing!;
+                await p.WaitUntilAsync(()=>{try{npcArrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownLife,sectionCursor,expected);return true;}catch(InvalidDataException){return false;}},
+                    "Fresh ordinary elevator arrival at the owned measured NPC standing point",TimeSpan.FromSeconds(15));
+            }
+            checkpoints.Add(new{Step=step,Enter=enter,DoorKey=key,Request=request,RpcCursor=cursor,RideLog=rideLog,NpcWitness=npcPlan,NpcDoor=observedDoor,NpcArrival=npcArrival});
             if(enter&&pending.Length>0)
             {
                 var arrival=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();

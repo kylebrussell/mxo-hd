@@ -218,8 +218,7 @@ namespace hds
                 }
             }
             p.site=state.Version==1?legacyCurrent:state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
-            // Never promote an older history entry into the missing current area. Items are
-            // already restored so the existing typed quarantine retains ownership and payload.
+            // Missing current raw identity is quarantined before adopting any NPC interior witness.
             if(state.Version==1&&state.SiteDoors.Length>0&&legacyCurrent==null)
                 throw new MissionPlacementRestoreException(p,"MissingExactLegacyMissionSite");
             MissionNpcInteriorCheckpoint.Apply(p,npcInterior);
