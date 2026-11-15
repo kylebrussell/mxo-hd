@@ -38,6 +38,7 @@ public sealed class WorldSession : IDisposable
     private readonly List<RpcRecord> rpcLog = new();
     private readonly List<byte[]> viewLog = new();
     private readonly List<ViewCreation> creations = new();
+    private readonly OwnViewLifeLog ownViewLife = new();
     private readonly List<string> problems = new();
     private int rawPackets;
     private long version;
@@ -77,6 +78,11 @@ public sealed class WorldSession : IDisposable
     public List<ViewCreation> CreationSnapshot()
     {
         lock (logLock) { return creations.ToList(); }
+    }
+
+    public OwnViewLifeSnapshot CurrentOwnViewLife()
+    {
+        lock (logLock) { return ownViewLife.Snapshot(); }
     }
 
     /// <summary>
@@ -227,10 +233,12 @@ public sealed class WorldSession : IDisposable
 
         lock (logLock)
         {
+            var parsedCreations = payload.ViewSection == null ? new List<ViewCreation>() : WireFormat.FindCreations(payload.ViewSection);
+            ownViewLife.Observe(payload.ResetRequested, payload.ViewSection, viewLog.Count, parsedCreations);
             if (payload.ViewSection != null)
             {
                 viewLog.Add(payload.ViewSection);
-                creations.AddRange(WireFormat.FindCreations(payload.ViewSection));
+                creations.AddRange(parsedCreations);
             }
             // A list can repeat RPCs we already have: the server sends unacked ones again with their own counters.
             // Those are skipped, as the client does; a counter past the next one is a gap.
@@ -324,6 +332,7 @@ public sealed class WorldSession : IDisposable
             return;
         }
         disposed = true;
+        lock (logLock) { ownViewLife.EndLife(); }
         stop.Cancel();
         udp.Dispose();
         try

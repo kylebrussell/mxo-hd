@@ -75,11 +75,14 @@ namespace hds
                 {holder.Arrival=holder.PendingArrival;holder.PendingArrival=null;}
                 arrival=holder.Arrival;position=holder.Position;
             }
+            var site=progress.site;
+            var elevator=progress.ElevatorFor(site);
             double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
-            if(!MissionInteriorSites.Contains(progress.site,new NavPoint {x=x,y=y,z=z}))return false;
-            bool Matches(Observation at)=>at!=null&&at.Current()&&MissionInteriorSites.Contains(progress.site,at.Position);
+            if(!MissionInteriorSites.Contains(site,new NavPoint {x=x,y=y,z=z},elevator))return false;
+            bool Matches(Observation at)=>at!=null&&at.Current()&&MissionInteriorSites.Contains(site,at.Position,elevator);
             var selected=Matches(arrival)?arrival:Matches(position)?position:null;
-            return selected!=null&&selected.Owner.Current()&&
+            return selected!=null&&selected.Owner.Current()&&ReferenceEquals(progress.site,site)&&
+                ReferenceEquals(progress.ElevatorFor(site),elevator)&&
                 MissionOutput.BindCurrent(c.messageQueue,c.TransportFence,selected.Owner.Epoch,selected.Owner.World);
         }
     }
