@@ -19,6 +19,11 @@ namespace hds
         }
         private static readonly ConditionalWeakTable<MissionSite,Cached> cache=new ConditionalWeakTable<MissionSite,Cached>();
         internal static bool Eligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
+            =>CheckSite(phase,site,out refusal,npcCount,true);
+        // A committed choice is proved by its exact request/fixed witness, not unused pool rows.
+        internal static bool SelectedSiteEligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
+            =>CheckSite(phase,site,out refusal,npcCount,false);
+        private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool)
         {
             refusal=null;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
@@ -40,27 +45,29 @@ namespace hds
                     OpenFloorOrientation orientation;try{orientation=new OpenFloorOrientation(s.quat);}catch(ArgumentException){return true;}
                     return nativeRegion.CouldReachNative(new G.Position(s.pos_x,s.pos_y,s.pos_z),usable,orientation);
                 }
-                if(bound.Any(Possible))return true;
+                // SelectObjects binds the first matching native row deterministically.
+                if(Possible(bound[0]))return true;
                 refusal="NoInteriorNativeUse:"+first.kind;return false;
             }
+            if(!checkSourcePool)return true;
             var matching=site.objectSpots.Where(s=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.
             var sources=matching.Length>0?matching:site.objectSpots.Count>0?site.objectSpots.ToArray():site.containers.ToArray();
             if(!TryRegion(site,out var region,out refusal))return false;
-            bool known=false;
             foreach(var raw in sources)
             {
                 ushort goid=MissionStaging.ExpectedConcrete(first,raw);
                 if(!MissionOpenFloorAdmission.Target(goid,raw)||!MissionOpenFloorProfiles.TryModel(goid,out var model)||
-                    !MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))return true; // not proven by this necessary check
+                    !MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))continue; // unknown cannot hide another proved impossible source
                 OpenFloorOrientation orientation;
-                try{orientation=new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation));}catch(ArgumentException){return true;}
-                if(!orientation.YawOnly)return true;
-                known=true;
-                if(region.CanFit(model,orientation,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ)))return true;
+                try{orientation=new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation));}catch(ArgumentException){continue;}
+                if(!orientation.YawOnly)continue;
+                // The ordinary shuffle may choose ANY row in this priority pool. A fitting
+                // alternative does not authorize committing a different, impossible row.
+                if(!region.CanFit(model,orientation,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ)))
+                {refusal="NoInteriorFootprint:"+first.kind;return false;}
             }
-            if(known){refusal="NoInteriorFootprint:"+first.kind;return false;}
             return true;
         }
         internal static bool TryAllocate(MissionSite site,int count,out double[][] spots,out string refusal)
