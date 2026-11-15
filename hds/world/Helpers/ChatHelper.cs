@@ -22,6 +22,7 @@ namespace hds
             if (SafeFloorProbe.Dev(Store.currentClient, commands)) return;
             if (PosterBoxFloorProbe.Dev(Store.currentClient, commands)) return;
             if (MissionRuntime.DevPresentation(Store.currentClient, commands)) return;
+            if (IngressLivenessQa.Dev(Store.currentClient, commands)) return;
 
             try
             {
