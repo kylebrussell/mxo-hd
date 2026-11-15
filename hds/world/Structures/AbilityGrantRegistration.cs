@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 namespace hds
 {
-    /// <summary>Observed zero-valued loaded-parent registrations, separate from numeric stats and archive ownership.</summary>
+    /// <summary>Separately qualified loaded-parent registrations; never archive ownership.</summary>
     public static class AbilityGrantRegistration
     {
         public const ushort Parent = 356, Child = 1087;
@@ -59,7 +59,7 @@ namespace hds
         }
         private sealed class Holder { internal readonly Presentation State=new Presentation(); }
         private static readonly ConditionalWeakTable<WorldClient,Holder> holders=new ConditionalWeakTable<WorldClient,Holder>();
-        // Exact capture-qualified pairs; legacy and scaled grants keep their existing paths.
+        // Historical 25 capture-qualified zero pairs stay separate from scaled Sneak and native-qualified tools.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedPairs { get; } = Array.AsReadOnly(new (ushort Source,ushort Target)[] {
             (51,1094),
             (64,1078),
@@ -87,10 +87,18 @@ namespace hds
             (490,1091),
             (533,1066)
         });
+        internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedScaledPairs { get; } = Array.AsReadOnly(
+            new (ushort Source,ushort Target)[]{(AbilitySneakGrant.Parent,AbilitySneakGrant.Child)});
+        // Stored175 grants1116; native tool admission reads the live actor's grant registry, not Margin alone.
+        // Primary contract: research/abilities/invisibility-tool-registration.md. No new level formula.
+        internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
+            Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
+        internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs => ObservedPairs.Concat(NativeToolPairs);
         public static bool Handles(ushort parent,ushort child)
         {
             parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
-            if(!ObservedPairs.Any(p=>p.Source==parent && p.Target==child))return false;
+            if(AbilitySneakGrant.Matches(parent,child))return true;
+            if(!RegisteredPairs.Any(p=>p.Source==parent && p.Target==child))return false;
             var modifiers=AbilityCatalog.Find(parent)?.Modifiers.Where(m=>
                 AbilityCatalog.IdOf((uint)m.Number("TargetAbilityGrant"))==child &&
                 m.Number("WhenEnabled",-1)==0 && m.Number("DurationType",-1)==2).ToArray();
@@ -126,8 +134,11 @@ namespace hds
                        data.waitForRPCShutDown || data.DistrictIsLA())return;
                     lock(data.passives)
                     {
-                        var desired=ObservedPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
+                        var desired=RegisteredPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
                             .Select(p=>new Relation(p.Source,p.Target,0));
+                        foreach(var pair in ObservedScaledPairs)
+                            if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned)&&AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level))
+                                desired=desired.Append(new Relation(pair.Source,pair.Target,level));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                     }
                 });

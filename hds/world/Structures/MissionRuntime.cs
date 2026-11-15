@@ -1104,7 +1104,9 @@ namespace hds
                     header = header ?? "30000100" + ((byte)sector).ToString("x2") + ((byte)(sector >> 8)).ToString("x2") +
                              "01000000000000003c00";
                     // The area points are its street entrance, as retail's were
-                    areaA = new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z };
+                    var elevator=progress.ElevatorFor(site);
+                    areaA = elevator==null?new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z }:
+                        elevator.Lobby.Select(v=>(float)v).ToArray();
                     areaB = areaA;
                 }
 
