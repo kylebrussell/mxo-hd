@@ -6,15 +6,18 @@ namespace hds.Tests;
 public sealed class MervAfterCurrentNpcTests
 {
     static MissionProgress.SavedState State(bool friendly=false)=>new(){Version=2,Mission=301209,Phase=1,Instance=73,Identity=new string('a',32),Started=100,
-        Flags=new(){["entered"]=true},Mobs=new(){new(){Npc=6,Phase=0,Identity=new string('b',32),Name="Agent",Friendly=friendly,Hostile=false,Health=100,X=100,Y=2095,Z=300}}};
+        Flags=new(){["entered"]=true},Mobs=new(){new(){Npc=6,Phase=0,Identity=new string('b',32),Name="Agent",Level=50,Rsi="35000024",Friendly=friendly,Hostile=false,Health=100,X=100,Y=2095,Z=300}}};
     static byte[] Own(){var o=new PlayerCharacter();o.UnsetRelatedStaticObjId();o.DisableAllAttributes();return new byte[]{1,0}.Concat(new ObjectManager().GenerateCreationPacket(o,0,1).getBytes()).Concat(new byte[]{2,0,0}).ToArray();}
-    static byte[] Birth(byte spawn=4,ushort view=9,bool friendly=false,double x=100)
+    static byte[] Birth(byte spawn=4,ushort view=9,bool friendly=false,double x=100,bool missionKey=true,byte level=50,byte npcRank=1,bool hostileDontAttack=false)
     {
         var o=new AttributeClass3827("NPC_BASE",599);o.UnsetRelatedStaticObjId();o.DisableAllAttributes();
         void Set(string name,byte[] b){var a=(hds.Attribute)o.GetType().GetField(name)!.GetValue(o)!;a.enable();a.setValue(b);}
         var attr=(hds.Attribute)o.GetType().GetField("CharacterName")!.GetValue(o)!;var name=new byte[attr.getSize()];System.Text.Encoding.ASCII.GetBytes("Agent").CopyTo(name,0);Set("CharacterName",name);
-        Set("Position",new[]{x,2095d,300d}.SelectMany(BitConverter.GetBytes).ToArray());Set("MissionKey",new byte[]{0,73,0,2});
-        if(friendly)Set("DontAttack",new byte[]{1});else{Set("IsEnemy",new byte[]{1});Set("TalkDefaultable",new byte[]{1});}
+        Set("Position",new[]{x,2095d,300d}.SelectMany(BitConverter.GetBytes).ToArray());Set("Level",new[]{level});
+        if(missionKey)Set("MissionKey",new byte[]{0,73,0,2});
+        Set("IsFriendly",new byte[]{0});Set("TitleAbility",Convert.FromHexString("00100000"));Set("ConditionStateFlags",Convert.FromHexString("00001000"));
+        Set("CombatantMode",new byte[]{0x22});Set("NPCRank",new[]{npcRank});Set("IsDead",new byte[]{0});Set("CurrentState",BitConverter.GetBytes(0x806u));Set("MoreInfoID",Convert.FromHexString("35000024"));
+        if(friendly)Set("DontAttack",new byte[]{1});else{Set("IsEnemy",new byte[]{1});Set("TalkDefaultable",new byte[]{1});if(hostileDontAttack)Set("DontAttack",new byte[]{1});}
         return new byte[]{1,0}.Concat(new ObjectManager().GenerateCreationPacket(o,0,spawn).getBytes()).Concat(BitConverter.GetBytes(view)).Concat(new byte[]{0}).ToArray();
     }
     static byte[] Move(float x=100,float y=2095)=>new byte[]{9,0,2,0x0e,1,0}.Concat(new[]{x,y,300f}.SelectMany(BitConverter.GetBytes)).ToArray();
@@ -73,6 +76,40 @@ public sealed class MervAfterCurrentNpcTests
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),raw.Concat(new byte[]{6,0,2,255}).ToArray()));
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),new byte[]{6,0,2,255}));
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),raw,new byte[]{1,0,1,1,0,6,0}));
+    }
+
+    [Fact]public void ActualHostileDoraReplacementWithoutKeyUsesSqlAndCurrentViewCorroboration()
+    {
+        // bfc5bbadf0 section43, after the friendly view16 deletion at42; literal ordinary Mob producer.
+        var raw=Convert.FromHexString("01000C57020FCDAB15AE446F726100000000000000000000000000000000000000000000000000000000001000002200001000D4006001005801A10001C1600100580000000040C6E24000000000805FC14000000000007ED840C001860100A8326608B860010058000000000000000000000066080608000081080A00000211110000");
+        var state=State();state.Mission=301208;state.Phase=1;state.Instance=47;state.Identity="a9ee4f3b7d2847608605213d4195517c";state.Started=1794725566;
+        var actor=state.Mobs[0];actor.Npc=4;actor.Identity="099ec6885aa845beaec225c4dceb8ea6";actor.Name="Dora";actor.Rsi="60010058";actor.X=38450;actor.Y=8895;actor.Z=25080;
+        var observed=MervAfterCurrentNpc.Require(Stream(Own(),raw),MervAfterCurrentNpc.Capture(state,4),state);
+        Assert.Equal((ushort)17,observed.View.ViewId);Assert.Equal((byte)15,observed.View.SpawnId);Assert.True(observed.WireMissionKeyAbsent);
+        Assert.Contains("SQL",observed.IdentityAssociation);Assert.Contains("no wire ownership proof",observed.IdentityAssociation);
+        var scope=MervAfterCurrentNpc.Capture(state,4);
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Require(Stream(Own(),raw,new byte[]{1,0,1,1,0,17,0}),scope,state));
+        state.Mobs[0].Identity=new string('c',32);Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Require(Stream(Own(),raw),scope,state));
+    }
+    [Fact]public void AbsentHostileKeyNeverRelaxesFriendlyPresentKeyLevelOrProducerShape()
+    {
+        var state=State();Assert.True(Observe(state,Own(),Birth(missionKey:false)).WireMissionKeyAbsent);
+        Assert.False(Observe(state,Own(),Birth()).WireMissionKeyAbsent);
+        Assert.Throws<InvalidDataException>(()=>Observe(State(true),Own(),Birth(friendly:true,missionKey:false)));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(missionKey:false,level:49)));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(missionKey:false,npcRank:2)));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(missionKey:false,hostileDontAttack:true)));
+        var wrong=Birth();var key=Assert.Single(WireFormat.FindCreations(wrong)).Attributes["MissionKey"];int at=BytePattern.IndexOf(wrong,key,12);Assert.True(at>=12);wrong[at+1]++;
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),wrong));
+    }
+    [Fact]public void KeyOmissionDoesNotAdmitDeletedRetiredOrAmbiguousHostileGenerations()
+    {
+        var state=State();var birth=Birth(missionKey:false);
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),birth,Delete()));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),birth,Delete(),birth));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),birth,Birth(5,10,missionKey:false)));
+        Assert.Equal((byte)5,Observe(state,Own(),birth,Delete(),Birth(5,missionKey:false)).View.SpawnId);
+        Assert.Throws<InvalidDataException>(()=>Observe(state,birth,Own()));
     }
 
 }
