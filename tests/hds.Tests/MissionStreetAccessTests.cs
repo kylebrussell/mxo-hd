@@ -65,6 +65,27 @@ public sealed class MissionStreetAccessTests
         raw.pos_x+=1;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
         raw=Raw(c.Raw,key);raw.metrId=2;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
     }
+    [Fact]public void DeclaredPublicPayloadMissingTruncatedOrReplacedNeverFallsBackToLegacy()
+    {
+        var c=Load(209);var raw=Raw(c.Raw,0x0d100003);string temp=Path.Combine(Path.GetTempPath(),"mxo-public-door-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(temp);
+        try
+        {
+            var missing=new MissionPublicDoors.Dataset(temp,DirectoryFor("mission_interior_evidence_v2"));
+            Assert.Equal(MissionPublicDoors.Kind.Refused,missing.Resolve(raw).State);
+            var unknown=Raw(c.Raw,0x0d100003);unknown.mxoStaticId=0x0d1fffff;unknown.staticId=0xfffff;
+            Assert.Equal(MissionPublicDoors.Kind.Legacy,missing.Resolve(unknown).State);
+            unknown=Raw(c.Raw,0x0d100003);unknown.metrId=2;Assert.Equal(MissionPublicDoors.Kind.Legacy,missing.Resolve(unknown).State);
+            string file=Path.Combine(temp,"209.json.gz");File.WriteAllBytes(file,new byte[]{0x1f,0x8b});
+            Assert.Equal(MissionPublicDoors.Kind.Refused,new MissionPublicDoors.Dataset(temp,DirectoryFor("mission_interior_evidence_v2")).Resolve(raw).State);
+            byte[] packed=File.ReadAllBytes(Path.Combine(DirectoryFor("mission_street_access"),"209.json.gz"));packed[^1]^=1;File.WriteAllBytes(file,packed);
+            Assert.Equal(MissionPublicDoors.Kind.Refused,new MissionPublicDoors.Dataset(temp,DirectoryFor("mission_interior_evidence_v2")).Resolve(raw).State);
+            File.Copy(Path.Combine(DirectoryFor("mission_street_access"),"209.json.gz"),file,true);
+            var valid=new MissionPublicDoors.Dataset(temp,DirectoryFor("mission_interior_evidence_v2"));var result=valid.Resolve(raw);
+            Assert.Equal(MissionPublicDoors.Kind.Resolved,result.State);Assert.Equal((ushort)346,result.Pose.Goid);Assert.Equal(raw.mxoStaticId,result.Pose.Key);
+            raw.pos_z+=1;Assert.Equal(MissionPublicDoors.Kind.Refused,valid.Resolve(raw).State);
+        }
+        finally{Directory.Delete(temp,true);}
+    }
     [Fact]public void UnknownRawSignatureOtherWorldOtherFloorAndMissingPublicNodeCannotSupplyAccess()
     {
         var c=Load(209);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);

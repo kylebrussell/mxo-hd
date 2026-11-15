@@ -70,7 +70,7 @@ def export(tools, repository, interiors, output, sectors):
                              Quaternion=row['quat'].lower(), Rotation=float(row['rotation']))
             legacy.setdefault(key, []).append(dict(File='data/'+path.name, Line=line, Signature=signature))
     if not source_files: raise ValueError('Declared legacy source files unavailable')
-    output = Path(output); output.mkdir(parents=True, exist_ok=True); declarations = []
+    output = Path(output); output.mkdir(parents=True, exist_ok=True); declarations = []; public_declarations = []
     for sector in sorted(set(sectors)):
         declaration = next(r for r in manifest['Sectors'] if r['Sector'] == sector)
         compressed = (Path(interiors)/(str(sector)+'.json.gz')).read_bytes()
@@ -117,13 +117,20 @@ def export(tools, repository, interiors, output, sectors):
                         NavLength=len(nav), Outdoor=topology, Layers=layers, NativeDoors=doors, NativeObjects=objects,
                         Legacy=[dict(Key=k, Rows=legacy[k]) for k in sorted({d['Key'] for d in doors}) if k in legacy],
                         LegacySources=source_files)
+        # This is a declared-candidate index, not proof of usability. Runtime still validates the exact opening.
+        candidates = sorted({key for portal in interior['Portals']
+            if portal['TargetRegion'] < interior['OutdoorRegions']
+            for key in portal['DoorKeys']
+            if any(d['Key'] == key and d['Class'] == 364 and d['Region'] == portal['SourceRegion'] for d in doors)})
         raw = canonical(document); packed = gzip.compress(raw, mtime=0)
         (output/(str(sector)+'.json.gz')).write_bytes(packed)
         declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(),
                                  InteriorDigest=declaration['Digest'], Regions=len(topology['Regions']), NativeDoors=len(doors)))
+        public_declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(), Keys=candidates))
     text=(Path(interiors)/'manifest.json').read_text(encoding='utf-8').replace('\r\n','\n')
     result = dict(Format=1, World=1, InteriorsManifest=sha(text.encode()), Sectors=declarations)
     (output/'manifest.json').write_bytes(canonical(result)+b'\n')
+    (output/'public-index.json').write_bytes(canonical(dict(Format=1, World=1, Sectors=public_declarations))+b'\n')
     return result
 
 
