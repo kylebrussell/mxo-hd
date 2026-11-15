@@ -39,6 +39,7 @@ public static partial class Scenarios
         new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
         new Scenario("loaded-grant-membership", LoadedGrantMembership, StillNpcs),
+        new Scenario(SneakScaledGrantFixture.Name, SneakScaledGrant, SneakScaledGrantFixture.Environment, Timeout: TimeSpan.FromMinutes(4)),
         new Scenario("invisibility-tool-registration", InvisibilityToolRegistration, InvisibilityToolRegistrationFixture.Environment),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
