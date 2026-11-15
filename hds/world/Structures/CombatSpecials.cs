@@ -51,7 +51,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             if (thrownDots.Contains(id)) return id == SeverArtery
-                ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; RandomCombatStateChance missing"
+                ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
             if (id == BerserkerAttack) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
             if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
@@ -71,7 +71,7 @@ namespace hds
 
         // ---- timed effects on the target ----
         // The thrown DOTs' stored ThrownDOT and fixed debuffs are UDB0 catalog debuffs: AbilityHostile.Catalog executes
-        // them through TempMods.TryGet (RandomCombatStateChance's periodic random state is not modelled).
+        // them through TempMods.TryGet (including the explicitly scoped341 random-state callback).
 
         // ---- buffs on the caster ----
 
@@ -161,14 +161,29 @@ namespace hds
 
         // ---- Taunt ----
 
-        private sealed class TauntState { public WorldClient Taunter; }
+        private sealed class TauntRecord
+        {
+            public readonly WorldClient Taunter;
+            public readonly WeakReference<WorldClient> ScopedOwner;
+            public readonly Func<bool> Current;
+            public TauntRecord(WorldClient owner, Func<bool> current)
+            { Taunter=current==null?owner:null; ScopedOwner=current==null?null:new WeakReference<WorldClient>(owner); Current=current; }
+            public WorldClient Owner => ScopedOwner!=null ? ScopedOwner.TryGetTarget(out var owner)?owner:null : Taunter;
+        }
+        private sealed class TauntState { public TauntRecord Record; }
         private static readonly ConditionalWeakTable<Mob, TauntState> taunts = new ConditionalWeakTable<Mob, TauntState>();
 
-        public static WorldClient MostHated(Mob mob)
+        private static TauntRecord CurrentTaunt(Mob mob)
         {
             if (mob == null || !taunts.TryGetValue(mob, out TauntState state)) return null;
-            lock (state) return state.Taunter;
+            TauntRecord record;
+            lock(state) record=state.Record;
+            // Never invoke lifecycle observations under the owner lock.
+            if(record==null || record.Current==null || record.Current())return record;
+            lock(state)if(ReferenceEquals(state.Record,record))state.Record=null;
+            return null;
         }
+        public static WorldClient MostHated(Mob mob) => CurrentTaunt(mob)?.Owner;
 
         /// <summary>TauntAggro: every hostile NPC around the caster now hates the caster most; one that is not already
         /// fighting the caster turns on them. Returns the NPCs taunted.</summary>
@@ -190,26 +205,52 @@ namespace hds
                 }
             foreach (Mob mob in taunted)
             {
-                TauntState state = taunts.GetValue(mob, _ => new TauntState());
-                lock (state) state.Taunter = caster;
-                Output.WriteDebugLog("[SPECIAL] Taunt: " + mob.getName() + " now hates " + caster.playerData.getCharID() + " most");
-                if (!CombatManager.GetHandler(caster).IsFighting(mob)) MobAggro.Retaliate(caster, mob);
+                ApplyNpcTaunt(caster, mob);
             }
             return taunted;
+        }
+
+        // Shared consumer of the exact TauntAggro initializer. Selection belongs to
+        // each ability:647 selects around self;610 uses its normal landed recipients.
+        internal static bool ApplyNpcTaunt(WorldClient caster, Mob mob, Func<bool> current=null)
+        {
+            if(current!=null && !current())return false;
+            TauntState state = taunts.GetValue(mob, _ => new TauntState());
+            var appended=new TauntRecord(caster,current);
+            TauntRecord previous;
+            lock(state) { previous=state.Record; state.Record=appended; }
+            if(current!=null && !current())
+            {
+                // Roll back only our unpublished replacement. A clear/newer record wins.
+                lock(state)if(ReferenceEquals(state.Record,appended))state.Record=previous;
+                return false;
+            }
+            Output.WriteDebugLog("[SPECIAL] Taunt: " + mob.getName() + " now hates " + caster.playerData.getCharID() + " most");
+            if (!CombatManager.GetHandler(caster).IsFighting(mob)) MobAggro.Retaliate(caster, mob);
+            return true;
         }
 
         /// <summary>A taunted NPC directs its attacks at its taunter while the taunter is fighting it: another player's
         /// fight with it gets no NPC hit. The taunt lapses when the taunter is no longer fighting that NPC.</summary>
         public static bool TurnedAway(Mob mob, WorldClient player)
         {
-            WorldClient taunter = MostHated(mob);
-            if (taunter == null || taunter == player) return false;
+            TauntRecord record=CurrentTaunt(mob);
+            WorldClient taunter = record?.Owner;
+            if (taunter == null) return false;
+            if (taunter == player) return TraceTauntDecision(mob,player,taunter,record,false);
             if (taunter.playerData.isDead || !CombatManager.GetHandler(taunter).IsFighting(mob))
             {
-                if (taunts.TryGetValue(mob, out TauntState state)) lock (state) if (state.Taunter == taunter) state.Taunter = null;
+                if (taunts.TryGetValue(mob, out TauntState state)) lock (state) if (ReferenceEquals(state.Record,record)) state.Record=null;
                 return false;
             }
-            return true;
+            return TraceTauntDecision(mob,player,taunter,record,true);
+        }
+
+        private static bool TraceTauntDecision(Mob mob,WorldClient player,WorldClient owner,TauntRecord record,bool away)
+        {
+            if(record?.Current!=null)Output.WriteDebugLog("[ENGAGE-FOES] turn entity="+mob.getEntityId()+" evaluated="+player.playerData.getCharID()+
+                " owner="+owner.playerData.getCharID()+" diverted="+away);
+            return away;
         }
     }
 }

@@ -15,6 +15,8 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
+  <ItemGroup><None Update="ZenMasterLegacyPlan.json" CopyToOutputDirectory="PreserveNewest" /><None Update="NativeQaLegacyPlans.json" CopyToOutputDirectory="PreserveNewest" /><None Update="NativeQaWriteCodeLegacyPlan.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
@@ -24,6 +26,7 @@
     <ProjectReference Include="..\..\tools\PacketResearch\PacketResearch.csproj" />
     <ProjectReference Include="..\..\tools\HeadlessClient\HeadlessClient.csproj" />
     <ProjectReference Include="..\..\tools\NativeQa\NativeQa.csproj" />
+    <ProjectReference Include="..\..\tools\LoadTest\LoadTest.csproj" />
   </ItemGroup>
 
 </Project>

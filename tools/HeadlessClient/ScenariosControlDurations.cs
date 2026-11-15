@@ -19,6 +19,7 @@ public static partial class Scenarios
         }
         var stunView = await caster.WaitForViewNamedAsync(stunned.Handle);
         var rootView = await caster.WaitForViewNamedAsync(rooted.Handle);
+        await PrepareFreeCastViralFixture(context,caster,40,315,330);
         Cast(caster, 315, stunView.ViewId);
         var stun = await stunned.WaitForRpcAsync(ModPattern(315, 102));
         Check.That(Math.Abs(BitConverter.ToSingle(stun.Bytes, 18) - 8.05f) < .0001f, "Stun packet carries the boosted fractional duration");
@@ -51,6 +52,7 @@ public static partial class Scenarios
             $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES ({caster.CharId},300,{ability},50,1)");
         await caster.EnterWorldAsync();
         var mob = await caster.WaitForViewNamedAsync("WinterFrost");
+        await PrepareFreeCastViralFixture(context,caster,315);
         Cast(caster, 315, mob.ViewId);
         await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("[EFFECTS] 315 on WinterFrost: State 102 0 8.05 s"),
             "NPC state receives the same fractional caster duration bonus", TimeSpan.FromSeconds(10));

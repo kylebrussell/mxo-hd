@@ -63,6 +63,14 @@ namespace hds
 
         public static void Drop(WorldClient client, Mob source, UInt32 info, UInt32 missionItem, IEnumerable<UInt32> items)
         {
+            if(client.playerData.missionProgress!=null&&client.playerData.missionMobs.Contains(source))
+            {
+                MissionPersistence.Mutate(client,()=>DropCore(client,source,info,missionItem,items));return;
+            }
+            DropCore(client,source,info,missionItem,items);
+        }
+        private static void DropCore(WorldClient client,Mob source,UInt32 info,UInt32 missionItem,IEnumerable<UInt32> items)
+        {
             lock (client.playerData.loot)
             {
                 SendWindow(client, client.playerData.loot.Add(source, info, missionItem, items));
@@ -102,6 +110,17 @@ namespace hds
         /// <summary>Grants the selected corpse once, retaining every item that does not fit.</summary>
         public static bool TryTakeAll(WorldClient client)
         {
+            lock(client.playerData.missionSync)
+            {
+                Mob source;
+                lock(client.playerData.loot)source=client.playerData.loot.Current?.Source;
+                if(client.playerData.missionProgress!=null&&source!=null&&client.playerData.missionMobs.Contains(source))
+                    return MissionPersistence.Mutate(client,()=>TryTakeAllCore(client));
+            }
+            return TryTakeAllCore(client);
+        }
+        private static bool TryTakeAllCore(WorldClient client)
+        {
             Mob emptied = null;
             ServerPackets packets = new ServerPackets();
             lock (client.playerData.loot)
@@ -119,33 +138,32 @@ namespace hds
 
                 if (corpse.Info > 0)
                 {
-                    UInt32 total = (UInt32)Math.Min(client.playerData.getInfo() + (long)corpse.Info, UInt32.MaxValue);
-                    Store.dbManager.WorldDbHandler.SaveInfo(client, total);
-                    client.playerData.setInfo(total);
-                    Output.WriteDebugLog("[LOOT] Player received " + corpse.Info + " info. Total: " + total);
-                    corpse.Info = 0;
+                    if(client.playerData.missionProgress!=null&&client.playerData.missionMobs.Contains(corpse.Source))
+                    {
+                        corpse.Info=0;
+                        MissionPersistence.Save(client); // pending cash transition and checkpoint commit together
+                    }
+                    else
+                    {
+                        UInt32 total = (UInt32)Math.Min(client.playerData.getInfo() + (long)corpse.Info, UInt32.MaxValue);
+                        Store.dbManager.WorldDbHandler.SaveInfo(client, total);
+                        client.playerData.setInfo(total);
+                        Output.WriteDebugLog("[LOOT] Player received " + corpse.Info + " info. Total: " + total);
+                        corpse.Info = 0;
+                    }
                 }
                 packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
-                GiveItems(client, corpse.Items);
-
-                var remaining = new List<(byte[] Data, UInt32 Item)>();
-                foreach (UInt32 item in corpse.Items)
-                {
-                    remaining.Add((new byte[4], item));
-                }
+                var claimed = GiveItems(client, corpse.Items);
                 if (corpse.MissionItem != 0)
                 {
                     if (MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
                     {
+                        claimed.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
                         corpse.MissionItem = 0;
                     }
-                    else
-                    {
-                        remaining.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
-                    }
                 }
-                packets.SendLootAccepted(client, remaining.ToArray());
-                if (remaining.Count == 0)
+                packets.SendLootAccepted(client, claimed.ToArray());
+                if (corpse.Items.Count == 0 && corpse.MissionItem == 0)
                 {
                     emptied = corpse.Source;
                 }
@@ -159,24 +177,30 @@ namespace hds
         }
 
         /// <summary>Removes each granted item immediately, so a later failure cannot grant it again on retry.</summary>
-        private static void GiveItems(WorldClient client, List<UInt32> items)
+        private static List<(byte[] Data, UInt32 Item)> GiveItems(WorldClient client, List<UInt32> items) =>
+            ClaimItems(items, goid =>
+            {
+                // Existing inventory policy stacks Code Bits/pills and refuses a full bag.
+                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
+                Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
+                return slot != 0;
+            });
+
+        internal static List<(byte[] Data, UInt32 Item)> ClaimItems(List<UInt32> items, Func<UInt32,bool> give)
         {
+            var claimed = new List<(byte[] Data, UInt32 Item)>();
             int index = 0;
             while (index < items.Count)
             {
                 UInt32 goid = items[index];
-                // Stacks onto an existing stack (Code Bits, pills) and refuses a full bag
-                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
-                if (slot == 0)
-                {
-                    index++;
-                }
+                if (!give(goid)) index++;
                 else
                 {
                     items.RemoveAt(index);
+                    claimed.Add((new byte[4], goid));
                 }
-                Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
             }
+            return claimed;
         }
     }
 }

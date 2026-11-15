@@ -31,6 +31,16 @@ public sealed class HeadlessPlayer : IDisposable
 
     /// <summary>Character data from the margin (05 inventory, 07 known abilities...).</summary>
     public IReadOnlyDictionary<byte, byte[]> CharacterData => margin.CharacterData;
+    public byte[] MarginLoginReply => margin.LoginReply.ToArray();
+
+    /// <summary>Normal creation already authenticated/loaded on this Margin; reuse it for the first UDP session.</summary>
+    public static async Task<HeadlessPlayer> AttachCreatedAsync(ServerAddress server,string handle,uint charId,MarginSession margin)
+    {
+        using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var world=new WorldSession(server.Host,server.WorldPort);
+        try{world.SendSessionRequest(charId);await margin.WaitForUdpSessionAsync(timeout.Token);return new HeadlessPlayer(handle,charId,margin,world);}
+        catch{world.Dispose();throw;}
+    }
 
     /// <summary>Auth, margin, then the world session up to the point the real client would finish loading the map.</summary>
     public static async Task<HeadlessPlayer> LoginAsync(ServerAddress server, string username, string handle, string password = "x")
@@ -66,10 +76,11 @@ public sealed class HeadlessPlayer : IDisposable
     /// <summary>
     /// Tells the server the world is loaded (RPC 05) and waits for the self spawn (a creation record for view 2).
     /// </summary>
-    public async Task EnterWorldAsync()
+    public async Task EnterWorldAsync(bool loadingComplete=true)
     {
         SendRpc("05");
         await WaitUntilAsync(() => World.CreationSnapshot().Any(c => c.ViewId == 2), "the self spawn", TimeSpan.FromSeconds(15));
+        if(loadingComplete)SendRpc("0c 01"); // native OnEnterWorld lifecycle marker
     }
 
     public void SendRpc(byte[] record) => World.SendRpcs(record);

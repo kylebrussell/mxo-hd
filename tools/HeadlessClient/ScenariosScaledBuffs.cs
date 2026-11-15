@@ -145,6 +145,7 @@ public static partial class Scenarios
         target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var view=await hacker.WaitForViewNamedAsync(target.Handle);
         Cast(target,327); await target.WaitForRpcAsync(ModPattern(327,172));
+        await PrepareFreeCastViralFixture(context,hacker,481);
         Cast(hacker,481,view.ViewId); await target.WaitForRpcAsync("80 bc 09 00",TimeSpan.FromSeconds(8));
         target.SkipReceived(); Cast(target,489); await target.WaitForRpcAsync("80 ba");
         Check.Equal(0,target.Received(ModPattern(489,172)).Count,"Overflow blocks a new47-unit group upgrade");

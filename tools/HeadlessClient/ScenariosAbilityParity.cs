@@ -102,6 +102,7 @@ public static partial class Scenarios
         victim.SendRpc($"41 {HandleOf(casterForVictim)}");
         await victim.WaitForRpcAsync("81 68");
 
+        await PrepareFreeCastViralFixture(context,caster,315,329);
         Cast(caster, 315, victimView.ViewId);
         await victim.WaitForRpcAsync(ModPattern(315, 102), TimeSpan.FromSeconds(10));
         await victim.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 04 09 00 28 ??");
@@ -145,6 +146,7 @@ public static partial class Scenarios
         var train = await caster.WaitForViewNamedAsync("Trainman");
         var smith = await caster.WaitForViewNamedAsync("Smithling");
         var below = await caster.WaitForViewNamedAsync("WinterHelper");
+        await PrepareFreeCastViralFixture(context,caster,359,466);
         Cast(caster, 466, frost.ViewId);
         await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("466 on Smithling"), "Area virus infects secondary target", TimeSpan.FromSeconds(10));
         // Switch the caster's live fight to another mob. The secondary DOTs must remain independent of that fight.

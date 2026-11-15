@@ -1,0 +1,37 @@
+{
+  "Environment": {
+    "MXO_DEV_COMMANDS": "1",
+    "MXO_AUTH_PORT": "11000",
+    "MXO_MARGIN_PORT": "10000",
+    "MXO_WORLD_PORT": "10000",
+    "MXO_CONSOLE_PORT": "55557",
+    "MXO_MOBS": "test",
+    "MXO_MOB_WANDER": "0",
+    "MXO_AGGRO": "0",
+    "MXO_PACKET_LOG": "1",
+    "MXO_GM_CHARACTER_IDS": "",
+    "MXO_CALLBACK_QA_ROLL15": "0",
+    "MXO_CALLBACK_QA_ROLL100": "0"
+  },
+  "Plan": {
+    "Abilities": [
+      2,
+      17,
+      871
+    ],
+    "X": 23828,
+    "Z": 13984,
+    "BeforeLoadout": [
+      "UPDATE characters SET level=99,healthC=100,healthM=500,innerStrC=100,innerStrM=200 WHERE charId=110"
+    ],
+    "AfterLoadout": [],
+    "AfterHelpers": [
+      "UPDATE characters SET innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111,6112,6113,6114); DELETE FROM inventory WHERE charId IN (110,6111,6112,6113,6114) AND slot=1; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,615,1,1,0),(6111,615,1,1,0),(6112,615,1,1,0),(6113,615,1,1,0),(6114,615,1,1,0)",
+      "UPDATE characters SET innerStrC=100,innerStrM=200 WHERE charId=110",
+      "UPDATE characters SET level=20,exp=16482500 WHERE charId=6111"
+    ],
+    "HealthCallbackQa": true,
+    "FixedCallbackRolls": true,
+    "ZenMasterForcedLevel": 99
+  }
+}

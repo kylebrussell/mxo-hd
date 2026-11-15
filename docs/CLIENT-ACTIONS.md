@@ -82,8 +82,8 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | `34` | Enter a stance (Stance): `/sit` `0a`, `/dance` `11`..`15` | D, C 21 | handled (new): the stance to the own view and everyone else's, sitting with ConditionStateFlags 0x00200000 | medium |
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
 | `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | handled: own/observer/late-view AFK and tell feedback; session presence | low |
-| `3b` | No fields; two senders, one in the slash command handler (0x62256760). Purpose not determined | D | ignored | low |
-| `81 55` | No fields, from the slash command handler. Purpose not determined | D | ignored | low |
+| `3b` | No fields; `/targetdamage` string600000d3 dispatches62259838. Response/effect unknown; see CLIENT-ACTIONS-FOLLOWTHROUGH.md | D | ignored | low |
+| `81 55` | No fields; `/stuck` string3a000052 dispatches62246b40 after a local stuck gate. Server recovery contract unknown | D | ignored | low |
 | `81 47`, `81 4a` | No fields; no sender found | D | ignored | low |
 
 ## Chat rooms (custom channels)
@@ -210,7 +210,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
 | `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
 | `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
-| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
+| `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Server `81 1a` also closes it (retail `loot.txt:420`; client dispatcher `62179a05`) | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
 | `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
@@ -240,7 +240,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 9e` | `/pvp` | D | handled | medium |
 | `81 51` | Target | D, C 972 | handled | high |
 | `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | handled: validated compiler request and script contest; [limits](CLIENT-COMBAT-ACTIONS.md) | medium |
-| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; fragment recovery and other inventory abilities remain | medium |
+| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; native producer requires CastValidTarget7, so this cannot activate Write Code970 (target0); fragment recovery and other inventory abilities remain | medium |
 | `81 aa` | UserData, Interrupted: an FX or cast ending (guess) | D | ignored | low |
 
 ## Help and petitions
@@ -325,7 +325,7 @@ No retail capture has a subway ride, so the records are client.dll's and the res
 
 | Record | Layout and what the client does |
 |---|---|
-| `81 3a` (S) | `<Position: 3 × f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
+| `81 3a` (S) | `<Position: 3 Ã— f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
 | `81 3d` (C) | No body, sent as the map opens (0x620fc150) |
 | `81 3e` (S) | `<Seconds u8>` (0x620fccd0): the departure countdown, shown as m:ss. The client starts at 60 and only takes a lower value. At 0 it shows "The subway is now leaving the station... sorry, but you missed it!" and sends `81 3b` |
 | `81 3b` (C) | No body: Cancel, or the countdown ran out (0x620fc490). The map closes |
@@ -353,6 +353,10 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 - `62` is sent for central-storage moves only; with IsCentralStorageItem set, `67` and `68` work on storage entries (see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md)).
 
 **The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+
+## Loot acknowledgements and closure
+
+Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).
 
 ## Looting single items
 
@@ -638,7 +642,7 @@ The rules are retail's flow; the checks are ours:
 
 **`34 <stance>` enters a stance.**
 - /sit sends `34 0a`.
-- /dance and /dance1–5 send `34 11`–`34 15`.
+- /dance and /dance1â€“5 send `34 11`â€“`34 15`.
 
 **`33 <current stance>` leaves one.** The client sends it for /stand, for /sit while sitting, and once when the player moves out of a locked stance. It keeps resending `33` until it sees stance 0: in the shutdown capture (ProxyM2_m2_packets6) the server imposed stance `19` and never released it, and the client sent `33 19` 1,906 times.
 

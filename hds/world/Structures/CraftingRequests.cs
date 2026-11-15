@@ -51,6 +51,11 @@ namespace hds
             ? new InventoryAbility { Ability = BitConverter.ToUInt32(body, 0), Slot = body[4], ToolSlot = body[5],
                 IsRecipeKnown = body[6] != 0 } : null;
 
+        // 621ed177..193 calls62515bb0 (CastValidTarget) and requires7 before producing81 31.
+        // In particular970 is a target0 tool toggle;37 is its parent skill, not a wire alias.
+        public static bool IsInventoryTargetAbility(uint ability) => ability <= ushort.MaxValue &&
+            AbilityCatalog.Find((ushort)ability)?.Number("Ability/CastValidTarget", -1) == 7;
+
         public static bool Matches(Compile request, Crafting.Recipe recipe)
         {
             var needed = recipe.Ingredients.GroupBy(i => i).ToDictionary(g => g.Key, g => g.Count());

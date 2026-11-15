@@ -1,0 +1,513 @@
+{
+  "Source": "Literal outputs from reviewed corrected offline planner396a3c37; old4 explicit contexts plus four retained live218 inputs. Not runtime staging/native walking.",
+  "Cases": [
+    {
+      "Name": "zion101209-phase1-1444",
+      "Raw": [
+        31950,
+        1349,
+        -6600
+      ],
+      "Quaternion": "00000000f20435bf00000000f304353f",
+      "RootId": [
+        555,
+        45,
+        94
+      ],
+      "Standing": [
+        31850,
+        1295,
+        -6620
+      ],
+      "RootEvidence": "Peer normal source selection: ApproachProjected and ApproachValidated true at exact polygon555/45/94 in mxo-zion-next-five-offline-selection.json. Caller-supplied standing context; normal elevator-to-root walking not proven.",
+      "Centre": [
+        31729.999995785314,
+        1240.0,
+        -6850.000005900559
+      ],
+      "Approach": [
+        31747.5,
+        1295.0,
+        -6800.0
+      ],
+      "SurfaceId": [
+        555,
+        45,
+        6
+      ],
+      "SurfaceVertices": [
+        [
+          31800.0,
+          -7000.0
+        ],
+        [
+          31800.0,
+          -6800.0
+        ],
+        [
+          31695.0,
+          -6800.0
+        ],
+        [
+          31600.0,
+          -6800.0
+        ],
+        [
+          31600.0,
+          -6815.0
+        ],
+        [
+          31600.0,
+          -7000.0
+        ]
+      ],
+      "Floor": 1200.0,
+      "SourceGoid": 1444,
+      "SourceKey": 581960276
+    },
+    {
+      "Name": "zion101209-phase2-1415",
+      "Raw": [
+        6715,
+        1022,
+        15005
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        1214,
+        65,
+        6
+      ],
+      "Standing": [
+        6900,
+        895,
+        15150
+      ],
+      "RootEvidence": "EXPLICIT ANALYTIC CALLER INPUT: normal selected site NPC standing XZ6900/15150 lies in polygon1214/65/6 at NAVsurface800. StandingY895 is exact NAV+95, distinct from source NPC896. No normal player entry-to-root bridge is established.",
+      "Centre": [
+        6855.0,
+        840.0,
+        15070.0
+      ],
+      "Approach": [
+        6900,
+        895.0,
+        15150
+      ],
+      "SurfaceId": [
+        1214,
+        65,
+        6
+      ],
+      "SurfaceVertices": [
+        [
+          6805.0,
+          15000.0
+        ],
+        [
+          7000.0,
+          15000.0
+        ],
+        [
+          7000.0,
+          15180.0
+        ],
+        [
+          6805.0,
+          15180.0
+        ]
+      ],
+      "Floor": 800.0,
+      "SourceGoid": 1415,
+      "SourceKey": 1272972635
+    },
+    {
+      "Name": "native209-open-floor-control",
+      "Raw": [
+        25100,
+        2040,
+        14100
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        209,
+        63,
+        3
+      ],
+      "Standing": [
+        25579.31146596289,
+        2095,
+        13959.481277120463
+      ],
+      "RootEvidence": "Existing normal mission landing context saved in mxo-box-qa-entry-path.json and validated by NavMesh Project in mxo-box-qa-grounding.json. Native209 tested the final open-floor asset, not this entire NAV route.",
+      "Centre": [
+        25100,
+        2040.0,
+        14100
+      ],
+      "Approach": [
+        25100.0,
+        2095.0,
+        14000.0
+      ],
+      "SurfaceId": [
+        209,
+        54,
+        12
+      ],
+      "SurfaceVertices": [
+        [
+          25000.0,
+          14200.0
+        ],
+        [
+          25000.0,
+          14000.0
+        ],
+        [
+          25200.0,
+          14000.0
+        ],
+        [
+          25200.0,
+          14200.0
+        ]
+      ],
+      "Floor": 2000.0,
+      "SourceGoid": 548,
+      "SourceKey": 0
+    },
+    {
+      "Name": "native203-failed-source",
+      "Raw": [
+        23940,
+        2100,
+        15050
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        209,
+        63,
+        3
+      ],
+      "Standing": [
+        25579.31146596289,
+        2095,
+        13959.481277120463
+      ],
+      "RootEvidence": "Same explicit normal landing context as209, not a guessed far-side room root.",
+      "Centre": [
+        24250.0,
+        2040.0,
+        15470.0
+      ],
+      "Approach": [
+        24400.0,
+        2095.0,
+        15500.0
+      ],
+      "SurfaceId": [
+        209,
+        54,
+        22
+      ],
+      "SurfaceVertices": [
+        [
+          24400.0,
+          15400.0
+        ],
+        [
+          24400.0,
+          15600.0
+        ],
+        [
+          24200.0,
+          15600.0
+        ],
+        [
+          24200.0,
+          15450.0
+        ],
+        [
+          24200.0,
+          15400.0
+        ],
+        [
+          24300.0,
+          15400.0
+        ]
+      ],
+      "Floor": 2000.0,
+      "SourceGoid": 1415,
+      "SourceKey": 219153372
+    },
+    {
+      "Name": "51e509462f-phase1-site0",
+      "Raw": [
+        24050,
+        3471,
+        14950
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        209,
+        60,
+        3
+      ],
+      "Standing": [
+        25550.263656786137,
+        3295,
+        13932.585925048399
+      ],
+      "RootEvidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site.",
+      "Centre": [
+        24110.0,
+        3240.0,
+        15120.0
+      ],
+      "Approach": [
+        24200.0,
+        3295.0,
+        15125.0
+      ],
+      "SurfaceId": [
+        209,
+        51,
+        57
+      ],
+      "SurfaceVertices": [
+        [
+          24200.0,
+          15050.0
+        ],
+        [
+          24200.0,
+          15200.0
+        ],
+        [
+          24060.0,
+          15200.0
+        ],
+        [
+          24060.0,
+          15050.0
+        ],
+        [
+          24140.0,
+          15050.0
+        ]
+      ],
+      "Floor": 3200.0,
+      "SiteBounds": [
+        23900.0,
+        26365.0,
+        12905.0,
+        15700.0
+      ],
+      "RetainedProofSha256": "faeed15493b3f94120cbaf0984413494d874ee36898b8e6f1d070505d58f59bc",
+      "SourceGoid": 1412,
+      "SourceKey": 219153053
+    },
+    {
+      "Name": "51e509462f-phase2-site0",
+      "Raw": [
+        39965,
+        605,
+        14460
+      ],
+      "Quaternion": "00000000f204353f00000000f304353f",
+      "RootId": [
+        1118,
+        52,
+        8
+      ],
+      "Standing": [
+        40970.71067811865,
+        495,
+        15470.710678118654
+      ],
+      "RootEvidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site.",
+      "Centre": [
+        39929.999995785314,
+        440.0,
+        14460.0
+      ],
+      "Approach": [
+        39900.0,
+        495.0,
+        14400.0
+      ],
+      "SurfaceId": [
+        1118,
+        67,
+        100
+      ],
+      "SurfaceVertices": [
+        [
+          39800.0,
+          14400.0
+        ],
+        [
+          40000.0,
+          14400.0
+        ],
+        [
+          40000.0,
+          14530.0
+        ],
+        [
+          39950.0,
+          14530.0
+        ],
+        [
+          39800.0,
+          14530.0
+        ]
+      ],
+      "Floor": 400.0,
+      "SiteBounds": [
+        39800.0,
+        41300.0,
+        13500.0,
+        15200.0
+      ],
+      "RetainedProofSha256": "faeed15493b3f94120cbaf0984413494d874ee36898b8e6f1d070505d58f59bc",
+      "SourceGoid": 1412,
+      "SourceKey": 1172308933
+    },
+    {
+      "Name": "cae96c70b5-phase1-site0",
+      "Raw": [
+        29055,
+        625,
+        -7485
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        555,
+        41,
+        3
+      ],
+      "Standing": [
+        30278.80849421055,
+        495,
+        -6998.874131254861
+      ],
+      "RootEvidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site.",
+      "Centre": [
+        30110.0,
+        440.0,
+        -7130.0
+      ],
+      "Approach": [
+        30130.0,
+        495.0,
+        -7000.0
+      ],
+      "SurfaceId": [
+        555,
+        41,
+        9
+      ],
+      "SurfaceVertices": [
+        [
+          30200.0,
+          -7200.0
+        ],
+        [
+          30200.0,
+          -7000.0
+        ],
+        [
+          30060.0,
+          -7000.0
+        ],
+        [
+          30060.0,
+          -7200.0
+        ]
+      ],
+      "Floor": 400.0,
+      "SiteBounds": [
+        27975.0,
+        32300.0,
+        -10000.0,
+        -6650.0
+      ],
+      "RetainedProofSha256": "41a8779eea3ede61d5976669cf239781df2fab69c5210db91784921908956ab8",
+      "SourceGoid": 1415,
+      "SourceKey": 581960068
+    },
+    {
+      "Name": "cae96c70b5-phase2-site0",
+      "Raw": [
+        35150,
+        1445,
+        -20055
+      ],
+      "Quaternion": "0000000000000000000000000000803f",
+      "RootId": [
+        298,
+        63,
+        8
+      ],
+      "Standing": [
+        35970.71067811865,
+        1295,
+        -20529.289321881344
+      ],
+      "RootEvidence": "Literal unchanged normal Ride/NearestOnMesh using actual compiled Locate; exact live saved checkpoint elevator and source membership qualified catalog site.",
+      "Centre": [
+        35150.0,
+        1240.0,
+        -20270.0
+      ],
+      "Approach": [
+        35130.0,
+        1295.0,
+        -20400.0
+      ],
+      "SurfaceId": [
+        298,
+        86,
+        37
+      ],
+      "SurfaceVertices": [
+        [
+          35060.0,
+          -20270.0
+        ],
+        [
+          35060.0,
+          -20330.0
+        ],
+        [
+          35060.0,
+          -20400.0
+        ],
+        [
+          35200.0,
+          -20400.0
+        ],
+        [
+          35200.0,
+          -20200.0
+        ],
+        [
+          35060.0,
+          -20200.0
+        ]
+      ],
+      "Floor": 1200.0,
+      "SiteBounds": [
+        34400.0,
+        36200.0,
+        -22000.0,
+        -20000.0
+      ],
+      "RetainedProofSha256": "41a8779eea3ede61d5976669cf239781df2fab69c5210db91784921908956ab8",
+      "SourceGoid": 1415,
+      "SourceKey": 312476298
+    }
+  ]
+}

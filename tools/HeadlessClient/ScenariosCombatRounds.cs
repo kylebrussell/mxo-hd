@@ -119,6 +119,7 @@ public static partial class Scenarios
 
         // Enrage must reject a withdrawal request while exchanges continue, then release that gate on expiry.
         var aliceForBob = await bob.WaitForViewNamedAsync("RoundAlice");
+        await PrepareFreeCastViralFixture(context,bob,588);
         Cast(bob,588,aliceForBob.ViewId);
         await alice.WaitForRpcAsync(ModPattern(588,93),TimeSpan.FromSeconds(10));
         alice.SendRpc("44 01");

@@ -7,7 +7,8 @@ namespace hds
     /// Consumable inventory items (pills) and the ability each one applies when used.
     /// The item names come from research/community-data/invitems.txt and the abilities from
     /// data/abilityIDs.csv; the pairing is by name (HealthReplenishPill2 -> PillHealthReplenish2Ability).
-    /// Retail use of Antibiotic 5.0 (PacketsZombiesPortingEtc line 77036) confirms the pairing pattern:
+    /// Antibiotic and condition sweep pairings are verified by raw GOB TriggeredAbility/ReqAbilityID; see
+    /// docs/ABILITY-CONSUMABLE-SWEEPS.md. Retail Antibiotic 5.0 (PacketsZombiesPortingEtc line 77036) confirms:
     /// the client asked for Antibiotic5Ability (678) with the item's bag slot.
     /// </summary>
     public static class ConsumableItems
@@ -16,12 +17,13 @@ namespace hds
         {
             /// <summary>Restores health: the ability's ValueFrom in data/abilityIDs.csv.</summary>
             Heal,
-            /// <summary>Removes negative states; this server has none to remove, so using it only spends it.</summary>
+            /// <summary>Applies the antibiotic ability's initial and periodic negative-condition sweeps.</summary>
             Cure,
-            /// <summary>Raises maximum health for a while (needs the buff system; not usable yet).</summary>
+            /// <summary>Raises maximum health for the stored duration through the owned-item path.</summary>
             MaxHealthBoost,
-            /// <summary>Chance to remove negative states (not usable yet).</summary>
-            ConditionSweep
+            /// <summary>Periodic chance to remove negative conditions.</summary>
+            ConditionSweep,
+            AntiStun
         }
 
         public struct Consumable
@@ -48,6 +50,9 @@ namespace hds
         /// <summary>Item goid to the consumable's ability and timers.</summary>
         public static readonly Dictionary<UInt32, Consumable> Items = new Dictionary<UInt32, Consumable>
         {
+            // Raw GOB TriggeredAbility and CanUseWhileStunned=1; timers handled by AntiStunPills.
+            { 42763, new Consumable(971, Effect.AntiStun, 973, 900) },
+            { 42764, new Consumable(972, Effect.AntiStun, 973, 600) },
             { 2399, new Consumable(190, Effect.Heal, HealPill, 10) },             // Health Pill 1.0 -> PillHealthReplenish1Ability
             { 6897, new Consumable(191, Effect.Heal, HealPill, 10) },             // Health Pill 2.0 -> PillHealthReplenish2Ability
             { 6924, new Consumable(192, Effect.Heal, HealPill, 10) },             // Health Pill 3.0 -> PillHealthReplenish3Ability
@@ -58,11 +63,11 @@ namespace hds
             { 39408, new Consumable(676, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 3.0
             { 39409, new Consumable(677, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 4.0
             { 39410, new Consumable(678, Effect.Cure, AntibioticPill, 8) },       // Antibiotic 5.0 (retail capture)
-            { 2407, new Consumable(187, Effect.MaxHealthBoost, HealPill, 10) },   // Health Boost 1.0 -> PillBolsterHealthAbility
-            { 39411, new Consumable(672, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 1.0 -> PillBolsterHealth1Ability
-            { 39412, new Consumable(188, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 2.0 -> PillBolsterHealth2Ability
-            { 39413, new Consumable(189, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 3.0 -> PillBolsterHealth3Ability
-            { 39414, new Consumable(673, Effect.MaxHealthBoost, HealPill, 10) },  // Health Boost 4.0 -> PillBolsterHealth4Ability
+            { 2407, new Consumable(187, Effect.MaxHealthBoost, 0, 30) },   // Legacy Boost Health -> PillBolsterHealthAbility (raw GOB pair)
+            { 39411, new Consumable(672, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 1.0 -> PillBolsterHealth1Ability
+            { 39412, new Consumable(188, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 2.0 -> PillBolsterHealth2Ability
+            { 39413, new Consumable(189, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 3.0 -> PillBolsterHealth3Ability
+            { 39414, new Consumable(673, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 4.0 -> PillBolsterHealth4Ability
             { 38539, new Consumable(659, Effect.ConditionSweep, HealPill, 10) },  // ConditionSweepGrant -> PillConditionSweep1Ability
         };
 
@@ -71,11 +76,19 @@ namespace hds
             return Items.TryGetValue(goid, out consumable);
         }
 
-        /// <summary>Heal pills and antibiotics can be used; the rest need systems this server lacks.</summary>
+        /// <summary>Heal, antibiotic, condition sweep and owned health boost paths are executable.</summary>
         public static bool IsUsable(Consumable consumable)
         {
-            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure;
+            return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure ||
+                consumable.Effect == Effect.ConditionSweep || consumable.Effect == Effect.MaxHealthBoost;
         }
+
+        // A death/revival or leave/re-entry into the same district invalidates the original cast too.
+        internal static bool CastMatches(ClientData data, int world, int life, double castEnd) =>
+            data.worldGeneration == world && data.lifeGeneration == life && data.castEndsAt == castEnd;
+
+        /// <summary>Stored CharStatsPrerequisite/ReqCharLevel on the antibiotic item records.</summary>
+        public static int RequiredLevel(UInt32 goid) => goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;
 
         /// <summary>
         /// The bag slot a 80 b9 ability request uses an item from, or null. The request body (after the header)

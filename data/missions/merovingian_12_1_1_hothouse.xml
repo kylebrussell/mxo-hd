@@ -15,7 +15,7 @@
      The four lost groups in South Vauxton that Flood names at the end are outside the mission and aren't built.
      The shipped mission ticket opens this mission independently of Flood's story sequence. -->
 <mission id="312101" title="Hothouse" description="Follow Ookami's lead on the interface program and intercept a Machine patrol." plot="1"
-         order="12101" org="3" entryItem="48125" completionItem="48134" minLevel="30" minReputation="20" district="1" districtName="slums" contact="Flood" exp="239105" info="105000">
+         order="12101" org="3" entryItem="48125" completionItem="48134" minLevel="30" rewardLevel="30" minReputation="20" district="1" districtName="slums" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
   <npc id="2" handle="Tesarova" type="FRIENDLY" at="2" rsi="fc0e0004" weapon="2564" />
   <npc id="3" handle="Machine Vector" type="HOSTILE" at="3" rsi="d8040058" weapon="2568" />

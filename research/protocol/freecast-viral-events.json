@@ -1,0 +1,42 @@
+{
+  "capture": "research/packet-dumps/community-intake/20260607T203107Z-hdneo-public-vector-state-static-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector28.log.txt",
+  "sha256": "acb54763e8fde66085109960de80ff0050fe22729ab466c39acb67cd55d24dcb",
+  "records": [
+    {
+      "packet_start_line": 7834,
+      "header": "GAME->Client [05:53:48 07/27/09] packet size: 216 CRYPTED, Flags: 7f ServerSeq: 508 ClientSeq: 518",
+      "length": 69,
+      "string_id": "0x240000f2",
+      "ability_id": 359,
+      "names": [
+        "AfterWhoruNeo",
+        "OooRoyooO"
+      ],
+      "extras": [
+        76,
+        0,
+        135,
+        0
+      ],
+      "rpc_hex": "81 67 17 00 27 00 f2 00 00 24 01 67 01 00 00 00 00 00 00 33 00 00 08 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 0a 00 4f 6f 6f 52 6f 79 6f 6f 4f 00 04 00 4c 00 00 00 00 00 00 00 87 00 00 00 00 00 00 00"
+    },
+    {
+      "packet_start_line": 7834,
+      "header": "GAME->Client [05:53:48 07/27/09] packet size: 216 CRYPTED, Flags: 7f ServerSeq: 508 ClientSeq: 518",
+      "length": 65,
+      "string_id": "0x240000f1",
+      "ability_id": 359,
+      "names": [
+        "AfterWhoruNeo",
+        "hOKZe"
+      ],
+      "extras": [
+        110,
+        0,
+        50,
+        0
+      ],
+      "rpc_hex": "81 67 17 00 27 00 f1 00 00 24 01 67 01 00 00 00 00 00 00 2f 00 00 08 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 06 00 68 4f 4b 5a 65 00 04 00 6e 00 00 00 00 00 00 00 32 00 00 00 00 00 00 00"
+    }
+  ]
+}

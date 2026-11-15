@@ -1,0 +1,326 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "objects": [
+    {
+      "id": 552,
+      "name": "Safe_Large",
+      "schema": 46,
+      "components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Container",
+          "type": 11
+        },
+        {
+          "name": "OpenUse",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        },
+        {
+          "name": "Reward",
+          "type": 80
+        },
+        {
+          "name": "InUseStanceSite",
+          "type": 32
+        }
+      ],
+      "fields": {
+        "Container/ExclusiveLocator": "000000000000000000000000000000000000",
+        "Container/ExclusiveType": 0,
+        "Container/InfoAmount": 0,
+        "Container/MissionKey": 0,
+        "Container/MissionLocator": "000000000000000000000000000000000000",
+        "Container/Observer": 0,
+        "Container/UseCount": 0,
+        "DmgVol/DamageBox": "000000000000000000000000",
+        "DmgVol/DamageMax": 25.0,
+        "DmgVol/DamageMin": 25.0,
+        "InUseStanceSite/HalfExtents": "000020420000484200000c42",
+        "InUseStanceSite/Orientation": "0000000000000000000000000000803f",
+        "InUseStanceSite/Position": "000000000000000000000000000000000000000000000000",
+        "InUseStanceSite/SiteEnterDestOffset": "00000000000000000000c842",
+        "InUseStanceSite/SiteEnterFacing": 180.0,
+        "InUseStanceSite/SiteExitDest": "00000000000000000000c842",
+        "InUseStanceSite/SiteExitFacing": 0.0,
+        "InUseStanceSite/SiteExitRule": 1011,
+        "InUseStanceSite/SiteStance": 0,
+        "Info/InfoID": 16778026,
+        "Info/MoreInfoID": 16778027,
+        "MissionElement/MissionKey": 0,
+        "MissionElement/MissionLocator": "000000000000000000000000000000000000",
+        "MissionElement/MissionTypeFlags": 0,
+        "MissionElement/SpawnType": 6,
+        "MissionElement/TeamLevel": 0,
+        "Model/AmbientFX_0": 0,
+        "Model/AnimationID0": 671090262,
+        "Model/AnimationID1": 671090264,
+        "Model/ClosingFX": 2248147131,
+        "Model/DescriptionID": 671090260,
+        "Model/HalfExtents": "000020420000484200000c42",
+        "Model/IsAnimOptional": 1,
+        "Model/OpeningFX": 2248147132,
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/PickLockSoundFX": 2248147211,
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "OpenUse/ClientRuleID": 1010,
+        "OpenUse/Cursor": 671092159,
+        "OpenUse/Defaultable": 1,
+        "OpenUse/ExecuteRuleID": 1010,
+        "OpenUse/MaxDistance": 100.0,
+        "OpenUse/NameID": 16778061,
+        "PickLockUsage/ActivateSound": 2248147834,
+        "PickLockUsage/ActivationTime_BaseDuration": 15,
+        "PickLockUsage/ActivationTime_MaxDuration": 25,
+        "PickLockUsage/ActivationTime_MinDuration": 5,
+        "PickLockUsage/ActivationTime_ModAttribute": 2148144128,
+        "PickLockUsage/ActivationTime_ModMult": 1.0,
+        "PickLockUsage/ClientRuleID": 4000,
+        "PickLockUsage/Defaultable": 0,
+        "PickLockUsage/ExecuteRuleID": 4000,
+        "PickLockUsage/MaxDistance": 100.0,
+        "PickLockUsage/NameID": 16778053,
+        "Reward/RewardRule": "TeamLevelRewardRule",
+        "Reward/RewardRuleArgs": "",
+        "Reward/RewardTable": "CONTAINER_REWARDS_C5_Safes",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "36080000ffffffff00000000000000000000000000000000",
+        "StateMachine/OpenedState": "34080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000",
+        "StateMachine/UnlockedState": "41080000ffffffff00000000000000000000000000000000",
+        "Trap/DetectDifficulty": 0,
+        "Trap/DisarmDifficulty": 0,
+        "Trap/TrapArmed": 0,
+        "Trap/TrapFX": 0,
+        "Trap/TrapLevel": 0,
+        "Trap/TrapVisible": 0,
+        "Trap/Trappable": 1,
+        "UnlockUsage/ActivateSound": 2248148586,
+        "UnlockUsage/ClientRuleID": 4006,
+        "UnlockUsage/Defaultable": 1,
+        "UnlockUsage/ExecuteRuleID": 4006,
+        "UnlockUsage/Lockable": 1,
+        "UnlockUsage/MaxDistance": 100.0,
+        "UnlockUsage/NameID": 16777270
+      }
+    },
+    {
+      "id": 1410,
+      "name": "SafeXformSpawner",
+      "schema": 141,
+      "components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "Spawner",
+          "type": 8
+        }
+      ],
+      "fields": {
+        "MissionElement/MissionKey": 0,
+        "MissionElement/MissionLocator": "000000000000000000000000000000000000",
+        "MissionElement/MissionTypeFlags": 0,
+        "MissionElement/TeamLevel": 0,
+        "Model/AnimationID0": 0,
+        "Model/DescriptionID": 1979711596,
+        "Model/HalfExtents": "0932d34102a231423e6ffd41",
+        "Model/Hidden": 0,
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "Spawner/HalfExtents": "0932d34102a231423e6ffd41",
+        "Spawner/MissionKey": 0,
+        "Spawner/MissionLocator": "000000000000000000000000000000000000",
+        "Spawner/MissionTypeFlags": 0,
+        "Spawner/Orientation": "0000000000000000000000000000803f",
+        "Spawner/Position": "000000000000000000000000000000000000000000000000",
+        "Spawner/SpawnInstanceData": 0,
+        "Spawner/SpawnTypeID": 6,
+        "Spawner/TeamLevel": 0
+      }
+    },
+    {
+      "id": 1416,
+      "name": "Wall Safe",
+      "schema": 46,
+      "components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Container",
+          "type": 11
+        },
+        {
+          "name": "OpenUse",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        },
+        {
+          "name": "Reward",
+          "type": 80
+        },
+        {
+          "name": "InUseStanceSite",
+          "type": 32
+        }
+      ],
+      "fields": {
+        "Container/ExclusiveLocator": "000000000000000000000000000000000000",
+        "Container/ExclusiveType": 0,
+        "Container/InfoAmount": 0,
+        "Container/MissionKey": 0,
+        "Container/MissionLocator": "000000000000000000000000000000000000",
+        "Container/Observer": 0,
+        "Container/UseCount": 0,
+        "DmgVol/DamageBox": "000000000000000000000000",
+        "DmgVol/DamageMax": 25.0,
+        "DmgVol/DamageMin": 25.0,
+        "InUseStanceSite/HalfExtents": "0000484200000c4200000040",
+        "InUseStanceSite/Orientation": "0000000000000000000000000000803f",
+        "InUseStanceSite/Position": "000000000000000000000000000000000000000000000000",
+        "InUseStanceSite/SiteEnterDestOffset": "00000000000000000000c842",
+        "InUseStanceSite/SiteEnterFacing": 180.0,
+        "InUseStanceSite/SiteExitDest": "00000000000000000000c842",
+        "InUseStanceSite/SiteExitFacing": 0.0,
+        "InUseStanceSite/SiteExitRule": 1011,
+        "InUseStanceSite/SiteStance": 0,
+        "Info/InfoID": 16778026,
+        "Info/MoreInfoID": 16778027,
+        "MissionElement/MissionKey": 0,
+        "MissionElement/MissionLocator": "000000000000000000000000000000000000",
+        "MissionElement/MissionTypeFlags": 0,
+        "MissionElement/SpawnType": 5,
+        "MissionElement/TeamLevel": 0,
+        "Model/AmbientFX_0": 0,
+        "Model/AnimationID0": 671091172,
+        "Model/AnimationID1": 1979711488,
+        "Model/ClosingFX": 2248147127,
+        "Model/DescriptionID": 671091169,
+        "Model/HalfExtents": "0000484200000c4200000040",
+        "Model/IsAnimOptional": 1,
+        "Model/OpeningFX": 2248147128,
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/PickLockSoundFX": 2248147211,
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "OpenUse/ClientRuleID": 1010,
+        "OpenUse/Cursor": 671092159,
+        "OpenUse/Defaultable": 1,
+        "OpenUse/ExecuteRuleID": 1010,
+        "OpenUse/MaxDistance": 350.0,
+        "OpenUse/NameID": 16778061,
+        "PickLockUsage/ActivateSound": 2248147834,
+        "PickLockUsage/ActivationTime_BaseDuration": 15,
+        "PickLockUsage/ActivationTime_MaxDuration": 25,
+        "PickLockUsage/ActivationTime_MinDuration": 5,
+        "PickLockUsage/ActivationTime_ModAttribute": 2148144128,
+        "PickLockUsage/ActivationTime_ModMult": 1.0,
+        "PickLockUsage/ClientRuleID": 4000,
+        "PickLockUsage/Defaultable": 0,
+        "PickLockUsage/ExecuteRuleID": 4000,
+        "PickLockUsage/MaxDistance": 350.0,
+        "PickLockUsage/NameID": 16778053,
+        "Reward/RewardRule": "TeamLevelRewardRule",
+        "Reward/RewardRuleArgs": "",
+        "Reward/RewardTable": "CONTAINER_REWARDS_C5_Safes",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "36080000ffffffff00000000000000000000000000000000",
+        "StateMachine/OpenedState": "34080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000",
+        "StateMachine/UnlockedState": "41080000ffffffff00000000000000000000000000000000",
+        "Trap/DetectDifficulty": 0,
+        "Trap/DisarmDifficulty": 0,
+        "Trap/TrapArmed": 0,
+        "Trap/TrapFX": 0,
+        "Trap/TrapLevel": 0,
+        "Trap/TrapVisible": 0,
+        "Trap/Trappable": 1,
+        "UnlockUsage/ActivateSound": 2248148586,
+        "UnlockUsage/ClientRuleID": 4006,
+        "UnlockUsage/Defaultable": 1,
+        "UnlockUsage/ExecuteRuleID": 4006,
+        "UnlockUsage/Lockable": 1,
+        "UnlockUsage/MaxDistance": 350.0,
+        "UnlockUsage/NameID": 16777270
+      }
+    }
+  ]
+}

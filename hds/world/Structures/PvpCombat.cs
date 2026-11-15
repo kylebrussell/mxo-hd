@@ -235,7 +235,7 @@ namespace hds
             victim.FlushQueue();
             PvpFlag.ToWatchers(victim, OtherHealthUpdate(victim, health, fx));
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), before - health,
-                health < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
+                health < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1), damageEvent:true);
             return HealthOf(victim) == 0; // callbacks can synchronously change authoritative health
         }
 
@@ -351,7 +351,7 @@ namespace hds
         /// known (<see cref="AbilityTargets.Retail"/>), its timed effects (<see cref="TimedEffects.ApplyToPlayer"/>) and
         /// the flag abilities. Returns false when the view isn't a player's.
         /// </summary>
-        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
+        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null, AbilityReverseBulldog.Cast reverseBulldog=null, GhostStrikeCallbacks.Ticket ghostStrike=null)
         {
             WorldClient target = PlayerInView(caster, targetViewId);
             if (target == null)
@@ -372,15 +372,21 @@ namespace hds
                 Refuse(caster, verdict, handle);
                 return true;
             }
-            LandAbilityOn(caster, ability, target, sneakOpener);
-            AbilityTargets.LandAround(caster, ability, target);
+            LandAbilityOn(caster, ability, target, sneakOpener,origin,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
+            AbilityTargets.LandAround(caster, ability, target,origin,engageFoes);
             return true;
         }
 
-        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false)
+        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityReverseBulldog.Cast reverseBulldog=null, GhostStrikeCallbacks.Ticket ghostStrike=null)
         {
             if (!ControlActions.CanUseAbilities(caster)) return;
+            if(ghostStrike!=null)
+            {
+                var ghostView=caster.viewMan.FindViewForEntity(target.playerData.getEntityId());
+                if(ghostView==null||!GhostStrikeCallbacks.BeforeHit(ghostStrike,caster,target,ghostView.ViewID,ghostView.spawnId))return;
+            }
             UInt16 abilityId = ability.getAbilityID();
+            if(FreeCastViralContest.Applies(abilityId,origin) && !FreeCastViralContest.Player(caster,ability,target))return;
             UInt16 damage;
             UInt32 fx;
             lock (random)
@@ -394,7 +400,7 @@ namespace hds
                 {
                     damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus
                         ? (UInt16)0
-                        : AbilityHandler.AbilityDamage(ability, random);
+                        : AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
                     fx = ability.getActivationFX();
                 }
             }
@@ -404,19 +410,22 @@ namespace hds
             }
             damage = CombatSpecials.Damage(abilityId, null) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
+            var conditionalFence=new ConditionalThrownDamage.Fence(caster,target);
+            int rawDamage = damage;
+            damage = TypedAbilityResistance.Player(caster, target, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);
             PvpFlag.ApplyAbility(target, abilityId);
-            TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster);
+            TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster,reverseBulldog:reverseBulldog);
             AbilityHostile.LandedOnPlayer(caster, target, abilityId);
             if (damage > 0)
             {
                 // Retail's lines: "Your %1z does %4I damage to %3s." and "%2s's %1z does %4I damage to you."
                 caster.messageQueue.addRpcMessage(AbilityMessages.Build(AbilityMessages.DamageCaster, true, AbilityMessages.ByGameObject,
-                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, 0));
+                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, rawDamage - damage));
                 target.messageQueue.addRpcMessage(AbilityMessages.Build(AbilityMessages.DamageTarget, false, AbilityMessages.ByGameObject,
-                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, 0));
+                    AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, rawDamage - damage));
                 caster.FlushQueue();
             }
             // A non-damaging control still has an activation effect on its victim. Send that effect to the
@@ -427,6 +436,8 @@ namespace hds
             {
                 Defeated(target, caster);
             }
+            else ConditionalThrownDamage.Player(caster,target,abilityId,conditionalFence);
+            GhostStrikeCallbacks.Accepted(ghostStrike);
         }
 
         // Tactic conditions on a player (CombatInterlock.ConditionBit), each for its own ten seconds

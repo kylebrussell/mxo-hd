@@ -1,2 +1,10 @@
 # Shell scripts run under bash even on Windows, where a CRLF checkout breaks them
 *.sh text eol=lf
+
+# Keep audited computer-anchor bytes identical across platforms.
+data/mission_computer_anchors.csv text eol=lf
+# Keep audited Safe-anchor bytes identical across platforms.
+data/mission_safe_anchors.csv text eol=lf
+
+# Preserve the exact pinned primary evidence bytes, including their original line endings.
+research/protocol/mission-open-floor-*.json -text whitespace=cr-at-eol

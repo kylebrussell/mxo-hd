@@ -26,6 +26,12 @@ namespace hds
             return bytes.ToArray();
         }
 
+        public static bool CanIntroduceNpc(Mob mob) => !mob.getIsDead() || mob.ScriptedCorpse;
+
+        /// <summary>NPC_BASE uses the sourced NPC stance/animation layout, distinct from player prone stance5.</summary>
+        public static byte[] NpcCorpse(Mob mob) => ServerPackets.BuildNpcDeathUpdate(mob.NextAnimationSeq(),
+            (byte)mob.getRotation(), (float)mob.getXPos(), (float)mob.getYPos(), (float)mob.getZPos());
+
         public static bool IsCorpse(WorldClient player) => player.playerData.isDead || player.playerData.duelDeath;
 
         public static byte[] OtherCorpse(WorldClient player)

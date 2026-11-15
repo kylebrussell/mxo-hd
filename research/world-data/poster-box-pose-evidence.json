@@ -1,0 +1,53 @@
+{
+  "source": "slums_13.sidi",
+  "sourceRid": 838865252,
+  "sourceSha256": "da3a2ca249546a4a379ecf53ea6df30119c63924e712c7a1a762e51c235f17bb",
+  "sourceFlags": 4,
+  "sector": 209,
+  "corner": [
+    22000.0,
+    0,
+    10000.0
+  ],
+  "placement": 36,
+  "parentRecordOffset": 234673,
+  "recordOffset": 234783,
+  "recordIndex": 1,
+  "recordCount": 36,
+  "primaryPrefab": 2181039309,
+  "secondaryResource": 2181039310,
+  "opaque": 32,
+  "upper": 0,
+  "pivot": [
+    200,
+    200,
+    580
+  ],
+  "rotation": 2,
+  "localGoid": 1415,
+  "localStaticId": 988,
+  "nativeKey": 219153372,
+  "localPosition": [
+    60.0,
+    100.0,
+    750.0
+  ],
+  "localQuaternion": [
+    0.0,
+    0.7071067094802856,
+    0.0,
+    0.7071067690849304
+  ],
+  "literalPosition": [
+    23940.0,
+    2100.0,
+    15050.0
+  ],
+  "literalQuaternion": [
+    0.0,
+    0.7071067690849304,
+    0.0,
+    -0.7071067094802856
+  ],
+  "literalQuaternionHex": "00000000f304353f00000000f20435bf"
+}

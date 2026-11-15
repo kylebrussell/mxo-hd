@@ -72,6 +72,9 @@ namespace hds
             return false;
         }
 
+        internal void PruneUnassignedWorldRpcs(int world,long transport) =>
+            RPCMessages.RemoveAll(message=>message.DiscardUnassignedWorldRpc(world,transport));
+
         public byte[] getFinalData(ClientData playerData)
         {
             // TODO: Sim Time with Client (not real time) on every 4 Local SSEQ we send
@@ -190,6 +193,10 @@ namespace hds
 
             return blocks;
         }
+
+        // Called only after sendPacket actually succeeds, using this final encoded packet's SSEQ.
+        internal void RecordDispatchedObjectReceipts(MessageQueue queue)
+        {queue.RecordDispatchedReceipts(neededAckSSeq,ObjectMessages);}
 
         public void generateObjectMessageData()
         {

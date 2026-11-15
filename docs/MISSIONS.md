@@ -5,7 +5,7 @@ How missions run, the file format in `data/missions/`, and what was recovered fr
 ## How retail worked
 
 - **Critical (story) missions were hand-written.** A developer describes writing them one at a time. IDs run chapter.sub.number, and the client's own labels count 1.1 = 3, 1.2 = 17, 1.3 = 6, then 5 each through 11.2, for about 171 per organisation.
-- **Standard missions look assembled from templates** (Assassination, Courier, Retrieval, Rescue, Escort, Infiltration, Recruitment): the same template shows up with different NPCs and buildings. No developer confirms a generator, so that is inferred. None is built yet.
+- **Standard missions look assembled from templates** (Assassination, Courier, Retrieval, Rescue, Escort, Infiltration, Recruitment): the same template shows up with different NPCs and buildings. No developer confirms a generator, so that is inferred. Existing neighborhood Assassination, Retrieval and Rescue templates are implemented with explicitly ours text and presentation (see below).
 - **The server held the definitions.** The client has no mission data beyond its two optional scripts (`Mission185`, `Mission986`), so everything here is rebuilt from what was sent to players.
 
 ## What a mission does
@@ -27,7 +27,7 @@ Three things the client depends on, found by trying them:
 
 - **Get** appears in an NPC's menu only with `GiverActiveTracker` set on it. No retail record we could find sets it, so it's our fit.
 - **Give** appears only while the player holds an item whose 4-byte descriptor is the NPC's MissionKey with `0x80` on the last byte. Retail's statue for Gagarin (key `01 9a 02 02`) was `5e 07 00 f2 04 00 00 01 9a 02 82 01`. We also set `TakerActiveTracker`.
-- **Leaving** isn't defined anywhere. In the captures the next step came when the player was 2 to 5 m past a mission door, so `MissionExit` uses 6 m from a door, or 60 m from all of them for leaving another way.
+- **Leaving** is not fully defined by the captures. Authored waypoint/escort checks retain the historical6m door approximation and60m far fallback. Generated sites with distinct lobby/mission floors now require a committed matching elevator transition rather than interior-door proximity; ground-floor sites retain the old rule. See `MISSION-LEAVE-TRANSITION.md` for policy, evidence and qualification limits.
 
 The two points in `80 a3` are street-level entrances to the mission area; the operator's "you've arrived" line fires near the first.
 
@@ -129,7 +129,7 @@ A phase with `site` is placed when it starts instead of at fixed positions. The 
 - `<object id kind>`: a `Computer`, `Safe` or `Mainframe` already on the floor is used if there is one; otherwise one is spawned at the floor's spawner for that kind, or a `Box` at a box spawner. `Furniture` (a filing cabinet, desk or dresser) and `Phone` are bound to one in place.
   - **Retail did the same.** It bound a spawned object to a static only when the static was the same object (`08 <goid> <static>`: The Internuncio's filing cabinets, dressers). At a spawner it spawned the object free (`0c`, no static): the client's definitions give spawner markers no Info or Usable part. Mission objects carry the key `ff <instance> 02` and use count 1, as retail's wall safes and filing cabinets did.
   - **Clicking them.** The player selects and uses them as in retail: the client sends `80 c7 <view> <spawn> <use>`, use 3 for a container's Open, 4 for Hack, 5 for Take. The client checks the distance itself ("Target is out of range") and its reach is short, about a step. Containers (safes, cabinets, desks, dressers, boxes) can be opened in their default state, 0x835.
-  - **Computers need a state.** In its default state (0x960) a computer can't be selected. The client's `gameobjects.gob` gives computers states 0x960 to 0x965; tried in the client, 0x961 offers Take, 0x963 to 0x965 offer Hack, and 0x960 and 0x962 nothing. A computer is spawned in 0x961 for a Search goal that gives an item and 0x963 for other goals, and goes back to 0x960 when it has no open goal (update mask `01 08`). No state offered Put, so a Put goal at a computer is done with Hack.
+  - **Computers need a state.** Default 0x960 is idle. Search with an item uses 0x961 (Take 5); Use or itemless Search uses 0x963 (Hack 4). Put uses 0x962 (Put 8), enabled by the native GenericKeyTest rule only with the matching mission-key item. The earlier no-item native probe offered nothing in 0x962; it did not prove Put absent. Current item/key producer and metadata-backed state are exercised by the Prima chain protocol fixture; native Put UI remains a separate check. The computer returns to 0x960 when no open goal remains (update mask `01 08`).
   - **Locked.** `locked="1"` spawns a safe, cabinet, desk or box in its LockedState (0x836): the player must Pick Lock it with Open Locks and a lockpick first (rule 4000; see [UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)), then it opens as usual.
   - **The phone** isn't known to be usable, so its goals are done by standing beside it (2.5 m).
 
@@ -256,11 +256,11 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 ### Known gaps
 
 - Only Zion's first three missions were captured: the rest are the guide's text, placed and paced by us.
-- Rewards are fixed at one capture's values; retail's rose with level (Welcome paid 3,000 to 5,500 XP).
-- `dead="1"` NPCs aren't spawned, so the bodies in The Internuncio don't appear.
+- Rewards now use an explicit OURS level curve with `rewardLevel` metadata; unknown archive reference levels use the documented default50 tuning baseline. Retail team/difficulty/input formulas remain unproven. Welcome's3,000 and5,500 samples were both level2 at different difficulties; see [source, policy and native checks](MISSION-REWARDS.md).
+- `dead="1"` NPCs now introduce sourced dead attributes and an NPC corpse pose, including late views; native rendering remains pending ([presentation evidence](MISSION-PRESENTATION.md)).
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
-- Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
-- A mission doesn't survive a relog: the NPCs go, and its items are taken back.
+- Hostile portrait visibility remains unresolved. Automatic hostile speech now also uses an explicit OURS system-chat fallback, preserving original80a1 flags; friendly/interactive speech is unchanged ([presentation evidence](MISSION-PRESENTATION.md)).
+- Active phases, placements, owned items and pending mission loot now survive relog through transactional checkpoints; the persistence format/timer policy are OURS and native QA remains pending ([details](MISSION-PERSISTENCE.md)).
 
 ### Full bags and loot replies
 
@@ -444,7 +444,7 @@ All three agree wherever they overlap, and so do the 13 Slums contacts in `data/
 ### What a neighbourhood contact offers
 
 - **Their own story missions** first, one at a time: missions with `org="0"` and `contact="<their name>"`. Retail's captured lists held just that one mission (plot flag set). Three are captured, all cut short: Paging (The Chef), Off White (Mr. Black) and Unhealthy Competition (The Newsie). Their title, description, briefing and goals are retail's; their site, enemies and rewards are ours, and each ends after its first phase.
-- **Generic missions** after that, built by `NeighbourhoodMissions` for every contact: Assassination ("Kill <target>"), Retrieval ("Search the computer") and Rescue ("Lead <name> out of the area", "Do not let <name> die"), each one phase on a generated site in the contact's district (in the Slums, preferring the contact's neighbourhood), with three Exiles. The goal lines are retail's generic wording from the captures. The titles, briefings, descriptions and names are ours, and retail's captured neighbourhood lists didn't show generic missions, so offering them is our design. Ids are 3000 + contact id x 10 + 1 to 3.
+- **Generic missions** after that, built by `NeighbourhoodMissions` for every contact: Assassination ("Kill <target>"), Retrieval ("Search the computer") and Rescue ("Lead <name> out of the area", "Do not let <name> die"), each one phase on a generated site in the contact's district (in the Slums, preferring the contact's neighbourhood), with three Exiles. The goal lines are retail's generic wording from the captures. The titles, briefings, descriptions and names are ours, and retail's captured neighbourhood lists didn't show generic missions, so offering them is our design. Ids are 3000 + contact id x 10 + 1 to 3. Their canonical definition lookup, cold restoration and transactional completion are described in [neighborhood persistence](MISSION-NEIGHBOURHOOD-PERSISTENCE.md).
 
 **Retail's procedural mission text isn't in the client.** sponsors.xml's `code` names a "procedural text stringtable" for each org contact, but no such table ships: every `.sta` the client has is decoded (`stringtable_client`, `stringtable_ccr`, the cinematics', the place names and four server-only event tables), none holds a briefing of a generic mission, and the captured Assassination briefings ("I am never pleased to order an assassination...") aren't in any of them. client.dll reads only `sponsors.xml` and `organizations.xml` (not shipped) from `resource/missions/definitions`. So generic text has to come from the captures or be written.
 
@@ -512,3 +512,7 @@ What differs from retail:
 ## Sources
 
 `research/missions/` holds the findings: `README.md` lists each file and what it covers. The 4 GB of screenshot logs (`hdneo/mxo-missions`) aren't in the repo.
+
+### Tyndall Prima missions4–10
+
+[The2304–2310 chain](ZION-PRIMA-CHAIN.md) has a full21-phase normal-protocol regression and a discovered `zion-chain` native fixture. The work repairs a concrete furniture-capacity softlock and adds authored goal-order gates; placements/pacing remain OURS and native QA is pending. It does not add persistence or a reward formula.

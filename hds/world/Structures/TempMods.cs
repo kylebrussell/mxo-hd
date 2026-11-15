@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace hds
@@ -123,6 +124,8 @@ namespace hds
             Terminal,
             /// <summary>A periodic script callback (NegativeConditionSweepPulse) every Interval while it lasts (<see cref="AbilityHostile.Pulse"/>).</summary>
             Pulse,
+            /// <summary>Sever Artery341 sourced init/update state callback only.</summary>
+            SeverState,
         }
 
         public sealed class Mod
@@ -130,6 +133,7 @@ namespace hds
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 MinValue, MaxValue;
+            public int DamageType = -1;
             public float Seconds;
             public Proc Proc;
             public float Chance = 1;
@@ -282,8 +286,8 @@ namespace hds
             { 340, E(340, State(OffBalanceAbility, 8)) },
             // Staggering Throw, old_world Vector 16171
             { 348, E(348, State(StaggeredAbility, 12)) },
-            // Subduing Throw, old_world Vector 33209: stunned 4 s, immunity 4 s
-            { 347, E(347, State(StunAbility, 4)) },
+            // Subduing Throw's captured4s stun is conditional on Dazed at the .01s marker's term.
+            // AbilityCatalog.Controls retains that script gate instead of treating the captured outcome as unconditional.
 
             // ---- Soldier ----
             // Crippling Shot, trinity proxy_011 1787 (ten captures: -103 .. -113, MovementSpeed -75 .. -124), 8 s
@@ -346,7 +350,7 @@ namespace hds
                     Seconds = m.Seconds, Proc = m.Proc, Chance = rule?.Chance ?? m.Chance,
                     Break = rule?.Break ?? (m.Target == MezAbility ? BreakRule.Damage : m.Break),
                     BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
-                    Interval = m.Interval });
+                    Interval = m.Interval, DamageType = rule != null && source.Mods.Count(p=>p.Target==m.Target && p.Proc==m.Proc)==1 ? rule.DamageType : -1 });
             }
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;

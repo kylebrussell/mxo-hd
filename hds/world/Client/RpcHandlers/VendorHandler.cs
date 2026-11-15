@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using System.Linq;
 using hds.shared;
 
 namespace hds{
@@ -16,20 +17,23 @@ namespace hds{
             return false;
         }
 
-        /// <summary>
-        /// Inventory slot addressed by a CLIENT_VENDOR_SELL (81 11) request: the first two bytes,
-        /// big-endian. Confirmed with the real 7.6005 client on 2026-11-06: selling the item in DB
-        /// slot 0 sent "00 00" and the item in DB slot 11 sent "00 0b". The retail captures'
-        /// "00 45".."00 58" are slots 69..88, i.e. items on later inventory pages. Reading these bytes
-        /// little-endian (the old parse) turned slot 11 into 2816, so only slot 0 could be sold.
-        /// </summary>
-        internal static UInt16 ParseSellSlot(byte[] packet)
-        {
-            return NumericalUtils.ByteArrayToUint16(new[] {packet[0], packet[1]}, 0);
-        }
+        /// <summary>Native6210ab10 reads Appraise and Slot as separate bytes. Normal sales are00+slot.</summary>
+        internal static UInt16 ParseSellSlot(byte[] packet) => packet[1];
 
-        public void processBuyItem(ref byte[] packet){
+        public void processBuyItem(ref byte[] packet)
+        {
+            lock(Store.currentClient.playerData.craftingSync) BuyItem(ref packet);
+        }
+        private void BuyItem(ref byte[] packet){
             if (!HasSession(Store.currentClient)) return;
+            if (VendorBuyback.TryBuyback(packet))
+            {
+                VendorBuyback.Handle(Store.currentClient,true);return;
+            }
+            if (packet.Length != 5 || packet[4] != 0)
+            {
+                ClientActionsHandler.Notice(Store.currentClient,"This vendor purchase request is not supported.");return;
+            }
             if (packet.Length < 4)
             {
                 Output.WriteDebugLog("[VENDOR] Buy packet too short.");
@@ -44,6 +48,27 @@ namespace hds{
                 return;
             }
 
+            // Native BuyBackLastItemSold is a separate operation; no normal-purchase fallback.
+            if(packet.Length>4 && packet[4]!=0)
+            { ClientActionsHandler.Notice(Store.currentClient,"Buying back the last sold item is not supported.");return; }
+            if(AbilityProgression.IsAbilityCode(itemGoID))
+            {
+                if(packet.Length!=5){ClientActionsHandler.Notice(Store.currentClient,"Invalid ability purchase request.");return;}
+                var publication=new AbilityAcquisition.Publication(Store.currentClient);
+                AbilityAcquisition.Receipt receipt;
+                try { receipt=Store.dbManager.WorldDbHandler.AcquireAbility(Store.currentClient.playerData.getCharID(),itemGoID,VendorPricing.GetBuyPrice(itemGoID)); }
+                catch(Exception error)
+                {
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: "+error.Message);
+                    publication.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
+                }
+                byte[][] acquiredPackets={ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID),
+                    ServerPackets.BuildInfoDelta((long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy),
+                    ServerPackets.BuildInfoCurrent(receipt.Cash,ServerPackets.InfoReasonVendorBuy),
+                    ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price)};
+                publication.PublishPurchase(Store.currentClient,receipt.Cash,acquiredPackets);
+                return;
+            }
             long currentCash = Store.currentClient.playerData.getInfo();
             ServerPackets packets = new ServerPackets();
             if (!VendorPricing.TryApplyBuy(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
@@ -55,77 +80,35 @@ namespace hds{
 
             // Retail order: 5e (add item, sent by processItemAdd) -> 80 e7 (-price) -> 80 e4 (new cash)
             // -> 81 0f (buy complete), all with reason 8.
-            bool abilityCode = AbilityProgression.IsAbilityCode(itemGoID);
-            if (abilityCode)
-            {
-                UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-                if (freeSlot == 0)
-                {
-                    packets.sendSystemChatMessage(Store.currentClient, "Your inventory is full.", "BROADCAST");
-                    return;
-                }
-                Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemGoID);
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(freeSlot, itemGoID));
-            }
-            else
-            {
-                InventoryHandler inventory = new InventoryHandler();
-                inventory.processItemAdd(itemGoID,0x10);
-            }
+            InventoryHandler inventory = new InventoryHandler();
+            inventory.processItemAdd(itemGoID,0x10);
 
             Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
             Store.currentClient.playerData.setInfo(newCash);
             packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorBuy);
             packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorBuy);
-            if (abilityCode)
-            {
-                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeBuyAck(itemGoID, price));
-            }
-            else
-            {
-                packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
-            }
+            packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
         }
 
-        public void processSellItem(ref byte[] packet){
-            if (!HasSession(Store.currentClient)) return;
-            ServerPackets packets = new ServerPackets();
-
-            if (packet.Length < 2)
+        public void processSellItem(ref byte[] packet)
+        {
+            WorldClient client=Store.currentClient;
+            lock(client.playerData.craftingSync)
             {
-                Output.WriteDebugLog("[VENDOR] Sell packet too short.");
-                return;
+                if(!HasSession(client))return;
+                if(!VendorTrading.TrySellRequest(packet,out bool appraise,out byte slot))return;
+                if(!appraise){VendorBuyback.Handle(client,false,slot);return;}
+                var db=Store.dbManager.WorldDbHandler;
+                Crafting.InventoryItem item=db.GetInventoryItems(client.playerData.getCharID()).FirstOrDefault(i=>i.Slot==slot);
+                if(item.Goid==0){ClientActionsHandler.Notice(client,"There is nothing to sell in that slot.");return;}
+                uint quote=VendorPricing.GetSellPrice(item.Goid);
+                if(quote==0){ClientActionsHandler.Notice(client,"This item cannot be sold.");return;}
+                if(appraise)
+                {
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildVendorItemSellAck(item.Goid,item.Count,quote,true));
+                    return;
+                }
             }
-
-            UInt16 slot = ParseSellSlot(packet);
-
-            UInt32 itemGoID = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-            if (itemGoID == 0)
-            {
-                packets.sendSystemChatMessage(Store.currentClient,
-                    "There is nothing to sell in that slot.", "MODAL");
-                return;
-            }
-
-            long currentCash = Store.currentClient.playerData.getInfo();
-            if (!VendorPricing.TryApplySell(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
-            {
-                packets.sendSystemChatMessage(Store.currentClient,
-                    "This item cannot be sold.", "MODAL");
-                return;
-            }
-
-            // Update the DB first, then answer in the retail order:
-            // 80 e7 (+price) -> 80 e4 (new cash) -> 5f (remove slot) -> 81 12 (sell complete).
-            UInt32 charId = Store.currentClient.playerData.getCharID();
-            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
-            Store.currentClient.playerData.setInfo(newCash);
-
-            packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorSell);
-            packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorSell);
-            packets.sendInventoryItemDelete(slot, Store.currentClient);
-            packets.SendVendorSellAck(Store.currentClient, itemGoID, price);
         }
     }
 }

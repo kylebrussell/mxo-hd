@@ -1,0 +1,109 @@
+{
+  "scope": "eight existing sanitized create/spawn/session logs; not the entire archive",
+  "totals": {
+    "ManageBonusTotal": 940,
+    "ManageBonusDecoded": 940,
+    "ManageBonusOpaque": 0,
+    "Protocol03Total": 11214,
+    "Protocol03Complete": 9057,
+    "Protocol03Partial": 2157
+  },
+  "captures": [
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_002_create_mxoemu_character2.log.txt",
+      "sha256": "7db24f56dd99a75d17ae158f943f80a8af5e35857aecf748c3b4d93266944d6f",
+      "manageBonusTotal": 160,
+      "manageBonusDecoded": 160,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 3163,
+      "protocol03Complete": 2566,
+      "protocol03Partial": 597,
+      "playerCreationRecords": 5,
+      "namedProfiles": 10
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k__create_char_mxoemu_and_make_complete_tutorial_enteringtheworld_uriah.log.txt",
+      "sha256": "1359f683e0d4583e16b115e9e1a78389ae6d7a4b680290433e2b82ded8683d6d",
+      "manageBonusTotal": 165,
+      "manageBonusDecoded": 165,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 1285,
+      "protocol03Complete": 873,
+      "protocol03Partial": 412,
+      "playerCreationRecords": 13,
+      "namedProfiles": 14
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_morpheuzzz_001_login_and_died_mara_teleport_to_archan_open_onedoor.log.txt",
+      "sha256": "706ff1cb00fa766c27d5cef2a3f1ada73b161520acaac6081a4045cc774379ce",
+      "manageBonusTotal": 22,
+      "manageBonusDecoded": 22,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 1783,
+      "protocol03Complete": 1437,
+      "protocol03Partial": 346,
+      "playerCreationRecords": 15,
+      "namedProfiles": 11
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_logins_loggedinsession001.log.txt",
+      "sha256": "3e8fcaf15cb1a8967d0b97c608267938384b3a870fbb5a456c06ef81c9af1879",
+      "manageBonusTotal": 305,
+      "manageBonusDecoded": 305,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 2558,
+      "protocol03Complete": 2350,
+      "protocol03Partial": 208,
+      "playerCreationRecords": 3,
+      "namedProfiles": 20
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_others_special_agent_spawn.log.txt",
+      "sha256": "8c082f31cbfbd4389c6c47df682dc73846756279796a8339a338ac7872752706",
+      "manageBonusTotal": 0,
+      "manageBonusDecoded": 0,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 416,
+      "protocol03Complete": 173,
+      "protocol03Partial": 243,
+      "playerCreationRecords": 0,
+      "namedProfiles": 1
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_morpheuzz_vector__create_morpheuzz_char.log.txt",
+      "sha256": "91f0eadfec2858d74c443f4e898a8e351b639e225aafbf8da104395d19508009",
+      "manageBonusTotal": 147,
+      "manageBonusDecoded": 147,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 436,
+      "protocol03Complete": 369,
+      "protocol03Partial": 67,
+      "playerCreationRecords": 5,
+      "namedProfiles": 15
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_mxoemu_001_jackin_coordinates_jackout.log.txt",
+      "sha256": "c0506a6d933f1b70607009eb6a9edb4fae196d706468942547ec7fd4714c5133",
+      "manageBonusTotal": 13,
+      "manageBonusDecoded": 13,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 1520,
+      "protocol03Complete": 1269,
+      "protocol03Partial": 251,
+      "playerCreationRecords": 3,
+      "namedProfiles": 15
+    },
+    {
+      "path": "research/packet-dumps/community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_norajob_acc_logs_002_norajob_create_female_char_mxoemu2.log.txt",
+      "sha256": "15a69932b35fb9bb67a9dbcc1aab5790c5b1737b6f661f4621d026350c72c287",
+      "manageBonusTotal": 128,
+      "manageBonusDecoded": 128,
+      "manageBonusOpaque": 0,
+      "protocol03Total": 53,
+      "protocol03Complete": 20,
+      "protocol03Partial": 33,
+      "playerCreationRecords": 9,
+      "namedProfiles": 8
+    }
+  ]
+}

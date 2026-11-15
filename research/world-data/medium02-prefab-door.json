@@ -1,0 +1,60 @@
+{
+  "world": 15,
+  "sector": 76,
+  "localId": 56,
+  "goid": 414,
+  "sourceSidi": "resource/worlds/final_world/constructs/medium/medium02/medium02_53.sidi",
+  "sourceSidiSha256": "c252110a033eb34dd448cbc816e847c4c8aac4a48aa2b318c654567be47f2e3d",
+  "prefabRid": "0x2c00054b",
+  "prefabSha256": "78060b7d805954afaa858bcbd3968f1606098db332db0d5fa16533275e0fa805",
+  "prefabAlias": "",
+  "rotation": 2,
+  "pivot": [
+    600,
+    0,
+    880
+  ],
+  "localPosition": [
+    0.0,
+    0.0,
+    700.0
+  ],
+  "localQuaternion": [
+    0.0,
+    -0.7071067094802856,
+    0.0,
+    0.7071067690849304
+  ],
+  "nativePosition": [
+    -6000,
+    0,
+    17100
+  ],
+  "serverPosition": [
+    -6000,
+    145,
+    17100
+  ],
+  "standing": [
+    -6100,
+    95,
+    17100
+  ],
+  "standingNav": {
+    "sector": 76,
+    "placementIndex": 2,
+    "polygon": 24,
+    "floorY": 0,
+    "sourceLocal": [
+      100,
+      700
+    ]
+  },
+  "expectedQuaternionBytes": "00000000f304353f00000000f204353f",
+  "modelDescriptionId": "0x2800005a",
+  "modelPath": "resource/GameObjects/Doors/Rotating/single_push/sl_push_knob_graymetal01texvar.moa",
+  "modelBytes": 902,
+  "modelSha256": "1a23438fafd7cf1ca1d4a785bef908689f3c4fc6c8a69534066bd75e31fdc559",
+  "sourceContract": "GO414 schema364/Open3/4004:834 ->838 after20s ->835 after1s",
+  "nativeRenderingPending": true
+}

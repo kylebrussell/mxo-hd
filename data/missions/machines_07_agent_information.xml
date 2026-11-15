@@ -3,9 +3,10 @@
      replaced by names. Placement is generated: see docs/MISSIONS.md. RSI-01 and RSI-02 (the Exile shells) are Gaspard
      and Benedetto. OfficeWorker 1-4 are never mentioned, so have no NPCs. "Kill the Zion operatives" is DefeatAll,
      which counts Capella and Tycho; they wait to be attacked (attacksOnSight="0") so the escort to Capella can finish
-     first. Searching the corpses isn't supported: it is a Search of a piece of furniture for the operatives' dossier
-     (6848). Agent Harrow is met in phase 1 and again at phase 3's office, so he has a second NPC entry (id 6) placed
-     there. -->
+     first. The operatives' dossier (6848) uses the existing corpse Loot path. That goal is open before either dies
+     so its item is captured in an ordinary loot window, while the separate kill-all goal still requires every hostile.
+     This pacing is ours. Agent Harrow is met in phase 1 and again at phase 3's office, so he has a second NPC entry
+     (id 6) placed there. -->
 <mission id="2207" title="Agent Information" description="Prevent two Zion Operatives from becoming a problem." plot="1" order="17"
          org="2" contact="Agent Gray" exp="66000" info="52500">
   <npc id="1" handle="Agent Harrow" type="FRIENDLY" at="1" rsi="3600004e" weapon="2564" />
@@ -26,12 +27,11 @@ You will be picking up a pair of RSI shells of Exiles and leading them into the 
   <phase site="Normal" enemy="Zion" enemies="5">
     <briefing>Now that the programs are with you, I will send you the address of the targets. They are known as Capella and Tycho. Enter the base and kill everyone you find. Then leave the Exiles' program Shells as evidence to frame the Merovingian.</briefing>
     <enter><say>See to it that the information they hold does not make it into the hands of the Zion council.</say></enter>
-    <object id="1" kind="Furniture" />
     <!-- Escorted to Capella, the first of the two targets. -->
     <objective goal="1" text="Lead the Exile programs to the Zion targets" type="Escort" npc="2,3" to="npc:4" />
     <objective goal="2" text="Kill the Zion operatives" type="DefeatAll" after="1" />
-    <!-- Searching corpses isn't supported: a Search of furniture instead. -->
-    <objective goal="3" text="Search the corpses of the Zion operatives" type="Search" item="6848" object="1" after="2" />
+    <!-- Existing corpse loot captures the mission item at kill time; keep this open before either operative dies. -->
+    <objective goal="3" text="Search the corpses of the Zion operatives" type="Loot" npc="4,5" item="6848" />
   </phase>
   <phase site="Office" enemy="Zion" enemies="2">
     <briefing>Agent Harrow has informed me that he will meet you at an office building that is close to your current location. I am sending you the coordinates now.</briefing>

@@ -15,14 +15,15 @@ public static partial class Scenarios
     }
 
     private static async Task<HeadlessPlayer> StartMerovingianStoryMission(ScenarioContext context, XElement mission,
-        XElement[] definitions)
+        XElement[] definitions, int fixtureLevel = 50)
     {
         int order = (int)mission.Attribute("order")!;
         uint ticket = (uint?)mission.Attribute("entryItem") ?? 0;
         int district = (int?)mission.Attribute("district") ?? 1;
-        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")!)
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")! + (fixtureLevel == 50 ? "" : "L" + fixtureLevel))
         {
-            X = 58800, Y = 2495, Z = 31900, Level = 50,
+            X = 58800, Y = 2495, Z = 31900, Level = fixtureLevel,
+            Experience = fixtureLevel == 50 ? 0 : (int)hds.PlayerProgression.ExperienceForLevel(fixtureLevel),
             DistrictId = district, District = district == 2 ? "dt" : "slums",
             Items = ticket == 0 ? Array.Empty<(int, uint, int)>() : new[] { (1, ticket, 1) }
         });
@@ -296,23 +297,28 @@ public static partial class Scenarios
         double z = BitConverter.ToDouble(waypoint, 19);
         // The phase can advance before the teleport acknowledgment. Keep its briefing in the receive cursor.
         player.SendChat(FormattableString.Invariant($"?tp {x} {y} {z} 0 0 0"));
+        // Generated interior-door proximity is not departure. Use the actual static door RPC;
+        // authored sites continue to use their existing crossing predicate.
+        player.SendRpc($"80 c8 {WireFormat.ToHex(waypoint.Skip(31).Take(4).ToArray())} 03 00");
         return Task.CompletedTask;
     }
 
-    private static async Task EnterMissionArea(ScenarioContext context, HeadlessPlayer player)
+    private static Task EnterMissionArea(ScenarioContext context, HeadlessPlayer player) => EnterMissionArea(context.Server, player);
+
+    private static async Task EnterMissionArea(ServerInstance server, HeadlessPlayer player)
     {
         // The waypoint is the elevator door on the target floor, sometimes outside the site's area bounds.
         // Teleporting there bypassed the ride ("already on that floor"), left followers behind, and could
         // leave deadline clocks unstarted. Travel from the street, wait for the actual ride, then enter.
-        Match site = Regex.Matches(context.Server.DebugLog(),
+        Match site = Regex.Matches(server.DebugLog(),
             @"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
         double Coordinate(int group) => double.Parse(site.Groups[group].Value, System.Globalization.CultureInfo.InvariantCulture);
         await MoveForMissionTest(player, Coordinate(4), Coordinate(5), Coordinate(6));
         if (Math.Abs(Coordinate(2) - Coordinate(5)) > 150)
         {
-            int rides = Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
+            int rides = Regex.Matches(server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
             player.SendChat("?missionfloor");
-            await player.WaitUntilAsync(() => Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
+            await player.WaitUntilAsync(() => Regex.Matches(server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
                 "elevator ride completes before entering the mission area", TimeSpan.FromSeconds(10));
         }
         await MoveForMissionTest(player, Coordinate(1), Coordinate(2), Coordinate(3));

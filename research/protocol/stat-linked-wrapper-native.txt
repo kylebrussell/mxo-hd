@@ -1,0 +1,74 @@
+
+RANGE 0x625c4e90 0xa3
+625c4e90 push     ebp
+625c4e91 mov      ebp, esp
+625c4e93 push     ebx
+625c4e94 push     esi
+625c4e95 push     edi
+625c4e96 mov      edi, ecx
+625c4e98 lea      eax, [ebp + 8]
+625c4e9b lea      esi, [edi + 0x110]
+625c4ea1 push     eax
+625c4ea2 mov      ecx, esi
+625c4ea4 call     0x620c19c0
+625c4ea9 mov      ebx, eax
+625c4eab cmp      ebx, dword ptr [esi]
+625c4ead mov      esi, dword ptr [ebp + 8]
+625c4eb0 je       0x625c4ee6
+625c4eb2 push     esi
+625c4eb3 lea      ecx, [edi + 0x134]
+625c4eb9 call     0x625e3f90
+625c4ebe test     al, al
+625c4ec0 jne      0x625c4ee6
+625c4ec2 mov      cl, byte ptr [ebp + 0xc]
+625c4ec5 mov      bx, word ptr [ebx + 0x14]
+625c4ec9 xor      eax, eax
+625c4ecb test     cl, cl
+625c4ecd je       0x625c4edd
+625c4ecf mov      ecx, dword ptr [ebp + 0x14]
+625c4ed2 push     ecx
+625c4ed3 push     1
+625c4ed5 push     esi
+625c4ed6 mov      ecx, edi
+625c4ed8 call     0x625c47a0
+625c4edd pop      edi
+625c4ede pop      esi
+625c4edf add      eax, ebx
+625c4ee1 pop      ebx
+625c4ee2 pop      ebp
+625c4ee3 ret      0x10
+625c4ee6 push     esi
+625c4ee7 call     0x62515b20
+625c4eec add      esp, 4
+625c4eef test     al, al
+625c4ef1 jne      0x625c4f00
+625c4ef3 push     esi
+625c4ef4 call     0x62515b00
+625c4ef9 add      esp, 4
+625c4efc test     al, al
+625c4efe je       0x625c4f29
+625c4f00 push     esi
+625c4f01 call     0x62515a90
+625c4f06 add      esp, 4
+625c4f09 test     al, al
+625c4f0b je       0x625c4f29
+625c4f0d mov      al, byte ptr [ebp + 0xc]
+625c4f10 test     al, al
+625c4f12 je       0x625c4f29
+625c4f14 mov      edx, dword ptr [ebp + 0x14]
+625c4f17 push     edx
+625c4f18 push     1
+625c4f1a push     esi
+625c4f1b mov      ecx, edi
+625c4f1d call     0x625c47a0
+625c4f22 pop      edi
+625c4f23 pop      esi
+625c4f24 pop      ebx
+625c4f25 pop      ebp
+625c4f26 ret      0x10
+625c4f29 pop      edi
+625c4f2a pop      esi
+625c4f2b xor      ax, ax
+625c4f2e pop      ebx
+625c4f2f pop      ebp
+625c4f30 ret      0x10

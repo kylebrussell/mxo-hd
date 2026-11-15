@@ -11,5 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\hds\Hardline Dreams MxO server.csproj" />
+    <ProjectReference Include="..\PacketResearch\PacketResearch.csproj" />
   </ItemGroup>
 </Project>

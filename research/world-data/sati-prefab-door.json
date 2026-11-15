@@ -1,0 +1,54 @@
+{
+  "world": 9,
+  "sector": 0,
+  "localId": 126,
+  "goid": 580,
+  "sourceSidi": "sati_20.sidi",
+  "prefabRid": "0x8200007f",
+  "resourcePack": "prefabs_5.pkb",
+  "resourceOffset": 5874314,
+  "resourceSize": 462766,
+  "resourceSha256": "fa67f221ffefe4e14f2ae8df7ddbaf76e3ca5ac7a994b3760a261c71a91c2ce5",
+  "rotation": 2,
+  "pivot": [
+    250,
+    80,
+    530
+  ],
+  "localPosition": [
+    1000.0,
+    0.0,
+    500.0
+  ],
+  "localQuaternion": [
+    0.0,
+    -0.7071067094802856,
+    0.0,
+    0.7071067690849304
+  ],
+  "nativePosition": [
+    35500.0,
+    800.0,
+    -17200.0
+  ],
+  "serverPosition": [
+    35500.0,
+    945.0,
+    -17200.0
+  ],
+  "standing": [
+    35600,
+    895,
+    -17200
+  ],
+  "navRegion": 42,
+  "navPolygon": 74,
+  "expectedQuaternionBytes": "00000000f304353f00000000f204353f",
+  "modelDescriptionId": "0x6800001a",
+  "modelPath": "resource/GameObjects/Doors/Rotating/single_push/sl_push_knob_fadedgreen02.moa",
+  "modelBytes": 897,
+  "modelSha256": "90db89864a6c3990a6e1f8d00186bc5074154e8c211aec99b2a0f2197d8db786",
+  "gobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "sourceContract": "GO580 schema364/Open3/4004:834 ->838 after20s ->835 after1s; no manual Close",
+  "nativeRenderingPending": true
+}

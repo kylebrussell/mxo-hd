@@ -21,12 +21,42 @@ namespace hds
         private UInt32 lastUsedTime;
         private int deadSignals;
         private bool alive;
+        private object livenessLock;
+        private bool explicitlyStopped, reapClaimed, reapInProgress;
+        private long ingressGeneration;
+        internal Func<uint> LivenessClock;
+        private object LivenessSync => LazyInitializer.EnsureInitialized(ref livenessLock);
+        private uint LivenessNow => LivenessClock==null?TimeUtils.getUnixTimeUint32():LivenessClock();
+        internal (uint Last,long Generation,bool Claimed) IngressSnapshot
+        {get {lock(LivenessSync)return(lastUsedTime,ingressGeneration,reapClaimed);}}
+        private bool Terminal {get {lock(LivenessSync)return explicitlyStopped||reapClaimed;}}
+        private bool NoteIngress()
+        {
+            lock(LivenessSync)
+            {
+                if(explicitlyStopped||reapClaimed||!alive)return false;
+                lastUsedTime=LivenessNow;ingressGeneration++;return true;
+            }
+        }
+        // Called only under the endpoint dictionary gate. No cleanup/SQL or other owner locks here.
+        internal bool TryClaimInactive()
+        {
+            lock(LivenessSync)
+            {
+                if(reapClaimed){if(reapInProgress)return false;reapInProgress=true;return true;}
+                if(alive&&!explicitlyStopped&&(IsBot||unchecked(LivenessNow-lastUsedTime)<=30))return false;
+                reapClaimed=true;reapInProgress=true;alive=false;return true;
+            }
+        }
+        // Preserve the existing cleanup retry after a failure, while the endpoint stays terminal.
+        internal void ReleaseFailedReap(){lock(LivenessSync)if(reapClaimed)reapInProgress=false;}
         private bool flushingQueueInProgress = false;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
         private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
         private bool packetWorkerRunning;
         private readonly object flushLock = new object();
+        internal WorldSendFence TransportFence { get; } = new WorldSendFence();
         private long lastFlushTick;
         private volatile bool flushPending;
         public const int FlushIntervalMs = 50;
@@ -106,7 +136,7 @@ namespace hds
         }
 
         // This method sends one packet at a time to the game client 
-        private void sendPacket(byte[] data)
+        private bool sendPacket(byte[] data)
         {
             if (this.deadSignals == 0)
             {
@@ -114,13 +144,15 @@ namespace hds
                 try
                 {
                     socket.BeginSendTo(data, 0, data.Length, SocketFlags.None, Remote, new AsyncCallback(FinalSendTo), Remote);
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     Output.WriteDebugLog("Socket Error " + ex.Message);
-                    alive = false;
+                    Alive = false;
                 }
             }
+            return false;
         }
 
         private void FinalSendTo(IAsyncResult asyncResult)
@@ -200,6 +232,7 @@ namespace hds
 
         public void FlushQueue(bool sent = false, bool force = false)
         {
+            if(MissionOutput.Buffered(messageQueue))return;
             if (IsBot)
             {
                 DropQueuedMessages();
@@ -223,7 +256,14 @@ namespace hds
                     return;
                 }
                 flushingQueueInProgress = true;
+                flushPending = false; // consume only requests that preceded this flush
             }
+
+            long scaleFlushStart=0;
+            try
+            {
+            scaleFlushStart=ScaleDiagnostics.Start;
+            long outgoingEpoch = TransportFence.Capture();
 
             // This resend the MessageQueue - should be called after parsing or after sending something out
             // or in a timed interval (keep alive for example)
@@ -234,6 +274,8 @@ namespace hds
 
             WorldPacket packet = new WorldPacket(playerData);
 
+            if (!TransportFence.TryRun(outgoingEpoch, () =>
+            {
             // Init encrypted Packet if we have MPM Messages
             if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0)
             {
@@ -278,6 +320,7 @@ namespace hds
                     packet.timed = false;
                 }
 
+                messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
                 if (messageQueue.RPCMessagesQueue.Count > 0)
                 {
                     lock (messageQueue.RPCMessagesQueue.SyncRoot)
@@ -338,6 +381,8 @@ namespace hds
             }
 
 
+            })) { flushPending = true; return; }
+
             // We have now PacketObjects - time to send them
             if (worldPackets.Count > 0)
             {
@@ -346,6 +391,12 @@ namespace hds
                 #endif 
                 foreach (WorldPacket thePacket in worldPackets)
                 {
+                    if (!TransportFence.TryRun(outgoingEpoch, () =>
+                    {
+                    // A world generation can change after preparation. Drop only unnumbered producer-owned records.
+                    thePacket.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
+                    messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
+                    // The existing encoder still emits its ordinary bare ACK if no content remains.
                     playerData.IncrementSseq();
 
                     byte[] finalData = thePacket.getFinalData(playerData);
@@ -361,7 +412,13 @@ namespace hds
                     }
                     else
                     {
-                        sendPacket(encryptedData);
+                        bool dispatched=sendPacket(encryptedData);
+                        if(dispatched)thePacket.RecordDispatchedObjectReceipts(messageQueue);
+                        if(dispatched && ScaleDiagnostics.Enabled)
+                        {
+                            foreach(var message in thePacket.RPCMessages)message.RecordScaleFirstSend(false);
+                            foreach(var message in thePacket.ObjectMessages)message.RecordScaleFirstSend(true);
+                        }
                     }
 
                     stopWatch.Stop();
@@ -371,12 +428,21 @@ namespace hds
                     Output.WritePacketLog(this, finalData, "SERVER",
                         playerData.getPss().ToString(), playerData.getCseq().ToString(),
                         playerData.getSseq().ToString(), ts.TotalMilliseconds.ToString(), "ENCRYPT");
+                    })) flushPending = true;
                 }
             }
 
-            flushingQueueInProgress = false;
-            lastFlushTick = Environment.TickCount64;
-            flushPending = false;
+            }
+            finally
+            {
+                lock (flushLock)
+                {
+                    flushingQueueInProgress = false;
+                    lastFlushTick = Environment.TickCount64;
+                    // Preserve requests raised during this flush, including reset/setup retries.
+                }
+                ScaleDiagnostics.FlushCompleted(scaleFlushStart);
+            }
         }
 
         private void SendRawMessages()
@@ -397,6 +463,7 @@ namespace hds
 
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
+            messageQueue.ObserveObjectReceipts(ackSeq,playerData.getPss());
             // First identify which messages needs to be deleted from queue
             ArrayList ackedObjectMessages = new ArrayList();
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
@@ -477,6 +544,9 @@ namespace hds
             }
 
 
+            // Fence reset before publishing its new envelope headers, not later in Parse.
+            TransportFence.PublishIncoming((processedPacket[0] & 0x40) != 0, () =>
+            {
             //clData.setPss((UInt16) decValues[1]);
             playerData.setPss((UInt16) decValues[1]);
             playerData.setCseq((UInt16) decValues[2]);
@@ -488,12 +558,16 @@ namespace hds
             }
 
             this.DeletedAckedPackets((UInt16) decValues[3]); // REMOVING FROM ACK QUEUE
+            });
             return processedPacket;
         }
 
         /// <summary>Called by the socket receiver before it arms the next receive, preserving datagram arrival order.</summary>
         internal void QueuePacket(byte[] packet)
         {
+            // The existing policy counts raw endpoint activity before decryption. A busy serialized
+            // worker must not make real incoming keepalives appear to be30 seconds of silence.
+            if(!NoteIngress())return;
             lock (receivedPackets)
             {
                 receivedPackets.Enqueue(packet);
@@ -510,6 +584,7 @@ namespace hds
         {
             while (true)
             {
+                if(Terminal){lock(receivedPackets){receivedPackets.Clear();packetWorkerRunning=false;}return;}
                 byte[] packet;
                 lock (receivedPackets)
                 {
@@ -520,21 +595,25 @@ namespace hds
                     }
                     packet = receivedPackets.Dequeue();
                 }
-                processPacket(packet);
+                ProcessPacketCore(packet);
             }
         }
+        internal int PendingPacketCount {get {lock(receivedPackets)return receivedPackets.Count;}}
 
         public void processPacket(byte[] packet)
         {
+            // Preserve the direct entry's raw-arrival contract; queued work was stamped at ingress.
+            if(NoteIngress())ProcessPacketCore(packet);
+        }
+        private void ProcessPacketCore(byte[] packet)
+        {
             lock (processLock)
             {
+                if(Terminal)return;
                 WorldClient previousClient = Store.currentClient;
                 Store.currentClient = this;
                 try
                 {
-                    // Update the last time we are called
-                    lastUsedTime = TimeUtils.getUnixTimeUint32();
-
                     // Decryption start
                     bool encrypted = false;
 
@@ -567,7 +646,8 @@ namespace hds
                                 ts.TotalMilliseconds.ToString(), "DECRYPT");
                         }
 
-                        protocolManager.Parse(encrypted, processedPacket);
+                        using(MissionProxyIntroduction.Incoming(this,encrypted && (processedPacket[0]&0x40)==0))
+                            protocolManager.Parse(encrypted, processedPacket);
                         FlushQueue();
                     }
                 }
@@ -633,18 +713,10 @@ namespace hds
         {
             get
             {
-                if (IsBot)
-                {
-                    return alive;
-                }
-                UInt32 now = TimeUtils.getUnixTimeUint32();
-                if (!this.alive || (now - lastUsedTime > 30))
-                {
-                    return false;
-                }
-                return true;
+                lock(LivenessSync)return alive&&!explicitlyStopped&&!reapClaimed&&
+                    (IsBot||unchecked(LivenessNow-lastUsedTime)<=30);
             }
-            set { alive = value; }
+            set {lock(LivenessSync){if(!value){alive=false;explicitlyStopped=true;}else if(!explicitlyStopped&&!reapClaimed)alive=true;}}
         }
     }
 }

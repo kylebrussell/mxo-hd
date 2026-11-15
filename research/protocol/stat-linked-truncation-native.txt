@@ -1,0 +1,54 @@
+
+RANGE 0x626a92d8 0xc0
+626a92d8 push     ebp
+626a92d9 mov      ebp, esp
+626a92db sub      esp, 0x20
+626a92de and      esp, 0xfffffff0
+626a92e1 fld      st(0)
+626a92e3 fst      dword ptr [esp + 0x18]
+626a92e7 fistp    qword ptr [esp + 0x10]
+626a92eb fild     qword ptr [esp + 0x10]
+626a92ef mov      edx, dword ptr [esp + 0x18]
+626a92f3 mov      eax, dword ptr [esp + 0x10]
+626a92f7 test     eax, eax
+626a92f9 je       0x626a9337
+626a92fb fsubp    st(1)
+626a92fd test     edx, edx
+626a92ff jns      0x626a931f
+626a9301 fstp     dword ptr [esp]
+626a9304 mov      ecx, dword ptr [esp]
+626a9307 xor      ecx, 0x80000000
+626a930d add      ecx, 0x7fffffff
+626a9313 adc      eax, 0
+626a9316 mov      edx, dword ptr [esp + 0x14]
+626a931a adc      edx, 0
+626a931d jmp      0x626a934b
+626a931f fstp     dword ptr [esp]
+626a9322 mov      ecx, dword ptr [esp]
+626a9325 add      ecx, 0x7fffffff
+626a932b sbb      eax, 0
+626a932e mov      edx, dword ptr [esp + 0x14]
+626a9332 sbb      edx, 0
+626a9335 jmp      0x626a934b
+626a9337 mov      edx, dword ptr [esp + 0x14]
+626a933b test     edx, 0x7fffffff
+626a9341 jne      0x626a92fb
+626a9343 fstp     dword ptr [esp + 0x18]
+626a9347 fstp     dword ptr [esp + 0x18]
+626a934b leave
+626a934c ret
+626a934d int3
+626a934e jmp      dword ptr [0x628682b0]
+626a9354 jmp      dword ptr [0x62868540]
+626a935a jmp      dword ptr [0x628682b8]
+626a9360 jmp      dword ptr [0x628682bc]
+626a9366 jmp      dword ptr [0x628682c0]
+626a936c jmp      dword ptr [0x628682c4]
+626a9372 jmp      dword ptr [0x628682c8]
+626a9378 jmp      dword ptr [0x628682cc]
+626a937e jmp      dword ptr [0x628682d0]
+626a9384 jmp      dword ptr [0x628682d4]
+626a938a jmp      dword ptr [0x628682d8]
+626a9390 jmp      dword ptr [0x628682dc]
+626a9396 .byte    0xff
+626a9397 .byte    0x25

@@ -1,0 +1,137 @@
+
+RANGE 0x620022f0 0x100
+620022f0 push     ebp
+620022f1 mov      ebp, esp
+620022f3 sub      esp, 0x18
+620022f6 push     ebx
+620022f7 push     esi
+620022f8 mov      esi, dword ptr [ebp + 0x10]
+620022fb xor      ebx, ebx
+620022fd mov      eax, esi
+620022ff push     edi
+62002300 mov      edi, ecx
+62002302 mov      dword ptr [ebp - 0x18], ebx
+62002305 mov      dword ptr [ebp - 0x14], ebx
+62002308 mov      dword ptr [ebp - 0x10], ebx
+6200230b lea      edx, [eax + 1]
+6200230e mov      edi, edi
+62002310 mov      cl, byte ptr [eax]
+62002312 inc      eax
+62002313 cmp      cl, bl
+62002315 jne      0x62002310
+62002317 sub      eax, edx
+62002319 lea      ecx, [ebp + 0x13]
+6200231c push     ecx
+6200231d add      eax, esi
+6200231f push     eax
+62002320 push     esi
+62002321 lea      ecx, [ebp - 0x18]
+62002324 call     0x62001f90
+62002329 mov      esi, dword ptr [ebp + 8]
+6200232c mov      eax, esi
+6200232e mov      dword ptr [ebp - 0xc], ebx
+62002331 mov      dword ptr [ebp - 8], ebx
+62002334 mov      dword ptr [ebp - 4], ebx
+62002337 lea      edx, [eax + 1]
+6200233a lea      ebx, [ebx]
+62002340 mov      cl, byte ptr [eax]
+62002342 inc      eax
+62002343 cmp      cl, bl
+62002345 jne      0x62002340
+62002347 sub      eax, edx
+62002349 lea      edx, [ebp + 0x13]
+6200234c push     edx
+6200234d add      eax, esi
+6200234f push     eax
+62002350 push     esi
+62002351 lea      ecx, [ebp - 0xc]
+62002354 call     0x62001f90
+62002359 mov      ecx, dword ptr [ebp + 0x14]
+6200235c lea      eax, [ebp - 0x18]
+6200235f push     eax
+62002360 push     1
+62002362 push     ecx
+62002363 lea      edx, [ebp - 0xc]
+62002366 push     edx
+62002367 mov      ecx, edi
+62002369 call     0x622a2270
+6200236e mov      eax, dword ptr [ebp - 0xc]
+62002371 cmp      eax, ebx
+62002373 je       0x62002384
+62002375 mov      ecx, dword ptr [ebp - 4]
+62002378 sub      ecx, eax
+6200237a push     ecx
+6200237b push     eax
+6200237c call     0x62001db0
+62002381 add      esp, 8
+62002384 mov      eax, dword ptr [ebp - 0x18]
+62002387 cmp      eax, ebx
+62002389 je       0x6200239a
+6200238b mov      edx, dword ptr [ebp - 0x10]
+6200238e sub      edx, eax
+62002390 push     edx
+62002391 push     eax
+62002392 call     0x62001db0
+62002397 add      esp, 8
+6200239a mov      eax, dword ptr [ebp + 0xc]
+6200239d mov      dword ptr [edi + 0x30], eax
+620023a0 mov      dword ptr [edi + 0x34], eax
+620023a3 mov      byte ptr [edi + 0x38], bl
+620023a6 mov      dword ptr [edi], 0x62868b18
+620023ac mov      eax, edi
+620023ae pop      edi
+620023af pop      esi
+620023b0 pop      ebx
+620023b1 mov      esp, ebp
+620023b3 pop      ebp
+620023b4 ret      0x10
+620023b7 int3
+620023b8 int3
+620023b9 int3
+620023ba int3
+620023bb int3
+620023bc int3
+620023bd int3
+620023be int3
+620023bf int3
+620023c0 xor      eax, eax
+620023c2 ret
+620023c3 int3
+620023c4 int3
+620023c5 int3
+620023c6 int3
+620023c7 int3
+620023c8 int3
+620023c9 int3
+620023ca int3
+620023cb int3
+620023cc int3
+620023cd int3
+620023ce int3
+620023cf int3
+620023d0 mov      eax, 4
+620023d5 ret
+620023d6 int3
+620023d7 int3
+620023d8 int3
+620023d9 int3
+620023da int3
+620023db int3
+620023dc int3
+620023dd int3
+620023de int3
+620023df int3
+620023e0 lea      eax, [ecx + 0x34]
+620023e3 ret
+620023e4 int3
+620023e5 int3
+620023e6 int3
+620023e7 int3
+620023e8 int3
+620023e9 int3
+620023ea int3
+620023eb int3
+620023ec int3
+620023ed int3
+620023ee int3
+620023ef int3

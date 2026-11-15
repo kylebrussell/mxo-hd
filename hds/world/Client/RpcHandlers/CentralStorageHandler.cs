@@ -56,10 +56,15 @@ namespace hds
         /// <summary>Client 62.</summary>
         public static void ProcessMove(WorldClient client, byte[] rpcData)
         {
+            lock(client.playerData.craftingSync) ProcessMoveLocked(client,rpcData);
+        }
+        private static void ProcessMoveLocked(WorldClient client,byte[] rpcData)
+        {
             if (!CentralStorage.TryParseMove(rpcData, out CentralStorage.Move move))
             {
                 return;
             }
+            var publication=new AbilityAcquisition.Publication(client);
             UInt32 charId = client.playerData.getCharID();
             CentralStorage.Plan plan;
             if (!IsOpenFor(client))
@@ -96,7 +101,7 @@ namespace hds
 
             if (move.FromBag)
             {
-                ApplyUpload(client, charId, plan);
+                ApplyUpload(client, charId, plan,publication);
             }
             else
             {
@@ -106,21 +111,27 @@ namespace hds
             Output.WriteDebugLog("[CENTRAL STORAGE] " + what + ": moved " + plan.Moved + " (" + CentralStorage.NameOf(plan.Status) + ")");
         }
 
-        private static void ApplyUpload(WorldClient client, UInt32 charId, CentralStorage.Plan plan)
+        private static void ApplyUpload(WorldClient client, UInt32 charId, CentralStorage.Plan plan,AbilityAcquisition.Publication publication)
         {
             MarketPlaceHandler.Db.GetInventoryItem(charId, plan.BagSlot, out UInt32 goid, out UInt32 ignored);
 
+            if(plan.LearnAbility)
+            {
+                // A changed snapshot must still use the exact shared ability transaction.
+                AbilityAcquisition.Receipt receipt;
+                try { receipt=Db.AcquireAbility(charId,goid,0,plan.BagSlot,plan.StorageSlot); }
+                catch(Exception error)
+                {
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] LA upload refused/rolled back: "+error.Message);
+                    publication.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
+                    publication.Publish(client,CentralStorage.BuildUploadResult(0,false,CentralStorage.InvalidTransaction));return;
+                }
+                CodeStorageHandler.PublishLearn(client,receipt,publication,true);
+                return;
+            }
             SetBagCount(client, charId, plan.BagSlot, plan.BagCount);
-            if (plan.LearnAbility)
-            {
-                Db.AddAbility(charId, plan.StorageSlot, unchecked((Int32)goid), 1);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(plan.StorageSlot, AbilityProgression.AbilityCodeValue(goid)));
-            }
-            else
-            {
-                SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
-            }
-            client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(plan.LearnAbility ? 1 : plan.Moved, plan.LearnAbility, plan.Status));
+            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
+            client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(plan.Moved,false,plan.Status));
         }
 
         private static void ApplyDownload(WorldClient client, UInt32 charId, CentralStorage.Plan plan)
@@ -226,7 +237,7 @@ namespace hds
 
         /// <summary>
         /// Client <c>5d &lt;slot u16&gt; 00 &lt;RecycleItem&gt;</c>: the window's Recycle button on a storage entry (0x621d4ae0 takes slots
-        /// below 0x208 when PersonalInventoryItem is 0). Paid as a bag recycle is (one item's price), answered as retail
+        /// below 0x208 when PersonalInventoryItem is 0). Native type0x2e quote retains one item's price, answered as retail
         /// answered a bag recycle (<c>80 e7</c>, <c>80 e4</c>) with the storage removal <c>5f &lt;slot&gt; 00</c>.
         /// </summary>
         public static void ProcessRecycle(WorldClient client, UInt16 slot)
@@ -244,19 +255,24 @@ namespace hds
                 return;
             }
 
-            long currentCash = client.playerData.getInfo();
-            UInt32 value = VendorPricing.GetRecyclePrice(entry.Goid);
-            UInt32 newCash = (UInt32)Math.Min(Math.Max(currentCash, 0) + (long)value, UInt32.MaxValue);
-            Db.RemoveCodeStorage(charId, slot);
-            Db.SaveInfo(client, newCash);
-            client.playerData.setInfo(newCash);
-
-            ServerPackets pak = new ServerPackets();
-            pak.SendInfoDelta(client, (long)newCash - currentCash, ServerPackets.InfoReasonRecycle);
-            pak.SendInfoCurrent(client, newCash, ServerPackets.InfoReasonRecycle);
-            client.messageQueue.addRpcMessage(CentralStorage.BuildRemove(slot));
-            client.FlushQueue();
-            Output.WriteDebugLog("[CENTRAL STORAGE] Recycled storage slot " + slot + " (" + entry.Goid + " x" + entry.Count + ") for " + value);
+            UInt32 quote=VendorPricing.GetRecyclePrice(entry.Goid);
+            try
+            {
+                InventoryPayout result=Db.ExchangeInventoryForInfo(charId,slot,entry.Goid,entry.Count,quote,storage:true);
+                if(result==null){ClientActionsHandler.Notice(client,"That storage item changed; try again.");return;}
+                client.playerData.setInfo(result.Cash);
+                ServerPackets pak=new ServerPackets();
+                pak.SendInfoDelta(client,result.Credited,ServerPackets.InfoReasonRecycle);
+                pak.SendInfoCurrent(client,result.Cash,ServerPackets.InfoReasonRecycle);
+                client.messageQueue.addRpcMessage(CentralStorage.BuildRemove(slot));
+                client.FlushQueue();
+                Output.WriteDebugLog("[CENTRAL STORAGE] Recycled storage slot "+slot+" for "+result.Credited);
+            }
+            catch(Exception e)
+            {
+                Output.WriteDebugLog("[CENTRAL STORAGE] Recycle rolled back: "+e.Message);
+                ClientActionsHandler.Notice(client,"The recycle could not be completed. Your item and information were kept.");
+            }
         }
     }
 }
