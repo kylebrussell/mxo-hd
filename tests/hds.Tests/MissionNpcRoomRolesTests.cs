@@ -1,6 +1,7 @@
 using System.Text.Json;
 using hds;
 using E=hds.MissionInteriorEvidence;
+using G=hds.MissionOpenFloorResolver;
 namespace hds.Tests;
 public partial class MissionNpcInteriorCheckpointTests
 {
@@ -88,3 +89,4 @@ public partial class MissionNpcInteriorCheckpointTests
         var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
     }
 }
+
