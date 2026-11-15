@@ -65,6 +65,19 @@ public class MissionInteriorEvidenceTests
         Assert.StartsWith("7d000000022b00270001", p.Raw); Assert.Equal(new[] { 0x2260056bu }, p.DoorKeys);
         Assert.NotNull(Index(d));
     }
+    [Fact] public void LiteralNonintegerMarkerPreservesNativeTranslationFirstFloatBits()
+    {
+        // Actual counted GO19 key22601ef4, region85, pivot460/360/1320, rotation3.
+        // Primary native transform stores translation13200+16000 before adding localX.
+        var d = Doc(); var source = Group(d, 0x22601ef4).Occurrences.Single();
+        Assert.StartsWith("13000000f41e0000585ac043000000004c4b4d45", source.Raw);
+        Assert.Equal((ushort)85, source.Region); Assert.Equal(new[] { 37315.29296875, 3600d, 29584.705078125 }, source.Position);
+        Assert.Equal(0x46e72169u, BitConverter.SingleToUInt32Bits((float)source.Position[2]));
+        float localX = BitConverter.ToSingle(Convert.FromHexString("585ac043"));
+        Assert.Equal(0x46e72169u, BitConverter.SingleToUInt32Bits(localX + (13200f + 16000f)));
+        Assert.Equal(0x46e7216au, BitConverter.SingleToUInt32Bits((localX + 13200f) + 16000f));
+        Assert.NotNull(Index(d)); // Production record replay must agree with these exact primary bits.
+    }
     [Fact] public void RetailOpen346UsesItsOwnNativeQuaternionAndNeverBorrowsPaired343Yaw()
     {
         // Recursion 2009-07-05 19:57:25 request321; matching next-second bound3460834 creation.

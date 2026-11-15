@@ -99,7 +99,9 @@ namespace hds
         private double[] NativePoint(byte[] raw, int offset, Region region)
         {
             double[] v = Turn(BitConverter.ToSingle(raw, offset), BitConverter.ToSingle(raw, offset + 4), BitConverter.ToSingle(raw, offset + 8), region.Rotation);
-            return Enumerable.Range(0, 3).Select(i => (double)(float)((float)((float)v[i] + (float)(region.Pivot[i] * 10)) + (float)document.ParentCorner[i])).ToArray();
+            // Native624685b0/62045e10 stores the composed translation BEFORE62111670/624cf0cb
+            // adds the rotated point. Reassociation changes noninteger source positions by one float ULP.
+            return Enumerable.Range(0, 3).Select(i => (double)(float)((float)v[i] + (float)((float)(region.Pivot[i] * 10) + (float)document.ParentCorner[i]))).ToArray();
         }
         private static string NativeQuaternion(byte[] raw, Region region)
         {
