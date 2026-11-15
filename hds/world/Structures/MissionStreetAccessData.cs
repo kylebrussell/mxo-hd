@@ -80,7 +80,7 @@ namespace hds
                         Edge edge=poly.Edges[e];Need(edge!=null&&edge.Index==e&&edge.SourceOffset==cursor,"StreetEdgeOrdinal");edge.Bytes=Convert.FromHexString(edge.Raw??"");
                         Need(edge.Bytes.Length==20&&Enumerable.Range(0,4).All(i=>float.IsFinite(BitConverter.ToSingle(edge.Bytes,4+i*4))),"StreetOriginalEdge");cursor+=20;
                         ushort target=BitConverter.ToUInt16(edge.Bytes),neighbor=BitConverter.ToUInt16(edge.Bytes,2);
-                        if(target<outdoor.Regions.Length)Need(outdoor.Regions[target]!=null&&outdoor.Regions[target].Polygons!=null&&neighbor<outdoor.Regions[target].Polygons.Length,"StreetLocalReference");
+                        if(neighbor!=ushort.MaxValue&&target<outdoor.Regions.Length)Need(outdoor.Regions[target]!=null&&outdoor.Regions[target].Polygons!=null&&neighbor<outdoor.Regions[target].Polygons.Length,"StreetLocalReference");
                         // Interior and cross-sector references remain raw. Only a proved exact link may be traversed later.
                     }
                     Need(cursor<=region.SectionOffset+(long)region.SectionLength,"StreetPolygonBounds");

@@ -92,4 +92,11 @@ public sealed class MissionStreetAccessTests
         var outside=Modified(c.Raw,c.Evidence);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
         Assert.False(c.Evidence.TryStreetAccess(outside,lobby,new E.Node(13,0),0x0d100028,key=>Raw(c.Raw,key),out _,out _));
     }
+    [Fact]public void OriginalTerminalReferenceIsPreservedWithoutBecomingPolygon65535()
+    {
+        var c=Load(209);var edge=c.Outdoor.At(new E.Node(31,1)).Edges[0];
+        Assert.Equal("0000ffff000080bf000000000000003a0048b745",edge.Raw);
+        Assert.False(c.Outdoor.Has(new E.Node(0,ushort.MaxValue)));
+        Assert.False(c.Outdoor.TryOutsidePath(new E.Node(31,1),new E.Node(0,ushort.MaxValue),out _));
+    }
 }
