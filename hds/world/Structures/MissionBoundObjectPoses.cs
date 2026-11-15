@@ -32,8 +32,10 @@ namespace hds
             state.spot?.metrId==1&&MissionSites.Goid(state.spot)==326;
 
         internal static bool TryCurrent(MissionObjectState state,out MissionComputerAnchors.Pose pose,out string refusal)
+            =>TryCurrentRegion(state,out pose,out _,out refusal);
+        internal static bool TryCurrentRegion(MissionObjectState state,out MissionComputerAnchors.Pose pose,out int region,out string refusal)
         {
-            pose=null;refusal=null;
+            pose=null;region=-1;refusal=null;
             if(!Supported(state)){refusal="NotSupportedBound326";return false;}
             var raw=state.spot;
             string path=DataLoader.DataPath("mission_bound_poses","1",raw.sectorID+".json.gz");
@@ -41,7 +43,7 @@ namespace hds
             {
                 var index=cache.GetOrAdd(path,p=>new Lazy<MissionBoundObjectPoses>(()=>
                     LoadAudited(Path.GetDirectoryName(p),raw.sectorID))).Value;
-                return index.TryResolve(raw,out pose,out _,out refusal);
+                return index.TryResolve(raw,out pose,out region,out refusal);
             }
             catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is FormatException||ex is OverflowException||ex is ArgumentException||ex is InvalidOperationException||ex is KeyNotFoundException)
             {refusal="UnavailableOrInvalidBound326Profile";return false;}
