@@ -161,8 +161,9 @@ namespace hds
                     MissionOpenFloorSite.From(selectedSite), Array.Empty<MissionNpcInteriorActor>(), 1);
                 selected = new MissionNpcInteriorPending(2, Kind, selection, null, "NpcEvidenceNotYetValidated");
                 E floor = provider.Evidence(selectedSite.metrId, selectedSite.elevatorDoor.sectorID), lobby = provider.Evidence(selectedSite.metrId, selectedSite.lobbyDoor.sectorID);
-                if (!floor.TryEntry(selectedSite.elevatorDoor, p => provider.Entry(selectedSite.metrId, p, selectedSite.CentreX, selectedSite.CentreZ, "original NPC floor entry"), out E.Entry floorEntry, out refusal) ||
-                    !lobby.TryEntry(selectedSite.lobbyDoor, p => provider.Entry(selectedSite.metrId, p, selectedSite.CentreX, selectedSite.CentreZ, "independent original NPC lobby entry"), out E.Entry lobbyEntry, out refusal))
+                StaticWorldObject[] siteMarkers = markers.Where(m => selectedSite.npcSpots.Any(spot => spot.SequenceEqual(new double[] { m.pos_x,m.pos_y-50,m.pos_z,m.rot }))).ToArray();
+                if (!floor.TryBuildingEntry(selectedSite.elevatorDoor,siteMarkers,initialRoles.Length,(native,x,z) => provider.Entry(selectedSite.metrId,native,x,z,"authored building-side NPC entry"),out E.Entry floorEntry,out uint carPrefab,out refusal) ||
+                    !lobby.TryLobbyEntry(selectedSite.lobbyDoor,carPrefab,(native,x,z) => provider.Entry(selectedSite.metrId,native,x,z,"independent authored street-side NPC lobby entry"),out E.Entry lobbyEntry,out refusal))
                 { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
                 if (!MissionNpcRoomRoles.Select(target, phase, selectedSite, markers, floor, floorEntry, provider, out selection, out refusal))
                 { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
@@ -172,7 +173,7 @@ namespace hds
                 {
                     Dictionary<uint, StaticWorldObject> rawDoors = new Dictionary<uint, StaticWorldObject>();
                     StaticWorldObject Lookup(uint key) { StaticWorldObject raw = provider.Door(selectedSite.metrId, key); if (raw == null) return null; raw = ReadRaw(RawJson(raw)); rawDoors[key] = raw; return raw; }
-                    if (!floor.TryNpcRoute(floorEntry, ReadRaw(actor.RawMarkerJson), actor.Standing, Lookup, out E.NpcRoute route, out refusal)) { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
+                    if (!floor.TryMeasuredNpcRoute(floorEntry, ReadRaw(actor.RawMarkerJson), actor.Standing, Lookup, out E.NpcRoute route, out refusal)) { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
                     proofs.Add(new MissionNpcInteriorActorProof(actor.Key, new MissionNpcInteriorNode(route.Target.Region, route.Target.Polygon), route.Nodes.Select(n => new MissionNpcInteriorNode(n.Region, n.Polygon)).ToArray()));
                     foreach (E.DoorPose door in route.RequiredDoors)
                     {

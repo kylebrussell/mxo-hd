@@ -279,11 +279,102 @@ namespace hds
         }
         private sealed class Step { internal Node Before; internal Portal Portal; internal Step(Node before, Portal portal) { Before = before; Portal = portal; } }
         private bool Level(Node node, double floor) => Available(node.Region) && node.Polygon < regions[node.Region].Polygons.Length && Poly(node).Edges.All(e => Same(Floor(Poly(node), e.Vertex[0], e.Vertex[2]), floor));
-        internal bool TryNpcRoute(Entry entry, StaticWorldObject marker, double[] planned, Func<uint, StaticWorldObject> selectedDoor, out NpcRoute proof, out string refusal)
+        private HashSet<Node> Component(Node start, double floor, uint excludedShaft)
+        {
+            var found = new HashSet<Node>(); var queue = new Queue<Node>();
+            if (!Level(start, floor)) return found; found.Add(start); queue.Enqueue(start);
+            while (queue.Count != 0)
+            {
+                Node n = queue.Dequeue();
+                foreach (Edge edge in Poly(n).Edges) if (edge.Neighbor != 0xffff) Add(new Node(n.Region, edge.Neighbor));
+                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == n.Region && p.SourcePolygon == n.Polygon && !p.DoorKeys.Contains(excludedShaft)))
+                    Add(new Node(portal.TargetRegion, portal.TargetPolygon));
+            }
+            void Add(Node n) { if (Level(n, floor) && found.Add(n)) queue.Enqueue(n); }
+            return found;
+        }
+        private Portal ShaftPortal(Occurrence occurrence, uint key, double floor)
+        {
+            Portal[] matching = document.Portals.Where(p => p.SourceRegion == occurrence.Region && p.DoorKeys.Contains(key) && Level(new Node(p.SourceRegion,p.SourcePolygon),floor)).ToArray();
+            return matching.Length == 1 ? matching[0] : null;
+        }
+        private bool ContextEntry(StaticWorldObject raw, G.Position position, Occurrence context, Func<G.Position,double,double,MissionOpenFloorEntry.Result> calculate, out Entry entry, out string refusal)
+        {
+            entry = null; refusal = "MissingExactShaftPortalContext";
+            Portal portal = ShaftPortal(context, raw.mxoStaticId, position.Y - 145); if (portal == null) return false;
+            Polygon adjacent = Poly(new Node(portal.SourceRegion,portal.SourcePolygon));
+            double x = adjacent.Edges.Average(e => e.Vertex[0]), z = adjacent.Edges.Average(e => e.Vertex[2]);
+            MissionOpenFloorEntry.Result result = calculate(position,x,z);
+            if (result?.Root == null || result.FallbackUsed || result.Root.Surface.Region != context.Region || result.Root.Surface.Sector != document.Sector)
+            { refusal = "EntryOutsideSelectedBuildingContext"; return false; }
+            return TryEntry(raw,_ => result,out entry,out refusal);
+        }
+        internal bool TryBuildingEntry(StaticWorldObject raw, StaticWorldObject[] markers, int roles, Func<G.Position,double,double,MissionOpenFloorEntry.Result> calculate,
+            out Entry entry, out uint carPrefab, out string refusal)
+        {
+            entry = null; carPrefab = 0;
+            if (!Position(raw,out Group group,out G.Position position,out refusal) || roles <= 0 || markers == null) return false;
+            var own = group.Occurrences.Where(o => o.Goid == MissionSites.Goid(raw)).ToArray();
+            var capacities = new Dictionary<Occurrence,int>();
+            foreach (Occurrence context in own)
+            {
+                Portal portal = ShaftPortal(context,raw.mxoStaticId,position.Y-145);
+                var reachable = portal == null ? new HashSet<Node>() : Component(new Node(portal.SourceRegion,portal.SourcePolygon),position.Y-145,raw.mxoStaticId);
+                var positions = new HashSet<string>();
+                foreach (StaticWorldObject marker in markers)
+                {
+                    if (!TryMeasuredMarker(marker,out double[] spot,out _)) continue;
+                    Group source = groups[marker.mxoStaticId]; ushort region = source.Occurrences.First(o => o.Goid == 19).Region;
+                    Polygon poly = regions[region].Polygons.LastOrDefault(p => Contains(p,Point(spot)));
+                    if (poly != null && reachable.Contains(new Node(region,(ushort)poly.Index))) positions.Add(string.Join("|",spot.Take(3).Select(v=>v.ToString("R",System.Globalization.CultureInfo.InvariantCulture))));
+                }
+                capacities[context] = positions.Count;
+            }
+            Occurrence[] building = own.Where(o => capacities[o] >= roles).ToArray();
+            if (building.Length != 1) { refusal = "MissingOrAmbiguousBuildingRoleContext"; return false; }
+            var car = own.Where(o => !ReferenceEquals(o,building[0])).ToArray();
+            if (car.Length == 0 || car.Any(o => capacities[o] != 0) || car.Select(o => regions[o.Region].PrefabRid).Distinct().Count() != 1)
+            { refusal = "MissingOrAmbiguousShaftCarRole"; return false; }
+            carPrefab = regions[car[0].Region].PrefabRid;
+            return ContextEntry(raw,position,building[0],calculate,out entry,out refusal);
+        }
+        internal bool TryLobbyEntry(StaticWorldObject raw, uint carPrefab, Func<G.Position,double,double,MissionOpenFloorEntry.Result> calculate, out Entry entry, out string refusal)
+        {
+            entry = null;
+            if (!Position(raw,out Group group,out G.Position position,out refusal)) return false;
+            var own = group.Occurrences.Where(o => o.Goid == MissionSites.Goid(raw)).ToArray();
+            var outside = own.Where(o => Available(o.Region) && regions[o.Region].PrefabRid != carPrefab).ToArray();
+            if (carPrefab == 0 || !own.Any(o => Available(o.Region) && regions[o.Region].PrefabRid == carPrefab) || outside.Length != 1)
+            { refusal = "MissingOrAmbiguousLobbyStreetContext"; return false; }
+            return ContextEntry(raw,position,outside[0],calculate,out entry,out refusal);
+        }
+        internal bool TryMeasuredMarker(StaticWorldObject raw, out double[] standing, out string refusal)
+        {
+            standing = null; refusal = "UncertifiedMeasuredNpcMarker";
+            if (!Raw(raw, out Group group) || MissionSites.Goid(raw) != 19) return false;
+            Occurrence[] own = group.Occurrences.Where(o => o.Goid == 19).ToArray();
+            if (own.Length == 0 || own.Select(o => o.Region).Distinct().Count() != 1 || !Available(own[0].Region) ||
+                own.Any(o => !o.Position.SequenceEqual(own[0].Position) || o.Quaternion != own[0].Quaternion)) return false;
+            // GO19 is the original floor marker, not a rendered model midpoint. NPC standing uses the existing +95 contract.
+            double[] native = own[0].Position;
+            standing = new double[] { native[0], native[1] + 95, native[2], raw.rot };
+            if (!regions[own[0].Region].Polygons.Any(p => Contains(p, Point(standing)))) { standing = null; return false; }
+            refusal = null; return true;
+        }
+        internal bool TryNpcRoute(Entry entry, StaticWorldObject marker, double[] planned, Func<uint, StaticWorldObject> selectedDoor, out NpcRoute proof, out string refusal) =>
+            TryNpcRouteCore(entry, marker, planned, selectedDoor, false, out proof, out refusal);
+        internal bool TryMeasuredNpcRoute(Entry entry, StaticWorldObject marker, double[] planned, Func<uint, StaticWorldObject> selectedDoor, out NpcRoute proof, out string refusal) =>
+            TryNpcRouteCore(entry, marker, planned, selectedDoor, true, out proof, out refusal);
+        private bool TryNpcRouteCore(Entry entry, StaticWorldObject marker, double[] planned, Func<uint, StaticWorldObject> selectedDoor, bool measured, out NpcRoute proof, out string refusal)
         {
             proof = null; refusal = "InvalidInteriorEntryOwner";
             if (entry == null || !ReferenceEquals(entry.Owner, this)) return false;
-            if (!TryMarkerForSpot(new StaticWorldObject[] { marker }, planned, out _, out refusal) || !Raw(marker, out Group group)) return false;
+            if (measured)
+            {
+                if (!TryMeasuredMarker(marker, out double[] expected, out refusal) || !Vector(planned, 4) || !expected.SequenceEqual(planned)) { refusal = refusal ?? "ChangedMeasuredNpcStanding"; return false; }
+            }
+            else if (!TryMarkerForSpot(new StaticWorldObject[] { marker }, planned, out _, out refusal)) return false;
+            if (!Raw(marker, out Group group)) return false;
             ushort[] original = group.Occurrences.Where(o => o.Goid == 19).Select(o => o.Region).Distinct().ToArray();
             if (original.Length != 1 || !Available(original[0])) { refusal = "MissingOrAmbiguousNpcOriginalRegion"; return false; }
             Region room = regions[original[0]]; G.Position standing = new G.Position(planned[0], planned[1], planned[2]);

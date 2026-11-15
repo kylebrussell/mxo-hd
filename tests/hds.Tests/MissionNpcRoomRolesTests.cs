@@ -23,7 +23,7 @@ public partial class MissionNpcInteriorCheckpointTests
     }
     [Fact] public void RoomPolicyRoundtripPreservesExplicitTagAndOldPolicyJsonShape()
     {
-        var prepared=Prepared();Assert.Equal(1,prepared.Pending.Selection.RolePlan);
+        var prepared=Prepared(true);Assert.Equal(1,prepared.Pending.Selection.RolePlan);
         prepared.Progress.npcInteriorPending=prepared.Pending;
         var saved=prepared.Progress.CaptureWithNpcCatalog(47,Array.Empty<Mob>(),new[]{prepared.Site});
         var restored=MissionProgress.RestoreWithNpcCatalog(prepared.Progress.mission,saved,new[]{prepared.Site},prepared.Provider);
@@ -79,14 +79,25 @@ public partial class MissionNpcInteriorCheckpointTests
         var doors=doc.Groups.ToDictionary(g=>g.Key,g=>From(g,g.Legacy.OrderBy(l=>l.Line).First().Signature));
         var markers=doc.Groups.SelectMany(g=>g.Legacy.Where(l=>l.Signature.Goid==19).Select(l=>From(g,l.Signature))).ToArray();
         var door=From(doc.Groups.Single(g=>g.Key==0x34a0028b),doc.Groups.Single(g=>g.Key==0x34a0028b).Legacy.Single(l=>l.Signature.Position[0]==10900).Signature);
-        var poly=doc.Regions.Single(r=>r.Id==47).Polygons[0];double x=poly.Edges.Average(e=>e.Vertex[0]),z=poly.Edges.Average(e=>e.Vertex[2]);double y=-(poly.Plane[0]*x+poly.Plane[2]*z+poly.Plane[3])/poly.Plane[1]+95;
-        var standing=new G.Position(x,y,z);Assert.True(evidence.TryEntry(door,_=>new MissionOpenFloorEntry.Result(standing,standing,false,false,false,new G.Root(new G.Id(842,47,0),standing,"literal original842 room"),null),out var entry,out var why),why);
+        NavLocation? Locate(G.Position point)
+        {
+            foreach(var region in doc.Regions.Where(r=>r.Available))foreach(var polygon in region.Polygons)
+            {
+                double floor=-(polygon.Plane[0]*point.X+polygon.Plane[2]*point.Z+polygon.Plane[3])/polygon.Plane[1];if(Math.Abs(floor+95-point.Y)>G.Epsilon)continue;
+                var edges=polygon.Edges;var cross=edges.Select((edge,i)=>{var next=edges[(i+1)%edges.Length];return(next.Vertex[0]-edge.Vertex[0])*(point.Z-edge.Vertex[2])-(next.Vertex[2]-edge.Vertex[2])*(point.X-edge.Vertex[0]);}).ToArray();
+                if(cross.All(v=>v>=-G.Epsilon)||cross.All(v=>v<=G.Epsilon))return new NavLocation{sector=842,region=region.Id,polygon=(ushort)polygon.Index,floorY=floor,indoors=true};
+            }
+            return null;
+        }
+        int calculations=0;MissionOpenFloorEntry.Result Calculate(G.Position native,double cx,double cz){calculations++;return MissionOpenFloorEntry.Calculate(native,cx,cz,"original scene context",_=>true,Locate);}
+        Assert.True(evidence.TryBuildingEntry(door,markers,3,Calculate,out var entry,out uint carPrefab,out var why),why);Assert.Equal((ushort)21,entry.Node.Region);Assert.Equal(1,calculations);
+        Assert.True(evidence.TryLobbyEntry(doors[0x34a0009f],carPrefab,Calculate,out var lobby,out why),why);Assert.Equal((ushort)5,lobby.Node.Region);Assert.Equal(2,calculations);
         var mission=Definition();mission.npcs.Add(new MissionNpc{id=7,at=3,arrival=new MissionArrival()});mission.npcs.Add(new MissionNpc{id=8,at=3,arrival=new MissionArrival()});
         var progress=new MissionProgress(mission){persistenceId="room-test",startedAt=1};var site=new MissionSite{metrId=1,elevatorDoor=door,lobbyDoor=door};
         foreach(var marker in markers)site.npcSpots.Add(new[]{marker.pos_x,marker.pos_y-50,marker.pos_z,marker.rot});
         Assert.True(MissionNpcRoomRoles.Select(progress,2,site,markers,evidence,entry,new SceneProvider(doors),out var selected,out why),why);
         Assert.Equal(new[]{6,7,8},selected.Actors.Select(a=>a.Id));Assert.Equal(3,selected.Actors.Select(a=>string.Join("|",a.Standing.Take(3))).Distinct().Count());
-        var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
+        var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryMeasuredNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
     }
 }
 

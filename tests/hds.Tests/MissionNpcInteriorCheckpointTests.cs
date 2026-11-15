@@ -49,10 +49,24 @@ public partial class MissionNpcInteriorCheckpointTests
             return MissionOpenFloorEntry.Calculate(door, x, z, evidence, _ => true, _ => new NavLocation { sector = 550, region = (ushort)(lobby ? 57 : 125), polygon = (ushort)(lobby ? 230 : 30), floorY = lobby ? 0 : 6000, indoors = true });
         }
     }
-    private static (MissionProgress Progress, MissionSite Site, Provider Provider, MissionNpcInteriorPending Pending) Prepared()
+    private static (MissionProgress Progress, MissionSite Site, Provider Provider, MissionNpcInteriorPending Pending) Prepared(bool measuredRoomRoles = false)
     {
         var p = new MissionProgress(Definition()) { phaseIndex = 1, persistenceId = "npc-identity", startedAt = 123 }; var site = Site(); var provider = new Provider(); var c = Client(p);
-        Assert.True(MissionNpcInteriorPlanning.Prepare(c, p, 2, site, provider, out var plan, out var selected, out var why), why); Assert.True(plan.BeforeCurrent(c)); return (p, site, provider, selected);
+        Assert.True(MissionNpcInteriorPlanning.Prepare(c, p, 2, site, provider, out var plan, out var selected, out var why), why); Assert.True(plan.BeforeCurrent(c));
+        if (!measuredRoomRoles)
+        {
+            // Literal old-policy checkpoint fixture remains old policy; fresh allocation has separate controls.
+            Assert.True(MissionNpcInteriorPlanning.Select(p,2,site,new[]{Marker()},out var oldSelection,out why),why);
+            var actor=oldSelection.Actors[0];
+            Assert.True(Primary.Value.TryEntry(site.elevatorDoor,native=>provider.Entry(1,native,site.CentreX,site.CentreZ,"old fixture entry"),out var entry,out why),why);
+            Assert.True(Primary.Value.TryNpcRoute(entry,Marker(),actor.Standing,key=>provider.Door(1,key),out var route,out why),why);
+            var proof=new MissionNpcInteriorActorProof(actor.Key,new MissionNpcInteriorNode(route.Target.Region,route.Target.Polygon),route.Nodes.Select(n=>new MissionNpcInteriorNode(n.Region,n.Polygon)).ToArray());
+            Assert.True(Primary.Value.TryEntry(site.lobbyDoor,native=>provider.Entry(1,native,site.CentreX,site.CentreZ,"old fixture lobby"),out var oldLobby,out why),why);
+            MissionNpcInteriorEntry Saved(StaticWorldObject raw,E.Entry e)=>new MissionNpcInteriorEntry(MissionNpcInteriorPlanning.RawJson(raw),Primary.Value.Digest,e.Door.Quaternion,new MissionNpcInteriorNode(e.Node.Region,e.Node.Polygon),new[]{e.Door.Position.X,e.Door.Position.Y,e.Door.Position.Z},new[]{e.Standing.X,e.Standing.Y,e.Standing.Z});
+            var witness=new MissionNpcInteriorWitness(2,MissionNpcInteriorPlanning.Kind,oldSelection,Saved(site.elevatorDoor,entry),Saved(site.lobbyDoor,oldLobby),new[]{proof},selected.Witness.Doors);
+            selected=new MissionNpcInteriorPending(2,MissionNpcInteriorPlanning.Kind,oldSelection,witness,null);
+        }
+        return (p, site, provider, selected);
     }
     [Fact] public void PurePlanPreservesStoryStageWireByteRolePrefixRawSourcesAndNoRuntimeState()
     {
@@ -60,7 +74,7 @@ public partial class MissionNpcInteriorCheckpointTests
         string before = JsonSerializer.Serialize(p.Capture(47, Array.Empty<Mob>()), MissionProgress.SaveJson);
         Assert.True(MissionNpcInteriorPlanning.Prepare(c, p, 2, site, provider, out var plan, out var pending, out var why), why);
         var actor = Assert.Single(pending.Selection.Actors); Assert.Equal("Npc", actor.Kind); Assert.Equal(6, actor.Id); Assert.Equal((byte)0, actor.WirePhase); Assert.Equal(2, pending.Selection.Phase);
-        Assert.Equal(new[] { 38490d, 6095, 26980, 148.999967603 }, actor.Standing); Assert.Equal(2, provider.EntryCalls);
+        Assert.Equal(new[] { 39620d, 6095, 28110, 148.999967603 }, actor.Standing); Assert.Equal(2, provider.EntryCalls);
         Assert.Equal(before, JsonSerializer.Serialize(p.Capture(47, Array.Empty<Mob>()), MissionProgress.SaveJson)); Assert.Null(p.npcInteriorPending); Assert.Null(p.site); Assert.Empty(p.sites); Assert.True(plan.BeforeCurrent(c));
     }
     [Fact] public void PendingModelsOwnArraysAndRoundtripWithoutRefillingMissingWitness()

@@ -161,7 +161,9 @@ namespace hds
                 MissionNpcInteriorActor actor = witness.Selection.Actors[i]; StaticWorldObject raw = MissionNpcInteriorPlanning.ReadRaw(actor.RawMarkerJson);
                 Require(markers.Any(m => Same(m, raw)), "ChangedNpcRawMarkerCatalog"); Dictionary<uint, StaticWorldObject> selected = new Dictionary<uint, StaticWorldObject>();
                 StaticWorldObject Lookup(uint key) { StaticWorldObject door = provider.Door(p.mission.district, key); if (door != null) { door = MissionNpcInteriorPlanning.ReadRaw(MissionNpcInteriorPlanning.RawJson(door)); selected[key] = door; } return door; }
-                Require(floor.TryNpcRoute(entry, raw, actor.Standing, Lookup, out E.NpcRoute route, out string why), why ?? "InvalidSavedNpcRoute");
+                E.NpcRoute route; string why;
+                bool validRoute = witness.Selection.RolePlan == 1 ? floor.TryMeasuredNpcRoute(entry, raw, actor.Standing, Lookup, out route, out why) : floor.TryNpcRoute(entry, raw, actor.Standing, Lookup, out route, out why);
+                Require(validRoute, why ?? "InvalidSavedNpcRoute");
                 MissionNpcInteriorActorProof proof = witness.Actors[i];
                 Require(proof.Target.Equals(new MissionNpcInteriorNode(route.Target.Region, route.Target.Polygon)) && proof.Nodes.SequenceEqual(route.Nodes.Select(n => new MissionNpcInteriorNode(n.Region, n.Polygon))), "ChangedNpcSavedInteriorRoute");
                 foreach (E.DoorPose door in route.RequiredDoors) expectedDoors[door.Key] = new MissionNpcInteriorDoor(door.Key, door.Goid, MissionNpcInteriorPlanning.RawJson(selected[door.Key]), door.Quaternion, new double[] { door.Position.X, door.Position.Y, door.Position.Z });

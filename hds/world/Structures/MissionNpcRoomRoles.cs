@@ -34,13 +34,14 @@ namespace hds
             for (int i = 0; i < spots.Length; i++)
             {
                 double[] spot = spots[i];
-                if (candidates.Any(c => c.Standing.Take(3).SequenceEqual(spot.Take(3)))) continue;
+                
                 var matching = markers.Where(m => MissionNpcInteriorPlanning.RawShape(m, site.metrId, site.elevatorDoor.sectorID, 19) &&
                     m.pos_x == spot[0] && m.pos_y-50 == spot[1] && m.pos_z == spot[2] && m.rot == spot[3])
                     .GroupBy(m => MissionNpcInteriorPlanning.RawJson(m)).Select(g => g.First()).ToArray();
                 if (matching.Length != 1) continue;
-                if (evidence.TryNpcRoute(entry, matching[0], spot, key => provider.Door(site.metrId, key), out E.NpcRoute route, out _))
-                    candidates.Add(new Candidate(matching[0], spot, route, i));
+                if (evidence.TryMeasuredMarker(matching[0], out double[] measured, out _) &&
+                    evidence.TryMeasuredNpcRoute(entry, matching[0], measured, key => provider.Door(site.metrId, key), out E.NpcRoute route, out _))
+                    candidates.Add(new Candidate(matching[0], measured, route, i));
             }
             Candidate[] chosen = Allocate(candidates, roles.Length);
             if (chosen.Length != roles.Length) { refusal = "InsufficientCertifiedNpcRoomSpots"; return false; }
@@ -55,8 +56,8 @@ namespace hds
             {
                 var actor=selection.Actors[i]; if(!roles[i].Matches(actor))return false;
                 var raw=MissionNpcInteriorPlanning.ReadRaw(actor.RawMarkerJson);
-                if(!MissionNpcInteriorPlanning.RawShape(raw,site.metrId,site.elevatorDoor.sectorID,19) || !actor.Standing.SequenceEqual(new double[]{raw.pos_x,raw.pos_y-50,raw.pos_z,raw.rot}) ||
-                    !site.npcSpots.Any(s=>s.SequenceEqual(actor.Standing)) || !used.Add(PositionKey(actor.Standing)))return false;
+                if(!MissionNpcInteriorPlanning.RawShape(raw,site.metrId,site.elevatorDoor.sectorID,19) || actor.Standing.Length != 4 || actor.Standing[3] != raw.rot ||
+                    !site.npcSpots.Any(s=>s.SequenceEqual(new double[]{raw.pos_x,raw.pos_y-50,raw.pos_z,raw.rot})) || !used.Add(PositionKey(actor.Standing)))return false;
             }
             return true;
         }
