@@ -203,7 +203,7 @@ namespace hds
                 UInt16 damage = 0;
                 if (shot.Hit)
                 {
-                    damage = (UInt16)Math.Round(shot.Damage * PvpCombat.IncomingDamageMultiplier(target));
+                    damage = PunishingBlows.Player(shooter, target, (UInt16)Math.Round(shot.Damage * PvpCombat.IncomingDamageMultiplier(target)));
                     died = PvpCombat.Damage(target, damage);
                 }
                 Output.WriteDebugLog($"[PVP] {PvpFlag.Name(shooter)} fires at {PvpFlag.Name(target)}: " +

@@ -70,11 +70,11 @@ public class MissionDepartureTests
         Assert.False(c.playerData.missionProgress.HasGeneratedDeparture);
         Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);
     }
-    [Fact] public void StationaryInteriorDoorDoesNotLeaveAndEscortPredicateRemainsUnchanged()
+    [Fact] public void StationaryInteriorDoorCannotCompleteGeneratedExitEscort()
     {
         var p=Progress();Assert.True(p.waitingForExit);Assert.True(MissionRuntime.NeedsToLeave(p,p.Phase.missionObjectives[0],1200,2495,100));
         for(int tick=0;tick<10;tick++)Assert.False(p.IsExiting(1200,2495,100));
-        Assert.True(p.AtExit(1200,2495,100)); // authored Escort-to-exit behavior is deliberately retained
+        Assert.False(p.AtExit(1200,2495,100)); // proximity to the interior door is not a committed departure
         Assert.False(p.IsExiting(1200,145,100)); // a pose alone does not manufacture transport evidence
         p.CommitGeneratedFloor(0,p.site,p.site.lobbyDoor);Assert.True(p.IsExiting(1200,145,100));
     }

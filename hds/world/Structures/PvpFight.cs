@@ -533,10 +533,10 @@ namespace hds
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     pDamage = CombatCalculator.CloseCombatDamage(rng, pLevel, nLevel, pTactic, out absorbedByN, pType,
                         AbilityStats.Player(p.Client, 1142), AbilityStats.Toughness(n.Client, false));
-                    pDamage = (UInt16)Math.Round(pDamage * PvpCombat.IncomingDamageMultiplier(n.Client));
+                    pDamage = PunishingBlows.Player(p.Client, n.Client, (UInt16)Math.Round(pDamage * PvpCombat.IncomingDamageMultiplier(n.Client)));
                     nDamage = CombatCalculator.CloseCombatDamage(rng, nLevel, pLevel, nTactic, out absorbedByP, nType,
                         AbilityStats.Player(n.Client, 1142), AbilityStats.Toughness(p.Client, false));
-                    nDamage = (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client));
+                    nDamage = PunishingBlows.Player(n.Client, p.Client, (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client)));
                     pFirst = !counter || CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == first, () => rng.Next(2) == 0);
                 }
 

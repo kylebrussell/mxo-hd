@@ -29,7 +29,7 @@ namespace hds{
                 Store.worldConfig = new WorldConfig("WorldConfig.xml");
 
                 /* Load Game Data */
-                DataLoader.getInstance();
+                MissionNpcCoverage.Prepare(DataLoader.getInstance());
 
                 /* Initialize DB Stuff */
 

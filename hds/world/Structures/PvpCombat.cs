@@ -420,6 +420,7 @@ namespace hds
             damage = CombatSpecials.Damage(abilityId, null) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             var conditionalFence=new ConditionalThrownDamage.Fence(caster,target);
+            damage = PunishingBlows.Player(caster, target, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Player(caster, target, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
