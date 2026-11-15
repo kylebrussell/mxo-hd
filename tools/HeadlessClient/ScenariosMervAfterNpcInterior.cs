@@ -37,13 +37,13 @@ public static partial class Scenarios
         int index=Array.FindIndex(actors,a=>a.GetProperty("Kind").GetString()=="Npc"&&a.GetProperty("Id").GetInt32()==npc);
         // Generated wave bodies have their own role identity; named NPC routes never borrow another actor.
         if(index<0)return;
-        var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,plan,index);var doors=MissionNpcInteriorProof.RequiredDoors(plan);var opened=new HashSet<uint>();
+        var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,plan,index);var doors=MissionNpcInteriorProof.RequiredDoors(plan);
         foreach(var step in route.Skip(1))
         {
             var current=await MervFollowupCurrent(context,p);Check.That(current!=null&&MervFollowupElevatorFixture.SameEntry(saved,current),"Actor approach keeps exact owner/phase/site/witness");
             foreach(uint key in step.Doors)
             {
-                if(!opened.Add(key))continue;var required=doors.Single(d=>d.Key==key);int cursor=p.World.RpcSnapshot().Count;
+                var required=doors.Single(d=>d.Key==key);int cursor=p.World.RpcSnapshot().Count;
                 NpcInteriorComputerState.DoorObservation? observed=MervFollowupElevatorFixture.CurrentOpenPortal(p.World.CurrentOwnViewLife(),required);
                 bool alreadyOpen=observed!=null;string? request=null;
                 if(!alreadyOpen){request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);}
