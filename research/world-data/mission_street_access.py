@@ -75,6 +75,10 @@ def export(tools, repository, interiors, output, sectors):
         sector = parent['sector']
         if sector not in outdoor_cache:
             path = index[parent['resource_refs']['SIDI']]['path'][:-5]+'.nav'
+            if path not in paths:
+                outdoor_cache[sector] = dict(World=1, Sector=sector, ParentCorner=parent['min'], NavPath=path,
+                    NavSha256=None, NavLength=0, Outdoor=None, Refusal='MissingOriginalNeighborNav')
+                return outdoor_cache[sector]
             source = R.read(paths[path])
             outdoor_cache[sector] = dict(World=1, Sector=sector, ParentCorner=parent['min'], NavPath=path,
                 NavSha256=sha(source), NavLength=len(source), Outdoor=outdoor(source))
@@ -82,65 +86,68 @@ def export(tools, repository, interiors, output, sectors):
     def adjacent(a,b):
         amin,amax,bmin,bmax=a['min'],a['max'],b['min'],b['max']
         return ((amin[0]==bmax[0] or amax[0]==bmin[0]) and amin[2]<bmax[2] and amax[2]>bmin[2]) or ((amin[2]==bmax[2] or amax[2]==bmin[2]) and amin[0]<bmax[0] and amax[0]>bmin[0])
-    output = Path(output); output.mkdir(parents=True, exist_ok=True); declarations = []; public_declarations = []
+    output = Path(output); output.mkdir(parents=True, exist_ok=True); declarations = []; public_declarations = []; refusals = []
     for sector in sorted(set(sectors)):
-        declaration = next(r for r in manifest['Sectors'] if r['Sector'] == sector)
-        compressed = (Path(interiors)/(str(sector)+'.json.gz')).read_bytes()
-        if sha(compressed) != declaration['Sha256'].lower(): raise ValueError('Interior payload identity')
-        payload = gzip.decompress(compressed)
-        if sha(payload) != declaration['Digest'].lower(): raise ValueError('Interior digest')
-        interior = json.loads(payload); parent = parents[sector]; references = parent['resource_refs']
-        sidi = index[references['SIDI']]; navpath = sidi['path'][:-5]+'.nav'; nav = R.read(paths[navpath])
-        if sha(nav) != interior['NavSha256']: raise ValueError('Original NAV differs from interior source')
-        topology = outdoor(nav)
-        if len(topology['Regions']) != interior['OutdoorRegions']: raise ValueError('Original outdoor ordinal count')
-        layers = []; doors = []; objects = []
-        # Complete declared GO layers are required even when no door happens to match a portal.
-        for kind in ('SID', 'SIDG', 'SIDI'):
-            rid = references[kind]
-            if rid not in index: raise ValueError('Missing declared native GO layer: '+kind)
-            source = R.read(index[rid]); inputs = []
-            if kind == 'SID':
-                buffers = B.osid_buffers(source)
-                inputs = [(buffers[3][0]+off, g, None) for off, g in B.go_records(buffers[3][1])]
-            elif kind == 'SIDG':
-                if source[:4] != b'SIDG': raise ValueError('Unknown native SIDG')
-                reader = B.M.Reader(source, 16); B.M.read_schema(reader)
-                inputs = [(reader.p-4+off, g, None) for off, g in B.go_records(source[reader.p-4:])]
-            else:
-                buffers = B.osid_buffers(source)
-                for context in B.sidi_go_contexts(buffers[0][1], index):
-                    if context['upper'] or context['rotation'] not in range(4): raise ValueError('Unsupported native parent hierarchy')
-                    inputs.extend((buffers[0][0]+off, g, context) for off, g in context['gos'])
-            layers.append(dict(Kind=kind, Rid=rid, Length=len(source), Sha256=sha(source), Count=len(inputs), DoorCount=sum(g[0] in classes for _,g,_ in inputs)))
-            for offset, g, context in inputs:
-                if g[0] > 0xffff or g[1] > 0xfffff: raise ValueError('Native static key/type outside source identity')
-                raw = source[offset:offset+74]
-                if len(raw) != 74 or struct.unpack_from('<II',raw) != g[:2]: raise ValueError('Native GO source offset mismatch')
-                record = dict(Key=sector << 20 | g[1], Goid=g[0], Class=classes.get(g[0],0), Layer=kind,
-                                  Rid=rid, SourceOffset=offset, Raw=raw.hex(), RecordSha256=sha(raw),
-                                  Region=interior['OutdoorRegions']+context['ordinal'] if context else None,
-                                  Pivot=context['pivot'] if context else None,
-                                  Rotation=context['rotation'] if context else None)
-                objects.append(record)
-                if g[0] in classes: doors.append(record)
-        document = dict(Format=1, World=1, Sector=sector, InteriorDigest=declaration['Digest'],
-                        ParentCorner=interior['ParentCorner'], NavPath=navpath, NavSha256=sha(nav),
-                        NavLength=len(nav), Outdoor=topology, Neighbors=[neighbor_evidence(p) for p in parents.values() if adjacent(parent,p)], Layers=layers, NativeDoors=doors, NativeObjects=objects,
-                        Legacy=[dict(Key=k, Rows=legacy[k]) for k in sorted({d['Key'] for d in doors}) if k in legacy],
-                        LegacySources=source_files)
-        # This is a declared-candidate index, not proof of usability. Runtime still validates the exact opening.
-        candidates = sorted({key for portal in interior['Portals']
-            if portal['TargetRegion'] < interior['OutdoorRegions']
-            for key in portal['DoorKeys']
-            if any(d['Key'] == key and d['Class'] == 364 and d['Region'] == portal['SourceRegion'] for d in doors)})
-        raw = canonical(document); packed = gzip.compress(raw, mtime=0)
-        (output/(str(sector)+'.json.gz')).write_bytes(packed)
-        declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(),
-                                 InteriorDigest=declaration['Digest'], Regions=len(topology['Regions']), NativeDoors=len(doors)))
-        public_declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(), Keys=candidates))
+        try:
+            declaration = next(r for r in manifest['Sectors'] if r['Sector'] == sector)
+            compressed = (Path(interiors)/(str(sector)+'.json.gz')).read_bytes()
+            if sha(compressed) != declaration['Sha256'].lower(): raise ValueError('Interior payload identity')
+            payload = gzip.decompress(compressed)
+            if sha(payload) != declaration['Digest'].lower(): raise ValueError('Interior digest')
+            interior = json.loads(payload); parent = parents[sector]; references = parent['resource_refs']
+            sidi = index[references['SIDI']]; navpath = sidi['path'][:-5]+'.nav'; nav = R.read(paths[navpath])
+            if sha(nav) != interior['NavSha256']: raise ValueError('Original NAV differs from interior source')
+            topology = outdoor(nav)
+            if len(topology['Regions']) != interior['OutdoorRegions']: raise ValueError('Original outdoor ordinal count')
+            layers = []; doors = []; objects = []
+            # Complete declared GO layers are required even when no door happens to match a portal.
+            for kind in ('SID', 'SIDG', 'SIDI'):
+                rid = references[kind]
+                if rid not in index: raise ValueError('Missing declared native GO layer: '+kind)
+                source = R.read(index[rid]); inputs = []
+                if kind == 'SID':
+                    buffers = B.osid_buffers(source)
+                    inputs = [(buffers[3][0]+off, g, None) for off, g in B.go_records(buffers[3][1])]
+                elif kind == 'SIDG':
+                    if source[:4] != b'SIDG': raise ValueError('Unknown native SIDG')
+                    reader = B.M.Reader(source, 16); B.M.read_schema(reader)
+                    inputs = [(reader.p-4+off, g, None) for off, g in B.go_records(source[reader.p-4:])]
+                else:
+                    buffers = B.osid_buffers(source)
+                    for context in B.sidi_go_contexts(buffers[0][1], index):
+                        if context['upper'] or context['rotation'] not in range(4): raise ValueError('Unsupported native parent hierarchy')
+                        inputs.extend((buffers[0][0]+off, g, context) for off, g in context['gos'])
+                layers.append(dict(Kind=kind, Rid=rid, Length=len(source), Sha256=sha(source), Count=len(inputs), DoorCount=sum(g[0] in classes for _,g,_ in inputs)))
+                for offset, g, context in inputs:
+                    if g[0] > 0xffff or g[1] > 0xfffff: raise ValueError('Native static key/type outside source identity')
+                    raw = source[offset:offset+74]
+                    if len(raw) != 74 or struct.unpack_from('<II',raw) != g[:2]: raise ValueError('Native GO source offset mismatch')
+                    record = dict(Key=sector << 20 | g[1], Goid=g[0], Class=classes.get(g[0],0), Layer=kind,
+                                      Rid=rid, SourceOffset=offset, Raw=raw.hex(), RecordSha256=sha(raw),
+                                      Region=interior['OutdoorRegions']+context['ordinal'] if context else None,
+                                      Pivot=context['pivot'] if context else None,
+                                      Rotation=context['rotation'] if context else None)
+                    objects.append(record)
+                    if g[0] in classes: doors.append(record)
+            document = dict(Format=1, World=1, Sector=sector, InteriorDigest=declaration['Digest'],
+                            ParentCorner=interior['ParentCorner'], NavPath=navpath, NavSha256=sha(nav),
+                            NavLength=len(nav), Outdoor=topology, Neighbors=[neighbor_evidence(p) for p in parents.values() if adjacent(parent,p)], Layers=layers, NativeDoors=doors, NativeObjects=objects,
+                            Legacy=[dict(Key=k, Rows=legacy[k]) for k in sorted({d['Key'] for d in doors}) if k in legacy],
+                            LegacySources=source_files)
+            # This is a declared-candidate index, not proof of usability. Runtime still validates the exact opening.
+            candidates = sorted({key for portal in interior['Portals']
+                if portal['TargetRegion'] < interior['OutdoorRegions']
+                for key in portal['DoorKeys']
+                if any(d['Key'] == key and d['Class'] == 364 and d['Region'] == portal['SourceRegion'] for d in doors)})
+            raw = canonical(document); packed = gzip.compress(raw, mtime=0)
+            (output/(str(sector)+'.json.gz')).write_bytes(packed)
+            declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(),
+                                     InteriorDigest=declaration['Digest'], Regions=len(topology['Regions']), NativeDoors=len(doors)))
+            public_declarations.append(dict(Sector=sector, Digest=sha(raw).upper(), Sha256=sha(packed).upper(), Keys=candidates))
+        except (ValueError, KeyError, FileNotFoundError, struct.error) as error:
+            refusals.append(dict(Sector=sector, Refusal=type(error).__name__+':'+str(error)))
     text=(Path(interiors)/'manifest.json').read_text(encoding='utf-8').replace('\r\n','\n')
-    result = dict(Format=1, World=1, InteriorsManifest=sha(text.encode()), Sectors=declarations)
+    result = dict(Format=1, World=1, InteriorsManifest=sha(text.encode()), Sectors=declarations, Refusals=refusals)
     (output/'manifest.json').write_bytes(canonical(result)+b'\n')
     (output/'public-index.json').write_bytes(canonical(dict(Format=1, World=1, Sectors=public_declarations))+b'\n')
     return result
@@ -149,6 +156,6 @@ def export(tools, repository, interiors, output, sectors):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tools'); parser.add_argument('repository'); parser.add_argument('interiors'); parser.add_argument('output')
-    parser.add_argument('--sectors', type=int, nargs='+', required=True)
+    parser.add_argument('--sectors', type=int, nargs='+', help='Omit to export every declared world1 interior scene')
     args = parser.parse_args()
-    print(json.dumps(export(args.tools, args.repository, args.interiors, args.output, args.sectors)))
+    print(json.dumps(export(args.tools, args.repository, args.interiors, args.output, args.sectors or [r['Sector'] for r in json.loads((Path(args.interiors)/'manifest.json').read_text())['Sectors']])))

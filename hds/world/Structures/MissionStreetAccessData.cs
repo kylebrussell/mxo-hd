@@ -26,7 +26,7 @@ namespace hds
         internal sealed class Legacy { public uint Key {get;set;} public LegacyRow[] Rows {get;set;} }
         internal sealed class LegacySource { public string File {get;set;} public string Sha256 {get;set;} }
         internal sealed class Neighbor
-        {public ushort World {get;set;}public ushort Sector {get;set;}public double[] ParentCorner {get;set;}public string NavPath {get;set;}public string NavSha256 {get;set;}public int NavLength {get;set;}public Outdoor Outdoor {get;set;}}
+        {public ushort World {get;set;}public ushort Sector {get;set;}public double[] ParentCorner {get;set;}public string NavPath {get;set;}public string NavSha256 {get;set;}public int NavLength {get;set;}public Outdoor Outdoor {get;set;}public string Refusal {get;set;}internal string ValidationRefusal;}
         internal sealed class Document
         {
             public int Format {get;set;} public ushort World {get;set;} public ushort Sector {get;set;} public string InteriorDigest {get;set;}
@@ -35,6 +35,7 @@ namespace hds
         }
         private readonly Document document;
         private readonly E.Node[] networkAnchors;
+        private readonly Dictionary<uint,int> nativeKeyCounts;
         private readonly Dictionary<E.Node,Polygon> polygons;
         internal readonly string Digest;
         internal ushort World => document.World;
@@ -42,9 +43,10 @@ namespace hds
         internal string InteriorDigest => document.InteriorDigest;
         internal string NavDigest => document.NavSha256;
         internal double[] Corner => (double[])document.ParentCorner.Clone();
+        internal bool UniqueNativeKey(uint key)=>nativeKeyCounts.TryGetValue(key,out int count)&&count==1;
         internal NativeDoor[] Doors(uint key) => document.NativeDoors.Where(d=>d.Key==key).ToArray();
         private MissionStreetAccessData(Document d,string digest)
-        {document=d;Digest=digest;polygons=d.Outdoor.Regions.SelectMany(r=>r.Polygons.Select(p=>new {Node=new E.Node(r.Id,checked((ushort)p.Index)),Poly=p})).ToDictionary(p=>p.Node,p=>p.Poly);networkAnchors=ComputeNetworkAnchors();}
+        {document=d;Digest=digest;polygons=d.Outdoor.Regions.SelectMany(r=>r.Polygons.Select(p=>new {Node=new E.Node(r.Id,checked((ushort)p.Index)),Poly=p})).ToDictionary(p=>p.Node,p=>p.Poly);networkAnchors=ComputeNetworkAnchors();nativeKeyCounts=d.NativeObjects.GroupBy(n=>n.Key).ToDictionary(g=>g.Key,g=>g.Count());}
         private static void Need(bool value,string reason){if(!value)throw new InvalidDataException(reason);}
         private static bool Hex(string s,int length)=>s!=null&&s.Length==length&&s.All(Uri.IsHexDigit);
         private static string Hash(byte[] bytes)=>Convert.ToHexString(SHA256.HashData(bytes));
@@ -130,7 +132,7 @@ namespace hds
         internal E.Node[] NetworkAnchors() => (E.Node[])networkAnchors.Clone();
         private E.Node[] ComputeNetworkAnchors()
         {
-            var neighbors=document.Neighbors.SelectMany(n=>BoundaryRows(n.Outdoor,n.ParentCorner)).ToArray();
+            var neighbors=document.Neighbors.Where(n=>n.ValidationRefusal==null).SelectMany(n=>BoundaryRows(n.Outdoor,n.ParentCorner)).ToArray();
             return BoundaryRows(document.Outdoor,document.ParentCorner).Where(row=>neighbors.Count(other=>
                 row.Item2[0].SequenceEqual(other.Item2[0])&&row.Item2[1].SequenceEqual(other.Item2[1])||
                 row.Item2[0].SequenceEqual(other.Item2[1])&&row.Item2[1].SequenceEqual(other.Item2[0]))==1).Select(row=>row.Item1).Distinct().ToArray();
@@ -143,9 +145,17 @@ namespace hds
             Need(d.Neighbors!=null&&d.Neighbors.Select(n=>n?.Sector).Distinct().Count()==d.Neighbors.Length,"StreetNeighborIdentity");
             foreach(var neighbor in d.Neighbors)
             {
-                Need(neighbor!=null&&neighbor.World==d.World&&neighbor.Sector!=d.Sector&&neighbor.Sector<=0x7ff&&neighbor.NavLength>=16&&Hex(neighbor.NavSha256,64)&&
-                    neighbor.ParentCorner?.Length==3&&neighbor.ParentCorner.All(double.IsFinite)&&neighbor.ParentCorner[1]==0&&neighbor.Outdoor!=null,"StreetNeighborSource");
-                ValidateOutdoor(neighbor.Outdoor,neighbor.NavLength);
+                Need(neighbor!=null&&neighbor.World==d.World&&neighbor.Sector!=d.Sector&&neighbor.Sector<=0x7ff&&neighbor.ParentCorner?.Length==3&&
+                    neighbor.ParentCorner.All(double.IsFinite)&&neighbor.ParentCorner[1]==0,"StreetNeighborSource");
+                if(neighbor.Refusal!=null)
+                {
+                    Need(neighbor.Refusal=="MissingOriginalNeighborNav"&&neighbor.NavLength==0&&neighbor.NavSha256==null&&neighbor.Outdoor==null&&!string.IsNullOrWhiteSpace(neighbor.NavPath),"StreetUnavailableNeighborShape");
+                    neighbor.ValidationRefusal=neighbor.Refusal;continue; // No graph node or anchor can be obtained from unavailable original evidence.
+                }
+                Need(neighbor.NavLength>=16&&Hex(neighbor.NavSha256,64)&&neighbor.Outdoor!=null,"StreetNeighborSource");
+                try {ValidateOutdoor(neighbor.Outdoor,neighbor.NavLength);}
+                catch(Exception ex) when(ex is InvalidDataException||ex is FormatException||ex is ArgumentException||ex is OverflowException)
+                {neighbor.ValidationRefusal="UnusableOriginalNeighborNav:"+ex.GetType().Name+":"+ex.Message;}
             }
             var outdoor=d.Outdoor;
             Need(d.Layers!=null&&d.Layers.Length==3&&d.Layers.Select(l=>l?.Kind).OrderBy(s=>s).SequenceEqual(new string[]{"SID","SIDG","SIDI"}),"StreetDeclaredGoLayers");

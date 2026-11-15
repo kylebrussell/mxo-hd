@@ -66,6 +66,20 @@ public sealed class MissionStreetAccessTests
         c.Raw["Neighbors"]=new JsonArray();var disconnected=Modified(c.Raw,c.Evidence);
         Assert.Empty(disconnected.NetworkAnchors());Assert.False(c.Evidence.TryStreetAccess(disconnected,lobby,shaft,key=>Raw(c.Raw,key),out _,out _));
     }
+    [Theory][InlineData(false)][InlineData(true)]
+    public void MissingOrCorruptNeighborsCannotAuthorizeEdgesOrRejectAnIndependentGoodPublicComponent(bool corrupt)
+    {
+        var c=Load(209);var neighbors=c.Raw["Neighbors"]!.AsArray();
+        foreach(var neighbor in neighbors.Where(n=>n!["Sector"]!.GetValue<int>()!=508))
+        {
+            if(corrupt)neighbor!["Outdoor"]!["RawSnav"]="00";
+            else{neighbor!["Refusal"]="MissingOriginalNeighborNav";neighbor["NavLength"]=0;neighbor["NavSha256"]=null;neighbor["Outdoor"]=null;}
+        }
+        var partial=Modified(c.Raw,c.Evidence);Assert.Equal(new[]{new E.Node(35,0)},partial.NetworkAnchors());
+        var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
+        Assert.True(c.Evidence.TryStreetAccess(partial,lobby,0x0d100028,key=>Raw(c.Raw,key),out var proof,out var why),why);
+        Assert.Equal(new E.Node(35,0),proof.OutsidePath[0]);
+    }
     [Theory][InlineData((ushort)209,0x0d100003u)][InlineData((ushort)879,0x36f00018u)]
     public void CanonicalPublicDoorKeepsRawIdentityAndUsesItsOwnNativeSchema(ushort sector,uint key)
     {
@@ -75,6 +89,14 @@ public sealed class MissionStreetAccessTests
         Assert.Equal(before,MissionNpcInteriorPlanning.RawJson(raw));
         raw.pos_x+=1;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
         raw=Raw(c.Raw,key);raw.metrId=2;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
+    }
+    [Fact]public void ASecondOriginalOccurrenceOfTheStaticKeyCannotBorrowThePublicDoorPose()
+    {
+        var c=Load(209);uint key=0x0d100003;var other=c.Raw["NativeObjects"]!.AsArray().First(n=>n!["Class"]!.GetValue<int>()==0)!;
+        byte[] raw=Convert.FromHexString(other["Raw"]!.GetValue<string>());BitConverter.GetBytes(key&0xfffff).CopyTo(raw,4);
+        other["Key"]=key;other["Raw"]=Convert.ToHexString(raw);other["RecordSha256"]=Convert.ToHexString(SHA256.HashData(raw));
+        var ambiguous=Modified(c.Raw,c.Evidence);Assert.False(ambiguous.UniqueNativeKey(key));
+        Assert.False(c.Evidence.TryCanonicalPublicDoor(ambiguous,Raw(c.Raw,key),out _,out _));
     }
     [Fact]public void DeclaredPublicPayloadMissingTruncatedOrReplacedNeverFallsBackToLegacy()
     {

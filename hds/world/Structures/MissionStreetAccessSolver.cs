@@ -49,7 +49,7 @@ namespace hds
         internal bool TryCanonicalPublicDoor(MissionStreetAccessData outside,StaticWorldObject raw,out DoorPose pose,out string refusal)
         {
             pose=null;refusal="InvalidCanonicalPublicDoor";
-            if(outside==null||outside.InteriorDigest!=Digest||!outside.LegacyMatches(raw)||!groups.TryGetValue(raw.mxoStaticId,out Group group))return false;
+            if(outside==null||outside.InteriorDigest!=Digest||!outside.LegacyMatches(raw)||!outside.UniqueNativeKey(raw.mxoStaticId)||!groups.TryGetValue(raw.mxoStaticId,out Group group))return false;
             var natives=outside.Doors(raw.mxoStaticId);
             if(natives.Length!=1||natives[0].Class!=364||!MissionInteriorDoorTypes.IsSupported(natives[0].Goid))return false;
             var native=natives[0];
@@ -97,8 +97,8 @@ namespace hds
                     unprovedDoorless=true;continue;
                 }
                 if(portal.DoorKeys.Length!=1||native.Length!=1||native[0].Key!=portal.DoorKeys[0]||native[0].Class!=364||!MissionInteriorDoorTypes.IsSupported(native[0].Goid))continue;
-                uint key=native[0].Key;StaticWorldObject raw=selectedRaw(key);
-                if(!outside.LegacyMatches(raw)||!groups.TryGetValue(key,out Group group)||outside.Doors(key).Length!=1)continue;
+                uint key=native[0].Key;if(!outside.UniqueNativeKey(key))continue;StaticWorldObject raw=selectedRaw(key);
+                if(!outside.LegacyMatches(raw)||!outside.UniqueNativeKey(raw.mxoStaticId)||!groups.TryGetValue(key,out Group group)||outside.Doors(key).Length!=1)continue;
                 Occurrence[] own=group.Occurrences.Where(o=>o.Region==inside.Region&&o.Goid==native[0].Goid&&o.RecordSha256.Equals(native[0].RecordSha256,StringComparison.OrdinalIgnoreCase)).ToArray();
                 if(own.Length!=1)continue;var door=new DoorPose(key,own[0]);
                 choices.Add(new StreetAccess(outside.Digest,Digest,"OriginalPublicDoor",external,inside,lobby.Node,route,inner,door,MissionNpcInteriorPlanning.RawJson(raw),opening));

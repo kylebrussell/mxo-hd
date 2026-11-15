@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -32,16 +33,16 @@ namespace hds
         }
         private static bool Hash(string s)=>s!=null&&s.Length==64&&s.All(Uri.IsHexDigit);
         private static readonly Index committed=ReadIndex();
+        private static readonly HashSet<uint> committedKeys=new HashSet<uint>(committed.Sectors.SelectMany(row=>row.Keys));
         internal sealed class Dataset
         {
-            private readonly string street,interior;private readonly Index index;
+            private readonly string street,interior;private readonly Index index;private readonly Dictionary<uint,Declaration> keys;
             private readonly ConcurrentDictionary<ushort,Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>> scenes=new ConcurrentDictionary<ushort,Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>>();
-            internal Dataset(string street,string interior,Index index=null){this.street=Path.GetFullPath(street);this.interior=Path.GetFullPath(interior);this.index=index??committed;}
+            internal Dataset(string street,string interior,Index index=null){this.street=Path.GetFullPath(street);this.interior=Path.GetFullPath(interior);this.index=index??committed;keys=this.index.Sectors.SelectMany(row=>row.Keys.Select(key=>new KeyValuePair<uint,Declaration>(key,row))).ToDictionary(pair=>pair.Key,pair=>pair.Value);}
             internal Result Resolve(StaticWorldObject raw)
             {
                 if(raw==null||raw.metrId!=index.World)return new Result(Kind.Legacy);
-                Declaration row=index.Sectors.SingleOrDefault(r=>r.Keys.Contains(raw.mxoStaticId));
-                if(row==null)return new Result(Kind.Legacy);
+                if(!keys.TryGetValue(raw.mxoStaticId,out Declaration row))return new Result(Kind.Legacy);
                 try
                 {
                     var scene=scenes.GetOrAdd(row.Sector,sector=>new Lazy<Tuple<MissionInteriorEvidence,MissionStreetAccessData>>(()=>
@@ -52,13 +53,14 @@ namespace hds
                     })).Value;
                     return scene.Item1.TryCanonicalPublicDoor(scene.Item2,raw,out var pose,out string why)?new Result(Kind.Resolved,pose):new Result(Kind.Refused,refusal:why);
                 }
-                catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is UnauthorizedAccessException||ex is ArgumentException||ex is OverflowException)
+                catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is UnauthorizedAccessException||ex is ArgumentException||ex is FormatException||ex is OverflowException)
                 {return new Result(Kind.Refused,refusal:"UnavailableDeclaredPublicDoor:"+ex.GetType().Name);}
             }
         }
         private static readonly ConcurrentDictionary<string,Dataset> datasets=new ConcurrentDictionary<string,Dataset>(StringComparer.OrdinalIgnoreCase);
         internal static Result Resolve(StaticWorldObject raw)
         {
+            if(raw==null||raw.metrId!=committed.World||!committedKeys.Contains(raw.mxoStaticId))return new Result(Kind.Legacy);
             string street=DataLoader.DataPath("mission_street_access","1"),interior=DataLoader.DataPath("mission_interior_evidence_v2","1");
             return datasets.GetOrAdd(Path.GetFullPath(street)+"|"+Path.GetFullPath(interior),_=>new Dataset(street,interior)).Resolve(raw);
         }
