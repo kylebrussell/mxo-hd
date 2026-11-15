@@ -105,7 +105,7 @@ public class MissionElevatorAnchorTests
         for(int i=0;i<2;i++)
         {
             Assert.False(MissionOpenFloorAdmission.TryGeometry(mission,1,site,choices,out _,out var why,pending));
-            Assert.Equal("ChangedPendingMissionElevatorWitness",why);Assert.Equal(before,JsonSerializer.Serialize(pending,MissionProgress.SaveJson));
+            Assert.Equal("MissingMissionElevatorWitness",why);Assert.Equal(before,JsonSerializer.Serialize(pending,MissionProgress.SaveJson));
         }
         var wrong=choices[0].ReadSpot();wrong.mxoStaticId=0x0d100023;wrong.staticId=35;wrong.type=BitConverter.GetBytes(2545u);
         Assert.False(MissionElevatorPoses.TryCreate(site,new[]{new MissionOpenFloorChoice(1,3,JsonSerializer.Serialize(wrong,MissionProgress.SaveJson))},out _,out var refusal));Assert.Equal("ElevatorSourceRegionDisagreement",refusal);
@@ -180,7 +180,7 @@ public class MissionElevatorAnchorTests
     [Fact] public void KnownCorrectedDoorWithoutWitnessAndConflictingHistoryNeverFallBackToRawOverlay()
     {
         var (site,choices)=ExactOps();Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out var why),why);
-        var progress=new MissionProgress(ActualMission());progress.sites.Add(site);
+        var progress=new MissionProgress(ActualMission()){site=site,openFloorResolvedPhase=0};progress.sites.Add(site);
         Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
         progress.elevatorWitnesses.Add(MissionOpenFloorSite.CatalogFingerprint(site),witness);
         Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
@@ -200,7 +200,7 @@ public class MissionElevatorAnchorTests
         using var started=new System.Threading.ManualResetEventSlim();Task<MissionElevatorPoses.Overlay> waiting;
         lock(owner.missionSync)
         {
-            waiting=Task.Run(()=>{started.Set();return MissionElevatorPoses.WithDoorOwner(client,site.elevatorDoor,_=>published=true);});
+            waiting=Task.Run(()=>{started.Set();return MissionElevatorPoses.WithCapturedDoorOwner(client,owner,site.elevatorDoor,_=>published=true);});
             Assert.True(started.Wait(TimeSpan.FromSeconds(30)));Assert.False(waiting.IsCompleted);client.playerData=new ClientData();
         }
         var stale=await waiting.WaitAsync(TimeSpan.FromSeconds(30));Assert.False(published);Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,stale.Kind);Assert.Equal("ChangedMissionDoorOwner",stale.Refusal);
@@ -277,5 +277,21 @@ public class MissionElevatorAnchorTests
         File.WriteAllText(Path.Combine(directory,"manifest.json"),crlf?manifest.Replace("\n","\r\n"):manifest,new System.Text.UTF8Encoding(false));
         File.Copy(DataLoader.DataPath("mission_elevators","1","209.json.gz"),Path.Combine(directory,"209.json.gz"));
         Assert.Equal(MissionElevatorAnchors.LoadKind.Available,new MissionElevatorAnchors.Dataset(directory).Load(Ops()).Kind);
+    }
+
+    [Fact] public void BoundOnlyVersionOneKnownDoorRetainsLegacyPublicationPath()
+    {
+        var (site,choices)=ExactOps();var progress=new MissionProgress(ActualMission()){site=site};progress.sites.Add(site);
+        Assert.False(progress.openFloorCheckpoint);Assert.Equal(MissionElevatorPoses.OverlayKind.Legacy,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
+    }
+
+    [Fact] public void LowLevelRequestKeepsLegacyRootUnlessSelectedWitnessIsExplicit()
+    {
+        var (site,choices)=ExactOps();var raw=choices[0].ReadSpot();var mission=ActualMission();string before=JsonSerializer.Serialize(raw,MissionProgress.SaveJson);
+        Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var elevator,out var why),why);
+        Assert.True(MissionOpenFloorRequests.TryCreate(raw,3,site,1,out var legacy,out why,mission.phases[1],1),why);
+        Assert.True(MissionOpenFloorRequests.TryCreate(raw,3,site,1,out var selected,out why,mission.phases[1],1,elevator),why);
+        Assert.Equal(28874.278135270823,legacy.Entry.Standing.X);Assert.Equal(28641.421356237308,selected.Entry.Standing.X);
+        Assert.NotEqual(legacy.Entry.Surface,selected.Entry.Surface);Assert.Equal(before,JsonSerializer.Serialize(raw,MissionProgress.SaveJson));
     }
 }

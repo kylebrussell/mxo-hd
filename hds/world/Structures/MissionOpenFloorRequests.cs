@@ -5,7 +5,7 @@ namespace hds
 {
     internal static class MissionOpenFloorRequests
     {
-        internal static bool TryCreate(StaticWorldObject raw,ushort concrete,MissionSite site,ushort world,out G.Request request,out string refusal,MissionPhase phase=null,ushort objectId=0)
+        internal static bool TryCreate(StaticWorldObject raw,ushort concrete,MissionSite site,ushort world,out G.Request request,out string refusal,MissionPhase phase=null,ushort objectId=0,MissionElevatorWitness elevator=null)
         {
             request=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSpot(raw)||!MissionOpenFloorAdmission.ValidSite(site)||raw.metrId!=world||site.metrId!=world||!MissionOpenFloorAdmission.Target(concrete,raw))
@@ -20,7 +20,13 @@ namespace hds
                 usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(actions,usable.HalfExtents,"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; "+
                     (phase.missionObjectives.Any(o=>o.objectId==objectId)?"actions required by existing phase goals":"no direct goal: sourced all3 geometric owner profile only, no offered actions inferred"));
             }
-            if(!MissionElevatorPoses.TryCreate(site,new[]{new MissionOpenFloorChoice(objectId,concrete,System.Text.Json.JsonSerializer.Serialize(raw,MissionProgress.SaveJson))},out var elevator,out refusal))return false;
+            // Default is an exact legacy replay. Only an explicit selected/saved witness changes entry.
+            var data=MissionElevatorAnchors.Current(site.elevatorDoor);
+            if(data.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=data.Refusal;return false;}
+            if(elevator!=null&&(elevator.Version!=1||elevator.SiteFingerprint!=MissionOpenFloorSite.CatalogFingerprint(site)||
+                elevator.Floor?.Length!=3||elevator.Floor.Any(v=>!double.IsFinite(v))||elevator.Sources==null||
+                !elevator.Sources.Select(j=>new MissionOpenFloorChoice(0,0,j).ReadSpot()).Any(s=>MissionOpenFloorSite.SpotFingerprint(s)==MissionOpenFloorSite.SpotFingerprint(raw))))
+            {refusal="InvalidExplicitMissionElevatorContext";return false;}
             var entry=MissionOpenFloorEntry.Calculate(world,MissionElevatorPoses.Floor(site,elevator),site.CentreX,site.CentreZ,elevator?.Evidence??"unchanged normal Ride entry at exact selected site");
             if(entry.Root==null){refusal=entry.Refusal;return false;}
             if(!MissionOpenFloorScenes.TryLoad(world,raw.sectorID,out var scene,out refusal))return false;

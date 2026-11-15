@@ -77,6 +77,9 @@ namespace hds
                 bool floor=raw.mxoStaticId==site.elevatorDoor?.mxoStaticId,lobby=raw.mxoStaticId==site.lobbyDoor?.mxoStaticId;
                 if(!floor&&!lobby)continue;
                 var selected=floor?site.elevatorDoor:site.lobbyDoor;var witness=progress.ElevatorFor(site);
+                bool adoptedCurrent=ReferenceEquals(site,progress.site)&&(progress.openFloorResolvedPhase==progress.phaseIndex||progress.objects.Values.Any(o=>o.OpenFloor!=null));
+                bool witnessedHistory=progress.sites.Any(s=>s.metrId==raw.metrId&&(s.elevatorDoor?.mxoStaticId==raw.mxoStaticId||s.lobbyDoor?.mxoStaticId==raw.mxoStaticId)&&progress.ElevatorFor(s)!=null);
+                if(witness==null&&!adoptedCurrent&&!witnessedHistory)continue; // No bound-only V1 migration.
                 var load=MissionElevatorAnchors.Current(selected,dataset);
                 if(load.Kind==MissionElevatorAnchors.LoadKind.Unavailable)return new Overlay(OverlayKind.Refused,refusal:load.Refusal);
                 var index=load.Index;bool known=load.Kind==MissionElevatorAnchors.LoadKind.Available&&index.HasDoor(selected);
@@ -102,7 +105,11 @@ namespace hds
         }
         internal static Overlay WithDoorOwner(WorldClient client,StaticWorldObject raw,Action<Overlay> publish,MissionElevatorAnchors.Dataset dataset=null)
         {
-            var owner=client?.playerData;if(owner==null)return new Overlay(OverlayKind.Refused,refusal:"MissingMissionDoorOwner");
+            return WithCapturedDoorOwner(client,client?.playerData,raw,publish,dataset);
+        }
+        internal static Overlay WithCapturedDoorOwner(WorldClient client,ClientData owner,StaticWorldObject raw,Action<Overlay> publish,MissionElevatorAnchors.Dataset dataset=null)
+        {
+            if(owner==null)return new Overlay(OverlayKind.Refused,refusal:"MissingMissionDoorOwner");
             lock(owner.missionSync)
             {
                 if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
@@ -122,6 +129,13 @@ namespace hds
             var witness=progress.ElevatorFor(site);if(witness==null)return MissionSites.InShaft(site,x,z);
             // Preserve the existing900-unit threshold, measured from the witnessed doors.
             return new[]{witness.Floor,witness.Lobby}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
+        }
+        internal static bool RequiresWitness(MissionSite site,out bool required,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
+        {
+            required=false;refusal=null;if(site?.elevatorDoor==null)return true;
+            var load=MissionElevatorAnchors.Current(site.elevatorDoor,dataset);
+            if(load.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=load.Refusal;return false;}
+            return load.Kind!=MissionElevatorAnchors.LoadKind.Available||!load.Index.HasDoor(site.elevatorDoor)||load.Index.NeedsCorrection(site.elevatorDoor,out required,out refusal);
         }
         internal static G.Position Floor(MissionSite site,MissionElevatorWitness witness)=>witness==null?new G.Position(site.elevatorDoor.pos_x,site.elevatorDoor.pos_y,site.elevatorDoor.pos_z):Position(witness.Floor);
         internal static G.Position Position(double[] p)=>new G.Position(p[0],p[1],p[2]);

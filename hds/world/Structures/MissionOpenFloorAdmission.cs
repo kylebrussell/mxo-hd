@@ -124,8 +124,8 @@ namespace hds
                 return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
             }
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
-            if(!MissionElevatorPoses.TryCreate(site,choices.ToArray(),out var elevator,out refusal))return false;
-            if(pending!=null&&!MissionElevatorPoses.Same(pending.Elevator,elevator)){refusal="ChangedPendingMissionElevatorWitness";return false;}
+            var elevator=pending?.Elevator;
+            if(elevator!=null&&!MissionElevatorPoses.Validate(site,choices.ToArray(),elevator,out refusal))return false;
             if(elevator!=null&&!MissionInteriorSites.TryAllocate(site,mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex]),out _,out refusal,elevator))return false;
             if(!MissionInteriorSites.SelectedSiteEligible(mission.phases[phaseIndex],site,out refusal,
                 mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex])))return false;
@@ -133,12 +133,17 @@ namespace hds
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
             {
                 var raw=choice.ReadSpot();
-                if(!MissionOpenFloorRequests.TryCreate(raw,choice.Goid,site,mission.district,out var request,out refusal,mission.phases[phaseIndex],choice.ObjectId))return false;
+                if(!MissionOpenFloorRequests.TryCreate(raw,choice.Goid,site,mission.district,out var request,out refusal,mission.phases[phaseIndex],choice.ObjectId,elevator))return false;
                 inputs.Add(new MissionOpenFloorPhasePlanner.Input(choice.ObjectId,request));
             }
             string geometryKey=MissionOpenFloorSite.Hash(MissionOpenFloorPhasePlanner.SearchPolicyVersion+":standing-interior:"+MissionOpenFloorResolver.StandingSelectionVersion+":"+string.Join(";",inputs.OrderBy(i=>i.ObjectId).Select(i=>i.ObjectId+":"+i.Request.Fingerprint)));
             if(pending?.TryFailedGeometry(geometryKey,out refusal)==true)return false;
             if(!MissionOpenFloorPhasePlanner.TryPlan(inputs,out var planned,out refusal)){pending?.RememberFailedGeometry(geometryKey,refusal);return false;}
+            if(pending!=null&&elevator==null)
+            {
+                if(!MissionElevatorPoses.RequiresWitness(site,out bool required,out refusal))return false;
+                if(required){refusal="MissingMissionElevatorWitness";return false;}
+            }
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
                 poses.Add(choice.ObjectId,MissionOpenFloorPlacement.From(mission.id,phaseIndex,choice.ObjectId,choice.ReadSpot(),planned.Results[choice.ObjectId]));
             Output.WriteDebugLog("[MISSION] Open-floor phase "+mission.id+"/"+phaseIndex+" order="+string.Join(",",planned.Order)+" attempts="+planned.Attempts+" bodyNodes="+planned.BodyNodes+" routeGraphs="+planned.RouteGraphs+" staticRootGraphs="+planned.StaticRootGraphs+" directSingle="+planned.DirectSingle+" geometryMs="+planned.Milliseconds);
@@ -149,7 +154,7 @@ namespace hds
             refusal=null;var results=new List<MissionOpenFloorResolver.Result>();
             foreach(var state in progress.Phase.objects.Where(d=>progress.objects.TryGetValue(d.id,out var s)&&s.OpenFloor!=null).Select(d=>progress.objects[d.id]))
             {
-                if(!MissionOpenFloorRequests.TryCreate(state.spot,state.goid,progress.site,progress.mission.district,out var request,out refusal,progress.Phase,state.def.id)||
+                if(!MissionOpenFloorRequests.TryCreate(state.spot,state.goid,progress.site,progress.mission.district,out var request,out refusal,progress.Phase,state.def.id,progress.ElevatorFor(progress.site))||
                     !state.OpenFloor.TryReplay(request,progress.mission.id,progress.phaseIndex,state,out var result,out refusal))return false;
                 results.Add(result);
             }
@@ -219,6 +224,12 @@ namespace hds
             if(boxes.Length>0&&!MissionInteriorSites.SelectedSiteEligible(progress.Phase,progress.site,out string interiorRefusal,
                 progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
                 throw new MissionPlacementRestoreException(progress,"Invalid fixed interior site:"+interiorRefusal);
+            if(boxes.Length>0&&progress.ElevatorFor(progress.site)==null)
+            {
+                if(!MissionElevatorPoses.RequiresWitness(progress.site,out bool required,out var doorRefusal,elevatorDataset))
+                    throw new MissionPlacementRestoreException(progress,"Invalid fixed mission elevator witness:"+doorRefusal);
+                if(required)throw new MissionPlacementRestoreException(progress,"MissingMissionElevatorWitness");
+            }
             if(!FixedSetClear(progress,out string fixedRefusal))throw new MissionPlacementRestoreException(progress,"Invalid fixed open-floor checkpoint:"+fixedRefusal);
         }
     }
