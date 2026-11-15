@@ -172,7 +172,7 @@ namespace hds
             }
             internal bool Current => !Cancelled && ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,player) &&
                 Data.getCharID()==character && Data.getDistrictId()==district && Data.worldGeneration==world && Data.lifeGeneration==life &&
-                Client.TransportFence!=null && Client.TransportFence.IsCurrent(transport) && Client.IsCurrentEndpointOwner && Client.Alive && Data.getOnWorld() &&
+                Client.TransportFence!=null && Client.TransportFence.IsCurrent(transport) && Client.Alive && Data.getOnWorld() &&
                 !Data.worldChangePending && !Data.waitForRPCShutDown;
         }
 
@@ -531,6 +531,9 @@ namespace hds
         {
             var lease=active?.Drain;
             if(lease==null || !ReferenceEquals(lease.Client,client))return;
+            // Never acquire the endpoint registry under buff locks: registry-held send paths enter transport code.
+            if(!client.IsCurrentEndpointOwner){lease.Cancelled=true;return;}
+            // Normal registry removal claims terminal liveness first; reset/quit invalidate the other current fences.
             var data=lease.Data;
             lock(data.upgradeSync)
             {

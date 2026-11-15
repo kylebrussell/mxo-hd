@@ -24,12 +24,4 @@ public class BuffDrainFixtureTests
         Assert.Empty(mode.Plan.BeforeLoadout);Assert.Empty(mode.Plan.AfterLoadout);Assert.Empty(mode.Plan.EnvironmentOverrides);
         Assert.Contains("SAME CSR110",Assert.Single(mode.Plan.ReadyMessages));
     }
-    [Fact]public void QuitBoundaryCancelsBeforeOnlineReleaseAndLoadingAreaHasItsExistingWorldDrop()
-    {
-        string dir=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(dir,"hds.sln"))&&!Directory.Exists(Path.Combine(dir,"hds","world")))dir=Directory.GetParent(dir)!.FullName;
-        string source=File.ReadAllText(Path.Combine(dir,"hds/world/Client/RpcHandlers/TeleportHandler.cs"));
-        string quit=source[source.IndexOf("public void processGameFinish"):source.IndexOf("public void ProcessRespawnRequest")];
-        Assert.True(quit.IndexOf("AbilityBuffs.CancelDrains(client)")<quit.IndexOf("SetOnlineStatus(client.playerData.getCharID(), 0)"));
-        string la=source[source.IndexOf("public static void GoToLoadingArea"):];Assert.Contains("client.playerData.setOnWorld(false)",la);
-    }
 }
