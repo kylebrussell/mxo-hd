@@ -82,15 +82,9 @@ namespace hds
                 selected=progress.pendingOpenFloor;
                 if(!PendingValid(progress,selected,siteCatalog)||selected.Phase!=phaseIndex) {refusal="InvalidPendingChoice";return false;}
                 site=selected.Site?.Resolve(siteCatalog??MissionSites.For(mission.district));choices=selected.Choices;
-                // The pending phase has not been staged or entered. Retire only a site newly proven
-                // disconnected by the shared interior gate, preserving the same ordinary selection inputs.
-                // Other geometry failures retain their immutable pending choice and failure memo.
-                if(site!=null&&!Eligible(site))
-                {
-                    MissionInteriorSites.Eligible(phase,site,out string reason,requiredNpcs);
-                    Output.WriteDebugLog("[MISSION] Pending interior site rejected: "+reason+" door="+site.elevatorDoor.mxoStaticId);
-                    selected=null;
-                }
+                // A committed pending choice stays immutable even if a stricter necessary
+                // admission check now refuses it. TryGeometry reports that refusal below;
+                // retry must not silently replace the source/site or replay departure.
             }
             if(selected==null)
             {
@@ -124,7 +118,7 @@ namespace hds
             if(mission==null||phaseIndex<0||phaseIndex>=mission.phases.Count||choices==null||choices.Any(c=>c==null)){refusal="InvalidPhaseChoices";return false;}
             if(!choices.Any(c=>Target(c.Goid,c.ReadSpot())))return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
-            if(!MissionInteriorSites.Eligible(mission.phases[phaseIndex],site,out refusal,
+            if(!MissionInteriorSites.SelectedSiteEligible(mission.phases[phaseIndex],site,out refusal,
                 mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex])))return false;
             var inputs=new List<MissionOpenFloorPhasePlanner.Input>();
             foreach(var choice in choices.Where(c=>Target(c.Goid,c.ReadSpot())))
@@ -202,7 +196,7 @@ namespace hds
             }
             else if(boxes.Length>0)throw new InvalidOperationException("Resolved open-floor without adopted phase marker");
             if(progress.pendingOpenFloor!=null&&!PendingValid(progress,progress.pendingOpenFloor,siteCatalog))throw new InvalidOperationException("Invalid pending open-floor checkpoint choice");
-            if(boxes.Length>0&&!MissionInteriorSites.Eligible(progress.Phase,progress.site,out string interiorRefusal,
+            if(boxes.Length>0&&!MissionInteriorSites.SelectedSiteEligible(progress.Phase,progress.site,out string interiorRefusal,
                 progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
                 throw new MissionPlacementRestoreException(progress,"Invalid fixed interior site:"+interiorRefusal);
             if(!FixedSetClear(progress,out string fixedRefusal))throw new MissionPlacementRestoreException(progress,"Invalid fixed open-floor checkpoint:"+fixedRefusal);

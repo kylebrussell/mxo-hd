@@ -16,6 +16,7 @@ public static class InteriorAdmissionFixture
         MervPropagandaFixture.Prerequisites.Concat(new[]{301202}).ToArray(),1,7,6832,0x0ee00271,0x0ee0004b);
     public static readonly InteriorAdmissionCase Zion=new("interior-admission-zion",101209,"Hardline Hunter",1,101208,7800,95,13795,
         ZionFollowupFixture.Prerequisites.Concat(ZionFollowupFixture.Missions).Concat(new[]{101208}).ToArray(),0,1,0,0x0d100401,0x0d100402);
+    public static readonly InteriorAdmissionCase ZionSourceDomain=Zion with {Name="interior-admission-source-domain",TargetPhase=1};
     public static readonly InteriorAdmissionCase Posters=new("interior-admission-posters",201202,"Poster Hunt",2,201202,17000,495,2300,
         PosterHuntFixture.Prerequisites,0,1,0,0x0d1003bb,0x0d1003dc,17,3,new uint[]{0x0d1003dc,0x0d100314,0x0d1002f1});
     public static readonly InteriorAdmissionCase Mainframe=new("interior-admission-mainframe357",301206,"Electromagnetic",3,301101,17000,495,2300,
