@@ -44,9 +44,11 @@ public static partial class Scenarios
             foreach(uint key in step.Doors)
             {
                 if(!opened.Add(key))continue;var required=doors.Single(d=>d.Key==key);int cursor=p.World.RpcSnapshot().Count;
-                string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);NpcInteriorComputerState.DoorObservation? observed=null;
+                NpcInteriorComputerState.DoorObservation? observed=MervFollowupElevatorFixture.CurrentOpenPortal(p.World.CurrentOwnViewLife(),required);
+                bool alreadyOpen=observed!=null;string? request=null;
+                if(!alreadyOpen){request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);}
                 await p.WaitUntilAsync(()=>{try{observed=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),required);return true;}catch(InvalidDataException){return false;}},"Ordinary required own-GO portal Open0834",TimeSpan.FromSeconds(15));
-                evidence.Add(new{Operation="ordinary-npc-portal-open",Actor=npc,Door=required,Request=request,RpcCursor=cursor,Current=observed,NativePassageProven=false});
+                evidence.Add(new{Operation="ordinary-npc-portal-open",Actor=npc,Door=required,Request=request,AlreadyOpen=alreadyOpen,RpcCursor=cursor,Current=observed,NativePassageProven=false});
             }
             await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
         }

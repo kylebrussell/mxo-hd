@@ -102,6 +102,19 @@ public class MervFollowupElevatorFixtureTests
         Assert.Equal((ushort)9,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),Door(key:0x0d100020,view:10,spawn:5),old),ride).View.ViewId);
         Assert.Equal((byte)5,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,new byte[]{1,0,1,1,0,9,0},Door(spawn:5)),ride).View.SpawnId);
     }
+    [Fact]public void PortalAlreadyOpenIsReusedButClosedDeletedOrReusedCannotSkipNormalOpen()
+    {
+        var door=new MissionNpcInteriorProof.Door(0x0d100028,419,new[]{28500d,545,14400},Q,null,"");
+        var birth=Door();var current=Life(Own(),birth);
+        Assert.NotNull(MervFollowupElevatorFixture.CurrentOpenPortal(current,door));
+        // Ordinary door use toggles state: a repeated route must not toggle a proven OPEN door closed.
+        var closed=Life(Own(),birth,new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray());
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(closed,door));
+        var delete=new byte[]{1,0,1,1,0,9,0};
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),birth,delete),door));
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),birth,delete,birth),door));
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),Door(key:0x0d100020)),door));
+    }
     [Fact]public void SamePoseWrongKeyDeletedReusedAmbiguousUnknownOrOldLifeCannotSupplyDoor()
     {
         var ride=MervFollowupElevatorFixture.Select(State(),true,Array.Empty<string>());var birth=Door();var delete=new byte[]{1,0,1,1,0,9,0};

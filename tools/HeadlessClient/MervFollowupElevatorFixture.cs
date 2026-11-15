@@ -77,6 +77,11 @@ public static class MervFollowupElevatorFixture
             !q.SequenceEqual(Convert.FromHexString(selected.Quaternion!)))throw new InvalidDataException("Requested measured door overlay differs");
     }
     public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection,uint State);
+    public static NpcInteriorComputerState.DoorObservation? CurrentOpenPortal(OwnViewLifeSnapshot stream,MissionNpcInteriorProof.Door selected)
+    {
+        try{return NpcInteriorComputerState.CurrentDoor(stream,selected);}
+        catch(InvalidDataException){return null;}
+    }
     public static DoorObservation CurrentOverlay(OwnViewLifeSnapshot stream,Ride selected)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for measured door");
