@@ -60,4 +60,31 @@ public partial class MissionNpcInteriorCheckpointTests
         var first=RoomCandidate(1,2,0);var rotated=new MissionNpcRoomRoles.Candidate(first.Marker,new[]{first.Standing[0],first.Standing[1],first.Standing[2],90d},first.Route,1);
         Assert.Single(MissionNpcRoomRoles.Allocate(new[]{first,rotated},2));
     }
+    private sealed class SceneProvider : IMissionNpcInteriorEvidenceProvider
+    {
+        internal readonly Dictionary<uint,StaticWorldObject> Doors;
+        internal SceneProvider(Dictionary<uint,StaticWorldObject> doors){Doors=doors;}
+        public E Evidence(ushort world,ushort sector)=>throw new InvalidOperationException("allocation must use its supplied scene");
+        public StaticWorldObject[] Markers(ushort world,ushort sector)=>throw new InvalidOperationException();
+        public StaticWorldObject Door(ushort world,uint key)=>Doors.GetValueOrDefault(key)!;
+        public MissionOpenFloorEntry.Result Entry(ushort world,G.Position door,double x,double z,string why)=>throw new InvalidOperationException("allocation must not calculate another entry");
+    }
+    [Fact] public void Original842SceneAllocatesThreeRolesInOneCertifiedRoom()
+    {
+        string directory=Path.Combine(Repo,"data","mission_interior_evidence","1");var evidence=E.LoadAudited(directory,1,842);
+        using var input=File.OpenRead(Path.Combine(directory,"842.json.gz"));using var gz=new System.IO.Compression.GZipStream(input,System.IO.Compression.CompressionMode.Decompress);
+        var doc=JsonSerializer.Deserialize<E.Document>(gz)!;
+        StaticWorldObject From(E.Group group,E.Signature sig)=>Raw(group.Key,sig.Goid,sig.Position[0],sig.Position[1],sig.Position[2],sig.Rotation,sig.Quaternion);
+        var doors=doc.Groups.ToDictionary(g=>g.Key,g=>From(g,g.Legacy.OrderBy(l=>l.Line).First().Signature));
+        var markers=doc.Groups.SelectMany(g=>g.Legacy.Where(l=>l.Signature.Goid==19).Select(l=>From(g,l.Signature))).ToArray();
+        var door=From(doc.Groups.Single(g=>g.Key==0x34a0028b),doc.Groups.Single(g=>g.Key==0x34a0028b).Legacy.Single(l=>l.Signature.Position[0]==10900).Signature);
+        var poly=doc.Regions.Single(r=>r.Id==47).Polygons[0];double x=poly.Edges.Average(e=>e.Vertex[0]),z=poly.Edges.Average(e=>e.Vertex[2]);double y=-(poly.Plane[0]*x+poly.Plane[2]*z+poly.Plane[3])/poly.Plane[1]+95;
+        var standing=new G.Position(x,y,z);Assert.True(evidence.TryEntry(door,_=>new MissionOpenFloorEntry.Result(standing,standing,false,false,false,new G.Root(new G.Id(842,47,0),standing,"literal original842 room"),null),out var entry,out var why),why);
+        var mission=Definition();mission.npcs.Add(new MissionNpc{id=7,at=3,arrival=new MissionArrival()});mission.npcs.Add(new MissionNpc{id=8,at=3,arrival=new MissionArrival()});
+        var progress=new MissionProgress(mission){persistenceId="room-test",startedAt=1};var site=new MissionSite{metrId=1,elevatorDoor=door,lobbyDoor=door};
+        foreach(var marker in markers)site.npcSpots.Add(new[]{marker.pos_x,marker.pos_y-50,marker.pos_z,marker.rot});
+        Assert.True(MissionNpcRoomRoles.Select(progress,2,site,markers,evidence,entry,new SceneProvider(doors),out var selected,out why),why);
+        Assert.Equal(new[]{6,7,8},selected.Actors.Select(a=>a.Id));Assert.Equal(3,selected.Actors.Select(a=>string.Join("|",a.Standing.Take(3))).Distinct().Count());
+        var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
+    }
 }
