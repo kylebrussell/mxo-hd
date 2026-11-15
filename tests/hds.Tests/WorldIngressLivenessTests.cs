@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
 using hds.shared;
+using hds.databases;
 namespace hds.Tests;
 [Collection("ConcentrationEnvironment")]
 public class WorldIngressLivenessTests:IDisposable
