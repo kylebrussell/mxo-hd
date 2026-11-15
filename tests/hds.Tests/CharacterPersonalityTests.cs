@@ -90,8 +90,10 @@ public class CharacterPersonalityTests
         string fields=System.Text.RegularExpressions.Regex.Match(sql,@"INSERT INTO `characters` \(([^\r\n]+)\) VALUES").Groups[1].Value.Replace("`","");
         Assert.NotEmpty(fields);Assert.DoesNotContain("trait_id",fields);
         string program=File.ReadAllText(Path.Combine(root,"tools","NativeQa","Program.cs"));
-        Assert.Contains("INSERT INTO characters ("+fields+") SELECT "+fields+" FROM reality_hd.characters WHERE charId=110;",program);
-        Assert.DoesNotContain("INSERT INTO characters SELECT * FROM reality_hd.characters",program);
+        Assert.Contains("NativeQaFixtureSeeder.PrepareAsync(root, database, fixturePlan, requestedAbilities)",program);
+        string seed=File.ReadAllText(Path.Combine(root,"tools","NativeQa","NativeQaFixtureSeeder.cs"));
+        Assert.Contains("INSERT INTO characters ("+fields+") SELECT "+fields+" FROM reality_hd.characters WHERE charId=110;",seed);
+        Assert.DoesNotContain("INSERT INTO characters SELECT * FROM reality_hd.characters",seed);
     }
     [Fact] public void ReservationSuppliesEveryRequiredColumnAndKeepsExistingEfAndClothingDefaults()
     {

@@ -37,6 +37,11 @@ namespace hds
             ClientData data = client.playerData;
             lock (data.missionSync)
             {
+                if(data.missionProgress?.restoreRefusal!=null)
+                {
+                    new ServerPackets().sendSystemChatMessage(client,"Abort your saved mission from Mission Status before accepting another.","BROADCAST");
+                    client.FlushQueue();return false;
+                }
                 if (!MissionTickets.CanStart(client, mission))
                 {
                     return false;

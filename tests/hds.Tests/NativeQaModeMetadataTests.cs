@@ -4,6 +4,35 @@ namespace hds.Tests;
 
 public class NativeQaModeMetadataTests
 {
+    public static IEnumerable<object[]> AllModes() => NativeQaModes.Names.Select(name => new object[] { name });
+
+    [Theory]
+    [MemberData(nameof(AllModes))]
+    public void EveryDiscoveredModeSerializesTheExecutorsStandardState(string mode)
+    {
+        var plan = NativeQaModes.Find(mode).Plan;
+        var standard = new NativeQaFixtureState
+        {
+            Database = "mxotest_state_serialization", Directory = "fixture", Account = "CSR_AbilityQA",
+            Character = "CSR_Tester", CharId = 110, BuildCommit = "test", Configuration = "Release",
+            SourceAssembly = "hds.dll", SourceAssemblySha256 = "source", SnapshotAssemblySha256 = "source",
+            Status = "Ready", Abilities = plan.Abilities, StealthShieldQa = plan.StealthShieldQa,
+            ShieldReady = plan.StealthShieldQa, CasterOrganization = plan.StealthShieldQa ? 1 : null,
+            CasterPvpFlag = plan.StealthShieldQa, HealthCallbackQa = plan.HealthCallbackQa,
+            CompileItemsQa = plan.CompileItemsQa, CallbackRoll15 = plan.HealthCallbackQa ? 0 : null,
+            CallbackRoll100 = plan.HealthCallbackQa ? 0 : null
+        };
+        var state = plan.StateWithMetadata(standard);
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(state));
+        var actual = document.RootElement;
+        var standardFields = JsonSerializer.SerializeToElement(standard);
+        foreach (var field in standardFields.EnumerateObject())
+            Assert.Equal(field.Value.GetRawText(), actual.GetProperty(field.Name).GetRawText());
+        foreach (var field in plan.ExtraQaMetadata)
+            Assert.Equal(field.Value.GetRawText(), actual.GetProperty(field.Key).GetRawText());
+        Assert.Equal(standardFields.EnumerateObject().Count() + plan.ExtraQaMetadata.Count, actual.EnumerateObject().Count());
+    }
+
     private static NativeQaModePlan Plan(Dictionary<string,object?>? values=null,string[]? messages=null) =>
         new(new ushort[]{2},0,0,Array.Empty<string>(),Array.Empty<string>(),Array.Empty<string>(),extraQaMetadata:values,readyMessages:messages);
 

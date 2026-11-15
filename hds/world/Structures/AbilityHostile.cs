@@ -65,6 +65,7 @@ namespace hds
         public static TempMods.Mod ModOf(ushort ability, AbilityCatalog.Modifier m)
         {
             if (m.Number("WhenEnabled", -1) != 2 || m.State != 0 || !Timed(m)) return null;
+            if(AbilitySeverArteryStates.Modifier(ability,m))return new TempMods.Mod { Kind=TempMods.KindFx,Target=710,MinValue=10,MaxValue=10,Seconds=30,Interval=2.5,Proc=TempMods.Proc.SeverState };
             float seconds = (float)m.Number("Duration");
             int value = (int)m.Number("MinValue");
             if (m.Text("StatModUpdateFunc").EndsWith("DOT", StringComparison.Ordinal) && !Scripted(m, true) && Fixed(m))

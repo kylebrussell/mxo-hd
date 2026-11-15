@@ -103,8 +103,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref sx, ref sy, ref sz);
             if (PacketsUtils.PlaceNear((UInt16)districtId, sx, sy, sz, out NavLocation place))
             {
-                Store.currentClient.messageQueue.addObjectMessage(
-                    PacketsUtils.createTeleportPacket(Store.currentClient, (float)sx, (float)sy, (float)sz), false);
+                MissionProxyIntroduction.Arrival(Store.currentClient,sx,sy,sz);
                 Output.WriteDebugLog("[SPAWN] On the nav mesh: sector " + place.sector + ", region " + place.region + ", polygon " + place.polygon);
             }
             if (districtId == (uint)MxOLocations.TUTORIAL)

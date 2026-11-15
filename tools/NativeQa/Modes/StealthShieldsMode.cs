@@ -18,7 +18,7 @@ public sealed class StealthShieldsMode : NativeQaMode
     {
         foreach(string name in context.HelperNames)
         {
-            var helper=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),name,name);
+            var helper=await HeadlessPlayer.LoginAsync(context.Address,name,name);
             context.Helpers.Add(name,helper); await helper.EnterWorldAsync();
         }
         byte[] ack=await StealthShieldFixture.ActivateTargetAsync(context.Helpers["QAEnemy"]);
