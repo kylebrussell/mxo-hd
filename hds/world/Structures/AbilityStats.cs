@@ -48,13 +48,18 @@ namespace hds
         {
             int test = ability == null ? -1 : (int)(AbilityCatalog.Find(ability.getAbilityID())?.Number("Ability/TestFunction", -1) ?? -1);
             ushort stat = SpecialAttackStat(test);
-            // Preserve established melee/ranged calculations exactly; do not invent viral/thrown percentage links.
+            // Viral bonus policy is OURS: use the same level-scaled percentage convention as melee/ranged.
+            // The exact retail linked-stat gameplay formula remains unrecovered. Thrown is unchanged.
             int total = test == 1 ? Attack(attacker, true) : stat == 342 || stat == 1032 ?
-                Player(attacker, 163) + Player(attacker, stat) +
+                Player(attacker, 163) + (stat == 342 ? ViralAccuracy(attacker) : Player(attacker, stat)) +
                 (TimedEffects.ForPlayer(attacker).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()) ? -30 : 0) : Attack(attacker, false);
             if (ability != null) Output.WriteDebugLog("[COMBAT-ATTACK OURS] special " + ability.getAbilityID() + " stat " + stat + " total " + total);
             return total;
         }
+        /// <summary>OURS approximation: loaded/active Viral Accuracy Bonus1147 adds level*percent/100,
+        /// using the existing melee/ranged truncation convention. Direct342 keeps its separate cap.</summary>
+        public static int ViralAccuracy(WorldClient client) => Player(client,342) +
+            PercentDelta(client.playerInstance.Level.getValue()[0],Player(client,1147));
         public static int Defense(WorldClient client, bool ranged) => Player(client, 959) + Player(client, ranged ? (UInt16)1010 : (UInt16)1009) +
             PercentDelta(client.playerInstance.Level.getValue()[0], Player(client, ranged ? (ushort)1027 : (ushort)1143));
         public static int Defense(Mob mob, bool ranged) => Npc(mob, 959) + Npc(mob, ranged ? (UInt16)1010 : (UInt16)1009);
