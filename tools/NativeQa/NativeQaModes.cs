@@ -56,9 +56,11 @@ public sealed class NativeQaModePlan
 }
 
 public sealed record NativeQaBootstrapContext(string OutputDirectory, string[] HelperNames, Dictionary<string,HeadlessPlayer> Helpers,
-    ServerAddress? Server = null)
+    ServerAddress? Server = null, ThrowawayDatabase? OwnedDatabase = null, ServerInstance? ActualServer = null)
 {
     public ServerAddress Address => Server ?? new ServerAddress("127.0.0.1",11000,10000,10000);
+    public void Deconstruct(out string output,out string[] names,out Dictionary<string,HeadlessPlayer> helpers,out ServerAddress? server)
+    {output=OutputDirectory;names=HelperNames;helpers=Helpers;server=Server;}
 }
 public abstract class NativeQaMode
 {
@@ -73,6 +75,8 @@ public static class NativeQaModes
         typeof(NativeQaMode).Assembly.GetTypes().Where(t=>!t.IsAbstract && typeof(NativeQaMode).IsAssignableFrom(t))
         .Select(t=>(NativeQaMode)Activator.CreateInstance(t)!).ToDictionary(m=>m.Name,StringComparer.Ordinal));
     public static NativeQaMode Find(string name) => modes.TryGetValue(name,out var mode)?mode:modes[""];
+    public static NativeQaMode RequireKnown(string name) => modes.TryGetValue(name,out var mode)?mode:
+        throw new ArgumentException("Unknown NativeQa mode: "+name,nameof(name));
     public static IEnumerable<string> EnvironmentKeys => modes.Values.SelectMany(m=>m.Plan.EnvironmentOverrides.Keys).Distinct(StringComparer.Ordinal);
     public static IEnumerable<string> Names => modes.Keys.Order(StringComparer.Ordinal);
 }
