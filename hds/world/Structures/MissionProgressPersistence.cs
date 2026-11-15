@@ -51,6 +51,9 @@ namespace hds
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorLegacyPhase { get; set; }
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionOpenFloorSite[] OpenFloorSites { get; set; }
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionElevatorWitness[] ElevatorWitnesses {get;set;}
+            // Parse only this recognized optional subtree after restoring identity/items. Invalid NPC metadata
+            // can then quarantine the exact original checkpoint without a broad SavedState JSON catch.
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] public JsonElement NpcInterior {get;set;}
             public List<SavedMob> Mobs { get; set; } = new List<SavedMob>();
         }
         public sealed class SavedObject
@@ -96,7 +99,9 @@ namespace hds
             public int? Wave { get; set; }
         }
         internal static readonly JsonSerializerOptions SaveJson = new JsonSerializerOptions() { IncludeFields = true };
-        public SavedState Capture(ushort instance, IEnumerable<Mob> mobs, NpcLootCache loot = null)
+        public SavedState Capture(ushort instance, IEnumerable<Mob> mobs, NpcLootCache loot = null) => CaptureNpcCore(instance,mobs,loot,null);
+        internal SavedState CaptureWithNpcCatalog(ushort instance,IEnumerable<Mob> mobs,IReadOnlyList<MissionSite> catalog,NpcLootCache loot=null) => CaptureNpcCore(instance,mobs,loot,catalog);
+        private SavedState CaptureNpcCore(ushort instance,IEnumerable<Mob> mobs,NpcLootCache loot,IReadOnlyList<MissionSite> npcCatalog)
         {
             double now = clock();
             var actors=mobs.ToArray();
@@ -111,13 +116,16 @@ namespace hds
                 GoalElapsed=goalClock.ToDictionary(p=>p.Key,p=>Math.Max(0,now-p.Value)), Waypoints=waypoints.ToArray(), Exits=exits.ToArray(),
                 SiteDoors=sites.Select(s=>s.elevatorDoor).ToArray(),
                 Objects=objects.Values.Select(o=>new SavedObject { Id=o.def.id, Spot=o.spot, Goid=o.goid, Unlocked=o.unlockedOnce, State=o.shownState, OpenFloor=o.OpenFloor }).ToList() };
-            if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null))
+            var npcInterior=CaptureNpcInterior();
+            if(npcInterior!=null)state.NpcInterior=JsonSerializer.SerializeToElement(npcInterior,SaveJson);
+            if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null)||npcInterior!=null)
             {
                 state.Version=2;state.PendingOpenFloor=pendingOpenFloor;state.OpenFloorPhase=openFloorResolvedPhase;state.OpenFloorLegacyPhase=openFloorLegacyPhase;state.OpenFloorSites=sites.Select(MissionOpenFloorSite.From).ToArray();
                 state.ElevatorWitnesses=elevatorWitnesses.Count==0?null:elevatorWitnesses.Values.ToArray();
                 state.OpenFloorCurrentSiteIndex=site==null?-1:sites.FindIndex(s=>ReferenceEquals(s,site));
                 if(site!=null&&state.OpenFloorCurrentSiteIndex<0)throw new InvalidOperationException("Box current site absent from exact history");
             }
+            if(npcInterior!=null)MissionNpcInteriorCheckpoint.PrepareRestore(this,state,npcCatalog);
             state.Flags[nameof(waitingForExit)]= waitingForExit;
             state.Flags[nameof(entered)]= entered;
             state.Flags[nameof(failed)]= failed;
@@ -149,12 +157,16 @@ namespace hds
         public static MissionProgress Restore(Mission mission, SavedState state, Func<double> clock = null) => RestoreCore(mission,state,clock,null);
         internal static MissionProgress RestoreFromCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,Func<double> clock=null) => RestoreCore(mission,state,clock,siteCatalog);
         private static MissionProgress RestoreCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog)
+            => RestoreNpcCore(mission,state,clock,siteCatalog,null);
+        internal static MissionProgress RestoreWithNpcCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,IMissionNpcInteriorEvidenceProvider provider,Func<double> clock=null)
+            => RestoreNpcCore(mission,state,clock,siteCatalog,provider);
+        private static MissionProgress RestoreNpcCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog,IMissionNpcInteriorEvidenceProvider npcProvider)
         {
             if ((state.Version!=1&&state.Version!=2) || state.Mission!=mission.id || state.Phase<0 || state.Phase>=mission.phases.Count)
                 throw new InvalidOperationException("Unsupported or invalid saved mission phase");
             if(state.Version==1&&(state.ElevatorWitnesses!=null||state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
                 throw new InvalidOperationException("Version1 cannot contain resolved open-floor metadata");
-            if(state.Version==2&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
+            if(state.Version==2&&state.NpcInterior.ValueKind==JsonValueKind.Undefined&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
             var p=new MissionProgress(mission) { persistenceId=state.Identity, phaseIndex=state.Phase, startedAt=state.Started, kills=state.Kills };
             if(clock!=null)p.clock=clock;
             double now=p.clock();
@@ -179,6 +191,7 @@ namespace hds
             p.justArrived.AddRange(mission.npcs.Where(n=>state.JustArrived.Contains(n.id)));
             p.wavesJustArrived.AddRange(p.Phase.Waves().Where(w=>state.WavesJustArrived.Contains(w.id)));p.justSwitched.AddRange(state.JustSwitched);
             p.waypoints=state.Waypoints.ToList();p.exits.AddRange(state.Exits);
+            var npcInterior=state.NpcInterior.ValueKind!=JsonValueKind.Undefined?MissionNpcInteriorCheckpoint.PrepareRestore(p,state,siteCatalog):null;
             if(state.Version==1)
                 foreach(var door in state.SiteDoors) { var site=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door); if(site!=null)p.sites.Add(site); }
             else
@@ -192,6 +205,7 @@ namespace hds
                 }
             }
             p.site=state.Version==1?p.sites.LastOrDefault():state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            MissionNpcInteriorCheckpoint.Apply(p,npcInterior);
             if(p.UsesGeneratedDeparture && state.DepartedPhase==p.phaseIndex && SameDepartureDoor(state.DepartedSite,p.site.elevatorDoor))
             {p.departedSite=p.site.elevatorDoor;p.departedPhase=p.phaseIndex;}
             foreach(var o in state.Objects)
@@ -227,6 +241,7 @@ namespace hds
                 throw new MissionPlacementRestoreException(p,"Legacy free Mainframe357 lacks an adopted witness");
             MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
+            MissionNpcInteriorCheckpoint.ValidateGeometry(p,npcInterior,npcProvider??MissionNpcInteriorEvidenceProvider.Instance);
             return p;
         }
     }
