@@ -50,7 +50,10 @@ public static partial class Scenarios
         {
             var before=(await Saved(enter?"before-entry":"before-exit"))!;
             await MachinesNextRide(context,p,enter,arrivalProofs.Add);
-            if(enter)await WaitSaved(v=>v!=null&&v.Mission==before.Mission&&v.Phase==before.Phase&&v.Identity==before.Identity&&v.Flags.GetValueOrDefault("entered"),"actual entered flag after ordinary Ride");
+            var after=await Saved(enter?"after-entry-observation":"after-exit-observation");
+            if(enter)Check.That(after!=null&&after.Mission==before.Mission&&after.Phase==before.Phase&&after.Identity==before.Identity&&after.Started==before.Started,"Ordinary entry keeps exact current mission/phase owner");
+            // entered means the legacy content-area trigger played, not immediate floor arrival.
+            // Published route/NPC/object approaches enter naturally; no pose/flag is changed here.
         }
         async Task Upload()
         {

@@ -8,6 +8,14 @@ public class MachinesCriticalNextFiveTests
 
     [Theory][InlineData(null)][InlineData("bad")][InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
     public void WholeCaseRequiresExactFrozenSource(string? expected)=>Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.RequirePin(expected,new string('B',64)));
+
+    [Fact] public void ActualEscortReadinessHasNoSyntheticContentEntryRequirement()
+    {
+        var mission=Load().Single(m=>m.id==201204);var state=new MissionProgress.SavedState{Version=2,Mission=201204,Phase=0,Identity=new string('a',32),Started=100,Instance=47,
+            Flags=new(){["entered"]=false,["failed"]=false},Done=new[]{1,2},Following=new ushort[]{1},Mobs=new(){new(){Npc=1,Identity=new string('b',32),Friendly=true,Health=100}}};
+        Assert.True(ZionAfter1212EscortProof.CanApproach(state,mission,3));Assert.False(state.Flags["entered"]);
+        state.Flags["failed"]=true;Assert.False(ZionAfter1212EscortProof.CanApproach(state,mission,3));
+    }
     [Fact] public void MatchingFrozenSourcePinIsAccepted()=>MachinesCriticalNextFiveFixture.RequirePin(new string('B',64),new string('B',64));
     [Theory][InlineData(1)][InlineData(2)]
     public void MysqlHexRetainsEscapedNamesAndBothSavedVersions(int version)

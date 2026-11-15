@@ -4,6 +4,9 @@ Current preparation reuses the stopped7fd producer through normal merges onto ac
 
 The13-phase QA audit replaces raw mysql payload reads with strict HEX/UTF8, raw CSV lobby guesses with exact current/historical saved witnesses, stale phase-birth cursors with typed current-live NPC/free/bound/booth observations, and legacy bound poses with the audited effective pose. Followers retain identity and use actual latest positions at unchanged readiness/range thresholds. Computer/door state uses current-birth capabilities, including the exact retired-door reset control from qualified245 b3ade659. The original21 prior receipts, seed201202, all literal payouts, XML/transcripts and gameplay timers remain unchanged. The60s next-phase wait remains the previously disclosed QA synchronization limit; source preparation latency is not declared normal-client-safe.
 
+
+Retained076 first case stopped75.1s on a QA wait for `entered=true` before any ordinary approach. Actual lobby0d100028 reached floor0d100024 with typedOPEN0x834, own NAV209/48/291 and exactACK followed by all3free548 births. Root28500/895/14200 lies100 units beyond the legacy content maxZ14100; later published Standings enter that content area naturally. The corrected driver observes the flag without changing it and does not conflate it with floor transport. Bounds/source/door/phase/owner/receipt checks remain. This does not resolve or dismiss the separate native261 public-entry HOLD for the same indoor lobby; native hover/passage is still required.
+
 ## Actual order and prerequisites
 
 Agent Gray's contact2001/org2 offers the first unfinished plot mission in authored order. After201201 the next five are201202 Poster Hunt,201203 Hard Time,201204 No Allies Here,201205 Under Warranty and201206 Gathering Evidence. Next is201207 Coroner's Report. Machines does not inherit Tyndall's Standard Courier. Unit checks inspect the real contact filter and ordered catalogue, rather than assuming arithmetic IDs.
