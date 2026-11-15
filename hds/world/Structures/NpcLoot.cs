@@ -153,26 +153,17 @@ namespace hds
                     }
                 }
                 packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
-                GiveItems(client, corpse.Items);
-
-                var remaining = new List<(byte[] Data, UInt32 Item)>();
-                foreach (UInt32 item in corpse.Items)
-                {
-                    remaining.Add((new byte[4], item));
-                }
+                var claimed = GiveItems(client, corpse.Items);
                 if (corpse.MissionItem != 0)
                 {
                     if (MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
                     {
+                        claimed.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
                         corpse.MissionItem = 0;
                     }
-                    else
-                    {
-                        remaining.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
-                    }
                 }
-                packets.SendLootAccepted(client, remaining.ToArray());
-                if (remaining.Count == 0)
+                packets.SendLootAccepted(client, claimed.ToArray());
+                if (corpse.Items.Count == 0 && corpse.MissionItem == 0)
                 {
                     emptied = corpse.Source;
                 }
@@ -186,24 +177,30 @@ namespace hds
         }
 
         /// <summary>Removes each granted item immediately, so a later failure cannot grant it again on retry.</summary>
-        private static void GiveItems(WorldClient client, List<UInt32> items)
+        private static List<(byte[] Data, UInt32 Item)> GiveItems(WorldClient client, List<UInt32> items) =>
+            ClaimItems(items, goid =>
+            {
+                // Existing inventory policy stacks Code Bits/pills and refuses a full bag.
+                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
+                Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
+                return slot != 0;
+            });
+
+        internal static List<(byte[] Data, UInt32 Item)> ClaimItems(List<UInt32> items, Func<UInt32,bool> give)
         {
+            var claimed = new List<(byte[] Data, UInt32 Item)>();
             int index = 0;
             while (index < items.Count)
             {
                 UInt32 goid = items[index];
-                // Stacks onto an existing stack (Code Bits, pills) and refuses a full bag
-                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
-                if (slot == 0)
-                {
-                    index++;
-                }
+                if (!give(goid)) index++;
                 else
                 {
                     items.RemoveAt(index);
+                    claimed.Add((new byte[4], goid));
                 }
-                Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
             }
+            return claimed;
         }
     }
 }

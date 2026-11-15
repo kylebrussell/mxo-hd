@@ -11,7 +11,7 @@ using hds.shared;
 
 namespace hds.databases{
 
-    public class MyMarginDBAccess : IMarginDBHandler{
+    public partial class MyMarginDBAccess : IMarginDBHandler{
 		
 		// One per thread: each margin client has a thread, and they used to share one connection, command and reader
 		// (see MyWorldDbAccess).
@@ -137,52 +137,7 @@ namespace hds.databases{
 			
 		}
 		
-		public UInt32 CreateNewCharacter(string handle, UInt32 userid, UInt32 worldId){
-			
-			
-            UInt32 charId = 0;
-			//TODO: Complete with real data from a hashtable (or something to do it faster);
-			//TODO: find values for uria starting place
-			var character = new Character {Handle = handle, UserId = userid, WorldId = (ushort) worldId};
-			using (MatrixDbContext dbContext = CreateDbContext())
-			{
-				dbContext.Characters.Add(character);
-				dbContext.SaveChanges();
-			}
-
-
-			//As i didnt find a solution for "last_insert_id" in C# we must fetch the last row by a normal query
-			charId = (UInt32)character.CharId;
-			if (charId != 0)
-			{
-				return charId;
-			}
-
-			conn.Open();
-            string sqlQuery = "SELECT charId FROM characters WHERE userId='" + userid.ToString() + "' AND worldId='" + worldId.ToString() + "' AND is_deleted='0' ORDER BY charId DESC LIMIT 1";
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = sqlQuery;
-            dr = queryExecuter.ExecuteReader();
-
-            while (dr.Read())
-            {
-                charId = (UInt32)Convert.ToDecimal(dr.GetValue(0));
-            }
-
-            conn.Close();
-
-	        // Create RSI Entry
-            conn.Open();
-            string sqlRSIQuery = "INSERT INTO rsivalues SET charid='" + charId.ToString() + "' ";
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = sqlRSIQuery;
-            queryExecuter.ExecuteNonQuery();
-
-			conn.Close();
-
-            return charId;
-			
-		}
+        public UInt32 CreateNewCharacter(string handle,UInt32 userid,UInt32 worldId)=>ReserveCharacter(handle,userid,worldId);
 
         public void updateCharacter(string firstName, string lastName, string background, UInt32 charID)
         {
@@ -223,9 +178,11 @@ namespace hds.databases{
 
         public void SetStartingAttributes(UInt32 charID)
         {
+            uint? trait=GetCharInfo(checked((int)charID))?.TraitId;
+            CharacterPersonality.Resolve(trait);
             foreach (byte attribute in CharacterAttributes.All)
             {
-                addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.BaseValue(attribute), 0);
+                addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.BaseValue(attribute,trait), 0);
             }
         }
 

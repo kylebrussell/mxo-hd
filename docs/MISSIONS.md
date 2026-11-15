@@ -27,7 +27,7 @@ Three things the client depends on, found by trying them:
 
 - **Get** appears in an NPC's menu only with `GiverActiveTracker` set on it. No retail record we could find sets it, so it's our fit.
 - **Give** appears only while the player holds an item whose 4-byte descriptor is the NPC's MissionKey with `0x80` on the last byte. Retail's statue for Gagarin (key `01 9a 02 02`) was `5e 07 00 f2 04 00 00 01 9a 02 82 01`. We also set `TakerActiveTracker`.
-- **Leaving** isn't defined anywhere. In the captures the next step came when the player was 2 to 5 m past a mission door, so `MissionExit` uses 6 m from a door, or 60 m from all of them for leaving another way.
+- **Leaving** is not fully defined by the captures. Authored waypoint/escort checks retain the historical6m door approximation and60m far fallback. Generated sites with distinct lobby/mission floors now require a committed matching elevator transition rather than interior-door proximity; ground-floor sites retain the old rule. See `MISSION-LEAVE-TRANSITION.md` for policy, evidence and qualification limits.
 
 The two points in `80 a3` are street-level entrances to the mission area; the operator's "you've arrived" line fires near the first.
 

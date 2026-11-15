@@ -26,6 +26,14 @@ namespace hds
 
         // A generated phase's placement, for this player: mission definitions are shared.
         public MissionSite site;
+        internal MissionOpenFloorPendingAdmission pendingOpenFloor;
+        internal bool openFloorCheckpoint;
+        internal int? openFloorResolvedPhase;
+        internal int? openFloorLegacyPhase;
+        // Runtime-only quarantine: retain the durable checkpoint and owned items for explicit abort.
+        internal string restoreRefusal;
+        internal readonly Dictionary<string,MissionElevatorWitness> elevatorWitnesses=new Dictionary<string,MissionElevatorWitness>();
+        internal MissionElevatorWitness ElevatorFor(MissionSite value)=>value!=null&&elevatorWitnesses.TryGetValue(MissionOpenFloorSite.CatalogFingerprint(value),out var witness)?witness:null;
         public readonly List<MissionSite> sites = new List<MissionSite>();         // every site used so far, in phase order
         public List<MissionWaypoint> waypoints = new List<MissionWaypoint>();      // this phase's, as sent
         public readonly List<double[]> exits = new List<double[]>();              // other places that count as leaving
@@ -429,7 +437,9 @@ namespace hds
         public bool NextPhase()
         {
             phaseIndex++;
+            openFloorResolvedPhase=null;openFloorLegacyPhase=null;
             waitingForExit = false;
+            departedSite = null;
             goalsCompleteSent = false;
             leaveNotNeeded = false;
             wavesArrived.Clear();
@@ -465,7 +475,7 @@ namespace hds
 
         public bool IsExiting(double x, double y, double z)
         {
-            return waitingForExit && Phase != null && (leaveNotNeeded || MissionExit.HasLeft(waypoints, exits, x, y, z));
+            return waitingForExit && Phase != null && (leaveNotNeeded || (UsesGeneratedDeparture ? HasGeneratedDeparture || MissionExit.IsOutside(waypoints, exits, x, y, z) : MissionExit.HasLeft(waypoints, exits, x, y, z)));
         }
 
         /// <summary>Whether (x, y, z) is at one of the phase's ways out, whether or not its goals are done.</summary>

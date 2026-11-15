@@ -16,9 +16,10 @@ namespace hds
         {
             public bool Committed {get;}
             public string Reason {get;}
+            public uint? Trait {get;}
             public IReadOnlyDictionary<byte,ushort> Values {get;}
-            public Result(bool committed,string reason,IDictionary<byte,ushort> values=null)
-            {Committed=committed;Reason=reason;Values=new System.Collections.ObjectModel.ReadOnlyDictionary<byte,ushort>(new Dictionary<byte,ushort>(values??new Dictionary<byte,ushort>()));}
+            public Result(bool committed,string reason,IDictionary<byte,ushort> values=null,uint? trait=null)
+            {Committed=committed;Reason=reason;Trait=trait;Values=new System.Collections.ObjectModel.ReadOnlyDictionary<byte,ushort>(new Dictionary<byte,ushort>(values??new Dictionary<byte,ushort>()));}
         }
         public static bool Known(uint attribute)=>attribute<=byte.MaxValue && Array.IndexOf(CharacterAttributes.All,(byte)attribute)>=0;
         public static bool Matches(Row row,byte attribute)=>Known(attribute) && row.Slot==CharacterAttributes.SlotOf(attribute) &&
@@ -33,17 +34,18 @@ namespace hds
                     if(Matches(row,attribute))values[attribute]=checked((ushort)row.Value);
             return values;
         }
-        public static bool TryPlan(IEnumerable<Row> source,IReadOnlyList<CharacterAttributes.Raise> raises,long experience,out Dictionary<byte,ushort> values)
+        public static bool TryPlan(IEnumerable<Row> source,IReadOnlyList<CharacterAttributes.Raise> raises,long experience,out Dictionary<byte,ushort> values,uint? trait=null)
         {
             values=new Dictionary<byte,ushort>();var rows=source.ToArray();
+            if(trait.HasValue&&!CharacterPersonality.Valid(trait.Value))return false;
             if(raises==null||raises.Count<1||raises.Count>5||experience<0||experience>uint.MaxValue)return false;
             foreach(byte attribute in CharacterAttributes.All)
             {
                 var owned=rows.Where(r=>r.Slot==CharacterAttributes.SlotOf(attribute)).ToArray();
-                if(owned.Length>1 || owned.Any(r=>!Matches(r,attribute)||r.Value<0||r.Value>CharacterAttributes.Cap))return false;
+                if((trait.HasValue&&owned.Length!=1)||owned.Length>1 || owned.Any(r=>!Matches(r,attribute)||r.Value<0||r.Value>CharacterAttributes.Cap))return false;
                 values[attribute]=owned.Length==1?(ushort)owned[0].Value:CharacterAttributes.LegacyValue(attribute);
             }
-            int spent=values.Sum(v=>CharacterAttributes.SpentPoints(v.Key,v.Value));
+            int spent=values.Sum(v=>CharacterAttributes.SpentPoints(v.Key,v.Value,trait));
             var seen=new HashSet<byte>();int requested=0;
             foreach(var raise in raises)
             {
@@ -60,7 +62,7 @@ namespace hds
         {
             var packet=new PacketContent();packet.AddHexBytes("80b6");packet.AddUint16(8,1);
             packet.AddUint32(result.Committed?0:FailureStatus,1);packet.AddUint16(result.Committed?(ushort)raises.Count:(ushort)0,1);
-            if(result.Committed)foreach(var raise in raises){packet.AddByte(0);packet.AddUint32(raise.Attribute,1);packet.AddByte(CharacterAttributes.NewLevelOf(raise.Attribute,result.Values[raise.Attribute]));}
+            if(result.Committed)foreach(var raise in raises){packet.AddByte(0);packet.AddUint32(raise.Attribute,1);packet.AddByte(CharacterAttributes.NewLevelOf(raise.Attribute,result.Values[raise.Attribute],result.Trait));}
             return packet.ReturnFinalPacket();
         }
         internal static bool Current(WorldClient c,ClientData d,int generation,int world,int life,long transport,uint character)=>

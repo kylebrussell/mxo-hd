@@ -50,14 +50,15 @@ Native80e4 constructors62129e80..9eb6 and6213dc75..9c allocate10 bytes and store
 
 ## Native one-pass checklist
 
-Use discovered NativeQa mode `ability-training`. It owns a complete stored prerequisite/folder closure in the disposable CSR110 archive. The selected rows remain unloaded; loaded Hacker begins49 with its proper loaded prerequisite chain, and Execute Program remains50. Character Level/EXP are50 with20,000,000 Info. No dev, GM or RNG override is enabled.
+Use discovered NativeQa mode `ability-training`, CSR110, level/EXP50 and20,000,000 Info. The fixture owns the prerequisite/folder closure. Hacker starts loaded at49; Execute Program stays50. The other training candidates start in the archive. No dev, GM or RNG override is enabled.
 
-1. Open Manage Abilities > Upgrade and select **one** level before comparing a quote. At the ACTUAL profile levels: Sneak25â†’26 is67,600 (previous135,200); Spy Style5â†’6 is3,600 (previous7,200); Improved Sneak1â†’2 is260,900 (previous800); Find Data Node30â†’31 is199,400 (previous192,200). The separate1â†’2 source/unit examples above are not the profile's current levels.
-2. Check all four quotes before spending; stop/report if any differ. Accept each intended upgrade once and verify one Info debit and the new level.
-3. Write Code14â†’15 is22,500 and stops at15. Download Mission Map is already capped10. Native UI should not offer an illegal16th/11th level; forged requests are a headless authority test, not a native UI action.
-4. Train the loaded Hacker49â†’50 for500,000. Its passive196 becomes200; all unrelated loaded records and Execute Program stay intact. Relog and verify the trained archive levels, Info and loadout.
+1. At a hardline, open **Abilities**. Load Write Code, Download Mission Map, Spy Style, Sneak, Find Data Node and Improved Sneak. The native client includes their qualifying parents automatically. Its Upgrade window lists **only equipped abilities**, so an archived row cannot be selected there directly.
+2. Open **Character > Upgrade**. Select one level before comparing quotes: Sneak25→26 is67,600; Spy Style5→6 is3,600; Improved Sneak1→2 is260,900; Find Data Node30→31 is199,400. These are the actual profile levels, rather than the separate1→2 source examples above.
+3. Check quotes before spending. Accept each intended upgrade once and verify one Info debit and the new level.
+4. Write Code14→15 costs22,500 and stops at15. Download Mission Map is already capped10. Forged over-cap requests are headless authority tests; the normal UI should prevent them.
+5. Train loaded Hacker49→50 for500,000. Check its196→200 passive record and unrelated Execute Program, then relog and verify trained levels, Info and loadout.
 
-These preseeded owned rows are a QA fixture, not a new vendor/drop/acquisition claim. Native UI/quote/spend/relog validation remains pending Claude. No native rendering or retail backend atomicity is claimed from a headless pass.
+Claude passed this native flow on2026-11-13 at source1b4aab2d, merged as5c9fc132. All listed quotes matched. Hacker, Write Code and Improved Sneak were accepted; cold relog retained their trained levels and19,216,600 Info. The remaining quoted rows were not all purchased in that run. Exact passive-record evidence remains separately covered headlessly. The owned fixture is not a vendor/drop acquisition claim or evidence of retail backend isolation.
 
 ## Verification
 

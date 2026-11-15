@@ -171,10 +171,16 @@ namespace hds
                 Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
                 return;
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Effective(Store.currentClient, AbilityID))
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "You do not have enough Inner Strength.");
-                return;
+                // Snapshot the same existing admission inputs once; the response reports their exact positive deficit.
+                UInt16 available=CurrentInnerStrength(Store.currentClient);
+                UInt16 effective=AbilityCosts.Effective(Store.currentClient, AbilityID);
+                if(available<effective)
+                {
+                    Deny(AbilityID,"You do not have enough Inner Strength.",AbilityRefusals.InsufficientInnerStrength,(uint)(effective-available));
+                    return;
+                }
             }
 
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
@@ -209,6 +215,7 @@ namespace hds
             }
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
+            var ghostStrike=GhostStrikeCallbacks.Capture(Store.currentClient,AbilityID,currentTargetViewId);
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
@@ -216,7 +223,11 @@ namespace hds
             else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
+            GhostStrikeCallbacks.Arm(ghostStrike);
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
+            GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
+            var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
+            var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -265,21 +276,22 @@ namespace hds
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true &&
-                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+            ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (hostileView > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
-                UInt16 targetView = currentTargetViewId;
+                UInt16 targetView = hostileView;
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
                 }
             }
             });
@@ -287,9 +299,9 @@ namespace hds
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
 
-        private static void Deny(UInt16 id, string message)
+        private static void Deny(UInt16 id, string message,uint reason=AbilityRefusals.LegacyAmbiguous,uint deficit=0)
         {
-            Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(id, AbilityCooldowns.DeniedBusy));
+            Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(id,reason,deficit)));
             new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);

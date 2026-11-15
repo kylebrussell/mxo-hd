@@ -8,6 +8,8 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        OrdinaryItemCode.Entry GetOrdinaryItemCode(UInt32 character, UInt16 slot);
+        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost);
         PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
         bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
@@ -56,6 +58,10 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        void EnsureVendorBuyback();
+        VendorBuyback.Result SellVendorItem(uint character, ushort slot, string session, uint vendor);
+        VendorBuyback.Result BuyBackVendorItem(uint character, string session, uint vendor);
+        AbilityAcquisition.Receipt AcquireAbility(UInt32 character, UInt32 goid, UInt32 price, UInt16? bagSlot = null, UInt16? archiveSlot = null, UInt16[] reserved = null);
         InventoryPayout ExchangeInventoryForInfo(UInt32 character, UInt16 slot, UInt32 expectedGoid, int expectedCount, UInt32 quote, bool storage = false);
 
         AbilityMemory.Result CommitAbilityLoadout(uint charId, IReadOnlyList<AbilityProgression.LoadoutEntry> entries, bool unload, int characterLevel);

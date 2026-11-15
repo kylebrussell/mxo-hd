@@ -8,6 +8,8 @@ namespace HeadlessClient;
 public sealed record RpcRecord(ushort ListCounter, int Index, byte[] Bytes)
 {
     /// <summary>The opcode as the server's headers number them: 0x28 for `28`, 0x187 for `81 87`.</summary>
+    public ushort? DatagramSequence { get; init; }
+
     public int Opcode => WireFormat.OpcodeOf(Bytes);
 
     public string Hex => WireFormat.ToHex(Bytes);

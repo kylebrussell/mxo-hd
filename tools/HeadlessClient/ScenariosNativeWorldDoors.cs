@@ -3,6 +3,8 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static Task SatiPrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.SatiPrefab);
     private static Task Medium02PrefabDoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium02Prefab);
     private static Task DataMinePrefabDoorDiagnostic(ScenarioContext context) => NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.DataMinePrefab);
@@ -10,6 +12,8 @@ public static partial class Scenarios
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Medium03Prefab);
     private static Task Large01DoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large01);
+    private static Task Large02PrefabDoorDiagnostic(ScenarioContext context) =>
+        NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large02Prefab);
     private static Task Large02DoorDiagnostic(ScenarioContext context) =>
         NativeWorldDoorDiagnostic(context, NativeWorldDoorFixtures.Large02);
 

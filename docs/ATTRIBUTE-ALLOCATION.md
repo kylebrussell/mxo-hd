@@ -28,8 +28,8 @@ The old no-row legacy policy remains a known limitation: shown values24/27/28/25
 
 Use discovered NativeQa mode `attribute-allocation`: CSR110, actual level/EXP50, five legitimate existing base rows,49 available points and1,000,000 Info. No dev, GM or RNG override.
 
-1. Open Status > Attributes. Verify49 available points and Focus8, Perception11, Reason8, Belief5, Vitality8.
-2. Queue one Focus and one Reason point, then confirm once. Verify shown9/11/9/5/8,47 points left and unchanged Info.
+1. Open **Character > Upgrade > Attributes**. Verify49 available points and Focus8, Perception11, Reason8, Belief5, Vitality8.
+2. Queue one Focus and one Reason point, then click **Apply All** once. Verify shown9/11/9/5/8,47 points left and unchanged Info.
 3. Relog. Verify all five values and remaining points, with no duplicate allocation.
 4. Native cap and failure UI remain checks for Claude; forged illegal requests are headless authority tests, not a claim that the normal UI offers them.
 
@@ -52,7 +52,7 @@ Required raw proof was saved before teardown in the owner's Temp directory:
 - Matching `.log`: SHA256 `27674203f4702b43291f2fe420b42aa6b1b5237b671e630c65f1e5997ad7c6ae`.
 - `mxo-attribute-fresh-2-stdout.txt`: SHA256 `7ebc216e83a2ed73eb53e12751bbc12e0406336ba96201401b07f29881e58cad`, including explicit exit0.
 
-Seven sessions retained60/56/56/55/55/55/22 RPCs and zero protocol problems, including actual pre-login PK/raw snapshots and both refusal/success80b6 records. Native UI/visual/quote validation remains pending Claude.
+Seven sessions retained60/56/56/55/55/55/22 RPCs and zero protocol problems, including actual pre-login PK/raw snapshots and both refusal/success80b6 records. The normal native two-point allocation/relog check later passed, as recorded below; native cap/refusal presentation remains unverified.
 
 The first attempt remains a **40.0 second fixture failure**, before any allocation. Initial UDP setup queued legacy values before the old post-login seed. MultiProtocolManager173..178 calls processPlayerSetup immediately after its UDP reply. The corrected optional `AttributeValues` seed is installed and recorded before LoginAsync; null preserves all other scenario defaults, and the initial-value assertion was not relaxed. Failed proof remains `mxo-attribute-allocation-mxotest_run_1_17e7de0c6d.*`, JSON SHA256 `8af3f16bc5000594619a81ba49f6771ca28daecc8709dbfa4ee4f5555d00e723`, log `99fcec5bc641160a2f5dfe0adf2c824933be008c102bf7a1f83783b746a2efb1`.
 
@@ -61,4 +61,7 @@ A source review also found that the old system-chat sender flushes internally. R
 Isolation is scoped to participating attribute allocations. At validation base `41ef78e0`, the old separate80b7 training route could still address hidden attribute rows; pending PR215 addresses that path independently and should land first. No pending215 code was imported here, and this package does not claim global integrity against every legacy writer.
 
 
-Master refresh after PR215: both independent training and attribute synchronization fields are retained, and the shared pure chat encoder/wrapper is exactly the native-tested master version. Attribute runtime, SQL, readers, mode and driver remain unchanged. The original 62.5-second fresh proof remains source-qualified; this upstream merge was checked with 142 combined focused tests and both actual build/profile/provenance checks, without another fresh run. Native attribute UI verification is still pending.
+Master refresh after PR215: both independent training and attribute synchronization fields are retained, and the shared pure chat encoder/wrapper is exactly the native-tested master version. Attribute runtime, SQL, readers, mode and driver remain unchanged. The original 62.5-second fresh proof remains source-qualified; this upstream merge was checked with 142 combined focused tests and both actual build/profile/provenance checks, without another fresh run. The normal native allocation/relog flow later passed; cap/refusal presentation remains unverified.
+
+
+Claude passed the native allocation flow on2026-11-13 at source2ec0ab8d and merged the source-equivalent master refreshcaa69085 as061dd088. Character > Upgrade > Attributes showed49 points; Focus+1 andReason+1 with Apply All produced one two-entry80b5 request and80b6 reply. The client showed47 points and both attributes9, with1,000,000 Info unchanged. Cold relog preserved the values and47 points. This confirms that normal UI flow, not every cap/refusal display or the unchanged no-row legacy policy.

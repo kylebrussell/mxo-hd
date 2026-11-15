@@ -410,7 +410,8 @@ namespace hds{
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
                     AbilityGrantRegistration.LoadingComplete(Store.currentClient, rpcData);
-		            break; // no standalone reply; materialize reviewed grants once the native avatar exists
+                    MissionObjectiveReplay.LoadingComplete(Store.currentClient, rpcData);
+		            break; // no standalone reply; refresh registered grants and pending restored objectives
 		        case (int) RPCRequestHeader.CLIENT_FEATURES_REQUEST:
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
 		            break;

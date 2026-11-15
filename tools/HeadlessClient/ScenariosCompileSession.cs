@@ -19,7 +19,7 @@ public static partial class Scenarios
             InnerStrength=0, Items=new[] {(3,1271u,1),(4,1271u,1),(5,7336u,20),(8,2565u,1),(9,38538u,1)} });
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES" +
             $"({p.CharId},30,{AbilityGoid(277)},50,1),({p.CharId},400,{CodeStorage.BaseValue(7332)},1,0)," +
-            $"({p.CharId},401,{2399u << 7},1,0)");
+            $"({p.CharId},401,{531u << 7},1,0)");
         await p.EnterWorldAsync(); p.SkipReceived();
         string recipe = $"81 2e {Le(7458u << 7)} 09 00 03 01 00 {Le(2u)} {Le(7336u)}";
         // Native double-click is equip 63, not tool activation. A refusal must unlock inventory without a move.
@@ -48,13 +48,13 @@ public static partial class Scenarios
         CompilerTool(p,3,true); await p.WaitForRpcAsync("80 bd 05 c9 03 00 00 00 00 00 01");
         await p.WaitForRpcAsync(ModPattern(969,968));
         p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
-        // This is the real native CompileUI 60 request for its ordinary item-code row, not an injected bit row.
-        p.SendRpc($"60 {Le(2399u)} 91 01 00 03 01"); await p.WaitForRpcAsync("61 01");
+        // This is the unsupported equipment-code request (ordinary IC is tested separately), not an injected bit row.
+        p.SendRpc($"60 {Le(531u)} 91 01 00 03 01"); await p.WaitForRpcAsync("61 01");
         await p.WaitForTextAsync("compilation is not reconstructed");
-        Check.Equal((long)(2399u << 7), await context.Database.LongAsync($"SELECT ability_id FROM char_abilities WHERE char_id={p.CharId} AND slot=401"), "Unsupported native item code preserved");
+        Check.Equal((long)(531u << 7), await context.Database.LongAsync($"SELECT ability_id FROM char_abilities WHERE char_id={p.CharId} AND slot=401"), "Unsupported native item code preserved");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={p.CharId} AND slot=401"), "Native item code charge preserved");
         Check.Equal(100000L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"), "Native refusal has no cash cost");
-        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=2399"), "No unsupported native item materialized");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=531"), "No unsupported native item materialized");
         CompilerTool(p,3,true); // idempotent start, not a toggle-off
         p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
         Check.Equal(1,p.Received(ModPattern(969,968)).Count,"One session record despite duplicate tool activation");

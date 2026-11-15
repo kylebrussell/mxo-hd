@@ -5,12 +5,18 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
+    // Optional profile only; null keeps the previous level50/XP0 seed exactly.
+    private static CharacterSeed PrimaActorSeed(string handle,byte org,double x,double z,int? level)
+    {
+        if(level.HasValue&&(level.Value<1||level.Value>50))throw new ArgumentOutOfRangeException(nameof(level));
+        return new CharacterSeed(handle){Level=level??50,Experience=level.HasValue?(int)PlayerProgression.ExperienceForLevel(level.Value):0,
+            X=x,Z=z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,Organization=org};
+    }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,int? actorLevel=null)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed(handle){Level=50,X=startX,Z=startZ,Health=5000,MaxHealth=5000,
-            InnerStrength=2000,MaxInnerStrength=2000,Organization=org});
+        var p=await context.AddPlayerAsync(PrimaActorSeed(handle,org,startX,startZ,actorLevel));
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
         Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
         if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));

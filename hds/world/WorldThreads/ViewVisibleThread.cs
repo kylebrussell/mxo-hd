@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 using hds.shared;
 using hds.world.Structures;
 
@@ -69,6 +70,7 @@ namespace hds
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
                 MissionContactNpcs.CheckViews(aliveClients);
+                foreach (WorldClient client in aliveClients) SafeFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PosterBoxFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PvpArchives.Check(client, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
               }
@@ -774,6 +776,26 @@ namespace hds
             }
         }
 
+        internal static bool TryClaimInactiveClient(WorldClient client,out string key)
+        {
+            key=null;var registry=WorldServer.Clients;if(client==null||registry==null)return false;
+            lock(registry)
+            {
+                if(!ReferenceEquals(registry,WorldServer.Clients))return false;
+                var owners=registry.Where(p=>ReferenceEquals(p.Value,client)).Take(2).ToArray();
+                if(owners.Length!=1||!client.TryClaimInactive())return false;
+                key=owners[0].Key;return true;
+            }
+        }
+        internal static bool RemoveClaimedClient(string key,WorldClient client)
+        {
+            if(client==null||!client.IngressSnapshot.Claimed)return false;
+            var registry=WorldServer.Clients;if(registry==null)return false;lock(registry)
+            {
+                if(!ReferenceEquals(registry,WorldServer.Clients)||!registry.TryGetValue(key,out var owner)||!ReferenceEquals(owner,client))return false;
+                registry.Remove(key);return true;
+            }
+        }
         private static void CleanDeadPlayers(List<WorldClient> deadClients, List<WorldClient> allClients)
         {
             if (deadClients.Count == 0)
@@ -781,14 +803,18 @@ namespace hds
                 return;
             }
 
-            HashSet<WorldClient> deadLookup = new HashSet<WorldClient>(deadClients);
             foreach (WorldClient deadClient in deadClients)
             {
-                if (deadClient == null)
+                // Revalidate the actual endpoint owner and latest ingress, then claim terminality
+                // BEFORE Trade/Combat/Suspend can block or change persistent state. Keep this owner
+                // mapped while cleanup runs; late ingress cannot resurrect it or create a replacement.
+                if (!TryClaimInactiveClient(deadClient,out string endpoint))
                 {
                     continue;
                 }
 
+                try
+                {
                 TradeHandler.Abort(deadClient);
                 CombatManager.RemoveClient(deadClient);
                 MissionPersistence.Suspend(deadClient);
@@ -819,6 +845,9 @@ namespace hds
                 string handle = StringUtils.charBytesToString_NZ(deadClient.playerInstance.CharacterName.getValue());
                 new BuddylistHandler().ProcessAnnounceFriendsOffline(deadClient.playerData.getCharID(), handle);
                 SocialHandler.PlayerLeftWorld(deadClient);
+                }
+                catch {deadClient.ReleaseFailedReap();throw;}
+                if(RemoveClaimedClient(endpoint,deadClient))Output.WriteLine("Removed inactive Client with Key " + endpoint);
                 // Views are now deleted to other players
                 // ToDo: Cleanup Missions (kill all running missions the player have)
                 // ToDo: Cleanup Teams (if your mission team has more than one player, you need to announce an update for the mission team to your mates)
@@ -826,23 +855,6 @@ namespace hds
                 // ToDo: Finally save the current character Data to the Database^^
             }
 
-            List<string> keysToRemove = new List<string>();
-            lock (WorldServer.Clients)
-            {
-                foreach (KeyValuePair<string, WorldClient> entry in WorldServer.Clients)
-                {
-                    if (deadLookup.Contains(entry.Value))
-                    {
-                        keysToRemove.Add(entry.Key);
-                    }
-                }
-
-                foreach (string key in keysToRemove)
-                {
-                    Output.WriteLine("Removed inactive Client with Key " + key);
-                    WorldServer.Clients.Remove(key);
-                }
-            }
         }
     }
 }

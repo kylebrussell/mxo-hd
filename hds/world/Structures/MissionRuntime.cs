@@ -40,14 +40,21 @@ namespace hds
 
         public static bool Start(WorldClient client, Mission mission, ushort transaction = 0) => MissionPersistence.Mutate(client,()=>{StartCore(client,mission,transaction);return true;},true);
 
-        private static void StartCore(WorldClient client, Mission mission, ushort transaction)
+        internal static bool StartOpenFloor(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan,ushort transaction) =>
+            MissionPersistence.Mutate(client,()=>
+            {
+                if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;
+                StartCore(client,progress.mission,transaction,progress,plan);return true;
+            },true);
+
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null)
         {
             lock (client.playerData.missionSync)
             {
                 EndCore(client,false);
 
                 ClientData data = client.playerData;
-                MissionProgress progress = new MissionProgress(mission);
+                MissionProgress progress = preparedProgress ?? new MissionProgress(mission);
                 data.activeMission = mission;
                 data.missionProgress = progress;
                 new ServerPackets().sendMissionAccept(client,transaction,data.missionInstanceCounter,mission);
@@ -67,7 +74,8 @@ namespace hds
                     }
                 }
 
-                MissionStaging.Stage(client, progress);
+                if(prepared==null)MissionStaging.Stage(client, progress);
+                else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
                 SendPhase(client, progress);
                 EnsureTimer();
                 MissionPersistence.Save(client);
@@ -94,7 +102,7 @@ namespace hds
         }
 
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
-        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;});
+        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;},abortBlocked:true);
 
         private static void EndCore(WorldClient client, bool clearPersistent = true)
         {
@@ -144,6 +152,15 @@ namespace hds
         {
             var progress=client.playerData.missionProgress;
             if(progress==null)return;
+            if(progress.restoreRefusal!=null)
+            {
+                new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
+                MissionObjectiveReplay.Arm(client,progress);
+                foreach(var item in progress.itemSlots)
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value,item.Key,ItemElement(progress,item.Key),client.playerData.missionInstanceCounter));
+                new ServerPackets().sendSystemChatMessage(client,"Your saved mission area is no longer safe to restore. Abort this mission from Mission Status before accepting another.","BROADCAST");
+                return; // Never publish unsafe objects, actors, waypoints or automatic goal/item grants.
+            }
             EnsureTimer();
             if(client.playerData.getDistrictId()!=progress.mission.district)return;
             new ServerPackets().sendMissionAccept(client,0,client.playerData.missionInstanceCounter,progress.mission);
@@ -517,7 +534,7 @@ namespace hds
                 if (progress == null || progress.failed || client.playerData.loot.WindowOpen) return false;
                 MissionObjectState state = progress.objects.Values.FirstOrDefault(o => o.putOpen);
                 if (state?.spot == null) return false;
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 if (!ContainerActions.InReach(client.playerInstance.Position.getValue(), pose.X, pose.Y, pose.Z)) return false;
                 MissionObjective objective = progress.OpenObjectives().FirstOrDefault(o => o.type == MissionGoalType.Put &&
                     o.objectId == state.def.id && progress.itemSlots.TryGetValue(o.item, out ushort ownedSlot) && ownedSlot == slot);
@@ -535,7 +552,16 @@ namespace hds
         /// <summary>Take All (81 1f) on a mission object's loot window. Returns true if it was one.</summary>
         public static bool OnTakeAll(WorldClient client)
         {
-            return MissionPersistence.Mutate(client,()=>OnTakeAllCore(client));
+            lock (client.playerData.missionSync)
+            {
+                if (client.playerData.missionProgress?.objects.Values.Any(o => o.lootOpen) != true) return false;
+                var owner = new MissionContainerRetry.Owner(client);
+                bool committed = MissionPersistence.Mutate(client,()=>MissionPersistence.DeferContainerCheckpoint(client,()=>OnTakeAllCore(client)));
+                // A failed mutation removes no client items and must still release Take All's pending cursor.
+                // Never fall through to another loot owner or publish into a switched world/life/transport.
+                if (!committed && MissionContainerRetry.Acknowledge(client, owner) && owner.Current(client)) client.FlushQueue();
+                return true;
+            }
         }
 
         private static bool OnTakeAllCore(WorldClient client)
@@ -553,31 +579,15 @@ namespace hds
                     continue;
                 }
 
-                foreach (MissionObjective objective in new List<MissionObjective>(progress.OpenObjectives()))
-                {
-                    if (objective.type == MissionGoalType.Search && objective.objectId == state.def.id)
+                return MissionContainerClaim.Take(state, progress.OpenObjectives(), client.playerData.missionInstanceCounter,
+                    item => GiveItem(client, progress, item, reservePending: true),
+                    (claimed, empty) =>
                     {
-                        if (objective.item != 0 && !GiveItem(client, progress, objective.item))
-                        {
-                            ushort instance = client.playerData.missionInstanceCounter;
-                            new ServerPackets().SendLootAccepted(client, new[]
-                            {
-                                (new byte[] { 0, (byte)instance, (byte)(instance >> 8), 0x82 }, objective.item)
-                            });
-                            return true;
-                        }
-
-                        Complete(client, progress, objective);
-                    }
-                }
-
-                state.lootOpen = false;
-                // Emptied: the container goes to the state retail's Open leads to (OpenedState, 0x834), which plays its
-                // opening and takes Open off its menu
-                ObjectStates.ShowOpened(client, state.entity, state.goid);
-                new ServerPackets().SendLootAccepted(client);
-                client.FlushQueue();
-                return true;
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildLootAccepted(claimed));
+                        if (empty) client.messageQueue.addRpcMessage(ServerPackets.BuildLootClosed());
+                    },
+                    () => ObjectStates.ShowOpened(client, state.entity, state.goid),
+                    objective => Complete(client, progress, objective));
             }
 
             return false;
@@ -631,7 +641,7 @@ namespace hds
             if (place.StartsWith("object:"))
             {
                 if (!ushort.TryParse(place.Substring(7), out ushort objectId) || !progress.objects.TryGetValue(objectId, out MissionObjectState state) || state.spot == null) return false;
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 return Distance2(pose.X, pose.Y, pose.Z, x, y, z) <= radius * radius;
             }
 
@@ -721,10 +731,12 @@ namespace hds
             return chosen;
         }
 
-        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId)
+        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId, bool reservePending = false)
         {
             if(progress.itemSlots.ContainsKey(goId))return true;
-            UInt16 slot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            UInt16 slot = reservePending
+                ? MissionContainerClaim.FreeSlot(Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()).Select(i => (int)i.Slot), progress.itemSlots.Values)
+                : Store.dbManager.WorldDbHandler.GetFirstNewSlot();
             if (slot == 0)
             {
                 if (!progress.inventoryFullNotice)
@@ -1002,8 +1014,8 @@ namespace hds
             if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
             {
                 // Object origins may be on a desk or cabinet. NPC height belongs to the floor, as site NPC spots do.
-                var pose = MissionComputerAnchors.For(state);
-                return Beside(pose.X, progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
+                var pose = MissionObjectPoses.For(state);
+                return Beside(pose.X, state.OpenFloor!=null ? state.OpenFloor.Standing[1] : progress.site == null ? pose.Y : progress.site.floorY - 50, pose.Z, index);
             }
 
             return BesidePlayer(px, py, pz, index);
@@ -1092,7 +1104,9 @@ namespace hds
                     header = header ?? "30000100" + ((byte)sector).ToString("x2") + ((byte)(sector >> 8)).ToString("x2") +
                              "01000000000000003c00";
                     // The area points are its street entrance, as retail's were
-                    areaA = new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z };
+                    var elevator=progress.ElevatorFor(site);
+                    areaA = elevator==null?new[] { (float)site.lobbyDoor.pos_x, (float)site.lobbyDoor.pos_y, (float)site.lobbyDoor.pos_z }:
+                        elevator.Lobby.Select(v=>(float)v).ToArray();
                     areaB = areaA;
                 }
 
@@ -1116,13 +1130,21 @@ namespace hds
         /// Replay only this phase's completed or currently open goals; a locked goal stays hidden.</summary>
         internal static void SendObjectives(WorldClient client, MissionProgress progress, bool restoring)
         {
+            if(restoring){MissionObjectiveReplay.Arm(client,progress);return;}
+            SendObjectiveRows(client,progress,false);
+        }
+        internal static void SendObjectiveRows(WorldClient client, MissionProgress progress, bool restoring)
+        {
             ServerPackets packets = new ServerPackets();
             foreach (MissionObjective objective in progress.Phase.missionObjectives)
                 if (progress.IsOpen(objective) || restoring && progress.IsDone(objective.goal))
                     packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
-            if (restoring)
-                foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
-                    packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
+        }
+        internal static void SendObjectiveCompletions(WorldClient client, MissionProgress progress)
+        {
+            ServerPackets packets = new ServerPackets();
+            foreach (MissionObjective objective in progress.Phase.missionObjectives.Where(o => progress.IsDone(o.goal)))
+                packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
         }
 
         // Items the briefing provides, including a retry when the bag was full at the start of this phase.
@@ -1329,6 +1351,7 @@ namespace hds
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
+            MissionStaging.IntroduceDeferredObjects(client,progress);
             bool sent = GiveProvidedItems(client, progress);
             SwitchSides(client, progress); // Retry a side change that was waiting for a safe placement.
             MissionStaging.Follow(client, progress, x, y, z);
@@ -1417,10 +1440,37 @@ namespace hds
                     Finish(client, progress);
                     return;
                 }
+                MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
+                {
+                    if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
+                    {
+                        if(selected!=null&&openFloorPlan?.BeforeCurrent(client)==true)
+                        {
+                            bool changed=progress.pendingOpenFloor==null||progress.pendingOpenFloor.Refusal!=refusal;
+                            progress.pendingOpenFloor=selected.WithRefusal(refusal);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                            if(changed) {Output.WriteDebugLog("[MISSION] Box next-phase admission deferred: "+refusal);
+                                client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(MissionOpenFloorAdmission.UnavailableMessage,"BROADCAST"));}
+                        }
+                        return;
+                    }
+                    if(!openFloorPlan.BeforeCurrent(client))return;
+                    // Admit the exact choice durably before tearing down the old phase.
+                    // A later staging/SQL rollback restores this same pending choice.
+                    if(openFloorPlan.Adopted)
+                    {
+                        progress.pendingOpenFloor=openFloorPlan.Selection.WithRefusal(null);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
+                        MissionPersistence.Save(client);
+                        if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
+                    }
+                }
+                if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
+                progress.pendingOpenFloor=null;
                 Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                MissionStaging.Stage(client, progress);
+                if(openFloorPlan==null)MissionStaging.Stage(client, progress);
+                else {if(openFloorPlan.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,openFloorPlan);}
                 SendPhase(client, progress);
 
                 return;
@@ -1450,7 +1500,7 @@ namespace hds
                     continue;
                 }
 
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 double dx = pose.X - x, dz = pose.Z - z;
                 if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(pose.Y - y) > 300)
                 {
@@ -1611,7 +1661,7 @@ namespace hds
         private static bool AtObject(WorldClient client, MissionProgress progress, MissionObjective objective, MissionObjectState state,
             double x, double y, double z)
         {
-            var pose = MissionComputerAnchors.For(state);
+            var pose = MissionObjectPoses.For(state);
             double ox = pose.X, oy = pose.Y, oz = pose.Z;
             bool arrived = Distance2(ox, oy, oz, x, y, z) <= EscortArrivalUnits * EscortArrivalUnits;
             foreach (ushort id in objective.Npcs)
