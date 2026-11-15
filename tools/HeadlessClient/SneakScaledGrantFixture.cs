@@ -16,6 +16,6 @@ public static class SneakScaledGrantFixture
     public static bool ChildMembership(byte[] rpc)=>ManageBonusRecord.TryDecode(rpc,out var m)&&m is{Type:0x45,SourceId:Parent,TargetId:Child}&&m.Locator==((uint)Child<<8|3);
     public static bool Membership(byte[] rpc,ushort level,bool off=false)=>ManageBonusRecord.TryDecode(rpc,out var m)&&m is{Type:0x45,SourceId:Parent,TargetId:Child,DurationBits:0}&&
         m.Locator==((uint)Child<<8|3)&&m.SignedValue==level&&m.AddRemoveType==(off?1:0);
-    public static bool Stealth209(byte[] rpc,ushort level,bool off=false)=>ManageBonusRecord.TryDecode(rpc,out var m)&&m is{Type:0x45,SourceId:Child,TargetId:209,DurationBits:0}&&
+    public static bool Stealth209(byte[] rpc,ushort level,bool off=false)=>ManageBonusRecord.TryDecode(rpc,out var m)&&m is{Type:0x15,SourceId:Child,TargetId:209,DurationBits:0}&&
         (m.Locator&255)==0&&m.SignedValue==level&&m.AddRemoveType==(off?1:0);
 }
