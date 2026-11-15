@@ -1301,7 +1301,7 @@ namespace hds
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
                 playerLevel, session.AttackerTactic, mob.getWeapon(), AbilityStats.Attack(mob, true), AbilityStats.Defense(player, true),
-                AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true));
+                AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true), () => !MobiusCode.PreventsFreeAttack(player));
             bool hit = shot.Hit;
 
             mob.rangedActionCounter++;

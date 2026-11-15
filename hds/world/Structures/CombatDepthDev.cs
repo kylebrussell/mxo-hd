@@ -10,6 +10,7 @@ namespace hds
             string command = args.Length > 0 ? args[0] : "";
             if (command == "offbalance") return CombatDepthOffBalance.Run(caller,args);
             if (command == "stagger") return CombatDepthStagger.Run(caller,args);
+            if (command == "mobius") return MobiusCodeQa.Run(caller,args);
             if (command == "hurtme") return ConcentrationDamageQa.Run(caller,args);
             if (command == "specialattack") return TypedAttackDiagnostic.Run(caller,args);
             if (command == "specialdefense")
