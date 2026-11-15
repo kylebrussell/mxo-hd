@@ -55,9 +55,11 @@ public static partial class Scenarios
             int cursor=p.World.RpcSnapshot().Count,log=context.Server.DebugLog().Length;p.SkipReceived();
             var ownLife=p.World.CurrentOwnViewLife();int sectionCursor=ownLife.Events.Count==0?ownLife.OwnBirthSection+1:ownLife.Events.Max(e=>e.Section)+1;
             NpcInteriorComputerState.DoorObservation? observedDoor=null;
+            // Static door models already belong to the client scene. The ordinary Open
+            // request introduces their server view in StateOpen(0x834), not before use.
+            string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
             if(npcDoor!=null)await p.WaitUntilAsync(()=>{try{observedDoor=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),npcDoor);return true;}catch(InvalidDataException){return false;}},
                 "Actual current owned NPC elevator key/own-GO/pose/quaternion",TimeSpan.FromSeconds(15));
-            string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
             if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary static elevator door ride",TimeSpan.FromSeconds(15));
             string rideLog=context.Server.DebugLog()[log..];
             NpcInteriorComputerState.Teleport? npcArrival=null;
@@ -108,11 +110,9 @@ public static partial class Scenarios
                     foreach(uint portalKey in point.Doors)
                     {
                         if(!opened.Add(portalKey))continue;var expected=doors.Single(d=>d.Key==portalKey);NpcInteriorComputerState.DoorObservation? actual=null;
-                        await p.WaitUntilAsync(()=>{try{actual=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),expected);return true;}catch(InvalidDataException){return false;}},
-                            "Current certified own-GO portal door before Open",TimeSpan.FromSeconds(15));
                         string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(portalKey))} 03 00";p.SendRpc(request);
-                        await p.WaitUntilAsync(()=>NpcInteriorComputerState.Read(p.World.CurrentOwnViewLife(),actual!.Capability)!=0x834,
-                            "Ordinary portal door leaves its closed state",TimeSpan.FromSeconds(15));
+                        await p.WaitUntilAsync(()=>{try{actual=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),expected);return true;}catch(InvalidDataException){return false;}},
+                            "Current certified own-GO portal door in the sourced Open state",TimeSpan.FromSeconds(15));
                         checkpoints.Add(new{Step=step,Operation="owned-npc-portal-open",Door=expected,Current=actual,Request=request,NativePassageProven=false});
                     }
                     await MoveForMissionTest(p,point.Standing[0],point.Standing[1],point.Standing[2]);
