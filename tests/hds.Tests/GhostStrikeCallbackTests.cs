@@ -4,7 +4,7 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class GhostStrikeCallbackTests
 {
-    private static WorldClient Client()
+    internal static WorldClient Client()
     {
         var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
         typeof(WorldClient).GetProperty("IsBot")!.SetValue(c,true);
@@ -15,7 +15,7 @@ public class GhostStrikeCallbackTests
         typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
         return c;
     }
-    private static GhostStrikeCallbacks.Ticket Ticket(WorldClient c,WorldClient target,ushort hidden=1116)
+    internal static GhostStrikeCallbacks.Ticket Ticket(WorldClient c,WorldClient target,ushort hidden=1116)
     {
         var expiry=Stealth.Begin(c,Stealth.Defs[hidden],50,durationOverride:20).Expires;
         var t=new GhostStrikeCallbacks.Ticket{Source=c,SourceCurrent=GhostStrikeCallbacks.Lifetime(c),

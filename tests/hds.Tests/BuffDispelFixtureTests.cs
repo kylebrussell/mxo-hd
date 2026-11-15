@@ -9,8 +9,18 @@ namespace hds.Tests;
 [CollectionDefinition("BuffDispelQaEnvironment",DisableParallelization=true)]
 public class BuffDispelQaEnvironmentCollection {}
 [Collection("BuffDispelQaEnvironment")]
-public class BuffDispelFixtureTests
+public class BuffDispelFixtureTests:IDisposable
 {
+    private readonly WorldServer previousWorld=Store.world;
+    private readonly Dictionary<string,WorldClient> previousClients=WorldServer.Clients;
+    // This collection disables parallelization. Own both publication globals rather than relying on test order
+    // or nulling Store.world to bypass the actual presentation path.
+    public BuffDispelFixtureTests()
+    {
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        Store.world=(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+    }
+    public void Dispose(){Store.world=previousWorld;WorldServer.Clients=previousClients;}
     private static void WithEnvironment(string? dev,string? database,string? roll,Action test)
     {
         string[] names={"MXO_DEV_COMMANDS","MXO_DB_NAME","MXO_BUFF_DISPEL_QA_ROLL100"};

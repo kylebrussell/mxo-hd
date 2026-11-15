@@ -13,18 +13,24 @@ namespace hds
         private static readonly ConditionalWeakTable<WorldClient,Setting> settings=new ConditionalWeakTable<WorldClient,Setting>();
         internal static Func<bool> Lifetime(WorldClient client)
         {
-            var current=AbilitySeverArteryStates.Lifetime(client);uint district=client.playerData.getDistrictId();
-            return ()=>current()&&client.playerData.getDistrictId()==district&&PvpCombat.HealthOf(client)>0;
+            if(client?.playerData==null)return ()=>false;
+            // Capture only at ticket/control creation, outside owner locks. The returned predicate is pure observation.
+            var owner=client.playerData;int world=owner.worldGeneration,life=owner.lifeGeneration;
+            uint character=owner.getCharID(),district=owner.getDistrictId();long epoch=client.TransportFence.Capture();
+            return ()=>ReferenceEquals(client.playerData,owner)&&owner.getCharID()==character&&client.Alive&&owner.getOnWorld()&&
+                !owner.worldChangePending&&!owner.waitForRPCShutDown&&!owner.isDead&&!owner.duelDeath&&
+                owner.worldGeneration==world&&owner.lifeGeneration==life&&owner.getDistrictId()==district&&
+                PvpCombat.HealthOf(client)>0&&client.TransportFence.IsCurrent(epoch);
         }
         public static string Dev(WorldClient source,string[] words)
         {
             if(source==null||!QaDraw(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                 Environment.GetEnvironmentVariable("MXO_GHOST_STRIKE_QA"),source.playerData.getCharID(),"8").HasValue||
-                !AbilitySeverArteryStates.Lifetime(source)()||string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase))
+                !Lifetime(source)()||string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase))
                 return "Ghost Strike QA requires dev1, disposable database, feature marker and current CSR110.";
             if(words.Length==1&&words[0]=="off"){settings.Remove(source);return "Ghost Strike callback normal RNG restored.";}
             if(words.Length!=1||!int.TryParse(words[0],out int roll)||(roll!=8&&roll!=9))return "Usage: ?ghoststrike <8|9> | off; callback only.";
-            settings.Remove(source);settings.Add(source,new Setting{Roll=roll,Current=AbilitySeverArteryStates.Lifetime(source)});
+            settings.Remove(source);settings.Add(source,new Setting{Roll=roll,Current=Lifetime(source)});
             return "Ghost Strike callback roll="+roll+"; base damage and cast/contest RNG unchanged.";
         }
         public sealed class Ticket
