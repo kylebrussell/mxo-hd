@@ -39,7 +39,7 @@ namespace hds
         {
             proof=null;refusal="MissingStreetAccess";
             if(outside==null||lobby==null||!ReferenceEquals(lobby.Owner,this)||outside.InteriorDigest!=Digest||!outside.Has(publicStart)||selectedRaw==null)return false;
-            double floor=lobby.Standing.Y-95;var choices=new List<StreetAccess>();
+            double floor=lobby.Standing.Y-95;var choices=new List<StreetAccess>();bool unprovedDoorless=false;
             foreach(Portal portal in document.Portals.Where(p=>p.TargetRegion<document.OutdoorRegions).OrderBy(p=>p.SourceRegion).ThenBy(p=>p.SourcePolygon).ThenBy(p=>p.TargetRegion).ThenBy(p=>p.TargetPolygon))
             {
                 var inside=new Node(portal.SourceRegion,portal.SourcePolygon);var external=new Node(portal.TargetRegion,portal.TargetPolygon);
@@ -52,8 +52,12 @@ namespace hds
                     opening.Any(v=>!Same(Floor(Poly(inside),v[0],v[1]),floor)||!Same(outside.Floor(external,v[0],v[1]),floor)))continue;
                 if(!outside.TryOutsidePath(publicStart,external,out Node[] route)||!StreetInteriorPath(inside,lobby.Node,floor,shaft,out Node[] inner))continue;
                 var native=outside.NativeOnOpening(inside.Region,opening,floor);
-                if(native.Length==0&&portal.DoorKeys.Length==0&&outside.DoorlessOriginClear(inside.Region,opening,floor))
-                {choices.Add(new StreetAccess(outside.Digest,Digest,"OriginalDoorlessOpening",external,inside,lobby.Node,route,inner,null,null,opening));continue;}
+                if(native.Length==0&&portal.DoorKeys.Length==0)
+                {
+                    // An empty origin/key set is not positive open-arch semantics or bounds clearance.
+                    // Keep this category refused until its original no-door flags are independently decoded.
+                    unprovedDoorless=true;continue;
+                }
                 if(portal.DoorKeys.Length!=1||native.Length!=1||native[0].Key!=portal.DoorKeys[0]||native[0].Class!=364||!MissionInteriorDoorTypes.IsSupported(native[0].Goid))continue;
                 uint key=native[0].Key;StaticWorldObject raw=selectedRaw(key);
                 if(!outside.LegacyMatches(raw)||!groups.TryGetValue(key,out Group group)||outside.Doors(key).Length!=1)continue;
@@ -62,7 +66,7 @@ namespace hds
                 choices.Add(new StreetAccess(outside.Digest,Digest,"OriginalPublicDoor",external,inside,lobby.Node,route,inner,door,MissionNpcInteriorPlanning.RawJson(raw),opening));
             }
             proof=choices.OrderBy(p=>p.OutsidePath.Length+p.InsidePath.Length).ThenBy(p=>p.Door==null?0:p.Door.Key).ThenBy(p=>p.Outside.Region).ThenBy(p=>p.Outside.Polygon).FirstOrDefault();
-            if(proof==null){refusal="NoCertifiedPublicLobbyRoute";return false;}refusal=null;return true;
+            if(proof==null){refusal=unprovedDoorless?"UnprovedOriginalDoorlessSemantics":"NoCertifiedPublicLobbyRoute";return false;}refusal=null;return true;
         }
     }
 }

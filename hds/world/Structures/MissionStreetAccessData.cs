@@ -167,17 +167,6 @@ namespace hds
                     p.X>=Math.Min(opening[0][0],opening[1][0])&&p.X<=Math.Max(opening[0][0],opening[1][0])&&p.Z>=Math.Min(opening[0][1],opening[1][1])&&p.Z<=Math.Max(opening[0][1],opening[1][1]);
             }).ToArray();
         }
-        internal bool DoorlessOriginClear(ushort interiorRegion,double[][] opening,double floor)
-        {
-            foreach(NativeDoor item in document.NativeObjects.Where(d=>!d.Region.HasValue||d.Region==interiorRegion))
-            {
-                G.Position p=NativeOrigin(item);
-                if(!double.IsFinite(p.X)||!double.IsFinite(p.Y)||!double.IsFinite(p.Z))return false;
-                if(Same(p.Y,floor)&&Same((p.X-opening[0][0])*(opening[1][1]-opening[0][1]),(p.Z-opening[0][1])*(opening[1][0]-opening[0][0]))&&
-                    p.X>=Math.Min(opening[0][0],opening[1][0])&&p.X<=Math.Max(opening[0][0],opening[1][0])&&p.Z>=Math.Min(opening[0][1],opening[1][1])&&p.Z<=Math.Max(opening[0][1],opening[1][1]))return false;
-            }
-            return true;
-        }
         internal G.Position Vertex(E.Node node,int edge)
         {
             byte[] raw=At(node).Edges[edge].Bytes;double x=(float)(BitConverter.ToSingle(raw,12)+(float)document.ParentCorner[0]);double z=(float)(BitConverter.ToSingle(raw,16)+(float)document.ParentCorner[2]);
