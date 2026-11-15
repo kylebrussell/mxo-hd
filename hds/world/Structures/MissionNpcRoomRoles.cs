@@ -24,11 +24,8 @@ namespace hds
             var complete = rooms.FirstOrDefault(g => g.Count() >= count);
             return (complete != null ? complete.OrderBy(c => c.Order) : rooms.SelectMany(g => g.OrderBy(c => c.Order))).Take(count).ToArray();
         }
-        internal static bool Select(MissionProgress p, int phase, MissionSite site, StaticWorldObject[] markers, E evidence, E.Entry entry,
-            IMissionNpcInteriorEvidenceProvider provider, out MissionNpcInteriorSelection selection, out string refusal)
+        internal static Candidate[] Certify(MissionSite site, StaticWorldObject[] markers, E evidence, E.Entry entry, IMissionNpcInteriorEvidenceProvider provider)
         {
-            selection = null;
-            if (!MissionNpcInteriorPlanning.Roles(p.mission, phase, out MissionNpcInteriorPlanning.Role[] roles, out refusal)) return false;
             var candidates = new List<Candidate>();
             var spots = site.npcSpots.OrderByDescending(s => (s[0]-site.elevatorDoor.pos_x)*(s[0]-site.elevatorDoor.pos_x)+(s[2]-site.elevatorDoor.pos_z)*(s[2]-site.elevatorDoor.pos_z)).ToArray();
             for (int i = 0; i < spots.Length; i++)
@@ -43,6 +40,14 @@ namespace hds
                     evidence.TryMeasuredNpcRoute(entry, matching[0], measured, key => provider.Door(site.metrId, key), out E.NpcRoute route, out _))
                     candidates.Add(new Candidate(matching[0], measured, route, i));
             }
+            return candidates.ToArray();
+        }
+        internal static bool Select(MissionProgress p, int phase, MissionSite site, StaticWorldObject[] markers, E evidence, E.Entry entry,
+            IMissionNpcInteriorEvidenceProvider provider, out MissionNpcInteriorSelection selection, out string refusal)
+        {
+            selection = null;
+            if (!MissionNpcInteriorPlanning.Roles(p.mission, phase, out MissionNpcInteriorPlanning.Role[] roles, out refusal)) return false;
+            Candidate[] candidates = Certify(site,markers,evidence,entry,provider);
             Candidate[] chosen = Allocate(candidates, roles.Length);
             if (chosen.Length != roles.Length) { refusal = "InsufficientCertifiedNpcRoomSpots"; return false; }
             var actors = roles.Select((r,i) => new MissionNpcInteriorActor(r.Kind,r.Id,r.Index,r.WirePhase,r.Deferred,MissionNpcInteriorPlanning.RawJson(chosen[i].Marker),chosen[i].Standing)).ToArray();

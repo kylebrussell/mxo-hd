@@ -59,6 +59,15 @@ namespace hds
             var selected=MissionStaging.ChooseSite(c,p,phase);
             if(!before.Current(c)){refusal="StaleNpcBeforeSelection";return false;}
             plan=new Plan(c,p,phase,selected,null);
+            if(MissionNpcCoverage.Required(p.mission,phase,out _))
+            {
+                if(selected.Site==null){plan=null;refusal="NoCertifiedNpcSite";return false;}
+                if(!MissionNpcCoverage.TrySelected(p.mission,phase,selected.Site,out var domain,out var provider,out refusal))
+                {plan=Refused(c,p,phase,selected,refusal);return false;}
+                bool accepted=MissionNpcInteriorPlanning.Prepare(c,p,phase,selected.Site,provider,out _,out var pending,out refusal,domain);
+                if(!before.Current(c)){plan=null;refusal="StaleNpcBeforeAdmission";return false;}
+                plan=pending==null?Refused(c,p,phase,selected,refusal):new Plan(c,p,phase,selected,pending);return accepted;
+            }
             if(selected.Site==null)return true;
             try { if(!Declared(selected.Site))return true; }
             catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is UnauthorizedAccessException||ex is JsonException)

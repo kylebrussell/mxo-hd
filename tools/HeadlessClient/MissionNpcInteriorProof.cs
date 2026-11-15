@@ -10,6 +10,7 @@ public static class MissionNpcInteriorProof
 {
     public const string Name="mission-npc-interior-route";
     public const uint Experience=168042,Information=133350;
+    public const string ActiveManifest="E3D18C84A23ED4CA170B902F803FE63D4E0906082CB117BDFEE30ED0BD7168CE";
     public const string Manifest="671D26F7CEB09121CF73B00AAC414303640F0040A313ADFD71FC732F8B270D1A";
     public const string HistoricalManifest="CD560A7631E49D76823ACE2DD872C0559FF549FCF271F5DFFC88C84CB697D79A";
     public sealed record Door(uint Key,ushort Goid,double[] Position,string Quaternion,double[]? Standing,string Raw);
@@ -64,27 +65,13 @@ public static class MissionNpcInteriorProof
     public sealed record RouteStep(double[] Standing,uint[] Doors,int Region,int Polygon);
     public static RouteStep[] Route(string repository,Plan p,int actorIndex=0)
     {
-        var source=Raw(p.Floor.Raw);string directory=Path.Combine(repository,"data","mission_interior_evidence","1");byte[] manifest=File.ReadAllBytes(Path.Combine(directory,"manifest.json"));
-        string normalized=new UTF8Encoding(false,true).GetString(manifest).Replace("\r\n","\n");Need(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized)))==Manifest,"NPC QA audited manifest pin");
-        using var m=JsonDocument.Parse(manifest);Need(m.RootElement.GetProperty("World").GetInt32()==1,"NPC QA manifest world");var row=m.RootElement.GetProperty("Sectors").EnumerateArray().Single(s=>s.GetProperty("Sector").GetInt32()==source.sectorID);
-        string expectedDigest=p.Witness.GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;
-        string file=Path.Combine(directory,source.sectorID+".json.gz");string hash=row.GetProperty("Sha256").GetString()!;
-        if(!row.TryGetProperty("Digest",out var activeDigest)||!string.Equals(activeDigest.GetString(),expectedDigest,StringComparison.OrdinalIgnoreCase))
-        {
-            byte[] history=File.ReadAllBytes(Path.Combine(directory,"history","manifest.json"));string text=new UTF8Encoding(false,true).GetString(history).Replace("\r\n","\n");
-            Need(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)))==HistoricalManifest,"NPC QA historical manifest pin");
-            using var historical=JsonDocument.Parse(history);Need(historical.RootElement.GetProperty("World").GetInt32()==1,"NPC QA historical world");
-            var version=historical.RootElement.GetProperty("Versions").EnumerateArray().Single(v=>v.GetProperty("Sector").GetInt32()==source.sectorID&&string.Equals(v.GetProperty("Digest").GetString(),expectedDigest,StringComparison.OrdinalIgnoreCase));
-            string leaf=source.sectorID+"-"+expectedDigest.ToUpperInvariant()+".json.gz";Need(version.GetProperty("File").GetString()==leaf,"NPC QA historical filename");
-            file=Path.Combine(directory,"history",leaf);hash=version.GetProperty("Sha256").GetString()!;
-        }
-        byte[] compressed=File.ReadAllBytes(file);Need(string.Equals(Convert.ToHexString(SHA256.HashData(compressed)),hash,StringComparison.OrdinalIgnoreCase),"NPC QA payload hash");
-        using var input=new MemoryStream(compressed);using var gzip=new GZipStream(input,CompressionMode.Decompress);using var output=new MemoryStream();gzip.CopyTo(output);byte[] bytes=output.ToArray();
-        Need(Convert.ToHexString(SHA256.HashData(bytes))==p.Witness.GetProperty("Floor").GetProperty("EvidenceDigest").GetString(),"NPC saved evidence digest");using var doc=JsonDocument.Parse(bytes);var root=doc.RootElement;
+        var source=Raw(p.Floor.Raw);string expectedDigest=p.Witness.GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;
+        using var doc=JsonDocument.Parse(EvidencePayload(repository,source.sectorID,expectedDigest));var root=doc.RootElement;
+        bool localEvidence=root.GetProperty("Format").GetInt32()==2;
         Need(root.GetProperty("World").GetInt32()==1&&root.GetProperty("Sector").GetInt32()==source.sectorID,"NPC QA explicit world/sector");
         void NativeDoor(Door door,JsonElement? entry)
         {
-            var raw=Raw(door.Raw);var group=root.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==door.Key);
+            var raw=Raw(door.Raw);using var ownDoc=JsonDocument.Parse(EvidencePayload(repository,raw.sectorID,entry?.GetProperty("EvidenceDigest").GetString()??expectedDigest));var group=ownDoc.RootElement.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==door.Key);
             Need(group.GetProperty("Legacy").EnumerateArray().Any(l=>
             {var s=l.GetProperty("Signature");return s.GetProperty("Goid").GetUInt16()==door.Goid&&s.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z})&&s.GetProperty("Rotation").GetDouble()==raw.rot&&string.Equals(s.GetProperty("Quaternion").GetString(),raw.quat,StringComparison.OrdinalIgnoreCase);}),"NPC QA exact legacy source signature");
             var occurrences=group.GetProperty("Occurrences").EnumerateArray().ToArray();var positionScope=MissionInteriorDoorTypes.IsSupported(door.Goid)?occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid):occurrences;Need(positionScope.Any()&&positionScope.All(o=>o.GetProperty("ModelPosition").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(door.Position)),"NPC QA native position consensus");
@@ -96,13 +83,26 @@ public static class MissionNpcInteriorProof
         var nodes=p.Witness.GetProperty("Actors")[actorIndex].GetProperty("Nodes").EnumerateArray().ToArray();Need(nodes.Length>0,"NPC nonempty topology path");
         int R(JsonElement n)=>n.GetProperty("Region").GetInt32();int P(JsonElement n)=>n.GetProperty("Polygon").GetInt32();
         JsonElement Polygon(JsonElement n){var region=root.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==R(n));Need(region.GetProperty("Available").GetBoolean(),"NPC missing prefab is not route");return region.GetProperty("Polygons")[P(n)];}
+        double[] Local(JsonElement node,double x,double z)
+        {
+            var region=root.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==R(node));var pivot=region.GetProperty("Pivot");var corner=root.GetProperty("ParentCorner");
+            double a=x-(float)((float)(pivot[0].GetInt32()*10)+(float)corner[0].GetDouble()),b=z-(float)((float)(pivot[2].GetInt32()*10)+(float)corner[2].GetDouble());
+            return region.GetProperty("Rotation").GetInt32() switch{0=>new[]{a,b},1=>new[]{-b,a},2=>new[]{-a,-b},_=>new[]{b,-a}};
+        }
+        double Floor(JsonElement poly,JsonElement node,double x,double z)
+        {
+            if(!localEvidence){var f=poly.GetProperty("Plane").EnumerateArray().Select(v=>v.GetDouble()).ToArray();Need(f.Length==4&&f[1]!=0,"NPC plane shape");return -(f[0]*x+f[2]*z+f[3])/f[1];}
+            byte[] raw=Convert.FromHexString(poly.GetProperty("RawHeader").GetString()!);Need(raw.Length==20,"NPC raw local plane header");var plane=Enumerable.Range(0,4).Select(i=>(double)BitConverter.ToSingle(raw,i*4)).ToArray();var at=Local(node,x,z);
+            var region=root.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==R(node));double y=(float)((float)(region.GetProperty("Pivot")[1].GetInt32()*10)+(float)root.GetProperty("ParentCorner")[1].GetDouble());
+            return -(plane[0]*at[0]+plane[2]*at[1]+plane[3])/plane[1]+y;
+        }
         Need(nodes[0].GetRawText()==p.Witness.GetProperty("Floor").GetProperty("Node").GetRawText(),"NPC topology begins actual entry");var steps=new List<RouteStep>{new(p.Floor.Standing!,Array.Empty<uint>(),R(nodes[0]),P(nodes[0]))};
         for(int i=1;i<nodes.Length;i++)
         {
             var a=Polygon(nodes[i-1]);var b=Polygon(nodes[i]);double[] x,z;uint[] doors;
             if(R(nodes[i-1])!=R(nodes[i]))
             {
-                var edges=root.GetProperty("Portals").EnumerateArray().Where(q=>q.GetProperty("SourceRegion").GetInt32()==R(nodes[i-1])&&q.GetProperty("SourcePolygon").GetInt32()==P(nodes[i-1])&&q.GetProperty("TargetRegion").GetInt32()==R(nodes[i])&&q.GetProperty("TargetPolygon").GetInt32()==P(nodes[i])).ToArray();Need(edges.Length==1,"NPC unique original portal");var edge=edges[0];
+                var edges=root.GetProperty("Portals").EnumerateArray().Where(q=>q.GetProperty("SourceRegion").GetInt32()==R(nodes[i-1])&&q.GetProperty("SourcePolygon").GetInt32()==P(nodes[i-1])&&q.GetProperty("TargetRegion").GetInt32()==R(nodes[i])&&q.GetProperty("TargetPolygon").GetInt32()==P(nodes[i])).ToArray();Need(edges.Length==1,"NPC unique original portal");var edge=edges[0];if(localEvidence)Need(edge.GetProperty("Transition").GetString()=="SameFloor","NPC route cannot cross an unproved/partial/different-floor portal");
                 Need(root.GetProperty("Portals").EnumerateArray().Count(q=>q.GetProperty("SourceRegion").GetInt32()==R(nodes[i])&&q.GetProperty("SourcePolygon").GetInt32()==P(nodes[i])&&q.GetProperty("TargetRegion").GetInt32()==R(nodes[i-1])&&q.GetProperty("TargetPolygon").GetInt32()==P(nodes[i-1])&&q.GetProperty("SourceEdge").GetInt32()==edge.GetProperty("TargetEdge").GetInt32()&&q.GetProperty("TargetEdge").GetInt32()==edge.GetProperty("SourceEdge").GetInt32())==1,"NPC reciprocal portal");
                 var ends=edge.GetProperty("Endpoints");x=ends[0].EnumerateArray().Select(v=>v.GetDouble()).ToArray();z=ends[1].EnumerateArray().Select(v=>v.GetDouble()).ToArray();doors=edge.GetProperty("DoorKeys").EnumerateArray().Select(v=>v.GetUInt32()).ToArray();
             }
@@ -112,8 +112,8 @@ public static class MissionNpcInteriorProof
                 var start=edges[edge].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray();var end=edges[(edge+1)%edges.Length].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray();x=new[]{start[0],start[2]};z=new[]{end[0],end[2]};doors=Array.Empty<uint>();
                 Need(b.GetProperty("Edges").EnumerateArray().Any(e=>e.GetProperty("Neighbor").GetInt32()==P(nodes[i-1])&&e.GetProperty("RegionTag").GetInt32()==65535),"NPC reciprocal polygon neighbor");
             }
-            double px=(x[0]+z[0])/2,pz=(x[1]+z[1])/2;double Floor(JsonElement poly){var f=poly.GetProperty("Plane").EnumerateArray().Select(v=>v.GetDouble()).ToArray();Need(f.Length==4&&f[1]!=0,"NPC plane shape");return -(f[0]*px+f[2]*pz+f[3])/f[1];}
-            Need(Floor(a)==Floor(b),"NPC portal/edge floor agreement");Need(doors.All(k=>RequiredDoors(p).Count(d=>d.Key==k)==1),"NPC every portal door is saved own-GO proof");steps.Add(new(new[]{px,Floor(a)+95,pz},doors,R(nodes[i]),P(nodes[i])));
+            double px=(x[0]+z[0])/2,pz=(x[1]+z[1])/2;double floorA=Floor(a,nodes[i-1],px,pz),floorB=Floor(b,nodes[i],px,pz);
+            Need(localEvidence?Math.Abs(floorA-floorB)<=1e-7:floorA==floorB,"NPC portal/edge floor agreement");Need(doors.All(k=>RequiredDoors(p).Count(d=>d.Key==k)==1),"NPC every portal door is saved own-GO proof");steps.Add(new(new[]{px,floorA+95,pz},doors,R(nodes[i]),P(nodes[i])));
         }
         var actor=p.Witness.GetProperty("Selection").GetProperty("Actors")[actorIndex];Need(p.Witness.GetProperty("Actors")[actorIndex].GetProperty("Role").GetString()==$"{actor.GetProperty("Kind").GetString()}:{actor.GetProperty("Id").GetInt32()}:{actor.GetProperty("Index").GetInt32()}","NPC route exact actor role association");var marker=Raw(actor.GetProperty("RawMarkerJson").GetString()!);var markerGroup=root.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==marker.mxoStaticId);
         Need(markerGroup.GetProperty("Occurrences").EnumerateArray().Where(o=>o.GetProperty("Goid").GetInt32()==19).Select(o=>o.GetProperty("Region").GetInt32()).Distinct().SequenceEqual(new[]{R(nodes[^1])}),"NPC QA exact marker original room association");
@@ -125,9 +125,37 @@ public static class MissionNpcInteriorProof
             Need(own.Length>0&&own.All(o=>{var native=o.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).ToArray();return new[]{native[0],native[1]+95,native[2]}.SequenceEqual(at.Take(3));}),"NPC QA measured marker standing");
         }
         var standing=Vector(actor,"Standing",4);var target=Polygon(nodes[^1]);var vertices=target.GetProperty("Edges").EnumerateArray().Select(e=>e.GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray()).ToArray();
-        var crosses=vertices.Select((v,i)=>(vertices[(i+1)%vertices.Length][0]-v[0])*(standing[2]-v[2])-(vertices[(i+1)%vertices.Length][2]-v[2])*(standing[0]-v[0])).ToArray();
-        var plane=target.GetProperty("Plane").EnumerateArray().Select(v=>v.GetDouble()).ToArray();Need((crosses.All(v=>v>=0)||crosses.All(v=>v<=0))&&standing[1]==-(plane[0]*standing[0]+plane[2]*standing[2]+plane[3])/plane[1]+95,"NPC QA exact actor standing inside original target polygon/floor");
+        double[] actorPoint=standing;double tolerance=0;
+        if(localEvidence){actorPoint=Local(nodes[^1],standing[0],standing[2]);vertices=target.GetProperty("Edges").EnumerateArray().Select(e=>{byte[] raw=Convert.FromHexString(e.GetProperty("Raw").GetString()!);return new[]{(double)BitConverter.ToSingle(raw,12),0d,(double)BitConverter.ToSingle(raw,16)};}).ToArray();actorPoint=new[]{actorPoint[0],standing[1],actorPoint[1]};tolerance=1e-7;}
+        var crosses=vertices.Select((v,i)=>(vertices[(i+1)%vertices.Length][0]-v[0])*(actorPoint[2]-v[2])-(vertices[(i+1)%vertices.Length][2]-v[2])*(actorPoint[0]-v[0])).ToArray();
+        Need((crosses.All(v=>v>=-tolerance)||crosses.All(v=>v<=tolerance))&&Math.Abs(standing[1]-(Floor(target,nodes[^1],standing[0],standing[2])+95))<=tolerance,"NPC QA exact actor standing inside original target polygon/floor");
         steps.Add(new(standing.Take(3).ToArray(),Array.Empty<uint>(),R(nodes[^1]),P(nodes[^1])));return steps.ToArray();
+    }
+    static byte[] EvidencePayload(string repository,ushort sector,string expectedDigest)
+    {
+        Need(expectedDigest.Length==64&&expectedDigest.All(Uri.IsHexDigit),"NPC saved evidence digest shape");
+        string directory=Path.Combine(repository,"data","mission_interior_evidence","1");
+        JsonDocument ManifestDocument(string path,string pin)
+        {byte[] bytes=File.ReadAllBytes(path);string text=new UTF8Encoding(false,true).GetString(bytes).Replace("\r\n","\n");Need(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)))==pin,"NPC QA audited manifest pin");var document=JsonDocument.Parse(bytes);Need(document.RootElement.GetProperty("World").GetInt32()==1,"NPC QA manifest world");return document;}
+        string? file=null,hash=null;
+        using(var legacy=ManifestDocument(Path.Combine(directory,"manifest.json"),Manifest))
+        {
+            var rows=legacy.RootElement.GetProperty("Sectors").EnumerateArray().Where(r=>r.GetProperty("Sector").GetInt32()==sector&&r.TryGetProperty("Digest",out var digest)&&string.Equals(digest.GetString(),expectedDigest,StringComparison.OrdinalIgnoreCase)).ToArray();
+            if(rows.Length==1){file=Path.Combine(directory,sector+".json.gz");hash=rows[0].GetProperty("Sha256").GetString();}
+        }
+        if(file==null)
+        {
+            using var history=ManifestDocument(Path.Combine(directory,"history","manifest.json"),HistoricalManifest);
+            var rows=history.RootElement.GetProperty("Versions").EnumerateArray().Where(r=>r.GetProperty("Sector").GetInt32()==sector&&string.Equals(r.GetProperty("Digest").GetString(),expectedDigest,StringComparison.OrdinalIgnoreCase)).ToArray();
+            if(rows.Length==1){string leaf=sector+"-"+expectedDigest.ToUpperInvariant()+".json.gz";Need(rows[0].GetProperty("File").GetString()==leaf,"NPC QA historical filename");file=Path.Combine(directory,"history",leaf);hash=rows[0].GetProperty("Sha256").GetString();}
+        }
+        if(file==null)
+        {
+            directory=Path.Combine(repository,"data","mission_interior_evidence_v2","1");using var active=ManifestDocument(Path.Combine(directory,"manifest.json"),ActiveManifest);
+            Need(active.RootElement.GetProperty("Format").GetInt32()==2,"NPC QA format2 manifest");var row=active.RootElement.GetProperty("Sectors").EnumerateArray().Single(r=>r.GetProperty("Sector").GetInt32()==sector&&string.Equals(r.GetProperty("Digest").GetString(),expectedDigest,StringComparison.OrdinalIgnoreCase));file=Path.Combine(directory,sector+".json.gz");hash=row.GetProperty("Sha256").GetString();
+        }
+        byte[] compressed=File.ReadAllBytes(file);Need(string.Equals(Convert.ToHexString(SHA256.HashData(compressed)),hash,StringComparison.OrdinalIgnoreCase),"NPC QA payload hash");
+        using var input=new MemoryStream(compressed);using var gzip=new GZipStream(input,CompressionMode.Decompress);using var output=new MemoryStream();gzip.CopyTo(output);byte[] result=output.ToArray();Need(Convert.ToHexString(SHA256.HashData(result))==expectedDigest,"NPC saved evidence digest");return result;
     }
     public static void Awards(IReadOnlyList<byte[]> records,long baselineExperience,long baselineInformation,IReadOnlySet<int>? restoredBaselines=null)
     {
