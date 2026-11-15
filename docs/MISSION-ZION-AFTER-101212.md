@@ -4,11 +4,13 @@ Current preparation is based on actual master `08d961eb47810f754d3ab4cd55cd23f7d
 
 NPC-only adopted phases use their exact owned current/historical same-site NPC Floor/Lobby witness, including raw key/Goid, measured pose/quaternion/Standing and owner/site identity. Free-prop witnesses and genuinely unwitnessed legacy paths remain separate. The current-life door reducer rejects unknown/truncated/deleted/reused/ambiguous streams. Actual entry root is checked against its saved NPC Standing and current NAV layer; independently audited actor topology is evidence, not native walking or headless portal-Open proof.
 
-The stable dataset is Format1 for scenes550/1349/842/1150. It does not claim Format2 or370-scene support. Bornmann's prior spread and next-phase bluevoid native failure remain retained historical evidence until this changed candidate is qualified and tested natively. Original95ad/527,218,251 and255 producers stay frozen.
+The current candidate additionally merges the general Format2 370-sector domain certificate (01234d73). It rejects missing or ambiguous building contexts before the existing chooser, without selecting a mission-specific site or rerolling. Saved Format1 and historical digests remain separate authorities. The shared QA route reader retains actor-index association and verifies Format2 raw-local floor arithmetic and independent lobby-sector evidence. Bornmann's prior spread and next-phase bluevoid native failure remain retained historical evidence until this changed candidate is qualified and tested natively. Original95ad/527,218,251 and255 producers stay frozen.
 
 The production union preserves adopted NPC replay with zero object RNG draws and fresh/nonadopted249 source-pool preparation exactly once. It retains exact V1 last-site quarantine before NPC witness adoption. Exit escort readiness uses the same owned NPC floor authority as ordinary Ride. After a disclosed movement aid, the QA driver waits for actual current followers within the unchanged1500 radius; readiness/transition share the existing15s budget, without blind repeated door requests.
 
 Qualification is pending the current whole-five run, actual mode bootstrap and final CI. Earlier405.1s/371.3s proofs below remain attributed to their own frozen sources. No new native render/walk/picking or unaided-survival claim is made. `QaBaseMaster` now names08d; `LegacyGeometryBaseline` retains the earlierc305 label explicitly.
+
+The stopped d6c677af run earned 101213–101216, including four carry relogs, then 101217 normal Accept refused `MissingOrAmbiguousBuildingRoleContext` before mutation. Its four receipts and raw proof remain historical; they are not a whole-five pass. The reconstructed candidate has a matching negative general-domain certificate. This changed-pool candidate still requires its own whole-five run and actual mode startup.
 
 ## Preserved mission and evidence contract
 
