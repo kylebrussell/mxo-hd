@@ -4,6 +4,8 @@ namespace HeadlessClient;
 // QA-only projection of the current persisted door; never repairs a checkpoint or searches for another site.
 public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness)
 {
+    public MissionNpcInteriorProof.Plan? Npc {get;init;}
+    public bool Measured => Witness!=null||Npc!=null;
     public static ZionAfter1212RidePlan Select(MissionProgress.SavedState state,bool enter,IEnumerable<string> legacyRows,IReadOnlyList<ushort>? objectOrder=null)
     {
         void Require(bool value,string reason){if(!value)throw new InvalidDataException(reason);}
@@ -19,6 +21,12 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         Require(index>=0&&index<state.SiteDoors.Length,"Current raw site index required");
         var raw=state.SiteDoors[index];Require(raw!=null&&raw.metrId==1&&raw.mxoStaticId==floorKey&&raw.type!=null&&raw.type.Length>=2&&new ushort[]{417,419}.Contains(BitConverter.ToUInt16(raw.type)),"Current raw site key must match waypoint");
         Require(state.Objects.All(o=>o.Spot!=null&&o.Spot.metrId==raw.metrId&&(o.OpenFloor==null||o.OpenFloor.World==raw.metrId)),"Current raw objects and OpenFloor witnesses must retain selected world");
+        var npc=ZionNpcInteriorRide.ForSite(state);
+        if(npc!=null)
+        {
+            var target=enter?npc.Lobby:npc.Floor;
+            return new(raw.metrId,target.Key,target.Position,target.Quaternion,null){Npc=npc};
+        }
         MissionOpenFloorSite? site=null;
         if(state.Version==2)
         {
@@ -64,7 +72,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
 
     public void RequireOverlay(ViewCreation view)
     {
-        if(Witness==null||view.RelatedStaticObjectId!=Key||!new ushort[]{417,419}.Contains(view.Goid)||
+        if(!Measured||view.RelatedStaticObjectId!=Key||!new ushort[]{417,419}.Contains(view.Goid)||
             !view.Attributes.TryGetValue("Position",out var p)||p.Length!=24||!Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==Pose[i])||
             !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(Convert.FromHexString(Quaternion!)))
             throw new InvalidDataException("Measured current door03 must retain the exact requested related-static key and pose");
@@ -75,7 +83,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         if(before.Version!=after.Version||before.Mission!=after.Mission||before.Phase!=after.Phase||before.Identity!=after.Identity||before.Started!=after.Started||before.Instance!=after.Instance)
             throw new InvalidDataException("Ride owner/mission/phase changed before ordinary door request");
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=ZionNpcInteriorRide.ForSite(s)?.Raw,s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         if(Snapshot(before)!=Snapshot(after))throw new InvalidDataException("Saved ride identity changed before ordinary door request");
     }
 }

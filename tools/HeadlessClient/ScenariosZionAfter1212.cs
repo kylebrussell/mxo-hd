@@ -39,6 +39,7 @@ public static partial class Scenarios
             CurrentRpcCursor=p.World.RpcSnapshot().Count,RawCheckpoint=currentRaw});
         bool Same(MissionProgress.SavedState? s)=>s?.Mission==before.Mission&&s.Phase==before.Phase&&s.Identity==before.Identity&&s.Started==before.Started;
         int logCursor=context.Server.DebugLog().Length;string? request=null;bool completionPending=false;
+        System.Diagnostics.Stopwatch? deadline=null;var ownLife=p.World.CurrentOwnViewLife();
         var current=await Current();Snapshot("Escort pre-approach checkpoint");
         if(Same(current))
         {
@@ -46,6 +47,19 @@ public static partial class Scenarios
             var door=before.Waypoints.Single();
             Snapshot("Escort saved-door approach authorized before movement");
             await MoveForMissionTest(p,door.x,door.y-50,door.z);
+            if(before.Exits.Single()[1]!=door.y)
+            {
+                deadline=System.Diagnostics.Stopwatch.StartNew();
+                var ids=authored.phases[before.Phase].missionObjectives.Single(o=>o.goal==goal).Npcs.ToArray();
+                IReadOnlyList<ZionAfter1212FollowerReadiness.Observation>? readiness=null;
+                await p.WaitUntilAsync(()=>
+                {
+                    var actual=Current().GetAwaiter().GetResult();if(actual==null)return false;
+                    try{readiness=ZionAfter1212FollowerReadiness.Require(p.World.CurrentOwnViewLife(),ownLife.Life,p.Handle,before,actual,ids,new[]{door.x,door.y-50,door.z});return true;}
+                    catch(InvalidDataException){return false;}
+                },"Current exit followers reached unchanged1500 range before ordinary downride",TimeSpan.FromSeconds(15));
+                note(new{Kind="Current exit follower readiness",before.Mission,before.Phase,Goal=goal,Followers=readiness});
+            }
             current=await Current();Snapshot("Escort pre-request checkpoint after authorized movement");
             if(Same(current))
             {
@@ -61,7 +75,7 @@ public static partial class Scenarios
                 }
             }
         }
-        var deadline=System.Diagnostics.Stopwatch.StartNew();
+        deadline??=System.Diagnostics.Stopwatch.StartNew();
         while(!ZionAfter1212EscortProof.Advanced(before,current,authored,goal,p.World.RpcSnapshot().Select(r=>r.Bytes).ToArray(),intentCursor))
         {
             if(deadline.Elapsed>TimeSpan.FromSeconds(15)){Snapshot("Escort strict transition timeout");throw new ScenarioFailure("Authored escort exit lacks fresh matching goal acknowledgement and exact committed next phase");}
@@ -90,7 +104,7 @@ public static partial class Scenarios
         if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",TimeSpan.FromSeconds(15));
         string rideLog=context.Server.DebugLog()[cursor..];
         note?.Invoke(new{Kind="Ordinary saved-site door request",Mission=state.Mission,Phase=state.Phase,Enter=enter,Key=key,Request=request,RpcCursor=rpc,SourceWaypoint=door,SourceExit=lobby,RideLog=rideLog});
-        if(plan.Witness is MissionElevatorWitness measured)
+        if(plan.Measured)
         {
             ViewCreation? overlay=null;
             await p.WaitUntilAsync(()=>
@@ -106,11 +120,21 @@ public static partial class Scenarios
                 Check.That(actual!=null,"Measured ordinary entry must produce an actual Ride root");
                 double[] root=Enumerable.Range(1,3).Select(i=>double.Parse(actual!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
                 SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-                Check.That(NavMesh.Locate(plan.World,root[0],root[1],root[2],out var nav)&&nav.sector==state.SiteDoors[state.OpenFloorCurrentSiteIndex!.Value].sectorID&&nav.region==measured.Region&&Math.Abs(root[1]-(nav.floorY+95))<=.01,"Actual measured Ride root is grounded on the selected floor NAV layer, including NPC-only phases");
+                ushort region=plan.Npc!=null?checked((ushort)plan.Npc.Witness.GetProperty("Floor").GetProperty("Node").GetProperty("Region").GetInt32()):plan.Witness!.Region;
+                Check.That(NavMesh.Locate(plan.World,root[0],root[1],root[2],out var nav)&&nav.sector==state.SiteDoors[state.OpenFloorCurrentSiteIndex!.Value].sectorID&&nav.region==region&&Math.Abs(root[1]-(nav.floorY+95))<=.01,"Actual measured Ride root is grounded on the selected floor NAV layer, including NPC-only phases");
+                if(plan.Npc!=null)
+                {
+                    Check.That(root.SequenceEqual(plan.Npc.Floor.Standing!),"NPC-v2 ordinary Ride uses its exact owned Standing");
+                    for(int actor=0;actor<plan.Npc.Witness.GetProperty("Actors").GetArrayLength();actor++)
+                    {
+                        var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,plan.Npc,actor);
+                        note?.Invoke(new{Kind="Independently audited NPC actor topology",Actor=actor,Route=route,NativePassageProven=false,HeadlessPortalOpenProven=false});
+                    }
+                }
                 foreach(var obj in state.Objects.Where(o=>o.OpenFloor!=null))Check.That(obj.OpenFloor!.Route.Take(3).SequenceEqual(root),"Every current fixed object retains the actual measured Ride root");
                 ZionAfter1212RidePlan.SameEntry(state,await ZionAfter1212Checkpoint(context,p));
             }
-            note?.Invoke(new{Kind="Current measured elevator witness",Witness=measured,RequestedKey=key,DoorView=overlay!.ViewId,DoorSpawn=overlay.SpawnId});
+            note?.Invoke(new{Kind="Current measured elevator witness",Witness=plan.Witness,NpcWitness=plan.Npc?.Raw,RequestedKey=key,DoorView=overlay!.ViewId,DoorSpawn=overlay.SpawnId});
         }
         if(enter&&pending.Length>0)
         {
