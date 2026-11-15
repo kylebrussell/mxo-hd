@@ -8,7 +8,7 @@ public sealed class ReverseBulldogMode:NativeQaMode
         string.Join(",",abilities.Select((a,i)=>$"({character},{i},{0x80000000u|((uint)a<<10)},50,1,'ReverseBulldog QA')"));
     public override NativeQaModePlan Plan{get;}=new(ReverseBulldogFixture.Abilities,17020,2693,Array.Empty<string>(),
         new[]{"UPDATE characters SET alignment=1,pvpflag=1,rotation=64,healthC=10000,healthM=10000,innerStrC=2000,innerStrM=2000 WHERE charId=110"},
-        new[]{"UPDATE characters SET x=CASE WHEN charId=6114 THEN 17220 ELSE 17020 END,y=495,z=2693,rotation=64,alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,pvpflag=1,healthC=10000,healthM=10000,innerStrC=2000,innerStrM=2000 WHERE charId IN(6111,6114)",
+        new[]{"UPDATE characters SET level=50,exp="+hds.PlayerProgression.ExperienceForLevel(50)+",x=CASE WHEN charId=6114 THEN 17220 ELSE 17020 END,y=495,z=2693,rotation=64,alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,pvpflag=1,healthC=10000,healthM=10000,innerStrC=2000,innerStrM=2000 WHERE charId IN(6111,6114)",
             Load(6111,ReverseBulldogFixture.Abilities),Load(6114,new ushort[]{2,17})},
         extraQaMetadata:new(){["Ability"]=388,["RawStunSeconds"]=8,["ExplicitTimerSeconds"]=16,["StunMarkerSeconds"]=.01,["TimerMarkerSeconds"]=.1,["InnerStrengthCost"]=60,["ReuseSeconds"]=60,["Target"]="QAEnemy6114",["NegativeHelper"]="QAFriend6111 normal Sneak/388 after CSR's actual 16-second timer",["NoRandomOverrides"]=true},
         environmentOverrides:new(){["MXO_PVP_SERVER"]="1",["MXO_PVP_MAX_SAFE_LEVEL"]="0"},
@@ -16,10 +16,15 @@ public sealed class ReverseBulldogMode:NativeQaMode
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         foreach(string name in new[]{"QAEnemy","QAFriend"})
-        {var p=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),name,name);context.Helpers.Add(name,p);await p.EnterWorldAsync();}
+        {var p=await HeadlessPlayer.LoginAsync(context.Address,name,name);context.Helpers.Add(name,p);await p.EnterWorldAsync();}
         var target=context.Helpers["QAEnemy"];var helper=context.Helpers["QAFriend"];
         await helper.WaitUntilAsync(()=>ReverseBulldogFixture.Current(helper.World.CreationSnapshot(),"QAEnemy")!=null,"actual helper target view",TimeSpan.FromSeconds(15));
+        var targetView=ReverseBulldogFixture.Current(helper.World.CreationSnapshot(),"QAEnemy")!;
+        var targetPose=ReverseBulldogFixture.Position(targetView);var helperSelf=helper.World.CreationSnapshot().Last(v=>v.ViewId==2);var helperPose=ReverseBulldogFixture.Position(helperSelf);
+        Check.That(targetPose.SequenceEqual(new double[]{17220,495,2693})&&helperPose.SequenceEqual(new double[]{17020,495,2693}),"Actual visible rear setup2m apart, both helper logins entered");
+        Check.Equal((ushort)10000,BitConverter.ToUInt16(targetView.Attributes["Health"]),"Actual healthy target before native input");
         await ReverseBulldogFixture.SneakAsync(helper);
+        await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"reverse-bulldog-ready.json"),JsonSerializer.Serialize(new{Target=targetView,TargetPose=targetPose,HelperPose=helperPose,TargetHealth=10000,Helper=helper.CharId,TargetCharacter=target.CharId,PlannedNativePose=new[]{17020,495,2693},Preparation="Both helpers actual login/entry; QAFriend ordinary Sneak; no native action or state injection"}));
         _=NegativeAfterNative(context,helper,target);
         return Array.Empty<byte>();
     }

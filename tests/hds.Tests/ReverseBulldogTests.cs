@@ -160,6 +160,7 @@ public class ReverseBulldogTests
         Assert.Equal(HeadlessClient.ReverseBulldogFixture.Abilities,source.OwnedLoadedAbilities!.Select(a=>a.Ability));Assert.Equal(new ushort[]{2,17},target.OwnedLoadedAbilities!.Select(a=>a.Ability));
         Assert.Equal(200,target.X-source.X);Assert.Equal(64,target.Rotation);Assert.Equal(2,target.Organization);Assert.Equal(10000,target.Health);
         var mode=NativeQa.NativeQaModes.Find("reverse-bulldog-controls");Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.GmCharacter110);Assert.False(mode.Plan.FixedCallbackRolls);
+        Assert.Contains(mode.Plan.AfterHelpers,sql=>sql.Contains("level=50,exp="+PlayerProgression.ExperienceForLevel(50)));
         Assert.Equal(8,mode.Plan.ExtraQaMetadata["RawStunSeconds"].GetInt32());Assert.Equal(16,mode.Plan.ExtraQaMetadata["ExplicitTimerSeconds"].GetInt32());
         HeadlessClient.ReverseBulldogFixture.RequirePin(new string('a',64),new string('A',64));Assert.Throws<InvalidDataException>(()=>HeadlessClient.ReverseBulldogFixture.RequirePin(null,new string('a',64)));
     }
@@ -177,4 +178,10 @@ public class ReverseBulldogTests
         Assert.False(holder.AppendCallback(388,new(){Target=102,Seconds=8},11,Current,out _));
         if(newer)Assert.Same(next,Assert.Single(holder.Snapshot()));else Assert.True(holder.IsEmpty);
     }
+    [Fact]public void RollbackCannotReviveAnAlreadyExpiredPreviousRecord()
+    {
+        var holder=new TimedEffects.Holder();var old=new TimedEffects.Active {Target=102,Seconds=1,RecordId=77};holder.Apply(388,new[]{old},10);
+        int checks=0;Assert.False(holder.AppendCallback(388,new(){Target=102,Seconds=8},12,()=>++checks==1,out _));Assert.True(holder.IsEmpty);
+    }
+
 }

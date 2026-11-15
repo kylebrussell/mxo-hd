@@ -14,6 +14,8 @@ public static class ReverseBulldogFixture
         var b=r.Bytes;return new Modifier(BitConverter.ToUInt16(b,2),BitConverter.ToUInt16(b,4),BitConverter.ToUInt32(b,7),BitConverter.ToUInt16(b,11),BitConverter.ToInt32(b,13),b[17]!=0,BitConverter.ToSingle(b,18));});
     public static bool Off(HeadlessPlayer player,Modifier on)=>Mods(player).Any(m=>m.Off&&m.Record==on.Record&&m.Parent==on.Parent&&m.Target==on.Target);
     public static ViewCreation? Current(IEnumerable<ViewCreation> views,string name)=>views.GroupBy(v=>v.ViewId).Select(g=>g.Last()).LastOrDefault(v=>v.Name==name&&v.Goid==12);
+    public static double[] Position(ViewCreation view)
+    {var bytes=view.Attributes["Position"];Check.Equal(24,bytes.Length,"Actual player XYZ position bytes");return new[]{BitConverter.ToDouble(bytes,0),BitConverter.ToDouble(bytes,8),BitConverter.ToDouble(bytes,16)};}
     public static byte[] Cast(HeadlessPlayer actor,ushort ability,ViewCreation target)
     {var bytes=new AbilityUseRecord(ability,DuelPackets.Handle(target.ViewId,target.SpawnId),0,0,0,0,0x6b,0x6b,0,0).Encode();Check.Equal(43,bytes.Length,"Full native-layout80b9");actor.SendRpc(bytes);return bytes;}
     public static async Task SneakAsync(HeadlessPlayer actor)

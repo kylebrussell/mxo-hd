@@ -111,17 +111,17 @@ namespace hds
             ushort parent=stun?Ability:TempMods.ControlImmunityTimerAbility;
             bool Current()=>receipt.Current && !HasTimer(subject,child,now);
             if(!subject.Effects.AppendCallback(parent,child,now,Current,out var replaced))return;
-            if(!Current()){subject.Effects.RollbackCallback(child,replaced);return;}
+            if(!Current()){subject.Effects.RollbackCallback(child,replaced,now);return;}
             // Output is bound to the captured world/transport, never owner work under that publication gate.
-            if(!Publish(receipt,child,replaced,stun))return;
+            if(!Publish(receipt,child,replaced,stun,now))return;
             TimedEffects.Track(subject);
             Output.WriteDebugLog("[REVERSE-BULLDOG] source="+cast.Character+" view="+cast.View.ViewID+" spawn="+cast.Spawn+
                 " state="+child.Target+" seconds="+child.Seconds+" callback="+(stun?"ApplyStunEffect":"AddControlImmunityTimerVal"));
         }
-        private static bool Publish(Receipt receipt,TimedEffects.Active child,List<TimedEffects.Active> replaced,bool stun)
+        private static bool Publish(Receipt receipt,TimedEffects.Active child,List<TimedEffects.Active> replaced,bool stun,double now)
         {
             var cast=receipt.Cast;
-            if(!receipt.Current){receipt.Subject.Effects.RollbackCallback(child,replaced);return false;}
+            if(!receipt.Current){receipt.Subject.Effects.RollbackCallback(child,replaced,now);return false;}
             if(cast.Player!=null)
             {
                 var target=cast.Player;child.RecordId=AbilityBuffs.NextRecordId(cast.TargetData);

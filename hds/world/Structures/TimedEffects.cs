@@ -126,17 +126,17 @@ namespace hds
                     replaced=previous;active.RemoveAll(a=>previous.Contains(a));
                     candidate.Parent=parent;candidate.Start=now;candidate.Expires=now+candidate.Seconds;candidate.Ticks=0;active.Add(candidate);
                     if(current())return true;
-                    RollbackCallback(candidate,replaced);
+                    RollbackCallback(candidate,replaced,now);
                     return false;
                 }
             }
-            internal void RollbackCallback(Active candidate,List<Active> replaced)
+            internal void RollbackCallback(Active candidate,List<Active> replaced,double now)
             {
                 lock(active)
                 {
                     // A clear/newer replacement wins. Never resurrect records after ours disappeared.
                     if(!active.Remove(candidate))return;
-                    if(!active.Any(a=>a.Parent==candidate.Parent && a.Target==candidate.Target))active.AddRange(replaced);
+                    if(!active.Any(a=>a.Parent==candidate.Parent && a.Target==candidate.Target))active.AddRange(replaced.Where(old=>old.Expires>now));
                 }
             }
 
