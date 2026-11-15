@@ -38,7 +38,8 @@ public class ZionNextFiveSelectionTests
                 var client=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));client.playerData=new(){missionInstanceCounter=47};client.viewMan=new();
                 foreach(var def in phase.objects)foreach(ushort goid in site.containers.Concat(site.realObjects).Select(MissionSites.Goid).Concat(new ushort[]{3,1416,552,357}).Distinct())
                     client.viewMan.GetViewForEntityAndGo(987000047000UL+(ulong)(phaseIndex*50+def.id),goid).viewCreated=true;
-                typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,phaseIndex==0?new Random(seed):rng});
+                var choices=MissionStaging.PrepareObjectChoices(phase,site,phaseIndex==0?new Random(seed):rng);
+                typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,choices});
                 Assert.Equal(phase.objects.Count,progress.objects.Count);Assert.Equal(progress.objects.Count,progress.objects.Values.Select(o=>o.spot.mxoStaticId).Distinct().Count());
                 var selected=new List<object>();
                 foreach(var pair in progress.objects.OrderBy(x=>x.Key))
