@@ -286,6 +286,10 @@ namespace hds
         private readonly System.Collections.Generic.HashSet<WorldClient> combatants = new System.Collections.Generic.HashSet<WorldClient>();
         private double nextRetaliation;
         public int CombatantCount { get { lock (combatSync) return combatants.Count; } }
+        internal WorldClient[] CombatantsSnapshot()
+        {
+            lock(combatSync)return new System.Collections.Generic.List<WorldClient>(combatants).ToArray();
+        }
         /// <summary>One NPC action clock shared by every player's session (including movement).
         /// Pairwise presentation remains separate; adding attackers must not multiply retaliation.</summary>
         public bool TryRetaliate(double now, double interval)

@@ -7,6 +7,10 @@ namespace hds
     {
         private static readonly Dictionary<WorldClient, CombatHandler> Handlers =
             new Dictionary<WorldClient, CombatHandler>();
+        internal static KeyValuePair<WorldClient,CombatHandler>[] SnapshotHandlers()
+        {
+            lock(Handlers)return new List<KeyValuePair<WorldClient,CombatHandler>>(Handlers).ToArray();
+        }
 
         public static CombatHandler GetHandler(WorldClient client)
         {

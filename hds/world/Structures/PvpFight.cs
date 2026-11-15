@@ -96,6 +96,16 @@ namespace hds
         private readonly List<Side> members = new List<Side>();
         public const int MaximumFighters = 6;
         public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
+        internal WorldClient[] CurrentOpponents(WorldClient target)
+        {
+            lock(sync)
+            {
+                if(!IsActive)return Array.Empty<WorldClient>();
+                Side side=members.LastOrDefault(s=>s.Present&&s.Client==target);
+                if(side==null)return Array.Empty<WorldClient>();
+                return members.Where(s=>s.Present&&s!=side&&(s.Other==side||side.Other==s)).Select(s=>s.Client).Distinct().ToArray();
+            }
+        }
 
         private PvpFight(WorldClient attacker, WorldClient defender)
         {

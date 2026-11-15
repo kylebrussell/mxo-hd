@@ -231,6 +231,8 @@ def server(i):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):
         parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
+    if r.get('sharpshooter'):
+        parts.append(r['sharpshooter'])
     if r.get('health_callback'):
         parts.append(r['health_callback'])
     if r['healing'] and not r.get('health_callback'):
@@ -310,7 +312,7 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
-    if i in PETS or r.get('proxy_technician'):
+    if i in PETS or r.get('proxy_technician') or r.get('sharpshooter'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i in (49, 1149) or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
