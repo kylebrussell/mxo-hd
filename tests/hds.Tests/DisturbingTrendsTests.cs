@@ -57,7 +57,7 @@ public class DisturbingTrendsTests
         var plan=new DisturbingTrendsMode().Plan;Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Equal(DisturbingTrendsFixture.SeedPrerequisites(110),plan.AfterHelpers[0]);
         Assert.Single(plan.EnvironmentOverrides);Assert.Equal("201101",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.True(plan.ExtraQaMetadata["NativePickingPending"].GetBoolean());
         Assert.True(plan.ExtraQaMetadata["PriorNativeGo3TakeObserved"].GetBoolean());Assert.True(plan.ExtraQaMetadata["PriorRenderingFailureRetracted"].GetBoolean());
-        Assert.True(plan.ExtraQaMetadata["SharedOpenFloorRouteAdmission"].GetBoolean());Assert.True(plan.ExtraQaMetadata["SharedInteriorAdmissionRequired"].GetBoolean());Assert.Equal("7dfe4815cec6d83e603397597ae16158b3017065",plan.ExtraQaMetadata["QaBaseMaster"].GetString());Assert.Contains("exp="+PlayerProgression.ExperienceForLevel(50),plan.AfterHelpers[1]);
+        Assert.True(plan.ExtraQaMetadata["SharedOpenFloorRouteAdmission"].GetBoolean());Assert.True(plan.ExtraQaMetadata["SharedInteriorAdmissionRequired"].GetBoolean());Assert.Equal("e6c5ab03efb4b6ef89b61ad4454e82b66a9f8472",plan.ExtraQaMetadata["QaBaseMaster"].GetString());Assert.Contains("exp="+PlayerProgression.ExperienceForLevel(50),plan.AfterHelpers[1]);
         var scenario=Scenarios.All.Single(s=>s.Name=="machines-disturbing-trends");
         Assert.Equal("1",scenario.Environment!["MXO_PACKET_LOG"]);
         var seed=DisturbingTrendsFixture.BeforeMargin(new CharacterSeed("QA"));
