@@ -59,6 +59,36 @@ public class SharpshooterFreeFireTests
         }
         finally{try{foreach(var h in handlers)h.pvpGunfire=null;foreach(var c in new[]{a,b,unrelated}){c.Alive=false;CombatManager.RemoveClient(c);}}finally{WorldServer.Clients=previous;}}
     }
+    [Theory]
+    [InlineData("active",2)][InlineData("dedup",2)][InlineData("ended",1)][InlineData("dead",1)]
+    [InlineData("world",1)][InlineData("life",1)][InlineData("owner",1)][InlineData("remote",1)]
+    [InlineData("wrongAttacker",1)][InlineData("replacement",1)]
+    public void VictimsCurrentNpcSessionCountsWhenAnotherPlayerBecameNpcsLastTarget(string change,int expected)
+    {
+        var a=Client();var b=Client();var shooter=Client();var x=Npc();var previous=WorldServer.Clients;
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        var handler=CombatManager.GetHandler(a);
+        var session=new CombatSession(change=="wrongAttacker"?b:a,x,1,CombatSession.CombatType.Ranged);
+        Set(session,"<IsActive>k__BackingField",true);Set(handler,"currentSession",session);
+        x.setCombatTarget(a);x.setCombatTarget(b);x.currentState=(int)Mob.statusList.COMBAT;
+        Assert.Same(b,x.getCombatTarget());
+        try
+        {
+            switch(change)
+            {
+                case "dedup": x.setCombatTarget(a);break;
+                case "ended": Set(session,"<IsActive>k__BackingField",false);break;
+                case "dead": x.setIsDead(true);break;
+                case "world": a.playerData.worldGeneration++;break;
+                case "life": a.playerData.lifeGeneration++;break;
+                case "owner": a.playerData=new ClientData();a.playerData.setOnWorld(true);a.playerData.setDistrictId(1);break;
+                case "remote": x.setDistrict(2);break;
+                case "replacement": Set(handler,"currentSession",new CombatSession(a,x,1,CombatSession.CombatType.Ranged));break;
+            }
+            Assert.Equal(expected,SharpshooterFreeFire.PlayerOpponents(a,shooter,change=="dedup"?x:null));
+        }
+        finally{Set(handler,"currentSession",null);a.Alive=false;CombatManager.RemoveClient(a);WorldServer.Clients=previous;}
+    }
     [Fact]public void CurrentInterlockOpponentsAreActualLinksNotWholeFighterCount()
     {
         var target=Client();var a=Client();var b=Client();var unrelated=Client();var t=new PvpFight.Side{Client=target};var aa=new PvpFight.Side{Client=a};var bb=new PvpFight.Side{Client=b};var uu=new PvpFight.Side{Client=unrelated};

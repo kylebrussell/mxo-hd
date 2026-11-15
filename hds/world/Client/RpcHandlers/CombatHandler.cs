@@ -28,6 +28,13 @@ namespace hds
 
         /// <summary>The NPC this player is in close combat with, if any (simulacra assist it).</summary>
         public Mob CurrentNpcTarget => currentSession != null && currentSession.IsActive ? currentSession.DefenderMob : null;
+        internal Mob CurrentNpcOpponentFor(WorldClient owner)
+        {
+            if (!ReferenceEquals(client, owner)) return null;
+            var session = currentSession;
+            var opponent = session?.CurrentNpcOpponent(owner);
+            return ReferenceEquals(currentSession, session) ? opponent : null;
+        }
 
         /// <summary>
         /// Legacy fields - kept for backwards compatibility during transition.

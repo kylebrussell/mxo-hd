@@ -45,11 +45,16 @@ namespace hds
         internal static int PlayerOpponents(WorldClient target,WorldClient currentShooter=null,Mob currentNpc=null)
         {
             if(!Live(target))return 0;
-            var clients=new HashSet<WorldClient>();var fights=new HashSet<PvpFight>();
+            var clients=new HashSet<WorldClient>();var fights=new HashSet<PvpFight>();var npc=new HashSet<Mob>();
             //The registry lock is released before any fight snapshot; callers take this BEFORE their shot/RNG locks.
             foreach(var pair in CombatManager.SnapshotHandlers())
             {
                 var h=pair.Value;var fire=h.pvpGunfire;
+                if(ReferenceEquals(pair.Key,target))
+                {
+                    var ownNpc=h.CurrentNpcOpponentFor(target);
+                    if(Live(ownNpc)&&Live(target)&&ownNpc.getDistrict()==target.playerData.getDistrictId())npc.Add(ownNpc);
+                }
                 if(fire!=null&&fire.IsActive&&ReferenceEquals(fire.Shooter,pair.Key)&&ReferenceEquals(fire.Target,target)&&Live(pair.Key))clients.Add(pair.Key);
                 var fight=h.pvpFight;
                 if(fight!=null&&fights.Add(fight))foreach(var c in fight.CurrentOpponents(target))if(Live(c))clients.Add(c);
@@ -57,7 +62,7 @@ namespace hds
             clients.RemoveWhere(c=>!Live(c)||ReferenceEquals(c,target)||c.playerData.getDistrictId()!=target.playerData.getDistrictId());
             if(Live(currentShooter)&&!ReferenceEquals(currentShooter,target)&&currentShooter.playerData.getDistrictId()==target.playerData.getDistrictId())clients.Add(currentShooter);
             Mob[] mobs;lock(WorldServer.mobs.SyncRoot)mobs=WorldServer.mobs.Cast<object>().OfType<Mob>().ToArray();
-            var npc=new HashSet<Mob>(mobs.Where(m=>Live(m)&&m.getDistrict()==target.playerData.getDistrictId()&&
+            npc.UnionWith(mobs.Where(m=>Live(m)&&m.getDistrict()==target.playerData.getDistrictId()&&
                 m.currentState==(int)Mob.statusList.COMBAT&&ReferenceEquals(m.getCombatTarget(),target)));
             if(Live(currentNpc)&&currentNpc.getDistrict()==target.playerData.getDistrictId())npc.Add(currentNpc);
             return clients.Count+npc.Count;

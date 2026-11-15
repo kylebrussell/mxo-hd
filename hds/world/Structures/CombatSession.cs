@@ -144,11 +144,29 @@ namespace hds
         /// <summary>
         /// Creates a new combat session for player vs mob combat.
         /// </summary>
+        private readonly Func<bool> npcLifetimeCurrent;
+        internal Mob CurrentNpcOpponent(WorldClient owner)
+        {
+            return ReferenceEquals(owner, Attacker) && IsActive && npcLifetimeCurrent != null && npcLifetimeCurrent()
+                ? DefenderMob : null;
+        }
+
         public CombatSession(WorldClient attacker, Mob defender, UInt32 targetViewSpawnId, CombatType type)
         {
             SessionId = sessionIdCounter++;
             Attacker = attacker;
             DefenderMob = defender;
+            var data = attacker?.playerData;
+            if (data != null && defender != null)
+            {
+                var world = data.worldGeneration; var life = data.lifeGeneration; var district = data.getDistrictId();
+                var entity = defender.getEntityId(); var death = defender.DeathGeneration;
+                var instance = defender.missionInstance; var phase = defender.missionPhase;
+                npcLifetimeCurrent = () => ReferenceEquals(attacker.playerData, data) && data.worldGeneration == world &&
+                    data.lifeGeneration == life && data.getDistrictId() == district && defender.getDistrict() == district &&
+                    defender.getEntityId() == entity && defender.DeathGeneration == death &&
+                    defender.missionInstance == instance && defender.missionPhase == phase;
+            }
             DefenderPlayer = null;
             TargetViewSpawnId = targetViewSpawnId;
             Type = type;
