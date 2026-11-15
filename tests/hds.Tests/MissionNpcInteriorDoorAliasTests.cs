@@ -10,7 +10,7 @@ public partial class MissionNpcInteriorCheckpointTests
         var index=new StaticObjectIndex();int rows=0;
         foreach(string line in File.ReadLines(Path.Combine(Repo,"data","staticObjects_slums_1.csv")).Skip(1))
         {
-            var d=line.Split(',');if(d[2]!="040f6022")continue;
+            var d=line.Split(',');if(d.Length<11)continue;if(d[2]!="040f6022")continue;
             var raw=new StaticWorldObject { metrId=ushort.Parse(d[0]),sectorID=ushort.Parse(d[1]),mxoStaticId=BitConverter.ToUInt32(Convert.FromHexString(d[2])),staticId=BitConverter.ToUInt32(Convert.FromHexString(d[3])),type=Convert.FromHexString(d[4][..4]),exterior=bool.Parse(d[5]),pos_x=double.Parse(d[6],CultureInfo.InvariantCulture),pos_y=double.Parse(d[7],CultureInfo.InvariantCulture),pos_z=double.Parse(d[8],CultureInfo.InvariantCulture),rot=double.Parse(d[9],CultureInfo.InvariantCulture),quat=d[10] };
             index.Add(raw);rows++;
         }
@@ -21,3 +21,4 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(before,JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson));Assert.Equal(calls,prepared.Provider.EntryCalls);
     }
 }
+
