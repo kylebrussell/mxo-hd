@@ -20,5 +20,30 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,overlay.Kind);Assert.Equal(40000,overlay.Position.X);Assert.Equal(25500,overlay.Position.Z);Assert.Equal(prepared.Pending.Witness.Lobby.Quaternion,overlay.Quaternion);
         Assert.Equal(before,JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson));Assert.Equal(calls,prepared.Provider.EntryCalls);
     }
+    [Theory] [InlineData("position")] [InlineData("rotation")] [InlineData("quaternion")] [InlineData("goid")] [InlineData("sector")] [InlineData("staticId")] [InlineData("woodPosition")] [InlineData("woodPairedGoid")]
+    public void SameKeyDoesNotAuthorizeUnknownSignatureOrBorrowAnotherGoid(string change)
+    {
+        var prepared=Prepared();var p=prepared.Progress;p.NextPhase();p.site=prepared.Site;p.sites.Add(prepared.Site);p.npcInteriorResolvedPhase=2;p.npcInteriorWitnesses[2]=prepared.Pending.Witness;
+        var raw=change.StartsWith("wood")?Wood():MissionNpcInteriorPlanning.ReadRaw(prepared.Pending.Witness.Lobby.RawDoorJson);
+        switch(change)
+        {
+            case "position":case "woodPosition":raw.pos_x++;break;
+            case "rotation":raw.rot++;break;
+            case "quaternion":raw.quat="000000000000000000000000000080bf";break;
+            case "goid":raw.type=BitConverter.GetBytes(417u);break;
+            case "woodPairedGoid":raw.type=BitConverter.GetBytes(343u);break;
+            case "sector":raw.sectorID++;break;
+            case "staticId":raw.staticId++;break;
+        }
+        string before=JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider)!.Kind);
+        Assert.Equal(before,JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson));
+    }
+    [Fact] public void AnotherWorldOrUnownedKeyCannotResolveThroughSavedAliasContext()
+    {
+        var prepared=Prepared();var p=prepared.Progress;p.npcInteriorWitnesses[2]=prepared.Pending.Witness;
+        var raw=MissionNpcInteriorPlanning.ReadRaw(prepared.Pending.Witness.Lobby.RawDoorJson);raw.metrId=2;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
+        raw.metrId=1;raw.mxoStaticId++;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
+    }
 }
 

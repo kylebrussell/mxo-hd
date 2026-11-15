@@ -134,10 +134,13 @@ namespace hds
             p.npcInteriorPending = envelope.Pending; p.npcInteriorResolvedPhase = envelope.CurrentPhase;
             foreach (MissionNpcInteriorWitness witness in envelope.Witnesses) p.npcInteriorWitnesses.Add(witness.Selection.Phase, witness);
         }
-        private static E.Entry SavedEntry(E index, MissionNpcInteriorEntry saved)
+        private static E.Entry SavedEntry(E index, MissionNpcInteriorEntry saved, StaticWorldObject incoming = null)
         {
             Require(index.Digest.Equals(saved.EvidenceDigest, StringComparison.OrdinalIgnoreCase), "ChangedNpcEvidenceDigest");
-            StaticWorldObject raw = MissionNpcInteriorPlanning.ReadRaw(saved.RawDoorJson); G.Position standing = new G.Position(saved.Standing[0], saved.Standing[1], saved.Standing[2]);
+            StaticWorldObject selected = MissionNpcInteriorPlanning.ReadRaw(saved.RawDoorJson);
+            StaticWorldObject raw = incoming ?? selected;
+            Require(raw.metrId == selected.metrId && raw.sectorID == selected.sectorID && raw.mxoStaticId == selected.mxoStaticId && MissionSites.Goid(raw) == MissionSites.Goid(selected), "ChangedNpcDoorRawIdentityOrGoid");
+            G.Position standing = new G.Position(saved.Standing[0], saved.Standing[1], saved.Standing[2]);
             Require(index.TryEntry(raw, native => new MissionOpenFloorEntry.Result(standing, standing, false, false, false,
                 new G.Root(new G.Id(raw.sectorID, saved.Node.Region, saved.Node.Polygon), standing, "exact persisted NPC entry only"), null), out E.Entry entry, out string why), why ?? "InvalidSavedNpcEntry");
             Require(saved.Position.SequenceEqual(new double[] { entry.Door.Position.X, entry.Door.Position.Y, entry.Door.Position.Z }) && saved.Quaternion.Equals(entry.Door.Quaternion, StringComparison.OrdinalIgnoreCase), "ChangedNpcSavedDoorPose"); return entry;
@@ -159,6 +162,26 @@ namespace hds
                 foreach (E.DoorPose door in route.RequiredDoors) expectedDoors[door.Key] = new MissionNpcInteriorDoor(door.Key, door.Goid, MissionNpcInteriorPlanning.RawJson(selected[door.Key]), door.Quaternion, new double[] { door.Position.X, door.Position.Y, door.Position.Z });
             }
             Require(Same(expectedDoors.OrderBy(d => d.Key).Select(d => d.Value).ToArray(), witness.Doors), "ChangedNpcSavedPortalDoors");
+        }
+        // An indexed alias is authority only for its exact audited signature, never for a new entry/context.
+        internal static void ValidateOverlay(MissionProgress p, MissionNpcInteriorWitness witness, MissionNpcInteriorEntry entry, MissionNpcInteriorDoor wood, StaticWorldObject raw, IMissionNpcInteriorEvidenceProvider provider)
+        {
+            try
+            {
+                Geometry(p, witness, provider);
+                E index = provider.Evidence(raw.metrId, raw.sectorID);
+                if (entry != null) SavedEntry(index, entry, raw);
+                else
+                {
+                    StaticWorldObject selected = MissionNpcInteriorPlanning.ReadRaw(wood.RawDoorJson);
+                    Require(raw.metrId == selected.metrId && raw.sectorID == selected.sectorID && raw.mxoStaticId == selected.mxoStaticId && MissionSites.Goid(raw) == wood.Goid, "ChangedNpcDoorRawIdentityOrGoid");
+                    Require(index.Digest.Equals(witness.Floor.EvidenceDigest, StringComparison.OrdinalIgnoreCase), "ChangedNpcEvidenceDigest");
+                    Require(index.TryWoodDoor(raw, out E.DoorPose pose, out string why), why ?? "InvalidNpcWoodAlias");
+                    Require(wood.Position.SequenceEqual(new double[] { pose.Position.X, pose.Position.Y, pose.Position.Z }) && wood.Quaternion.Equals(pose.Quaternion, StringComparison.OrdinalIgnoreCase), "ChangedNpcSavedDoorPose");
+                }
+            }
+            catch (Exception ex) when (ex is InvalidDataException || ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
+            { throw new MissionPlacementRestoreException(p, "Invalid fixed NPC-v2 overlay evidence:" + ex.Message); }
         }
         internal static void ValidateGeometry(MissionProgress p, MissionNpcInteriorEnvelope envelope, IMissionNpcInteriorEvidenceProvider provider)
         {

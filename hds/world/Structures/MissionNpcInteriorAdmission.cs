@@ -118,9 +118,7 @@ namespace hds
                 else wood=w.Doors.SingleOrDefault(d=>d.Key==raw.mxoStaticId);
                 if(entry==null&&wood==null)continue;
                 if(p.restoreRefusal!=null)return new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Refused,refusal:"QuarantinedNpcInteriorDoor");
-                string selected=entry?.RawDoorJson??wood.RawDoorJson;
-                if(MissionNpcInteriorPlanning.RawJson(raw)!=selected)return new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Refused,refusal:"ChangedNpcDoorRawIdentityOrGoid");
-                try {MissionNpcInteriorCheckpoint.ValidateGeometry(p,new MissionNpcInteriorEnvelope(2,MissionNpcInteriorPlanning.Kind,null,null,new[]{w}),provider??MissionNpcInteriorEvidenceProvider.Instance);}
+                try {MissionNpcInteriorCheckpoint.ValidateOverlay(p,w,entry,wood,raw,provider??MissionNpcInteriorEvidenceProvider.Instance);}
                 catch(MissionPlacementRestoreException ex){return new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Refused,refusal:ex.Message);}
                 var position=entry?.Position??wood.Position;string q=entry?.Quaternion??wood.Quaternion;
                 var candidate=new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Resolved,MissionElevatorPoses.Position(position),q);
