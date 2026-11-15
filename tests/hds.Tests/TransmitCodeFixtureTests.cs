@@ -37,4 +37,13 @@ public class TransmitCodeFixtureTests
         Assert.False(mode.Plan.FixedCallbackRolls);Assert.Equal("65",mode.Plan.EnvironmentOverrides["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]);
         Assert.Contains("OURS",mode.Plan.ReadyMessages.Single());
     }
-}
+    [Fact]public void RetainedNormalHackerCastHasStyled538DamageBeforeTheBonus()
+    {
+        var bytes=Convert.FromHexString("816717002800f900007c000010000000280580390000070f005472616e736d6974436173746572000f005472616e736d69745461726765740002001a02000000000000");
+        Assert.True(TransmitCodeFixture.Damage(bytes,330,"TransmitCaster","TransmitTarget",out int done,out int resisted));
+        Assert.Equal(538,done);Assert.Equal(0,resisted);
+        Assert.Equal(done,(int)(424*(double)(float)1.27)); //existing normal Hacker172+27, not a target593 change
+        double zero=.66/220*20-.33,withBonus=.66/220*42-.33;
+        Assert.Equal(510,(int)Math.Floor(done*(1-withBonus)/(1-zero)));
+        Assert.Equal(510,TypedAbilityResistance.Amount(done,50,50,22));
+    }}

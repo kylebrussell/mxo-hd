@@ -52,10 +52,10 @@ public static partial class Scenarios
                 await caster.WaitForRpcAsync(r=>r.Bytes.SequenceEqual(ended),"Natural own reuse expiry",TimeSpan.FromSeconds(30));
             }
             stage="normal593-unload";await Loaded(false);
-            stage="baseline-viral";await Hit(330,424,424,0);
+            stage="baseline-viral";await Hit(330,538,538,0);
             stage="baseline-thrown";await Hit(1135,83,83,0);
             stage="normal593-load";await Loaded(true);
-            stage="bonus-viral";await Hit(330,424,401,22);
+            stage="bonus-viral";await Hit(330,538,510,22);
             stage="bonus-thrown";await Hit(1135,83,78,22);
             stage="bonus-dot";await Style(1006,172,27);target.SkipReceived();int dotStart=context.Server.DebugLog().Length;
             Cast(caster,474,view.ViewId);await target.WaitForRpcAsync(ModPattern(474,1157),TimeSpan.FromSeconds(10));
