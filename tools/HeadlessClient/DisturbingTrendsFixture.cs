@@ -48,5 +48,24 @@ public static class DisturbingTrendsFixture
             .Select(f=>BitConverter.ToUInt32(Convert.FromHexString(f[2]),0)).Distinct().Take(2).ToArray();
         if(ids.Length!=1)throw new InvalidDataException("Exact current-site door is missing or ambiguous");return ids[0];
     }
+    // Use the committed selected-site measured identity; never reverse-look-up a corrected pose in raw CSV.
+    public static uint LobbyKey(hds.MissionProgress.SavedState state,IEnumerable<string> rawRows)
+    {
+        hds.MissionElevatorWitness? witness=null;
+        if(state.OpenFloorCurrentSiteIndex is int index&&index>=0&&state.OpenFloorSites!=null&&index<state.OpenFloorSites.Length)
+            witness=state.ElevatorWitnesses?.SingleOrDefault(w=>w.SiteFingerprint==state.OpenFloorSites[index].Fingerprint);
+        if(witness==null)return DoorAt(rawRows,state.Exits.Single());
+        var door=state.Waypoints.Single();var lobby=state.Exits.Single();
+        if(witness.Version!=1||witness.Floor?.Length!=3||witness.Lobby?.Length!=3||witness.FloorKey!=BitConverter.ToUInt32(Convert.FromHexString(door.doorHex))||witness.LobbyKey==0||
+            !witness.Floor.SequenceEqual(new[]{door.x,door.y,door.z})||!witness.Lobby.SequenceEqual(lobby))
+            throw new InvalidDataException("Committed measured elevator identity/pose differs from current site");
+        if(witness.Sources==null||witness.Sources.Length==0)throw new InvalidDataException("Measured elevator lacks source evidence");
+        var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
+        var sources=witness.Sources.Select(raw=>System.Text.Json.JsonSerializer.Deserialize<hds.StaticWorldObject>(raw,options)??throw new InvalidDataException("Missing measured raw source")).ToArray();
+        foreach(var obj in state.Objects.Where(o=>o.OpenFloor!=null))
+            if(!sources.Any(raw=>System.Text.Json.JsonSerializer.Serialize(raw,options)==System.Text.Json.JsonSerializer.Serialize(obj.Spot,options)))
+                throw new InvalidDataException("Measured elevator source evidence differs from current immutable object source");
+        return witness.LobbyKey;
+    }
     public static string SeedPrerequisites(long character)=>"INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",Prerequisites.Select(id=>$"({character},{id})"));
 }

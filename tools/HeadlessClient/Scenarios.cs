@@ -23,8 +23,10 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
+        new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),
         new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),
         new Scenario("interior-admission-merv",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Merv),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Merv)),
         new Scenario("interior-admission-posters",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Posters),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Posters)),
@@ -38,6 +40,8 @@ public static partial class Scenarios
         new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
         new Scenario("loaded-grant-membership", LoadedGrantMembership, StillNpcs),
+        new Scenario(SneakScaledGrantFixture.Name, SneakScaledGrant, SneakScaledGrantFixture.Environment, Timeout: TimeSpan.FromMinutes(4)),
+        new Scenario("invisibility-tool-registration", InvisibilityToolRegistration, InvisibilityToolRegistrationFixture.Environment),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
         new Scenario("small03-partial-world", Small03PartialWorld, new Dictionary<string,string> { ["MXO_MOB_WANDER"]="0", ["MXO_AGGRO"]="0" }),
         new Scenario("medium03-partial-world", Medium03PartialWorld, new Dictionary<string,string>{["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"}),
@@ -249,6 +253,8 @@ public static partial class Scenarios
         new Scenario("large02-world-door-diagnostic", Large02DoorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("login-reader-error-recovery", LoginReaderCleanup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
+        new Scenario(MissionBoundCabinetFixture.Name, MissionBoundCabinet, MissionBoundCabinetFixture.Environment, Timeout: TimeSpan.FromMinutes(6)),
+        new Scenario("world-ingress-liveness",IngressLiveness,IngressLivenessFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
         new Scenario("mission-courier", MissionCourier, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="20001"}),
@@ -263,7 +269,6 @@ public static partial class Scenarios
         new Scenario("merv-propaganda-count", MervPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("machines-critical-opening",MachinesCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101"}),
-        new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("poster-hunt-count", PosterHuntCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("poster-box-floor", PosterBoxFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202",[PosterBoxFloorProbe.EnvironmentKey]="1"}),
         new Scenario("safe-floor", SafeFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",[SafeFloorProbe.EnvironmentKey]="1"}),

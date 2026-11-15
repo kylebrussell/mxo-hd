@@ -83,4 +83,19 @@ public class DisturbingTrendsTests
         Assert.Null(DisturbingTrendsFixture.CurrentNpc(new[]{actual},0,mob,1,47));
         Assert.Null(new CharacterSeed("Legacy").CompletedMissions);
     }
+    [Fact] public void MeasuredLobbyKeyUsesSelectedWitnessInsteadOfRawCoordinateSearch()
+    {
+        var site=new MissionOpenFloorSite(1,0x0d100020,28800,1345,14700,"selected-site");
+        var witness=new MissionElevatorWitness(1,"selected-site",47,new[]{28500d,1345d,14400d},new[]{28500d,545d,14400d},"0000000000000000000000000000803f","0000000000000000000000000000803f","audited-control",new[]{"{}"},0x0d100020,0x0d100000,49);
+        var saved=new MissionProgress.SavedState{Version=2,OpenFloorSites=new[]{site},OpenFloorCurrentSiteIndex=0,ElevatorWitnesses=new[]{witness},Waypoints=new[]{new MissionWaypoint{x=28500,y=1345,z=14400,doorHex="2000100d"}},Exits=new[]{new[]{28500d,545d,14400d}}};
+        Assert.Equal(0x0d100000u,DisturbingTrendsFixture.LobbyKey(saved,Array.Empty<string>()));
+        saved.Exits[0][0]++;Assert.Throws<InvalidDataException>(()=>DisturbingTrendsFixture.LobbyKey(saved,Array.Empty<string>()));
+    }
+    [Fact] public void CarryRowsRequireOwnedDiskAndNonstackableStoredZeroCount()
+    {
+        var row=MissionBoundCabinetFixture.RequireMissionInventory("1001\t6783\t7\t0",1001,6783,7);
+        Assert.Equal(row,MissionBoundCabinetFixture.RequireMissionInventory("1001\t6783\t7\t0",1001,6783,7));
+        Assert.Throws<InvalidDataException>(()=>MissionBoundCabinetFixture.RequireMissionInventory("1002\t6783\t7\t0",1001,6783,7));
+        Assert.Throws<InvalidDataException>(()=>MissionBoundCabinetFixture.RequireMissionInventory("1001\t6783\t7\t1",1001,6783,7));
+    }
 }
