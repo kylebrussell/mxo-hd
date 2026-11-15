@@ -10,7 +10,7 @@ public static class MissionNpcInteriorProof
 {
     public const string Name="mission-npc-interior-route";
     public const uint Experience=168042,Information=133350;
-    public const string Manifest="5B903D4F50D49C3DC94ADC81041C95F42ABB72A395E8102DA2DD6F1C02CDEEA3";
+    public const string Manifest="DD15FBEEE0B0359245EB4147C772FEE926E8257759ABE019A797EA3EA3FED8F4";
     public sealed record Door(uint Key,ushort Goid,double[] Position,string Quaternion,double[]? Standing,string Raw);
     public sealed record Plan(string Identity,long Started,int Phase,string Site,string Raw,JsonElement Witness,Door Floor,Door Lobby);
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};

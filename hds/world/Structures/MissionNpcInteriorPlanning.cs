@@ -156,7 +156,9 @@ namespace hds
                 StaticWorldObject[] rows = provider.Markers(selectedSite.metrId, selectedSite.elevatorDoor.sectorID);
                 if (rows == null) throw new InvalidDataException("MissingNpcMarkerRows");
                 StaticWorldObject[] markers = rows.Select(raw => ReadRaw(RawJson(raw))).ToArray();
-                if (!Select(target, phase, selectedSite, markers, out MissionNpcInteriorSelection selection, out refusal)) return false;
+                if (!Roles(target.mission, phase, out Role[] initialRoles, out refusal)) return false;
+                MissionNpcInteriorSelection selection = new MissionNpcInteriorSelection(target.mission.id, target.persistenceId, target.startedAt, phase,
+                    MissionOpenFloorSite.From(selectedSite), Array.Empty<MissionNpcInteriorActor>(), 1);
                 selected = new MissionNpcInteriorPending(2, Kind, selection, null, "NpcEvidenceNotYetValidated");
                 E floor = provider.Evidence(selectedSite.metrId, selectedSite.elevatorDoor.sectorID), lobby = provider.Evidence(selectedSite.metrId, selectedSite.lobbyDoor.sectorID);
                 if (!floor.TryEntry(selectedSite.elevatorDoor, p => provider.Entry(selectedSite.metrId, p, selectedSite.CentreX, selectedSite.CentreZ, "original NPC floor entry"), out E.Entry floorEntry, out refusal) ||

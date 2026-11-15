@@ -46,7 +46,7 @@ namespace hds
         }
         internal sealed class Declaration { public ushort Sector { get; set; } public string Sha256 { get; set; } public int Regions { get; set; } public int Portals { get; set; } public int Groups { get; set; } }
         internal sealed class Manifest { public int Format { get; set; } public ushort World { get; set; } public Declaration[] Sectors { get; set; } }
-        internal const string ManifestSha256 = "EF80706C2E2B99CB83DD5BC3B153A5AFA26CEF7E24CA855CE975D72BC825A873";
+        internal const string ManifestSha256 = "DD15FBEEE0B0359245EB4147C772FEE926E8257759ABE019A797EA3EA3FED8F4";
         private readonly Document document;
         private readonly Dictionary<ushort, Region> regions;
         private readonly Dictionary<uint, Group> groups;
