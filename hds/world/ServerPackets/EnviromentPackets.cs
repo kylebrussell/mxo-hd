@@ -18,6 +18,7 @@ namespace hds
                 staticObjectView.spawnId = spawnId;
                 byte[] creation = BuildSpawnGameObject(creationObjectData,staticObjectView.ViewID,spawnId);
                 MissionComputer1407Qa.Spawn(client, creationObjectData, staticObjectView, creation);
+                MissionPropProbe.Spawn(client, creationObjectData, staticObjectView, creation);
                 client.messageQueue.addObjectMessage(creation, false);
                 client.FlushQueue();
                 staticObjectView.viewCreated = true;

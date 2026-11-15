@@ -26,6 +26,7 @@ public static partial class Scenarios
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),
+        new Scenario("mission-prop-visibility", MissionPropVisibility, new Dictionary<string,string>(InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)){[MissionPropProbe.EnvironmentKey]="1"}),
         new Scenario("interior-admission-merv",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Merv),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Merv)),
         new Scenario("interior-admission-posters",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Posters),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Posters)),
         new Scenario("interior-admission-zion",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Zion),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),

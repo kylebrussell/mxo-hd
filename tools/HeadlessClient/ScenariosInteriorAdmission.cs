@@ -6,11 +6,11 @@ using hds;
 namespace HeadlessClient;
 public static partial class Scenarios
 {
-    private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c)
+    private static async Task InteriorAdmissionProof(ScenarioContext context,InteriorAdmissionCase c,HeadlessPlayer? suppliedPlayer=null,Func<HeadlessPlayer,MissionProgress.SavedState,List<object>,Task>? beforeTargetAction=null)
     {
         var server=context.Server;ServerInstance? coldServer=null;var packetLogs=new List<object>();
         InteriorAdmissionFixture.RequireSource(System.Environment.GetEnvironmentVariable(InteriorAdmissionFixture.ExpectedSourceEnvironment),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(server.SourceAssembly))));
-        var p=await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
+        var p=suppliedPlayer??await context.AddPlayerAsync(new CharacterSeed("Interior"+c.Organization){Level=c.Level,Experience=(int)PlayerProgression.ExperienceForLevel(c.Level),Organization=c.Organization,
             X=c.X,Y=c.Y,Z=c.Z,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,CompletedMissions=c.Prerequisites});
         var fields=new JsonSerializerOptions{IncludeFields=true};var proof=new List<object>();string step="prerequisites";Exception? failure=null;
         long baselineXp=0,baselineInfo=0;int initialViews=0,initialSections=0;double[]? actualRideRoot=null;
@@ -56,7 +56,7 @@ public static partial class Scenarios
         void RetainPackets(string label)
         {
             string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());
-            string path=Path.Combine(Path.GetTempPath(),"mxo-"+c.Name+"-"+context.Database.Name+"-"+label+"-PacketLog.txt");File.WriteAllText(path,raw);
+            string path=Path.Combine(Path.GetTempPath(),"mxo-"+(beforeTargetAction==null?c.Name:"mission-prop-visibility")+"-"+context.Database.Name+"-"+label+"-PacketLog.txt");File.WriteAllText(path,raw);
             packetLogs.Add(new{Label=label,Path=path,server.ProcessId,Sha256=Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw)))});
         }
         async Task Ride(bool enter,MissionProgress.SavedState? source=null)
@@ -120,6 +120,7 @@ public static partial class Scenarios
                 step="ordinary-second-floor-entry";await Ride(true);
             }
             step="target-initial-placements";var target=await Saved();Check.Equal(c.TargetPhase,target.Phase,"Actual target phase");await InitialNpcs(target);
+            if(beforeTargetAction!=null){step="current-mission-visibility-diagnostic";await beforeTargetAction(p,target,proof);step="diagnostic-complete-before-take";return;}
             if(c.Mission==201202)
             {
                 Check.Equal(3,target.Objects.Count,"Poster first phase retains all three authored objects");
@@ -226,7 +227,7 @@ public static partial class Scenarios
             try{RetainPackets(coldServer==null?"original":"cold");}catch(Exception packetError){packetFailure=packetError;proof.Add(new{PacketRetentionError=packetError.ToString()});}
             try
             {
-                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+c.Name+"-"+context.Database.Name);string dll=server.SourceAssembly;
+                string stem=Path.Combine(Path.GetTempPath(),"mxo-"+(beforeTargetAction==null?c.Name:"mission-prop-visibility")+"-"+context.Database.Name);string dll=server.SourceAssembly;
                 await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=failure==null&&packetFailure==null,Step=step,Failure=(failure??packetFailure)?.ToString(),Case=c,Proof=proof,Database=context.Database.Name,server.ProcessId,SourceAssembly=dll,
                     SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,SourceSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dll))),SourceMtimeUtc=File.GetLastWriteTimeUtc(dll).ToString("O"),
                     PacketLogs=packetLogs,Rpc=p.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=p.World.Problems.ToArray(),Debug=server.DebugLog(),Output=server.FullOutput(),
