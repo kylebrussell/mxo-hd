@@ -351,7 +351,7 @@ namespace hds
         /// known (<see cref="AbilityTargets.Retail"/>), its timed effects (<see cref="TimedEffects.ApplyToPlayer"/>) and
         /// the flag abilities. Returns false when the view isn't a player's.
         /// </summary>
-        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, GhostStrikeCallbacks.Ticket ghostStrike = null)
+        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null, GhostStrikeCallbacks.Ticket ghostStrike=null)
         {
             WorldClient target = PlayerInView(caster, targetViewId);
             if (target == null)
@@ -372,12 +372,12 @@ namespace hds
                 Refuse(caster, verdict, handle);
                 return true;
             }
-            LandAbilityOn(caster, ability, target, sneakOpener,origin,ghostStrike);
-            AbilityTargets.LandAround(caster, ability, target,origin);
+            LandAbilityOn(caster, ability, target, sneakOpener,origin,ghostStrike:ghostStrike);
+            AbilityTargets.LandAround(caster, ability, target,origin,engageFoes);
             return true;
         }
 
-        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, GhostStrikeCallbacks.Ticket ghostStrike = null)
+        public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, GhostStrikeCallbacks.Ticket ghostStrike=null)
         {
             if (!ControlActions.CanUseAbilities(caster)) return;
             if(ghostStrike!=null)

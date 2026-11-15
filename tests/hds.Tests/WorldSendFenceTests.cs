@@ -22,7 +22,6 @@ public class WorldSendFenceTests
         }
         finally{release.Set();await holder;}
     }
-
     [Fact]
     public async Task PreparedOldWorldBatchCannotUseResetCountersOrDispatch()
     {
