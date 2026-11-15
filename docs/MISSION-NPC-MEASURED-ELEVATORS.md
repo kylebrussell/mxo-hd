@@ -1,6 +1,6 @@
 # NPC-only measured elevator evidence (pure checkpoint)
 
-This package does **not** change mission selection, admission, checkpoints, NPC placement, door publication, movement or restore. There are no runtime callers. It is the audited evidence/resolver prerequisite for a separately reviewed NPC-only policy. It does not claim that Tabor can now be completed ordinarily.
+This document records the original pure evidence checkpoint. The accompanying NPC-v2 runtime now uses this evidence for selected NPC-only sites in the two declared pilot sectors. See [runtime policy](MISSION-NPC-INTERIOR-RUNTIME.md) and [normal route validation](MISSION-NPC-INTERIOR-ROUTE.md) for the integrated behavior; the historical pure-checkpoint limits below retain their original attribution.
 
 The committed primary profiles cover explicit world1 sectors550 (Tabor) and1349 (retail control) only. Every original placement ordinal is retained; unavailable prefab/INAV evidence is explicit and never becomes a route. The existing `data/mission_elevators/1` tree and all v1/default consumers remain unchanged. World2 export and sector842/Bornmann policy remain separate backlogs.
 
@@ -31,3 +31,9 @@ Client primary anchors: HandleCreateObject622d9510; bound static lookup622be5e0â
 This index has no mission, SQL, timer, transport publication or packet mutation entry point. Result arrays own their data. Future integration requires a NEW tagged NPC witness/pending policy, exact accepted-owner/phase/world/life/transport binding and a reviewed old-state refusal boundary; v1 must not be reinterpreted and old pending/fixed raw state must not be migrated or rerolled. The Stage/Accept/Advance/restore/overlay map will be reviewed before those files change.
 
 Before any ordinary-completion claim, Claude must verify actual Tabor metal elevator and wooden Door/Open hover/pick, native group pose/leaf motion and ordinary passage/exit, followed by normal Give/one receipt/next offer on the separately reviewed producer. The retained old ?missionfloor/carry/Give result remains historical partial evidence. Missing world2 prefab8a000000 is a synthetic ordinal-preservation negative in tests, not a claim that Tabor's source is missing. No native or fresh-server run is part of this checkpoint.
+
+## Extending measured mission coverage
+
+The runtime is scene-based and role-based, with no mission-ID placement exceptions. To extend coverage, export each mission sector from original world/sector resources using this exporter; retain original placement ordinals, missing resources, source markers, GO-specific door records and counted reciprocal portals. Validate manifest and payload integrity, exact transforms and native model midpoints, same-floor links and each selected role's marker association before adding a sector to the declared provider. A selected unsupported relative/synthetic role refuses rather than receiving an invented offset.
+
+All-sector coverage therefore needs a reviewed sector/resource inventory, audited exports, source-to-role association and ordinary native entry/door/passage checks. World 2 remains a separate resource-completeness boundary. Bornmann and dialogue partners (including models 6958/6959/580) must use the same authored marker/connected-room pipeline; moving them beside one another by mission ID or a distance threshold is not part of this package. Sector 842's recorded separation is evidence for that next association pass, not a new exception here.
