@@ -21,6 +21,35 @@ namespace hds
         private UInt32 lastUsedTime;
         private int deadSignals;
         private bool alive;
+        private object livenessLock;
+        private bool explicitlyStopped, reapClaimed, reapInProgress;
+        private long ingressGeneration;
+        internal Func<uint> LivenessClock;
+        private object LivenessSync => LazyInitializer.EnsureInitialized(ref livenessLock);
+        private uint LivenessNow => LivenessClock==null?TimeUtils.getUnixTimeUint32():LivenessClock();
+        internal (uint Last,long Generation,bool Claimed) IngressSnapshot
+        {get {lock(LivenessSync)return(lastUsedTime,ingressGeneration,reapClaimed);}}
+        private bool Terminal {get {lock(LivenessSync)return explicitlyStopped||reapClaimed;}}
+        private bool NoteIngress()
+        {
+            lock(LivenessSync)
+            {
+                if(explicitlyStopped||reapClaimed||!alive)return false;
+                lastUsedTime=LivenessNow;ingressGeneration++;return true;
+            }
+        }
+        // Called only under the endpoint dictionary gate. No cleanup/SQL or other owner locks here.
+        internal bool TryClaimInactive()
+        {
+            lock(LivenessSync)
+            {
+                if(reapClaimed){if(reapInProgress)return false;reapInProgress=true;return true;}
+                if(alive&&!explicitlyStopped&&(IsBot||unchecked(LivenessNow-lastUsedTime)<=30))return false;
+                reapClaimed=true;reapInProgress=true;alive=false;return true;
+            }
+        }
+        // Preserve the existing cleanup retry after a failure, while the endpoint stays terminal.
+        internal void ReleaseFailedReap(){lock(LivenessSync)if(reapClaimed)reapInProgress=false;}
         private bool flushingQueueInProgress = false;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
@@ -536,6 +565,9 @@ namespace hds
         /// <summary>Called by the socket receiver before it arms the next receive, preserving datagram arrival order.</summary>
         internal void QueuePacket(byte[] packet)
         {
+            // The existing policy counts raw endpoint activity before decryption. A busy serialized
+            // worker must not make real incoming keepalives appear to be30 seconds of silence.
+            if(!NoteIngress())return;
             lock (receivedPackets)
             {
                 receivedPackets.Enqueue(packet);
@@ -552,6 +584,7 @@ namespace hds
         {
             while (true)
             {
+                if(Terminal){lock(receivedPackets){receivedPackets.Clear();packetWorkerRunning=false;}return;}
                 byte[] packet;
                 lock (receivedPackets)
                 {
@@ -562,21 +595,25 @@ namespace hds
                     }
                     packet = receivedPackets.Dequeue();
                 }
-                processPacket(packet);
+                ProcessPacketCore(packet);
             }
         }
+        internal int PendingPacketCount {get {lock(receivedPackets)return receivedPackets.Count;}}
 
         public void processPacket(byte[] packet)
         {
+            // Preserve the direct entry's raw-arrival contract; queued work was stamped at ingress.
+            if(NoteIngress())ProcessPacketCore(packet);
+        }
+        private void ProcessPacketCore(byte[] packet)
+        {
             lock (processLock)
             {
+                if(Terminal)return;
                 WorldClient previousClient = Store.currentClient;
                 Store.currentClient = this;
                 try
                 {
-                    // Update the last time we are called
-                    lastUsedTime = TimeUtils.getUnixTimeUint32();
-
                     // Decryption start
                     bool encrypted = false;
 
@@ -676,18 +713,10 @@ namespace hds
         {
             get
             {
-                if (IsBot)
-                {
-                    return alive;
-                }
-                UInt32 now = TimeUtils.getUnixTimeUint32();
-                if (!this.alive || (now - lastUsedTime > 30))
-                {
-                    return false;
-                }
-                return true;
+                lock(LivenessSync)return alive&&!explicitlyStopped&&!reapClaimed&&
+                    (IsBot||unchecked(LivenessNow-lastUsedTime)<=30);
             }
-            set { alive = value; }
+            set {lock(LivenessSync){if(!value){alive=false;explicitlyStopped=true;}else if(!explicitlyStopped&&!reapClaimed)alive=true;}}
         }
     }
 }
