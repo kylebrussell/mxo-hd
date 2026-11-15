@@ -198,6 +198,7 @@ namespace hds
                 if(state.Version==2&&(def==null||p.objects.ContainsKey(o.Id)))throw new InvalidOperationException("Invalid open-floor checkpoint object identity");
                 if(def!=null)p.objects[o.Id]=new MissionObjectState {def=def,spot=o.Spot,goid=o.Goid,unlockedOnce=o.Unlocked,shownState=o.State,OpenFloor=o.OpenFloor};
             }
+            MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             return p;
         }
