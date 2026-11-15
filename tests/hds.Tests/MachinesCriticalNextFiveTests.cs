@@ -5,6 +5,23 @@ using NativeQa;
 namespace hds.Tests;
 public class MachinesCriticalNextFiveTests
 {
+    [Fact] public void CurrentHostilesIncludeNamedXmlActorsWithoutTreatingOldStageOrFriendlyActorsAsTargets()
+    {
+        var authored=new HashSet<ushort>{1};
+        var phage=new MissionProgress.SavedMob{Npc=1,Friendly=false,Hostile=false,Dead=false,Phase=0};
+        Assert.True(MachinesCriticalNextFiveFixture.CurrentHostile(phage,authored));
+        Assert.False(MachinesCriticalNextFiveFixture.CurrentHostile(phage,new HashSet<ushort>{2}));
+        phage.Friendly=true;Assert.False(MachinesCriticalNextFiveFixture.CurrentHostile(phage,authored));
+        phage.Friendly=false;phage.Dead=true;Assert.False(MachinesCriticalNextFiveFixture.CurrentHostile(phage,authored));
+        Assert.True(MachinesCriticalNextFiveFixture.CurrentHostile(new MissionProgress.SavedMob{Npc=1050,Hostile=true},authored));
+    }
+    [Fact] public void LatestGenerationCannotReselectHistoricalSameViewId()
+    {
+        var attrs=new Dictionary<string,byte[]>();
+        var old=new ViewCreation(7,599,1,attrs);var current=new ViewCreation(7,599,2,attrs);
+        Assert.Same(current,Assert.Single(MachinesCriticalNextFiveFixture.LatestViews(new[]{old,current},0)));
+        Assert.Same(current,Assert.Single(MachinesCriticalNextFiveFixture.LatestViews(new[]{old,current},1)));
+    }
     [Fact] public void ActualNpcLevelIsOneByteAndMalformedSchemaIsRejected()
     {
         Assert.Equal((byte)50,MachinesCriticalNextFiveFixture.NpcLevel(new Dictionary<string,byte[]>{{"Level",new byte[]{0x32}}}));

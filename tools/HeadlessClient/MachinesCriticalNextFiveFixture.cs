@@ -7,6 +7,11 @@ public static class MachinesCriticalNextFiveFixture
         1201,1204,1203,1205,1206,1207,1208,
         2201,2202,2203,2204,2205,2206,2207,2208,2209,2210,201101,201102,201103,201201};
     public const int NextMission = 201207, Seed = 201202;
+    // Saved Hostile denotes generated progress.hostiles membership, not every enemy's side.
+    public static bool CurrentHostile(MissionProgress.SavedMob actor,IReadOnlySet<ushort> authoredCurrentStageIds) =>
+        !actor.Dead&&!actor.Friendly&&(actor.Hostile||authoredCurrentStageIds.Contains(actor.Npc));
+    public static IEnumerable<ViewCreation> LatestViews(IEnumerable<ViewCreation> creations,int cursor) =>
+        creations.Skip(cursor).GroupBy(v=>v.ViewId).Select(g=>g.Last());
     public static byte NpcLevel(IReadOnlyDictionary<string,byte[]> attributes)
     {
         if(!attributes.TryGetValue("Level",out var value)||value.Length!=1)

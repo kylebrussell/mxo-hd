@@ -38,8 +38,8 @@ public static partial class Scenarios
                 BitConverter.ToUInt16(key,1)==state.Instance&&key[3]==2:!v.Attributes.ContainsKey("MissionKey"))&&
                 v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
                 Math.Abs(BitConverter.ToDouble(pos)-current.X)<0.001&&Math.Abs(BitConverter.ToDouble(pos,8)-current.Y)<0.001&&Math.Abs(BitConverter.ToDouble(pos,16)-current.Z)<0.001;
-            await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(ownCursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).Any(Matches),"Current saved NPC position/side/mission generation",TimeSpan.FromSeconds(15));
-            var view=p.World.CreationSnapshot().Skip(ownCursor).GroupBy(v=>v.ViewId).Select(g=>g.Last()).Last(Matches);
+            await p.WaitUntilAsync(()=>MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),ownCursor).Any(Matches),"Current saved NPC position/side/mission generation",TimeSpan.FromSeconds(15));
+            var view=MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),ownCursor).Last(Matches);
             targets.Add(new{Role="NPC",state.Mission,state.Phase,state.Identity,state.Instance,CreationCursor=ownCursor,Definition=id,Current=current,view.ViewId,view.SpawnId,
                 Attributes=view.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});
             return view;
@@ -223,7 +223,8 @@ public static partial class Scenarios
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
                             foreach(var npc in mission.Elements("npc"))names.Add((string)npc.Attribute("handle")!);
-                            List<ViewCreation> Targets()=>p.World.CreationSnapshot().Skip(viewsStart).GroupBy(v=>v.ViewId).Select(g=>g.Last())
+                            var authoredCurrentStageIds=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>(ushort)n.Attribute("id")!).ToHashSet();
+                            List<ViewCreation> Targets()=>MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),viewsStart)
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
                                     (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();
@@ -233,7 +234,7 @@ public static partial class Scenarios
                                 if(Done(number))break;
                                 var currentState=(await Saved("wave-current-owner"))!;
                                 Check.Equal(phase,currentState.Phase,"DefeatAll remains in its authored current phase");
-                                var currentActors=currentState.Mobs.Where(m=>!m.Dead&&!m.Friendly&&m.Hostile).ToArray();
+                                var currentActors=currentState.Mobs.Where(m=>MachinesCriticalNextFiveFixture.CurrentHostile(m,authoredCurrentStageIds)).ToArray();
                                 var target=Targets().LastOrDefault(v=>currentActors.Any(m=>m.Name==v.Name&&
                                     MachinesCriticalNextFiveFixture.NpcLevel(v.Attributes)==m.Level&&v.Attributes.TryGetValue("Position",out var pos)&&pos.Length==24&&
                                     BitConverter.ToDouble(pos)==m.X&&BitConverter.ToDouble(pos,8)==m.Y&&BitConverter.ToDouble(pos,16)==m.Z));
