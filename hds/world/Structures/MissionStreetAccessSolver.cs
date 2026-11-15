@@ -33,6 +33,38 @@ namespace hds
             if(!previous.ContainsKey(end))return false;var result=new List<Node>();for(Node? n=end;n.HasValue;n=previous[n.Value])result.Add(n.Value);
             result.Reverse();path=result.ToArray();return true;
         }
+        // This proves only the counted reciprocal public opening, never collision/pick success.
+        private bool StreetOpening(MissionStreetAccessData outside,Portal portal,double floor)
+        {
+            var inside=new Node(portal.SourceRegion,portal.SourcePolygon);var external=new Node(portal.TargetRegion,portal.TargetPolygon);
+            if(!Available(inside.Region)||!outside.Has(external)||portal.TargetEdge>=outside.At(external).Edges.Length||!Level(inside,floor))return false;
+            byte[] reverse=outside.At(external).Edges[portal.TargetEdge].Bytes;
+            if(BitConverter.ToUInt16(reverse)!=inside.Region||BitConverter.ToUInt16(reverse,2)!=inside.Polygon)return false;
+            double[][] interiorEdge=Segment(inside.Region,inside.Polygon,portal.SourceEdge),exteriorEdge=outside.Segment(external,portal.TargetEdge),opening=portal.Endpoints;
+            if(opening.Any(v=>!OnSegment(new double[]{v[0],0,v[1]},interiorEdge)||!OnSegment(new double[]{v[0],0,v[1]},exteriorEdge)))return false;
+            return Math.Sqrt(Math.Pow(opening[1][0]-opening[0][0],2)+Math.Pow(opening[1][1]-opening[0][1],2))>=NavMesh.MinOpenEdge&&
+                opening.All(v=>Same(Floor(Poly(inside),v[0],v[1]),floor)&&Same(outside.Floor(external,v[0],v[1]),floor));
+        }
+        // Canonical world-door identity has no mission/phase lease. Only an exact audited public portal qualifies.
+        internal bool TryCanonicalPublicDoor(MissionStreetAccessData outside,StaticWorldObject raw,out DoorPose pose,out string refusal)
+        {
+            pose=null;refusal="InvalidCanonicalPublicDoor";
+            if(outside==null||outside.InteriorDigest!=Digest||!outside.LegacyMatches(raw)||!groups.TryGetValue(raw.mxoStaticId,out Group group))return false;
+            var natives=outside.Doors(raw.mxoStaticId);
+            if(natives.Length!=1||natives[0].Class!=364||!MissionInteriorDoorTypes.IsSupported(natives[0].Goid))return false;
+            var native=natives[0];
+            Occurrence[] own=group.Occurrences.Where(o=>o.Goid==native.Goid&&o.RecordSha256.Equals(native.RecordSha256,StringComparison.OrdinalIgnoreCase)).ToArray();
+            if(own.Length!=1||native.Region!=own[0].Region)return false;
+            foreach(Portal portal in document.Portals.Where(p=>p.SourceRegion==own[0].Region&&p.TargetRegion<document.OutdoorRegions&&p.DoorKeys.Length==1&&p.DoorKeys[0]==raw.mxoStaticId))
+            {
+                double floor=outside.NativeOrigin(native).Y;
+                if(!StreetOpening(outside,portal,floor))continue;
+                var on=outside.NativeOnOpening(portal.SourceRegion,portal.Endpoints,floor);
+                if(on.Length!=1||on[0].Key!=raw.mxoStaticId)continue;
+                pose=new DoorPose(raw.mxoStaticId,own[0]);refusal=null;return true;
+            }
+            return false;
+        }
         // The public starting node is explicit evidence. Choosing a fresh public world-network anchor is not done here.
         internal bool TryStreetAccess(MissionStreetAccessData outside,Entry lobby,Node publicStart,uint shaft,Func<uint,StaticWorldObject> selectedRaw,
             out StreetAccess proof,out string refusal)
@@ -43,13 +75,8 @@ namespace hds
             foreach(Portal portal in document.Portals.Where(p=>p.TargetRegion<document.OutdoorRegions).OrderBy(p=>p.SourceRegion).ThenBy(p=>p.SourcePolygon).ThenBy(p=>p.TargetRegion).ThenBy(p=>p.TargetPolygon))
             {
                 var inside=new Node(portal.SourceRegion,portal.SourcePolygon);var external=new Node(portal.TargetRegion,portal.TargetPolygon);
-                if(!Available(inside.Region)||!outside.Has(external)||portal.TargetEdge>=outside.At(external).Edges.Length||!Level(inside,floor))continue;
-                byte[] reverse=outside.At(external).Edges[portal.TargetEdge].Bytes;
-                if(BitConverter.ToUInt16(reverse)!=inside.Region||BitConverter.ToUInt16(reverse,2)!=inside.Polygon)continue;
-                double[][] interiorEdge=Segment(inside.Region,inside.Polygon,portal.SourceEdge),exteriorEdge=outside.Segment(external,portal.TargetEdge),opening=portal.Endpoints;
-                if(opening.Any(v=>!OnSegment(new double[]{v[0],0,v[1]},interiorEdge)||!OnSegment(new double[]{v[0],0,v[1]},exteriorEdge)))continue;
-                if(Math.Sqrt(Math.Pow(opening[1][0]-opening[0][0],2)+Math.Pow(opening[1][1]-opening[0][1],2))<NavMesh.MinOpenEdge||
-                    opening.Any(v=>!Same(Floor(Poly(inside),v[0],v[1]),floor)||!Same(outside.Floor(external,v[0],v[1]),floor)))continue;
+                if(!StreetOpening(outside,portal,floor))continue;
+                double[][] opening=portal.Endpoints;
                 if(!outside.TryOutsidePath(publicStart,external,out Node[] route)||!StreetInteriorPath(inside,lobby.Node,floor,shaft,out Node[] inner))continue;
                 var native=outside.NativeOnOpening(inside.Region,opening,floor);
                 if(native.Length==0&&portal.DoorKeys.Length==0)

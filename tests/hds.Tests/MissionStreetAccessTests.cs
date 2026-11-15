@@ -55,6 +55,16 @@ public sealed class MissionStreetAccessTests
         else Assert.Equal((ushort)365,proof.Door.Goid);
         Assert.Equal(before,c.Raw.ToJsonString());Assert.Equal(101213,saved.Mission);Assert.False(saved.Flags["entered"]);Assert.Empty(saved.Items);
     }
+    [Theory][InlineData((ushort)209,0x0d100003u)][InlineData((ushort)879,0x36f00018u)]
+    public void CanonicalPublicDoorKeepsRawIdentityAndUsesItsOwnNativeSchema(ushort sector,uint key)
+    {
+        var c=Load(sector);var raw=Raw(c.Raw,key);string before=MissionNpcInteriorPlanning.RawJson(raw);
+        Assert.True(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out var pose,out var why),why);
+        Assert.Equal(key,pose.Key);Assert.True(MissionInteriorDoorTypes.IsSupported(pose.Goid));
+        Assert.Equal(before,MissionNpcInteriorPlanning.RawJson(raw));
+        raw.pos_x+=1;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
+        raw=Raw(c.Raw,key);raw.metrId=2;Assert.False(c.Evidence.TryCanonicalPublicDoor(c.Outdoor,raw,out _,out _));
+    }
     [Fact]public void UnknownRawSignatureOtherWorldOtherFloorAndMissingPublicNodeCannotSupplyAccess()
     {
         var c=Load(209);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
