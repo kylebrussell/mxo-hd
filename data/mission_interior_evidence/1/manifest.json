@@ -1,0 +1,34 @@
+{
+  "Format": 1,
+  "World": 1,
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "GobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "MetrSha256": "50d2f1828507da6022fbe38a90d857975e5e68e9339854dd18ca85941e9dd23d",
+  "TransformSha256": "c8058e67440d14c0cacb4a921553a9f539b789aa6568970296b3ecb06a1b6884",
+  "LegacyFiles": [
+    {
+      "File": "data/staticObjects_slums_1.csv",
+      "Sha256": "a73476add26b564bd405b7d9cc4ab37aad96434536acff857c59bfbb07f4ba1d"
+    },
+    {
+      "File": "data/staticObjects_slums_2.csv",
+      "Sha256": "aefbbbfbbffae981f0329ca88fbde957a2e0abef13ae6b569cabcf780314b65e"
+    }
+  ],
+  "Sectors": [
+    {
+      "Sector": 550,
+      "Sha256": "3231609f5ac22ccfd27a753fec03d14e286497b51f7e12690b5fc558116c8ab3",
+      "Regions": 157,
+      "Portals": 267,
+      "Groups": 1009
+    },
+    {
+      "Sector": 1349,
+      "Sha256": "d3074712c8537ec7a2eed62809d54943766ad8ef80e069ca5e26bf8abc3f4e79",
+      "Regions": 51,
+      "Portals": 75,
+      "Groups": 121
+    }
+  ]
+}
