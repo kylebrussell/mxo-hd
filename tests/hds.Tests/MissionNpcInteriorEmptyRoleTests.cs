@@ -38,7 +38,7 @@ public partial class MissionNpcInteriorCheckpointTests
         var m=HardTimeZeroRoles();var p=new MissionProgress(m){phaseIndex=0,persistenceId=pending.Selection.Identity,startedAt=pending.Selection.Started,waitingForExit=true};
         foreach(var goal in m.phases[0].missionObjectives)p.Complete(goal);p.itemSlots[6796]=40;p.itemSlots[6795]=41;
         var selected=pending.Selection.Site.Resolve(EmptyRoleSites.Value);Assert.NotNull(selected);Assert.Equal(0x22602808u,selected.elevatorDoor.mxoStaticId);
-        var prior=Assert.Single(EmptyRoleSites.Value.Where(s=>s.elevatorDoor.mxoStaticId==0x0d100020&&s.elevatorDoor.pos_y==1345&&s.containers.Concat(s.realObjects).Any(o=>o.mxoStaticId==0x0d1001a2)));
+        var prior=Assert.Single(EmptyRoleSites.Value.Where(s=>s.elevatorDoor?.mxoStaticId==0x0d100020&&s.elevatorDoor.pos_y==1345&&s.containers.Concat(s.realObjects).Any(o=>o.mxoStaticId==0x0d1001a2)));
         p.site=prior;p.sites.Add(prior);var raw=prior.containers.Concat(prior.realObjects).Single(o=>o.mxoStaticId==0x0d1001a2);
         p.objects[1]=new MissionObjectState{def=m.phases[0].objects.Single(),spot=raw,goid=326};p.npcInteriorPending=pending;
         return(p,Client(p),selected,new Provider());
