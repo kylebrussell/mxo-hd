@@ -63,4 +63,8 @@ public static class ZionArmorBoxCheckpoint
             v.Attributes.TryGetValue("Orientation",out var q)&&q.SequenceEqual(Convert.FromHexString(pose.Quaternion))&&
             v.Attributes.TryGetValue("MissionKey",out var key)&&key.SequenceEqual(Convert.FromHexString("FF320002")));
     }
+    public static void RequireUnchangedGoals(MissionProgress.SavedState expected,MissionProgress.SavedState current)
+    {
+        if(!expected.Done.SequenceEqual(current.Done)||!expected.EverDone.SequenceEqual(current.EverDone))throw new InvalidDataException("Earned goal progress changed during checkpoint lifecycle");
+    }
 }

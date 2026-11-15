@@ -95,4 +95,13 @@ public class ZionArmorBoxCheckpointTests
         Assert.Same(body,ZionArmorBoxCheckpoint.CurrentBody(new[]{own,nextOwn,body},2,nextOwn,pose));
         Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body},0,own,pose));
     }
+    [Fact]
+    public void LifecycleCannotHideGoalProgressButAllowsNaturalEntryAndElapsedTimers()
+    {
+        var expected=ZionArmorBoxCheckpoint.Verified();var current=ZionArmorBoxCheckpoint.Verified();
+        current.Flags["entered"]=false;current.NpcElapsed[10]=2.5;current.GoalElapsed[1]=3.5;
+        ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current);
+        current.Done=new[]{1};Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current));
+        current.Done=expected.Done;current.EverDone=current.EverDone.Append(999).ToArray();Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current));
+    }
 }

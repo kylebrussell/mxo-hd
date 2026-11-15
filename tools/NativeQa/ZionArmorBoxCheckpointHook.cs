@@ -26,6 +26,7 @@ public static class ZionArmorBoxCheckpointHook
             Check.Equal(expected.OpenFloorCurrentSiteIndex,s.OpenFloorCurrentSiteIndex,"Current captured site index");
             Check.Equal(JsonSerializer.Serialize(expected.OpenFloorSites,fields),JsonSerializer.Serialize(s.OpenFloorSites,fields),"Captured full site history");
             Check.Equal(0,s.Items.Count,"No earned item injected or taken");
+            ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,s);
         }
         try
         {
@@ -40,13 +41,7 @@ public static class ZionArmorBoxCheckpointHook
             await actor.WaitUntilAsync(()=>ZionArmorBoxCheckpoint.CurrentBody(actor.World.CreationSnapshot(),viewCursor,own,pose)!=null,"Captured548 exact key/orientation/current-ownlife after stationary ordinary Ride",TimeSpan.FromSeconds(15));
             receipt=InteriorAdmissionDeliveryProof.Require(InteriorAdmissionDeliveryProof.Read(packetPath),110,packetCursor,pose.Route.Take(3).ToArray(),548,pose.Centre);
             Identity(await Payload());Check.Equal(receipts,await Receipts(),"No active/later receipt");Check.Equal(beforeItems,await Items(),"No probe item mutation");Check.Equal(beforeAccount,await Account(),"No reward/XP injection");
-            stage="ordinary-exit";int exitCursor=server.DebugLog().Length;actor.SendRpc("80 c8 "+WireFormat.ToHex(BitConverter.GetBytes(witness.FloorKey))+" 03 00");
-            // The normal exit is observable in the same actual server log; no mission-floor native start.
-            await actor.WaitUntilAsync(()=>server.DebugLog()[exitCursor..].Contains("[MISSION] Teleported to "),"New ordinary return to captured lobby",TimeSpan.FromSeconds(15));
-            var exit=System.Text.RegularExpressions.Regex.Matches(server.DebugLog()[exitCursor..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
-            double[] returned=Enumerable.Range(1,3).Select(i=>double.Parse(exit.Groups[i].Value,System.Globalization.CultureInfo.InvariantCulture)).ToArray();
-            Check.Equal(witness.Lobby[1]-50,returned[1],"Ordinary exit reached lobby floor, not native missionfloor");
-            Check.That(Math.Sqrt(Math.Pow(returned[0]-witness.Lobby[0],2)+Math.Pow(returned[2]-witness.Lobby[2],2))<=800,"Ordinary return stays near captured lobby");
+            // Authored goals do not yet allow a downward ride. Release normally from this accepted floor.
             stage="ordinarylogout";actor.SkipReceived();actor.SendRpc("80 fe 00");await actor.WaitForRpcAsync("80 fd");actor.Dispose();await Task.Delay(TimeSpan.FromSeconds(33));
             afterHex=await Payload();Identity(afterHex);Check.Equal(receipts,await Receipts(),"Receipt boundary after release");Check.Equal(beforeItems,await Items(),"Owned items after release");Check.Equal(beforeAccount,await Account(),"Account after release");Check.Equal(0,actor.World.Problems.Count,"Actual current CSR parser");passed=true;stage="complete";
             return Array.Empty<byte>();
@@ -59,7 +54,7 @@ public static class ZionArmorBoxCheckpointHook
                 if(afterHex.Length==0)try{afterHex=await Payload();}catch(Exception e){afterHex="READ FAILED: "+e.Message;}
                 Directory.CreateDirectory(context.OutputDirectory);string raw=InteriorAdmissionDeliveryProof.Read(Path.Combine(server.WorkingDirectory,"PacketLog.txt"));
                 await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"checkpoint-PacketLog.txt"),raw);
-                await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"checkpoint-proof.json"),JsonSerializer.Serialize(new{Passed=passed,Stage=stage,Failure=failure?.ToString(),Database=db.Name,server.ProcessId,server.SourceAssembly,server.SourceAssemblySha256,CaptureSha256=ZionArmorBoxCheckpoint.PayloadSha256,BeforeHex=beforeHex,AfterHex=afterHex,BeforeAccount=beforeAccount,BeforeItems=beforeItems,EarlierReceipts=receipts,ArrivalReceipt=receipt,RawSha256=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw))),Rpcs=actor?.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),Views=actor?.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=actor?.World.Problems.ToArray(),NativeRenderingProven=false,NewChainProven=false},new JsonSerializerOptions{WriteIndented=true}));
+                await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"checkpoint-proof.json"),JsonSerializer.Serialize(new{Passed=passed,Stage=stage,Failure=failure?.ToString(),Database=db.Name,server.ProcessId,server.SourceAssembly,server.SourceAssemblySha256,CaptureSha256=ZionArmorBoxCheckpoint.PayloadSha256,BeforeHex=beforeHex,AfterHex=afterHex,BeforeAccount=beforeAccount,BeforeItems=beforeItems,EarlierReceipts=receipts,ArrivalReceipt=receipt,NativeStart="Captured floor after ordinary headless entry and normal logout; not native door-entry proof",RawSha256=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw))),Rpcs=actor?.World.RpcSnapshot().Select(r=>r.Hex).ToArray(),Views=actor?.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=actor?.World.Problems.ToArray(),NativeRenderingProven=false,NativeDoorEntryProven=false,NewChainProven=false},new JsonSerializerOptions{WriteIndented=true}));
             }
             finally{actor?.Dispose();}
         }
