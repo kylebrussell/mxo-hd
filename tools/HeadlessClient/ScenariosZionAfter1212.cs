@@ -97,7 +97,7 @@ public static partial class Scenarios
         await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
         ZionAfter1212RidePlan.SameEntry(state,await ZionAfter1212Checkpoint(context,p));
         Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Current own-view life retained immediately before Ride wire request");
-        var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid&&ZionAfter1212Fixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance,creationStart)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
+        var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid&&ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,state.Instance)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
         int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
@@ -146,7 +146,7 @@ public static partial class Scenarios
                 await MoveForMissionTest(p,root[0],root[1],root[2]);
                 p.World.SendViewList(ZionAfter1212Fixture.ClientPosition(root));
             }
-            await p.WaitUntilAsync(()=>pending.All(o=>ZionAfter1212Fixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance,creationStart)!=null),"First current free bodies after stationary arrival receipt",TimeSpan.FromSeconds(15));
+            await p.WaitUntilAsync(()=>pending.All(o=>ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,state.Instance)!=null),"First current free bodies after stationary arrival receipt",TimeSpan.FromSeconds(15));
             string raw=InteriorAdmissionDeliveryProof.Read(packetPath);
             foreach(var obj in pending)
             {
@@ -215,8 +215,8 @@ public static partial class Scenarios
         Check.That(NavMesh.Locate(1,w.Standing[0],w.Standing[1],w.Standing[2],out var standing),"Published free-object Standing is on actual NAV");
         Check.Equal(standing.floorY+95,w.Standing[1],"Published Standing uses actual NAV height");
         for(int i=0;i<w.Route.Count;i+=3)await MoveForMissionTest(p,w.Route[i],w.Route[i+1],w.Route[i+2]);
-        await p.WaitUntilAsync(()=>ZionAfter1212Fixture.CurrentBody(p.World.CreationSnapshot(),obj,state.Instance,creationStart)!=null,"current generation fixed object body at committed witness",TimeSpan.FromSeconds(15));
-        var body=ZionAfter1212Fixture.CurrentBody(p.World.CreationSnapshot(),obj,state.Instance,creationStart)!;
+        await p.WaitUntilAsync(()=>ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),obj,state.Instance)!=null,"current generation fixed object body at committed witness",TimeSpan.FromSeconds(15));
+        var body=ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),obj,state.Instance)!;
         Check.Equal(w.Quaternion,Convert.ToHexString(body.Attributes["Orientation"]),"Fixed DTO orientation on actual03 body");
         var after=await ZionAfter1212Checkpoint(context,p);var current=after.Objects.Single(o=>o.Id==objectId);
         Check.Equal(JsonSerializer.Serialize(new{obj.Id,obj.Goid,obj.Spot,obj.OpenFloor},new JsonSerializerOptions{IncludeFields=true}),JsonSerializer.Serialize(new{current.Id,current.Goid,current.Spot,current.OpenFloor},new JsonSerializerOptions{IncludeFields=true}),"Whole raw source/fixed DTO unchanged through ordinary ride/route movement");
