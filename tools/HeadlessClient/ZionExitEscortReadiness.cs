@@ -1,0 +1,80 @@
+using hds;
+using System.Xml.Linq;
+namespace HeadlessClient;
+
+/// <summary>Current-session, read-only readiness for an exit after a disclosed player movement aid.</summary>
+public static class ZionExitEscortReadiness
+{
+    public sealed record Observation(ushort Npc,ushort View,byte Spawn,long Life,int Birth,int PositionSection,double[] Position);
+    private sealed record Live(ViewCreation View,string Raw,int Birth,int PositionSection,double[]? Position,bool Known,bool Dead);
+    public static ushort[] OpenFollowers(XElement definition,MissionProgress.SavedState state)
+    {
+        var xml=new System.Xml.XmlDocument();xml.LoadXml(definition.ToString());var mission=MissionXml.Parse(xml.DocumentElement!);
+        if(mission.id!=state.Mission||state.Phase<0||state.Phase>=mission.phases.Count)throw new InvalidDataException("Wrong escort mission/phase");
+        return mission.phases[state.Phase].missionObjectives.Where(o=>o.type==MissionGoalType.Escort&&o.escortTo=="exit"&&!state.Done.Contains(o.goal)&&
+            (o.afterGoal<0||state.Done.Contains(o.afterGoal))).SelectMany(o=>o.Npcs).Distinct().ToArray();
+    }
+    public static IReadOnlyList<Observation> Require(OwnViewLifeSnapshot stream,long expectedLife,string handle,
+        MissionProgress.SavedState before,MissionProgress.SavedState current,IReadOnlyList<ushort> followers,double[] player)
+    {
+        if(!stream.Current||!stream.OwnViewReady||stream.Life!=expectedLife||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life)||
+            player.Length!=3||player.Any(v=>!double.IsFinite(v))||!MervFollowupElevatorFixture.SameEntry(before,current)||followers.Count==0)
+            throw new InvalidDataException("Wrong current escort owner/life/site");
+        var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool own=false;
+        foreach(var e in stream.Events)
+        {
+            if(e.Section<stream.OwnBirthSection)continue;var bytes=e.Bytes;var births=WireFormat.FindCreationEvents(bytes);int at=0;
+            if(e.Section==stream.OwnBirthSection)
+            {
+                var self=births.LastOrDefault(b=>b.Creation.ViewId==2&&b.Creation.Goid==12&&b.Creation.Name==handle)??throw new InvalidDataException("Wrong current own2 identity");
+                at=self.Offset+self.Length;own=true;
+            }
+            if(!own)throw new InvalidDataException("Follower precedes current own2");
+            while(at<bytes.Length)
+            {
+                var birth=births.FirstOrDefault(b=>b.Offset==at);
+                if(birth!=null)
+                {
+                    var v=birth.Creation;string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    if(!live.TryGetValue(v.ViewId,out var prior)||prior.Raw!=raw)
+                    {
+                        if(prior!=null)retired.Add((prior.View.ViewId,prior.View.SpawnId));
+                        double[]? pos=v.Attributes.TryGetValue("Position",out var p)&&p.Length==24?Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(p,i*8)).ToArray():null;
+                        bool dead=v.Attributes.TryGetValue("IsDead",out var d)&&(d.Length!=1||d[0]!=0);
+                        live[v.ViewId]=new(v,raw,e.Section,e.Section,pos,!retired.Contains((v.ViewId,v.SpawnId)),dead);
+                    }
+                    at+=birth.Length;continue;
+                }
+                ushort? kind=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
+                    at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException("Unknown/truncated current escort view frame");
+                if(frame.Type==MervFollowupViewFrames.Kind.Delete)
+                {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
+                else if(live.TryGetValue(frame.View,out var changed))
+                {
+                    if(frame.Type==MervFollowupViewFrames.Kind.Death)live[frame.View]=changed with{Dead=true};
+                    else if(frame.PositionOffset>=0)live[frame.View]=changed with{Position=Enumerable.Range(0,3).Select(i=>(double)BitConverter.ToSingle(bytes,at+frame.PositionOffset+i*4)).ToArray(),PositionSection=e.Section};
+                }
+                at+=frame.Length;
+            }
+        }
+        var result=new List<Observation>();
+        foreach(ushort id in followers)
+        {
+            var old=before.Mobs.Single(m=>m.Npc==id);var mobs=current.Mobs.Where(m=>m.Npc==id).ToArray();
+            if(mobs.Length!=1||!current.Following.Contains(id)||!Guid.TryParseExact(old.Identity,"N",out _)||mobs[0].Identity!=old.Identity||mobs[0].Dead||mobs[0].Health==0||
+                mobs[0].Name!=old.Name||mobs[0].Friendly!=old.Friendly||mobs[0].Phase!=old.Phase)throw new InvalidDataException("Wrong live following identity");
+            var mob=mobs[0];bool Match(Live v)=>v.View.Goid==599&&v.View.Name==mob.Name&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
+                v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
+                (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
+                    v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
+            var matches=live.Values.Where(Match).ToArray();
+            if(matches.Length!=1||!matches[0].Known||matches[0].Dead||matches[0].Position==null)throw new InvalidDataException("No unique current live escort view");
+            var chosen=matches[0];var position=chosen.Position!;double[] saved={mob.X,mob.Y,mob.Z};
+            if(position.Any(v=>!double.IsFinite(v))||Enumerable.Range(0,3).Any(i=>Math.Abs(position[i]-saved[i])>=1)||
+                Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
+            result.Add(new(id,chosen.View.ViewId,chosen.View.SpawnId,stream.Life,chosen.Birth,chosen.PositionSection,position));
+        }
+        if(!stream.Current)throw new InvalidDataException("Escort own life changed");return result;
+    }
+}

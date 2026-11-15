@@ -25,7 +25,20 @@ public static partial class Scenarios
         var authored=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"zion_1_2_*.xml").Select(XElement.Load).Single(m=>(int)m.Attribute("id")! == state.Mission);
         var objectOrder=authored.Elements("phase").ElementAt(state.Phase).Elements("object").Select(o=>checked((ushort)(int)o.Attribute("id")!)).ToArray();
         var selected=MervFollowupElevatorFixture.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
-        uint key=selected.Key;var pose=selected.Pose;await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        uint key=selected.Key;var pose=selected.Pose;long ownLife=p.World.CurrentOwnViewLife().Life;
+        await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        var exitFollowers=enter?Array.Empty<ushort>():ZionExitEscortReadiness.OpenFollowers(authored,state);
+        if(exitFollowers.Length>0)
+        {
+            IReadOnlyList<ZionExitEscortReadiness.Observation>? readiness=null;
+            await p.WaitUntilAsync(()=>
+            {
+                var current=ZionNextFiveCheckpoint(context,p).GetAwaiter().GetResult();
+                try{readiness=ZionExitEscortReadiness.Require(p.World.CurrentOwnViewLife(),ownLife,p.Handle,state,current,exitFollowers,new[]{pose[0],pose[1]-50,pose[2]});return true;}
+                catch(InvalidDataException){return false;}
+            },"Current following actors reached unchanged1500 escort range before ordinary door request",TimeSpan.FromSeconds(15));
+            note?.Invoke(new{Kind="Current exit follower readiness after player aid",Mission=state.Mission,Phase=state.Phase,OwnLife=ownLife,Radius=1500,Followers=readiness});
+        }
         Check.That(MervFollowupElevatorFixture.SameEntry(state,await ZionNextFiveCheckpoint(context,p)),"Owned Zion phase/site/source/witness is unchanged before door request");
         var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&ZionNextFiveFixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
