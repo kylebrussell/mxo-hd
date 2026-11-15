@@ -77,7 +77,9 @@ namespace hds
             internal Shot(Func<bool> current,Func<float> distance,Func<uint> defenderWeapon,WorldClient player,uint weapon,Func<int> count,string actor)
             {
                 this.current=current;this.distance=distance;this.defenderWeapon=defenderWeapon;this.player=player;this.weapon=weapon;this.actor=actor;
-                validAtCapture=current();targetWeapon=validAtCapture?defenderWeapon():0;
+                validAtCapture=current();
+                if(validAtCapture){float metres=distance();validAtCapture=float.IsFinite(metres)&&metres>=0;}
+                targetWeapon=validAtCapture?defenderWeapon():0;
                 loaded=validAtCapture&&player!=null&&AbilityPassives.IsLoaded(player,148);
                 //Each skipped dimension is irrelevant to the literal formula. Fence it again before use.
                 CountSampled=validAtCapture&&RangedWeapons.AttackClass(weapon)!=0&&!RangedWeapons.IsGun(targetWeapon)&&!loaded;

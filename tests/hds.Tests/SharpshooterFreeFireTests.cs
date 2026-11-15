@@ -90,6 +90,11 @@ public class SharpshooterFreeFireTests
         Assert.False(noGun.CountSampled);Assert.Equal(100,noGun.AddToAttack(100,0));Assert.Equal(0,scans);
         var invalid=new SharpshooterFreeFire.Shot(()=>false,()=>1f,()=>0,c,537,Count,"unit");
         Assert.False(invalid.CountSampled);Assert.Equal(100,invalid.AddToAttack(100,537));Assert.Equal(0,scans);
+        foreach(float distance in new[]{float.NaN,float.PositiveInfinity,-1})
+        {
+            var invalidRange=new SharpshooterFreeFire.Shot(()=>true,()=>distance,()=>0,c,537,Count,"unit");
+            Assert.False(invalidRange.CountSampled);Assert.Equal(100,invalidRange.AddToAttack(100,537));Assert.Equal(0,scans);
+        }
         AbilityPassives.SetLoaded(c,new(ushort,ushort)[]{(148,50)});
         var loaded=new SharpshooterFreeFire.Shot(()=>true,()=>1f,()=>0,c,537,Count,"unit");
         Assert.False(loaded.CountSampled);Assert.Equal(100,loaded.AddToAttack(100,537));Assert.Equal(0,scans);
@@ -107,7 +112,6 @@ public class SharpshooterFreeFireTests
         AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
         Assert.Equal(100,loaded.AddToAttack(100,537));Assert.Equal(0,scans);
     }
-    private sealed class TrackingRandom:Random
     [Fact]public void DefenderUsesCurrentEquippedWeaponNotAStaleFreeFirePick()
     {
         var a=Client();var b=Client();b.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(220,495,100));
