@@ -261,6 +261,7 @@ public static partial class Scenarios
         new Scenario("zion-critical-opening", ZionCriticalOpening, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
         new Scenario("zion-critical-followup",ZionCriticalFollowup,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101203"}),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
+        new Scenario("merovingian-after-301207",MervAfter301207,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301208",["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(15)),
         new Scenario("merovingian-critical-opening",MervCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merv-critical-followup", MervCriticalFollowup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("merv-propaganda-count", MervPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
