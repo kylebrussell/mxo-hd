@@ -57,7 +57,11 @@ namespace hds
                 return output;
             }
         }
-        private sealed class Holder { internal readonly Presentation State=new Presentation(); }
+        private sealed class Holder
+        {
+            internal readonly Presentation State=new Presentation();
+            internal readonly AbilityShadowPresentation.Presentation Shadow=new AbilityShadowPresentation.Presentation();
+        }
         private static readonly ConditionalWeakTable<WorldClient,Holder> holders=new ConditionalWeakTable<WorldClient,Holder>();
         // Historical 25 capture-qualified zero pairs stay separate from scaled Sneak and native-qualified tools.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedPairs { get; } = Array.AsReadOnly(new (ushort Source,ushort Target)[] {
@@ -94,12 +98,19 @@ namespace hds
         internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
             Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
         internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs => ObservedPairs.Concat(NativeToolPairs);
+        // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.
+        internal static IReadOnlyList<(ushort Source,ushort Target)> ReadyPresentationPairs { get; } =
+            Array.AsReadOnly(new (ushort Source,ushort Target)[]{(290,1117)});
         public static bool Handles(ushort parent,ushort child)
         {
             parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
             if(AbilitySneakGrant.Matches(parent,child))return true;
-            if(!RegisteredPairs.Any(p=>p.Source==parent && p.Target==child))return false;
-            var modifiers=AbilityCatalog.Find(parent)?.Modifiers.Where(m=>
+            if(!RegisteredPairs.Concat(ReadyPresentationPairs).Any(p=>p.Source==parent && p.Target==child))return false;
+            return ZeroGrant(AbilityCatalog.Find(parent),child);
+        }
+        internal static bool ZeroGrant(AbilityCatalog.Entry parent,ushort child)
+        {
+            var modifiers=parent?.Modifiers.Where(m=>
                 AbilityCatalog.IdOf((uint)m.Number("TargetAbilityGrant"))==child &&
                 m.Number("WhenEnabled",-1)==0 && m.Number("DurationType",-1)==2).ToArray();
             return modifiers?.Length==1 && modifiers[0].Number("ValueFunction")==0 &&
@@ -130,7 +141,7 @@ namespace hds
             lock(holder)
                 client.TransportFence.TryRun(stamp.Transport,()=>
                 {
-                    if(data.worldGeneration!=stamp.World || !data.getOnWorld() || data.worldChangePending ||
+                    if(!ReferenceEquals(client.playerData,data)||data.worldGeneration!=stamp.World || !data.getOnWorld() || data.worldChangePending ||
                        data.waitForRPCShutDown || data.DistrictIsLA())return;
                     lock(data.passives)
                     {
@@ -140,6 +151,13 @@ namespace hds
                             if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned)&&AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level))
                                 desired=desired.Append(new Relation(pair.Source,pair.Target,level));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
+                        if(Handles(AbilityShadowPresentation.Parent,AbilityShadowPresentation.Child))
+                        {
+                            var shadow=new AbilityShadowPresentation.Snapshot(data,data.passives.Loaded.ContainsKey(AbilityShadowPresentation.Parent),
+                                data.passives.ShadowOwned,data.passives.ShadowEmitted);
+                            foreach(var packet in holder.Shadow.Reconcile(data,stamp,complete,shadow))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
+                        }
+                        data.passives.ShadowEmitted=default;
                     }
                 });
         }
