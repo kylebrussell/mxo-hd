@@ -72,7 +72,8 @@ public static class ZionExitEscortReadiness
             if(matches.Length!=1||!matches[0].Known||matches[0].Dead||matches[0].Position==null)throw new InvalidDataException("No unique current live escort view");
             var chosen=matches[0];var position=chosen.Position!;double[] saved={mob.X,mob.Y,mob.Z};
             if(position.Any(v=>!double.IsFinite(v))||Enumerable.Range(0,3).Any(i=>Math.Abs(position[i]-saved[i])>=1)||
-                Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
+                Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d||
+                Enumerable.Range(0,3).Sum(i=>Math.Pow(saved[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
             result.Add(new(id,chosen.View.ViewId,chosen.View.SpawnId,stream.Life,chosen.Birth,chosen.PositionSection,position));
         }
         if(!stream.Current)throw new InvalidDataException("Escort own life changed");return result;

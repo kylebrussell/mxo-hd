@@ -44,6 +44,13 @@ public class ZionExitEscortReadinessTests
         if(change=="duplicate"){var b=B(Maynard);b[5]=3;b[^3]=9;sections.Add(Convert.ToHexString(b));}
         Assert.Throws<InvalidDataException>(()=>Ready(Log(sections.ToArray()),State(),State(53234.16015625,-16114.6416015625)));
     }
+    [Fact] public void Existing1500BoundaryRequiresBothCurrentSavedAndWirePositions()
+    {
+        string Move(float x){var b=B(Near);BitConverter.GetBytes(x).CopyTo(b,6);BitConverter.GetBytes(-16700f).CopyTo(b,14);return Convert.ToHexString(b);}
+        Assert.Single(Ready(Log(Own,Maynard,Move(52700)),State(),State(52700,-16700)));
+        Assert.Throws<InvalidDataException>(()=>Ready(Log(Own,Maynard,Move(52700.5f)),State(),State(52699.9,-16700)));
+        Assert.Throws<InvalidDataException>(()=>Ready(Log(Own,Maynard,Move(52699.9f)),State(),State(52700.5,-16700)));
+    }
     [Fact] public void OwnSessionLifeAndHandleMustRemainCurrent()
     {
         var log=Log(Own,Maynard,Far,Near);var stream=log.Snapshot();var current=State(53234.16015625,-16114.6416015625);

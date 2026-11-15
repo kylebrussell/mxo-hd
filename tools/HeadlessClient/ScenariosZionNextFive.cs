@@ -27,7 +27,8 @@ public static partial class Scenarios
         var selected=MervFollowupElevatorFixture.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
         uint key=selected.Key;var pose=selected.Pose;long ownLife=p.World.CurrentOwnViewLife().Life;
         await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
-        var exitFollowers=enter?Array.Empty<ushort>():ZionExitEscortReadiness.OpenFollowers(authored,state);
+        var rideBudget=System.Diagnostics.Stopwatch.StartNew();
+        var exitFollowers=enter||door.y==lobby[1]?Array.Empty<ushort>():ZionExitEscortReadiness.OpenFollowers(authored,state);
         if(exitFollowers.Length>0)
         {
             IReadOnlyList<ZionExitEscortReadiness.Observation>? readiness=null;
@@ -44,7 +45,12 @@ public static partial class Scenarios
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
         int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
-        if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",TimeSpan.FromSeconds(15));
+        if(door.y!=lobby[1])
+        {
+            var remaining=TimeSpan.FromSeconds(15)-(exitFollowers.Length>0?rideBudget.Elapsed:TimeSpan.Zero);
+            if(remaining<=TimeSpan.Zero)throw new TimeoutException("Follower readiness exhausted the existing15s ride budget");
+            await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",remaining);
+        }
         string rideLog=context.Server.DebugLog()[cursor..];
         note?.Invoke(new{Kind="Ordinary saved-site door request",Mission=state.Mission,Phase=state.Phase,Enter=enter,Key=key,Request=request,RpcCursor=rpc,SourceWaypoint=door,SourceExit=lobby,RideLog=rideLog});
         if(selected.Witness!=null)
