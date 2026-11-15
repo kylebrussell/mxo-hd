@@ -20,7 +20,7 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,overlay.Kind);Assert.Equal(40000,overlay.Position.X);Assert.Equal(25500,overlay.Position.Z);Assert.Equal(prepared.Pending.Witness.Lobby.Quaternion,overlay.Quaternion);
         Assert.Equal(before,JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson));Assert.Equal(calls,prepared.Provider.EntryCalls);
     }
-    [Theory] [InlineData("position")] [InlineData("rotation")] [InlineData("quaternion")] [InlineData("goid")] [InlineData("sector")] [InlineData("staticId")] [InlineData("woodPosition")] [InlineData("woodPairedGoid")]
+    [Theory] [InlineData("position")] [InlineData("rotation")] [InlineData("quaternion")] [InlineData("goid")] [InlineData("sector")] [InlineData("staticId")] [InlineData("exterior")] [InlineData("woodPosition")] [InlineData("woodPairedGoid")]
     public void SameKeyDoesNotAuthorizeUnknownSignatureOrBorrowAnotherGoid(string change)
     {
         var prepared=Prepared();var p=prepared.Progress;p.NextPhase();p.site=prepared.Site;p.sites.Add(prepared.Site);p.npcInteriorResolvedPhase=2;p.npcInteriorWitnesses[2]=prepared.Pending.Witness;
@@ -34,6 +34,7 @@ public partial class MissionNpcInteriorCheckpointTests
             case "woodPairedGoid":raw.type=BitConverter.GetBytes(343u);break;
             case "sector":raw.sectorID++;break;
             case "staticId":raw.staticId++;break;
+            case "exterior":raw.exterior=true;break;
         }
         string before=JsonSerializer.Serialize(prepared.Pending,MissionProgress.SaveJson);
         Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider)!.Kind);

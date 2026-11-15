@@ -169,7 +169,9 @@ namespace hds
             try
             {
                 Geometry(p, witness, provider);
-                E index = provider.Evidence(raw.metrId, raw.sectorID);
+                StaticWorldObject expectedRaw = MissionNpcInteriorPlanning.ReadRaw(entry != null ? entry.RawDoorJson : wood.RawDoorJson);
+                Require(raw.metrId == expectedRaw.metrId && raw.sectorID == expectedRaw.sectorID && raw.mxoStaticId == expectedRaw.mxoStaticId && MissionSites.Goid(raw) == MissionSites.Goid(expectedRaw), "ChangedNpcDoorRawIdentityOrGoid");
+                E index = provider.Evidence(expectedRaw.metrId, expectedRaw.sectorID);
                 if (entry != null) SavedEntry(index, entry, raw);
                 else
                 {
