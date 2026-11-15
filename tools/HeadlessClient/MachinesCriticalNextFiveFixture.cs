@@ -17,6 +17,18 @@ public static class MachinesCriticalNextFiveFixture
         var state=System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(MissionBoundCabinetFixture.DecodeCheckpointHex(hex),new System.Text.Json.JsonSerializerOptions{IncludeFields=true})??throw new InvalidDataException("Missing Machines checkpoint");
         if(state.Version!=1&&state.Version!=2)throw new InvalidDataException("Unsupported Machines checkpoint version");return state;
     }
+    public static (MissionComputerAnchors.Pose Pose,NavPoint Standing) BoundApproach(MissionProgress.SavedObject obj,double[] from)
+    {
+        if(obj.OpenFloor!=null||obj.Spot?.type==null||obj.Spot.type.Length<2||BitConverter.ToUInt16(obj.Spot.type)!=obj.Goid||obj.Spot.metrId!=1||from.Length!=3||from.Any(x=>!double.IsFinite(x)))
+            throw new InvalidDataException("Exact bound source and current root required");
+        var pose=MissionObjectPoses.For(new MissionObjectState{goid=obj.Goid,spot=obj.Spot});
+        if(!NavMesh.Locate(1,from[0],from[1],from[2],out _))throw new InvalidDataException("Actual mission Ride root is not NAV");
+        var rootSector=SectorProperties.At(1,from[0],from[2]);var objectSector=SectorProperties.At(1,pose.X,pose.Z);
+        double flat=(from[0]-pose.X)*(from[0]-pose.X)+(from[2]-pose.Z)*(from[2]-pose.Z);
+        if(rootSector==null||objectSector==null||(rootSector.sector!=objectSector.sector&&flat>1600d*1600d))throw new InvalidDataException("Bound approach cannot drop current component origin");
+        if(!NavMesh.Project(1,pose.X,pose.Y,pose.Z,out var standing,maxDistance:800,reachableFrom:from))throw new InvalidDataException("Effective bound native furniture has no current-component NAV approach");
+        return(pose,standing);
+    }
     public static byte[] ClientPosition(IReadOnlyList<double> root)
     {
         if(root.Count!=3||root.Any(v=>!double.IsFinite(v)||!float.IsFinite((float)v)))throw new ArgumentException("Invalid current root");

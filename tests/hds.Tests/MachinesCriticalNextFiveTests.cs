@@ -6,6 +6,22 @@ namespace hds.Tests;
 public class MachinesCriticalNextFiveTests
 {
 
+    [Fact] public void CapturedCabinetApproachUsesAuditedPoseWithoutChangingRawSource()
+    {
+        string repo=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(repo,"data","sector_properties.csv")))repo=Path.GetDirectoryName(repo)!;
+        SectorProperties.Load(Path.Combine(repo,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(repo,"data","navmesh"));
+        var raw=new StaticWorldObject{metrId=1,sectorID=209,mxoStaticId=0x0d1001a2,staticId=418,type=BitConverter.GetBytes((ushort)326),pos_x=30765,pos_y=1347,pos_z=14160,rot=90,quat="0000000000000000000000000000803f"};
+        var obj=new MissionProgress.SavedObject{Id=1,Goid=326,Spot=raw};double[] root={28874.278135270823,1295,14514.304661822947};
+        string before=System.Text.Json.JsonSerializer.Serialize(raw,new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
+        Assert.False(NavMesh.Project(1,raw.pos_x,raw.pos_y,raw.pos_z,out _,maxDistance:800,reachableFrom:root));
+        var actual=MachinesCriticalNextFiveFixture.BoundApproach(obj,root);
+        Assert.Equal((28040d,1282d,11435d),(actual.Pose.X,actual.Pose.Y,actual.Pose.Z));Assert.Equal(new[]{28080d,1295,11330},actual.Standing.Position);
+        Assert.Equal((209,47,350),((int)actual.Standing.location.sector,(int)actual.Standing.location.region,(int)actual.Standing.location.polygon));
+        Assert.Equal(before,System.Text.Json.JsonSerializer.Serialize(raw,new System.Text.Json.JsonSerializerOptions{IncludeFields=true}));
+        obj.Goid=552;Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.BoundApproach(obj,root));obj.Goid=326;
+        Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.BoundApproach(obj,new[]{double.NaN,1295,14514d}));
+    }
+
     [Theory][InlineData(null)][InlineData("bad")][InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
     public void WholeCaseRequiresExactFrozenSource(string? expected)=>Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.RequirePin(expected,new string('B',64)));
 
