@@ -479,7 +479,9 @@ namespace hds
         }
 
         /// <summary>Whether (x, y, z) is at one of the phase's ways out, whether or not its goals are done.</summary>
-        public bool AtExit(double x, double y, double z) => Phase != null && MissionExit.HasLeft(waypoints, exits, x, y, z);
+        public bool AtExit(double x, double y, double z) => Phase != null && (UsesGeneratedDeparture
+            ? HasGeneratedDeparture || MissionExit.IsOutside(waypoints, exits, x, y, z)
+            : MissionExit.HasLeft(waypoints, exits, x, y, z));
     }
 
     /// <summary>

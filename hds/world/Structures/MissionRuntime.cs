@@ -1568,6 +1568,15 @@ namespace hds
             return false;
         }
 
+        // Readiness is shared by ordinary escort ticks and the generated floor-door ride intent.
+        // A door request never recruits followers or completes a goal.
+        private static bool EscortFollowersNear(WorldClient client, MissionProgress progress, MissionObjective objective,
+            double x, double y, double z) => objective.Npcs.All(id => progress.following.Contains(id) && Near(client,id,x,y,z,1500));
+
+        internal static bool ReadyExitEscort(WorldClient client, MissionProgress progress, double x, double y, double z) =>
+            ReferenceEquals(client.playerData.missionProgress,progress) && progress.OpenObjectives().Any(objective =>
+                objective.type==MissionGoalType.Escort && objective.escortTo=="exit" && EscortFollowersNear(client,progress,objective,x,y,z));
+
         private static bool TickEscorts(WorldClient client, MissionProgress progress, double x, double y, double z)
         {
             bool sent = false;
@@ -1591,7 +1600,6 @@ namespace hds
                 }
 
                 // "Lead both hostages out of the area": every NPC the goal names has to come along
-                bool allWithPlayer = true;
                 foreach (ushort id in objective.Npcs)
                 {
                     if (!progress.following.Contains(id) && Near(client, id, x, y, z, 600))
@@ -1600,10 +1608,9 @@ namespace hds
                         Output.WriteDebugLog("[MISSION] NPC " + id + " follows the player");
                     }
 
-                    allWithPlayer &= progress.following.Contains(id) && Near(client, id, x, y, z, 1500);
                 }
 
-                if (!allWithPlayer)
+                if (!EscortFollowersNear(client, progress, objective, x, y, z))
                 {
                     continue;
                 }
