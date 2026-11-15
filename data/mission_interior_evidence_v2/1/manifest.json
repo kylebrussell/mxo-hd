@@ -1,0 +1,3062 @@
+{
+  "Format": 2,
+  "World": 1,
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "GobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "MetrSha256": "50d2f1828507da6022fbe38a90d857975e5e68e9339854dd18ca85941e9dd23d",
+  "TransformSha256": "c8058e67440d14c0cacb4a921553a9f539b789aa6568970296b3ecb06a1b6884",
+  "DoorCatalog": {
+    "Class": 364,
+    "Goids": [
+      343,
+      344,
+      346,
+      347,
+      348,
+      349,
+      350,
+      351,
+      352,
+      354,
+      355,
+      356,
+      359,
+      360,
+      362,
+      364,
+      365,
+      412,
+      413,
+      414,
+      415,
+      416,
+      461,
+      486,
+      576,
+      577,
+      578,
+      579,
+      580,
+      581,
+      640,
+      641,
+      642,
+      643,
+      644,
+      645,
+      646,
+      2430,
+      2431,
+      2432,
+      6951,
+      6954,
+      6955,
+      6956,
+      6957,
+      6958,
+      6959,
+      6960,
+      6963,
+      6964,
+      6965,
+      6966,
+      6967,
+      6968,
+      6969,
+      6970,
+      6971,
+      6972,
+      6973,
+      6974,
+      6975,
+      6976,
+      6977,
+      6978,
+      6979,
+      6980,
+      6981,
+      6982,
+      6983,
+      6984,
+      6985,
+      6986,
+      7491,
+      9990,
+      37908,
+      37909
+    ],
+    "Source": "hds/resources/gameobjects/definitions/GameObjectDefinitions.cs"
+  },
+  "LegacyFiles": [
+    {
+      "File": "data/staticObjects_slums_1.csv",
+      "Sha256": "a73476add26b564bd405b7d9cc4ab37aad96434536acff857c59bfbb07f4ba1d"
+    },
+    {
+      "File": "data/staticObjects_slums_2.csv",
+      "Sha256": "aefbbbfbbffae981f0329ca88fbde957a2e0abef13ae6b569cabcf780314b65e"
+    }
+  ],
+  "Sectors": [
+    {
+      "Sector": 3,
+      "Digest": "A5C06CE65194B308A123AA1C14C47D977795D91AF4363342D9A4D4FDD7DCB3BD",
+      "Sha256": "2078e9f54053faa1ad60376c0b67acf0031764b906672be2eef0f76a3bdd9d56",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 4,
+      "Digest": "977E60FFEC08AF4B0B73805692207BC452E2B3087F0961789571E5395C0BAAA2",
+      "Sha256": "ae70ee6ac445fec31b95b3e4ec4f2824d8d4d5e0b1c5b8d4080b54ef88969c41",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 8,
+      "Digest": "4883A365753E98812F00EB455EEE1C3540E509A166A45B856477EBDEB7AA596C",
+      "Sha256": "1001aa1cdbc01d5786f36126778e2c1084b9b37004fdc41dff5beedc2560fe87",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 17,
+      "Digest": "AAAC5C86A7E7E852AD459138BD53BB353311C7BAC70F0EA4390787FB04BA6C24",
+      "Sha256": "38d669103d1f2ce291b06f037431b886c4a9b6761fda845c25c4fc2215205a6f",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 48
+    },
+    {
+      "Sector": 19,
+      "Digest": "AECD907A40DFBBAA68CEF4931F605F3521E56DFC419561E350A24EA46E4E0C4D",
+      "Sha256": "76e12b6ee2332465135ca92a39fb536011da8bb8f16bb15cc759164d825573e1",
+      "Regions": 54,
+      "Portals": 81,
+      "Groups": 273
+    },
+    {
+      "Sector": 20,
+      "Digest": "5255BDFDEA85FABAF7F7797B22C2FDE9EA55A1404526CACA312FBAD460476F0F",
+      "Sha256": "68a8c3d197580ec41052d99d7298e259c3ead2046c41044d7bf6e177c8454d7f",
+      "Regions": 39,
+      "Portals": 242,
+      "Groups": 20
+    },
+    {
+      "Sector": 22,
+      "Digest": "3CFFB05A4B3A31F74C1B3C4FC955D94B213DD04F248D54B94519CA4CBDD50187",
+      "Sha256": "3f0375dd5ea665c7b6b9dc6532053d006cb8ed576d842c98a1fdc9a43a943937",
+      "Regions": 51,
+      "Portals": 75,
+      "Groups": 179
+    },
+    {
+      "Sector": 24,
+      "Digest": "828671CCEA5D8E078D73AE212620CEE0D7CCFB6DA92D34F837E5B01121E9434D",
+      "Sha256": "91e7681abe7180754a2353234d98f59e04fba337a7ff616c629c78214f943eb5",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 31,
+      "Digest": "5751F1B54D0BC0741DD8A5B89CEA31581D58C94BC4762261C8E5C7CC0C54F10E",
+      "Sha256": "40ea627f06edc03a05a6e359dba97ce3a9da83c3bec882d03609a7e4c3af5de9",
+      "Regions": 18,
+      "Portals": 21,
+      "Groups": 172
+    },
+    {
+      "Sector": 33,
+      "Digest": "30458190F63E301523DB245B93E72667BBD57684AF8B2B921F25294006577C91",
+      "Sha256": "80d6f27980f994c0c9c0ecfda44d6de1728609be19d0dbab097a0ca05dba173a",
+      "Regions": 227,
+      "Portals": 404,
+      "Groups": 1670
+    },
+    {
+      "Sector": 35,
+      "Digest": "D8B178010E2C8F9314EF0C57C8738B3C81E73D0F15B0B879E05EA0B923AEE72F",
+      "Sha256": "df6046a8d46327c72eb0a1dc21d688a4d24c011953acd3d280a5556f42d977aa",
+      "Regions": 89,
+      "Portals": 144,
+      "Groups": 189
+    },
+    {
+      "Sector": 38,
+      "Digest": "A00CC63B7CB23723A0C2169562574ED7DBDB7463CA731E2280D982CEDC604235",
+      "Sha256": "30f3a7e58841ccf81429bdc4e7fe3d8c3be1088413fe5abbdfeb3ba8b65d8f34",
+      "Regions": 33,
+      "Portals": 50,
+      "Groups": 179
+    },
+    {
+      "Sector": 43,
+      "Digest": "34B15D1DD4C09ECF06837E0177E348C20364192F89893EAC3CB37D0B0599C356",
+      "Sha256": "d3a48acd5d7ac13a5a0d00e0e162be26082c811e8c1282f5fbfe9be26f508360",
+      "Regions": 51,
+      "Portals": 123,
+      "Groups": 420
+    },
+    {
+      "Sector": 47,
+      "Digest": "03F28A895E1B3FAD35C6F1D5BB53F89E8811AC39BFB713BFAAF65492C6E97740",
+      "Sha256": "6214f402c30193e0b3aa6529f0e55d3d99b5db11c5b730260fb832f88a126c30",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 53,
+      "Digest": "810FDD1F4411779D0D1AC7FE910ED9A221598EFDB09F658157D41317E40DCAE9",
+      "Sha256": "fc853966beda02b9f00bd2d449d4bf26c0cfa99cb827ff9eb0da23d64bbc602f",
+      "Regions": 22,
+      "Portals": 46,
+      "Groups": 231
+    },
+    {
+      "Sector": 57,
+      "Digest": "C52478A458B21F5E5D15DD522306960EC535F2DD8B370F97D6424624B91332E2",
+      "Sha256": "bb8acb3210bdb3e06afde82269ed4f30025af7e85eaeeb5e36739420b9ab890b",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 60,
+      "Digest": "0E56129AC079D3C81FB457F154BF80A2B86F496BC606236DB1E32FC378FF12F9",
+      "Sha256": "faa61abff44f91436fd71231702147b5d386ca15d2d8034f75e07ae9510763d6",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 64,
+      "Digest": "61E3F3F411B1493C04436CD23ECECC0802059DD5C803402C861CFA1ABE0D3789",
+      "Sha256": "b3f5aa126a0a019ca8fa9630bffa5e2975330f2b907ffc3cd7302382768be7a6",
+      "Regions": 59,
+      "Portals": 102,
+      "Groups": 95
+    },
+    {
+      "Sector": 66,
+      "Digest": "84963589FA8E9912BADC55CFC8124369B8A66E3C287D4B750023C2DD4BFC5EE2",
+      "Sha256": "46ebaeb62f1bd7270af4268a845fdcaa58f9cf0bc4373a4fcfea03882e59169c",
+      "Regions": 159,
+      "Portals": 274,
+      "Groups": 748
+    },
+    {
+      "Sector": 75,
+      "Digest": "10E511379E39328F02818AD20EA81F4439D815BD13DDF2BCDDB43B27E127D731",
+      "Sha256": "13d8d6c10874ab7464ec7254dfacf83eb10c1e615285cc3ee8759eae14b55082",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 81,
+      "Digest": "CA9DE1883F674B78A620CFDDF188368DAD523DE2D0F6D307B19DB80AFD66E542",
+      "Sha256": "02699d53d3167e30e2247f0697beba7364708ed186695720c80fd02e9cc9b43b",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 83,
+      "Digest": "9506DE6EA949D744017F3C18E39DE0667810D776AF0ECBABD53DE002B1115143",
+      "Sha256": "7b3ad97c136cb310ab3152b9e73cb3642f8b50f5f01e5c4e3b398859de5af17c",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 87,
+      "Digest": "DEA03DD337A6EA0A4622E08C9269249532E239495218C554BEC4D027EACF052B",
+      "Sha256": "d2bd2dd6a7818aa51c3b949b878104eea261ffc21561de3131eb2d5250d2555c",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 92,
+      "Digest": "FF42CCD03524004EF02A1160F02CF21FF5D5A4149254D8B38D6EF12A44126BF6",
+      "Sha256": "6a8597ca96f6494a2144dcfd6b39aaa879bb30fb20ac9ffb9605d9e8b8208d6f",
+      "Regions": 76,
+      "Portals": 142,
+      "Groups": 486
+    },
+    {
+      "Sector": 95,
+      "Digest": "4F1A512774D087E1CD9445DE80113A3BAA0284966900944886BCEF50CB70A44E",
+      "Sha256": "faa9b41373a01084e3143f3a9ac89f1f0700e05513167d4b8fe35a71974c590c",
+      "Regions": 28,
+      "Portals": 42,
+      "Groups": 99
+    },
+    {
+      "Sector": 98,
+      "Digest": "69D5AB9CD698399DD80F8B078A3E3A5423D5C10C7D8F0B2441183DCF0CC14422",
+      "Sha256": "b50a507cc4f0a1818f56bf618861aadae6b43d100f83b412b6c6a075891df128",
+      "Regions": 207,
+      "Portals": 293,
+      "Groups": 1040
+    },
+    {
+      "Sector": 101,
+      "Digest": "8C5C873E89CB9F6260721E1D5BD04C58946FAFCBAC0D292879FCB6D23E3D84A4",
+      "Sha256": "8beef19a7966de286569cbca4a4e016f2f5fde56c2371ecdf82abc6ddd370be0",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 103,
+      "Digest": "E1A03717AB4655A5EBE66B41EFA7E40F5BB444D471C4A127DB56CC73C810979F",
+      "Sha256": "ff5853ab2974d8c4c1bef85aab6c44eb56808c19581a6a91cc6dad520b8a6505",
+      "Regions": 30,
+      "Portals": 74,
+      "Groups": 384
+    },
+    {
+      "Sector": 106,
+      "Digest": "571B8F6782C7138D13871FE6DF727AE3A1DABC7EB623FCE15138A9B4AF971DB4",
+      "Sha256": "f785326bb0b14991958e244370bf4825bd27548d038ec45dbb8feb7144502a17",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 109,
+      "Digest": "058B2288D7A1883EC494C0807415707B368CBF6DA3247AE8D0BCCC064616A858",
+      "Sha256": "05bf86d51e3cbaeae3644f393b73f53bcf92cf19a19b0d2423921e84a3d82b77",
+      "Regions": 143,
+      "Portals": 352,
+      "Groups": 1653
+    },
+    {
+      "Sector": 113,
+      "Digest": "525007B4824600EB96EC6BEC73A4184A6F54FE2FDB1144680EC5467956A6EF0B",
+      "Sha256": "a1eb2d8ff6976ff0ccb0c591e61af58b92f70fc0933addb02c7c4e9dc00a691f",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 47
+    },
+    {
+      "Sector": 121,
+      "Digest": "57A85553A4250A06576B033C1C66B1AD503E7049F1C85642210856991C992E9A",
+      "Sha256": "175bb5f323dcb8b43a5336ca1e8168f91bf4a4c5bc68e8796828bbfdf92567dd",
+      "Regions": 20,
+      "Portals": 29,
+      "Groups": 191
+    },
+    {
+      "Sector": 127,
+      "Digest": "7217AF1EEC5ADBDD8038BEEB148C94A17B554E9C8105E4FB715E62A42693DA32",
+      "Sha256": "0b220f0383f73b7c747735da2b321254d07ca35b5d87c906dfeb8ba123bf7753",
+      "Regions": 43,
+      "Portals": 65,
+      "Groups": 495
+    },
+    {
+      "Sector": 128,
+      "Digest": "6F8DE70B9D11713AAC2DB2A13CBBC7450909C5FAC7F5E563CBB4C181CA6BFA12",
+      "Sha256": "b73098e68299a2f9a57c0d97e90fcb356365bcfaab6dfe6378127625d59b8f7c",
+      "Regions": 38,
+      "Portals": 56,
+      "Groups": 123
+    },
+    {
+      "Sector": 132,
+      "Digest": "80AD6703D38B9B95780C5FC91D546BAF176074AD51F6B20BD98309A981A65F90",
+      "Sha256": "dfc3fa0fb1696a58f88ac9245da2ffc212436e5d1ea6d80aedd908a17e05d73f",
+      "Regions": 96,
+      "Portals": 144,
+      "Groups": 518
+    },
+    {
+      "Sector": 133,
+      "Digest": "8AD4EE8E11EB9246485DD56DF264E65A8BBA8709778B43C551FE5B5130E95098",
+      "Sha256": "d9b8d6ff18976d183ddc5a10cab608cf374fa0323face602a73c39653a16181b",
+      "Regions": 34,
+      "Portals": 46,
+      "Groups": 318
+    },
+    {
+      "Sector": 136,
+      "Digest": "A2BBBA51B6F7664AD8175F07092247BB0F5BE16ACBBDFAAA73423393AD7FD644",
+      "Sha256": "cbe7dd82ce070caa350acddb4acc6863ab8e12bcabb3789b478f712e605442f9",
+      "Regions": 166,
+      "Portals": 400,
+      "Groups": 1936
+    },
+    {
+      "Sector": 139,
+      "Digest": "E28F75EE03D5942CF884145C429E7AF25C31A394DD74867209644315A0C35BC3",
+      "Sha256": "2c12147a790ca854ca4497015e047dff85217ac44f16a67b861f55a08e36ab68",
+      "Regions": 40,
+      "Portals": 67,
+      "Groups": 403
+    },
+    {
+      "Sector": 141,
+      "Digest": "64FA9F8C111CF6CDFA10878C5FB90AF0016B7256C880D5F393176045ADDA5833",
+      "Sha256": "5d64525566ddc52099cb3890fa41d069b9d8c358be5540fc829a4fef9aa8ad04",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 142,
+      "Digest": "AC4004A0E50E862372D736B3929AAB18BE1DAB2C612321517206B92ED0B4B060",
+      "Sha256": "61eac38a73dc9e76045a3700d17f4de7ec634d23a58c72015ed5c063df775af4",
+      "Regions": 121,
+      "Portals": 350,
+      "Groups": 2602
+    },
+    {
+      "Sector": 149,
+      "Digest": "9DA2448A382F2312030ACFA0B7DE9F39CD8BD6B33A7876ADA416339CFCBB88ED",
+      "Sha256": "e5be97f6278ab3ac8786f91f72479643feadc501d20fd4ba6252eeb5895172f7",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 133
+    },
+    {
+      "Sector": 150,
+      "Digest": "FFD37AF475A59F97C938F37093DE0B1835C69BD1B9F39BC90E6063028049D2EE",
+      "Sha256": "d9295c3f6c4170512934f9ca4345402fa1ebe09f5986a98b722eebd213f5a5e7",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 154,
+      "Digest": "963BC9D258B10F113637D5159715C8F6A0966EE92A83D6EC593AB50A4AC24A5F",
+      "Sha256": "9cf767a57631ae43a0eb8700530de178a8305015f4608b8a47fd66f0786efd53",
+      "Regions": 31,
+      "Portals": 75,
+      "Groups": 89
+    },
+    {
+      "Sector": 156,
+      "Digest": "829BE7802E325301A06E1F13DB49B1244246C86DE6F9FD2C855FF53AA2C3445E",
+      "Sha256": "c9bc7ce669afd51a954b7bcc46e53cbab1c567a264ab014effcda5410ee1bea3",
+      "Regions": 164,
+      "Portals": 296,
+      "Groups": 1192
+    },
+    {
+      "Sector": 157,
+      "Digest": "CF0DAD41D3F285C1C408915170767E200A57A56A1820D6960717181D7000115C",
+      "Sha256": "a6a9b6cdd86bae96cd433c96245197fc1e33ba65aaf0baa9070a10f824ea18ae",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 161,
+      "Digest": "2F8EBA494A845562DD707CFDF7B14B5F93D91FB2B6ACA936FE1CF412594A6DF2",
+      "Sha256": "a6d3d2d6b91a1b0aac781d6c1086d2daea776b74e7822f7f3bf2b6c3127503c1",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 164,
+      "Digest": "82AA976B5509B7598A071B344411FFD931A1511DEECEFD66287C9EBC7E069E2B",
+      "Sha256": "92a9af45f3c66b1a7db7277df6f51feeb92cb3e301fa7596e2e3fb0bd78cdcdb",
+      "Regions": 67,
+      "Portals": 115,
+      "Groups": 409
+    },
+    {
+      "Sector": 166,
+      "Digest": "3E92F35AB137FA79629B409BACFB4347A7C98164DB8124317E743EA7BB61FFA5",
+      "Sha256": "f483972b94c804bac7c0e8241a366a7c60838b89a68615c70f2239cfb255a114",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 179,
+      "Digest": "A8B5992FE502E377D70E38C631AEB20C00B0F7BD29DFE9AB7919B5E38F2522DB",
+      "Sha256": "73c2685a07fb085405fb79aba7f4222a2c1e8f759234f63f1129c66551b685d8",
+      "Regions": 82,
+      "Portals": 121,
+      "Groups": 353
+    },
+    {
+      "Sector": 180,
+      "Digest": "9BDDDA22630099C768C7EB0204B6D2A23BAD870B25CBC02C97FAE99A85F56203",
+      "Sha256": "706e60de3f251661018fc6198234f974f4f5c34781e8e8e3165ca877acd97aed",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 185,
+      "Digest": "0667ED4FAF22408A2CED8DDBB5D9F0EDC9215FC6BC1C8EF98CE9A8DD47C28800",
+      "Sha256": "38ea244ba3dd090f9d8902992460025ced40e6ae70f90f494284b5fb9a90fef2",
+      "Regions": 57,
+      "Portals": 121,
+      "Groups": 600
+    },
+    {
+      "Sector": 186,
+      "Digest": "29849321F25313A2A998436C5DDD4AAE1DE17E89FA937BDB62BD6015C15A9DBB",
+      "Sha256": "d9e5b7ca7c0a4b2e06a604ea18145797e8efe3316f4f00c3dc34163f1c593157",
+      "Regions": 37,
+      "Portals": 64,
+      "Groups": 169
+    },
+    {
+      "Sector": 188,
+      "Digest": "075FC9C2DDC1537DE60B80521370B680077736DFB661E4CDCD520E6D47E6F348",
+      "Sha256": "b09ef8d5e879d63931d222ac46e633f506ddfb13657945ffdee8923064171fd9",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 191,
+      "Digest": "D9FD7D5207D49A661D717CD913616B04174B88556C8D9169B0175D2339F535E3",
+      "Sha256": "7978c2a99c169f3f311e51a09ec2cb5413c8eed88f1277e4a096f93e40fee8bb",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 194,
+      "Digest": "5A1F99DCB4B47709AA3C1DEEDF9AFDBAE41A4ED9DD91BDC71AF2F33DDE339DE9",
+      "Sha256": "8548a9fb2bc401a527540bdb9e62ff86384f277954ada165f80eda2895943a83",
+      "Regions": 91,
+      "Portals": 148,
+      "Groups": 187
+    },
+    {
+      "Sector": 196,
+      "Digest": "AB8680EB856582C24383B2F331B080893E9A84873DFD39C3CC20797F19521F3F",
+      "Sha256": "16d532346f77810ba4b79d4d2b61c18ac2aa13c783653050434178bd56898924",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 198,
+      "Digest": "EE46411EAB94C8E6F983753B5EBE7F0931D4DD3B8C7E44680767313DBDAE6D97",
+      "Sha256": "b715c60f04c09a80b293bc07a9cfd939b2be8c312021ee0e7a4d076307d68635",
+      "Regions": 96,
+      "Portals": 153,
+      "Groups": 397
+    },
+    {
+      "Sector": 202,
+      "Digest": "79129F038559F5BA75457730877B6178D77F7D4B201F4832D5BD69DAA2E0877B",
+      "Sha256": "cfea46faf93ddf8ecb223ad0fe594fc3a503ceee88fde0d952c1c43fa9c87b27",
+      "Regions": 65,
+      "Portals": 96,
+      "Groups": 337
+    },
+    {
+      "Sector": 203,
+      "Digest": "BFD01E4DA77BFD192B611EE101D2F5C522498DB67080C657C80FC2BC39603524",
+      "Sha256": "25b69d98ad3656792e3c541071c5152d0dd23cd11003f4d07aa960a6dfd13fbc",
+      "Regions": 88,
+      "Portals": 165,
+      "Groups": 780
+    },
+    {
+      "Sector": 204,
+      "Digest": "3B732A5C4A288B361D53E89204B02C823567D06CE565BEBEAAA1F89C06607334",
+      "Sha256": "579b814e4b69555c863995103616d50540708d3c26e00d49ba39988e30b72e52",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 205,
+      "Digest": "E1CD0E2EC1B5758EE4E2907B63A5B602A58805ADF8C9938F393A2DCB14ABEBDF",
+      "Sha256": "39e2d61c5f95d646cfc078cd899dc01253fca70084fbaedd9620b0713b1ede45",
+      "Regions": 23,
+      "Portals": 33,
+      "Groups": 76
+    },
+    {
+      "Sector": 209,
+      "Digest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+      "Sha256": "855bfb443f552f774fdf13a6c6e690c33e6a88446acdae1a28e1e55a3e9e8f40",
+      "Regions": 50,
+      "Portals": 77,
+      "Groups": 229
+    },
+    {
+      "Sector": 222,
+      "Digest": "4B2862D616747F4138AC7D67CBC27AD47B35E1025370A14BABBB2F210653B96B",
+      "Sha256": "afbc7433e388d652e3fb6a85b971e08e52c9728f656140e015dc2e758767b210",
+      "Regions": 58,
+      "Portals": 170,
+      "Groups": 1153
+    },
+    {
+      "Sector": 230,
+      "Digest": "F7A15D0D59A2FBE6A2E3FD685A3B1B1F53D8C90E690F6FD1E804EC92C1D000DF",
+      "Sha256": "f7ee363221e901ca2a0554338eecec427b9f5f26ea3036f50b8be7c82238fee5",
+      "Regions": 207,
+      "Portals": 293,
+      "Groups": 1040
+    },
+    {
+      "Sector": 233,
+      "Digest": "77EBFFC296DB8B9933139D793E604413EB0BBB9F8F1B300ED8DE19352559985A",
+      "Sha256": "80dec01efedd15f0ac779eabffe1b2625272b7c39a587a381141f03ab4c7bdd8",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 235,
+      "Digest": "0ACF853D51A8E680E14AE9056B3D0CE918C93291EA0B9CB4EB70E0FF023C9922",
+      "Sha256": "8cecb836690ac3d339d08b6ba47f8b845223b2dbbf96d68cd989cdce1428fec6",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 238,
+      "Digest": "F8B3381899DD44BC82F6DB4A81553CFFC1C19AE83E3F430B205F959BF9E8D859",
+      "Sha256": "8d21d9cf8ea382fafc029ec97325b9e6825bbfebf6e8fc5cd8444899a9c2c09d",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 239,
+      "Digest": "9AEDDBAE93008E68FDEAAAF009E359036CD5BB3AF044395D5671991D8CBD01E7",
+      "Sha256": "2f79ebb6dda58e4780e887d7f1ad4738ac4179d540923f72f877340df855de8a",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 247,
+      "Digest": "56F959F81CBE88E88E226E273BC7EF657A9D83F0123248A829497B68F39969B1",
+      "Sha256": "d0aae178d9d3f13c07832adcc88707c0399ef811574c814ab56dbf46d24a551a",
+      "Regions": 15,
+      "Portals": 26,
+      "Groups": 164
+    },
+    {
+      "Sector": 248,
+      "Digest": "A6BDA419D0BEC0CB9EA7E7BBEEB1618B978A84BE7F6959A6B7B487647BB53C29",
+      "Sha256": "f47f7fdad1e837fdfde1cf2d280705f5ca3e830f67ee2d782fcc2eec7c96f340",
+      "Regions": 23,
+      "Portals": 33,
+      "Groups": 80
+    },
+    {
+      "Sector": 249,
+      "Digest": "DBA24F14B4B6A5745B81631A76E83DB839F1A453D32DDD38E866AA54BA7DF000",
+      "Sha256": "63a533ee59e6e941b052796854f11f7b0204d3453a503236a95402898635d459",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 48
+    },
+    {
+      "Sector": 251,
+      "Digest": "BF346C0BA98DBBA3F2DA40C01368CFD71908AD61D75F4F23B1E7DC20FFFB0EB2",
+      "Sha256": "1e0a648949e4ed63fa131becdcc0e332fda7970c4506e569b1e0f5a8bb6d7dc6",
+      "Regions": 39,
+      "Portals": 65,
+      "Groups": 254
+    },
+    {
+      "Sector": 252,
+      "Digest": "6AF939A4D432E8021885C9EFCBD1992EDCB9BFF1CC1F3792C10776E81D2B76C1",
+      "Sha256": "fab57195edfb4ff48fc66bc1453a3ca8e05af0d23a0cd11dc99138967146546c",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 253,
+      "Digest": "6FC90DA51D245D2BCE156196D17C524F793A191666DD1457CFA6DF966108D4F4",
+      "Sha256": "2a6e7eab020362812e49fb78551c3da929d9c719b08b9c61af00110e20c49224",
+      "Regions": 39,
+      "Portals": 74,
+      "Groups": 302
+    },
+    {
+      "Sector": 258,
+      "Digest": "1BE9716E2CCA95A35DA41BC51AC50F664A2CA9D51DD144C1A429DE4C27BD22AA",
+      "Sha256": "4e14aede784719611b375b14126971315e17a2e3f2b5dca7607185cb9080b76e",
+      "Regions": 29,
+      "Portals": 43,
+      "Groups": 178
+    },
+    {
+      "Sector": 261,
+      "Digest": "0BF2681FE1868D0417822205DF03B6F858D974DFF32E279062903A7984E02A08",
+      "Sha256": "5183876cb5126731d32e0dc055c5d8882f33670fb9470a220146c4727fdd05ec",
+      "Regions": 43,
+      "Portals": 62,
+      "Groups": 269
+    },
+    {
+      "Sector": 267,
+      "Digest": "B4FDF4AD087F1CF94035A28B8AE1D25472A0C4A0132C2DB56937E269144B5AB8",
+      "Sha256": "9d90ea02b9f374023332b51791e022bfb2aba3b8a54c0f96e9fe8fd7e837870c",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 268,
+      "Digest": "5BB07603734CF4222B7DAD199EDEBEE7D10F9D4B6C12E4C2915B75F28475B4D3",
+      "Sha256": "1488958ad78bc45b04e055bdcd185545b93734a60a47a05cbab56b5a5cead31b",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 270,
+      "Digest": "84B618BAFA8E2C74AF4B9FD09EBA986153B9F563F41C5F79C87BEB9957BB6A2D",
+      "Sha256": "c562123466eba60b1bf5c213ffbfd453f0f6699081a4290433ed0426ecf21fb2",
+      "Regions": 58,
+      "Portals": 170,
+      "Groups": 1153
+    },
+    {
+      "Sector": 274,
+      "Digest": "B64D122A44948AA3CE1B323CD204C6D056471B382A97F1439B4A184559259D12",
+      "Sha256": "ee99da236cc46ae7febabbe639a79388e417d6937fcd64bd3064f2cbccba31c0",
+      "Regions": 29,
+      "Portals": 49,
+      "Groups": 121
+    },
+    {
+      "Sector": 276,
+      "Digest": "8B0BCEFE7C6FF1A0BE346B1C846C231AA1E50B8C002903AFD81E6260E469C226",
+      "Sha256": "f87e18d253a52e4bcb8d88591edeea861da1312a046ab1f28afd8af0d73abd68",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 282,
+      "Digest": "659E3722FEBABAE19FE9B9BD45E14F71F4908C4760B76F93BED7A0BA9EFFDB27",
+      "Sha256": "317237208b83308f8c035bfe821234e8f9cf20de93688024ad498d721c4b02cd",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 285,
+      "Digest": "9B211CF7A9A39A48864A9762F11EF4DB186C39AC9D8B4AF98819AFF5EE55E459",
+      "Sha256": "e1fbfe6c92ae79604e94061e74fdc28251264410a20f4fa7663c4048f12c220e",
+      "Regions": 23,
+      "Portals": 33,
+      "Groups": 78
+    },
+    {
+      "Sector": 295,
+      "Digest": "5F07B503A1FC36E2B226CFFFC799B0AAC8420F559BAD65239FDC4DEAFC5FE3E6",
+      "Sha256": "93b9e02ab338767b4dfe3ef283c935fd89aca63ba0a3a1aa1aea600d9d4fce52",
+      "Regions": 16,
+      "Portals": 32,
+      "Groups": 138
+    },
+    {
+      "Sector": 296,
+      "Digest": "984B308167138EF758C8F15788EBE71313A7569A19331236E484CD0B23BD17A0",
+      "Sha256": "f95958c546e8b62723c1dfb4ee019f5869e7ff245a64bbbb7c6e6836abba76d2",
+      "Regions": 29,
+      "Portals": 43,
+      "Groups": 182
+    },
+    {
+      "Sector": 298,
+      "Digest": "DA2DEEFDB49D8EE80FC6860028DDDDB63E4D11F6DF76A5FACC66E158FA702652",
+      "Sha256": "62879d43bcc81958a2260825f617be64895c495e4a8117f36100cd07c29d8772",
+      "Regions": 51,
+      "Portals": 75,
+      "Groups": 173
+    },
+    {
+      "Sector": 306,
+      "Digest": "DF0326F3A578ADE826A0C64C29CEFB934E3B60D03809D60E79829408B539B386",
+      "Sha256": "7debd3f968c6c76b62bc74dd7e0b33a2dcb3967dc0b71dc105e0fb85b08dc3c3",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 311,
+      "Digest": "6334862FAE361CAD4AFD7C3D5311D53518EB7D5CCB437A18B68126697D61C0B0",
+      "Sha256": "4a903dda47d0a9ef4016f7374652b0e64e0e13a4dcb69ab0338c9b80de060eba",
+      "Regions": 25,
+      "Portals": 41,
+      "Groups": 244
+    },
+    {
+      "Sector": 312,
+      "Digest": "FAA7DD2E98138BDF44F7382D1711A63C3E4A6EA11EF9B7D6FF53921FC8E6BDD6",
+      "Sha256": "73da0ac12696e59bd757286425fbb6e90507946778aa3c71b5fe02dc46079a3f",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 328,
+      "Digest": "DA4A13A8F429665A1214E8625B63388D943B44AA94B166A44C2218666EB037BF",
+      "Sha256": "218b88cf36560f85a7108d050a652b6c3611093caf0e90a08cfc9d7d3caa74ad",
+      "Regions": 53,
+      "Portals": 87,
+      "Groups": 193
+    },
+    {
+      "Sector": 330,
+      "Digest": "C52663EA5CD00EB0852675C554D27D9E72A7552681D1E60ADF42E8869795276C",
+      "Sha256": "dc244874435b9c1acde4729caa65b07830337cd97986dfbd89baf489f0d49bd0",
+      "Regions": 20,
+      "Portals": 29,
+      "Groups": 191
+    },
+    {
+      "Sector": 332,
+      "Digest": "7A15558C7F9680197105EDA437C12E4A7243585A9665F4EB4DCE756AA5315681",
+      "Sha256": "e7e583608be5ea4b3fb47a5471beea8747e4dcacba15fc55f32e97305da61a50",
+      "Regions": 39,
+      "Portals": 67,
+      "Groups": 254
+    },
+    {
+      "Sector": 337,
+      "Digest": "4A19DC0B27D0A0DB85142A024883EF10325640DBF11A293E3EAE369104556884",
+      "Sha256": "50558dc6c5a6b0c5ab5fb3e887b5e8b75339653495d19f039023b89871e1b719",
+      "Regions": 42,
+      "Portals": 58,
+      "Groups": 158
+    },
+    {
+      "Sector": 338,
+      "Digest": "0FA2850BBC2F25EE51141F6BA93A52BB0AE934ADDF7EAC12FA2CDE8B88A156B9",
+      "Sha256": "d18c9cc6fd787353b8efb663e4d258c7a5387fa6f6938df92217937b3b0bd7f5",
+      "Regions": 29,
+      "Portals": 43,
+      "Groups": 182
+    },
+    {
+      "Sector": 341,
+      "Digest": "72033C2A638E5A7C1351DB3A71EF667C28E4FF95F15A2A7BE0AA2C3C702AA3BC",
+      "Sha256": "e210267ee48708a665f59d772ca9237b8d14316249335687e0a53baf0f6027d4",
+      "Regions": 23,
+      "Portals": 41,
+      "Groups": 91
+    },
+    {
+      "Sector": 343,
+      "Digest": "549BA624A9A03A9D396DDC47E0E7C142E5FB3946620D902F8E5871E0EC665C81",
+      "Sha256": "15cb4f4876341a908b41e4f03bb23dc27301f8c4250021db00739de86d2bfd2a",
+      "Regions": 78,
+      "Portals": 168,
+      "Groups": 908
+    },
+    {
+      "Sector": 347,
+      "Digest": "B39333241E481A226C654E8D5E1057A6FBD92680498D18C57D699CC55CE1099C",
+      "Sha256": "f17fe49744cf9b66a93152276e8f6def62a4656109535f83212ed81a2fbaaf6e",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 348,
+      "Digest": "311DD146D0DD754E26577A9D0BD0DA7B4FF529CF4C1B5F9BADBAE08A8CE6D0C2",
+      "Sha256": "69c29d9b1cfa2f20243d5f67383239635d81b1ae7ad2e41dd078e6bd9afe3158",
+      "Regions": 31,
+      "Portals": 48,
+      "Groups": 195
+    },
+    {
+      "Sector": 357,
+      "Digest": "4EA2DEADCDA3E7109A1C50ADE4B0FDA026BA94F926D5DE38E386EA7D50EB8D59",
+      "Sha256": "46d9699ba81510d4029cfba66afebcf9ca20cfc918d492b89e275939d821b9a2",
+      "Regions": 30,
+      "Portals": 71,
+      "Groups": 183
+    },
+    {
+      "Sector": 369,
+      "Digest": "EBB78641462D607C55E7900DCF318621DB6EE375144D52BD146A0287763BC13A",
+      "Sha256": "2b24b46bfdec2ec4cfa0c7b7f730c64aac703d59d524ab81347c4fe68553c185",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 370,
+      "Digest": "9A62207E35A5892AB514E734E1963BE380DF311559FDB2E3EAA2976D0EBF93EE",
+      "Sha256": "0862b28c3e9b592e36c9521bc931d7c27cbe9bcd9b151407986900358bf2ff0a",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 382,
+      "Digest": "12D7F0581C1894EA3B4B06D360521A88DE15D8EE58C92C6786263C98F39835EC",
+      "Sha256": "bd2918533a56045e960fd10caebdf2cc29667baf85cc3f28c3422b2e95c3e7e1",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 390,
+      "Digest": "62A06066C5E2FDE13763A9E77AB56605948CAE87727957C566764D1B57F78C82",
+      "Sha256": "c81434c0d4fa2f24a009462b9c703a89623c6be53763822a08011d55cf589e0d",
+      "Regions": 51,
+      "Portals": 74,
+      "Groups": 430
+    },
+    {
+      "Sector": 394,
+      "Digest": "6A962326C51C102D8D6410C71CD02462CF6A040CF24F9B054FF39301612D8C5A",
+      "Sha256": "b9cc6d811ea08c7dca5d0fcfb88c9f647acb4635387d7b3ec0179070b087f02f",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 398,
+      "Digest": "8CB0D684DCB507556313659746BB5612AC02EE8087C1F2D5A21E67CA46C9ED00",
+      "Sha256": "2942f4035b966e841293871b9a4bfecf01e938df324cc8ba91bd58c4dab0e95a",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 47
+    },
+    {
+      "Sector": 400,
+      "Digest": "F6CA2365AA7E577CBC497CDA9FBF244342A6143B98D4A4782CDC97CAE02923B0",
+      "Sha256": "2443b894fd02300e606ad92795dee6dc7dacc1b9ba8b1aeb881263d8d1192dd2",
+      "Regions": 38,
+      "Portals": 56,
+      "Groups": 128
+    },
+    {
+      "Sector": 401,
+      "Digest": "18DF6408163FF7C838F97118DB7776FD3A7AAAB02727F92AEF2D016C034E0EDC",
+      "Sha256": "617e4b063fed43a5c0756e588a1a28b6019a4b0fe524dc7a5f5b83cb9be5a343",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 403,
+      "Digest": "F05A2E3B68087D3DE310F99B0D2F50CFD90D677DD9ECA07BDEB3D0E593686F6F",
+      "Sha256": "b14acbc1e64c08e874f106d372c97bd6b4b818e2fe0c8df526302e44f57da336",
+      "Regions": 35,
+      "Portals": 52,
+      "Groups": 192
+    },
+    {
+      "Sector": 405,
+      "Digest": "31814A73B83A2D2F5E7E330D455DBE0A979C8F74ED040D5FF98F0CE6483496D5",
+      "Sha256": "54438cfceb8d5ebcf4ca8f596d528246eb346303c2b19110afb0e58ba311032a",
+      "Regions": 61,
+      "Portals": 86,
+      "Groups": 667
+    },
+    {
+      "Sector": 411,
+      "Digest": "66E96BDB7C5EFD237A165AC7C89BF80B28FA48578A7F42864D3BBCD413E5FAFA",
+      "Sha256": "d21bef4ac8ce8f100ce51fe0087795dc2c2954ceb27a04757f3a5be7ee8d2d6c",
+      "Regions": 227,
+      "Portals": 404,
+      "Groups": 1670
+    },
+    {
+      "Sector": 414,
+      "Digest": "20A0CAD859B21FF34D967CBAF27A7007FFD6F38D093FC78422C1D7402E94EB22",
+      "Sha256": "2534f98b1702ebb317cd15450566e88a2f0cf7a6186000ec6f02037cba6cfea5",
+      "Regions": 47,
+      "Portals": 67,
+      "Groups": 177
+    },
+    {
+      "Sector": 417,
+      "Digest": "D66A0F6ED53202EDAA6DFECA603EC30D08509495D08E2D91F7B4812BACF5A4F4",
+      "Sha256": "3f3b098779540937dac301bde4b3f2c5f265387bf6491af0a5f75d3bc129975c",
+      "Regions": 104,
+      "Portals": 182,
+      "Groups": 466
+    },
+    {
+      "Sector": 423,
+      "Digest": "FFF6306A9DF00962D649F8F09407E00B0505BA4C3BE5839A99EAD981143FCDBD",
+      "Sha256": "082fb045973d4299a9c8e4e1de9b77144a496d9fec47608437e8abd44eb4222c",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 424,
+      "Digest": "0F2E038AFA0DAC206AD2A54D5B0047BDD52EF0A0F246F9B2EC973E298A2A4A9E",
+      "Sha256": "4b5b99efcf24694450a812226bb3fbbb50f0262e94aacc295755bfeac98b004b",
+      "Regions": 29,
+      "Portals": 46,
+      "Groups": 293
+    },
+    {
+      "Sector": 429,
+      "Digest": "1C413BB48491D0844578EBC90E56BFC03632807F8D350936F5A69DE8DEFBCF67",
+      "Sha256": "fced86e52fd3a7bf65ee759bdc6256e774980b2a8ca034404601fe16a2045973",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 432,
+      "Digest": "1BC83B4F138F45E7B6BC75FE469912EC618D5A0D8258ACFA1031B51FC2C54B90",
+      "Sha256": "fb4ffb44bc5dfe568f82aa66d5c0b6630f8c96a879abcd595c4f3752b132b583",
+      "Regions": 34,
+      "Portals": 68,
+      "Groups": 598
+    },
+    {
+      "Sector": 433,
+      "Digest": "9E41082FABBC0EEA2B9ED37E90107BB0D381D7F51E921F584535D6B8CF003011",
+      "Sha256": "d58c171d233e7f53917c6c66b9f7d85aa4ee6b2fb53ed857169840a3ed402f91",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 436,
+      "Digest": "1F4C76D0F96D978866449B66D8E8121A9348D0766644F053EFF8068465F76B90",
+      "Sha256": "cef6db5af4c624e44a6fccdd4f621f6c6d9212df2842fedb92b4387b24e78928",
+      "Regions": 78,
+      "Portals": 212,
+      "Groups": 1516
+    },
+    {
+      "Sector": 439,
+      "Digest": "86F96B10C13E3966D80A4DB66FF3BB7163509D3F85F617A85AF23701A6DE8829",
+      "Sha256": "7d1bb3f2121b84e8a602d93d4598a31da269fc3d7b283be941f3eaa57c8757e4",
+      "Regions": 86,
+      "Portals": 209,
+      "Groups": 980
+    },
+    {
+      "Sector": 441,
+      "Digest": "00268B340977F597D1A7FC857EB8B835ACE3CDEE2023930412BCE326DD4FC68B",
+      "Sha256": "386147b05ac91259301908530b60389d1b07e1518661681b17618472db34a510",
+      "Regions": 121,
+      "Portals": 350,
+      "Groups": 2602
+    },
+    {
+      "Sector": 443,
+      "Digest": "F37CE7F89D20ABC99045B0F6F0ADE39C8C161B372860DDE1F744DF206745499E",
+      "Sha256": "f099fbd1ed5a0eb84fb29e4a3c0da88d66d3cd1309e5a59505bf2f7f4f1bcfeb",
+      "Regions": 59,
+      "Portals": 111,
+      "Groups": 36
+    },
+    {
+      "Sector": 448,
+      "Digest": "B10A8A410C6F210D0F187DBF01089220ECD4319A0A308667C5E1402359124BEE",
+      "Sha256": "e31db3b86250c33ead5d2cd18ee092131bda0e240e9d83be493834a6484ee871",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 449,
+      "Digest": "0D89AD290D6F0E24A148383EABC8C090FCC059DC8F41411F3C29DF3B3B0F793C",
+      "Sha256": "c83f9bbb0da48a94c186e669c9b14f616ad6b2fdfed3abd0d188e1fe61c8c544",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 901
+    },
+    {
+      "Sector": 451,
+      "Digest": "19D7C07C8689D3F446CFE80F9B84DA6269D66659A5EA466C701DAF29D6F5BD5D",
+      "Sha256": "8eb415c47e9b3cfae6911c12c1bdeb3d2f7c64b7946baf201856dee529bf075d",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 454,
+      "Digest": "0CC35BCE9DB35741B6FCE5AD67D8EAE6A1488A399CFDF1389606C13DC4B55E90",
+      "Sha256": "b18de85afc458f0358eb6661fe0d488b52c6e8da41228f7208e2b8a9aaf9fa1c",
+      "Regions": 87,
+      "Portals": 127,
+      "Groups": 300
+    },
+    {
+      "Sector": 456,
+      "Digest": "2354F7AF9548D25DFF6171FA97187BC158CC93116395DD18343F7CD15D13DFE6",
+      "Sha256": "9e47910a9ad330f42646142bb18b203bd0e23b226d186b335a6a5463a050aca4",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 458,
+      "Digest": "EA8AD09568B2D1E8E57851EC7B8C12C7F2775EFB4FFFD54A509DD59BFE906193",
+      "Sha256": "d44e2fb3094fabda0d3f5d9eb59863bc629eda15d98b1c3b32cc687f3088ec8a",
+      "Regions": 79,
+      "Portals": 160,
+      "Groups": 642
+    },
+    {
+      "Sector": 467,
+      "Digest": "A86D1C2E3DB1C9C0E76915E3D1266272D37AEBA44D8CB65629E1DF62E18F3057",
+      "Sha256": "9ce55285c26fa2325a12257afbc9871451ac86450dd80a47baf64651fbc791a9",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 470,
+      "Digest": "EE99537C73A69B17C097788B9C74318D75931B98C25389BB1204F68CD57E3245",
+      "Sha256": "a9ac5c586d890f44ef543a2727ff9783f8ab1e0cafbeaa449112d60309427829",
+      "Regions": 174,
+      "Portals": 297,
+      "Groups": 794
+    },
+    {
+      "Sector": 475,
+      "Digest": "07A47314E6B689AE67EE6B480AF8F2936B2508F70BB84002794018E7FBFE8B88",
+      "Sha256": "982e6dbe79d9ba7f0531c0b470b3996b9fd16aab2af2e7c5bbb66c35e4b89df7",
+      "Regions": 27,
+      "Portals": 47,
+      "Groups": 267
+    },
+    {
+      "Sector": 481,
+      "Digest": "04C0742B85629C6E6B51CC1CEBFC1F4DF0CB9CDF42D46660E0D0DA411EC06653",
+      "Sha256": "8463d47d13da30e572aab9e559ce520c44a682de4efd9b7291e0c77790a87f03",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 482,
+      "Digest": "53AA6EC82A531C84A93EA79A2B61048A49F4DC12C2CB96E602F73179D0D7EBB3",
+      "Sha256": "e584ab04651cbfc1d2dbd01b7bd4ace7d0846c46094f0efd46e5871015fcccbe",
+      "Regions": 143,
+      "Portals": 352,
+      "Groups": 1653
+    },
+    {
+      "Sector": 485,
+      "Digest": "1FBF7F4710455695BB7A9B16C686645A165641683EF8C8BDAF6F157DE833A70B",
+      "Sha256": "3885d89fcde9f7ddf3a4169f3edfb8db750c1943ef0223c26877c57e65a16004",
+      "Regions": 65,
+      "Portals": 100,
+      "Groups": 279
+    },
+    {
+      "Sector": 498,
+      "Digest": "384ACBBEE672C447FB6660675E85F63B7330524306933E19BF185189A935EAFF",
+      "Sha256": "5ccd1714fed2b58bd2a1dddc8f9b86f11f2816f07addab3cd57a581d8d621e51",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 48
+    },
+    {
+      "Sector": 500,
+      "Digest": "36EC0235933DBDBF4688ADBDE9FA41BE78E8C29BEE2463A242531F4D69C61A15",
+      "Sha256": "1d824572ad3b12b80c0adeb82fe68f817e2d6f88f5a5bfdc3670b26ba8749c0e",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 505,
+      "Digest": "268254E17DA63CE69B4A45A3F09B72E73388B90FF2E9CC9F9A76F8F560D9FF00",
+      "Sha256": "992c1b9382b361446b582319f38d8ffc8c65b744fda1ba75056949fcee740bac",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 506,
+      "Digest": "51C603B7ED3F5B165B0C39A5747BB9BF0EFFF132D1499BC9A132120348446038",
+      "Sha256": "3884784b0d4e872208d2a8a28676d3054498bce3c1d1584326257d962b0c337c",
+      "Regions": 21,
+      "Portals": 29,
+      "Groups": 76
+    },
+    {
+      "Sector": 509,
+      "Digest": "0E62D1AD9CF59B57E5FC30CF112D628051BD63674253E5852323D34D2FDC0E20",
+      "Sha256": "6646c3ca25fd4ccde7d52249c858fd842fe6724cc2a34ee4f067a1d6d547c71c",
+      "Regions": 108,
+      "Portals": 184,
+      "Groups": 515
+    },
+    {
+      "Sector": 510,
+      "Digest": "20876EA118753CB7FBC2A5636D381C136FE27F0C0FC18B896A5ADCA08914FDBC",
+      "Sha256": "631e8a89bed84f3883bce1ba16636abdb403232f6634b641c08a1d37722848ea",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 514,
+      "Digest": "93433AC12648FC40FDF9F10302D85E84880A6CE1A7CE62C58CF98064749D9673",
+      "Sha256": "43b5090a6e6f196d678678da8dc56dd6d5f1bf8412b8fe2703f3150d4fc6b1d2",
+      "Regions": 210,
+      "Portals": 460,
+      "Groups": 2162
+    },
+    {
+      "Sector": 516,
+      "Digest": "093DFBFA1D05AC9B8F0CC34DB137C850D3053F0CE2DFD81217654769B4EE7E8B",
+      "Sha256": "c78075bc2b4e2649000ab12e23516e6a370158992e79e9e819314e7ff7559343",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 527,
+      "Digest": "A4DFDDD2D350C8D3FB1F569E72E56FF06E1B74CA5859972E546A4FA478521453",
+      "Sha256": "2bdd2196cc73f987dd84215d91f5460dfba78ce9bf0cf4124af437fc550c30c0",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 898
+    },
+    {
+      "Sector": 529,
+      "Digest": "FE9173865A7B40319E0E40E317B627A1DC6153B486DBB84CEAB3857C63B83AFA",
+      "Sha256": "66daa79ce04e20ae5eddfff87521b757fbd726ff41785982bf379e5977d34c7f",
+      "Regions": 68,
+      "Portals": 168,
+      "Groups": 732
+    },
+    {
+      "Sector": 536,
+      "Digest": "02329AAA7F123BE1FE2D9DAB139DCA26BFC917269221B736A8B0717BC2CC0666",
+      "Sha256": "b9b6a87666d3ae75b6e418664c56af391229807a8eebc1be8ec5be2ba3189dd2",
+      "Regions": 23,
+      "Portals": 41,
+      "Groups": 91
+    },
+    {
+      "Sector": 545,
+      "Digest": "F2FD2BAA503574E80BF9421F6263AB5FB22286636621E74521AF2BAB27477ABB",
+      "Sha256": "5be68eab0efb32e20f60fed05e4eb1481de3e21fcad26993bc822b2bebf6d681",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 550,
+      "Digest": "B68E8E9957CE7CC69E1D3AB40C83D297A6EE6DB824C683F3E3D8E27F4CF55787",
+      "Sha256": "036c54fd5740783253470b9e2636481292bb34d5cebe950fdea1047854182d0e",
+      "Regions": 157,
+      "Portals": 267,
+      "Groups": 1351
+    },
+    {
+      "Sector": 551,
+      "Digest": "18DD4634F6702DAA53C1BF02515B73D95E654711A5F742915DEEE77D941BEDE2",
+      "Sha256": "578e2461d417c17c617a2f3cb8fde9ae6cea26d89c383771b444d89cdcbfbd5f",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 555,
+      "Digest": "4CB3FBD685DC8444701F043B8959DC540B7B42971E9BFD93D59EE9F73B3ADCD4",
+      "Sha256": "2ad7ca5e81cff1fc728c0e7bd71833ed00ab5a53e49e9905b7d61fb6da8fa938",
+      "Regions": 31,
+      "Portals": 57,
+      "Groups": 224
+    },
+    {
+      "Sector": 561,
+      "Digest": "98C9D18DCACE74075323257F008EE8F29A658C025FFAA1131CFC626A8BE12322",
+      "Sha256": "128d79a46744bfc0c63635fba3c433783d373241f3f97354e0dc9dae65706234",
+      "Regions": 20,
+      "Portals": 29,
+      "Groups": 191
+    },
+    {
+      "Sector": 562,
+      "Digest": "47C5A91CC767E3D2BC96006364DA4994948C477ECC57C2432910CA5416357666",
+      "Sha256": "f11343dc2b1c668e0028e82c79667bf54b6326fb66d76a61bda79d3b5518f768",
+      "Regions": 93,
+      "Portals": 132,
+      "Groups": 427
+    },
+    {
+      "Sector": 577,
+      "Digest": "06247B42856286F1165704B28D25CBB09EE7913B02526CAD7A9F5E14CAA225A3",
+      "Sha256": "4a2e6d5ffd4bb914e8454ad2973d817b7b559d4fa5da8165b84d447ba29efe3d",
+      "Regions": 64,
+      "Portals": 84,
+      "Groups": 270
+    },
+    {
+      "Sector": 578,
+      "Digest": "4266E3E5A6003407477C8A69E039040AC93C9CD5A221256E6380776DCE412917",
+      "Sha256": "e3a6195a88cb2d5c874d626c004dca25e5fcdce99afe1ad0218c2fcce89e52a5",
+      "Regions": 44,
+      "Portals": 53,
+      "Groups": 168
+    },
+    {
+      "Sector": 583,
+      "Digest": "9DAB68D12F23BB56FD365C0344791EB0A1C80F313A8455E8B23F42503B762046",
+      "Sha256": "f3cdc5830abbdba7e91844ca98adf2ce5a581b745430081461a23fca40731687",
+      "Regions": 143,
+      "Portals": 352,
+      "Groups": 1653
+    },
+    {
+      "Sector": 589,
+      "Digest": "600E2518F2ED396E64B916B0BBC0D604D40B01131AE6995054865C49EA32A635",
+      "Sha256": "00b7ebdf3ea13f75c0d69d1a31ae3a1eb5067164d1d9638d6d603267b3a820bb",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 590,
+      "Digest": "19AAB5BBF5DE9471428C9C4BF5AD542E4FF06196ED0974669B1A5DD1BE82F595",
+      "Sha256": "9334f0d03cf77558691764101d3c0cad4d7371bac893ed012943e8af16e30970",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 602,
+      "Digest": "2D207A6E8F5FBD7A846DDE5DFB4E6E565F4F7B8E42B06C10A3903F3042E8CBD5",
+      "Sha256": "8fabd0d9282d230ebfaa025a0d9ad378459a19a1baa7f7838aa1d6876891185b",
+      "Regions": 33,
+      "Portals": 42,
+      "Groups": 162
+    },
+    {
+      "Sector": 620,
+      "Digest": "F865EDEE22C861A3BA610A65432B927F9BE6631E7C216AE51FFBE39EF3292175",
+      "Sha256": "e5064b401079377bc5b1b2ef902864693f1c91637569a656fc6db6416d2ff1c0",
+      "Regions": 57,
+      "Portals": 81,
+      "Groups": 208
+    },
+    {
+      "Sector": 628,
+      "Digest": "9D7C05CD5A21BE5EB2BADEC2E94EC523924E2CE73AEC24C2FBC8788BF2B5A09E",
+      "Sha256": "12d32a8a2d091aeeed75f75c6df0ec862682a696d2005ca1db7083e7fa8f99f1",
+      "Regions": 73,
+      "Portals": 108,
+      "Groups": 362
+    },
+    {
+      "Sector": 638,
+      "Digest": "3E5ADF0E259D71191F684AC644F93277C478B526F1B35BC73E69917EC138EE34",
+      "Sha256": "fcf02bd63fdec288f52616d9029c9d0bfd36a3557d6ccfa997008ff78d52c6f1",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 641,
+      "Digest": "EC6D41491C36DF5353BCAE35D90CD209E2811B17B00FA27ABE919053F819A7F0",
+      "Sha256": "bdcc3ca2f049f20b72bdf2c670f85f47d2071e0ae6a28c1ad86c6758a5a5a03d",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 901
+    },
+    {
+      "Sector": 648,
+      "Digest": "59DCC20232D2DE57E980443929D35A32D6C4FF53CF82E3BA856FC2F3D8ECE0DB",
+      "Sha256": "8714b94b0cdf830820c5450e4e13374ed0e191429e755cb288ce808aa9b38d0f",
+      "Regions": 16,
+      "Portals": 25,
+      "Groups": 146
+    },
+    {
+      "Sector": 649,
+      "Digest": "B2F894D035F2C86F0ED124F4BFDD0D62BC7A8446D1885202561BC9A66DADB36B",
+      "Sha256": "a5dcb0ee2bbc7033d0a507320874cc947232b89d084dd930fb747ce5e999e23a",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 650,
+      "Digest": "9F429B2DA66B0140068E48EDBA5DB2524855A2D8FC133C9AC1831399F8AA33B2",
+      "Sha256": "965c78181433d3cb45ae8510fd4ba9adcdba5866ecfee57cd36d22fa810c0298",
+      "Regions": 108,
+      "Portals": 156,
+      "Groups": 380
+    },
+    {
+      "Sector": 663,
+      "Digest": "C67F1DC0E9899DE08D23B64E65A93BB6C50F848C5A5EF444A9624DABB1CB8EAF",
+      "Sha256": "c8b85ea2fe21ce8dceea404e4a9ef9aa3ab4b95714cbd4530b58a47477f66f89",
+      "Regions": 20,
+      "Portals": 38,
+      "Groups": 191
+    },
+    {
+      "Sector": 665,
+      "Digest": "57755165EA6D7EF17D2318222C34B7B36E6D08780065DA01B9A1BA512A842A48",
+      "Sha256": "dcee8dc0d1e69bec8176628ff57dbe2987f85df45f8aa1b56873bcd5fbde9bfe",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 669,
+      "Digest": "ECBDC422EFF0DBA0D33158871B40C9605E95FB35D6E59C95F6B752F04A500AD8",
+      "Sha256": "21d89879674a77b0a9df7f0546ca1860db08951a3dfd187749e148c32d1e8424",
+      "Regions": 33,
+      "Portals": 44,
+      "Groups": 183
+    },
+    {
+      "Sector": 674,
+      "Digest": "B6637407CAA99FCB565C03A5806299032A12602C99EBD030590424740A5D40B0",
+      "Sha256": "21588db9cc728edcf07699e15755f4f997d3fe948e36c91b8735c3e873bab51c",
+      "Regions": 61,
+      "Portals": 100,
+      "Groups": 241
+    },
+    {
+      "Sector": 678,
+      "Digest": "F894C04FDD880535DC1466E5C5A1ED2483060CB1E7A2EC02388F56AC413A31C9",
+      "Sha256": "f25265f8e42af82a42a50eb6bbc2b90ca9ab7622a320458de4695db5135fa706",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 679,
+      "Digest": "6C10D527EC623F65528F8991F9A7DCF80F5034CB8A704398A4119C45B087833E",
+      "Sha256": "80e3253cbf9033681f050b29749165f742dd1145a0ae83a33e0dc81928e59470",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 683,
+      "Digest": "38F520A51E0255DFDA2C222E19B5D57C046A7DD73A0FC0DB4170DBA28D1236BC",
+      "Sha256": "559c85b633b80f64da9455dfe69e684171fc6e705ded8ef84ba5e79da237a3e5",
+      "Regions": 77,
+      "Portals": 129,
+      "Groups": 1044
+    },
+    {
+      "Sector": 691,
+      "Digest": "787404CFD0C0E14052A90EC65DF6D93F526E0A80670DD0D27A17B15C5CFDD094",
+      "Sha256": "bfe6856f5d73344ae76217b85d6b6ac32b3286b71badb9728e40c8cd6806b2aa",
+      "Regions": 76,
+      "Portals": 142,
+      "Groups": 486
+    },
+    {
+      "Sector": 693,
+      "Digest": "88C7A3138B065687DB6F458D168051DD3CD738E9D0720FCEEC3E1E2E5BAABF3F",
+      "Sha256": "b04a5517d453a40ae57a3be56bc22e50c23df0b30092893f213cc953e08c7c31",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 698,
+      "Digest": "FEEAC08135FCA3982FE787DBBE85E6558CC933E245F3229278313380F97FEA05",
+      "Sha256": "39aad59791bf49c3405601f97437121e89eee47d541c89c347117d8bb031095e",
+      "Regions": 182,
+      "Portals": 272,
+      "Groups": 760
+    },
+    {
+      "Sector": 701,
+      "Digest": "89FBA10763D877BF6F0001065AB532875F3CCD870A8FFFAA6C9A05F5E0909A2B",
+      "Sha256": "9784d95b666469d7bcb092cb4836ff5aff8f3a23725cadd2633d6ba2b1ecbf75",
+      "Regions": 66,
+      "Portals": 111,
+      "Groups": 362
+    },
+    {
+      "Sector": 703,
+      "Digest": "9B6F015E7A8DF9A36DC7764325385EDA71BFDC388A2B6A9EC35FF7F58AC25316",
+      "Sha256": "c01ec65c1ea8c1421c9611ea8bccef1307bdf788dd8c5d76a8fee3554a4824d4",
+      "Regions": 25,
+      "Portals": 57,
+      "Groups": 223
+    },
+    {
+      "Sector": 713,
+      "Digest": "569BCE97569602D4E6CA7F59858EC8752CE337C9F3AD92D9AB3047CDC3B43847",
+      "Sha256": "e12cc089d158ec37fb40ca0472c8adc70f8cabd5cdd97a07b976669847aa40ee",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 715,
+      "Digest": "D7680B074DAB35E89862A9A7FF52A7145B4CEC1C42A9E48681D454DFD4AF066C",
+      "Sha256": "2dce6cb35adc95770e1916db7eb0eceb1018d4c6fedd51ef5dafdbf928190c3b",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 723,
+      "Digest": "2C744778FF901D70A857F717B1799F9C9EF650787227FA622AD2A3EA7674E515",
+      "Sha256": "2ba58d5edc890eea39d15ff2e7101a219b7c0cc50a7d6cb264853002ff805d7e",
+      "Regions": 25,
+      "Portals": 57,
+      "Groups": 223
+    },
+    {
+      "Sector": 728,
+      "Digest": "33447460E8852653645A24CC892B35429C9047450EB0690D08D500D382148893",
+      "Sha256": "3d69054c546c33615e8b1afb2fda284e52939c2e8241a739e819bebea1ee2a1f",
+      "Regions": 120,
+      "Portals": 228,
+      "Groups": 1017
+    },
+    {
+      "Sector": 729,
+      "Digest": "790533A2672C02FDA46FECCE38D64FCD6D8A7DF0DFF798D417A4E25D50AD2ABD",
+      "Sha256": "8bfbd8106bec565924ffc2a7b3e866e4c60a01da0d13dce250f50d74a0911ba5",
+      "Regions": 31,
+      "Portals": 41,
+      "Groups": 88
+    },
+    {
+      "Sector": 730,
+      "Digest": "2DD09A059D81DA64494C1ABDC4B41A9D7EEEF1C250A5F7DF5571268674350A45",
+      "Sha256": "aea50481439925b918b9a1b49a4536c70645c39f42c9626f6ce00cef9bf675a4",
+      "Regions": 66,
+      "Portals": 98,
+      "Groups": 225
+    },
+    {
+      "Sector": 732,
+      "Digest": "44FD179F8C40391E85FDFDBF93CBBF31F606F8E4B4F4F44B5B40393766FDC1F9",
+      "Sha256": "cd976ea4d123c1c5273d69cd749ae77aa7567a57c53fafd806beed17d5197990",
+      "Regions": 47,
+      "Portals": 84,
+      "Groups": 335
+    },
+    {
+      "Sector": 734,
+      "Digest": "15F8DCDC99B76EFB4B6B577FEBC153783A971993C95C473C6BC306267FE87EEC",
+      "Sha256": "1cf47c9aa5602c7450ecd44785036f83698fc67ffc33c544ecc232a468e6a73b",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 47
+    },
+    {
+      "Sector": 738,
+      "Digest": "9F3AD7680D353342F0BDFA32A9B9DC1B04E507BB0452A3D44DA685197E607140",
+      "Sha256": "195302367544773503a6da185b95006bae22ceefaefc698c4b31483561ac4aab",
+      "Regions": 68,
+      "Portals": 168,
+      "Groups": 732
+    },
+    {
+      "Sector": 739,
+      "Digest": "321B5DA86B5C301B38E9C39D434453A90118DB0C8CDB5939CF4AF07A754C6276",
+      "Sha256": "af1c070237cf3e75820621d2ad16c8addf03a581ebc483609fc8efdb112c27d7",
+      "Regions": 134,
+      "Portals": 216,
+      "Groups": 1466
+    },
+    {
+      "Sector": 744,
+      "Digest": "A7AAB77239F807F819037FBAD9F3283CC24AA9792707BB1211C12C60FE1EE4D6",
+      "Sha256": "4b2a1dc1df98cbebb00ff6e1e311d026daaf0dcd4065917e104c22da3a263350",
+      "Regions": 68,
+      "Portals": 168,
+      "Groups": 732
+    },
+    {
+      "Sector": 748,
+      "Digest": "8689F9FCB8F9775D2A9F3D815CE21B4A5D8EDCF0B2BF48E46F89909B8BA0A242",
+      "Sha256": "5b932b814d6cf2964248309d1b4d8e37956ed0bc27b8b38ab4c920f97357111e",
+      "Regions": 36,
+      "Portals": 42,
+      "Groups": 268
+    },
+    {
+      "Sector": 753,
+      "Digest": "2C92863B15624C63F1AADD7BCF5FFFE2F2A73B39923B743E4A5CFF1593E7983E",
+      "Sha256": "7517bb6b7e0cd44af29e7797bea20b3478a7b5f1dcc2bfc69a97462445512459",
+      "Regions": 50,
+      "Portals": 77,
+      "Groups": 232
+    },
+    {
+      "Sector": 754,
+      "Digest": "E52A783C0091175AC6C26C0422453117B889EBBB45EE5B16D955E7675257D77C",
+      "Sha256": "a39f5e3532f12c09d5d8743d8e06e0c95dca667d600aba38b4419212c1887757",
+      "Regions": 92,
+      "Portals": 201,
+      "Groups": 1208
+    },
+    {
+      "Sector": 759,
+      "Digest": "A3EC91041B821FF6CB96BC3C1D51FA7757BCE2504A9C2F9EC4F68048BCA1C21F",
+      "Sha256": "dcb5697572043a12f05e892a6fdfd2ea78a1b22ccb594d3fafc47e78e24e2825",
+      "Regions": 45,
+      "Portals": 67,
+      "Groups": 226
+    },
+    {
+      "Sector": 760,
+      "Digest": "177B056C738C33B55923AEE0599BA42A6011AB189C77B59A4DBBC6BE060216FD",
+      "Sha256": "0559146161297438d072eefae364e5c065a787cb7649713a359892b9a945f81e",
+      "Regions": 76,
+      "Portals": 142,
+      "Groups": 486
+    },
+    {
+      "Sector": 768,
+      "Digest": "1FFC5F9A01C7F852A1B1F3CCCD777776499428A6907CF93A7B9C47B9E5862C46",
+      "Sha256": "b7e2f58bc8d0db0dbb55e52b78dcb7202de1a3dee485709d77e61a0665d87b5b",
+      "Regions": 24,
+      "Portals": 33,
+      "Groups": 154
+    },
+    {
+      "Sector": 770,
+      "Digest": "D0FF0B77F8A693FDF85B20D40B0CE2A5FCF748D02EDF03726EA765AF83669A08",
+      "Sha256": "fe56b380069a8bdb15f9e9d0da2383401501cef1bd3f651ef91c2e0d4cb364cd",
+      "Regions": 18,
+      "Portals": 21,
+      "Groups": 134
+    },
+    {
+      "Sector": 778,
+      "Digest": "DCFCFB5021FEBFDADD7A007BC624835E5E0736CFA4C5BC2563D088F314B30420",
+      "Sha256": "d8ea418ecfcd7afb90ffd08bae41a106ba76a91a5fbc71601ab413ad2b151a4e",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 779,
+      "Digest": "E62CFD225E474F5C449822047F13F282ADB45D83C195DCEE18C58091F45E6EC4",
+      "Sha256": "f693db1d5c6b41121005944605facfc74266cbc00c13b806b1571a2431a5627c",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 781,
+      "Digest": "B9B280CE049D36BA98832CC977F849FE42AFBD2E8DFE43187B63F3E36BC0B712",
+      "Sha256": "a5716ad87b3b946efa55d45d6fb29b709abe052fde14820451020561d5cd79b9",
+      "Regions": 21,
+      "Portals": 29,
+      "Groups": 76
+    },
+    {
+      "Sector": 791,
+      "Digest": "6FDB4C2283D62AE909CE76F320A0DA8A3DC39CAC7726A9B76B47801425E2414E",
+      "Sha256": "d1f098704b79828cefb15c297799b3d10954ecf0103b04e238462097f2e3d923",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 796,
+      "Digest": "4EBF41260A69238A40C92873E3A3F135AF65522B0524055D70C5C2DB247798A8",
+      "Sha256": "78b159e2f393bfda1e90a828b627a6ae5ab8f88c3d30cf9c29bd0f7fb0357111",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 798,
+      "Digest": "9A12D7356AC1228CD02C4B1756CA262B3DF6E7A4011D94CC80EC099398C4C3ED",
+      "Sha256": "d139e423506080927b08f05e2806d0ecebd24e9099d1759794f57c99d5c7d947",
+      "Regions": 86,
+      "Portals": 209,
+      "Groups": 979
+    },
+    {
+      "Sector": 799,
+      "Digest": "D456604954E53109189422ADA64E25D5F795E4653B2CF65C75837B03E67FB904",
+      "Sha256": "6f2f63698b09fb9a8873dd2ec4e1dfe47b8dc682634dd262f0b77160147be508",
+      "Regions": 130,
+      "Portals": 259,
+      "Groups": 1141
+    },
+    {
+      "Sector": 800,
+      "Digest": "F1348FD9196358C287A46CAC2CAB91665D8BDF3EADD94723EB1875D34CCCA0A3",
+      "Sha256": "5878d6c24a1e705771fde27380f3517ac3a03b15701bcef4f35ed89217f2d623",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 802,
+      "Digest": "664F7F9912ECCAE193A2EE39F1E6957AE61DA11EFCFE0105F39EB028EA561362",
+      "Sha256": "5fffdf5fc12dabb91e4ae863c980f61622a3c85dd6c4df53e6fa782bb0566c6c",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 816,
+      "Digest": "171BDB4841867BCF0934740EE2447D51747ED8A44A986A4B06A2DCD6FCE07FC1",
+      "Sha256": "32a1c2051fdac39bf134f1cc43867ad686fe6e489624dbe35fc35f35b60df747",
+      "Regions": 23,
+      "Portals": 33,
+      "Groups": 80
+    },
+    {
+      "Sector": 817,
+      "Digest": "ED60EE0E7CD8C89C735EA00FE5127FE816E5119127361BD3A7C210886D72314D",
+      "Sha256": "27d2d94dd339bc02abdb33dc48b257521eba7d3154073540fa1729e980233169",
+      "Regions": 64,
+      "Portals": 96,
+      "Groups": 436
+    },
+    {
+      "Sector": 818,
+      "Digest": "306BDCC14861F23118CDAE4EC9FADE934BB4AFF7BDA1DFD60754617708ECBB26",
+      "Sha256": "4766733c1a03625b37e3dbee9d0198c2b381dfb134742b1e6cfa8d3c7db59ef7",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 898
+    },
+    {
+      "Sector": 820,
+      "Digest": "0EF63DEDDA34F568597B92055CCE846722189C9253DFA9B6E2C3F071DCAFD705",
+      "Sha256": "6dc266a1d07e69854197ab86fd94e7fe1bd1edd6f88eede08dfa6523bc3f7082",
+      "Regions": 104,
+      "Portals": 182,
+      "Groups": 466
+    },
+    {
+      "Sector": 822,
+      "Digest": "3D43C8DAD735A5F94FC4CDAFC388DA562A7BDE4E11A499BC52CB22EAC71CE05A",
+      "Sha256": "0be2af737a0b97c457242e976ab5612d77bc053e6a24f7c289bf3e181cdf074a",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 831,
+      "Digest": "554A32FC6ECE48D313602B49FF3991068D72179C8B3CD09638406A41BCD29FFE",
+      "Sha256": "5abb2c6740fff721026cca43f1d2c33cfc6014ddc0ae1de3e6b9196d811ad747",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 832,
+      "Digest": "38422723EB68D62A6E392B5956DC5F6D2DC88CE825B30BB0DCDB93ACAB6D94E7",
+      "Sha256": "dc5b97d6b688111f2c1b96b9fbe6b4c9f4b45f42537e3e51cd6e67c764b2ca50",
+      "Regions": 38,
+      "Portals": 56,
+      "Groups": 123
+    },
+    {
+      "Sector": 836,
+      "Digest": "1B6192529FF53B6543A37546466C13CB8E74713F2F9E2665C238AD0DF6B045E1",
+      "Sha256": "2cedaf150b2c9d90b6dd6629b4339404b955012ea4d02bf09a5aa9d51d9d082f",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 842,
+      "Digest": "F19A10702532B8CFDDA81DD0AADE468FBB26FEC41636C61CB5F1DF0B4A9842D4",
+      "Sha256": "4ccdb24493c4d8123d065f401166cad9c32bc33ed90f239bcd16547862a81f9b",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 847,
+      "Digest": "D0275B7E18520A37A6DEE0ED7B14ECA182CE00CC17DC034D64BF622DC13FA95A",
+      "Sha256": "4779426a6cb7fa160d6b121c25e12311ff794b036806802d46c39e1f434e7b2c",
+      "Regions": 47,
+      "Portals": 126,
+      "Groups": 624
+    },
+    {
+      "Sector": 850,
+      "Digest": "9250779C9A23311BAB37D9DDF6620A810A9BE165010095B5F0D57369FF55DA84",
+      "Sha256": "5a7aba63c2c4b30892b0f9a0c934037710a37a75f0ee74a199ce8f903b14950e",
+      "Regions": 19,
+      "Portals": 25,
+      "Groups": 78
+    },
+    {
+      "Sector": 859,
+      "Digest": "E3E3C5BB8906D0EA86F2F651C0FF306C39C97C2678A5E6FDBAA5EBB5C581EA80",
+      "Sha256": "1b8ec301065800cd75952b10f2f3f7bf4e55039ab05d69f6e4486578a97b5284",
+      "Regions": 75,
+      "Portals": 102,
+      "Groups": 378
+    },
+    {
+      "Sector": 864,
+      "Digest": "521FBF2DEF0351CAB8D3E5CE1D167739A3E2547C190572580826835051B03643",
+      "Sha256": "1cd6738b90c751b7bba08d3c1fbaa3c6c1d3909429426a4fa6162bd009561b96",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 865,
+      "Digest": "4B54254FC72978BB2F3843D57A42696F0FC45EDE2A13E42277F08B84293C61EA",
+      "Sha256": "d3a9e6853cb93712f498de17b932d14a5a3dd3a73e01509c75bd345a6131ae39",
+      "Regions": 53,
+      "Portals": 79,
+      "Groups": 174
+    },
+    {
+      "Sector": 869,
+      "Digest": "F71C8C33159D487EDFA8551E82754192E233F8EB25AF27114DC9268E50820A94",
+      "Sha256": "abcc7d9d837bd3da9830d75fd20b5f32923817287bb04c5b621bd111134022e0",
+      "Regions": 36,
+      "Portals": 73,
+      "Groups": 602
+    },
+    {
+      "Sector": 873,
+      "Digest": "C68AAF51C577BDBAE8AEBE51EBE747FCB2A2CD6750755E9844FE762DBB4D2C71",
+      "Sha256": "a4efc20fdeb66c76c188627ceccb34704437841ca73f4c314dc155f02ef0677f",
+      "Regions": 110,
+      "Portals": 163,
+      "Groups": 497
+    },
+    {
+      "Sector": 879,
+      "Digest": "C59E14BF473A68898BA6C65405B431CFD67AA2FBC891985B716EB87D71BA2157",
+      "Sha256": "98dea29111c7759d3cff0ea4efc935f7f0e087fac7c0684c7742fd8a455b880a",
+      "Regions": 81,
+      "Portals": 118,
+      "Groups": 395
+    },
+    {
+      "Sector": 881,
+      "Digest": "F597DF9425C615F0AAAD5C3099617B664EF75138EC479E70B7C2503963C8A553",
+      "Sha256": "002fb4040f976e05de0af15632c77bbd370aedc6a1625ea3a2e16aa68f991a96",
+      "Regions": 143,
+      "Portals": 352,
+      "Groups": 1653
+    },
+    {
+      "Sector": 883,
+      "Digest": "ACF149CD4A81F7BF8AA8B620B070B23F720DDC855825DF75F53C502AEB4717E3",
+      "Sha256": "38a7679dff6a1d8b784c210bfa17077402a3ddc7de90e84a7c7348ef172d32d3",
+      "Regions": 102,
+      "Portals": 194,
+      "Groups": 739
+    },
+    {
+      "Sector": 885,
+      "Digest": "5D1BB53C81C1F90A7DC73C68EE021100C510AA81FF8F0475A345C102BBA8C0E8",
+      "Sha256": "6a9042b31f8ca21f4399ee6462c709e125d0c312dc46de6697309bc8a853c8b0",
+      "Regions": 64,
+      "Portals": 149,
+      "Groups": 244
+    },
+    {
+      "Sector": 886,
+      "Digest": "0F8C3AE48D5F88861766CF8D4DFA2B5B3C71E1AF75FF494B7A64211A95F99E83",
+      "Sha256": "b27c452ec664366f74cb6d3074763cf75a1f69bfa6213423601ccb0154f2b2d2",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 888,
+      "Digest": "9F4F381B6E31F1689EBD305ED71E6F7CCAD9CFDF2CEDD8EF648B495CDC029883",
+      "Sha256": "cce4a7b7e5119e93abd03e71e41d1e657fe49a68cf84aad6bf2a1de49aa26646",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 890,
+      "Digest": "47C505DE8702842541F61C71479973D5973F5748A1052BF0757A737C75164E2C",
+      "Sha256": "f389965dff8893bb3e56d40f28d87b5d72bcd27da0a5965a710f58c3cc38314b",
+      "Regions": 35,
+      "Portals": 52,
+      "Groups": 239
+    },
+    {
+      "Sector": 896,
+      "Digest": "CC5E89CE39CC7E935EC876163C44F12AF8AF855E2D82EF3B9ECD5B73DC0CDF64",
+      "Sha256": "18c06cdbfc188ef84f96ebd5250b6ff52cabaf0bec84ad7b7764508b2e2aa390",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 906,
+      "Digest": "B55B3891A5C1E23807A117CED128359630E93EA0EA4454573FB755BDAB777B73",
+      "Sha256": "3316940923f65c7b18155b2fd234ce631d518b97b57e32dbce68ed2966a73feb",
+      "Regions": 34,
+      "Portals": 68,
+      "Groups": 598
+    },
+    {
+      "Sector": 920,
+      "Digest": "78A149BE2F01828FA0D24950EC430F8522A5C4CFDC81B9A8892104FA6510B55D",
+      "Sha256": "dcf19078a3730560b5174baef7ce8f0917e3f28875b28b998f7806289ca67dc2",
+      "Regions": 90,
+      "Portals": 147,
+      "Groups": 368
+    },
+    {
+      "Sector": 926,
+      "Digest": "640FC66D5B1CF453DF2DDF77BEEF9753EB6148E48E1EACFD341E0452BBE6CD04",
+      "Sha256": "b6d0b2ad87257ba99e7ac5fbb116beefd767e140b664731471f0e75e434d28ab",
+      "Regions": 75,
+      "Portals": 119,
+      "Groups": 387
+    },
+    {
+      "Sector": 930,
+      "Digest": "933B24F77DF10F463C457B12C65DE64BE38D05D81A3A9772193B2AD482FCB1FE",
+      "Sha256": "44ef2c6c0fa4a77abba241f6f7299612acb6a88edbc1bc62b623f07f58055afd",
+      "Regions": 104,
+      "Portals": 182,
+      "Groups": 466
+    },
+    {
+      "Sector": 931,
+      "Digest": "D0C14B92AADAAC5728AD020015A0FE8336FE62DF0CEA74576F3FC04992EF7049",
+      "Sha256": "c489ac8d90ed5a4d31f676e9a89e0b0c950ce37081eefe983a2200aca0d33b87",
+      "Regions": 67,
+      "Portals": 98,
+      "Groups": 312
+    },
+    {
+      "Sector": 932,
+      "Digest": "D9A4E836556B35F65FD324C08046917068D6A4D6BB9709653C2F2901A07CA991",
+      "Sha256": "2976ccf865dcc25cc6513bc782c16953ad32bc047ba8287abaa3c0f0519e7b65",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 935,
+      "Digest": "BDFEB547F48A198590B8584647ADEC7B476AB242376D65B27176222624D1F849",
+      "Sha256": "569c1565667e62366f09e6f4889e40473a6365d86920c5b9c17d7c8dc94ec924",
+      "Regions": 75,
+      "Portals": 124,
+      "Groups": 315
+    },
+    {
+      "Sector": 941,
+      "Digest": "36C08919C18FEBC571366BA8C377632DF567E3E3C1CB382265DFEC2F591D1F88",
+      "Sha256": "c3c99e8914259e60e8a404d07018f81b849702be4cad72a07d74fcd06b8b6e4f",
+      "Regions": 38,
+      "Portals": 56,
+      "Groups": 125
+    },
+    {
+      "Sector": 942,
+      "Digest": "18D2EE60B65A3496EDFC55DD7D6D464419CF0FFB551D3A117AD68BF048D629BD",
+      "Sha256": "e2a37cb0aed18ad51916f970793e88138f4d9de8628958f0a2df3dcd1750dfdd",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 948,
+      "Digest": "6C29B06801E9E5AC73207B55CD9D22A01D8B5AF7B69EA1A7918DB59416E97E6F",
+      "Sha256": "aca7244bc63ec24bdc747a634635b88b637f906963c98045e2d14591279df3f0",
+      "Regions": 26,
+      "Portals": 52,
+      "Groups": 181
+    },
+    {
+      "Sector": 952,
+      "Digest": "5F90EBA03BD3982FB5A0C659FE3EC9105DBC41B1DDD8B9E4800B4CB2461B3F77",
+      "Sha256": "75cf788c4771fea9f51aa2edb711449ec8734e7ada59a800a15f2ab2764d732f",
+      "Regions": 37,
+      "Portals": 91,
+      "Groups": 632
+    },
+    {
+      "Sector": 954,
+      "Digest": "B3DD7B6C8FBE569195F36850D935D77742BDB172F211F78A99482D5B91B9F695",
+      "Sha256": "9de831e5ebe3c95d9c3d14e1cb554e9fbe39f3e056b0a0566ef5c50e55141cfb",
+      "Regions": 110,
+      "Portals": 160,
+      "Groups": 389
+    },
+    {
+      "Sector": 961,
+      "Digest": "FB7DA4F18E2E6F18B4841A55A20B3C86C91AE497F7C58C50CACEF11C5C454956",
+      "Sha256": "8f138645ba8f55dc7b6d13fe4340efa78e935aa9a6bb8043c263ff95dbaaa1e4",
+      "Regions": 96,
+      "Portals": 144,
+      "Groups": 701
+    },
+    {
+      "Sector": 964,
+      "Digest": "A9F34FB004BE036B61A3E40253468036F9B48F4B523EE8E358B24645FB2B7DC4",
+      "Sha256": "437797b38fc5eb33843e0a7402d6c3558f8d12bce04d912e2895cb979a6a35c5",
+      "Regions": 28,
+      "Portals": 41,
+      "Groups": 189
+    },
+    {
+      "Sector": 969,
+      "Digest": "4CC33B989CF995A899ED2AE8326416F2FD361BC668CE9F4123C0403320C0965E",
+      "Sha256": "817a4cd22af0bcbe36b3fabaf14e98d0697568cd8faef189462c15fc0f92d8d5",
+      "Regions": 122,
+      "Portals": 293,
+      "Groups": 1414
+    },
+    {
+      "Sector": 973,
+      "Digest": "03DCDB9D4DBE3387566BA460893DA303C0755A92813EA0004CBB037A9F99AE0C",
+      "Sha256": "8b6adb5ad504bb284505627777aae88ab0d65aee0e173a7ad89e3d33d741c0cb",
+      "Regions": 69,
+      "Portals": 100,
+      "Groups": 367
+    },
+    {
+      "Sector": 977,
+      "Digest": "340DD213D8D155A601B6D067CDE7F5B4C41D07E3DDC7BA318BBAADBB2C9DAF0B",
+      "Sha256": "c0bb49d2f2a5673d02b7f329fce412e5f5a019609c22c4849fd416285d426f10",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 980,
+      "Digest": "E1CD97835234FAF61BFE20755B59EDCE775FE400B79DEB052A78000DBD7F807D",
+      "Sha256": "02a2ef30819c68b0e96557a7342c32f41bfeec3596b9dad108d485eae2b956e3",
+      "Regions": 145,
+      "Portals": 256,
+      "Groups": 1074
+    },
+    {
+      "Sector": 982,
+      "Digest": "03ECDC4310E09DA952B7B984AFDA118DA6F0B20D27C8D1ED29B803AF989802E4",
+      "Sha256": "3b75803815f4f671eaf8a7158e57d2528b92236dfc17d9870598be2478446994",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 983,
+      "Digest": "0B3A90662172DE4BDE150E65CDF8012FA4868A48418CED9503C3CF7644FE660D",
+      "Sha256": "a7d91915295ae089059573c3947c1578368c8b933cbd15aaa6cc40b6d4d6745d",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 53
+    },
+    {
+      "Sector": 985,
+      "Digest": "8F2A1EC033487E4E6A41AB69CAAE5D06659BDDA315B9F9B78C8B63874C54EBD0",
+      "Sha256": "f16118114ad0a01fc595c81ec912c1f817a09cd20801e312bd4c05667eae9f84",
+      "Regions": 104,
+      "Portals": 182,
+      "Groups": 466
+    },
+    {
+      "Sector": 987,
+      "Digest": "5E39C4D64950598B3DCD194B2273E7DBEFCC5BD0A518A8CF054A7106E9656163",
+      "Sha256": "5328300efadca8b291ec3558261de7e9d349abf1eca3cb115d5813012979bc19",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 991,
+      "Digest": "2EF1FD7E2762CB7D6D965D1EFC25D1C66D7DF99E2F8C36EADBE25221B3784A9F",
+      "Sha256": "1c56f3cdaa0f4f295e2df19f8ecc4ec932ed28bcdc75561762e3d0fd12d7e856",
+      "Regions": 31,
+      "Portals": 55,
+      "Groups": 185
+    },
+    {
+      "Sector": 1002,
+      "Digest": "0F4AD01572D39D9E4C352B4AD656F913986827976736261ABA97E18C5E19DE4A",
+      "Sha256": "0a27a9aaff9a4397981350b780c3b502382df33d50c42314b3816775e1232041",
+      "Regions": 130,
+      "Portals": 216,
+      "Groups": 597
+    },
+    {
+      "Sector": 1004,
+      "Digest": "5C9310E192CD1416468FD7CD76D501B8493D35A32491CC51987FBC557F1AE8EF",
+      "Sha256": "678036743a5b6dd479d53b54408a47d82c3919bb6676c3312ccc91cdfccdc780",
+      "Regions": 36,
+      "Portals": 76,
+      "Groups": 614
+    },
+    {
+      "Sector": 1010,
+      "Digest": "B2BBCF4C8CDA1BC42E032EA919A4015A887A61470F1CEFDC382E1CACB802E5ED",
+      "Sha256": "563dacc098b76de7adcba373eaa65d896f5ead0537a8f2f3bbb5fab82b77fa34",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1011,
+      "Digest": "F80A600A10586A5400A9E1CD53C715791F6F3C8FE6B3F9BBD61F0649D0975D50",
+      "Sha256": "a6b8a076310f39c57f75a7ccf423dc88198ba98a9a510e8ce4fe0f3a32fc7069",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1012,
+      "Digest": "AF6CD6D2609A2766035964244EBCCFEA3D67646016210E70F6C65544DF414569",
+      "Sha256": "5cca8bb56d00a2464eb985b5df9aca752c6d66c4ec5e11963d4e1bc344f29f87",
+      "Regions": 109,
+      "Portals": 195,
+      "Groups": 524
+    },
+    {
+      "Sector": 1020,
+      "Digest": "157A44713DDA202D6E32B4AC83466CDFA3DE49CE54D8E99CF3CE7975BBE5277E",
+      "Sha256": "56d9210789d4355675bd20fd2c602ad6b298ecbc3308dc5c1fc4af27697bf1c7",
+      "Regions": 109,
+      "Portals": 235,
+      "Groups": 1310
+    },
+    {
+      "Sector": 1023,
+      "Digest": "CF3AECB46E26BDC1ACBF043D28527072A8003E52A5E60DFEDF9AEFF16DE8FE0A",
+      "Sha256": "d8014abf684d497d0838f435fbc7b870edbce9509dd3134feea1fe69104dd821",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1027,
+      "Digest": "BBAD3BD4645EE38DB8CC317AAE6919B7077FDB4DE4A27C921500E1C2361B263A",
+      "Sha256": "550079a7103f16eebd3619f2f94e9ebd04430dad522a95e329a408ea33fb7282",
+      "Regions": 22,
+      "Portals": 46,
+      "Groups": 231
+    },
+    {
+      "Sector": 1028,
+      "Digest": "3981029E7247FF4E85AC7A0B76B53CA9512359AAB1A8D684C32A800337AC5821",
+      "Sha256": "78c4719b680a98c04a4afa25fc7c2088a2b4f8c9a4c771220d55edf58e845c06",
+      "Regions": 50,
+      "Portals": 75,
+      "Groups": 287
+    },
+    {
+      "Sector": 1033,
+      "Digest": "650C0E75B7EFD7F822C412ED040B5D7C3207908D4381D8BB539511E13BCB3362",
+      "Sha256": "ef10410a094dcd3fbb76e0d40626f576a95a40b4173c2e5a0fe2ba6900fa6c28",
+      "Regions": 49,
+      "Portals": 71,
+      "Groups": 175
+    },
+    {
+      "Sector": 1034,
+      "Digest": "1BDF7FFE5C4DFF5AB72633644338EEBA921351CA8B023260FF98746D8C16DD67",
+      "Sha256": "aacbdaabf7e237dd1ab8383a8081176670ff7344ba451e269a1f7a873a5600f1",
+      "Regions": 103,
+      "Portals": 170,
+      "Groups": 519
+    },
+    {
+      "Sector": 1036,
+      "Digest": "A671558B7A7EA2ECE591D98191D334462D2383770A62D5E7F1E9EB4722B6698E",
+      "Sha256": "4f0b2660b2a06cb44337415efd0bd849384506ec1b534aa7b0bd0b861b8a566c",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1042,
+      "Digest": "1E77F7B31C6E25D95AB68D67E422454A5AC34A7F5CD268C78F58DE334AD596C7",
+      "Sha256": "62328be13c0b01813677509c59fd10cba90589c850a8e90524d333bd38973499",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1048,
+      "Digest": "59B49E4271FADDACE5C7F9B0C12904C81623755D28A3AFC6C54266462125BC7D",
+      "Sha256": "86f19e2c6d057fa7672bf47601e1dd5d293ae1cb5b05230a6d72a538c2e34bbe",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1050,
+      "Digest": "AE9FB78D01B7D5DDAA925FE544E5EB4759B0170237A21EA4759AE83FAA6B3125",
+      "Sha256": "e9fd58fb3d441b26a55c8e37ef752e30fa08c6ccc4ff710481577014e7348d71",
+      "Regions": 58,
+      "Portals": 170,
+      "Groups": 1153
+    },
+    {
+      "Sector": 1052,
+      "Digest": "5A41CE51E874966700620EA2C2E7E1399DBD7085809C4E6185E375731A6BEDBD",
+      "Sha256": "df40e14b65e0dcbfdedb9e943748918b6081ca9cbe4b8babb77d0582561cb4dc",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1056,
+      "Digest": "CF2A839F2C8FC0D775E41F434ED1ADFFF729CDF627380B52EEA1F4E0EF7CD924",
+      "Sha256": "472bde2d43cdb677ed2aaac2b95279c57501e025c8a5d3175f2fd0981ec35149",
+      "Regions": 68,
+      "Portals": 168,
+      "Groups": 732
+    },
+    {
+      "Sector": 1060,
+      "Digest": "1E893D215BB70D7D5EBDCBC1457B2FD7D959CEA4453EED20BB3E7F8F1669553D",
+      "Sha256": "cb3acbf938b51490ce09b63141da1471add877cb036436648e0cde645faa5273",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1065,
+      "Digest": "38AF3284214D0CC10999F5F44CAC92266CCEE4BDC484974BB3F19CADA11842B6",
+      "Sha256": "cb2d22a75f297bb17167b5d1a392a49701ea29957a57377cba575ae95bd9b2b2",
+      "Regions": 51,
+      "Portals": 88,
+      "Groups": 359
+    },
+    {
+      "Sector": 1080,
+      "Digest": "DBB1F901072B2B852F3D05C61742910A0E2B50BE9A08798664C71125184EA889",
+      "Sha256": "19a8d3b45b6be2fbf89ff8e8b04a917f203ab7b397afd2689332ab7bb60992c2",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1086,
+      "Digest": "C380D1BE5CB769C547D6F083AC98F4066CC154E96CD4ADDE0F92CAA1A469F166",
+      "Sha256": "d58c2600ceac10f3f343c41761b893b2f1f84b2016af498f98942b1ff69c1d0c",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 1091,
+      "Digest": "A313D2C0BE5255B9171F2B122A3AA72A95F0417C72F46B5E1BE491D0798C45D6",
+      "Sha256": "b1c0d5efa8031d27322c4b97afe28aa759c0b9b6f628f22cdf0fbed74c490b0c",
+      "Regions": 59,
+      "Portals": 102,
+      "Groups": 160
+    },
+    {
+      "Sector": 1098,
+      "Digest": "D9852E388316794796CE7E819E01FF7F8FD9617EDB0A3A4CABF94AE0F5AD7797",
+      "Sha256": "7f6b723533fed9554af410b20747070693d7b7c95edecec18c170982a66aef32",
+      "Regions": 92,
+      "Portals": 219,
+      "Groups": 985
+    },
+    {
+      "Sector": 1103,
+      "Digest": "472F7D4B38C41FD6AE517BAF0A18BC2E5FD8A30217226279019F1E7D434CCEB1",
+      "Sha256": "b1976c77e428ce54e6413d5f62a1b32b450bca1bceaf56eb905315e6bcdf2bf6",
+      "Regions": 53,
+      "Portals": 79,
+      "Groups": 173
+    },
+    {
+      "Sector": 1114,
+      "Digest": "A6C527F8BC2EC6885FC62BEF26597F2319B22D232F6BEBDDBFBA9D788E82ED4C",
+      "Sha256": "26634c7a00b77337a2a712053fd7a82c7321a6832958084e30276e2719a0f2f2",
+      "Regions": 57,
+      "Portals": 108,
+      "Groups": 298
+    },
+    {
+      "Sector": 1118,
+      "Digest": "F6CCEB16907DC240296973406CDE4065088622D61EAF9ECF4811940135772F36",
+      "Sha256": "1e444bc4fe91fbfdd11a2f9b2b19d715f966d9e75cbc758540d8623f6207d275",
+      "Regions": 68,
+      "Portals": 102,
+      "Groups": 424
+    },
+    {
+      "Sector": 1119,
+      "Digest": "FE4EF12887B7D539CB316F0B6C5257A78A38CFA01AA3F0FB92E7995C1ACD3B5B",
+      "Sha256": "ff6f4304afd4ec6b65adc90c165beb76d67ce6459a8d250172e6e2f3b14fcccb",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1120,
+      "Digest": "74316264CFF1E9EA3D622D8A61BD9895D66A8A70F6D19F0A614E068C7DAB83C0",
+      "Sha256": "f10463a123b684a8250a35bd6358ea3861ea98a476ff15f74b3bd0b9087208ed",
+      "Regions": 36,
+      "Portals": 52,
+      "Groups": 131
+    },
+    {
+      "Sector": 1121,
+      "Digest": "09F0CED13F26A7628EB435F7EF0FF0D9AF460573EE018ED641EFB8B3C3BF8057",
+      "Sha256": "f8b11e74a5b6be8c3b32d004b47a92e5d6c146428b80dbaf37f8f918ba8ec3ae",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 1123,
+      "Digest": "CCCC35F5B3B3753386AC3B7F562352DF75F2ED7171229EA9DA3E947A7031A603",
+      "Sha256": "3df6f4140f94843689ed0fc807c8442c1e6542a535973da64061d8c895a4a15b",
+      "Regions": 74,
+      "Portals": 110,
+      "Groups": 462
+    },
+    {
+      "Sector": 1124,
+      "Digest": "47E69497EEDB0803DF8CF12B2A6CBF83BE58B087AFB4D1C9BF0F3E656E5F0A1A",
+      "Sha256": "f8ec723c06e810cb7c902567041a982c543997e1028b0d64cea1fd9a5777de50",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 898
+    },
+    {
+      "Sector": 1127,
+      "Digest": "873C47429E389E03E00CC045B6D61ACFF8196E7F579187DF45D089C26543E010",
+      "Sha256": "0161ce410b5cc76907ed260342abba593eda80861731ff1ed2ce01c7c730c977",
+      "Regions": 111,
+      "Portals": 176,
+      "Groups": 446
+    },
+    {
+      "Sector": 1128,
+      "Digest": "BDEFB8560950AB68B0714760DE933878B6A294B1881A4512579DA2F0F064B2A9",
+      "Sha256": "6f09395187ceee654b5fe5349ff8e4fa32b7f581fe0f962a7322eb14dfd44cbc",
+      "Regions": 47,
+      "Portals": 84,
+      "Groups": 346
+    },
+    {
+      "Sector": 1129,
+      "Digest": "D7F3326BC5E598C2CFAD9C769DC893550FD1140ABB8CDAA5C2D8751160CE1830",
+      "Sha256": "eccd8c8a4f53f52d13a8078a3b382fac3a49bea8b333374c5f9214f3286c29a5",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 1130,
+      "Digest": "317ABD59481FCA5EB105B0AC142E53FD3DAE98FAF8831D95AED9FEF6AB9C50E6",
+      "Sha256": "4ebcca92109f257dd107090db6b85189c8dddaa2b7af253a02a33e8423b6dc78",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 47
+    },
+    {
+      "Sector": 1135,
+      "Digest": "EB11B8F8F406F2A199DF9E331759344D35218C09F9225DCF11B0C9AAAC950C29",
+      "Sha256": "20455eda2bb23223516b6bb8d3400edd76bc105f87a8faadab7e5afe2c64a264",
+      "Regions": 135,
+      "Portals": 236,
+      "Groups": 756
+    },
+    {
+      "Sector": 1137,
+      "Digest": "1EBE76D1EC26A4ADE1774103BA0E53B9E0570A82CB93324981F64A6DC8666588",
+      "Sha256": "d70c6e2137c7064ecc46a58258190dd88fc2b7d4c22d78c2a7536ef0c807e143",
+      "Regions": 93,
+      "Portals": 151,
+      "Groups": 479
+    },
+    {
+      "Sector": 1138,
+      "Digest": "0EA4F12C8C3686774803DE3945158938092921F74DEB35D333CC43C7A1AC7446",
+      "Sha256": "85aabf95d1441472c517706eb114f08af612ea989561a7b017975c1660587384",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1141,
+      "Digest": "1B745804C459739AA53DE7F814A3C21C9D3A956D3B5AF4214915AE8D2D1F5EC7",
+      "Sha256": "4ec2f31c0a6f64fe78f5d1e9fbedae2578143c3bd89c9fc8b80c469fc6fa2cba",
+      "Regions": 63,
+      "Portals": 117,
+      "Groups": 157
+    },
+    {
+      "Sector": 1145,
+      "Digest": "336E53C5F1F3CCE85D343D02DB47810F23F054E849C21A761B53520A73F465CF",
+      "Sha256": "92d8d3fa4f706483ad9094d4cf52426812ec4991c806d97ce3e40a41a11bc6ec",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 1148,
+      "Digest": "4A63AEA712682CFFC0FA5820A3B90CE55BA3EB66AFFF24C689C731537F9B7639",
+      "Sha256": "57e59446bbbf37c5048b7faaacdc02a35762e1cd896e51312ed4e157ec82fe1d",
+      "Regions": 38,
+      "Portals": 71,
+      "Groups": 382
+    },
+    {
+      "Sector": 1149,
+      "Digest": "132E9C6F067459491F0A42E575EC8F19F3BF544C1F9D5BCBE140F791920A0686",
+      "Sha256": "ea994e346fb4f19383a8fc29339930e4ff6e49ceb70d24a38ca88141c8f1ba58",
+      "Regions": 59,
+      "Portals": 85,
+      "Groups": 209
+    },
+    {
+      "Sector": 1150,
+      "Digest": "269BBBEF2FE8F5AFD9A11B51F622C3D3BEDC102A26835065ACDCEA40EB854894",
+      "Sha256": "9f485ecb5005402ebf8b0df03154a2f7c03a56061c8a2a1ef20f537695576e06",
+      "Regions": 42,
+      "Portals": 72,
+      "Groups": 220
+    },
+    {
+      "Sector": 1152,
+      "Digest": "3A45975D053677FE57CE2A0D83BB2388337711224BD4DA24A8D8D7880F8C43DE",
+      "Sha256": "e45cf806cc14f1923a37fdedf3afcc5c5ee93b138902820901263da1c3be9af9",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1156,
+      "Digest": "53F03CFE10A257B2B669DABC954366D063989CC3DEFC640AF615B6C6C7217336",
+      "Sha256": "81e632bcb144b7146cb1b5d004679aac177589dd05e395a4395a5e1ab16af526",
+      "Regions": 8,
+      "Portals": 11,
+      "Groups": 19
+    },
+    {
+      "Sector": 1159,
+      "Digest": "FABAAEA2AFE1F384C4B2CA333DAAD097663111359D4A2C06EC41CF8991FFBF85",
+      "Sha256": "e0714e1b950d8efba41ee5d2861f0a354e71d9744cc43000d39a2e530562be6b",
+      "Regions": 32,
+      "Portals": 83,
+      "Groups": 146
+    },
+    {
+      "Sector": 1160,
+      "Digest": "F5A26B8F8AE6D0E84450E727B47268AF3721DE66CA5C03AA94A63291C7DEA9A7",
+      "Sha256": "856fa9e8e0387ae06a2827d59b5eb9b7a82040af72e05965c8d98cb8df9daeb4",
+      "Regions": 12,
+      "Portals": 21,
+      "Groups": 103
+    },
+    {
+      "Sector": 1165,
+      "Digest": "5F4BD9DA60D336F9CA58274E33C3B2E2CAE7429CE898A054CD31BCC0D545AACF",
+      "Sha256": "e7f7db429b5ee41abea5fb4821da1eeb96175888705f69f0b3f889bd45ebc241",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1167,
+      "Digest": "4961116780804CA8D75F11D14A1268A219BFA247D7C624CC439851F23EA59648",
+      "Sha256": "629719e749b3a2e99159789b0b1ecf1adba0001cedf501e36971671cdcc8056a",
+      "Regions": 92,
+      "Portals": 219,
+      "Groups": 985
+    },
+    {
+      "Sector": 1168,
+      "Digest": "9207F99D2D5BAC7F8352BB74FD457AEA0AFB1C4AF59C13DA4D6E8524C2A7151E",
+      "Sha256": "3352d3a1ecff216f8eb3d2e747e9946cc9458fec4526ee15fe7c62a32957caa6",
+      "Regions": 159,
+      "Portals": 424,
+      "Groups": 1600
+    },
+    {
+      "Sector": 1171,
+      "Digest": "E33475DB4E8B06F943AF0547505F8220C134B719838E0F86C441CF185FCDBFE4",
+      "Sha256": "65e50c1d18e27cc8136e271ae1adb9548913dc1cb3e952f069ce063f1b3b25e3",
+      "Regions": 86,
+      "Portals": 130,
+      "Groups": 1017
+    },
+    {
+      "Sector": 1172,
+      "Digest": "7C7AECA484F18D7A62F6E96A57AA8BE3D4F839987F6FDDA3A07220B3B09A4BB3",
+      "Sha256": "88014574153d93bcb326c0f0a17a9b8d386737c541333bbd5859b6c550193d32",
+      "Regions": 68,
+      "Portals": 168,
+      "Groups": 732
+    },
+    {
+      "Sector": 1178,
+      "Digest": "5EFA27ABA0555271E0441FCD0256FD5B6C857C0A203A77A7A9DD3199AB2B85CA",
+      "Sha256": "57ea0bd719e005e82190901fd0501b4980287a11ba28c52dc65bebae65ab22bd",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1187,
+      "Digest": "517C71A5A438228AED40C0EA7E442E621DDAF1341FCAA9C3BFA45A1EB75C2DED",
+      "Sha256": "26d96c7efb53772a970444bee2fada6c7499bc5047041b1ff097fa2f08b99799",
+      "Regions": 35,
+      "Portals": 62,
+      "Groups": 188
+    },
+    {
+      "Sector": 1190,
+      "Digest": "008C11687D438A16724B95E25D182A7E8745CE89E31ABF362F3B16135DBD9102",
+      "Sha256": "5bcf6c4ffe7c0ebcb598bd0caacae193b0775d43ce2cc055ffb1009e7ce44383",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 1191,
+      "Digest": "83367D48199554395401E74B86A3714AB4EECEBC855D99ED3EBD6DA9FF4F37FD",
+      "Sha256": "0cba55eaca200004942a365bcaaf765d541db323bed3a28fe12b59278ff20e8f",
+      "Regions": 15,
+      "Portals": 26,
+      "Groups": 164
+    },
+    {
+      "Sector": 1194,
+      "Digest": "8A57DEEEBA1AE34DBB4F76B5FE5993E462BC1E3929C649D000EF030FAD4CDEF0",
+      "Sha256": "38c71ebb45da78aac0176eae8ab331a39429bb5ab5b46cd34a3d017dbaff24b4",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1195,
+      "Digest": "F43EB74EDB41ECFD241E85A450A3B6BFBE2FE699AAF04D87734FADD22C91922D",
+      "Sha256": "c3e40645cdcec9c5f79be013f2403702ea85cfaa24d555fc8fbb0b1de450c3e4",
+      "Regions": 36,
+      "Portals": 52,
+      "Groups": 129
+    },
+    {
+      "Sector": 1201,
+      "Digest": "C8AD81F397AE8BD4744F0B7295AB86DA987EE40BCD3E4B7813ADE9AA59EA5AA0",
+      "Sha256": "0eb58d854fedd6a2ff7417271bcb32fdc00c68cb9ac8de36de087d422c7e9293",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1202,
+      "Digest": "5D200E8AE5E99DBC07FE266B86B88979F0EBDF0A3B2D8FD0571D59FBF8ACB7B1",
+      "Sha256": "f78ad52926f0f7b70df12a418087eb8e52e1552a4d8f21cde1d0cbd11e607024",
+      "Regions": 15,
+      "Portals": 26,
+      "Groups": 164
+    },
+    {
+      "Sector": 1205,
+      "Digest": "2984FA71743BD9714EFFCD3DD0BF23746EDA965F31C09BBBD425D9E0E90B29EC",
+      "Sha256": "bb4ddf214efcce61fa37b1907168d5f148a4c53fa2ea364aa28eb0ae092f1558",
+      "Regions": 35,
+      "Portals": 74,
+      "Groups": 611
+    },
+    {
+      "Sector": 1210,
+      "Digest": "AA6DCBABA4339A72AF56F09E8A0780B883AB0578D1B07A74C37A8998EF90801B",
+      "Sha256": "8f7fd5c8fd09637bcb928485fc972913ce2f3b894cfc3a21cca9d612a485faf4",
+      "Regions": 116,
+      "Portals": 173,
+      "Groups": 516
+    },
+    {
+      "Sector": 1214,
+      "Digest": "72F3B519F6268F39BF36480639C9B5EB4EBEA00889C48383AC4472B7F03B20D0",
+      "Sha256": "ea576eacf5911384b0dfce4f71eae7fba00d858b0b8522df10a90d141a29af45",
+      "Regions": 65,
+      "Portals": 89,
+      "Groups": 318
+    },
+    {
+      "Sector": 1217,
+      "Digest": "4E573309F7E9558A7A50569533EB58660CDF2A9DB93EFE9BADF82858AA61BEC9",
+      "Sha256": "c79634da9d2089802bf385f29fc1f88a612a494196ffce43d4784e4c5de80a60",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 1218,
+      "Digest": "E1BCCA1295CC25C9983343677901B59901C7A2FF1C02E2AAD24337BB6DB8BB31",
+      "Sha256": "86b74e1b37dc495a70b351fd8792ac5ba5c34e01a8fae2f1686c29f8ebc272c2",
+      "Regions": 29,
+      "Portals": 35,
+      "Groups": 145
+    },
+    {
+      "Sector": 1227,
+      "Digest": "BFFC47398EBBB76B50006ED5FED931E8ACE2156B41DABDAB26CC02202C97A6E2",
+      "Sha256": "0643030c888d3536a260ac51a7e63f772545d1b58465f61aceda0ce42aace713",
+      "Regions": 30,
+      "Portals": 42,
+      "Groups": 237
+    },
+    {
+      "Sector": 1232,
+      "Digest": "8D5E1CE9FD28DF2DD30FBD9D770A3081BA4B6BF4D435F0E3E60C93A793549A79",
+      "Sha256": "0fc4f8d2d92674b0df578a83f6f8cc87db0135c666bf54d048691e9c03bfcf54",
+      "Regions": 63,
+      "Portals": 123,
+      "Groups": 269
+    },
+    {
+      "Sector": 1239,
+      "Digest": "5262E6E0DA225762ABB4EAC51B36000A4B8355656388432CF755C6F3D3124D06",
+      "Sha256": "9f2b6a30607a2c0091ac3094a604c6097c731082063d7a17ccc6d9ed1bc67018",
+      "Regions": 38,
+      "Portals": 56,
+      "Groups": 127
+    },
+    {
+      "Sector": 1242,
+      "Digest": "4DC62054328EE859E36F4D60DAC815F83CA6E6FA4F30236738D9C5917F300EB7",
+      "Sha256": "749ffeec11a599dfd15bd02dc3383572453ebe368d2f64d52e56734419dc1dca",
+      "Regions": 67,
+      "Portals": 106,
+      "Groups": 486
+    },
+    {
+      "Sector": 1254,
+      "Digest": "FEC24B1AB88878809C497DFA398E9F7566DDCD495F0A0BC5381ED9299111B176",
+      "Sha256": "ca5ad79ca4e7f8b8ec0424b0baec93bf6281f4e6a9d550a81f0a0fcbd732e43c",
+      "Regions": 15,
+      "Portals": 26,
+      "Groups": 164
+    },
+    {
+      "Sector": 1257,
+      "Digest": "E85330AF526A4D555E89786E18564E51B60200E72F59367D39A2CCFDA432AE2D",
+      "Sha256": "f694e8f928a6788be96c121eb96f710c1a2f17d2344ad0847f5e1b0e51cd13c4",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 1267,
+      "Digest": "987C60FBC50280A337E8C8226AC3FE80888B2CFCD4EBB10BB2E26F87987C1D42",
+      "Sha256": "02f7618f080dbf66981142ef80881573290d6f9d18714b6939eaa45e6e186a7e",
+      "Regions": 54,
+      "Portals": 117,
+      "Groups": 655
+    },
+    {
+      "Sector": 1269,
+      "Digest": "234DCF3A62B0FB736A9D8CABD60FCB65216DBABF4563B78B11AF25C416B3AA36",
+      "Sha256": "8296ec9c440ebb3aa1684ef520ad92727d5537017646e2b7bdc64b979d1a641c",
+      "Regions": 81,
+      "Portals": 232,
+      "Groups": 898
+    },
+    {
+      "Sector": 1270,
+      "Digest": "896D45D4D720BCEB73F8BC510A494DF75864202B8F0708466234C351343D2B05",
+      "Sha256": "6bcfaeac934ec5efeec4f68bacfbdbbf7e83a4830666ff1af1db527f24386225",
+      "Regions": 68,
+      "Portals": 150,
+      "Groups": 767
+    },
+    {
+      "Sector": 1283,
+      "Digest": "A068AF5E6F3345AF8278171728B4BA73230F8DE6933EF99D4B851C032541159F",
+      "Sha256": "959f421277d8ff7ba7077aff822746262b822e17784264db2d8140583d3cacdf",
+      "Regions": 22,
+      "Portals": 37,
+      "Groups": 81
+    },
+    {
+      "Sector": 1285,
+      "Digest": "F67AF17EBEE8A145DB6170C6F4DD5D5744E8AFF2908831219597E065726B91B4",
+      "Sha256": "114af7575bad8e13a47bc47545eb390262760e26875a1944d92fe2d54117965d",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1286,
+      "Digest": "C40EEEC5AE7A8E9F879454323B7C615F3C25582B3B13366A056958F4D89D74A2",
+      "Sha256": "767e50d5296dd444edd0f4b1fe5784b8497701b9fc0d15b3067da277abbcf16c",
+      "Regions": 146,
+      "Portals": 211,
+      "Groups": 616
+    },
+    {
+      "Sector": 1297,
+      "Digest": "84EF51553FBC3BFF88CD1E5BE73C50B191CFBA3FF1AE996714241ECE5E3408B0",
+      "Sha256": "cf8424d09a0c11d522b2b9597ff6548e11b983a373f86276a10d93f0204b882f",
+      "Regions": 18,
+      "Portals": 37,
+      "Groups": 155
+    },
+    {
+      "Sector": 1301,
+      "Digest": "FE02A109A223C69DD3BBAEE6E7DDFEDFDBA935BECE56FC1A4807A2EC2CA2FD16",
+      "Sha256": "d7243cd9f4bc966b69b69db95264930aca7da50ad05059c320a8cbcf8a9fc33e",
+      "Regions": 156,
+      "Portals": 245,
+      "Groups": 588
+    },
+    {
+      "Sector": 1302,
+      "Digest": "BA8ABB1F5B241E778574C91B465D04A8AE0F202EAF8D576DECF1C13E8689E917",
+      "Sha256": "efb65b3ce43f60fb31be8ca6b7cd3030590ed240ac89144413689f31fa03bb85",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1303,
+      "Digest": "BEE96B996FB1AF546C0FD3A93D9C9734033882DF1EB1CFE3A6DD76C6BD27F19E",
+      "Sha256": "a49e8a32ff5699282168d1409d1138b4b887766f8980ae55528a9491935beede",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1305,
+      "Digest": "A36AAD25A0A18E190D6E9A2782CE8D4BC49C8DD3D9EF8025CAF4F682C3D4898F",
+      "Sha256": "d1524beda118a302acc531f8c4794b778e9f80d2890335dcfdb81330077c2d55",
+      "Regions": 33,
+      "Portals": 50,
+      "Groups": 179
+    },
+    {
+      "Sector": 1307,
+      "Digest": "157415C8D679E004D8E9043E3D2548040D33BE38C8C9E2D7754206CBEA0D2633",
+      "Sha256": "c2390425f21a75ba58f64bc75c582236b29b4114ce495a14fe60755d23b2bafc",
+      "Regions": 51,
+      "Portals": 106,
+      "Groups": 79
+    },
+    {
+      "Sector": 1312,
+      "Digest": "1D5C16D05E704D8CB6B702829585872B85076A6AFD7CE7AFAE9656208C2D560A",
+      "Sha256": "27de57c25d550a70eb946ecaf9c847b3672876bd4fd24856a48583d640da192a",
+      "Regions": 116,
+      "Portals": 175,
+      "Groups": 455
+    },
+    {
+      "Sector": 1313,
+      "Digest": "0ECC24A0CD03AA86BDBE738A1E72E101EC4D43FBF635B3BCF1F328DA9BEBECDD",
+      "Sha256": "f037e32276dbc71b8d538ad3e53e6162c72f021f5a4e4d6dc8e0abb2b8d25dc3",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1314,
+      "Digest": "395B8EB8FFE1B781EF801871DD2C334145EDBBD988A369696104D7722DC2F27A",
+      "Sha256": "c92b1e8da131f1f7f0620a34f11e32597f104dda5adb14a61701fd7d386758a5",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1317,
+      "Digest": "4E02A3B7E9FF6608EE0667B3205BD62F4E7B87724C9037D6F38D6F855248242F",
+      "Sha256": "cf0cee190ec8cc3425bd4fd4577b537883ee070cc5179a43952d33d803df689a",
+      "Regions": 31,
+      "Portals": 48,
+      "Groups": 193
+    },
+    {
+      "Sector": 1327,
+      "Digest": "8FAD7C1A674EE68AAA8715F6D2769782D48259D2322A58DE712DA1A242C1C192",
+      "Sha256": "131f5ca5ba64e2afb477d860bc24bc93209a6991135b342974f89f91a9a2d630",
+      "Regions": 86,
+      "Portals": 209,
+      "Groups": 980
+    },
+    {
+      "Sector": 1330,
+      "Digest": "E63F6D3A1D07C2FF42B497936313C5A657DAE6EF0A5959FD3FB01C7F5D41DFC7",
+      "Sha256": "c265cd67efb76b3857c2bafb567e0a7086bada18b72e60a2adefe159fde5117d",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1332,
+      "Digest": "4A24F55E089CC87161704E01AB03D3DC00CA788E18AEEA71EDCD96185C155E87",
+      "Sha256": "602b42e6cf0d016affa0ab871855cd1f8d646bfcead6ee5b96a6f73b8d716c7d",
+      "Regions": 40,
+      "Portals": 77,
+      "Groups": 304
+    },
+    {
+      "Sector": 1334,
+      "Digest": "518852E3FDB0E18DAA4CC03731E99BA4450E1E0F8471C42F0BE7C4E995F7BE36",
+      "Sha256": "7d54c774b7ba565966748ee9b4960d7a2885907d3e0b97c82315b1f091a1cb3d",
+      "Regions": 114,
+      "Portals": 202,
+      "Groups": 855
+    },
+    {
+      "Sector": 1335,
+      "Digest": "4A4DF4F4AB049FEB88A21D9F852DAEDBBB08621A10136900B37FBD011939D489",
+      "Sha256": "6b547ccb43c0b2f2027d6971234db6aa799b1f36366263d2ebbdac9af5c454b2",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1339,
+      "Digest": "47CBC9B10423C7B3EC7A17806890BF5C5B13FD0EEA863308F521A7786F8554FB",
+      "Sha256": "b08fbc7d1699eb3b43af524521e6ed999d14849098427c7fb0d6cbecfac711d7",
+      "Regions": 46,
+      "Portals": 69,
+      "Groups": 228
+    },
+    {
+      "Sector": 1342,
+      "Digest": "80626A429C6D918171F60C7AAA972E109437EFCA632505C7F6E4BEDC4DA552A3",
+      "Sha256": "84fe2377fe82c603fdf997c7e42c1e35fd11d99ce92db47ed575028ad910c5f5",
+      "Regions": 8,
+      "Portals": 11,
+      "Groups": 19
+    },
+    {
+      "Sector": 1345,
+      "Digest": "35082F230A3BAC1A71B6FD68A8F572B4BE41F6D7C8B89D2F527D9515420097CC",
+      "Sha256": "9b9767e64a42cd1aca139e15f6101785cc5a1f9563783d7259d2ae327a2042b8",
+      "Regions": 166,
+      "Portals": 248,
+      "Groups": 932
+    },
+    {
+      "Sector": 1349,
+      "Digest": "E83F0301D78E3C8F8B0617A8E0D6899A218B113CBB587F7458E262A5CC5F78F5",
+      "Sha256": "cecacc8475ecdc0f090af52199af9be895f8242c44737ee51309b78088bba763",
+      "Regions": 51,
+      "Portals": 75,
+      "Groups": 171
+    },
+    {
+      "Sector": 1356,
+      "Digest": "A132F6F552F3EDD960DD11B9307E53E9430503157460FCBA31E25F06F662E986",
+      "Sha256": "d6891ccfa3b19876fac7db59e4927513260864569235c9fd39d182b2759561c7",
+      "Regions": 69,
+      "Portals": 140,
+      "Groups": 701
+    },
+    {
+      "Sector": 1362,
+      "Digest": "2A7FD2568BCE9322FE6E4D2D56AED7A484267D1A8609D2E769E191D54CC68201",
+      "Sha256": "536bde7d5e3f350ddf6e464761209ab197f74c4a5ccf902e7ae12e548e434927",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 233
+    },
+    {
+      "Sector": 1368,
+      "Digest": "3C415D78F6E3F3E704C784E7788D4F6986C20BFD113EC55253AE0F5F96C9963C",
+      "Sha256": "c5ade976ddc51258958c18f8f72351f444071184c95eaabbc295139ca8b9964f",
+      "Regions": 55,
+      "Portals": 105,
+      "Groups": 27
+    },
+    {
+      "Sector": 1369,
+      "Digest": "79EBEF41D58A8FE7C1C99721C4B5294BB343A265979551F51A7BB207363AFEEF",
+      "Sha256": "686469f9a64fe542c5ece8160ccae15599f5879da1f1a43d2c2a2a9ccdefef02",
+      "Regions": 55,
+      "Portals": 83,
+      "Groups": 372
+    },
+    {
+      "Sector": 1374,
+      "Digest": "07529FA3BCE6D8960F3385F4C23E0BADFBDE7466FDFCF7ACAB802EC635D7E412",
+      "Sha256": "28e3ef2643c2a35a674c748a08fe12fd4d345801f1adcf3af9d992ab5b856475",
+      "Regions": 17,
+      "Portals": 35,
+      "Groups": 58
+    },
+    {
+      "Sector": 1375,
+      "Digest": "A721A61D00A3EE9A311A00DA80145FE5DE991AC9F30F6CCE1C12079C73974249",
+      "Sha256": "bd56e7a450b8a438edb8d2374c328837576bcc59d73faa6bc8a9b2d39229e6e0",
+      "Regions": 40,
+      "Portals": 68,
+      "Groups": 139
+    },
+    {
+      "Sector": 1380,
+      "Digest": "B2499AB4C09F0B659D811DD44FAD513B8305EE1399F2E8C34F15B3239E9D261C",
+      "Sha256": "4de3449fb83ecea6284b5b2065e164c1274c5f01aa0932b48171af3359f8d01a",
+      "Regions": 49,
+      "Portals": 85,
+      "Groups": 259
+    },
+    {
+      "Sector": 1385,
+      "Digest": "4845D9A2D23A535EBEC961629A1AE0A284C552D4B03158CE634566FCAF22507D",
+      "Sha256": "86eae40e18521a84d45defb69204f721dbd3146a49ac6d62c3acb0ffdf3c6ffe",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1396,
+      "Digest": "091DC4FB7F89EBF6D41901AA604E1913F8A606EEB94814615516EDEFBEBD863C",
+      "Sha256": "31c016d6ddc5458a1297dfef79b444cf6e15b626cecd5547b591f4e7861788ad",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1397,
+      "Digest": "BA56AB816C449805C6FD5786256C1812F18F2654B9469E1F1CA939408D6C2156",
+      "Sha256": "b248fe706187c3372f187019ed792f8b0f9c46db29c4a71dd524f441d6de6ca8",
+      "Regions": 30,
+      "Portals": 69,
+      "Groups": 318
+    },
+    {
+      "Sector": 1398,
+      "Digest": "0FA38AB4C1F8839CD13B3CD59B93E0B31E83EA8C60AA8F707D13D2DDFD7D3529",
+      "Sha256": "d2e72d63fb49b6cdfa3ef0d57a14958d46dfa715e49543e32163b30a13a52392",
+      "Regions": 107,
+      "Portals": 183,
+      "Groups": 515
+    },
+    {
+      "Sector": 1402,
+      "Digest": "F7F246CA334956329DC5ED77BD8CAD0CD42B877F5B031511EA271BEADD6DA7C6",
+      "Sha256": "cde23691f11f3a70a31a34cdacff96e4dd788b1c26bea014f91aa6372ce16dcd",
+      "Regions": 67,
+      "Portals": 102,
+      "Groups": 298
+    },
+    {
+      "Sector": 1406,
+      "Digest": "5F07AEC759BF42617698AF64F7694E999853E9CC68C10305D7C4E1F7832C7D7B",
+      "Sha256": "2856ef86063849919edf1ac6950226b6fa7f4392f58672f5fb42b7c8a39bd068",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1407,
+      "Digest": "E995B24DCEA39E20129BE10AED62BD87366D86E82D3D742BAB4AD1A7FDA26D81",
+      "Sha256": "8b2e15ebe0fb046b3fb3e782dc48c74e5dc505f914497024e91183871a110092",
+      "Regions": 15,
+      "Portals": 23,
+      "Groups": 49
+    },
+    {
+      "Sector": 1413,
+      "Digest": "2F0B6C296EA333C25ECD450CE94D9CC702FE3EAA04E2452634233AB9B87831C9",
+      "Sha256": "9801c0ea41b1627cac0afd872a26f0d50aac5fe9107b6a8f83b6d31bb164a6b6",
+      "Regions": 14,
+      "Portals": 20,
+      "Groups": 129
+    },
+    {
+      "Sector": 1417,
+      "Digest": "DCEBC3DF4B8F95512611EC67B61252D5769B0F8A39458F4D5E5539070D842C7F",
+      "Sha256": "ace34eb4b55287f5f0ac61b4bcd89d93b66e8cb0be91ff03611bc7f5745dba6c",
+      "Regions": 33,
+      "Portals": 47,
+      "Groups": 336
+    },
+    {
+      "Sector": 1431,
+      "Digest": "F98ABC3C336FF42F4F3017C44714776353144F4DC7940C4B16483AD0185D1373",
+      "Sha256": "836c6ee70e8e50548f483a936016b27e19b23e443c051a7606b079aa42fef8f7",
+      "Regions": 76,
+      "Portals": 142,
+      "Groups": 486
+    },
+    {
+      "Sector": 1434,
+      "Digest": "8A348E52861150F5EF69C99266C655191D916101ABE141C21801757733C702DE",
+      "Sha256": "4b31c2c6a1dcaa7129938c7fbbfa5a404416296b6a990c0e3c7df0af21e4599f",
+      "Regions": 24,
+      "Portals": 51,
+      "Groups": 253
+    },
+    {
+      "Sector": 1436,
+      "Digest": "0EA3579BEF4255018B8131AC8CAE00069247FF95521973653064025E64BBD379",
+      "Sha256": "bb4dc93e73792487ba6442d5d12009104a1cbf2ab4e70f12fb2c890923ee75fd",
+      "Regions": 35,
+      "Portals": 52,
+      "Groups": 238
+    },
+    {
+      "Sector": 1438,
+      "Digest": "A8BEC98DDEF4341171B95849EFD5C7161B7A7CDEDDFA2380318650C3D2B4C5A0",
+      "Sha256": "30a064b42212bcf589ddf37c7774ab319cce838e151f34999e2ebd3bebbef088",
+      "Regions": 159,
+      "Portals": 274,
+      "Groups": 748
+    },
+    {
+      "Sector": 1439,
+      "Digest": "6D03888ED10C2EE0FA2594906A850ACBE565A40831714822A643768D8D9C8507",
+      "Sha256": "a843070fc21f0972b8bac3bc2ff5c625dc4e628250d79b86f768de0e323a55ba",
+      "Regions": 45,
+      "Portals": 82,
+      "Groups": 31
+    },
+    {
+      "Sector": 1448,
+      "Digest": "A52CE5C222239EFADD9202A8A9A3DFA7F533F6F5AAF2AC2EADFBF8D52A08EA26",
+      "Sha256": "3fa2855f013dd9596298f6861c0bbdcca281accc25ee9624314bfd1f267b7191",
+      "Regions": 16,
+      "Portals": 32,
+      "Groups": 138
+    },
+    {
+      "Sector": 1479,
+      "Digest": "60665964702058F9445BD6DC73F8BDCA398A19ED30222ADE5D2B6F883691DC52",
+      "Sha256": "a3adb44e914ebf81430a6a1db1cc8ec8dc86d9365465e469a6dd28fd1d68bcb2",
+      "Regions": 82,
+      "Portals": 148,
+      "Groups": 596
+    },
+    {
+      "Sector": 1490,
+      "Digest": "E9452D2F33522E08C9904D6D084EBBBB5076BEE1020B421E59A6FCA7BC2C803E",
+      "Sha256": "698e93ad3109d71253b245e230ba9ed7bd7efd384d98f14efbe0e7c15303566b",
+      "Regions": 34,
+      "Portals": 48,
+      "Groups": 125
+    },
+    {
+      "Sector": 1492,
+      "Digest": "289E01705D9A85FD69738365317E4D03E5F42C10A864511D9B0A736CB7A02AC6",
+      "Sha256": "4ffb7a8498ba9393aa01269290a42f3bac37f93cf5a9900200774314b4166144",
+      "Regions": 78,
+      "Portals": 168,
+      "Groups": 908
+    }
+  ]
+}
