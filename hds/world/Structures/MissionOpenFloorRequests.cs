@@ -20,7 +20,8 @@ namespace hds
                 usable=MissionOpenFloorUsableRange.Profile.InitialComputerActions(actions,usable.HalfExtents,"GO3 Usable5 Hack4/Get5/Put8 stored offsets399/387/606 beyond327; zero-init648; native initial configurable fallback400; "+
                     (phase.missionObjectives.Any(o=>o.objectId==objectId)?"actions required by existing phase goals":"no direct goal: sourced all3 geometric owner profile only, no offered actions inferred"));
             }
-            var entry=MissionOpenFloorEntry.Calculate(world,new G.Position(site.elevatorDoor.pos_x,site.elevatorDoor.pos_y,site.elevatorDoor.pos_z),site.CentreX,site.CentreZ,"unchanged normal Ride entry at exact selected site");
+            if(!MissionElevatorPoses.TryCreate(site,new[]{new MissionOpenFloorChoice(objectId,concrete,System.Text.Json.JsonSerializer.Serialize(raw,MissionProgress.SaveJson))},out var elevator,out refusal))return false;
+            var entry=MissionOpenFloorEntry.Calculate(world,MissionElevatorPoses.Floor(site,elevator),site.CentreX,site.CentreZ,elevator?.Evidence??"unchanged normal Ride entry at exact selected site");
             if(entry.Root==null){refusal=entry.Refusal;return false;}
             if(!MissionOpenFloorScenes.TryLoad(world,raw.sectorID,out var scene,out refusal))return false;
             ushort[] sectors=new[]{raw.sectorID,entry.Root.Surface.Sector}.Distinct().OrderBy(s=>s).ToArray();

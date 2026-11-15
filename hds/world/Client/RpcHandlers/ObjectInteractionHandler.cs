@@ -158,9 +158,13 @@ namespace hds
             orientation.enable();
             position.enable();
             currentState.enable();
-            position.setValue(NumericalUtils.doublesToLtVector3d(staticWorldObject.pos_x,
-                staticWorldObject.pos_y, staticWorldObject.pos_z));
-            orientation.setValue(StringUtils.hexStringToBytes(staticWorldObject.quat));
+            var measured=new MissionOpenFloorResolver.Position(staticWorldObject.pos_x,staticWorldObject.pos_y,staticWorldObject.pos_z);
+            string measuredQuaternion=staticWorldObject.quat;
+            if(MissionSites.Goid(staticWorldObject)==417||MissionSites.Goid(staticWorldObject)==419)
+                if(MissionElevatorPoses.TryOverlay(Store.currentClient?.playerData?.missionProgress,staticWorldObject,out var resolved,out var resolvedQuaternion))
+                {measured=resolved;measuredQuaternion=resolvedQuaternion;}
+            position.setValue(NumericalUtils.doublesToLtVector3d(measured.X,measured.Y,measured.Z));
+            orientation.setValue(StringUtils.hexStringToBytes(measuredQuaternion));
             currentState.setValue(NumericalUtils.uint32ToByteArray(DoorLifecycle.StateOpen, 1));
             return door;
         }

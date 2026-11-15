@@ -1,0 +1,2238 @@
+{
+  "Format": 1,
+  "MetrSha256": "50d2f1828507da6022fbe38a90d857975e5e68e9339854dd18ca85941e9dd23d",
+  "NativeTransformSha256": "c8058e67440d14c0cacb4a921553a9f539b789aa6568970296b3ecb06a1b6884",
+  "LegacyFiles": [
+    {
+      "File": "data/staticObjects_slums_1.csv",
+      "Sha256": "a73476add26b564bd405b7d9cc4ab37aad96434536acff857c59bfbb07f4ba1d"
+    },
+    {
+      "File": "data/staticObjects_slums_2.csv",
+      "Sha256": "aefbbbfbbffae981f0329ca88fbde957a2e0abef13ae6b569cabcf780314b65e"
+    }
+  ],
+  "Scope": "Exact legacy signature membership in original region-qualified counted SIDI occurrence groups; membership does not assert legacy region ownership.",
+  "Sectors": [
+    {
+      "Sector": 3,
+      "Groups": 6,
+      "Sources": 112,
+      "Sha256": "c83ac2fb0706909093fc4157ab3f4b607a9496ce918456578f69231aef099789"
+    },
+    {
+      "Sector": 4,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "8fe0835357c56c356cb79a678842ef72947516dc01dfcacab60c922fd33b5fa2"
+    },
+    {
+      "Sector": 8,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "daafb55fa446e7e708438ed9c53af5592bc8b819184c3dcc9eecaf5e06920139"
+    },
+    {
+      "Sector": 17,
+      "Groups": 6,
+      "Sources": 40,
+      "Sha256": "1c1cd8c4b418dc83b8eed1486f7e775dbc353b3334a3a84d4dd9846a5a3402eb"
+    },
+    {
+      "Sector": 19,
+      "Groups": 23,
+      "Sources": 290,
+      "Sha256": "ec1d1fee3d26cefa7a3f43e0d4eeae2c192edd495dd47352f2e6357d73a28a79"
+    },
+    {
+      "Sector": 20,
+      "Groups": 4,
+      "Sources": 0,
+      "Sha256": "288bfbba531bb926e42923e92fc3731ac4cb722b11e0121d3e3f58b96403cad1"
+    },
+    {
+      "Sector": 22,
+      "Groups": 21,
+      "Sources": 162,
+      "Sha256": "63588f809ff80cac5f5d39e09215c611f9922d04f5edbf910fb3cd7b3c540ce8"
+    },
+    {
+      "Sector": 24,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "3680faa5abee0f44d91202bf01353ecb0eadc7d9e6d2d7aa5176249ec282eb28"
+    },
+    {
+      "Sector": 31,
+      "Groups": 9,
+      "Sources": 181,
+      "Sha256": "1ad66bbcc3f1e505378649155e54d70c562297fae5c04317bb55cd1faac41510"
+    },
+    {
+      "Sector": 33,
+      "Groups": 66,
+      "Sources": 1857,
+      "Sha256": "d2923b06bfcce473ed9cf6ba3d6bcd77c3e5314276ef2b66af7de03d1d6d92be"
+    },
+    {
+      "Sector": 35,
+      "Groups": 38,
+      "Sources": 156,
+      "Sha256": "7c40b5aecda9671ff6ca4941e99ac02658367858642e524f632e8d279e8b2d99"
+    },
+    {
+      "Sector": 38,
+      "Groups": 15,
+      "Sources": 182,
+      "Sha256": "23c22fd85379a834f6f54416da0c088e9bf87ea720cf40cc49898400f4dc87b7"
+    },
+    {
+      "Sector": 43,
+      "Groups": 10,
+      "Sources": 509,
+      "Sha256": "b045b6b45cbcf82b5b96bb5ead196457ccf0e1ecee078a461106d3c89b4509c3"
+    },
+    {
+      "Sector": 47,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "f9949c7d99729b71ceb6a79ad29ff16a7f1e0ad5b8540fe5ee8d8dc72ab4eae0"
+    },
+    {
+      "Sector": 53,
+      "Groups": 8,
+      "Sources": 217,
+      "Sha256": "7312c71f5343b293cb26329358624283783238240dca87637e87363b39d2e1c6"
+    },
+    {
+      "Sector": 57,
+      "Groups": 5,
+      "Sources": 297,
+      "Sha256": "9eacb3c4ce2ee85967d38b32e7be9e418722bb8796e6f55cc45e73e718f5b294"
+    },
+    {
+      "Sector": 60,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "bf6d4eb5a7c1be4e549cccb7ac5fb5219e5274a2d27ced895173daad1dd56afe"
+    },
+    {
+      "Sector": 64,
+      "Groups": 21,
+      "Sources": 76,
+      "Sha256": "b846cdaeebf6baf01fd4eba2da8f23be51ca6f01a1138df44e67f5e653408ad7"
+    },
+    {
+      "Sector": 66,
+      "Groups": 54,
+      "Sources": 879,
+      "Sha256": "4db13068b9d63ac2e42f8e6a5b2e34cfcf05bccf0498a4e2660a65ff2a8ffb68"
+    },
+    {
+      "Sector": 75,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "1ea1adcf25e8b7baeaaec9b9350e0fa0c6caf06cb8143fb6d0cfb1ae61c874ec"
+    },
+    {
+      "Sector": 81,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "0962af12e63b41e2c0f252ca4e95b62c1244f0e3ec811f75ee7d3b5b0e61a38b"
+    },
+    {
+      "Sector": 83,
+      "Groups": 5,
+      "Sources": 300,
+      "Sha256": "bab9a5ed75ac37213946cb9dba9c2bd786425abf9d265aa823faa90b48f697f3"
+    },
+    {
+      "Sector": 87,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "158f9a483098c1c7680d8930d0f13fca7098c52f425a217e395a1bc25f7efe5c"
+    },
+    {
+      "Sector": 92,
+      "Groups": 23,
+      "Sources": 560,
+      "Sha256": "a61b06b77ee554999e07e1426bad02be9e26c8334362edf91f3a36288cc288e9"
+    },
+    {
+      "Sector": 95,
+      "Groups": 12,
+      "Sources": 83,
+      "Sha256": "631590f742ebda09dd5651a33631d8ea01defc9686ad4d884fa1405effe3d39b"
+    },
+    {
+      "Sector": 98,
+      "Groups": 104,
+      "Sources": 2136,
+      "Sha256": "a871c7ec982f97258a871415d960e6d67b42e984e1a18becf179fe929c5f480f"
+    },
+    {
+      "Sector": 101,
+      "Groups": 10,
+      "Sources": 766,
+      "Sha256": "2b3d1139d78a0d74501b3f2add6b96bf036d5e87369f3b42668a3908c25a0cee"
+    },
+    {
+      "Sector": 103,
+      "Groups": 5,
+      "Sources": 446,
+      "Sha256": "4be5c7e302d49d6ae57e14f187f194e84c1958f2aaf59b01e9c5f4924f3259fd"
+    },
+    {
+      "Sector": 106,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "1d9fdd751c55a1f4b3f98fb6e47d9d89ebbec005183da75cf76ba7f4aad3aa54"
+    },
+    {
+      "Sector": 109,
+      "Groups": 36,
+      "Sources": 1663,
+      "Sha256": "9d68b324d797f72b083324e2af3b3e244954885a919510e0f9d96c8b1b8172c6"
+    },
+    {
+      "Sector": 113,
+      "Groups": 6,
+      "Sources": 45,
+      "Sha256": "6d2e1c95907f0d1bc713debfaa74148b6ed3ecb5ce60ad2f4b95462f329b0f4f"
+    },
+    {
+      "Sector": 121,
+      "Groups": 10,
+      "Sources": 214,
+      "Sha256": "a2664b8936d8f6eb16addb21b8371deee82be2d1781b3405859a124d77c68a2c"
+    },
+    {
+      "Sector": 127,
+      "Groups": 28,
+      "Sources": 598,
+      "Sha256": "b35af01049fe65d2032f727256658cc29fa71f59221723d160f97e88cc7efaa1"
+    },
+    {
+      "Sector": 128,
+      "Groups": 15,
+      "Sources": 122,
+      "Sha256": "3fedb55899061e136fd97815576748f21e13a4494a0a65375903bc37c0b8f97b"
+    },
+    {
+      "Sector": 132,
+      "Groups": 43,
+      "Sources": 518,
+      "Sha256": "014597b1b360dfcf1c7226cfb8180c87d6f78932851fb67f718046965cb2404a"
+    },
+    {
+      "Sector": 133,
+      "Groups": 17,
+      "Sources": 346,
+      "Sha256": "0efb27705723a1300066ade28308b80cfad49432965a5e5113a3e9a5cc575861"
+    },
+    {
+      "Sector": 136,
+      "Groups": 29,
+      "Sources": 2503,
+      "Sha256": "4fd644ed996a5c63587bc714a2adb94d41909e6513acd4f4f3f78d536ff3bdcc"
+    },
+    {
+      "Sector": 139,
+      "Groups": 17,
+      "Sources": 397,
+      "Sha256": "be01d2b73eabb8aec57fa5afee9c42946462f0b50a34fa9dcd73560298a71bb2"
+    },
+    {
+      "Sector": 141,
+      "Groups": 6,
+      "Sources": 49,
+      "Sha256": "d98e0b2617bad374b8edfa4b0afa65222f1c918131ec2580b405767a5eb08df2"
+    },
+    {
+      "Sector": 142,
+      "Groups": 36,
+      "Sources": 2355,
+      "Sha256": "dfb349c8c3eef590681769153ae0e0155f47a4d14e6d25df80a93518ba246bd8"
+    },
+    {
+      "Sector": 149,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "d415667036293363950fc2e612620ea27036e90e752dfe0b020aa083c9e9d17d"
+    },
+    {
+      "Sector": 150,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "282be2fd93d61bf85145d043236efe347483daac83683588c38eeb38cba8f4d0"
+    },
+    {
+      "Sector": 154,
+      "Groups": 9,
+      "Sources": 55,
+      "Sha256": "e61722f17118e83f1b3685d2e70967d1ef5ee85d9b919796c1a8ebea2983fa9a"
+    },
+    {
+      "Sector": 156,
+      "Groups": 48,
+      "Sources": 1313,
+      "Sha256": "125167827a7f91a51ff5522967a643f84a1918682a4a7ad4ad60cc2a5f44796c"
+    },
+    {
+      "Sector": 157,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "9ced0d149536f690a451e1a3e69b9744302936304733d9d512cfda761b38336d"
+    },
+    {
+      "Sector": 161,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "dea0c7e46371bae829abdcc43cbbbd21df05f6aad3375777990ac60664077d81"
+    },
+    {
+      "Sector": 164,
+      "Groups": 27,
+      "Sources": 396,
+      "Sha256": "d1c2eb98af456ab6ee8a2d32d0e1735ed0eeb3fdc9c07906f6d9fb1f4d0a37ef"
+    },
+    {
+      "Sector": 166,
+      "Groups": 42,
+      "Sources": 1200,
+      "Sha256": "d103c7f931ef66d476e42c881b78749fc460f368689d9cc9ae1d39feb954ac78"
+    },
+    {
+      "Sector": 179,
+      "Groups": 36,
+      "Sources": 326,
+      "Sha256": "8bd4a1944d97eea8cc73d79c87057a6e6cd7dc5c837a9b10e5d908a0554ca1a0"
+    },
+    {
+      "Sector": 180,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "4f6fe7ba2237a579ef72a81001e06e454ccbd172246c9f2069c077ec07855397"
+    },
+    {
+      "Sector": 185,
+      "Groups": 20,
+      "Sources": 1088,
+      "Sha256": "87aa2953392d2e9fd8d043db93360330acd2a85928d47fb9e3c9f7ec6004a14c"
+    },
+    {
+      "Sector": 186,
+      "Groups": 12,
+      "Sources": 155,
+      "Sha256": "51d2cbd1dcb7871fa3e0354fb412f9556d73b66af057f1fb70a557e40a04a36f"
+    },
+    {
+      "Sector": 188,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "9d311f6919c6b171a9ee5f5a13d97a2a71a0506d3ef81dc93b62d51f64ba047a"
+    },
+    {
+      "Sector": 191,
+      "Groups": 10,
+      "Sources": 782,
+      "Sha256": "78b785b02e69846c4e62554913535208a0dd5dad9e1aeeb9a8baafd1a42ad30e"
+    },
+    {
+      "Sector": 194,
+      "Groups": 38,
+      "Sources": 156,
+      "Sha256": "132eebb8cca0696e7beda4f738e635870eb0219d172727f5a666752555a95efd"
+    },
+    {
+      "Sector": 196,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "77dcde8dc03110163dbc12f9d922b674a961115257baeb5e8b026c6a8bda6c95"
+    },
+    {
+      "Sector": 198,
+      "Groups": 36,
+      "Sources": 432,
+      "Sha256": "77960c26593ad53b4104c05c29010e82bd22cd184271813b0b84dbafa1aa1b71"
+    },
+    {
+      "Sector": 202,
+      "Groups": 23,
+      "Sources": 338,
+      "Sha256": "1c6416dd3540f0ec3467808c7484059c9700aab85c779b382d6f76ddad913665"
+    },
+    {
+      "Sector": 203,
+      "Groups": 25,
+      "Sources": 885,
+      "Sha256": "1f9794d1be6ac7fac635000072e326454aeacc606fb84ade444df5bc12498343"
+    },
+    {
+      "Sector": 204,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "e72936255e915aa5c49b27dd6037ce61afe75085ad63aa47cba46cd95a887277"
+    },
+    {
+      "Sector": 205,
+      "Groups": 9,
+      "Sources": 79,
+      "Sha256": "4c18565df7d9f0fd4407139a1d48d6a7a778de8275f2f9051103d8fce2f24f2e"
+    },
+    {
+      "Sector": 209,
+      "Groups": 21,
+      "Sources": 226,
+      "Sha256": "842969b07d7bb8e93afc237132fa6512a3bac67fd338f63d3dd11fac2fbc21ea"
+    },
+    {
+      "Sector": 222,
+      "Groups": 18,
+      "Sources": 1033,
+      "Sha256": "86b335d54199aa3b07c5fb4636a213a223e90e18f392c264d222379616881115"
+    },
+    {
+      "Sector": 230,
+      "Groups": 104,
+      "Sources": 2124,
+      "Sha256": "1476bc6ca7e15259cf978dc3516b495f668e52fc4928a68e1c2c4f415592363e"
+    },
+    {
+      "Sector": 233,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "69c43b10536f85a10b25afe95ae883257d1dec4f1661ca4733ec48539e65e6c9"
+    },
+    {
+      "Sector": 235,
+      "Groups": 10,
+      "Sources": 784,
+      "Sha256": "65745cca61c5709221bb12b40ed598e039d7fffa66787de38e5649c374277a58"
+    },
+    {
+      "Sector": 238,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "c4a921a68f196f0d4042a9f41e9362ba325edf9a0e3a6030f110f9219af4d6ec"
+    },
+    {
+      "Sector": 239,
+      "Groups": 18,
+      "Sources": 262,
+      "Sha256": "25e402b42c760ee7c1a42fcb0a90251a6057f15796d18f112b569cb76b0883c7"
+    },
+    {
+      "Sector": 247,
+      "Groups": 10,
+      "Sources": 190,
+      "Sha256": "30323095144762335ac7279996255b7c1c52046be8df4f539e5fec22499589bb"
+    },
+    {
+      "Sector": 248,
+      "Groups": 9,
+      "Sources": 75,
+      "Sha256": "86fd6c1f3831ec9577579f9d72e7fb29a26e8d11d890966a3a52284c5862f9af"
+    },
+    {
+      "Sector": 249,
+      "Groups": 6,
+      "Sources": 47,
+      "Sha256": "c458579c5dab6cc2e93be20457080a466c0c38f409291c2c69aff5a0e1f0b74b"
+    },
+    {
+      "Sector": 251,
+      "Groups": 18,
+      "Sources": 267,
+      "Sha256": "7e332fd3599d20d204b5e3b6f8f1dddf4b2bea002e1005deaa0d43828c3b9fce"
+    },
+    {
+      "Sector": 252,
+      "Groups": 42,
+      "Sources": 1201,
+      "Sha256": "4a0e909a2bdbaebbb127608b8ac59efd588d19c00e9cdf551c5bb22486a4cf0a"
+    },
+    {
+      "Sector": 253,
+      "Groups": 11,
+      "Sources": 352,
+      "Sha256": "47d4be3bd66041472c0e9a3767782f6bd51bf7e348899b730b4cdc187fceed3b"
+    },
+    {
+      "Sector": 258,
+      "Groups": 11,
+      "Sources": 180,
+      "Sha256": "d7fa181acab338cda5ec2e5f32ef61efb306184db7ba6199c3063d91dfeccacf"
+    },
+    {
+      "Sector": 261,
+      "Groups": 19,
+      "Sources": 285,
+      "Sha256": "59ed2a11d13baef8128f6f902c8a7d68e5a9bcaae0219b7243f5c52dca9a29f0"
+    },
+    {
+      "Sector": 267,
+      "Groups": 6,
+      "Sources": 44,
+      "Sha256": "686dfa34ad1db986dfac5eeaecaf7ca9b918a164664f9fd065f95021be150395"
+    },
+    {
+      "Sector": 268,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "d24e636f5b085cdebf1d32696655983b4c910611343b074fff6c15429473a3e0"
+    },
+    {
+      "Sector": 270,
+      "Groups": 18,
+      "Sources": 1033,
+      "Sha256": "5cde01022e61a8ea459546b29fcef38ee94d0204f171860e879d3d9db07b472a"
+    },
+    {
+      "Sector": 274,
+      "Groups": 6,
+      "Sources": 99,
+      "Sha256": "03daddc7db4f085775fb25dce9bd76f18a7642b6ed423366ebe9978f97762ccc"
+    },
+    {
+      "Sector": 276,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "e002a245b7eb7c1c98ed73e771acd96539e8d180f3d5ffc24eb51bf0167db4a6"
+    },
+    {
+      "Sector": 282,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "ae9903e75a8f26b29e39862817c68fcca5b96d23eaae98ddcdd3744fcf1c2aa0"
+    },
+    {
+      "Sector": 285,
+      "Groups": 9,
+      "Sources": 77,
+      "Sha256": "bc24ef8d7d5442b0e1fce2abd650f4056b010b9dc4331025d14da238f3c8fb69"
+    },
+    {
+      "Sector": 295,
+      "Groups": 5,
+      "Sources": 132,
+      "Sha256": "c53c610b70badd2b97780e39e98b7e445c9d8841c5d21fc18545caffd0e210bf"
+    },
+    {
+      "Sector": 296,
+      "Groups": 11,
+      "Sources": 180,
+      "Sha256": "e15c0346055089feeac83a60fd41b24ce78a1e41d453f3206066649ddd3a7b5f"
+    },
+    {
+      "Sector": 298,
+      "Groups": 21,
+      "Sources": 156,
+      "Sha256": "ae56eed793d03ed3c37146e5ab1d0c72c89af68f287703b49c7a4ca7bcb14ac4"
+    },
+    {
+      "Sector": 306,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "403ad380f86eb68c14d8a5c4d8002262662f7e86e3d75d12e8aa8d0485984ce7"
+    },
+    {
+      "Sector": 311,
+      "Groups": 16,
+      "Sources": 271,
+      "Sha256": "0f1fbe622c9031062962c0c87200112f3d85fe631e3a175cf609090294b5cb34"
+    },
+    {
+      "Sector": 312,
+      "Groups": 10,
+      "Sources": 783,
+      "Sha256": "34daee417085e029f81e0e16268b3b1a71bfc31ffbb49ad9619320d6bea277ef"
+    },
+    {
+      "Sector": 328,
+      "Groups": 21,
+      "Sources": 161,
+      "Sha256": "4d0801e64298d3116d96999bd9007f464211f6afbfa39f71f1e103921034650e"
+    },
+    {
+      "Sector": 330,
+      "Groups": 10,
+      "Sources": 214,
+      "Sha256": "8dbaea217d242966422b43abcd35ebd962be389e53a3a92ef1b66695dd2ac1f3"
+    },
+    {
+      "Sector": 332,
+      "Groups": 9,
+      "Sources": 276,
+      "Sha256": "da7b33e76b3899de44b3cdaf1cff652d7561be331268528af57e9b415cb7136e"
+    },
+    {
+      "Sector": 337,
+      "Groups": 18,
+      "Sources": 130,
+      "Sha256": "e1db8f2d777c657584679808d3590312b6770deaa1b060e960846f91498e9d38"
+    },
+    {
+      "Sector": 338,
+      "Groups": 11,
+      "Sources": 182,
+      "Sha256": "ef0ca9f544cf41921e916e67046415de512a21b8e045f2d75890e852dd465ce6"
+    },
+    {
+      "Sector": 341,
+      "Groups": 9,
+      "Sources": 82,
+      "Sha256": "4d59afeb0c4bf0153dedf7ee2414870a79ee74d44f9d312a4de72dbafc679370"
+    },
+    {
+      "Sector": 343,
+      "Groups": 15,
+      "Sources": 1062,
+      "Sha256": "e728ad59f4b8cfd80020742a34206fe1f444df3b14a4754ca093bb9e2a6b4a81"
+    },
+    {
+      "Sector": 347,
+      "Groups": 42,
+      "Sources": 1200,
+      "Sha256": "6b55432577ec428a48515fc1b8791ee76d550955e359cbe25d9c8d7799176775"
+    },
+    {
+      "Sector": 348,
+      "Groups": 14,
+      "Sources": 205,
+      "Sha256": "aebb67f4b7dbda418838405e37471cee8e6589027dd938906956203a4cbca11b"
+    },
+    {
+      "Sector": 357,
+      "Groups": 9,
+      "Sources": 172,
+      "Sha256": "a1a6c08ce7d353cc3f2886d4096529f1b497f17ed5a61732bb7100dcb0bdb729"
+    },
+    {
+      "Sector": 369,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "178635472ce7bfc161966c263ce756b055326b9b2ccb183bf4e96e6b6f773f44"
+    },
+    {
+      "Sector": 370,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "f8081a7ce5bf94939af413db3f387d35c3fbd21dd9de614482fac6d743ea9036"
+    },
+    {
+      "Sector": 382,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "4f524c28f09f0f8debbf23e335393879145cb8126931755faa696fd49f5a9bd0"
+    },
+    {
+      "Sector": 390,
+      "Groups": 20,
+      "Sources": 448,
+      "Sha256": "861edc6441d00a12f159bf4102d441ed55663aa5fb2b34246d942e0037d18b80"
+    },
+    {
+      "Sector": 394,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "40c70ed829562216dda56ccaeb22578f434b3a362adb91f00872098aa4b0f1c4"
+    },
+    {
+      "Sector": 398,
+      "Groups": 6,
+      "Sources": 46,
+      "Sha256": "7ded75364f38ab5295380a7e5a78292c5752b63034c4e2c2a5bbb8c516bdad70"
+    },
+    {
+      "Sector": 400,
+      "Groups": 15,
+      "Sources": 121,
+      "Sha256": "871e32c4b38a17c09d01c753a99a4510c64954d3c9368e44ce3eb3ebc58dca76"
+    },
+    {
+      "Sector": 401,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "f7a75a6d646bd04b9427c0dd2d243640fcfe68ad5d47d646bb239e31e0cbd9b9"
+    },
+    {
+      "Sector": 403,
+      "Groups": 14,
+      "Sources": 184,
+      "Sha256": "6a73ed0d678de1070905bae9f127171022f473ae9c5b42bdc05bb7a258c83d97"
+    },
+    {
+      "Sector": 405,
+      "Groups": 37,
+      "Sources": 782,
+      "Sha256": "76d17d02fe66c405aa0634ac9252378f9704f97f72c883dad52b05feab09b3ec"
+    },
+    {
+      "Sector": 411,
+      "Groups": 66,
+      "Sources": 1857,
+      "Sha256": "581c58b829d7b0726631f65df2d0abbba4961d06fc10aa1dcca1cecfedf94303"
+    },
+    {
+      "Sector": 414,
+      "Groups": 21,
+      "Sources": 130,
+      "Sha256": "c0d8f3f1cc4e62d7c98ecc7190961c305083f0a9c7edd9ec213a16fa7f4011bd"
+    },
+    {
+      "Sector": 417,
+      "Groups": 36,
+      "Sources": 529,
+      "Sha256": "8823b0022b79fc98e7fdcd630159dd4548f1e233290a86010f1aebc2f99e6d3e"
+    },
+    {
+      "Sector": 423,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "7d852ee42508ff01f3feabe9fb127af3c48992d3054dded403a652dee34fe2b0"
+    },
+    {
+      "Sector": 424,
+      "Groups": 15,
+      "Sources": 319,
+      "Sha256": "1116ac976761a840eb0da6c1e4f6cbad93390e89bf9d3214c39bf9adc3b30a18"
+    },
+    {
+      "Sector": 429,
+      "Groups": 42,
+      "Sources": 1200,
+      "Sha256": "3ef8f54cb2e7c68dc8e14f792d14c5bf6c4c547d13c495d674784778edb24e7a"
+    },
+    {
+      "Sector": 432,
+      "Groups": 7,
+      "Sources": 563,
+      "Sha256": "6a41eb0ddc9cd0cd20d0a459026ffbf0b837b0a6394ac5f64a126a46bdbd7d25"
+    },
+    {
+      "Sector": 433,
+      "Groups": 18,
+      "Sources": 264,
+      "Sha256": "994787b306a33bb14a34f768eeb5ec34239bcc0d515e2f5a659ab8d311cece1a"
+    },
+    {
+      "Sector": 436,
+      "Groups": 26,
+      "Sources": 2715,
+      "Sha256": "1a1815f87884fcd57a643d00e27db1046a2f51fd964460212eec8896a8688b32"
+    },
+    {
+      "Sector": 439,
+      "Groups": 16,
+      "Sources": 1251,
+      "Sha256": "57ddfa8c48c963dafc1eac87d74f010b6dc71257d1cdd644c023d4a5f928e25c"
+    },
+    {
+      "Sector": 441,
+      "Groups": 36,
+      "Sources": 2354,
+      "Sha256": "c054e471f1b03700181aac9ad512b010e5e29a75db1ace026a1e2542b171f0c1"
+    },
+    {
+      "Sector": 443,
+      "Groups": 16,
+      "Sources": 2,
+      "Sha256": "25550b69514bd5cdf0f6928988d95592f1dcdf08d19dd66f0513ed9a821d94ac"
+    },
+    {
+      "Sector": 448,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "986e6032c3270120294648956702b56705c0657304a3c5882d79d7449b823190"
+    },
+    {
+      "Sector": 449,
+      "Groups": 27,
+      "Sources": 1059,
+      "Sha256": "96cebf26f921c1e877e0f1b6770d90e533e9309766ea12fbfc08d20172b52bff"
+    },
+    {
+      "Sector": 451,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "9e941a7a5d82bbb3b6cfea8b9d50489e7d4ca54e26c5a0467ffc962a271ad4ce"
+    },
+    {
+      "Sector": 454,
+      "Groups": 36,
+      "Sources": 264,
+      "Sha256": "6792c78898ed452e280f6435d4a267685f21362f4d71a308b95c641fa732b829"
+    },
+    {
+      "Sector": 456,
+      "Groups": 18,
+      "Sources": 264,
+      "Sha256": "1505e361d9102d241b8746d67d704121cae8fbe0effcc7f7731a433fd1d5df3c"
+    },
+    {
+      "Sector": 458,
+      "Groups": 22,
+      "Sources": 575,
+      "Sha256": "cf6d6e4184d4790b668b6d61ab9ba40a9db23b5f278b5e2e215c04186e3e203b"
+    },
+    {
+      "Sector": 467,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "b7c92899b69dc64511c65b5f3c93e6a95d348ed3f50cd676bc4888669c0ba455"
+    },
+    {
+      "Sector": 470,
+      "Groups": 60,
+      "Sources": 922,
+      "Sha256": "3e7517491b0ba855e2b3a17ff441ffcda46e0d927dfa78f454a3e82c5c1bb8d1"
+    },
+    {
+      "Sector": 475,
+      "Groups": 16,
+      "Sources": 302,
+      "Sha256": "c44a09554529b600813450dc22b91507dc5441cb262bfcb572934da708dbea04"
+    },
+    {
+      "Sector": 481,
+      "Groups": 6,
+      "Sources": 51,
+      "Sha256": "a782454f6a2138256f5dbb4187e16e44d55b65ec30c31a9bc70e52352ec98877"
+    },
+    {
+      "Sector": 482,
+      "Groups": 36,
+      "Sources": 1662,
+      "Sha256": "a68668c55201fd3fb783b4cc99c7d8052cad549882ea7b2267cd32db165d067a"
+    },
+    {
+      "Sector": 485,
+      "Groups": 27,
+      "Sources": 288,
+      "Sha256": "f9d56f551e78dc7e9b9ce8dbe74d3145aa1a8aa9be2f3645571eb26ec21d561d"
+    },
+    {
+      "Sector": 498,
+      "Groups": 6,
+      "Sources": 46,
+      "Sha256": "20b6d2835be8b83df35d6a59a66b1857013838491cb035fca4216f289a7718de"
+    },
+    {
+      "Sector": 500,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "19a2570793ae0d8ffb86cb04065da0fd209a2703b9370c563ebf525842af09c4"
+    },
+    {
+      "Sector": 505,
+      "Groups": 5,
+      "Sources": 298,
+      "Sha256": "51d19d0ca0dd9b538d636460db84edf3524d9272b05a8922891db3ddabeb6083"
+    },
+    {
+      "Sector": 506,
+      "Groups": 9,
+      "Sources": 75,
+      "Sha256": "6c9319cd7f09f640827b31c85212bf6f8f97a0154becce90e249e1fb0d4912f0"
+    },
+    {
+      "Sector": 509,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "0ed601f19881c69c53ae88ed2f81124f15e7fbe7fb027ab7e28313ad488c3303"
+    },
+    {
+      "Sector": 510,
+      "Groups": 6,
+      "Sources": 111,
+      "Sha256": "2f4a014e03e9d173bfbaeae7dc4c01c19e8ef5288fc0ae3a909d61da4ccb2821"
+    },
+    {
+      "Sector": 514,
+      "Groups": 50,
+      "Sources": 2711,
+      "Sha256": "8aeea15638d6f1b461a2efefe098c07f74475032f80537b4b4e54d647aaf211f"
+    },
+    {
+      "Sector": 516,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "08f59d0efd359fde070df9d2dc89dcc4db2dabc6e3400741364713da26d625c4"
+    },
+    {
+      "Sector": 527,
+      "Groups": 24,
+      "Sources": 1059,
+      "Sha256": "0bd843210d6c9054bdd52c280c9c54d13858f6ce0078314d2785fe352d9a578f"
+    },
+    {
+      "Sector": 529,
+      "Groups": 18,
+      "Sources": 743,
+      "Sha256": "9eb3782e8ccbd9d2275c332b48b9af4f9bb15aa1c96fdf008b97cff23874bc43"
+    },
+    {
+      "Sector": 536,
+      "Groups": 9,
+      "Sources": 78,
+      "Sha256": "e0d7266928099e53d75c7c098ea7f13c938a84f7e2bc4dadfd38a59dee399e45"
+    },
+    {
+      "Sector": 545,
+      "Groups": 42,
+      "Sources": 1199,
+      "Sha256": "6201eef076877808bea5bf7710706b0362abc418d7653de51d2cbaa6f6ba21d9"
+    },
+    {
+      "Sector": 550,
+      "Groups": 74,
+      "Sources": 2163,
+      "Sha256": "f549b45ed1df495fde5d9150229ea617a6e17082eb30466faa23b3abc735283e"
+    },
+    {
+      "Sector": 551,
+      "Groups": 10,
+      "Sources": 744,
+      "Sha256": "3e7d115b9b967e82201a836d6c65e62fa4daf48868d9ba5150a69f501434ec07"
+    },
+    {
+      "Sector": 555,
+      "Groups": 6,
+      "Sources": 246,
+      "Sha256": "dd3a5251f5cfce7b31c280248aae2d3363e8ae68d481892e70891b15a10cc268"
+    },
+    {
+      "Sector": 561,
+      "Groups": 10,
+      "Sources": 214,
+      "Sha256": "7f719fc116f6d495ee499358362316ec104a0c32304de56e6af94e5bf109bda1"
+    },
+    {
+      "Sector": 562,
+      "Groups": 41,
+      "Sources": 389,
+      "Sha256": "145d60bc13a714c5c7db45383c4179db4517497b4e4d6c6bdfbfab7e161f6e32"
+    },
+    {
+      "Sector": 577,
+      "Groups": 20,
+      "Sources": 231,
+      "Sha256": "44d0d7131ebb3d3e756c97e182fe1a4aaeb115799c3183774d5cc06e96a3a010"
+    },
+    {
+      "Sector": 578,
+      "Groups": 22,
+      "Sources": 180,
+      "Sha256": "e6fd91033cf4e52c12cc3d9abfb7060c68ad524b8f14f325897130b7eaef683e"
+    },
+    {
+      "Sector": 583,
+      "Groups": 36,
+      "Sources": 1659,
+      "Sha256": "71e9b9fa51c672f0da90db004057e3e927e31101dda1dffba89054bf0f4c1f7b"
+    },
+    {
+      "Sector": 589,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "c91f2f86ac2388c28715f4972f05193ff0bb0cd3103d0a04c9a4ab9ecc14d293"
+    },
+    {
+      "Sector": 590,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "1b9a1baf4631e11fa4910e13c7817874d433630bb81b4a7a4ef597c014cf15bf"
+    },
+    {
+      "Sector": 602,
+      "Groups": 8,
+      "Sources": 165,
+      "Sha256": "f6794c80de975eb268eafa5e0a77bece46a3b0c6cee40981938064aa1f81f278"
+    },
+    {
+      "Sector": 620,
+      "Groups": 24,
+      "Sources": 184,
+      "Sha256": "6acf31e663c0ec9195b8069e9041bca125a74b152358d8b8176a8240da6ae47a"
+    },
+    {
+      "Sector": 628,
+      "Groups": 31,
+      "Sources": 366,
+      "Sha256": "04fc62df400d690088315b73bb19a366fd72a159e2fb61f54803859f195fe3f1"
+    },
+    {
+      "Sector": 638,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "5668b7cfa2124ac5ff5495ff31cfdc5c236619566c40aa433bced84011ff1658"
+    },
+    {
+      "Sector": 641,
+      "Groups": 27,
+      "Sources": 1059,
+      "Sha256": "4a36aa9c02e7b2301ef9eb785226dc3fb500e3633415c7de940e42afa76e3e4c"
+    },
+    {
+      "Sector": 648,
+      "Groups": 8,
+      "Sources": 165,
+      "Sha256": "2918f85f895a97fff4cead5ecf2d5b2e7ab8a7465fc082eefa891483b69e461a"
+    },
+    {
+      "Sector": 649,
+      "Groups": 10,
+      "Sources": 792,
+      "Sha256": "e345c827e9f3428b983ed1e686218dd41f441b67dd09af7f0071579224f260b6"
+    },
+    {
+      "Sector": 650,
+      "Groups": 45,
+      "Sources": 338,
+      "Sha256": "108dbf88c99bc53177512058a7730f605466df90ec6ae3faba477ca10db79c39"
+    },
+    {
+      "Sector": 663,
+      "Groups": 6,
+      "Sources": 215,
+      "Sha256": "3936b7f2cf4522a14dd1f9eea4e203bbf59955d63f7a872d3895c904785ea45c"
+    },
+    {
+      "Sector": 665,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "102773b567dc1b8b5b1a00cac51be1886d9b8e0ef56a1e328666a1121a3a137d"
+    },
+    {
+      "Sector": 669,
+      "Groups": 15,
+      "Sources": 191,
+      "Sha256": "623db1370f09efb3dee4b397dd925abe600bca629d59c5c914e657284ca253cb"
+    },
+    {
+      "Sector": 674,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "bc893ae3470a4c157d50553ba89c4663f17e33e10c427ab2793ce7b56e95a752"
+    },
+    {
+      "Sector": 678,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "840f3cfa0a67ebc9501d62413b7672ad7641e1fa1729939832ce12cdea9b72fe"
+    },
+    {
+      "Sector": 679,
+      "Groups": 6,
+      "Sources": 114,
+      "Sha256": "8b25c600eb45b8fd5ecc7cc7ece68e8d6d355cd0e4b640dc54ec8a8adb01cbc3"
+    },
+    {
+      "Sector": 683,
+      "Groups": 18,
+      "Sources": 1607,
+      "Sha256": "0d7a5e0dee08861da9db09f7b3c03c04fac6b1d4f0ce464d14e685a2fb6f1bf4"
+    },
+    {
+      "Sector": 691,
+      "Groups": 23,
+      "Sources": 556,
+      "Sha256": "c1b152299c44a86ff66dd8a456e47b13b84431ecf4b6e08b4a6d76d6f520d731"
+    },
+    {
+      "Sector": 693,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "14be0e584e68e2824ac36c18e5abaafd056d8ff81f3323834de62b9542c5ba76"
+    },
+    {
+      "Sector": 698,
+      "Groups": 75,
+      "Sources": 772,
+      "Sha256": "e29c339d1cbcfb6821dcd36f38bf358e8e7afa6f79398c5644da44a9e0e1b7a2"
+    },
+    {
+      "Sector": 701,
+      "Groups": 23,
+      "Sources": 392,
+      "Sha256": "8f68fbaada8e1bff14a4bee67950912dc16459b030647aaadda67221dda75b71"
+    },
+    {
+      "Sector": 703,
+      "Groups": 6,
+      "Sources": 247,
+      "Sha256": "2428adab3746b61ff720738b6f540d4d486f8492cc2524775c8aad7231d3d1ce"
+    },
+    {
+      "Sector": 713,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "884a7e73c96e7231569e0719336afa337aa6a002da5cb0553f83116e8defb96f"
+    },
+    {
+      "Sector": 715,
+      "Groups": 18,
+      "Sources": 266,
+      "Sha256": "040b4f1e1893cc82fba4abe5c4f0c26c5d4259ea0e900e27786f28c5c0c3e5ff"
+    },
+    {
+      "Sector": 723,
+      "Groups": 6,
+      "Sources": 247,
+      "Sha256": "43fcaa76b002dc2cf276f8968a69769cd1000ed20af9fd2c5059f6ae9d86481d"
+    },
+    {
+      "Sector": 728,
+      "Groups": 33,
+      "Sources": 1166,
+      "Sha256": "f2d312da7f3e77326333a4dc0cc303197b878437e285de60e1b0e4045bc3853d"
+    },
+    {
+      "Sector": 729,
+      "Groups": 9,
+      "Sources": 80,
+      "Sha256": "e19dcbecb143cd0b88b689b011fbd22d8fa96585f55a8a878c600e568d602554"
+    },
+    {
+      "Sector": 730,
+      "Groups": 27,
+      "Sources": 207,
+      "Sha256": "1d50729419ba81c2fa0256ec1148134546fac53e0decac30081af927be0ce3da"
+    },
+    {
+      "Sector": 732,
+      "Groups": 14,
+      "Sources": 386,
+      "Sha256": "59630f401daaba505a1dfe5ec8a6d5345b2fab6d2c7f0883ab796fd9581d4a5a"
+    },
+    {
+      "Sector": 734,
+      "Groups": 6,
+      "Sources": 44,
+      "Sha256": "ea427931a4f050979be10ace8afe5f8a8da2bcba5010030e3913e3d0a3f708b5"
+    },
+    {
+      "Sector": 738,
+      "Groups": 18,
+      "Sources": 742,
+      "Sha256": "e0d520f4b9004a952096d583125dc4de06ba0c9174c87af19a0223fbf02fef5d"
+    },
+    {
+      "Sector": 739,
+      "Groups": 36,
+      "Sources": 2169,
+      "Sha256": "fdf7715af1006d57a9a91c5d9e0215b3c224287660e62580fe61488adb8a432c"
+    },
+    {
+      "Sector": 744,
+      "Groups": 18,
+      "Sources": 739,
+      "Sha256": "0666549cf7e3aa294c86340a29711768f5a37e7be98effeee6670a4bb80ae1ce"
+    },
+    {
+      "Sector": 748,
+      "Groups": 18,
+      "Sources": 292,
+      "Sha256": "fab088be18faa0cff2105244622d8c831009e5d354958e3040228fe5ecc4d1ed"
+    },
+    {
+      "Sector": 753,
+      "Groups": 21,
+      "Sources": 240,
+      "Sha256": "e0d2baf65f50194a05b5cd1b2f340cfc2fe04f866686a812c605b468a4a24c9e"
+    },
+    {
+      "Sector": 754,
+      "Groups": 30,
+      "Sources": 2051,
+      "Sha256": "663cbafb0c6776cede0d088ee37c00772fd91206f0ee7d2adc6cb7261281eb32"
+    },
+    {
+      "Sector": 759,
+      "Groups": 17,
+      "Sources": 223,
+      "Sha256": "bd42351af5fbd4b2a63d0353b20af5826463d9d821b0e5d762a0b4b0a200bbf5"
+    },
+    {
+      "Sector": 760,
+      "Groups": 23,
+      "Sources": 565,
+      "Sha256": "61509f3a628371cf0035bd7b6295228757f4df852d235be9a192f61bf92aafeb"
+    },
+    {
+      "Sector": 768,
+      "Groups": 8,
+      "Sources": 166,
+      "Sha256": "10ac3ed91b41aca76b8f34b261369851794743a5b12e1ed03003331cab974df9"
+    },
+    {
+      "Sector": 770,
+      "Groups": 9,
+      "Sources": 142,
+      "Sha256": "7d11e72a79e1f8d5aaa9b271ca2b417110222e0dce6e067f8e0b46f286f6a4e3"
+    },
+    {
+      "Sector": 778,
+      "Groups": 5,
+      "Sources": 299,
+      "Sha256": "604107f1cdabf9b6e50fe952a9b06bdda3daf90269d1e5ec3a37334a5c2e7cbb"
+    },
+    {
+      "Sector": 779,
+      "Groups": 5,
+      "Sources": 286,
+      "Sha256": "286d5330e99adcabb1239bd2285632df6c1b0ec45cf0306fdfa5b5151ebd2344"
+    },
+    {
+      "Sector": 781,
+      "Groups": 9,
+      "Sources": 78,
+      "Sha256": "3a5d444ee3e4318c09f47201a13d49a1a715fcb74672783c027784d84e3dc8ec"
+    },
+    {
+      "Sector": 791,
+      "Groups": 18,
+      "Sources": 264,
+      "Sha256": "52adf55ed96cdb205a2f4c453a372a092da85af9ce093b75ee063785cd34cdea"
+    },
+    {
+      "Sector": 796,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "cdb7950b4a832a267eea9edc711f7ca265c5414308e64a452f454e5a5729dd16"
+    },
+    {
+      "Sector": 798,
+      "Groups": 16,
+      "Sources": 1254,
+      "Sha256": "5ca254aebc54b44fae9be8adb0fd48b0ded2a6f002d4d44b04dd71f7156450e7"
+    },
+    {
+      "Sector": 799,
+      "Groups": 33,
+      "Sources": 1341,
+      "Sha256": "ebbbb8cf5db2434edf2fab58e94f575cfabb2cf2bf66322038c31ce6025558b0"
+    },
+    {
+      "Sector": 800,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "d863469d81129430a18a8d46485d8d905ad1e4989a336151aeb375434804b6dc"
+    },
+    {
+      "Sector": 802,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "bdf87a4360ba3aa337c7c75bc1c9bf29466aea73a1b1540093096e79fb3a3f82"
+    },
+    {
+      "Sector": 816,
+      "Groups": 9,
+      "Sources": 75,
+      "Sha256": "cf33c09d2c182c94889242cd6941b7a83816d34d22abc61919818c5f7a2770a9"
+    },
+    {
+      "Sector": 817,
+      "Groups": 30,
+      "Sources": 456,
+      "Sha256": "9e37c2b2a7c49959bbfb38a87a596e79f6fc45a61cfa98359489ed65cd4b1c8f"
+    },
+    {
+      "Sector": 818,
+      "Groups": 24,
+      "Sources": 1059,
+      "Sha256": "077363b0ec04e205c4e34b7b9f195f6db92046ec2aeaebb593fc6787207986f1"
+    },
+    {
+      "Sector": 820,
+      "Groups": 36,
+      "Sources": 527,
+      "Sha256": "1f1079318d94797437be817f6393aed5f3f9077421be521292ba74d5ead9d62c"
+    },
+    {
+      "Sector": 822,
+      "Groups": 10,
+      "Sources": 781,
+      "Sha256": "89bb5052dd71a8f7aed8bd094bf3995423633275d3667550b60c096473b7fa2b"
+    },
+    {
+      "Sector": 831,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "022c6c551d90a92b4fa9761b2f4e1347cd61e2758e0ee268c0a30f5f5c983f31"
+    },
+    {
+      "Sector": 832,
+      "Groups": 15,
+      "Sources": 118,
+      "Sha256": "584bb1f1620b63ffd630ea366ab67e04d1e806478f6cc4ec77251ecb73b02f51"
+    },
+    {
+      "Sector": 836,
+      "Groups": 24,
+      "Sources": 656,
+      "Sha256": "d7676ba4463e899c0c0d3d8249f6d931b4c15635abeb8fd8cf9806a1862a352f"
+    },
+    {
+      "Sector": 842,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "04255f51177b2d6abc52e341d2752e8a43de2523c78df289f5509f8e8c971134"
+    },
+    {
+      "Sector": 847,
+      "Groups": 6,
+      "Sources": 572,
+      "Sha256": "cc3f6435ee5e7920b4b73a119e86add8d0c03c9e9496b758ed97cfcd5bac7c29"
+    },
+    {
+      "Sector": 850,
+      "Groups": 9,
+      "Sources": 55,
+      "Sha256": "3dd25676d2f991294b78ce9a40a7b7e0002b71e242c50499c9d220c961b08922"
+    },
+    {
+      "Sector": 859,
+      "Groups": 33,
+      "Sources": 363,
+      "Sha256": "06451cc7d972ebc232592592b56c04a663eebec3a5d1e3397071a750bf50b739"
+    },
+    {
+      "Sector": 864,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "72c472a0c170d915303b415cfa5b00755b52f2d5c8512f01a75694599f3081fa"
+    },
+    {
+      "Sector": 865,
+      "Groups": 21,
+      "Sources": 168,
+      "Sha256": "bbf72d79470720cd75eaef3622994d3db07a1f2de83d7e0bf3f2e6cdfaf511e7"
+    },
+    {
+      "Sector": 869,
+      "Groups": 8,
+      "Sources": 568,
+      "Sha256": "befeb3f7de65a2e3e5d141ad14c6c88511e4c4fbfa2f802128a313d9a35c77ff"
+    },
+    {
+      "Sector": 873,
+      "Groups": 48,
+      "Sources": 456,
+      "Sha256": "c188cc6e19412337ecf3ed571505e0c453cd6c2a4a984b812f77aeeffe5665de"
+    },
+    {
+      "Sector": 879,
+      "Groups": 34,
+      "Sources": 417,
+      "Sha256": "d998f3fa2623055732c4f694e12786f521b34bb01dd049aedc6371a528d42c4a"
+    },
+    {
+      "Sector": 881,
+      "Groups": 36,
+      "Sources": 1663,
+      "Sha256": "4a12c2d13ad33a480bf1b376c9051d0044b751f4da9e916c36e6937783b053b4"
+    },
+    {
+      "Sector": 883,
+      "Groups": 38,
+      "Sources": 786,
+      "Sha256": "e987683f0d57a0883f043011cd01920d322dec97c31d2359537b6cc88831c90e"
+    },
+    {
+      "Sector": 885,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "6ec65a9bac8b98dd223bc833b20480f16e3d2eab94fb75ab1b7622d5508ccda7"
+    },
+    {
+      "Sector": 886,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "bd9d2241fe7b6af98d867b559b7af8618c9e1fd8e37cf721dcce6a7828c0062b"
+    },
+    {
+      "Sector": 888,
+      "Groups": 5,
+      "Sources": 287,
+      "Sha256": "51d44be356c72c8a3efe3198cd8c0d5e0b0dfcc743e4aa8b50521d346cfddffe"
+    },
+    {
+      "Sector": 890,
+      "Groups": 16,
+      "Sources": 261,
+      "Sha256": "8d1e1911e1d50bfd62e523752868cb587a9ea907b9f237fad7d79929c4c6e57e"
+    },
+    {
+      "Sector": 896,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "6b88c7f0c321b8fd767522a4949e73f355e1acc4c5443649ed5617edca675599"
+    },
+    {
+      "Sector": 906,
+      "Groups": 7,
+      "Sources": 569,
+      "Sha256": "005473ac45e5ba1fb0ca076d8f4f8885a19a01b0c40f92895459d03ae96f8b46"
+    },
+    {
+      "Sector": 920,
+      "Groups": 33,
+      "Sources": 399,
+      "Sha256": "357d6f6c20840cbc691bc344599a41f383549c601ae81a03b816ae6b87b279fe"
+    },
+    {
+      "Sector": 926,
+      "Groups": 24,
+      "Sources": 431,
+      "Sha256": "90da64abce528a07e63ed37e5172cf33c004b632452ff0064385519351879d01"
+    },
+    {
+      "Sector": 930,
+      "Groups": 36,
+      "Sources": 528,
+      "Sha256": "aaa26672af9fb9f9436c01e7c38e81749b4efc429ae076d90d33967e38557724"
+    },
+    {
+      "Sector": 931,
+      "Groups": 30,
+      "Sources": 291,
+      "Sha256": "f9aec13133ed6aa577851334bd3f5d8836cff77e7814320da97ff9c1fefdae96"
+    },
+    {
+      "Sector": 932,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "effb9fc31027fa345ddd2717ec1cb4a7d5f695c15a33e0f505cb2785d41b6878"
+    },
+    {
+      "Sector": 935,
+      "Groups": 27,
+      "Sources": 357,
+      "Sha256": "74dab8aeff58e0e54284143cd8155622cb5446151c3e850c076959ddcf232473"
+    },
+    {
+      "Sector": 941,
+      "Groups": 15,
+      "Sources": 124,
+      "Sha256": "a6c5cf8aff43698442478b9f28bd8c14489b214802a32fd1a78f274175b0a905"
+    },
+    {
+      "Sector": 942,
+      "Groups": 42,
+      "Sources": 1199,
+      "Sha256": "cd97f031178a7ad2028c8c6168746d51c8236745c1de360006d1977f57eb81ef"
+    },
+    {
+      "Sector": 948,
+      "Groups": 6,
+      "Sources": 151,
+      "Sha256": "60617c62363ea4ac8e99581871558925ffe367eea770eed68f512c5573eabfff"
+    },
+    {
+      "Sector": 952,
+      "Groups": 16,
+      "Sources": 921,
+      "Sha256": "1395e6d3d72aa3ba053c241c21faf9c2b110786fb96c4a08105409b675f18866"
+    },
+    {
+      "Sector": 954,
+      "Groups": 45,
+      "Sources": 364,
+      "Sha256": "e4ec319f3f17b09c0d14dadfc9a9cfab81b6512182951e9204fafd8e4a8b52eb"
+    },
+    {
+      "Sector": 961,
+      "Groups": 49,
+      "Sources": 862,
+      "Sha256": "dfaf8df168d90baa85046dd5f822ea96053c978483067cff9a84fdb1b74aadd1"
+    },
+    {
+      "Sector": 964,
+      "Groups": 9,
+      "Sources": 182,
+      "Sha256": "264212d2af279379bbf35499ce1aeddc7232986a83a6a60c26d81dff5827e81a"
+    },
+    {
+      "Sector": 969,
+      "Groups": 22,
+      "Sources": 1801,
+      "Sha256": "e591b25c91dafa509eb5531194c0f8eb9aace0af6af2111418895dc928181d70"
+    },
+    {
+      "Sector": 973,
+      "Groups": 31,
+      "Sources": 369,
+      "Sha256": "19619ac24be8a28bfe74a0ec1bc9bf674af7d31d110fdffcda4fd41904254099"
+    },
+    {
+      "Sector": 977,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "a1944a55defa3a3dab663663d9498645d9dd2f80588db6c0ede3b6b691a5c70e"
+    },
+    {
+      "Sector": 980,
+      "Groups": 42,
+      "Sources": 1200,
+      "Sha256": "c5efcca8630a4e976c84e4ff2dd2fc41fe135cd8b53a7d0cd32d0493f9b4c3ef"
+    },
+    {
+      "Sector": 982,
+      "Groups": 5,
+      "Sources": 295,
+      "Sha256": "06e818cd113d03c5062689f324abc8f4b44dae7711628682a412d0c076b15cab"
+    },
+    {
+      "Sector": 983,
+      "Groups": 6,
+      "Sources": 50,
+      "Sha256": "793868ad5f488f1c694024e2cf2688ba0fcd0832790ae5749074d400f1448a9e"
+    },
+    {
+      "Sector": 985,
+      "Groups": 36,
+      "Sources": 527,
+      "Sha256": "892837adfd47593ee91aa671e896b9f38f4d4d2768990679b5e4549da2d4a6f3"
+    },
+    {
+      "Sector": 987,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "127db17f66e9147685add9969711eb42738bd2b50eb9f302c4eea800fb3a494e"
+    },
+    {
+      "Sector": 991,
+      "Groups": 11,
+      "Sources": 173,
+      "Sha256": "8ac28bca7aa4ee9f0857d5f06c8d34ab608157b70ede821e6c857f5b227d50eb"
+    },
+    {
+      "Sector": 1002,
+      "Groups": 45,
+      "Sources": 696,
+      "Sha256": "bc587fce9698243065bc9a9120eb64903d6e5c715d597864fd7307edab186d11"
+    },
+    {
+      "Sector": 1004,
+      "Groups": 6,
+      "Sources": 576,
+      "Sha256": "5b09d3abd0bb71a7dd75f626621a15b818b6c269bfe90a22c335c1f3603e1226"
+    },
+    {
+      "Sector": 1010,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "d1a93744e7b8e6fd6e544955aa02a92348d31b7d2e8051d3a5c653b8bdee5688"
+    },
+    {
+      "Sector": 1011,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "4f41a7722652dc493edf7197f9807c5a8114f478332b02967f2a4e5317e4e078"
+    },
+    {
+      "Sector": 1012,
+      "Groups": 36,
+      "Sources": 618,
+      "Sha256": "aacd5f6a0764bffda4ceb239c8af4c27271c43d7f034694f0d93de55d44025f1"
+    },
+    {
+      "Sector": 1020,
+      "Groups": 20,
+      "Sources": 1570,
+      "Sha256": "508ab2bbe28a8c3658df1afd7657cc8ede17685983d0d7d24bf957eebaf753bc"
+    },
+    {
+      "Sector": 1023,
+      "Groups": 24,
+      "Sources": 656,
+      "Sha256": "e7ca1dc7778c1ddd3bb8dc924cbc6a53d6d773f274c1e072de2efe537e7f19c5"
+    },
+    {
+      "Sector": 1027,
+      "Groups": 8,
+      "Sources": 215,
+      "Sha256": "0f70aa0d14d4a63875bdfeed113e244eb5e21c0686940a1e984e377db8b615c1"
+    },
+    {
+      "Sector": 1028,
+      "Groups": 22,
+      "Sources": 298,
+      "Sha256": "8322b3c1354a2cd6544d5d7c579231a19956b36c6230248425b6ec87775fbd39"
+    },
+    {
+      "Sector": 1033,
+      "Groups": 21,
+      "Sources": 140,
+      "Sha256": "bbf7c9aba0f75e006f10bbd54d3968afe7b1d8b167de85c2962d48b3a8e65262"
+    },
+    {
+      "Sector": 1034,
+      "Groups": 40,
+      "Sources": 522,
+      "Sha256": "7b4ab06c55cf80bcc5e140e86a70e1063b276d0d7d1cfdd9126fe2682932dba5"
+    },
+    {
+      "Sector": 1036,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "ba78682a50c3c02b8f2e7dd22c334f7ed36640e89dfb735bcfcae2a591bc9dab"
+    },
+    {
+      "Sector": 1042,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "72688971e23abbc0b04577bb588011f0c37ce5cf7a110e16476ef952a7332b7e"
+    },
+    {
+      "Sector": 1048,
+      "Groups": 18,
+      "Sources": 264,
+      "Sha256": "0b8aa627736d31960b63a23ffc6341fc98eb225029f6470852b70e7173f6a981"
+    },
+    {
+      "Sector": 1050,
+      "Groups": 18,
+      "Sources": 1033,
+      "Sha256": "ae1d1c3fbdb740993acddbef60aefe9427c4f850b33ddee3a0379dbc6746dea5"
+    },
+    {
+      "Sector": 1052,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "8d37b5ded8460305e4144a4b57765b36ee2f40724c4dff923679073f0fe71dd6"
+    },
+    {
+      "Sector": 1056,
+      "Groups": 18,
+      "Sources": 740,
+      "Sha256": "6f3c4ce5d7b9d0237d5000472ac936c3d40422dd664e4224fb39ce6c37a905c2"
+    },
+    {
+      "Sector": 1060,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "69f0378dfa8cf182dfe63cd76c277cce72927354c66994bb294363d4a65deff8"
+    },
+    {
+      "Sector": 1065,
+      "Groups": 15,
+      "Sources": 398,
+      "Sha256": "a2bf1cde92883955fe304a7d960fc45956abc0eee4bd1b2df971f7e5f0818fa2"
+    },
+    {
+      "Sector": 1080,
+      "Groups": 5,
+      "Sources": 298,
+      "Sha256": "9c9c7192d95acb7f1c186655787cc0e2c4e241022903c26c4e9b4026917f4a61"
+    },
+    {
+      "Sector": 1086,
+      "Groups": 6,
+      "Sources": 50,
+      "Sha256": "c1c02a0ace7041309593eb7d580f729bc499dc9220c103e7434741c4de02b0f1"
+    },
+    {
+      "Sector": 1091,
+      "Groups": 25,
+      "Sources": 133,
+      "Sha256": "81fc1da0c2ad76f7a2140c6518fc7a8da2b1bb3974677b408127f37356ecdfeb"
+    },
+    {
+      "Sector": 1098,
+      "Groups": 23,
+      "Sources": 1046,
+      "Sha256": "f8b2bed60603f17129e911d82321adc0125d979abb03f29fc9cfec49eb99e61f"
+    },
+    {
+      "Sector": 1103,
+      "Groups": 21,
+      "Sources": 157,
+      "Sha256": "840d7b7346158b7223eef2da0b243d15930f945392029b9c50436fa8ca2dca28"
+    },
+    {
+      "Sector": 1114,
+      "Groups": 18,
+      "Sources": 319,
+      "Sha256": "eb42d7d9d6077eb536c3f488807b4810e77c5810dd36cadc8d96f6d6313d586f"
+    },
+    {
+      "Sector": 1118,
+      "Groups": 31,
+      "Sources": 460,
+      "Sha256": "1cd98cb006275c8b36fbfff949e265e9befc6510d967744e615b9a61a4989c70"
+    },
+    {
+      "Sector": 1119,
+      "Groups": 5,
+      "Sources": 293,
+      "Sha256": "386c294f43719416f2dea57453a8efd7faf5e943210995c8714069fae78f8ad3"
+    },
+    {
+      "Sector": 1120,
+      "Groups": 15,
+      "Sources": 121,
+      "Sha256": "761684e256f3b5c1a8e901f9716171066bc75447635b5912121b0e4021531414"
+    },
+    {
+      "Sector": 1121,
+      "Groups": 6,
+      "Sources": 112,
+      "Sha256": "091b63b6247c97f0588258313a7301308c6f54601ac7b226864da9eeba676495"
+    },
+    {
+      "Sector": 1123,
+      "Groups": 33,
+      "Sources": 499,
+      "Sha256": "a430b3a6c4a152e4d6f1c9a9378a0056bfe2db85239e15a510aabcb797713fbd"
+    },
+    {
+      "Sector": 1124,
+      "Groups": 24,
+      "Sources": 1059,
+      "Sha256": "ad2ae23dc2dce8c449738583511838b0b6030b4191bc3afac239833a3e7d69c5"
+    },
+    {
+      "Sector": 1127,
+      "Groups": 42,
+      "Sources": 472,
+      "Sha256": "93148c31468b271178b62767766e5f50c4191ff56a69dbfa8c5e153d318d839e"
+    },
+    {
+      "Sector": 1128,
+      "Groups": 9,
+      "Sources": 397,
+      "Sha256": "6cca7eaf943242b6643c608680a5d43246175c9089718b002e93bdf175810873"
+    },
+    {
+      "Sector": 1129,
+      "Groups": 6,
+      "Sources": 113,
+      "Sha256": "e1b0d3dec1a642991959bdbe589a26560590e1cec494dd19ed1f603143619d0a"
+    },
+    {
+      "Sector": 1130,
+      "Groups": 6,
+      "Sources": 47,
+      "Sha256": "d32853033d253e74093527622cbddae5751df2323b01dd04627e6378d7c037b2"
+    },
+    {
+      "Sector": 1135,
+      "Groups": 47,
+      "Sources": 861,
+      "Sha256": "ff0e30066368828021e70a4eb9baebda600ea0679f92687cd0ae0e73dee616f4"
+    },
+    {
+      "Sector": 1137,
+      "Groups": 36,
+      "Sources": 526,
+      "Sha256": "a063f150815bd06a96e20d8fee6c8d75222a12c4eaff9d9e638cc71827f9bb52"
+    },
+    {
+      "Sector": 1138,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "ce455a63493318104e6c4b2f64ad199a28ca797c520424939b529c93d13e3012"
+    },
+    {
+      "Sector": 1141,
+      "Groups": 23,
+      "Sources": 147,
+      "Sha256": "6be7a3dee794beea4aec434d26699e957f8b19c13552ba265242a4b8939261d7"
+    },
+    {
+      "Sector": 1145,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "cda682a4d637b64a4c12d325c02d5bf445ab37fb2ac4956c35e5064ee306bac1"
+    },
+    {
+      "Sector": 1148,
+      "Groups": 10,
+      "Sources": 439,
+      "Sha256": "1027c3f9ba83d7ba3304a738b60a01ad150ac6b5e183a0d947779fdb5824384f"
+    },
+    {
+      "Sector": 1149,
+      "Groups": 24,
+      "Sources": 205,
+      "Sha256": "b745efe0ed1571a84441fe83def667e690550c31787b345096d6f1e580991623"
+    },
+    {
+      "Sector": 1150,
+      "Groups": 9,
+      "Sources": 241,
+      "Sha256": "5b6388888a10999c172172e2e42e8c582eb9920259931a83853f626085e900f1"
+    },
+    {
+      "Sector": 1152,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "15e159e2cc712acdf930c2bc92a6c4f03378fec4a49f00d6032a2982e635d24d"
+    },
+    {
+      "Sector": 1156,
+      "Groups": 4,
+      "Sources": 21,
+      "Sha256": "f6111b3a71c34c4042ccdacf0ac70923ac7d8ec5cbf25e70b310d4e3a1b187f6"
+    },
+    {
+      "Sector": 1159,
+      "Groups": 9,
+      "Sources": 146,
+      "Sha256": "2f9b2c9819eb7179a591cab0a9e3eebcf7ec23a5aa6887470b2f5c123de63912"
+    },
+    {
+      "Sector": 1160,
+      "Groups": 6,
+      "Sources": 115,
+      "Sha256": "8b02ce9948ae4aea63624680d8ece36d29f0cd615509260fb9bbbc372d996bf4"
+    },
+    {
+      "Sector": 1165,
+      "Groups": 5,
+      "Sources": 302,
+      "Sha256": "e9cc4dc740868bfa50e4aa0ac51cd678a4197de27bebb2d4a0526caeba7a1c98"
+    },
+    {
+      "Sector": 1167,
+      "Groups": 23,
+      "Sources": 1037,
+      "Sha256": "a75868b73d2f5591ae32b57ea773c3421f8722b5295123549bf6615849776b04"
+    },
+    {
+      "Sector": 1168,
+      "Groups": 48,
+      "Sources": 1862,
+      "Sha256": "75062781c1d9dc30a06e4c2cb0228c6ce5cf6445f00011172ef7f19e3c97b043"
+    },
+    {
+      "Sector": 1171,
+      "Groups": 56,
+      "Sources": 1282,
+      "Sha256": "36913f481f2d2ec9ff1ab0e86523557c0d4c39c2c2a5acf90ba28ad84fc74c3a"
+    },
+    {
+      "Sector": 1172,
+      "Groups": 18,
+      "Sources": 737,
+      "Sha256": "beaee2c697a7f025aa556c5b173e721784e59b255df21eda9cac560771378209"
+    },
+    {
+      "Sector": 1178,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "c35fdb55b1cf6e8db5d3cda777cd18742a2006cc9d003dc870bac77b7c9ae27f"
+    },
+    {
+      "Sector": 1187,
+      "Groups": 15,
+      "Sources": 189,
+      "Sha256": "de405cbafd831572fb76cf9d0d75f40dfc1b95264e49eca70ecfe2b33e5956a1"
+    },
+    {
+      "Sector": 1190,
+      "Groups": 10,
+      "Sources": 768,
+      "Sha256": "2d4aa3985c571940fea1581ad0fd47ecae03aad8ac3b0e95d2ef68647467c8d6"
+    },
+    {
+      "Sector": 1191,
+      "Groups": 10,
+      "Sources": 190,
+      "Sha256": "071a408939be4dddda94ff7d53970302a211d3a9e5a31a58d3d6f8ca35646b6d"
+    },
+    {
+      "Sector": 1194,
+      "Groups": 5,
+      "Sources": 298,
+      "Sha256": "bf498d3a49065b9a6f42f280908f4faaa508d1387b452aae3df8eedba1f0da41"
+    },
+    {
+      "Sector": 1195,
+      "Groups": 15,
+      "Sources": 123,
+      "Sha256": "b2afb1698dfd011d59e72ed49b4048e647210dad4001f7e1dd5d33909e53bbb5"
+    },
+    {
+      "Sector": 1201,
+      "Groups": 18,
+      "Sources": 263,
+      "Sha256": "337f1029938836fec53795cbba44a257af14884c8bdb75ef0fc444e1cfb78665"
+    },
+    {
+      "Sector": 1202,
+      "Groups": 10,
+      "Sources": 190,
+      "Sha256": "d5f8a1fb68e3de6627acbd7b9dfe70d2be40b125332b2e1ec210991044c14c54"
+    },
+    {
+      "Sector": 1205,
+      "Groups": 6,
+      "Sources": 579,
+      "Sha256": "14fa373fc60affe99daf34db50db3b55e1ae10309164940724c13d8fad7d64f8"
+    },
+    {
+      "Sector": 1210,
+      "Groups": 49,
+      "Sources": 521,
+      "Sha256": "f36a6e6a1901d0c60254c82e67607848875d7d4a4a071cc84bfc798fc6fa36f3"
+    },
+    {
+      "Sector": 1214,
+      "Groups": 28,
+      "Sources": 308,
+      "Sha256": "55d19772fb34663af252d9daea5ebf076b558c555fa60c215506c0d88f9f36c3"
+    },
+    {
+      "Sector": 1217,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "678f6283be5af5318af4df52ade6313943277c1e4942d1c45f6d962cc5a52e91"
+    },
+    {
+      "Sector": 1218,
+      "Groups": 9,
+      "Sources": 147,
+      "Sha256": "59db2204f735c5fb2a27a7c16fa3f120c9aabbb9fc5c5636fd0534457d851860"
+    },
+    {
+      "Sector": 1227,
+      "Groups": 15,
+      "Sources": 258,
+      "Sha256": "52d2fbf9bb9883292a60f670a3ab1c1259fc193a5ae52ea06e16ca0c4defd506"
+    },
+    {
+      "Sector": 1232,
+      "Groups": 20,
+      "Sources": 248,
+      "Sha256": "7087703b2cf95ba88b3f5413a1435c40ff5cb76eb90dab067252addb817ee2cd"
+    },
+    {
+      "Sector": 1239,
+      "Groups": 15,
+      "Sources": 120,
+      "Sha256": "447b8c9dcfdfca13197f23366d5477bcbcf12a7e8c01256a56f1eed4692d7ec1"
+    },
+    {
+      "Sector": 1242,
+      "Groups": 32,
+      "Sources": 531,
+      "Sha256": "ebd5a4488af936e1701e3279f36978a8dd69d869bfdf1b420e025f630bef358b"
+    },
+    {
+      "Sector": 1254,
+      "Groups": 10,
+      "Sources": 190,
+      "Sha256": "fba5628a60560976f9504bf1260038a1d3504e30a1a8d225d122883f85f09f86"
+    },
+    {
+      "Sector": 1257,
+      "Groups": 6,
+      "Sources": 39,
+      "Sha256": "cc70000e46746b2c72a1e0e89dd04645e90998c81fd6de0c8c3fa81a9590a0b3"
+    },
+    {
+      "Sector": 1267,
+      "Groups": 10,
+      "Sources": 787,
+      "Sha256": "8345a739f05bad5e739e9471c69da0934da611f1909dfa015e44bc3b79be92f6"
+    },
+    {
+      "Sector": 1269,
+      "Groups": 24,
+      "Sources": 1059,
+      "Sha256": "694c5c6ef449a0774819a622583880410a9f24048143e534bef958320f1381d3"
+    },
+    {
+      "Sector": 1270,
+      "Groups": 16,
+      "Sources": 881,
+      "Sha256": "a7a042ab02e463eb058d8b3bc36433d1ce5ecb27f77c38b3f58d3f0228b4c4cb"
+    },
+    {
+      "Sector": 1283,
+      "Groups": 9,
+      "Sources": 80,
+      "Sha256": "884aff35cc487df5218b69bad5749197d069f75ba6cf56cf0e16a02be4ba9fd0"
+    },
+    {
+      "Sector": 1285,
+      "Groups": 5,
+      "Sources": 291,
+      "Sha256": "75c9b9342c7e65b11c66e3235e2ae1bec400df75d4a8deb8bd28f7ef853b003f"
+    },
+    {
+      "Sector": 1286,
+      "Groups": 63,
+      "Sources": 589,
+      "Sha256": "cd51bc73ac5e9c409a3afd8a1389f214cf9f54809a434469f5feabcc7530a964"
+    },
+    {
+      "Sector": 1297,
+      "Groups": 8,
+      "Sources": 168,
+      "Sha256": "4bf673f2f9f02db77ae3865d4c162a625e3b19b4cd3e23ea901fca55a3c03ccb"
+    },
+    {
+      "Sector": 1301,
+      "Groups": 60,
+      "Sources": 575,
+      "Sha256": "edd975457b3733b7adaceaabcfedd5b29510cdd52fb906ede70860242258e3fc"
+    },
+    {
+      "Sector": 1302,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "8b8b25ca5d6fd61c7f058ab8d3ae948e2740267c2209336f9bd62f4796312f9b"
+    },
+    {
+      "Sector": 1303,
+      "Groups": 5,
+      "Sources": 307,
+      "Sha256": "b71d1188152b13adae26712190ed27a6273c979ccdfd32202fcec55abd4dd960"
+    },
+    {
+      "Sector": 1305,
+      "Groups": 15,
+      "Sources": 190,
+      "Sha256": "22af88bdb1cfecba89680b2b4114879fcbb3d045d29f9ffc66a136afbbde70e4"
+    },
+    {
+      "Sector": 1307,
+      "Groups": 12,
+      "Sources": 54,
+      "Sha256": "cecb7278b4a392bbc3afb5e925e04b955bb7e98515a43e3b00d1c54f3c752066"
+    },
+    {
+      "Sector": 1312,
+      "Groups": 48,
+      "Sources": 451,
+      "Sha256": "a07004503105b4e34a5c35615b65f0561309b401c0b85cc166672de8472a6b82"
+    },
+    {
+      "Sector": 1313,
+      "Groups": 24,
+      "Sources": 658,
+      "Sha256": "5910ad2ee577937dfcaea87776cf7b2b2230494b025c989a6d0c0019faf1bef7"
+    },
+    {
+      "Sector": 1314,
+      "Groups": 5,
+      "Sources": 295,
+      "Sha256": "ff02c6583afd53672fa9cf0b3a3a12f33a94cd9acbf59443589c83a332782c92"
+    },
+    {
+      "Sector": 1317,
+      "Groups": 14,
+      "Sources": 212,
+      "Sha256": "6035db8f679cc4aa4255364732efe6d20700f3c5bd1185bdfc9c9cbe65fa579a"
+    },
+    {
+      "Sector": 1327,
+      "Groups": 16,
+      "Sources": 1251,
+      "Sha256": "3fd8813d53c4ea9f869217f5e74c10362cec9c72ac539c6c686091d597dda2d7"
+    },
+    {
+      "Sector": 1330,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "8b783e1e4dacce17addaa27cba1045b5086d277bb3807afcf2d9b5e9fe4b87ed"
+    },
+    {
+      "Sector": 1332,
+      "Groups": 11,
+      "Sources": 349,
+      "Sha256": "c0f3b0460948b9203ee0944f4431d93246139fa54cb80901c2dd590bccf5315d"
+    },
+    {
+      "Sector": 1334,
+      "Groups": 46,
+      "Sources": 1556,
+      "Sha256": "50bd138b39df508a16a050f5e2383ab86418ca79dbd3d1d19469ed27b0d2d515"
+    },
+    {
+      "Sector": 1335,
+      "Groups": 18,
+      "Sources": 265,
+      "Sha256": "1b788ebe057b9a8930df65b002f8ee682450b82a8e5f66cb545ae8c5baa0a97f"
+    },
+    {
+      "Sector": 1339,
+      "Groups": 21,
+      "Sources": 218,
+      "Sha256": "87905fafdab8c89c024f8bc9b9d216eb81c0c1ce8c2d03adb7dc6278143757a6"
+    },
+    {
+      "Sector": 1342,
+      "Groups": 4,
+      "Sources": 20,
+      "Sha256": "11d87fed202c29a142efad3cb0513ca716b97ff56135f8912c9870a3be0c988f"
+    },
+    {
+      "Sector": 1345,
+      "Groups": 75,
+      "Sources": 964,
+      "Sha256": "b1d591d6e37004c531752a314e840dee323690b825672d6b989d4c816554dff4"
+    },
+    {
+      "Sector": 1349,
+      "Groups": 21,
+      "Sources": 165,
+      "Sha256": "fc9381c21d14790cf0d5c902e5653d9d03e734333d01c8730aa2ac320ecb628e"
+    },
+    {
+      "Sector": 1356,
+      "Groups": 16,
+      "Sources": 823,
+      "Sha256": "a76a9bde33ff30af0c8eed5e197238ed9d00aa85393eaf4ab930ccaff276b446"
+    },
+    {
+      "Sector": 1362,
+      "Groups": 18,
+      "Sources": 264,
+      "Sha256": "5fbfc46c188b7ca3cb712d7ec6ab620d297fb016fe87435953ee38a11545cf17"
+    },
+    {
+      "Sector": 1368,
+      "Groups": 16,
+      "Sources": 8,
+      "Sha256": "abdf368eaa3388cd675309f477c46c8a20eda7a7acb3141d83f77443ff860f80"
+    },
+    {
+      "Sector": 1369,
+      "Groups": 25,
+      "Sources": 399,
+      "Sha256": "5fa924ff8c1e642b5e033723a156f56e5658bc4a1f7c471da30d8a7ae6d42865"
+    },
+    {
+      "Sector": 1374,
+      "Groups": 6,
+      "Sources": 51,
+      "Sha256": "96400acdd44fef3e9c15c41c8c11423be83204c983d5e144f018925bb107664b"
+    },
+    {
+      "Sector": 1375,
+      "Groups": 15,
+      "Sources": 125,
+      "Sha256": "2b51240f8093249053e7038ec8ef58654cd06039e05727749a11ebb7c08f16b8"
+    },
+    {
+      "Sector": 1380,
+      "Groups": 15,
+      "Sources": 226,
+      "Sha256": "abb203c4170e19c4ac4a1d45d845608bc0f2904b964f38e947f8d03576a283d6"
+    },
+    {
+      "Sector": 1385,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "248afeb4fee229a2776abd45e9f05d66d50e76c9553a3e3f6e2092dec86dc160"
+    },
+    {
+      "Sector": 1396,
+      "Groups": 5,
+      "Sources": 301,
+      "Sha256": "b214efcd5f21fc5607bdca576f15ff47789809a428b24c0fc1cbac2188f28a9e"
+    },
+    {
+      "Sector": 1397,
+      "Groups": 5,
+      "Sources": 349,
+      "Sha256": "8d51d3aa28453f8b9079d021638d468b6bce2a66546554f6bd427117e8c27961"
+    },
+    {
+      "Sector": 1398,
+      "Groups": 36,
+      "Sources": 617,
+      "Sha256": "9efdc2b8d6cde8c401e4bf6122c9df9bad99349ae2bbb4e257e2b8fcd8ab678c"
+    },
+    {
+      "Sector": 1402,
+      "Groups": 24,
+      "Sources": 289,
+      "Sha256": "c545041d8a716edadb0d9a7fdfa31c0ac5181c1a3dfcd597d3341584c14f64a9"
+    },
+    {
+      "Sector": 1406,
+      "Groups": 5,
+      "Sources": 300,
+      "Sha256": "82edbc8167dbba985fc970198508d71b76ebabd3554c771d5b2fca7970db4876"
+    },
+    {
+      "Sector": 1407,
+      "Groups": 6,
+      "Sources": 45,
+      "Sha256": "1243a7cf3fadebc7fdeda29b4af588e710505170fc0ba82cf93740a68e8b00ae"
+    },
+    {
+      "Sector": 1413,
+      "Groups": 5,
+      "Sources": 129,
+      "Sha256": "434d2d12dd6cdd4cdd956d9c927cec43a7f77e2c2760dd5a7746f602c115e87e"
+    },
+    {
+      "Sector": 1417,
+      "Groups": 19,
+      "Sources": 362,
+      "Sha256": "99d2ddb3b2d952d8be6e9acc551f77e639dbe64559fbaaaca51e716d3a729160"
+    },
+    {
+      "Sector": 1431,
+      "Groups": 23,
+      "Sources": 568,
+      "Sha256": "4a5a757e168ddb7bb0ee2c5d3ffc1f54c9ff5b2d53a527b789886360e37524fb"
+    },
+    {
+      "Sector": 1434,
+      "Groups": 5,
+      "Sources": 300,
+      "Sha256": "383bca7a5281e03f1094ee92c0ca3eedbc7ae5e3b4fbf038217ea1eded4cbf3f"
+    },
+    {
+      "Sector": 1436,
+      "Groups": 16,
+      "Sources": 263,
+      "Sha256": "faac2d71bdf64d04f5210fdf0f3ba4a4ee700a6b95efd47391fe17ca9153e2c5"
+    },
+    {
+      "Sector": 1438,
+      "Groups": 54,
+      "Sources": 882,
+      "Sha256": "db23ad82295bab3cb5aeb792d3e86fee55eb1fd94a1978325997cd516339aee9"
+    },
+    {
+      "Sector": 1439,
+      "Groups": 20,
+      "Sources": 4,
+      "Sha256": "1abb88f4f38debbc65596dc131c65d76999eb978fdec9f22f43682768952a6a9"
+    },
+    {
+      "Sector": 1448,
+      "Groups": 5,
+      "Sources": 130,
+      "Sha256": "47fa081d76781c573469df5ac7a80711afbb7d7a0e7bbedf3c8317119bfdeb36"
+    },
+    {
+      "Sector": 1479,
+      "Groups": 24,
+      "Sources": 657,
+      "Sha256": "f1f102ba915e871816137096388d4f77759f3ae67ddefadd3a876ecca81e0e9b"
+    },
+    {
+      "Sector": 1490,
+      "Groups": 15,
+      "Sources": 103,
+      "Sha256": "3931b7fda7fdc254ba6b3879b6afc3b62edb927319869d6a1db37e31cc040f75"
+    },
+    {
+      "Sector": 1492,
+      "Groups": 15,
+      "Sources": 1067,
+      "Sha256": "4f8fbde344d4cbcc337bda0c129901b789f0c4b1f9f17611eaf717ee49dc1ef1"
+    }
+  ]
+}

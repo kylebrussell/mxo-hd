@@ -99,7 +99,8 @@ namespace hds
                     ??MissionSites.Choose(sites,"Any",x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
 
                 choices=site==null?Array.Empty<MissionOpenFloorChoice>():MissionStaging.SelectObjects(phase,site,rng).Select(MissionOpenFloorChoice.From).ToArray();
-                selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":null);
+                MissionElevatorPoses.TryCreate(site,choices,out var elevator,out _);
+                selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":null,elevator);
             }
             if(!Current()) {selected=null;refusal="StaleWorld";return false;}
             plan=new Plan(client,progress,phaseIndex,site,selected,new Dictionary<ushort,MissionOpenFloorPlacement>(),before,beforePhase,data,world,life,transport,character);
@@ -118,6 +119,9 @@ namespace hds
             if(mission==null||phaseIndex<0||phaseIndex>=mission.phases.Count||choices==null||choices.Any(c=>c==null)){refusal="InvalidPhaseChoices";return false;}
             if(!choices.Any(c=>Target(c.Goid,c.ReadSpot())))return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
+            if(!MissionElevatorPoses.TryCreate(site,choices.ToArray(),out var elevator,out refusal))return false;
+            if(pending!=null&&!MissionElevatorPoses.Same(pending.Elevator,elevator)){refusal="ChangedPendingMissionElevatorWitness";return false;}
+            if(elevator!=null&&!MissionInteriorSites.TryAllocate(site,mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex]),out _,out refusal,elevator))return false;
             if(!MissionInteriorSites.SelectedSiteEligible(mission.phases[phaseIndex],site,out refusal,
                 mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(mission.phases[phaseIndex])))return false;
             var inputs=new List<MissionOpenFloorPhasePlanner.Input>();
@@ -196,6 +200,17 @@ namespace hds
             }
             else if(boxes.Length>0)throw new InvalidOperationException("Resolved open-floor without adopted phase marker");
             if(progress.pendingOpenFloor!=null&&!PendingValid(progress,progress.pendingOpenFloor,siteCatalog))throw new InvalidOperationException("Invalid pending open-floor checkpoint choice");
+            // All checkpoint and pending identity is validated before native/NAV geometry work.
+            foreach(var elevator in progress.elevatorWitnesses.Values)
+            {
+                var elevatorSite=progress.sites.Single(s=>MissionOpenFloorSite.CatalogFingerprint(s)==elevator.SiteFingerprint);
+                var elevatorChoices=elevator.Sources.Select((raw,i)=>new MissionOpenFloorChoice((ushort)i,0,raw)).ToArray();
+                if(ReferenceEquals(elevatorSite,progress.site)&&progress.openFloorResolvedPhase==progress.phaseIndex&&
+                    !elevator.Sources.SequenceEqual(progress.objects.Values.OrderBy(s=>progress.Phase.objects.IndexOf(s.def)).Select(s=>JsonSerializer.Serialize(s.spot,MissionProgress.SaveJson))))
+                    throw new InvalidOperationException("Current mission elevator source set differs from selected objects");
+                if(!MissionElevatorPoses.Validate(elevatorSite,elevatorChoices,elevator,out string elevatorRefusal))
+                    throw new MissionPlacementRestoreException(progress,"Invalid fixed mission elevator witness:"+elevatorRefusal);
+            }
             if(boxes.Length>0&&!MissionInteriorSites.SelectedSiteEligible(progress.Phase,progress.site,out string interiorRefusal,
                 progress.mission.npcs.Count(n=>n.at==progress.phaseIndex+1)+MissionStaging.SpotsForWaves(progress.Phase)))
                 throw new MissionPlacementRestoreException(progress,"Invalid fixed interior site:"+interiorRefusal);
