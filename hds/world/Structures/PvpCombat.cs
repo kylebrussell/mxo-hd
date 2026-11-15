@@ -351,7 +351,7 @@ namespace hds
         /// known (<see cref="AbilityTargets.Retail"/>), its timed effects (<see cref="TimedEffects.ApplyToPlayer"/>) and
         /// the flag abilities. Returns false when the view isn't a player's.
         /// </summary>
-        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        public static bool LandAbility(WorldClient caster, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null)
         {
             WorldClient target = PlayerInView(caster, targetViewId);
             if (target == null)
@@ -373,7 +373,7 @@ namespace hds
                 return true;
             }
             LandAbilityOn(caster, ability, target, sneakOpener,origin);
-            AbilityTargets.LandAround(caster, ability, target,origin);
+            AbilityTargets.LandAround(caster, ability, target,origin,engageFoes);
             return true;
         }
 

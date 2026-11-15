@@ -71,10 +71,11 @@ namespace hds
         /// with the NPC (as when the client asks for close combat) if there isn't one, so the NPC fights back and
         /// its death, experience and loot go the usual way. Returns false when the view isn't a live NPC.
         /// </summary>
-        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null)
         {
+            if(engageFoes!=null && !engageFoes.Current)return false;
             Mob primary = FindMob(client, targetViewId, out _);
-            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin);
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin,engageFoes);
             if (primary.getIsDead() || primary.isFriendly) return false;
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
@@ -93,7 +94,7 @@ namespace hds
                             mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
                     }
             }
-            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener,origin);
+            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener,origin,engageFoes);
             // Area hostile abilities also reach players around the target that PvP rules allow
             if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
                 foreach (WorldClient player in AbilityHostile.PlayersInArea(client, primary.getXPos(), primary.getYPos(), primary.getZPos(), radius))
@@ -103,7 +104,7 @@ namespace hds
         }
 
         /// <summary>An area ability that landed on a player also reaches the NPCs and PvP-legal players around them.</summary>
-        public static void LandAround(WorldClient client, AbilityItem ability, WorldClient primary, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        public static void LandAround(WorldClient client, AbilityItem ability, WorldClient primary, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null)
         {
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double radius = AbilityRadius.TargetMetres(client, ability.getAbilityID());
@@ -112,7 +113,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(primary.playerInstance.Position.getValue(), ref x, ref y, ref z);
             foreach (WorldClient player in AbilityHostile.PlayersInArea(client, x, y, z, radius, primary))
                 PvpCombat.LandAbilityOn(client, ability, player,origin:origin);
-            foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius)) LandOne(client, ability, view,origin:origin);
+            foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius)) LandOne(client, ability, view,origin:origin,engageFoes:engageFoes);
         }
 
         public static bool WithinArea(double x, double y, double z, double tx, double ty, double tz, double radiusMetres)
@@ -121,7 +122,7 @@ namespace hds
             return Math.Abs(dy) < 150 && dx * dx + dy * dy + dz * dz <= radius * radius;
         }
 
-        internal static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved)
+        internal static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null)
         {
             UInt16 abilityId = ability.getAbilityID();
             bool contest=FreeCastViralContest.Applies(abilityId,origin);
@@ -169,6 +170,8 @@ namespace hds
                 return false;
             }
 
+            var engageRecipient=AbilityEngageFoes.Before(engageFoes,client,mob,view??client.viewMan.getViewById(targetViewId),abilityId);
+
             var conditionalFence=new ConditionalThrownDamage.Fence(client,npcSpawn:view.spawnId);
             CombatHandler handler = CombatManager.GetHandler(client);
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
@@ -177,6 +180,7 @@ namespace hds
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
             AbilityHostile.LandedOnMob(client, mob, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
+            AbilityEngageFoes.After(engageRecipient);
             ConditionalThrownDamage.Npc(client,mob,targetViewId,abilityId,fx,conditionalFence);
             CombatSpecials.Landed(client, abilityId);
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
