@@ -221,6 +221,7 @@ namespace hds
                     p.elevatorWitnesses.Add(witness.SiteFingerprint,witness);
                 }
             }
+            MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             return p;
         }
