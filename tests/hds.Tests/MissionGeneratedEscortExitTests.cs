@@ -7,8 +7,20 @@ using NativeQa.Modes;
 
 namespace hds.Tests;
 
-public class MissionGeneratedEscortExitTests
+[CollectionDefinition("MissionGeneratedEscortExit",DisableParallelization=true)]
+public class MissionGeneratedEscortExitCollection {}
+[Collection("MissionGeneratedEscortExit")]
+public class MissionGeneratedEscortExitTests : IDisposable
 {
+    readonly WorldServer oldWorld=Store.world;
+    readonly Dictionary<string,WorldClient> oldClients=WorldServer.Clients;
+    public MissionGeneratedEscortExitTests()
+    {
+        Store.world=(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+    }
+    public void Dispose(){Store.world=oldWorld;WorldServer.Clients=oldClients;}
+
     static (WorldClient c,MissionProgress p,Mob follower) Captured()
     {
         string root=AppContext.BaseDirectory;
