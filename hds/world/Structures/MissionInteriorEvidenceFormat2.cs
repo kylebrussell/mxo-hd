@@ -88,7 +88,7 @@ namespace hds
             if(Available(p.TargetRegion))Segment(p.TargetRegion,p.TargetPolygon,p.TargetEdge);
             if(!Available(p.SourceRegion)||!Available(p.TargetRegion))return "UnavailableRegion";
             double[][] local=LocalPortal(p);if(EqualPoint(local[0],local[1]))return "DegeneratePortal";
-            Portal[] reverse=document.Portals.Where(q=>q.SourceRegion==p.TargetRegion&&q.SourcePolygon==p.TargetPolygon&&q.SourceEdge==p.TargetEdge&&q.TargetRegion==p.SourceRegion&&q.TargetPolygon==p.SourcePolygon&&q.TargetEdge==p.SourceEdge).ToArray();
+            Portal[] reverse=Reverse(p);
             if(reverse.Length!=1||!EqualSegment(local,LocalPortal(reverse[0])))return "UnprovedReverse";
             double[][] source=SectorSegment(p.SourceRegion,p.SourcePolygon,p.SourceEdge),target=SectorSegment(p.TargetRegion,p.TargetPolygon,p.TargetEdge);
             if(!EqualSegment(source,local)||!EqualSegment(target,local))
@@ -107,7 +107,7 @@ namespace hds
         private void ValidatePortalDoors(Portal portal)
         {
             double[][] local=LocalPortal(portal);
-            uint[] expected=document.Groups.Where(g=>g.Occurrences.Any(o=>o.Goid!=19&&(o.Region==portal.SourceRegion||o.Region==portal.TargetRegion)&&OnSegment(SectorOccurrence(o),local))).Select(g=>g.Key).OrderBy(k=>k).ToArray();
+            uint[] expected=DoorOccurrences(portal.SourceRegion).Concat(portal.TargetRegion==portal.SourceRegion?Array.Empty<KeyValuePair<uint,Occurrence>>():DoorOccurrences(portal.TargetRegion)).Where(pair=>OnSegment(SectorOccurrence(pair.Value),local)).Select(pair=>pair.Key).Distinct().OrderBy(k=>k).ToArray();
             Require(expected.SequenceEqual(portal.DoorKeys.OrderBy(k=>k)),"InteriorPortalDoorAssociation");
         }
     }

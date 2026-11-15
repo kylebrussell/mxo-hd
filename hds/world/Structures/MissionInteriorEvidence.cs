@@ -55,6 +55,14 @@ namespace hds
         private readonly Document document;
         private readonly Dictionary<ushort, Region> regions;
         private readonly Dictionary<uint, Group> groups;
+        private readonly Dictionary<Node,Portal[]> outgoingPortals;
+        private readonly Dictionary<ushort,Portal[]> regionPortals;
+        private readonly Dictionary<(ushort,ushort,byte,ushort,ushort,byte),Portal[]> portalRecords;
+        private readonly Dictionary<ushort,KeyValuePair<uint,Occurrence>[]> regionDoors;
+        private static (ushort,ushort,byte,ushort,ushort,byte) PortalKey(Portal p) => (p.SourceRegion,p.SourcePolygon,p.SourceEdge,p.TargetRegion,p.TargetPolygon,p.TargetEdge);
+        private Portal[] Outgoing(Node node) => outgoingPortals.TryGetValue(node,out Portal[] rows)?rows:Array.Empty<Portal>();
+        private Portal[] Reverse(Portal p) => portalRecords.TryGetValue((p.TargetRegion,p.TargetPolygon,p.TargetEdge,p.SourceRegion,p.SourcePolygon,p.SourceEdge),out Portal[] rows)?rows:Array.Empty<Portal>();
+        private IEnumerable<KeyValuePair<uint,Occurrence>> DoorOccurrences(ushort region) => regionDoors.TryGetValue(region,out KeyValuePair<uint,Occurrence>[] rows)?rows:Array.Empty<KeyValuePair<uint,Occurrence>>();
         internal readonly string Digest;
 
         internal readonly struct Node : IEquatable<Node>
@@ -87,7 +95,16 @@ namespace hds
             internal NpcRoute(string raw, Node target, Node[] path, DoorPose[] required) { RawMarkerJson = raw; Target = target; nodes = (Node[])path.Clone(); doors = (DoorPose[])required.Clone(); }
         }
         private MissionInteriorEvidence(Document doc, string digest)
-        { document = doc; Digest = digest; regions = doc.Regions.ToDictionary(r => r.Id); groups = doc.Groups.ToDictionary(g => g.Key); Validate(); }
+        {
+            document = doc; Digest = digest; regions = doc.Regions.ToDictionary(r => r.Id); groups = doc.Groups.ToDictionary(g => g.Key);
+            // GroupBy preserves original row order, including duplicate records needed by validation.
+            outgoingPortals=doc.Portals.GroupBy(p=>new Node(p.SourceRegion,p.SourcePolygon)).ToDictionary(g=>g.Key,g=>g.ToArray());
+            regionPortals=doc.Portals.GroupBy(p=>p.SourceRegion).ToDictionary(g=>g.Key,g=>g.ToArray());
+            portalRecords=doc.Portals.GroupBy(PortalKey).ToDictionary(g=>g.Key,g=>g.ToArray());
+            regionDoors=doc.Groups.SelectMany(g=>(g.Occurrences??Array.Empty<Occurrence>()).Where(o=>o!=null&&o.Goid!=19).Select(o=>new KeyValuePair<uint,Occurrence>(g.Key,o)))
+                .GroupBy(pair=>pair.Value.Region).ToDictionary(g=>g.Key,g=>g.ToArray());
+            Validate();
+        }
         private static bool Hex(string s, int n) => s != null && s.Length == n && s.All(Uri.IsHexDigit);
         private static bool Vector(double[] a, int n) => a != null && a.Length == n && a.All(double.IsFinite);
         private static bool Family(ushort g) => g == 19 || MissionInteriorDoorTypes.IsSupported(g) || g == 417 || g == 419;
@@ -190,7 +207,7 @@ namespace hds
                 }
                 // Missing declared prefab or exterior evidence is retained, never promoted to a walk edge.
                 if (!Available(p.SourceRegion) || !Available(p.TargetRegion)) continue;
-                Require(d.Portals.Count(q => q.SourceRegion == p.TargetRegion && q.SourcePolygon == p.TargetPolygon && q.SourceEdge == p.TargetEdge && q.TargetRegion == p.SourceRegion && q.TargetPolygon == p.SourcePolygon && q.TargetEdge == p.SourceEdge) == 1, "InteriorPortalReciprocal");
+                Require(Reverse(p).Length == 1, "InteriorPortalReciprocal");
                 Require(EqualSegment(Segment(p.SourceRegion, p.SourcePolygon, p.SourceEdge), p.Endpoints) && EqualSegment(Segment(p.TargetRegion, p.TargetPolygon, p.TargetEdge), p.Endpoints), "InteriorPortalEndpoints");
                 foreach (double[] at in p.Endpoints)
                     Require(Same(Floor(Poly(new Node(p.SourceRegion, p.SourcePolygon)), at[0], at[1]), Floor(Poly(new Node(p.TargetRegion, p.TargetPolygon)), at[0], at[1])), "InteriorPortalFloor");
@@ -342,7 +359,7 @@ namespace hds
             {
                 Node n = queue.Dequeue();
                 foreach (Edge edge in Poly(n).Edges) if (LocalReference(edge)) Add(new Node(n.Region, edge.Neighbor));
-                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == n.Region && p.SourcePolygon == n.Polygon && !p.DoorKeys.Contains(excludedShaft) && PortalUsable(p)))
+                foreach (Portal portal in Outgoing(n).Where(p => !p.DoorKeys.Contains(excludedShaft) && PortalUsable(p)))
                     Add(new Node(portal.TargetRegion, portal.TargetPolygon));
             }
             void Add(Node n) { if (Level(n, floor) && found.Add(n)) queue.Enqueue(n); }
@@ -350,7 +367,7 @@ namespace hds
         }
         private Portal ShaftPortal(Occurrence occurrence, uint key, double floor)
         {
-            Portal[] matching = document.Portals.Where(p => p.SourceRegion == occurrence.Region && p.DoorKeys.Contains(key) && PortalUsable(p) && Level(new Node(p.SourceRegion,p.SourcePolygon),floor)).ToArray();
+            Portal[] matching = (regionPortals.TryGetValue(occurrence.Region,out Portal[] rows)?rows:Array.Empty<Portal>()).Where(p => p.DoorKeys.Contains(key) && PortalUsable(p) && Level(new Node(p.SourceRegion,p.SourcePolygon),floor)).ToArray();
             return matching.Length == 1 ? matching[0] : null;
         }
         private bool ContextEntry(StaticWorldObject raw, G.Position position, Occurrence context, Func<G.Position,double,double,MissionOpenFloorEntry.Result> calculate, out Entry entry, out string refusal)
@@ -447,7 +464,7 @@ namespace hds
                 if (!Level(node, floor)) continue;
                 foreach (Edge e in Poly(node).Edges)
                     if (LocalReference(e)) Add(new Node(node.Region, e.Neighbor), null, node);
-                foreach (Portal portal in document.Portals.Where(p => p.SourceRegion == node.Region && p.SourcePolygon == node.Polygon && PortalUsable(p)))
+                foreach (Portal portal in Outgoing(node).Where(PortalUsable))
                     if (Available(portal.TargetRegion)) Add(new Node(portal.TargetRegion, portal.TargetPolygon), portal, node);
             }
             void Add(Node next, Portal portal, Node before) { if (!previous.ContainsKey(next) && Level(next, floor)) { previous.Add(next, new Step(before, portal)); queue.Enqueue(next); } }

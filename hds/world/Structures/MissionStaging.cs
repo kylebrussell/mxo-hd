@@ -92,7 +92,8 @@ namespace hds
             Random rng = LayoutRandom(mission.id,0,unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(mission,0);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible) ??
                                   MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible);
             data.missionPreviewFor = mission;
@@ -146,7 +147,8 @@ namespace hds
             var site=phaseIndex==0&&client.playerData.missionPreviewFor==mission?client.playerData.missionPreview:null;
             List<string> hoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
             int npcs=mission.npcs.Count(n=>n.at==at)+SpotsForWaves(phase),objects=PlacesNeeded(phase),furniture=FurnitureNeeded(phase);
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(progress.mission,phaseIndex);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             if(site!=null&&!Eligible(site))site=null;
             site=site??MissionSites.Choose(sites,phase.site,px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
                 ??MissionSites.Choose(sites,"Any",px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
