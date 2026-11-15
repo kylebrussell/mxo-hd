@@ -81,7 +81,7 @@ public static partial class Scenarios
         async Task InitialNpcs(MissionProgress.SavedState s)
         {
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-            foreach(var m in s.Mobs.Where(m=>m.Phase==s.Phase&&!m.Dead))
+            foreach(var m in s.Mobs.Where(m=>(c==InteriorAdmissionFixture.ZionSourceDomain ? s.Phase==1&&(m.Hostile||m.Npc==1) : m.Phase==s.Phase)&&!m.Dead))
             {
                 Check.That(NavMesh.Locate(1,m.X,m.Y,m.Z,out var nav),"Initial admitted NPC is on actual NAV: "+m.Name);
                 Check.Equal(nav.floorY+95,m.Y,"Initial NPC standing height uses its actual NAV floor");
@@ -106,8 +106,25 @@ public static partial class Scenarios
             step="ordinary-first-floor-entry";await Ride(true);var firstSite=await Saved();await InitialNpcs(firstSite);
             if(c.TargetPhase>0)
             {
-                step="ordinary-first-phase-goals";var first=await Npc(1);int cursor=p.World.RpcSnapshot().Count;
-                int nextViews=p.World.CreationSnapshot().Count,nextSections=p.World.ViewSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await Goal(1,cursor);
+                step="ordinary-first-phase-goals";int cursor=p.World.RpcSnapshot().Count;
+                int nextViews=p.World.CreationSnapshot().Count,nextSections=p.World.ViewSnapshot().Count;
+                if(c==InteriorAdmissionFixture.ZionSourceDomain)
+                {
+                    var obj=firstSite.Objects.Single();Check.That(obj.OpenFloor!=null,"First junction has its committed witness");
+                    var witness=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(obj.OpenFloor,fields));
+                    witness.Require(c.Mission,0,1,obj.Spot.mxoStaticId,BitConverter.ToUInt16(obj.Spot.type,0),obj.Goid);
+                    var route=witness.Route.ToArray();for(int i=0;i<route.Length;i+=3)await MoveForMissionTest(p,route[i],route[i+1],route[i+2]);
+                    ViewCreation? body=null;await p.WaitUntilAsync(()=>(body=InteriorAdmissionFixture.Body(p.World.CreationSnapshot(),initialViews,obj.Goid,witness.Centre.ToArray()))!=null,"current first junction body",TimeSpan.FromSeconds(15));
+                    byte use=ObjectStates.UseNumber(obj.Goid,"Open")??throw new ScenarioFailure("No normal Box Open");
+                    cursor=p.World.RpcSnapshot().Count;p.SendRpc($"80 c7 {MissionNpcId(body!)} {use:x2} 00");await Goal(1,cursor);
+                    var done=await Saved();Check.Equal(0,done.Phase,"First junction waits for actual exit");Check.That(done.Done.Contains(1),"First junction goal persisted");
+                    proof.Add(new{Step=step,FirstSource=obj.Spot,FirstPlacement=obj.OpenFloor,FirstCheckpoint=done,GoalCursor=cursor});
+                }
+                else
+                {
+                    var first=await Npc(1);cursor=p.World.RpcSnapshot().Count;
+                    p.SendRpc($"80 c7 {MissionNpcId(first)} 09 00");await Goal(1,cursor);
+                }
                 if(c.Mission==301203)
                 {
                     var fortuna=await Npc(2);cursor=p.World.RpcSnapshot().Count;await DefeatMissionNpc(p,fortuna);await Goal(2,cursor);
@@ -120,6 +137,11 @@ public static partial class Scenarios
                 step="ordinary-second-floor-entry";await Ride(true);
             }
             step="target-initial-placements";var target=await Saved();Check.Equal(c.TargetPhase,target.Phase,"Actual target phase");await InitialNpcs(target);
+            if(c==InteriorAdmissionFixture.ZionSourceDomain)
+            {
+                Check.Equal(4,target.Mobs.Count(m=>m.Hostile&&!m.Dead),"Actual current second-junction hostile membership");
+                Check.Equal(1,target.Mobs.Count(m=>m.Npc==1&&!m.Dead),"Actual current Dick Lange");
+            }
             if(c.Mission==201202)
             {
                 Check.Equal(3,target.Objects.Count,"Poster first phase retains all three authored objects");
@@ -177,7 +199,7 @@ public static partial class Scenarios
                 proof.Add(new{Step=step,BoundNative=true,obj.Goid,obj.Spot.mxoStaticId,SourceCentre=centre,NavStanding=standing,Scope="Existing native object, NAV approach only; no generated footprint/static-route witness or native walking/picking proof"});
             }
             Check.That(NavMesh.Locate(1,route[0],route[1],route[2],out var rootNav),"Actual root is NAV");Check.Equal(rootNav.floorY+95,route[1],"Root uses actual floor standing height");
-            foreach(var npc in target.Mobs.Where(m=>m.Phase==target.Phase&&!m.Dead))
+            foreach(var npc in target.Mobs.Where(m=>(c==InteriorAdmissionFixture.ZionSourceDomain ? target.Phase==1&&(m.Hostile||m.Npc==1) : m.Phase==target.Phase)&&!m.Dead))
             {Check.That(NavMesh.Locate(1,npc.X,npc.Y,npc.Z,out var npcNav),"Target NPC remains on NAV");Check.Equal(rootNav.floorY,npcNav.floorY,"Target NPC and admitted root are on the same actual floor");
              Check.Equal(rootNav.indoors,npcNav.indoors,"Target NPC and root share NAV space kind");
              if(rootNav.indoors){Check.Equal(rootNav.sector,npcNav.sector,"Target NPC shares root interior sector");Check.Equal(rootNav.region,npcNav.region,"Target NPC shares root interior placement");}}
