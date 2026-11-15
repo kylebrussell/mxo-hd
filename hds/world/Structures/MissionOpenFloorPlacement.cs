@@ -35,7 +35,7 @@ namespace hds
         }
         internal bool Basic(StaticWorldObject raw,ushort concrete,ushort id)
         {
-            if(raw==null||raw.type==null||(raw.type.Length!=2&&raw.type.Length!=4)||Policy!=G.PolicyVersion||ObjectId!=id||World!=raw.metrId||SourceKey!=raw.mxoStaticId||
+            if(raw==null||raw.type==null||(raw.type.Length!=2&&raw.type.Length!=4)||(Policy!=G.PolicyVersion&&Policy!=3)||ObjectId!=id||World!=raw.metrId||SourceKey!=raw.mxoStaticId||
                 SourceGoid!=MissionSites.Goid(raw)||ConcreteGoid!=concrete||RawFingerprint!=RawHash(raw)||!Hex(InputFingerprint,64)||!Hex(Quaternion,32)||
                 centre.Length!=3||standing.Length!=3||route.Length<6||route.Length%3!=0||surface.Length!=3||rootSurface.Length!=3||routeSurfaces.Length<3||routeSurfaces.Length%3!=0||
                 route.Length!=routeSurfaces.Length+3||centre.Concat(standing).Concat(route).Any(x=>!double.IsFinite(x))||!standing.SequenceEqual(route.Skip(route.Length-3)))return false;
@@ -51,7 +51,8 @@ namespace hds
             if(points[0].X!=request.Entry.Standing.X||points[0].Y!=request.Entry.Standing.Y||points[0].Z!=request.Entry.Standing.Z)return false;
             var ids=Enumerable.Range(0,routeSurfaces.Length/3).Select(i=>new G.Id(routeSurfaces[i*3],routeSurfaces[i*3+1],routeSurfaces[i*3+2])).ToArray();
             if(!G.ValidateRouteIds(request,ids,points))return false;
-            return G.TryReplay(request,InputFingerprint,new G.Id(surface[0],surface[1],surface[2]),new G.Position(centre[0],centre[1],centre[2]),points,ids,out result,out refusal);
+            if(Policy==3&&InputFingerprint!=request.LegacyFingerprint){refusal="LegacyOpenFloorInputChanged";return false;}
+            return G.TryReplay(request,Policy==3?request.Fingerprint:InputFingerprint,new G.Id(surface[0],surface[1],surface[2]),new G.Position(centre[0],centre[1],centre[2]),points,ids,out result,out refusal);
         }
         private static bool Hex(string s,int length)=>s!=null&&s.Length==length&&s.All(Uri.IsHexDigit);
     }

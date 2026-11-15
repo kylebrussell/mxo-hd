@@ -74,6 +74,7 @@ namespace hds
 				if (state.HasPosition)
 				{
 					Position.setValue(NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z));
+                    MissionProxyIntroduction.AcceptedPosition(Store.currentClient,state.X,state.Y,state.Z);
 				}
 
 				// Other players see this player through a view of their own; the update goes there unchanged.

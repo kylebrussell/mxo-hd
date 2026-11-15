@@ -8,16 +8,21 @@ namespace hds
     internal static class MissionPlacement
     {
         internal static bool Resolve(ushort district, double[] desired, double[] player, IEnumerable<double[]> npcSpots,
-            bool besidePlayer, out NavPoint point, out bool siteFallback, IEnumerable<double[]> occupied = null, MissionSite site = null)
+            bool besidePlayer, out NavPoint point, out bool siteFallback, IEnumerable<double[]> occupied = null, MissionSite site = null, Func<NavPoint,bool> admissible = null, Func<double[],double,NavPoint?> projector = null)
         {
             List<double[]> taken = occupied?.ToList() ?? new List<double[]>();
             bool Free(NavPoint at) => (site == null || (at.x >= site.minX && at.x <= site.maxX &&
                 at.z >= site.minZ && at.z <= site.maxZ)) &&
-                !taken.Any(p => Math.Abs(p[1] - at.y) < 150 && Distance(p, at.Position) < 100 * 100);
+                !taken.Any(p => Math.Abs(p[1] - at.y) < 150 && Distance(p, at.Position) < 100 * 100) && (admissible==null||admissible(at));
+            bool Project(double[] target,double radius,out NavPoint placed)
+            {
+                if(projector==null)return NavMesh.Project(district,target[0],target[1],target[2],out placed,
+                    maxDistance:radius,reachableFrom:player,requireDirect:besidePlayer);
+                var projected=projector(target,radius);placed=projected??default;return projected.HasValue;
+            }
             bool TryAt(double[] target, double radius, out NavPoint placed)
             {
-                if (!NavMesh.Project(district, target[0], target[1], target[2], out placed,
-                    maxDistance: radius, reachableFrom: player, requireDirect: besidePlayer)) return false;
+                if(!Project(target,radius,out placed))return false;
                 if (Free(placed)) return true;
                 // Projection can collapse several offsets onto the same wall edge. Reserve actual projected
                 // positions, including earlier members of a wave, and look locally before trying another site spot.
@@ -26,8 +31,8 @@ namespace hds
                     foreach (double[] candidate in Enumerable.Range(0, 16).Select(i => new[]
                         { centre.x + spread * Math.Cos(i * Math.PI / 8), centre.y, centre.z + spread * Math.Sin(i * Math.PI / 8) })
                         .OrderBy(p => Distance(p, target)))
-                        if (NavMesh.Project(district, candidate[0], candidate[1], candidate[2], out placed,
-                            maxDistance: 50, reachableFrom: player ?? centre.Position, requireDirect: besidePlayer) && Free(placed)) return true;
+                        if ((projector!=null?Project(candidate,50,out placed):NavMesh.Project(district,candidate[0],candidate[1],candidate[2],out placed,
+                            maxDistance:50,reachableFrom:player??centre.Position,requireDirect:besidePlayer)) && Free(placed)) return true;
                 return false;
             }
             siteFallback = false;
@@ -66,7 +71,9 @@ namespace hds
             if (reserved != null) occupied.AddRange(reserved.Select(p => p.Position));
             bool placed = Resolve(district, new[] { x, y, z }, player,
                 site?.npcSpots ?? Enumerable.Empty<double[]>(), besidePlayer, out point, out bool fallback, occupied,
-                besidePlayer ? null : site);
+                besidePlayer ? null : site,
+                !besidePlayer&&site!=null&&MissionOpenFloorAdmission.Requires(progress.Phase)?new Func<NavPoint,bool>(at=>MissionInteriorSites.Contains(site,at)):null,
+                !besidePlayer&&site!=null&&MissionOpenFloorAdmission.Requires(progress.Phase)?new Func<double[],double,NavPoint?>((target,radius)=>MissionInteriorSites.Project(site,target,radius)):null);
             if (fallback) Output.WriteDebugLog("[MISSION] Arrival uses a walkable site NPC spot");
             if (!placed) Output.WriteDebugLog("[MISSION] No walkable arrival position at " + x + "," + y + "," + z);
             return placed;

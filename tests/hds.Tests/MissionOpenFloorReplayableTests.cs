@@ -22,12 +22,12 @@ public class MissionOpenFloorReplayableTests
         var all=bodies.ToArray();int completed=bodies.GeometryEvaluations;Assert.True(completed>initial);Assert.Equal(all,bodies.ToArray());Assert.Equal(completed,bodies.GeometryEvaluations);
         Assert.True(G.TryBodySequence(r,out var independent,out why,out _),why);Assert.True(independent.GeometryEvaluations<completed); // no cross-context proof cache
     }
-    [Fact] public void EmptyRootOnlyTraversalDoesNotDrainAllWaveAndAllWaveStillFindsLegalStandingRange()
+    [Fact] public void AWholeSiteAcrossAClosedPartitionCannotUseTheAllCandidateWave()
     {
-        var r=Input(wall:true,rightSite:true);Assert.True(G.TryBodySequence(r,out var bodies,out string why,out _),why);int initial=bodies.GeometryEvaluations;
-        Assert.Empty(bodies.Enumerate(true));Assert.Equal(initial,bodies.GeometryEvaluations);Assert.NotEmpty(bodies.Enumerate(false));
-        Assert.True(P.TryPlan(new[]{new P.Input(1,r)},out var plan,out why,out var work,P.Limits.Default,false),why);
-        Assert.Equal(1,work.BodyNodes);Assert.Equal(1,work.RouteGraphs);Assert.True(G.ValidateSet(plan.Results.Values.ToArray(),out why),why);
+        var r=Input(wall:true,rightSite:true);Assert.False(G.TryBodySequence(r,out _,out string why,out _));
+        Assert.Equal("NoGeometricBodyCandidates",why);
+        Assert.False(P.TryPlan(new[]{new P.Input(1,r)},out var plan,out why,out var work,P.Limits.Default,false));
+        Assert.Null(plan);Assert.Equal(0,work.RouteGraphs);
     }
     [Fact] public void EmptyAndBlockedRootRefusalsKeepTheirPreparationGraphOrder()
     {
