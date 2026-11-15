@@ -33,7 +33,7 @@ public class ZionPropagandaSelectionTests
             foreach(var def in phase.objects)client.viewMan.GetViewForEntityAndGo(987000047000UL+(ulong)(phaseIndex*50+def.id),548).viewCreated=true;
             // The first phase reuses its normal preview; Stage resets the RNG without re-choosing that cached site.
             var allocationRng=phaseIndex==0?new Random(seed):rng;
-            typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,allocationRng});
+            typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,MissionStaging.PrepareObjectChoices(phase,site,allocationRng)});
             records.Add(new{Phase=phaseIndex,Approach=new[]{x,z},EffectiveSeed=seed,Site=site,Objects=progress.objects.Values.Select(o=>new{o.def.id,o.goid,SourceGoid=MissionSites.Goid(o.spot),Spot=o.spot}).ToArray()});
             File.WriteAllText(Path.Combine(Path.GetTempPath(),"mxo-zion-propaganda-offline-selection.json"),JsonSerializer.Serialize(new{LayoutSeed=101101,Mission=mission.id,Phases=records,Scope="Offline normal Choose/PlaceObjects; transport suppressed; no forced spots, live acceptance or native placement claim"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
             int wanted=phaseIndex==0?6:4;Assert.Equal(wanted,progress.objects.Count);

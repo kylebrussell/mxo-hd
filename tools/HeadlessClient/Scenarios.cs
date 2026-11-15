@@ -250,6 +250,7 @@ public static partial class Scenarios
         new Scenario("large02-world-door-diagnostic", Large02DoorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("login-reader-error-recovery", LoginReaderCleanup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
+        new Scenario(MissionBoundCabinetFixture.Name, MissionBoundCabinet, MissionBoundCabinetFixture.Environment, Timeout: TimeSpan.FromMinutes(6)),
         new Scenario("world-ingress-liveness",IngressLiveness,IngressLivenessFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("mission-rewards-welcome", MissionRewardsWelcome, StillNpcs),
         new Scenario("mission-rewards-hothouse", MissionRewardsHothouse, StillNpcs),
