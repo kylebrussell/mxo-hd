@@ -76,6 +76,7 @@ public class SneakScaledGrantTests
         Assert.True(SneakScaledGrantFixture.ChildMembership(captured));Assert.True(SneakScaledGrantFixture.Membership(captured,50));Assert.False(SneakScaledGrantFixture.Membership(captured,17));
         var active=AbilityBuffs.BuildModifier(AbilityBuffs.KindStat,1,1111,209,17,false,0);
         Assert.True(SneakScaledGrantFixture.Stealth209(active,17));Assert.False(SneakScaledGrantFixture.ChildMembership(active));
+        Assert.False(SneakScaledGrantFixture.Stealth209(AbilityBuffs.BuildModifier(0x45,1,1111,209,17,false,0),17));
     }
     [Theory][InlineData(null)][InlineData("")][InlineData("bad")][InlineData("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")]
     public void FreshCannotUseUnpinnedOrWrongRuntime(string? expected)=>Assert.Throws<InvalidDataException>(()=>SneakScaledGrantFixture.RequireSource(expected,new string('a',64)));
