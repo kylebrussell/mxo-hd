@@ -170,10 +170,47 @@ public class MissionElevatorAnchorTests
     {
         var (site,choices)=ExactOps();Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out var why),why);
         var progress=new MissionProgress(ActualMission());progress.sites.Add(site);progress.elevatorWitnesses.Add(MissionOpenFloorSite.CatalogFingerprint(site),witness);
-        Assert.True(MissionElevatorPoses.TryOverlay(progress,site.elevatorDoor,out var position,out _));Assert.Equal(28500,position.X);
-        var raw=Ops();raw.staticId++;Assert.False(MissionElevatorPoses.TryOverlay(progress,raw,out _,out _));
-        raw=Ops();raw.metrId=2;Assert.False(MissionElevatorPoses.TryOverlay(progress,raw,out _,out _));
-        raw=Ops();raw.pos_x++;Assert.False(MissionElevatorPoses.TryOverlay(progress,raw,out _,out _));
-        progress.restoreRefusal="retained incompatible checkpoint";Assert.False(MissionElevatorPoses.TryOverlay(progress,site.elevatorDoor,out _,out _));
+        var overlay=MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor);Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,overlay.Kind);Assert.Equal(28500,overlay.Position.X);
+        var raw=Ops();raw.staticId++;Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,raw).Kind);
+        raw=Ops();raw.metrId=2;Assert.Equal(MissionElevatorPoses.OverlayKind.Legacy,MissionElevatorPoses.ResolveOverlay(progress,raw).Kind);
+        raw=Ops();raw.pos_x++;Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,raw).Kind);
+        progress.restoreRefusal="retained incompatible checkpoint";Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
+    }
+
+    [Fact] public void KnownCorrectedDoorWithoutWitnessAndConflictingHistoryNeverFallBackToRawOverlay()
+    {
+        var (site,choices)=ExactOps();Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out var why),why);
+        var progress=new MissionProgress(ActualMission());progress.sites.Add(site);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
+        progress.elevatorWitnesses.Add(MissionOpenFloorSite.CatalogFingerprint(site),witness);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
+        var other=new MissionSite{metrId=1,elevatorDoor=site.elevatorDoor,lobbyDoor=site.lobbyDoor,minX=site.minX+1,maxX=site.maxX,minZ=site.minZ,maxZ=site.maxZ};progress.sites.Add(other);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind); // No convenient valid-history pick.
+        Assert.True(MissionElevatorAnchors.TryCurrent(site.elevatorDoor,out var index));Assert.True(index.TryResolve(site.elevatorDoor,41,out var core,out why),why);
+        progress.elevatorWitnesses.Add(MissionOpenFloorSite.CatalogFingerprint(other),new MissionElevatorWitness(1,MissionOpenFloorSite.CatalogFingerprint(other),41,witness.Floor,witness.Lobby,core.Quaternion,witness.LobbyQuaternion,witness.Evidence,witness.Sources,witness.FloorKey,witness.LobbyKey,witness.LobbyRegion));
+        var conflict=MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor);Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,conflict.Kind);Assert.Equal("ConflictingMissionElevatorHistory",conflict.Refusal);
+    }
+    [Fact] public async Task DoorPublicationHoldsOwnerLockAndRejectsOwnerReplacedWhileWaiting()
+    {
+        var (site,choices)=ExactOps();Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out var why),why);
+        var progress=new MissionProgress(ActualMission());progress.sites.Add(site);progress.elevatorWitnesses.Add(MissionOpenFloorSite.CatalogFingerprint(site),witness);
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));var owner=new ClientData();client.playerData=owner;owner.missionProgress=progress;
+        bool published=false;var normal=MissionElevatorPoses.WithDoorOwner(client,site.elevatorDoor,_=>{Assert.True(System.Threading.Monitor.IsEntered(owner.missionSync));published=true;});
+        Assert.True(published);Assert.Equal(MissionElevatorPoses.OverlayKind.Resolved,normal.Kind);published=false;
+        using var started=new System.Threading.ManualResetEventSlim();Task<MissionElevatorPoses.Overlay> waiting;
+        lock(owner.missionSync)
+        {
+            waiting=Task.Run(()=>{started.Set();return MissionElevatorPoses.WithDoorOwner(client,site.elevatorDoor,_=>published=true);});
+            Assert.True(started.Wait(TimeSpan.FromSeconds(30)));Assert.False(waiting.IsCompleted);client.playerData=new ClientData();
+        }
+        var stale=await waiting.WaitAsync(TimeSpan.FromSeconds(30));Assert.False(published);Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,stale.Kind);Assert.Equal("ChangedMissionDoorOwner",stale.Refusal);
+    }
+    [Fact] public void BoundLegacySelectionCannotAdoptCorrectedMetadataWithoutFreePropPlanner()
+    {
+        var (site,choices)=ExactOps();var mission=ActualMission();var legacy=new[]{new MissionOpenFloorChoice(1,1407,choices[0].RawSpotJson)};
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(mission,1,site,legacy,out var poses,out var why),why);Assert.Empty(poses);
+        Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out why),why);
+        var pending=new MissionOpenFloorPendingAdmission(1,mission.id,"bound",1,123,MissionOpenFloorSite.From(site),legacy,null,witness);
+        Assert.False(MissionOpenFloorAdmission.TryGeometry(mission,1,site,legacy,out _,out why,pending));Assert.Equal("UnexpectedLegacyMissionElevatorWitness",why);
     }
 }

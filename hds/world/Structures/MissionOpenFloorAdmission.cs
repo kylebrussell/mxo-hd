@@ -99,7 +99,8 @@ namespace hds
                     ??MissionSites.Choose(sites,"Any",x,z,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
 
                 choices=site==null?Array.Empty<MissionOpenFloorChoice>():MissionStaging.SelectObjects(phase,site,rng).Select(MissionOpenFloorChoice.From).ToArray();
-                MissionElevatorPoses.TryCreate(site,choices,out var elevator,out _);
+                MissionElevatorWitness elevator=null;
+                if(choices.Any(c=>Target(c.Goid,c.ReadSpot())))MissionElevatorPoses.TryCreate(site,choices,out elevator,out _);
                 selected=new MissionOpenFloorPendingAdmission(1,mission.id,progress.persistenceId,phaseIndex,progress.startedAt,site==null?null:MissionOpenFloorSite.From(site),choices,site==null?"NoSite":null,elevator);
             }
             if(!Current()) {selected=null;refusal="StaleWorld";return false;}
@@ -117,7 +118,11 @@ namespace hds
         {
             poses=new Dictionary<ushort,MissionOpenFloorPlacement>();refusal=null;
             if(mission==null||phaseIndex<0||phaseIndex>=mission.phases.Count||choices==null||choices.Any(c=>c==null)){refusal="InvalidPhaseChoices";return false;}
-            if(!choices.Any(c=>Target(c.Goid,c.ReadSpot())))return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
+            if(!choices.Any(c=>Target(c.Goid,c.ReadSpot())))
+            {
+                if(pending?.Elevator!=null){refusal="UnexpectedLegacyMissionElevatorWitness";return false;}
+                return true; // Same-prototype bound selections remain legacy, with no metadata adoption.
+            }
             if(!ValidSite(site)||!ChoicesValid(mission.phases[phaseIndex],site,choices)){refusal="InvalidObjectChoices";return false;}
             if(!MissionElevatorPoses.TryCreate(site,choices.ToArray(),out var elevator,out refusal))return false;
             if(pending!=null&&!MissionElevatorPoses.Same(pending.Elevator,elevator)){refusal="ChangedPendingMissionElevatorWitness";return false;}

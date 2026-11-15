@@ -2,7 +2,7 @@
 Original counted SIDI records + direct SCIN parent, using established native transform.
 No source selection, world/static mutation, runtime fallback, or height heuristic.
 """
-import argparse, collections, csv, gzip, hashlib, json, struct, sys
+import argparse, collections, csv, gzip, hashlib, itertools, json, struct, sys
 from pathlib import Path
 import mission_open_floor_world_bounds as B
 
@@ -21,6 +21,8 @@ def export(tools, output, sectors=None):
             sig=dict(Goid=goid,Position=[float(row[k]) for k in ('pos_x','pos_y','pos_z')],Quaternion=row['quat'].lower())
             if sig not in [x['Signature'] for x in legacy[(sector,static)]]:
                 legacy[(sector,static)].append(dict(Signature=sig,File=str(path).replace('\\','/'),Line=line))
+    by_sector=collections.defaultdict(dict)
+    for key,members in legacy.items():by_sector[key[0]][key]=members
     manifest=[];parent_path=Path(R.D)/next(p for i,_,p in B.M.WORLDS if i==1);output=Path(output);output.mkdir(parents=True,exist_ok=True)
     for parent in parents:
         sector=parent['sector']
@@ -40,10 +42,18 @@ def export(tools, output, sectors=None):
                 key=(sector,g[1])
                 if key not in legacy:continue
                 pos,q=B.T.sector_pose(g[2:5],g[5:9],c['pivot'],c['rotation'],parent['min'],parent_kind='direct-sector')
+                if g[0] in (417,419):
+                    # Concrete6231ae00 uses bound midpoint, not the logical GO origin.
+                    # The existing +145 convention is admitted only after this exact record proves it.
+                    rotated=B.T.quarter_turn(g[2:5],c['rotation']);translation=[p-v for p,v in zip(pos,rotated)]
+                    corners=[[v+t for v,t in zip(B.T.quarter_turn(corner,c['rotation']),translation)] for corner in itertools.product(*zip(g[9:12],g[12:15]))]
+                    low=[min(corner[i] for corner in corners) for i in range(3)];high=[max(corner[i] for corner in corners) for i in range(3)]
+                    centre=[B.T.f32(B.T.f32(a+b)*B.T.f32(.5)) for a,b in zip(low,high)]
+                    if centre!=[pos[0],pos[1]+145,pos[2]]:raise ValueError('Unproved mission elevator bound-centre convention')
                 native[key].append(dict(Goid=g[0],Region=outdoors+c['ordinal'],Position=pos,Quaternion=struct.pack('<4f',*q).hex(),Placement=c['ordinal'],SourceRid=srid,PrefabRid=c['prefab'],RecordOffset=offset))
         groups=[];sources=[]
-        for key,members in sorted(legacy.items()):
-            if key[0]!=sector or key not in native:continue
+        for key,members in sorted(by_sector[sector].items()):
+            if key not in native:continue
             occ=native[key];door=all(x['Signature']['Goid'] in (417,419) for x in members)
             if door and not all(x['Goid'] in (417,419) for x in occ):continue
             target=groups if door else sources

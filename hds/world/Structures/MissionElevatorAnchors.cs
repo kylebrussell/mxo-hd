@@ -21,6 +21,7 @@ namespace hds
         {
             internal readonly double X,Y,Z;internal readonly string Quaternion,Evidence;internal readonly ushort Region;
             internal Pose(double x,double y,double z,string quaternion,ushort region,string evidence){X=x;Y=y;Z=z;Quaternion=quaternion;Region=region;Evidence=evidence;}
+            // Exporter verifies each417/419 bound midpoint (6231ae00) is logical origin+(0,145,0).
             internal MissionOpenFloorResolver.Position Presentation=>new MissionOpenFloorResolver.Position(X,Y+145,Z);
         }
         private readonly Document data;

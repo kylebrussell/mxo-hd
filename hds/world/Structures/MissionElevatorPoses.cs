@@ -7,12 +7,12 @@ namespace hds
     // Persisted alongside the raw site/source DTO. Never used to rewrite those identities.
     public sealed class MissionElevatorWitness
     {
-        public int Version {get;} public string SiteFingerprint {get;} public ushort Region {get;} public uint FloorKey {get;} public uint LobbyKey {get;}
+        public int Version {get;} public string SiteFingerprint {get;} public ushort Region {get;} public ushort LobbyRegion {get;} public uint FloorKey {get;} public uint LobbyKey {get;}
         private readonly double[] floor,lobby;private readonly string[] sources;
         public double[] Floor =>(double[])floor?.Clone(); public double[] Lobby =>(double[])lobby?.Clone(); public string FloorQuaternion {get;} public string LobbyQuaternion {get;}
         public string Evidence {get;} public string[] Sources =>(string[])sources?.Clone();
-        [JsonConstructor] public MissionElevatorWitness(int version,string siteFingerprint,ushort region,double[] floor,double[] lobby,string floorQuaternion,string lobbyQuaternion,string evidence,string[] sources,uint floorKey=0,uint lobbyKey=0)
-        {Version=version;FloorKey=floorKey;LobbyKey=lobbyKey;SiteFingerprint=siteFingerprint;Region=region;this.floor=(double[])floor?.Clone();this.lobby=(double[])lobby?.Clone();FloorQuaternion=floorQuaternion;LobbyQuaternion=lobbyQuaternion;Evidence=evidence;this.sources=(string[])sources?.Clone();}
+        [JsonConstructor] public MissionElevatorWitness(int version,string siteFingerprint,ushort region,double[] floor,double[] lobby,string floorQuaternion,string lobbyQuaternion,string evidence,string[] sources,uint floorKey=0,uint lobbyKey=0,ushort lobbyRegion=0)
+        {Version=version;LobbyRegion=lobbyRegion;FloorKey=floorKey;LobbyKey=lobbyKey;SiteFingerprint=siteFingerprint;Region=region;this.floor=(double[])floor?.Clone();this.lobby=(double[])lobby?.Clone();FloorQuaternion=floorQuaternion;LobbyQuaternion=lobbyQuaternion;Evidence=evidence;this.sources=(string[])sources?.Clone();}
     }
     internal static class MissionElevatorPoses
     {
@@ -53,19 +53,57 @@ namespace hds
             {refusal="ElevatorResolvedLobbyRegionDisagreement";return false;}
             witness=new MissionElevatorWitness(1,MissionOpenFloorSite.CatalogFingerprint(site),floor.Region,
                 new[]{floor.X,floor.Y+145,floor.Z},new[]{lobby.X,lobby.Y+145,lobby.Z},floor.Quaternion,lobby.Quaternion,
-                floor.Evidence+";"+lobby.Evidence,choices.Select(c=>c.RawSpotJson).ToArray(),raw.mxoStaticId,lobbyRaw.mxoStaticId);return true;
+                floor.Evidence+";"+lobby.Evidence,choices.Select(c=>c.RawSpotJson).ToArray(),raw.mxoStaticId,lobbyRaw.mxoStaticId,lobby.Region);return true;
         }
-        internal static bool TryOverlay(MissionProgress progress,StaticWorldObject raw,out G.Position position,out string quaternion)
+        internal enum OverlayKind { Legacy,Resolved,Refused }
+        internal sealed class Overlay
         {
-            position=default;quaternion=null;if(progress==null||progress.restoreRefusal!=null||raw==null)return false;
-            foreach(var site in progress.sites.AsEnumerable().Reverse())
+            internal readonly OverlayKind Kind;internal readonly G.Position Position;internal readonly string Quaternion,Refusal;
+            internal Overlay(OverlayKind kind,G.Position position=default,string quaternion=null,string refusal=null){Kind=kind;Position=position;Quaternion=quaternion;Refusal=refusal;}
+        }
+        // Caller holds the captured owner's missionSync through snapshot, publication and OnElevator.
+        internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw)
+        {
+            if(progress==null||raw==null)return new Overlay(OverlayKind.Legacy);
+            Overlay resolved=null;
+            foreach(var site in progress.sites)
             {
-                var witness=progress.ElevatorFor(site);if(witness==null||raw.metrId!=site.metrId||
-                    !MissionElevatorAnchors.TryCurrent(raw,out var index)||!index.HasDoor(raw)||!index.NeedsCorrection(raw,out _,out _))continue;
-                if(raw.mxoStaticId==site.elevatorDoor.mxoStaticId){position=Position(witness.Floor);quaternion=witness.FloorQuaternion;return true;}
-                if(raw.mxoStaticId==site.lobbyDoor.mxoStaticId){position=Position(witness.Lobby);quaternion=witness.LobbyQuaternion;return true;}
+                if(raw.metrId!=site.metrId)continue;
+                bool floor=raw.mxoStaticId==site.elevatorDoor?.mxoStaticId,lobby=raw.mxoStaticId==site.lobbyDoor?.mxoStaticId;
+                if(!floor&&!lobby)continue;
+                var selected=floor?site.elevatorDoor:site.lobbyDoor;var witness=progress.ElevatorFor(site);
+                bool known=MissionElevatorAnchors.TryCurrent(selected,out var index)&&index.HasDoor(selected);
+                bool changed=false;string refusal=null;
+                if(known&&!index.NeedsCorrection(selected,out changed,out refusal))
+                    return new Overlay(OverlayKind.Refused,refusal:refusal);
+                if(witness==null&&!changed)continue; // Unchanged/unrelated legacy behavior is preserved.
+                if(witness==null||progress.restoreRefusal!=null||!known)
+                    return new Overlay(OverlayKind.Refused,refusal:"MissingOrQuarantinedMissionElevatorWitness");
+                if(witness.Version!=1||witness.SiteFingerprint!=MissionOpenFloorSite.CatalogFingerprint(site)||
+                    witness.FloorKey!=site.elevatorDoor.mxoStaticId||witness.LobbyKey!=site.lobbyDoor.mxoStaticId||
+                    !index.TryResolve(raw,floor?witness.Region:witness.LobbyRegion,out var pose,out refusal))
+                    return new Overlay(OverlayKind.Refused,refusal:refusal??"InvalidMissionElevatorWitnessIdentity");
+                var expected=floor?witness.Floor:witness.Lobby;string q=floor?witness.FloorQuaternion:witness.LobbyQuaternion;
+                if(expected?.Length!=3||expected.Any(v=>!double.IsFinite(v))||expected[0]!=pose.X||expected[1]!=pose.Y+145||expected[2]!=pose.Z||!string.Equals(q,pose.Quaternion,StringComparison.OrdinalIgnoreCase))
+                    return new Overlay(OverlayKind.Refused,refusal:"MissionElevatorWitnessPoseDisagreement");
+                var candidate=new Overlay(OverlayKind.Resolved,Position(expected),q);
+                if(resolved!=null&&(!resolved.Position.Equals(candidate.Position)||!string.Equals(resolved.Quaternion,candidate.Quaternion,StringComparison.OrdinalIgnoreCase)))
+                    return new Overlay(OverlayKind.Refused,refusal:"ConflictingMissionElevatorHistory");
+                resolved=candidate;
             }
-            return false;
+            return resolved??new Overlay(OverlayKind.Legacy);
+        }
+        internal static Overlay WithDoorOwner(WorldClient client,StaticWorldObject raw,Action<Overlay> publish)
+        {
+            var owner=client?.playerData;if(owner==null)return new Overlay(OverlayKind.Refused,refusal:"MissingMissionDoorOwner");
+            lock(owner.missionSync)
+            {
+                if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
+                var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw);
+                if(!ReferenceEquals(client.playerData,owner)||!ReferenceEquals(owner.missionProgress,progress))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorProgress");
+                if(snapshot.Kind!=OverlayKind.Refused)publish(snapshot);
+                return snapshot;
+            }
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,StaticWorldObject used)
         {

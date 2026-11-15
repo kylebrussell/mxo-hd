@@ -105,6 +105,19 @@ namespace hds
 
         public void processObjectInteraction(StaticWorldObject staticWorldObject, GameObjectItem item)
         {
+            ushort type=MissionSites.Goid(staticWorldObject);
+            if(type==417||type==419)
+            {
+                var decision=MissionElevatorPoses.WithDoorOwner(Store.currentClient,staticWorldObject,
+                    snapshot=>ProcessObjectInteractionCore(staticWorldObject,item,snapshot));
+                if(decision.Kind==MissionElevatorPoses.OverlayKind.Refused)
+                    Output.WriteDebugLog("[MISSION] Elevator door refused before overlay: "+decision.Refusal);
+                return;
+            }
+            ProcessObjectInteractionCore(staticWorldObject,item,null);
+        }
+        private void ProcessObjectInteractionCore(StaticWorldObject staticWorldObject,GameObjectItem item,MissionElevatorPoses.Overlay snapshot)
+        {
             UInt16 typeId = NumericalUtils.ByteArrayToUint16(staticWorldObject.type, 1);
             Output.WriteDebugLog("[DOOR] Use of static " + staticWorldObject.mxoStaticId + " type " + typeId +
                                  " (" + item.getName() + ")");
@@ -115,17 +128,17 @@ namespace hds
             if (doorClass == typeof(AttributeClass363))
             {
                 AttributeClass363 d = new AttributeClass363("DOOR363", typeId);
-                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject,snapshot);
             }
             else if (doorClass == typeof(AttributeClass364))
             {
                 AttributeClass364 d = new AttributeClass364("DOOR364", typeId);
-                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject,snapshot);
             }
             else if (doorClass == typeof(AttributeClass365))
             {
                 AttributeClass365 d = new AttributeClass365("DOOR365", typeId);
-                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject,snapshot);
             }
             else
             {
@@ -151,7 +164,7 @@ namespace hds
         }
 
         private static GameObject PrepareDoor(GameObject door, Attribute position, Attribute orientation,
-            Attribute currentState, StaticWorldObject staticWorldObject)
+            Attribute currentState, StaticWorldObject staticWorldObject,MissionElevatorPoses.Overlay snapshot)
         {
             door.SetRelatedStaticObjId(staticWorldObject.mxoStaticId);
             door.DisableAllAttributes();
@@ -160,9 +173,8 @@ namespace hds
             currentState.enable();
             var measured=new MissionOpenFloorResolver.Position(staticWorldObject.pos_x,staticWorldObject.pos_y,staticWorldObject.pos_z);
             string measuredQuaternion=staticWorldObject.quat;
-            if(MissionSites.Goid(staticWorldObject)==417||MissionSites.Goid(staticWorldObject)==419)
-                if(MissionElevatorPoses.TryOverlay(Store.currentClient?.playerData?.missionProgress,staticWorldObject,out var resolved,out var resolvedQuaternion))
-                {measured=resolved;measuredQuaternion=resolvedQuaternion;}
+            if(snapshot?.Kind==MissionElevatorPoses.OverlayKind.Resolved)
+            {measured=snapshot.Position;measuredQuaternion=snapshot.Quaternion;}
             position.setValue(NumericalUtils.doublesToLtVector3d(measured.X,measured.Y,measured.Z));
             orientation.setValue(StringUtils.hexStringToBytes(measuredQuaternion));
             currentState.setValue(NumericalUtils.uint32ToByteArray(DoorLifecycle.StateOpen, 1));
