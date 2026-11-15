@@ -5,6 +5,8 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
+    212 when typeof(AbilityCatalog).Assembly.GetType("hds.PunishingBlows") != null => "OURS current Daze/Stun/OffBalance damage percent (PunishingBlows consumer present)",
     204 => "stealth detection",
     209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",

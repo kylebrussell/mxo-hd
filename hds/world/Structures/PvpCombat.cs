@@ -172,6 +172,15 @@ namespace hds
                 return true;
             }
 
+            if(!CombatInsightEngagement.Allows(attacker,target,targetHandle,out var entry))
+            {
+                // Captured forced-entry refusal shape; no new recast timer or IS charge.
+                attacker.messageQueue.addRpcMessage(BuildCombatRefused(14,false,targetHandle,true,false));
+                new ServerPackets().sendSystemChatMessage(attacker,entry.Computed?
+                    $"OURS: Evade Combat resisted entry (force {entry.Force}, evade {entry.Evade}).":"Combat entry target changed.","SYSTEM");
+                attacker.FlushQueue();
+                return true;
+            }
             PvpFight.Start(attacker, target, request);
             return true;
         }
