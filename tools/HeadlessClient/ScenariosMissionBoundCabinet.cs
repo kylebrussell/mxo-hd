@@ -18,8 +18,16 @@ public static partial class Scenarios
         var json=new JsonSerializerOptions{IncludeFields=true};string PacketPath()=>Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         async Task<MissionProgress.SavedState> Saved()
         {
-            string raw=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}");
-            checkpoints.Add(new{Step=step,Payload=raw});var s=JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,json)!;MissionBoundCabinetFixture.RequireOriginal(s);return s;
+            string hex=await context.Database.ScalarAsync($"SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}");
+            var retained=new Dictionary<string,object?>{{"Step",step},{"PayloadHex",hex}};checkpoints.Add(retained);
+            string raw=MissionBoundCabinetFixture.DecodeCheckpointHex(hex);retained["Payload"]=raw;
+            var s=JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,json)!;MissionBoundCabinetFixture.RequireOriginal(s);return s;
+        }
+        async Task<MissionBoundCabinetFixture.InventoryProof> Inventory(uint item,ushort slot)
+        {
+            string rows=await context.Database.ExecuteAsync($"SELECT charId,goid,slot,`count` FROM inventory WHERE charId={p.CharId} AND goid={item} ORDER BY slot");
+            var retained=new Dictionary<string,object?>{{"Step",step},{"InventoryRows",rows},{"ExpectedCharacter",p.CharId},{"ExpectedItem",item},{"ExpectedSlot",slot}};proof.Add(retained);
+            var actual=MissionBoundCabinetFixture.RequireMissionInventory(rows,p.CharId,item,slot);retained["Inventory"]=actual;return actual;
         }
         async Task<string> Account()=>await context.Database.ExecuteAsync($"SELECT exp,cash,(SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId=201203) FROM characters WHERE charId={p.CharId}");
         async Task<ViewCreation> Cabinet(int cursor,int sections)
@@ -74,6 +82,7 @@ public static partial class Scenarios
             step="earned-flyer";p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(phage!)} 05 00");var loot=await p.WaitForRpcAsync("81 19");await Claim(loot.Bytes,6796);
             await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Any(r=>BytePattern.Parse("80 a0 02 06 00 01").IsMatch(r.Bytes)),"Flyer goal acknowledgement",TimeSpan.FromSeconds(15));
             var carry=await Saved();Check.That(carry.Items.ContainsKey(6796)&&!carry.Done.Contains((ushort)3),"Earned Flyer while cabinet Search pending");string beforeAccount=await Account();
+            var flyerBefore=await Inventory(6796,carry.Items[6796]);
             string history=JsonSerializer.Serialize(new{carry.Objects,carry.SiteDoors,carry.OpenFloorCurrentSiteIndex,carry.OpenFloorSites},json);
             string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
             step="ordinary-carry-relog";p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();await Task.Delay(TimeSpan.FromSeconds(33));
@@ -82,6 +91,8 @@ public static partial class Scenarios
             Check.Equal(carry.Identity,restored.Identity,"Same mission identity after normal relog");Check.Equal(carry.Started,restored.Started,"Same mission start");Check.Equal(carry.Instance,restored.Instance,"Same executor instance");
             Check.That(carry.Done.SequenceEqual(restored.Done)&&carry.EverDone.SequenceEqual(restored.EverDone),"Exact pending/completed history");
             Check.Equal(history,JsonSerializer.Serialize(new{restored.Objects,restored.SiteDoors,restored.OpenFloorCurrentSiteIndex,restored.OpenFloorSites},json),"Raw source and site history are immutable");
+            Check.That(carry.Items.OrderBy(i=>i.Key).SequenceEqual(restored.Items.OrderBy(i=>i.Key)),"Exact earned item slots survive carry relog");
+            var flyerAfter=await Inventory(6796,carry.Items[6796]);Check.That(flyerBefore==flyerAfter,"Actual Flyer inventory owner/item/slot/raw-count survives relog");
             Check.Equal(beforeAccount,await Account(),"Relog awards no XP/cash/receipt");body=await Cabinet(views,sections);
             step="grounded-original-cabinet-open";var standing=MissionBoundCabinetFixture.Standing;
             Check.That(NavMesh.Locate(1,standing[0],standing[1],standing[2],out var nav)&&nav.floorY+95==standing[1]&&nav.sector==rootNav.sector&&nav.region==rootNav.region,"Actual grounded same-placement approach, no legacy position fallback");
@@ -90,7 +101,7 @@ public static partial class Scenarios
             await p.WaitForRpcAsync("80 a0 03 06 00 01");var final=await Saved();
             Check.Equal(rawObjects,RawSources(final),"Original selected raw bound object remains unchanged after Open/Take");
             Check.That(final.Items.ContainsKey(6796)&&final.Items.ContainsKey(6795),"Both normal earned item identities remain owned");
-            Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6795 AND slot={final.Items[6795]}"),"One earned Folder at committed slot");
+            await Inventory(6796,carry.Items[6796]);await Inventory(6795,final.Items[6795]);
             Check.Equal(beforeSearch,await Account(),"Cabinet Search does not award mission XP/cash/receipt");
             Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId=201203"),"No selected mission completion injection");
             foreach(var actor in sessions)Check.Equal(0,actor.World.Problems.Count,"Actual parser remains clean across sessions");
@@ -99,11 +110,14 @@ public static partial class Scenarios
         catch(Exception error){failure=error;throw;}
         finally
         {
-            string? account=null,checkpoint=null,readError=null;try{account=await Account();checkpoint=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={p.CharId}");}catch(Exception error){readError=error.ToString();}
+            string? account=null,checkpointHex=null,checkpoint=null,inventoryRows=null;var readErrors=new List<string>();
+            try{account=await Account();}catch(Exception error){readErrors.Add("Account: "+error);}
+            try{checkpointHex=await context.Database.ScalarAsync($"SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}");checkpoint=MissionBoundCabinetFixture.DecodeCheckpointHex(checkpointHex);}catch(Exception error){readErrors.Add("Checkpoint: "+error);}
+            try{inventoryRows=await context.Database.ExecuteAsync($"SELECT charId,goid,slot,`count` FROM inventory WHERE charId={p.CharId} AND goid IN (6795,6796) ORDER BY goid,slot");}catch(Exception error){readErrors.Add("Inventory: "+error);}
             string stem=Path.Combine(Path.GetTempPath(),"mxo-bound-cabinet-"+context.Database.Name),raw=InteriorAdmissionDeliveryProof.Read(PacketPath());File.WriteAllText(stem+"-PacketLog.txt",raw);
             await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{Passed=passed,Step=step,Failure=failure?.ToString(),Database=context.Database.Name,ServerPid=context.Server.ProcessId,
                 Source=context.Server.SourceAssembly,SourceSha256=context.Server.SourceAssemblySha256,ExpectedSource=System.Environment.GetEnvironmentVariable(MissionBoundCabinetFixture.SourcePin),Proof=proof,Checkpoints=checkpoints,
-                FinalAccount=account,FinalCheckpoint=checkpoint,ReadError=readError,RawPacketLog=stem+"-PacketLog.txt",RawPacketSha256=Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw))),
+                FinalAccount=account,FinalCheckpointHex=checkpointHex,FinalCheckpoint=checkpoint,FinalInventoryRows=inventoryRows,ReadErrors=readErrors,RawPacketLog=stem+"-PacketLog.txt",RawPacketSha256=Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw))),
                 Sessions=sessions.Select(a=>new{a.CharId,Rpcs=a.World.RpcSnapshot(),Views=a.World.ViewSnapshot().Select(Convert.ToHexString),Problems=a.World.Problems}),
                 Qualification="Normal-wire bound/static/item proof only; native hover/walk/rendering unproved. Test movement/weaken1 affects all nearby NPCs including friends; aggro/wander off; no unaided combat claim."},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
             File.WriteAllText(stem+".log",context.Server.FullOutput()+"\n---Debug---\n"+context.Server.DebugLog());Console.WriteLine("BOUND CABINET EVIDENCE="+stem);foreach(var actor in sessions)actor.Dispose();

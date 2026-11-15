@@ -1,8 +1,31 @@
 using hds;
+using System.Globalization;
+using System.Text;
 namespace HeadlessClient;
 
 public static class MissionBoundCabinetFixture
 {
+    public sealed record InventoryProof(uint Character,uint Goid,ushort Slot,uint RawCount);
+    public static string DecodeCheckpointHex(string hex)
+    {
+        if(string.IsNullOrEmpty(hex)||hex.Length%2!=0||hex.Any(c=>!Uri.IsHexDigit(c)))
+            throw new InvalidDataException("Checkpoint must be nonempty HEX(payload)");
+        try{return new UTF8Encoding(false,true).GetString(Convert.FromHexString(hex));}
+        catch(DecoderFallbackException error){throw new InvalidDataException("Checkpoint is not UTF8",error);}
+    }
+    public static InventoryProof RequireMissionInventory(string rows,uint character,uint goid,ushort slot)
+    {
+        var lines=rows.TrimEnd('\r','\n').Split('\n');
+        if(lines.Length!=1)throw new InvalidDataException("Exactly one nonstackable mission inventory row is required");
+        var fields=lines[0].TrimEnd('\r').Split('\t');
+        if(fields.Length!=4||!uint.TryParse(fields[0],NumberStyles.None,CultureInfo.InvariantCulture,out uint owner)||
+            !uint.TryParse(fields[1],NumberStyles.None,CultureInfo.InvariantCulture,out uint item)||
+            !ushort.TryParse(fields[2],NumberStyles.None,CultureInfo.InvariantCulture,out ushort savedSlot)||
+            !uint.TryParse(fields[3],NumberStyles.None,CultureInfo.InvariantCulture,out uint rawCount)||
+            owner!=character||item!=goid||savedSlot!=slot||rawCount!=0)
+            throw new InvalidDataException("Mission inventory owner/item/slot/raw-count differs from the earned nonstackable row");
+        return new(owner,item,savedSlot,rawCount);
+    }
     public const string Name="mission-bound-filing-cabinet",SourcePin="MXO_BOUND_OBJECT_SOURCE_SHA256";
     public const int Mission=201203;
     public const uint NativeKey=0x0d1001a2;

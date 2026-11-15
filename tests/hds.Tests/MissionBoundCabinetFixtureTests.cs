@@ -5,6 +5,28 @@ namespace hds.Tests;
 
 public class MissionBoundCabinetFixtureTests
 {
+    [Fact] public void CheckpointHexPreservesJsonQuotesBackslashesControlsAndUnicode()
+    {
+        string expected="quote\" slash\\ newline\n tab\t 雪";
+        string json=System.Text.Json.JsonSerializer.Serialize(new{Text=expected});
+        string hex=Convert.ToHexString(System.Text.Encoding.UTF8.GetBytes(json));
+        string decoded=MissionBoundCabinetFixture.DecodeCheckpointHex(hex);
+        Assert.Equal(json,decoded);using var doc=System.Text.Json.JsonDocument.Parse(decoded);
+        Assert.Equal(expected,doc.RootElement.GetProperty("Text").GetString());
+    }
+    [Theory][InlineData("")][InlineData("NULL")][InlineData("0")][InlineData("GG")][InlineData("FF")][InlineData("C328")]
+    public void MissingMalformedOrInvalidUtf8CheckpointIsNotNormalized(string hex)=>
+        Assert.Throws<InvalidDataException>(()=>MissionBoundCabinetFixture.DecodeCheckpointHex(hex));
+    [Fact] public void EarnedNonstackableInventoryHasOneActualOwnerItemSlotAndRawZeroCount()
+    {
+        var observed=MissionBoundCabinetFixture.RequireMissionInventory("110\t6796\t7\t0\n",110,6796,7);
+        Assert.Equal(new MissionBoundCabinetFixture.InventoryProof(110,6796,7,0),observed);
+    }
+    [Theory][InlineData("")][InlineData("110\t6796\t7\t0\n110\t6796\t7\t0\n")]
+    [InlineData("111\t6796\t7\t0")][InlineData("110\t6795\t7\t0")][InlineData("110\t6796\t8\t0")]
+    [InlineData("110\t6796\t7\t1")][InlineData("110\t6796\t7\t-1")][InlineData("110\t6796\t7")]
+    public void MissingDuplicateOrMismatchedInventoryCannotProveCarryOwnership(string rows)=>
+        Assert.Throws<InvalidDataException>(()=>MissionBoundCabinetFixture.RequireMissionInventory(rows,110,6796,7));
     [Fact] public void RealMissionItemGrantKeepsItsActualSlotDescriptorAndInstance()
     {
         var literal=Convert.FromHexString("5E01008C1A00000030008201");
