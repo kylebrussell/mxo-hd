@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 using NativeQa;
 using HeadlessClient;
 namespace hds.Tests;
