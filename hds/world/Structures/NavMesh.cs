@@ -82,6 +82,8 @@ namespace hds
         private static readonly object loadLock = new object();
         private static readonly Dictionary<UInt16, District> districts = new Dictionary<UInt16, District>();
         private static string directory;
+        private static long snapshotRevision;
+        internal static long SnapshotRevision=>System.Threading.Volatile.Read(ref snapshotRevision);
 
         /// <summary>Points the loader at another folder (tests); districts load on first use.</summary>
         public static void UseDirectory(string path)
@@ -90,6 +92,7 @@ namespace hds
             {
                 directory = path;
                 districts.Clear();
+                System.Threading.Interlocked.Increment(ref snapshotRevision);
             }
         }
 

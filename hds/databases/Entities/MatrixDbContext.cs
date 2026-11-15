@@ -260,6 +260,8 @@ namespace hds.databases.Entities
                     .HasColumnName("level")
                     .HasDefaultValueSql("'1'");
 
+                entity.Property(e => e.TraitId).HasColumnType("int unsigned").HasColumnName("trait_id");
+
                 entity.Property(e => e.Profession)
                     .HasColumnType("smallint(6)")
                     .HasColumnName("profession")

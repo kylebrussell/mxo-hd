@@ -104,14 +104,13 @@ namespace hds
             { 1237, new Cooldown(90) },         // Zombie Virus 3 Bite
         };
 
-        /// <summary>80 ba code retail answered a use with while the ability's timer ran (a 80 bd lock).</summary>
-        public const byte DeniedTimerRunning = 0x1f;
+        /// <summary>Native621e540d: reuse-wait message. Existing timer admission is unchanged.</summary>
+        public const byte DeniedTimerRunning = (byte)AbilityRefusals.ReuseWait;
 
-        /// <summary>
-        /// 80 ba code for a use while another cast runs. A guess at the meaning: retail answered quick repeats of an
-        /// ability with it (06 for ability 0x1ae in the Rajko "Zombies" log, 0x366 in Warboy's m2 log), and it is the commonest code.
-        /// </summary>
-        public const byte DeniedBusy = 0x06;
+        /// <summary>Legacy ambiguous refusal. Native6 means current tactic, not generic cast-busy.</summary>
+        public const byte DeniedLegacyAmbiguous = (byte)AbilityRefusals.CurrentTactic;
+        /// <summary>Compatibility alias only; remaining aggregate callers retain their previous value.</summary>
+        public const byte DeniedBusy = DeniedLegacyAmbiguous;
 
         /// <summary>True while a cast started with <see cref="StartCast"/> runs: the cooldown only starts when it ends.</summary>
         public static bool IsCasting(ClientData data, double now)
@@ -124,21 +123,9 @@ namespace hds
             data.castEndsAt = now + castSeconds;
         }
 
-        /// <summary>
-        /// <c>80 ba &lt;ability u16&gt; 00 00 6b &lt;code&gt;</c> and eleven zero bytes: retail's answer to a use it refused,
-        /// instead of the 80 ac cast echo (e.g. <c>80 ba 49 01 00 00 6b 1f 00 ...</c> while 80 bd held ability 0x149).
-        /// </summary>
-        public static byte[] BuildDenied(UInt16 abilityId, byte code)
-        {
-            byte[] record = new byte[19];
-            record[0] = 0x80;
-            record[1] = 0xba;
-            record[2] = (byte)abilityId;
-            record[3] = (byte)(abilityId >> 8);
-            record[6] = 0x6b;
-            record[7] = code;
-            return record;
-        }
+        /// <summary>Compatibility wrapper; the native AbilityID/ErrorID fields are fullu32.</summary>
+        public static byte[] BuildDenied(UInt16 abilityId, byte code) =>
+            AbilityRefusals.Encode(new AbilityRefusals.Record(abilityId,code));
 
         /// <summary><c>80 bd 01 &lt;id u16&gt; &lt;type&gt; &lt;seconds f32&gt; &lt;01 start / 00 end&gt;</c></summary>
         public static byte[] BuildTimer(UInt16 id, byte type, float seconds, bool start)

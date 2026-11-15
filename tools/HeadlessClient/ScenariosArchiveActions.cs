@@ -16,8 +16,7 @@ public static partial class Scenarios
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9e 00");
         await EnterMissionArea(context,player);
-        player.SendChat("?missionobject 1");
-        await player.WaitForTextAsync("Object moved");
+        await ApproachMissionObjectFixture(context,player,1);
         var safe=await MissionObjectView(context,player,"Safe");
         player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
         await player.WaitForRpcAsync("81 19");

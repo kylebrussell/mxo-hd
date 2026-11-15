@@ -1,5 +1,7 @@
 # Completed mission objectives after relog
 
+Historical PR163 wire fix: native DISPLAY FAILED. Its early combined replay is superseded by [the current lifecycle follow-up](MISSION-OBJECTIVE-UI-REPLAY.md). Use that checklist and distinguish the floating tracker from Mission Status > Objectives.
+
 Claude's native PR158 run at70be317 passed mission restoration and Abort. It also found a smaller presentation regression: Watchful Eyes displayed two identically worded Get objectives before relog, with the first checked, but only one unchecked line afterward. The first device and durable completed goal were preserved.
 
 `MissionRuntime.Reannounce` previously called `SendPhase`, which creates only open objective rows, and then sent completion updates for already completed goals. The missing checked row is consistent with a completion update for a row the fresh HUD never received. This is an inference from the native observation and server packet order; no new native record layout is proposed.

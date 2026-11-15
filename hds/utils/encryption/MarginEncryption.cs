@@ -119,6 +119,25 @@ namespace hds
 		}
 		
 		
+        // Opt-in ONLY for0a/0c: legacy consumers historically receive payload plus PKCS suffix.
+        internal bool TryDecryptCreationBody(byte[] packet,out byte[] body)
+        {
+            body=null;
+            if(packet==null||packet.Length<33||(packet.Length-17)%16!=0)return false;
+            var iv=new byte[16];Array.Copy(packet,1,iv,0,16);
+            var encrypted=new byte[packet.Length-17];Array.Copy(packet,17,encrypted,0,encrypted.Length);
+            var plain=new byte[encrypted.Length];tf.SetIV(iv);tf.SetKey(TF_Key);tf.Decrypt(encrypted,plain);
+            if(plain.Length<16)return false;
+            int size=plain[4]|plain[5]<<8;int end=10+size,padding=plain.Length-end;
+            if(size<1||end>plain.Length||padding<1||padding>16)return false;
+            for(int i=end;i<plain.Length;i++)if(plain[i]!=padding)return false;
+            var checkedBytes=new byte[6+size];Array.Copy(plain,4,checkedBytes,0,checkedBytes.Length);
+            byte[] crc=crc32.checksumB(checkedBytes,1);
+            for(int i=0;i<4;i++)if(plain[i]!=crc[i])return false;
+            if(plain[10]!=0x0a&&plain[10]!=0x0c)return false;
+            body=new byte[size];Array.Copy(plain,10,body,0,size);return true;
+        }
+
 		public byte[] decryptMargin(byte[] packet)
         {
 

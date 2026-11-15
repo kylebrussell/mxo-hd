@@ -1,0 +1,172 @@
+{
+  "Format": 1,
+  "Scope": "ONLY151->1111. Three positively identified files; observations include retransmissions, not independent events or a corpus-wide search. Captured levels are50 only; low-level behavior follows separately verified stored function2. Historical25 zero-relation evidence is unchanged.",
+  "ClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "GobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "DecoderSha256": "10965313DDD1DA320FB8154BEFC406C34278C86C69A1DF4B8D174AE661F6A0FE",
+  "Parent": 151,
+  "Child": 1111,
+  "CapturedLevels": [
+    50
+  ],
+  "BaseObservations": 6,
+  "MembershipObservations": 19,
+  "OriginalParentRecord": {
+    "Offset": 14992960,
+    "Size": 304,
+    "Sha256": "23c0c40d5ce645366bf77f6b293216f125f7766ba5ac0f927a4e2acf86f4a635"
+  },
+  "OriginalChildRecord": {
+    "Offset": 14999497,
+    "Size": 439,
+    "Sha256": "60fffd99edb5dcc9a5ec67076767f243bcf62cfb2bd776caa09df49126db859c"
+  },
+  "Files": [
+    {
+      "File": "research/packet-dumps/community-intake/20260607T212233Z-hdneo-public-session-spawn-movement-sanitized-selected/logs/mxopackets1_luizoe_recursion1.log.txt",
+      "FileSha256": "BCBEE078ED1EC807E0706079AB47A6C7197220A1AFBE66DEC9268CEAB15E48DE",
+      "FileLfSha256": "CE149E4ACE98B5994B330C70F57630B7BBDC89BB8D57EF110A34878F17739EE6",
+      "Bases": [
+        {
+          "Line": 200,
+          "Payload": "57 04 32 00 08 02"
+        },
+        {
+          "Line": 38870,
+          "Payload": "57 04 32 00 08 02"
+        }
+      ],
+      "Memberships": [
+        {
+          "Line": 200,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 200,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 622,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 38721,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        }
+      ]
+    },
+    {
+      "File": "research/packet-dumps/community-intake/20260608T065306Z-hdneo-public-luizoe-remaining-trade-sanitized-selected/logs/mxopackets1_luizoe_recursion2.log.txt",
+      "FileSha256": "FC6D22518FF69BD02E78BBF49C87591C6D2FF5B60DB59B05E03E6C1FDA83EA7D",
+      "FileLfSha256": "80AFA3A0040738248A4DF131763466A1C9B5606E211AC84F26EDF6D6654C85D6",
+      "Bases": [
+        {
+          "Line": 1321,
+          "Payload": "57 04 32 00 08 02"
+        }
+      ],
+      "Memberships": [
+        {
+          "Line": 845,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 1321,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 1321,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 5627,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 7696,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 8431,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        }
+      ]
+    },
+    {
+      "File": "research/packet-dumps/community-intake/20260608T065306Z-hdneo-public-luizoe-remaining-trade-sanitized-selected/logs/mxopackets1_luizoe_any_things.log.txt",
+      "FileSha256": "0781AD1BD5225CE6C217CE54DB4C7BEACA2E3029387313B4E2851A1B4C4C6733",
+      "FileLfSha256": "869C4E3BCCDDBD59F34E0FDB061D26E230B9A5D6A85F219E58447A08C95BBFED",
+      "Bases": [
+        {
+          "Line": 172,
+          "Payload": "57 04 32 00 08 02"
+        },
+        {
+          "Line": 921,
+          "Payload": "57 04 32 00 08 02"
+        },
+        {
+          "Line": 3993,
+          "Payload": "57 04 32 00 08 02"
+        }
+      ],
+      "Memberships": [
+        {
+          "Line": 172,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 172,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 921,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 921,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 1185,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 3484,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 3830,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        },
+        {
+          "Line": 3993,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 01 00 00 00 00",
+          "Operation": 1
+        },
+        {
+          "Line": 3993,
+          "Payload": "45 03 57 04 00 97 00 00 00 57 04 32 00 00 00 00 00 00 00 00",
+          "Operation": 0
+        }
+      ]
+    }
+  ]
+}

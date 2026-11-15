@@ -3,6 +3,25 @@ namespace hds.Tests;
 
 public class WorldSendFenceTests
 {
+    [Fact]public void ObservationRejectsPendingAndEveryPriorResetEpoch()
+    {
+        var fence=new WorldSendFence();long old=fence.Capture();Assert.True(fence.IsCurrent(old));
+        fence.PublishIncoming(false,()=>{});Assert.True(fence.IsCurrent(old));
+        fence.PublishIncoming(true,()=>{});long next=fence.Capture();Assert.False(fence.IsCurrent(old));Assert.False(fence.IsCurrent(next));
+        fence.Resume(old);Assert.False(fence.IsCurrent(next));fence.Resume(next);Assert.True(fence.IsCurrent(next));Assert.False(fence.IsCurrent(old));
+        fence.PublishIncoming(true,()=>{});long last=fence.Capture();fence.Resume(last);Assert.False(fence.IsCurrent(next));Assert.True(fence.IsCurrent(last));
+    }
+    [Fact]public async Task ObservationDoesNotAcquireThePublicationGate()
+    {
+        var fence=new WorldSendFence();long epoch=fence.Capture();using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();
+        var holder=Task.Factory.StartNew(()=>fence.TryRun(epoch,()=>{entered.Set();Assert.True(release.Wait(TimeSpan.FromSeconds(30)));}),TaskCreationOptions.LongRunning);
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(30)));
+            var observer=Task.Factory.StartNew(()=>fence.IsCurrent(epoch),TaskCreationOptions.LongRunning);Assert.True(await observer.WaitAsync(TimeSpan.FromSeconds(30)));
+        }
+        finally{release.Set();await holder;}
+    }
     [Fact]
     public async Task PreparedOldWorldBatchCannotUseResetCountersOrDispatch()
     {

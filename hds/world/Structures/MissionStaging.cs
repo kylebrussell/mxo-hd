@@ -14,6 +14,7 @@ namespace hds
         public StaticWorldObject spot;  // the furniture or spawner it's bound to
         public UInt16 goid;
         public UInt64 entity;
+        public MissionOpenFloorPlacement OpenFloor; // null for untouched legacy objects
         public bool lootOpen;           // a Search window is showing
         public bool putOpen;            // the empty Put container window is showing
         public UInt32 shownState;       // a computer's CurrentState as the client last had it
@@ -25,13 +26,13 @@ namespace hds
     /// NPC spawners, spawns its hostiles and objects, and sets its waypoint to the floor's elevator door. Also walks
     /// escorted NPCs after the player, and offers the elevator ride retail's operator offered (ID_OPERATOR_MISSION_ELEVATOR).
     /// </summary>
-    public static class MissionStaging
+    public static partial class MissionStaging
     {
         /// <summary>"I've hacked into the elevator control system. Do you want me to send you to the right floor?"</summary>
         public const UInt32 StringElevatorOffer = 0x600000E2;
         public const UInt32 StringYes = 0x02000007, StringNo = 0x02000000;
 
-        private const UInt64 EntityBase = 987000000000UL;
+        internal const UInt64 EntityBase = 987000000000UL;
 
         /// <summary>The MissionKey element retail's mission containers carried.</summary>
         public const byte ContainerElement = 0xff;
@@ -91,8 +92,9 @@ namespace hds
             Random rng = LayoutRandom(mission.id,0,unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture) ??
-                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible) ??
+                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible);
             data.missionPreviewFor = mission;
             return data.missionPreview;
         }
@@ -113,7 +115,7 @@ namespace hds
                 !database.All(c=>char.IsAsciiLetterOrDigit(c)||c=='_') || !int.TryParse(raw,out int seed) || seed<0) return null;
             return unchecked(seed ^ mission*31 ^ phase*104729);
         }
-        private static Random LayoutRandom(int mission,int phase,int legacySeed) => new Random(
+        internal static Random LayoutRandom(int mission,int phase,int legacySeed) => new Random(
             QaSiteSeed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                 Environment.GetEnvironmentVariable("MXO_MISSION_SITE_QA_SEED"),mission,phase) ?? legacySeed);
 
@@ -122,7 +124,9 @@ namespace hds
         public static int SpotsForWaves(MissionPhase phase) => phase.Waves().Where(w => w.arrival.at == null).Sum(w => w.count);
 
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
-        public static bool Stage(WorldClient client, MissionProgress progress)
+        public static bool Stage(WorldClient client, MissionProgress progress) => StageCore(client,progress,null);
+        internal static bool StagePrepared(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan) => StageCore(client,progress,plan);
+        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared)
         {
             MissionPhase phase = progress.Phase;
             Mission mission = progress.mission;
@@ -138,38 +142,69 @@ namespace hds
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
             int furniture = FurnitureNeeded(phase);
-            Random rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
-            List<MissionSite> sites = MissionSites.For(mission.district);
-            MissionSite site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
-            client.playerData.missionPreview = null;
-            client.playerData.missionPreviewFor = null;
-            List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            int npcs = placed.Count + SpotsForWaves(phase);
-            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture)
-                        ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture);
-            if (site == null)
+            Random rng=null;MissionSite site;
+            if(prepared==null)
             {
-                Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
-                return false;
+                rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
+                List<MissionSite> sites = MissionSites.For(mission.district);
+                site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
+                client.playerData.missionPreview = null;
+                client.playerData.missionPreviewFor = null;
+                List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
+                int npcs = placed.Count + SpotsForWaves(phase);
+                bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+                if(site!=null&&!Eligible(site))site=null;
+                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible)
+                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible);
+                if (site == null)
+                {
+                    Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
+                    return false;
+                }
+            }
+            else
+            {
+                prepared.RequireCurrent(client,progress);
+                site=prepared.Site;
+                if(prepared.Adopted)progress.openFloorResolvedPhase=progress.phaseIndex;
+                client.playerData.missionPreview=null;client.playerData.missionPreviewFor=null;
             }
 
+            // No layout RNG is consumed between site choice and object placement. Materialize the
+            // same choices here so an unsupported bound record fails before any NPC/global mob exists.
+            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            if(prepared!=null)
+                foreach(var c in prepared.Selection.Choices)
+                    MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
+                        OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
+
             progress.site = site;
+            if(prepared?.Selection.Elevator!=null)progress.elevatorWitnesses[MissionOpenFloorSite.CatalogFingerprint(site)]=prepared.Selection.Elevator;
+            var elevatorWitness=progress.ElevatorFor(site);var floorDoor=MissionElevatorPoses.Floor(site,elevatorWitness);
+            var lobbyDoor=elevatorWitness==null?new MissionOpenFloorResolver.Position(site.lobbyDoor.pos_x,site.lobbyDoor.pos_y,site.lobbyDoor.pos_z):MissionElevatorPoses.Position(elevatorWitness.Lobby);
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
             {
                 new MissionWaypoint
                 {
-                    x = site.elevatorDoor.pos_x, y = site.elevatorDoor.pos_y, z = site.elevatorDoor.pos_z,
+                    x = floorDoor.X, y = floorDoor.Y, z = floorDoor.Z,
                     doorHex = MissionSites.DoorHex(site.elevatorDoor)
                 }
             };
             progress.exits.Clear();
-            progress.exits.Add(new[] { site.lobbyDoor.pos_x, site.lobbyDoor.pos_y, site.lobbyDoor.pos_z });
+            progress.exits.Add(new[] { lobbyDoor.X,lobbyDoor.Y,lobbyDoor.Z });
             Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor in " + site.neighbourhood + " (" + site.CentreX + "," + site.floorY + "," +
                                  site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
-            List<double[]> spots = site.npcSpots
+            IEnumerable<double[]> sourceSpots=site.npcSpots;
+            if(MissionOpenFloorAdmission.Requires(phase)&&placed.Count+SpotsForWaves(phase)>0)
+            {
+                int count=placed.Count+SpotsForWaves(phase);
+                if(!MissionInteriorSites.TryAllocate(site,count,out var allocated,out string why,elevatorWitness))throw new MissionCheckpointException("Interior NPC admission changed: "+why);
+                if(allocated.Length>0)sourceSpots=allocated;
+            }
+            List<double[]> spots = sourceSpots
                 .OrderByDescending(s => Distance2(s[0], s[2], site.elevatorDoor.pos_x, site.elevatorDoor.pos_z))
                 .ToList();
             int next = 0;
@@ -250,7 +285,8 @@ namespace hds
                 }
             }
 
-            PlaceObjects(client, progress, rng);
+            if(prepared==null)PlaceObjects(client, progress, objectChoices);
+            else PlacePreparedObjects(client,progress,prepared);
 
             for (int i = 0; i < besideObjects.Count; i++)
             {
@@ -330,13 +366,21 @@ namespace hds
             return true;
         }
 
-        private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
+        internal sealed class ObjectChoice
         {
-            MissionSite site = progress.site;
+            internal readonly MissionObjectDef Definition;
+            internal readonly StaticWorldObject Spot;
+            internal readonly ushort Goid;
+            internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
+            {Definition=definition;Spot=spot;Goid=goid;}
+        }
+        // Shared exact chooser. Staging materializes it before publishing any phase entities.
+        internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
+        {
             List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
             List<StaticWorldObject> spawners = site.objectSpots.OrderBy(_ => rng.Next()).ToList();
             HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
-            foreach (MissionObjectDef def in progress.Phase.objects)
+            foreach (MissionObjectDef def in phase.objects)
             {
                 StaticWorldObject spot;
                 UInt16 goid;
@@ -371,6 +415,22 @@ namespace hds
                     goid = spot == null ? (UInt16)0 : MissionSites.Goid(spot);
                 }
 
+                yield return new ObjectChoice(def,spot,GeneratedConcrete(spot,goid));
+            }
+        }
+
+        internal static ObjectChoice[] PrepareObjectChoices(MissionPhase phase,MissionSite site,Random rng)
+        {
+            var choices=SelectObjects(phase,site,rng).ToArray();
+            foreach(var choice in choices)
+                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+            return choices;
+        }
+        private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
+        {
+            foreach (ObjectChoice choice in choices)
+            {
+                MissionObjectDef def=choice.Definition;StaticWorldObject spot=choice.Spot;ushort goid=choice.Goid;
                 if (spot == null)
                 {
                     Output.WriteLine("[MISSION] Nowhere to put object " + def.id + " (" + def.kind + ")");
@@ -386,7 +446,7 @@ namespace hds
                 };
                 progress.objects[def.id] = state;
                 SpawnObject(client, progress, state);
-                var pose = MissionComputerAnchors.For(state);
+                var pose = MissionObjectPoses.For(state);
                 Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + pose.X + "," +
                                      pose.Y + "," + pose.Z);
             }
@@ -467,7 +527,24 @@ namespace hds
             }
         }
 
+        // A generated proxy is independent of its spawner; unrelated same-prototype furniture keeps its existing binding.
+        internal static void ConfigureSourceBinding(GameObject obj,MissionObjectState state)
+        {
+            if(MissionSites.Goid(state.spot)==state.goid)obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
+            else obj.UnsetRelatedStaticObjId();
+        }
+
         private static void SpawnObject(WorldClient client, MissionProgress progress, MissionObjectState state)
+        {
+            if(MissionProxyIntroduction.Deferred(state))return;
+            SpawnObjectNow(client,progress,state);
+        }
+        internal static void IntroduceDeferredObjects(WorldClient client,MissionProgress progress)
+        {
+            foreach(var state in progress.objects.Values)
+                if(MissionProxyIntroduction.Ready(client,progress,state))SpawnObjectNow(client,progress,state);
+        }
+        private static void SpawnObjectNow(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
             FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
             if (field == null)
@@ -479,19 +556,10 @@ namespace hds
             // Bound to the static only when it's the same object, as retail bound its filing cabinets and dressers (08 <goid>
             // <static>). At a spawner marker retail spawned it free (0c, no static): the client's definitions give the
             // spawners no Info or Usable part, so a mission object bound to one couldn't be selected.
-            if (MissionSites.Goid(state.spot) == state.goid)
-            {
-                obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
-            }
-            else
-            {
-                obj.UnsetRelatedStaticObjId();
-            }
+            ConfigureSourceBinding(obj,state);
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
-            var pose = MissionComputerAnchors.For(state);
-            SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(pose.X, pose.Y, pose.Z));
-            SetAttribute(obj, "Orientation", pose.Orientation);
+            ApplyObjectPose(obj,state);
             // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
             // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });
@@ -520,6 +588,13 @@ namespace hds
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
         }
 
+        internal static void ApplyObjectPose(GameObject obj,MissionObjectState state)
+        {
+            var pose=MissionObjectPoses.For(state);
+            SetAttribute(obj,"Position",NumericalUtils.doublesToLtVector3d(pose.X,pose.Y,pose.Z));
+            SetAttribute(obj,"Orientation",pose.Orientation);
+        }
+
         private static void SetAttribute(GameObject obj, string name, byte[] value)
         {
             FieldInfo field = obj.GetType().GetField(name);
@@ -538,6 +613,9 @@ namespace hds
             {
                 return false;
             }
+
+            // Fixed admitted poses are immutable; this explicit legacy custom-move tool refuses before touching a view or source.
+            if(state.OpenFloor!=null)return false;
 
             ClientView view = client.viewMan.FindViewForEntity(state.entity);
             if (view != null)
@@ -559,6 +637,7 @@ namespace hds
 
         public static void DespawnObjects(WorldClient client, MissionProgress progress)
         {
+            PosterBoxFloorProbe.Clear(client);
             foreach (MissionObjectState state in progress.objects.Values)
             {
                 ClientView view = client.viewMan.FindViewForEntity(state.entity);
@@ -643,7 +722,7 @@ namespace hds
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
 
-            MissionSite site = progress.sites.LastOrDefault(s => used != null ? MissionSites.InShaft(s, used) : MissionSites.InShaft(s, x, z));
+            MissionSite site = progress.sites.LastOrDefault(s => used != null ? MissionElevatorPoses.InShaft(progress,s,used) : MissionElevatorPoses.InShaft(progress,s,x,z));
             if (site == null)
             {
                 return false;
@@ -651,7 +730,9 @@ namespace hds
 
             bool current = site == progress.site && !progress.waitingForExit;
             StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
-            if (Math.Abs(py - target.pos_y) < 200)
+            var targetWitness=progress.ElevatorFor(site);
+            double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
+            if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
             }
@@ -659,12 +740,17 @@ namespace hds
             client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(0x28000a70, 0x26000014, 0, 1, 0, "",
                 current ? ElevatorUpLine : ElevatorDownLine));
             client.FlushQueue();
-            Output.WriteDebugLog("[MISSION] Elevator: to " + target.pos_y);
+            Output.WriteDebugLog("[MISSION] Elevator: to " + targetY);
             var rideRequested = System.Diagnostics.Stopwatch.StartNew();
+            var stamp=new MissionRideStamp(client,progress);
             DelayedActions.AfterFor(client, 2, () =>
             {
                 Output.WriteDebugLog("[MISSION] Elevator callback elapsed ms " + rideRequested.ElapsedMilliseconds);
-                Ride(client, progress, target, site);
+                MissionTransportState.Run(client, () =>
+                {
+                    Ride(client, progress, target, site, stamp);
+                    return true;
+                }, stamp);
             });
             return true;
         }
@@ -672,7 +758,7 @@ namespace hds
         public const string ElevatorUpLine = "I've hacked into the elevator control system. Sending you to the right floor.";
         public const string ElevatorDownLine = "I've hacked into the elevator control system. Taking you back down to the street.";
 
-        private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site)
+        private static void Ride(WorldClient client, MissionProgress progress, StaticWorldObject target, MissionSite site, MissionRideStamp stamp)
         {
             Output.WriteDebugLog("[MISSION] Elevator callback for " + progress.mission.id + "; current " +
                 (client.playerData.missionProgress?.mission.id.ToString() ?? "none"));
@@ -684,19 +770,24 @@ namespace hds
 
             // Into the car at the other floor, as the street door's car is: a couple of metres from its door towards the
             // middle of the building. Retail stood players 50 units below a floor after a ride (y 2495 on floor 2545).
-            double dx = site.CentreX - target.pos_x, dz = site.CentreZ - target.pos_z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
-            double x = target.pos_x + dx / length * 200, y = target.pos_y - 50, z = target.pos_z + dz / length * 200;
+            var witness=progress.ElevatorFor(site);
+            var measured=witness==null?new MissionOpenFloorResolver.Position(target.pos_x,target.pos_y,target.pos_z):
+                MissionElevatorPoses.Position(ReferenceEquals(target,site.elevatorDoor)?witness.Floor:witness.Lobby);
+            double dx = site.CentreX - measured.X, dz = site.CentreZ - measured.Z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
+            double x = measured.X + dx / length * 200, y = measured.Y - 50, z = measured.Z + dz / length * 200;
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
             Output.WriteDebugLog("[MISSION] Elevator navigation start");
-            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), target.pos_x, y, target.pos_z, out NavLocation car) &&
+            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
-                x = NearestOnMesh(client, target.pos_x, y, target.pos_z, out z);
+                x = NearestOnMesh(client, measured.X, y, measured.Z, out z);
             }
 
             Output.WriteDebugLog("[MISSION] Elevator navigation finished");
+            stamp.RequireCurrent();
             Teleport(client, x, y, z);
+            progress.CommitGeneratedFloor(progress.phaseIndex, site, target);
             foreach (ushort id in progress.following)
             {
                 Mob mob = MissionRuntime.FindNpc(client.playerData, id);
@@ -752,7 +843,7 @@ namespace hds
         public static void Teleport(WorldClient client, double x, double y, double z)
         {
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
+            MissionProxyIntroduction.Arrival(client,x,y,z);
             Output.WriteDebugLog("[MISSION] Teleported to " + x + "," + y + "," + z);
         }
 

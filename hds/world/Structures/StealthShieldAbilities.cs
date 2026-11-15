@@ -66,6 +66,7 @@ namespace hds
         { cast.Action=Of(caster).Action;cast.StealthVersion=Stealth.Version(caster); }
         public static bool Live(WorldClient caster,Cast cast)=>caster!=null && caster.Alive && caster.playerData.getOnWorld() &&
             !caster.playerData.isDead && !caster.playerData.duelDeath && caster.playerData.worldGeneration==cast.World && caster.playerData.lifeGeneration==cast.Life;
+        internal static int ActionVersion(WorldClient caster)=>Of(caster).Action;
         public static void ActionTaken(WorldClient caster)
         {
             var session=Of(caster);session.Action++;

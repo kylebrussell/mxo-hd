@@ -3,7 +3,8 @@ public static partial class Scenarios
 {
     private static Task MissionTeamRelog(ScenarioContext context) => MissionRelogReplay(context, false);
     private static Task MissionObjectivesRelog(ScenarioContext context) => MissionRelogReplay(context, true);
-    private static async Task MissionRelogReplay(ScenarioContext context, bool checkObjectiveRows)
+    private static Task MissionObjectiveUiRelog(ScenarioContext context) => MissionRelogReplay(context,true,true);
+    private static async Task MissionRelogReplay(ScenarioContext context, bool checkObjectiveRows, bool checkLoadingReplay=false)
     {
         var original=await StartRelogMission(context);
         var npc=await VisitMissionNpc(context,original,"Herschel");
@@ -15,8 +16,23 @@ public static partial class Scenarios
         // Real CleanDeadPlayers drops the old live group and margin reservation; no server restart or simulated restore.
         await Task.Delay(TimeSpan.FromSeconds(33));
         using var p=await HeadlessPlayer.LoginAsync(context.Server.Address,username,original.Handle);
-        await p.EnterWorldAsync(); await p.WaitForRpcAsync("80 9c");
+        await p.EnterWorldAsync(!checkLoadingReplay); await p.WaitForRpcAsync("80 9c");
         await p.WaitUntilAsync(()=>p.Received("80 8e").Count>0,"restored native team information",TimeSpan.FromSeconds(6));
+        if(checkLoadingReplay)
+        {
+            Check.Equal(0,p.Received("80 a0").Count,"No restored objective record before LoadingComplete");
+            int before=p.World.RpcSnapshot().Count;
+            p.SendRpc("0c 00");await Task.Delay(200);
+            Check.Equal(0,p.Received("80 a0").Count,"Wrong loading status cannot replay goals");
+            p.SendRpc("0c 01");
+            await p.WaitUntilAsync(()=>p.Received("80 a0 01 06 00 01").Count==1,"post-loading completed tick",TimeSpan.FromSeconds(6));
+            var replay=p.World.RpcSnapshot().Skip(before).Where(r=>r.Opcode==0xa0).ToList();
+            Check.Equal(3,replay.Count,"One loading replay: two open widgets then one completed tick");
+            Check.That(replay[0].Bytes[2]==1 && replay[0].Bytes[5]==0 && replay[1].Bytes[2]==2 && replay[1].Bytes[5]==0 && replay[2].Bytes[2]==1 && replay[2].Bytes[5]==1,"Goal IDs and post-loading row/tick order");
+            Check.That(replay[0].DatagramSequence.HasValue && replay[2].DatagramSequence.HasValue && replay[0].DatagramSequence!=replay[2].DatagramSequence && replay[1].DatagramSequence!=replay[2].DatagramSequence,"Completion received in a different actual UDP datagram from both row creations");
+            p.SendRpc("0c 01");await Task.Delay(700);
+            Check.Equal(3,p.Received("80 a0").Count,"Duplicate LoadingComplete never replays again");
+        }
         if (checkObjectiveRows)
         {
             await p.WaitForRpcAsync("80 a0 01 06 00 01");

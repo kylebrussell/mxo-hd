@@ -37,15 +37,33 @@ namespace hds
             ClientData data = client.playerData;
             lock (data.missionSync)
             {
+                if(data.missionProgress?.restoreRefusal!=null)
+                {
+                    new ServerPackets().sendSystemChatMessage(client,"Abort your saved mission from Mission Status before accepting another.","BROADCAST");
+                    client.FlushQueue();return false;
+                }
                 if (!MissionTickets.CanStart(client, mission))
                 {
                     return false;
                 }
+                MissionProgress openFloorProgress=null;MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                if(MissionOpenFloorAdmission.Requires(mission.phases.FirstOrDefault()))
+                {
+                    openFloorProgress=new MissionProgress(mission);
+                    if(!MissionOpenFloorAdmission.TryPrepare(client,openFloorProgress,0,data.missionProgress,out openFloorPlan,out _,out string refusal)||!openFloorPlan.BeforeCurrent(client))
+                    {
+                        Output.WriteDebugLog("[MISSION] Box acceptance refused before mutation: "+refusal);
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage("This mission area cannot be placed safely. Please try again later.","BROADCAST"));
+                        client.FlushQueue();return false;
+                    }
+                }
                 SocialHandler.EnsureTeam(client);
 
+                ushort previousInstance=data.missionInstanceCounter;
                 data.missionInstanceCounter++;
                 // Acceptance, NPCs and briefing publish only after their durable checkpoint (retail's order).
-                if(!MissionRuntime.Start(client,mission,txn))return false;
+                if(openFloorPlan==null) {if(!MissionRuntime.Start(client,mission,txn))return false;}
+                else if(!MissionRuntime.StartOpenFloor(client,openFloorProgress,openFloorPlan,txn)) {data.missionInstanceCounter=previousInstance;return false;}
                 UtilityAbilities.OnMissionAccepted(client);
                 client.FlushQueue();
                 Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");

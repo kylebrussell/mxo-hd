@@ -1,0 +1,580 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "objects": [
+    {
+      "id": 552,
+      "name": "Safe_Large",
+      "schema": 46,
+      "components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "Container",
+          "type": 11
+        },
+        {
+          "name": "OpenUse",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        },
+        {
+          "name": "Reward",
+          "type": 80
+        },
+        {
+          "name": "InUseStanceSite",
+          "type": 32
+        }
+      ],
+      "fields": {
+        "Container/ExclusiveLocator": "000000000000000000000000000000000000",
+        "Container/ExclusiveType": 0,
+        "Container/InfoAmount": 0,
+        "Container/MissionKey": 0,
+        "Container/MissionLocator": "000000000000000000000000000000000000",
+        "Container/Observer": 0,
+        "Container/UseCount": 0,
+        "DmgVol/DamageBox": "000000000000000000000000",
+        "DmgVol/DamageMax": 25.0,
+        "DmgVol/DamageMin": 25.0,
+        "InUseStanceSite/HalfExtents": "000020420000484200000c42",
+        "InUseStanceSite/Orientation": "0000000000000000000000000000803f",
+        "InUseStanceSite/Position": "000000000000000000000000000000000000000000000000",
+        "InUseStanceSite/SiteEnterDestOffset": "00000000000000000000c842",
+        "InUseStanceSite/SiteEnterFacing": 180.0,
+        "InUseStanceSite/SiteExitDest": "00000000000000000000c842",
+        "InUseStanceSite/SiteExitFacing": 0.0,
+        "InUseStanceSite/SiteExitRule": 1011,
+        "InUseStanceSite/SiteStance": 0,
+        "Info/InfoID": 16778026,
+        "Info/MoreInfoID": 16778027,
+        "MissionElement/MissionKey": 0,
+        "MissionElement/MissionLocator": "000000000000000000000000000000000000",
+        "MissionElement/MissionTypeFlags": 0,
+        "MissionElement/SpawnType": 6,
+        "MissionElement/TeamLevel": 0,
+        "Model/AmbientFX_0": 0,
+        "Model/AnimationID0": 671090262,
+        "Model/AnimationID1": 671090264,
+        "Model/ClosingFX": 2248147131,
+        "Model/DescriptionID": 671090260,
+        "Model/HalfExtents": "000020420000484200000c42",
+        "Model/IsAnimOptional": 1,
+        "Model/OpeningFX": 2248147132,
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/PickLockSoundFX": 2248147211,
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "OpenUse/ClientRuleID": 1010,
+        "OpenUse/Cursor": 671092159,
+        "OpenUse/Defaultable": 1,
+        "OpenUse/ExecuteRuleID": 1010,
+        "OpenUse/MaxDistance": 100.0,
+        "OpenUse/NameID": 16778061,
+        "PickLockUsage/ActivateSound": 2248147834,
+        "PickLockUsage/ActivationTime_BaseDuration": 15,
+        "PickLockUsage/ActivationTime_MaxDuration": 25,
+        "PickLockUsage/ActivationTime_MinDuration": 5,
+        "PickLockUsage/ActivationTime_ModAttribute": 2148144128,
+        "PickLockUsage/ActivationTime_ModMult": 1.0,
+        "PickLockUsage/ClientRuleID": 4000,
+        "PickLockUsage/Defaultable": 0,
+        "PickLockUsage/ExecuteRuleID": 4000,
+        "PickLockUsage/MaxDistance": 100.0,
+        "PickLockUsage/NameID": 16778053,
+        "Reward/RewardRule": "TeamLevelRewardRule",
+        "Reward/RewardRuleArgs": "",
+        "Reward/RewardTable": "CONTAINER_REWARDS_C5_Safes",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "36080000ffffffff00000000000000000000000000000000",
+        "StateMachine/OpenedState": "34080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000",
+        "StateMachine/UnlockedState": "41080000ffffffff00000000000000000000000000000000",
+        "Trap/DetectDifficulty": 0,
+        "Trap/DisarmDifficulty": 0,
+        "Trap/TrapArmed": 0,
+        "Trap/TrapFX": 0,
+        "Trap/TrapLevel": 0,
+        "Trap/TrapVisible": 0,
+        "Trap/Trappable": 1,
+        "UnlockUsage/ActivateSound": 2248148586,
+        "UnlockUsage/ClientRuleID": 4006,
+        "UnlockUsage/Defaultable": 1,
+        "UnlockUsage/ExecuteRuleID": 4006,
+        "UnlockUsage/Lockable": 1,
+        "UnlockUsage/MaxDistance": 100.0,
+        "UnlockUsage/NameID": 16777270
+      }
+    },
+    {
+      "id": 1410,
+      "name": "SafeXformSpawner",
+      "schema": 141,
+      "components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "Spawner",
+          "type": 8
+        }
+      ],
+      "fields": {
+        "MissionElement/MissionKey": 0,
+        "MissionElement/MissionLocator": "000000000000000000000000000000000000",
+        "MissionElement/MissionTypeFlags": 0,
+        "MissionElement/TeamLevel": 0,
+        "Model/AnimationID0": 0,
+        "Model/DescriptionID": 1979711596,
+        "Model/HalfExtents": "0932d34102a231423e6ffd41",
+        "Model/Hidden": 0,
+        "Model/Orientation": "0000000000000000000000000000803f",
+        "Model/Position": "000000000000000000000000000000000000000000000000",
+        "Spawner/HalfExtents": "0932d34102a231423e6ffd41",
+        "Spawner/MissionKey": 0,
+        "Spawner/MissionLocator": "000000000000000000000000000000000000",
+        "Spawner/MissionTypeFlags": 0,
+        "Spawner/Orientation": "0000000000000000000000000000803f",
+        "Spawner/Position": "000000000000000000000000000000000000000000000000",
+        "Spawner/SpawnInstanceData": 0,
+        "Spawner/SpawnTypeID": 6,
+        "Spawner/TeamLevel": 0
+      }
+    }
+  ],
+  "modelResources": {
+    "moa": {
+      "rid": 671090260,
+      "flags": 4,
+      "pack": "gameobjects.pkb",
+      "type": 84017920,
+      "off": 2044203,
+      "size": 546,
+      "path": "resource/GameObjects/Containers/large_safe/large_safe.moa"
+    },
+    "moa_sha256": "2c86628f698b840d97b813895b3b1a3eea48613270ece9ea9639bdc1eb522604",
+    "references": [
+      {
+        "rid": "0x2800064e",
+        "resource": {
+          "rid": 671090254,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018688,
+          "off": 2044749,
+          "size": 637,
+          "path": "resource/GameObjects/Containers/large_safe/skeleton/skeleton.ska"
+        },
+        "sha256": "b8361d43f14a032924eb0b602ecd2ab1d3cb5eebc5f9878b810767bdeb818e56",
+        "moa_reference_offsets": [
+          32
+        ]
+      },
+      {
+        "rid": "0x2800064f",
+        "resource": {
+          "rid": 671090255,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018432,
+          "off": 2039887,
+          "size": 707,
+          "path": ""
+        },
+        "sha256": "ac401f8a5ce51a30addd6474b1f2f33f8d57a51b2661d9ceb4215f37dacb159a",
+        "moa_reference_offsets": [
+          97
+        ]
+      },
+      {
+        "rid": "0x28000651",
+        "resource": {
+          "rid": 671090257,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018432,
+          "off": 2041497,
+          "size": 939,
+          "path": ""
+        },
+        "sha256": "f7099d4c549b6d0c714e084278426b3459cdb61a944fc373a3073d21434cba57",
+        "moa_reference_offsets": [
+          209
+        ]
+      },
+      {
+        "rid": "0x28000652",
+        "resource": {
+          "rid": 671090258,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018432,
+          "off": 2040594,
+          "size": 903,
+          "path": ""
+        },
+        "sha256": "ec276ac0a0ac085ee51096adb4613818fcd2a342ff51e5b29797debeec7aba65",
+        "moa_reference_offsets": [
+          321
+        ]
+      },
+      {
+        "rid": "0x28000653",
+        "resource": {
+          "rid": 671090259,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018432,
+          "off": 2042436,
+          "size": 1767,
+          "path": ""
+        },
+        "sha256": "4c59c32105603829243251cc7b21165ac9c498739481e40ba25ee3c7226d5171",
+        "moa_reference_offsets": [
+          433
+        ]
+      },
+      {
+        "rid": "0x28000656",
+        "resource": {
+          "rid": 671090262,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 84018944,
+          "off": 2038195,
+          "size": 786,
+          "path": "resource/GameObjects/Containers/large_safe/animations/closing.ana"
+        },
+        "sha256": "493c97c9ce281088ee40681f69264167c1831bec908357824f40db0b26ffc329",
+        "moa_reference_offsets": []
+      },
+      {
+        "rid": "0x28000658",
+        "resource": {
+          "rid": 671090264,
+          "flags": 4,
+          "pack": "gameobjects.pkb",
+          "type": 50464512,
+          "off": 2039225,
+          "size": 662,
+          "path": "resource/GameObjects/Containers/large_safe/animations/opening.ana"
+        },
+        "sha256": "459b7819cea5700b8733b9cd41ca6b7a52e5eba5506921f128eeb2b85dcd7a16",
+        "moa_reference_offsets": []
+      }
+    ]
+  },
+  "meshBounds": [
+    {
+      "rid": "0x2800064f",
+      "path": "",
+      "sha256": "ac401f8a5ce51a30addd6474b1f2f33f8d57a51b2661d9ceb4215f37dacb159a",
+      "vertices": 16,
+      "triangles": 22,
+      "bone": 2,
+      "min": [
+        -23.342147827148438,
+        -5.075900554656982,
+        -38.08912658691406
+      ],
+      "max": [
+        -13.19035530090332,
+        5.0758957862854,
+        -33.96957015991211
+      ]
+    },
+    {
+      "rid": "0x28000651",
+      "path": "",
+      "sha256": "f7099d4c549b6d0c714e084278426b3459cdb61a944fc373a3073d21434cba57",
+      "vertices": 24,
+      "triangles": 18,
+      "bone": 3,
+      "min": [
+        -9.41278076171875,
+        -1.1326109170913696,
+        -40.13495635986328
+      ],
+      "max": [
+        2.423686981201172,
+        1.1326135396957397,
+        -33.72468566894531
+      ]
+    },
+    {
+      "rid": "0x28000652",
+      "path": "",
+      "sha256": "ec276ac0a0ac085ee51096adb4613818fcd2a342ff51e5b29797debeec7aba65",
+      "vertices": 24,
+      "triangles": 12,
+      "bone": 1,
+      "min": [
+        -32.0,
+        -43.999996185302734,
+        -34.0
+      ],
+      "max": [
+        31.999998092651367,
+        43.999996185302734,
+        -25.999984741210938
+      ]
+    },
+    {
+      "rid": "0x28000653",
+      "path": "",
+      "sha256": "4c59c32105603829243251cc7b21165ac9c498739481e40ba25ee3c7226d5171",
+      "vertices": 48,
+      "triangles": 28,
+      "bone": 0,
+      "min": [
+        -39.400634765625,
+        -50.0,
+        -34.000003814697266
+      ],
+      "max": [
+        39.400634765625,
+        50.0,
+        34.08476257324219
+      ]
+    }
+  ],
+  "navWitness": {
+    "source": {
+      "navSha256": "2b012bfa11693f4acd9020565f5661fa2324a7df69bb6870f785ed0da144f260",
+      "decompressedSha256": "59b4cfb76ea804eaf004fee80231d4ac8bb8f52a6519dc807b3f0d928914c6ad",
+      "sectorPropertiesSha256": "c94801450389eda7db4ffe72e6e763eb5ae83be3d9e7f65b7911716bf61921c5",
+      "version": 2,
+      "district": 1,
+      "loadedSectors": [
+        209
+      ],
+      "scope": "Exact requested sector set only; no claim of connectivity outside it"
+    },
+    "points": [
+      {
+        "x": 25100,
+        "z": 14100,
+        "floor2000": [
+          {
+            "id": [
+              209,
+              54,
+              12
+            ],
+            "floor": 2000.0,
+            "vertices": [
+              [
+                25000.0,
+                14200.0
+              ],
+              [
+                25000.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14200.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "x": 25100,
+        "z": 14020,
+        "floor2000": [
+          {
+            "id": [
+              209,
+              54,
+              12
+            ],
+            "floor": 2000.0,
+            "vertices": [
+              [
+                25000.0,
+                14200.0
+              ],
+              [
+                25000.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14200.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "x": 25100,
+        "z": 14000,
+        "floor2000": [
+          {
+            "id": [
+              209,
+              54,
+              12
+            ],
+            "floor": 2000.0,
+            "vertices": [
+              [
+                25000.0,
+                14200.0
+              ],
+              [
+                25000.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14000.0
+              ],
+              [
+                25200.0,
+                14200.0
+              ]
+            ]
+          },
+          {
+            "id": [
+              209,
+              54,
+              148
+            ],
+            "floor": 2000.0,
+            "vertices": [
+              [
+                25000.0,
+                14000.0
+              ],
+              [
+                25000.0,
+                13925.0
+              ],
+              [
+                25000.0,
+                13860.0
+              ],
+              [
+                25200.0,
+                13860.0
+              ],
+              [
+                25200.0,
+                13900.0
+              ],
+              [
+                25200.0,
+                14000.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "x": 29100,
+        "z": 14900,
+        "floor2000": []
+      },
+      {
+        "x": 29100,
+        "z": 14780,
+        "floor2000": [
+          {
+            "id": [
+              209,
+              45,
+              48
+            ],
+            "floor": 2000.0,
+            "vertices": [
+              [
+                29000.0,
+                14600.0
+              ],
+              [
+                29200.0,
+                14600.0
+              ],
+              [
+                29200.0,
+                14800.0
+              ],
+              [
+                29000.0,
+                14800.0
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "limits": [
+    "Raw GOB and source anchors do not prove a retail mission chooser.",
+    "Closed BASE footprint only, not animated sweep, native draw, static clearance, normal route or picking.",
+    "Blank resource aliases are retained, not invented names.",
+    "Native failure has valid free creation before/after relog; missing drawing versus occlusion remains unresolved."
+  ],
+  "nativeModelConsumer": {
+    "clientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+    "scope": "Shared Model6 attachment and raw type11 translation; not observation that a failed-session resource loaded or drew.",
+    "slices": {
+      "0x625d0c50": "a2623bcb74148b57045352e8101ae2ffeb088b076a018bcfff108b96b80000008b8e6c0200008b02518b088b118b462852508bcee837b0ffff8b4e288a510c80",
+      "0x625cbd76": "8b45088a480c8b550c80e108f6d953521bc983e10283c1028bf98b0d44b3a262897d10e8f24fe2ff3bc30f844e0200008a402d3c030f85ab0000008b86b8000000c68648020000008b088b018b188dbe4c02000057c7865c020000e0a75c62e876d1ffff8b0d80fca2628b1183c4046a035357ff52048b55108b0d58369f628b01526a0bff50108986640200008b866c",
+      "0x622ddb50": "558bec8b45088b1083c11889118b50048951048b50088951088b500c89510c8b50108951108b40148941145dc20400cc558bec8b450883c1188b1189108b51048950048b51088950088b510c89500c8b",
+      "0x623ae4ad": "8b45bc8b55b833c989857cffffffa0401b9a6284c0899578ffffff8b55c0bf0000803f898d54ffffff898d64ffffff898d74ffffff897d848955807429d90550"
+    }
+  }
+}

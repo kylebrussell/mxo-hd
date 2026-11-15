@@ -8,6 +8,26 @@ if (HasFlag(options, "--help") || HasFlag(options, "-h"))
     return 0;
 }
 
+string? abilityUseHex=GetSingle(options,"--ability-use-hex");
+string? abilityUseBodyHex=GetSingle(options,"--ability-use-body-hex");
+bool hasAbilityUse=HasFlag(options,"--ability-use-hex"),hasAbilityUseBody=HasFlag(options,"--ability-use-body-hex");
+if(hasAbilityUse || hasAbilityUseBody)
+{
+    if(hasAbilityUse && hasAbilityUseBody){Console.Error.WriteLine("Select one full RPC or body input.");return 2;}
+    string inputOption=hasAbilityUse?"--ability-use-hex":"--ability-use-body-hex";
+    if(options[inputOption].Count!=1){Console.Error.WriteLine("Provide exactly one hexadecimal value for "+inputOption+".");return 2;}
+    try
+    {
+        byte[] bytes=Convert.FromHexString(abilityUseHex??abilityUseBodyHex!);
+        AbilityUseRecord? record;
+        bool valid=abilityUseHex!=null?AbilityUseRecord.TryDecode(bytes,out record):AbilityUseRecord.TryDecodePayload(bytes,out record);
+        if(!valid){Console.Error.WriteLine("Expected exactly43 bytes80b9 or41 body bytes; short harness records are not full native records.");return 2;}
+        byte[] rpc=record!.Encode();
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{Fields=record,GroundWordsHex=new[]{record.TargetGroundLocationWord0.ToString("X16"),record.TargetGroundLocationWord1.ToString("X16"),record.TargetGroundLocationWord2.ToString("X16")},RpcHex=Convert.ToHexString(rpc),BodyHex=Convert.ToHexString(rpc.AsSpan(2)),Semantics="Native printer names only; ground words/flags are raw, no activation/admission inference."},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));return 0;
+    }
+    catch(FormatException){Console.Error.WriteLine("Input must be exact hexadecimal bytes without separators.");return 2;}
+}
+
 string repo = GetSingle(options, "--repo") ?? Directory.GetCurrentDirectory();
 string fullRepo = Path.GetFullPath(repo);
 
@@ -106,6 +126,8 @@ static void PrintUsage()
       dotnet run --project tools/PacketResearch -- [options]
 
     Options:
+      --ability-use-hex <hex> Decode one exact full43-byte80b9 record and roundtrip.
+      --ability-use-body-hex <hex> Decode one exact41-byte80b9 body.
       --repo <path>            Repository root. Defaults to current directory.
       --families-json <path>  Bounded lossless 80bc / conservative 03 accounting; skips full report.
       --packet-dumps <path>    Packet dump root. Can be provided more than once.

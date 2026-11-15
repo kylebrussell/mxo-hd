@@ -351,11 +351,11 @@ public static partial class Scenarios
     }
 
     /// <summary>The u32 after the last `&lt;view&gt; &lt;bytes&gt;` in what the player received.</summary>
-    private static uint ViewUpdateU32(HeadlessPlayer player, ushort viewId, string bytes)
+    internal static uint ViewUpdateU32(HeadlessPlayer player, ushort viewId, string bytes, int firstViewList = 0)
     {
         byte[] needle = WireFormat.FromHex($"{viewId & 0xff:x2}{viewId >> 8:x2}{bytes}");
         uint value = 0;
-        foreach (byte[] section in player.World.ViewSnapshot())
+        foreach (byte[] section in player.World.ViewSnapshot().Skip(firstViewList))
         {
             for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
             {

@@ -54,6 +54,12 @@ class NativePrefabTransformTests(unittest.TestCase):
             self.assertEqual(2,result.returncode)
             self.assertIn('reviewed world',result.stderr)
 
+    def test_sati_rotated_door_independent_literal(self):
+        point,q=T.sector_pose((1000,0,500),(0,-0.7071067094802856,0,0.7071067690849304),(250,80,530),2,(34000,0,-22000),parent_kind='direct-sector')
+        self.assertEqual((35500.,800.,-17200.),point)
+        import struct
+        self.assertEqual('00000000f304353f00000000f204353f',struct.pack('<4f',*q).hex())
+
     def test_unknown_parent_nonfinite_and_invalid_rotation_are_refused(self):
         for kind in ('nested-IPI','EPI','unknown'):
             with self.assertRaises(ValueError):T.sector_pose((0,0,0),(0,0,0,1),(0,0,0),0,(0,0,0),parent_kind=kind)

@@ -556,7 +556,8 @@ namespace hds.databases{
             {
 			OpenConnection();
             UInt32 charID = Store.currentClient.playerData.getCharID();
-			string sqlQuery="Select handle,x,y,z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
+			// Promote FLOAT positions before text-protocol conversion so loading preserves their stored binary values.
+			string sqlQuery="Select handle,x+0e0 AS x,y+0e0 AS y,z+0e0 AS z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
 			queryExecuter= conn.CreateCommand();
 			queryExecuter.CommandText = sqlQuery;					
 			reader= queryExecuter.ExecuteReader();
@@ -1548,22 +1549,15 @@ namespace hds.databases{
 		                          "', innerStrC = '" + innerStrength + "', innerStrM = '" + maxInnerStrength + "' WHERE charId = '" + charId + "' LIMIT 1");
 	    }
 
-	    public Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId)
-	    {
-		    OpenConnection();
-		    queryExecuter = conn.CreateCommand();
-		    queryExecuter.CommandText = "SELECT slot, level FROM char_abilities WHERE char_id = '" + charId + "' AND slot >= " + CharacterAttributes.FirstSlot;
-		    dr = queryExecuter.ExecuteReader();
-
-		    Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
-		    while (dr.Read())
-		    {
-			    attributes[(byte)(Convert.ToInt32(dr.GetValue(0)) - CharacterAttributes.FirstSlot)] = Convert.ToUInt16(dr.GetValue(1));
-		    }
-		    dr.Close();
-		    CloseConnection();
-		    return attributes;
-	    }
+        public Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId)
+        {
+            using var connection=new MySqlConnection(connectionString);connection.Open();using var command=connection.CreateCommand();
+            command.Parameters.AddWithValue("@character",charId);
+            command.CommandText="SELECT id,slot,ability_id,level FROM char_abilities WHERE char_id=@character AND slot IN (598,599,601,602,604) ORDER BY id";
+            using var reader=command.ExecuteReader();var rows=new List<AttributeAllocation.Row>();
+            while(reader.Read())rows.Add(new AttributeAllocation.Row(reader.GetUInt32(0),reader.GetInt32(1),reader.GetInt64(2),reader.GetInt64(3)));
+            return AttributeAllocation.ReadValues(rows);
+        }
 
 	    public void SetCharacterAttribute(UInt32 charId, byte attribute, UInt16 value)
 	    {

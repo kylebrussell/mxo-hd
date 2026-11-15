@@ -54,6 +54,11 @@ namespace hds
 
         public void sendSystemChatMessage(WorldClient client, string message, string type)
         {
+            client.messageQueue.addRpcMessage(BuildSystemChatMessage(message,type));
+            client.FlushQueue();
+        }
+        internal static byte[] BuildSystemChatMessage(string message,string type)
+        {
             byte typeByte;
             switch (type)
             {
@@ -87,8 +92,7 @@ namespace hds
             pak.AddByteArray(hexContents);
             pak.AddSizedTerminatedString(message);
 
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-            client.FlushQueue();
+            return pak.ReturnFinalPacket();
         }
     }
 }

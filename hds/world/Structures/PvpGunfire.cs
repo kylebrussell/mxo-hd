@@ -168,7 +168,7 @@ namespace hds
                         PvpFlag.LevelOf(target), target.playerData.combatTactic, gun,
                         AbilityStats.Attack(shooter, true), AbilityStats.Defense(target, true),
                         AbilityStats.Player(shooter, 1139), AbilityStats.Player(shooter, 171) / 100.0,
-                        AbilityStats.Toughness(target, true));
+                        AbilityStats.Toughness(target, true), () => !MobiusCode.PreventsFreeAttack(target));
                 }
 
                 double x = 0, y = 0, z = 0;

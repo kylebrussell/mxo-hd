@@ -1,0 +1,1143 @@
+{
+  "Scope": "Unit input from real retained live218 checkpoint/canonical catalog reconstruction only; not runtime data/seed injection",
+  "Cases": [
+    {
+      "Name": "51e509462f/phase1",
+      "Site": {
+        "style": "GenericApt",
+        "metrId": 1,
+        "neighbourhood": "",
+        "floorY": 3345.0,
+        "minX": 23900.0,
+        "maxX": 26365.0,
+        "minZ": 12905.0,
+        "maxZ": 15700.0,
+        "npcSpots": [
+          [
+            24500.0,
+            3301.0,
+            14300.0,
+            192.000000986
+          ],
+          [
+            24850.0,
+            3301.0,
+            15050.0,
+            200.999999833
+          ],
+          [
+            25250.0,
+            3295.0,
+            14550.0,
+            254.999991503
+          ],
+          [
+            25150.0,
+            3295.0,
+            14050.0,
+            317.000046437
+          ],
+          [
+            25775.5507812,
+            3295.0,
+            15565.5507812,
+            212.000000311
+          ],
+          [
+            25500.0,
+            3295.0,
+            15650.0,
+            201.999998398
+          ]
+        ],
+        "containers": [
+          {
+            "exterior": false,
+            "pos_x": 25950.0,
+            "pos_y": 3345.0,
+            "pos_z": 15200.0,
+            "rot": 269.99998838,
+            "quat": "00000000f204353f00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153007,
+            "staticId": 623,
+            "type": "pQU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25950.0,
+            "pos_y": 3345.0,
+            "pos_z": 15050.0,
+            "rot": 269.99998838,
+            "quat": "00000000f204353f00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153008,
+            "staticId": 624,
+            "type": "pAU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25250.0,
+            "pos_y": 3347.0,
+            "pos_z": 15530.0,
+            "rot": 90.0000116205,
+            "quat": "00000000f20435bf00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153029,
+            "staticId": 645,
+            "type": "RgE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25240.0,
+            "pos_y": 3345.0,
+            "pos_z": 15675.0,
+            "rot": 90.0000116205,
+            "quat": "00000000f20435bf00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153030,
+            "staticId": 646,
+            "type": "PQI=",
+            "strType": null
+          }
+        ],
+        "objectSpots": [
+          {
+            "exterior": false,
+            "pos_x": 24050.0,
+            "pos_y": 3471.0,
+            "pos_z": 14950.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153053,
+            "staticId": 669,
+            "type": "hAU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25945.0,
+            "pos_y": 3445.0,
+            "pos_z": 15190.0,
+            "rot": 269.99998838,
+            "quat": "00000000f204353f00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153009,
+            "staticId": 625,
+            "type": "hwU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25945.0,
+            "pos_y": 3445.0,
+            "pos_z": 15050.0,
+            "rot": 269.99998838,
+            "quat": "00000000f204353f00000000f304353f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153010,
+            "staticId": 626,
+            "type": "hwU=",
+            "strType": null
+          }
+        ],
+        "realObjects": [],
+        "elevatorDoor": {
+          "exterior": false,
+          "pos_x": 25700.0,
+          "pos_y": 3345.0,
+          "pos_z": 13800.0,
+          "rot": 180.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219153017,
+          "staticId": 633,
+          "type": "oQE=",
+          "strType": null
+        },
+        "lobbyDoor": {
+          "exterior": false,
+          "pos_x": 25700.0,
+          "pos_y": 545.0,
+          "pos_z": 13800.0,
+          "rot": 180.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219153353,
+          "staticId": 969,
+          "type": "oQE=",
+          "strType": null
+        },
+        "shaft": [
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 545.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153353,
+            "staticId": 969,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 945.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153347,
+            "staticId": 963,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 1345.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153221,
+            "staticId": 837,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 1745.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153342,
+            "staticId": 958,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 2145.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153339,
+            "staticId": 955,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 2545.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153091,
+            "staticId": 707,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 2945.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153334,
+            "staticId": 950,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 3345.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219153017,
+            "staticId": 633,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 25700.0,
+            "pos_y": 3745.0,
+            "pos_z": 13800.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 209,
+            "metrId": 1,
+            "mxoStaticId": 219152999,
+            "staticId": 615,
+            "type": "oQE=",
+            "strType": null
+          }
+        ],
+        "CentreX": 25132.5,
+        "CentreZ": 14302.5
+      },
+      "Object": {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 24050,
+          "pos_y": 3471,
+          "pos_z": 14950,
+          "rot": 180,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219153053,
+          "staticId": 669,
+          "type": "hAU=",
+          "strType": null
+        },
+        "Goid": 548,
+        "Unlocked": false,
+        "State": 0
+      }
+    },
+    {
+      "Name": "51e509462f/phase2",
+      "Site": {
+        "style": "GenericApt",
+        "metrId": 1,
+        "neighbourhood": "",
+        "floorY": 545.0,
+        "minX": 39800.0,
+        "maxX": 41300.0,
+        "minZ": 13500.0,
+        "maxZ": 15200.0,
+        "npcSpots": [
+          [
+            40375.0,
+            495.0,
+            13675.0,
+            1.1620496565e-05
+          ],
+          [
+            40084.1503906,
+            495.0,
+            14065.8496094,
+            210.000023758
+          ],
+          [
+            40750.0,
+            495.0,
+            14200.0,
+            -30.0000237584
+          ],
+          [
+            40120.0,
+            495.0,
+            15015.0,
+            179.99998838
+          ]
+        ],
+        "containers": [],
+        "objectSpots": [
+          {
+            "exterior": false,
+            "pos_x": 39965.0,
+            "pos_y": 605.0,
+            "pos_z": 14460.0,
+            "rot": 179.99998838,
+            "quat": "00000000f204353f00000000f304353f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308933,
+            "staticId": 965,
+            "type": "hAU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40140.0,
+            "pos_y": 622.0,
+            "pos_z": 14775.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308939,
+            "staticId": 971,
+            "type": "hwU=",
+            "strType": null
+          }
+        ],
+        "realObjects": [],
+        "elevatorDoor": {
+          "exterior": false,
+          "pos_x": 40900.0,
+          "pos_y": 545.0,
+          "pos_z": 15400.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308608,
+          "staticId": 640,
+          "type": "oQE=",
+          "strType": null
+        },
+        "lobbyDoor": {
+          "exterior": false,
+          "pos_x": 40900.0,
+          "pos_y": 145.0,
+          "pos_z": 15400.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308570,
+          "staticId": 602,
+          "type": "oQE=",
+          "strType": null
+        },
+        "shaft": [
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 145.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308570,
+            "staticId": 602,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 545.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308608,
+            "staticId": 640,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 945.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308605,
+            "staticId": 637,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 1345.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308598,
+            "staticId": 630,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 1745.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308595,
+            "staticId": 627,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 2145.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308592,
+            "staticId": 624,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 2545.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308566,
+            "staticId": 598,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 2945.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308587,
+            "staticId": 619,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 40900.0,
+            "pos_y": 3345.0,
+            "pos_z": 15400.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 1118,
+            "metrId": 1,
+            "mxoStaticId": 1172308584,
+            "staticId": 616,
+            "type": "oQE=",
+            "strType": null
+          }
+        ],
+        "CentreX": 40550.0,
+        "CentreZ": 14350.0
+      },
+      "Object": {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 39965,
+          "pos_y": 605,
+          "pos_z": 14460,
+          "rot": 179.99998838,
+          "quat": "00000000f204353f00000000f304353f",
+          "sectorID": 1118,
+          "metrId": 1,
+          "mxoStaticId": 1172308933,
+          "staticId": 965,
+          "type": "hAU=",
+          "strType": null
+        },
+        "Goid": 548,
+        "Unlocked": false,
+        "State": 0
+      }
+    },
+    {
+      "Name": "cae96c70b5/phase1",
+      "Site": {
+        "style": "SlumApt",
+        "metrId": 1,
+        "neighbourhood": "",
+        "floorY": 545.0,
+        "minX": 27975.0,
+        "maxX": 32300.0,
+        "minZ": -10000.0,
+        "maxZ": -6650.0,
+        "npcSpots": [
+          [
+            28700.0,
+            495.0,
+            -7800.0,
+            195.000000892
+          ],
+          [
+            30200.0,
+            499.0,
+            -8500.0,
+            22.9999989601
+          ],
+          [
+            30632.78125,
+            499.0,
+            -8367.21923828,
+            22.9999989601
+          ],
+          [
+            30250.0,
+            495.0,
+            -7800.0,
+            61.9999997531
+          ],
+          [
+            31300.0,
+            495.0,
+            -8450.0,
+            7.00000062092
+          ],
+          [
+            31550.0,
+            495.0,
+            -8500.0,
+            -10.0000156205
+          ],
+          [
+            31300.0,
+            499.0,
+            -7750.0,
+            -44.0000130185
+          ],
+          [
+            31685.3066406,
+            499.0,
+            -7264.69335938,
+            -47.9999924038
+          ],
+          [
+            31800.0,
+            495.0,
+            -6700.0,
+            -132.000008922
+          ]
+        ],
+        "containers": [
+          {
+            "exterior": false,
+            "pos_x": 30570.0,
+            "pos_y": 545.0,
+            "pos_z": -8750.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960337,
+            "staticId": 657,
+            "type": "RgE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30130.0,
+            "pos_y": 545.0,
+            "pos_z": -7450.0,
+            "rot": 180.0,
+            "quat": "000000000000803f000000002ebd3bb3",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960327,
+            "staticId": 647,
+            "type": "RgE=",
+            "strType": null
+          }
+        ],
+        "objectSpots": [
+          {
+            "exterior": false,
+            "pos_x": 29055.0,
+            "pos_y": 625.0,
+            "pos_z": -7485.0,
+            "rot": 180.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960068,
+            "staticId": 388,
+            "type": "hwU=",
+            "strType": null
+          }
+        ],
+        "realObjects": [],
+        "elevatorDoor": {
+          "exterior": false,
+          "pos_x": 30300.0,
+          "pos_y": 545.0,
+          "pos_z": -6800.0,
+          "rot": 0.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 555,
+          "metrId": 1,
+          "mxoStaticId": 581959699,
+          "staticId": 19,
+          "type": "oQE=",
+          "strType": null
+        },
+        "lobbyDoor": {
+          "exterior": false,
+          "pos_x": 30300.0,
+          "pos_y": 145.0,
+          "pos_z": -6800.0,
+          "rot": 0.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 555,
+          "metrId": 1,
+          "mxoStaticId": 581959703,
+          "staticId": 23,
+          "type": "owE=",
+          "strType": null
+        },
+        "shaft": [
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 145.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581959703,
+            "staticId": 23,
+            "type": "owE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 145.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581959703,
+            "staticId": 23,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 545.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581959699,
+            "staticId": 19,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 945.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960189,
+            "staticId": 509,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 1345.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960186,
+            "staticId": 506,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 1745.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581959695,
+            "staticId": 15,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 30300.0,
+            "pos_y": 2145.0,
+            "pos_z": -6800.0,
+            "rot": 0.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 555,
+            "metrId": 1,
+            "mxoStaticId": 581960181,
+            "staticId": 501,
+            "type": "oQE=",
+            "strType": null
+          }
+        ],
+        "CentreX": 30137.5,
+        "CentreZ": -8325.0
+      },
+      "Object": {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 29055,
+          "pos_y": 625,
+          "pos_z": -7485,
+          "rot": 180,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 555,
+          "metrId": 1,
+          "mxoStaticId": 581960068,
+          "staticId": 388,
+          "type": "hwU=",
+          "strType": null
+        },
+        "Goid": 548,
+        "Unlocked": false,
+        "State": 0
+      }
+    },
+    {
+      "Name": "cae96c70b5/phase2",
+      "Site": {
+        "style": "GenericApt",
+        "metrId": 1,
+        "neighbourhood": "",
+        "floorY": 1345.0,
+        "minX": 34400.0,
+        "maxX": 36200.0,
+        "minZ": -22000.0,
+        "maxZ": -20000.0,
+        "npcSpots": [
+          [
+            34950.0,
+            1295.0,
+            -21800.0,
+            239.999967603
+          ],
+          [
+            34430.6191406,
+            1295.0,
+            -20220.6186523,
+            105.000000892
+          ],
+          [
+            35880.6171875,
+            1295.0,
+            -21930.6191406,
+            15.0000084969
+          ],
+          [
+            35965.6181641,
+            1295.0,
+            -21470.6191406,
+            -14.9999960238
+          ],
+          [
+            35095.0,
+            1295.0,
+            -20445.0,
+            270.0
+          ],
+          [
+            35875.0,
+            1295.0,
+            -20775.0,
+            90.0
+          ]
+        ],
+        "containers": [
+          {
+            "exterior": false,
+            "pos_x": 34975.0,
+            "pos_y": 1347.0,
+            "pos_z": -20040.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312476291,
+            "staticId": 643,
+            "type": "RgE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35150.0,
+            "pos_y": 1345.0,
+            "pos_z": -20050.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312476295,
+            "staticId": 647,
+            "type": "pAU=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35450.0,
+            "pos_y": 1345.0,
+            "pos_z": -20050.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312476302,
+            "staticId": 654,
+            "type": "pAU=",
+            "strType": null
+          }
+        ],
+        "objectSpots": [
+          {
+            "exterior": false,
+            "pos_x": 35150.0,
+            "pos_y": 1445.0,
+            "pos_z": -20055.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312476298,
+            "staticId": 650,
+            "type": "hwU=",
+            "strType": null
+          }
+        ],
+        "realObjects": [],
+        "elevatorDoor": {
+          "exterior": false,
+          "pos_x": 35900.0,
+          "pos_y": 1345.0,
+          "pos_z": -20600.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 298,
+          "metrId": 1,
+          "mxoStaticId": 312475935,
+          "staticId": 287,
+          "type": "oQE=",
+          "strType": null
+        },
+        "lobbyDoor": {
+          "exterior": false,
+          "pos_x": 35900.0,
+          "pos_y": 145.0,
+          "pos_z": -20600.0,
+          "rot": 90.0,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 298,
+          "metrId": 1,
+          "mxoStaticId": 312475919,
+          "staticId": 271,
+          "type": "oQE=",
+          "strType": null
+        },
+        "shaft": [
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 145.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475919,
+            "staticId": 271,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 545.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475914,
+            "staticId": 266,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 945.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475938,
+            "staticId": 290,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 1345.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475935,
+            "staticId": 287,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 1745.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475932,
+            "staticId": 284,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 2145.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475929,
+            "staticId": 281,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 2545.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475910,
+            "staticId": 262,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 2945.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475905,
+            "staticId": 257,
+            "type": "oQE=",
+            "strType": null
+          },
+          {
+            "exterior": false,
+            "pos_x": 35900.0,
+            "pos_y": 3345.0,
+            "pos_z": -20600.0,
+            "rot": 90.0,
+            "quat": "0000000000000000000000000000803f",
+            "sectorID": 298,
+            "metrId": 1,
+            "mxoStaticId": 312475922,
+            "staticId": 274,
+            "type": "oQE=",
+            "strType": null
+          }
+        ],
+        "CentreX": 35300.0,
+        "CentreZ": -21000.0
+      },
+      "Object": {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 35150,
+          "pos_y": 1445,
+          "pos_z": -20055,
+          "rot": 90,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 298,
+          "metrId": 1,
+          "mxoStaticId": 312476298,
+          "staticId": 650,
+          "type": "hwU=",
+          "strType": null
+        },
+        "Goid": 548,
+        "Unlocked": false,
+        "State": 0
+      }
+    }
+  ],
+  "Representation": "Literal byte[] type values normalized from PowerShell integer-array JSON to System.Text.Json base64 without changing decoded bytes."
+}
