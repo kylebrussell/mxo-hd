@@ -95,8 +95,10 @@ public class BuffDispelFixtureTests:IDisposable
         typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
         return c;
     }
-    [Fact]
-    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture(bool worldPresent)
     {
         WithEnvironment("1","mxotest_dispel","0",()=>
         {
@@ -105,7 +107,7 @@ public class BuffDispelFixtureTests:IDisposable
             // Exercise the normal watcher publication path against an owned empty world,
             // independent of whichever static world/client table another test restored.
             WorldServer.Clients=new Dictionary<string,WorldClient>();
-            Store.world=(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            Store.world=worldPresent?(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer)):null;
             try
             {
                 Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
