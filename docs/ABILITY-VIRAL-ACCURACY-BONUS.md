@@ -1,0 +1,9 @@
+# Viral accuracy bonus: server approximation
+
+Run Program32 and other loaded producers of stat1147 now affect viral casts. This is deliberately **OURS**, not a recovered retail formula: add `truncate(casterLevel * capped1147 / 100)` to the separately capped direct viral accuracy342. It matches the existing server convention for melee and ballistic percentage bonuses. Level50 Run Program supplies1147+10 and therefore adds5 to the viral accuracy input; unloading removes the contribution. Direct buffs, caps, costs, cooldowns, random draws and non-viral accuracy keep their existing behavior.
+
+The shared total feeds ordinary free-cast viral contests against NPCs and players, plus the existing queued-special diagnostic. This does not make positive-cast viral moves queueable. Original modifier records and the client display link are known; the authoritative retail coefficient and its full stat aggregation remain unknown. Ability status stays partial.
+
+Native one-pass: `viral-accuracy-bonus`, CSR110 only. Unload32 with `?qaunload 32`, then `?combatdepth specialattack 33`. Load32 with `?qaload 32` and repeat: the total increases5 and paired seeded landed count increases. Deflect Code23 and Code Shaper35 are already owned and loaded prerequisites. The diagnostic is read-only and uses its own fixed seed. Cast ordinary Static Blast33 at WinterFrost in each state; capture `[FREECAST-VIRAL]` inputs to confirm the real cast consumer. Only the two viral contest draws use fixture17000/17000; this does not globally force damage, callbacks or combat RNG. Respect normal cooldowns. Unload/relog and verify no residual bonus. Claude handles client lock/reset and native results.
+
+Validation pending; no READY or native pass claimed yet.
