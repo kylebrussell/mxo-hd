@@ -47,6 +47,7 @@ namespace hds
                     return false;
                 }
                 MissionProgress openFloorProgress=null;MissionOpenFloorAdmission.Plan openFloorPlan=null;
+                MissionProgress npcProgress=null;MissionNpcInteriorAdmission.Plan npcPlan=null;
                 if(MissionOpenFloorAdmission.Requires(mission.phases.FirstOrDefault()))
                 {
                     openFloorProgress=new MissionProgress(mission);
@@ -57,12 +58,22 @@ namespace hds
                         client.FlushQueue();return false;
                     }
                 }
+                else if(MissionNpcInteriorAdmission.Candidate(mission.phases.FirstOrDefault()))
+                {
+                    npcProgress=new MissionProgress(mission);
+                    if(!MissionNpcInteriorAdmission.TryPrepare(client,npcProgress,0,out npcPlan,out string refusal)||npcPlan!=null&&!npcPlan.BeforeCurrent(client))
+                    {
+                        Output.WriteDebugLog("[MISSION] NPC acceptance refused before mutation: "+refusal);
+                        return false; // No instance/team/owner/preview/item/output change on failed initial admission.
+                    }
+                }
                 SocialHandler.EnsureTeam(client);
 
                 ushort previousInstance=data.missionInstanceCounter;
                 data.missionInstanceCounter++;
                 // Acceptance, NPCs and briefing publish only after their durable checkpoint (retail's order).
-                if(openFloorPlan==null) {if(!MissionRuntime.Start(client,mission,txn))return false;}
+                if(npcPlan!=null) {if(!MissionRuntime.StartNpcInterior(client,npcProgress,npcPlan,txn)){data.missionInstanceCounter=previousInstance;return false;}}
+                else if(openFloorPlan==null) {if(!MissionRuntime.Start(client,mission,txn))return false;}
                 else if(!MissionRuntime.StartOpenFloor(client,openFloorProgress,openFloorPlan,txn)) {data.missionInstanceCounter=previousInstance;return false;}
                 UtilityAbilities.OnMissionAccepted(client);
                 client.FlushQueue();

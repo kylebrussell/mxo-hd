@@ -18,8 +18,8 @@ public static class MervFollowupViewFrames
         if(view==2&&goid==12)
         {
             if(Has(2,"011c")&&Fits(28)){frame=Make(Kind.OwnTeleport,28);return true;}
-            // PlayerPackets mode/health, MissionPackets key, SocialPackets team.
-            foreach(var shape in new[]{("0280808080808002",11),("0280808040",9),("028040",9),("028020",9)})
+            // PlayerPackets mode/health/IS, MissionPackets key, SocialPackets team.
+            foreach(var shape in new[]{("0280808080808002",11),("0280808040",9),("0280808010",9),("028040",9),("028020",9)})
                 if(Has(2,shape.Item1)&&Fits(shape.Item2)){frame=Make(Kind.Attribute,shape.Item2);return true;}
             // CombatPackets.SendLeaveCombatMode: action0 plus flags attribute.
             if(Has(2,"0301000080808080808001")&&Fits(17)){frame=Make(Kind.Attribute,17);return true;}
