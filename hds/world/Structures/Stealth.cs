@@ -35,7 +35,7 @@ namespace hds
             ImpartInvisibilityAbility = 366, VanishAbility = 368, MasterShadowAbility = 1118;
         public const UInt16 StealthAbility = 209, StealthDetectionAbility = 204, NoiseLevelBuffTargetAbility = 509,
             ConcealedAbility = 623, StealthStateAbility = 881, MovementSpeedAbility = 115, SneakMovementAbility = 877,
-            ISDrainTargetAbility = 681;
+            ISDrainTargetAbility = 681, InvisDurationAbility = 644;
 
         // ability/utility.py SneakTest / InitialSneakTest
         public const double FrustumDegrees = 60.0, MaxDetectUnits = 2000.0, MinDetectUnits = 300.0, MaxSneakLevel = 50.0;
@@ -94,8 +94,8 @@ namespace hds
             return Math.Acos(Math.Min(1, dot)) * 180 / Math.PI < degrees;
         }
 
-        /// <summary>misc.py InvisibilityGrant_DirectObject: 30 s + 2 s a level (+ InvisDuration, not a player ability here).</summary>
-        public static double InvisibilitySeconds(int level) => InvisibilityBaseSeconds + Math.Max(0, level) * 2;
+        /// <summary>misc.py InvisibilityGrant_DirectObject: 30 s + 2 s a level + current InvisDuration644.</summary>
+        public static double InvisibilitySeconds(int level, int durationBonus = 0) => InvisibilityBaseSeconds + Math.Max(0, level) * 2 + durationBonus;
 
         // ---- definitions ----
 
@@ -317,7 +317,9 @@ namespace hds
             {
                 Def = def, Level = abilityLevel, Started = TimeUtils.GetSimTimeSeconds(),
                 Mods = ModifiersFor(def, abilityLevel, characterLevel),
-                Seconds = def.Kind == Kind.Invisibility ? (float)InvisibilitySeconds(abilityLevel) :
+                // The script snapshots the current duration stat once. Explicit restoration
+                // overrides use their original remaining time and never read/add this bonus.
+                Seconds = def.Kind == Kind.Invisibility ? durationOverride ?? (float)InvisibilitySeconds(abilityLevel, AbilityStats.Player(client,InvisDurationAbility)) :
                     def.Kind == Kind.Imparted ? (float)ImpartedSeconds : def.Kind == Kind.Shadow ? (float)ShadowSeconds :
                     def.Kind == Kind.Disguise ? (float)AbilityDisguise.Seconds(abilityLevel, AbilityStats.Player(client,639)) : 0f,
             };
