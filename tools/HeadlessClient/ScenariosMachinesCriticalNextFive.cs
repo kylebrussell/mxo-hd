@@ -223,7 +223,7 @@ public static partial class Scenarios
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
                             foreach(var npc in mission.Elements("npc"))names.Add((string)npc.Attribute("handle")!);
-                            var authoredCurrentStageIds=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>(ushort)n.Attribute("id")!).ToHashSet();
+                            var authoredCurrentStageIds=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>checked((ushort)(int)n.Attribute("id")!)).ToHashSet();
                             List<ViewCreation> Targets()=>MachinesCriticalNextFiveFixture.LatestViews(p.World.CreationSnapshot(),viewsStart)
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
@@ -396,3 +396,4 @@ public static partial class Scenarios
         return view;
     }
 }
+
