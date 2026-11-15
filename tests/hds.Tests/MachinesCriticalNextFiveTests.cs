@@ -6,6 +6,32 @@ namespace hds.Tests;
 public class MachinesCriticalNextFiveTests
 {
 
+    private static (MissionProgress.SavedState State,MissionNpcInteriorProof.Plan Plan) CapturedFinalRoleShape()
+    {
+        var state=new MissionProgress.SavedState{Version=2,Mission=201206,Phase=1,Identity=new string('a',32),Started=100,Instance=51};
+        state.Mobs.Add(new(){Npc=4,Identity=new string('b',32)});
+        for(int i=0;i<4;i++)state.Mobs.Add(new(){Npc=(ushort)(1100+i),Identity=(i+1).ToString("x32"),Hostile=true,Wave=0,Health=100});
+        var actors=new[]{new{Kind="Npc",Id=4,Index=0},new{Kind="Wave",Id=0,Index=0},new{Kind="Wave",Id=0,Index=1},new{Kind="Wave",Id=0,Index=2},new{Kind="Wave",Id=0,Index=3}};
+        var witness=System.Text.Json.JsonSerializer.SerializeToElement(new{Selection=new{Mission=201206,Actors=actors},Actors=actors.Select(a=>new{Role=$"{a.Kind}:{a.Id}:{a.Index}"}).ToArray()});
+        var door=new MissionNpcInteriorProof.Door(1,417,new[]{0d,0,0},new string('0',32),null,"");
+        return(state,new(state.Identity,state.Started,state.Phase,"literal-role-only-shape","",witness,door,door));
+    }
+    [Fact] public void CurrentFinalProgramsMapToTheirOwnCertifiedWaveRolesIncludingRetainedDeadSiblings()
+    {
+        var f=CapturedFinalRoleShape();Assert.Equal(0,MachinesCriticalNextFiveFixture.CertifiedActorIndex(f.State,f.State.Mobs[0],f.Plan));
+        f.State.Mobs[1].Dead=true;
+        for(int i=1;i<5;i++)Assert.Equal(i,MachinesCriticalNextFiveFixture.CertifiedActorIndex(f.State,f.State.Mobs[i],f.Plan));
+    }
+    [Theory][InlineData("owner")][InlineData("phase")][InlineData("missingSibling")][InlineData("oldStage")][InlineData("duplicateIdentity")][InlineData("wrongWave")]
+    public void ReacquireNeverBorrowsForeignOrIncompleteSavedActorRole(string change)
+    {
+        var f=CapturedFinalRoleShape();var actor=f.State.Mobs[^1];
+        if(change=="owner")f.State.Identity=new string('c',32);else if(change=="phase")f.State.Phase++;
+        else if(change=="missingSibling")f.State.Mobs.RemoveAt(1);else if(change=="oldStage")actor.Npc=1053;
+        else if(change=="duplicateIdentity")f.State.Mobs[1].Identity=actor.Identity;else actor.Wave=9;
+        Assert.Throws<InvalidDataException>(()=>MachinesCriticalNextFiveFixture.CertifiedActorIndex(f.State,actor,f.Plan));
+    }
+
     [Fact] public void CapturedCabinetApproachUsesAuditedPoseWithoutChangingRawSource()
     {
         string repo=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(repo,"data","sector_properties.csv")))repo=Path.GetDirectoryName(repo)!;

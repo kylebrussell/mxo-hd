@@ -31,7 +31,7 @@ public static class MachinesCriticalNextFiveFixture
     }
     public static int CertifiedActorIndex(MissionProgress.SavedState state,MissionProgress.SavedMob actor,MissionNpcInteriorProof.Plan plan)
     {
-        if(plan.Identity!=state.Identity||plan.Started!=state.Started||plan.Phase!=state.Phase||!state.Mobs.Any(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity))throw new InvalidDataException("Current actor/owned route scope changed");
+        if(plan.Identity!=state.Identity||plan.Started!=state.Started||plan.Phase!=state.Phase||state.Mobs.Count(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity)!=1)throw new InvalidDataException("Current actor/owned route scope changed");
         var selection=plan.Witness.GetProperty("Selection");
         if(selection.GetProperty("Mission").GetInt32()!=state.Mission)throw new InvalidDataException("Foreign actor route mission");
         string key;
@@ -42,7 +42,7 @@ public static class MachinesCriticalNextFiveFixture
             int first=1000+(state.Phase+1)*50;
             var wave=state.Mobs.Where(m=>m.Hostile&&m.Wave==actor.Wave).OrderBy(m=>m.Npc).ToArray();
             var roles=selection.GetProperty("Actors").EnumerateArray().Where(a=>a.GetProperty("Kind").GetString()=="Wave"&&a.GetProperty("Id").GetInt32()==actor.Wave.Value).ToArray();
-            if(wave.Length!=roles.Length||wave.Any(m=>m.Npc<first||m.Npc>=first+50)||wave.Select(m=>m.Npc).Distinct().Count()!=wave.Length||!roles.Select(a=>a.GetProperty("Index").GetInt32()).SequenceEqual(Enumerable.Range(0,roles.Length)))throw new InvalidDataException("Incomplete/wrong-stage generated role group");
+            if(wave.Length>=50||wave.Length!=roles.Length||wave.Select(m=>m.Identity).Distinct().Count()!=wave.Length||wave.Any(m=>m.Npc<first||m.Npc>=first+50)||wave.Select(m=>m.Npc).Distinct().Count()!=wave.Length||!roles.Select(a=>a.GetProperty("Index").GetInt32()).SequenceEqual(Enumerable.Range(0,roles.Length)))throw new InvalidDataException("Incomplete/wrong-stage generated role group");
             int ordinal=Array.FindIndex(wave,m=>m.Npc==actor.Npc&&m.Identity==actor.Identity);if(ordinal<0)throw new InvalidDataException("Current generated identity absent");key=$"Wave:{actor.Wave.Value}:{ordinal}";
         }
         var proofs=plan.Witness.GetProperty("Actors").EnumerateArray().ToArray();var matches=Enumerable.Range(0,proofs.Length).Where(i=>proofs[i].GetProperty("Role").GetString()==key).ToArray();
