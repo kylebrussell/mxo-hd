@@ -70,7 +70,7 @@ public class SneakScaledGrantTests
     }
     [Fact] public void ActualSchemasDistinguishEarlyZeroBaseAndSourceGrantFromActive209()
     {
-        var oldZero=Convert.FromHexString("80B2570400000802"),native50=Convert.FromHexString("80B2570432000802");
+        var oldZero=Convert.FromHexString("80B2570400000802");var native50=Convert.FromHexString("80B2570432000802");
         Assert.True(SneakScaledGrantFixture.ChildBase(oldZero));Assert.False(SneakScaledGrantFixture.Base(oldZero,17));Assert.True(SneakScaledGrantFixture.Base(native50,50));
         var captured=Convert.FromHexString("80BC4503570400970000005704320000000000000000");
         Assert.True(SneakScaledGrantFixture.ChildMembership(captured));Assert.True(SneakScaledGrantFixture.Membership(captured,50));Assert.False(SneakScaledGrantFixture.Membership(captured,17));
