@@ -171,6 +171,14 @@ public sealed class MissionStreetAccessTests
         c.Raw["Outdoor"]!["RawSnav"]=Convert.ToHexString(snav);
         Assert.Throws<InvalidDataException>(()=>Modified(c.Raw,c.Evidence));
     }
+    [Fact]public void OriginalNonFfffBoundarySublinkIsNotReinterpretedAsALocalRegionReference()
+    {
+        var c=Load(1283);var node=new E.Node(34,7);var poly=c.Outdoor.At(node);
+        Assert.Equal("10000800e0259e3e4c7b733f0080533e3fe66844",poly.Edges[4].Raw);
+        Assert.True(poly.Boundary[4]);Assert.False(c.Outdoor.Has(new E.Node(16,8)));
+        Assert.DoesNotContain(node,c.Outdoor.NetworkAnchors());
+        Assert.False(c.Outdoor.TryOutsidePath(node,new E.Node(16,8),out _));
+    }
     [Fact]public void OriginalTerminalReferenceIsPreservedWithoutBecomingPolygon65535()
     {
         var c=Load(209);var edge=c.Outdoor.At(new E.Node(31,1)).Edges[0];

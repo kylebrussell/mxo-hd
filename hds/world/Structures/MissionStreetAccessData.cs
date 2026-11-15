@@ -16,7 +16,7 @@ namespace hds
     internal sealed class MissionStreetAccessData
     {
         internal sealed class Edge { public int Index {get;set;} public int SourceOffset {get;set;} public string Raw {get;set;} internal byte[] Bytes; }
-        internal sealed class Polygon { public int Index {get;set;} public int SourceOffset {get;set;} public string RawHeader {get;set;} public Edge[] Edges {get;set;} internal double[] Plane; }
+        internal sealed class Polygon { public int Index {get;set;} public int SourceOffset {get;set;} public string RawHeader {get;set;} public Edge[] Edges {get;set;} internal double[] Plane; internal bool[] Boundary; }
         internal sealed class Region { public ushort Id {get;set;} public int SectionOffset {get;set;} public int SectionLength {get;set;} public int NvpsOffset {get;set;} public string RawHeader {get;set;} public int PolygonEnd {get;set;} public Polygon[] Polygons {get;set;} }
         internal sealed class Outdoor { public string RawHeader {get;set;} public string RawSectionTable {get;set;} public int SnavOffset {get;set;} public int SnavLength {get;set;} public string RawSnav {get;set;} public Region[] Regions {get;set;} }
         internal sealed class Layer { public string Kind {get;set;} public uint Rid {get;set;} public int Length {get;set;} public string Sha256 {get;set;} public int Count {get;set;} public int DoorCount {get;set;} }
@@ -76,14 +76,14 @@ namespace hds
                 for(int p=0;p<region.Polygons.Length;p++)
                 {
                     Polygon poly=region.Polygons[p];Need(poly!=null&&poly.Index==p&&poly.SourceOffset==cursor&&poly.Edges!=null,"StreetPolygonOrdinal");
-                    byte[] plane=Convert.FromHexString(poly.RawHeader??"");Need(plane.Length==20&&BitConverter.ToUInt32(plane,16)==poly.Edges.Length,"StreetPolygonRawCount");
+                    poly.Boundary=new bool[poly.Edges.Length];byte[] plane=Convert.FromHexString(poly.RawHeader??"");Need(plane.Length==20&&BitConverter.ToUInt32(plane,16)==poly.Edges.Length,"StreetPolygonRawCount");
                     poly.Plane=Enumerable.Range(0,4).Select(i=>(double)BitConverter.ToSingle(plane,i*4)).ToArray();Need(poly.Plane.All(double.IsFinite)&&poly.Plane[1]!=0,"StreetOriginalPlane");cursor+=20;
                     for(int e=0;e<poly.Edges.Length;e++)
                     {
                         Edge edge=poly.Edges[e];Need(edge!=null&&edge.Index==e&&edge.SourceOffset==cursor,"StreetEdgeOrdinal");edge.Bytes=Convert.FromHexString(edge.Raw??"");
                         Need(edge.Bytes.Length==20&&Enumerable.Range(0,4).All(i=>float.IsFinite(BitConverter.ToSingle(edge.Bytes,4+i*4))),"StreetOriginalEdge");cursor+=20;
                         ushort target=BitConverter.ToUInt16(edge.Bytes),neighbor=BitConverter.ToUInt16(edge.Bytes,2);
-                        if(neighbor!=ushort.MaxValue&&target<outdoor.Regions.Length)Need(outdoor.Regions[target]!=null&&outdoor.Regions[target].Polygons!=null&&neighbor<outdoor.Regions[target].Polygons.Length,"StreetLocalReference");
+                        // Counted SNAV boundary rows may use low tags which resemble local regions. Classification follows that original table below.
                         // Interior and cross-sector references remain raw. Only a proved exact link may be traversed later.
                     }
                     Need(cursor<=region.SectionOffset+(long)region.SectionLength,"StreetPolygonBounds");
@@ -107,7 +107,8 @@ namespace hds
                     Need(region<outdoor.Regions.Length&&poly<outdoor.Regions[region].Polygons.Length&&edge<outdoor.Regions[region].Polygons[poly].Edges.Length&&
                         Enumerable.Range(0,6).All(i=>float.IsFinite(BitConverter.ToSingle(snav,at+8+i*4))),"StreetBoundarySourceReference");
                     byte[] original=outdoor.Regions[region].Polygons[poly].Edges[edge].Bytes;
-                    Need(BitConverter.ToUInt16(original,2)==ushort.MaxValue&&BitConverter.ToUInt16(original)==(side<<12|index),"StreetBoundaryReverseReference");
+                    Need(BitConverter.ToUInt16(original)==(side<<12|index),"StreetBoundaryReverseReference");
+                    outdoor.Regions[region].Polygons[poly].Boundary[edge]=true;
                 }
                 boundaryCursor+=checked(12+(int)size);
             }
@@ -122,6 +123,8 @@ namespace hds
                 for(int i=0;i<count;i++)
                 {
                     int at=cursor+16+i*32;var node=new E.Node(BitConverter.ToUInt16(raw,at),BitConverter.ToUInt16(raw,at+2));
+                    int edge=checked((int)BitConverter.ToUInt32(raw,at+4));
+                    if(BitConverter.ToUInt16(outdoor.Regions[node.Region].Polygons[node.Polygon].Edges[edge].Bytes,2)!=ushort.MaxValue)continue; // Original cross-boundary sublinks remain unproved, never local edges or public anchors.
                     double[][] endpoints=Enumerable.Range(0,2).Select(j=>Enumerable.Range(0,3).Select(k=>(double)(float)(BitConverter.ToSingle(raw,at+8+j*12+k*4)+(float)corner[k])).ToArray()).ToArray();
                     rows.Add(Tuple.Create(node,endpoints));
                 }
@@ -195,7 +198,7 @@ namespace hds
         private static bool Same(double a,double b)=>Math.Abs(a-b)<=G.Epsilon;
         private bool OutsideEdge(E.Node from,int edge,out E.Node next)
         {
-            next=default(E.Node);byte[] raw=At(from).Edges[edge].Bytes;var target=new E.Node(BitConverter.ToUInt16(raw),BitConverter.ToUInt16(raw,2));
+            next=default(E.Node);if(At(from).Boundary[edge])return false;byte[] raw=At(from).Edges[edge].Bytes;var target=new E.Node(BitConverter.ToUInt16(raw),BitConverter.ToUInt16(raw,2));
             if(!Has(target))return false;double[][] source=Segment(from,edge);
             for(int i=0;i<At(target).Edges.Length;i++)
             {
