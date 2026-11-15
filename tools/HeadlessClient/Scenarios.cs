@@ -71,6 +71,7 @@ public static partial class Scenarios
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
         new Scenario("sever-artery-states",SeverArteryStates,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_SEVER_STATE_QA"]="1"}),
         new Scenario("conditional-thrown-damage",ConditionalThrownDamageWire,ConditionalThrowFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
+        new Scenario("reverse-bulldog-controls", ReverseBulldogControls, ReverseBulldogFixture.Environment),
         new Scenario("conditional-powerless", ConditionalPowerlessWire, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PVP_SERVER"]="1",["MXO_CONDITIONAL_POWERLESS_QA"]="1"}),
         new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
         new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),

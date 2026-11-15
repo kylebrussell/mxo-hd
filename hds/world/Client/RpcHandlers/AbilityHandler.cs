@@ -224,6 +224,7 @@ namespace hds
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
             var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
+            var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -287,7 +288,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes,reverseBulldog);
                 }
             }
             });
