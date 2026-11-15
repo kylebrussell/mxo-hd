@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 namespace hds
 {
-    /// <summary>Observed zero-valued loaded-parent registrations, separate from numeric stats and archive ownership.</summary>
+    /// <summary>Separately qualified loaded-parent registrations; never archive ownership.</summary>
     public static class AbilityGrantRegistration
     {
         public const ushort Parent = 356, Child = 1087;
@@ -59,7 +59,7 @@ namespace hds
         }
         private sealed class Holder { internal readonly Presentation State=new Presentation(); }
         private static readonly ConditionalWeakTable<WorldClient,Holder> holders=new ConditionalWeakTable<WorldClient,Holder>();
-        // Exact capture-qualified pairs; legacy and scaled grants keep their existing paths.
+        // Historical 25 zero-valued relations remain immutable and separate from scaled Sneak.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedPairs { get; } = Array.AsReadOnly(new (ushort Source,ushort Target)[] {
             (51,1094),
             (64,1078),
@@ -87,9 +87,12 @@ namespace hds
             (490,1091),
             (533,1066)
         });
+        internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedScaledPairs { get; } = Array.AsReadOnly(
+            new (ushort Source,ushort Target)[]{(AbilitySneakGrant.Parent,AbilitySneakGrant.Child)});
         public static bool Handles(ushort parent,ushort child)
         {
             parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
+            if(AbilitySneakGrant.Matches(parent,child))return true;
             if(!ObservedPairs.Any(p=>p.Source==parent && p.Target==child))return false;
             var modifiers=AbilityCatalog.Find(parent)?.Modifiers.Where(m=>
                 AbilityCatalog.IdOf((uint)m.Number("TargetAbilityGrant"))==child &&
@@ -128,6 +131,9 @@ namespace hds
                     {
                         var desired=ObservedPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
                             .Select(p=>new Relation(p.Source,p.Target,0));
+                        foreach(var pair in ObservedScaledPairs)
+                            if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned)&&AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level))
+                                desired=desired.Append(new Relation(pair.Source,pair.Target,level));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                     }
                 });
