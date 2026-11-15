@@ -25,6 +25,22 @@ public static class ZionAfter1212EscortProof
                 state.Mobs.Count(m => m.Npc == id && !m.Dead && m.Health > 0) == 1);
     }
 
+    // This is only an outcome to await after an authorized approach, never permission to send a door request.
+    public static bool CompletedPendingAdvance(MissionProgress.SavedState before, MissionProgress.SavedState? current,
+        Mission mission, int goal)
+    {
+        var objective = Objective(before, mission, goal);
+        return objective != null && current != null && current.Mission == before.Mission && current.Phase == before.Phase &&
+            current.Identity == before.Identity && current.Started == before.Started && current.Instance == before.Instance &&
+            current.Done.Contains(goal) && current.EverDone.Contains(goal) &&
+            current.Flags.GetValueOrDefault("entered") && !current.Flags.GetValueOrDefault("failed") &&
+            current.Flags.GetValueOrDefault("waitingForExit") && current.Flags.GetValueOrDefault("goalsCompleteSent") &&
+            current.Flags.GetValueOrDefault("leaveNotNeeded") &&
+            mission.phases[before.Phase].missionObjectives.Where(o => !o.optional).All(o => current.Done.Contains(o.goal)) &&
+            objective.Npcs.Count > 0 && objective.Npcs.All(id => id != 0 && current.Following.Contains(id) &&
+                current.Mobs.Count(m => m.Npc == id && !m.Dead && m.Health > 0) == 1);
+    }
+
     public static bool Advanced(MissionProgress.SavedState before, MissionProgress.SavedState? current,
         Mission mission, int goal, IReadOnlyList<byte[]> records, int cursor)
     {

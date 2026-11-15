@@ -26,38 +26,50 @@ public static partial class Scenarios
         return ZionAfter1212CheckpointPayload.Read(hex)??throw new ScenarioFailure("Expected current owned Zion checkpoint");
     }
     private static async Task ZionAfter1212EscortExit(ScenarioContext context,HeadlessPlayer p,Mission authored,int goal,
-        MissionProgress.SavedState before,int intentCursor,Action<object> note)
+        MissionProgress.SavedState before,int intentCursor,int intentAbsoluteCursor,Action<object> note)
     {
+        string? currentRaw=null;
         async Task<MissionProgress.SavedState?> Current()
         {
             string hex=await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");
+            currentRaw=ZionAfter1212CheckpointPayload.Raw(hex);
             return ZionAfter1212CheckpointPayload.Read(hex);
         }
+        void Snapshot(string kind)=>note(new{Kind=kind,Goal=goal,IntentRpcCursor=intentCursor,IntentAbsoluteRpcCursor=intentAbsoluteCursor,
+            CurrentRpcCursor=p.World.RpcSnapshot().Count,RawCheckpoint=currentRaw});
         bool Same(MissionProgress.SavedState? s)=>s?.Mission==before.Mission&&s.Phase==before.Phase&&s.Identity==before.Identity&&s.Started==before.Started;
-        int logCursor=context.Server.DebugLog().Length;string? request=null;
-        var current=await Current();
+        int logCursor=context.Server.DebugLog().Length;string? request=null;bool completionPending=false;
+        var current=await Current();Snapshot("Escort pre-approach checkpoint");
         if(Same(current))
         {
             Check.That(ZionAfter1212EscortProof.CanApproach(current!,authored,goal),"Exact pending authored exit has live following actors and completed prerequisites");
             var door=before.Waypoints.Single();
+            Snapshot("Escort saved-door approach authorized before movement");
             await MoveForMissionTest(p,door.x,door.y-50,door.z);
-            current=await Current();
+            current=await Current();Snapshot("Escort pre-request checkpoint after authorized movement");
             if(Same(current))
             {
-                Check.That(ZionAfter1212EscortProof.CanApproach(current!,authored,goal),"Exit capability remains current before sending the saved door request");
-                uint key=BitConverter.ToUInt32(Convert.FromHexString(door.doorHex));
-                request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                if(ZionAfter1212EscortProof.CanApproach(current!,authored,goal))
+                {
+                    uint key=BitConverter.ToUInt32(Convert.FromHexString(door.doorHex));
+                    request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                }
+                else
+                {
+                    Check.That(ZionAfter1212EscortProof.CompletedPendingAdvance(before,current,authored,goal),"Exit capability remains current or exact completed outcome is pending after authorized movement");
+                    completionPending=true;Snapshot("Escort completed pending advance; obsolete door request skipped");
+                }
             }
         }
         var deadline=System.Diagnostics.Stopwatch.StartNew();
         while(!ZionAfter1212EscortProof.Advanced(before,current,authored,goal,p.World.RpcSnapshot().Select(r=>r.Bytes).ToArray(),intentCursor))
         {
-            if(deadline.Elapsed>TimeSpan.FromSeconds(15))throw new ScenarioFailure("Authored escort exit lacks fresh matching goal acknowledgement and exact committed next phase");
+            if(deadline.Elapsed>TimeSpan.FromSeconds(15)){Snapshot("Escort strict transition timeout");throw new ScenarioFailure("Authored escort exit lacks fresh matching goal acknowledgement and exact committed next phase");}
             await Task.Delay(25);current=await Current();
         }
         string rideLog=context.Server.DebugLog()[logCursor..];
-        note(new{Kind="Authored escort exit outcome",before.Mission,CompletedPhase=before.Phase,Goal=goal,IntentRpcCursor=intentCursor,
-            Request=request,PhysicalTeleportObserved=rideLog.Contains("[MISSION] Teleported to "),RideLog=rideLog});
+        note(new{Kind="Authored escort exit outcome",before.Mission,CompletedPhase=before.Phase,Goal=goal,IntentRpcCursor=intentCursor,IntentAbsoluteRpcCursor=intentAbsoluteCursor,
+            CompletionWasPending=completionPending,CommittedCheckpoint=currentRaw,Request=request,PhysicalTeleportObserved=rideLog.Contains("[MISSION] Teleported to "),RideLog=rideLog});
     }
     private static async Task ZionAfter1212Ride(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null,int creationStart=0)
     {

@@ -8,6 +8,6 @@ public sealed class ZionAfter1212Mode : NativeQaMode
             "UPDATE characters SET level=50,exp="+PlayerProgression.ExperienceForLevel(50)+",y=495,alignment=1,healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110"},
         DevCommands:true,FixedCallbackRolls:false,GmCharacter110:false,
         environmentOverrides:new(){["MXO_MISSION_SITE_QA_SEED"]="101213"},
-        extraQaMetadata:new(){["ZionAfter101212Qa"]=true,["QaBaseMaster"]="7dfe4815cec6d83e603397597ae16158b3017065",["CurrentOwnLifeBoundBody"]=true,["EarlierReceiptsOnly"]=true,["NextMission"]=101301},
+        extraQaMetadata:new(){["ZionAfter101212Qa"]=true,["QaBaseMaster"]="c30569e1fc8437883b74b0b011e662c73fb14efb",["CurrentOwnLifeBoundBody"]=true,["EarlierReceiptsOnly"]=true,["NextMission"]=101301},
         readyMessages:new[]{"CSR110 only. Tyndall Call > Critical It's Hard To Find Good Help beside Standard Courier. Earn101213-101217 without progress/item/reward grants. End at Lord of Flies. Use published Root/Route/Standing for free proxies; inspect actual radial/item menus and Hardline Upload, Actions combat and normal elevator paths. Duplicate Agent Lee holders require their separate corpses. Fissure and AgentBrown/Park escorts must survive. Relog carrying actual earned items before Give/Upload; verify each receipt once. No native geometry or no-aids claim from headless. See docs/MISSION-ZION-AFTER-101212.md. Current merged shared geometry is used; native walking/picking remains unproved."});
 }

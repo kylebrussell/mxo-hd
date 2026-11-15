@@ -141,7 +141,11 @@ public static partial class Scenarios
                         {
                             string to=(string?)goal.Attribute("to")??"exit";
                             int escortIntentCursor=p.World.RpcSnapshot().Count;
+                            int escortIntentAbsoluteCursor=diagnostics!.AbsoluteRpcCursor(escortIntentCursor);
                             var escortOwner=to=="exit"?await ZionAfter1212Checkpoint(context,p):null;
+                            if(to=="exit")diagnostics.Note(new{Kind="Escort intent before recruitment",Mission=id,Phase=phase,Goal=number,
+                                IntentRpcCursor=escortIntentCursor,IntentAbsoluteRpcCursor=escortIntentAbsoluteCursor,
+                                BeforeCheckpoint=JsonSerializer.SerializeToElement(escortOwner,new JsonSerializerOptions{IncludeFields=true})});
                             foreach(string key in ((string)goal.Attribute("npc")!).Split(','))
                             {
                                 var npc=Npc(key);
@@ -149,7 +153,7 @@ public static partial class Scenarios
                                 if((int?)npc.Attribute("at")==phase+1)
                                 {var recruit=evidenceOptions?.ExactZionAfter1212==true?await ZionAfter1212Npc(context,p,npc,viewsStart):await PrimaNpc(context,p,npc,viewsStart,true);diagnostics?.Target("Escort recruitment",recruit);await Task.Delay(800);}
                             }
-                            if(to=="exit")await ZionAfter1212EscortExit(context,p,authoredMission,number,escortOwner!,escortIntentCursor,diagnostics!.Note);
+                            if(to=="exit")await ZionAfter1212EscortExit(context,p,authoredMission,number,escortOwner!,escortIntentCursor,escortIntentAbsoluteCursor,diagnostics!.Note);
                             else if(to=="hardline")await ZionUpload(p);
                             else if(to.StartsWith("npc:")){var destination=evidenceOptions?.ExactZionAfter1212==true?await ZionAfter1212Npc(context,p,Npc(to[4..]),viewsStart):await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);diagnostics?.Target("Escort destination",destination);}
                             else if(to.StartsWith("object:")){if(evidenceOptions?.ExactZionAfter1212==true)await ZionAfter1212Object(context,p,int.Parse(to[7..]),viewsStart,diagnostics!.Note);else await ZionObject(context,p,int.Parse(to[7..]));}

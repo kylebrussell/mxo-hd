@@ -14,6 +14,7 @@ internal sealed class ZionAfter1212Evidence : IDisposable
     private readonly List<byte[]> previousRecords=new();private readonly HashSet<int> restoredBaselines=new();
     private readonly HashSet<int> carryRelogged=new();private readonly List<object> carryProofs=new();
     internal int RpcCursor=>previousRecords.Count+actor.World.RpcSnapshot().Count;
+    internal int AbsoluteRpcCursor(int localCursor)=>checked(previousRecords.Count+localCursor);
     internal IReadOnlyList<byte[]> SummariesSince(int cursor)=>ZionAfter1212Fixture.CompletionSummaries(previousRecords,actor.World.RpcSnapshot().Select(r=>r.Bytes).ToArray(),cursor);
     private byte[][] Records()=>previousRecords.Concat(actor.World.RpcSnapshot().Select(r=>r.Bytes)).ToArray();
     private int rpcStart,viewStart;private string operation="world-entry",operationKind="";
