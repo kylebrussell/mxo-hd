@@ -162,6 +162,9 @@ namespace hds
                 if (!floor.TryEntry(selectedSite.elevatorDoor, p => provider.Entry(selectedSite.metrId, p, selectedSite.CentreX, selectedSite.CentreZ, "original NPC floor entry"), out E.Entry floorEntry, out refusal) ||
                     !lobby.TryEntry(selectedSite.lobbyDoor, p => provider.Entry(selectedSite.metrId, p, selectedSite.CentreX, selectedSite.CentreZ, "independent original NPC lobby entry"), out E.Entry lobbyEntry, out refusal))
                 { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
+                if (!MissionNpcRoomRoles.Select(target, phase, selectedSite, markers, floor, floorEntry, provider, out selection, out refusal))
+                { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
+                selected = new MissionNpcInteriorPending(2, Kind, selection, null, "NpcRoomRolesNotYetCommitted");
                 List<MissionNpcInteriorActorProof> proofs = new List<MissionNpcInteriorActorProof>(); Dictionary<uint, MissionNpcInteriorDoor> doors = new Dictionary<uint, MissionNpcInteriorDoor>();
                 foreach (MissionNpcInteriorActor actor in selection.Actors)
                 {

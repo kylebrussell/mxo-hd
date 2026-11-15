@@ -9,7 +9,7 @@ namespace hds
     internal static class MissionNpcInteriorAdmission
     {
         internal static bool Candidate(MissionPhase phase) => phase?.site != null && phase.objects.Count == 0;
-        internal static bool Declared(MissionSite site) => site?.metrId == 1 && (site.elevatorDoor?.sectorID == 550 || site.elevatorDoor?.sectorID == 1349);
+        internal static bool Declared(MissionSite site) => site?.metrId == 1 && site.elevatorDoor != null && MissionInteriorEvidence.Declared(DataLoader.DataPath("mission_interior_evidence", "1"), site.metrId, site.elevatorDoor.sectorID);
         internal sealed class Plan
         {
             internal readonly MissionProgress Progress;
@@ -59,7 +59,10 @@ namespace hds
             var selected=MissionStaging.ChooseSite(c,p,phase);
             if(!before.Current(c)){refusal="StaleNpcBeforeSelection";return false;}
             plan=new Plan(c,p,phase,selected,null);
-            if(selected.Site==null||!Declared(selected.Site))return true;
+            if(selected.Site==null)return true;
+            try { if(!Declared(selected.Site))return true; }
+            catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is UnauthorizedAccessException||ex is JsonException)
+            { refusal="NpcDeclarationUnavailable:"+ex.GetType().Name;plan=Refused(c,p,phase,selected,refusal);return false; }
             var load=MissionElevatorAnchors.Current(selected.Site.elevatorDoor);
             if(load.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=load.Refusal;plan=Refused(c,p,phase,selected,refusal);return false;}
             if(load.Kind!=MissionElevatorAnchors.LoadKind.Available||!load.Index.HasDoor(selected.Site.elevatorDoor))return true;

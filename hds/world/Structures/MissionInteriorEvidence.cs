@@ -46,7 +46,7 @@ namespace hds
         }
         internal sealed class Declaration { public ushort Sector { get; set; } public string Sha256 { get; set; } public int Regions { get; set; } public int Portals { get; set; } public int Groups { get; set; } }
         internal sealed class Manifest { public int Format { get; set; } public ushort World { get; set; } public Declaration[] Sectors { get; set; } }
-        internal const string ManifestSha256 = "5B903D4F50D49C3DC94ADC81041C95F42ABB72A395E8102DA2DD6F1C02CDEEA3";
+        internal const string ManifestSha256 = "EF80706C2E2B99CB83DD5BC3B153A5AFA26CEF7E24CA855CE975D72BC825A873";
         private readonly Document document;
         private readonly Dictionary<ushort, Region> regions;
         private readonly Dictionary<uint, Group> groups;
@@ -192,13 +192,19 @@ namespace hds
             using var input = new MemoryStream(compressed); using var gzip = new GZipStream(input, CompressionMode.Decompress); using var output = new MemoryStream(); gzip.CopyTo(output);
             return Read(output.ToArray(), world, sector);
         }
-        internal static MissionInteriorEvidence LoadAudited(string directory, ushort world, ushort sector)
+        private static Manifest AuditedManifest(string directory, ushort world)
         {
             byte[] bytes = File.ReadAllBytes(Path.Combine(directory, "manifest.json"));
             string normalized = new UTF8Encoding(false, true).GetString(bytes).Replace("\r\n", "\n");
             Require(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).Equals(ManifestSha256, StringComparison.OrdinalIgnoreCase), "InteriorEvidenceManifestHash");
             Manifest m = JsonSerializer.Deserialize<Manifest>(bytes);
             Require(m != null && m.Format == 1 && m.World == world && m.Sectors != null && m.Sectors.All(s => s != null) && m.Sectors.Select(s => s.Sector).Distinct().Count() == m.Sectors.Length, "InteriorEvidenceManifestWorld");
+            return m;
+        }
+        internal static bool Declared(string directory, ushort world, ushort sector) => AuditedManifest(directory, world).Sectors.Any(s => s.Sector == sector);
+        internal static MissionInteriorEvidence LoadAudited(string directory, ushort world, ushort sector)
+        {
+            Manifest m = AuditedManifest(directory, world);
             Declaration row = m.Sectors.SingleOrDefault(s => s.Sector == sector); Require(row != null, "UndeclaredInteriorEvidenceSector");
             MissionInteriorEvidence index = LoadVerified(File.ReadAllBytes(Path.Combine(directory, sector + ".json.gz")), row.Sha256, world, sector);
             Require(index.document.Regions.Length == row.Regions && index.document.Portals.Length == row.Portals && index.document.Groups.Length == row.Groups, "InteriorEvidenceManifestCounts");

@@ -24,6 +24,20 @@
       "Groups": 1009
     },
     {
+      "Sector": 842,
+      "Sha256": "8d3f7dd43f93b9c11579fbf96fdb0358298e5b8658c24422d101e6dc1e9d1671",
+      "Regions": 52,
+      "Portals": 91,
+      "Groups": 165
+    },
+    {
+      "Sector": 1150,
+      "Sha256": "a3eab196bec4492dc57b2b1bca34426c9482bcb657d943724fd45b7b73726cd3",
+      "Regions": 42,
+      "Portals": 72,
+      "Groups": 160
+    },
+    {
       "Sector": 1349,
       "Sha256": "d3074712c8537ec7a2eed62809d54943766ad8ef80e069ca5e26bf8abc3f4e79",
       "Regions": 51,

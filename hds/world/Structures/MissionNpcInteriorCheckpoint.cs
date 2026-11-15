@@ -69,8 +69,13 @@ namespace hds
             Require(selection.Actors.Length>0,"NpcSelectionActorPrefix");
             Require(selection.Actors.All(a => a != null && Vector(a.Standing, 4)), "NpcSelectedActorShape");
             StaticWorldObject[] markers = selection.Actors.Select(a => MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson)).ToArray();
-            Require(MissionNpcInteriorPlanning.Select(p, selection.Phase, site, markers, out MissionNpcInteriorSelection expected, out string refusal), refusal ?? "NpcSelectedRoles");
-            Require(Same(expected, selection), "ChangedNpcPlannedPrefix"); return site;
+            if (selection.RolePlan == 0)
+            {
+                Require(MissionNpcInteriorPlanning.Select(p, selection.Phase, site, markers, out MissionNpcInteriorSelection expected, out string refusal), refusal ?? "NpcSelectedRoles");
+                Require(Same(expected, selection), "ChangedNpcPlannedPrefix");
+            }
+            else Require(selection.RolePlan == 1 && MissionNpcRoomRoles.ValidSelection(p, site, selection), "ChangedNpcRoomRoleSelection");
+            return site;
         }
         private static void EntryShape(MissionNpcInteriorEntry entry, StaticWorldObject expected)
         {

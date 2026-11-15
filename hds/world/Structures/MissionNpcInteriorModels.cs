@@ -29,10 +29,11 @@ namespace hds
     internal sealed class MissionNpcInteriorSelection
     {
         public int Mission { get; } public string Identity { get; } public long Started { get; } public int Phase { get; } public MissionOpenFloorSite Site { get; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int RolePlan { get; }
         private readonly MissionNpcInteriorActor[] actors;
         public MissionNpcInteriorActor[] Actors => MissionNpcInteriorModels.Copy(actors);
-        [JsonConstructor] public MissionNpcInteriorSelection(int mission, string identity, long started, int phase, MissionOpenFloorSite site, MissionNpcInteriorActor[] actors)
-        { Mission = mission; Identity = identity; Started = started; Phase = phase; Site = site; this.actors = MissionNpcInteriorModels.Copy(actors); }
+        [JsonConstructor] public MissionNpcInteriorSelection(int mission, string identity, long started, int phase, MissionOpenFloorSite site, MissionNpcInteriorActor[] actors, int rolePlan = 0)
+        { RolePlan = rolePlan; Mission = mission; Identity = identity; Started = started; Phase = phase; Site = site; this.actors = MissionNpcInteriorModels.Copy(actors); }
     }
     internal sealed class MissionNpcInteriorEntry
     {
