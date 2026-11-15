@@ -66,7 +66,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         }
         // Only an unchanged raw tuple can use the original CSV path. A missing measured witness is not repaired.
         Require(floor.SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z}),"Unwitnessed corrected floor cannot fall back to CSV");
-        uint lobbyKey=ZionAfter1212Fixture.DoorAt(legacyRows,lobby);
+        uint lobbyKey=MissionRawDoorLookup.DoorAt(legacyRows,lobby);
         return new(raw.metrId,enter?lobbyKey:floorKey,enter?lobby:floor,null,null);
     }
 
