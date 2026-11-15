@@ -96,7 +96,7 @@ public static partial class Scenarios
         if(!enter)
         {
             await p.WaitUntilAsync(()=>context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')").GetAwaiter().GetResult()!=state.Mission+":"+state.Phase,
-                "Ordinary exit persisted its next phase before reading another door",TimeSpan.FromSeconds(20));
+                "Ordinary exit persisted its next phase before reading another door",TimeSpan.FromSeconds(MachinesCriticalNextFiveFixture.PhaseTransitionSeconds));
         }
     }
     private static async Task<ViewCreation> MachinesNextObjectQualified(ScenarioContext context,HeadlessPlayer p,int objectId,int creationStart,Action<object>? note=null)

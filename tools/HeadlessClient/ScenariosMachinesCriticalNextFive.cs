@@ -15,7 +15,7 @@ public static partial class Scenarios
         Check.That(!ids.Append(MachinesCriticalNextFiveFixture.NextMission).Intersect(prerequisites).Any(),"Selected and next missions are never prerequisite grants");
         var actors=new List<HeadlessPlayer>{p};var checkpoints=new List<object>();var targets=new List<object>();var rewards=new List<object>();
         int missionCreationCursor=0;var followerIdentities=new Dictionary<int,string>();
-        var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;
+        var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;var caseClock=System.Diagnostics.Stopwatch.StartNew();
         ServerInstance? coldServer=null;object? coldProof=null;int initialPid=context.Server.ProcessId;
         string? retiredPackets=null,retiredDebug=null,retiredOutput=null;
         var fields=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
@@ -291,7 +291,7 @@ public static partial class Scenarios
                 phaseCreationCursor=nextCreationCursor;phase++;
                 // Exact cold preparation at the retained actual exit takes28.58s. QA synchronization only:
                 // no authored, resolver/search, transport or RPC timer is changed by this bounded wait.
-                if(phase<mission.Elements("phase").Count())await WaitSaved(s=>s!=null&&s.Phase==phase,"next phase persisted after normal departure",60);
+                if(phase<mission.Elements("phase").Count())await WaitSaved(s=>s!=null&&s.Phase==phase,"next phase persisted after normal departure",MachinesCriticalNextFiveFixture.PhaseTransitionSeconds);
                 else await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(completionCursor).Any(r=>BytePattern.Parse("80 a2 00").IsMatch(r.Bytes)),"mission completed over wire",TimeSpan.FromSeconds(15));
             }
             await Barrier();
@@ -339,12 +339,15 @@ public static partial class Scenarios
             try
             {
                 string dll=context.Server.SourceAssembly,stem=Path.Combine(Path.GetTempPath(),"mxo-machines-critical-next-five-"+context.Database.Name);
-                string? receipts=null,receiptError=null;
+                string? receipts=null,receiptError=null,currentPayloadHex=null,currentPayload=null,currentPayloadError=null;
+                try{currentPayloadHex=await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");currentPayload=currentPayloadHex=="NULL"?null:MissionBoundCabinetFixture.DecodeCheckpointHex(currentPayloadHex);}
+                catch(Exception error){currentPayloadError=error.ToString();}
                 try{receipts=await context.Database.ExecuteAsync($"SELECT missionId,completions FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) ORDER BY missionId");}
                 catch(Exception error){receiptError=error.ToString();}
                 string rawPackets=retiredPackets??InteriorAdmissionDeliveryProof.Read(PacketPath());File.WriteAllText(stem+"-PacketLog.txt",rawPackets);
                 await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
-                    Passed=step=="complete"&&scenarioFailure==null,Step=step,Failure=scenarioFailure?.ToString(),Database=context.Database.Name,
+                    Passed=step=="complete"&&scenarioFailure==null,Step=step,Failure=scenarioFailure?.ToString(),Database=context.Database.Name,ElapsedSeconds=caseClock.Elapsed.TotalSeconds,
+                    CurrentPayloadHex=currentPayloadHex,CurrentPayload=currentPayload,CurrentPayloadCaptureError=currentPayloadError,
                     ServerPid=initialPid,ColdRestart=coldProof,SourceAssembly=dll,SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
                     SelectedMissions=ids,Prerequisites=prerequisites,Checkpoints=checkpoints,Targets=targets,Rewards=rewards,Carry=carryProofs,Arrivals=arrivalProofs,RawPacketLogPath=stem+"-PacketLog.txt",RawPacketLogSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawPackets))),
                     Receipts=receipts,ReceiptCaptureError=receiptError,

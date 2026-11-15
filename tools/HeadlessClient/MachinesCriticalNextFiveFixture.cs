@@ -6,6 +6,8 @@ public static class MachinesCriticalNextFiveFixture
     public static readonly int[] Prerequisites = {
         1201,1204,1203,1205,1206,1207,1208,
         2201,2202,2203,2204,2205,2206,2207,2208,2209,2210,201101,201102,201103,201201};
+    // Existing Machines phase-transition QA synchronization budget; no server timer changes.
+    public const int PhaseTransitionSeconds=60;
     public const string SourcePin="MXO_MACHINES_NEXT_FIVE_SOURCE_SHA256";
     public static void RequirePin(string? expected,string actual)
     {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Exact Machines source pin required");}
