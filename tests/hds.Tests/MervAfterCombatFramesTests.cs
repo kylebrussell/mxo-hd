@@ -295,4 +295,23 @@ public class MervAfterCombatFramesTests
         var death=new byte[]{29,0}.Concat(ServerPackets.BuildNpcDeathUpdate()).ToArray();
         Assert.True(MervAfterCombatFrames.TryRead(death,0,599,out var df));Assert.Equal(24,df.Length);Assert.Equal(-1,df.PositionOffset);
     }
+    [Fact]public void UnknownBeforeLaterBirthOrBetweenKnownSectionsCannotRecoverWithinOwnLife()
+    {
+        var state=StateAgent105();var scope=MervAfterCurrentNpc.Capture(state,6);
+        // The later authentic Agent birth is not a resynchronization point.
+        var before=Agent105.Take(72).Concat(new[]{"6358"}).Concat(Agent105.Skip(72)).ToArray();
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Require(Stream(before),scope,state));
+        var between=Agent105.Take(87).Concat(new[]{"6358"}).Concat(Agent105.Skip(87)).ToArray();
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Require(Stream(between),scope,state));
+        var truncated=Agent105.Take(72).Concat(new[]{"0200011C"}).Concat(Agent105.Skip(72)).ToArray();
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Require(Stream(truncated),scope,state));
+        // An actual new own birth after reset establishes a separate qualified life.
+        var log=new OwnViewLifeLog();var own=Bytes(Agent105[0]);
+        log.Observe(false,own,0,WireFormat.FindCreations(own));log.Observe(false,Bytes("6358"),1,Array.Empty<ViewCreation>());
+        log.Observe(true,null,2,Array.Empty<ViewCreation>());
+        for(int i=0;i<Agent105.Length;i++)
+        {var b=Bytes(Agent105[i]);log.Observe(false,b,i+3,WireFormat.FindCreations(b));}
+        Assert.Equal((ushort)27,MervAfterCurrentNpc.Require(log.Snapshot(),scope,state).View.ViewId);
+    }
+
 }

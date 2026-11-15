@@ -99,9 +99,9 @@ public static class MervAfterCurrentNpc
                     ?addressed.View.Goid:cursor+2<=section.Length&&BitConverter.ToUInt16(section,cursor)==2?(ushort)12:null;
                 if(!MervAfterCombatFrames.TryRead(section,cursor,goid,out var frame))
                 {
-                    // Unknown frame has no proven boundary or actor. Do not search its payload for IDs/births.
-                    foreach(var current in live.Values){current.GenerationKnown=false;current.Position=null;}
-                    break;
+                    // An ambiguous current-life stream cannot be repaired by a later NPC birth.
+                    // Only a wholly new qualified own life starts a separate observation.
+                    throw new InvalidDataException($"Unknown/truncated current-life frame at section{e.Section} offset{cursor}");
                 }
                 if(frame.Type==MervAfterCombatFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var removed))retired.Add((removed.View.ViewId,removed.View.SpawnId));}
