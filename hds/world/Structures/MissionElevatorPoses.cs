@@ -18,6 +18,36 @@ namespace hds
     {
         internal static bool TryCreate(MissionSite site,MissionOpenFloorChoice[] choices,out MissionElevatorWitness witness,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
         {
+            witness=null;
+            if(!TrySelectionContext(site,out var context,out refusal,dataset))return false;
+            if(context==null)return true;
+            if(choices==null||choices.Length==0){refusal="ElevatorMissingIndependentSourceRegion";return false;}
+            foreach(var choice in choices)
+                if(!CompatibleSource(site,choice?.ReadSpot(),context,out refusal,dataset))return false;
+            witness=new MissionElevatorWitness(context.Version,context.SiteFingerprint,context.Region,context.Floor,context.Lobby,
+                context.FloorQuaternion,context.LobbyQuaternion,context.Evidence,choices.Select(c=>c.RawSpotJson).ToArray(),context.FloorKey,context.LobbyKey,context.LobbyRegion);
+            return true;
+        }
+        internal static bool CompatibleSource(MissionSite site,StaticWorldObject raw,MissionElevatorWitness context,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
+        {
+            refusal="ElevatorSourceRegionDisagreement";
+            if(raw==null||context==null)return false;
+            var state=new MissionObjectState{spot=raw,goid=MissionSites.Goid(raw)};
+            if(MissionBoundObjectPoses.Supported(state))
+            {
+                if(!MissionBoundObjectPoses.TryCurrentRegion(state,out _,out int region,out refusal))return false;
+                if(region!=context.Region){refusal="ElevatorBoundSourceRegionDisagreement";return false;}
+            }
+            else
+            {
+                var load=MissionElevatorAnchors.Current(site.elevatorDoor,dataset);
+                if(load.Kind!=MissionElevatorAnchors.LoadKind.Available){refusal=load.Refusal??"UnavailableElevatorSourceRegion";return false;}
+                if(!load.Index.SourceRegion(raw,context.Region))return false;
+            }
+            refusal=null;return true;
+        }
+        internal static bool TrySelectionContext(MissionSite site,out MissionElevatorWitness witness,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
+        {
             witness=null;refusal=null;if(site?.elevatorDoor==null||site.lobbyDoor==null)return true;
             var raw=site.elevatorDoor;
             var load=MissionElevatorAnchors.Current(raw,dataset);
@@ -31,13 +61,6 @@ namespace hds
             if(!index.TryResolve(raw,legacy.Root.Surface.Region,out var floor,out refusal))return false;
             // Known-working coincident locations retain their current yaw and every legacy consumer.
             if(raw.pos_x==floor.X&&raw.pos_y==floor.Y+145&&raw.pos_z==floor.Z)return true;
-            if(choices==null||choices.Length==0){refusal="ElevatorMissingIndependentSourceRegion";return false;}
-            foreach(var choice in choices)
-            {
-                var source=choice?.ReadSpot();
-                if(source==null||!index.SourceRegion(source,legacy.Root.Surface.Region))
-                {refusal="ElevatorSourceRegionDisagreement";return false;}
-            }
             var entry=MissionOpenFloorEntry.Calculate(site.metrId,floor.Presentation,site.CentreX,site.CentreZ,floor.Evidence);
             if(entry.Root==null||entry.Root.Surface.Sector!=legacy.Root.Surface.Sector||entry.Root.Surface.Region!=legacy.Root.Surface.Region)
             {refusal="ElevatorResolvedEntryRegionDisagreement";return false;}
@@ -58,7 +81,7 @@ namespace hds
             {refusal="ElevatorResolvedLobbyRegionDisagreement";return false;}
             witness=new MissionElevatorWitness(1,MissionOpenFloorSite.CatalogFingerprint(site),floor.Region,
                 new[]{floor.X,floor.Y+145,floor.Z},new[]{lobby.X,lobby.Y+145,lobby.Z},floor.Quaternion,lobby.Quaternion,
-                floor.Evidence+";"+lobby.Evidence,choices.Select(c=>c.RawSpotJson).ToArray(),raw.mxoStaticId,lobbyRaw.mxoStaticId,lobby.Region);return true;
+                floor.Evidence+";"+lobby.Evidence,Array.Empty<string>(),raw.mxoStaticId,lobbyRaw.mxoStaticId,lobby.Region);return true;
         }
         internal enum OverlayKind { Legacy,Resolved,Refused }
         internal sealed class Overlay
@@ -70,6 +93,7 @@ namespace hds
         internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw,MissionElevatorAnchors.Dataset dataset=null)
         {
             if(progress==null||raw==null)return new Overlay(OverlayKind.Legacy);
+            var npc=MissionNpcInteriorAdmission.Overlay(progress,raw);if(npc!=null)return npc;
             Overlay resolved=null;
             foreach(var site in progress.sites)
             {
@@ -115,17 +139,35 @@ namespace hds
                 if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
                 var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw,dataset);
                 if(!ReferenceEquals(client.playerData,owner)||!ReferenceEquals(owner.missionProgress,progress))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorProgress");
+                if(snapshot.Kind!=OverlayKind.Refused&&MissionNpcInteriorAdmission.OwnsDoor(progress,raw))
+                {
+                    var stamp=new MissionRideStamp(client,progress);
+                    if(!stamp.Current)return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorLifetime");
+                    if(MissionOutput.Buffered(client.messageQueue))
+                    {
+                        if(!stamp.BindOutput())return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorOutput");
+                        publish(snapshot);stamp.RequireCurrent();return snapshot;
+                    }
+                    using(var output=MissionOutput.Begin(client.messageQueue))
+                    {
+                        if(!stamp.BindOutput())return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorOutput");
+                        publish(snapshot);stamp.RequireCurrent();output.Commit();client.FlushQueue();return snapshot;
+                    }
+                }
                 if(snapshot.Kind!=OverlayKind.Refused)publish(snapshot);
                 return snapshot;
             }
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,StaticWorldObject used)
         {
+            if(MissionNpcInteriorAdmission.ForSite(progress,site)!=null)return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
             if(progress.ElevatorFor(site)==null)return MissionSites.InShaft(site,used);
             return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,double x,double z)
         {
+            var npc=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npc!=null)return new[]{npc.Floor.Position,npc.Lobby.Position}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
             var witness=progress.ElevatorFor(site);if(witness==null)return MissionSites.InShaft(site,x,z);
             // Preserve the existing900-unit threshold, measured from the witnessed doors.
             return new[]{witness.Floor,witness.Lobby}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
