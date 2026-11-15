@@ -30,14 +30,17 @@ public static partial class Scenarios
                 Cast(caster,315,view.ViewId);
                 var state=await target.WaitForRpcAsync(r=>DeflectCodeFixture.State(r.Bytes,315,102,false,out _),"Current normal315 stun",TimeSpan.FromSeconds(10));
                 DeflectCodeFixture.State(state.Bytes,315,102,false,out float seconds);Check.That(Math.Abs(seconds-expected)<.0001f,"Independent expected stun duration");
-                var immunity=await target.WaitForRpcAsync(r=>DeflectCodeFixture.State(r.Bytes,734,681,false,out _),"Normal immunity remains present",TimeSpan.FromSeconds(5));
-                DeflectCodeFixture.State(immunity.Bytes,734,681,false,out float immunitySeconds);Check.Equal(14f,immunitySeconds,"Unmitigated734 timer");
+                await target.WaitUntilAsync(()=>DeflectCodeFixture.FreshState(target.World.RpcSnapshot().Select(r=>r.Bytes),cursor,734,681)!=null,
+                    "Current-cast immunity (producer emits it before the Stun)",TimeSpan.FromSeconds(5));
+                var immunity=DeflectCodeFixture.FreshState(target.World.RpcSnapshot().Select(r=>r.Bytes),cursor,734,681)??throw new InvalidOperationException("Current immunity disappeared");
+                DeflectCodeFixture.State(immunity,734,681,false,out float immunitySeconds);Check.Equal(14f,immunitySeconds,"Unmitigated734 timer");
                 var reuse=await caster.WaitForRpcAsync(r=>r.Bytes.Length==11&&r.Bytes[0]==0x80&&r.Bytes[1]==0xbd&&r.Bytes[2]==1&&BitConverter.ToUInt16(r.Bytes,3)==315&&r.Bytes[5]==4&&r.Bytes[10]==1,"Normal315 own reuse timer");
                 var reuseOff=reuse.Bytes.ToArray();reuseOff[10]=0;
-                await target.WaitForRpcAsync(r=>DeflectCodeFixture.State(r.Bytes,315,102,true,out _),"Natural stun expiry",TimeSpan.FromSeconds(12));
-                await target.WaitForRpcAsync(r=>DeflectCodeFixture.State(r.Bytes,734,681,true,out _),"Real immunity expiry, never removed by a command",TimeSpan.FromSeconds(16));
+                var stateOff=state.Bytes.ToArray();stateOff[17]=1;var immunityOff=immunity.ToArray();immunityOff[17]=1;
+                await target.WaitForRpcAsync(r=>r.Bytes.SequenceEqual(stateOff),"Natural exact-record Stun expiry",TimeSpan.FromSeconds(12));
+                await target.WaitForRpcAsync(r=>r.Bytes.SequenceEqual(immunityOff),"Real exact-record immunity expiry, never removed by a command",TimeSpan.FromSeconds(16));
                 await caster.WaitForRpcAsync(r=>r.Bytes.SequenceEqual(reuseOff),"Real normal315 reuse expiry",TimeSpan.FromSeconds(10));
-                measurements.Add(new{Stage=stage,Duration=seconds,Immunity=immunitySeconds,Cursor=cursor,State=Convert.ToHexString(state.Bytes),ImmunityRecord=Convert.ToHexString(immunity.Bytes)});
+                measurements.Add(new{Stage=stage,Duration=seconds,Immunity=immunitySeconds,Cursor=cursor,State=Convert.ToHexString(state.Bytes),ImmunityRecord=Convert.ToHexString(immunity)});
             }
             stage="normal23-off";await Loaded(false);await Stun(7);
             stage="normal23-on";await Loaded(true);await Stun(6.3f);

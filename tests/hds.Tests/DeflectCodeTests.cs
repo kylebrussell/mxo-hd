@@ -77,4 +77,22 @@ public class DeflectCodeTests
         Assert.Contains("OURS",mode.Plan.ReadyMessages.Single());Assert.DoesNotContain("MXO_CALLBACK_QA_ROLL100",mode.Plan.EnvironmentOverrides.Keys);
         Assert.True(DeflectCodeFixture.DefenderAbilities.Sum(id=>AbilityCatalog.Find(id)!.Number("Ability/InventoryMemCost"))<=AbilityMemory.ForLevel(50));
     }
+    [Fact]public void FreshCastWindowRetainsEarlierImmunityWithoutAdoptingOldRecords()
+    {
+        var immunity=Convert.FromHexString("80bc0100130100de020000a902000000000000006041");
+        var stun=Convert.FromHexString("80bc11001201003b010000660000000000000000e040");
+        var stale=immunity.ToArray();BitConverter.GetBytes(8f).CopyTo(stale,18);
+        var records=new[]{stale,immunity,stun};
+        Assert.True(DeflectCodeFixture.State(immunity,734,681,false,out float duration));Assert.Equal(14,duration);
+        Assert.Same(immunity,DeflectCodeFixture.FreshState(records,1,734,681));
+        Assert.Same(stun,DeflectCodeFixture.FreshState(records,1,315,102));
+        Assert.Null(DeflectCodeFixture.FreshState(records,3,734,681));
+        Assert.Null(DeflectCodeFixture.FreshState(records,1,734,102));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>DeflectCodeFixture.FreshState(records,-1,734,681));
+        var off=immunity.ToArray();off[17]=1;Assert.Null(DeflectCodeFixture.FreshState(new[]{off},0,734,681));
+        Assert.Null(DeflectCodeFixture.FreshState(new[]{immunity[..^1]},0,734,681));
+        var actual=AbilityBuffs.BuildModifier(1,0x113,734,681,0,false,14);
+        Assert.Equal(immunity,actual);actual[17]=1;
+        Assert.Equal(AbilityBuffs.BuildModifier(1,0x113,734,681,0,true,14),actual);
+    }
 }

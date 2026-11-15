@@ -22,4 +22,10 @@ public static class DeflectCodeFixture
             BitConverter.ToUInt32(b,7)!=parent||BitConverter.ToUInt16(b,11)!=target||BitConverter.ToInt32(b,13)!=0||b[17]!=(off?1:0))return false;
         seconds=BitConverter.ToSingle(b,18);return float.IsFinite(seconds)&&seconds>0;
     }
+    //An absolute current-cast window, independent of the consuming convenience wait cursor.
+    public static byte[]? FreshState(IEnumerable<byte[]> records,int cursor,ushort parent,ushort target)
+    {
+        if(cursor<0)throw new ArgumentOutOfRangeException(nameof(cursor));
+        return records.Skip(cursor).FirstOrDefault(b=>State(b,parent,target,false,out _));
+    }
 }
