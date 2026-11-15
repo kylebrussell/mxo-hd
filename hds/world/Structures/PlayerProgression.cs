@@ -243,9 +243,10 @@ namespace hds
             return grants;
         }
 
-        /// <summary>Only Awakened's hidden ability follows its level; the others stayed at 0 in retail.</summary>
+        /// <summary>Awakened and the separately proved function-2 Sneak grant follow their sourced levels.</summary>
         public static UInt16 GrantLevel(UInt16 ability, UInt16 abilityLevel)
         {
+            if(AbilitySneakGrant.TryLevel(ability,AbilitySneakGrant.Child,abilityLevel,out ushort sneak))return sneak;
             return ability == AwakenedAbility ? abilityLevel : (UInt16)0;
         }
 
