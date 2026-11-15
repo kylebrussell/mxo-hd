@@ -40,7 +40,7 @@ namespace hds
             bool current=ReferenceEquals(c.playerData,owner)&&owner.worldGeneration==world&&owner.lifeGeneration==life&&
                 owner.getCharID()==character&&owner.getDistrictId()==district&&c.TransportFence.IsCurrent(transport)&&c.Alive&&owner.getOnWorld()&&!owner.worldChangePending&&!owner.waitForRPCShutDown;
             lock(WorldServer.Clients)current&=WorldServer.Clients.Values.Any(x=>ReferenceEquals(x,c));
-            File.WriteAllText("IngressLivenessQa.json",JsonSerializer.Serialize(new{Character=character,District=district,Endpoint=owner.getUniqueKey(),World=world,Life=life,Transport=transport,
+            File.WriteAllText("IngressLivenessQa.json",JsonSerializer.Serialize(new{Character=character,District=district,Endpoint=owner.getUniqueKey(""),World=world,Life=life,Transport=transport,
                 Before=new{before.Last,before.Generation,before.Claimed},After=new{after.Last,after.Generation,after.Claimed},Pending=pending,
                 CurrentOwner=current,ElapsedMs=watch.Elapsed.TotalMilliseconds,Scope="35s intentional worker delay; not normal cold-preparation latency"},new JsonSerializerOptions{WriteIndented=true}));
             Output.WriteDebugLog("[INGRESS-QA] resumed current="+current+" ingressDelta="+(after.Generation-before.Generation)+" pending="+pending);
