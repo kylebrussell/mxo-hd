@@ -3,7 +3,7 @@ using hds;
 namespace HeadlessClient;
 
 /// <summary>Read-only entry authority from an already owned NPC-v2 witness; no chooser/repair.</summary>
-public static class ZionNpcInteriorRide
+public static class MissionNpcInteriorRide
 {
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};
     static void Need(bool ok,string why){if(!ok)throw new InvalidDataException(why);}
@@ -29,8 +29,20 @@ public static class ZionNpcInteriorRide
         var site=state.OpenFloorSites[index];var raw=state.SiteDoors[index];
         Need(site.District==1&&raw.metrId==1&&site.DoorKey==raw.mxoStaticId&&site.DoorX==raw.pos_x&&site.DoorY==raw.pos_y&&site.DoorZ==raw.pos_z,"NPC saved raw/site identity");
         var matches=e.GetProperty("Witnesses").EnumerateArray().Where(w=>w.GetProperty("Selection").GetProperty("Site").GetProperty("Fingerprint").GetString()==site.Fingerprint).ToArray();
-        bool current=e.GetProperty("CurrentPhase").ValueKind==JsonValueKind.Number&&e.GetProperty("CurrentPhase").GetInt32()==state.Phase;
+        var currentPhase=e.GetProperty("CurrentPhase");
+        Need(currentPhase.ValueKind==JsonValueKind.Null||currentPhase.ValueKind==JsonValueKind.Number&&currentPhase.GetInt32()>=0&&currentPhase.GetInt32()<=state.Phase,"NPC current marker is not future/invalid");
+        bool current=currentPhase.ValueKind==JsonValueKind.Number&&currentPhase.GetInt32()==state.Phase;
         if(matches.Length==0){Need(!current,"Current NPC phase missing its selected site witness");return null;}
+        foreach(var candidate in matches)
+        {
+            Shape(candidate,"Version","Kind","Selection","Floor","Lobby","Actors","Doors");
+            Need(candidate.GetProperty("Version").GetInt32()==2&&candidate.GetProperty("Kind").GetString()=="NpcInterior","NPC witness version/kind");
+            var c=candidate.GetProperty("Selection");Shape(c,"Mission","Identity","Started","Phase","Site","Actors");
+            Need(c.GetProperty("Mission").GetInt32()==state.Mission&&c.GetProperty("Identity").GetString()==state.Identity&&c.GetProperty("Started").GetInt64()==state.Started&&
+                c.GetProperty("Phase").GetInt32()>=0&&c.GetProperty("Phase").GetInt32()<=state.Phase,"Foreign/future NPC witness history");
+            var captured=JsonSerializer.Deserialize<MissionOpenFloorSite>(c.GetProperty("Site").GetRawText())!;
+            Need(captured.District==site.District&&captured.DoorKey==site.DoorKey&&captured.DoorX==site.DoorX&&captured.DoorY==site.DoorY&&captured.DoorZ==site.DoorZ,"NPC witness selected raw site metadata");
+        }
         string Pair(JsonElement w)=>w.GetProperty("Floor").GetRawText()+w.GetProperty("Lobby").GetRawText();
         Need(matches.All(w=>Pair(w)==Pair(matches[0])),"Conflicting owned NPC entry history");
         var active=matches.Where(w=>w.GetProperty("Selection").GetProperty("Phase").GetInt32()==state.Phase).ToArray();

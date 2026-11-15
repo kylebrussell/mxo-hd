@@ -21,7 +21,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         Require(index>=0&&index<state.SiteDoors.Length,"Current raw site index required");
         var raw=state.SiteDoors[index];Require(raw!=null&&raw.metrId==1&&raw.mxoStaticId==floorKey&&raw.type!=null&&raw.type.Length>=2&&new ushort[]{417,419}.Contains(BitConverter.ToUInt16(raw.type)),"Current raw site key must match waypoint");
         Require(state.Objects.All(o=>o.Spot!=null&&o.Spot.metrId==raw.metrId&&(o.OpenFloor==null||o.OpenFloor.World==raw.metrId)),"Current raw objects and OpenFloor witnesses must retain selected world");
-        var npc=ZionNpcInteriorRide.ForSite(state);
+        var npc=MissionNpcInteriorRide.ForSite(state);
         if(npc!=null)
         {
             var target=enter?npc.Lobby:npc.Floor;
@@ -83,7 +83,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         if(before.Version!=after.Version||before.Mission!=after.Mission||before.Phase!=after.Phase||before.Identity!=after.Identity||before.Started!=after.Started||before.Instance!=after.Instance)
             throw new InvalidDataException("Ride owner/mission/phase changed before ordinary door request");
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=ZionNpcInteriorRide.ForSite(s)?.Raw,s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         if(Snapshot(before)!=Snapshot(after))throw new InvalidDataException("Saved ride identity changed before ordinary door request");
     }
 }

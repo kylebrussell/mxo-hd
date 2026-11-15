@@ -19,7 +19,7 @@ public partial class MissionNpcInteriorCheckpointTests
     [Fact] public void ZionNpcRideUsesOwnedMeasuredKeysAndPosesWithoutAnyCsvLookup()
     {
         var state=NpcRideState();string raw=JsonSerializer.Serialize(state,MissionProgress.SaveJson);
-        var npc=ZionNpcInteriorRide.ForSite(state)!;var entry=ZionAfter1212RidePlan.Select(state,true,Array.Empty<string>());var exit=ZionAfter1212RidePlan.Select(state,false,Array.Empty<string>());
+        var npc=MissionNpcInteriorRide.ForSite(state)!;var entry=ZionAfter1212RidePlan.Select(state,true,Array.Empty<string>());var exit=ZionAfter1212RidePlan.Select(state,false,Array.Empty<string>());
         Assert.True(entry.Measured);Assert.NotNull(entry.Npc);Assert.Null(entry.Witness);Assert.Equal(npc.Lobby.Key,entry.Key);Assert.Equal(npc.Lobby.Position,entry.Pose);
         Assert.Equal(npc.Floor.Key,exit.Key);Assert.Equal(npc.Floor.Position,exit.Pose);
         var view=new ViewCreation(9,419,7,new Dictionary<string,byte[]>{{"Position",entry.Pose.SelectMany(BitConverter.GetBytes).ToArray()},{"Orientation",Convert.FromHexString(entry.Quaternion!)}}){RelatedStaticObjectId=entry.Key};
@@ -47,7 +47,7 @@ public partial class MissionNpcInteriorCheckpointTests
     [Fact] public void HistoricalSameSiteNpcEntryDoesNotPretendToCertifyCurrentActors()
     {
         var state=NpcRideState();ChangeNpc(state,e=>{e["CurrentPhase"]=1;e["Witnesses"]![0]!["Selection"]!["Phase"]=1;});
-        var plan=ZionNpcInteriorRide.ForSite(state)!;Assert.Equal(1,plan.Witness.GetProperty("Selection").GetProperty("Phase").GetInt32());
+        var plan=MissionNpcInteriorRide.ForSite(state)!;Assert.Equal(1,plan.Witness.GetProperty("Selection").GetProperty("Phase").GetInt32());
         Assert.NotNull(ZionAfter1212RidePlan.Select(state,true,Array.Empty<string>()).Npc);
         var other=NpcRideState();ChangeNpc(other,e=>e["Witnesses"]![0]!["Floor"]!["Position"]![0]=1);
         Assert.Throws<InvalidDataException>(()=>ZionAfter1212RidePlan.SameEntry(state,other));
