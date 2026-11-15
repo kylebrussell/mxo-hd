@@ -46,5 +46,30 @@ public partial class MissionNpcInteriorCheckpointTests
         var raw=MissionNpcInteriorPlanning.ReadRaw(prepared.Pending.Witness.Lobby.RawDoorJson);raw.metrId=2;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
         raw.metrId=1;raw.mxoStaticId++;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
     }
+    [Theory] [InlineData("digest")] [InlineData("node")] [InlineData("standing")] [InlineData("entryPosition")] [InlineData("entryQuaternion")] [InlineData("woodPosition")] [InlineData("woodQuaternion")]
+    public void ActualIndexedAliasCannotRepairTamperedSavedContext(string change)
+    {
+        var prepared=Prepared();var p=prepared.Progress;p.NextPhase();p.site=prepared.Site;p.sites.Add(prepared.Site);p.npcInteriorResolvedPhase=2;p.itemSlots[6783]=1;
+        var node=System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(prepared.Pending.Witness,MissionProgress.SaveJson))!;
+        switch(change)
+        {
+            case "digest":node["Lobby"]!["EvidenceDigest"]=new string('0',64);break;
+            case "node":node["Lobby"]!["Node"]!["Region"]=116;break;
+            case "standing":node["Lobby"]!["Standing"]![0]=40370d;break;
+            case "entryPosition":node["Lobby"]!["Position"]![0]=40001d;break;
+            case "entryQuaternion":node["Lobby"]!["Quaternion"]="00000000f304353f00000000f304353f";break;
+            case "woodPosition":node["Doors"]![0]!["Position"]![0]=38501d;break;
+            case "woodQuaternion":node["Doors"]![0]!["Quaternion"]="0000000000000000000000000000803f";break;
+        }
+        var witness=JsonSerializer.Deserialize<MissionNpcInteriorWitness>(node.ToJsonString(),MissionProgress.SaveJson)!;p.npcInteriorWitnesses[2]=witness;
+        string before=JsonSerializer.Serialize(witness,MissionProgress.SaveJson);int calls=prepared.Provider.EntryCalls;
+        // Exact first row selected by the actual DataLoader index, with two-byte GOID as loaded.
+        string[] d=File.ReadLines(Path.Combine(Repo,"data","staticObjects_slums_1.csv")).Select(l=>l.Split(',')).First(d=>d.Length>=11&&d[2]=="040f6022");
+        var raw=Raw(0x22600f04,419,double.Parse(d[6],CultureInfo.InvariantCulture),double.Parse(d[7],CultureInfo.InvariantCulture),double.Parse(d[8],CultureInfo.InvariantCulture),double.Parse(d[9],CultureInfo.InvariantCulture),d[10]);raw.type=Convert.FromHexString(d[4][..4]);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider)!.Kind);
+        var envelope=new MissionNpcInteriorEnvelope(2,MissionNpcInteriorPlanning.Kind,null,2,new[]{witness});
+        var error=Assert.Throws<MissionPlacementRestoreException>(()=>MissionNpcInteriorCheckpoint.ValidateGeometry(p,envelope,prepared.Provider));
+        Assert.Equal((ushort)1,p.itemSlots[6783]);Assert.Equal(before,JsonSerializer.Serialize(witness,MissionProgress.SaveJson));Assert.Equal(calls,prepared.Provider.EntryCalls);
+    }
 }
 
