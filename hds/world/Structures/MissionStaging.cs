@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -126,7 +126,29 @@ namespace hds
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
         public static bool Stage(WorldClient client, MissionProgress progress) => StageCore(client,progress,null);
         internal static bool StagePrepared(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan) => StageCore(client,progress,plan);
-        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared)
+        internal static bool StageNpcPrepared(WorldClient client,MissionProgress progress,MissionNpcInteriorAdmission.Plan plan) => StageCore(client,progress,null,plan);
+        internal sealed class SiteSelection
+        {
+            internal readonly MissionSite Site;internal readonly Random Random;
+            internal SiteSelection(MissionSite site,Random random){Site=site;Random=random;}
+        }
+        // The original chooser, factored once. Preview clearing belongs to successful Stage, not failed admission.
+        internal static SiteSelection ChooseSite(WorldClient client,MissionProgress progress,int phaseIndex)
+        {
+            var mission=progress.mission;var phase=mission.phases[phaseIndex];int at=phaseIndex+1;
+            double px=0,py=0,pz=0;NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
+            var rng=LayoutRandom(mission.id,phaseIndex,unchecked((int)client.playerData.getCharID()*7919+mission.id*31+at+(int)progress.startedAt));
+            List<MissionSite> sites=MissionSites.For(mission.district);
+            var site=phaseIndex==0&&client.playerData.missionPreviewFor==mission?client.playerData.missionPreview:null;
+            List<string> hoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
+            int npcs=mission.npcs.Count(n=>n.at==at)+SpotsForWaves(phase),objects=PlacesNeeded(phase),furniture=FurnitureNeeded(phase);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            if(site!=null&&!Eligible(site))site=null;
+            site=site??MissionSites.Choose(sites,phase.site,px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
+                ??MissionSites.Choose(sites,"Any",px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
+            return new SiteSelection(site,rng);
+        }
+        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared,MissionNpcInteriorAdmission.Plan npcPrepared=null)
         {
             MissionPhase phase = progress.Phase;
             Mission mission = progress.mission;
@@ -135,9 +157,6 @@ namespace hds
                 return false;
             }
 
-            double px = 0, py = 0, pz = 0;
-            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
-
             int at = progress.phaseIndex + 1;
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
@@ -145,17 +164,10 @@ namespace hds
             Random rng=null;MissionSite site;
             if(prepared==null)
             {
-                rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
-                List<MissionSite> sites = MissionSites.For(mission.district);
-                site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
+                if(npcPrepared!=null)npcPrepared.RequireStaging(client);
+                var selected=npcPrepared?.Selected??ChooseSite(client,progress,progress.phaseIndex);rng=selected.Random;site=selected.Site;
                 client.playerData.missionPreview = null;
                 client.playerData.missionPreviewFor = null;
-                List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-                int npcs = placed.Count + SpotsForWaves(phase);
-                bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
-                if(site!=null&&!Eligible(site))site=null;
-                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible)
-                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible);
                 if (site == null)
                 {
                     Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
@@ -179,9 +191,15 @@ namespace hds
                         OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
 
             progress.site = site;
+            if(npcPrepared?.Adopted==true)
+            {
+                progress.npcInteriorWitnesses[progress.phaseIndex]=npcPrepared.Pending.Witness;progress.npcInteriorResolvedPhase=progress.phaseIndex;
+            }
             if(prepared?.Selection.Elevator!=null)progress.elevatorWitnesses[MissionOpenFloorSite.CatalogFingerprint(site)]=prepared.Selection.Elevator;
             var elevatorWitness=progress.ElevatorFor(site);var floorDoor=MissionElevatorPoses.Floor(site,elevatorWitness);
             var lobbyDoor=elevatorWitness==null?new MissionOpenFloorResolver.Position(site.lobbyDoor.pos_x,site.lobbyDoor.pos_y,site.lobbyDoor.pos_z):MissionElevatorPoses.Position(elevatorWitness.Lobby);
+            var npcWitness=MissionNpcInteriorAdmission.Current(progress);
+            if(npcWitness!=null){floorDoor=MissionElevatorPoses.Position(npcWitness.Floor.Position);lobbyDoor=MissionElevatorPoses.Position(npcWitness.Lobby.Position);}
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
             {
@@ -210,6 +228,11 @@ namespace hds
             int next = 0;
             double[] NextSpot()
             {
+                if(npcWitness!=null)
+                {
+                    if(next>=npcWitness.Selection.Actors.Length)throw new MissionCheckpointException("NPC certified prefix exhausted");
+                    return npcWitness.Selection.Actors[next++].Standing;
+                }
                 double[] spot = spots[next % spots.Count];
                 int lap = next / spots.Count;
                 next++;
@@ -236,7 +259,7 @@ namespace hds
                 }
 
                 Mob mob = MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
-                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc));
+                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc),placement:MissionNpcInteriorAdmission.ActorPoint(progress,"Npc",npc.id,0,spot));
                 if (mob == null)
                 {
                     progress.pendingNpcPlacements.Add(npc.id);
@@ -331,7 +354,9 @@ namespace hds
             List<NavPoint> floor = new List<NavPoint>();
             foreach (double[] spot in spots)
             {
-                if (!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out NavPoint placed, reserved: floor))
+                var certified=MissionNpcInteriorAdmission.ActorPoint(progress,"Wave",wave.id,floor.Count,spot);
+                NavPoint placed=certified??default;
+                if (!certified.HasValue&&!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out placed, reserved: floor))
                 {
                     progress.pendingWavePlacements.Add(wave.id);
                     return false;
@@ -732,6 +757,8 @@ namespace hds
             StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
             var targetWitness=progress.ElevatorFor(site);
             double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
+            var npcTarget=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcTarget!=null)targetY=(current?npcTarget.Floor:npcTarget.Lobby).Position[1];
             if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
@@ -775,10 +802,16 @@ namespace hds
                 MissionElevatorPoses.Position(ReferenceEquals(target,site.elevatorDoor)?witness.Floor:witness.Lobby);
             double dx = site.CentreX - measured.X, dz = site.CentreZ - measured.Z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
             double x = measured.X + dx / length * 200, y = measured.Y - 50, z = measured.Z + dz / length * 200;
+            var npcWitness=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcWitness!=null)
+            {
+                var saved=ReferenceEquals(target,site.elevatorDoor)?npcWitness.Floor:npcWitness.Lobby;
+                x=saved.Standing[0];y=saved.Standing[1];z=saved.Standing[2];
+            }
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
             Output.WriteDebugLog("[MISSION] Elevator navigation start");
-            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
+            if (npcWitness==null&&PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
                 x = NearestOnMesh(client, measured.X, y, measured.Z, out z);

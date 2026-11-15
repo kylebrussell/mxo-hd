@@ -8,7 +8,7 @@ using E = hds.MissionInteriorEvidence;
 namespace hds.Tests;
 
 [Collection("DelayedActions")]
-public class MissionNpcInteriorCheckpointTests
+public partial class MissionNpcInteriorCheckpointTests
 {
     private static string Repo { get { string p = AppContext.BaseDirectory; while (!File.Exists(Path.Combine(p, "hds.sln"))) p = Path.GetDirectoryName(p)!; return p; } }
     private static readonly Lazy<E> Primary = new Lazy<E>(() => E.LoadAudited(Path.Combine(Repo, "data", "mission_interior_evidence", "1"), 1, 550));

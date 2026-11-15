@@ -57,10 +57,16 @@ namespace hds
             }
             foreach (JsonElement witness in e.GetProperty("Witnesses").EnumerateArray()) WitnessShape(witness);
         }
-        private static MissionSite Selection(MissionProgress p, MissionNpcInteriorSelection selection, IReadOnlyList<MissionSite> catalog)
+        private static MissionSite SelectionIdentity(MissionProgress p, MissionNpcInteriorSelection selection, IReadOnlyList<MissionSite> catalog)
         {
             Require(selection != null && selection.Mission == p.mission.id && selection.Identity == p.persistenceId && !string.IsNullOrWhiteSpace(selection.Identity) && selection.Started == p.startedAt && selection.Phase >= 0 && selection.Phase < p.mission.phases.Count && selection.Site != null && selection.Site.District == p.mission.district && selection.Actors != null, "NpcSelectionIdentity");
             MissionSite site = selection.Site.Resolve(catalog); Require(site != null, "NpcSelectionSiteIdentity");
+            return site;
+        }
+        private static MissionSite Selection(MissionProgress p, MissionNpcInteriorSelection selection, IReadOnlyList<MissionSite> catalog)
+        {
+            MissionSite site=SelectionIdentity(p,selection,catalog);
+            Require(selection.Actors.Length>0,"NpcSelectionActorPrefix");
             Require(selection.Actors.All(a => a != null && Vector(a.Standing, 4)), "NpcSelectedActorShape");
             StaticWorldObject[] markers = selection.Actors.Select(a => MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson)).ToArray();
             Require(MissionNpcInteriorPlanning.Select(p, selection.Phase, site, markers, out MissionNpcInteriorSelection expected, out string refusal), refusal ?? "NpcSelectedRoles");
@@ -110,7 +116,10 @@ namespace hds
                 {
                     MissionNpcInteriorPending pending = envelope.Pending;
                     Require(pending.Version == 2 && pending.Kind == MissionNpcInteriorPlanning.Kind && pending.Selection != null && (pending.Selection.Phase == p.phaseIndex || pending.Selection.Phase == p.phaseIndex + 1), "NpcPendingVersionPhase");
-                    Selection(p, pending.Selection, catalog);
+                    // A zero-actor refused selection is NOT placement authority. It records the one
+                    // selected site when proof could not even materialize a safe role prefix.
+                    if(pending.Witness==null&&pending.Selection.Actors?.Length==0)SelectionIdentity(p,pending.Selection,catalog);
+                    else Selection(p, pending.Selection, catalog);
                     if (pending.Witness == null) Require(!string.IsNullOrWhiteSpace(pending.Refusal), "NpcPendingMissingProof");
                     else { Witness(p, pending.Witness, catalog); Require(Same(pending.Selection, pending.Witness.Selection), "NpcPendingWitnessSelection"); }
                 }

@@ -50,14 +50,14 @@ namespace hds
             transport = client.TransportFence.Capture(); mission = target.mission.id; started = target.startedAt; identity = target.persistenceId; this.phase = phase;
         }
         // Observation only. The future caller still owns missionSync and final transaction/publication checks.
-        internal bool Current(WorldClient client) => client != null && ReferenceEquals(client.playerData, owner) && client.Alive && owner.getOnWorld() &&
-            !owner.worldChangePending && !owner.waitForRPCShutDown && (before == null || before.restoreRefusal == null) &&
+        internal bool Current(WorldClient client,MissionNpcInteriorPending installed=null) => client != null && ReferenceEquals(client.playerData, owner) && client.Alive && owner.getOnWorld() &&
+            !owner.isDead && !owner.worldChangePending && !owner.waitForRPCShutDown && (before == null || before.restoreRefusal == null) &&
             owner.getCharID() == character && owner.getDistrictId() == district && district == target.mission.district && owner.worldGeneration == world && owner.lifeGeneration == life &&
             client.TransportFence.IsCurrent(transport) && ReferenceEquals(owner.missionProgress, before) && ReferenceEquals(owner.activeMission, active) &&
             (before == null || before.phaseIndex == beforePhase) && target.phaseIndex == targetCurrentPhase && target.mission.id == mission &&
             target.persistenceId == identity && target.startedAt == started && phase >= 0 && phase < target.mission.phases.Count &&
-            (before == null || ReferenceEquals(before.site, beforeSite) && ReferenceEquals(before.npcInteriorPending, beforePending) && before.sites.Count == beforeSites) &&
-            ReferenceEquals(target.site, targetSite) && ReferenceEquals(target.npcInteriorPending, targetPending) && target.sites.Count == targetSites &&
+            (before == null || ReferenceEquals(before.site, beforeSite) && (ReferenceEquals(before.npcInteriorPending, beforePending)||installed!=null&&ReferenceEquals(before,target)&&ReferenceEquals(before.npcInteriorPending,installed)) && before.sites.Count == beforeSites) &&
+            ReferenceEquals(target.site, targetSite) && (ReferenceEquals(target.npcInteriorPending, targetPending)||installed!=null&&ReferenceEquals(target.npcInteriorPending,installed)) && target.sites.Count == targetSites &&
             phase == (ReferenceEquals(before, target) ? beforePhase + 1 : 0);
     }
     internal static class MissionNpcInteriorPlanning
@@ -181,7 +181,7 @@ namespace hds
                 if (!prepared.BeforeCurrent(client)) { selected = null; refusal = "StaleNpcBeforeStateOrSelection"; return false; }
                 plan = prepared; refusal = null; return true;
             }
-            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
+            catch (Exception ex) when (ex is InvalidDataException || ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
             { refusal = "NpcEvidenceUnavailable:" + ex.GetType().Name; if (selected != null) selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
         }
     }
