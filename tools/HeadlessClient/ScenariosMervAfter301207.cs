@@ -19,6 +19,7 @@ public static partial class Scenarios
         var p=await context.AddPlayerAsync(seed);
         sessions.Add(p);
         var restoredBaselines=new HashSet<int>();
+        MervAfterProgressProof.Acceptance? acceptance=null;
         var ledgerOperations=new List<MervLedgerOperation>();var npcBindings=new Dictionary<string,ViewCreation>();var viewOwners=new Dictionary<(int Session,ushort View,byte Spawn),string>();
         byte[][] Wire()=>sessions.SelectMany(a=>a.World.RpcSnapshot()).Select(r=>r.Bytes).ToArray();
         void CaptureRestoredBaselines()
@@ -43,20 +44,33 @@ public static partial class Scenarios
             if(string.IsNullOrWhiteSpace(hex))return null;
             return System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(System.Text.Encoding.UTF8.GetString(Convert.FromHexString(hex)),fields);
         }
+        async Task<MissionProgress.SavedState?> Receipt()
+        {
+            string hex=await context.Database.ScalarAsync($"SELECT IFNULL(HEX(receipt),'') FROM char_active_missions WHERE charId={p.CharId}");
+            return string.IsNullOrWhiteSpace(hex)?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(System.Text.Encoding.UTF8.GetString(Convert.FromHexString(hex)),fields);
+        }
+        async Task<IReadOnlyList<MervAfterProgressProof.InventoryRow>> ItemRows(uint goid)
+        {
+            string json=await context.Database.ScalarAsync($"SELECT COALESCE(JSON_ARRAYAGG(JSON_OBJECT('Character',charId,'Slot',slot,'Goid',goid,'Count',count)),'[]') FROM inventory WHERE charId={p.CharId} AND goid={goid}");
+            return System.Text.Json.JsonSerializer.Deserialize<MervAfterProgressProof.InventoryRow[]>(json)!;
+        }
         async Task WaitPersisted(int mission,int nextPhase,bool terminal,int absoluteCursor)
         {
+            Check.That(acceptance?.Mission==mission,"Transition uses the actual accepted mission token");
+            int phase=nextPhase-1;
             await p.WaitUntilAsync(()=>
             {
                 var current=Current().GetAwaiter().GetResult();
-                if(!terminal)return current?.Mission==mission&&current.Phase==nextPhase;
-                long receipts=context.Database.LongAsync($"SELECT COALESCE(SUM(completions),0) FROM char_missions WHERE charId={p.CharId} AND missionId={mission}").GetAwaiter().GetResult();
-                return current==null&&receipts==1&&Wire().Skip(absoluteCursor).Any(b=>b.Length==26&&b[0]==0x80&&b[1]==0xa2&&b[2]==0);
-            },"Exact owned persisted next phase or terminal receipt+fresh summary",TimeSpan.FromSeconds(15));
+                var receipt=terminal?Receipt().GetAwaiter().GetResult():null;
+                long count=terminal?context.Database.LongAsync($"SELECT COALESCE(SUM(completions),0) FROM char_missions WHERE charId={p.CharId} AND missionId={mission}").GetAwaiter().GetResult():0;
+                return MervAfterProgressProof.Advanced(acceptance!,phase,terminal?phase:phase+1,current,receipt,count,Wire(),absoluteCursor);
+            },"Exact accepted identity/start/instance next phase or terminal CAS receipt+fresh summary",TimeSpan.FromSeconds(15));
         }
         async Task Exit(int absoluteCursor,bool terminal)
         {
             var state=await Current();
-            evidence.Add(new{Step=step,Operation="pre-exit-owned-checkpoint",State=state,ExpectedMission=expectedMission,ExpectedPhase=expectedPhase});
+            evidence.Add(new{Step=step,Operation="pre-exit-owned-checkpoint",State=state,Acceptance=acceptance,ExpectedMission=expectedMission,ExpectedPhase=expectedPhase});
+            if(state!=null)Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,state),"Exit retains accepted identity/start/instance");
             if(state?.Mission==expectedMission&&state.Phase==expectedPhase)
             {
                 Check.That(state.Flags.GetValueOrDefault("waitingForExit"),"Current ordinary exit needs authoritative waiting-for-exit");
@@ -123,16 +137,39 @@ public static partial class Scenarios
             p.SendRpc($"80 98 06 00 {Le((ushort)index)} 01 02 00");await p.WaitForRpcAsync("80 99");
             p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
             Check.Equal((long)id,await context.Database.LongAsync($"SELECT JSON_EXTRACT(payload,'$.Mission') FROM char_active_missions WHERE charId={p.CharId}"),"Actual accepted definition ID matches selected Critical title");
+            var accepted=await Saved();acceptance=MervAfterProgressProof.Capture(accepted);
+            Check.Equal(id,acceptance.Mission,"Acceptance token is from the actual requested definition");
+            evidence.Add(new{Step=step,Operation="normal-accepted-mission-token",Acceptance=acceptance,Checkpoint=accepted,AbsoluteRpcCursor=Wire().Length});
             int phase=0;
             foreach(var area in mission.Elements("phase"))
             {
-                int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
+                int phaseAbsoluteCursor=Wire().Length;int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
-                bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
+                var provenGoals=new HashSet<int>();int finalPhase=mission.Elements("phase").Count()-1;
+                bool Done(int n)
+                {
+                    if(provenGoals.Contains(n))return true;
+                    bool optional=(int?)area.Elements("objective").Single(g=>(int)g.Attribute("goal")! ==n).Attribute("optional")==1;
+                    var state=Current().GetAwaiter().GetResult();var receipt=state==null?Receipt().GetAwaiter().GetResult():null;
+                    long count=state==null?context.Database.LongAsync($"SELECT COALESCE(SUM(completions),0) FROM char_missions WHERE charId={p.CharId} AND missionId={id}").GetAwaiter().GetResult():0;
+                    bool done=MervAfterProgressProof.GoalDone(acceptance!,phase,finalPhase,n,optional,state,receipt,count,
+                        Wire(),phaseAbsoluteCursor,missionAbsoluteCursor);
+                    if(done)
+                    {
+                        provenGoals.Add(n);
+                        evidence.Add(new{Step=step,Operation="scoped-current-goal-proof",Acceptance=acceptance,Phase=phase,Goal=n,Optional=optional,
+                            PhaseAbsoluteRpcCursor=phaseAbsoluteCursor,MissionAbsoluteRpcCursor=missionAbsoluteCursor,
+                            Current=state,TerminalCasReceipt=receipt,Completions=count});
+                    }
+                    return done;
+                }
                 expectedPhase=phase;step=$"mission-{id}-phase-{phase}";
                 if(id==301212&&phase==2&&!carryRelogged)
                 {
                     var before=await Saved();Check.That(before.Items.ContainsKey(6827),"Computer Parts earned by current Take before carry relog");
+                    Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,before),"Carry is the same normal acceptance");
+                    var beforeRows=await ItemRows(6827);var ownedBefore=MervAfterProgressProof.RequireOwnedItem(beforeRows,p.CharId,6827,before.Items[6827]);
+                    evidence.Add(new{Step=step,Operation="actual-owned-parts-before-logout",Rows=beforeRows,Owned=ownedBefore});
                     string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
                     var account=await Account();Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();await Task.Delay(TimeSpan.FromSeconds(33));
                     p=await HeadlessPlayer.LoginAsync(context.Server.Address,username,handle);sessions.Add(p);await p.EnterWorldAsync();p.SendRpc("0c 01");p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
@@ -140,6 +177,10 @@ public static partial class Scenarios
                     Check.Equal(before.Mission,after.Mission,"Selected carry mission survives relog");
                     Check.Equal(System.Text.Json.JsonSerializer.Serialize(new{before.SiteDoors,before.OpenFloorSites,before.OpenFloorCurrentSiteIndex,before.EverDone},fields),System.Text.Json.JsonSerializer.Serialize(new{after.SiteDoors,after.OpenFloorSites,after.OpenFloorCurrentSiteIndex,after.EverDone},fields),"Exact admitted site and earned goal history survives carry relog");
                     Check.Equal(before.Phase,after.Phase,"Current delivery phase survives relog");Check.Equal(before.Items[6827],after.Items[6827],"Computer Parts exact slot survives relog");Check.Equal(account,await Account(),"Relog pays no reward");
+                    Check.That(MervAfterProgressProof.Owns(acceptance!,after),"Restored carry retains actual acceptance instance too");
+                    var afterRows=await ItemRows(6827);var ownedAfter=MervAfterProgressProof.RequireOwnedItem(afterRows,p.CharId,6827,after.Items[6827]);
+                    Check.Equal(ownedBefore,ownedAfter,"Actual inventory character/item/slot/count survives relog");
+                    evidence.Add(new{Step=step,Operation="actual-owned-parts-after-login",Rows=afterRows,Owned=ownedAfter});
                     Check.Equal(System.Text.Json.JsonSerializer.Serialize(before.Objects,fields),System.Text.Json.JsonSerializer.Serialize(after.Objects,fields),"Admitted fixed witnesses survive relog");
                     await Barrier();End();
                     carryRelogged=true;rpcStart=0;viewsStart=0;sectionsStart=0;listStart=0;ends=0;
@@ -203,15 +244,9 @@ public static partial class Scenarios
                             byte use=ObjectStates.UseNumber(view.Goid,label) ?? throw new Exception($"No sourced {label} use for{view.Goid}");
                             if(computer)
                             {
-                                uint CurrentState()
-                                {
-                                    uint state=MervFollowupApproachFixture.InitialState(view);
-                                    byte[] prefix=WireFormat.FromHex($"{Le(view.ViewId)} 01 08");
-                                    foreach(byte[] section in p.World.ViewSnapshot().Skip(sectionsStart))
-                                        for(int at=BytePattern.IndexOf(section,prefix,0);at>=0;at=BytePattern.IndexOf(section,prefix,at+1))
-                                            if(at+prefix.Length+4<=section.Length)state=BitConverter.ToUInt32(section,at+prefix.Length);
-                                    return state;
-                                }
+                                var stateScope=MervAfterComputerState.Capture(p.World.CurrentOwnViewLife(),view);
+                                uint CurrentState()=>MervAfterComputerState.Read(p.World.CurrentOwnViewLife(),stateScope.Capability);
+                                evidence.Add(new{Step=step,Operation="current-computer-birth-state-capability",Scope=stateScope});
                                 await p.WaitUntilAsync(()=>ObjectStates.Offered(view.Goid,CurrentState()).Contains(use),
                                     $"actual enabled computer {label} use{use}",TimeSpan.FromSeconds(10));
                             }
@@ -246,6 +281,11 @@ public static partial class Scenarios
                     }
                     await p.WaitUntilAsync(()=>Done(number),$"Prima{id} phase{phase+1} actual goal{number} done",TimeSpan.FromSeconds(20));
                     await Barrier();End();
+                    if(type=="Give"&&(uint?)goal.Attribute("item")==6827)
+                    {
+                        var remaining=await ItemRows(6827);Check.Equal(0,remaining.Count,"Actual parts inventory row removed by normal Give");
+                        evidence.Add(new{Step=step,Operation="actual-owned-parts-after-give",Rows=remaining});
+                    }
 
                 }
                 var current=await Current();
