@@ -11,7 +11,7 @@ Sneak, Improved Sneak, Escape and Evasion, Concealment, Invisibility, Impart Inv
   - Sneak: Stealth (209) = ability level, Noise modifier (509) +10, Movement Speed (115) -200, StealthState.
   - Escape and Evasion: Sneak Movement (877) +25, Stealth = character level, StealthState.
   - Concealment: Stealth = ability level, Concealed and StealthState.
-  - Invisibility: Movement Speed -300 and StealthState, for 30 s + 2 s per level (`misc.py` INVISIBILITY_BASE_TIME).
+  - Invisibility: Movement Speed -300 and StealthState, for 30 s + 2 s per level + active InvisDuration644 (`misc.py` InvisibilityGrant_DirectObject). The existing Shadow1117 class buff supplies +3; snapshot once, preserve explicit remaining-time overrides. Stat1051 from175 is movement speed, not duration. [Consumer proof and native visibility gate](ABILITY-INVISIBILITY-DURATION.md).
   - Imparted invisibility (629): kInvisible only, for 120 s.
   - Master Shadow: kShadowObject for 180 s, taking 25 IS every 5 s (ISDrainWithAbilityDeactivation). It ends when IS runs short, and its recast starts when it ends (AddRecastTimer).
 
