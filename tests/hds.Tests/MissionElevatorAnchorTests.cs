@@ -213,4 +213,69 @@ public class MissionElevatorAnchorTests
         var pending=new MissionOpenFloorPendingAdmission(1,mission.id,"bound",1,123,MissionOpenFloorSite.From(site),legacy,null,witness);
         Assert.False(MissionOpenFloorAdmission.TryGeometry(mission,1,site,legacy,out _,out why,pending));Assert.Equal("UnexpectedLegacyMissionElevatorWitness",why);
     }
+
+    [Theory][InlineData("missing")][InlineData("truncated")][InlineData("hash-mismatch")][InlineData("invalid-json")]
+    public void DeclaredPayloadFailureRefusesCreationSelectedOverlayAndRestoreWithoutMutation(string fault)
+    {
+        var saved=CapturedHistory(out var mission,out var site,out var witness);
+        var restored=MissionProgress.RestoreFromCatalog(mission,saved,new[]{site});
+        var choices=witness.Sources.Select((raw,i)=>new MissionOpenFloorChoice((ushort)i,3,raw)).ToArray();
+        string before=JsonSerializer.Serialize(saved,MissionProgress.SaveJson);
+        string directory=Path.Combine(Path.GetTempPath(),"mxo-elevator-declared-data-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        byte[] payload=File.ReadAllBytes(DataLoader.DataPath("mission_elevators","1","209.json.gz"));
+        string expected=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload));
+        if(fault=="truncated")File.WriteAllBytes(Path.Combine(directory,"209.json.gz"),payload.Take(12).ToArray());
+        if(fault=="hash-mismatch")File.WriteAllBytes(Path.Combine(directory,"209.json.gz"),payload.Concat(new byte[]{1}).ToArray());
+        if(fault=="invalid-json")
+        {
+            using var stream=new MemoryStream();using(var gz=new System.IO.Compression.GZipStream(stream,System.IO.Compression.CompressionMode.Compress,true))gz.Write(System.Text.Encoding.UTF8.GetBytes("{invalid"));
+            payload=stream.ToArray();File.WriteAllBytes(Path.Combine(directory,"209.json.gz"),payload);expected=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload));
+        }
+        File.WriteAllText(Path.Combine(directory,"manifest.json"),JsonSerializer.Serialize(new{Format=1,World=1,Sectors=new[]{new{Sector=209,Groups=21,Sources=226,Sha256=expected}}}));
+        string manifestHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine(directory,"manifest.json")).Replace("\r\n","\n"))));
+        var dataset=new MissionElevatorAnchors.Dataset(directory,manifestHash);
+        for(int retry=0;retry<2;retry++)
+        {
+            Assert.Equal(MissionElevatorAnchors.LoadKind.Unavailable,dataset.Load(site.elevatorDoor).Kind);
+            Assert.False(MissionElevatorPoses.TryCreate(site,choices,out var created,out var refusal,dataset));Assert.Null(created);Assert.NotNull(refusal);
+            var overlay=MissionElevatorPoses.ResolveOverlay(restored,site.elevatorDoor,dataset);Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,overlay.Kind);
+            var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));client.playerData=new ClientData();client.playerData.missionProgress=restored;
+            bool published=false;var decision=MissionElevatorPoses.WithDoorOwner(client,site.elevatorDoor,_=>published=true,dataset);
+            Assert.False(published);Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,decision.Kind);
+            var blocked=Assert.Throws<MissionPlacementRestoreException>(()=>MissionOpenFloorAdmission.ValidateRestored(restored,new[]{site},dataset));
+            Assert.Contains("Invalid fixed mission elevator witness",blocked.Message);
+            Assert.Equal(before,JsonSerializer.Serialize(saved,MissionProgress.SaveJson));Assert.True(MissionElevatorPoses.Same(witness,restored.ElevatorFor(site)));
+        }
+        var unrelated=Ops();unrelated.staticId++;unrelated.mxoStaticId++;
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Legacy,MissionElevatorPoses.ResolveOverlay(restored,unrelated,dataset).Kind);
+        var undeclared=Ops();undeclared.sectorID=2;undeclared.mxoStaticId=(2u<<20)|undeclared.staticId;
+        Assert.Equal(MissionElevatorAnchors.LoadKind.Undeclared,dataset.Load(undeclared).Kind);
+    }
+    [Fact] public void MissingOrInvalidManifestCannotUndeclareSupportedData()
+    {
+        foreach(string? manifest in new string?[]{null,"{broken", "{\"Format\":1,\"World\":2,\"Sectors\":[]}","{\"Format\":1,\"World\":1,\"Sectors\":[]}"})
+        {
+            string directory=Path.Combine(Path.GetTempPath(),"mxo-elevator-manifest-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+            if(manifest!=null)File.WriteAllText(Path.Combine(directory,"manifest.json"),manifest);
+            Assert.Equal(MissionElevatorAnchors.LoadKind.Unavailable,new MissionElevatorAnchors.Dataset(directory).Load(Ops()).Kind);
+        }
+    }
+
+    [Fact] public void HealthyDeclaredSectorWithAbsentGroupKeepsLegacyPath()
+    {
+        var (site,choices)=ExactOps();site.elevatorDoor.staticId=0xffffe;site.elevatorDoor.mxoStaticId=(209u<<20)|site.elevatorDoor.staticId;
+        Assert.True(MissionElevatorPoses.TryCreate(site,choices,out var witness,out var why),why);Assert.Null(witness);
+        var progress=new MissionProgress(ActualMission());progress.sites.Add(site);
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Legacy,MissionElevatorPoses.ResolveOverlay(progress,site.elevatorDoor).Kind);
+    }
+
+    [Theory][InlineData(false)][InlineData(true)]
+    public void CommittedManifestPinAcceptsOnlyEquivalentLfOrCrLfPackage(bool crlf)
+    {
+        string directory=Path.Combine(Path.GetTempPath(),"mxo-elevator-manifest-eol-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        string manifest=File.ReadAllText(DataLoader.DataPath("mission_elevators","1","manifest.json")).Replace("\r\n","\n");
+        File.WriteAllText(Path.Combine(directory,"manifest.json"),crlf?manifest.Replace("\n","\r\n"):manifest,new System.Text.UTF8Encoding(false));
+        File.Copy(DataLoader.DataPath("mission_elevators","1","209.json.gz"),Path.Combine(directory,"209.json.gz"));
+        Assert.Equal(MissionElevatorAnchors.LoadKind.Available,new MissionElevatorAnchors.Dataset(directory).Load(Ops()).Kind);
+    }
 }

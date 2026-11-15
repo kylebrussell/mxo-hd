@@ -27,7 +27,6 @@ namespace hds
         private readonly Document data;
         private readonly Dictionary<uint,Group> groups,sources;
         internal readonly string Digest;
-        private static readonly ConcurrentDictionary<string,Lazy<MissionElevatorAnchors>> cache=new ConcurrentDictionary<string,Lazy<MissionElevatorAnchors>>(StringComparer.OrdinalIgnoreCase);
         private MissionElevatorAnchors(Document d,string digest){data=d;Digest=digest;groups=d.Groups.ToDictionary(g=>g.Key);sources=d.Sources.ToDictionary(g=>g.Key);}
         internal static MissionElevatorAnchors Read(Stream input,ushort sector)
         {
@@ -83,11 +82,67 @@ namespace hds
                 "original-elevator-group:"+group.Key.ToString("x8")+":legacy:"+Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(group.Legacy.Single(l=>Match(raw,l.Signature)).Signature)))+
                 ":selected-record:"+Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(chosen))));refusal=null;return true;
         }
-        internal static bool TryCurrent(StaticWorldObject raw,out MissionElevatorAnchors index)
+        internal enum LoadKind { Undeclared,Available,Unavailable }
+        internal sealed class LoadResult
         {
-            index=null;if(raw==null||raw.metrId!=1)return false;string path=DataLoader.DataPath("mission_elevators","1",raw.sectorID+".json.gz");
-            try{index=cache.GetOrAdd(path,p=>new Lazy<MissionElevatorAnchors>(()=>{using var file=File.OpenRead(p);using var gz=new GZipStream(file,CompressionMode.Decompress);return Read(gz,raw.sectorID);})).Value;return true;}
-            catch(Exception ex) when(ex is IOException||ex is JsonException||ex is ArgumentException||ex is OverflowException){return false;}
+            internal readonly LoadKind Kind;internal readonly MissionElevatorAnchors Index;internal readonly string Refusal;
+            internal LoadResult(LoadKind kind,MissionElevatorAnchors index=null,string refusal=null){Kind=kind;Index=index;Refusal=refusal;}
         }
+        internal sealed class ManifestSector { public ushort Sector {get;set;} public int Groups {get;set;} public int Sources {get;set;} public string Sha256 {get;set;} }
+        internal sealed class Manifest { public int Format {get;set;} public ushort World {get;set;} public ManifestSector[] Sectors {get;set;} }
+        internal const string CommittedManifestSha256="5FD3231BE8C2520F6F17A447D4014F8361158276A697DCD2793095BB550E4B30";
+        internal sealed class Dataset
+        {
+            private readonly string directory;private readonly Lazy<Manifest> manifest;
+            private readonly ConcurrentDictionary<ushort,Lazy<LoadResult>> loaded=new ConcurrentDictionary<ushort,Lazy<LoadResult>>();
+            internal Dataset(string directory,string expectedManifestSha256=CommittedManifestSha256)
+            {
+                this.directory=Path.GetFullPath(directory);
+                manifest=new Lazy<Manifest>(()=>
+                {
+                    byte[] manifestBytes=File.ReadAllBytes(Path.Combine(this.directory,"manifest.json"));
+                    string normalized=new System.Text.UTF8Encoding(false,true).GetString(manifestBytes).Replace("\r\n","\n");
+                    if(!string.Equals(Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalized))),expectedManifestSha256,StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidDataException("ElevatorManifestHashMismatch");
+                    var m=JsonSerializer.Deserialize<Manifest>(manifestBytes);
+                    if(m==null||m.Format!=1||m.World!=1||m.Sectors==null||m.Sectors.Any(r=>r==null||r.Sector>0x7ff||r.Groups<1||r.Sources<0||r.Sha256==null||r.Sha256.Length!=64||!r.Sha256.All(Uri.IsHexDigit))||m.Sectors.Select(r=>r.Sector).Distinct().Count()!=m.Sectors.Length)
+                        throw new InvalidDataException("ElevatorManifestIdentity");
+                    return m;
+                });
+            }
+            internal LoadResult Load(StaticWorldObject raw)
+            {
+                if(raw==null||raw.metrId!=1)return new LoadResult(LoadKind.Undeclared);
+                try
+                {
+                    var declaration=manifest.Value.Sectors.SingleOrDefault(r=>r.Sector==raw.sectorID);
+                    if(declaration==null)return new LoadResult(LoadKind.Undeclared);
+                    return loaded.GetOrAdd(raw.sectorID,sector=>new Lazy<LoadResult>(()=>LoadDeclared(declaration))).Value;
+                }
+                catch(Exception ex) when(DataFailure(ex)){return new LoadResult(LoadKind.Unavailable,refusal:"UnavailableDeclaredElevatorDataset:"+ex.GetType().Name);}
+            }
+            private LoadResult LoadDeclared(ManifestSector declaration)
+            {
+                // The manifest selects only this exact file, never an alternate directory or sector.
+                byte[] compressed=File.ReadAllBytes(Path.Combine(directory,declaration.Sector+".json.gz"));
+                if(!string.Equals(Convert.ToHexString(SHA256.HashData(compressed)),declaration.Sha256,StringComparison.OrdinalIgnoreCase))
+                    return new LoadResult(LoadKind.Unavailable,refusal:"DeclaredElevatorPayloadHashMismatch");
+                using var bytes=new MemoryStream(compressed);using var gz=new GZipStream(bytes,CompressionMode.Decompress);
+                var index=Read(gz,declaration.Sector);
+                if(index.data.Groups.Length!=declaration.Groups||index.data.Sources.Length!=declaration.Sources)
+                    return new LoadResult(LoadKind.Unavailable,refusal:"DeclaredElevatorPayloadCountMismatch");
+                return new LoadResult(LoadKind.Available,index);
+            }
+        }
+        private static bool DataFailure(Exception ex)=>ex is IOException||ex is InvalidDataException||ex is JsonException||ex is ArgumentException||ex is OverflowException||ex is UnauthorizedAccessException;
+        private static readonly ConcurrentDictionary<string,Dataset> datasets=new ConcurrentDictionary<string,Dataset>(StringComparer.OrdinalIgnoreCase);
+        internal static LoadResult Current(StaticWorldObject raw,Dataset dataset=null)
+        {
+            if(raw==null||raw.metrId!=1)return new LoadResult(LoadKind.Undeclared);
+            string path=DataLoader.DataPath("mission_elevators","1");
+            return (dataset??datasets.GetOrAdd(Path.GetFullPath(path),p=>new Dataset(p))).Load(raw);
+        }
+        internal static bool TryCurrent(StaticWorldObject raw,out MissionElevatorAnchors index)
+        {var result=Current(raw);index=result.Index;return result.Kind==LoadKind.Available;}
     }
 }

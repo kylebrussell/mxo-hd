@@ -64,7 +64,7 @@ def export(tools, output, sectors=None):
         with path.open('wb') as file:
             with gzip.GzipFile(filename='',mode='wb',fileobj=file,mtime=0) as gz:gz.write(encoded)
         manifest.append(dict(Sector=sector,Groups=len(groups),Sources=len(sources),Sha256=B.digest(path.read_bytes())))
-    (output/'manifest.json').write_text(json.dumps(dict(Format=1,MetrSha256=B.digest(parent_path.read_bytes()),NativeTransformSha256=B.digest(Path(B.T.__file__).read_bytes()),LegacyFiles=[dict(File=str(f).replace('\\','/'),Sha256=B.digest(f.read_bytes())) for f in sorted(Path('data').glob('staticObjects_slums_*.csv'))],Scope='Exact legacy signature membership in original region-qualified counted SIDI occurrence groups; membership does not assert legacy region ownership.',Sectors=manifest),indent=2)+'\n')
+    (output/'manifest.json').write_text(json.dumps(dict(Format=1,World=1,MetrSha256=B.digest(parent_path.read_bytes()),NativeTransformSha256=B.digest(Path(B.T.__file__).read_bytes()),LegacyFiles=[dict(File=str(f).replace('\\','/'),Sha256=B.digest(f.read_bytes())) for f in sorted(Path('data').glob('staticObjects_slums_*.csv'))],Scope='Exact legacy signature membership in original region-qualified counted SIDI occurrence groups; membership does not assert legacy region ownership.',Sectors=manifest),indent=2)+'\n')
 
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('tools');a.add_argument('--output',required=True);a.add_argument('--sectors',type=int,nargs='*');args=a.parse_args();export(args.tools,args.output,args.sectors)

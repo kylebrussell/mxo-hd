@@ -16,11 +16,13 @@ namespace hds
     }
     internal static class MissionElevatorPoses
     {
-        internal static bool TryCreate(MissionSite site,MissionOpenFloorChoice[] choices,out MissionElevatorWitness witness,out string refusal)
+        internal static bool TryCreate(MissionSite site,MissionOpenFloorChoice[] choices,out MissionElevatorWitness witness,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
         {
             witness=null;refusal=null;if(site?.elevatorDoor==null||site.lobbyDoor==null)return true;
             var raw=site.elevatorDoor;
-            if(!MissionElevatorAnchors.TryCurrent(raw,out var index)||!index.HasDoor(raw))return true;
+            var load=MissionElevatorAnchors.Current(raw,dataset);
+            if(load.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=load.Refusal;return false;}
+            var index=load.Index;if(load.Kind==MissionElevatorAnchors.LoadKind.Undeclared||!index.HasDoor(raw))return true;
             if(!index.NeedsCorrection(raw,out bool changed,out refusal))return false;
             if(!changed)return true;
             var legacy=MissionOpenFloorEntry.Calculate(site.metrId,new G.Position(raw.pos_x,raw.pos_y,raw.pos_z),site.CentreX,site.CentreZ,"legacy entry used only for original-region association");
@@ -41,7 +43,10 @@ namespace hds
             {refusal="ElevatorResolvedEntryRegionDisagreement";return false;}
             // Independently locate and resolve the selected lobby record. No inferred floor delta.
             var lobbyRaw=site.lobbyDoor;
-            if(!MissionElevatorAnchors.TryCurrent(lobbyRaw,out var lobbyIndex)||!lobbyIndex.TryPosition(lobbyRaw,out var lobbyNative,out refusal))
+            var lobbyLoad=MissionElevatorAnchors.Current(lobbyRaw,dataset);
+            if(lobbyLoad.Kind==MissionElevatorAnchors.LoadKind.Unavailable){refusal=lobbyLoad.Refusal;return false;}
+            var lobbyIndex=lobbyLoad.Index;
+            if(lobbyLoad.Kind!=MissionElevatorAnchors.LoadKind.Available||!lobbyIndex.TryPosition(lobbyRaw,out var lobbyNative,out refusal))
             {refusal=refusal??"ElevatorLobbyPositionUnavailable";return false;}
             var lobbyPoint=new G.Position(lobbyNative.X,lobbyNative.Y+145,lobbyNative.Z);
             var lobbyEntry=MissionOpenFloorEntry.Calculate(site.metrId,lobbyPoint,site.CentreX,site.CentreZ,"independent original lobby position consensus");
@@ -62,7 +67,7 @@ namespace hds
             internal Overlay(OverlayKind kind,G.Position position=default,string quaternion=null,string refusal=null){Kind=kind;Position=position;Quaternion=quaternion;Refusal=refusal;}
         }
         // Caller holds the captured owner's missionSync through snapshot, publication and OnElevator.
-        internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw)
+        internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw,MissionElevatorAnchors.Dataset dataset=null)
         {
             if(progress==null||raw==null)return new Overlay(OverlayKind.Legacy);
             Overlay resolved=null;
@@ -72,7 +77,9 @@ namespace hds
                 bool floor=raw.mxoStaticId==site.elevatorDoor?.mxoStaticId,lobby=raw.mxoStaticId==site.lobbyDoor?.mxoStaticId;
                 if(!floor&&!lobby)continue;
                 var selected=floor?site.elevatorDoor:site.lobbyDoor;var witness=progress.ElevatorFor(site);
-                bool known=MissionElevatorAnchors.TryCurrent(selected,out var index)&&index.HasDoor(selected);
+                var load=MissionElevatorAnchors.Current(selected,dataset);
+                if(load.Kind==MissionElevatorAnchors.LoadKind.Unavailable)return new Overlay(OverlayKind.Refused,refusal:load.Refusal);
+                var index=load.Index;bool known=load.Kind==MissionElevatorAnchors.LoadKind.Available&&index.HasDoor(selected);
                 bool changed=false;string refusal=null;
                 if(known&&!index.NeedsCorrection(selected,out changed,out refusal))
                     return new Overlay(OverlayKind.Refused,refusal:refusal);
@@ -93,13 +100,13 @@ namespace hds
             }
             return resolved??new Overlay(OverlayKind.Legacy);
         }
-        internal static Overlay WithDoorOwner(WorldClient client,StaticWorldObject raw,Action<Overlay> publish)
+        internal static Overlay WithDoorOwner(WorldClient client,StaticWorldObject raw,Action<Overlay> publish,MissionElevatorAnchors.Dataset dataset=null)
         {
             var owner=client?.playerData;if(owner==null)return new Overlay(OverlayKind.Refused,refusal:"MissingMissionDoorOwner");
             lock(owner.missionSync)
             {
                 if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
-                var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw);
+                var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw,dataset);
                 if(!ReferenceEquals(client.playerData,owner)||!ReferenceEquals(owner.missionProgress,progress))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorProgress");
                 if(snapshot.Kind!=OverlayKind.Refused)publish(snapshot);
                 return snapshot;
@@ -119,9 +126,9 @@ namespace hds
         internal static G.Position Floor(MissionSite site,MissionElevatorWitness witness)=>witness==null?new G.Position(site.elevatorDoor.pos_x,site.elevatorDoor.pos_y,site.elevatorDoor.pos_z):Position(witness.Floor);
         internal static G.Position Position(double[] p)=>new G.Position(p[0],p[1],p[2]);
         internal static bool Same(MissionElevatorWitness a,MissionElevatorWitness b)=>System.Text.Json.JsonSerializer.Serialize(a,MissionProgress.SaveJson)==System.Text.Json.JsonSerializer.Serialize(b,MissionProgress.SaveJson);
-        internal static bool Validate(MissionSite site,MissionOpenFloorChoice[] choices,MissionElevatorWitness saved,out string refusal)
+        internal static bool Validate(MissionSite site,MissionOpenFloorChoice[] choices,MissionElevatorWitness saved,out string refusal,MissionElevatorAnchors.Dataset dataset=null)
         {
-            if(!TryCreate(site,choices,out var expected,out refusal))return false;
+            if(!TryCreate(site,choices,out var expected,out refusal,dataset))return false;
             if(!Same(saved,expected)){refusal="ChangedMissionElevatorWitness";return false;}return true;
         }
     }

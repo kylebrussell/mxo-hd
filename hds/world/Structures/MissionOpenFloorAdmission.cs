@@ -178,7 +178,7 @@ namespace hds
                 progress.openFloorLegacyPhase=progress.phaseIndex;
             progress.openFloorCheckpoint=true;
         }
-        internal static void ValidateRestored(MissionProgress progress,IReadOnlyList<MissionSite> siteCatalog=null)
+        internal static void ValidateRestored(MissionProgress progress,IReadOnlyList<MissionSite> siteCatalog=null,MissionElevatorAnchors.Dataset elevatorDataset=null)
         {
             if(progress.objects.Values.Any(s=>!ValidSpot(s.spot)))throw new InvalidOperationException("Invalid open-floor checkpoint raw source");
             var boxes=progress.objects.Values.Where(s=>s.OpenFloor!=null).ToArray();
@@ -213,7 +213,7 @@ namespace hds
                 if(ReferenceEquals(elevatorSite,progress.site)&&progress.openFloorResolvedPhase==progress.phaseIndex&&
                     !elevator.Sources.SequenceEqual(progress.objects.Values.OrderBy(s=>progress.Phase.objects.IndexOf(s.def)).Select(s=>JsonSerializer.Serialize(s.spot,MissionProgress.SaveJson))))
                     throw new InvalidOperationException("Current mission elevator source set differs from selected objects");
-                if(!MissionElevatorPoses.Validate(elevatorSite,elevatorChoices,elevator,out string elevatorRefusal))
+                if(!MissionElevatorPoses.Validate(elevatorSite,elevatorChoices,elevator,out string elevatorRefusal,elevatorDataset))
                     throw new MissionPlacementRestoreException(progress,"Invalid fixed mission elevator witness:"+elevatorRefusal);
             }
             if(boxes.Length>0&&!MissionInteriorSites.SelectedSiteEligible(progress.Phase,progress.site,out string interiorRefusal,
