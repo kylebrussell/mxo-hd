@@ -65,6 +65,17 @@ namespace hds
             }
             return false;
         }
+        // Fresh policy: a current-sector outdoor component must join an exactly reciprocal original sector-network boundary.
+        // No traversal across that boundary is invented; all travel below stays in the validated current-sector graph.
+        internal bool TryStreetAccess(MissionStreetAccessData outside,Entry lobby,uint shaft,Func<uint,StaticWorldObject> selectedRaw,out StreetAccess proof,out string refusal)
+        {
+            proof=null;refusal="NoCertifiedPublicNetworkComponent";if(outside==null)return false;
+            foreach(Node start in outside.NetworkAnchors())
+                if(TryStreetAccess(outside,lobby,start,shaft,selectedRaw,out StreetAccess candidate,out string why)&&
+                    (proof==null||candidate.OutsidePath.Length+candidate.InsidePath.Length<proof.OutsidePath.Length+proof.InsidePath.Length||
+                    candidate.OutsidePath.Length+candidate.InsidePath.Length==proof.OutsidePath.Length+proof.InsidePath.Length&&candidate.Door.Key<proof.Door.Key))proof=candidate;
+            if(proof==null)return false;refusal=null;return true;
+        }
         // The public starting node is explicit evidence. Choosing a fresh public world-network anchor is not done here.
         internal bool TryStreetAccess(MissionStreetAccessData outside,Entry lobby,Node publicStart,uint shaft,Func<uint,StaticWorldObject> selectedRaw,
             out StreetAccess proof,out string refusal)

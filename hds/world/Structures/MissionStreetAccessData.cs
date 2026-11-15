@@ -25,13 +25,16 @@ namespace hds
         internal sealed class LegacyRow { public string File {get;set;} public int Line {get;set;} public Signature Signature {get;set;} }
         internal sealed class Legacy { public uint Key {get;set;} public LegacyRow[] Rows {get;set;} }
         internal sealed class LegacySource { public string File {get;set;} public string Sha256 {get;set;} }
+        internal sealed class Neighbor
+        {public ushort World {get;set;}public ushort Sector {get;set;}public double[] ParentCorner {get;set;}public string NavPath {get;set;}public string NavSha256 {get;set;}public int NavLength {get;set;}public Outdoor Outdoor {get;set;}}
         internal sealed class Document
         {
             public int Format {get;set;} public ushort World {get;set;} public ushort Sector {get;set;} public string InteriorDigest {get;set;}
             public double[] ParentCorner {get;set;} public string NavPath {get;set;} public string NavSha256 {get;set;} public int NavLength {get;set;}
-            public Outdoor Outdoor {get;set;} public Layer[] Layers {get;set;} public NativeDoor[] NativeDoors {get;set;} public NativeDoor[] NativeObjects {get;set;} public Legacy[] Legacy {get;set;} public LegacySource[] LegacySources {get;set;}
+            public Outdoor Outdoor {get;set;} public Neighbor[] Neighbors {get;set;} public Layer[] Layers {get;set;} public NativeDoor[] NativeDoors {get;set;} public NativeDoor[] NativeObjects {get;set;} public Legacy[] Legacy {get;set;} public LegacySource[] LegacySources {get;set;}
         }
         private readonly Document document;
+        private readonly E.Node[] networkAnchors;
         private readonly Dictionary<E.Node,Polygon> polygons;
         internal readonly string Digest;
         internal ushort World => document.World;
@@ -41,7 +44,7 @@ namespace hds
         internal double[] Corner => (double[])document.ParentCorner.Clone();
         internal NativeDoor[] Doors(uint key) => document.NativeDoors.Where(d=>d.Key==key).ToArray();
         private MissionStreetAccessData(Document d,string digest)
-        {document=d;Digest=digest;polygons=d.Outdoor.Regions.SelectMany(r=>r.Polygons.Select(p=>new {Node=new E.Node(r.Id,checked((ushort)p.Index)),Poly=p})).ToDictionary(p=>p.Node,p=>p.Poly);}
+        {document=d;Digest=digest;polygons=d.Outdoor.Regions.SelectMany(r=>r.Polygons.Select(p=>new {Node=new E.Node(r.Id,checked((ushort)p.Index)),Poly=p})).ToDictionary(p=>p.Node,p=>p.Poly);networkAnchors=ComputeNetworkAnchors();}
         private static void Need(bool value,string reason){if(!value)throw new InvalidDataException(reason);}
         private static bool Hex(string s,int length)=>s!=null&&s.Length==length&&s.All(Uri.IsHexDigit);
         private static string Hash(byte[] bytes)=>Convert.ToHexString(SHA256.HashData(bytes));
@@ -53,20 +56,18 @@ namespace hds
             var d=JsonSerializer.Deserialize<Document>(bytes);Validate(d);Need(interior!=null&&interior.MatchesStreetSource(d),"StreetInteriorSourceBinding");
             return new MissionStreetAccessData(d,expectedDigest.ToUpperInvariant());
         }
-        private static void Validate(Document d)
+        private static void ValidateOutdoor(Outdoor outdoor,int navLength)
         {
-            Need(d!=null&&d.Format==1&&d.World==1&&d.Sector<=0x7ff&&Hex(d.InteriorDigest,64)&&Hex(d.NavSha256,64)&&d.NavLength>=16&&
-                d.ParentCorner!=null&&d.ParentCorner.Length==3&&d.ParentCorner.All(double.IsFinite)&&d.ParentCorner[1]==0&&d.Outdoor!=null,"StreetDocumentIdentity");
-            var outdoor=d.Outdoor;byte[] header=Convert.FromHexString(outdoor.RawHeader??"");byte[] table=Convert.FromHexString(outdoor.RawSectionTable??"");
+            byte[] header=Convert.FromHexString(outdoor.RawHeader??"");byte[] table=Convert.FromHexString(outdoor.RawSectionTable??"");
             Need(header.Length==16&&BitConverter.ToUInt32(header)==0&&BitConverter.ToUInt32(header,4)==0,"StreetNavHeader");
-            uint sections=BitConverter.ToUInt32(header,8);Need(sections>0&&sections<=ushort.MaxValue&&table.Length==sections*8&&16L+table.Length<=d.NavLength&&outdoor.Regions!=null&&outdoor.Regions.Length==sections-1,"StreetOutdoorCount");
+            uint sections=BitConverter.ToUInt32(header,8);Need(sections>0&&sections<=ushort.MaxValue&&table.Length==sections*8&&16L+table.Length<=navLength&&outdoor.Regions!=null&&outdoor.Regions.Length==sections-1,"StreetOutdoorCount");
             Need(outdoor.SnavOffset==BitConverter.ToUInt32(table)&&outdoor.SnavLength==BitConverter.ToUInt32(table,4)&&outdoor.SnavOffset>=16+table.Length&&
-                (long)outdoor.SnavOffset+outdoor.SnavLength<=d.NavLength,"StreetSnavBounds");
+                (long)outdoor.SnavOffset+outdoor.SnavLength<=navLength,"StreetSnavBounds");
             for(int r=0;r<outdoor.Regions.Length;r++)
             {
                 Region region=outdoor.Regions[r];Need(region!=null&&region.Id==r&&region.Polygons!=null&&region.Polygons.Length<=ushort.MaxValue,"StreetOriginalRegionOrdinal");
                 Need(region.SectionOffset==BitConverter.ToUInt32(table,(r+1)*8)&&region.SectionLength==BitConverter.ToUInt32(table,(r+1)*8+4)&&
-                    region.SectionOffset>=16+table.Length&&region.SectionLength>=16&&(long)region.SectionOffset+region.SectionLength<=d.NavLength,"StreetSectionBounds");
+                    region.SectionOffset>=16+table.Length&&region.SectionLength>=16&&(long)region.SectionOffset+region.SectionLength<=navLength,"StreetSectionBounds");
                 byte[] raw=Convert.FromHexString(region.RawHeader??"");Need(raw.Length==16&&Encoding.ASCII.GetString(raw,0,4)=="NVPS"&&BitConverter.ToUInt32(raw,8)==(BitConverter.ToUInt32(raw,4)|0x81000000u)&&
                     BitConverter.ToUInt32(raw,12)==region.Polygons.Length&&region.NvpsOffset>=region.SectionOffset&&region.NvpsOffset+16L<=region.SectionOffset+(long)region.SectionLength,"StreetNvpsHeader");
                 long cursor=region.NvpsOffset+16L;
@@ -109,6 +110,44 @@ namespace hds
                 boundaryCursor+=checked(12+(int)size);
             }
             Need(boundaryCursor==snav.Length,"StreetBoundaryCountedEnd");
+        }
+        private static Tuple<E.Node,double[][]>[] BoundaryRows(Outdoor outdoor,double[] corner)
+        {
+            byte[] raw=Convert.FromHexString(outdoor.RawSnav);int cursor=44;var rows=new List<Tuple<E.Node,double[][]>>();
+            for(int side=0;side<4;side++)
+            {
+                int count=checked((int)BitConverter.ToUInt32(raw,cursor+12));
+                for(int i=0;i<count;i++)
+                {
+                    int at=cursor+16+i*32;var node=new E.Node(BitConverter.ToUInt16(raw,at),BitConverter.ToUInt16(raw,at+2));
+                    double[][] endpoints=Enumerable.Range(0,2).Select(j=>Enumerable.Range(0,3).Select(k=>(double)(float)(BitConverter.ToSingle(raw,at+8+j*12+k*4)+(float)corner[k])).ToArray()).ToArray();
+                    rows.Add(Tuple.Create(node,endpoints));
+                }
+                cursor+=checked(12+(int)BitConverter.ToUInt32(raw,cursor+4));
+            }
+            return rows.ToArray();
+        }
+        internal E.Node[] NetworkAnchors() => (E.Node[])networkAnchors.Clone();
+        private E.Node[] ComputeNetworkAnchors()
+        {
+            var neighbors=document.Neighbors.SelectMany(n=>BoundaryRows(n.Outdoor,n.ParentCorner)).ToArray();
+            return BoundaryRows(document.Outdoor,document.ParentCorner).Where(row=>neighbors.Count(other=>
+                row.Item2[0].SequenceEqual(other.Item2[0])&&row.Item2[1].SequenceEqual(other.Item2[1])||
+                row.Item2[0].SequenceEqual(other.Item2[1])&&row.Item2[1].SequenceEqual(other.Item2[0]))==1).Select(row=>row.Item1).Distinct().ToArray();
+        }
+        private static void Validate(Document d)
+        {
+            Need(d!=null&&d.Format==1&&d.World==1&&d.Sector<=0x7ff&&Hex(d.InteriorDigest,64)&&Hex(d.NavSha256,64)&&d.NavLength>=16&&
+                d.ParentCorner!=null&&d.ParentCorner.Length==3&&d.ParentCorner.All(double.IsFinite)&&d.ParentCorner[1]==0&&d.Outdoor!=null,"StreetDocumentIdentity");
+            ValidateOutdoor(d.Outdoor,d.NavLength);
+            Need(d.Neighbors!=null&&d.Neighbors.Select(n=>n?.Sector).Distinct().Count()==d.Neighbors.Length,"StreetNeighborIdentity");
+            foreach(var neighbor in d.Neighbors)
+            {
+                Need(neighbor!=null&&neighbor.World==d.World&&neighbor.Sector!=d.Sector&&neighbor.Sector<=0x7ff&&neighbor.NavLength>=16&&Hex(neighbor.NavSha256,64)&&
+                    neighbor.ParentCorner?.Length==3&&neighbor.ParentCorner.All(double.IsFinite)&&neighbor.ParentCorner[1]==0&&neighbor.Outdoor!=null,"StreetNeighborSource");
+                ValidateOutdoor(neighbor.Outdoor,neighbor.NavLength);
+            }
+            var outdoor=d.Outdoor;
             Need(d.Layers!=null&&d.Layers.Length==3&&d.Layers.Select(l=>l?.Kind).OrderBy(s=>s).SequenceEqual(new string[]{"SID","SIDG","SIDI"}),"StreetDeclaredGoLayers");
             Need(d.Layers.All(l=>l.Rid!=0&&l.Length>=0&&l.Count>=0&&l.DoorCount>=0&&l.DoorCount<=l.Count&&Hex(l.Sha256,64))&&d.NativeDoors!=null&&
                 d.Layers.All(l=>d.NativeDoors.Count(n=>n.Layer==l.Kind)==l.DoorCount),"StreetNativeCounts");

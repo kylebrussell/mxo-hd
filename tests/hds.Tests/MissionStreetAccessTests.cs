@@ -55,6 +55,17 @@ public sealed class MissionStreetAccessTests
         else Assert.Equal((ushort)365,proof.Door.Goid);
         Assert.Equal(before,c.Raw.ToJsonString());Assert.Equal(101213,saved.Mission);Assert.False(saved.Flags["entered"]);Assert.Empty(saved.Items);
     }
+    [Theory][InlineData((ushort)209,9)][InlineData((ushort)879,4)]
+    public void FreshPublicAccessUsesReciprocalOriginalNetworkRatherThanFixedWorldStart(ushort sector,int expected)
+    {
+        var c=Load(sector);bool mara=sector==209;uint shaft=mara?0x0d100028u:0x36f00469u;
+        Assert.Equal(expected,c.Outdoor.NetworkAnchors().Length);
+        var lobby=mara?Lobby(c.Evidence,c.Interior,shaft,49,283,28500,495,14200):Lobby(c.Evidence,c.Interior,shaft,35,10,-2600,95,-17300);
+        Assert.True(c.Evidence.TryStreetAccess(c.Outdoor,lobby,shaft,key=>Raw(c.Raw,key),out var proof,out var why),why);
+        Assert.Contains(proof.OutsidePath[0],c.Outdoor.NetworkAnchors());Assert.Equal(lobby.Node,proof.InsidePath[^1]);
+        c.Raw["Neighbors"]=new JsonArray();var disconnected=Modified(c.Raw,c.Evidence);
+        Assert.Empty(disconnected.NetworkAnchors());Assert.False(c.Evidence.TryStreetAccess(disconnected,lobby,shaft,key=>Raw(c.Raw,key),out _,out _));
+    }
     [Theory][InlineData((ushort)209,0x0d100003u)][InlineData((ushort)879,0x36f00018u)]
     public void CanonicalPublicDoorKeepsRawIdentityAndUsesItsOwnNativeSchema(ushort sector,uint key)
     {

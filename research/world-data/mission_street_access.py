@@ -70,6 +70,18 @@ def export(tools, repository, interiors, output, sectors):
                              Quaternion=row['quat'].lower(), Rotation=float(row['rotation']))
             legacy.setdefault(key, []).append(dict(File='data/'+path.name, Line=line, Signature=signature))
     if not source_files: raise ValueError('Declared legacy source files unavailable')
+    outdoor_cache = {}
+    def neighbor_evidence(parent):
+        sector = parent['sector']
+        if sector not in outdoor_cache:
+            path = index[parent['resource_refs']['SIDI']]['path'][:-5]+'.nav'
+            source = R.read(paths[path])
+            outdoor_cache[sector] = dict(World=1, Sector=sector, ParentCorner=parent['min'], NavPath=path,
+                NavSha256=sha(source), NavLength=len(source), Outdoor=outdoor(source))
+        return outdoor_cache[sector]
+    def adjacent(a,b):
+        amin,amax,bmin,bmax=a['min'],a['max'],b['min'],b['max']
+        return ((amin[0]==bmax[0] or amax[0]==bmin[0]) and amin[2]<bmax[2] and amax[2]>bmin[2]) or ((amin[2]==bmax[2] or amax[2]==bmin[2]) and amin[0]<bmax[0] and amax[0]>bmin[0])
     output = Path(output); output.mkdir(parents=True, exist_ok=True); declarations = []; public_declarations = []
     for sector in sorted(set(sectors)):
         declaration = next(r for r in manifest['Sectors'] if r['Sector'] == sector)
@@ -114,7 +126,7 @@ def export(tools, repository, interiors, output, sectors):
                 if g[0] in classes: doors.append(record)
         document = dict(Format=1, World=1, Sector=sector, InteriorDigest=declaration['Digest'],
                         ParentCorner=interior['ParentCorner'], NavPath=navpath, NavSha256=sha(nav),
-                        NavLength=len(nav), Outdoor=topology, Layers=layers, NativeDoors=doors, NativeObjects=objects,
+                        NavLength=len(nav), Outdoor=topology, Neighbors=[neighbor_evidence(p) for p in parents.values() if adjacent(parent,p)], Layers=layers, NativeDoors=doors, NativeObjects=objects,
                         Legacy=[dict(Key=k, Rows=legacy[k]) for k in sorted({d['Key'] for d in doors}) if k in legacy],
                         LegacySources=source_files)
         # This is a declared-candidate index, not proof of usability. Runtime still validates the exact opening.
