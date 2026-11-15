@@ -178,6 +178,7 @@ namespace hds
             CombatHandler handler = CombatManager.GetHandler(client);
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
+            damage = PunishingBlows.Npc(client, mob, damage);
             damage = TypedAbilityResistance.Npc(client, mob, abilityId, damage);
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId,reverseBulldog:reverseBulldog);
             AbilityHostile.LandedOnMob(client, mob, abilityId);

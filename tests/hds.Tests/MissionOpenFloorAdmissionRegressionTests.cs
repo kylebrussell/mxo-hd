@@ -77,6 +77,15 @@ public class MissionOpenFloorAdmissionRegressionTests
         var xml=new XmlDocument();xml.Load(Directory.GetFiles(Path.Combine(Repo,"data","missions"),"zion_1_2_9*").Single());
         return MissionXml.Parse(xml.DocumentElement!);
     }
+    private static Dictionary<uint,bool> KnownLegacyFootprints(MissionSite site)
+    {
+        Assert.True(MissionInteriorSites.TryRegion(site,out var region,out string why),why);
+        Assert.True(MissionOpenFloorProfiles.TryModel(548,out var model));var fits=new Dictionary<uint,bool>();
+        foreach(var raw in site.objectSpots.Where(s=>MissionSites.Goid(s)==1412))
+            if(MissionOpenFloorAnchors.TryCurrent(raw,out var anchor,out _))
+                fits.Add(raw.mxoStaticId,region.CanFit(model,new OpenFloorOrientation(Convert.ToHexString(anchor.Orientation)),new(site.minX,site.maxX,site.minZ,site.maxZ)));
+        return fits;
+    }
     [Fact] public void ExactHardlineHunterMixedSourcePoolRejectsBeforeOrdinarySelection()
     {
         LoadNav();var site=ExactMixedSourceSite();var phase=HardlineHunter().phases[1];
@@ -90,7 +99,8 @@ public class MissionOpenFloorAdmissionRegressionTests
             results.Add(raw.mxoStaticId,region.CanFit(request.Model,new(request.Anchor.QuaternionHex),request.SiteBounds));
         }
         Assert.Equal(4,results.Count);Assert.False(results[0x47e00167]);Assert.Equal(3,results.Count(x=>x.Value));
-        Assert.False(MissionInteriorSites.Eligible(phase,site,out why,5));Assert.Equal("NoInteriorFootprint:Box",why);
+        Assert.False(MissionElevatorPoses.TrySelectionContext(site,out _,out string nativeWhy));Assert.Equal("ElevatorResolvedEntryRegionDisagreement",nativeWhy);
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out why,5));Assert.Equal(nativeWhy,why);
         // Chooser semantics remain unchanged: the impossible row is still normally selectable.
         Assert.Contains(Enumerable.Range(0,64).Select(seed=>MissionStaging.SelectObjects(phase,site,new Random(seed)).Single().Spot.mxoStaticId),id=>id==0x47e00167);
     }
@@ -101,11 +111,21 @@ public class MissionOpenFloorAdmissionRegressionTests
         // Audit fingerprint no longer matches: this row is unknown, not a negative proof.
         var unknown=site.objectSpots.First(o=>o.mxoStaticId==0x47e00377);unknown.pos_x+=1;
         if(reverse)site.objectSpots.Reverse();
-        Assert.False(MissionInteriorSites.Eligible(phase,site,out var why,5));Assert.Equal("NoInteriorFootprint:Box",why);
-        site.objectSpots.RemoveAll(o=>o.mxoStaticId==0x47e00167);
-        Assert.True(MissionInteriorSites.Eligible(phase,site,out why,5),why);
+        Assert.False(MissionOpenFloorAnchors.TryCurrent(unknown,out _,out _));
+        var m=HardlineHunter();
+        Assert.False(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{Choice(m,unknown,1)},out _,out string why));Assert.Equal("MissingOrAmbiguousAuditedAnchor",why);
+        var bad=site.objectSpots.Single(o=>o.mxoStaticId==0x47e00167);
+        Assert.False(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{Choice(m,bad,1)},out _,out why));Assert.Equal("NoGeometricBodyCandidates",why);
+        var fits=KnownLegacyFootprints(site);var good=site.objectSpots.Single(o=>o.mxoStaticId==fits.First(pair=>pair.Value).Key);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{Choice(m,good,1)},out _,out why),why);
+        Assert.False(fits[bad.mxoStaticId]);Assert.True(fits[good.mxoStaticId]);Assert.DoesNotContain(unknown.mxoStaticId,fits.Keys);
+        Assert.False(MissionElevatorPoses.TrySelectionContext(site,out _,out string nativeWhy));Assert.Equal("ElevatorResolvedEntryRegionDisagreement",nativeWhy);
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out why,5));Assert.Equal(nativeWhy,why);
+        site.objectSpots.Remove(bad);Assert.All(KnownLegacyFootprints(site).Values,Assert.True);
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out why,5));Assert.Equal(nativeWhy,why);
+
     }
-    [Fact] public void CommittedImpossiblePendingChoiceRemainsExactAndRefusedOnRetry()
+    [Fact] public void CommittedImpossiblePendingKeepsLegacyNegativeAndSpecificNativeRefusal()
     {
         LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var p=new MissionProgress(m){startedAt=100,persistenceId="retained-mixed-source"};
         p.Complete(p.Phase.missionObjectives.Single());p.waitingForExit=true;
@@ -113,10 +133,12 @@ public class MissionOpenFloorAdmissionRegressionTests
         p.pendingOpenFloor=new(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),new[]{choice},"NoGeometricBodyCandidates");
         var c=Client();c.playerData.missionProgress=p;var pending=p.pendingOpenFloor;string raw=JsonSerializer.Serialize(pending,Fields);
         Assert.True(MissionOpenFloorAdmission.PendingValid(p,pending,new[]{site}));
+        Assert.False(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out _,out string legacyWhy));Assert.Equal("NoGeometricBodyCandidates",legacyWhy);
+        Assert.False(MissionElevatorPoses.TrySelectionContext(site,out _,out string nativeWhy));Assert.Equal("ElevatorResolvedEntryRegionDisagreement",nativeWhy);
         for(int retry=0;retry<2;retry++)
         {
             Assert.False(MissionOpenFloorAdmission.TryPrepare(c,p,1,p,out var plan,out var selected,out var why,new[]{site}));
-            Assert.Equal("NoGeometricBodyCandidates",why);Assert.Same(pending,selected);Assert.Same(pending,plan.Selection);
+            Assert.Equal(nativeWhy,why);Assert.Same(pending,selected);Assert.Same(pending,plan.Selection);
             Assert.Same(pending,p.pendingOpenFloor);Assert.Equal(raw,JsonSerializer.Serialize(selected,Fields));Assert.Equal(0,p.phaseIndex);
         }
     }
@@ -133,7 +155,7 @@ public class MissionOpenFloorAdmissionRegressionTests
         Assert.True(poses[1].TryReplay(request,m.id,1,p.objects[1],out _,out why),why);
         Assert.Equal(before,JsonSerializer.Serialize(saved,Fields));Assert.Equal(0x47e00377u,p.objects[1].spot.mxoStaticId);
     }
-    [Fact] public void PositiveGeometryOldPendingStillRefusesMissingWitnessBeforeAdoption()
+    [Fact] public void PositiveLegacyGeometryCannotAuthorizeUnsupportedPendingElevator()
     {
         LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var p=new MissionProgress(m){startedAt=100,persistenceId="old-positive-pending"};
         p.Complete(p.Phase.missionObjectives.Single());p.waitingForExit=true;
@@ -141,10 +163,11 @@ public class MissionOpenFloorAdmissionRegressionTests
         Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out var legacy,out string why),why);Assert.NotEmpty(legacy);
         var pending=new MissionOpenFloorPendingAdmission(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),new[]{choice},null);p.pendingOpenFloor=pending;
         string before=JsonSerializer.Serialize(pending,Fields);var c=Client();c.playerData.missionProgress=p;
+        Assert.False(MissionElevatorPoses.TrySelectionContext(site,out _,out string nativeWhy));Assert.Equal("ElevatorResolvedEntryRegionDisagreement",nativeWhy);
         for(int retry=0;retry<2;retry++)
         {
             Assert.False(MissionOpenFloorAdmission.TryPrepare(c,p,1,p,out var plan,out var selected,out why,new[]{site}));
-            Assert.Equal("MissingMissionElevatorWitness",why);Assert.Same(pending,selected);Assert.Empty(plan.Poses);Assert.Equal(0,p.phaseIndex);
+            Assert.Equal(nativeWhy,why);Assert.Same(pending,selected);Assert.Empty(plan.Poses);Assert.Equal(0,p.phaseIndex);
             Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Null(pending.Elevator);
         }
     }
@@ -163,8 +186,13 @@ public class MissionOpenFloorAdmissionRegressionTests
     {
         LoadNav();var site=ExactMixedSourceSite();var phase=HardlineHunter().phases[1];
         var impossible=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00167);site.objectSpots.Remove(impossible);site.containers.Add(impossible);
-        Assert.True(MissionInteriorSites.Eligible(phase,site,out var why,5),why);
-        Assert.All(Enumerable.Range(0,16),seed=>Assert.NotEqual(impossible.mxoStaticId,MissionStaging.SelectObjects(phase,site,new Random(seed)).Single().Spot.mxoStaticId));
+        Assert.False(MissionElevatorPoses.TrySelectionContext(site,out _,out string nativeWhy));Assert.Equal("ElevatorResolvedEntryRegionDisagreement",nativeWhy);
+        Assert.False(MissionInteriorSites.Eligible(phase,site,out var why,5));Assert.Equal(nativeWhy,why);
+        Assert.All(Enumerable.Range(0,16),seed=>
+        {
+            var source=MissionStaging.SelectObjects(phase,site,new Random(seed)).Single().Spot;Assert.NotEqual(impossible.mxoStaticId,source.mxoStaticId);
+            Assert.True(MissionOpenFloorAdmission.TryGeometry(HardlineHunter(),1,site,new[]{Choice(HardlineHunter(),source,1)},out _,out string legacyWhy),legacyWhy);
+        });
     }
     [Fact] public void NativeFirstChoiceIsDeterministicRatherThanAnyReachableAlternative()
     {
