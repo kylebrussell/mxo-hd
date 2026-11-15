@@ -55,13 +55,13 @@ namespace hds
                 refusal="NoInteriorNativeUse:"+first.kind;return false;
             }
             if(!checkSourcePool)return true;
-            var matching=site.objectSpots.Where(s=>(pools==null||pools.Allows(s))&&MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
+            var matching=site.objectSpots.Where(s=>(pools==null||pools.AllowsFirst(first,s))&&MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.
-            var available=site.objectSpots.Where(s=>pools==null||pools.Allows(s)).ToArray();
-            var sources=matching.Length>0?matching:available.Length>0?available:site.containers.Where(s=>pools==null||pools.Allows(s)).ToArray();
+            var available=site.objectSpots.Where(s=>pools==null||pools.AllowsFirst(first,s)).ToArray();
+            var sources=matching.Length>0?matching:available.Length>0?available:site.containers.Where(s=>pools==null||pools.AllowsFirst(first,s)).ToArray();
             if(!TryRegion(site,out var region,out refusal,elevator))return false;
-            foreach(var raw in sources.Where(s=>pools==null||pools.Allows(s)))
+            foreach(var raw in sources.Where(s=>pools==null||pools.AllowsFirst(first,s)))
             {
                 ushort goid=MissionStaging.ExpectedConcrete(first,raw);
                 if(!MissionOpenFloorAdmission.Target(goid,raw)||!MissionOpenFloorProfiles.TryModel(goid,out var model)||
