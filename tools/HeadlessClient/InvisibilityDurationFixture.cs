@@ -12,6 +12,24 @@ public static class InvisibilityDurationFixture
     public static Modifier? Read(byte[] b)=>b.Length==22&&b[0]==0x80&&b[1]==0xbc?new(BitConverter.ToUInt16(b,2),BitConverter.ToUInt16(b,4),BitConverter.ToUInt32(b,7),BitConverter.ToUInt16(b,11),BitConverter.ToInt32(b,13),b[17]!=0,BitConverter.ToSingle(b,18)):null;
     public static IEnumerable<Modifier> Mods(HeadlessPlayer p,int cursor=0)=>p.World.RpcSnapshot().Skip(cursor).Select(r=>Read(r.Bytes)).OfType<Modifier>();
     public static bool Off(HeadlessPlayer p,Modifier on,int cursor)=>Mods(p,cursor).Any(m=>m.Off&&m.Record==on.Record&&m.Parent==on.Parent&&m.Target==on.Target);
+    public sealed record Cooldown(int RpcIndex,float Seconds,bool Running,string Raw);
+    public sealed record Readiness(bool SeenStart,Cooldown? Latest)
+    {public bool Ready=>SeenStart&&Latest is {Running:false};}
+    public static Readiness CooldownReadiness(IEnumerable<byte[]> rpc)
+    {
+        bool start=false;Cooldown? latest=null;int index=0;
+        foreach(var b in rpc)
+        {
+            if(b.Length==11&&b[0]==0x80&&b[1]==0xbd&&b[2]==1&&BitConverter.ToUInt16(b,3)==1116&&b[5]==4)
+            {
+                float seconds=BitConverter.ToSingle(b,6);
+                if(!float.IsFinite(seconds)||seconds<0||b[10]>1)throw new InvalidDataException("Malformed current1116 own cooldown record");
+                bool running=b[10]!=0;start|=running;latest=new(index,seconds,running,Convert.ToHexString(b));
+            }
+            index++;
+        }
+        return new(start,latest);
+    }
     public static void RequirePin(string? expected,string actual)
     {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Invisibility duration requires exact source pin via "+SourcePin);}
 }

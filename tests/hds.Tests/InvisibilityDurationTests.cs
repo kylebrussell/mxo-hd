@@ -79,4 +79,22 @@ public class InvisibilityDurationTests
         Assert.Throws<ScenarioFailure>(()=>GhostStrikeInvisibilityTool.OwnedSlot(Convert.FromHexString("28CC0100000000000C28CC0100000000000C")));
         var request=GhostStrikeInvisibilityTool.Request(40);Assert.Equal(43,request.Length);Assert.Equal(1116,BitConverter.ToUInt16(request,2));Assert.Equal(40,request[37]);Assert.Equal(0,request[38]);
     }
+    [Fact] public void ReadinessRequiresObservedStartAndLatestMatchingOwnTimerOff()
+    {
+        byte[] on=Convert.FromHexString("80bd015c04040000f04101"),off=Convert.FromHexString("80bd015c04040000f04100");
+        Assert.False(InvisibilityDurationFixture.CooldownReadiness(Array.Empty<byte[]>()).Ready);
+        Assert.False(InvisibilityDurationFixture.CooldownReadiness(new[]{off}).Ready);
+        Assert.False(InvisibilityDurationFixture.CooldownReadiness(new[]{on}).Ready);
+        var ready=InvisibilityDurationFixture.CooldownReadiness(new[]{on,off});Assert.True(ready.Ready);Assert.Equal(30,ready.Latest!.Seconds);Assert.Equal(1,ready.Latest.RpcIndex);
+        Assert.False(InvisibilityDurationFixture.CooldownReadiness(new[]{on,off,on}).Ready); // a later start defeats an old OFF
+        var other=on.ToArray();other[3]=0x5d;var group=on.ToArray();group[5]=0;
+        Assert.True(InvisibilityDurationFixture.CooldownReadiness(new[]{on,off,other,group}).Ready);
+        var invalid=on.ToArray();invalid[10]=2;Assert.Throws<InvalidDataException>(()=>InvisibilityDurationFixture.CooldownReadiness(new[]{invalid}));
+    }
+    [Fact] public void Current1116CooldownIsUseTimeAndItsNaturalEndDoesNotInventATermTimer()
+    {
+        Assert.True(AbilityBuffs.CooldownStartsOnUse(1116));Assert.True(AbilityCooldowns.TryGet(1116,out var cooldown));Assert.Equal(30,cooldown.Seconds);
+        var c=Client();var state=Stealth.Begin(c,Stealth.Defs[1116],50);DelayedActions.RunDue(state.Expires+1);Assert.Null(Stealth.Current(c));
+        Assert.False(AbilityCooldowns.IsCoolingDown(c.playerData,1116,TimeUtils.GetSimTimeSeconds()));
+    }
 }

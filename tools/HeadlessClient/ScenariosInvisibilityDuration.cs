@@ -26,6 +26,15 @@ public static partial class Scenarios
             var updates=ViewUpdateValues(actor,2,"02 80 80 80 10",viewCursor).ToArray();var history=new[]{before}.Concat(updates).ToArray();
             Check.That(history.Zip(history.Skip(1)).Any(v=>v.First-v.Second==20),"Actual normal1117 twentyIS debit");
             operations.Add(new{Stage=stage,Request=Convert.ToHexString(request),Cursor=cursor,BeforeIS=before,IsUpdates=updates,Modifiers=InvisibilityDurationFixture.Mods(actor,cursor).ToArray(),NativeActionsVisibilityProven=false});
+            stage="observed-invisibility-cooldown-ready";
+            var readyClock=Stopwatch.StartNew();var beforeReady=InvisibilityDurationFixture.CooldownReadiness(actor.World.RpcSnapshot().Select(r=>r.Bytes));
+            // Current1116 starts its stored30s own timer on USE. It normally ends during
+            // the130s baseline; readiness is observed, never inferred from duration or reset.
+            await actor.WaitUntilAsync(()=>InvisibilityDurationFixture.CooldownReadiness(actor.World.RpcSnapshot().Select(r=>r.Bytes)).Ready,
+                "observed current1116 own cooldown OFF",TimeSpan.FromSeconds(35));
+            var afterReady=InvisibilityDurationFixture.CooldownReadiness(actor.World.RpcSnapshot().Select(r=>r.Bytes));
+            Check.Equal(30f,afterReady.Latest!.Seconds,"Actual stored1116 own timer duration");
+            operations.Add(new{Stage=stage,Before=beforeReady,After=afterReady,ActualWaitSeconds=readyClock.Elapsed.TotalSeconds,NoResetOrFixedWait=true,Policy="Current source use-time30; no1116 term timer inferred"});
             await Natural(133,"shadow-duration");
             Check.Equal(0,actor.World.Problems.Count+observer.World.Problems.Count,"Normal-wire parser healthy");stage="passed";
         }
