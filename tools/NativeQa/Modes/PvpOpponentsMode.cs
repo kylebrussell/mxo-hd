@@ -14,7 +14,7 @@ public sealed class PvpOpponentsMode:NativeQaMode
         var entries=new List<object>();var observers=new List<object>();
         foreach(string name in context.HelperNames)
         {
-            var player=await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000),name,name);
+            var player=await HeadlessPlayer.LoginAsync(context.Address,name,name);
             context.Helpers.Add(name,player);entries.Add(await PvpOpponentsFixture.EnterAsync(player));
         }
         //Helpers only: waiting for CSR before Ready would deadlock the native startup workflow.
