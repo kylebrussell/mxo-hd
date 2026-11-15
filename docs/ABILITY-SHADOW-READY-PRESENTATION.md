@@ -31,4 +31,3 @@ No native, headless server, build-pair or full-suite proof is claimed at this in
 # Normal-wire qualification candidate
 
 The `shadow-ready-presentation` headless case enters with automatic loading-complete disabled. It uses a current-session own03 and feature-response barrier, then checks code-only `0c` and `0c00` publish no1117 base/relation. Exact `0c01` must emit late zero/520 base before Type45 ADD; duplicate complete is idempotent. Normal290 unload/reload uses the actual Margin07 slot and existing80ae loadout request, observes committed loaded flags, and checks the defined Shadow OFF-before-unload order. Other175/151 records remain byte-identical. A normal logout,33-second reservation wait and cold replacement repeat the ready sequence under an exact source pin. SQL ownership/levels/slots remain unchanged and1117 is never archived or invoked. This is protocol/state evidence only; the case has not yet been run and does not prove native listing.
-
