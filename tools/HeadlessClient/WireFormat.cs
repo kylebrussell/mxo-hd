@@ -38,6 +38,8 @@ public sealed class WorldPayload
 /// <summary>A creation record found in a 03 list: `01 00 &lt;0c|08&gt; goid [static] counter cd ab attributes view 00`.</summary>
 public sealed record ViewCreation(ushort ViewId, ushort Goid, byte SpawnId, IReadOnlyDictionary<string, byte[]> Attributes)
 {
+    /// <summary>Bound creation header08 related-static key; null for fully dynamic0c records.</summary>
+    public uint? RelatedStaticObjectId { get; init; }
     /// <summary>The name attribute, when the record carries one.</summary>
     public string? Name => Attributes.TryGetValue("CharacterName", out byte[]? name) ? WireFormat.ZeroTerminated(name) : null;
 }
@@ -187,9 +189,12 @@ public static class WireFormat
             int offset = i + 3;
             ushort goid = (ushort)(section[offset] | (section[offset + 1] << 8));
             offset += 2;
+            uint? relatedStaticObjectId=null;
             if (section[i + 2] == 0x08)
             {
-                offset += 4; // related static object id
+                if(offset+4>section.Length)continue;
+                relatedStaticObjectId=BitConverter.ToUInt32(section,offset);
+                offset += 4; // ObjectManager.GenerateCreationPacket bound header identity
             }
             if (offset + 3 > section.Length || section[offset + 1] != 0xcd || section[offset + 2] != 0xab)
             {
@@ -201,7 +206,7 @@ public static class WireFormat
                 offset + 3 <= section.Length && section[offset + 2] == 0x00)
             {
                 ushort viewId = (ushort)(section[offset] | (section[offset + 1] << 8));
-                found.Add(new CreationEvent(i, offset + 3 - i, new ViewCreation(viewId, goid, spawnId, attributes)));
+                found.Add(new CreationEvent(i, offset + 3 - i, new ViewCreation(viewId, goid, spawnId, attributes){RelatedStaticObjectId=relatedStaticObjectId}));
                 i = offset + 2;
             }
         }

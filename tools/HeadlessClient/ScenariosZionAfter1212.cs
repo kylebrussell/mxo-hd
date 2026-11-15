@@ -74,8 +74,15 @@ public static partial class Scenarios
     private static async Task ZionAfter1212Ride(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null,int creationStart=0)
     {
         var state=await ZionAfter1212Checkpoint(context,p);var door=state.Waypoints.Single();var lobby=state.Exits.Single();
-        uint key=enter?ZionAfter1212Fixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),lobby):BitConverter.ToUInt32(Convert.FromHexString(door.doorHex),0);
-        var pose=enter?lobby:new[]{door.x,door.y,door.z};await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Ordinary Ride requires the current own-view life");
+        var authoredXml=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"zion_1_2_*.xml").Select(XElement.Load).Single(m=>(int)m.Attribute("id")! ==state.Mission);
+        var authoredDocument=new System.Xml.XmlDocument();authoredDocument.LoadXml(authoredXml.ToString());
+        var objectOrder=MissionXml.Parse(authoredDocument.DocumentElement!).phases[state.Phase].objects.Select(o=>o.id).ToArray();
+        var plan=ZionAfter1212RidePlan.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
+        uint key=plan.Key;var pose=plan.Pose;
+        await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        ZionAfter1212RidePlan.SameEntry(state,await ZionAfter1212Checkpoint(context,p));
+        Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Current own-view life retained immediately before Ride wire request");
         var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid&&ZionAfter1212Fixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance,creationStart)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
@@ -83,6 +90,28 @@ public static partial class Scenarios
         if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",TimeSpan.FromSeconds(15));
         string rideLog=context.Server.DebugLog()[cursor..];
         note?.Invoke(new{Kind="Ordinary saved-site door request",Mission=state.Mission,Phase=state.Phase,Enter=enter,Key=key,Request=request,RpcCursor=rpc,SourceWaypoint=door,SourceExit=lobby,RideLog=rideLog});
+        if(plan.Witness is MissionElevatorWitness measured)
+        {
+            ViewCreation? overlay=null;
+            await p.WaitUntilAsync(()=>
+            {
+                try{overlay=ZionCurrentDoorOverlay.Require(p.World.CurrentOwnViewLife(),plan);return true;}
+                catch(InvalidDataException){return false;}
+            },"Current live requested measured door03 overlay after ordinary request",TimeSpan.FromSeconds(15));
+            Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Measured overlay belongs to the current requested own-view life");
+            plan.RequireOverlay(overlay!);
+            if(enter)
+            {
+                var actual=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+                Check.That(actual!=null,"Measured ordinary entry must produce an actual Ride root");
+                double[] root=Enumerable.Range(1,3).Select(i=>double.Parse(actual!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+                SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
+                Check.That(NavMesh.Locate(plan.World,root[0],root[1],root[2],out var nav)&&nav.sector==state.SiteDoors[state.OpenFloorCurrentSiteIndex!.Value].sectorID&&nav.region==measured.Region&&Math.Abs(root[1]-(nav.floorY+95))<=.01,"Actual measured Ride root is grounded on the selected floor NAV layer, including NPC-only phases");
+                foreach(var obj in state.Objects.Where(o=>o.OpenFloor!=null))Check.That(obj.OpenFloor!.Route.Take(3).SequenceEqual(root),"Every current fixed object retains the actual measured Ride root");
+                ZionAfter1212RidePlan.SameEntry(state,await ZionAfter1212Checkpoint(context,p));
+            }
+            note?.Invoke(new{Kind="Current measured elevator witness",Witness=measured,RequestedKey=key,DoorView=overlay!.ViewId,DoorSpawn=overlay.SpawnId});
+        }
         if(enter&&pending.Length>0)
         {
             var arrival=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
