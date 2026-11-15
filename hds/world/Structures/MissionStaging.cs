@@ -172,7 +172,7 @@ namespace hds
 
             // No layout RNG is consumed between site choice and object placement. Materialize the
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
-            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            var objectChoices=prepared==null?PrepareSourcePoolChoices(phase,site,rng,placed.Count+SpotsForWaves(phase)):null;
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
                     MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
@@ -374,11 +374,62 @@ namespace hds
             internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
             {Definition=definition;Spot=spot;Goid=goid;}
         }
+        internal sealed class SourcePools
+        {
+            internal readonly MissionElevatorWitness Elevator;
+            private readonly HashSet<StaticWorldObject> allowed;
+            internal SourcePools(MissionElevatorWitness elevator,IEnumerable<StaticWorldObject> rows)
+            {Elevator=elevator;allowed=new HashSet<StaticWorldObject>(rows);}
+            internal bool Allows(StaticWorldObject row)=>allowed.Contains(row);
+        }
+        // Necessary preselection only. No RNG, site mutation, fixed-choice repair or body planning.
+        internal static bool TrySourcePools(MissionPhase phase,MissionSite site,int npcCount,out SourcePools pools,out string refusal)
+        {
+            pools=null;refusal=null;
+            if(!MissionOpenFloorAdmission.Requires(phase)||site==null)return true;
+            var taken=new HashSet<StaticWorldObject>();var remaining=new List<MissionObjectDef>();
+            foreach(var def in phase.objects)
+            {
+                var real=site.realObjects.FirstOrDefault(o=>!taken.Contains(o)&&
+                    string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)],def.kind,StringComparison.OrdinalIgnoreCase));
+                if(real!=null)taken.Add(real);else remaining.Add(def);
+            }
+            var rows=site.objectSpots.Concat(site.containers).ToArray();
+            bool mayAdopt=remaining.Any(d=>ObjectGoids.ContainsKey(d.kind)&&rows.Any(raw=>MissionOpenFloorAdmission.Target(ExpectedConcrete(d,raw),raw)));
+            if(!mayAdopt)return true; // Bound-only/NPC-only behavior and migration remain unchanged.
+            if(!MissionElevatorPoses.TrySelectionContext(site,out var context,out refusal))return false;
+            if(context==null)return true; // Genuine undeclared/unchanged legacy case.
+            foreach(var raw in taken)
+                if(!MissionElevatorPoses.CompatibleSource(site,raw,context,out refusal))return false;
+            var allowed=rows.Where(raw=>MissionElevatorPoses.CompatibleSource(site,raw,context,out _)).ToArray();
+            if(rows.Concat(taken).Select(MissionOpenFloorSite.SpotFingerprint).Distinct().Count()!=rows.Length+taken.Count)
+            {refusal="AmbiguousElevatorSourcePool";return false;}
+            int spawners=site.objectSpots.Count(allowed.Contains),furniture=site.containers.Count(allowed.Contains);
+            int spawned=remaining.Count(d=>ObjectGoids.ContainsKey(d.kind)),native=remaining.Count-spawned;
+            if(furniture<native+Math.Max(0,spawned-spawners))
+            {refusal="InsufficientCompatibleElevatorSources";return false;}
+            if(!MissionInteriorSites.TryAllocate(site,npcCount,out _,out refusal,context))return false;
+            pools=new SourcePools(context,allowed);return true;
+        }
         // Shared exact chooser. Staging materializes it before publishing any phase entities.
         internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
+            =>SelectObjectsFromPools(phase,site,rng,null);
+        internal static ObjectChoice[] PrepareSourcePoolChoices(MissionPhase phase,MissionSite site,Random rng,int npcCount)
         {
-            List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
-            List<StaticWorldObject> spawners = site.objectSpots.OrderBy(_ => rng.Next()).ToList();
+            if(!TrySourcePools(phase,site,npcCount,out var pools,out string refusal))
+                throw new MissionCheckpointException("Object source selection refused: "+refusal);
+            var choices=SelectObjectsFromPools(phase,site,rng,pools).ToArray();
+            foreach(var choice in choices)
+                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+            return choices;
+        }
+        internal static IEnumerable<ObjectChoice> SelectObjectsFromPools(MissionPhase phase,MissionSite site,Random rng,SourcePools pools)
+        {
+            // Preserve one existing key/draw per ORIGINAL row, even for prefiltered sources.
+            List<StaticWorldObject> furniture = site.containers.Select(s=>new{Spot=s,Key=rng.Next()})
+                .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
+            List<StaticWorldObject> spawners = site.objectSpots.Select(s=>new{Spot=s,Key=rng.Next()})
+                .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
             HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
             foreach (MissionObjectDef def in phase.objects)
             {
