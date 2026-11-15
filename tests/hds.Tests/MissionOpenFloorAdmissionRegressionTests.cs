@@ -120,7 +120,7 @@ public class MissionOpenFloorAdmissionRegressionTests
             Assert.Same(pending,p.pendingOpenFloor);Assert.Equal(raw,JsonSerializer.Serialize(selected,Fields));Assert.Equal(0,p.phaseIndex);
         }
     }
-    [Fact] public void ExistingValidExactSourceRestoresDespiteImpossibleUnusedAlternative()
+    [Fact] public void LegacyExactSourceGeometryReplaysDespiteImpossibleUnusedAlternative()
     {
         LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();
         Assert.False(MissionInteriorSites.Eligible(m.phases[1],site,out _,5));
@@ -128,9 +128,36 @@ public class MissionOpenFloorAdmissionRegressionTests
         Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out var poses,out string why),why);
         var p=new MissionProgress(m){phaseIndex=1,site=site,openFloorCheckpoint=true,openFloorResolvedPhase=1,startedAt=100,persistenceId="valid-mixed-source"};
         p.sites.Add(site);p.objects.Add(1,new(){def=m.phases[1].objects.Single(),spot=source,goid=548,entity=123,OpenFloor=poses[1]});
-        var saved=RoundTrip(p);var restored=MissionProgress.RestoreFromCatalog(m,saved,new[]{site});
-        Assert.Equal(JsonSerializer.Serialize(saved,Fields),JsonSerializer.Serialize(restored.Capture(23,Array.Empty<Mob>()),Fields));
-        Assert.Equal(0x47e00377u,restored.objects[1].spot.mxoStaticId);
+        var saved=RoundTrip(p);string before=JsonSerializer.Serialize(saved,Fields);
+        Assert.True(MissionOpenFloorRequests.TryCreate(source,548,site,1,out var request,out why,m.phases[1],1),why);
+        Assert.True(poses[1].TryReplay(request,m.id,1,p.objects[1],out _,out why),why);
+        Assert.Equal(before,JsonSerializer.Serialize(saved,Fields));Assert.Equal(0x47e00377u,p.objects[1].spot.mxoStaticId);
+    }
+    [Fact] public void PositiveGeometryOldPendingStillRefusesMissingWitnessBeforeAdoption()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var p=new MissionProgress(m){startedAt=100,persistenceId="old-positive-pending"};
+        p.Complete(p.Phase.missionObjectives.Single());p.waitingForExit=true;
+        var choice=Choice(m,site.objectSpots.Single(o=>o.mxoStaticId==0x47e00377),1);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{choice},out var legacy,out string why),why);Assert.NotEmpty(legacy);
+        var pending=new MissionOpenFloorPendingAdmission(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),new[]{choice},null);p.pendingOpenFloor=pending;
+        string before=JsonSerializer.Serialize(pending,Fields);var c=Client();c.playerData.missionProgress=p;
+        for(int retry=0;retry<2;retry++)
+        {
+            Assert.False(MissionOpenFloorAdmission.TryPrepare(c,p,1,p,out var plan,out var selected,out why,new[]{site}));
+            Assert.Equal("MissingMissionElevatorWitness",why);Assert.Same(pending,selected);Assert.Empty(plan.Poses);Assert.Equal(0,p.phaseIndex);
+            Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Null(pending.Elevator);
+        }
+    }
+    [Fact] public void LegacyFixedCorrectedDoorWithoutWitnessRefusesRestoreAndPublication()
+    {
+        LoadNav();var site=ExactMixedSourceSite();var m=HardlineHunter();var source=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00377);
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(m,1,site,new[]{Choice(m,source,1)},out var poses,out string why),why);
+        var p=new MissionProgress(m){phaseIndex=1,site=site,openFloorCheckpoint=true,openFloorResolvedPhase=1,startedAt=100,persistenceId="old-fixed-missing-door"};
+        p.sites.Add(site);p.objects.Add(1,new(){def=m.phases[1].objects.Single(),spot=source,goid=548,entity=123,OpenFloor=poses[1]});p.itemSlots[6783]=6;
+        var saved=RoundTrip(p);string before=JsonSerializer.Serialize(saved,Fields);
+        var refused=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,saved,new[]{site}));Assert.Equal("MissingMissionElevatorWitness",refused.Message);
+        Assert.Equal((ushort)6,refused.Progress.itemSlots[6783]);Assert.Equal(before,JsonSerializer.Serialize(saved,Fields));
+        Assert.Equal(MissionElevatorPoses.OverlayKind.Refused,MissionElevatorPoses.ResolveOverlay(refused.Progress,site.elevatorDoor).Kind);
     }
     [Fact] public void LowerPriorityImpossibleFurnitureIsNotInTheMatchingSpawnerPool()
     {
