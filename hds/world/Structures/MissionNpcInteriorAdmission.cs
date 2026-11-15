@@ -9,6 +9,20 @@ namespace hds
     internal static class MissionNpcInteriorAdmission
     {
         internal static bool Candidate(MissionPhase phase) => phase?.site != null && phase.objects.Count == 0;
+        // A generated waypoint-only phase has no NPC placement to certify. Malformed
+        // negative counts and unsupported real roles remain candidates and fail closed.
+        internal static bool EmptyRoles(Mission mission,int index)
+        {
+            if(mission==null||index<0||index>=mission.phases.Count||!Candidate(mission.phases[index]))return false;
+            var phase=mission.phases[index];
+            return !mission.npcs.Any(n=>n.at==index+1)&&phase.enemies==0&&phase.waves.All(w=>w!=null&&w.count==0);
+        }
+        internal static bool Candidate(Mission mission,int index) => mission!=null&&index>=0&&index<mission.phases.Count&&Candidate(mission.phases[index])&&!EmptyRoles(mission,index);
+        private static bool EmptyReplay(MissionProgress p,int phase,MissionNpcInteriorPending pending,MissionSite exact) =>
+            EmptyRoles(p.mission,phase)&&pending!=null&&pending.Version==2&&pending.Kind==MissionNpcInteriorPlanning.Kind&&pending.Witness==null&&
+            pending.Refusal=="MissingNpcSiteRole"&&pending.Selection!=null&&pending.Selection.Mission==p.mission.id&&pending.Selection.Identity==p.persistenceId&&pending.Selection.Started==p.startedAt&&
+            pending.Selection.Phase==phase&&pending.Selection.RolePlan==0&&pending.Selection.Actors?.Length==0&&pending.Selection.Site?.District==p.mission.district&&exact!=null&&
+            pending.Selection.Site.Fingerprint==MissionOpenFloorSite.CatalogFingerprint(exact);
         internal static bool Declared(MissionSite site) => site?.metrId == 1 && site.elevatorDoor != null && MissionInteriorEvidence.Declared(DataLoader.DataPath("mission_interior_evidence", "1"), site.metrId, site.elevatorDoor.sectorID);
         internal sealed class Plan
         {
@@ -16,6 +30,8 @@ namespace hds
             internal readonly MissionStaging.SiteSelection Selected;
             internal readonly MissionNpcInteriorPending Pending;
             internal readonly bool Replayed;
+            internal readonly bool EmptyRoleReplay;
+            internal bool ObjectReplay => Replayed&&(Adopted||EmptyRoleReplay);
             private readonly MissionNpcInteriorBefore before;
             private readonly ClientData owner;
             private readonly long transport;
@@ -23,8 +39,8 @@ namespace hds
             private readonly uint character;
             private readonly string identity;
             private readonly long started;
-            internal Plan(WorldClient c, MissionProgress p, int phase, MissionStaging.SiteSelection selected, MissionNpcInteriorPending pending,bool replayed=false)
-            { Progress=p;Selected=selected;Pending=pending;Replayed=replayed;this.phase=phase;identity=p.persistenceId;started=p.startedAt;before=new MissionNpcInteriorBefore(c,p,phase);owner=c.playerData;transport=c.TransportFence.Capture();world=owner.worldGeneration;life=owner.lifeGeneration;character=owner.getCharID(); }
+            internal Plan(WorldClient c, MissionProgress p, int phase, MissionStaging.SiteSelection selected, MissionNpcInteriorPending pending,bool replayed=false,bool emptyRoleReplay=false)
+            { Progress=p;Selected=selected;Pending=pending;Replayed=replayed;EmptyRoleReplay=emptyRoleReplay;this.phase=phase;identity=p.persistenceId;started=p.startedAt;before=new MissionNpcInteriorBefore(c,p,phase);owner=c.playerData;transport=c.TransportFence.Capture();world=owner.worldGeneration;life=owner.lifeGeneration;character=owner.getCharID(); }
             internal bool Adopted => Pending?.Witness != null;
             internal bool BeforeCurrent(WorldClient c) => before.Current(c,Pending);
             internal bool WorldCurrent(WorldClient c) => ReferenceEquals(c.playerData,owner)&&owner.getCharID()==character&&owner.worldGeneration==world&&owner.lifeGeneration==life&&
@@ -33,7 +49,8 @@ namespace hds
             // Deliberately distinct from BeforeCurrent: called AFTER the intentional NextPhase/Start owner change.
             internal void RequireStaging(WorldClient c)
             {
-                if(Pending!=null&&!Adopted)throw new MissionCheckpointException("Refused NPC pending cannot stage");
+                if(Pending!=null&&!Adopted&&!EmptyRoleReplay)throw new MissionCheckpointException("Refused NPC pending cannot stage");
+                if(EmptyRoleReplay&&!EmptyReplay(Progress,phase,Pending,Selected.Site))throw new MissionCheckpointException("Changed empty-role replay");
                 if(!WorldCurrent(c)||!ReferenceEquals(owner.missionProgress,Progress)||!ReferenceEquals(owner.activeMission,Progress.mission)||
                     Progress.phaseIndex!=phase||Progress.persistenceId!=identity||Progress.startedAt!=started||
                     (Pending!=null&&(Progress.phaseIndex!=Pending.Selection.Phase||Pending.Selection.Identity!=Progress.persistenceId||Pending.Selection.Started!=Progress.startedAt))||
@@ -49,7 +66,7 @@ namespace hds
         internal static bool TryPrepare(WorldClient c,MissionProgress p,int phase,out Plan plan,out string refusal)
         {
             plan=null;refusal=null;
-            if(!Candidate(p.mission.phases[phase]))return true;
+            if(!Candidate(p.mission,phase)&&p.npcInteriorPending==null)return true;
             var before=new MissionNpcInteriorBefore(c,p,phase);
             if(!before.Current(c)){refusal="StaleNpcBeforeState";return false;}
             if(p.npcInteriorPending!=null)
@@ -86,6 +103,11 @@ namespace hds
             plan=null;refusal="InvalidCommittedNpcPending";var pending=p.npcInteriorPending;
             var exact=pending?.Selection?.Site?.Resolve(catalog);
             if(exact==null||phase!=p.phaseIndex+1||!p.AllDone||!p.waitingForExit||pending.Selection.Phase!=phase||pending.Selection.Identity!=p.persistenceId||pending.Selection.Started!=p.startedAt)return false;
+            if(EmptyReplay(p,phase,pending,exact))
+            {
+                plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(exact,null),pending,true,true);
+                refusal=null;return plan.BeforeCurrent(c);
+            }
             plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(exact,null),pending,true);
             if(!plan.BeforeCurrent(c))return false;
             if(pending.Witness==null){refusal=pending.Refusal;return false;}
