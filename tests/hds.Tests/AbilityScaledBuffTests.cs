@@ -236,6 +236,7 @@ public class AbilityScaledBuffTests
     public void SourcedTogglesDrainAndDeactivateOnShortfall(ushort id,ushort stat,int expected,int drain,int interval)
     {
         var c=Client(50);
+        using var owner=new BuffDrainTestOwner(c);
         AbilityPassives.SetLoaded(c,new[]{(id,(ushort)20)},true);
         Assert.True(AbilityBuffs.Apply(c,id));
         Assert.Equal(expected,AbilityBuffs.Total(c,stat));
