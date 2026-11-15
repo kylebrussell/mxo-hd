@@ -46,7 +46,7 @@ public partial class MissionNpcInteriorCheckpointTests
         var raw=MissionNpcInteriorPlanning.ReadRaw(prepared.Pending.Witness.Lobby.RawDoorJson);raw.metrId=2;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
         raw.metrId=1;raw.mxoStaticId++;Assert.Null(MissionNpcInteriorAdmission.Overlay(p,raw,prepared.Provider));
     }
-    [Theory] [InlineData("digest")] [InlineData("node")] [InlineData("standing")] [InlineData("entryPosition")] [InlineData("entryQuaternion")] [InlineData("woodPosition")] [InlineData("woodQuaternion")]
+    [Theory] [InlineData("digest")] [InlineData("node")] [InlineData("standing")] [InlineData("lobbyStandingY")] [InlineData("floorStandingY")] [InlineData("entryPosition")] [InlineData("entryQuaternion")] [InlineData("woodPosition")] [InlineData("woodQuaternion")]
     public void ActualIndexedAliasCannotRepairTamperedSavedContext(string change)
     {
         var prepared=Prepared();var p=prepared.Progress;p.NextPhase();p.site=prepared.Site;p.sites.Add(prepared.Site);p.npcInteriorResolvedPhase=2;p.itemSlots[6783]=1;
@@ -56,6 +56,8 @@ public partial class MissionNpcInteriorCheckpointTests
             case "digest":node["Lobby"]!["EvidenceDigest"]=new string('0',64);break;
             case "node":node["Lobby"]!["Node"]!["Region"]=116;break;
             case "standing":node["Lobby"]!["Standing"]![0]=40370d;break;
+            case "lobbyStandingY":node["Lobby"]!["Standing"]![1]=96d;break;
+            case "floorStandingY":node["Floor"]!["Standing"]![1]=6096d;break;
             case "entryPosition":node["Lobby"]!["Position"]![0]=40001d;break;
             case "entryQuaternion":node["Lobby"]!["Quaternion"]="00000000f304353f00000000f304353f";break;
             case "woodPosition":node["Doors"]![0]!["Position"]![0]=38501d;break;
