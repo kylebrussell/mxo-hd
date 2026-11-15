@@ -12,8 +12,25 @@ public partial class MissionNpcInteriorCheckpointTests
         p.npcInteriorPending=selected;p.waitingForExit=true;
         Assert.True(MissionNpcInteriorAdmission.Replay(c,p,2,new[]{site},provider,out var replay,out why),why);
         Assert.Null(replay.Selected.Random);Assert.Same(selected,replay.Pending);int reads=provider.Reads;
+        p.NextPhase();replay.RequireStaging(c);
         Assert.Empty(MissionStaging.StageObjectChoices(p.mission.phases[2],replay.Selected.Site,replay.Selected.Random,replay));
-        Assert.Equal(reads,provider.Reads);Assert.Same(selected,p.npcInteriorPending);Assert.Equal(1,p.phaseIndex);
+        Assert.Equal(reads,provider.Reads);Assert.Same(selected,p.npcInteriorPending);Assert.Equal(2,p.phaseIndex);
+    }
+    private sealed class CountingRandom : Random
+    {
+        internal int Draws;
+        internal CountingRandom(int seed):base(seed){}
+        public override int Next(){Draws++;return base.Next();}
+    }
+    [Theory] [InlineData(true)] [InlineData(false)]
+    public void FreshAndNonAdoptedNpcStageChoicesKeepOriginalFurnitureShuffleDraws(bool adopted)
+    {
+        var prepared=Prepared();var p=prepared.Progress;var c=Client(p);var site=prepared.Site;site.containers.Add(Wood());site.objectSpots.Add(Marker());
+        var expected=new CountingRandom(724);var actual=new CountingRandom(724);
+        var plan=new MissionNpcInteriorAdmission.Plan(c,p,2,new MissionStaging.SiteSelection(site,actual),adopted?prepared.Pending:null!);
+        Assert.False(plan.Replayed);Assert.Empty(MissionStaging.PrepareObjectChoices(p.mission.phases[2],site,expected));
+        Assert.Empty(MissionStaging.StageObjectChoices(p.mission.phases[2],site,actual,plan));
+        Assert.True(actual.Draws>0);Assert.Equal(expected.Draws,actual.Draws);Assert.Equal(expected.Next(),actual.Next());
     }
     [Fact] public void RuntimePostAdvanceGuardIsDistinctAndRequiresExactPublishedSiteWitness()
     {
@@ -64,6 +81,7 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Null(restored.npcInteriorPending.Witness);Assert.Equal(original,restored.CaptureWithNpcCatalog(47,Array.Empty<Mob>(),new[]{prepared.Site}).NpcInterior.GetRawText());
         Assert.Equal(reads,prepared.Provider.Reads);Assert.Equal((ushort)6,restored.itemSlots[6783]);
         Assert.False(MissionNpcInteriorAdmission.Replay(Client(restored),restored,2,new[]{prepared.Site},prepared.Provider,out var plan,out _));Assert.False(plan.Adopted);
+        restored.NextPhase();Assert.Throws<MissionCheckpointException>(()=>plan.RequireStaging(Client(restored)));
     }
     [Fact] public void CertifiedActorUsesExactOwnRoleTargetAndDoesNotProjectOrBorrowAnotherSpot()
     {

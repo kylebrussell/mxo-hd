@@ -457,8 +457,16 @@ namespace hds
                 if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
             return choices;
         }
-        internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared) =>
-            PrepareObjectChoices(phase,site,rng);
+        internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared)
+        {
+            if(npcPrepared?.Replayed==true&&npcPrepared.Adopted)
+            {
+                if(phase.objects.Count!=0||!ReferenceEquals(npcPrepared.Progress.Phase,phase)||!ReferenceEquals(npcPrepared.Selected.Site,site))
+                    throw new MissionCheckpointException("Changed NPC-only replay object definitions/site");
+                return Array.Empty<ObjectChoice>(); // The durable NPC-only selection owns NO object choices/RNG.
+            }
+            return PrepareObjectChoices(phase,site,rng); // Fresh and non-adopted paths retain all original draws.
+        }
         private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
         {
             foreach (ObjectChoice choice in choices)

@@ -15,6 +15,7 @@ namespace hds
             internal readonly MissionProgress Progress;
             internal readonly MissionStaging.SiteSelection Selected;
             internal readonly MissionNpcInteriorPending Pending;
+            internal readonly bool Replayed;
             private readonly MissionNpcInteriorBefore before;
             private readonly ClientData owner;
             private readonly long transport;
@@ -22,8 +23,8 @@ namespace hds
             private readonly uint character;
             private readonly string identity;
             private readonly long started;
-            internal Plan(WorldClient c, MissionProgress p, int phase, MissionStaging.SiteSelection selected, MissionNpcInteriorPending pending)
-            { Progress=p;Selected=selected;Pending=pending;this.phase=phase;identity=p.persistenceId;started=p.startedAt;before=new MissionNpcInteriorBefore(c,p,phase);owner=c.playerData;transport=c.TransportFence.Capture();world=owner.worldGeneration;life=owner.lifeGeneration;character=owner.getCharID(); }
+            internal Plan(WorldClient c, MissionProgress p, int phase, MissionStaging.SiteSelection selected, MissionNpcInteriorPending pending,bool replayed=false)
+            { Progress=p;Selected=selected;Pending=pending;Replayed=replayed;this.phase=phase;identity=p.persistenceId;started=p.startedAt;before=new MissionNpcInteriorBefore(c,p,phase);owner=c.playerData;transport=c.TransportFence.Capture();world=owner.worldGeneration;life=owner.lifeGeneration;character=owner.getCharID(); }
             internal bool Adopted => Pending?.Witness != null;
             internal bool BeforeCurrent(WorldClient c) => before.Current(c,Pending);
             internal bool WorldCurrent(WorldClient c) => ReferenceEquals(c.playerData,owner)&&owner.getCharID()==character&&owner.worldGeneration==world&&owner.lifeGeneration==life&&
@@ -32,6 +33,7 @@ namespace hds
             // Deliberately distinct from BeforeCurrent: called AFTER the intentional NextPhase/Start owner change.
             internal void RequireStaging(WorldClient c)
             {
+                if(Pending!=null&&!Adopted)throw new MissionCheckpointException("Refused NPC pending cannot stage");
                 if(!WorldCurrent(c)||!ReferenceEquals(owner.missionProgress,Progress)||!ReferenceEquals(owner.activeMission,Progress.mission)||
                     Progress.phaseIndex!=phase||Progress.persistenceId!=identity||Progress.startedAt!=started||
                     (Pending!=null&&(Progress.phaseIndex!=Pending.Selection.Phase||Pending.Selection.Identity!=Progress.persistenceId||Pending.Selection.Started!=Progress.startedAt))||
@@ -72,7 +74,7 @@ namespace hds
             plan=null;refusal="InvalidCommittedNpcPending";var pending=p.npcInteriorPending;
             var exact=pending?.Selection?.Site?.Resolve(catalog);
             if(exact==null||phase!=p.phaseIndex+1||!p.AllDone||!p.waitingForExit||pending.Selection.Phase!=phase||pending.Selection.Identity!=p.persistenceId||pending.Selection.Started!=p.startedAt)return false;
-            plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(exact,null),pending);
+            plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(exact,null),pending,true);
             if(!plan.BeforeCurrent(c))return false;
             if(pending.Witness==null){refusal=pending.Refusal;return false;}
             MissionNpcInteriorCheckpoint.ValidateGeometry(p,new MissionNpcInteriorEnvelope(2,MissionNpcInteriorPlanning.Kind,pending,null,Array.Empty<MissionNpcInteriorWitness>()),provider);
