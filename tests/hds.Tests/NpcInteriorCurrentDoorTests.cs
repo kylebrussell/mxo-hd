@@ -2,6 +2,22 @@ using HeadlessClient;
 namespace hds.Tests;
 public partial class MissionNpcInteriorCheckpointTests
 {
+    [Fact] public void ExactDoorResetInvalidatesOnlyItsOwnBirthAndDoesNotPoisonAnotherCurrentDoor()
+    {
+        // Literal retained Merv section51: old elevator6 reset to closed, followed by its delete.
+        var reset=Convert.FromHexString("060001FF0000000000000000000000000003000000003508000001000101000600");
+        Assert.Equal(reset.Take(26).Skip(2),DoorLifecycle.BuildResetUpdate());
+        var log=QaLife(QaOwn(),QaDoor(view:6,key:0x2260056c),QaDoor(state:0x834),reset);
+        Assert.Equal(0x834u,NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()).State);
+        var ownReset=BitConverter.GetBytes((ushort)9).Concat(DoorLifecycle.BuildResetUpdate()).ToArray();
+        log=QaLife(QaOwn(),QaDoor(state:0x834),ownReset);
+        Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()));
+        var malformed=(byte[])ownReset.Clone();malformed[5]^=1;
+        log=QaLife(QaOwn(),QaDoor(view:6,key:0x2260056c),QaDoor(state:0x834),malformed);
+        Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()));
+        log=QaLife(QaOwn(),QaDoor(state:0x834),ownReset[..^1]);
+        Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()));
+    }
     static MissionNpcInteriorProof.Door QaExpectedDoor()=>new(0x2260056b,346,new[]{38500d,6145,25800},QaDoorQuaternion,null,"");
     static readonly double[] QaDestination={39810.81081081081,6095,25564.864864864863};
     // Literal producer contract: own2/011c,id,NAV3*u16,yaw,XYZ3*f32,simtimeu32 (PacketsUtils144).
