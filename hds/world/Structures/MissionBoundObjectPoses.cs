@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace hds
@@ -12,6 +13,7 @@ namespace hds
     // Native static creation6231ae00 uses transformed authored bounds, NOT the logical-origin anchor.
     internal sealed class MissionBoundObjectPoses
     {
+        internal const string AuditedManifestSha256="95657513146af308f60d6e532624e143a572b649a1cad98c4601b9eb8ac1c234";
         private sealed class Entry
         {
             internal double[] Legacy;
@@ -38,7 +40,7 @@ namespace hds
             try
             {
                 var index=cache.GetOrAdd(path,p=>new Lazy<MissionBoundObjectPoses>(()=>
-                    LoadVerified(Path.GetDirectoryName(p),raw.sectorID))).Value;
+                    LoadAudited(Path.GetDirectoryName(p),raw.sectorID))).Value;
                 return index.TryResolve(raw,out pose,out _,out refusal);
             }
             catch(Exception ex) when(ex is IOException||ex is InvalidDataException||ex is JsonException||ex is FormatException||ex is OverflowException||ex is ArgumentException||ex is InvalidOperationException||ex is KeyNotFoundException)
@@ -62,8 +64,17 @@ namespace hds
             using(var document=JsonDocument.Parse(stream))return Read(document.RootElement,sector);
         }
         internal static MissionBoundObjectPoses LoadVerified(string directory,ushort sector)
+            =>LoadVerified(directory,sector,null);
+        internal static MissionBoundObjectPoses LoadAudited(string directory,ushort sector)
+            =>LoadVerified(directory,sector,AuditedManifestSha256);
+        private static MissionBoundObjectPoses LoadVerified(string directory,ushort sector,string requiredManifestHash)
         {
-            using var manifest=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory,"manifest.json")));
+            byte[] manifestBytes=File.ReadAllBytes(Path.Combine(directory,"manifest.json"));
+            // Git's Windows checkout may use CRLF. Pin the committed UTF8/LF text, not platform line endings.
+            string manifestText=new UTF8Encoding(false,true).GetString(manifestBytes).Replace("\r\n","\n");
+            if(requiredManifestHash!=null&&!Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(manifestText))).Equals(requiredManifestHash,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("BoundPoseManifestHash");
+            using var manifest=JsonDocument.Parse(manifestText);
             var root=manifest.RootElement;UniqueProperties(root);
             if(root.GetProperty("Format").GetInt32()!=1||root.GetProperty("World").GetInt32()!=1||root.GetProperty("Goid").GetInt32()!=326)
                 throw new InvalidDataException("BoundPoseManifestIdentity");

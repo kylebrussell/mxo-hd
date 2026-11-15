@@ -84,6 +84,37 @@ public class MissionBoundObjectPoseTests
         }
         finally {Directory.Delete(directory,true);}
     }
+    [Theory][InlineData("lf")][InlineData("crlf")][InlineData("coherent-pose-and-manifest-edit")]
+    public void ActualRuntimeBoundaryPinsCommittedManifestWithPlatformIndependentLineEndings(string variant)
+    {
+        string directory=Path.Combine(Path.GetTempPath(),"mxo-bound-audited-test-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        try
+        {
+            string source=Path.Combine(Root,"data/mission_bound_poses/1");
+            string manifest=File.ReadAllText(Path.Combine(source,"manifest.json")).Replace("\r\n","\n");
+            byte[] payload=File.ReadAllBytes(Path.Combine(source,"209.json.gz"));
+            if(variant=="coherent-pose-and-manifest-edit")
+            {
+                using var input=new MemoryStream(payload);using var gz=new GZipStream(input,CompressionMode.Decompress);
+                var profile=JsonNode.Parse(gz)!;var row=profile["Rows"]![0]!;
+                foreach(string key in new[]{"Minimum","Maximum","Centre"})row[key]![1]=row[key]![1]!.GetValue<double>()+10;
+                using var output=new MemoryStream();using(var zip=new GZipStream(output,CompressionLevel.SmallestSize,true))JsonSerializer.Serialize(zip,profile);
+                payload=output.ToArray();var changed=JsonNode.Parse(manifest)!;
+                changed["Files"]!.AsArray().Single(f=>f!["Sector"]!.GetValue<int>()==209)!["Sha256"]=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload));
+                manifest=changed.ToJsonString();
+            }
+            if(variant=="crlf")manifest=manifest.Replace("\n","\r\n");
+            File.WriteAllText(Path.Combine(directory,"manifest.json"),manifest);File.WriteAllBytes(Path.Combine(directory,"209.json.gz"),payload);
+            if(variant=="coherent-pose-and-manifest-edit")
+            {
+                Assert.True(MissionBoundObjectPoses.LoadVerified(directory,209).Count>0); // structural seam alone cannot establish authored proof
+                var error=Assert.Throws<InvalidDataException>(()=>MissionBoundObjectPoses.LoadAudited(directory,209));
+                Assert.Equal("BoundPoseManifestHash",error.Message);
+            }
+            else Assert.True(MissionBoundObjectPoses.LoadAudited(directory,209).Count>0);
+        }
+        finally {Directory.Delete(directory,true);}
+    }
     [Fact] public void EveryCommittedSectorProfileMatchesItsManifestAndNativeMidpointSchema()
     {
         string directory=Path.Combine(Root,"data/mission_bound_poses/1");using var manifest=JsonDocument.Parse(File.ReadAllText(Path.Combine(directory,"manifest.json")));
