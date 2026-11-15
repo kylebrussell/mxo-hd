@@ -238,7 +238,7 @@ public static partial class Scenarios
                             Check.Equal(3,afterGoal.Mobs.Count(m=>m.Wave==1),"All three repair reinforcements are actually staged");
                         if(id is 201204 or 201205)
                             {
-                                var follower=afterGoal.Mobs.Single(m=>m.Npc==1);Check.That(!follower.Dead&&follower.Health>0,"Current protected follower stays alive without a health override");
+                                var follower=afterGoal.Mobs.Single(m=>m.Npc==1);Check.That(!follower.Dead&&follower.Health>0,"Current protected follower stays alive under disclosed weaken assistance; no unaided survival claim");
                                 if(followerIdentities.TryGetValue(id,out string? identity))Check.Equal(identity,follower.Identity,"Same protected actor identity across phase carry");else followerIdentities[id]=follower.Identity;
                             }
                     }
