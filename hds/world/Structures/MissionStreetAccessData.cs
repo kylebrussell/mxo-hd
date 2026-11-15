@@ -18,7 +18,7 @@ namespace hds
         internal sealed class Edge { public int Index {get;set;} public int SourceOffset {get;set;} public string Raw {get;set;} internal byte[] Bytes; }
         internal sealed class Polygon { public int Index {get;set;} public int SourceOffset {get;set;} public string RawHeader {get;set;} public Edge[] Edges {get;set;} internal double[] Plane; }
         internal sealed class Region { public ushort Id {get;set;} public int SectionOffset {get;set;} public int SectionLength {get;set;} public int NvpsOffset {get;set;} public string RawHeader {get;set;} public int PolygonEnd {get;set;} public Polygon[] Polygons {get;set;} }
-        internal sealed class Outdoor { public string RawHeader {get;set;} public string RawSectionTable {get;set;} public int SnavOffset {get;set;} public int SnavLength {get;set;} public Region[] Regions {get;set;} }
+        internal sealed class Outdoor { public string RawHeader {get;set;} public string RawSectionTable {get;set;} public int SnavOffset {get;set;} public int SnavLength {get;set;} public string RawSnav {get;set;} public Region[] Regions {get;set;} }
         internal sealed class Layer { public string Kind {get;set;} public uint Rid {get;set;} public int Length {get;set;} public string Sha256 {get;set;} public int Count {get;set;} public int DoorCount {get;set;} }
         internal sealed class NativeDoor { public uint Key {get;set;} public ushort Goid {get;set;} public int Class {get;set;} public string Layer {get;set;} public uint Rid {get;set;} public int SourceOffset {get;set;} public string Raw {get;set;} public string RecordSha256 {get;set;} public ushort? Region {get;set;} public int[] Pivot {get;set;} public int? Rotation {get;set;} }
         internal sealed class Signature { public ushort Goid {get;set;} public bool Exterior {get;set;} public double[] Position {get;set;} public string Quaternion {get;set;} public double Rotation {get;set;} }
@@ -87,6 +87,28 @@ namespace hds
                 }
                 Need(cursor==region.PolygonEnd,"StreetCountedPolygonEnd");
             }
+            // Preserve original sector-network boundary tables. These rows do not authorize traversal into an unavailable sector.
+            byte[] snav=Convert.FromHexString(outdoor.RawSnav??"");
+            Need(snav.Length==outdoor.SnavLength&&snav.Length>=44&&Encoding.ASCII.GetString(snav,0,4)=="SNAV"&&
+                BitConverter.ToUInt32(snav,4)==snav.Length-32&&BitConverter.ToUInt32(snav,8)==1&&BitConverter.ToUInt32(snav,12)==1&&
+                Encoding.ASCII.GetString(snav,32,4)=="SSES"&&BitConverter.ToUInt32(snav,36)==snav.Length-44&&BitConverter.ToUInt32(snav,40)==0x01000004,"StreetSnavHeader");
+            int boundaryCursor=44;
+            for(int side=0;side<4;side++)
+            {
+                Need(boundaryCursor+16L<=snav.Length&&Encoding.ASCII.GetString(snav,boundaryCursor,4)=="SSES","StreetBoundaryHeader");
+                uint size=BitConverter.ToUInt32(snav,boundaryCursor+4),count=BitConverter.ToUInt32(snav,boundaryCursor+12);
+                Need(size==4L+count*32L&&BitConverter.ToUInt32(snav,boundaryCursor+8)==(size|0x81000000u)&&boundaryCursor+12L+size<=snav.Length,"StreetBoundaryCount");
+                for(int index=0;index<count;index++)
+                {
+                    int at=boundaryCursor+16+index*32;ushort region=BitConverter.ToUInt16(snav,at),poly=BitConverter.ToUInt16(snav,at+2);uint edge=BitConverter.ToUInt32(snav,at+4);
+                    Need(region<outdoor.Regions.Length&&poly<outdoor.Regions[region].Polygons.Length&&edge<outdoor.Regions[region].Polygons[poly].Edges.Length&&
+                        Enumerable.Range(0,6).All(i=>float.IsFinite(BitConverter.ToSingle(snav,at+8+i*4))),"StreetBoundarySourceReference");
+                    byte[] original=outdoor.Regions[region].Polygons[poly].Edges[edge].Bytes;
+                    Need(BitConverter.ToUInt16(original,2)==ushort.MaxValue&&BitConverter.ToUInt16(original)==(side<<12|index),"StreetBoundaryReverseReference");
+                }
+                boundaryCursor+=checked(12+(int)size);
+            }
+            Need(boundaryCursor==snav.Length,"StreetBoundaryCountedEnd");
             Need(d.Layers!=null&&d.Layers.Length==3&&d.Layers.Select(l=>l?.Kind).OrderBy(s=>s).SequenceEqual(new string[]{"SID","SIDG","SIDI"}),"StreetDeclaredGoLayers");
             Need(d.Layers.All(l=>l.Rid!=0&&l.Length>=0&&l.Count>=0&&l.DoorCount>=0&&l.DoorCount<=l.Count&&Hex(l.Sha256,64))&&d.NativeDoors!=null&&
                 d.Layers.All(l=>d.NativeDoors.Count(n=>n.Layer==l.Kind)==l.DoorCount),"StreetNativeCounts");

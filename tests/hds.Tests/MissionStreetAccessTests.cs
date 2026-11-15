@@ -123,6 +123,21 @@ public sealed class MissionStreetAccessTests
         var outside=Modified(c.Raw,c.Evidence);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
         Assert.False(c.Evidence.TryStreetAccess(outside,lobby,new E.Node(13,0),0x0d100028,key=>Raw(c.Raw,key),out _,out _));
     }
+    [Theory][InlineData("count")][InlineData("source")][InlineData("reverse")][InlineData("truncated")]
+    public void CountedOriginalSectorBoundaryRowsRetainExactSourceAndReverseReferences(string change)
+    {
+        var c=Load(209);byte[] snav=Convert.FromHexString(c.Raw["Outdoor"]!["RawSnav"]!.GetValue<string>());
+        Assert.Equal("1F000100000000000000003A0000C8430048B7450000003A0000C84300A8B645",Convert.ToHexString(snav.AsSpan(60,32)));
+        switch(change)
+        {
+            case "count":snav[56]++;break;
+            case "source":snav[60]=255;break;
+            case "reverse":snav[64]=1;break;
+            case "truncated":snav=snav[..^1];break;
+        }
+        c.Raw["Outdoor"]!["RawSnav"]=Convert.ToHexString(snav);
+        Assert.Throws<InvalidDataException>(()=>Modified(c.Raw,c.Evidence));
+    }
     [Fact]public void OriginalTerminalReferenceIsPreservedWithoutBecomingPolygon65535()
     {
         var c=Load(209);var edge=c.Outdoor.At(new E.Node(31,1)).Edges[0];

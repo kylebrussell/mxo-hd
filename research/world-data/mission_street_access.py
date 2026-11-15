@@ -43,7 +43,7 @@ def outdoor(nav):
         regions.append(dict(Id=ordinal, SectionOffset=offset, SectionLength=length,
                             NvpsOffset=at, RawHeader=header.hex(), PolygonEnd=cursor, Polygons=rows))
     return dict(RawHeader=nav[:16].hex(), RawSectionTable=nav[16:16+8*count].hex(),
-                SnavOffset=sections[0][0], SnavLength=sections[0][1], Regions=regions)
+                SnavOffset=sections[0][0], SnavLength=sections[0][1], RawSnav=nav[sections[0][0]:sum(sections[0])].hex(), Regions=regions)
 
 
 def export(tools, repository, interiors, output, sectors):
