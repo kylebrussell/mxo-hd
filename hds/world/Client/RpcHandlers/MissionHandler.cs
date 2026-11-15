@@ -59,7 +59,7 @@ namespace hds
                         client.FlushQueue();return false;
                     }
                 }
-                else if(MissionNpcInteriorAdmission.Candidate(mission.phases.FirstOrDefault()))
+                else if(MissionNpcInteriorAdmission.Candidate(mission,0))
                 {
                     npcProgress=new MissionProgress(mission);
                     if(!MissionNpcInteriorAdmission.TryPrepare(client,npcProgress,0,out npcPlan,out string refusal)||npcPlan!=null&&!npcPlan.BeforeCurrent(client))

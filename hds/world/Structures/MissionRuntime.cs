@@ -1480,7 +1480,7 @@ namespace hds
                         if(!MissionOpenFloorAdmission.PendingDurable(client.playerData,progress.pendingOpenFloor)||!openFloorPlan.BeforeCurrent(client))return;
                     }
                 }
-                else if(MissionNpcInteriorAdmission.Candidate(progress.mission.phases[progress.phaseIndex+1]))
+                else if((MissionNpcInteriorAdmission.Candidate(progress.mission,progress.phaseIndex+1)||progress.npcInteriorPending!=null))
                 {
                     bool prepared=MissionNpcInteriorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,out npcPlan,out string refusal);
                     if(npcPlan==null||!npcPlan.BeforeCurrent(client))return;

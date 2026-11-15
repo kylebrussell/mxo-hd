@@ -595,12 +595,12 @@ namespace hds
             return choices;
         }
         internal static ObjectChoice[] StageSourceChoices(MissionPhase phase,MissionSite site,Random rng,
-            MissionNpcInteriorAdmission.Plan npcPrepared,int reserved) => npcPrepared?.Replayed==true&&npcPrepared.Adopted
+            MissionNpcInteriorAdmission.Plan npcPrepared,int reserved) => npcPrepared?.ObjectReplay==true
                 ?StageObjectChoices(phase,site,rng,npcPrepared):PrepareSourcePoolChoices(phase,site,rng,reserved);
 
         internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared)
         {
-            if(npcPrepared?.Replayed==true&&npcPrepared.Adopted)
+            if(npcPrepared?.ObjectReplay==true)
             {
                 if(phase.objects.Count!=0||!ReferenceEquals(npcPrepared.Progress.Phase,phase)||!ReferenceEquals(npcPrepared.Selected.Site,site))
                     throw new MissionCheckpointException("Changed NPC-only replay object definitions/site");
