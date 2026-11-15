@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 namespace hds
 {
 
@@ -10,6 +11,10 @@ internal sealed class WorldSendFence
     private bool resetPending;
 
     public long Capture() { lock (sync) return epoch; }
+    // Observation only, not serialized execution. Read the epoch on both sides
+    // so an entire reset/resume between reads cannot validate an older lifetime.
+    public bool IsCurrent(long expected) => Interlocked.Read(ref epoch)==expected &&
+        !Volatile.Read(ref resetPending) && Interlocked.Read(ref epoch)==expected;
     public bool TryRun(long expected, Action action)
     {
         lock (sync)
