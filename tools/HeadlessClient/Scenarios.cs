@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),
@@ -40,6 +41,7 @@ public static partial class Scenarios
         new Scenario("character-creation-personality", CharacterCreationPersonality, StillNpcs),
         new Scenario("stat-producers", StatProducers, StillNpcs),
         new Scenario("loaded-grant-membership", LoadedGrantMembership, StillNpcs),
+        new Scenario(ShadowReadyWireFixture.Name, ShadowReadyPresentation, ShadowReadyWireFixture.Environment, Timeout: TimeSpan.FromMinutes(5)),
         new Scenario(SneakScaledGrantFixture.Name, SneakScaledGrant, SneakScaledGrantFixture.Environment, Timeout: TimeSpan.FromMinutes(4)),
         new Scenario("invisibility-tool-registration", InvisibilityToolRegistration, InvisibilityToolRegistrationFixture.Environment),
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
@@ -152,6 +154,7 @@ public static partial class Scenarios
         new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("mobius-free-attack-positive", MobiusPositive, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
         new Scenario("mobius-free-attack-negative", MobiusNegative, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
+        new Scenario("hyperjump-resource-records", HyperjumpResourceRecords, StillNpcs),
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
@@ -324,6 +327,7 @@ public static partial class Scenarios
         new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
         new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
+        new Scenario("pvp-opponents-entry", PvpOpponentsEntry, PvpOpponentsFixture.Environment),
         new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
         new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
         new Scenario("nativeqa-duel-helper", NativeQaDuelHelper, new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="0",["MXO_DEV_COMMANDS"]="0"}),
