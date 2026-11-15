@@ -75,7 +75,7 @@ public static partial class Scenarios
                     SourceIsUpdates=sourceIsUpdates,TargetHealthUpdates=targetHealthUpdates,
                     AfterWire=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")},
                     SourceFreshViews=caster.World.ViewSnapshot().Skip(sourceViews).Select(Convert.ToHexString),TargetFreshViews=victim.World.ViewSnapshot().Skip(targetViews).Select(Convert.ToHexString),Log=context.Server.DebugLog()[log..]});
-                await Task.Delay(31000); // normal1116 term cooldown30s and365 reuse10s; no timer injection
+                await Task.Delay(31000); // conservative31s QA wait for normal1116 reuse30s/365 reuse10s; no term-timer claim or injection
             }
             stage="npc-accepted";caster.SkipReceived();caster.SendChat("?ghoststrike 8");await caster.WaitForTextAsync("callback roll=8");
             var npc=await caster.WaitForViewNamedAsync("Trainman");
