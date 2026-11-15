@@ -109,20 +109,42 @@ public class BuffDrainLifetimeTests
         Assert.Equal(shortfall?0:afterClaim?99:100,NumericalUtils.ByteArrayToUint16(oldPlayer.InnerStrengthAvailable.getValue(),1));
         AbilityBuffs.TickActiveDrain(c,old);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
     }
-    [Fact]public void ActivationCaptureDoesNotWaitForTransportWhileHoldingBuffLock()
+    [Fact]public void EveryCurrentlyProducedDrainHasTheCheckedCallbackFreeTerminationContract()
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);var found=new List<ushort>();
+        foreach(var id in AbilityCatalog.All.Keys)
+            if(AbilityScaledBuffs.Resolve(c,id,out var buff) && buff.DrainAmount>0)
+            {found.Add(id);Assert.True(AbilityBuffs.PlainDrain(buff),"Unhandled draining definition "+id);}
+        Assert.Equal(new ushort[]{13,16,442},found.OrderBy(x=>x));
+    }
+    [Fact]public void CallbackBearingDrainCannotSilentlyEnterThePureTerminationFamily()
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);var active=On(c);
+        active.Definition.TermHeal=1;
+        AbilityBuffs.TickActiveDrain(c,active);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));Assert.True(active.Drain.Cancelled);
+        active.Definition.TermHeal=0;
+    }
+    [Fact]public void ShortfallPreservesTheExisting442FifteenSecondTimerAndRecords()
     {
         var c=Client();using var owner=new BuffDrainTestOwner(c);
-        using var gateHeld=new ManualResetEventSlim();using var releaseGate=new ManualResetEventSlim();
-        var gate=Task.Run(()=>c.TransportFence.TryRun(c.TransportFence.Capture(),()=>{gateHeld.Set();Assert.True(releaseGate.Wait(TimeSpan.FromSeconds(3)));}));
-        Assert.True(gateHeld.Wait(TimeSpan.FromSeconds(3)));
-        Task? apply=null;
-        lock(c.playerData.activeBuffs)
-        {
-            apply=Task.Run(()=>On(c));
-            // If Apply acquired this lock before Capture, the probe would block the reset-gate owner.
-            releaseGate.Set();Assert.True(gate.Wait(TimeSpan.FromSeconds(3)));
-        }
-        Assert.True(apply.Wait(TimeSpan.FromSeconds(3)));
+        AbilityPassives.SetLoaded(c,new[]{((ushort)442,(ushort)50)},true);Assert.True(AbilityBuffs.Apply(c,442));
+        var active=c.playerData.activeBuffs[442];c.messageQueue.RPCMessagesQueue.Clear();c.playerInstance.InnerStrengthAvailable.setValue((ushort)0);
+        double now=TimeUtils.GetSimTimeSeconds();AbilityBuffs.TickActiveDrain(c,active);
+        Assert.False(AbilityBuffs.IsActive(c,442));Assert.InRange(c.playerData.cooldownEndsAt[442],now+15,TimeUtils.GetSimTimeSeconds()+15);
+        bool Has(byte[] payload)=>c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Any(m=>m.content.AsSpan(1).SequenceEqual(payload));
+        Assert.True(Has(AbilityCooldowns.BuildTimer(442,AbilityCooldowns.OwnTimer,15,true)));
+        Assert.True(Has(AbilityBuffs.BuildExclusive(442,false)));
+        foreach(var record in AbilityBuffs.BuildRecords(442,active.Definition,active.RecordIds,true))Assert.True(Has(record));
+        DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds()+15.1);Assert.True(Has(AbilityCooldowns.BuildTimer(442,AbilityCooldowns.OwnTimer,15,false)));
+    }
+    [Fact]public void CapturedCooldownExpiryCannotPublishIntoResetOwner()
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);var data=c.playerData;var player=c.playerInstance;long epoch=c.TransportFence.Capture();
+        Assert.True(c.TransportFence.TryRun(epoch,()=>AbilityCooldowns.StartCaptured(c,442,TimeUtils.GetSimTimeSeconds(),data,player,data.worldGeneration,data.lifeGeneration,epoch)));
+        c.TransportFence.PublishIncoming(true,()=>{});long next=c.TransportFence.Capture();
+        c.TransportFence.ApplyReset(next,()=>{c.messageQueue.ForgetSentRpcs();c.messageQueue.ForgetWorldObjects();c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();});c.TransportFence.Resume(next);
+        int before=c.messageQueue.RPCMessagesQueue.Count;DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds()+15.1);Assert.Equal(before,c.messageQueue.RPCMessagesQueue.Count);
+        c.playerData=data;c.playerInstance=player;
     }
     [Fact]public void ScheduledOldCallbackAfterRelogAndNewOnOffDoesNotDrainTheNewLife()
     {
