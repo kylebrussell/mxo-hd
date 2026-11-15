@@ -19,6 +19,8 @@ Committed fixed placements never rerun selection and remain byte-identical throu
 
 Qualification at988220d6:76 affected tests plus5 search-work/first-trial controls PASS; one unfiltered Release suite6306PASS. Initial75PASS/1 stale fresh-order assertion is retained separately. The literal old committed DTO restore assertions remain exact. Actual builds and the changed-runtime whole-five case are the next qualification steps, not yet passed.
 
+Retainedd84 changed-runtime case124.2s completed201202 and proved the former phase2 admission in3577ms with3graphs/263body visits, then earned201203 Flyer6796 before its Search adapter failed. Actual current326bound03 uses audited Centre28040/1282/11435; stale approach still projected raw CSV30765/1347/14160. Exact NAV proof from current root209/47/18 shows raw projection false and effective projection true at28080/1295/11330,209/47/350, under unchanged800/current-component restriction. The QA-only correction now uses MissionObjectPoses.For for bound sector/distance/projection and keeps raw DTO/static binding immutable. All other Machines positional source consumers were audited.39 affected tests PASS; full6306 remains attributed to the unchanged Policy5 runtime. No whole-five completion/native claim follows from this partial case.
+
 ## Actual order and prerequisites
 
 Agent Gray's contact2001/org2 offers the first unfinished plot mission in authored order. After201201 the next five are201202 Poster Hunt,201203 Hard Time,201204 No Allies Here,201205 Under Warranty and201206 Gathering Evidence. Next is201207 Coroner's Report. Machines does not inherit Tyndall's Standard Courier. Unit checks inspect the real contact filter and ordered catalogue, rather than assuming arithmetic IDs.
