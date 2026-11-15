@@ -221,6 +221,10 @@ namespace hds
                     p.elevatorWitnesses.Add(witness.SiteFingerprint,witness);
                 }
             }
+            // 357 had no audited free-placement path before admission support. Never silently
+            // bless or reroll an old free357 pose/items on reconnect, whether entered or not.
+            if(state.Version==1&&p.objects.Values.Any(o=>o.goid==357&&MissionOpenFloorAdmission.Target(o.goid,o.spot)))
+                throw new MissionPlacementRestoreException(p,"Legacy free Mainframe357 lacks an adopted witness");
             MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             return p;

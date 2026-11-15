@@ -15,6 +15,8 @@ namespace hds
             internal readonly Dictionary<ushort, ushort> Loaded = new Dictionary<ushort, ushort>();
             internal readonly Dictionary<string, Active> Records = new Dictionary<string, Active>();
             internal Dictionary<ushort, int> Totals = new Dictionary<ushort, int>();
+            internal AbilityShadowPresentation.Owned ShadowOwned;
+            internal AbilityShadowPresentation.Emitted ShadowEmitted;
         }
         internal sealed class Active
         {
@@ -46,20 +48,33 @@ namespace hds
         public static void Load(WorldClient client, bool newWorld = false)
         {
             var rows = Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID());
-            SetLoaded(client, LoadedArchiveAbilities(rows), newWorld);
+            SetLoadedCore(client, LoadedArchiveAbilities(rows), newWorld, AbilityShadowPresentation.FromArchive(rows),default);
         }
 
         internal static IEnumerable<(ushort Ability,ushort Level)> LoadedArchiveAbilities(IEnumerable<MarginAbilityItem> rows) =>
             rows.Where(r=>r.getLoaded() && (unchecked((uint)r.getAbilityID()) & 0xfc000000u) == CodeStorage.AbilityFlag).Select(r=>(AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())),r.getLevel()));
 
         public static void SetLoaded(WorldClient client, IEnumerable<(ushort Ability, ushort Level)> loaded, bool newWorld = false)
+            =>SetLoadedCore(client,loaded,newWorld,null,default);
+
+        internal static void SetLoadedFromRows(WorldClient client,IEnumerable<AbilityMemory.Row> rows,byte[] emittedShadowBase=null)
         {
+            var snapshot=rows.ToArray();
+            SetLoadedCore(client,snapshot.Where(r=>AbilityMemory.IsAbility(r.Descriptor)).Select(r=>(r.Ability,r.Level)),false,
+                AbilityShadowPresentation.FromRows(snapshot),AbilityShadowPresentation.Emitted.FromPacket(emittedShadowBase));
+        }
+        private static void SetLoadedCore(WorldClient client,IEnumerable<(ushort Ability,ushort Level)> loaded,bool newWorld,
+            AbilityShadowPresentation.Owned? explicitShadow,AbilityShadowPresentation.Emitted emitted)
+        {
+            var rows=loaded.ToArray();
             State state = client.playerData.passives;
             lock (state)
             {
                 state.Generation++;
+                state.ShadowOwned=explicitShadow??state.ShadowOwned.Retain(rows);
+                state.ShadowEmitted=emitted;
                 state.Loaded.Clear();
-                foreach (var row in loaded)
+                foreach (var row in rows)
                 {
                     ushort id = AbilityCatalog.Canonical(row.Ability);
                     var entry = AbilityCatalog.Find(id);
