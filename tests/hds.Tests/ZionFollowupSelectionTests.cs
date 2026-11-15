@@ -36,7 +36,7 @@ public class ZionFollowupSelectionTests
         var client=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));client.playerData=new(){missionInstanceCounter=47};client.viewMan=new();
         // Suppress transport only for these offline views; actual Choose and PlaceObjects remain unchanged.
         foreach(int id in new[]{1,2})client.viewMan.GetViewForEntityAndGo(987000047000UL+(ulong)id,3).viewCreated=true;
-        typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,new Random(effective)});
+        typeof(MissionStaging).GetMethod("PlaceObjects",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{client,progress,MissionStaging.PrepareObjectChoices(phase,siteChosen,new Random(effective))});
         using var reader=File.OpenText(Path.Combine(Root,"data","mission_computer_anchors.csv"));var index=MissionComputerAnchors.Read(reader);
         var states=progress.objects.OrderBy(p=>p.Key).Select(p=>new{Object=p.Key,Concrete=p.Value.goid,SourceGoid=MissionSites.Goid(p.Value.spot),Spot=p.Value.spot,Supported=index.TryResolve(p.Value.spot,p.Value.goid,out var pose),Pose=pose}).ToArray();
         string path=Path.Combine(Path.GetTempPath(),"mxo-zion-followup-selection.json");File.WriteAllText(path,JsonSerializer.Serialize(new{Mission=mission.id,Seed=101203,EffectiveSeed=effective,Approach=new[]{17000,495,2300},Site=siteChosen,Objects=states,Scope="Offline actual contact offer/Choose/PlaceObjects; no live acceptance, no forced source spots"},new JsonSerializerOptions{IncludeFields=true,WriteIndented=true}));
@@ -67,7 +67,7 @@ public class ZionFollowupSelectionTests
                 foreach(var def in phase.objects)foreach(ushort goid in site.containers.Concat(site.realObjects).Select(MissionSites.Goid).Append((ushort)3).Distinct())
                     client.viewMan.GetViewForEntityAndGo(987000047000UL+(ulong)(phaseIndex*50+def.id),goid).viewCreated=true;
                 // Preview's first phase gets a fresh stage RNG; later phases consume Choose on that RNG.
-                place.Invoke(null,new object[]{client,progress,phaseIndex==0?new Random(effective):rng});
+                place.Invoke(null,new object[]{client,progress,MissionStaging.PrepareObjectChoices(phase,site,phaseIndex==0?new Random(effective):rng)});
                 Assert.Equal(phase.objects.Count,progress.objects.Count);var selected=new List<object>();
                 foreach(var pair in progress.objects.OrderBy(x=>x.Key))
                 {

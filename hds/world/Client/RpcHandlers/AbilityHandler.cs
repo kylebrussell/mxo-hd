@@ -215,6 +215,7 @@ namespace hds
             }
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
+            var ghostStrike=GhostStrikeCallbacks.Capture(Store.currentClient,AbilityID,currentTargetViewId);
             bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
@@ -222,7 +223,9 @@ namespace hds
             else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
+            GhostStrikeCallbacks.Arm(ghostStrike);
             var normalCast=AbilityCastInterrupts.Begin(Store.currentClient,AbilityID,currentAbility.getCastingTime());
+            GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
             var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             ProcessAbilityScript(this.currentAbility);
@@ -288,7 +291,7 @@ namespace hds
                 if (ability.getCastingTime() > 0 ||
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
-                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes,reverseBulldog);
+                    if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
                 }
             }
             });
@@ -483,28 +486,16 @@ namespace hds
         public void ProcessJump(ref byte[] rpcData)
         {
             if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
-            double xDest = 0;
-            double yDest = 0;
-            double zDest = 0;
-            PacketReader reader = new PacketReader(rpcData);
-            xDest = reader.ReadDouble(1);
-            yDest = reader.ReadDouble(1);
-            zDest = reader.ReadDouble(1);
-            
-            // The landing spot's nav place as the client sees it: sector, region, polygon (u16 each; retail's matched the
-            // nav mesh). Logged next to ours: 0xffff or a different place means the client has lost its nav location.
-            byte[] landingPlace = reader.ReadBytes(6);
-            UInt16 clientSector = BitConverter.ToUInt16(landingPlace, 0), clientRegion = BitConverter.ToUInt16(landingPlace, 2),
-                clientPolygon = BitConverter.ToUInt16(landingPlace, 4);
+            if (!JumpRecords.TryStartBody(rpcData, out var request)) return;
+            double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
+            ushort clientSector = request.Destination.Sector, clientRegion = request.Destination.Prefab,
+                clientPolygon = request.Destination.NavPoly;
             string ours = NavMesh.Locate((UInt16)Store.currentClient.playerData.getDistrictId(), xDest, yDest, zDest, out NavLocation server)
-                ? server.sector + "/" + server.region + "/" + server.polygon
-                : "none";
+                ? server.sector + "/" + server.region + "/" + server.polygon : "none";
             Output.WriteDebugLog("[NAV] Jump to " + (int)xDest + "," + (int)yDest + "," + (int)zDest + ": client " + clientSector + "/" +
                                  clientRegion + "/" + clientPolygon + ", server " + ours);
-            UInt32 peakHeight = reader.ReadUInt32(1);
-            uint maybeFlag = reader.ReadUint8(); // is it everytime 01 ? maybe must check 
-            
-            UInt32 jumpId = reader.ReadUInt32(1); // JumpId
+            UInt32 peakHeight = request.PeakBits;
+            UInt32 clientTickSample = request.TimeStamp;
 
             // Players current X Z Y
             double x = 0;
@@ -527,7 +518,7 @@ namespace hds
             UInt32 endTime = JumpEndTime(TimeUtils.GetSimTimeSeconds(), peak);
 
             ServerPackets packets = new ServerPackets();
-            packets.SendHyperJumpID(jumpId);
+            packets.SendHyperJumpID(clientTickSample);
             packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
@@ -602,17 +593,10 @@ namespace hds
         public void processHyperJumpCancel(ref byte[] rpcData)
         {
             if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
-            double xDest = 0;
-            double yDest = 0;
-            double zDest = 0;
-            PacketReader reader = new PacketReader(rpcData);
-            xDest = reader.ReadDouble(1);
-            yDest = reader.ReadDouble(1);
-            zDest = reader.ReadDouble(1);
-
-            // ToDo: figure out what this 6 bytes are could be
-            // Skip 6 bytes as we currently didnt knew
-            UInt32 clientJumpIdUnknown = reader.ReadUInt32(1);
+            if (!JumpRecords.TryCancelBody(rpcData, out var request)) return;
+            double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
+            Output.WriteDebugLog("[NAV] Jump cancel to " + xDest + "," + yDest + "," + zDest + ": client " +
+                request.Destination.Sector + "/" + request.Destination.Prefab + "/" + request.Destination.NavPoly);
 
             // Players current X Z Y
             double x = 0;
@@ -633,7 +617,7 @@ namespace hds
             UInt32 endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, yPos - yDest) / 4f);
 
             ServerPackets packets = new ServerPackets();
-            packets.SendHyperJumpID(clientJumpIdUnknown);
+            // Cancel has only a navigation tail, not a client clock sample to echo.
             packets.SendHyperJumpUpdate(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest, startTime,
                 endTime);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 using NativeQa;
 using HeadlessClient;
 namespace hds.Tests;
@@ -9,8 +10,18 @@ namespace hds.Tests;
 [CollectionDefinition("BuffDispelQaEnvironment",DisableParallelization=true)]
 public class BuffDispelQaEnvironmentCollection {}
 [Collection("BuffDispelQaEnvironment")]
-public class BuffDispelFixtureTests
+public class BuffDispelFixtureTests:IDisposable
 {
+    private readonly WorldServer previousWorld=Store.world;
+    private readonly Dictionary<string,WorldClient> previousClients=WorldServer.Clients;
+    // This collection disables parallelization. Own both publication globals rather than relying on test order
+    // or nulling Store.world to bypass the actual presentation path.
+    public BuffDispelFixtureTests()
+    {
+        WorldServer.Clients=new Dictionary<string,WorldClient>();
+        Store.world=(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+    }
+    public void Dispose(){Store.world=previousWorld;WorldServer.Clients=previousClients;}
     private static void WithEnvironment(string? dev,string? database,string? roll,Action test)
     {
         string[] names={"MXO_DEV_COMMANDS","MXO_DB_NAME","MXO_BUFF_DISPEL_QA_ROLL100"};
@@ -84,17 +95,32 @@ public class BuffDispelFixtureTests
         typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
         return c;
     }
-    [Fact]
-    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture(bool worldPresent)
     {
         WithEnvironment("1","mxotest_dispel","0",()=>
         {
+            var previousWorld=Store.world;var previousClients=WorldServer.Clients;
             var caster=Client();var target=Client();
-            Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
-            AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
-            Assert.True(AbilityBuffs.IsActive(target,49));
-            AbilityHostile.LandedOnPlayer(caster,target,261);
-            Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
+            // Exercise the normal watcher publication path against an owned empty world,
+            // independent of whichever static world/client table another test restored.
+            WorldServer.Clients=new Dictionary<string,WorldClient>();
+            Store.world=worldPresent?(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer)):null;
+            try
+            {
+                Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
+                AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
+                Assert.True(AbilityBuffs.IsActive(target,49));
+                AbilityHostile.LandedOnPlayer(caster,target,261);
+                Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
+            }
+            finally
+            {
+                try {AbilityBuffs.RemoveAll(target);AbilityBuffs.RemoveAll(caster);}
+                finally {Store.world=previousWorld;WorldServer.Clients=previousClients;}
+            }
         });
     }
 

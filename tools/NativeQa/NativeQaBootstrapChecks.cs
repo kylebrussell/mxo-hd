@@ -81,7 +81,7 @@ public static class NativeQaBootstrapChecks
                 {
                     Console.WriteLine("BOOTSTRAP START " + (name.Length == 0 ? "(default)" : name));
                     byte[] ack = await mode.AfterStartAsync(new NativeQaBootstrapContext(modeDirectory,
-                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address));
+                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server));
                     if (server.HasExited) throw new InvalidOperationException("Bootstrap server exited.");
                     var modePlan = mode.Plan;
                     var standard = new NativeQaFixtureState
