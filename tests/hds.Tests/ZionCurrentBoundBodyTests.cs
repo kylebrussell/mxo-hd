@@ -97,4 +97,11 @@ public sealed class ZionCurrentBoundBodyTests
         byte[] wrong=(byte[])actual.Clone();int y=wrong.AsSpan().IndexOf(found.View.Attributes["Position"])+8;BitConverter.GetBytes(2145d).CopyTo(wrong,y);
         Assert.Throws<InvalidDataException>(()=>ZionCurrentBoundBody.Require(Stream(Own(),wrong),scope,state));
     }
+
+    [Theory][InlineData(1)][InlineData(2)]
+    public void BoundNativeBodyRetainsBothSupportedCheckpointEnvelopes(int version)
+    {var state=State();state.Version=version;var scope=ZionCurrentBoundBody.Capture(state,1);var result=ZionCurrentBoundBody.Require(Stream(Own(),Birth()),scope,state);Assert.Equal((ushort)16,result.View.ViewId);Assert.Equal(version,state.Version);}
+    [Theory][InlineData(0)][InlineData(3)]
+    public void UnknownCheckpointEnvelopeNeverAuthorizesBoundBody(int version)
+    {var state=State();state.Version=version;Assert.Throws<InvalidDataException>(()=>ZionCurrentBoundBody.Capture(state,1));}
 }

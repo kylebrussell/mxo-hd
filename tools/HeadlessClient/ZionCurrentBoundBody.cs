@@ -20,7 +20,7 @@ public static class ZionCurrentBoundBody
     private static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.Waypoints,s.Exits},Fields);
     private static MissionProgress.SavedObject Bound(MissionProgress.SavedState s,ushort id)
     {
-        if(s.Version!=1||s.Mission<=0||s.Phase<0||s.Instance==0||s.Started<=0||s.Flags==null||!Guid.TryParseExact(s.Identity,"N",out _)||
+        if((s.Version!=1&&s.Version!=2)||s.Mission<=0||s.Phase<0||s.Instance==0||s.Started<=0||s.Flags==null||!Guid.TryParseExact(s.Identity,"N",out _)||
             !s.Flags.GetValueOrDefault("entered")||s.Flags.GetValueOrDefault("failed"))throw new InvalidDataException("No current entered owned mission scope");
         var o=s.Objects.Single(x=>x.Id==id);
         if(o.OpenFloor!=null||o.Spot?.type==null||(o.Spot.type.Length!=2&&o.Spot.type.Length!=4)||BitConverter.ToUInt16(o.Spot.type)!=o.Goid||(o.Spot.mxoStaticId==0||o.Spot.mxoStaticId==uint.MaxValue)||
