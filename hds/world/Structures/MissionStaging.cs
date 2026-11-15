@@ -190,7 +190,7 @@ namespace hds
 
             // No layout RNG is consumed between site choice and object placement. Materialize the
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
-            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            var objectChoices=prepared==null?StageObjectChoices(phase,site,rng,npcPrepared):null;
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
                     MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
@@ -457,6 +457,8 @@ namespace hds
                 if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
             return choices;
         }
+        internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared) =>
+            PrepareObjectChoices(phase,site,rng);
         private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
         {
             foreach (ObjectChoice choice in choices)

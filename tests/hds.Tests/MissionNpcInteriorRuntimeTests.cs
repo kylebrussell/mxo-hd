@@ -4,6 +4,17 @@ namespace hds.Tests;
 
 public partial class MissionNpcInteriorCheckpointTests
 {
+    [Fact] public void WitnessedReplayWithFurnitureUsesActualStageChoicesWithoutNewRandomOrSelection()
+    {
+        var p=new MissionProgress(Definition()){phaseIndex=1,persistenceId="furniture-replay",startedAt=123};var c=Client(p);var site=Site();var provider=new Provider();
+        site.containers.Add(Wood());site.objectSpots.Add(Marker());
+        Assert.True(MissionNpcInteriorPlanning.Prepare(c,p,2,site,provider,out _,out var selected,out var why),why);
+        p.npcInteriorPending=selected;p.waitingForExit=true;
+        Assert.True(MissionNpcInteriorAdmission.Replay(c,p,2,new[]{site},provider,out var replay,out why),why);
+        Assert.Null(replay.Selected.Random);Assert.Same(selected,replay.Pending);int reads=provider.Reads;
+        Assert.Empty(MissionStaging.StageObjectChoices(p.mission.phases[2],replay.Selected.Site,replay.Selected.Random,replay));
+        Assert.Equal(reads,provider.Reads);Assert.Same(selected,p.npcInteriorPending);Assert.Equal(1,p.phaseIndex);
+    }
     [Fact] public void RuntimePostAdvanceGuardIsDistinctAndRequiresExactPublishedSiteWitness()
     {
         var prepared=Prepared();var p=prepared.Progress;var c=Client(p);
