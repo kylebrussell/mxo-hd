@@ -62,11 +62,18 @@ internal sealed class PrimaChainEvidence : IDisposable
         if(before.Items.Count==0&&before.Following.Length==0)return actor;
         actor.SkipReceived();actor.SendChat("?save");await actor.WaitForRpcAsync("2e 07");
         raw=await Payload();before=JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,new JsonSerializerOptions{IncludeFields=true})!;
+        async Task<string> MissionInventory()=>before.Items.Count==0?string.Empty:await context.Database.ExecuteAsync($"SELECT charId,goid,slot,count FROM inventory WHERE charId={actor.CharId} AND goid IN ({string.Join(",",before.Items.Keys.Order())}) ORDER BY goid,slot");
+        string inventoryBefore=await MissionInventory();
         string wallet=await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE charId={actor.CharId}");
         string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={actor.CharId}");
         actor.SendRpc("80 fe 00");await actor.WaitForRpcAsync("80 fd");
         Check.Equal(0,actor.World.Problems.Count,"Active carry original parser");sessions.Add(Snapshot(actor));previousRecords.AddRange(actor.World.RpcSnapshot().Select(r=>r.Bytes));
-        string handle=actor.Handle;actor.Dispose();actor=await HeadlessPlayer.LoginAsync(context.Server.Address,username,handle);relogged=actor;
+        string handle=actor.Handle;actor.Dispose();
+        // Normal logout acknowledges before the existing30s world-session reservation expires.
+        // Wait for its ordinary release; do not clear the reservation or retry a refused login.
+        var reservationWait=Stopwatch.StartNew();await Task.Delay(TimeSpan.FromSeconds(33));
+        double reservationSeconds=reservationWait.Elapsed.TotalSeconds;
+        actor=await HeadlessPlayer.LoginAsync(context.Server.Address,username,handle);relogged=actor;
         await actor.EnterWorldAsync();await actor.WaitForRpcAsync("80 9c");
         await actor.WaitUntilAsync(()=>actor.World.RpcSnapshot().Any(r=>r.Bytes.Length==10&&r.Bytes[0]==0x80&&r.Bytes[1]==0xe5)&&actor.World.RpcSnapshot().Any(r=>r.Bytes.Length==10&&r.Bytes[0]==0x80&&r.Bytes[1]==0xe4),"Restored carry initial wallet baselines",TimeSpan.FromSeconds(10));
         foreach(byte opcode in new byte[]{0xe5,0xe4})
@@ -76,6 +83,8 @@ internal sealed class PrimaChainEvidence : IDisposable
         }
         string afterRaw=await Payload();var after=JsonSerializer.Deserialize<MissionProgress.SavedState>(afterRaw,new JsonSerializerOptions{IncludeFields=true})!;
         Check.Equal(before.Identity,after.Identity,"Carry relog identity");Check.Equal(before.Started,after.Started,"Carry relog acceptance");Check.Equal(before.Phase,after.Phase,"Carry relog actual phase");
+        Check.That(before.Done.Order().SequenceEqual(after.Done.Order())&&before.EverDone.Order().SequenceEqual(after.EverDone.Order()),"Carry relog retains earned goal history");
+        Check.Equal(inventoryBefore,await MissionInventory(),"Actual owned mission inventory rows retain slot and raw count through carry relog");
         Check.Equal(JsonSerializer.Serialize(before.Items),JsonSerializer.Serialize(after.Items),"Carry item slots retained");Check.That(before.Following.Order().SequenceEqual(after.Following.Order()),"Carry followers retained");
         Check.Equal(JsonSerializer.Serialize(before.Objects,new JsonSerializerOptions{IncludeFields=true}),JsonSerializer.Serialize(after.Objects,new JsonSerializerOptions{IncludeFields=true}),"Carry fixed sources/objects retained");Check.Equal(JsonSerializer.Serialize(new{before.SiteDoors,before.OpenFloorSites,before.OpenFloorCurrentSiteIndex,before.Waypoints,before.Exits},new JsonSerializerOptions{IncludeFields=true}),
             JsonSerializer.Serialize(new{after.SiteDoors,after.OpenFloorSites,after.OpenFloorCurrentSiteIndex,after.Waypoints,after.Exits},new JsonSerializerOptions{IncludeFields=true}),"Carry exact v1/v2 site history/current waypoint retained");
@@ -86,7 +95,7 @@ internal sealed class PrimaChainEvidence : IDisposable
         }
         Check.Equal(wallet,await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE charId={actor.CharId}"),"Carry relog pays nothing");
         Check.That(PrimaRewardLedger.HasNoCompletionReplay(actor.World.RpcSnapshot().Select(r=>r.Bytes).ToArray()),"Active carry relog has no completion replay");
-        carryProofs.Add(new{Mission=mission,Before=raw,After=afterRaw,Wallet=wallet,RestoredBaselineIndices=restoredBaselines.ToArray()});carryRelogged.Add(mission);return actor;
+        carryProofs.Add(new{Mission=mission,Before=raw,After=afterRaw,Wallet=wallet,InventoryBefore=inventoryBefore,InventoryAfter=await MissionInventory(),ReservationWaitSeconds=reservationSeconds,RestoredBaselineIndices=restoredBaselines.ToArray()});carryRelogged.Add(mission);return actor;
     }
     internal async Task AwardAsync(int id)
     {
