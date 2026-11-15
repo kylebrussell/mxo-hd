@@ -5,6 +5,7 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    1044 => "OURS additive interlock attack-base initiative; health snapshot sourced, retail consumer unresolved",
     204 => "stealth detection",
     209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",

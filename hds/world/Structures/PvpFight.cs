@@ -524,10 +524,10 @@ namespace hds
                 lock (rng)
                 {
                     pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
-                        AbilityStats.SpecialAttack(p.Client, pAbility), AbilityStats.SpecialDefense(n.Client, pAbility)) &&
+                        InterlockInitiative.Attack(p.Client, pAbility), AbilityStats.SpecialDefense(n.Client, pAbility)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
-                        AbilityStats.SpecialAttack(n.Client, nAbility), AbilityStats.SpecialDefense(p.Client, nAbility)) &&
+                        InterlockInitiative.Attack(n.Client, nAbility), AbilityStats.SpecialDefense(p.Client, nAbility)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
