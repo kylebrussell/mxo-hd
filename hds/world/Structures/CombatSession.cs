@@ -159,10 +159,12 @@ namespace hds
             var data = attacker?.playerData;
             if (data != null && defender != null)
             {
+                var character = data.getCharID(); var player = attacker.playerInstance;
                 var world = data.worldGeneration; var life = data.lifeGeneration; var district = data.getDistrictId();
                 var entity = defender.getEntityId(); var death = defender.DeathGeneration;
                 var instance = defender.missionInstance; var phase = defender.missionPhase;
-                npcLifetimeCurrent = () => ReferenceEquals(attacker.playerData, data) && data.worldGeneration == world &&
+                npcLifetimeCurrent = () => ReferenceEquals(attacker.playerData, data) && ReferenceEquals(attacker.playerInstance, player) &&
+                    data.getCharID() == character && data.worldGeneration == world &&
                     data.lifeGeneration == life && data.getDistrictId() == district && defender.getDistrict() == district &&
                     defender.getEntityId() == entity && defender.DeathGeneration == death &&
                     defender.missionInstance == instance && defender.missionPhase == phase;

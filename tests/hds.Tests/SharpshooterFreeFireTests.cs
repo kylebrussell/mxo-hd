@@ -62,7 +62,7 @@ public class SharpshooterFreeFireTests
     [Theory]
     [InlineData("active",2)][InlineData("dedup",2)][InlineData("ended",1)][InlineData("dead",1)]
     [InlineData("world",1)][InlineData("life",1)][InlineData("owner",1)][InlineData("remote",1)]
-    [InlineData("wrongAttacker",1)][InlineData("replacement",1)]
+    [InlineData("wrongAttacker",1)][InlineData("replacement",1)][InlineData("character",1)][InlineData("player",1)]
     public void VictimsCurrentNpcSessionCountsWhenAnotherPlayerBecameNpcsLastTarget(string change,int expected)
     {
         var a=Client();var b=Client();var shooter=Client();var x=Npc();var previous=WorldServer.Clients;
@@ -79,6 +79,8 @@ public class SharpshooterFreeFireTests
                 case "dedup": x.setCombatTarget(a);break;
                 case "ended": Set(session,"<IsActive>k__BackingField",false);break;
                 case "dead": x.setIsDead(true);break;
+                case "character": a.playerData.setCharID(999);break;
+                case "player": a.playerInstance=new PlayerCharacter();a.playerInstance.Health.setValue((ushort)1000);break;
                 case "world": a.playerData.worldGeneration++;break;
                 case "life": a.playerData.lifeGeneration++;break;
                 case "owner": a.playerData=new ClientData();a.playerData.setOnWorld(true);a.playerData.setDistrictId(1);break;
