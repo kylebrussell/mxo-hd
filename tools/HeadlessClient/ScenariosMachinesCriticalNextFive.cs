@@ -44,9 +44,9 @@ public static partial class Scenarios
                 Attributes=view.Attributes.ToDictionary(a=>a.Key,a=>Convert.ToHexString(a.Value))});
             return view;
         }
-        async Task<MissionProgress.SavedState?> WaitSaved(Func<MissionProgress.SavedState?,bool> predicate,string label)
+        async Task<MissionProgress.SavedState?> WaitSaved(Func<MissionProgress.SavedState?,bool> predicate,string label,int timeoutSeconds=20)
         {
-            var deadline=DateTime.UtcNow.AddSeconds(20);
+            var deadline=DateTime.UtcNow.AddSeconds(timeoutSeconds);
             while(DateTime.UtcNow<deadline){var value=await Saved(label);if(predicate(value))return value;await Task.Delay(100);}
             throw new TimeoutException("Persisted mission condition: "+label);
         }
@@ -299,7 +299,9 @@ public static partial class Scenarios
                 var endState=await WaitSaved(s=>s==null||s.Phase!=phase||(s.Flags.TryGetValue("waitingForExit",out bool waiting)&&waiting),"phase goals durably complete");
                 if(endState?.Phase==phase){nextCreationCursor=p.World.CreationSnapshot().Count;await Ride(false);}
                 phaseCreationCursor=nextCreationCursor;phase++;
-                if(phase<mission.Elements("phase").Count())await WaitSaved(s=>s!=null&&s.Phase==phase,"next phase persisted after normal departure");
+                // Exact cold preparation at the retained actual exit takes28.58s. QA synchronization only:
+                // no authored, resolver/search, transport or RPC timer is changed by this bounded wait.
+                if(phase<mission.Elements("phase").Count())await WaitSaved(s=>s!=null&&s.Phase==phase,"next phase persisted after normal departure",60);
                 else await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(completionCursor).Any(r=>BytePattern.Parse("80 a2 00").IsMatch(r.Bytes)),"mission completed over wire",TimeSpan.FromSeconds(15));
             }
             await Barrier();
