@@ -41,13 +41,13 @@ public class LoadedGrantMembershipTests
         Assert.Equal(Convert.FromHexString("80bc45032404008f0000002404000000000100000000"),packets[^1]);
         AbilityGrantRegistration.LoadedChanged(c);Assert.Equal(10,c.messageQueue.RPCMessagesQueue.Count);
     }
-    [Fact] public void HistoricalZeroPairsStayImmutableAndOnlySeparatelyQualifiedScaledPairJoins()
+    [Fact] public void HistoricalZeroPairsScaledAndNativeToolQualificationsStaySeparate()
     {
         var writable=Assert.IsAssignableFrom<IList<(ushort Source,ushort Target)>>(AbilityGrantRegistration.ObservedPairs);
         Assert.True(writable.IsReadOnly);Assert.Throws<NotSupportedException>(()=>writable[0]=(2,17));
         Assert.Throws<NotSupportedException>(()=>writable.Add((151,1111)));
         var admitted=AbilityCatalog.All.Values.SelectMany(parent=>AbilityProgression.GrantsOf(parent.Id).Where(child=>AbilityGrantRegistration.Handles(parent.Id,child)).Select(child=>(parent.Id,child))).OrderBy(p=>p.Id).ToArray();
-        Assert.Equal(AbilityGrantRegistration.ObservedPairs.Concat(AbilityGrantRegistration.ObservedScaledPairs).OrderBy(p=>p.Source).Select(p=>(p.Source,p.Target)),admitted);
+        Assert.Equal(AbilityGrantRegistration.RegisteredPairs.Concat(AbilityGrantRegistration.ObservedScaledPairs).OrderBy(p=>p.Source).Select(p=>(p.Source,p.Target)),admitted);
         Assert.True(AbilityGrantRegistration.Handles(151,1111));Assert.Equal((ushort)50,AbilityProgression.GrantLevel(151,50)); // separately proved stored function2; historical zero list unchanged
     }
     [Fact] public void EveryAdmittedPairHasHashPinnedPositiveFramedCaptureEvidence()

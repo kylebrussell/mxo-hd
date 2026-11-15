@@ -50,6 +50,7 @@ namespace hds
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorPhase { get; set; }
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? OpenFloorLegacyPhase { get; set; }
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionOpenFloorSite[] OpenFloorSites { get; set; }
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionElevatorWitness[] ElevatorWitnesses {get;set;}
             public List<SavedMob> Mobs { get; set; } = new List<SavedMob>();
         }
         public sealed class SavedObject
@@ -113,6 +114,7 @@ namespace hds
             if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null))
             {
                 state.Version=2;state.PendingOpenFloor=pendingOpenFloor;state.OpenFloorPhase=openFloorResolvedPhase;state.OpenFloorLegacyPhase=openFloorLegacyPhase;state.OpenFloorSites=sites.Select(MissionOpenFloorSite.From).ToArray();
+                state.ElevatorWitnesses=elevatorWitnesses.Count==0?null:elevatorWitnesses.Values.ToArray();
                 state.OpenFloorCurrentSiteIndex=site==null?-1:sites.FindIndex(s=>ReferenceEquals(s,site));
                 if(site!=null&&state.OpenFloorCurrentSiteIndex<0)throw new InvalidOperationException("Box current site absent from exact history");
             }
@@ -150,7 +152,7 @@ namespace hds
         {
             if ((state.Version!=1&&state.Version!=2) || state.Mission!=mission.id || state.Phase<0 || state.Phase>=mission.phases.Count)
                 throw new InvalidOperationException("Unsupported or invalid saved mission phase");
-            if(state.Version==1&&(state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
+            if(state.Version==1&&(state.ElevatorWitnesses!=null||state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
                 throw new InvalidOperationException("Version1 cannot contain resolved open-floor metadata");
             if(state.Version==2&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
             var p=new MissionProgress(mission) { persistenceId=state.Identity, phaseIndex=state.Phase, startedAt=state.Started, kills=state.Kills };
@@ -197,6 +199,27 @@ namespace hds
                 var def=p.Phase.objects.Find(d=>d.id==o.Id);
                 if(state.Version==2&&(def==null||p.objects.ContainsKey(o.Id)))throw new InvalidOperationException("Invalid open-floor checkpoint object identity");
                 if(def!=null)p.objects[o.Id]=new MissionObjectState {def=def,spot=o.Spot,goid=o.Goid,unlockedOnce=o.Unlocked,shownState=o.State,OpenFloor=o.OpenFloor};
+            }
+            if(state.ElevatorWitnesses!=null)
+            {
+                foreach(var witness in state.ElevatorWitnesses)
+                {
+                    var matching=p.sites.Where(s=>witness!=null&&MissionOpenFloorSite.CatalogFingerprint(s)==witness.SiteFingerprint).ToArray();
+                    if(matching.Length!=1||witness.Version!=1||witness.Sources==null||witness.Sources.Length==0||witness.Sources.Any(string.IsNullOrWhiteSpace)||
+                        witness.Floor?.Length!=3||witness.Lobby?.Length!=3||witness.Floor.Concat(witness.Lobby).Any(v=>!double.IsFinite(v))||
+                        witness.FloorKey!=matching[0].elevatorDoor.mxoStaticId||witness.LobbyKey!=matching[0].lobbyDoor.mxoStaticId||p.elevatorWitnesses.ContainsKey(witness.SiteFingerprint))
+                        throw new InvalidOperationException("Invalid persisted mission elevator identity");
+                    try
+                    {
+                        var pool=matching[0].objectSpots.Concat(matching[0].containers).Concat(matching[0].realObjects).Select(MissionOpenFloorSite.SpotFingerprint).ToArray();
+                        var choices=witness.Sources.Select((raw,i)=>new MissionOpenFloorChoice((ushort)i,0,raw).ReadSpot()).ToArray();
+                        if(choices.Any(raw=>!MissionOpenFloorAdmission.ValidSpot(raw)||pool.Count(f=>f==MissionOpenFloorSite.SpotFingerprint(raw))!=1)||
+                            choices.Select(MissionOpenFloorSite.SpotFingerprint).Distinct().Count()!=choices.Length)
+                            throw new InvalidOperationException("Invalid persisted mission elevator source identity");
+                    }
+                    catch(JsonException ex){throw new InvalidOperationException("Invalid persisted mission elevator source",ex);}
+                    p.elevatorWitnesses.Add(witness.SiteFingerprint,witness);
+                }
             }
             MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
