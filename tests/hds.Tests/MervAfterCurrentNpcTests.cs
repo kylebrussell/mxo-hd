@@ -53,4 +53,26 @@ public sealed class MervAfterCurrentNpcTests
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth()));
         Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(),death,Move(y:495)));
     }
+    [Fact]public void ExactCapturedOwnTeleportCounter6DoesNotInvalidateNpcView6()
+    {
+        // 98c060d575 section13, CSEQ45/SSEQ124. The counter at offset4 is not an NPC view identifier.
+        var raw=Convert.FromHexString("0200011C06000000000000000020E94600E0A14400705546177A0000");
+        var state=State();var observed=Observe(state,Own(),Birth(view:6),raw);
+        Assert.Equal((ushort)6,observed.View.ViewId);Assert.Equal(1,observed.PositionSection);
+        Assert.Equal(new MervAfterCurrentNpc.Point(100,2095,300),observed.Position);
+        var other=PacketsUtils.createTeleportPacket(29840,1295,13660,0,0,0,9,0);
+        Assert.Equal((ushort)9,Observe(state,Own(),Birth(),other).View.ViewId);
+    }
+    [Fact]public void OwnTeleportMustBeCompleteAndAtKnownCursorNotInsideAnUnknownGap()
+    {
+        var state=State();var raw=Convert.FromHexString("0200011C06000000000000000020E94600E0A14400705546177A0000");
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),raw.Take(27).ToArray()));
+        var wrong=(byte[])raw.Clone();wrong[3]=0x1d;
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),wrong));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),new byte[]{99,88}.Concat(raw).ToArray()));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),raw.Concat(new byte[]{6,0,2,255}).ToArray()));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),new byte[]{6,0,2,255}));
+        Assert.Throws<InvalidDataException>(()=>Observe(state,Own(),Birth(view:6),raw,new byte[]{1,0,1,1,0,6,0}));
+    }
+
 }

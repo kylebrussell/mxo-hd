@@ -57,20 +57,40 @@ public static class MervAfterCurrentNpc
                 start = own.Offset + own.Length;
             }
             if (!ownBirthSeen) throw new InvalidDataException("Current own-view birth must precede carried objects");
-            var known = new List<(int Start, int End, WireFormat.CreationEvent? Birth, ushort? Deleted)>();
+            var known = new List<(int Start, int End, WireFormat.CreationEvent? Birth, ushort? Deleted, bool OwnTeleport)>();
             foreach (var creation in creations.Where(c => c.Offset >= start))
-                known.Add((creation.Offset, creation.Offset + creation.Length, creation, null));
+                known.Add((creation.Offset, creation.Offset + creation.Length, creation, null, false));
+            // PacketsUtils.createTeleportPacket: own view2,01,1c, counter, NAV, yaw, XYZ-f32, time.
+            // Classify only at a current known frame boundary; a matching substring inside an unknown gap is not proof.
+            int cursor=start;
+            while(cursor<section.Length)
+            {
+                var birth=creations.FirstOrDefault(c=>c.Offset==cursor);
+                if(birth!=null){cursor+=birth.Length;continue;}
+                if(cursor+28<=section.Length&&section.AsSpan(cursor,4).SequenceEqual(new byte[]{2,0,1,0x1c}))
+                {known.Add((cursor,cursor+28,null,null,true));cursor+=28;continue;}
+                if(cursor+7<=section.Length&&section.AsSpan(cursor,5).SequenceEqual(new byte[]{1,0,1,1,0}))
+                {cursor+=7;continue;}
+                if(cursor+18<=section.Length&&section[cursor+2]==2&&section[cursor+3]==0x0e)
+                {cursor+=18;continue;}
+                if(cursor+27<=section.Length&&section[cursor+2]==7&&section[cursor+3]==1&&section[cursor+4]==0x1d&&
+                    (BitConverter.ToUInt16(section,cursor+5)==13||BitConverter.ToUInt16(section,cursor+5)==5))
+                {cursor+=27;continue;}
+                break; // Never search unknown bytes for a plausible own teleport.
+            }
             for (int at = start; at + 7 <= section.Length; at++)
             {
-                if (creations.Any(c => at >= c.Offset && at < c.Offset + c.Length)) continue;
+                if (creations.Any(c => at >= c.Offset && at < c.Offset + c.Length) ||
+                    known.Any(k=>k.OwnTeleport&&at>=k.Start&&at<k.End)) continue;
                 if (section[at] == 1 && section[at + 1] == 0 && section[at + 2] == 1 && section[at + 3] == 1 && section[at + 4] == 0)
                 {
-                    known.Add((at, at + 7, null, BitConverter.ToUInt16(section, at + 5)));
+                    known.Add((at, at + 7, null, BitConverter.ToUInt16(section, at + 5), false));
                     at += 6;
                 }
             }
             foreach (var record in known.OrderBy(k => k.Start))
             {
+                if(record.OwnTeleport)continue;
                 if (record.Deleted.HasValue)
                 {
                     if (live.Remove(record.Deleted.Value, out var removed)) retired.Add((removed.View.ViewId, removed.View.SpawnId));
