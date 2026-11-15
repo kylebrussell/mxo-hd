@@ -1,0 +1,6238 @@
+{
+  "SourceGobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "Count": 76,
+  "Rows": [
+    {
+      "Goid": 343,
+      "Name": "Door DT Pull Handle LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 344,
+      "Name": "Door DT Push Knob Redwood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 346,
+      "Name": "Door DT Push Knob LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 347,
+      "Name": "Door DT Push Handle Redwood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 348,
+      "Name": "Door DT Pull Knob LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 349,
+      "Name": "Door zz Push Handle Screen1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 350,
+      "Name": "Door zz Push Handle Ornate1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 351,
+      "Name": "Door zz Push Handle Glass1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 352,
+      "Name": "Door zz Pull Prisonbars",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 354,
+      "Name": "Door zz Pull Handle Screen1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 355,
+      "Name": "Door zz Push Knob Metal1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 356,
+      "Name": "Door zz Push Prisonbars",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 359,
+      "Name": "Door zz Push Knob Greenmetal01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 360,
+      "Name": "Door zz Push Handle Woodglass",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 362,
+      "Name": "Door DT Push Knob Graywood01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 364,
+      "Name": "Door DT Push Knob Graymetal01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 365,
+      "Name": "Door DT Push Knob Darkwood01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 412,
+      "Name": "Door DT Push Knob Wood03",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 413,
+      "Name": "Door SL Push Handle Screentexvar",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 414,
+      "Name": "Door SL Push Knob Graymetal01texvar",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 415,
+      "Name": "Door SL Push Knob Greenmetal01texvar",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 416,
+      "Name": "Door SL Push Knob Metal1texvar",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 461,
+      "Name": "Door SL Push Knob Fadedred01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 486,
+      "Name": "Door DT Mensroom LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 576,
+      "Name": "Door DT Push Handle LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 577,
+      "Name": "Door zz Pull Knob Metal1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 578,
+      "Name": "Door zz Push Handle Graywood Glass",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 579,
+      "Name": "Door DT Push Knob Graymetal02",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 580,
+      "Name": "Door SL Push Knob Fadedgreen02",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 581,
+      "Name": "Door DT Ladiesroom LtWood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 640,
+      "Name": "Door EX ZZ Knob Brown",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 641,
+      "Name": "Door EX ZZ Knob Gray",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 642,
+      "Name": "Door EX ZZ Knob Green",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 643,
+      "Name": "Door EX ZZ Knob Green2",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 644,
+      "Name": "Door EX ZZ Knob Red",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 645,
+      "Name": "Door EX SL Knob Metalgreen",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 646,
+      "Name": "Door EX SL Knob Metalpurple",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 2430,
+      "Name": "Door Tutorial Greendoor",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 2431,
+      "Name": "Door Tutorial Greendoor Dojo",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 2432,
+      "Name": "Door Tutorial Greendoor Warehouse",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6951,
+      "Name": "Door Revolving",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6954,
+      "Name": "Door SL Push Handle Grnmetal",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6955,
+      "Name": "Door SL Push Handle Grymetal",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6956,
+      "Name": "Door SL Push Handle Pwood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6957,
+      "Name": "Door SL Push Handle Rdnmetal",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6958,
+      "Name": "Door SL Push Handle Wood 1",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6959,
+      "Name": "Door SL Push Handle Wood 2",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6960,
+      "Name": "Door SL Push Handle Ylmetal",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6963,
+      "Name": "SL Push Knob Grayflat03",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6964,
+      "Name": "SL Push Knob Grayflat02",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6965,
+      "Name": "SL Push Knob Grayflat01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6966,
+      "Name": "Door_ZZ_sky03_var2_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6967,
+      "Name": "Door_ZZ_sky04_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6968,
+      "Name": "Door_DT_sky05_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6969,
+      "Name": "Door_ZZ_sky02_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6970,
+      "Name": "Door_IT_hotel_01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6971,
+      "Name": "Door_ZZ_sky03_var1_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6972,
+      "Name": "Door_IT_aprt_03_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6973,
+      "Name": "Door_ZZ_sky01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6974,
+      "Name": "Door_DT_sky01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6975,
+      "Name": "Door_DT_sky02_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6976,
+      "Name": "Door_DT_sky03_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6977,
+      "Name": "Door_DT_sky04_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6978,
+      "Name": "Door_DT_sky06_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6979,
+      "Name": "Door_IT_Factory_01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6980,
+      "Name": "Door_IT_Dojo_01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6981,
+      "Name": "Door_IT_Rest_01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6982,
+      "Name": "Door_IT_aprt_01_ext",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6983,
+      "Name": "Door SL Church",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6984,
+      "Name": "Door SL Push Knob GrayVent01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6985,
+      "Name": "SL Push Knob Glass",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 6986,
+      "Name": "Door SL Push Knob Fadedgreen01",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 7491,
+      "Name": "Door Cell Door",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 9990,
+      "Name": "Door Merovingian Push",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 37908,
+      "Name": "Door Tutorial Greendoor Merovingian",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    },
+    {
+      "Goid": 37909,
+      "Name": "Door Tutorial Greendoor Graywood",
+      "Components": [
+        {
+          "name": "Model",
+          "type": 6
+        },
+        {
+          "name": "Info",
+          "type": 12
+        },
+        {
+          "name": "NavMeshController",
+          "type": 4
+        },
+        {
+          "name": "OpenUsage",
+          "type": 5
+        },
+        {
+          "name": "PickLockUsage",
+          "type": 5
+        },
+        {
+          "name": "MissionElement",
+          "type": 37
+        },
+        {
+          "name": "ThreshholdTrigger",
+          "type": 35
+        },
+        {
+          "name": "StateMachine",
+          "type": 36
+        },
+        {
+          "name": "UnlockUsage",
+          "type": 5
+        },
+        {
+          "name": "PortalController",
+          "type": 52
+        },
+        {
+          "name": "GuardAction",
+          "type": 58
+        },
+        {
+          "name": "DmgVol",
+          "type": 1
+        },
+        {
+          "name": "Trap",
+          "type": 43
+        },
+        {
+          "name": "AbilityTarget",
+          "type": 42
+        }
+      ],
+      "Fields": {
+        "OpenUsage/ClientRuleID": 4004,
+        "OpenUsage/Cursor": 671092159,
+        "OpenUsage/Defaultable": 1,
+        "OpenUsage/ExecuteRuleID": 4004,
+        "OpenUsage/MaxDistance": 1000.0,
+        "OpenUsage/NameID": 16777267,
+        "PortalController/IsOpen": 0,
+        "PortalController/PortalListA": "ffffffffffff",
+        "PortalController/PortalListB": "ffffffffffff",
+        "StateMachine/ClosedState": "35080000ffffffff00000000000000000000000000000000",
+        "StateMachine/ClosingState": "380800000000000001000000000000003508000000000000",
+        "StateMachine/CurrentState": 2101,
+        "StateMachine/DisarmedState": "3a080000ffffffff00000000000000000000000000000000",
+        "StateMachine/LockedState": "360800002200000000000000000000000000000000000000",
+        "StateMachine/OpenedState": "340800000000000014000000000000003808000000000000",
+        "StateMachine/ReopenedState": "420800000000000014000000000000003808000000000000",
+        "StateMachine/TrappedState": "39080000ffffffff00000000000000000000000000000000",
+        "StateMachine/TriggeredState": "3b080000ffffffff00000000000000000000000000000000"
+      }
+    }
+  ]
+}

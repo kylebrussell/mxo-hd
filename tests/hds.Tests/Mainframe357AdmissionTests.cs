@@ -42,7 +42,7 @@ public class Mainframe357AdmissionTests
         Nav();var m=Mission();var phase=m.phases[0];var random=new Random(301101);int npcs=m.npcs.Count+MissionStaging.SpotsForWaves(phase);
         var site=MissionSites.Choose(Sites.Value,phase.site,17000,2300,npcs,MissionStaging.PlacesNeeded(phase),random,admissible:s=>MissionInteriorSites.Eligible(phase,s,out _,npcs))
             ??MissionSites.Choose(Sites.Value,"Any",17000,2300,npcs,MissionStaging.PlacesNeeded(phase),random,admissible:s=>MissionInteriorSites.Eligible(phase,s,out _,npcs));Assert.NotNull(site);
-        var choices=MissionStaging.SelectObjects(phase,site!,random).Select(MissionOpenFloorChoice.From).ToArray();Assert.Equal((ushort)357,Assert.Single(choices).Goid);
+        var choices=MissionStaging.PrepareSourcePoolChoices(phase,site!,random,npcs).Select(MissionOpenFloorChoice.From).ToArray();Assert.Equal((ushort)357,Assert.Single(choices).Goid);
         // Mirror normal TryPrepare's selected elevator context, without changing chooser/source/RNG.
         Assert.True(MissionElevatorPoses.TryCreate(site!,choices,out var elevator,out string why),why);Assert.NotNull(elevator);
         var selected=new MissionOpenFloorPendingAdmission(1,m.id,"mainframe-fixed",0,100,MissionOpenFloorSite.From(site!),choices,null,elevator);

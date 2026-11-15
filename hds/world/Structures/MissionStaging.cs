@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -92,7 +92,8 @@ namespace hds
             Random rng = LayoutRandom(mission.id,0,unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
+            Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(mission,0);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible) ??
                                   MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible);
             data.missionPreviewFor = mission;
@@ -126,7 +127,34 @@ namespace hds
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
         public static bool Stage(WorldClient client, MissionProgress progress) => StageCore(client,progress,null);
         internal static bool StagePrepared(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan) => StageCore(client,progress,plan);
-        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared)
+        internal static bool StageNpcPrepared(WorldClient client,MissionProgress progress,MissionNpcInteriorAdmission.Plan plan) => StageCore(client,progress,null,plan);
+        internal sealed class SiteSelection
+        {
+            internal readonly MissionSite Site;internal readonly Random Random;
+            internal SiteSelection(MissionSite site,Random random){Site=site;Random=random;}
+        }
+        // The original chooser, factored once. Preview clearing belongs to successful Stage, not failed admission.
+        internal static SiteSelection ChooseSite(WorldClient client,MissionProgress progress,int phaseIndex)
+        {
+            double px=0,py=0,pz=0;NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
+            return ChooseSiteAt(client,progress,phaseIndex,px,pz);
+        }
+        private static SiteSelection ChooseSiteAt(WorldClient client,MissionProgress progress,int phaseIndex,double px,double pz)
+        {
+            var mission=progress.mission;var phase=mission.phases[phaseIndex];int at=phaseIndex+1;
+            var rng=LayoutRandom(mission.id,phaseIndex,unchecked((int)client.playerData.getCharID()*7919+mission.id*31+at+(int)progress.startedAt));
+            List<MissionSite> sites=MissionSites.For(mission.district);
+            var site=phaseIndex==0&&client.playerData.missionPreviewFor==mission?client.playerData.missionPreview:null;
+            List<string> hoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
+            int npcs=mission.npcs.Count(n=>n.at==at)+SpotsForWaves(phase),objects=PlacesNeeded(phase),furniture=FurnitureNeeded(phase);
+            Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(progress.mission,phaseIndex);
+            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
+            if(site!=null&&!Eligible(site))site=null;
+            site=site??MissionSites.Choose(sites,phase.site,px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
+                ??MissionSites.Choose(sites,"Any",px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
+            return new SiteSelection(site,rng);
+        }
+        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared,MissionNpcInteriorAdmission.Plan npcPrepared=null)
         {
             MissionPhase phase = progress.Phase;
             Mission mission = progress.mission;
@@ -135,9 +163,8 @@ namespace hds
                 return false;
             }
 
-            double px = 0, py = 0, pz = 0;
-            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
-
+            double px=0,py=0,pz=0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
             int at = progress.phaseIndex + 1;
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
             int objects = PlacesNeeded(phase);
@@ -145,17 +172,10 @@ namespace hds
             Random rng=null;MissionSite site;
             if(prepared==null)
             {
-                rng = LayoutRandom(mission.id,progress.phaseIndex,unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
-                List<MissionSite> sites = MissionSites.For(mission.district);
-                site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
+                if(npcPrepared!=null)npcPrepared.RequireStaging(client);
+                var selected=npcPrepared?.Selected??ChooseSiteAt(client,progress,progress.phaseIndex,px,pz);rng=selected.Random;site=selected.Site;
                 client.playerData.missionPreview = null;
                 client.playerData.missionPreviewFor = null;
-                List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-                int npcs = placed.Count + SpotsForWaves(phase);
-                bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs);
-                if(site!=null&&!Eligible(site))site=null;
-                site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible)
-                            ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods, requiredFurniture: furniture,admissible:Eligible);
                 if (site == null)
                 {
                     Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
@@ -172,16 +192,23 @@ namespace hds
 
             // No layout RNG is consumed between site choice and object placement. Materialize the
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
-            var objectChoices=prepared==null?PrepareObjectChoices(phase,site,rng):null;
+            // NPC-only replay owns no object choices/RNG; fresh paths retain249 source-pool preparation.
+            var objectChoices=prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
                     MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
                         OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
 
             progress.site = site;
+            if(npcPrepared?.Adopted==true)
+            {
+                progress.npcInteriorWitnesses[progress.phaseIndex]=npcPrepared.Pending.Witness;progress.npcInteriorResolvedPhase=progress.phaseIndex;
+            }
             if(prepared?.Selection.Elevator!=null)progress.elevatorWitnesses[MissionOpenFloorSite.CatalogFingerprint(site)]=prepared.Selection.Elevator;
             var elevatorWitness=progress.ElevatorFor(site);var floorDoor=MissionElevatorPoses.Floor(site,elevatorWitness);
             var lobbyDoor=elevatorWitness==null?new MissionOpenFloorResolver.Position(site.lobbyDoor.pos_x,site.lobbyDoor.pos_y,site.lobbyDoor.pos_z):MissionElevatorPoses.Position(elevatorWitness.Lobby);
+            var npcWitness=MissionNpcInteriorAdmission.Current(progress);
+            if(npcWitness!=null){floorDoor=MissionElevatorPoses.Position(npcWitness.Floor.Position);lobbyDoor=MissionElevatorPoses.Position(npcWitness.Lobby.Position);}
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
             {
@@ -210,6 +237,11 @@ namespace hds
             int next = 0;
             double[] NextSpot()
             {
+                if(npcWitness!=null)
+                {
+                    if(next>=npcWitness.Selection.Actors.Length)throw new MissionCheckpointException("NPC certified prefix exhausted");
+                    return npcWitness.Selection.Actors[next++].Standing;
+                }
                 double[] spot = spots[next % spots.Count];
                 int lap = next / spots.Count;
                 next++;
@@ -236,7 +268,7 @@ namespace hds
                 }
 
                 Mob mob = MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
-                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc));
+                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc),placement:MissionNpcInteriorAdmission.ActorPoint(progress,"Npc",npc.id,0,spot));
                 if (mob == null)
                 {
                     progress.pendingNpcPlacements.Add(npc.id);
@@ -331,7 +363,9 @@ namespace hds
             List<NavPoint> floor = new List<NavPoint>();
             foreach (double[] spot in spots)
             {
-                if (!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out NavPoint placed, reserved: floor))
+                var certified=MissionNpcInteriorAdmission.ActorPoint(progress,"Wave",wave.id,floor.Count,spot);
+                NavPoint placed=certified??default;
+                if (!certified.HasValue&&!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out placed, reserved: floor))
                 {
                     progress.pendingWavePlacements.Add(wave.id);
                     return false;
@@ -374,11 +408,139 @@ namespace hds
             internal ObjectChoice(MissionObjectDef definition,StaticWorldObject spot,ushort goid)
             {Definition=definition;Spot=spot;Goid=goid;}
         }
+        internal sealed class SourcePools
+        {
+            internal readonly MissionElevatorWitness Elevator;
+            private readonly HashSet<StaticWorldObject> allowed;
+            internal readonly GeneratedSafeAssignment SafeAssignment;
+            internal SourcePools(MissionElevatorWitness elevator,IEnumerable<StaticWorldObject> rows,GeneratedSafeAssignment safeAssignment=null)
+            {Elevator=elevator;allowed=new HashSet<StaticWorldObject>(rows);SafeAssignment=safeAssignment;}
+            internal bool Allows(StaticWorldObject row)=>allowed.Contains(row);
+            internal bool AllowsFirst(MissionObjectDef def,StaticWorldObject row)=>Allows(row)&&(SafeAssignment==null||SafeAssignment.CanChooseFirst(def,row));
+        }
+        // Fresh-only row assignment. Native bindings and default legacy selectors remain unchanged.
+        internal sealed class GeneratedSafeAssignment
+        {
+            internal readonly Dictionary<MissionObjectDef,StaticWorldObject> Native;
+            private readonly MissionObjectDef[] remaining;
+            private readonly StaticWorldObject[] rows;
+            private readonly HashSet<StaticWorldObject> furniture;
+            internal GeneratedSafeAssignment(Dictionary<MissionObjectDef,StaticWorldObject> native,IEnumerable<MissionObjectDef> definitions,
+                IEnumerable<StaticWorldObject> sources,IEnumerable<StaticWorldObject> containers)
+            {Native=native;remaining=definitions.ToArray();rows=sources.ToArray();furniture=new HashSet<StaticWorldObject>(containers);}
+            private bool Edge(MissionObjectDef def,StaticWorldObject row)=>
+                string.Equals(def.kind,"Safe",StringComparison.OrdinalIgnoreCase)?MissionSites.Goid(row)==1410:
+                ObjectGoids.ContainsKey(def.kind)||furniture.Contains(row);
+            internal bool Complete(int start=0,StaticWorldObject excluded=null,ISet<StaticWorldObject> used=null)
+            {
+                var assigned=new Dictionary<StaticWorldObject,int>();
+                bool Match(int index,HashSet<StaticWorldObject> seen)
+                {
+                    foreach(var row in rows)
+                    {
+                        if(ReferenceEquals(row,excluded)||(used?.Contains(row)??false)||!Edge(remaining[index],row)||!seen.Add(row))continue;
+                        if(!assigned.TryGetValue(row,out int previous)||Match(previous,seen)){assigned[row]=index;return true;}
+                    }
+                    return false;
+                }
+                for(int i=start;i<remaining.Length;i++)if(!Match(i,new HashSet<StaticWorldObject>()))return false;
+                return true;
+            }
+            internal bool CanChooseFirst(MissionObjectDef def,StaticWorldObject row)=>
+                remaining.Length>0&&ReferenceEquals(remaining[0],def)&&Edge(def,row)&&Complete(1,row);
+            internal IEnumerable<ObjectChoice> Select(MissionPhase phase,MissionSite site,Random rng)
+            {
+                // Exactly the legacy draw count/order, including rows excluded from this assignment.
+                var containers=site.containers.Select(row=>new{row,key=rng.Next()}).OrderBy(x=>x.key).Select(x=>x.row).ToList();
+                var spawners=site.objectSpots.Select(row=>new{row,key=rng.Next()}).OrderBy(x=>x.key).Select(x=>x.row).ToList();
+                var used=new HashSet<StaticWorldObject>();int index=0;
+                foreach(var def in phase.objects)
+                {
+                    if(Native.TryGetValue(def,out var native)){yield return new ObjectChoice(def,native,MissionSites.Goid(native));continue;}
+                    IEnumerable<StaticWorldObject> priority;
+                    if(ObjectGoids.ContainsKey(def.kind))
+                        priority=spawners.Where(r=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(r),out var kind)&&string.Equals(kind,def.kind,StringComparison.OrdinalIgnoreCase))
+                            .Concat(spawners).Concat(containers);
+                    else
+                    {
+                        bool phone=string.Equals(def.kind,"Phone",StringComparison.OrdinalIgnoreCase);
+                        priority=containers.Where(r=>(MissionSites.Goid(r)==MissionSites.PhoneGoId)==phone).Concat(containers);
+                    }
+                    var spot=priority.FirstOrDefault(row=>rows.Contains(row)&&!used.Contains(row)&&Edge(def,row)&&Complete(index+1,row,used));
+                    if(spot==null)throw new MissionCheckpointException("Generated Safe assignment lost complete source capacity");
+                    used.Add(spot);index++;
+                    yield return new ObjectChoice(def,spot,ExpectedConcrete(def,spot));
+                }
+            }
+        }
+        // Necessary preselection only. No RNG, site mutation, fixed-choice repair or body planning.
+        internal static bool TrySourcePools(MissionPhase phase,MissionSite site,int npcCount,out SourcePools pools,out string refusal)
+        {
+            pools=null;refusal=null;
+            if(!MissionOpenFloorAdmission.Requires(phase)||site==null)return true;
+            var taken=new HashSet<StaticWorldObject>();var remaining=new List<MissionObjectDef>();
+            var nativeAssignments=new Dictionary<MissionObjectDef,StaticWorldObject>();
+            foreach(var def in phase.objects)
+            {
+                var real=site.realObjects.FirstOrDefault(o=>!taken.Contains(o)&&
+                    string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)],def.kind,StringComparison.OrdinalIgnoreCase));
+                if(real!=null){taken.Add(real);nativeAssignments.Add(def,real);}else remaining.Add(def);
+            }
+            var rows=site.objectSpots.Concat(site.containers).ToArray();
+            bool freeSafe=remaining.Any(d=>string.Equals(d.kind,"Safe",StringComparison.OrdinalIgnoreCase));
+            GeneratedSafeAssignment safeAssignment=null;
+            if(freeSafe)
+            {
+                if(rows.Concat(taken).Select(MissionOpenFloorSite.SpotFingerprint).Distinct().Count()!=rows.Length+taken.Count)
+                {refusal="AmbiguousGeneratedSafeSourcePool";return false;}
+                safeAssignment=new GeneratedSafeAssignment(nativeAssignments,remaining,rows,site.containers);
+                if(!safeAssignment.Complete()){refusal="InsufficientCompatibleGeneratedSafeSources";return false;}
+            }
+            bool mayAdopt=remaining.Any(d=>ObjectGoids.ContainsKey(d.kind)&&rows.Any(raw=>MissionOpenFloorAdmission.Target(ExpectedConcrete(d,raw),raw)));
+            if(!mayAdopt){if(safeAssignment!=null)pools=new SourcePools(null,rows,safeAssignment);return true;} // No fresh Safe can escape unsupported as legacy.
+            if(!MissionElevatorPoses.TrySelectionContext(site,out var context,out refusal))return false;
+            if(context==null){if(safeAssignment!=null)pools=new SourcePools(null,rows,safeAssignment);return true;} // Existing legacy geometry contract.
+            foreach(var raw in taken)
+                if(!MissionElevatorPoses.CompatibleSource(site,raw,context,out refusal))return false;
+            var allowed=rows.Where(raw=>MissionElevatorPoses.CompatibleSource(site,raw,context,out _)).ToArray();
+            if(rows.Concat(taken).Select(MissionOpenFloorSite.SpotFingerprint).Distinct().Count()!=rows.Length+taken.Count)
+            {refusal="AmbiguousElevatorSourcePool";return false;}
+            int spawners=site.objectSpots.Count(allowed.Contains),furniture=site.containers.Count(allowed.Contains);
+            int spawned=remaining.Count(d=>ObjectGoids.ContainsKey(d.kind)),native=remaining.Count-spawned;
+            if(furniture<native+Math.Max(0,spawned-spawners))
+            {refusal="InsufficientCompatibleElevatorSources";return false;}
+            if(safeAssignment!=null)
+            {
+                safeAssignment=new GeneratedSafeAssignment(nativeAssignments,remaining,allowed,site.containers);
+                if(!safeAssignment.Complete()){refusal="InsufficientCompatibleGeneratedSafeSources";return false;}
+            }
+            if(!MissionInteriorSites.TryAllocate(site,npcCount,out _,out refusal,context))return false;
+            pools=new SourcePools(context,allowed,safeAssignment);return true;
+        }
         // Shared exact chooser. Staging materializes it before publishing any phase entities.
         internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
+            =>SelectObjectsFromPools(phase,site,rng,null);
+        internal static ObjectChoice[] PrepareSourcePoolChoices(MissionPhase phase,MissionSite site,Random rng,int npcCount)
         {
-            List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
-            List<StaticWorldObject> spawners = site.objectSpots.OrderBy(_ => rng.Next()).ToList();
+            if(!TrySourcePools(phase,site,npcCount,out var pools,out string refusal))
+                throw new MissionCheckpointException("Object source selection refused: "+refusal);
+            var choices=SelectObjectsFromPools(phase,site,rng,pools).ToArray();
+            foreach(var choice in choices)
+                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+            return choices;
+        }
+        internal static IEnumerable<ObjectChoice> SelectObjectsFromPools(MissionPhase phase,MissionSite site,Random rng,SourcePools pools)
+        {
+            if(pools?.SafeAssignment!=null)
+            {
+                foreach(var choice in pools.SafeAssignment.Select(phase,site,rng))yield return choice;
+                yield break;
+            }
+            // Preserve one existing key/draw per ORIGINAL row, even for prefiltered sources.
+            List<StaticWorldObject> furniture = site.containers.Select(s=>new{Spot=s,Key=rng.Next()})
+                .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
+            List<StaticWorldObject> spawners = site.objectSpots.Select(s=>new{Spot=s,Key=rng.Next()})
+                .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
             HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
             foreach (MissionObjectDef def in phase.objects)
             {
@@ -425,6 +587,20 @@ namespace hds
             foreach(var choice in choices)
                 if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
             return choices;
+        }
+        internal static ObjectChoice[] StageSourceChoices(MissionPhase phase,MissionSite site,Random rng,
+            MissionNpcInteriorAdmission.Plan npcPrepared,int reserved) => npcPrepared?.Replayed==true&&npcPrepared.Adopted
+                ?StageObjectChoices(phase,site,rng,npcPrepared):PrepareSourcePoolChoices(phase,site,rng,reserved);
+
+        internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared)
+        {
+            if(npcPrepared?.Replayed==true&&npcPrepared.Adopted)
+            {
+                if(phase.objects.Count!=0||!ReferenceEquals(npcPrepared.Progress.Phase,phase)||!ReferenceEquals(npcPrepared.Selected.Site,site))
+                    throw new MissionCheckpointException("Changed NPC-only replay object definitions/site");
+                return Array.Empty<ObjectChoice>(); // The durable NPC-only selection owns NO object choices/RNG.
+            }
+            return PrepareObjectChoices(phase,site,rng); // Fresh and non-adopted paths retain all original draws.
         }
         private static void PlaceObjects(WorldClient client, MissionProgress progress, IReadOnlyList<ObjectChoice> choices)
         {
@@ -729,9 +905,12 @@ namespace hds
             }
 
             bool current = site == progress.site && !progress.waitingForExit;
+            if (current && ExitEscortRide(client,progress,site,used,px,py,pz)) current=false;
             StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
             var targetWitness=progress.ElevatorFor(site);
             double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
+            var npcTarget=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcTarget!=null)targetY=(current?npcTarget.Floor:npcTarget.Lobby).Position[1];
             if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
@@ -755,6 +934,21 @@ namespace hds
             return true;
         }
 
+        // The exit goal cannot complete until the downride commits. Permit that ride while the
+        // goal is still open, but only from its current generated floor with its actual followers.
+        internal static bool ExitEscortRide(WorldClient client,MissionProgress progress,MissionSite site,StaticWorldObject used,
+            double x,double y,double z)
+        {
+            if(!ReferenceEquals(progress.site,site)||!progress.UsesGeneratedDeparture||progress.waitingForExit||used==null)return false;
+            var witness=progress.ElevatorFor(site);
+            uint floorKey=witness?.FloorKey??site.elevatorDoor.mxoStaticId;
+            double floorY=witness==null?site.elevatorDoor.pos_y:witness.Floor[1];
+            var npcFloor=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcFloor!=null){floorKey=MissionNpcInteriorPlanning.ReadRaw(npcFloor.Floor.RawDoorJson).mxoStaticId;floorY=npcFloor.Floor.Position[1];}
+            return used.metrId==site.elevatorDoor.metrId && used.mxoStaticId==floorKey && Math.Abs(y-floorY)<200 &&
+                MissionRuntime.ReadyExitEscort(client,progress,x,y,z);
+        }
+
         public const string ElevatorUpLine = "I've hacked into the elevator control system. Sending you to the right floor.";
         public const string ElevatorDownLine = "I've hacked into the elevator control system. Taking you back down to the street.";
 
@@ -775,10 +969,16 @@ namespace hds
                 MissionElevatorPoses.Position(ReferenceEquals(target,site.elevatorDoor)?witness.Floor:witness.Lobby);
             double dx = site.CentreX - measured.X, dz = site.CentreZ - measured.Z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
             double x = measured.X + dx / length * 200, y = measured.Y - 50, z = measured.Z + dz / length * 200;
+            var npcWitness=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcWitness!=null)
+            {
+                var saved=ReferenceEquals(target,site.elevatorDoor)?npcWitness.Floor:npcWitness.Lobby;
+                x=saved.Standing[0];y=saved.Standing[1];z=saved.Standing[2];
+            }
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
             Output.WriteDebugLog("[MISSION] Elevator navigation start");
-            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
+            if (npcWitness==null&&PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
                 x = NearestOnMesh(client, measured.X, y, measured.Z, out z);
