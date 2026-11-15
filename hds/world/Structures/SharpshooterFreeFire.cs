@@ -60,41 +60,52 @@ namespace hds
         {
             private readonly Func<bool> current;
             private readonly Func<float> distance;
-            private readonly Func<bool> defenderGun;
+            private readonly Func<uint> defenderWeapon;
             private readonly WorldClient player;
             private readonly uint weapon;
             private readonly string actor;
+            private readonly uint targetWeapon;
+            private readonly bool loaded,validAtCapture;
             public int Opponents {get;}
-            internal Shot(Func<bool> current,Func<float> distance,Func<bool> defenderGun,WorldClient player,uint weapon,int opponents,string actor)
-            {this.current=current;this.distance=distance;this.defenderGun=defenderGun;this.player=player;this.weapon=weapon;Opponents=opponents;this.actor=actor;}
+            public bool CountSampled {get;}
+            internal Shot(Func<bool> current,Func<float> distance,Func<uint> defenderWeapon,WorldClient player,uint weapon,Func<int> count,string actor)
+            {
+                this.current=current;this.distance=distance;this.defenderWeapon=defenderWeapon;this.player=player;this.weapon=weapon;this.actor=actor;
+                validAtCapture=current();targetWeapon=validAtCapture?defenderWeapon():0;
+                loaded=validAtCapture&&player!=null&&AbilityPassives.IsLoaded(player,148);
+                //Each skipped dimension is irrelevant to the literal formula. Fence it again before use.
+                CountSampled=validAtCapture&&RangedWeapons.AttackClass(weapon)!=0&&!RangedWeapons.IsGun(targetWeapon)&&!loaded;
+                Opponents=CountSampled?count():0;
+            }
             public int AddToAttack(int existing,uint actualWeapon)
             {
-                if(actualWeapon!=weapon||!current())return existing;
-                bool loaded=player!=null&&AbilityPassives.IsLoaded(player,148);float metres=distance();bool gun=defenderGun();
+                if(actualWeapon!=weapon||!validAtCapture||!current()||defenderWeapon()!=targetWeapon||
+                    (player!=null&&AbilityPassives.IsLoaded(player,148))!=loaded)return existing;
+                float metres=distance();bool gun=RangedWeapons.IsGun(targetWeapon);
                 int modifier=Modifier(RangedWeapons.AttackClass(weapon),gun,metres,Opponents,loaded);
-                Output.WriteDebugLog($"[SHARPSHOOTER OURS] actor={actor} class{RangedWeapons.AttackClass(weapon)} defenderGun{gun} metres{metres:F3} opponents{Opponents} loaded148{loaded} modifier{modifier} attackBonus{existing}->{existing+modifier}");
+                Output.WriteDebugLog($"[SHARPSHOOTER OURS] actor={actor} class{RangedWeapons.AttackClass(weapon)} defenderGun{gun} metres{metres:F3} opponents{Opponents} countSampled{CountSampled} loaded148{loaded} modifier{modifier} attackBonus{existing}->{existing+modifier}");
                 return existing+modifier;
             }
         }
         public static Shot AgainstNpc(WorldClient source,Mob target,uint weapon)
         {
-            var a=Stamp(source);var b=Stamp(target);int count=NpcOpponents(target,source);
+            var a=Stamp(source);var b=Stamp(target);
             return new Shot(()=>a()&&b()&&source.playerData.getDistrictId()==target.getDistrict(),
                 ()=>CombatCalculator.CalculateDistanceMetres(source.playerInstance.Position.getValue(),target.getXPos(),target.getYPos(),target.getZPos()),
-                ()=>RangedWeapons.IsGun(target.getWeapon()),source,weapon,count,Name(source));
+                ()=>target.getWeapon(),source,weapon,()=>NpcOpponents(target,source),Name(source));
         }
         public static Shot AgainstPlayer(WorldClient source,WorldClient target,uint weapon)
         {
-            var a=Stamp(source);var b=Stamp(target);int count=PlayerOpponents(target,source);
+            var a=Stamp(source);var b=Stamp(target);
             return new Shot(()=>a()&&b()&&source.playerData.getDistrictId()==target.playerData.getDistrictId(),
-                ()=>PvpCombat.MetresBetween(source,target),()=>RangedWeapons.IsGun(PvpGunfire.GunOf(target)),source,weapon,count,Name(source));
+                ()=>PvpCombat.MetresBetween(source,target),()=>PvpGunfire.GunOf(target),source,weapon,()=>PlayerOpponents(target,source),Name(source));
         }
         public static Shot FromNpc(Mob source,WorldClient target,uint weapon)
         {
-            var a=Stamp(source);var b=Stamp(target);int count=PlayerOpponents(target,currentNpc:source);
+            var a=Stamp(source);var b=Stamp(target);
             return new Shot(()=>a()&&b()&&source.getDistrict()==target.playerData.getDistrictId(),
                 ()=>CombatCalculator.CalculateDistanceMetres(target.playerInstance.Position.getValue(),source.getXPos(),source.getYPos(),source.getZPos()),
-                ()=>RangedWeapons.IsGun(PvpGunfire.GunOf(target)),null,weapon,count,source?.getName()??"");
+                ()=>PvpGunfire.GunOf(target),null,weapon,()=>PlayerOpponents(target,currentNpc:source),source?.getName()??"");
         }
     }
 }

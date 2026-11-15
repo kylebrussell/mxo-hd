@@ -81,6 +81,32 @@ public class SharpshooterFreeFireTests
         Assert.True(off.Hit);Assert.True(on.Hit);Assert.True(on.AttackRoll>off.AttackRoll);Assert.Equal(off.DefenseRoll,on.DefenseRoll);Assert.Equal(off.Damage,on.Damage);
         Assert.Equal(a.Draws,b.Draws);Assert.Equal(a.Doubles,b.Doubles);Assert.Equal(a.Next(),b.Next());
     }
+    [Fact]public void InapplicableAndLoadedShotsBypassTheActualCountProvider()
+    {
+        var c=Client();int scans=0;int Count(){scans++;return 3;}
+        var gunTarget=new SharpshooterFreeFire.Shot(()=>true,()=>1f,()=>537,c,537,Count,"unit");
+        Assert.False(gunTarget.CountSampled);Assert.Equal(100,gunTarget.AddToAttack(100,537));Assert.Equal(0,scans);
+        var noGun=new SharpshooterFreeFire.Shot(()=>true,()=>1f,()=>0,c,0,Count,"unit");
+        Assert.False(noGun.CountSampled);Assert.Equal(100,noGun.AddToAttack(100,0));Assert.Equal(0,scans);
+        var invalid=new SharpshooterFreeFire.Shot(()=>false,()=>1f,()=>0,c,537,Count,"unit");
+        Assert.False(invalid.CountSampled);Assert.Equal(100,invalid.AddToAttack(100,537));Assert.Equal(0,scans);
+        AbilityPassives.SetLoaded(c,new(ushort,ushort)[]{(148,50)});
+        var loaded=new SharpshooterFreeFire.Shot(()=>true,()=>1f,()=>0,c,537,Count,"unit");
+        Assert.False(loaded.CountSampled);Assert.Equal(100,loaded.AddToAttack(100,537));Assert.Equal(0,scans);
+        AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+        var applicable=new SharpshooterFreeFire.Shot(()=>true,()=>1f,()=>0,c,537,Count,"unit");
+        Assert.True(applicable.CountSampled);Assert.Equal(3,applicable.Opponents);Assert.Equal(80,applicable.AddToAttack(100,537));Assert.Equal(1,scans);
+    }
+    [Fact]public void ABypassedCountCannotBeReusedAfterWeaponOrLoadedStateChanges()
+    {
+        var c=Client();uint targetWeapon=537;int scans=0;
+        var gunTarget=new SharpshooterFreeFire.Shot(()=>true,()=>4f,()=>targetWeapon,c,537,()=>{scans++;return 3;},"unit");
+        targetWeapon=0;Assert.Equal(100,gunTarget.AddToAttack(100,537));Assert.Equal(0,scans); //not an unearned+5 after the swap
+        AbilityPassives.SetLoaded(c,new(ushort,ushort)[]{(148,50)});
+        var loaded=new SharpshooterFreeFire.Shot(()=>true,()=>4f,()=>targetWeapon,c,537,()=>{scans++;return 3;},"unit");
+        AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+        Assert.Equal(100,loaded.AddToAttack(100,537));Assert.Equal(0,scans);
+    }
     private sealed class TrackingRandom:Random
     {
         public List<(int Min,int Max,int Value)> Draws=new();public List<double> Doubles=new();public TrackingRandom(int seed):base(seed){}
