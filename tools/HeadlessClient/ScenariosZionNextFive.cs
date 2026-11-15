@@ -10,15 +10,23 @@ public static partial class Scenarios
     private static Task ZionCriticalNextFive(ScenarioContext context)=>RunPrimaChain(context,"ZionNextFive",1,ZionNextFiveFixture.Missions,
         ZionNextFiveFixture.Prerequisites,"zion_1_2_*.xml",requireStandardCourier:true,evidenceLabel:"zion-critical-next-five",
         evidenceOptions:new(checked((int)PlayerProgression.ExperienceForLevel(50)),ColdRestart:true,RestartEnvironment:ZionNextFiveEnvironment,ExpectedExperienceDelta:434250,ExpectedInformationDelta:455000,FreshUploadBooth:true,MissionExperience:new uint[]{68625,90750,137500,68625,68750},MissionInformation:new uint[]{91000,91000,91000,91000,91000},ExactZionNextFive:true));
+    private static async Task<MissionProgress.SavedState> ZionNextFiveCheckpoint(ScenarioContext context,HeadlessPlayer p)
+    {
+        string hex=await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId={p.CharId}");
+        return MervFollowupCheckpointFixture.ParseHex(hex)??throw new ScenarioFailure("Expected the owned active Zion checkpoint");
+    }
     private static async Task ZionNextFiveExit(ScenarioContext context,HeadlessPlayer p,Action<object>? note=null)
     {
         await ZionNextFiveRide(context,p,false,note);
     }
     private static async Task ZionNextFiveRide(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null)
     {
-        var state=await MissionCheckpoint(context,p);var door=state.Waypoints.Single();var lobby=state.Exits.Single();
-        uint key=enter?ZionNextFiveFixture.DoorAt(new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),lobby):BitConverter.ToUInt32(Convert.FromHexString(door.doorHex),0);
-        var pose=enter?lobby:new[]{door.x,door.y,door.z};await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        var state=await ZionNextFiveCheckpoint(context,p);var door=state.Waypoints.Single();var lobby=state.Exits.Single();
+        var authored=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"zion_1_2_*.xml").Select(XElement.Load).Single(m=>(int)m.Attribute("id")! == state.Mission);
+        var objectOrder=authored.Elements("phase").ElementAt(state.Phase).Elements("object").Select(o=>checked((ushort)(int)o.Attribute("id")!)).ToArray();
+        var selected=MervFollowupElevatorFixture.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
+        uint key=selected.Key;var pose=selected.Pose;await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        Check.That(MervFollowupElevatorFixture.SameEntry(state,await ZionNextFiveCheckpoint(context,p)),"Owned Zion phase/site/source/witness is unchanged before door request");
         var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&ZionNextFiveFixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
@@ -26,6 +34,22 @@ public static partial class Scenarios
         if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",TimeSpan.FromSeconds(15));
         string rideLog=context.Server.DebugLog()[cursor..];
         note?.Invoke(new{Kind="Ordinary saved-site door request",Mission=state.Mission,Phase=state.Phase,Enter=enter,Key=key,Request=request,RpcCursor=rpc,SourceWaypoint=door,SourceExit=lobby,RideLog=rideLog});
+        if(selected.Witness!=null)
+        {
+            MervFollowupElevatorFixture.DoorObservation? current=null;
+            await p.WaitUntilAsync(()=>
+            {
+                try{current=MervFollowupElevatorFixture.CurrentOverlay(p.World.CurrentOwnViewLife(),selected);return true;}
+                catch(InvalidDataException){return false;}
+            },"Exact current-life Zion measured door key/pose/quaternion",TimeSpan.FromSeconds(15));
+            var arrival=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            Check.That(arrival!=null,"Measured Zion door actually teleported");
+            double[] actual=Enumerable.Range(1,3).Select(i=>double.Parse(arrival!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+            SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
+            Check.That(NavMesh.Locate(1,actual[0],actual[1],actual[2],out var root),"Measured Zion arrival is on actual NAV");
+            MervFollowupElevatorFixture.RequireRoot(selected,enter,actual,root.sector,root.region,root.floorY,state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).Select(o=>o.OpenFloor!.Route.Take(3).ToArray()));
+            note?.Invoke(new{Kind="Current measured Zion elevator",selected.Key,selected.Witness,ActualRoot=actual,current!.OwnLife,current.BirthSection,DoorView=current.View.ViewId,DoorSpawn=current.View.SpawnId,NativeRenderingProven=false});
+        }
         if(enter&&pending.Length>0)
         {
             var arrival=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
@@ -61,7 +85,7 @@ public static partial class Scenarios
     }
     private static async Task<ViewCreation> ZionNextFiveNpc(ScenarioContext context,HeadlessPlayer p,XElement definition,int creationStart)
     {
-        var state=await MissionCheckpoint(context,p);ushort id=checked((ushort)(int)definition.Attribute("id")!);
+        var state=await ZionNextFiveCheckpoint(context,p);ushort id=checked((ushort)(int)definition.Attribute("id")!);
         var mob=state.Mobs.Single(m=>m.Npc==id);
         await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
         ViewCreation? current=null;
@@ -70,7 +94,7 @@ public static partial class Scenarios
     }
     private static async Task<ViewCreation> ZionNextFiveObject(ScenarioContext context,HeadlessPlayer p,int objectId,int creationStart,Action<object>? note=null)
     {
-        var state=await MissionCheckpoint(context,p);var obj=state.Objects.Single(o=>o.Id==objectId);
+        var state=await ZionNextFiveCheckpoint(context,p);var obj=state.Objects.Single(o=>o.Id==objectId);
         if(obj.OpenFloor==null)
         {
             Check.That(NumericalUtils.ByteArrayToUint16(obj.Spot.type,1)==obj.Goid,"Only an actual bound native object can lack a free-proxy witness");
@@ -102,7 +126,7 @@ public static partial class Scenarios
         await p.WaitUntilAsync(()=>p.World.CreationSnapshot().Skip(creationStart).Any(Exact),"current fixed object body at committed witness",TimeSpan.FromSeconds(15));
         var body=p.World.CreationSnapshot().Skip(creationStart).Last(Exact);
         Check.Equal(w.Quaternion,Convert.ToHexString(body.Attributes["Orientation"]),"Fixed DTO orientation on actual03 body");
-        var after=await MissionCheckpoint(context,p);var current=after.Objects.Single(o=>o.Id==objectId);
+        var after=await ZionNextFiveCheckpoint(context,p);var current=after.Objects.Single(o=>o.Id==objectId);
         Check.Equal(JsonSerializer.Serialize(new{obj.Id,obj.Goid,obj.Spot,obj.OpenFloor},new JsonSerializerOptions{IncludeFields=true}),JsonSerializer.Serialize(new{current.Id,current.Goid,current.Spot,current.OpenFloor},new JsonSerializerOptions{IncludeFields=true}),"Whole raw source/fixed DTO unchanged through ordinary ride/route movement");
         Check.Equal(JsonSerializer.Serialize(new{state.OpenFloorSites,state.OpenFloorCurrentSiteIndex,state.Waypoints,state.Exits},new JsonSerializerOptions{IncludeFields=true}),JsonSerializer.Serialize(new{after.OpenFloorSites,after.OpenFloorCurrentSiteIndex,after.Waypoints,after.Exits},new JsonSerializerOptions{IncludeFields=true}),"Entire fixed site history/current door tuple unchanged");
         note?.Invoke(new{Kind="Immutable source/fixed DTO",Source=obj.Spot,Witness=w.RawJson,body.ViewId,body.SpawnId});return body;

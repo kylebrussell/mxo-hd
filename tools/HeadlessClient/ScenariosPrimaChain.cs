@@ -58,7 +58,7 @@ public static partial class Scenarios
                 if(evidenceOptions?.ExactZionNextFive==true)
                 {
                     var next=await diagnostics!.CarryRelogAsync(id);
-                    if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await MissionCheckpoint(context,p)).Done);}
+                    if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
                 }
                 if(diagnostics!=null)await diagnostics.PhaseAsync(id,phase);
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
@@ -150,7 +150,7 @@ public static partial class Scenarios
                             foreach(string key in ((string)goal.Attribute("npc")!).Split(','))
                             {
                                 var npc=Npc(key);
-                                if(evidenceOptions?.ExactZionNextFive==true&&(await MissionCheckpoint(context,p)).Following.Contains(ushort.Parse(key)))continue;
+                                if(evidenceOptions?.ExactZionNextFive==true&&(await ZionNextFiveCheckpoint(context,p)).Following.Contains(ushort.Parse(key)))continue;
                                 if((int?)npc.Attribute("at")==phase+1)
                                 {var recruit=evidenceOptions?.ExactZionNextFive==true?await ZionNextFiveNpc(context,p,npc,viewsStart):await PrimaNpc(context,p,npc,viewsStart,true);diagnostics?.Target("Escort recruitment",recruit);await Task.Delay(800);}
                             }
@@ -192,7 +192,7 @@ public static partial class Scenarios
                                 for(int attempts=0;!Done(number)&&attempts<100;attempts++)
                                 {
                                     int observed=p.World.CreationSnapshot().Count;
-                                    var saved=await MissionCheckpoint(context,p);
+                                    var saved=await ZionNextFiveCheckpoint(context,p);
                                     var targets=ZionNextFiveFixture.CurrentHostiles(p.World.CreationSnapshot(),viewsStart,saved,id,phase)
                                         .Where(v=>!killed.Contains((v.ViewId,v.SpawnId))).ToArray();
                                     if(Done(number))break;
@@ -223,7 +223,7 @@ public static partial class Scenarios
                     if(evidenceOptions?.ExactZionNextFive==true)
                     {
                         var next=await diagnostics!.CarryRelogAsync(id);
-                        if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await MissionCheckpoint(context,p)).Done);}
+                        if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
                     }
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
@@ -232,7 +232,7 @@ public static partial class Scenarios
                 {
                     if(evidenceOptions?.ExactZionNextFive==true)
                     {
-                        string raw=await context.Database.ScalarAsync($"SELECT IFNULL(payload,'') FROM char_active_missions WHERE charId={p.CharId}");
+                        string raw=MervFollowupCheckpointFixture.DecodeHex(await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId={p.CharId}"))??string.Empty;
                         var actual=string.IsNullOrWhiteSpace(raw)?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
                         if(actual?.Phase==phase)await ZionNextFiveExit(context,p,diagnostics!.Note);
                         else diagnostics!.Note(new{Kind="Legacy automatic advance before explicit exit",Mission=id,CompletedPhase=phase,ActualPhase=actual?.Phase,CurrentCheckpoint=raw});

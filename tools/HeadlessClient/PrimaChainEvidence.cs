@@ -57,7 +57,7 @@ internal sealed class PrimaChainEvidence : IDisposable
     internal async Task<HeadlessPlayer> CarryRelogAsync(int mission)
     {
         if(!options.ExactZionNextFive||carryRelogged.Contains(mission))return actor;
-        async Task<string> Payload()=>await context.Database.ScalarAsync($"SELECT IFNULL(payload,'') FROM char_active_missions WHERE charId={actor.CharId}");
+        async Task<string> Payload()=>MervFollowupCheckpointFixture.DecodeHex(await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId={actor.CharId}"))??string.Empty;
         string raw=await Payload();if(string.IsNullOrWhiteSpace(raw))return actor;var before=JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,new JsonSerializerOptions{IncludeFields=true})!;
         if(before.Items.Count==0&&before.Following.Length==0)return actor;
         actor.SkipReceived();actor.SendChat("?save");await actor.WaitForRpcAsync("2e 07");
