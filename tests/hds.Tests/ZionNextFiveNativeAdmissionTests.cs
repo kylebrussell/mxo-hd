@@ -32,10 +32,10 @@ public class ZionNextFiveNativeAdmissionTests
         var xml=new XmlDocument();xml.Load(Path.Combine(Repo,"data/missions/zion_1_2_9_hardline_hunter.xml"));return MissionXml.Parse(xml.DocumentElement!);
     }
     static MissionSite Site(string fingerprint)=>Catalog.Value.Single(s=>MissionOpenFloorSite.CatalogFingerprint(s)==fingerprint);
-    [Fact] public void Captured47e00529CannotQualifyForThe47e00647MeasuredFloorOrRepairItsPending()
+    [Fact] public void Captured47e00129CannotQualifyForThe47e00247MeasuredFloorOrRepairItsPending()
     {
-        var mission=Mission();var site=Site(FailedSite);var raw=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00529);
-        Assert.Equal(0x47e00647u,site.elevatorDoor.mxoStaticId);Assert.Equal((ushort)1412,MissionSites.Goid(raw));
+        var mission=Mission();var site=Site(FailedSite);var raw=site.objectSpots.Single(s=>s.mxoStaticId==0x47e00129);
+        Assert.Equal(0x47e00247u,site.elevatorDoor.mxoStaticId);Assert.Equal((ushort)1412,MissionSites.Goid(raw));
         Assert.Equal((44870d,3065d,-13770d),(raw.pos_x,raw.pos_y,raw.pos_z));
         var choice=new MissionOpenFloorChoice(1,548,JsonSerializer.Serialize(raw,Fields));
         Assert.True(MissionElevatorPoses.TrySelectionContext(site,out var context,out string why),why);Assert.NotNull(context);
@@ -45,7 +45,7 @@ public class ZionNextFiveNativeAdmissionTests
         string before=JsonSerializer.Serialize(pending,Fields);
         Assert.False(MissionOpenFloorAdmission.TryGeometry(mission,1,site,pending.Choices,out _,out why,pending));
         Assert.Equal("ElevatorSourceRegionDisagreement",why);Assert.Null(pending.Elevator);
-        Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Equal(0x47e00529u,pending.Choices.Single().ReadSpot().mxoStaticId);
+        Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Equal(0x47e00129u,pending.Choices.Single().ReadSpot().mxoStaticId);
     }
     [Fact] public void SameNormal101208SeedAndCapturedExitChooseACompleteCompatibleNextPhase()
     {
@@ -61,7 +61,7 @@ public class ZionNextFiveNativeAdmissionTests
         Assert.NotNull(selected);Assert.True(MissionStaging.TrySourcePools(phase,selected,npcs,out var pools,out string why),why);
         var choices=MissionStaging.SelectObjectsFromPools(phase,selected,rng,pools).Select(MissionOpenFloorChoice.From).ToArray();
         var choice=Assert.Single(choices);Assert.Equal((ushort)548,choice.Goid);
-        Assert.False(selected.elevatorDoor.mxoStaticId==0x47e00647&&choice.ReadSpot().mxoStaticId==0x47e00529);
+        Assert.False(selected.elevatorDoor.mxoStaticId==0x47e00247&&choice.ReadSpot().mxoStaticId==0x47e00129);
         Assert.True(MissionElevatorPoses.TryCreate(selected,choices,out var elevator,out why),why);
         var pending=new MissionOpenFloorPendingAdmission(1,101209,new string('a',32),1,1794756844,MissionOpenFloorSite.From(selected),choices,null,elevator);
         Assert.True(MissionOpenFloorAdmission.TryGeometry(mission,1,selected,choices,out var poses,out why,pending),why);
