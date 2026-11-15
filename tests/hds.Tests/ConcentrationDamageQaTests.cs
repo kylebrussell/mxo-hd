@@ -114,7 +114,8 @@ public class ConcentrationDamageQaTests : IDisposable
     {
         var c=Client();Store.currentClient=null!;Assert.DoesNotContain("armed:",Arm(c));Store.currentClient=c;
         c.playerData.setUDPSessionEstablished(false);Assert.DoesNotContain("armed:",Arm(c));c.playerData.setUDPSessionEstablished(true);
-        c.Alive=false;Assert.DoesNotContain("armed:",Arm(c));c.Alive=true;
+        c.Alive=false;Assert.DoesNotContain("armed:",Arm(c));c.Alive=true;Assert.False(c.Alive);
+        c=Client(); // An explicitly stopped endpoint requires a new owner, not revival of the old fixture.
         Assert.DoesNotContain("armed:",CombatDepthDev.Run(c,new[]{"hurtme","100","next","6114"}));
         Assert.DoesNotContain("armed:",CombatDepthDev.Run(c,new[]{"hurtme","100"}));
         c.playerInstance.Health.setValue((ushort)100);Assert.DoesNotContain("armed:",Arm(c));
