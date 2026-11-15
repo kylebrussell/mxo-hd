@@ -143,9 +143,15 @@ namespace hds
             }
             return state;
         }
-        internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door) =>
-            door==null?null:candidates.FirstOrDefault(s=>s?.elevatorDoor!=null && s.elevatorDoor.mxoStaticId==door.mxoStaticId &&
-                s.elevatorDoor.sectorID==door.sectorID && s.elevatorDoor.metrId==door.metrId);
+        internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door)
+        {
+            if(door==null)return null;
+            // A static key can have multiple legacy CSV poses. Keep the captured raw door,
+            // rather than replacing it with the first alias after a normal relog.
+            string signature=MissionOpenFloorSite.SpotFingerprint(door);
+            // V1 stores no cluster fingerprint: identical raw-door clusters retain legacy order.
+            return candidates.FirstOrDefault(s=>s?.elevatorDoor!=null&&MissionOpenFloorSite.SpotFingerprint(s.elevatorDoor)==signature);
+        }
         public static MissionProgress Restore(Mission mission, SavedState state, Func<double> clock = null) => RestoreCore(mission,state,clock,null);
         internal static MissionProgress RestoreFromCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,Func<double> clock=null) => RestoreCore(mission,state,clock,siteCatalog);
         private static MissionProgress RestoreCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog)
