@@ -5,6 +5,8 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
+    212 when typeof(AbilityCatalog).Assembly.GetType("hds.PunishingBlows") != null => "OURS current Daze/Stun/OffBalance damage percent (PunishingBlows consumer present)",
     204 => "stealth detection",
     209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",
@@ -15,8 +17,10 @@ static string Consumer(ushort stat) => stat switch
     1011 or 1029 or 1030 => "typed combat-special defence in interlock",
     183 => "typed combat-special defence and PARTIAL modeled free-cast viral defence (NPC neutral tactic)",
     342 => "PARTIAL modeled primary TF2 free-cast viral attack; native base/link totals unresolved",
+    1147 => "OURS level-scaled percentage bonus to normal free-cast and diagnostic viral accuracy; retail coefficient unresolved",
     637 => "PARTIAL modern free-cast viral consistency; native table with OURS settings/64-significand policy",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
+    1146 or 1148 when typeof(AbilityCatalog).Assembly.GetType("hds.TypedResistanceBonuses") != null => "OURS level-scaled percentage to existing typed viral/thrown resistance points, once;4*level+20 scale; retail coefficient unresolved",
     157 or 1033 => "OURS normalized typed ability health damage/DOT resistance; native caller/base unresolved",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",

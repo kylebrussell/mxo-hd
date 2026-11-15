@@ -1,0 +1,60 @@
+using System.Runtime.CompilerServices;
+using hds;
+namespace hds.Tests;
+[Collection("DelayedActions")]
+public class ViralAccuracyConsumerTests
+{
+    [Fact]
+    public void SharedNativeAndHeadlessLoadoutCanReloadRunProgramThroughTheRealPrerequisiteRule()
+    {
+        var ids=HeadlessClient.ViralAccuracyBonusFixture.Abilities;
+        var rows=ids.Select((id,i)=>new AbilityMemory.Row((uint)i,(ushort)i,0x80000000u|((uint)id<<10),50,id!=32)).ToArray();
+        var root=Assert.Single(rows,r=>r.Ability==32);
+        Assert.Null(AbilityLoadQualification.Refusal(rows,new[]{root},PlayerProgression.ExperienceForLevel(50),out bool low));
+        Assert.False(low);
+        Assert.True(rows.Sum(r=>AbilityMemory.Cost(r.Ability))<=AbilityMemory.ForLevel(50));
+        var mode=NativeQa.NativeQaModes.RequireKnown("viral-accuracy-bonus");
+        Assert.Equal(ids,mode.Plan.Abilities);
+    }
+    [Fact]
+    public void RegisteredScenarioActuallyCapturesItsNpcAndScopedDrawEnvironment()
+    {
+        var scenario=HeadlessClient.Scenarios.All.Single(s=>s.Name=="viral-accuracy-bonus");
+        Assert.NotNull(scenario.Environment);
+        Assert.Equal("test",scenario.Environment["MXO_MOBS"]);
+        Assert.Equal("0",scenario.Environment["MXO_AGGRO"]);
+        Assert.Equal("17000",scenario.Environment["MXO_FREECAST_VIRAL_QA_ATTACK15"]);
+        Assert.Equal("17000",scenario.Environment["MXO_FREECAST_VIRAL_QA_DEFENSE15"]);
+    }
+    static WorldClient Client(byte level)
+    {
+        var c=(WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.playerData=new ClientData();c.playerInstance=new PlayerCharacter();c.messageQueue=new MessageQueue();
+        c.playerInstance.Level.setValue(level);
+        typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
+        return c;
+    }
+    [Theory][InlineData(10,1)][InlineData(25,2)][InlineData(50,5)]
+    public void LoadedRunProgramChangesActualViralTotalsAndUnloadingRemovesIt(byte level,int expected)
+    {
+        var c=Client(level);int before=AbilityStats.ViralAccuracy(c);
+        AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(32,50)});
+        Assert.Equal(10,AbilityStats.Player(c,1147));
+        Assert.Equal(before+expected,AbilityStats.ViralAccuracy(c));
+        Assert.Equal(0,AbilityStats.Attack(c,false));Assert.Equal(0,AbilityStats.Attack(c,true));
+        var ability=new AbilityItem();ability.setAbilityID(33);
+        Assert.Equal(expected,AbilityStats.SpecialAttack(c,ability));
+        AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
+        Assert.Equal(before,AbilityStats.ViralAccuracy(c));
+    }
+    [Fact]
+    public void BonusChangesFreeCastProductionContestWithoutChangingDraws()
+    {
+        var c=Client(50);
+        var before=FreeCastViralContest.Evaluate(AbilityStats.ViralAccuracy(c),0,0,0,0,null,17000,17000);
+        AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(32,50)});
+        var after=FreeCastViralContest.Evaluate(AbilityStats.ViralAccuracy(c),0,0,0,0,null,17000,17000);
+        Assert.True(after.Attack>before.Attack);Assert.Equal(before.Defense,after.Defense);
+        Assert.Equal(before.Forced,after.Forced);
+    }
+}
