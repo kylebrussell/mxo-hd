@@ -99,5 +99,13 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(new[]{6,7,8},selected.Actors.Select(a=>a.Id));Assert.Equal(3,selected.Actors.Select(a=>string.Join("|",a.Standing.Take(3))).Distinct().Count());
         var rooms=selected.Actors.Select(a=>{var raw=MissionNpcInteriorPlanning.ReadRaw(a.RawMarkerJson);Assert.True(evidence.TryMeasuredNpcRoute(entry,raw,a.Standing,k=>doors.GetValueOrDefault(k),out var route,out var refusal),refusal);return route.Target.Region;}).Distinct();Assert.Single(rooms);
     }
+    [Fact] public void RoomModeStartsFreshCriticalOfferWithOnlyEarlierReceipts()
+    {
+        var mode=NativeQa.NativeQaModes.RequireKnown("mission-npc-room-roles");var plan=mode.Plan;
+        Assert.Equal("101213",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
+        Assert.Equal(32,NativeQa.Modes.MissionNpcRoomRolesMode.EarlierReceipts.Length);Assert.DoesNotContain(101213,NativeQa.Modes.MissionNpcRoomRolesMode.EarlierReceipts);
+        Assert.Contains("(110,101212)",Assert.Single(plan.BeforeLoadout));Assert.DoesNotContain("(110,101213)",Assert.Single(plan.BeforeLoadout));
+        Assert.Equal((17000,2300),(plan.X,plan.Z));Assert.All(plan.ReadyMessages,m=>Assert.DoesNotContain("force842 as",m));
+    }
 }
 
