@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 using NativeQa;
 using HeadlessClient;
 namespace hds.Tests;
@@ -84,18 +85,30 @@ public class BuffDispelFixtureTests
         typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);
         return c;
     }
-    [Fact]
-    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitCallerRandomStaysAuthoritativeAndOnlyNullUsesQaFixture(bool worldPresent)
     {
-        WithEnvironment("1","mxotest_dispel","0",()=>
+        var oldWorld=Store.world;
+        var oldClients=WorldServer.Clients;
+        try
         {
-            var caster=Client();var target=Client();
-            Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
-            AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
-            Assert.True(AbilityBuffs.IsActive(target,49));
-            AbilityHostile.LandedOnPlayer(caster,target,261);
-            Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
-        });
+            // This callback test owns its watcher context; other tests may leave a world
+            // instance with the previous (possibly null) endpoint registry restored.
+            Store.world=worldPresent?(WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer)):null;
+            WorldServer.Clients=new();
+            WithEnvironment("1","mxotest_dispel","0",()=>
+            {
+                var caster=Client();var target=Client();
+                Assert.True(AbilityBuffs.Apply(target,49));Assert.True(AbilityBuffs.Apply(target,489));
+                AbilityHostile.LandedOnPlayer(caster,target,261,new MissRandom());
+                Assert.True(AbilityBuffs.IsActive(target,49));
+                AbilityHostile.LandedOnPlayer(caster,target,261);
+                Assert.False(AbilityBuffs.IsActive(target,49));Assert.True(AbilityBuffs.IsActive(target,489));
+            });
+        }
+        finally{Store.world=oldWorld;WorldServer.Clients=oldClients;}
     }
 
     [Theory]
