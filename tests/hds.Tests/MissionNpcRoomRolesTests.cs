@@ -47,4 +47,12 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.True(E.Declared(directory,1,(ushort)sector));Assert.NotNull(E.LoadAudited(directory,1,(ushort)sector));
         Assert.False(E.Declared(directory,1,1));
     }
+    [Fact] public void CapacityCountsNamedAndDeferredWaveRolesInAuthoredOrder()
+    {
+        var mission=Definition();mission.phases[2].waves.Add(new MissionWave{id=9,enemy="Machines",count=2,arrival=new MissionArrival()});
+        Assert.True(MissionNpcInteriorPlanning.Roles(mission,2,out var roles,out var why),why);
+        Assert.Equal(new[]{"Npc","Wave","Wave"},roles.Select(r=>r.Kind));
+        Assert.Equal(new[]{6,9,9},roles.Select(r=>r.Id));Assert.Equal(new[]{0,0,1},roles.Select(r=>r.Index));
+        Assert.All(MissionNpcRoomRoles.Allocate(new[]{RoomCandidate(1,1,0),RoomCandidate(2,2,1),RoomCandidate(2,3,2),RoomCandidate(2,4,3)},roles.Length),c=>Assert.Equal((ushort)2,c.Route.Target.Region));
+    }
 }

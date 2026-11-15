@@ -124,7 +124,7 @@ public partial class MissionNpcInteriorCheckpointTests
     {
         var p=new MissionProgress(Definition()){phaseIndex=1};string before=JsonSerializer.Serialize(p.Capture(47,Array.Empty<Mob>()),MissionProgress.SaveJson);
         Assert.Null(MissionNpcInteriorAdmission.Current(p));Assert.Null(MissionNpcInteriorAdmission.ActorPoint(p,"Npc",6,0,new[]{1d,2,3,4}));Assert.Null(MissionNpcInteriorAdmission.Overlay(p,Wood()));
-        var site=Site();site.elevatorDoor.sectorID=842;Assert.False(MissionNpcInteriorAdmission.Declared(site));Assert.True(MissionNpcInteriorAdmission.Candidate(p.Phase));
+        var site=Site();site.elevatorDoor.sectorID=1;Assert.False(MissionNpcInteriorAdmission.Declared(site));Assert.True(MissionNpcInteriorAdmission.Candidate(p.Phase));
         Assert.Equal(before,JsonSerializer.Serialize(p.Capture(47,Array.Empty<Mob>()),MissionProgress.SaveJson));
     }
 }
