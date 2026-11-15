@@ -34,19 +34,26 @@ public static partial class Scenarios
             async Task Fire(HeadlessPlayer target,bool loaded,int expected,bool sampled,int opponents)
             {
                 var view=await shooter.WaitForViewNamedAsync(target.Handle);shooter.SkipReceived();target.SkipReceived();int start=context.Server.DebugLog().Length;
+                int ownCursor=shooter.World.RpcSnapshot().Count,targetCursor=target.World.RpcSnapshot().Count;
                 shooter.SendRpc("3d 01");shooter.SendRpc("41 "+HandleOf(view));
                 await shooter.WaitForRpcAsync("4e 00");
-                var own=await shooter.WaitForRpcAsync(r=>SharpshooterFixture.ReadShot(r.Bytes,shooter.Handle,target.Handle,true,out _),"Complete own ordinary8168 shot");
-                var other=await target.WaitForRpcAsync(r=>SharpshooterFixture.ReadShot(r.Bytes,shooter.Handle,target.Handle,false,out _),"Complete target ordinary8168 shot");
-                SharpshooterFixture.ReadShot(own.Bytes,shooter.Handle,target.Handle,true,out var ownValues);SharpshooterFixture.ReadShot(other.Bytes,shooter.Handle,target.Handle,false,out var otherValues);
-                Check.Equal(ownValues,otherValues,"Independent wire attack/defense/damage agrees for both actors");
-                var input=context.Server.DebugLog()[start..].Split('\n').Select(l=>SharpshooterFixture.ReadInput(l.TrimEnd('\r'),shooter.Handle)).FirstOrDefault(i=>i!=null)??throw new InvalidOperationException("Current shot input diagnostic missing");
-                Check.Equal((byte)0x38,input.Class,"Actual owned pistol class");Check.Equal(loaded,input.Loaded,"Current148 membership");Check.Equal(expected,input.Modifier,"Recovered literal modifier");
-                Check.Equal(sampled,input.CountSampled,"Only relevant opponent count scanned");if(sampled)Check.Equal(opponents,input.Opponents,"Distinct current live opponents");
-                baseAttack??=input.Before;Check.Equal(baseAttack.Value,input.Before,"Same actual base attack before/after148; no invented stat");
                 int stopStart=context.Server.DebugLog().Length;shooter.SendRpc("3d 00");
                 await shooter.WaitUntilAsync(()=>context.Server.DebugLog()[stopStart..].Contains("[COMBAT] Combat stance idle"),"Ordinary holster completes after stopping the fire timer",TimeSpan.FromSeconds(10));
-                measurements.Add(new{Stage=stage,Target=target.Handle,Input=input,Wire=ownValues,OwnRpc=Convert.ToHexString(own.Bytes),TargetRpc=Convert.ToHexString(other.Bytes)});
+                var inputs=context.Server.DebugLog()[start..].Split('\n').Select(l=>SharpshooterFixture.ReadInput(l.TrimEnd('\r'),shooter.Handle)).Where(i=>i!=null).Cast<SharpshooterFixture.Input>().ToArray();
+                Check.That(inputs.Length>0,"Stopped stage has actual shot inputs");
+                foreach(var input in inputs)
+                {
+                    Check.Equal((byte)0x38,input.Class,"Actual owned pistol class");Check.Equal(loaded,input.Loaded,"Current148 membership");Check.Equal(expected,input.Modifier,"Recovered literal modifier");
+                    Check.Equal(sampled,input.CountSampled,"Only relevant opponent count scanned");if(sampled)Check.Equal(opponents,input.Opponents,"Distinct current live opponents");
+                    baseAttack??=input.Before;Check.Equal(baseAttack.Value,input.Before,"Same actual base attack before/after148; no invented stat");
+                }
+                //Drain every naturally emitted shot before changing loadout/target. No delayed old pair can qualify the next stage.
+                await shooter.WaitUntilAsync(()=>SharpshooterFixture.CompleteStage(shooter.World.RpcSnapshot().Select(r=>r.Bytes),ownCursor,
+                    target.World.RpcSnapshot().Select(r=>r.Bytes),targetCursor,shooter.Handle,target.Handle,inputs.Length,out _),"All stopped-stage complete own/target8168 and4e records",TimeSpan.FromSeconds(10));
+                Check.That(SharpshooterFixture.CompleteStage(shooter.World.RpcSnapshot().Select(r=>r.Bytes),ownCursor,target.World.RpcSnapshot().Select(r=>r.Bytes),targetCursor,
+                    shooter.Handle,target.Handle,inputs.Length,out var wire),"Independent complete ordered wire pairs");
+                measurements.Add(new{Stage=stage,Target=target.Handle,Inputs=inputs,Wire=wire,OwnCursor=ownCursor,TargetCursor=targetCursor,
+                    OwnRpc=shooter.World.RpcSnapshot().Skip(ownCursor).Select(r=>r.Hex),TargetRpc=target.World.RpcSnapshot().Skip(targetCursor).Select(r=>r.Hex)});
             }
             stage="148-off-close";await Loaded(false);await Fire(close,false,-5,true,1);
             stage="148-on-close";await Loaded(true);await Fire(close,true,0,false,0);

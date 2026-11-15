@@ -37,4 +37,14 @@ public static class SharpshooterFixture
         ushort damage=BitConverter.ToUInt16(b,10);short absorbed=BitConverter.ToInt16(b,12);if(result==4&&(damage!=0||absorbed!=0))return false;
         shot=new(result==3,damage,absorbed,BitConverter.ToUInt16(b,14),BitConverter.ToUInt16(b,16));return true;
     }
+    public static bool CompleteStage(IEnumerable<byte[]> own,int ownCursor,IEnumerable<byte[]> target,int targetCursor,
+        string shooterName,string targetName,int expected,out Shot[] shots)
+    {
+        shots=Array.Empty<Shot>();if(expected<1||ownCursor<0||targetCursor<0)return false;
+        var self=own.Skip(ownCursor).ToArray();var other=target.Skip(targetCursor).ToArray();
+        Shot[] Values(IEnumerable<byte[]> bytes,bool isYou)=>bytes.Select(b=>ReadShot(b,shooterName,targetName,isYou,out var value)?value:null).Where(v=>v!=null).Cast<Shot>().ToArray();
+        var a=Values(self,true);var b=Values(other,false);
+        if(self.Count(r=>r.Length==2&&r[0]==0x4e&&r[1]==0)!=expected||a.Length!=expected||b.Length!=expected||!a.SequenceEqual(b))return false;
+        shots=a;return true;
+    }
 }

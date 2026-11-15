@@ -34,4 +34,18 @@ public class SharpshooterFixtureTests
         Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.FixedCallbackRolls);Assert.False(mode.Plan.GmCharacter110);
         Assert.DoesNotContain(mode.Plan.EnvironmentOverrides.Keys,k=>k.Contains("ROLL")||k.Contains("DRAW"));Assert.Contains("OURS",mode.Plan.ReadyMessages.Single());
     }
+    [Fact]public void StoppedStageDrainsAllOrderedPairsAndRejectsMissingExtraOrMismatchedRecords()
+    {
+        var first=Literal.ToArray();var second=Literal.ToArray();BitConverter.GetBytes((ushort)20).CopyTo(second,10);
+        var other1=first.ToArray();other1[22]=0;var other2=second.ToArray();other2[22]=0;var ack=new byte[]{0x4e,0};
+        var own=new[]{Literal,ack,first,ack,second};var target=new[]{Literal,other1,other2};
+        Assert.True(SharpshooterFixture.CompleteStage(own,1,target,1,"SharpShooter","SharpFists",2,out var shots));Assert.Equal(2,shots.Length);Assert.Equal((ushort)20,shots[1].Damage);
+        Assert.False(SharpshooterFixture.CompleteStage(own,1,target,1,"SharpShooter","SharpFists",1,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(own,1,target,1,"SharpShooter","SharpFists",3,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(new[]{first,ack,second},0,target,1,"SharpShooter","SharpFists",2,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(own,1,new[]{other2,other1},0,"SharpShooter","SharpFists",2,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(own,1,new[]{other1,other2[..^1]},0,"SharpShooter","SharpFists",2,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(own,1,target,1,"Other","SharpFists",2,out _));
+        Assert.False(SharpshooterFixture.CompleteStage(own,-1,target,1,"SharpShooter","SharpFists",2,out _));
+    }
 }
