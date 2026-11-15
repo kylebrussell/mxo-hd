@@ -46,4 +46,17 @@ public class TransmitCodeFixtureTests
         double zero=.66/220*20-.33,withBonus=.66/220*42-.33;
         Assert.Equal(510,(int)Math.Floor(done*(1-withBonus)/(1-zero)));
         Assert.Equal(510,TypedAbilityResistance.Amount(done,50,50,22));
+    }    [Fact]public void RetainedSourcedDotValueUsesItsActualRandomTotalAndPrimaryInterval()
+    {
+        var modifier=Convert.FromHexString("80bc1d00200100da01000085044f040000000000f041");
+        Assert.True(TransmitCodeFixture.DotOracle(modifier,out int total,out int raw,out int final));
+        Assert.Equal(1103,total);Assert.Equal(92,raw);Assert.Equal(87,final);
+        var damage=Convert.FromHexString("816717002800f900007c000010000000680780390000070f005472616e736d6974436173746572000f005472616e736d69745461726765740002005700000005000000");
+        Assert.True(TransmitCodeFixture.Damage(damage,474,"TransmitCaster","TransmitTarget",out int done,out int absorbed));
+        Assert.Equal(final,done);Assert.Equal(raw-final,absorbed);
+        for(int length=0;length<modifier.Length;length++)Assert.False(TransmitCodeFixture.DotOracle(modifier[..length],out _,out _,out _));
+        foreach(int offset in new[]{0,2,6,7,11,17,21}){var bad=modifier.ToArray();bad[offset]^=1;Assert.False(TransmitCodeFixture.DotOracle(bad,out _,out _,out _));}
+        foreach(int value in new[]{1099,1100,1117}){var valid=modifier.ToArray();BitConverter.GetBytes(value).CopyTo(valid,13);Assert.True(TransmitCodeFixture.DotOracle(valid,out _,out int r,out int f));Assert.Equal(value>=1110?93:92,r);Assert.Equal(r==93?88:87,f);}
+        foreach(int value in new[]{0,1098,1118,int.MaxValue}){var bad=modifier.ToArray();BitConverter.GetBytes(value).CopyTo(bad,13);Assert.False(TransmitCodeFixture.DotOracle(bad,out _,out _,out _));}
+        Assert.False(TransmitCodeFixture.DotOracle(modifier.Concat(new byte[]{0}).ToArray(),out _,out _,out _));
     }}

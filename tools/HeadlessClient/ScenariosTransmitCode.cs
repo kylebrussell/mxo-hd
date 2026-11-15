@@ -58,12 +58,15 @@ public static partial class Scenarios
             stage="bonus-viral";await Hit(330,538,510,22);
             stage="bonus-thrown";await Hit(1135,83,78,22);
             stage="bonus-dot";await Style(1006,172,27);target.SkipReceived();int dotStart=context.Server.DebugLog().Length;
-            Cast(caster,474,view.ViewId);await target.WaitForRpcAsync(ModPattern(474,1157),TimeSpan.FromSeconds(10));
-            var tick=await target.WaitForRpcAsync(r=>TransmitCodeFixture.Damage(r.Bytes,474,caster.Handle,target.Handle,out int done,out int resisted)&&done==256&&resisted==15,
-                "Independent first DOT tick271->256 with593",TimeSpan.FromSeconds(10));
-            Check.That(context.Server.DebugLog()[dotStart..].Contains("[TYPED-RESISTANCE OURS] 474 type2 total22 raw271 final256"),"DOT enters the same resistance consumer once");
-            measurements.Add(new{Stage=stage,Raw=271,Final=256,Received=Convert.ToHexString(tick.Bytes),Log=context.Server.DebugLog()[dotStart..]});
-            Check.Equal(0,caster.World.Problems.Count+target.World.Problems.Count,"Both session parsers clean");passed=true;stage="complete";
+            int dotCursor=target.World.RpcSnapshot().Count;
+            Cast(caster,474,view.ViewId);
+            var modifier=await target.WaitForRpcAsync(r=>TransmitCodeFixture.DotOracle(r.Bytes,out _,out _,out _),"Fresh current474 DOT value/duration",TimeSpan.FromSeconds(10));
+            Check.That(target.World.RpcSnapshot().Skip(dotCursor).Contains(modifier),"DOT modifier belongs to this cast cursor and owned target session");
+            Check.That(TransmitCodeFixture.DotOracle(modifier.Bytes,out int dotValue,out int dotRaw,out int dotFinal),"Exact sourced normal DOT shape");
+            var tick=await target.WaitForRpcAsync(r=>TransmitCodeFixture.Damage(r.Bytes,474,caster.Handle,target.Handle,out int done,out int resisted)&&done==dotFinal&&resisted==dotRaw-dotFinal,
+                "Independent sourced DOT tick with593",TimeSpan.FromSeconds(10));
+            Check.That(context.Server.DebugLog()[dotStart..].Contains($"[TYPED-RESISTANCE OURS] 474 type2 total22 raw{dotRaw} final{dotFinal}"),"DOT enters the same resistance consumer once");
+            measurements.Add(new{Stage=stage,Value=dotValue,Duration=30,Raw=dotRaw,Final=dotFinal,Modifier=Convert.ToHexString(modifier.Bytes),Received=Convert.ToHexString(tick.Bytes),Log=context.Server.DebugLog()[dotStart..]});            Check.Equal(0,caster.World.Problems.Count+target.World.Problems.Count,"Both session parsers clean");passed=true;stage="complete";
         }
         catch(Exception error){failure=error;throw;}
         finally

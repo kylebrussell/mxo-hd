@@ -20,6 +20,19 @@ public static class TransmitCodeFixture
     public static string CasterSql(uint character)=>$"DELETE FROM char_abilities WHERE char_id={character} AND slot<520;"+
         string.Join("",TypedResistanceFixture.Abilities.Select((id,i)=>$"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({character},{400+i},{0x80000000L|((long)id<<10)},50,1);"));
 
+    //Exact current474 DOT modifier. This reads its normal random total, never supplies a roll.
+    public static bool DotOracle(byte[] b,out int value,out int raw,out int final)
+    {
+        value=raw=final=0;
+        if(b.Length!=22||b[0]!=0x80||b[1]!=0xbc||b[2]!=0x1d||b[6]!=0||
+            BitConverter.ToUInt32(b,7)!=474||BitConverter.ToUInt16(b,11)!=1157||b[17]!=0||BitConverter.ToSingle(b,18)!=30)return false;
+        value=BitConverter.ToInt32(b,13);
+        //866..880 total, scaled once by the observed current Hacker172+27.
+        if(value<(int)(866*(double)(float)1.27)||value>(int)(880*(double)(float)1.27))return false;
+        raw=(int)Math.Floor(value/30.0*2.5+.5);
+        double zero=.66/220*20-.33,modified=.66/220*42-.33;
+        final=(int)Math.Floor(raw*(1-modified)/(1-zero));return true;
+    }
     //Complete8167 DamageTarget record, using the documented offsets/counts rather than substring matching.
     public static bool Damage(byte[] b,ushort ability,string caster,string target,out int done,out int resisted)
     {
