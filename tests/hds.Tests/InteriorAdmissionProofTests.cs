@@ -22,6 +22,15 @@ public class InteriorAdmissionProofTests
             Assert.Equal(c.LayoutSeed.ToString(),plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.Single(Scenarios.All,s=>s.Name==c.Name);
         }
     }
+    [Fact] public void SourceDomainModeUsesNormalSecondJunctionWithoutSourceOrSeedOverride()
+    {
+        var c=InteriorAdmissionFixture.ZionSourceDomain;var original=InteriorAdmissionFixture.Zion;
+        Assert.Equal(1,c.TargetPhase);Assert.Equal(original.LayoutSeed,c.LayoutSeed);Assert.Equal(original.Prerequisites,c.Prerequisites);
+        Assert.Equal(InteriorAdmissionFixture.Environment(original),InteriorAdmissionFixture.Environment(c));
+        Assert.IsType<InteriorAdmissionSourceDomainMode>(NativeQaModes.Find(c.Name));
+        Assert.Equal(InteriorAdmissionFixture.Environment(c),Assert.Single(Scenarios.All,x=>x.Name==c.Name).Environment);
+        Assert.Contains("ordinary exit",string.Join(" ",NativeQaModes.Find(c.Name).Plan.ReadyMessages));
+    }
     [Fact] public void ZionNativePreviewOriginAndEarlierReceiptAreNotConflatedWithOtherCases()
     {
         var z=InteriorAdmissionFixture.Zion;Assert.Equal((7800d,95d,13795d),(z.X,z.Y,z.Z));Assert.Contains(101208,z.Prerequisites);Assert.Equal(101209,z.Mission);

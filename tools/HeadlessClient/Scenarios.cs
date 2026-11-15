@@ -28,6 +28,7 @@ public static partial class Scenarios
         new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),
         new Scenario("interior-admission-merv",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Merv),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Merv)),
         new Scenario("interior-admission-posters",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Posters),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Posters)),
+        new Scenario("interior-admission-source-domain",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ZionSourceDomain),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ZionSourceDomain)),
         new Scenario("interior-admission-zion",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Zion),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("protocol-family-canary", ProtocolFamilyCanary, StillNpcs),
         new Scenario("mission-open-floor-box", MissionOpenFloorBoxScenario, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
