@@ -5,6 +5,8 @@ public static partial class Scenarios
 {
     private static async Task IngressLiveness(ScenarioContext context)
     {
+        string? expectedSource=System.Environment.GetEnvironmentVariable(IngressLivenessFixture.SourcePin);
+        IngressLivenessFixture.RequirePin(expectedSource,context.Server.SourceAssemblySha256);
         using var p=await IngressLivenessFixture.CsrAsync(context);bool passed=false;Exception? failure=null;var proof=new List<object>();string stage="entry";
         string PacketPath()=>Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         async Task<string> Account()=>await context.Database.ExecuteAsync($"SELECT exp,cash,is_online,(SELECT COALESCE(MAX(payload),'NULL') FROM char_active_missions WHERE charId=110) FROM characters WHERE charId=110");
@@ -41,7 +43,7 @@ public static partial class Scenarios
             string raw=InteriorAdmissionDeliveryProof.Read(PacketPath());File.WriteAllText(stem+"-PacketLog.txt",raw);
             string controlPath=Path.Combine(context.Server.WorkingDirectory,"IngressLivenessQa.json");
             await File.WriteAllTextAsync(stem+".json",JsonSerializer.Serialize(new{passed,stage,Failure=failure?.ToString(),Database=context.Database.Name,ServerPid=context.Server.ProcessId,
-                SourceAssembly=context.Server.SourceAssembly,SourceSha256=context.Server.SourceAssemblySha256,Proof=proof,FinalAccount=final,ReadError=readError,
+                ExpectedSourceSha256=expectedSource,SourceAssembly=context.Server.SourceAssembly,SourceSha256=context.Server.SourceAssemblySha256,Proof=proof,FinalAccount=final,ReadError=readError,
                 Control=File.Exists(controlPath)?File.ReadAllText(controlPath):null,RawPacketLog=stem+"-PacketLog.txt",RawSha256=Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw))),
                 CharacterData=p.CharacterData.ToDictionary(k=>(int)k.Key,v=>Convert.ToHexString(v.Value)),Rpcs=p.World.RpcSnapshot(),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems,
                 Qualification="Intentional35s blocked-worker diagnostic; no normal cold-preparation latency/nativeUI claim"},new JsonSerializerOptions{WriteIndented=true}));

@@ -149,7 +149,7 @@ namespace hds
                 catch (Exception ex)
                 {
                     Output.WriteDebugLog("Socket Error " + ex.Message);
-                    alive = false;
+                    Alive = false;
                 }
             }
             return false;

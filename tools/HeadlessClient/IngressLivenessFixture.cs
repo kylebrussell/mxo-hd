@@ -2,6 +2,9 @@ using hds;
 namespace HeadlessClient;
 public static class IngressLivenessFixture
 {
+    public const string SourcePin="MXO_INGRESS_LIVENESS_SOURCE_SHA256";
+    public static void RequirePin(string? expected,string actual)
+    {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Ingress liveness requires exact source pin via "+SourcePin);}
     public static ushort[] Abilities=>new ushort[]{2,17};
     public static Dictionary<string,string> Environment=>new(){["MXO_DEV_COMMANDS"]="1",["MXO_INGRESS_LIVENESS_QA"]="1",["MXO_PACKET_LOG"]="1",
         ["MXO_MOBS"]="test",["MXO_MOB_WANDER"]="0",["MXO_AGGRO"]="0"};

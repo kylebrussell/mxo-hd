@@ -70,6 +70,21 @@ public class WorldIngressLivenessTests:IDisposable
         typeof(WorldClient).GetMethod("ProcessQueuedPackets",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(c,null);
         Assert.Equal(0,c.PendingPacketCount);Assert.False(Running(c));Assert.Equal(0,c.playerData.getRPCCounter());
     }
+    [Fact]public void ActualSendFailureStopsAndDiscardsAlreadyQueuedHandlers()
+    {
+        var c=Client(()=>10,true);c.QueuePacket(new byte[]{0xff});
+        // The missing socket exercises the real sendPacket exception path, not a simulated setter.
+        Assert.False((bool)typeof(WorldClient).GetMethod("sendPacket",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(c,new object[]{Array.Empty<byte>()})!);
+        c.Alive=true;c.QueuePacket(new byte[]{0xff});Assert.False(c.Alive);Assert.Equal(1,c.PendingPacketCount);
+        typeof(WorldClient).GetMethod("ProcessQueuedPackets",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(c,null);
+        Assert.Equal(0,c.PendingPacketCount);Assert.False(Running(c));Assert.Equal(0,c.playerData.getRPCCounter());
+    }
+    [Fact]public void SourcePinIsMandatoryAndExact()
+    {
+        HeadlessClient.IngressLivenessFixture.RequirePin(new string('a',64),new string('A',64));
+        foreach(string? pin in new[]{null,"",new string('a',63),new string('z',64),new string('b',64)})
+            Assert.Throws<InvalidDataException>(()=>HeadlessClient.IngressLivenessFixture.RequirePin(pin,new string('a',64)));
+    }
     [Theory][InlineData("0","mxotest_owned","1",110,false)][InlineData("1","reality_hd","1",110,false)]
     [InlineData("1","mxotest_owned","0",110,false)][InlineData("1","mxotest_owned","1",111,false)]
     [InlineData("1","mxotest_owned","1",110,true)]
