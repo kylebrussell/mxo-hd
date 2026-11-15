@@ -6,9 +6,10 @@ public static partial class Scenarios
     private static async Task Class364Doors(ScenarioContext context)
     {
         bool passed=false;string? failure=null;
+        var fixture=NativeWorldDoorFixtures.Medium03Prefab with { Mode="class364-doors" };
         try
         {
-            await NativeWorldDoorDiagnostic(context,NativeWorldDoorFixtures.Medium03Prefab with { Mode="class364-doors" });
+            await NativeWorldDoorDiagnostic(context,fixture);
             passed=true;
         }
         catch(Exception ex){failure=ex.ToString();throw;}
@@ -27,11 +28,11 @@ public static partial class Scenarios
             catch(Exception ex){packetFailure=ex.ToString();}
             await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new
             {
-                Passed=passed&&packetFailure==null,ProtocolCasePassed=passed,Failure=failure,context.Server.ProcessId,Schema=context.Server.DatabaseName,
+                Case="class364-doors",Passed=passed&&packetFailure==null,ProtocolCasePassed=passed,Failure=failure,context.Server.ProcessId,Schema=context.Server.DatabaseName,
                 context.Server.WorkingDirectory,context.Server.SourceAssembly,
                 SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
                 PacketLog=packet,PacketLogSha256=packetSha,PacketLogFailure=packetFailure,
-                Fixture=NativeWorldDoorFixtures.Medium03Prefab,NativeRenderingProven=false,NativePassageProven=false
+                Fixture=fixture,NativeRenderingProven=false,NativePassageProven=false
             },new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
             await File.WriteAllTextAsync(stem+"-debug.log",context.Server.FullOutput()+"\n--- DebugLog ---\n"+context.Server.DebugLog());
             if(passed&&packetFailure!=null)throw new InvalidOperationException("Class364 packet proof was not retained: "+packetFailure);
