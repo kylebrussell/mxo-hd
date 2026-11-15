@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),
@@ -154,6 +155,7 @@ public static partial class Scenarios
         new Scenario("ability-wire-record", AbilityWireRecord, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("mobius-free-attack-positive", MobiusPositive, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
         new Scenario("mobius-free-attack-negative", MobiusNegative, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MOBIUS_QA"]="1"}),
+        new Scenario("hyperjump-resource-records", HyperjumpResourceRecords, StillNpcs),
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),

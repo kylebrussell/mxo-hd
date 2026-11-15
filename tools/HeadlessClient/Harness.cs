@@ -188,6 +188,12 @@ public sealed class ServerInstance : IDisposable
     public ServerAddress Address { get; }
     public string WorkingDirectory { get; }
     public string SourceAssemblySha256 { get; }
+    public string DatabaseName => process.StartInfo.Environment["MXO_DB_NAME"]!;
+    // Address remains the allocated harness endpoint. Native fixed-port overrides are observed separately.
+    public ServerAddress ConfiguredAddress => new(process.StartInfo.Environment["MXO_BIND_ADDRESS"] ?? Host,
+        int.Parse(process.StartInfo.Environment["MXO_AUTH_PORT"]!,CultureInfo.InvariantCulture),
+        int.Parse(process.StartInfo.Environment["MXO_MARGIN_PORT"]!,CultureInfo.InvariantCulture),
+        int.Parse(process.StartInfo.Environment["MXO_WORLD_PORT"]!,CultureInfo.InvariantCulture));
 
     private ServerInstance(Process process, ServerAddress address, string workingDirectory)
     {

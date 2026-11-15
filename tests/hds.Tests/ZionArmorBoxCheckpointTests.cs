@@ -1,0 +1,107 @@
+using System.Runtime.CompilerServices;
+using System.Reflection;
+using System.Text;
+using HeadlessClient;
+using NativeQa;
+namespace hds.Tests;
+
+public class ZionArmorBoxCheckpointTests
+{
+    [Fact]
+    public void VerbatimEarnedCaptureHasNoItemsOrBeyondCaptureReceipt()
+    {
+        var state=ZionArmorBoxCheckpoint.Verified();Assert.Equal(101216,state.Mission);Assert.Equal(3,state.Phase);Assert.Empty(state.Items);
+        Assert.Equal("d57dd5e3a9e9470cba8b369e6bb93eb8",state.Identity);Assert.Equal(1794736946,state.Started);Assert.All(state.Mobs,m=>Assert.Equal(2150,m.Health));
+        Assert.DoesNotContain(101216,ZionArmorBoxCheckpoint.EarlierReceipts);Assert.DoesNotContain(101217,ZionArmorBoxCheckpoint.EarlierReceipts);
+        Assert.Contains(101215,ZionArmorBoxCheckpoint.EarlierReceipts);Assert.Single(state.Objects);Assert.Equal(0x0d1000d0u,state.Objects[0].OpenFloor.SourceKey);
+        Assert.Equal(new[]{28413.453786483045,1695,14219.695388506345},state.Objects[0].OpenFloor.Route.Take(3));
+    }
+    [Fact]
+    public void CaptureAndManifestFailClosedBeforeSql()
+    {
+        byte[] payload=ZionArmorBoxCheckpoint.Payload;var a=typeof(ZionArmorBoxCheckpoint).Assembly;using var stream=a.GetManifestResourceStream(a.GetManifestResourceNames().Single(n=>n.EndsWith("zion-armor-box.manifest.json")))!;using var mem=new MemoryStream();stream.CopyTo(mem);byte[] manifest=mem.ToArray();
+        Assert.NotNull(ZionArmorBoxCheckpoint.Verify(payload,manifest));
+        var changed=payload.ToArray();changed[1]^=1;Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.Verify(changed,manifest));
+        Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.Verify(payload[..^1],manifest));
+        string json=Encoding.UTF8.GetString(manifest).Replace("\"Phase\": 3","\"Phase\": 2");Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.Verify(payload,Encoding.UTF8.GetBytes(json)));
+    }
+    [Theory][InlineData("")][InlineData("reality_hd")][InlineData("mxotest_")][InlineData("mxotest_bad;DROP")]
+    public void NonownedSchemaRefuses(string schema)=>Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireOwnedSchema(schema));
+    [Fact]
+    public void SourceAndStrictHexCannotNormalizeCorruptEvidence()
+    {
+        string h=new('A',64);ZionArmorBoxCheckpoint.RequireSource(h,h.ToLowerInvariant());
+        Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireSource(null,h));Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireSource(new('B',64),h));
+        Assert.Equal("{\"quote\":\"a\\b\"}",ZionArmorBoxCheckpoint.StrictUtf8Hex(Convert.ToHexString(Encoding.UTF8.GetBytes("{\"quote\":\"a\\b\"}"))));
+        Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.StrictUtf8Hex("ABC"));Assert.Throws<DecoderFallbackException>(()=>ZionArmorBoxCheckpoint.StrictUtf8Hex("FF"));
+    }
+    [Fact]
+    public void OptionalContextKeepsDefaultsIdentityAndFourFieldDeconstruction()
+    {
+        var helpers=new Dictionary<string,HeadlessPlayer>();var context=new NativeQaBootstrapContext("proof",Array.Empty<string>(),helpers);
+        Assert.Equal(new ServerAddress("127.0.0.1",11000,10000,10000),context.Address);Assert.Null(context.OwnedDatabase);Assert.Null(context.ActualServer);
+        var (output,names,actualHelpers,address)=context;Assert.Equal("proof",output);Assert.Same(helpers,actualHelpers);Assert.Null(address);
+        var db=(ThrowawayDatabase)RuntimeHelpers.GetUninitializedObject(typeof(ThrowawayDatabase));var server=(ServerInstance)RuntimeHelpers.GetUninitializedObject(typeof(ServerInstance));
+        var attached=context with {OwnedDatabase=db,ActualServer=server};Assert.Same(db,attached.OwnedDatabase);Assert.Same(server,attached.ActualServer);
+        Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireContext(context));
+        // Reject the nonowned service before dereferencing or contacting any fake server.
+        typeof(ThrowawayDatabase).GetField("<Name>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(db,"reality_hd");
+        Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireContext(attached));
+    }
+    [Fact]
+    public void ModeHasRealHookWithoutNpcRewritesOrProgressBeyondSnapshot()
+    {
+        var mode=new NativeQa.Modes.ZionArmorBoxCheckpointMode();Assert.True(NativeQaBootstrapChecks.HasCustomHook(mode));Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.GmCharacter110);
+        Assert.Equal(28500,mode.Plan.X);Assert.Equal(14400,mode.Plan.Z);Assert.Empty(mode.Plan.AfterHelpers);
+    }
+    [Fact]
+    public void ConfiguredEndpointObservesNativeOverridesWithoutChangingAllocatedAddress()
+    {
+        var server=(ServerInstance)RuntimeHelpers.GetUninitializedObject(typeof(ServerInstance));
+        using var process=new System.Diagnostics.Process{StartInfo=new System.Diagnostics.ProcessStartInfo("unused")};
+        typeof(ServerInstance).GetField("process",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(server,process);
+        var allocated=new ServerAddress("127.0.0.1",21000,22000,23000);
+        typeof(ServerInstance).GetField("<Address>k__BackingField",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(server,allocated);
+        var env=process.StartInfo.Environment;env["MXO_BIND_ADDRESS"]="127.0.0.1";env["MXO_AUTH_PORT"]="11000";env["MXO_MARGIN_PORT"]="10000";env["MXO_WORLD_PORT"]="10000";
+        var native=new NativeQaBootstrapContext("proof",Array.Empty<string>(),new());
+        Assert.Equal(native.Address,server.ConfiguredAddress);Assert.Same(allocated,server.Address);
+        env["MXO_AUTH_PORT"]="21000";env["MXO_MARGIN_PORT"]="22000";env["MXO_WORLD_PORT"]="23000";
+        Assert.Equal((native with {Server=allocated}).Address,server.ConfiguredAddress);Assert.NotEqual(native.Address,server.ConfiguredAddress);
+    }
+    [Fact]
+    public void StrictModeLookupRejectsUnknownButPreservesOmittedAndEveryKnownPlan()
+    {
+        Assert.Throws<ArgumentException>(()=>NativeQaModes.RequireKnown("merv-critical-followup"));
+        Assert.Same(NativeQaModes.Find(""),NativeQaModes.RequireKnown(""));
+        foreach(string name in NativeQaModes.Names)Assert.Same(NativeQaModes.Find(name).Plan,NativeQaModes.RequireKnown(name).Plan);
+        Assert.Same(NativeQaModes.Find(""),NativeQaModes.Find("not-a-mode")); //legacy fallback API unchanged
+    }
+    [Fact]
+    public void CapturedBodyRequiresExactKeyQuaternionAndCurrentOwnlifeBirth()
+    {
+        var pose=ZionArmorBoxCheckpoint.Verified().Objects.Single().OpenFloor;
+        var own=new ViewCreation(2,12,1,new Dictionary<string,byte[]>());
+        var attrs=new Dictionary<string,byte[]>{["Position"]=pose.Centre.SelectMany(BitConverter.GetBytes).ToArray(),["Orientation"]=Convert.FromHexString(pose.Quaternion),["MissionKey"]=Convert.FromHexString("FF320002")};
+        var body=new ViewCreation(23,548,21,attrs);Assert.Same(body,ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body},1,own,pose));
+        foreach(string field in new[]{"MissionKey","Orientation"})
+        {
+            var wrong=attrs.ToDictionary(p=>p.Key,p=>p.Value.ToArray());wrong[field][0]^=1;
+            Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,new ViewCreation(23,548,21,wrong)},1,own,pose));
+        }
+        //Even identical view/spawn counters cannot borrow a previous life's exact spatial alias.
+        var nextOwn=new ViewCreation(2,12,1,new Dictionary<string,byte[]>());
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body,nextOwn},3,own,pose));
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body,nextOwn},3,nextOwn,pose));
+        Assert.Same(body,ZionArmorBoxCheckpoint.CurrentBody(new[]{own,nextOwn,body},2,nextOwn,pose));
+        Assert.Null(ZionArmorBoxCheckpoint.CurrentBody(new[]{own,body},0,own,pose));
+    }
+    [Fact]
+    public void LifecycleCannotHideGoalProgressButAllowsNaturalEntryAndElapsedTimers()
+    {
+        var expected=ZionArmorBoxCheckpoint.Verified();var current=ZionArmorBoxCheckpoint.Verified();
+        current.Flags["entered"]=false;current.NpcElapsed[10]=2.5;current.GoalElapsed[1]=3.5;
+        ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current);
+        current.Done=new[]{1};Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current));
+        current.Done=expected.Done;current.EverDone=current.EverDone.Append(999).ToArray();Assert.Throws<InvalidDataException>(()=>ZionArmorBoxCheckpoint.RequireUnchangedGoals(expected,current));
+    }
+}
