@@ -30,6 +30,13 @@ public class DisturbingTrendsTests
         var low=MissionRewards.Calculate(mission,17);Assert.Equal(54871u,low.Experience);Assert.Equal(45339u,low.Info);
         Assert.Equal(168042u,DisturbingTrendsFixture.ExpectedXp);Assert.Equal(133350u,DisturbingTrendsFixture.ExpectedInfo);
     }
+    [Fact] public void FixedPlacementComparisonAllowsNormalUseStateIntroductionButRejectsChangedPrototype()
+    {
+        var item=new MissionProgress.SavedObject{Id=1,Goid=3,State=0};
+        string fixedPlacement=DisturbingTrendsFixture.FixedDescriptor(item);
+        item.State=2401;Assert.Equal(fixedPlacement,DisturbingTrendsFixture.FixedDescriptor(item));
+        item.Goid=548;Assert.NotEqual(fixedPlacement,DisturbingTrendsFixture.FixedDescriptor(item));
+    }
     [Fact] public void DoorLookupUsesExactCurrentPoseAndRejectsAmbiguity()
     {
         string Row(string key,string x)=>"1,0,"+key+",0,A301,0,"+x+",495,2300,0,0";

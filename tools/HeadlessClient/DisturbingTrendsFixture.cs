@@ -4,6 +4,10 @@ public static class DisturbingTrendsFixture
     public const int Mission=201201,LayoutSeed=201101;
     public const uint ExpectedXp=168042,ExpectedInfo=133350;
     public static readonly int[] Prerequisites={1201,1204,1203,1205,1206,1207,1208,2201,2202,2203,2204,2205,2206,2207,2208,2209,2210,201101,201102,201103};
+    // Object state may legitimately change from unannounced0 to the default Take state2401.
+    // The invariant is the complete immutable source and placement, not its live use state.
+    public static string FixedDescriptor(hds.MissionProgress.SavedObject obj)=>System.Text.Json.JsonSerializer.Serialize(
+        new{obj.Id,obj.Spot,obj.Goid,obj.OpenFloor},new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
     public static CharacterSeed BeforeMargin(CharacterSeed seed)
     {
         if(Prerequisites.Any(id=>id<=0)||Prerequisites.Distinct().Count()!=Prerequisites.Length||Prerequisites.Contains(Mission)||Prerequisites.Contains(Mission+1))

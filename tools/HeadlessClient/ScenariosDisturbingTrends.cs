@@ -77,7 +77,7 @@ public static partial class Scenarios
             Check.That(source.OpenFloor!=null,"Current master must admit an open-floor Computer before the phase advances");
             var witness=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(source.OpenFloor,options));
             witness.Require(201201,1,1,source.Spot.mxoStaticId,NumericalUtils.ByteArrayToUint16(source.Spot.type,1),3);
-            string fixedSource=JsonSerializer.Serialize(source,options);
+            string fixedSource=DisturbingTrendsFixture.FixedDescriptor(source);
             step="phase2-ride";
             int rideCursor=context.Server.DebugLog().Length;await Ride(true,before);
             var ride=Regex.Matches(context.Server.DebugLog()[rideCursor..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
@@ -106,7 +106,7 @@ public static partial class Scenarios
             Check.Equal(witness.Quaternion,Convert.ToHexString(computer.Attributes["Orientation"]),"Actual creation quaternion matches persisted plan");
             byte take=ObjectStates.UseNumber(computer.Goid,"Take")??throw new ScenarioFailure("No native Take definition on actual Computer");
             await p.WaitUntilAsync(()=>{var updates=ViewUpdateValues(p,computer.ViewId,"01 08");uint state=updates.Count>0?updates[^1]:BitConverter.ToUInt32(computer.Attributes["CurrentState"]);return ObjectStates.Offered(computer.Goid,state).Contains(take);},"Actual Computer state offers Take",TimeSpan.FromSeconds(10));
-            Check.Equal(fixedSource,JsonSerializer.Serialize((await Saved()).Objects.Single(o=>o.Id==1),options),"Raw source and fixed DTO remain unchanged through ride and route movement");
+            Check.Equal(fixedSource,DisturbingTrendsFixture.FixedDescriptor((await Saved()).Objects.Single(o=>o.Id==1)),"Raw source and fixed DTO remain unchanged through ride and route movement");
             p.SendRpc($"80 c7 {MissionNpcId(computer)} {take:x2} 00");await p.WaitForRpcAsync("80 a0 01 06 00 01");step="earned-disk";var taken=await Saved();
             Check.That(taken.Items.ContainsKey(6783),"Normal Take earned tracked Map Disk6783");ushort slot=taken.Items[6783];
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid=6783"),"Exactly one earned disk");
