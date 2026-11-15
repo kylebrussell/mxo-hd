@@ -20,4 +20,4 @@ Stop on a missing door, unusable room, missing follower or premature goal transi
 
 ## Validation
 
-Pending source qualification. The retained combined218 failure is 159.8s/exit1, schema count0/all31 recorded process identities gone; no retry was used to erase it. The standalone V1 restore PR251 remains separately qualified.
+Release focused227/0 and full5924/0 passed at14e1213a. Build producer17f4743a differs only by removal of a trailing test-file blank. Actual NativeQa Debug/Release builds, known mode/default plans, build-info and exact-once compiled mode discovery passed. The first focus226/1 exposed missing test-world publication globals; the first repair had a missing shared-namespace import (compile failure). Both are retained. The corrected test owns/restores globals under a serial collection and exercises actual follower relocation and animation publication. Live and native passage are not yet proved. The retained combined218 failure is 159.8s/exit1, schema count0/all31 recorded process identities gone; no retry was used to erase it. The standalone V1 restore PR251 remains separately qualified.
