@@ -405,6 +405,56 @@ public class MissionOpenFloorAdmissionRegressionTests
         Assert.False(MissionStaging.MoveObjectToPlayer(c,1));Assert.Equal(before,JsonSerializer.Serialize(p.objects[1].spot,Fields));
     }
 
+    // Literal persisted pending from normal201202 Poster Hunt run283bd051; no chooser or RNG replay.
+    private static (Mission Mission,MissionSite Site,MissionOpenFloorPendingAdmission Pending,MissionOpenFloorPhasePlanner.Input[] Inputs) PosterHuntFourBoxes()
+    {
+        LoadNav();var xml=new XmlDocument();xml.Load(Path.Combine(Repo,"data","missions","machines_1_2_2_poster_hunt.xml"));var mission=MissionXml.Parse(xml.DocumentElement!);
+        var pending=JsonSerializer.Deserialize<MissionOpenFloorPendingAdmission>("{\"Policy\":1,\"Mission\":201202,\"Identity\":\"82e91593dc3947a8a5004d2e7caa1d1b\",\"Phase\":2,\"Started\":1794779654,\"Site\":{\"District\":1,\"DoorKey\":219152412,\"DoorX\":27800,\"DoorY\":1745,\"DoorZ\":13700,\"Fingerprint\":\"FE1A4A0FAD5BF68CC4633B517E0E855108E109A0FAB99E2D3B5C9BC31ABCAADA\"},\"Choices\":[{\"ObjectId\":1,\"Goid\":548,\"RawSpotJson\":\"{\\\"exterior\\\":false,\\\"pos_x\\\":27950,\\\"pos_y\\\":1746,\\\"pos_z\\\":13350,\\\"rot\\\":1.1620496565E-05,\\\"quat\\\":\\\"00000000f20435bf00000000f304353f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152592,\\\"staticId\\\":208,\\\"type\\\":\\\"hAU=\\\",\\\"strType\\\":null}\"},{\"ObjectId\":2,\"Goid\":548,\"RawSpotJson\":\"{\\\"exterior\\\":false,\\\"pos_x\\\":27700,\\\"pos_y\\\":1746,\\\"pos_z\\\":13350,\\\"rot\\\":90,\\\"quat\\\":\\\"0000000000000000000000000000803f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152586,\\\"staticId\\\":202,\\\"type\\\":\\\"gAU=\\\",\\\"strType\\\":null}\"},{\"ObjectId\":3,\"Goid\":548,\"RawSpotJson\":\"{\\\"exterior\\\":false,\\\"pos_x\\\":28905,\\\"pos_y\\\":1826,\\\"pos_z\\\":12875,\\\"rot\\\":270,\\\"quat\\\":\\\"000000000000803f000000002ebd3bb3\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152622,\\\"staticId\\\":238,\\\"type\\\":\\\"hwU=\\\",\\\"strType\\\":null}\"},{\"ObjectId\":4,\"Goid\":548,\"RawSpotJson\":\"{\\\"exterior\\\":false,\\\"pos_x\\\":27260,\\\"pos_y\\\":1825,\\\"pos_z\\\":13100,\\\"rot\\\":179.99998838,\\\"quat\\\":\\\"00000000f204353f00000000f304353f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152575,\\\"staticId\\\":191,\\\"type\\\":\\\"fwU=\\\",\\\"strType\\\":null}\"}],\"Refusal\":\"SearchExhausted:RouteGraphs\",\"Elevator\":{\"Version\":1,\"SiteFingerprint\":\"FE1A4A0FAD5BF68CC4633B517E0E855108E109A0FAB99E2D3B5C9BC31ABCAADA\",\"Region\":46,\"LobbyRegion\":49,\"FloorKey\":219152412,\"LobbyKey\":219152424,\"Floor\":[28500,1745,14400],\"Lobby\":[28500,545,14400],\"FloorQuaternion\":\"00000000f304353300000000ffff7f3f\",\"LobbyQuaternion\":\"00000000f304353300000000ffff7f3f\",\"Evidence\":\"original-elevator-group:0d10001c:legacy:0C806401BD7591F18C95A061C12F413E7F535EE152B13E5BF35FD74CEA30D9F8:selected-record:9991AFBF8121A0D346DD82C0A51F77F4FD302300FCF17D272379CCB4D4F85D6E;original-elevator-group:0d100028:legacy:5F9AAB53C5012FB4759EFF7BCEFA2C94D5BAF6B65F2B0CBC558A7F2CD249F5B3:selected-record:CE7647A84BBFCE742314CCC5B41AF985F8177844BFC8388BCF2EE89F71C84B40\",\"Sources\":[\"{\\\"exterior\\\":false,\\\"pos_x\\\":27950,\\\"pos_y\\\":1746,\\\"pos_z\\\":13350,\\\"rot\\\":1.1620496565E-05,\\\"quat\\\":\\\"00000000f20435bf00000000f304353f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152592,\\\"staticId\\\":208,\\\"type\\\":\\\"hAU=\\\",\\\"strType\\\":null}\",\"{\\\"exterior\\\":false,\\\"pos_x\\\":27700,\\\"pos_y\\\":1746,\\\"pos_z\\\":13350,\\\"rot\\\":90,\\\"quat\\\":\\\"0000000000000000000000000000803f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152586,\\\"staticId\\\":202,\\\"type\\\":\\\"gAU=\\\",\\\"strType\\\":null}\",\"{\\\"exterior\\\":false,\\\"pos_x\\\":28905,\\\"pos_y\\\":1826,\\\"pos_z\\\":12875,\\\"rot\\\":270,\\\"quat\\\":\\\"000000000000803f000000002ebd3bb3\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152622,\\\"staticId\\\":238,\\\"type\\\":\\\"hwU=\\\",\\\"strType\\\":null}\",\"{\\\"exterior\\\":false,\\\"pos_x\\\":27260,\\\"pos_y\\\":1825,\\\"pos_z\\\":13100,\\\"rot\\\":179.99998838,\\\"quat\\\":\\\"00000000f204353f00000000f304353f\\\",\\\"sectorID\\\":209,\\\"metrId\\\":1,\\\"mxoStaticId\\\":219152575,\\\"staticId\\\":191,\\\"type\\\":\\\"fwU=\\\",\\\"strType\\\":null}\"]}}",Fields)!;
+        var site=Assert.Single(Catalog.Value.Where(s=>MissionOpenFloorSite.CatalogFingerprint(s)==pending.Site.Fingerprint));
+        Assert.Equal(0x0d10001cu,site.elevatorDoor.mxoStaticId);Assert.Equal(46,pending.Elevator.Region);
+        Assert.Equal(new uint[]{0x0d1000d0,0x0d1000ca,0x0d1000ee,0x0d1000bf},pending.Choices.Select(c=>c.ReadSpot().mxoStaticId));
+        var inputs=pending.Choices.Select(c=>{Assert.True(MissionOpenFloorRequests.TryCreate(c.ReadSpot(),c.Goid,site,1,out var request,out string why,mission.phases[2],c.ObjectId,pending.Elevator),why);return new MissionOpenFloorPhasePlanner.Input(c.ObjectId,request);}).ToArray();
+        Assert.All(inputs,i=>{Assert.Equal(new G.Id(209,46,111),i.Request.Entry.Surface);Assert.Equal(1695,i.Request.Entry.Standing.Y);});
+        return(mission,site,pending,inputs);
+    }
+    [Fact]
+    public void ActualPosterHuntFourBoxesShareBudgetsAndReachExistingThirdOrderWithoutStarvation()
+    {
+        var (_,_,_,inputs)=PosterHuntFourBoxes();var limits=MissionOpenFloorPhasePlanner.Limits.Default;
+        Assert.True(MissionOpenFloorPhasePlanner.TryPlan(inputs,out var plan,out string why,out var work,limits),why);
+        Assert.Equal(3,work.RouteGraphs);Assert.InRange(work.BodyNodes,1,4096);Assert.Equal(new ushort[]{3,4,1,2},plan.Order);
+        Assert.True(G.ValidateSet(plan.Results.Values.ToArray(),out why),why);
+        Assert.All(plan.Results.Values,result=>{Assert.True(G.ValidateRouteIds(result.Input,result.RoutePolygons,result.Route));Assert.True(result.Range.Within);Assert.True(result.NativeCastRange.Within);});
+        // A graph cap belongs to the entire scheduler, never separately to each order.
+        Assert.False(MissionOpenFloorPhasePlanner.TryPlan(inputs,out _,out why,out work,new MissionOpenFloorPhasePlanner.Limits(4096,2)));
+        Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(2,work.RouteGraphs);Assert.InRange(work.BodyNodes,1,4096);
+        Assert.False(MissionOpenFloorPhasePlanner.TryPlan(inputs,out _,out why,out work,new MissionOpenFloorPhasePlanner.Limits(1,32)));
+        Assert.Equal("SearchExhausted:BodyNodes",why);Assert.Equal(1,work.BodyNodes);Assert.Equal(0,work.RouteGraphs);
+    }
+    [Fact]
+    public void ActualPosterHuntOldDepthFirstSpendsAllGraphsOnFourthBody()
+    {
+        var (_,_,_,inputs)=PosterHuntFourBoxes();var sequences=inputs.Select(i=>{Assert.True(G.TryBodySequence(i.Request,out var sequence,out string why,out _),why);return sequence;}).ToArray();
+        var bodies=new G.BodyCandidate[4];int graphs=0;var prefixes=new HashSet<string>();
+        bool Visit(int depth)
+        {
+            if(depth==4){graphs++;prefixes.Add(JsonSerializer.Serialize(bodies.Take(3).Select(b=>b.Centre)));Assert.False(G.RouteBodySet(bodies,out _,out string why));Assert.Equal("NoWholePhaseStandingRoute:4",why);return graphs==32;}
+            foreach(var body in sequences[depth].Enumerate(true)){if(Enumerable.Range(0,depth).Any(i=>!G.BodiesClear(body,bodies[i])))continue;bodies[depth]=body;if(Visit(depth+1))return true;}return false;
+        }
+        Assert.True(Visit(0));Assert.Equal(32,graphs);Assert.Single(prefixes);
+    }
+    [Fact]
+    public void RefusedPendingRecomputesOnlySameImmutableChoicesUnderNewSearchVersion()
+    {
+        var (mission,site,pending,inputs)=PosterHuntFourBoxes();string before=JsonSerializer.Serialize(pending,Fields);
+        string oldKey=MissionOpenFloorSite.Hash("4:standing-interior:"+MissionOpenFloorResolver.StandingSelectionVersion+":"+string.Join(";",inputs.OrderBy(i=>i.ObjectId).Select(i=>i.ObjectId+":"+i.Request.Fingerprint)));
+        pending.RememberFailedGeometry(oldKey,"SearchExhausted:RouteGraphs");
+        Assert.True(MissionOpenFloorAdmission.TryGeometry(mission,2,site,pending.Choices,out var poses,out string why,pending),why);
+        Assert.Equal(4,poses.Count);Assert.Equal(before,JsonSerializer.Serialize(pending,Fields));Assert.Equal("SearchExhausted:RouteGraphs",pending.Refusal);
+        // Fixed placements validate directly and do not consult fresh-order scheduling.
+        foreach(var choice in pending.Choices){var pose=poses[choice.ObjectId];Assert.True(MissionOpenFloorRequests.TryCreate(choice.ReadSpot(),548,site,1,out var request,out why,mission.phases[2],choice.ObjectId,pending.Elevator),why);Assert.True(pose.Replay(request,mission.id,2,new MissionObjectState{def=mission.phases[2].objects.Single(d=>d.id==choice.ObjectId),spot=choice.ReadSpot(),goid=548,OpenFloor=pose},out why),why);}
+    }
+
     [Fact]
     public void ActualThreeObjectPhaseCapturesAndColdReplaysCanonicalWholeSetWithoutReselection()
     {
