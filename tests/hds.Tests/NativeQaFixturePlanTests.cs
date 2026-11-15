@@ -43,6 +43,14 @@ public class NativeQaFixturePlanTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             try { await process.WaitForExitAsync(timeout.Token); }
             catch { process.Kill(true); throw; }
+            if(mode=="unknown-mode")
+            {
+                Assert.NotEqual(0,process.ExitCode);
+                Assert.Contains("Unknown NativeQa mode: unknown-mode",await errors);
+                Assert.Empty(await output);
+                Assert.Empty(Directory.EnumerateFileSystemEntries(empty));
+                return; //legacy Find fallback remains separate; CLI must fail before setup
+            }
             Assert.True(process.ExitCode==0,await errors);
             using var json = JsonDocument.Parse(await output);
             using var baseline=JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"NativeQaLegacyPlans.json")));
