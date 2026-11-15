@@ -26,6 +26,7 @@ public sealed class MervAfterCurrentNpcTests
         var hostile=State();Assert.False(hostile.Mobs[0].Hostile);Assert.Equal((ushort)9,Observe(hostile,Own(),Birth()).View.ViewId);
         Assert.Equal((ushort)9,Observe(State(true),Own(),Birth(friendly:true)).View.ViewId);
         Assert.Throws<InvalidDataException>(()=>Observe(hostile,Own(),Birth(friendly:true)));
+        hostile.Mobs[0].Health=0;Assert.Throws<InvalidDataException>(()=>Observe(hostile,Own(),Birth()));
     }
     [Fact]public void DuplicateAgentNamesUseCurrentPositionAndCurrentGenerationWithoutHistoryFallback()
     {

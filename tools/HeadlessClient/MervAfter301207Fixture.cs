@@ -8,7 +8,9 @@ public static class MervAfter301207Fixture
     // Literal existing authored level50 payouts; never call production Calculate as the test oracle.
     public static readonly IReadOnlyDictionary<int,(uint Xp,uint Info)> Payouts=new Dictionary<int,(uint,uint)>{
         [301208]=(68750,91000),[301209]=(68750,91000),[301210]=(68750,91000),[301211]=(68750,91000),[301212]=(68750,91000)};
-    public static CharacterSeed BeforeMargin(CharacterSeed seed)=>MervFollowupFixture.BeforeMargin(seed,Missions,Prerequisites,NextMission);
+    public static CharacterSeed BeforeMargin(CharacterSeed seed)=>BeforeMargin(seed,Missions,Prerequisites,NextMission);
+    public static CharacterSeed BeforeMargin(CharacterSeed seed,IReadOnlyList<int> requested,IReadOnlyList<int> prior,int next)=>
+        MervFollowupFixture.BeforeMargin(seed,requested,prior,next);
     public static string SeedPrerequisites(long character)
     {
         MervFollowupFixture.ValidateReceipts(Missions,Prerequisites,NextMission);

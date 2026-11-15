@@ -14,7 +14,7 @@ public static class MervAfterCurrentNpc
             !Guid.TryParseExact(state.Identity,"N",out _)||!state.Flags.GetValueOrDefault("entered")||state.Flags.GetValueOrDefault("failed"))
             throw new InvalidDataException("No current entered owned NPC mission scope");
         var actor=state.Mobs.Single(m=>m.Npc==npc);
-        if(!Guid.TryParseExact(actor.Identity,"N",out _)||!new[]{actor.X,actor.Y,actor.Z}.All(double.IsFinite))throw new InvalidDataException("Invalid saved NPC UUID/pose");
+        if(!Guid.TryParseExact(actor.Identity,"N",out _)||!actor.Dead&&actor.Health<=0||!new[]{actor.X,actor.Y,actor.Z}.All(double.IsFinite))throw new InvalidDataException("Invalid saved NPC UUID/pose");
         return actor;
     }
     public static Scope Capture(MissionProgress.SavedState state,ushort npc)
