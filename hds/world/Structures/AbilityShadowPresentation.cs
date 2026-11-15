@@ -69,7 +69,7 @@ namespace hds
                 // Only a normal packet queued in this already-ready world can satisfy a base transition.
                 // Early/old-world packets never suppress the required late ready replay.
                 if(wasReady&&snapshot.Emitted.Present)shown=snapshot.Emitted.Value;
-                if(member&&!snapshot.ParentLoaded){output.Add(AbilityGrantRegistration.Record(new(Parent,Child,0),true));member=false;}
+                if(member&&!snapshot.ParentLoaded){output.Add(AbilityGrantRegistration.Record(new AbilityGrantRegistration.Relation(Parent,Child,0),true));member=false;}
                 if(snapshot.Owned.Ambiguous)return output; // preserve ordinary rows; never guess a slot or overwrite them with derived0
                 Base? next=snapshot.Owned.Value??(snapshot.ParentLoaded?new Base(0,AbilityProgression.HiddenSlot):(Base?)null);
                 if(!Nullable.Equals(shown,next))
@@ -78,7 +78,7 @@ namespace hds
                     else if(shown.HasValue)output.Add(ServerPackets.BuildAbilityUnload(Child));
                     shown=next;
                 }
-                if(snapshot.ParentLoaded&&!member){output.Add(AbilityGrantRegistration.Record(new(Parent,Child,0),false));member=true;}
+                if(snapshot.ParentLoaded&&!member){output.Add(AbilityGrantRegistration.Record(new AbilityGrantRegistration.Relation(Parent,Child,0),false));member=true;}
                 return output;
             }
         }

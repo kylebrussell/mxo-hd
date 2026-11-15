@@ -384,15 +384,15 @@ namespace hds
                     if(unload)
                     {
                         if(remainingMembership.Contains(ability)) continue;
-                        var packet=ServerPackets.BuildAbilityUnload(ability);client.messageQueue.addRpcMessage(packet);
-                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=packet;
+                        var ownedPacket=ServerPackets.BuildAbilityUnload(ability);client.messageQueue.addRpcMessage(ownedPacket);
+                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=ownedPacket;
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
                             if(!remainingMembership.Contains(grant) && !AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                     }
                     else
                     {
-                        var packet=ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot);client.messageQueue.addRpcMessage(packet);
-                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=packet;
+                        var ownedPacket=ServerPackets.BuildAbilityLoad(ability,owned.Level,owned.Slot);client.messageQueue.addRpcMessage(ownedPacket);
+                        if(ability==AbilityShadowPresentation.Child)emittedShadowBase=ownedPacket;
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
                             if(!AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                                 AbilityProgression.GrantLevel(ability,owned.Level),AbilityProgression.HiddenSlot));
