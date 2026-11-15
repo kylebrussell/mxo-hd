@@ -154,4 +154,3 @@ public class ShadowReadyPresentationTests
         Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.DoesNotContain(plan.BeforeLoadout.Concat(plan.AfterLoadout).Concat(plan.AfterHelpers),sql=>sql.Contains("1117"));
     }
 }
-
