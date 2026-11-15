@@ -15,7 +15,7 @@ public static partial class Scenarios
         Check.That(!ids.Append(MachinesCriticalNextFiveFixture.NextMission).Intersect(prerequisites).Any(),"Selected and next missions are never prerequisite grants");
         var actors=new List<HeadlessPlayer>{p};var checkpoints=new List<object>();var targets=new List<object>();var rewards=new List<object>();
         int missionCreationCursor=0;var followerIdentities=new Dictionary<int,string>();
-        var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;var caseClock=System.Diagnostics.Stopwatch.StartNew();
+        bool outsideAfterUpload=false;var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;var caseClock=System.Diagnostics.Stopwatch.StartNew();
         ServerInstance? coldServer=null;object? coldProof=null;int initialPid=context.Server.ProcessId;
         string? retiredPackets=null,retiredDebug=null,retiredOutput=null;
         var fields=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
@@ -31,6 +31,7 @@ public static partial class Scenarios
         {
             var state=(await Saved("npc-target-before"))!;int id=(int)definition.Attribute("id")!;
             var current=state.Mobs.Single(m=>m.Npc==id);
+            if(outsideAfterUpload)await Reacquire(current,state,TimeSpan.FromSeconds(15));
             await MoveForMissionTest(p,current.X+100,current.Y,current.Z);await Barrier();
             state=(await Saved("npc-target-current"))!;current=state.Mobs.Single(m=>m.Npc==id);
             ViewCreation? view=null;
@@ -49,7 +50,7 @@ public static partial class Scenarios
         async Task Ride(bool enter)
         {
             var before=(await Saved(enter?"before-entry":"before-exit"))!;
-            await MachinesNextRide(context,p,enter,arrivalProofs.Add);
+            await MachinesNextRide(context,p,enter,arrivalProofs.Add);if(enter)outsideAfterUpload=false;
             var after=await Saved(enter?"after-entry-observation":"after-exit-observation");
             if(enter)Check.That(after!=null&&after.Mission==before.Mission&&after.Phase==before.Phase&&after.Identity==before.Identity&&after.Started==before.Started,"Ordinary entry keeps exact current mission/phase owner");
             // entered means the legacy content-area trigger played, not immediate floor arrival.
@@ -57,10 +58,21 @@ public static partial class Scenarios
         }
         async Task Upload()
         {
-            await MoveForMissionTest(p,17000,495,2200);ViewCreation? booth=null;
+            await MoveForMissionTest(p,17000,495,2200);outsideAfterUpload=true;ViewCreation? booth=null;
             await p.WaitUntilAsync(()=>(booth=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife()))!=null,"exact still-live current Mara booth",TimeSpan.FromSeconds(10));
             targets.Add(new{Role="Upload booth",booth!.ViewId,booth.SpawnId,booth.RelatedStaticObjectId});
             p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(booth)} 04 00");await p.WaitForRpcAsync("81 18");
+        }
+        async Task Reacquire(MissionProgress.SavedMob actor,MissionProgress.SavedState before,TimeSpan budget)
+        {
+            var clock=System.Diagnostics.Stopwatch.StartNew();var life=p.World.CurrentOwnViewLife();
+            TimeSpan Remaining(){var remaining=budget-clock.Elapsed;if(remaining<=TimeSpan.Zero)throw new TimeoutException("Current hostile reacquire exhausted original combat budget");return remaining;}
+            if(outsideAfterUpload)await Ride(true).WaitAsync(Remaining());
+            var owned=(await Saved("reacquire-after-ordinary-entry"))!;ZionAfter1212RidePlan.SameEntry(before,owned);
+            Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Ordinary hostile return retains actual current owner/life");
+            var current=owned.Mobs.Single(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity);
+            await MachinesNextCertifiedActorRoute(context,p,owned,current,targets.Add).WaitAsync(Remaining());
+            await MoveForMissionTest(p,current.X+100,current.Y,current.Z).WaitAsync(Remaining());await Barrier().WaitAsync(Remaining());
         }
         async Task Claim(byte[] window)
         {
@@ -216,7 +228,15 @@ public static partial class Scenarios
                             }
                             for(int attempts=0;!Done(number) && attempts<100;attempts++)
                             {
-                                await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(30));
+                                var window=System.Diagnostics.Stopwatch.StartNew();
+                                if(!Done(number)&&Targets().Count==0)
+                                {
+                                    var owned=(await Saved("missing-visible-current-hostile"))!;
+                                    Check.That(owned.Mission==id&&owned.Phase==phase,"Reacquire only the current authored hostile stage");
+                                    var absent=owned.Mobs.LastOrDefault(m=>MachinesCriticalNextFiveFixture.CurrentHostile(m,authoredCurrentStageIds));
+                                    if(absent!=null)await Reacquire(absent,owned,TimeSpan.FromSeconds(30));
+                                }
+                                await p.WaitUntilAsync(()=>Done(number)||Targets().Count>0,"next current-phase hostile or wave completion",TimeSpan.FromSeconds(Math.Max(.001,30-window.Elapsed.TotalSeconds)));
                                 if(Done(number))break;
                                 var currentState=(await Saved("wave-current-owner"))!;
                                 Check.Equal(phase,currentState.Phase,"DefeatAll remains in its authored current phase");

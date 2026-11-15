@@ -99,6 +99,27 @@ public static partial class Scenarios
                 "Ordinary exit persisted its next phase before reading another door",TimeSpan.FromSeconds(MachinesCriticalNextFiveFixture.PhaseTransitionSeconds));
         }
     }
+    private static async Task MachinesNextCertifiedActorRoute(ScenarioContext context,HeadlessPlayer p,MissionProgress.SavedState state,MissionProgress.SavedMob actor,Action<object> note)
+    {
+        var plan=MissionNpcInteriorRide.ForSite(state)??throw new ScenarioFailure("Post-upload return requires the current certified NPC floor");
+        int index=MachinesCriticalNextFiveFixture.CertifiedActorIndex(state,actor,plan);var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,plan,index);
+        var doors=MissionNpcInteriorProof.RequiredDoors(plan);var opened=new HashSet<uint>();var life=p.World.CurrentOwnViewLife();
+        foreach(var point in route)
+        {
+            Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Certified reacquire route retains current owner/life");
+            foreach(uint key in point.Doors)
+            {
+                if(!opened.Add(key))continue;var door=doors.Single(d=>d.Key==key);NpcInteriorComputerState.DoorObservation? current=null;
+                string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                await p.WaitUntilAsync(()=>{try{current=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door);return true;}catch(InvalidDataException){return false;}},"current certified actor-route portal Open",TimeSpan.FromSeconds(15));
+                note(new{Kind="Reacquire certified portal Open",Door=door,Request=request,Current=current,NativePassageProven=false});
+            }
+            await MoveForMissionTest(p,point.Standing[0],point.Standing[1],point.Standing[2]);
+        }
+        var after=await MachinesNextCheckpoint(context,p);ZionAfter1212RidePlan.SameEntry(state,after);
+        Check.That(after.Mobs.Any(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity),"Reacquired actor retains exact saved identity");
+        note(new{Kind="Certified actor reacquire route",state.Mission,state.Phase,Actor=actor.Npc,actor.Identity,RoleIndex=index,Route=route,MovementAid="Existing test movement to lobby/route points/latest actor; ordinary elevator and portal RPCs only",NativeWalkingProven=false});
+    }
     private static async Task<ViewCreation> MachinesNextObjectQualified(ScenarioContext context,HeadlessPlayer p,int objectId,int creationStart,Action<object>? note=null)
     {
         var state=await MachinesNextCheckpoint(context,p);var obj=state.Objects.Single(o=>o.Id==objectId);
