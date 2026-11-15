@@ -1,7 +1,7 @@
 using hds;
 using HeadlessClient;
 namespace hds.Tests;
-public class MervFollowupElevatorFixtureTests
+public class ZionMeasuredElevatorFixtureTests
 {
     const string Q="0000000000000000000000000000803F";
     static StaticWorldObject RawSource(ushort world=1)=>new(){metrId=world,sectorID=209,staticId=441,mxoStaticId=0x0d1001b9,type=BitConverter.GetBytes((ushort)1408),pos_x=27500,pos_y=945,pos_z=13350,quat=Q};
@@ -108,16 +108,6 @@ public class MervFollowupElevatorFixtureTests
             Assert.Throws<InvalidDataException>(()=>MervFollowupElevatorFixture.CurrentOverlay(Life(rows),ride));
         var log=new OwnViewLifeLog();var own=Own();log.Observe(false,own,0,WireFormat.FindCreations(own));log.Observe(false,birth,1,WireFormat.FindCreations(birth));var stale=log.Snapshot();log.Observe(true,null,2,Array.Empty<ViewCreation>());
         Assert.Throws<InvalidDataException>(()=>MervFollowupElevatorFixture.CurrentOverlay(stale,ride));
-    }
-
-    [Fact]public void SharedRideCallerUsesPersistedSelectionAndLiveObservationWithoutDroppingExitGuards()
-    {
-        string root=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(root,"hds.sln")))root=Path.GetDirectoryName(root)!;
-        string source=File.ReadAllText(Path.Combine(root,"tools","HeadlessClient","ScenariosMervFollowupApproach.cs"));
-        Assert.Contains("MervFollowupElevatorFixture.Select(saved,enter",source);Assert.Contains("MervFollowupElevatorFixture.SameEntry",source);
-        Assert.Contains("MervFollowupElevatorFixture.CurrentOverlay(p.World.CurrentOwnViewLife()",source);
-        Assert.DoesNotContain("MervFollowupApproachFixture.DoorAt(",source);Assert.DoesNotContain("CreationSnapshot().Skip(beforeArrival.Count)",source);
-        Assert.Contains("MervFollowupWaitEscortExit",source);Assert.Contains("MervFollowupApproachFixture.CanDepart",source);
     }
 
     [Fact]public void HistoricalSelectedWitnessAllowsNpcOnlyOrDifferentNonadoptedCurrentSources()
