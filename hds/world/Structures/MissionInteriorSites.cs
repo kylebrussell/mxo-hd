@@ -29,7 +29,7 @@ namespace hds
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
             // With no runtime actors and enough same-kind native objects, SelectObjects never
             // creates a free prop. Preserve that existing bound-only path without a new NAV proof.
-            if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
+            if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
                 .GroupBy(o=>o.kind,StringComparer.OrdinalIgnoreCase).All(g=>site.realObjects.Count(s=>
                     MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
             if(!TryAllocate(site,npcCount,out _,out refusal))return false;
