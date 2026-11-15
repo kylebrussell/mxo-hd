@@ -123,7 +123,7 @@ public static partial class Scenarios
                 var actual=Enumerable.Range(1,3).Select(i=>double.Parse(actualArrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
                 SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
                 if(NavMesh.Locate(selectedRide.District,actual[0],actual[1],actual[2],out var actualNav))
-                    evidence.Add(MervBound326Approach.Capture(saved,actual,actualNav,p.World.CurrentOwnViewLife()));
+                    evidence.Add(MervBound326Approach.Capture(saved,actual,actualNav,p.World.CurrentOwnViewLife(),selectedRide.Witness!=null));
             }
         }
         if(!enter)
@@ -188,7 +188,7 @@ public static partial class Scenarios
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
             var pose=MissionObjectPoses.For(new MissionObjectState{spot=owned.Spot,goid=owned.Goid});centre=new[]{pose.X,pose.Y,pose.Z};quaternion=Convert.ToHexString(pose.Orientation);
             double[]? standing=null;
-            if(owned.Goid==326)
+            if(owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)
             {
                 var arrival=evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault()??throw new ScenarioFailure("No current actual arrival context for bound326");
                 var result=MervBound326Approach.Choose(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife());
@@ -201,14 +201,17 @@ public static partial class Scenarios
                     if(ContainerActions.InReach(candidate.SelectMany(BitConverter.GetBytes).ToArray(),pose.X,pose.Y,pose.Z)){standing=candidate;break;}
                 }
             Check.That(standing!=null,"Bound source requires a NAV-grounded in-range approach");
-            await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification="bound source NAV/range only; no route/collision/picking proof";
+            await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification=owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Legacy?
+                "legacy bound326 five-point NAV/server-range only; native range/route/picking not proved":
+                owned.Goid==326?"measured bound326 native100/NAV-component witness; no direct route/collision/picking proof":
+                "bound source NAV/range only; no route/collision/picking proof";
         }
         ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),owned.Goid,centre,quaternion,saved.Instance);
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
         var after=await MervFollowupCheckpoint(context,p);
         Check.Equal(saved.Mission,after.Mission,"Approach retains selected mission");Check.Equal(saved.Phase,after.Phase,"Approach retains current phase");
         Check.Equal(original,Raw(after.Objects.Single(o=>o.Id==id)),"Approach retains exact raw source and fixed witness DTO");
-        if(owned.Goid==326&&owned.OpenFloor==null)MervBound326Approach.RequireScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().Last(),p.World.CurrentOwnViewLife());
+        if(owned.Goid==326&&owned.OpenFloor==null&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)MervBound326Approach.RequireScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().Last(),p.World.CurrentOwnViewLife());
         evidence.Add(new{Operation="current-object-approach",saved.Mission,saved.Phase,Object=id,SourceAndWitness=original,Centre=centre,Quaternion=quaternion,Qualification=qualification});
         return Current()!;
     }

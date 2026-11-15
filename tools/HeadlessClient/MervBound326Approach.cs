@@ -11,7 +11,7 @@ public static class MervBound326Approach
 {
     const string ManifestSha="95657513146af308f60d6e532624e143a572b649a1cad98c4601b9eb8ac1c234";
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};
-    public sealed record Arrival(int Mission,int Phase,ushort Instance,string Identity,long Started,string Site,double[] Root,ushort Sector,ushort Region,double FloorY,long OwnLife)
+    public sealed record Arrival(int Mission,int Phase,ushort Instance,string Identity,long Started,string Site,double[] Root,ushort Sector,ushort Region,double FloorY,long OwnLife,bool VerifiedMeasured=false)
     { public string Operation=>"bound326-arrival-context"; [JsonIgnore] internal OwnViewLifeSnapshot? Token {get;init;} }
     public sealed record Bounds(uint SourceKey,double[] Centre,double[] Minimum,double[] Maximum,string Quaternion,int Region);
     public sealed record Sample(double[] Position,ushort Sector,ushort Region,ushort Polygon,double FloorY);
@@ -19,15 +19,50 @@ public static class MervBound326Approach
     { public bool DirectRouteProven=>false;public bool CollisionProven=>false;public bool NativePickingProven=>false; }
     public sealed record Nav(Func<double[],Sample?> Locate,Func<double[],double,double[],Sample?> Project);
     static bool Point(double[] p)=>p?.Length==3&&p.All(double.IsFinite);
-    static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.Waypoints,s.Exits,Door=s.SiteDoors.LastOrDefault(),s.OpenFloorCurrentSiteIndex,s.OpenFloorSites},Fields);
-    public static Arrival Capture(MissionProgress.SavedState state,double[] root,NavLocation nav,OwnViewLifeSnapshot life)
+    static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.Waypoints,s.Exits,Door=s.SiteDoors.LastOrDefault(),s.OpenFloorCurrentSiteIndex,s.OpenFloorSites,s.ElevatorWitnesses},Fields);
+    public enum ProofScope { Legacy, Measured }
+    public static ProofScope Classify(MissionProgress.SavedState state)
+    {
+        if(state.Waypoints.Length!=1||state.Exits.Length!=1||!Point(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!Point(state.Exits[0]))throw new InvalidDataException("Invalid current door/lobby identity");
+        uint key;try{var bytes=Convert.FromHexString(state.Waypoints[0].doorHex);if(bytes.Length!=4)throw new FormatException();key=BitConverter.ToUInt32(bytes);}catch(Exception e)when(e is FormatException or ArgumentNullException){throw new InvalidDataException("Invalid current door key",e);}
+        int index=state.Version==2?state.OpenFloorCurrentSiteIndex??-1:state.SiteDoors.Length-1;
+        if(index<0||index>=state.SiteDoors.Length||state.SiteDoors[index]?.mxoStaticId!=key||state.SiteDoors[index].metrId!=1||!new ushort[]{417,419}.Contains(MissionSites.Goid(state.SiteDoors[index])))throw new InvalidDataException("Wrong current raw site door");
+        bool adopted=state.OpenFloorPhase==state.Phase||state.Objects.Any(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid);
+        if(state.Version==1)
+        {
+            if(state.ElevatorWitnesses!=null||state.OpenFloorSites!=null||state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorLegacyPhase.HasValue||adopted)throw new InvalidDataException("Legacy state carries measured metadata");
+            return ProofScope.Legacy;
+        }
+        if(state.Version!=2||state.OpenFloorSites==null||index>=state.OpenFloorSites.Length)throw new InvalidDataException("Missing current selected site");
+        var site=state.OpenFloorSites[index];var raw=state.SiteDoors[index];
+        if(site==null||string.IsNullOrWhiteSpace(site.Fingerprint)||site.District!=1||site.DoorKey!=key||site.DoorX!=raw.pos_x||site.DoorY!=raw.pos_y||site.DoorZ!=raw.pos_z)throw new InvalidDataException("Wrong selected site identity");
+        var witnesses=state.ElevatorWitnesses??Array.Empty<MissionElevatorWitness>();
+        if(witnesses.Any(w=>w==null||w.Version!=1||state.OpenFloorSites.Count(s=>s.Fingerprint==w.SiteFingerprint)!=1||!Point(w.Floor)||!Point(w.Lobby)||w.Sources==null||w.Sources.Length==0||w.Sources.Any(string.IsNullOrWhiteSpace)))throw new InvalidDataException("Unknown/malformed historical witness site");
+        foreach(var historical in witnesses)
+        {
+            var ownedSite=state.OpenFloorSites.Single(s=>s.Fingerprint==historical.SiteFingerprint);
+            if(historical.FloorKey!=ownedSite.DoorKey||historical.LobbyKey==0)throw new InvalidDataException("Witness belongs to another raw site key");
+            _=Basis(historical.FloorQuaternion);_=Basis(historical.LobbyQuaternion);
+            foreach(string source in historical.Sources)
+            {
+                StaticWorldObject? spot;try{spot=JsonSerializer.Deserialize<StaticWorldObject>(source,Fields);}catch(JsonException e){throw new InvalidDataException("Malformed historical source JSON",e);}
+                if(spot?.metrId!=1||spot.type==null||spot.type.Length is not(2 or 4)||!double.IsFinite(spot.pos_x)||!double.IsFinite(spot.pos_y)||!double.IsFinite(spot.pos_z)||spot.quat==null)throw new InvalidDataException("Historical source world/shape differs");
+            }
+        }
+        var current=witnesses.Where(w=>w.SiteFingerprint==site.Fingerprint).ToArray();if(current.Length>1)throw new InvalidDataException("Duplicate current measured witnesses");
+        if(current.Length==0){if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");return ProofScope.Legacy;}
+        var w=current[0];if(w.FloorKey!=key||!w.Floor.SequenceEqual(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!w.Lobby.SequenceEqual(state.Exits[0])||w.LobbyKey==0)throw new InvalidDataException("Current measured witness differs from selected door");
+        return ProofScope.Measured;
+    }
+    public static Arrival Capture(MissionProgress.SavedState state,double[] root,NavLocation nav,OwnViewLifeSnapshot life,bool verifiedMeasured=false)
     {
         if(!Point(root)||!life.Current||!life.OwnViewReady)throw new InvalidDataException("No actual current arrival life");
-        return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,Site(state),root.ToArray(),nav.sector,nav.region,nav.floorY,life.Life){Token=life};
+        if(verifiedMeasured&&Classify(state)!=ProofScope.Measured)throw new InvalidDataException("No selected measured witness was verified");
+        return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,Site(state),root.ToArray(),nav.sector,nav.region,nav.floorY,life.Life,verifiedMeasured){Token=life};
     }
     public static void RequireScope(MissionProgress.SavedState state,int id,Arrival arrival,OwnViewLifeSnapshot life)
     {
-        if(arrival==null||arrival.Token==null||!arrival.Token.Current||!life.Current||!life.OwnViewReady||
+        if(Classify(state)!=ProofScope.Measured||arrival==null||!arrival.VerifiedMeasured||arrival.Token==null||!arrival.Token.Current||!life.Current||!life.OwnViewReady||
             !ReferenceEquals(arrival.Token.Owner,life.Owner)||arrival.OwnLife!=life.Life||state.Mission!=arrival.Mission||state.Phase!=arrival.Phase||
             state.Instance!=arrival.Instance||state.Identity!=arrival.Identity||state.Started!=arrival.Started||Site(state)!=arrival.Site||
             !state.Flags.TryGetValue("entered",out bool entered)||!entered||state.Flags.GetValueOrDefault("failed"))throw new InvalidDataException("Bound approach arrival scope changed");

@@ -14,7 +14,7 @@ public class MervBound326ApproachTests
         var state=JsonSerializer.Deserialize<MissionProgress.SavedState>(f.GetProperty("State").GetRawText(),Fields)!;
         var root=f.GetProperty("ActualRoot").EnumerateArray().Select(v=>v.GetDouble()).ToArray();var own=f.GetProperty("OwnBirthBase64").GetBytesFromBase64();
         var log=new OwnViewLifeLog();log.Observe(false,own,0,WireFormat.FindCreations(own));
-        var at=new NavLocation{sector=1118,region=36,polygon=106,floorY=1600};return(state,log,MervBound326Approach.Capture(state,root,at,log.Snapshot()));
+        var at=new NavLocation{sector=1118,region=36,polygon=106,floorY=1600};return(state,log,MervBound326Approach.Capture(state,root,at,log.Snapshot(),true));
     }
     static MervBound326Approach.Bounds Bounds()=>new(0x45e0007b,new[]{40160d,1682,12705},new[]{40130d,1602,12680},new[]{40190d,1762,12730},"00000000F30435BF00000000F304353F",36);
     static MervBound326Approach.Nav Fake(MervBound326Approach.Arrival a,double[]? candidate=null,ushort region=36,bool rootMissing=false,bool projectMissing=false)
