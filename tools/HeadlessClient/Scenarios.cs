@@ -134,6 +134,7 @@ public static partial class Scenarios
         new Scenario("qa-revive-in-place", QaReviveInPlace, StillNpcs),
         new Scenario("ability-resurrection-resources", AbilityResurrectionResources, StillNpcs),
         new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
+        new Scenario("deflect-code-duration", DeflectCodeWire, DeflectCodeFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-control-duration-npc", AbilityControlDurationNpc, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("buff-dispel-fixture-hit", BuffDispelFixtureHit, FreeCastViralLandingEnvironment(StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_BUFF_DISPEL_QA_ROLL100"]="0"}).ToDictionary(p=>p.Key,p=>p.Value))),
