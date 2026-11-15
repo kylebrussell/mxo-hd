@@ -24,8 +24,13 @@ public static partial class Scenarios
         try
         {
             await caster.EnterWorldAsync();await victim.EnterWorldAsync();await observer.EnterWorldAsync();
-            foreach(var p in new[]{caster,victim}){p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
             var target=await caster.WaitForViewNamedAsync(victim.Handle);var observed=await observer.WaitForViewNamedAsync(caster.Handle);
+            int observerFlagCursor=observer.World.ViewSnapshot().Count;
+            foreach(var p in new[]{caster,victim}){p.SendChat("?pvpflag on");await p.WaitForViewUpdateAsync(2,OwnPvpFlagOn);}
+            GhostStrikeObserverFlags.Sample? initialObserverFlags=null;
+            await observer.WaitUntilAsync(()=>{initialObserverFlags=GhostStrikeObserverFlags.Latest(observer.World.ViewSnapshot(),observed.ViewId,observerFlagCursor);
+                return initialObserverFlags!=null&&(initialObserverFlags.Flags&PvpFlag.PvpBit)!=0;},"actual observer flag update after normal pvpflag-on command",TimeSpan.FromSeconds(5));
+            proof.Add(new{Stage="observer-pvp-baseline",Observed=initialObserverFlags});
             Cast(caster,1112);await caster.WaitForRpcAsync(ModPattern(1112,1034));
             stage="no-invisibility-current-base-policy";int noInvisibility=context.Server.DebugLog().Length;
             Cast(caster,365,target.ViewId);await caster.WaitUntilAsync(()=>context.Server.DebugLog()[noInvisibility..].Contains(" lands on GhostEnemy for "),"ordinary hit without supported invisibility",TimeSpan.FromSeconds(6));
@@ -34,14 +39,19 @@ public static partial class Scenarios
             foreach(int roll in new[]{9,8})
             {
                 stage="roll-"+roll;caster.SkipReceived();caster.SendChat("?ghoststrike "+roll);await caster.WaitForTextAsync("callback roll="+roll);
+                var observerBaseline=GhostStrikeObserverFlags.Latest(observer.World.ViewSnapshot(),observed.ViewId)
+                    ??throw new ScenarioFailure("No actual current observer flag baseline");
+                Check.That((observerBaseline.Flags&PvpFlag.PvpBit)!=0,"Current observer baseline retains normal PvP flag");
+                uint observerOn=GhostStrikeObserverFlags.Expected(observerBaseline.Flags,true),observerOff=GhostStrikeObserverFlags.Expected(observerBaseline.Flags,false);
+                proof.Add(new{Stage=stage+"-observer-baseline",Observed=observerBaseline,ExpectedOn=observerOn,ExpectedOff=observerOff});
                 observer.SkipReceived();Cast(caster,1116);var initial=await caster.WaitForRpcAsync(ModPattern(1116,115));
-                await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,Stealth.StealthedFlag)));
+                await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,observerOn)));
                 double originalDuration=BitConverter.ToSingle(initial.Bytes,18);int cursor=caster.World.RpcSnapshot().Count;
                 int log=context.Server.DebugLog().Length,sourceViews=caster.World.ViewSnapshot().Count,targetViews=victim.World.ViewSnapshot().Count;
                 var before=new{SourceHealth=GhostWireVital(caster,"Health","02 80 80 80 40"),SourceIS=GhostWireVital(caster,"InnerStrengthAvailable","02 80 80 80 10"),TargetHealth=GhostWireVital(victim,"Health","02 80 80 80 40")};
                 DateTime start=DateTime.UtcNow;Cast(caster,365,target.ViewId);
                 await caster.WaitForRpcAsync(ModPattern(1116,115,true)); // this cast keeps the ordinary break
-                await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(0,0)));
+                await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(0,observerOff)));
                 await caster.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains(" lands on GhostEnemy for "),"accepted ordinary365 hit",TimeSpan.FromSeconds(6));
                 await victim.WaitUntilAsync(()=>ViewUpdateValues(victim,2,"02 80 80 80 40",targetViews).Count>0,"fresh target own03 health update",TimeSpan.FromSeconds(3));
                 await Task.Delay(500);
@@ -56,7 +66,7 @@ public static partial class Scenarios
                     float remaining=BitConverter.ToSingle(restorations.Single().Bytes,18);
                     Check.That(remaining>0&&remaining<originalDuration-1,"Restoration uses remaining original duration, never a fresh130s grant");
                     Check.Equal(1,System.Text.RegularExpressions.Regex.Matches(context.Server.DebugLog()[log..],@"\[GHOST-STRIKE\] accepted callback").Count,"Once per accepted cast");
-                    await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,Stealth.StealthedFlag)));
+                    await observer.WaitForViewUpdateAsync(observed.ViewId,WireFormat.ToHex(Stealth.BuildOther(Stealth.Invisible,observerOn)));
                     // Turning the normal restored grant off uses its own standard activation path.
                     Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115,true));
                 }
