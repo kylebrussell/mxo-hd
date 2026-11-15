@@ -6,7 +6,7 @@ public static class MervAfterCurrentNpc
 {
     public sealed record Scope(int Mission,int Phase,ushort Instance,string MissionIdentity,long Started,ushort Npc,string Descriptor);
     public sealed record Point(double X,double Y,double Z);
-    public sealed record CurrentView(ViewCreation View,Point Position,int CreationSection,int PositionSection,string PositionBytes,long OwnLife,bool Retained);
+    public sealed record CurrentView(ViewCreation View,Point Position,int CreationSection,int PositionSection,string PositionBytes,long OwnLife);
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};
     static MissionProgress.SavedMob Owned(MissionProgress.SavedState state,ushort npc)
     {
@@ -144,6 +144,6 @@ public static class MervAfterCurrentNpc
             throw new InvalidDataException("Latest current live carried position does not match current owned XYZ");
         if (!stream.Current) throw new InvalidDataException("Own-view life changed while reading carried generation");
         return new CurrentView(selected.View, latest, selected.Birth, selected.PositionSection, selected.PositionBytes,
-            stream.Life, selected.Birth < stream.Events.Count);
+            stream.Life);
     }
 }
