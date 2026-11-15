@@ -105,12 +105,12 @@ public static partial class Scenarios
                 var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,npcPlan);var doors=MissionNpcInteriorProof.RequiredDoors(npcPlan);var opened=new HashSet<uint>();
                 foreach(var point in route.Skip(1))
                 {
-                    foreach(uint key in point.Doors)
+                    foreach(uint portalKey in point.Doors)
                     {
-                        if(!opened.Add(key))continue;var expected=doors.Single(d=>d.Key==key);NpcInteriorComputerState.DoorObservation? actual=null;
+                        if(!opened.Add(portalKey))continue;var expected=doors.Single(d=>d.Key==portalKey);NpcInteriorComputerState.DoorObservation? actual=null;
                         await p.WaitUntilAsync(()=>{try{actual=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),expected);return true;}catch(InvalidDataException){return false;}},
                             "Current certified own-GO portal door before Open",TimeSpan.FromSeconds(15));
-                        string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                        string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(portalKey))} 03 00";p.SendRpc(request);
                         await p.WaitUntilAsync(()=>NpcInteriorComputerState.Read(p.World.CurrentOwnViewLife(),actual!.Capability)!=0x834,
                             "Ordinary portal door leaves its closed state",TimeSpan.FromSeconds(15));
                         checkpoints.Add(new{Step=step,Operation="owned-npc-portal-open",Door=expected,Current=actual,Request=request,NativePassageProven=false});
