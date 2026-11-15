@@ -10,8 +10,9 @@ public static partial class Scenarios
     };
     private static async Task ViralAccuracyBonus(ScenarioContext context)
     {
-        var caster=await context.AddPlayerAsync(NearNpc("ViralBonus") with{Level=50,Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,
-            OwnedLoadedAbilities=new (ushort,ushort)[]{(2,50),(17,50),(1006,50),(23,50),(35,50),(32,50),(33,50)}});
+        var caster=await context.AddPlayerAsync(NearNpc("ViralBonus") with{Level=50,Experience=checked((int)hds.PlayerProgression.ExperienceForLevel(50)),
+            Organization=1,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,
+            OwnedLoadedAbilities=ViralAccuracyBonusFixture.Abilities.Select(id=>(id,(ushort)50)).ToArray()});
         var enemy=await context.AddPlayerAsync(NearNpc("ViralBonusEnemy",100) with{Level=50,Organization=2,Health=5000,MaxHealth=5000});
         var observations=new List<object>();bool passed=false;
         try

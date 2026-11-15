@@ -5,6 +5,18 @@ namespace hds.Tests;
 public class ViralAccuracyConsumerTests
 {
     [Fact]
+    public void SharedNativeAndHeadlessLoadoutCanReloadRunProgramThroughTheRealPrerequisiteRule()
+    {
+        var ids=HeadlessClient.ViralAccuracyBonusFixture.Abilities;
+        var rows=ids.Select((id,i)=>new AbilityMemory.Row((uint)i,(ushort)i,0x80000000u|((uint)id<<10),50,id!=32)).ToArray();
+        var root=Assert.Single(rows,r=>r.Ability==32);
+        Assert.Null(AbilityLoadQualification.Refusal(rows,new[]{root},PlayerProgression.ExperienceForLevel(50),out bool low));
+        Assert.False(low);
+        Assert.True(rows.Sum(r=>AbilityMemory.Cost(r.Ability))<=AbilityMemory.ForLevel(50));
+        var mode=NativeQa.NativeQaModes.RequireKnown("viral-accuracy-bonus");
+        Assert.Equal(ids,mode.Plan.Abilities);
+    }
+    [Fact]
     public void RegisteredScenarioActuallyCapturesItsNpcAndScopedDrawEnvironment()
     {
         var scenario=HeadlessClient.Scenarios.All.Single(s=>s.Name=="viral-accuracy-bonus");
