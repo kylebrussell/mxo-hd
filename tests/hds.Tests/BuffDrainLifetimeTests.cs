@@ -81,6 +81,49 @@ public class BuffDrainLifetimeTests
         c.playerData=data;c.playerInstance=player;
         data.setOnWorld(true);AbilityBuffs.TickActiveDrain(c,a);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
     }
+    [Theory][InlineData(false,false)][InlineData(true,false)][InlineData(true,true)]
+    public void ResetBetweenValidationClaimAndPublicationNeverChargesOrPublishesIntoNewInstance(bool afterClaim,bool shortfall)
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);var old=On(c);var oldPlayer=c.playerInstance;
+        if(shortfall)oldPlayer.InnerStrengthAvailable.setValue((ushort)0);
+        AbilityBuffs.Active? fresh=null;int queued=0;
+        void ResetOnAnotherThread()
+        {
+            var task=Task.Run(()=>
+            {
+                c.TransportFence.PublishIncoming(true,()=>{});long epoch=c.TransportFence.Capture();
+                Assert.True(c.TransportFence.ApplyReset(epoch,()=>
+                {
+                    c.playerData.setOnWorld(false);c.playerData=new ClientData();c.playerData.setOnWorld(true);c.playerData.setCharID(110);c.playerData.setDistrictId(1);
+                    c.playerInstance=new PlayerCharacter();c.playerInstance.Level.setValue((byte)50);c.playerInstance.Health.setValue((ushort)1000);c.playerInstance.MaxHealth.setValue((ushort)1000);
+                    c.playerInstance.InnerStrengthAvailable.setValue((ushort)100);c.playerInstance.InnerStrengthMax.setValue((ushort)100);
+                    c.messageQueue.ForgetWorldObjects();c.messageQueue.ForgetSentRpcs();
+                }));
+                c.TransportFence.Resume(epoch);fresh=On(c);queued=c.messageQueue.ObjectMessagesQueue.Count;
+            });
+            Assert.True(task.Wait(TimeSpan.FromSeconds(3)),"Reset acquires transport without a buff/upgrade lock inversion");task.GetAwaiter().GetResult();
+        }
+        AbilityBuffs.TickActiveDrain(c,old,beforeClaim:afterClaim?null:ResetOnAnotherThread,beforePublication:afterClaim?ResetOnAnotherThread:null);
+        Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));Assert.Same(fresh,c.playerData.activeBuffs[16]);
+        Assert.Equal(queued,c.messageQueue.ObjectMessagesQueue.Count);Assert.True(old.Drain.Cancelled);
+        Assert.Equal(shortfall?0:afterClaim?99:100,NumericalUtils.ByteArrayToUint16(oldPlayer.InnerStrengthAvailable.getValue(),1));
+        AbilityBuffs.TickActiveDrain(c,old);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
+    }
+    [Fact]public void ActivationCaptureDoesNotWaitForTransportWhileHoldingBuffLock()
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);
+        using var gateHeld=new ManualResetEventSlim();using var releaseGate=new ManualResetEventSlim();
+        var gate=Task.Run(()=>c.TransportFence.TryRun(c.TransportFence.Capture(),()=>{gateHeld.Set();Assert.True(releaseGate.Wait(TimeSpan.FromSeconds(3)));}));
+        Assert.True(gateHeld.Wait(TimeSpan.FromSeconds(3)));
+        Task? apply=null;
+        lock(c.playerData.activeBuffs)
+        {
+            apply=Task.Run(()=>On(c));
+            // If Apply acquired this lock before Capture, the probe would block the reset-gate owner.
+            releaseGate.Set();Assert.True(gate.Wait(TimeSpan.FromSeconds(3)));
+        }
+        Assert.True(apply.Wait(TimeSpan.FromSeconds(3)));
+    }
     [Fact]public void ScheduledOldCallbackAfterRelogAndNewOnOffDoesNotDrainTheNewLife()
     {
         var c=Client();using var owner=new BuffDrainTestOwner(c);var old=On(c);

@@ -159,20 +159,20 @@ namespace hds
         {
             internal readonly WorldClient Client;
             internal readonly ClientData Data;
-            private readonly PlayerCharacter player;
+            internal readonly PlayerCharacter Player;
             private readonly uint character,district;
             private readonly int world,life;
-            private readonly long transport;
+            internal readonly long Transport;
             internal volatile bool Cancelled;
             internal DrainLifetime(WorldClient client)
             {
-                Client=client;Data=client.playerData;player=client.playerInstance;
+                Client=client;Data=client.playerData;Player=client.playerInstance;
                 character=Data.getCharID();district=Data.getDistrictId();world=Data.worldGeneration;life=Data.lifeGeneration;
-                transport=client.TransportFence?.Capture() ?? -1;
+                Transport=client.TransportFence?.Capture() ?? -1;
             }
-            internal bool Current => !Cancelled && ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,player) &&
+            internal bool Current => !Cancelled && ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,Player) &&
                 Data.getCharID()==character && Data.getDistrictId()==district && Data.worldGeneration==world && Data.lifeGeneration==life &&
-                Client.TransportFence!=null && Client.TransportFence.IsCurrent(transport) && Client.Alive && Data.getOnWorld() &&
+                Client.TransportFence!=null && Client.TransportFence.IsCurrent(Transport) && Client.Alive && Data.getOnWorld() &&
                 !Data.worldChangePending && !Data.waitForRPCShutDown;
         }
 
@@ -421,10 +421,16 @@ namespace hds
 
         public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
         {
-            lock (client.playerData.upgradeSync) return ApplyCore(client,abilityId,caster);
+            // Capture before ANY activation/upgrade lock: reset owns the transport gate first.
+            var drain=new DrainLifetime(client);
+            lock (drain.Data.upgradeSync)
+            {
+                if(!ReferenceEquals(client.playerData,drain.Data))return false;
+                return ApplyCore(client,abilityId,caster,drain);
+            }
         }
 
-        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster)
+        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster,DrainLifetime drain)
         {
             if (TacticalConflict(client, abilityId)) return false;
             if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
@@ -466,7 +472,7 @@ namespace hds
                     ids[i] = NextRecordId(data);
                 }
                 active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Started=TimeUtils.GetSimTimeSeconds(), Definition = buff };
-                if(buff.DrainAmount>0 && buff.DrainSeconds>0)active.Drain=new DrainLifetime(client);
+                if(buff.DrainAmount>0 && buff.DrainSeconds>0)active.Drain=drain;
                 data.activeBuffs[abilityId] = active;
             }
 
@@ -527,38 +533,55 @@ namespace hds
             TickActiveDrain(client,active);
         }
 
-        internal static void TickActiveDrain(WorldClient client,Active active)
+        internal static void TickActiveDrain(WorldClient client,Active active,Action beforeClaim=null,Action beforePublication=null)
         {
             var lease=active?.Drain;
             if(lease==null || !ReferenceEquals(lease.Client,client))return;
-            // Never acquire the endpoint registry under buff locks: registry-held send paths enter transport code.
-            if(!client.IsCurrentEndpointOwner){lease.Cancelled=true;return;}
-            // Normal registry removal claims terminal liveness first; reset/quit invalidate the other current fences.
-            var data=lease.Data;
-            lock(data.upgradeSync)
+            // Registry observation is outside all activation/transport locks.
+            if(!client.IsCurrentEndpointOwner || !lease.Current){lease.Cancelled=true;return;}
+            var data=lease.Data;bool claimed=false,shortfall=false;int missing=0;ushort remaining=0;
+            beforeClaim?.Invoke(); // Invocation-local test seam, never used by the scheduler.
+            // OUTERMOST transport admission: no caller-held upgrade/buff/registry lock.
+            if(!client.TransportFence.TryRun(lease.Transport,()=>
             {
-                bool shortfall;int missing=0;ushort remaining=0;
                 lock(data.activeBuffs)
                 {
-                    if(!lease.Current || !data.activeBuffs.TryGetValue(active.AbilityId,out var current) || !ReferenceEquals(current,active))
-                    {lease.Cancelled=true;return;}
-                    var buff=active.Definition;
-                    if(buff==null || buff.DrainAmount<=0)return;
-                    shortfall=data.isDead || data.duelDeath || AbilityHandler.CurrentInnerStrength(client)<buff.DrainAmount;
-                    if(shortfall)missing=Math.Max(0,buff.DrainAmount-AbilityHandler.CurrentInnerStrength(client));
-                    else remaining=AbilityHandler.SpendInnerStrength(client,(ushort)buff.DrainAmount);
+                    if(!lease.Current || !data.activeBuffs.TryGetValue(active.AbilityId,out var current) || !ReferenceEquals(current,active))return;
+                    var buff=active.Definition;if(buff==null || buff.DrainAmount<=0)return;
+                    ushort available=NumericalUtils.ByteArrayToUint16(lease.Player.InnerStrengthAvailable.getValue(),1);
+                    shortfall=data.isDead || data.duelDeath || available<buff.DrainAmount;
+                    if(shortfall)missing=Math.Max(0,buff.DrainAmount-available);
+                    else
+                    {
+                        remaining=(ushort)Math.Max(0,available-buff.DrainAmount);
+                        lease.Player.InnerStrengthAvailable.setValue(remaining); // Always the captured resource owner.
+                    }
+                    claimed=true;
                 }
+            }) || !claimed){lease.Cancelled=true;return;}
+            beforePublication?.Invoke(); // Reset can complete here; publication must retain the ORIGINAL epoch.
+            bool published=false;
+            if(!client.TransportFence.TryRun(lease.Transport,()=>
+            {
                 if(!lease.Current)return;
                 if(shortfall)
                 {
                     if(missing>0)
                     {
                         string name=TimedEffects.PlayerName(client);
-                        client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,active.AbilityId,name,name,missing));
+                        client.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,active.AbilityId,name,name,missing),data.worldGeneration,lease.Transport);
                     }
-                    RemoveCore(client,active.AbilityId,true,false,active.Generation,false,active);client.FlushQueue();return;
+                    published=RemoveCore(client,active.AbilityId,true,false,active.Generation,false,active);
+                    return;
                 }
-                new ServerPackets().sendISCurrent(client,remaining);
+                // Pure packet construction/queue publication only; Flush is OUTSIDE the gate.
+                client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfInnerStrength,PlayerViewAttributes.U16(remaining))),false);
+                published=true;
+            }))lease.Cancelled=true;
+            if(!published){lease.Cancelled=true;return;}
+            client.FlushQueue();
+            if(!shortfall)
+            {
                 Output.WriteDebugLog($"[BUFF-DRAIN] char{data.getCharID()} ability{active.AbilityId} generation{active.Generation} amount{active.Definition.DrainAmount} remaining{remaining}");
                 if(lease.Current)ScheduleDrain(client,active);
             }
