@@ -151,9 +151,17 @@ namespace hds
             }
             return state;
         }
-        internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door) =>
-            door==null?null:candidates.FirstOrDefault(s=>s?.elevatorDoor!=null && s.elevatorDoor.mxoStaticId==door.mxoStaticId &&
-                s.elevatorDoor.sectorID==door.sectorID && s.elevatorDoor.metrId==door.metrId);
+        internal static MissionSite FindSavedSite(IEnumerable<MissionSite> candidates,StaticWorldObject door)
+        {
+            if(door==null)return null;
+            // A static key can have multiple legacy CSV poses. Keep the captured raw door,
+            // rather than replacing it with the first alias after a normal relog.
+            string signature=MissionOpenFloorSite.SpotFingerprint(door);
+            // V1 stores no cluster fingerprint: identical raw-door clusters retain legacy order.
+            return candidates.FirstOrDefault(s=>s?.elevatorDoor!=null&&s.elevatorDoor.mxoStaticId==door.mxoStaticId&&
+                s.elevatorDoor.sectorID==door.sectorID&&s.elevatorDoor.metrId==door.metrId&&
+                MissionOpenFloorSite.SpotFingerprint(s.elevatorDoor)==signature);
+        }
         public static MissionProgress Restore(Mission mission, SavedState state, Func<double> clock = null) => RestoreCore(mission,state,clock,null);
         internal static MissionProgress RestoreFromCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,Func<double> clock=null) => RestoreCore(mission,state,clock,siteCatalog);
         private static MissionProgress RestoreCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog)
@@ -192,8 +200,13 @@ namespace hds
             p.wavesJustArrived.AddRange(p.Phase.Waves().Where(w=>state.WavesJustArrived.Contains(w.id)));p.justSwitched.AddRange(state.JustSwitched);
             p.waypoints=state.Waypoints.ToList();p.exits.AddRange(state.Exits);
             var npcInterior=state.NpcInterior.ValueKind!=JsonValueKind.Undefined?MissionNpcInteriorCheckpoint.PrepareRestore(p,state,siteCatalog):null;
+            MissionSite legacyCurrent=null;
             if(state.Version==1)
-                foreach(var door in state.SiteDoors) { var site=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door); if(site!=null)p.sites.Add(site); }
+                foreach(var door in state.SiteDoors)
+                {
+                    legacyCurrent=FindSavedSite(siteCatalog??MissionSites.For(mission.district),door);
+                    if(legacyCurrent!=null)p.sites.Add(legacyCurrent);
+                }
             else
             {
                 p.openFloorCheckpoint=true;p.pendingOpenFloor=state.PendingOpenFloor;p.openFloorResolvedPhase=state.OpenFloorPhase;p.openFloorLegacyPhase=state.OpenFloorLegacyPhase;
@@ -204,7 +217,11 @@ namespace hds
                     p.sites.Add(site);
                 }
             }
-            p.site=state.Version==1?p.sites.LastOrDefault():state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            p.site=state.Version==1?legacyCurrent:state.OpenFloorCurrentSiteIndex.Value==-1?null:p.sites[state.OpenFloorCurrentSiteIndex.Value];
+            // Never promote an older history entry into the missing current area. Items are
+            // already restored so the existing typed quarantine retains ownership and payload.
+            if(state.Version==1&&state.SiteDoors.Length>0&&legacyCurrent==null)
+                throw new MissionPlacementRestoreException(p,"MissingExactLegacyMissionSite");
             MissionNpcInteriorCheckpoint.Apply(p,npcInterior);
             if(p.UsesGeneratedDeparture && state.DepartedPhase==p.phaseIndex && SameDepartureDoor(state.DepartedSite,p.site.elevatorDoor))
             {p.departedSite=p.site.elevatorDoor;p.departedPhase=p.phaseIndex;}
