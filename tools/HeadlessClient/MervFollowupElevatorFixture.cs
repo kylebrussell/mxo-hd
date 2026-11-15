@@ -67,7 +67,7 @@ public static class MervFollowupElevatorFixture
         if(current==null||before.Version!=current.Version||before.Mission!=current.Mission||before.Phase!=current.Phase||
             before.Identity!=current.Identity||before.Started!=current.Started||before.Instance!=current.Instance)return false;
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcEntry=MissionNpcInteriorRide.ForSite(s)?.Raw,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         return Snapshot(before)==Snapshot(current);
     }
     public static void RequireOverlay(Ride selected,ViewCreation view)
@@ -76,7 +76,7 @@ public static class MervFollowupElevatorFixture
             !Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==selected.Pose[i])||!view.Attributes.TryGetValue("Orientation",out var q)||
             !q.SequenceEqual(Convert.FromHexString(selected.Quaternion!)))throw new InvalidDataException("Requested measured door overlay differs");
     }
-    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection);
+    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection,uint State);
     public static DoorObservation CurrentOverlay(OwnViewLifeSnapshot stream,Ride selected)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for measured door");
@@ -107,7 +107,8 @@ public static class MervFollowupElevatorFixture
         var matches=live.Values.Where(v=>v.View.RelatedStaticObjectId==selected.Key).ToArray();
         if(!own||matches.Length!=1||!matches[0].Known)throw new InvalidDataException("Missing/ambiguous/deleted/reused current measured door key");
         var chosen=matches[0];RequireOverlay(selected,chosen.View);if(!stream.Current)throw new InvalidDataException("Door own life changed");
-        return new(chosen.View,stream.Life,chosen.Birth);
+        var open=NpcInteriorComputerState.CurrentDoor(stream,new MissionNpcInteriorProof.Door(selected.Key,chosen.View.Goid,selected.Pose,selected.Quaternion!,null,""));
+        return new(open.View,open.Capability.Life,open.Capability.Birth,open.State);
     }
     public static void RequireRoot(Ride selected,bool enter,double[] actual,ushort sector,ushort region,double floorY,IEnumerable<double[]> freeRoots)
     {

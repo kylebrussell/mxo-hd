@@ -65,6 +65,13 @@ public static partial class Scenarios
             evidence.Add(new{Operation="legitimate-auto-advance-before-door",Mission=expectedMission,CompletedPhase=expectedPhase,ActualMission=saved?.Mission,ActualPhase=saved?.Phase});return;
         }
         Check.That(MervFollowupApproachFixture.OwnsWaitingPhase(saved,expectedMission,expectedPhase),"Door belongs to expected current mission/phase");
+        var npcRide=MissionNpcInteriorRide.ForSite(saved!);
+        if(npcRide!=null)
+        {
+            await MervAfterNpcRide(context,p,enter,saved!,npcRide,evidence,expectedMission,expectedPhase);
+            if(!enter)await MervFollowupWaitTransition(context,p,expectedMission,expectedPhase);
+            return;
+        }
         var door=saved!.Waypoints.Single();var lobby=saved.Exits.Single();
         var authoredSite=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"merovingian_1_2_*.xml")
             .Select(System.Xml.Linq.XElement.Load).Single(m=>(int)m.Attribute("id")! == expectedMission);
@@ -88,7 +95,7 @@ public static partial class Scenarios
                 evidence.Add(new{Operation="legitimate-auto-advance-before-door-send",Mission=expectedMission,CompletedPhase=expectedPhase,ActualMission=current?.Mission,ActualPhase=current?.Phase});return;
             }
         }
-        if(enter)Check.That(MervFollowupElevatorFixture.SameEntry(saved,await MervFollowupCurrent(context,p)),
+        Check.That(MervFollowupElevatorFixture.SameEntry(saved,await MervFollowupCurrent(context,p)),
             "Current accepted entry/site/witness remains identical immediately before ordinary door request");
         string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
         if(!enter&&exitEscortGoal.HasValue)await MervFollowupWaitEscortExit(context,p,before!,authoredExit!,exitEscortGoal.Value,intent);
@@ -113,7 +120,7 @@ public static partial class Scenarios
                     saved.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).Select(o=>o.OpenFloor!.Route.Take(3).ToArray()));
                 evidence.Add(new{Operation="selected-measured-elevator-root",Key=key,ActualRoot=actual,nav.sector,nav.region,nav.floorY,selectedRide.Witness});
             }
-            evidence.Add(new{Operation="selected-measured-elevator-overlay",Key=key,Pose=pose,selectedRide.Witness,overlay.ViewId,overlay.SpawnId,currentDoor.OwnLife,currentDoor.BirthSection,ObservedCurrentAfterRequest=true,NewCreationNotRequired=true});
+            evidence.Add(new{Operation="selected-measured-elevator-overlay",Key=key,Pose=pose,selectedRide.Witness,overlay.ViewId,overlay.SpawnId,currentDoor.OwnLife,currentDoor.BirthSection,currentDoor.State,ObservedCurrentAfterRequest=true,NewCreationNotRequired=true});
         }
         if(!enter)
         {
@@ -124,7 +131,7 @@ public static partial class Scenarios
         if(enter)
         {
             var free=saved.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).ToArray();
-            var pending=free.Where(o=>MervFollowupApproachFixture.CurrentBody(beforeArrival,o.Goid,o.OpenFloor!.Centre,o.OpenFloor.Quaternion,saved.Instance)==null).ToArray();
+            var pending=free.Where(o=>ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,saved.Instance)==null).ToArray();
             foreach(var o in free.Except(pending))evidence.Add(new{Operation="current-free-body-already-present",saved.Mission,saved.Phase,o.Id,PriorArrivalInterestAllowed=true});
             if(pending.Length>0)
             {
@@ -145,7 +152,7 @@ public static partial class Scenarios
                 }
                 // First creation follows current arrival interest; never wait for it before the ride.
                 // The ordinary ride path stays stationary here: no client position/movement can replace its ACK.
-                await p.WaitUntilAsync(()=>pending.All(o=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),o.Goid,o.OpenFloor!.Centre,o.OpenFloor.Quaternion,saved.Instance)!=null),"Current free bodies after actual floor arrival",TimeSpan.FromSeconds(15));
+                await p.WaitUntilAsync(()=>pending.All(o=>ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,saved.Instance)!=null),"Current free bodies after actual floor arrival",TimeSpan.FromSeconds(15));
                 foreach(var o in pending)
                 {
                     object? receipt=rode?InteriorAdmissionDeliveryProof.Require(InteriorAdmissionDeliveryProof.Read(packetPath),p.CharId,packetCursor,root,o.Goid,o.OpenFloor!.Centre):null;
@@ -186,7 +193,12 @@ public static partial class Scenarios
             Check.That(standing!=null,"Bound source requires a NAV-grounded in-range approach");
             await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification="bound source NAV/range only; no route/collision/picking proof";
         }
-        ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),owned.Goid,centre,quaternion,saved.Instance);
+        ViewCreation? Current()
+        {
+            if(owned.OpenFloor!=null)return ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),owned,saved.Instance);
+            var scope=MervAfterCurrentBoundBody.Capture(saved,(ushort)id);
+            try{return MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,MervFollowupCheckpoint(context,p).GetAwaiter().GetResult()).View;}catch(InvalidDataException){return null;}
+        }
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
         var after=await MervFollowupCheckpoint(context,p);
         Check.Equal(saved.Mission,after.Mission,"Approach retains selected mission");Check.Equal(saved.Phase,after.Phase,"Approach retains current phase");

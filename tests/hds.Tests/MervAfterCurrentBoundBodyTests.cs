@@ -22,6 +22,13 @@ public sealed class MervAfterCurrentBoundBodyTests
     static byte[] Delete(ushort view=9)=>new byte[]{1,0,1,1,0}.Concat(BitConverter.GetBytes(view)).ToArray();
     static OwnViewLifeSnapshot Stream(params byte[][] sections){var log=new OwnViewLifeLog();for(int i=0;i<sections.Length;i++)log.Observe(false,sections[i],i,WireFormat.FindCreations(sections[i]));return log.Snapshot();}
     static MervAfterCurrentBoundBody.Result Observe(params byte[][] sections){var s=State();return MervAfterCurrentBoundBody.Require(Stream(sections),MervAfterCurrentBoundBody.Capture(s,1),s);}
+    [Theory][InlineData(1)][InlineData(2)]public void NativeBoundPresentationRemainsBoundAcrossSupportedCheckpointVersions(int version)
+    {
+        var state=State();state.Version=version;string raw=System.Text.Json.JsonSerializer.Serialize(state,new System.Text.Json.JsonSerializerOptions{IncludeFields=true});
+        var current=MervAfterCurrentBoundBody.Require(Stream(Own(),Birth()),MervAfterCurrentBoundBody.Capture(state,1),state);
+        Assert.Equal(Source,current.StaticBinding);Assert.Null(state.Objects[0].OpenFloor);
+        Assert.Equal(raw,System.Text.Json.JsonSerializer.Serialize(state,new System.Text.Json.JsonSerializerOptions{IncludeFields=true}));
+    }
     [Fact]public void Actual326SerializerHeaderRequiresItsExactNativeBindingPoseAndInstance()
     {
         var birth=Birth();Assert.Equal((byte)8,birth[2]);var result=Observe(Own(),birth);

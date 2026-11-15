@@ -192,7 +192,7 @@ namespace hds
 
             // No layout RNG is consumed between site choice and object placement. Materialize the
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
-            // NPC-only replay owns no object choices/RNG; fresh paths retain source-pool preparation.
+            // NPC-only replay owns no object choices/RNG; fresh paths retain249 source-pool preparation.
             var objectChoices=prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
@@ -943,6 +943,8 @@ namespace hds
             var witness=progress.ElevatorFor(site);
             uint floorKey=witness?.FloorKey??site.elevatorDoor.mxoStaticId;
             double floorY=witness==null?site.elevatorDoor.pos_y:witness.Floor[1];
+            var npcFloor=MissionNpcInteriorAdmission.ForSite(progress,site);
+            if(npcFloor!=null){floorKey=MissionNpcInteriorPlanning.ReadRaw(npcFloor.Floor.RawDoorJson).mxoStaticId;floorY=npcFloor.Floor.Position[1];}
             return used.metrId==site.elevatorDoor.metrId && used.mxoStaticId==floorKey && Math.Abs(y-floorY)<200 &&
                 MissionRuntime.ReadyExitEscort(client,progress,x,y,z);
         }

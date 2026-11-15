@@ -13,7 +13,9 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.True(MissionNpcInteriorAdmission.Replay(c,p,2,new[]{site},provider,out var replay,out why),why);
         Assert.Null(replay.Selected.Random);Assert.Same(selected,replay.Pending);int reads=provider.Reads;
         p.NextPhase();replay.RequireStaging(c);
-        Assert.Empty(MissionStaging.StageObjectChoices(p.mission.phases[2],replay.Selected.Site,replay.Selected.Random,replay));
+        var replayRandom=new CountingRandom(724);
+        Assert.Empty(MissionStaging.StageSourceChoices(p.mission.phases[2],replay.Selected.Site,replayRandom,replay,99));
+        Assert.Equal(0,replayRandom.Draws);
         Assert.Equal(reads,provider.Reads);Assert.Same(selected,p.npcInteriorPending);Assert.Equal(2,p.phaseIndex);
     }
     private sealed class CountingRandom : Random
@@ -28,9 +30,24 @@ public partial class MissionNpcInteriorCheckpointTests
         var prepared=Prepared();var p=prepared.Progress;var c=Client(p);var site=prepared.Site;site.containers.Add(Wood());site.objectSpots.Add(Marker());
         var expected=new CountingRandom(724);var actual=new CountingRandom(724);
         var plan=new MissionNpcInteriorAdmission.Plan(c,p,2,new MissionStaging.SiteSelection(site,actual),adopted?prepared.Pending:null!);
-        Assert.False(plan.Replayed);Assert.Empty(MissionStaging.PrepareObjectChoices(p.mission.phases[2],site,expected));
-        Assert.Empty(MissionStaging.StageObjectChoices(p.mission.phases[2],site,actual,plan));
+        Assert.False(plan.Replayed);Assert.Empty(MissionStaging.PrepareSourcePoolChoices(p.mission.phases[2],site,expected,0));
+        Assert.Empty(MissionStaging.StageSourceChoices(p.mission.phases[2],site,actual,plan,0));
         Assert.True(actual.Draws>0);Assert.Equal(expected.Draws,actual.Draws);Assert.Equal(expected.Next(),actual.Next());
+    }
+    [Fact] public void ExitEscortUsesTheSameOwnedNpcFloorAndRefusesConflictingHistory()
+    {
+        var prepared=Prepared();var p=prepared.Progress;p.NextPhase();p.site=prepared.Site;p.sites.Add(p.site);
+        var witness=prepared.Pending.Witness;p.npcInteriorResolvedPhase=2;p.npcInteriorWitnesses[2]=witness;
+        p.Phase.missionObjectives.Add(new MissionObjective{goal=1,type=MissionGoalType.Escort,npcId=6,escortTo="exit"});p.following.Add(6);
+        var c=Client(p);var floor=witness.Floor.Position;var mob=new Mob();mob.missionNpcId=6;mob.setHealthM(100);mob.setHealthC(100);
+        mob.setXPos(floor[0]);mob.setYPos(floor[1]-50);mob.setZPos(floor[2]);c.playerData.missionMobs.Add(mob);
+        var used=MissionNpcInteriorPlanning.ReadRaw(witness.Floor.RawDoorJson);
+        Assert.True(MissionStaging.ExitEscortRide(c,p,p.site,used,floor[0],floor[1]-50,floor[2]));
+        // Corrupted cached history must refuse through the existing authority, never guess legacy raw pose.
+        var changed=(double[])floor.Clone();changed[1]++;
+        var other=new MissionNpcInteriorEntry(witness.Floor.RawDoorJson,witness.Floor.EvidenceDigest,witness.Floor.Quaternion,witness.Floor.Node,changed,witness.Floor.Standing);
+        p.npcInteriorWitnesses[1]=new MissionNpcInteriorWitness(witness.Version,witness.Kind,witness.Selection,other,witness.Lobby,witness.Actors,witness.Doors);
+        Assert.Throws<MissionCheckpointException>(()=>MissionStaging.ExitEscortRide(c,p,p.site,used,floor[0],floor[1]-50,floor[2]));
     }
     [Fact] public void RuntimePostAdvanceGuardIsDistinctAndRequiresExactPublishedSiteWitness()
     {

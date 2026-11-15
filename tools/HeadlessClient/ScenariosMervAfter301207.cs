@@ -88,13 +88,15 @@ public static partial class Scenarios
         async Task<ViewCreation> CurrentNpc(XElement npc,int start,bool corpse=false)
         {
             ushort id=ushort.Parse((string)npc.Attribute("id")!);var checkpoint=await Saved();
+            Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,checkpoint),"NPC belongs to the actual accepted owner");
             Check.Equal(expectedMission,checkpoint.Mission,"NPC belongs to the currently selected mission");Check.Equal(expectedPhase,checkpoint.Phase,"NPC belongs to the actual current phase snapshot");
             var owned=checkpoint.Mobs.Single(m=>m.Npc==id&&(corpse||!m.Dead));
+            await MervAfterNpcRoute(context,p,checkpoint,id,evidence);
             await MoveForMissionTest(p,owned.X+100,owned.Y,owned.Z);
             var scope=MervAfterCurrentNpc.Capture(checkpoint,id);MervAfterCurrentNpc.CurrentView? observed=null;
             await p.WaitUntilAsync(()=>
             {
-                try{observed=MervAfterCurrentNpc.Require(p.World.CurrentOwnViewLife(),scope,Saved().GetAwaiter().GetResult());return true;}
+                try{var current=Saved().GetAwaiter().GetResult();Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,current)&&current.Phase==expectedPhase,"NPC wait keeps accepted phase owner");observed=MervAfterCurrentNpc.Require(p.World.CurrentOwnViewLife(),scope,current);return true;}
                 catch(InvalidDataException){return false;}
             },"Exact current own-life NPC generation/latest pose/side/UUID "+id,TimeSpan.FromSeconds(12));
             var view=observed!.View;var generation=(sessions.Count,view.ViewId,view.SpawnId);
@@ -171,16 +173,16 @@ public static partial class Scenarios
                     var beforeRows=await ItemRows(6827);var ownedBefore=MervAfterProgressProof.RequireOwnedItem(beforeRows,p.CharId,6827,before.Items[6827]);
                     evidence.Add(new{Step=step,Operation="actual-owned-parts-before-logout",Rows=beforeRows,Owned=ownedBefore});
                     string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
-                    var account=await Account();Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();await Task.Delay(TimeSpan.FromSeconds(33));
+                    var account=await Account();Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();var carryWait=System.Diagnostics.Stopwatch.StartNew();await Task.Delay(TimeSpan.FromSeconds(33));double carryWaitSeconds=carryWait.Elapsed.TotalSeconds;
                     p=await HeadlessPlayer.LoginAsync(context.Server.Address,username,handle);sessions.Add(p);await p.EnterWorldAsync();p.SendRpc("0c 01");p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
                     CaptureRestoredBaselines();var after=await Saved();Check.Equal(before.Identity,after.Identity,"Carry identity survives relog");Check.Equal(before.Started,after.Started,"Carry Started survives relog");
                     Check.Equal(before.Mission,after.Mission,"Selected carry mission survives relog");
-                    Check.Equal(System.Text.Json.JsonSerializer.Serialize(new{before.SiteDoors,before.OpenFloorSites,before.OpenFloorCurrentSiteIndex,before.EverDone},fields),System.Text.Json.JsonSerializer.Serialize(new{after.SiteDoors,after.OpenFloorSites,after.OpenFloorCurrentSiteIndex,after.EverDone},fields),"Exact admitted site and earned goal history survives carry relog");
+                    Check.Equal(System.Text.Json.JsonSerializer.Serialize(new{before.SiteDoors,before.OpenFloorSites,before.OpenFloorCurrentSiteIndex,before.EverDone,Npc=before.NpcInterior.ValueKind==System.Text.Json.JsonValueKind.Undefined?null:before.NpcInterior.GetRawText()},fields),System.Text.Json.JsonSerializer.Serialize(new{after.SiteDoors,after.OpenFloorSites,after.OpenFloorCurrentSiteIndex,after.EverDone,Npc=after.NpcInterior.ValueKind==System.Text.Json.JsonValueKind.Undefined?null:after.NpcInterior.GetRawText()},fields),"Exact admitted site and earned goal history survives carry relog");
                     Check.Equal(before.Phase,after.Phase,"Current delivery phase survives relog");Check.Equal(before.Items[6827],after.Items[6827],"Computer Parts exact slot survives relog");Check.Equal(account,await Account(),"Relog pays no reward");
                     Check.That(MervAfterProgressProof.Owns(acceptance!,after),"Restored carry retains actual acceptance instance too");
                     var afterRows=await ItemRows(6827);var ownedAfter=MervAfterProgressProof.RequireOwnedItem(afterRows,p.CharId,6827,after.Items[6827]);
                     Check.Equal(ownedBefore,ownedAfter,"Actual inventory character/item/slot/count survives relog");
-                    evidence.Add(new{Step=step,Operation="actual-owned-parts-after-login",Rows=afterRows,Owned=ownedAfter});
+                    evidence.Add(new{Step=step,Operation="actual-owned-parts-after-login",WaitSeconds=carryWaitSeconds,Rows=afterRows,Owned=ownedAfter});
                     Check.Equal(System.Text.Json.JsonSerializer.Serialize(before.Objects,fields),System.Text.Json.JsonSerializer.Serialize(after.Objects,fields),"Admitted fixed witnesses survive relog");
                     await Barrier();End();
                     carryRelogged=true;rpcStart=0;viewsStart=0;sectionsStart=0;listStart=0;ends=0;
@@ -197,7 +199,7 @@ public static partial class Scenarios
                     var preGoal=await Account();Begin((string)goal.Attribute("type")!);
                     evidence.Add(new{Step=step,PreGoalXp=preGoal.Xp,PreGoalInfo=preGoal.Info,OperationStart=operationStart});
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;
-                    Console.WriteLine($"  Prima{id} phase{phase+1} goal{number} {type}");
+                    Console.WriteLine($"  Merv{id} phase{phase+1} goal{number} {type}");
                     XElement Npc(string key)=>mission.Elements("npc").Single(n=>(string)n.Attribute("id")! == key);
                     switch(type)
                     {
@@ -270,16 +272,18 @@ public static partial class Scenarios
                         {
                             for(int attempts=0;!Done(number)&&attempts<100;attempts++)
                             {
-                                var state=await Saved();var owned=state.Mobs.LastOrDefault(m=>!m.Friendly&&!m.Dead);
+                                var state=await Saved();Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,state)&&state.Phase==expectedPhase,"DefeatAll keeps current accepted stage");
+                                var named=mission.Elements("npc").Where(n=>(int?)n.Attribute("at")==phase+1).Select(n=>checked((ushort)(int)n.Attribute("id")!)).ToArray();
+                                var owned=MervAfterCurrentNpc.CurrentHostiles(state,named).LastOrDefault();
                                 if(owned==null){await Task.Delay(250);continue;}
                                 var target=await CurrentNpc(new XElement("npc",new XAttribute("id",owned.Npc)),viewsStart);
                                 await DefeatMissionNpc(p,target);killed.Add((target.ViewId,target.SpawnId));
                             }
                             break;
                         }
-                        default:throw new Exception("Unsupported Prima goal "+type);
+                        default:throw new Exception("Unsupported Merv goal "+type);
                     }
-                    await p.WaitUntilAsync(()=>Done(number),$"Prima{id} phase{phase+1} actual goal{number} done",TimeSpan.FromSeconds(20));
+                    await p.WaitUntilAsync(()=>Done(number),$"Merv{id} phase{phase+1} actual goal{number} done",TimeSpan.FromSeconds(20));
                     await Barrier();End();
                     if(type=="Give"&&(uint?)goal.Attribute("item")==6827)
                     {
@@ -316,7 +320,7 @@ public static partial class Scenarios
         var completedAccount=await Account();Check.Equal((long)ledger.Experience,completedAccount.Xp,"Independent received XP ledger equals durable SQL");Check.Equal((long)ledger.Information,completedAccount.Info,"Independent received corpse/mission cash ledger equals durable SQL");evidence.Add(new{Step="earned-ledger",Ledger=ledger});
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6827"),"Delivered parts no longer owned");
         step="completed-relog";string completedUser=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={p.CharId}");
-        Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();await Task.Delay(TimeSpan.FromSeconds(33));
+        Begin("Relog");p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();var carryWait=System.Diagnostics.Stopwatch.StartNew();await Task.Delay(TimeSpan.FromSeconds(33));double carryWaitSeconds=carryWait.Elapsed.TotalSeconds;
         p=await HeadlessPlayer.LoginAsync(context.Server.Address,completedUser,handle);sessions.Add(p);await p.EnterWorldAsync();p.SendRpc("0c 01");await Barrier();
         CaptureRestoredBaselines();End();var finalLedger=MervRewardLedger.Reconcile(Wire(),ledgerOperations,baseline.Experience,baseline.Information,ids.Select(id=>MervAfter301207Fixture.Payouts[id].Xp).ToArray(),ids.Select(id=>MervAfter301207Fixture.Payouts[id].Info).ToArray(),restoredBaselines);
         Check.Equal(ledger.Experience,finalLedger.Experience,"Completed relog preserves independently reconciled XP baseline");Check.Equal(ledger.Information,finalLedger.Information,"Completed relog preserves independently reconciled cash baseline");evidence.Add(new{Step="final-relog-ledger",Ledger=finalLedger});

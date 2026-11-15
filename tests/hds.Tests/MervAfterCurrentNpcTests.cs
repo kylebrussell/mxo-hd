@@ -24,6 +24,13 @@ public sealed class MervAfterCurrentNpcTests
     static byte[] Delete()=>new byte[]{1,0,1,1,0,9,0};
     static OwnViewLifeSnapshot Stream(params byte[][] rows){var log=new OwnViewLifeLog();for(int i=0;i<rows.Length;i++)log.Observe(false,rows[i],i,WireFormat.FindCreations(rows[i]));return log.Snapshot();}
     static MervAfterCurrentNpc.CurrentView Observe(MissionProgress.SavedState state,params byte[][] rows)=>MervAfterCurrentNpc.Require(Stream(rows),MervAfterCurrentNpc.Capture(state,6),state);
+    [Fact]public void CurrentStageHostilesUseMembershipOrAuthoredStageRatherThanWirePhase()
+    {
+        var state=new MissionProgress.SavedState{Phase=2,Mobs=new(){
+            new(){Npc=1,Phase=0,Hostile=true,Health=10},new(){Npc=2,Phase=0,Hostile=false,Health=10},
+            new(){Npc=3,Phase=0,Hostile=false,Health=10},new(){Npc=4,Phase=0,Hostile=true,Friendly=true,Health=10},new(){Npc=5,Phase=0,Hostile=true,Dead=true,Health=0}}};
+        Assert.Equal(new ushort[]{1,2},MervAfterCurrentNpc.CurrentHostiles(state,new ushort[]{2}).Select(m=>m.Npc));
+    }
     [Fact]public void ScriptedHostileWithHostileMembershipFalseAndFriendlyWithoutEnemyFlagAreValid()
     {
         var hostile=State();Assert.False(hostile.Mobs[0].Hostile);Assert.Equal((ushort)9,Observe(hostile,Own(),Birth()).View.ViewId);

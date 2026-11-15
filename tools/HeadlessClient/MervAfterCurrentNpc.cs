@@ -13,6 +13,7 @@ public static class MervAfterCurrentNpc
             : "SQL accepted mission/NPC UUID + current-view corroboration and exact wire instance key";
     }
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};
+    public static MissionProgress.SavedMob[] CurrentHostiles(MissionProgress.SavedState state,IReadOnlyCollection<ushort> currentAuthoredNpcs) => state.Mobs.Where(m=>!m.Friendly&&!m.Dead&&m.Health>0&&(m.Hostile||currentAuthoredNpcs.Contains(m.Npc))).ToArray();
     static MissionProgress.SavedMob Owned(MissionProgress.SavedState state,ushort npc)
     {
         if(state.Version is not (1 or 2)||state.Mission<=0||state.Instance==0||state.Phase<0||state.Started<=0||
