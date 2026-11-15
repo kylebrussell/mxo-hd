@@ -20,7 +20,7 @@ namespace hds
     {
         internal static readonly MissionNpcInteriorEvidenceProvider Instance = new MissionNpcInteriorEvidenceProvider();
         public E Evidence(ushort world, ushort sector) => E.LoadAudited(DataLoader.DataPath("mission_interior_evidence", world.ToString(System.Globalization.CultureInfo.InvariantCulture)), world, sector);
-        public E SavedEvidence(ushort world, ushort sector, string digest) => E.LoadForDigest(DataLoader.DataPath("mission_interior_evidence",world.ToString(System.Globalization.CultureInfo.InvariantCulture)),world,sector,digest);
+        public E SavedEvidence(ushort world, ushort sector, string digest) => MissionNpcCoverage.SavedEvidence(world,sector,digest);
         public StaticWorldObject[] Markers(ushort world, ushort sector) => DataLoader.getInstance().WorldObjectsDB.Where(o => o.metrId == world && o.sectorID == sector && o.type != null && o.type.Length >= 2 && MissionSites.Goid(o) == 19).ToArray();
         public StaticWorldObject Door(ushort world, uint key) => DataLoader.getInstance().getObjectValues(key, world);
         public MissionOpenFloorEntry.Result Entry(ushort world, G.Position door, double centreX, double centreZ, string evidence) => MissionOpenFloorEntry.Calculate(world, door, centreX, centreZ, evidence);
@@ -145,7 +145,7 @@ namespace hds
             return false;
         }
         internal static bool Prepare(WorldClient client, MissionProgress target, int phase, MissionSite selectedSite, IMissionNpcInteriorEvidenceProvider provider,
-            out Plan plan, out MissionNpcInteriorPending selected, out string refusal)
+            out Plan plan, out MissionNpcInteriorPending selected, out string refusal, MissionNpcDomainCertificates.Binding domain=null)
         {
             plan = null; selected = null; refusal = "StaleNpcBeforeState";
             if (client?.playerData == null || client.TransportFence == null || target == null) return false;
@@ -167,6 +167,8 @@ namespace hds
                 if (!floor.TryBuildingEntry(selectedSite.elevatorDoor,siteMarkers,initialRoles.Length,(native,x,z) => provider.Entry(selectedSite.metrId,native,x,z,"authored building-side NPC entry"),out E.Entry floorEntry,out uint carPrefab,out refusal) ||
                     !lobby.TryLobbyEntry(selectedSite.lobbyDoor,carPrefab,(native,x,z) => provider.Entry(selectedSite.metrId,native,x,z,"independent authored street-side NPC lobby entry"),out E.Entry lobbyEntry,out refusal))
                 { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
+                if(domain!=null&&!domain.Matches(selectedSite,initialRoles.Length,floor,floorEntry,lobby,lobbyEntry))
+                {refusal="ChangedCertifiedNpcContext";selected=selected.WithRefusal(refusal);return RefuseBefore(before,client,ref selected,ref refusal);}
                 if (!MissionNpcRoomRoles.Select(target, phase, selectedSite, markers, floor, floorEntry, provider, out selection, out refusal))
                 { selected = selected.WithRefusal(refusal); return RefuseBefore(before, client, ref selected, ref refusal); }
                 selected = new MissionNpcInteriorPending(2, Kind, selection, null, "NpcRoomRolesNotYetCommitted");
