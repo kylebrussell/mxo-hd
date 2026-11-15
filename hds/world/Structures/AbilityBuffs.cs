@@ -535,12 +535,13 @@ namespace hds
             TickActiveDrain(client,active);
         }
 
-        // Every currently produced drain has this callback-free stat-toggle termination contract.
-        internal static bool PlainDrain(Buff buff) => buff!=null && buff.DrainAmount>0 && buff.DrainSeconds>0 &&
-            buff.Seconds==0 && buff.Exclusive && buff.Toggle && buff.Family==0 && buff.RefundIS==0 && buff.TermHeal==0 &&
-            buff.TermSweepChance==0 && string.IsNullOrEmpty(buff.HealthChangedProc) && buff.HealthChangedValue==0 &&
+        // Health-change listeners end by exact membership removal; none of these termination paths invokes that listener.
+        internal static bool PureDrainTermination(Buff buff) => buff!=null && buff.DrainAmount>0 && buff.DrainSeconds>0 &&
+            buff.Seconds==0 && buff.Exclusive && buff.Toggle && buff.RefundIS==0 && buff.TermHeal==0 &&
+            buff.TermSweepChance==0 &&
             buff.MovementScale==0 && buff.DissemblingType==0 && buff.EffectId==0 && !buff.EvadeShield &&
-            buff.Modifiers!=null && buff.Modifiers.All(m=>m.Kind==KindStat && m.Stat!=106 && m.Stat!=109 && m.Stat!=1056 && m.Stat!=1057);
+            buff.Modifiers!=null && buff.Modifiers.All(m=>(m.Kind==KindStat || m.Kind==TempMods.KindFx) &&
+                (m.Kind!=KindStat || m.Stat!=106 && m.Stat!=109 && m.Stat!=1056 && m.Stat!=1057));
 
         internal static void TickActiveDrain(WorldClient client,Active active,Action beforeClaim=null,Action beforePublication=null)
         {
@@ -554,7 +555,7 @@ namespace hds
                 lock(data.activeBuffs)
                 {
                     if(!lease.Current || !data.activeBuffs.TryGetValue(active.AbilityId,out var current) || !ReferenceEquals(current,active))return;
-                    var buff=active.Definition;if(!PlainDrain(buff))return;
+                    var buff=active.Definition;if(!PureDrainTermination(buff))return;
                     ushort available=NumericalUtils.ByteArrayToUint16(lease.Player.InnerStrengthAvailable.getValue(),1);
                     shortfall=data.isDead || data.duelDeath || available<buff.DrainAmount;
                     if(shortfall)

@@ -109,13 +109,26 @@ public class BuffDrainLifetimeTests
         Assert.Equal(shortfall?0:afterClaim?99:100,NumericalUtils.ByteArrayToUint16(oldPlayer.InnerStrengthAvailable.getValue(),1));
         AbilityBuffs.TickActiveDrain(c,old);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
     }
-    [Fact]public void EveryCurrentlyProducedDrainHasTheCheckedCallbackFreeTerminationContract()
+    [Fact]public void EveryCurrentlyProducedDrainHasTheCheckedPureTerminationContract()
     {
         var c=Client();using var owner=new BuffDrainTestOwner(c);var found=new List<ushort>();
         foreach(var id in AbilityCatalog.All.Keys)
             if(AbilityScaledBuffs.Resolve(c,id,out var buff) && buff.DrainAmount>0)
-            {found.Add(id);Assert.True(AbilityBuffs.PlainDrain(buff),"Unhandled draining definition "+id);}
-        Assert.Equal(new ushort[]{13,16,442},found.OrderBy(x=>x));
+            {found.Add(id);Assert.True(AbilityBuffs.PureDrainTermination(buff),"Unhandled draining definition "+id);}
+        Assert.Equal(new ushort[]{13,16,442,941,943},found.OrderBy(x=>x));
+    }
+    [Theory][InlineData(941,7)][InlineData(943,6)]
+    public void HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords(ushort id,int cost)
+    {
+        var c=Client();using var owner=new BuffDrainTestOwner(c);Assert.True(AbilityBuffs.Apply(c,id));
+        var active=c.playerData.activeBuffs[id];Assert.False(string.IsNullOrEmpty(active.Definition.HealthChangedProc));
+        Assert.Equal(cost,active.Definition.DrainAmount);
+        AbilityBuffs.TickActiveDrain(c,active);Assert.Equal(100-cost,AbilityHandler.CurrentInnerStrength(c));
+        c.playerInstance.InnerStrengthAvailable.setValue((ushort)0);c.messageQueue.RPCMessagesQueue.Clear();
+        AbilityBuffs.TickActiveDrain(c,active);Assert.False(AbilityBuffs.IsActive(c,id));
+        foreach(var record in AbilityBuffs.BuildRecords(id,active.Definition,active.RecordIds,true))
+            Assert.Contains(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),m=>m.content.AsSpan(1).SequenceEqual(record));
+        Assert.DoesNotContain(c.playerData.activeBuffs.Values,a=>ReferenceEquals(a,active));
     }
     [Fact]public void CallbackBearingDrainCannotSilentlyEnterThePureTerminationFamily()
     {
