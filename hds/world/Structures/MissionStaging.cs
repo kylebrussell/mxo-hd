@@ -857,6 +857,7 @@ namespace hds
             }
 
             bool current = site == progress.site && !progress.waitingForExit;
+            if (current && ExitEscortRide(client,progress,site,used,px,py,pz)) current=false;
             StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
             var targetWitness=progress.ElevatorFor(site);
             double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
@@ -882,6 +883,19 @@ namespace hds
                 if(committed)MissionTickQaDiagnostics.Arm(client,progress);
             });
             return true;
+        }
+
+        // The exit goal cannot complete until the downride commits. Permit that ride while the
+        // goal is still open, but only from its current generated floor with its actual followers.
+        internal static bool ExitEscortRide(WorldClient client,MissionProgress progress,MissionSite site,StaticWorldObject used,
+            double x,double y,double z)
+        {
+            if(!ReferenceEquals(progress.site,site)||!progress.UsesGeneratedDeparture||progress.waitingForExit||used==null)return false;
+            var witness=progress.ElevatorFor(site);
+            uint floorKey=witness?.FloorKey??site.elevatorDoor.mxoStaticId;
+            double floorY=witness==null?site.elevatorDoor.pos_y:witness.Floor[1];
+            return used.metrId==site.elevatorDoor.metrId && used.mxoStaticId==floorKey && Math.Abs(y-floorY)<200 &&
+                MissionRuntime.ReadyExitEscort(client,progress,x,y,z);
         }
 
         public const string ElevatorUpLine = "I've hacked into the elevator control system. Sending you to the right floor.";
