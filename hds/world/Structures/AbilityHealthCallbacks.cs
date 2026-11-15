@@ -195,14 +195,14 @@ namespace hds
                 foreach(var target in AbilityHostile.PlayersInArea(source,x,y,z,radius))
                 {
                     PvpFlag.OnFightStarts(source,true);
-                    int damage=Sample(effect,Roll15());
+                    int damage=PunishingBlows.Player(source,target,Sample(effect,Roll15()));
                     target.messageQueue.addRpcMessage(AbilityMessages.Damage(false,effect,TimedEffects.PlayerName(source),TimedEffects.PlayerName(target),damage,0));
                     source.messageQueue.addRpcMessage(AbilityMessages.Damage(true,effect,TimedEffects.PlayerName(source),TimedEffects.PlayerName(target),damage,0));
                     if(PvpCombat.Damage(target,damage,0x28000a43)) PvpCombat.Defeated(target,source);
                     source.FlushQueue();
                 }
                 foreach(var (mob,view) in AbilityHostile.MobsInArea(source,x,y,z,radius))
-                    CombatManager.GetHandler(source).ApplyAbilityToNpc(mob,view,(ushort)Sample(effect,Roll15()),0x28000a43);
+                    CombatManager.GetHandler(source).ApplyAbilityToNpc(mob,view,PunishingBlows.Npc(source,mob,Sample(effect,Roll15())),0x28000a43);
             }
         }
 

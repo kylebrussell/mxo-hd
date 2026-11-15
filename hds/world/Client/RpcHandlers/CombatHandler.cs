@@ -302,7 +302,7 @@ namespace hds
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
                 playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
                     AbilityStats.Player(player, 1142), AbilityStats.Toughness(mob, false));
-                playerDamage = (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier());
+                playerDamage = PunishingBlows.Npc(player, mob, (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier()));
                 npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer,
                     CombatTacticType.Normal, AbilityStats.Npc(mob, 1142), AbilityStats.Toughness(player, false));
                 playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
@@ -1151,7 +1151,7 @@ namespace hds
             if (hit)
             {
                 // Staggered adds its share, as in close combat. Retail's gun damage has no distance falloff.
-                damage = (UInt16)Math.Round(shot.Damage * target.IncomingDamageMultiplier());
+                damage = PunishingBlows.Npc(player, target, (UInt16)Math.Round(shot.Damage * target.IncomingDamageMultiplier()));
                 died = session.ApplyDamageToDefender(damage, 0);
             }
             Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage + " (" + shot.Absorbed + " absorbed)" : "miss")} (roll {shot.AttackRoll} vs {shot.DefenseRoll})");
