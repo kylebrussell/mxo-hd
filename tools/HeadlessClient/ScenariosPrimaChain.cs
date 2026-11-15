@@ -14,20 +14,35 @@ public static partial class Scenarios
     }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,int? actorLevel=null)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,bool strictFollowupApproach=false,int? actorLevel=null)
     {
-        var p=await context.AddPlayerAsync(PrimaActorSeed(handle,org,startX,startZ,actorLevel));
-        await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
-        Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
-        if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
-        Exception? scenarioFailure=null;
+        var seed=PrimaActorSeed(handle,org,startX,startZ,actorLevel);
+        // Opt-in213 profile validates before AddPlayerAsync can mutate SQL or start Margin.
+        if(strictFollowupApproach)seed=MervFollowupFixture.BeforeMargin(seed,ids,prerequisites,MervFollowupFixture.NextMission);
+        var p=await context.AddPlayerAsync(seed);
+        if(!strictFollowupApproach)
+        {
+            await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL,missionId INT NOT NULL,completions INT NOT NULL DEFAULT 1,PRIMARY KEY(charId,missionId))");
+            Check.That(!ids.Intersect(prerequisites).Any(),"Selected missions are never prerequisite grants");
+            if(prerequisites.Length>0)await context.Database.ExecuteAsync("INSERT IGNORE INTO char_missions(charId,missionId) VALUES "+string.Join(",",prerequisites.Select(id=>$"({p.CharId},{id})")));
+        }
+        Exception? scenarioFailure=null;HeadlessPlayer? relogged=null;object? relogProof=null;string step="entry";var carriedEvidence=new List<object>();var phaseCheckpoints=new List<object>();
         try
         {
+        if(strictFollowupApproach)
+        {
+            await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId} AND slot<520");
+            await LoadAbilitiesAsync(context,p,2,17,45,1006,77);
+        }
         await p.EnterWorldAsync();
         foreach(int id in ids)
         {
+            step="mission-"+id;
+            var carried=new Dictionary<ushort,CarriedMissionNpcFixture.Token>();
             var mission=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
                 .Single(m=>(int)m.Attribute("id")! == id);
+            Mission? authoredExit=null;
+            if(strictFollowupApproach){var definition=new System.Xml.XmlDocument();definition.LoadXml(mission.ToString());authoredExit=MissionXml.Parse(definition.DocumentElement!);}
             int logStart=context.Server.DebugLog().Length;int ends=p.Received("80 a2 00").Count;
             int listStart=p.World.RpcSnapshot().Count;
             p.SkipReceived();p.SendRpc($"80 94 05 00 {org:x2}");await p.WaitForRpcAsync("80 97 05 00");
@@ -43,10 +58,20 @@ public static partial class Scenarios
             int phase=0;
             foreach(var area in mission.Elements("phase"))
             {
+                step=$"mission-{id}-phase-{phase+1}";
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
                 bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
-                await EnterMissionArea(context,p);
+                if(strictFollowupApproach)await MervFollowupRide(context,p,true,phaseCheckpoints,id,phase);
+                else await EnterMissionArea(context,p);
+                if(checkpointRecreatedCarriedNpcs)
+                {
+                    string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
+                    using var active=System.Text.Json.JsonDocument.Parse(checkpoint);
+                    Check.Equal(id,active.RootElement.GetProperty("Mission").GetInt32(),"Actual phase checkpoint mission");
+                    Check.Equal(phase,active.RootElement.GetProperty("Phase").GetInt32(),"Actual phase checkpoint index");
+                    phaseCheckpoints.Add(new{Mission=id,Phase=phase,Checkpoint=checkpoint});
+                }
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
                 while(goals.Any(g=>!Done((int)g.Attribute("goal")!)))
                 {
@@ -55,6 +80,7 @@ public static partial class Scenarios
                         .OrderBy(g=>(int?)g.Attribute("optional")==1?0:1).FirstOrDefault();
                     Check.That(goal!=null,$"Mission{id} phase{phase+1} has an eligible remaining goal");
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;
+                    step=$"mission-{id}-phase-{phase+1}-goal-{number}-{type}";
                     Console.WriteLine($"  Prima{id} phase{phase+1} goal{number} {type}");
                     XElement Npc(string key)=>mission.Elements("npc").Single(n=>(string)n.Attribute("id")! == key);
                     switch(type)
@@ -63,7 +89,32 @@ public static partial class Scenarios
                         {
                             string reference=(string)goal.Attribute("npc")!;
                             var npc=Npc(type=="Loot"?reference.Split(',')[0]:reference);
-                            var view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1);
+                            ViewCreation view;
+                            if(checkpointRecreatedCarriedNpcs && (int?)npc.Attribute("at") is int introduced && introduced<phase+1)
+                            {
+                                ushort npcId=ushort.Parse((string)npc.Attribute("id")!);
+                                Check.That(carried.TryGetValue(npcId,out var token),"Carried NPC has an earlier actual following identity");
+                                string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
+                                var point=CarriedMissionNpcFixture.Resolve(checkpoint,token!,phase,type=="Get");
+                                await MoveForMissionTest(p,point.X+100,point.Y,point.Z);
+                                CarriedMissionNpcFixture.CurrentView? observed=null;
+                                if(strictFollowupApproach)
+                                {
+                                    // Resolve the owned checkpoint again after movement; followers may have moved since birth.
+                                    checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
+                                    point=CarriedMissionNpcFixture.Resolve(checkpoint,token!,phase,type=="Get");
+                                    await p.WaitUntilAsync(()=>
+                                    {
+                                        try{observed=CarriedMissionNpcFixture.CurrentLiveView(p.World.CurrentOwnViewLife(),token!,checkpoint,phase,type=="Get",sectionsStart);return true;}
+                                        catch(InvalidDataException){return false;}
+                                    },"latest current-generation carried NPC XYZ from actual wire",TimeSpan.FromSeconds(10));
+                                    view=observed!.View;
+                                }
+                                else view=CarriedMissionNpcFixture.RecreatedView(p.World.CreationSnapshot(),viewsStart,token!);
+                                carriedEvidence.Add(new{Operation="resolve",Checkpoint=checkpoint,Token=token,Point=point,Observed=observed,View=view.ViewId,Spawn=view.SpawnId,Phase=phase});
+                                Console.WriteLine($"  carried NPC{npcId} current-phase view{view.ViewId}/spawn{view.SpawnId} from owned checkpoint");
+                            }
+                            else view=await PrimaNpc(context,p,npc,viewsStart,(int?)npc.Attribute("at")==phase+1,strictFollowupApproach);
                             bool hostile=view.Attributes.TryGetValue("IsEnemy",out var enemy) && enemy[0]!=0;
                             var key=(view.ViewId,view.SpawnId);
                             if(type=="Defeat" || type=="Loot" && !killed.Contains(key) &&
@@ -89,7 +140,7 @@ public static partial class Scenarios
                         case "Search":case "Use":case "Put":
                         {
                             int objectId=(int)goal.Attribute("object")!;uint item=(uint?)goal.Attribute("item")??0;
-                            var view=await ZionObject(context,p,objectId);
+                            var view=strictFollowupApproach?await MervFollowupObject(context,p,objectId,viewsStart,phaseCheckpoints):await ZionObject(context,p,objectId);
                             if(!MissionStaging.IsClickable(view.Goid))
                             {await p.WaitUntilAsync(()=>Done(number),"nonclickable mission object proximity",TimeSpan.FromSeconds(10));break;}
                             bool computer=MissionStaging.IsComputer(view.Goid);
@@ -99,7 +150,7 @@ public static partial class Scenarios
                             {
                                 uint CurrentState()
                                 {
-                                    uint state=BitConverter.ToUInt32(view.Attributes["CurrentState"]);
+                                    uint state=strictFollowupApproach?MervFollowupApproachFixture.InitialState(view):BitConverter.ToUInt32(view.Attributes["CurrentState"]);
                                     byte[] prefix=WireFormat.FromHex($"{Le(view.ViewId)} 01 08");
                                     foreach(byte[] section in p.World.ViewSnapshot().Skip(sectionsStart))
                                         for(int at=BytePattern.IndexOf(section,prefix,0);at>=0;at=BytePattern.IndexOf(section,prefix,at+1))
@@ -127,17 +178,28 @@ public static partial class Scenarios
                         }
                         case "Escort":
                         {
+                            string to=(string?)goal.Attribute("to")??"exit";
+                            int escortIntentCursor=p.World.RpcSnapshot().Count;
+                            var exitOwner=strictFollowupApproach&&to=="exit"?await MervFollowupCurrent(context,p):null;
                             foreach(string key in ((string)goal.Attribute("npc")!).Split(','))
                             {
                                 var npc=Npc(key);
                                 if((int?)npc.Attribute("at")==phase+1)
-                                {await PrimaNpc(context,p,npc,viewsStart,true);await Task.Delay(800);}
+                                {
+                                    await PrimaNpc(context,p,npc,viewsStart,true,strictFollowupApproach);await Task.Delay(800);
+                                    ushort npcId=ushort.Parse((string)npc.Attribute("id")!);
+                                    if(checkpointRecreatedCarriedNpcs && mission.Elements("phase").Skip(phase+1).SelectMany(a=>a.Elements("objective")).Any(o=>((string?)o.Attribute("npc"))?.Split(',').Contains(key)==true))
+                                    {
+                                        string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
+                                        carried[npcId]=CarriedMissionNpcFixture.Capture(checkpoint,id,phase,npcId,(string)npc.Attribute("handle")!,true);
+                                        carriedEvidence.Add(new{Operation="capture",Checkpoint=checkpoint,Token=carried[npcId]});
+                                    }
+                                }
                             }
-                            string to=(string?)goal.Attribute("to")??"exit";
-                            if(to=="exit")await LeaveMissionArea(p);
+                            if(to=="exit") {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints,id,phase,authoredExit,number,exitOwner,escortIntentCursor);else await LeaveMissionArea(p);}
                             else if(to=="hardline")await ZionUpload(p);
-                            else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);
-                            else if(to.StartsWith("object:"))await ZionObject(context,p,int.Parse(to[7..]));
+                            else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true,strictFollowupApproach);
+                            else if(to.StartsWith("object:")) {if(strictFollowupApproach)await MervFollowupObject(context,p,int.Parse(to[7..]),viewsStart,phaseCheckpoints);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
@@ -146,7 +208,8 @@ public static partial class Scenarios
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
                             foreach(var npc in mission.Elements("npc"))names.Add((string)npc.Attribute("handle")!);
-                            List<ViewCreation> Targets()=>p.World.CreationSnapshot().Skip(viewsStart)
+                            IEnumerable<ViewCreation> CurrentTargets()=>strictFollowupApproach?MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),viewsStart):p.World.CreationSnapshot().Skip(viewsStart);
+                            List<ViewCreation> Targets()=>CurrentTargets()
                                 .Where(v=>v.Goid==599 && names.Contains(v.Name??"") && !killed.Contains((v.ViewId,v.SpawnId)) &&
                                     v.Attributes.TryGetValue("IsEnemy",out var e) && e[0]!=0 &&
                                     (!v.Attributes.TryGetValue("IsDead",out var d) || d[0]==0)).ToList();
@@ -164,49 +227,122 @@ public static partial class Scenarios
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))await LeaveMissionArea(p);
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting"))
+                {
+                    if(strictFollowupApproach)
+                    {
+                        string hex=await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId={p.CharId}");
+                        string? raw=MervFollowupCheckpointFixture.DecodeHex(hex);
+                        var actual=raw==null?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,MervFollowupFields);
+                        if(MervFollowupApproachFixture.OwnsWaitingPhase(actual,id,phase))await MervFollowupRide(context,p,false,phaseCheckpoints,id,phase);
+                        else phaseCheckpoints.Add(new{Operation="legitimate-auto-advance-before-exit",Mission=id,CompletedPhase=phase,ActualMission=actual?.Mission,ActualPhase=actual?.Phase,Checkpoint=raw});
+                    }
+                    else await LeaveMissionArea(p);
+                }
                 phase++;
                 if(phase<mission.Elements("phase").Count())
                     await p.WaitUntilAsync(()=>Regex.Matches(Log(),@"\[MISSION\] Phase \d+ at a").Count>phase,"next phase staged",TimeSpan.FromSeconds(15));
-                else await p.WaitUntilAsync(()=>p.Received("80 a2 00").Count>ends,"mission completed over wire",TimeSpan.FromSeconds(15));
+                else
+                {
+                    if(strictFollowupApproach)
+                    {
+                        await MervFollowupWaitCompletion(context,p,id,listStart);
+                    }
+                    else await p.WaitUntilAsync(()=>p.Received("80 a2 00").Count>ends,"mission completed over wire",TimeSpan.FromSeconds(15));
+                }
             }
             Check.Equal(1L,await context.Database.LongAsync($"SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId={id}"),"Selected chain completion earned exactly once");
             Check.Equal(0,p.World.Problems.Count,"Prima chain protocol problems");
         }
         Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)})"),"Every selected completion earned, not granted");
+        if(relogAfterChain)
+        {
+            step="ordinary-chain-relog";
+            string filter=$"charId={p.CharId}";
+            string before=await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE {filter}");
+            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE {filter}"),"Completed chain has no active payload");
+            string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE {filter}");
+            p.SendRpc("80 fe 00");await p.WaitForRpcAsync("80 fd");p.Dispose();
+            await Task.Delay(TimeSpan.FromSeconds(33)); // Existing ordinary session reservation cleanup, no timer override.
+            relogged=await HeadlessPlayer.LoginAsync(context.Server.Address,username,p.Handle);await relogged.EnterWorldAsync();
+            Check.That(relogged.World.CreationSnapshot().Any(v=>v.ViewId==2),"Relog actual self");relogged.SendRpc("0c 01");
+            relogged.SkipReceived();relogged.SendRpc("81 48");await relogged.WaitForRpcAsync("81 49");
+            Check.Equal(before,await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE {filter}"),"Relog creates no duplicate reward payout");
+            Check.Equal((long)ids.Length,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE {filter} AND missionId IN ({string.Join(",",ids)}) AND completions=1"),"Every earned receipt remains exactly one after relog");
+            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE {filter}"),"Relog cannot revive completed chain");
+            Check.Equal(0,relogged.Received("80 a2").Count,"Relog has no replayed completion");Check.Equal(0,relogged.World.Problems.Count,"Relog protocol problems");
+            if(strictFollowupApproach)
+            {
+                var next=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),filePattern).Select(XElement.Load)
+                    .Single(m=>(int)m.Attribute("id")! == MervFollowupFixture.NextMission);
+                int offerCursor=relogged.World.RpcSnapshot().Count;relogged.SkipReceived();relogged.SendRpc($"80 94 05 00 {org:x2}");await relogged.WaitForRpcAsync("80 97 05 00");
+                var offerRows=relogged.World.RpcSnapshot().Skip(offerCursor).Select(r=>r.Bytes).ToArray();
+                int nextIndex=MissionContactChoice.CriticalIndex(offerRows,(string)next.Attribute("title")!);
+                phaseCheckpoints.Add(new{Operation="actual-next-critical-offer-after-completed-relog",Mission=MervFollowupFixture.NextMission,Title=(string)next.Attribute("title")!,Index=nextIndex,Rpcs=offerRows.Select(Convert.ToHexString).ToArray()});
+                Check.Equal(0,relogged.World.Problems.Count,"Next offer protocol problems");
+            }
+            relogProof=new{RewardBefore=before,RewardAfter=await context.Database.ScalarAsync($"SELECT CONCAT(exp,':',cash) FROM characters WHERE {filter}"),Rpc=relogged.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=relogged.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=relogged.World.Problems.ToArray()};
+        }
+        step="complete";
         }
         catch(Exception error) {scenarioFailure=error;throw;}
         finally
         {
+            try
+            {
             if(evidenceLabel!=null)
             try
             {
                 string stem=Path.Combine(Path.GetTempPath(),"mxo-"+evidenceLabel+"-"+context.Database.Name);
                 File.WriteAllText(stem+"-debug.log",context.Server.DebugLog());
+                File.WriteAllText(stem+"-stdout.log",context.Server.FullOutput());
                 var dll=context.Server.SourceAssembly;
+                string? packetLogPath=null,packetLogSha256=null,packetLogFailure=null;
+                if(strictFollowupApproach)
+                {
+                    try
+                    {
+                        string rawPackets=InteriorAdmissionDeliveryProof.Read(Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"));
+                        packetLogPath=stem+"-PacketLog.txt";await File.WriteAllTextAsync(packetLogPath,rawPackets);
+                        packetLogSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawPackets)));
+                    }
+                    catch(Exception error){packetLogFailure=error.ToString();}
+                }
                 await File.WriteAllTextAsync(stem+".json",System.Text.Json.JsonSerializer.Serialize(new{
-                    SourceAssembly=dll,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,
+                    Passed=scenarioFailure==null&&packetLogFailure==null,Step=step,Failure=scenarioFailure?.ToString(),Database=context.Database.Name,context.Server.ProcessId,context.Server.WorkingDirectory,PacketLogPath=packetLogPath,PacketLogSha256=packetLogSha256,PacketLogFailure=packetLogFailure,SourceAssembly=dll,SourceConfiguration=new DirectoryInfo(Path.GetDirectoryName(dll)!).Parent!.Name,
                     SourceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(dll))),
-                    SelectedMissions=ids,Prerequisites=prerequisites,
+                    SelectedMissions=ids,Prerequisites=prerequisites,CarriedNpcEvidence=carriedEvidence,PhaseCheckpoints=phaseCheckpoints,Relog= relogProof,RelogFailureSession=relogged==null?null:new{Rpc=relogged.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),Views=relogged.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),Problems=relogged.World.Problems.ToArray()},
                     CurrentPayloadHex=await context.Database.ExecuteAsync($"SELECT IFNULL(HEX(payload),'NULL') FROM char_active_missions WHERE charId={p.CharId}"),
                     CompletionReceipts=await context.Database.ExecuteAsync($"SELECT missionId,completions FROM char_missions WHERE charId={p.CharId} AND missionId IN ({string.Join(",",ids)}) ORDER BY missionId"),
                     Rpc=p.World.RpcSnapshot().Select(r=>Convert.ToHexString(r.Bytes)).ToArray(),
                     ReceivedViewLists=p.World.ViewSnapshot().Select(Convert.ToHexString).ToArray(),
+                    CurrentOwnViewLife=strictFollowupApproach?p.World.CurrentOwnViewLife():null,
                     ProtocolProblems=p.World.Problems.ToArray(),NativeReachabilityProven=false,NativeRenderingProven=false,
                     MovementPolicy="Existing test-only movement/weaken helpers; completion is protocol evidence, not wall/room reachability proof"
                 },new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
                 Console.WriteLine("  Required mission evidence "+stem+".json");
+                if(packetLogFailure!=null&&scenarioFailure==null)throw new ScenarioFailure("Required packet log capture failed: "+packetLogFailure);
             }
             catch(Exception proofError)
             {
                 if(scenarioFailure==null)throw; // A successful scenario cannot silently omit required proof.
                 Console.Error.WriteLine("Required evidence capture also failed; preserving original scenario exception: "+proofError);
             }
+            }
+            finally { relogged?.Dispose(); }
         }
     }
 
-    private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase)
+    private static async Task<ViewCreation> PrimaNpc(ScenarioContext context,HeadlessPlayer p,XElement npc,int viewsStart,bool introducedThisPhase,bool strictCurrent=false)
     {
+        if(strictCurrent)
+        {
+            var state=await MervFollowupCheckpoint(context,p);var mob=state.Mobs.Single(m=>m.Npc==(ushort)(int)npc.Attribute("id")!);
+            await MoveForMissionTest(p,mob.X+100,mob.Y,mob.Z);
+            ViewCreation? current=null;
+            await p.WaitUntilAsync(()=>(current=MervFollowupApproachFixture.CurrentGenerations(p.World.CreationSnapshot(),introducedThisPhase?viewsStart:0).LastOrDefault(v=>MervFollowupApproachFixture.NpcMatches(v,mob,state.Instance)))!=null,"current saved NPC XYZ/side/generation",TimeSpan.FromSeconds(15));
+            return current!;
+        }
         string name=(string)npc.Attribute("handle")!;
         await VisitMissionNpc(context,p,name);
         var match=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Spawned (friendly|hostile) NPC "+Regex.Escape(name)+@" at ([^,\r\n]+),([^,\r\n]+),([^\r\n]+)").Last();
