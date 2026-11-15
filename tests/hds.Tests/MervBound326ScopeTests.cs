@@ -45,8 +45,8 @@ public class MervBound326ScopeTests
             case "site-key":s.OpenFloorSites[s.OpenFloorCurrentSiteIndex!.Value]=new(1,w.FloorKey+1,0,0,0,w.SiteFingerprint);break;case "raw-door":s.SiteDoors[s.OpenFloorCurrentSiteIndex!.Value].mxoStaticId++;break;
             case "duplicate":s.ElevatorWitnesses=new[]{w,w};break;
             case "wrong-site":s.ElevatorWitnesses=new[]{new MissionElevatorWitness(w.Version,"other-site",w.Region,w.Floor,w.Lobby,w.FloorQuaternion,w.LobbyQuaternion,w.Evidence,w.Sources,w.FloorKey,w.LobbyKey,w.LobbyRegion)};break;
-            case "floor":w.Floor[0]++;break;case "bad-quaternion":s.ElevatorWitnesses=new[]{new MissionElevatorWitness(w.Version,w.SiteFingerprint,w.Region,w.Floor,w.Lobby,"broken",w.LobbyQuaternion,w.Evidence,w.Sources,w.FloorKey,w.LobbyKey,w.LobbyRegion)};break;
-            case "source-json":w.Sources[0]="not json";break;case "marked-missing":s.ElevatorWitnesses=null!;break;
+            case "floor":var floor=w.Floor;floor[0]++;s.ElevatorWitnesses=new[]{new MissionElevatorWitness(w.Version,w.SiteFingerprint,w.Region,floor,w.Lobby,w.FloorQuaternion,w.LobbyQuaternion,w.Evidence,w.Sources,w.FloorKey,w.LobbyKey,w.LobbyRegion)};break;case "bad-quaternion":s.ElevatorWitnesses=new[]{new MissionElevatorWitness(w.Version,w.SiteFingerprint,w.Region,w.Floor,w.Lobby,"broken",w.LobbyQuaternion,w.Evidence,w.Sources,w.FloorKey,w.LobbyKey,w.LobbyRegion)};break;
+            case "source-json":var sources=w.Sources;sources[0]="not json";s.ElevatorWitnesses=new[]{new MissionElevatorWitness(w.Version,w.SiteFingerprint,w.Region,w.Floor,w.Lobby,w.FloorQuaternion,w.LobbyQuaternion,w.Evidence,sources,w.FloorKey,w.LobbyKey,w.LobbyRegion)};break;case "marked-missing":s.ElevatorWitnesses=null!;break;
             case "adopted-missing":s.OpenFloorPhase=null;s.ElevatorWitnesses=null!;break;}
         Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Classify(s));
     }
