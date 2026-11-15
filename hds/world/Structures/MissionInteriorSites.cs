@@ -18,12 +18,14 @@ namespace hds
             internal bool Result;
         }
         private static readonly ConditionalWeakTable<MissionSite,Cached> cache=new ConditionalWeakTable<MissionSite,Cached>();
+        // One latest pure result per measured site, independent of the unchanged legacy slot.
+        private static readonly ConditionalWeakTable<MissionSite,Cached> measuredCache=new ConditionalWeakTable<MissionSite,Cached>();
         internal static bool Eligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
             =>CheckSite(phase,site,out refusal,npcCount,true);
         // A committed choice is proved by its exact request/fixed witness, not unused pool rows.
-        internal static bool SelectedSiteEligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0)
-            =>CheckSite(phase,site,out refusal,npcCount,false);
-        private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool)
+        internal static bool SelectedSiteEligible(MissionPhase phase,MissionSite site,out string refusal,int npcCount=0,MissionElevatorWitness elevator=null)
+            =>CheckSite(phase,site,out refusal,npcCount,false,elevator);
+        private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool,MissionElevatorWitness elevator=null)
         {
             refusal=null;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
@@ -32,13 +34,16 @@ namespace hds
             if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
                 .GroupBy(o=>o.kind,StringComparer.OrdinalIgnoreCase).All(g=>site.realObjects.Count(s=>
                     MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
-            if(!TryAllocate(site,npcCount,out _,out refusal))return false;
+            MissionStaging.SourcePools pools=null;
+            if(checkSourcePool&&!MissionStaging.TrySourcePools(phase,site,npcCount,out pools,out refusal))return false;
+            elevator=elevator??pools?.Elevator;
+            if(!TryAllocate(site,npcCount,out _,out refusal,elevator))return false;
             var first=phase.objects.FirstOrDefault();if(first==null)return true;
             var bound=site.realObjects.Where(s=>MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             if(bound.Length>0)
             {
-                if(!TryRegion(site,out var nativeRegion,out refusal))return false;
+                if(!TryRegion(site,out var nativeRegion,out refusal,elevator))return false;
                 bool Possible(StaticWorldObject s)
                 {
                     if(!MissionOpenFloorProfiles.TryUsable(MissionSites.Goid(s),out var usable))return true;
@@ -50,12 +55,13 @@ namespace hds
                 refusal="NoInteriorNativeUse:"+first.kind;return false;
             }
             if(!checkSourcePool)return true;
-            var matching=site.objectSpots.Where(s=>MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
+            var matching=site.objectSpots.Where(s=>(pools==null||pools.AllowsFirst(first,s))&&MissionSites.ObjectSpawners.TryGetValue(MissionSites.Goid(s),out var kind)&&
                 string.Equals(kind,first.kind,StringComparison.OrdinalIgnoreCase)).ToArray();
             // Exactly the first source picker's priority; no RNG is drawn and no source is rerolled.
-            var sources=matching.Length>0?matching:site.objectSpots.Count>0?site.objectSpots.ToArray():site.containers.ToArray();
-            if(!TryRegion(site,out var region,out refusal))return false;
-            foreach(var raw in sources)
+            var available=site.objectSpots.Where(s=>pools==null||pools.AllowsFirst(first,s)).ToArray();
+            var sources=matching.Length>0?matching:available.Length>0?available:site.containers.Where(s=>pools==null||pools.AllowsFirst(first,s)).ToArray();
+            if(!TryRegion(site,out var region,out refusal,elevator))return false;
+            foreach(var raw in sources.Where(s=>pools==null||pools.AllowsFirst(first,s)))
             {
                 ushort goid=MissionStaging.ExpectedConcrete(first,raw);
                 if(!MissionOpenFloorAdmission.Target(goid,raw)||!MissionOpenFloorProfiles.TryModel(goid,out var model)||
@@ -114,7 +120,26 @@ namespace hds
             region=null;refusal=null;
             if(!MissionOpenFloorAdmission.ValidSite(site)||site.metrId!=1){refusal="UnsupportedInteriorSite";return false;}
             string key=NavMesh.SnapshotRevision+":"+DataLoader.DataPath("mission_open_floor")+":"+MissionOpenFloorSite.CatalogFingerprint(site);
-            if(elevator!=null)return Build(site,out region,out refusal,elevator);
+            if(elevator!=null)
+            {
+                string witness;
+                try {witness=System.Text.Json.JsonSerializer.Serialize(elevator,MissionProgress.SaveJson);}
+                catch(Exception ex) when(ex is ArgumentException||ex is System.Text.Json.JsonException||ex is NotSupportedException)
+                {
+                    // Key construction must not introduce a new rejection/exception for malformed inputs.
+                    return Build(site,out region,out refusal,elevator);
+                }
+                key+=":"+MissionOpenFloorSite.Hash(witness);
+                var measured=measuredCache.GetOrCreateValue(site);
+                lock(measured)
+                {
+                    if(measured.Key!=key)
+                    {
+                        measured.Result=Build(site,out measured.Region,out measured.Refusal,elevator);measured.Key=key;
+                    }
+                    region=measured.Region;refusal=measured.Refusal;return measured.Result;
+                }
+            }
             var entry=cache.GetOrCreateValue(site);
             lock(entry)
             {
