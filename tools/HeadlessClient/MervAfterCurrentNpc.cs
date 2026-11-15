@@ -23,7 +23,14 @@ public static class MervAfterCurrentNpc
         if(!Guid.TryParseExact(actor.Identity,"N",out _)||!actor.Dead&&actor.Health<=0||!new[]{actor.X,actor.Y,actor.Z}.All(double.IsFinite))throw new InvalidDataException("Invalid saved NPC UUID/pose");
         return actor;
     }
-    public static Scope Capture(MissionProgress.SavedState state,ushort npc)
+    public static Scope CaptureAfterApproach(MissionProgress.SavedState before,MissionProgress.SavedState current,ushort npc)
+    {
+        if(before.Mission!=current.Mission||before.Phase!=current.Phase||before.Instance!=current.Instance||
+            before.Identity!=current.Identity||before.Started!=current.Started||
+            before.Mobs.Single(m=>m.Npc==npc).Identity!=current.Mobs.Single(m=>m.Npc==npc).Identity)
+            throw new InvalidDataException("NPC approach changed accepted phase or actor UUID");
+        return Capture(current,npc);
+    }    public static Scope Capture(MissionProgress.SavedState state,ushort npc)
     {
         var actor=Owned(state,npc);
         return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,npc,

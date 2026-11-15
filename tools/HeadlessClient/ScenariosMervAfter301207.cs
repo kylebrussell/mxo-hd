@@ -93,7 +93,10 @@ public static partial class Scenarios
             var owned=checkpoint.Mobs.Single(m=>m.Npc==id&&(corpse||!m.Dead));
             await MervAfterNpcRoute(context,p,checkpoint,id,evidence);
             await MoveForMissionTest(p,owned.X+100,owned.Y,owned.Z);
-            var scope=MervAfterCurrentNpc.Capture(checkpoint,id);MervAfterCurrentNpc.CurrentView? observed=null;
+            var afterApproach=await Saved();
+            Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,afterApproach),"NPC approach keeps actual accepted owner");
+            var scope=MervAfterCurrentNpc.CaptureAfterApproach(checkpoint,afterApproach,id);checkpoint=afterApproach;
+            owned=checkpoint.Mobs.Single(m=>m.Npc==id&&(corpse||!m.Dead));MervAfterCurrentNpc.CurrentView? observed=null;
             await p.WaitUntilAsync(()=>
             {
                 try{var current=Saved().GetAwaiter().GetResult();Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,current)&&current.Phase==expectedPhase,"NPC wait keeps accepted phase owner");observed=MervAfterCurrentNpc.Require(p.World.CurrentOwnViewLife(),scope,current);return true;}

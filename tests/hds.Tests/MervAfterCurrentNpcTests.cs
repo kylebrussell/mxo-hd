@@ -24,7 +24,19 @@ public sealed class MervAfterCurrentNpcTests
     static byte[] Delete()=>new byte[]{1,0,1,1,0,9,0};
     static OwnViewLifeSnapshot Stream(params byte[][] rows){var log=new OwnViewLifeLog();for(int i=0;i<rows.Length;i++)log.Observe(false,rows[i],i,WireFormat.FindCreations(rows[i]));return log.Snapshot();}
     static MervAfterCurrentNpc.CurrentView Observe(MissionProgress.SavedState state,params byte[][] rows)=>MervAfterCurrentNpc.Require(Stream(rows),MervAfterCurrentNpc.Capture(state,6),state);
-    [Fact]public void CurrentStageHostilesUseMembershipOrAuthoredStageRatherThanWirePhase()
+    [Fact]public void ApproachRefreshUsesNewEnteredCheckpointWithoutRelaxingOwnerPhaseOrActorIdentity()
+    {
+        var before=State();before.Flags["entered"]=false;var after=State();
+        Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.Capture(before,6));
+        var scope=MervAfterCurrentNpc.CaptureAfterApproach(before,after,6);
+        Assert.Equal((ushort)9,MervAfterCurrentNpc.Require(Stream(Own(),Birth()),scope,after).View.ViewId);
+        foreach(var kind in new[]{"mission","phase","instance","identity","started","actor","entered"})
+        {
+            after=State();switch(kind){case "mission":after.Mission++;break;case "phase":after.Phase++;break;case "instance":after.Instance++;break;
+            case "identity":after.Identity=new string('c',32);break;case "started":after.Started++;break;case "actor":after.Mobs[0].Identity=new string('c',32);break;case "entered":after.Flags["entered"]=false;break;}
+            Assert.Throws<InvalidDataException>(()=>MervAfterCurrentNpc.CaptureAfterApproach(before,after,6));
+        }
+    }    [Fact]public void CurrentStageHostilesUseMembershipOrAuthoredStageRatherThanWirePhase()
     {
         var state=new MissionProgress.SavedState{Phase=2,Mobs=new(){
             new(){Npc=1,Phase=0,Hostile=true,Health=10},new(){Npc=2,Phase=0,Hostile=false,Health=10},
