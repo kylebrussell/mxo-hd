@@ -22,7 +22,7 @@ public class MissionOutsideContinuationTests
     static (OwnViewLifeLog Log,OwnViewLifeSnapshot Life) CurrentLife()
     {
         var own=new PlayerCharacter();own.UnsetRelatedStaticObjId();own.DisableAllAttributes();
-        byte[] bytes=new byte[]{1,0}.Concat(new hds.shared.ObjectManager().GenerateCreationPacket(own,0,1).getBytes()).Concat(BitConverter.GetBytes((ushort)2)).Concat(new byte[]{0}).ToArray();
+        byte[] bytes=new byte[]{1,0}.Concat(new hds.resources.gameobjects.ObjectManager().GenerateCreationPacket(own,0,1).getBytes()).Concat(BitConverter.GetBytes((ushort)2)).Concat(new byte[]{0}).ToArray();
         var log=new OwnViewLifeLog();log.Observe(false,bytes,0,WireFormat.FindCreations(bytes));return(log,log.Snapshot());
     }
     [Fact] public void OutsideTokenCannotCrossResetOrAnotherOwnLife()
