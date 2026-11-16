@@ -1,6 +1,8 @@
 # Zion critical missions 101208-101212
 
-This publication normally merges master `e79906f0d493f631637a5052881e718bea6bb126` into the qualified PR218 refresh, retaining old published ancestry and both current scenario/mode registrations. Incoming master ability consumers remain intact. The four existing default-off disposable-test-only mission tick diagnostics are unchanged from qualified producer `4bb27ecb`; they observe calls and do not invoke admission twice. No source XML, transcript, data, placement policy, range, search budget or authored timer is changed. No new server run is claimed for this mechanical refresh.
+This QA refresh normally merges published PR218 `d4b2bc44` with master `4d5076c0` (including the native-passed ordinary mid-phase elevator return). Production and data exactly match master: the old disposable tick diagnostics are removed, not required for proof. Opt-in 101208/101212 Upload now requires an actual ordinary saved-door downride, a post-approach/pre-request cutpoint, fresh typed current-life arrival and the exact client ACK before carry relog or the disclosed outside movement aid. Saved Street context takes priority over NPC/legacy selection; corrected tuples never fall back to CSV. V2 follower carry retains the accepted identity/instance/UUID across normal Quit and a fresh current own-view life without normalizing checkpoint version.
+
+Current outside-proof source qualification is focused/build/plan only until a separately granted whole-chain run; the historical 225.6-second case and 24-second inherited no-op bootstrap remain attributed to `4bb27ecb`, not this changed driver. No source XML, placement policy, range, search budget or authored timer is changed. Native walking/rendering/survival remain unproven by headless checks.
 
 ## Scope and fixture
 
