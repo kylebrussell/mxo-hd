@@ -29,7 +29,7 @@ public static partial class Scenarios
                     if(i<2)continue;
                     int count=i,penalty=loaded?(i==2?0:-5):(i==2?-10:-15);
                     await central.WaitUntilAsync(()=>Regex.IsMatch(context.Server.DebugLog()[logCursor..],@"\[MULTIFIGHTING OURS\] Multi0 opponents"+count+" loaded"+loaded+" penalty"+penalty+@" (attack|defence)-?\d+->-?\d+"),"Actual direct-link count and loaded140 penalty",TimeSpan.FromSeconds(15));
-                    var matches=Regex.Matches(context.Server.DebugLog()[logCursor..],@"\[MULTIFIGHTING OURS\] Multi0 opponents"+count+" loaded"+loaded+" penalty(-?\d+) (attack|defence)(-?\d+)->(-?\d+)");
+                    var matches=Regex.Matches(context.Server.DebugLog()[logCursor..],@"\[MULTIFIGHTING OURS\] Multi0 opponents"+count+" loaded"+loaded+@" penalty(-?\d+) (attack|defence)(-?\d+)->(-?\d+)");
                     foreach(Match m in matches){Check.Equal(penalty,int.Parse(m.Groups[1].Value),"Literal recovered penalty");Check.Equal(int.Parse(m.Groups[3].Value)+penalty,int.Parse(m.Groups[4].Value),"Exactly once on actual input");}
                     observations.Add(new{stage,Count=count,Loaded=loaded,Penalty=penalty,Inputs=matches.Select(m=>m.Value).ToArray()});
                 }
