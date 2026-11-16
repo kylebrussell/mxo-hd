@@ -18,6 +18,7 @@ static string Consumer(ushort stat) => stat switch
     1011 or 1029 or 1030 => "typed combat-special defence in interlock",
     183 => "typed combat-special defence and PARTIAL modeled free-cast viral defence (NPC neutral tactic)",
     342 => "PARTIAL modeled primary TF2 free-cast viral attack; native base/link totals unresolved",
+    1145 when typeof(AbilityStats).GetMethod("ThrownAccuracy") != null => "OURS level-scaled percent to queued TF4 thrown accuracy, once; direct1032 separate; native coefficient unresolved",
     1147 => "OURS level-scaled percentage bonus to normal free-cast and diagnostic viral accuracy; retail coefficient unresolved",
     637 => "PARTIAL modern free-cast viral consistency; native table with OURS settings/64-significand policy",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
