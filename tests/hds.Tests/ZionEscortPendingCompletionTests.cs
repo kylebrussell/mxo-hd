@@ -30,7 +30,7 @@ public sealed class ZionEscortPendingCompletionTests
     }
     [Theory]
     [InlineData("mission")][InlineData("phase")][InlineData("identity")][InlineData("start")][InlineData("instance")]
-    [InlineData("not-done")][InlineData("not-history")][InlineData("outside")][InlineData("failed")]
+    [InlineData("not-done")][InlineData("not-history")][InlineData("failed")]
     [InlineData("not-waiting")][InlineData("not-all-complete")][InlineData("leave-required")][InlineData("dead")][InlineData("not-following")]
     [InlineData("incomplete-mandatory")][InlineData("wrong-goal")][InlineData("not-exit")][InlineData("missing-prerequisite")][InlineData("already-done-before")]
     public void PendingOutcomeRejectsEveryWrongScopeIncompleteOrUnsafeState(string change)
@@ -40,7 +40,7 @@ public sealed class ZionEscortPendingCompletionTests
         {
             case "mission":current.Mission++;break;case "phase":current.Phase++;break;case "identity":current.Identity="other";break;
             case "start":current.Started++;break;case "instance":current.Instance++;break;case "not-done":current.Done=new[]{1,2};break;
-            case "not-history":current.EverDone=new[]{1,2};break;case "outside":current.Flags["entered"]=false;break;
+            case "not-history":current.EverDone=new[]{1,2};break;
             case "failed":current.Flags["failed"]=true;break;case "not-waiting":current.Flags["waitingForExit"]=false;break;
             case "not-all-complete":current.Flags["goalsCompleteSent"]=false;break;case "leave-required":current.Flags["leaveNotNeeded"]=false;break;
             case "dead":current.Mobs[0].Dead=true;break;case "not-following":current.Following=new ushort[]{8};break;
@@ -49,6 +49,15 @@ public sealed class ZionEscortPendingCompletionTests
             case "missing-prerequisite":before.Done=new[]{1};break;case "already-done-before":before.Done=new[]{1,2,3};break;
         }
         Assert.False(ZionAfter1212EscortProof.CompletedPendingAdvance(before,current,mission,goal));
+    }
+    [Fact]public void EnteredFlagClearingDoesNotTurnPendingObservationIntoDoorOrAdvanceAuthority()
+    {
+        var before=Before();var current=Current();var mission=Mission();
+        current.Flags["entered"]=false;
+        Assert.True(ZionAfter1212EscortProof.CompletedPendingAdvance(before,current,mission,3));
+        Assert.False(ZionAfter1212EscortProof.CanApproach(current,mission,3));
+        Assert.False(ZionAfter1212EscortProof.Advanced(before,current,mission,3,Array.Empty<byte[]>(),0));
+        Assert.False(current.Flags["entered"]);
     }
     [Fact]public void PendingCannotSatisfyStrictCompletionWithoutFreshAckAndCommittedExactNextPhase()
     {
