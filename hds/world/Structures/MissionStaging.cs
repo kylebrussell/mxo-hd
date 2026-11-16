@@ -197,11 +197,13 @@ namespace hds
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
             // NPC-only replay owns no object choices/RNG; fresh paths retain249 source-pool preparation.
             var objectChoices=streetPrepared!=null?streetPrepared.Choices():prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
-            if(streetPrepared!=null)foreach(var c in objectChoices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=c.Spot,goid=c.Goid});
+            if(streetPrepared!=null)foreach(var c in objectChoices){var state=new MissionObjectState{spot=c.Spot,goid=c.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
-                    MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
-                        OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
+                {
+                    var state=new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null};
+                    MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);
+                }
 
             var streetSelection=MissionStreetCoverage.Stage(progress,site,streetPrepared!=null?System.Text.Json.JsonSerializer.SerializeToElement(streetPrepared.Pending.Selection,MissionProgress.SaveJson):prepared!=null?prepared.Selection.Street:npcPrepared?.Pending?.Street??default);
             progress.site = site;
@@ -431,12 +433,13 @@ namespace hds
             private readonly MissionObjectDef[] remaining;
             private readonly StaticWorldObject[] rows;
             private readonly HashSet<StaticWorldObject> furniture;
+            private readonly Func<MissionObjectDef,StaticWorldObject,bool> sourceEdge;
             internal GeneratedSafeAssignment(Dictionary<MissionObjectDef,StaticWorldObject> native,IEnumerable<MissionObjectDef> definitions,
-                IEnumerable<StaticWorldObject> sources,IEnumerable<StaticWorldObject> containers)
-            {Native=native;remaining=definitions.ToArray();rows=sources.ToArray();furniture=new HashSet<StaticWorldObject>(containers);}
+                IEnumerable<StaticWorldObject> sources,IEnumerable<StaticWorldObject> containers,Func<MissionObjectDef,StaticWorldObject,bool> sourceEdge=null)
+            {Native=native;remaining=definitions.ToArray();rows=sources.ToArray();furniture=new HashSet<StaticWorldObject>(containers);this.sourceEdge=sourceEdge;}
             private bool Edge(MissionObjectDef def,StaticWorldObject row)=>
-                string.Equals(def.kind,"Safe",StringComparison.OrdinalIgnoreCase)?MissionSites.Goid(row)==1410:
-                ObjectGoids.ContainsKey(def.kind)||furniture.Contains(row);
+                (string.Equals(def.kind,"Safe",StringComparison.OrdinalIgnoreCase)?MissionSites.Goid(row)==1410:
+                ObjectGoids.ContainsKey(def.kind)||furniture.Contains(row))&&(sourceEdge==null||sourceEdge(def,row));
             internal bool Complete(int start=0,StaticWorldObject excluded=null,ISet<StaticWorldObject> used=null)
             {
                 var assigned=new Dictionary<StaticWorldObject,int>();
@@ -483,6 +486,7 @@ namespace hds
         internal static bool TrySourcePools(MissionPhase phase,MissionSite site,int npcCount,out SourcePools pools,out string refusal)
         {
             pools=null;refusal=null;
+            if(MissionBoundFurnitureAdmission.Applies(phase,site))return MissionBoundFurnitureAdmission.TryPools(phase,site,out pools,out refusal);
             if(!MissionOpenFloorAdmission.Requires(phase)||site==null)return true;
             var taken=new HashSet<StaticWorldObject>();var remaining=new List<MissionObjectDef>();
             var nativeAssignments=new Dictionary<MissionObjectDef,StaticWorldObject>();
@@ -532,7 +536,7 @@ namespace hds
                 throw new MissionCheckpointException("Object source selection refused: "+refusal);
             var choices=SelectObjectsFromPools(phase,site,rng,pools).ToArray();
             foreach(var choice in choices)
-                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
             return choices;
         }
         internal static IEnumerable<ObjectChoice> SelectObjectsFromPools(MissionPhase phase,MissionSite site,Random rng,SourcePools pools)
@@ -591,7 +595,7 @@ namespace hds
         {
             var choices=SelectObjects(phase,site,rng).ToArray();
             foreach(var choice in choices)
-                if(choice.Spot!=null)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.Spot,goid=choice.Goid});
+                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
             return choices;
         }
         internal static ObjectChoice[] StageSourceChoices(MissionPhase phase,MissionSite site,Random rng,
