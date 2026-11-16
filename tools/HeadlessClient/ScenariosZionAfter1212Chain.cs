@@ -239,8 +239,17 @@ public static partial class Scenarios
                     diagnostics?.End();
                 }
                 string Log()=>context.Server.DebugLog()[logStart..];
-                await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
                 async Task<string> PersistedPhase()=>await context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");
+                bool DirectFinalCompletion()
+                {
+                    if(evidenceOptions?.ExactZionAfter1212!=true||phase!=mission.Elements("phase").Count()-1)return false;
+                    string persisted=PersistedPhase().GetAwaiter().GetResult();if(persisted!="NULL")return false;
+                    long receipts=context.Database.LongAsync($"SELECT IFNULL((SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId={id}),0)").GetAwaiter().GetResult();
+                    int selected=Array.IndexOf(ids,id);
+                    return ZionFinalCompletionObservation.Matches(phase,mission.Elements("phase").Count(),persisted,receipts,
+                        diagnostics!.SummariesSince(missionRpcCursor),evidenceOptions.MissionExperience![selected],evidenceOptions.MissionInformation![selected]);
+                }
+                await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done")||DirectFinalCompletion(),"phase goals complete or exact directly committed final completion",TimeSpan.FromSeconds(10));
                 string actual=await PersistedPhase();
                 if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")&&actual==id+":"+phase&&outside==null)
                 {
