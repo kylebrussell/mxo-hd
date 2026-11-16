@@ -1,7 +1,7 @@
 using System;
 namespace hds
 {
-    /// <summary>Sourced snapshot presentation only: no recovered combat initiative consumer.</summary>
+    /// <summary>Sourced health snapshot; InterlockInitiative supplies the explicitly OURS combat consumer.</summary>
     public static class AbilityDesperation
     {
         // Explicit disposable-fixture control: stable HP for exact-half snapshot QA, never a retail mechanic.
