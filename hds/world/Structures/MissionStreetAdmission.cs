@@ -25,6 +25,7 @@ namespace hds
                     Pending.Selection.Mission!=Progress.mission.id||Pending.Selection.Identity!=Progress.persistenceId||Pending.Selection.Started!=Progress.startedAt||Pending.Selection.Refusal!=null||
                     Pending.Selection.Context==null||Pending.Selection.Site.Fingerprint!=MissionOpenFloorSite.CatalogFingerprint(Selected.Site))throw new MissionCheckpointException("Stale or refused ordinary street admission");
                 MissionStreetBoundRoutes.Validate(Progress,Pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,Progress.mission.district),Pending.Choices);
+                MissionStreetFurnitureRoutes.Validate(Progress,Pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,Progress.mission.district),Pending.Choices);
             }
             internal MissionStaging.ObjectChoice[] Choices()=>Pending.Choices.Select(c=>new MissionStaging.ObjectChoice(Progress.Phase.objects.Single(d=>d.id==c.ObjectId),c.ReadSpot(),c.Goid)).ToArray();
             internal void RequirePublished(WorldClient c)
@@ -40,7 +41,8 @@ namespace hds
                 if(pending.Selection.Refusal!=null){refusal=pending.Selection.Refusal;return false;}
                 if(!MissionStreetContexts.ValidateSelected(pending.Selection.Context,site,MissionPublicDoors.CurrentDataset(),key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),out refusal))return false;
                 MissionStreetBoundRoutes.Validate(p,pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),pending.Choices);
-                foreach(var choice in pending.Choices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid});
+                MissionStreetFurnitureRoutes.Validate(p,pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),pending.Choices);
+                foreach(var choice in pending.Choices){var state=new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
                 return plan.BeforeCurrent(c);
             }
             var selected=MissionStaging.ChooseSite(c,p,phase);if(!before.Current(c)||selected.Site==null){refusal="NoCertifiedOrdinaryStreetSite";return false;}
@@ -51,7 +53,7 @@ namespace hds
                 if(!MissionStaging.TrySourcePools(definitions,selected.Site,npcs,out var pools,out string sourceRefusal))throw new MissionCheckpointException(sourceRefusal);
                 choices=MissionStaging.SelectObjectsFromPools(definitions,selected.Site,selected.Random,pools).Select(MissionOpenFloorChoice.From).ToArray();
                 if(!MissionOpenFloorAdmission.ChoicesValid(definitions,selected.Site,choices)||choices.Any(choice=>choice.Goid!=MissionSites.Goid(choice.ReadSpot())))throw new MissionCheckpointException("Ordinary street choices require unchanged native prototypes");
-                foreach(var choice in choices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid});
+                foreach(var choice in choices){var state=new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
                 accepted=MissionStreetCoverage.TryPrepare(p,phase,selected.Site,out json,out refusal);
             }
             catch(Exception ex) when(ex is MissionCheckpointException||ex is System.IO.InvalidDataException||ex is JsonException||ex is ArgumentException)
@@ -64,7 +66,9 @@ namespace hds
                 try
                 {
                     selection=MissionStreetBoundRoutes.Build(p,selection,choices,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district));
+                    selection=MissionStreetFurnitureRoutes.Build(p,selection,choices,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district));
                     MissionStreetBoundRoutes.Validate(p,selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),choices);
+                    MissionStreetFurnitureRoutes.Validate(p,selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),choices);
                 }
                 catch(Exception ex) when(ex is InvalidDataException||ex is MissionCheckpointException||ex is JsonException||ex is ArgumentException)
                 {

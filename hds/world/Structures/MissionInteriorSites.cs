@@ -28,6 +28,11 @@ namespace hds
         private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool,MissionElevatorWitness elevator=null)
         {
             refusal=null;
+            // Ordinary bound Furniture/Phone phases do not adopt free props. Their enrolled
+            // native-source capacity must still qualify BEFORE the normal site chooser.
+            // Fixed replay proves its immutable choice separately and never reselects here.
+            if(checkSourcePool&&MissionBoundFurnitureAdmission.Applies(phase,site)&&
+                !MissionStaging.TrySourcePools(phase,site,npcCount,out _,out refusal))return false;
             if(!MissionOpenFloorAdmission.Requires(phase))return true;
             // With no runtime actors and enough same-kind native objects, SelectObjects never
             // creates a free prop. Preserve that existing bound-only path without a new NAV proof.

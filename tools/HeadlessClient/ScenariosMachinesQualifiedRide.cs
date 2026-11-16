@@ -134,7 +134,30 @@ public static partial class Scenarios
             var ride=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
             double[] from=Enumerable.Range(1,3).Select(i=>double.Parse(ride.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
             Check.That(NavMesh.Locate(1,from[0],from[1],from[2],out var root),"Actual current RideRoot membership");
-            if(obj.Goid==326)
+            // V3 may contain both326 and new furniture: consume its fixed authority before the old326 dispatcher.
+            var furnitureRoute=MissionBoundFurnitureRouteProof.SupportsGoid(obj.Goid)?MissionBoundFurnitureRouteProof.Read(context.RepositoryRoot,state,objectId):null;
+            if(furnitureRoute!=null)
+            {
+                var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Current own life for fixed furniture route");
+                MissionBoundFurnitureRouteProof.RequireArrival(furnitureRoute,from,root.sector,root.region,root.floorY);
+                async Task SameFurniture(){MissionBoundFurnitureRouteProof.RequireCurrent(furnitureRoute,await MachinesNextCheckpoint(context,p));Check.That(life.Current,"Fixed furniture route own life remains current");}
+                foreach(var step in MissionBoundFurnitureRouteProof.Steps(context.RepositoryRoot,furnitureRoute))
+                {
+                    await SameFurniture();
+                    foreach(uint key in step.Doors)
+                    {
+                        var door=furnitureRoute.Doors.Single(d=>d.Key==key);var requestLife=p.World.CurrentOwnViewLife();int views=p.World.ViewSnapshot().Count,debug=context.Server.DebugLog().Length;
+                        Check.That(requestLife.Current&&requestLife.OwnViewReady,"Current own life before V3 portal Open");p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00");
+                        await p.WaitUntilAsync(()=>{try{var now=p.World.CurrentOwnViewLife();_=MissionBound326RouteProof.RequireDoorUse(context.Server.DebugLog(),debug,door);_=MissionBound326RouteProof.RequireOpen(now,requestLife,door);return true;}catch(InvalidDataException){return false;}},"Actual V3 own-GOID portal Open before route crossing",TimeSpan.FromSeconds(15));
+                        p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");await SameFurniture();
+                        _=MissionBound326RouteProof.RequireOpen(p.World.CurrentOwnViewLife(),requestLife,door);Check.Equal(0,MissionPublicStreetWire.Teleports(p.World.CurrentOwnViewLife(),requestLife,views).Count,"V3 internal Open is not an elevator ride");
+                        note?.Invoke(new{Kind="V3 required own-GOID door Open",state.Mission,state.Phase,ObjectId=objectId,Door=door,ViewCursor=views,DebugCursor=debug,Exact03PacketAckProven=false,NativePassageProven=false});
+                    }
+                    await SameFurniture();await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
+                }
+                await SameFurniture();note?.Invoke(new{Kind="Current fixed furniture V3 route consumed",state.Mission,state.Phase,ObjectId=objectId,ActualRideRoot=from,Route=furnitureRoute.Route,NativeCollisionClearanceProven=false});
+            }
+            else if(obj.Goid==326)
             {
             var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Current own life for bound approach");
             var bounds=MissionBound326Approach.Load(context.RepositoryRoot,obj);
@@ -186,9 +209,15 @@ public static partial class Scenarios
             var owned=await MachinesNextCheckpoint(context,p);ZionCurrentBoundBody.Result? currentBody=null;
             await p.WaitUntilAsync(()=>
             {
-                try{currentBody=ZionCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),boundScope,owned);return true;}
+                try{currentBody=ZionCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),boundScope,owned,furnitureRoute);return true;}
                 catch(InvalidDataException){return false;}
             },"native furniture current own-life bound body",TimeSpan.FromSeconds(15));
+            if(furnitureRoute!=null)
+            {
+                var view=currentBody!.View;Check.That(view.Attributes.TryGetValue("Position",out var nativePosition)&&nativePosition.Length==24&&Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(nativePosition,i*8)==furnitureRoute.Centre[i])&&
+                    view.Attributes.TryGetValue("Orientation",out var nativeQuaternion)&&nativeQuaternion.SequenceEqual(Convert.FromHexString(furnitureRoute.Quaternion)),"Current body matches independent V3 profile/route pose");
+                MissionBoundFurnitureRouteProof.RequireCurrent(furnitureRoute,await MachinesNextCheckpoint(context,p));
+            }
             note?.Invoke(new{Kind="Current own-life bound body",state.Mission,state.Phase,ObjectId=objectId,Scope=boundScope,
                 Current=currentBody,RawSource=obj.Spot,PhaseCreationCursor=creationStart,
                 SelectionPolicy="Current own life; no post-phase birth requirement",NativeRenderingProven=false});

@@ -25,11 +25,12 @@ public static class ZionAfter1212StreetEntry
         Need(state.Version==2&&Guid.TryParseExact(state.Identity,"N",out _)&&state.Started>0&&state.OpenFloorCurrentSiteIndex.HasValue&&state.OpenFloorSites!=null,"Street owned selected site");
         int i=state.OpenFloorCurrentSiteIndex!.Value;Need(i>=0&&i<state.OpenFloorSites!.Length&&i<state.SiteDoors.Length,"Street current index");var site=state.OpenFloorSites[i];var raw=state.SiteDoors[i];
         var all=e.GetProperty("Witnesses").EnumerateArray().ToArray();
-        foreach(var w in all)Need((w.GetProperty("Version").GetInt32()==1||w.GetProperty("Version").GetInt32()==2)&&w.GetProperty("Mission").GetInt32()==state.Mission&&w.GetProperty("Identity").GetString()==state.Identity&&w.GetProperty("Started").GetInt64()==state.Started&&w.GetProperty("Phase").GetInt32()>=0&&w.GetProperty("Phase").GetInt32()<=state.Phase&&w.GetProperty("Refusal").ValueKind==JsonValueKind.Null,"Street exact owner/history");
+        foreach(var w in all)Need((w.GetProperty("Version").GetInt32()==1||w.GetProperty("Version").GetInt32()==2||w.GetProperty("Version").GetInt32()==3)&&w.GetProperty("Mission").GetInt32()==state.Mission&&w.GetProperty("Identity").GetString()==state.Identity&&w.GetProperty("Started").GetInt64()==state.Started&&w.GetProperty("Phase").GetInt32()>=0&&w.GetProperty("Phase").GetInt32()<=state.Phase&&w.GetProperty("Refusal").ValueKind==JsonValueKind.Null,"Street exact owner/history");
         var matches=all.Where(w=>w.GetProperty("Site").GetProperty("Fingerprint").GetString()==site.Fingerprint).ToArray();
         if(matches.Length==0){Need(!all.Any(w=>w.GetProperty("Phase").GetInt32()==state.Phase),"Street current witness missing selected site");return null;}
         Need(matches.All(w=>w.GetProperty("Context").GetRawText()==matches[0].GetProperty("Context").GetRawText()),"Street conflicting context history");
-        foreach(var selected in matches)MissionBound326RouteProof.SelectionVersion(selected);
+        foreach(var selected in matches)
+        {if(selected.GetProperty("Version").GetInt32()==3)MissionBoundFurnitureRouteProof.SelectionVersion(selected);else{Need(!selected.TryGetProperty("FurnitureRoutes",out _),"Old selection cannot acquire furniture authority");MissionBound326RouteProof.SelectionVersion(selected);}}
         var current=matches.Where(w=>w.GetProperty("Phase").GetInt32()==state.Phase).ToArray();Need(current.Length<=1,"Street ambiguous current selection");
         var w0=current.Length==1?current[0]:matches[0];var savedSite=JsonSerializer.Deserialize<MissionOpenFloorSite>(w0.GetProperty("Site").GetRawText())!;
         Need(savedSite.District==1&&site.District==1&&savedSite.DoorKey==site.DoorKey&&savedSite.DoorX==site.DoorX&&savedSite.DoorY==site.DoorY&&savedSite.DoorZ==site.DoorZ,"Street saved site identity");
