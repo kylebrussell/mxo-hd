@@ -20,6 +20,38 @@ public static partial class Scenarios
     {
         await ZionAfter1212Ride(context,p,false,note);
     }
+    // The no-area stage inherits a real completed downride, not an invented new room.
+    private static async Task<MissionOutsideUploadProof.Token> ZionAfter1212ExitToNoSite(ScenarioContext context,HeadlessPlayer p,Mission authored,int nextPhase,Action<object> note)
+    {
+        var before=await ZionAfter1212Checkpoint(context,p);
+        Check.That(nextPhase==before.Phase+1&&ZionAfter1212OutsideStage.Matches(authored,nextPhase)&&before.Flags.GetValueOrDefault("waitingForExit"),"Only a completed interior exit can hand off to the authored outdoor stage");
+        var street=ZionAfter1212StreetEntry.ForSite(before);var npc=MissionNpcInteriorRide.ForSite(before);
+        var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Completed departure requires an exact saved lobby Standing");
+        var original=p.World.CurrentOwnViewLife();OwnViewLifeSnapshot? requestLife=null;
+        int sections=-1,packetLine=-1,logOffset=-1;var boundary=new MissionOutsideUploadProof.RequestBoundary();
+        string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
+        void Mark()=>boundary.Mark(()=>
+        {
+            var now=p.World.CurrentOwnViewLife();
+            Check.That(original.Current&&now.Current&&now.OwnViewReady&&ReferenceEquals(original.Owner,now.Owner)&&original.Life==now.Life,"Completed downride retains its actual current owner/life");
+            requestLife=now;sections=p.World.ViewSnapshot().Count;packetLine=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c=='\n');logOffset=context.Server.DebugLog().Length;
+        });
+        await ZionAfter1212Ride(context,p,false,note,beforeRequest:Mark);boundary.RequireMarked();
+        MissionOutsideUploadProof.RequirePhysicalTrip(context.Server.DebugLog()[logOffset..],standing);
+        NpcInteriorComputerState.Teleport? arrival=null;
+        await p.WaitUntilAsync(()=>{try{arrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),requestLife!,sections,standing);return true;}catch(InvalidDataException){return false;}},"Actual completed downride before outdoor Upload stage",TimeSpan.FromSeconds(15));
+        MissionMidphaseReturnFixture.Arrival? receipt=null;
+        await p.WaitUntilAsync(()=>{try{receipt=MissionMidphaseReturnFixture.RequireArrival(InteriorAdmissionDeliveryProof.Read(packetPath),p.CharId,packetLine,arrival!);return true;}catch(InvalidDataException){return false;}},"Exact completed-downride ACK before no-area handoff",TimeSpan.FromSeconds(10));
+        var after=await ZionAfter1212Checkpoint(context,p);MissionNoSiteActorHistory.RequireTransition(before,after);
+        string Items(MissionProgress.SavedState x)=>JsonSerializer.Serialize(x.Items.OrderBy(k=>k.Key));
+        string History(MissionProgress.SavedState x)=>JsonSerializer.Serialize(new{x.SiteDoors,x.OpenFloorSites,x.ElevatorWitnesses,
+            Npc=x.NpcInterior.ValueKind==JsonValueKind.Undefined?null:x.NpcInterior.GetProperty("Witnesses").GetRawText(),
+            Street=x.StreetAccess.ValueKind==JsonValueKind.Undefined?null:x.StreetAccess.GetProperty("Witnesses").GetRawText()},new JsonSerializerOptions{IncludeFields=true});
+        Check.That(after.Phase==nextPhase&&after.Done.Length==0&&Items(before)==Items(after)&&before.EverDone.Order().SequenceEqual(after.EverDone.Order())&&History(before)==History(after),"No-area phase handoff preserves earned items/goals and complete historical placement");
+        var token=new MissionOutsideUploadProof.Token(after,p.World.CurrentOwnViewLife());
+        MissionOutsideUploadProof.RequireCurrent(token,after,requestLife!);ZionAfter1212OutsideStage.Require(authored,nextPhase,after,token.Checkpoint);
+        note(new{Kind="Actual completed downride/ACK to authored outdoor Upload stage",Before=before,After=after,ViewCursor=sections,PacketLine=packetLine,LogOffset=logOffset,Arrival=arrival,Receipt=receipt,MovementAid=false});return token;
+    }
     private static async Task<MissionProgress.SavedState> ZionAfter1212Checkpoint(ScenarioContext context,HeadlessPlayer p)
     {
         string hex=await context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");

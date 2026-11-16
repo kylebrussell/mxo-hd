@@ -10,7 +10,7 @@ public class ZionAfter1212OutsideStageTests
         while(!File.Exists(Path.Combine(root,"data","missions","zion_1_2_14_lost_fragments.xml")))root=Path.GetDirectoryName(root)!;
         var doc=new XmlDocument();doc.Load(Path.Combine(root,"data","missions","zion_1_2_14_lost_fragments.xml"));return MissionXml.Parse(doc.DocumentElement!);
     }
-    static MissionProgress.SavedState State()=>new(){Version=2,Mission=101214,Phase=1,Identity=new string('a',32),Started=1,OpenFloorCurrentSiteIndex=-1};
+    static MissionProgress.SavedState State()=>new(){Version=2,Mission=101214,Phase=1,Identity=new string('a',32),Started=1,Instance=48,OpenFloorCurrentSiteIndex=-1};
     [Fact] public void FourFragmentsUploadStaysOutdoorsWithOriginalGoalsItemsAndRewards()
     {
         var m=Mission();Assert.Null(m.phases[1].site);Assert.True(ZionAfter1212OutsideStage.Matches(m,1));Assert.False(ZionAfter1212OutsideStage.Matches(m,0));

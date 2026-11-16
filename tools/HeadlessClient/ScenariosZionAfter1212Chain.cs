@@ -39,7 +39,7 @@ public static partial class Scenarios
             p.SendRpc($"80 98 06 00 {Le((ushort)index)} 01 02 00");await p.WaitForRpcAsync("80 99");
             p.SendRpc("80 9b 07 00 01");await p.WaitForRpcAsync("80 9e 00");
             Check.Equal((long)id,await context.Database.LongAsync($"SELECT JSON_EXTRACT(payload,'$.Mission') FROM char_active_missions WHERE charId={p.CharId}"),"Actual accepted definition ID matches selected Critical title");
-            int phase=0;
+            int phase=0;MissionOutsideUploadProof.Token? noSiteContinuation=null;
             foreach(var area in mission.Elements("phase"))
             {
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
@@ -48,7 +48,9 @@ public static partial class Scenarios
                 bool outsideOnly=ZionAfter1212OutsideStage.Matches(authoredMission,phase);
                 if(outsideOnly)
                 {
-                    ZionAfter1212OutsideStage.Require(authoredMission,phase,await ZionAfter1212Checkpoint(context,p));
+                    var current=await ZionAfter1212Checkpoint(context,p);Check.That(noSiteContinuation!=null,"No-area Upload requires the actual prior completed-downride token");
+                    MissionOutsideUploadProof.RequireCurrent(noSiteContinuation!,current,p.World.CurrentOwnViewLife());
+                    ZionAfter1212OutsideStage.Require(authoredMission,phase,current,noSiteContinuation!.Checkpoint);
                     diagnostics!.Note(new{Kind="Authored outdoor Upload stage; no new interior entry or ride",Mission=id,Phase=phase,NativeWalkingProven=false});
                 }
                 else await ZionAfter1212Ride(context,p,true,diagnostics!.Note,viewsStart);
@@ -63,7 +65,12 @@ public static partial class Scenarios
                 async Task PrepareOutside()
                 {
                     var current=await ZionAfter1212Checkpoint(context,p);
-                    if(outsideOnly){ZionAfter1212OutsideStage.Require(authoredMission,phase,current);return;}
+                    if(outsideOnly)
+                    {
+                        Check.That(noSiteContinuation!=null,"Outdoor Upload retains its actual completed-departure token");
+                        MissionOutsideUploadProof.RequireCurrent(noSiteContinuation!,current,p.World.CurrentOwnViewLife());
+                        ZionAfter1212OutsideStage.Require(authoredMission,phase,current,noSiteContinuation!.Checkpoint);return;
+                    }
                     if(outside!=null){MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());return;}
                     var street=ZionAfter1212StreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
                     var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
@@ -224,7 +231,11 @@ public static partial class Scenarios
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
                 async Task<string> PersistedPhase()=>await context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");
                 string actual=await PersistedPhase();
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")&&actual==id+":"+phase&&outside==null)await ZionAfter1212Exit(context,p,diagnostics!.Note);
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")&&actual==id+":"+phase&&outside==null)
+                {
+                    if(ZionAfter1212OutsideStage.Matches(authoredMission,phase+1))noSiteContinuation=await ZionAfter1212ExitToNoSite(context,p,authoredMission,phase+1,diagnostics!.Note);
+                    else await ZionAfter1212Exit(context,p,diagnostics!.Note);
+                }
                 phase++;
                 string expected=phase<mission.Elements("phase").Count()?id+":"+phase:"NULL";
                 await p.WaitUntilAsync(()=>PersistedPhase().GetAwaiter().GetResult()==expected,"Exact persisted phase/completion after authored progression",TimeSpan.FromSeconds(20));
