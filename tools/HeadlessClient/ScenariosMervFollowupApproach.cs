@@ -70,7 +70,8 @@ public static partial class Scenarios
             .Select(System.Xml.Linq.XElement.Load).Single(m=>(int)m.Attribute("id")! == expectedMission);
         var sourceOrder=authoredSite.Elements("phase").ElementAt(expectedPhase).Elements("object").Select(o=>checked((ushort)(int)o.Attribute("id")!)).ToArray();
         var selectedRide=MervFollowupElevatorFixture.Select(saved,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),sourceOrder);
-        uint key=selectedRide.Key;var pose=selectedRide.Pose;await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        uint key=selectedRide.Key;var pose=selectedRide.Pose;var approach=selectedRide.Approach;
+        await MoveForMissionTest(p,approach[0],approach[1],approach[2]);
         int log=context.Server.DebugLog().Length; var beforeArrival=p.World.CreationSnapshot();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c=='\n');
@@ -90,11 +91,12 @@ public static partial class Scenarios
         }
         if(enter)Check.That(MervFollowupElevatorFixture.SameEntry(saved,await MervFollowupCurrent(context,p)),
             "Current accepted entry/site/witness remains identical immediately before ordinary door request");
+        var ownWorld=p.World.CurrentOwnViewLife();int viewCursor=ownWorld.Events.Count==0?ownWorld.OwnBirthSection+1:ownWorld.Events.Max(e=>e.Section)+1;
         string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
         if(!enter&&exitEscortGoal.HasValue)await MervFollowupWaitEscortExit(context,p,before!,authoredExit!,exitEscortGoal.Value,intent);
         else if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary saved-door elevator ride",TimeSpan.FromSeconds(15));
         evidence.Add(new{Operation="ordinary-door",saved.Mission,saved.Phase,Enter=enter,DoorKey=key,Request=request,AuthoredExitEscort=exitEscortGoal,IntentRpcCursor=intent,PhysicalTeleportObserved=context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),Waypoint=door,Lobby=lobby,RideLog=context.Server.DebugLog()[log..]});
-        if(selectedRide.Witness!=null)
+        if(selectedRide.Measured)
         {
             MervFollowupElevatorFixture.DoorObservation? currentDoor=null;
             await p.WaitUntilAsync(()=>
@@ -104,6 +106,7 @@ public static partial class Scenarios
             },"Exact current-life measured door key/pose/quaternion",TimeSpan.FromSeconds(15));
             var overlay=currentDoor!.View;
             var arrival=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            Check.That(selectedRide.Npc==null||arrival!=null,"Owned NPC entry requires the ordinary actual ride");
             if(arrival!=null)
             {
                 var actual=Enumerable.Range(1,3).Select(i=>double.Parse(arrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
@@ -111,7 +114,11 @@ public static partial class Scenarios
                 Check.That(NavMesh.Locate(selectedRide.District,actual[0],actual[1],actual[2],out var nav),"Measured actual arrival has NAV");
                 MervFollowupElevatorFixture.RequireRoot(selectedRide,enter,actual,nav.sector,nav.region,nav.floorY,
                     saved.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).Select(o=>o.OpenFloor!.Route.Take(3).ToArray()));
-                evidence.Add(new{Operation="selected-measured-elevator-root",Key=key,ActualRoot=actual,nav.sector,nav.region,nav.floorY,selectedRide.Witness});
+                NpcInteriorComputerState.Teleport? npcArrival=null;
+                if(selectedRide.Npc!=null)
+                    await p.WaitUntilAsync(()=>{try{npcArrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownWorld,viewCursor,actual);return true;}catch(InvalidDataException){return false;}},
+                        "Fresh ordinary arrival at the owned NPC Standing",TimeSpan.FromSeconds(15));
+                evidence.Add(new{Operation="selected-measured-elevator-root",Key=key,ActualRoot=actual,nav.sector,nav.region,nav.floorY,selectedRide.Witness,NpcWitness=selectedRide.Npc?.Raw,NpcArrival=npcArrival});
             }
             evidence.Add(new{Operation="selected-measured-elevator-overlay",Key=key,Pose=pose,selectedRide.Witness,overlay.ViewId,overlay.SpawnId,currentDoor.OwnLife,currentDoor.BirthSection,ObservedCurrentAfterRequest=true,NewCreationNotRequired=true});
         }
@@ -123,7 +130,7 @@ public static partial class Scenarios
                 var actual=Enumerable.Range(1,3).Select(i=>double.Parse(actualArrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
                 SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
                 if(NavMesh.Locate(selectedRide.District,actual[0],actual[1],actual[2],out var actualNav))
-                    evidence.Add(MervBound326Approach.Capture(saved,actual,actualNav,p.World.CurrentOwnViewLife(),selectedRide.Witness!=null));
+                    evidence.Add(MervBound326Approach.Capture(saved,actual,actualNav,p.World.CurrentOwnViewLife(),selectedRide.Measured));
             }
         }
         if(!enter)
