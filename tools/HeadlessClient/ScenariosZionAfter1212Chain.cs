@@ -45,7 +45,13 @@ public static partial class Scenarios
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
                 bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
-                await ZionAfter1212Ride(context,p,true,diagnostics!.Note,viewsStart);
+                bool outsideOnly=ZionAfter1212OutsideStage.Matches(authoredMission,phase);
+                if(outsideOnly)
+                {
+                    ZionAfter1212OutsideStage.Require(authoredMission,phase,await ZionAfter1212Checkpoint(context,p));
+                    diagnostics!.Note(new{Kind="Authored outdoor Upload stage; no new interior entry or ride",Mission=id,Phase=phase,NativeWalkingProven=false});
+                }
+                else await ZionAfter1212Ride(context,p,true,diagnostics!.Note,viewsStart);
                 if(evidenceOptions?.ExactZionAfter1212==true)
                 {
                     var next=await diagnostics!.CarryRelogAsync(id);
@@ -57,6 +63,7 @@ public static partial class Scenarios
                 async Task PrepareOutside()
                 {
                     var current=await ZionAfter1212Checkpoint(context,p);
+                    if(outsideOnly){ZionAfter1212OutsideStage.Require(authoredMission,phase,current);return;}
                     if(outside!=null){MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());return;}
                     var street=ZionAfter1212StreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
                     var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
