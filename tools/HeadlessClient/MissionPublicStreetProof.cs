@@ -12,6 +12,18 @@ public static class MissionPublicStreetProof
     static void Need(bool b,string why){if(!b)throw new InvalidDataException(why);}
     static double[] V(JsonElement e){var a=e.EnumerateArray().Select(x=>x.GetDouble()).ToArray();Need(a.Length==3&&a.All(double.IsFinite),"Street finite triple");return a;}
     static StaticWorldObject Raw(string s)=>JsonSerializer.Deserialize<StaticWorldObject>(s,Fields)??throw new InvalidDataException("Street raw identity");
+    // Idle Mob.Tick may change Position/Rotation before any authored goal. All other owned fields remain exact.
+    public static void RequireStableActors(IReadOnlyList<MissionProgress.SavedMob> before,IReadOnlyList<MissionProgress.SavedMob> after)
+    {
+        Need(before!=null&&after!=null&&before.Count==after.Count,"Owned actor count changed");
+        foreach(var list in new[]{before,after})Need(list.All(m=>m!=null&&Guid.TryParseExact(m.Identity,"N",out _)&&new[]{m.X,m.Y,m.Z}.All(double.IsFinite))&&list.Select(m=>m.Identity).Distinct().Count()==list.Count,"Owned actor UUID/pose invalid or duplicated");
+        string Stable(MissionProgress.SavedMob mob)
+        {
+            var node=System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(mob,Fields))!.AsObject();
+            foreach(string motion in new[]{"X","Y","Z","Rotation"})node.Remove(motion);return node.ToJsonString();
+        }
+        Need(before.OrderBy(m=>m.Identity).Select(Stable).SequenceEqual(after.OrderBy(m=>m.Identity).Select(Stable)),"Owned actor identity/role/side/health/state changed");
+    }
     public static JsonElement Select(MissionProgress.SavedState s)
     {
         Need(s.Version==2&&s.Mission==101213&&s.Phase==0&&s.Started>0&&Guid.TryParseExact(s.Identity,"N",out _)&&s.OpenFloorSites!=null&&s.OpenFloorCurrentSiteIndex.HasValue,"Current101213 accepted owner");

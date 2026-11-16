@@ -65,4 +65,20 @@ public sealed partial class MissionStreetAccessTests
         Assert.Equal(raw.Length,offset);Assert.Equal(hds.ServerPackets.BuildEnterCombatMode(0x00100000),raw[32..]);
     }
 
+    static MissionProgress.SavedMob[] RetainedWander(bool after)=>JsonSerializer.Deserialize<MissionProgress.SavedMob[]>(after?"[{\"Identity\":\"7a0eb09e9fa44d4d8365e6f99828d9b8\",\"RewardExperience\":0,\"Lootable\":false,\"Loot\":null,\"Npc\":1,\"Phase\":0,\"Name\":\"Antilope\",\"Rsi\":\"9b0000b4\",\"Level\":50,\"Health\":2150,\"MaxHealth\":2150,\"Weapon\":2568,\"Rotation\":65445,\"X\":27993.322265625,\"Y\":1295,\"Z\":11858.7041015625,\"Dead\":false,\"ScriptedCorpse\":false,\"Aggro\":0,\"Friendly\":true,\"Hostile\":false,\"Giver\":false,\"Taker\":false,\"Wave\":null}]":"[{\"Identity\":\"7a0eb09e9fa44d4d8365e6f99828d9b8\",\"RewardExperience\":0,\"Lootable\":false,\"Loot\":null,\"Npc\":1,\"Phase\":0,\"Name\":\"Antilope\",\"Rsi\":\"9b0000b4\",\"Level\":50,\"Health\":2150,\"MaxHealth\":2150,\"Weapon\":2568,\"Rotation\":0,\"X\":27600,\"Y\":1295,\"Z\":11550,\"Dead\":false,\"ScriptedCorpse\":false,\"Aggro\":0,\"Friendly\":true,\"Hostile\":false,\"Giver\":false,\"Taker\":false,\"Wave\":null}]")!;
+    [Fact]public void ActualAntilopeWanderPreservesOwnedIdentityAndRemainsOnTheSameNativeFloor()
+    {
+        var before=RetainedWander(false);var after=RetainedWander(true);Assert.NotEqual(before[0].X,after[0].X);Assert.NotEqual(before[0].Rotation,after[0].Rotation);
+        MissionPublicStreetProof.RequireStableActors(before,after);
+        SectorProperties.Load(Path.Combine(Repo,"data/sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Repo,"data/navmesh"));
+        foreach(var m in before.Concat(after)){Assert.True(NavMesh.Locate(1,m.X,m.Y,m.Z,out var nav));Assert.True(nav.indoors);Assert.Equal((ushort)209,nav.sector);Assert.Equal(m.Y,nav.floorY+95);Assert.Equal(1295,m.Y);}
+    }
+    [Theory][InlineData("identity")][InlineData("npc")][InlineData("phase")][InlineData("side")][InlineData("health")][InlineData("nan")][InlineData("missing")][InlineData("duplicate")]
+    public void PublicApproachCannotBorrowChangedOrMissingActorsWhileAllowingOnlyMotion(string change)
+    {
+        var before=RetainedWander(false);var after=RetainedWander(true);var m=after[0];
+        switch(change){case "identity":m.Identity=new string('b',32);break;case "npc":m.Npc++;break;case "phase":m.Phase++;break;case "side":m.Friendly=!m.Friendly;break;case "health":m.Health--;break;case "nan":m.X=double.NaN;break;case "missing":after=Array.Empty<MissionProgress.SavedMob>();break;case "duplicate":before=new[]{before[0],before[0]};after=new[]{m,m};break;}
+        Assert.Throws<InvalidDataException>(()=>MissionPublicStreetProof.RequireStableActors(before,after));
+    }
+
 }
