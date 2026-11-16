@@ -13,22 +13,24 @@ public class OrdinaryWithdrawalInputTests
     }
     static AbilityItem Move(ushort id){var m=new AbilityItem();m.setAbilityID(id);return m;}
     static void Stat(WorldClient c,ushort id,int value)=>TimedEffects.ForPlayer(c).Effects.Apply(id,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=id,Value=value,Seconds=60}},TimeUtils.GetSimTimeSeconds());
-    [Fact] public void Primary1005LinkAndReal120ProducerUseExistingSeparateCapsAndLoadLifecycle()
+    [Fact] public void RealNormalStylesSupplyPrimary65Then72Then65While1045RemainsUnconsumed()
     {
         Assert.Equal((ushort)1045,AbilityCatalog.IdOf((uint)AbilityCatalog.Find(1005)!.Number("AbilityAttributeLink/AttributeLink")));
-        var c=Actor();AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(17,50),(1112,50)});c.playerData.combatStyle=1112;AbilityPassives.Refresh(c,false);
-        Assert.Equal(72,AbilityStats.Player(c,1005));Assert.Equal(72,WithdrawalInput.Attack(c,null,true));
-        AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(17,50),(1112,50),(120,50)});
-        Assert.Equal(25,AbilityStats.Player(c,1045));Assert.Equal(84,WithdrawalInput.Attack(c,null,true));
-        AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(17,50),(1112,50)});Assert.Equal(72,WithdrawalInput.Attack(c,null,true));
-        c.playerData=new ClientData();Assert.Equal(0,WithdrawalInput.Attack(c,null,true)); // No persistent input cache or old owner's passive adoption.
+        Assert.False(AbilityCatalog.Find(1005)!.Has("AbilityAttributeLink/AttributeLevelBonusScale"));
+        var c=Actor();AbilityPassives.SetLoaded(c,WithdrawalFixture.Abilities.Select(id=>(id,(ushort)50)));
+        foreach(var row in new[]{(Style:(ushort)17,Raw:65),(Style:(ushort)1112,Raw:72),(Style:(ushort)17,Raw:65)})
+        {c.playerData.combatStyle=row.Style;AbilityPassives.Refresh(c,false);Assert.Equal(row.Raw,AbilityStats.Player(c,1005));Assert.Equal(row.Raw,WithdrawalInput.Attack(c,null,true));}
+        AbilityPassives.SetLoaded(c,WithdrawalFixture.Abilities.Concat(new ushort[]{120}).Select(id=>(id,(ushort)50)));
+        Assert.Equal(25,AbilityStats.Player(c,1045));Assert.Equal(65,WithdrawalInput.Attack(c,null,true));
+        AbilityPassives.SetLoaded(c,WithdrawalFixture.Abilities.Select(id=>(id,(ushort)50)));Assert.Equal(0,AbilityStats.Player(c,1045));Assert.Equal(65,WithdrawalInput.Attack(c,null,true));
+        c.playerData=new ClientData();Assert.Equal(0,WithdrawalInput.Attack(c,null,true));
     }
-    [Fact] public void DirectAndBonusCapSeparatelyAndNegativeTotalsRemainMeaningful()
+    [Fact] public void DirectCapAppliesAndLinkedBonusIsNotGuessed()
     {
         var c=Actor();Stat(c,1005,10000);Stat(c,1045,1000);
-        Assert.Equal(600,AbilityStats.Player(c,1005));Assert.Equal(130,AbilityStats.Player(c,1045));Assert.Equal(665,WithdrawalInput.Attack(c,null,true));
-        var n=Actor();Stat(n,1005,20);Stat(n,1045,-11);Assert.Equal(15,WithdrawalInput.Attack(n,null,true));
-        Stat(n,163,50);Stat(n,522,80);Stat(n,1044,60);Assert.Equal(15,WithdrawalInput.Attack(n,null,true)); // Ordinary-withdraw input is typed, not a duplicate melee/initiative addition.
+        Assert.Equal(600,AbilityStats.Player(c,1005));Assert.Equal(130,AbilityStats.Player(c,1045));Assert.Equal(600,WithdrawalInput.Attack(c,null,true));
+        var n=Actor();Stat(n,1005,20);Stat(n,1045,-11);Assert.Equal(20,WithdrawalInput.Attack(n,null,true));
+        Stat(n,163,50);Stat(n,522,80);Stat(n,1044,60);Assert.Equal(20,WithdrawalInput.Attack(n,null,true)); // Ordinary-withdraw input is typed, not a duplicate melee/initiative addition.
     }
     [Theory] [InlineData(CombatTactic.Speed,1d)] [InlineData(CombatTactic.Power,1.2d)] [InlineData(CombatTactic.Grab,.9d)] [InlineData(CombatTactic.Block,1d)]
     public void PrimaryTacticFactorsFeedExistingTwoRollsWithoutNewDraws(CombatTactic tactic,double factor)
@@ -85,11 +87,11 @@ public class OrdinaryWithdrawalInputTests
         side.Withdrawing=false;fight.RequestWithdraw(c,true);Assert.True(side.OrdinaryWithdrawalRequested);
         Assert.True(WithdrawalInput.Ordinary(side.Withdrawing,false,null,side.OrdinaryWithdrawalRequested));
     }
-    [Fact] public void FixtureHasFullNormalPrerequisitesAndOnly120LoadChanges()
+    [Fact] public void FixtureHasSevenNormalParentsAndNoLoadoutOrStatOverrides()
     {
-        var ids=WithdrawalFixture.Abilities;var rows=ids.Select((id,i)=>new AbilityMemory.Row((uint)i,(ushort)(400+i),0x80000000u|((uint)id<<10),50,id!=120)).ToArray();
-        Assert.Null(AbilityLoadQualification.Refusal(rows,new[]{Assert.Single(rows,x=>x.Ability==120)},PlayerProgression.ExperienceForLevel(50),out bool low));Assert.False(low);
-        Assert.True(rows.Sum(x=>AbilityMemory.Cost(x.Ability))<=AbilityMemory.ForLevel(50));Assert.Equal(403,WithdrawalFixture.DisguiseSlot);
+        var ids=WithdrawalFixture.Abilities;var rows=ids.Select((id,i)=>new AbilityMemory.Row((uint)i,(ushort)(400+i),0x80000000u|((uint)id<<10),50,id!=1112)).ToArray();
+        Assert.Null(AbilityLoadQualification.Refusal(rows,new[]{Assert.Single(rows,x=>x.Ability==1112)},PlayerProgression.ExperienceForLevel(50),out bool low));Assert.False(low);
+        Assert.True(rows.Sum(x=>AbilityMemory.Cost(x.Ability))<=AbilityMemory.ForLevel(50));Assert.Equal(7,ids.Length);
         var mode=NativeQa.NativeQaModes.RequireKnown(WithdrawalFixture.Name);Assert.False(mode.Plan.DevCommands);Assert.False(mode.Plan.FixedCallbackRolls);
         Assert.Equal(ids,mode.Plan.Abilities);Assert.DoesNotContain(mode.Plan.EnvironmentOverrides.Keys,k=>k.Contains("ROLL")||k.Contains("ATTACK15"));
     }

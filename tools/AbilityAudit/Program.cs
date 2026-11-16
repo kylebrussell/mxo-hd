@@ -5,7 +5,7 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
-    1005 or 1045 when typeof(AbilityCatalog).Assembly.GetType("hds.WithdrawalInput") != null => "OURS ordinary contested44 withdrawal raw1005 + level-percent1045; primary withdrawal tactic factors; TF6 escape unchanged",
+    1005 when typeof(AbilityCatalog).Assembly.GetType("hds.WithdrawalInput") != null => "Primary direct1005 and withdrawal tactic factors; OURS ordinary44 caller/level baseline; linked1045 coefficient unimplemented; TF6 unchanged",
     1044 => "OURS additive interlock attack-base initiative; health snapshot sourced, retail consumer unresolved",
     519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
     212 when typeof(AbilityCatalog).Assembly.GetType("hds.PunishingBlows") != null => "OURS current Daze/Stun/OffBalance damage percent (PunishingBlows consumer present)",
