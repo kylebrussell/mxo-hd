@@ -42,7 +42,7 @@ namespace hds
             if(!ReferenceEquals(live,target)||visible==null||!visible.viewCreated||visible.spawnId!=fence.NpcSpawn)return;
             int value=Resolve(ability,source.playerInstance.Level.getValue()[0],TimedEffects.ForMob(target),TimeUtils.GetSimTimeSeconds());
             if(value<=0)return;
-            int raw=AbilityStats.ScaleAbilityDamage(source,ability,value);
+            int raw=PunishingBlows.Npc(source,target,AbilityStats.ScaleAbilityDamage(source,ability,value));
             ushort damage=TypedAbilityResistance.Npc(source,target,ability,raw,7);
             ushort before=target.getHealthC();
             if(!CombatManager.GetHandler(source).ApplyAbilityToNpc(target,view,damage,fx))return;
@@ -56,7 +56,7 @@ namespace hds
             if(!Handles(ability)||!fence.Current(source)||!fence.TargetCurrent(target)||PvpCombat.HealthOf(target)==0)return;
             int value=Resolve(ability,source.playerInstance.Level.getValue()[0],TimedEffects.ForPlayer(target),TimeUtils.GetSimTimeSeconds());
             if(value<=0)return;
-            int raw=AbilityStats.ScaleAbilityDamage(source,ability,value);
+            int raw=PunishingBlows.Player(source,target,AbilityStats.ScaleAbilityDamage(source,ability,value));
             ushort damage=TypedAbilityResistance.Player(source,target,ability,raw,7);
             if(!fence.Current(source)||!fence.TargetCurrent(target)||PvpCombat.Check(source,target)!=PvpRules.Verdict.Allowed)return;
             string casterName=PvpFlag.Name(source),targetName=PvpFlag.Name(target);

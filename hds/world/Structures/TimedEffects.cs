@@ -838,6 +838,7 @@ namespace hds
                 Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " heals " + Name + " for " + damage);
                 return true;
             }
+            damage = PunishingBlows.Player(mod.Caster, client, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Player(mod.Caster, client, mod.Parent, damage, mod.DamageType);
             UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
@@ -974,6 +975,7 @@ namespace hds
             {
                 return false;
             }
+            damage = PunishingBlows.Npc(caster, mob, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Npc(caster, mob, mod.Parent, damage, mod.DamageType);
             // Each target keeps its DOT even when the caster's current fight changes. Death claiming and rewards

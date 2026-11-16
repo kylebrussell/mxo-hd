@@ -96,6 +96,16 @@ namespace hds
         private readonly List<Side> members = new List<Side>();
         public const int MaximumFighters = 6;
         public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
+        internal WorldClient[] CurrentOpponents(WorldClient target)
+        {
+            lock(sync)
+            {
+                if(!IsActive)return Array.Empty<WorldClient>();
+                Side side=members.LastOrDefault(s=>s.Present&&s.Client==target);
+                if(side==null)return Array.Empty<WorldClient>();
+                return members.Where(s=>s.Present&&s!=side&&(s.Other==side||side.Other==s)).Select(s=>s.Client).Distinct().ToArray();
+            }
+        }
 
         private PvpFight(WorldClient attacker, WorldClient defender)
         {
@@ -524,19 +534,19 @@ namespace hds
                 lock (rng)
                 {
                     pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
-                        AbilityStats.SpecialAttack(p.Client, pAbility), AbilityStats.SpecialDefense(n.Client, pAbility)) &&
+                        InterlockInitiative.Attack(p.Client, pAbility), AbilityStats.SpecialDefense(n.Client, pAbility)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
-                        AbilityStats.SpecialAttack(n.Client, nAbility), AbilityStats.SpecialDefense(p.Client, nAbility)) &&
+                        InterlockInitiative.Attack(n.Client, nAbility), AbilityStats.SpecialDefense(p.Client, nAbility)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     pDamage = CombatCalculator.CloseCombatDamage(rng, pLevel, nLevel, pTactic, out absorbedByN, pType,
                         AbilityStats.Player(p.Client, 1142), AbilityStats.Toughness(n.Client, false));
-                    pDamage = (UInt16)Math.Round(pDamage * PvpCombat.IncomingDamageMultiplier(n.Client));
+                    pDamage = PunishingBlows.Player(p.Client, n.Client, (UInt16)Math.Round(pDamage * PvpCombat.IncomingDamageMultiplier(n.Client)));
                     nDamage = CombatCalculator.CloseCombatDamage(rng, nLevel, pLevel, nTactic, out absorbedByP, nType,
                         AbilityStats.Player(n.Client, 1142), AbilityStats.Toughness(p.Client, false));
-                    nDamage = (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client));
+                    nDamage = PunishingBlows.Player(n.Client, p.Client, (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client)));
                     pFirst = !counter || CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == first, () => rng.Next(2) == 0);
                 }
 

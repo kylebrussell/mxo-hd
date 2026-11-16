@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
         new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
@@ -79,6 +80,9 @@ public static partial class Scenarios
         new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
         new Scenario("sever-artery-states",SeverArteryStates,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_SEVER_STATE_QA"]="1"}),
+        new Scenario("combat-insight-engagement",CombatInsightWire,CombatInsightFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
+        new Scenario("punishing-blows",PunishingBlowsWire,PunishingBlowsFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
+        new Scenario("buff-drain-lifetime",BuffDrainLifetimeWire,BuffDrainLifetimeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("conditional-thrown-damage",ConditionalThrownDamageWire,ConditionalThrowFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("reverse-bulldog-controls", ReverseBulldogControls, ReverseBulldogFixture.Environment),
         new Scenario("ghost-strike-callback",GhostStrikeCallback,GhostStrikeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
@@ -102,6 +106,7 @@ public static partial class Scenarios
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
         new Scenario("ability-zen-master", ZenMaster, HealthCallbackNpcs),
         new Scenario("ability-desperation-snapshot", DesperationSnapshot, HealthCallbackNpcs.Concat(new Dictionary<string,string> { ["MXO_DESPERATION_QA_HOLD_HEALTH"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
+        new Scenario("desperation-initiative",DesperationInitiative,new Dictionary<string,string>(StillNpcs){["MXO_DESPERATION_QA_HOLD_HEALTH"]="1"}),
         new Scenario("ability-concentration-armed-fixture", ConcentrationArmedFixture,
             FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_CAST_INTERRUPT_QA_ROLL"]="85",["MXO_CONCENTRATION_QA_DAMAGE"]="1"})),
         new Scenario("ability-concentration-control",ConcentrationControl,FreeCastViralLandingEnvironment(StillNpcs.Concat(new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="1",["MXO_CAST_INTERRUPT_QA_ROLL"]="85"}).ToDictionary(p=>p.Key,p=>p.Value))),
@@ -159,6 +164,7 @@ public static partial class Scenarios
         new Scenario("hyperjump-resource-records", HyperjumpResourceRecords, StillNpcs),
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
+        new Scenario("transmit-code-resistance",TransmitCodeWire,TransmitCodeFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
         new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),
@@ -326,6 +332,7 @@ public static partial class Scenarios
         }),
         new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
         new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
+        new Scenario("sharpshooter-freefire", SharpshooterWire, SharpshooterFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
         new Scenario("pvp-opponents-entry", PvpOpponentsEntry, PvpOpponentsFixture.Environment),
