@@ -51,9 +51,17 @@ public static class MissionPublicStreetProof
         Need(opening.Length==3&&centre.Length==3&&opening.All(double.IsFinite)&&centre.All(double.IsFinite),"Finite public side sample");
         double dx=centre[0]-opening[0],dz=centre[2]-opening[2];Need(dx*dx+dz*dz>0,"Nonzero public side direction");return new[]{(opening[0]+centre[0])/2,centre[1],(opening[2]+centre[2])/2};
     }
-    public static Plan Read(string repository,MissionProgress.SavedState saved)
+    public static Plan Read(string repository,MissionProgress.SavedState saved)=>ReadSelected(repository,saved,Select(saved));
+    // Shared geometry only: the existing generic Street reader validates exact owner/site/raw/context first.
+    public static Plan ReadCurrent(string repository,MissionProgress.SavedState saved)
     {
-        var row=Select(saved);var c=row.GetProperty("Context");var lobby=c.GetProperty("Lobby");var raw=Raw(lobby.GetProperty("RawDoorJson").GetString()!);Need(raw.metrId==1,"Street lobby world");
+        var current=MervFollowupStreetEntry.ForSite(saved)??throw new InvalidDataException("Missing current Street context");
+        Need(current.Raw.GetProperty("Phase").GetInt32()==saved.Phase,"Current phase, not historical Street context");
+        return ReadSelected(repository,saved,current.Raw);
+    }
+    static Plan ReadSelected(string repository,MissionProgress.SavedState saved,JsonElement row)
+    {
+        var c=row.GetProperty("Context");var lobby=c.GetProperty("Lobby");var raw=Raw(lobby.GetProperty("RawDoorJson").GetString()!);Need(raw.metrId==1,"Street lobby world");
         byte[] compressed=File.ReadAllBytes(Path.Combine(repository,"data","mission_street_access","1",raw.sectorID+".json.gz"));using var input=new MemoryStream(compressed);using var gz=new GZipStream(input,CompressionMode.Decompress);using var output=new MemoryStream();gz.CopyTo(output);byte[] bytes=output.ToArray();
         Need(Convert.ToHexString(SHA256.HashData(bytes))==c.GetProperty("StreetDigest").GetString(),"Street payload matches saved digest");using var street=JsonDocument.Parse(bytes);using var interior=JsonDocument.Parse(MissionNpcInteriorProof.EvidencePayload(repository,raw.sectorID,lobby.GetProperty("EvidenceDigest").GetString()!));var outer=street.RootElement;var inner=interior.RootElement;
         Need(outer.GetProperty("World").GetInt32()==1&&outer.GetProperty("Sector").GetInt32()==raw.sectorID&&inner.GetProperty("World").GetInt32()==1&&inner.GetProperty("Sector").GetInt32()==raw.sectorID,"Exact street/interior world/sector");

@@ -1,4 +1,6 @@
-﻿# Zion critical missions 101208-101212
+Captured native101210phase1 lobby recheck: [diagnostic checklist](MISSION-ZION-BLUEPILL-LOBBY-CHECKPOINT.md). It preserves the accepted capture and checks the public path/current lobby waypoint; car rendering remains unproved.
+
+# Zion critical missions 101208-101212
 
 ## Native0940 HOLD and current lobby-marker correction (source only)
 
