@@ -5,7 +5,9 @@ namespace HeadlessClient;
 public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness)
 {
     public MissionNpcInteriorProof.Plan? Npc {get;init;}
-    public bool Measured => Witness!=null||Npc!=null;
+    public ZionAfter1212StreetEntry.Plan? Street {get;init;}
+    public bool Measured => Witness!=null||Npc!=null||Street!=null;
+    public double[] Approach => Street!=null?(Key==Street.Floor.Key?Street.Floor:Street.Lobby).Standing!:Npc!=null?(Key==Npc.Floor.Key?Npc.Floor:Npc.Lobby).Standing!:new[]{Pose[0],Pose[1]-50,Pose[2]};
     public static ZionAfter1212RidePlan Select(MissionProgress.SavedState state,bool enter,IEnumerable<string> legacyRows,IReadOnlyList<ushort>? objectOrder=null)
     {
         void Require(bool value,string reason){if(!value)throw new InvalidDataException(reason);}
@@ -21,6 +23,8 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         Require(index>=0&&index<state.SiteDoors.Length,"Current raw site index required");
         var raw=state.SiteDoors[index];Require(raw!=null&&raw.metrId==1&&raw.mxoStaticId==floorKey&&raw.type!=null&&raw.type.Length>=2&&new ushort[]{417,419}.Contains(BitConverter.ToUInt16(raw.type)),"Current raw site key must match waypoint");
         Require(state.Objects.All(o=>o.Spot!=null&&o.Spot.metrId==raw.metrId&&(o.OpenFloor==null||o.OpenFloor.World==raw.metrId)),"Current raw objects and OpenFloor witnesses must retain selected world");
+        var street=ZionAfter1212StreetEntry.ForSite(state);
+        if(street!=null){var entry=enter?street.Lobby:street.Floor;return new(raw.metrId,entry.Key,entry.Position,entry.Quaternion,null){Street=street};}
         var npc=MissionNpcInteriorRide.ForSite(state);
         if(npc!=null)
         {
@@ -83,7 +87,7 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         if(before.Version!=after.Version||before.Mission!=after.Mission||before.Phase!=after.Phase||before.Identity!=after.Identity||before.Started!=after.Started||before.Instance!=after.Instance)
             throw new InvalidDataException("Ride owner/mission/phase changed before ordinary door request");
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,Street=s.StreetAccess.ValueKind==System.Text.Json.JsonValueKind.Undefined?null:s.StreetAccess.GetRawText(),s.Waypoints,s.Exits,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         if(Snapshot(before)!=Snapshot(after))throw new InvalidDataException("Saved ride identity changed before ordinary door request");
     }
 }

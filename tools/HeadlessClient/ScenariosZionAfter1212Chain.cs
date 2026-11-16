@@ -53,6 +53,22 @@ public static partial class Scenarios
                 }
                 if(diagnostics!=null)await diagnostics.PhaseAsync(id,phase);
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
+                MissionOutsideUploadProof.Token? outside=null;
+                async Task PrepareOutside()
+                {
+                    var current=await ZionAfter1212Checkpoint(context,p);
+                    if(outside!=null){MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());return;}
+                    var street=ZionAfter1212StreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                    var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
+                    outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,()=>ZionAfter1212Checkpoint(context,p),mark=>ZionAfter1212Ride(context,p,false,diagnostics!.Note,waitForPhaseAdvance:false,beforeRequest:mark),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),context.Server.DebugLog,diagnostics!.Note);
+                }
+                async Task ReturnInside()
+                {
+                    if(outside==null)return;var current=await ZionAfter1212Checkpoint(context,p);MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
+                    var street=ZionAfter1212StreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                    var standing=street?.Floor.Standing??npc?.Floor.Standing??throw new ScenarioFailure("Return trip requires exact saved floor Standing");
+                    await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,()=>ZionAfter1212Checkpoint(context,p),mark=>ZionAfter1212Ride(context,p,true,diagnostics!.Note,beforeRequest:mark),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),context.Server.DebugLog,diagnostics!.Note,returningInside:true);outside=null;
+                }
                 ViewCreation? currentUploadBooth=null;
                 while(goals.Any(g=>!Done((int)g.Attribute("goal")!)))
                 {
@@ -61,6 +77,7 @@ public static partial class Scenarios
                         .OrderBy(g=>(int?)g.Attribute("optional")==1?0:1).FirstOrDefault();
                     Check.That(goal!=null,$"Mission{id} phase{phase+1} has an eligible remaining goal");
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;if(type!="Upload")currentUploadBooth=null;
+                    if(type!="Upload")await ReturnInside();
                     diagnostics?.Begin(id,phase,number,type);
                     Console.WriteLine($"  Prima{id} phase{phase+1} goal{number} {type}");
                     XElement Npc(string key)=>mission.Elements("npc").Single(n=>(string)n.Attribute("id")! == key);
@@ -154,13 +171,14 @@ public static partial class Scenarios
                                 {var recruit=evidenceOptions?.ExactZionAfter1212==true?await ZionAfter1212Npc(context,p,npc,viewsStart):await PrimaNpc(context,p,npc,viewsStart,true);diagnostics?.Target("Escort recruitment",recruit);await Task.Delay(800);}
                             }
                             if(to=="exit")await ZionAfter1212EscortExit(context,p,authoredMission,number,escortOwner!,escortIntentCursor,escortIntentAbsoluteCursor,diagnostics!.Note);
-                            else if(to=="hardline")await ZionUpload(p);
+                            else if(to=="hardline"){await PrepareOutside();await ZionUpload(p);}
                             else if(to.StartsWith("npc:")){var destination=evidenceOptions?.ExactZionAfter1212==true?await ZionAfter1212Npc(context,p,Npc(to[4..]),viewsStart):await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true);diagnostics?.Target("Escort destination",destination);}
                             else if(to.StartsWith("object:")){if(evidenceOptions?.ExactZionAfter1212==true)await ZionAfter1212Object(context,p,int.Parse(to[7..]),viewsStart,diagnostics!.Note);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
                         case "Upload":
+                            await PrepareOutside();
                             if(evidenceOptions?.FreshUploadBooth==true)
                             {
                                 // A valid booth may already be live after carry reentry. Reconcile its exact
@@ -199,7 +217,7 @@ public static partial class Scenarios
                 await p.WaitUntilAsync(()=>Log().Contains($"[MISSION] Phase {phase} goals done"),"phase goals complete",TimeSpan.FromSeconds(10));
                 async Task<string> PersistedPhase()=>await context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')");
                 string actual=await PersistedPhase();
-                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")&&actual==id+":"+phase)await ZionAfter1212Exit(context,p,diagnostics!.Note);
+                if(Log().Contains($"[MISSION] Phase {phase} goals done; waiting")&&actual==id+":"+phase&&outside==null)await ZionAfter1212Exit(context,p,diagnostics!.Note);
                 phase++;
                 string expected=phase<mission.Elements("phase").Count()?id+":"+phase:"NULL";
                 await p.WaitUntilAsync(()=>PersistedPhase().GetAwaiter().GetResult()==expected,"Exact persisted phase/completion after authored progression",TimeSpan.FromSeconds(20));

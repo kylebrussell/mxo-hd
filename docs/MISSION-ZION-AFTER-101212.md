@@ -175,3 +175,10 @@ Frozen producer pins:
 - Release NativeQa: `2E429B9AAED62C0B8DDBCC24230B9AC5ADDBAB9676C510323C8B41DF12CE65C5`.
 
 Historical95ad raw JSON SHA256: `6C1674B6AEA3F699A13D4958DDF93D315B4F696D771DF022F815C1540777CF1F`; PacketLog SHA256: `142091ACE595453CA58E0D28A3505906B364B76E8ECA78BFA184E16D85AA6FED`. Complete source/driver/process/cleanup/raw proof is `Temp/mxo-pr241-saved-ride-refresh-20261115/final-95ad0043-proof.json`, SHA256 `6670FA7F9F90E22762C753757A071C9B0F0946E9A8AC54445487CB0AD1A680D8`. Frozen95ad runtime/tools/tests/data and all old producers remain preserved. A docs-only publication descendant adds this attribution; new-head green CI and coordinator review are required before READY. Claude alone owns native QA and merge.
+
+
+## Current source candidate: ordinary outside trips
+
+The current candidate composes PR271 and the public-street admission runtime. Its QA driver requires an ordinary unfinished-floor downride, fresh current-life arrival and exact packet ACK before any disclosed outside Upload movement aid. Repeated uploads at the same live booth retain the current owner/site/life token; later interior actions require a normal up trip. Saved Street pose, Standing and NAV node take precedence over older NPC entry witnesses. No production placement gate is weakened.
+
+Native checks must walk street door → lobby → distinct car → floor, then ordinary car down → public exit → hardline, and return normally if needed. Root/route point movement remains a headless aid. Current integration is UNBUILT/UNRUN and depends on PR271 native pass/merge; earlier401.2s chain proof is historical and did not prove unfinished-floor escape. This remains HOLD until current focused checks, builds, fresh chain/bootstrap and CI pass.
