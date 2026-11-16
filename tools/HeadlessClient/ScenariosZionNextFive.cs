@@ -25,7 +25,7 @@ public static partial class Scenarios
         var authored=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"zion_1_2_*.xml").Select(XElement.Load).Single(m=>(int)m.Attribute("id")! == state.Mission);
         var objectOrder=authored.Elements("phase").ElementAt(state.Phase).Elements("object").Select(o=>checked((ushort)(int)o.Attribute("id")!)).ToArray();
         var selected=MervFollowupElevatorFixture.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
-        uint key=selected.Key;var pose=selected.Pose;long ownLife=p.World.CurrentOwnViewLife().Life;
+        uint key=selected.Key;var pose=selected.Pose;var ownWorld=p.World.CurrentOwnViewLife();long ownLife=ownWorld.Life;
         var approach=selected.Approach;
         await MoveForMissionTest(p,approach[0],approach[1],approach[2]);
         var rideBudget=System.Diagnostics.Stopwatch.StartNew();
@@ -45,7 +45,8 @@ public static partial class Scenarios
         var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&ZionNextFiveFixture.CurrentBody(p.World.CreationSnapshot(),o,state.Instance)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
-        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count,viewCursor=p.World.ViewSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+        var beforeRide=p.World.CurrentOwnViewLife();int viewCursor=beforeRide.Events.Count==0?beforeRide.OwnBirthSection+1:beforeRide.Events.Max(e=>e.Section)+1;
+        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
         if(door.y!=lobby[1])
         {
             var remaining=TimeSpan.FromSeconds(15)-(exitFollowers.Length>0?rideBudget.Elapsed:TimeSpan.Zero);
@@ -70,7 +71,7 @@ public static partial class Scenarios
             MervFollowupElevatorFixture.RequireRoot(selected,enter,actual,root.sector,root.region,root.floorY,state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).Select(o=>o.OpenFloor!.Route.Take(3).ToArray()));
             NpcInteriorComputerState.Teleport? npcArrival=null;
             if(selected.Npc!=null)
-                await p.WaitUntilAsync(()=>{try{npcArrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownLife,viewCursor,actual);return true;}catch(InvalidDataException){return false;}},
+                await p.WaitUntilAsync(()=>{try{npcArrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownWorld,viewCursor,actual);return true;}catch(InvalidDataException){return false;}},
                     "Fresh ordinary arrival at the owned NPC Standing",TimeSpan.FromSeconds(15));
             note?.Invoke(new{Kind="Current measured Zion elevator",selected.Key,selected.Witness,NpcWitness=selected.Npc?.Raw,NpcArrival=npcArrival,ActualRoot=actual,current!.OwnLife,current.BirthSection,DoorView=current.View.ViewId,DoorSpawn=current.View.SpawnId,NativeRenderingProven=false});
         }
