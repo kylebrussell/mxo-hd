@@ -18,7 +18,7 @@ public sealed class ZionFurnitureDestinationDoorTests
  [Fact] public void Retained6987RouteUsesExact346OnDestinationSideWithoutBorrowing348()
  {
   var p=Payload();string before=p.ToJsonString();var plan=MissionBoundFurnitureRouteProof.Read(Root,State(p),1)!;Assert.Equal((ushort)6987,plan.Goid);Assert.Equal((ushort)71,plan.Region);
-  var steps=MissionBoundFurnitureRouteProof.Steps(Root,plan);Assert.Contains(steps,s=>s.Doors.Contains(1398803739));Assert.Equal((ushort)346,Assert.Single(plan.Doors).Goid);Assert.Equal(before,p.ToJsonString());
+  var steps=MissionBoundFurnitureRouteProof.Steps(Root,plan);Assert.Contains(steps,s=>s.Doors.Contains(1398803739u));Assert.Equal((ushort)346,Assert.Single(plan.Doors).Goid);Assert.Equal(before,p.ToJsonString());
   var e=Evidence();var own=Group(e)["Occurrences"]!.AsArray();Assert.Equal(71,(int)own.Single(o=>(int)o!["Goid"]! ==346)!["Region"]!);Assert.Equal(116,(int)own.Single(o=>(int)o!["Goid"]! ==348)!["Region"]!);Own(e);
  }
  [Theory][InlineData("companionOnly")][InlineData("wrongOwnGoid")][InlineData("position")][InlineData("quaternion")][InlineData("globalConflict")][InlineData("unavailable")]
