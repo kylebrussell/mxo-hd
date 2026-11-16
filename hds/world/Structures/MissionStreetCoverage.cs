@@ -36,7 +36,9 @@ namespace hds
         {
             string kind=MissionStreetCheckpoint.KindFor(mission,phase);State state=Volatile.Read(ref current);
             if(kind==null||state==null)return null;
-            return site=>state.Contexts!=null&&state.Contexts.Allows(site,kind=="Npc");
+            // The same first-row index used by ordinary static dispatch, without lookup logging or graph work.
+            var loader=DataLoader.getInstance();
+            return site=>state.Contexts!=null&&state.Contexts.AllowsCurrent(site,kind=="Npc",key=>loader.WorldObjectsById.Find(key,mission.district));
         }
         internal static bool TryPrepare(MissionProgress p,int phase,MissionSite site,out JsonElement json,out string refusal)
         {
