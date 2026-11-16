@@ -144,7 +144,22 @@ public static partial class Scenarios
             var owned=(await Saved("reacquire-after-ordinary-entry"))!;ZionAfter1212RidePlan.SameEntry(before,owned);
             Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Ordinary hostile return retains actual current owner/life");
             var current=owned.Mobs.Single(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity);
-            await MachinesNextCertifiedActorRoute(context,p,owned,current,targets.Add).WaitAsync(Remaining());
+            if(MissionNpcInteriorRide.ForSite(owned)!=null)
+                await MachinesNextCertifiedActorRoute(context,p,owned,current,targets.Add).WaitAsync(Remaining());
+            else
+            {
+                var approach=MachinesObjectActorApproach.Read(context.RepositoryRoot,owned,current.Npc,p.World.CurrentOwnViewLife());
+                foreach(var point in approach.Steps)
+                {
+                    MachinesObjectActorApproach.RequireCurrent(approach,(await Saved("objects-actor-route-current"))!,p.World.CurrentOwnViewLife());
+                    await MoveForMissionTest(p,point.Standing[0],point.Standing[1],point.Standing[2]).WaitAsync(Remaining());
+                }
+                await Barrier().WaitAsync(Remaining());
+                var observed=(await Saved("objects-actor-route-arrived"))!;
+                MachinesObjectActorApproach.RequireCurrent(approach,observed,p.World.CurrentOwnViewLife());
+                Check.That(ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,observed.Mobs.Single(m=>m.Npc==actor.Npc),observed.Instance)!=null,"Object-stage approached actor has exact current live identity/position");
+                targets.Add(new{Kind="Objects actor approach",Actor=current.Identity,approach.Steps,RequiredDoors=Array.Empty<uint>(),NativeWalkingProven=false,MovementAid="Disclosed certified same-region local-edge points; no Project or synthetic NPC witness"});
+            }
             await MoveForMissionTest(p,current.X+100,current.Y,current.Z).WaitAsync(Remaining());await Barrier().WaitAsync(Remaining());
         }
         async Task Claim(byte[] window)
