@@ -32,7 +32,7 @@ public class MachinesNoSiteUploadTests
         Assert.False(MachinesNoSiteUploadFixture.IsNoSiteUpload(m,1));
     }
     static MissionProgress.SavedState Before()=>new(){Version=2,Identity=new string('a',32),Mission=201203,Instance=48,Started=1,Phase=0,Items=new(){{6796,1},{6795,2}}};
-    static MissionProgress.SavedState After(){var s=Before();s.Phase=1;return s;}
+    static MissionProgress.SavedState After(){var s=Before();s.Phase=1;s.OpenFloorCurrentSiteIndex=-1;return s;}
     [Fact] public void CompletedDownHandoffOnlyBindsExactNextNoSitePhaseWithEarnedItems()
     {
         var m=Load();MachinesNoSiteUploadFixture.RequireTransition(Before(),After(),m);
@@ -40,5 +40,9 @@ public class MachinesNoSiteUploadTests
         after=After();after.Items.Clear();Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
         after=After();after.Phase=3;Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
         after=After();after.Waypoints=new[]{new MissionWaypoint()};Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
+        after=After();after.OpenFloorCurrentSiteIndex=0;Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
+        after=After();after.OpenFloorCurrentSiteIndex=null;Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
+        after=After();after.Mobs.Add(new MissionProgress.SavedMob());Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
+        after=After();after.Version=1;Assert.Throws<InvalidDataException>(()=>MachinesNoSiteUploadFixture.RequireTransition(Before(),after,m));
     }
 }
