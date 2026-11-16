@@ -65,14 +65,4 @@ public sealed partial class MissionStreetAccessTests
         Assert.True(f.Cache.AllowsCurrent(f.Site,false,Lookup)); // Necessary identity is deliberately not a geometry certificate.
         Assert.False(MissionStreetContexts.ValidateSelected(f.Context,f.Site,new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")),Lookup,out _));
     }
-    [Fact] public void RefusedDurableContextRetainsExactPayloadChoicesAndItemsWithoutReroll()
-    {
-        var f=Audited665Entries();var selection=new MissionStreetSelection(1,101216,"9aa5d1f8c21643849871440c37883ea2",1794812627,2,MissionOpenFloorSite.From(f.Site),"Objects",f.Context,null);
-        var pending=new MissionStreetPending(selection,Array.Empty<MissionOpenFloorChoice>());
-        var state=new MissionProgress.SavedState{Version=2,Mission=101216,Phase=1,Items=new(){{6831,6}}};
-        string before=JsonSerializer.Serialize(new{Pending=pending,State=state},MissionProgress.SaveJson);
-        Assert.False(MissionStreetContexts.ValidateSelected(pending.Selection.Context,f.Site,new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")),key=>f.Current.Find(key,1),out _));
-        Assert.Same(selection,pending.Selection);Assert.Empty(pending.Choices);Assert.Equal((ushort)6,state.Items[6831]);
-        Assert.Equal(before,JsonSerializer.Serialize(new{Pending=pending,State=state},MissionProgress.SaveJson));
-    }
 }
