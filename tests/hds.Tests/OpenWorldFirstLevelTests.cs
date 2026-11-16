@@ -7,6 +7,20 @@ using NativeQa.Modes;
 using Xunit;
 public class OpenWorldFirstLevelTests
 {
+    [Fact] public void CapturedWanderingTargetUsesBoundedInsetWithoutStraightLineClaim()
+    {
+        var root=FindRoot();SectorProperties.Load(Path.Combine(root,"data/sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(root,"data/navmesh"));
+        double[] target={20017.978515625,-705,61984.71484375};
+        Assert.False(NavMesh.Project(1,target[0],target[1],target[2]-100,out _,maxDistance:1,reachableFrom:OpenWorldFirstLevelFixture.Start,requireDirect:true));
+        var approach=OpenWorldFirstLevelFixture.Approach(target);
+        Assert.Equal(20020,approach.x);Assert.Equal(-705,approach.y);Assert.Equal(61884.71484375,approach.z);
+        Assert.Equal((ushort)524,approach.location.sector);Assert.False(approach.location.indoors);
+        foreach(var spawn in OpenWorldFirstLevelFixture.Spawns)Assert.Equal(spawn[2]-100,OpenWorldFirstLevelFixture.Approach(spawn).z);
+        Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{19900d,-705d,61984d}));
+        Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{target[0],-305d,target[2]}));
+        Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{double.NaN,-705d,target[2]}));
+        Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{0d,-705d,0d}));
+    }
     [Fact] public void ExistingCapturedPairSurvivesProductionDedupAndIsGrounded()
     {
         var root=FindRoot();var seen=new MobSpawnFilter.Seen();var kept=File.ReadLines(Path.Combine(root,"data/npc_spawns/OpenWorld.csv")).Skip(1).Select(l=>l.Split(';')).Where(row=>!seen.IsRepeat(ushort.Parse(row[0]),row[2],double.Parse(row[7]),double.Parse(row[9]),double.Parse(row[8]))).ToArray();

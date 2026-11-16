@@ -16,9 +16,8 @@ public static partial class Scenarios
             {
                 stage="ordinary-kill-"+source[0];OpenWorldCurrentNpc.Current? current=null;
                 await p.WaitUntilAsync(()=>{try{current=OpenWorldCurrentNpc.Require(p.World.CurrentOwnViewLife(),source[0],source[1],source[2]);return true;}catch(InvalidDataException){return false;}},"Current ordinary captured Runner",TimeSpan.FromSeconds(20));
-                var target=current!;double[] approach={target.Position[0],target.Position[1],target.Position[2]-100};
-                Check.That(NavMesh.Project(1,approach[0],approach[1],approach[2],out var nav,maxDistance:1,reachableFrom:OpenWorldFirstLevelFixture.Start,requireDirect:true),"Existing source has direct grounded approach");
-                // Disclosed wire movement aid only; native checklist walks this short outdoor segment.
+                var target=current!;var nav=OpenWorldFirstLevelFixture.Approach(target.Position);
+                // Disclosed point movement aid; native walking/collision must be checked independently.
                 await MoveForMissionTest(p,nav.x,nav.y,nav.z);var refreshed=OpenWorldCurrentNpc.Require(p.World.CurrentOwnViewLife(),source[0],source[1],source[2]);
                 Check.Equal(target.View.SpawnId,refreshed.View.SpawnId,"Same target generation before ordinary combat");
                 int cursor=p.World.RpcSnapshot().Count;p.SendRpc("3d 01");p.SendRpc($"40 {Le(refreshed.View.ViewId)} {Le((ushort)refreshed.View.SpawnId)} 00 00 00 00 00 00 00");
