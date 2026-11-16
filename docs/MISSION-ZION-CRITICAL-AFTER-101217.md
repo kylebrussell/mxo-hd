@@ -34,7 +34,6 @@ Headless movement/weaken assistance does not prove collision clearance, native r
 |---|---|---|
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212ActorRoute.cs`|`356390bd3b5ae0b2de3486b66d30d220d23579e0`|
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212CheckpointPayload.cs`|`cc973dfb288816b472bf1af3b10013b615b8a1f5`|
-|`fa06152b`|`tools/HeadlessClient/ZionAfter1212EscortProof.cs`|`b45a6e27f57a03270cf35dafd5ea2fdccbd33e10`|
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212OutsideStage.cs`|`6904e345b25e9efc43bc79a8af589a1a700449ff`|
 |`fa06152b`|`tools/HeadlessClient/ZionCurrentUploadBooth.cs`|`8256c5f9ad57b68728b539231d916230cf452902`|
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212Fixture.cs`|`7da1e618d81b6d919520b2a125bec13ff1f36ac5`|
@@ -51,3 +50,5 @@ Headless movement/weaken assistance does not prove collision clearance, native r
 The273 qualified Ride/Object implementations are adapted into new package-local methods solely for the new XML pattern/names; their source template is retained in Temp. The old shared ScenariosMachinesQualifiedRide.cs remains exactly core34. No whole Machine or Merv selected story driver is imported.
 
 Cloud build `43884982147` retained five compiler errors and ran no tests. The older imported NPC route helper was removed in favor of the exact core34 helper (including its actor-index API); the carry body lookup uses the current own-life typed reader. This remains an uncompiled source candidate pending cloud qualification.
+
+Cloud `43888306833` retained 6895 passing tests and one failure: an older imported escort helper reintroduced a synthetic entered-state requirement. The shared helper is restored byte-for-byte to core34; current core escort semantics and their existing assertion remain unchanged. Local 204 passing controls and four builds remain attributed to `894ab338`.
