@@ -2,7 +2,17 @@
 
 This QA refresh normally merges published PR218 `d4b2bc44` with master `9894edab` (including the native-passed ordinary mid-phase elevator return). Production and data exactly match master: the old disposable tick diagnostics are removed, not required for proof. Opt-in 101208/101212 Upload now requires an actual ordinary saved-door downride, a post-approach/pre-request cutpoint, fresh typed current-life arrival and the exact client ACK before carry relog or the disclosed outside movement aid. Saved Street context takes priority over NPC/legacy selection; corrected tuples never fall back to CSV. V2 follower carry retains the accepted identity/instance/UUID across normal Quit and a fresh current own-view life without normalizing checkpoint version.
 
-Current outside-proof source qualification is focused/build/plan only until a separately granted whole-chain run; the historical 225.6-second case and 24-second inherited no-op bootstrap remain attributed to `4bb27ecb`, not this changed driver. No source XML, placement policy, range, search budget or authored timer is changed. Native walking/rendering/survival remain unproven by headless checks.
+Current producer `e2494a795670227da770990efab425c223e08e86` passed the whole case in **223.2 seconds, held driver exit 0**, then a separately granted actual-mode seed/auth bootstrap with its inherited no-op hook. Current CI passed **6743 units + 12/43 policy tests**. The historical 225.6-second case and 24-second bootstrap remain attributed to `4bb27ecb`. No source XML, placement policy, range, search budget or authored timer is changed. Native walking/rendering/survival remain unproven by headless checks.
+
+## Current outside-trip proof
+
+The current run earned each of 101208–101212 exactly once, completed three carry relogs with five parser-clean sessions, then completed a cold restart: server 54380 was gone before replacement 57312, no completion replay, and final wallet unchanged. Baseline 296082500 XP / 1000 cash; mission 434250 XP / 455000 cash; fighting 288060 XP / loot 20000 cash; final **296804810 XP /476000 cash**, checked against wire and durable DB. Corpse loot is variable; the older 29000 outcome is historical.
+
+Before any outside aid/carry relog, 101208's actual ordinary downride reached 25700/495/13600 with sequence 248 and exact ACK 248 (packet lines 1366/1371); 101212 reached 10900/95/2200 with sequence 594 / ACK 594 (lines 7700/7705). Both use request cutpoints after approach, typed own-life 011c arrival and movement-aid=false. These prove transport delivery, not native walking/rendering.
+
+Raw `Temp/mxo-zion-critical-next-five-mxotest_run_1_7bc139f2a5.json`, SHA256 `47C84FA84C14F6FF7A796F1F70929311476BB156A816AA6F75CFB4DE2ED28750`. Compact summary `Temp/mxo-pr218-outside-refresh-20261116/whole-case-summary-e2494a79.json`, SHA256 `221EACA3973999DD2AE0BDA71BE2E8235F809F81D4ABD3E185A5DED579376A17`. Independent cleanup: exact game schema absent, all 72 recorded canonical process identities gone. Actual single-mode bootstrap used `mxotest_bootstrap_c2a2c6873c`, runner 46856/server 53992, exit 0; independent schema count 0/all 9 identities gone. Its scope is the actual mode's seed/auth/state-schema and inherited no-op hook (custom hooks 0), not another game or all-mode matrix.
+
+Actual newest Debug HDS `B8896A6A5C1961EF7DF93336665E907237E3395E95E01D76A21A448383DEE135`; Release driver `8860150E9BEC80A05B1D73AFCD97C54892C4D848ED0B9341CE975AAC12C4C220`; runner `258B43BB37DBFD9D95A883C83006CE051FB283B7714145AE63CA096A75FEA9C1`. Both actual server source paths/hashes matched. Wrapper-only expected-source guard is explicit: this older case has no in-case source-env consumer. Source/build freeze `freeze-e2494a79.json` in the same Temp proof directory. Source/tools/tests/data remain byte-identical for the docs-only publication descendant; no rebuild or repeated game is claimed.
 
 ## Scope and fixture
 
@@ -20,7 +30,7 @@ Exact discovered headless case and NativeQa mode: `zion-critical-next-five`. Exa
 
 Current doors come from persisted site identity and measured floor/lobby witness. Only genuinely unwitnessed legacy sites use exact raw lookup. Free props are observed before route/NPC aids, retaining actual arrival/body order, raw source, full DTO, Root/Route/Standing and quaternion. NPCs use current life/generation, saved identity, side and position. The wire phase byte is distinct from authored stage. After exit-intent movement, current follower movement and persisted position must agree within the existing 1500 range before the ordinary door request; readiness/ride retain the existing 15s budget. Each relog session has its own completion-count baseline.
 
-## Current whole-chain qualification
+## Historical 4bb whole-chain qualification
 
 Producer `4bb27ecb6ba0f598663f96d3873f7e8febc6d040`: ONE whole case **PASS 225.6s, held exit 0**, plus separately authorized actual-mode bootstrap **PASS 24s**. These proofs remain attributed to 4bb, not this latest-master publication. Actual newest Debug HDS `4EEE08E0F065EA077BACE89E5D0D0AA2CAF6D18E75C3205B8BE15E02A4377C6C`; Release driver `1574B66FA87E187F8FF63EA3E87103DCF9F431A5C9B27D5959ABA38A7A804B28`.
 
