@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using HeadlessClient;
 using hds;
+using hds.shared;
 namespace hds.Tests;
 [Collection("DelayedActions")]
 public sealed class MachinesAfter201206FurnitureIntegrationTests
