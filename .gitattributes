@@ -11,3 +11,6 @@ research/protocol/mission-open-floor-*.json -text whitespace=cr-at-eol
 
 # The captured MySQL batch is hash-pinned with its original CRLF ending.
 tools/HeadlessClient/Fixtures/mission-midphase-return.native-batch.json -text whitespace=cr-at-eol
+
+# Native0940 accepted checkpoint is hash-pinned verbatim, including CRLF bytes.
+tests/hds.Tests/Fixtures/Native218-0940-101210-phase1.json -text whitespace=cr-at-eol
