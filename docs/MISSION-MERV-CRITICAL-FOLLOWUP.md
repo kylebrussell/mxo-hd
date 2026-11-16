@@ -1,3 +1,7 @@
+## Current post269 native entry gate
+
+Start a new normal Flood Critical chain with only earlier receipts. Follow the public approach waypoint, hover/pick and Open the actual exterior Door, walk through into the lobby, then Open the distinct car door. Public Open must not teleport floors. Use the current saved Street Floor/Lobby Standing for car context. Stop on absent hover, solid facade, unsupported passage or wrong floor. Headless movement aids do not establish collision or picking. Do not reuse the997 checkpoint or use `?missionfloor` as native proof. This new local qualification is pending; no new whole-case/native pass is claimed.
+
 > Source-only refresh onto master `0a96282c` (269 public access +270): new whole-case characters seed earlier receipts before Margin and normally offer/accept the chain, so new missions enroll current certified Street admission. No old997 checkpoint is injected or migrated. The99752.9s FAIL at301203 bound326 remains historical: sector1120 car26/building11 is excluded for fresh selection, not repaired. This merge and package-only savedStreet reader have NO new local/fresh/native proof; CI pending, HOLD. Runtime is master plus the preexisting resolver allocation optimization only.
 
 # Merovingian critical follow-up

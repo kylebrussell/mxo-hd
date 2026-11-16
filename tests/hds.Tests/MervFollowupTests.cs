@@ -26,8 +26,10 @@ public class MervFollowupTests
     [Fact] public void NativeProfileSeedsNoSelectedCompletionAndPreservesExistingPolicies()
     {
         var plan=new MervCriticalFollowupMode().Plan;Assert.Equal(MervFollowupFixture.SeedPrerequisites(110),plan.AfterHelpers[0]);Assert.Equal("301101",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);
-        Assert.Equal("08d961eb47810f754d3ab4cd55cd23f7dcc8b897",plan.ExtraQaMetadata["QaBaseMaster"].GetString());
-        Assert.Equal("PR249",plan.ExtraQaMetadata["SharedPlacementDependency"].GetString());
+        Assert.Equal("0a96282c6866c9636e76b92994db46f375774934",plan.ExtraQaMetadata["QaBaseMaster"].GetString());
+        Assert.Equal("master269",plan.ExtraQaMetadata["SharedPlacementDependency"].GetString());
+        Assert.True(plan.ExtraQaMetadata["FreshStreetEnrollment"].GetBoolean());
+        Assert.Contains(plan.ReadyMessages,m=>m.Contains("public Door")&&m.Contains("Public Open must not perform a floor ride"));
         Assert.Equal("measured introduction/native floor preselection/cache/fresh generated Safe assignment",plan.ExtraQaMetadata["SharedPlacementScope"].GetString());
         Assert.Contains("merovingian-critical-followup",NativeQa.NativeQaModes.Names);
         Assert.DoesNotContain("merovingian-after-301207",NativeQa.NativeQaModes.Names);
