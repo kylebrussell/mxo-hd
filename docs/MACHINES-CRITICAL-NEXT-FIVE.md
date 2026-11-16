@@ -1,8 +1,14 @@
 # Machines critical next five after Disturbing Trends
 
-## Source refresh only — current master 4cbf7365
+## Current-master bounded qualification
 
-This object-only normal merge preserves current master public-street access and merged ability/runtime changes. The sole remaining production delta is the existing Policy5 fair whole-phase search in MissionOpenFloorPhasePlanner; data is exactly master. Existing Machines QA and both registries are retained. This refreshed source has NOT been locally built or run: storage limits prohibit data checkout/builds/servers. No new native source/binary pins or native pass are claimed. The following live results remain attributed to the historical frozen producer; final combined CI qualifies only the refreshed source tree.
+Producer `863c0c1041591fdf4c32e94264b6e85ee572257c` normally merges the prior PR264 source refresh with master `0a96282c6866c9636e76b92994db46f375774934` (public street access, thrown accuracy and native-passed first earned level).130 affected tests passed; actual NativeQa Debug/Release builds, exact/default mode plans, build-info and exact-one case discovery passed. All four hardlink build flags were enabled. No new fixture or runtime issue surfaced. The only unique production delta remains Policy5 in MissionOpenFloorPhasePlanner; data exactly matches master. QaBaseMaster08d is retained historical fixture geometry provenance, not the actual compiled runtime identity.
+
+Actual newest Debug source SHA256 `1310878E77BF67FCC9CA49DF904A95FE4FF86E0BCF32E2944606C6C05417DE58`; older Release source `F5A6B019E1F69FFB29477E11DCF6E0C50DA82AAE4DD15BEDB04B212F3F123F51`; Release driver `E8C284E47F822DFFD7AAD4CD71A9E1EB010C7E5CBC84CE4EDAA0BF04B0FE01CF`; Release NativeQa `1C324CD38CAC97C28FED8620204380F0B9D0F03A4A570E94A006CAC3ED3A99DC`. No fresh server or native test was run for this refresh. Earlier whole-five265.3s proof below remains attributed to c6d65cce. The previous source-refresh CI43801055121 passed; final publication CI is reported in the PR. Final documentation changes preserve the qualified producer's hds/data/tools/tests trees and compiled bytes.
+
+## Historical source-only refresh — master 4cbf7365
+
+This object-only normal merge preserves current master public-street access and merged ability/runtime changes. The sole remaining production delta is the existing Policy5 fair whole-phase search in MissionOpenFloorPhasePlanner; data is exactly master. Existing Machines QA and both registries are retained. That source-only checkpoint had not been locally built or run; later bounded qualification is recorded below. No new native source/binary pins or native pass are claimed. The following live results remain attributed to the historical frozen producer; final combined CI qualifies only the refreshed source tree.
 
 ## Qualified historical normal-wire producer
 
