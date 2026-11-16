@@ -115,7 +115,7 @@ public static partial class Scenarios
                 MervFollowupElevatorFixture.RequireRoot(selectedRide,enter,actual,nav.sector,nav.region,nav.floorY,
                     saved.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid).Select(o=>o.OpenFloor!.Route.Take(3).ToArray()));
                 NpcInteriorComputerState.Teleport? npcArrival=null;
-                if(selectedRide.Npc!=null)
+                if(selectedRide.Npc!=null||selectedRide.Street!=null)
                     await p.WaitUntilAsync(()=>{try{npcArrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownWorld,viewCursor,actual);return true;}catch(InvalidDataException){return false;}},
                         "Fresh ordinary arrival at the owned NPC Standing",TimeSpan.FromSeconds(15));
                 evidence.Add(new{Operation="selected-measured-elevator-root",Key=key,ActualRoot=actual,nav.sector,nav.region,nav.floorY,selectedRide.Witness,NpcWitness=selectedRide.Npc?.Raw,NpcArrival=npcArrival});

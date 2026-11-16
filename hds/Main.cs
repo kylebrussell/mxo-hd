@@ -30,6 +30,7 @@ namespace hds{
 
                 /* Load Game Data */
                 MissionNpcCoverage.Prepare(DataLoader.getInstance());
+                MissionStreetCoverage.Prepare(DataLoader.getInstance());
 
                 /* Initialize DB Stuff */
 

@@ -54,6 +54,7 @@ namespace hds
             // Parse only this recognized optional subtree after restoring identity/items. Invalid NPC metadata
             // can then quarantine the exact original checkpoint without a broad SavedState JSON catch.
             [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] public JsonElement NpcInterior {get;set;}
+            [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] public JsonElement StreetAccess {get;set;}
             public List<SavedMob> Mobs { get; set; } = new List<SavedMob>();
         }
         public sealed class SavedObject
@@ -117,8 +118,9 @@ namespace hds
                 SiteDoors=sites.Select(s=>s.elevatorDoor).ToArray(),
                 Objects=objects.Values.Select(o=>new SavedObject { Id=o.def.id, Spot=o.spot, Goid=o.goid, Unlocked=o.unlockedOnce, State=o.shownState, OpenFloor=o.OpenFloor }).ToList() };
             var npcInterior=CaptureNpcInterior();
+            var street=MissionStreetCheckpoint.Capture(this);if(street.ValueKind!=JsonValueKind.Undefined)state.StreetAccess=street;
             if(npcInterior!=null)state.NpcInterior=JsonSerializer.SerializeToElement(npcInterior,SaveJson);
-            if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null)||npcInterior!=null)
+            if(openFloorCheckpoint||pendingOpenFloor!=null||objects.Values.Any(o=>o.OpenFloor!=null)||npcInterior!=null||street.ValueKind!=JsonValueKind.Undefined)
             {
                 state.Version=2;state.PendingOpenFloor=pendingOpenFloor;state.OpenFloorPhase=openFloorResolvedPhase;state.OpenFloorLegacyPhase=openFloorLegacyPhase;state.OpenFloorSites=sites.Select(MissionOpenFloorSite.From).ToArray();
                 state.ElevatorWitnesses=elevatorWitnesses.Count==0?null:elevatorWitnesses.Values.ToArray();
@@ -126,6 +128,7 @@ namespace hds
                 if(site!=null&&state.OpenFloorCurrentSiteIndex<0)throw new InvalidOperationException("Box current site absent from exact history");
             }
             if(npcInterior!=null)MissionNpcInteriorCheckpoint.PrepareRestore(this,state,npcCatalog);
+            MissionStreetCheckpoint.PrepareRestore(this,state,npcCatalog,npcInterior);
             state.Flags[nameof(waitingForExit)]= waitingForExit;
             state.Flags[nameof(entered)]= entered;
             state.Flags[nameof(failed)]= failed;
@@ -168,14 +171,16 @@ namespace hds
             => RestoreNpcCore(mission,state,clock,siteCatalog,null);
         internal static MissionProgress RestoreWithNpcCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> siteCatalog,IMissionNpcInteriorEvidenceProvider provider,Func<double> clock=null)
             => RestoreNpcCore(mission,state,clock,siteCatalog,provider);
-        private static MissionProgress RestoreNpcCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog,IMissionNpcInteriorEvidenceProvider npcProvider)
+        internal static MissionProgress RestoreWithStreetCatalog(Mission mission,SavedState state,IReadOnlyList<MissionSite> catalog,MissionPublicDoors.Dataset dataset,Func<uint,StaticWorldObject> lookup)
+            =>RestoreNpcCore(mission,state,null,catalog,null,dataset,lookup);
+        private static MissionProgress RestoreNpcCore(Mission mission,SavedState state,Func<double> clock,IReadOnlyList<MissionSite> siteCatalog,IMissionNpcInteriorEvidenceProvider npcProvider,MissionPublicDoors.Dataset streetDataset=null,Func<uint,StaticWorldObject> streetLookup=null)
         {
             if ((state.Version!=1&&state.Version!=2) || state.Mission!=mission.id || state.Phase<0 || state.Phase>=mission.phases.Count)
                 throw new InvalidOperationException("Unsupported or invalid saved mission phase");
-            if(state.Version==1&&(state.ElevatorWitnesses!=null||state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
+            if(state.Version==1&&!MissionStreetCheckpoint.Present(state)&&(state.ElevatorWitnesses!=null||state.PendingOpenFloor!=null||state.OpenFloorSites!=null||state.OpenFloorPhase.HasValue||state.OpenFloorLegacyPhase.HasValue||state.OpenFloorCurrentSiteIndex.HasValue||state.Objects.Any(o=>o.OpenFloor!=null)))
                 throw new InvalidOperationException("Version1 cannot contain resolved open-floor metadata");
-            if(state.Version==2&&state.NpcInterior.ValueKind==JsonValueKind.Undefined&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
-            var p=new MissionProgress(mission) { persistenceId=state.Identity, phaseIndex=state.Phase, startedAt=state.Started, kills=state.Kills };
+            if(state.Version==2&&state.NpcInterior.ValueKind==JsonValueKind.Undefined&&!MissionStreetCheckpoint.Present(state)&&(state.OpenFloorSites==null||!state.OpenFloorCurrentSiteIndex.HasValue||state.OpenFloorCurrentSiteIndex.Value < -1||state.OpenFloorCurrentSiteIndex.Value>=state.OpenFloorSites.Length||string.IsNullOrWhiteSpace(state.Identity)))throw new InvalidOperationException("Version2 requires exact mission site history");
+            var p=new MissionProgress(mission) { streetPolicy=false,persistenceId=state.Identity, phaseIndex=state.Phase, startedAt=state.Started, kills=state.Kills };
             if(clock!=null)p.clock=clock;
             double now=p.clock();
             p.done.UnionWith(state.Done); p.everDone.UnionWith(state.EverDone); p.arrived.UnionWith(state.Arrived); p.killed.UnionWith(state.Killed);
@@ -200,6 +205,7 @@ namespace hds
             p.wavesJustArrived.AddRange(p.Phase.Waves().Where(w=>state.WavesJustArrived.Contains(w.id)));p.justSwitched.AddRange(state.JustSwitched);
             p.waypoints=state.Waypoints.ToList();p.exits.AddRange(state.Exits);
             var npcInterior=state.NpcInterior.ValueKind!=JsonValueKind.Undefined?MissionNpcInteriorCheckpoint.PrepareRestore(p,state,siteCatalog):null;
+            var street=MissionStreetCheckpoint.PrepareRestore(p,state,siteCatalog,npcInterior);
             MissionSite legacyCurrent=null;
             if(state.Version==1)
                 foreach(var door in state.SiteDoors)
@@ -222,6 +228,7 @@ namespace hds
             if(state.Version==1&&state.SiteDoors.Length>0&&legacyCurrent==null)
                 throw new MissionPlacementRestoreException(p,"MissingExactLegacyMissionSite");
             MissionNpcInteriorCheckpoint.Apply(p,npcInterior);
+            MissionStreetCheckpoint.Apply(p,street);
             if(p.UsesGeneratedDeparture && state.DepartedPhase==p.phaseIndex && SameDepartureDoor(state.DepartedSite,p.site.elevatorDoor))
             {p.departedSite=p.site.elevatorDoor;p.departedPhase=p.phaseIndex;}
             foreach(var o in state.Objects)
@@ -258,6 +265,7 @@ namespace hds
             MissionBoundObjectPoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             MissionNpcInteriorCheckpoint.ValidateGeometry(p,npcInterior,npcProvider??MissionNpcInteriorEvidenceProvider.Instance);
+            if(street!=null)MissionStreetCheckpoint.ValidateGeometry(p,street,streetDataset??MissionPublicDoors.CurrentDataset(),streetLookup??(key=>DataLoader.getInstance().getObjectValues(key,mission.district)),siteCatalog);
             return p;
         }
     }

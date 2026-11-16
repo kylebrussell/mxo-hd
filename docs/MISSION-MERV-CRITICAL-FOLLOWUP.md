@@ -1,3 +1,5 @@
+> Source-only refresh onto master `0a96282c` (269 public access +270): new whole-case characters seed earlier receipts before Margin and normally offer/accept the chain, so new missions enroll current certified Street admission. No old997 checkpoint is injected or migrated. The99752.9s FAIL at301203 bound326 remains historical: sector1120 car26/building11 is excluded for fresh selection, not repaired. This merge and package-only savedStreet reader have NO new local/fresh/native proof; CI pending, HOLD. Runtime is master plus the preexisting resolver allocation optimization only.
+
 # Merovingian critical follow-up
 
 ## Current native review candidate

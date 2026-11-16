@@ -211,6 +211,8 @@ def server(i):
         parts.append(r['utility'])
     if i in UTILITY_NOTES:
         parts.append(UTILITY_NOTES[i])
+    if r.get('multifighting'):
+        parts.append(r['multifighting'])
     if r['cost_source'] != 'fallback':
         parts.append(f"IS {r['cost']} ({r['cost_source']})")
     if r['cooldown']:
@@ -315,7 +317,7 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
-    if i in PETS or r.get('proxy_technician') or r.get('sharpshooter'):
+    if i in PETS or r.get('proxy_technician') or r.get('sharpshooter') or r.get('multifighting'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i == 49 and not any(m['stat'] == 520 and m['consumer'] != 'total only' for m in (r.get('buff_stats') or [])):
