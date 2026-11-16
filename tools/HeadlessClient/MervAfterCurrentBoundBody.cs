@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using hds;
 namespace HeadlessClient;
 
@@ -38,9 +38,10 @@ public static class MervAfterCurrentBoundBody
     public static Scope Capture(MissionProgress.SavedState state,ushort id)
     {var o=Bound(state,id);return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,id,Descriptor(o),Site(state));}
 
-    public static Result Require(OwnViewLifeSnapshot stream,Scope scope,MissionProgress.SavedState current)
+    public static Result Require(OwnViewLifeSnapshot stream,Scope scope,MissionProgress.SavedState current,MissionBoundFurnitureRouteProof.Plan? furnitureRoute=null)
     {
         var o=Bound(current,scope.ObjectId);
+        if(MissionBoundFurnitureRouteProof.SupportsGoid(o.Goid)&&MervAfterFurnitureApproach.NeedsArrival(current)&&furnitureRoute==null)throw new InvalidDataException("Recognized V3 body requires its independently validated typed route");
         if(current.Mission!=scope.Mission||current.Phase!=scope.Phase||current.Instance!=scope.Instance||current.Identity!=scope.Identity||current.Started!=scope.Started||
             Descriptor(o)!=scope.Descriptor||Site(current)!=scope.Site)throw new InvalidDataException("Bound mission/phase/source/site scope changed");
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own-view life");
@@ -87,11 +88,17 @@ public static class MervAfterCurrentBoundBody
         if(candidates.Length!=1)throw new InvalidDataException("Expected exactly one live current source binding");
         var selected=candidates[0];var view=selected.View;
         // Raw source remains the binding/scope; native presentation is resolved by the same server facade.
-        var pose=MissionObjectPoses.For(new MissionObjectState{spot=o.Spot,goid=o.Goid});
-        byte[] expectedPosition=new[]{pose.X,pose.Y,pose.Z}.SelectMany(BitConverter.GetBytes).ToArray();
+        var pose=furnitureRoute==null?MissionObjectPoses.For(new MissionObjectState{spot=o.Spot,goid=o.Goid}):default;
+        if(furnitureRoute!=null)
+        {
+            MissionBoundFurnitureRouteProof.RequireCurrent(furnitureRoute,current);
+            if(furnitureRoute.ObjectId!=o.Id||furnitureRoute.Goid!=o.Goid)throw new InvalidDataException("Typed V3 route belongs to another body");
+        }
+        byte[] expectedPosition=(furnitureRoute==null?new[]{pose.X,pose.Y,pose.Z}:furnitureRoute.Centre).SelectMany(BitConverter.GetBytes).ToArray();
+        byte[] expectedQuaternion=furnitureRoute==null?pose.Orientation:Convert.FromHexString(furnitureRoute.Quaternion);
         byte[] expectedKey={0xff,(byte)scope.Instance,(byte)(scope.Instance>>8),2};
         if(!selected.Known||view.Goid!=o.Goid||!view.Attributes.TryGetValue("Position",out var p)||!p.SequenceEqual(expectedPosition)||
-            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(pose.Orientation)||
+            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(expectedQuaternion)||
             !view.Attributes.TryGetValue("MissionKey",out var key)||!key.SequenceEqual(expectedKey)||!stream.Current)
             throw new InvalidDataException("Current live bound body pose/key/generation mismatch");
         return new(view,stream.Life,selected.Birth,selected.Binding!.Value,selected.Raw);

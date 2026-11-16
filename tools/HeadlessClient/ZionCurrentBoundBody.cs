@@ -31,7 +31,7 @@ public static class ZionCurrentBoundBody
     public static Scope Capture(MissionProgress.SavedState state,ushort id)
     {var o=Bound(state,id);return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,id,Descriptor(o),Site(state));}
 
-    public static Result Require(OwnViewLifeSnapshot stream,Scope scope,MissionProgress.SavedState current)
+    public static Result Require(OwnViewLifeSnapshot stream,Scope scope,MissionProgress.SavedState current,MissionBoundFurnitureRouteProof.Plan? furnitureProof=null)
     {
         var o=Bound(current,scope.ObjectId);
         if(current.Mission!=scope.Mission||current.Phase!=scope.Phase||current.Instance!=scope.Instance||current.Identity!=scope.Identity||current.Started!=scope.Started||
@@ -86,11 +86,24 @@ public static class ZionCurrentBoundBody
         if(candidates.Length!=1)throw new InvalidDataException("Expected exactly one live current source binding");
         var selected=candidates[0];var view=selected.View;
         // The raw source stays immutable; native bound326 creation uses its audited bounds centre.
-        var pose=MissionObjectPoses.For(new MissionObjectState{goid=o.Goid,spot=o.Spot});
-        byte[] expectedPosition=new[]{pose.X,pose.Y,pose.Z}.SelectMany(BitConverter.GetBytes).ToArray();
+        if(furnitureProof==null&&MissionBoundFurnitureRouteProof.SupportsGoid(o.Goid)&&current.StreetAccess.ValueKind==JsonValueKind.Object&&
+            current.StreetAccess.GetProperty("Witnesses").EnumerateArray().Any(w=>w.GetProperty("Phase").GetInt32()==current.Phase&&w.GetProperty("Version").GetInt32()==3))
+            throw new InvalidDataException("Recognized V3 bound body requires its independently validated typed route");
+        byte[] expectedPosition,expectedOrientation;
+        if(furnitureProof!=null)
+        {
+            MissionBoundFurnitureRouteProof.RequireCurrent(furnitureProof,current);
+            if(furnitureProof.ObjectId!=scope.ObjectId||furnitureProof.Goid!=o.Goid)throw new InvalidDataException("Furniture proof names another bound source");
+            expectedPosition=furnitureProof.Centre.SelectMany(BitConverter.GetBytes).ToArray();expectedOrientation=Convert.FromHexString(furnitureProof.Quaternion);
+        }
+        else
+        {
+            var pose=MissionObjectPoses.For(new MissionObjectState{goid=o.Goid,spot=o.Spot});
+            expectedPosition=new[]{pose.X,pose.Y,pose.Z}.SelectMany(BitConverter.GetBytes).ToArray();expectedOrientation=pose.Orientation;
+        }
         byte[] expectedKey={0xff,(byte)scope.Instance,(byte)(scope.Instance>>8),2};
         if(!selected.Known||view.Goid!=o.Goid||!view.Attributes.TryGetValue("Position",out var p)||!p.SequenceEqual(expectedPosition)||
-            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(pose.Orientation)||
+            !view.Attributes.TryGetValue("Orientation",out var q)||!q.SequenceEqual(expectedOrientation)||
             !view.Attributes.TryGetValue("MissionKey",out var key)||!key.SequenceEqual(expectedKey)||!stream.Current)
             throw new InvalidDataException("Current live bound body pose/key/generation mismatch");
         return new(view,stream.Life,selected.Birth,selected.Binding!.Value,selected.Raw);

@@ -1,4 +1,12 @@
-# Flood critical wave after A Special Case
+﻿# Flood critical wave after A Special Case
+
+## Source-only PR274 furniture integration (unqualified)
+
+The current continuation normal-merges reviewed core `aac33496ef2afe609eb17adc5b79f850737a8077`. The prior `7f1940cd` producer remains retained with a verified byte-copy archive of45 primary binaries under `Temp/mxo-pr245-core274-source-integration-20261116/primary`; its failed gameplay attribution below is unchanged. No local build, tests or fresh whole-chain proof has run for this integration. DRAFT/HOLD remains.
+
+Recognized StreetSelectionV3 dispatches to the core's generic `MissionBoundFurnitureRouteProof` before the old326 route/sampler. SavedState remains V1/V2. Independent pinned native profiles, immutable selected raw choices, exact native centre/quaternion, saved floor/path/Standing and required own-GOID doors are replayed without Project, RNG, raw five-point fallback or source replacement. Ordinary car arrival must have a fresh current-own-life011c, matching physical-trip log and transport receipt; each internal door requires ordinary80c8, fresh exact DOOR-use log, typed current0834 and the normal8148/49 barrier before movement crosses. This is not an exact03 transport-ACK or native walking/rendering claim.
+
+The final current-body observer accepts only the typed validated V3 plan for its exact ObjectId/Goid/current owner; legacy untagged behavior stays unchanged. Unit controls use the existing captured1450 fixture as a parser/control input, not as newly earned whole-chain evidence. Native checks remain ordinary public street entry, car rides, saved internal door actions and actual object Open/Search/Take; movement along saved nodes is a disclosed headless aid. No story, goals, items, rewards, timers, ranges or source choices are forced.
 
 ## Latest retained failure and source-only500dc refresh
 

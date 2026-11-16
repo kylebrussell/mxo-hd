@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using hds;
@@ -117,7 +117,7 @@ public static partial class Scenarios
             // Native bound sources use their actual source binding/current life, never a fabricated free witness.
             var afterApproach=await Saved();Check.That(acceptance!=null&&MervAfterProgressProof.Owns(acceptance,afterApproach),"Object approach keeps accepted owner");
             var scope=MervAfterCurrentBoundBody.CaptureAfterApproach(checkpoint,afterApproach,(ushort)id);
-            var current=MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,afterApproach);
+            var current=MervAfterCurrentBoundBody.Require(p.World.CurrentOwnViewLife(),scope,afterApproach,MissionBoundFurnitureRouteProof.SupportsGoid(owned.Goid)?MissionBoundFurnitureRouteProof.Read(context.RepositoryRoot,afterApproach,id):null);
             evidence.Add(new{Step=step,Operation="current-bound-body",Scope=scope,Observed=current});return current.View;
         }
         Exception? scenarioFailure=null;

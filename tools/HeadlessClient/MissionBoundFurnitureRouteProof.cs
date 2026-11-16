@@ -18,9 +18,33 @@ public static class MissionBoundFurnitureRouteProof
  static void Shape(JsonElement e,params string[] names)=>Need(e.ValueKind==JsonValueKind.Object&&e.EnumerateObject().Count()==names.Length&&names.All(n=>e.TryGetProperty(n,out _)),"Exact recognized fields");
  static readonly ushort[] NewGoids={573,1431,1432,1433,1434,1435,1438,1439,1443,1444,1445,1446,1447,1448,1449,1450,1451,6987,37913,38484};
  static bool Supported(ushort goid)=>goid==326||NewGoids.Contains(goid);
+ public static bool SupportsGoid(ushort goid)=>Supported(goid);
  public sealed record Step(double[] Standing,uint[] Doors,int Region,int Polygon);
  public sealed record Plan(int Mission,ushort Instance,int ObjectId,ushort Goid,string Owner,long Started,int Phase,string Sources,JsonElement Selection,JsonElement Route,Door Floor,Door Lobby,Door[] Doors,double[] Standing,ushort Region,ushort Polygon,double FloorY,double[] Centre,string Quaternion);
 
+ // Shape dispatch only; Read independently proves current profile/geometry before any object-route use.
+ public static void SelectionVersion(JsonElement w)
+ {
+  try
+  {
+   Shape(w,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal","FurnitureRoutes");
+   Need(w.GetProperty("Version").GetInt32()==3&&w.GetProperty("Kind").GetString()=="Objects"&&w.GetProperty("Refusal").ValueKind==JsonValueKind.Null,"Tagged StreetV3");
+   var e=w.GetProperty("FurnitureRoutes");Shape(e,"Version","Kind","EvidenceDigest","FurnitureManifest","Choices","Routes");
+   Need(e.GetProperty("Version").GetInt32()==1&&e.GetProperty("Kind").GetString()=="BoundFurnitureRoutes"&&Hash(e.GetProperty("FurnitureManifest").GetString(),FurnitureManifest)&&e.GetProperty("EvidenceDigest").GetString()==w.GetProperty("Context").GetProperty("Floor").GetProperty("EvidenceDigest").GetString(),"V3 envelope type/profile/context");
+   var choices=e.GetProperty("Choices").EnumerateArray().ToArray();Need(choices.Length>0&&choices.Select(c=>c.GetProperty("ObjectId").GetUInt16()).Distinct().Count()==choices.Length,"V3 unique complete choices");
+   foreach(var c in choices){Shape(c,"ObjectId","Goid","RawSpotJson");Need(c.GetProperty("ObjectId").GetUInt16()>0&&(Supported(c.GetProperty("Goid").GetUInt16())||c.GetProperty("Goid").GetUInt16()==1401)&&!string.IsNullOrWhiteSpace(c.GetProperty("RawSpotJson").GetString()),"V3 choice shape");}
+   var routes=e.GetProperty("Routes").EnumerateArray().ToArray();Need(routes.Length==choices.Count(c=>Supported(c.GetProperty("Goid").GetUInt16()))&&routes.Length>0&&routes.Any(r=>NewGoids.Contains(r.GetProperty("Goid").GetUInt16()))&&routes.Select(r=>r.GetProperty("ObjectId").GetUInt16()).Distinct().Count()==routes.Length,"V3 distinct typed routes");
+   foreach(var r in routes)
+   {
+    Shape(r,"ObjectId","Goid","ProfileManifestSha256","RawSourceJson","Region","NativePosition","NativeQuaternion","Standing","Target","Nodes","Doors");ushort goid=r.GetProperty("Goid").GetUInt16();int id=r.GetProperty("ObjectId").GetUInt16();
+    Need(id>0&&Supported(goid)&&Hash(r.GetProperty("ProfileManifestSha256").GetString(),goid==326?CabinetManifest:FurnitureManifest)&&choices.Count(c=>c.GetProperty("ObjectId").GetUInt16()==id&&c.GetProperty("Goid").GetUInt16()==goid&&c.GetProperty("RawSpotJson").GetString()==r.GetProperty("RawSourceJson").GetString())==1,"V3 exact typed choice association");
+    _=V(r.GetProperty("NativePosition"));_=V(r.GetProperty("Standing"));CheckQuaternion(r.GetProperty("NativeQuaternion").GetString()!);Shape(r.GetProperty("Target"),"Region","Polygon");
+    var nodes=r.GetProperty("Nodes").EnumerateArray().ToArray();Need(nodes.Length>0&&nodes[^1].GetRawText()==r.GetProperty("Target").GetRawText()&&nodes.Select(n=>n.GetRawText()).Distinct().Count()==nodes.Length,"V3 saved noncyclic target");foreach(var n in nodes)Shape(n,"Region","Polygon");
+    var doors=r.GetProperty("Doors").EnumerateArray().ToArray();Need(doors.Select(d=>d.GetProperty("Key").GetUInt32()).Distinct().Count()==doors.Length,"V3 unique doors");foreach(var d in doors){Shape(d,"Key","Goid","RawDoorJson","Quaternion","Position");Need(MissionInteriorDoorTypes.IsSupported(d.GetProperty("Goid").GetUInt16()),"V3 supported own door type");_=V(d.GetProperty("Position"));CheckQuaternion(d.GetProperty("Quaternion").GetString()!);}
+   }
+  }
+  catch(Exception e) when(e is JsonException or InvalidOperationException or KeyNotFoundException or ArgumentException or OverflowException or FormatException){throw new InvalidDataException("Malformed V3 selection shape",e);}
+ }
  // Null grants no new authority: old/unenrolled selections must still use their existing strict validator. Malformed V3 throws.
  public static Plan? Read(string repo,MissionProgress.SavedState state,int objectId)
  {
@@ -46,7 +70,7 @@ public static class MissionBoundFurnitureRouteProof
   }
   var matches=all.Where(w=>w.GetProperty("Phase").GetInt32()==s.Phase).ToArray();Need(matches.Length<=1,"Unique current selection");
   if(matches.Length==0)return null;var row=matches[0];if(row.GetProperty("Version").GetInt32()!=3)return null;
-  Shape(row,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal","FurnitureRoutes");
+  SelectionVersion(row);
   Need(row.GetProperty("Kind").GetString()=="Objects"&&row.GetProperty("Refusal").ValueKind==JsonValueKind.Null,"Owned object route");
   var selected=row.GetProperty("Site");Need(site.District==1&&raw.metrId==1&&selected.GetProperty("District").GetInt32()==1&&selected.GetProperty("Fingerprint").GetString()==site.Fingerprint&&selected.GetProperty("DoorKey").GetUInt32()==site.DoorKey&&site.DoorKey==raw.mxoStaticId&&
    selected.GetProperty("DoorX").GetDouble()==site.DoorX&&selected.GetProperty("DoorY").GetDouble()==site.DoorY&&selected.GetProperty("DoorZ").GetDouble()==site.DoorZ&&new[]{raw.pos_x,raw.pos_y,raw.pos_z}.SequenceEqual(new[]{site.DoorX,site.DoorY,site.DoorZ}),"Exact world/site/raw door");
@@ -108,6 +132,12 @@ public static class MissionBoundFurnitureRouteProof
   return(row.Clone(),half);
  }
  static void CheckQuaternion(string text){byte[] b=Convert.FromHexString(text);Need(b.Length==16,"Quaternion shape");var q=Enumerable.Range(0,4).Select(i=>BitConverter.ToSingle(b,i*4)).ToArray();Need(q.All(float.IsFinite)&&Math.Abs(q.Sum(v=>(double)v*v)-1)<1e-5,"Unit finite quaternion");}
+ public static void RequireArrival(Plan plan,double[] actualRoot,ushort sector,ushort region,double floorY)
+ {
+  var raw=Raw(plan.Floor.Raw);var node=plan.Selection.GetProperty("Context").GetProperty("Floor").GetProperty("Node");
+  Need(actualRoot.Length==3&&actualRoot.All(double.IsFinite)&&raw.metrId==1&&sector==raw.sectorID&&region==node.GetProperty("Region").GetUInt16()&&floorY==plan.FloorY&&actualRoot[1]==floorY+95&&
+   Enumerable.Range(0,3).All(i=>BitConverter.SingleToInt32Bits((float)actualRoot[i])==BitConverter.SingleToInt32Bits((float)plan.Floor.Standing![i])),"Actual captured ordinary RideRoot equals fixed current floor entry");
+ }
  public static void RequireCurrent(Plan plan,MissionProgress.SavedState state)
  {var selected=Selection(state);Need(selected.HasValue&&state.Mission==plan.Mission&&state.Instance==plan.Instance&&state.Identity==plan.Owner&&state.Started==plan.Started&&state.Phase==plan.Phase&&Sources(state)==plan.Sources&&selected.Value.GetRawText()==plan.Selection.GetRawText(),"Current accepted/source/route identity");}
  public static float NativeDistance(double[] at,double[] centre,string quaternion,float[] h)
