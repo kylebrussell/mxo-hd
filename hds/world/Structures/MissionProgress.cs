@@ -438,6 +438,7 @@ namespace hds
         {
             phaseIndex++;
             openFloorResolvedPhase=null;openFloorLegacyPhase=null;
+            npcInteriorResolvedPhase=null;
             waitingForExit = false;
             departedSite = null;
             goalsCompleteSent = false;

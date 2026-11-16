@@ -164,7 +164,7 @@ namespace hds
             foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius))
             {
                 TimedEffects.ApplyToMob(client, mob, view, effectId);
-                if (damage > 0) CombatManager.GetHandler(client).ApplyAbilityToNpc(mob, view, damage, fx);
+                if (damage > 0) CombatManager.GetHandler(client).ApplyAbilityToNpc(mob, view, PunishingBlows.Npc(client, mob, damage), fx);
                 hits++;
             }
             foreach (WorldClient target in AbilityHostile.PlayersInArea(client, x, y, z, radius))
@@ -173,9 +173,10 @@ namespace hds
                 TimedEffects.ApplyToPlayer(target, effectId, name, client);
                 if (damage > 0)
                 {
-                    target.messageQueue.addRpcMessage(AbilityMessages.Damage(false, effectId, name, TimedEffects.PlayerName(target), damage, 0));
+                    ushort targetDamage = PunishingBlows.Player(client, target, damage);
+                    target.messageQueue.addRpcMessage(AbilityMessages.Damage(false, effectId, name, TimedEffects.PlayerName(target), targetDamage, 0));
                     target.FlushQueue();
-                    if (PvpCombat.Damage(target, damage, fx)) PvpCombat.Defeated(target, client);
+                    if (PvpCombat.Damage(target, targetDamage, fx)) PvpCombat.Defeated(target, client);
                 }
                 hits++;
             }

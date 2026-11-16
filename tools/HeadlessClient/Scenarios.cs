@@ -23,10 +23,13 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
+        new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),
+        new Scenario(MissionNpcInteriorProof.Name,c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.NpcInteriorRoute,true,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.NpcInteriorRoute),Timeout:TimeSpan.FromMinutes(6)),
         new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),
         new Scenario("interior-admission-merv",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Merv),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Merv)),
         new Scenario("interior-admission-posters",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Posters),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Posters)),
@@ -77,6 +80,9 @@ public static partial class Scenarios
         new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
         new Scenario("sever-artery-states",SeverArteryStates,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_SEVER_STATE_QA"]="1"}),
+        new Scenario("combat-insight-engagement",CombatInsightWire,CombatInsightFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
+        new Scenario("punishing-blows",PunishingBlowsWire,PunishingBlowsFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
+        new Scenario("buff-drain-lifetime",BuffDrainLifetimeWire,BuffDrainLifetimeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("conditional-thrown-damage",ConditionalThrownDamageWire,ConditionalThrowFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("reverse-bulldog-controls", ReverseBulldogControls, ReverseBulldogFixture.Environment),
         new Scenario("ghost-strike-callback",GhostStrikeCallback,GhostStrikeFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
@@ -157,6 +163,7 @@ public static partial class Scenarios
         new Scenario("hyperjump-resource-records", HyperjumpResourceRecords, StillNpcs),
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
+        new Scenario("transmit-code-resistance",TransmitCodeWire,TransmitCodeFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
         new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),

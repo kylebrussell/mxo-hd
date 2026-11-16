@@ -60,6 +60,7 @@ namespace hds
         private readonly ClientData data;
         private readonly MissionProgress progress;
         private readonly MissionSite site;
+        private readonly MissionNpcInteriorWitness npcWitness;
         private readonly int phase, world, life;
         private readonly uint character, district;
         private readonly bool onWorld;
@@ -67,6 +68,7 @@ namespace hds
         internal MissionRideStamp(WorldClient client, MissionProgress progress)
         {
             this.client=client;data=client.playerData;this.progress=progress;site=progress?.site;
+            npcWitness=MissionNpcInteriorAdmission.ForSite(progress,site);
             phase=progress?.phaseIndex??-1;world=data.worldGeneration;life=data.lifeGeneration;
             character=data.getCharID();district=data.getDistrictId();onWorld=data.getOnWorld();
             Transport=client.TransportFence.Capture();
@@ -78,6 +80,8 @@ namespace hds
         }
         internal bool Current => client.Alive && ReferenceEquals(client.playerData,data) &&
             ReferenceEquals(data.missionProgress,progress) && (progress==null || progress.phaseIndex==phase && ReferenceEquals(progress.site,site)) &&
+            ReferenceEquals(MissionNpcInteriorAdmission.ForSite(progress,site),npcWitness) &&
+            (npcWitness==null||client.TransportFence.IsCurrent(Transport)) &&
             data.worldGeneration==world && data.lifeGeneration==life && data.getCharID()==character &&
             data.getDistrictId()==district && data.getOnWorld()==onWorld && !data.isDead && !data.worldChangePending &&
             !data.waitForRPCShutDown && client.TransportFence.Capture()==Transport;

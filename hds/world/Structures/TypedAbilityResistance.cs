@@ -39,7 +39,7 @@ namespace hds
             ushort stat=Stat(type);
             if(caster==null || victim==null || caster==victim || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
             return Apply(caster.playerInstance.Level.getValue()[0],victim.playerInstance.Level.getValue()[0],
-                AbilityStats.Player(victim,144)+AbilityStats.Player(victim,stat),ability,raw,type);
+                TypedResistanceBonuses.Player(victim,type,AbilityStats.Player(victim,144)+AbilityStats.Player(victim,stat)),ability,raw,type);
         }
         public static ushort Npc(WorldClient caster,Mob victim,ushort ability,int raw,int type=-2)
         {
@@ -47,7 +47,7 @@ namespace hds
             ushort stat=Stat(type);
             if(caster==null || victim==null || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
             return Apply(caster.playerInstance.Level.getValue()[0],victim.getLevel(),
-                AbilityStats.Npc(victim,144)+AbilityStats.Npc(victim,stat),ability,raw,type);
+                TypedResistanceBonuses.Npc(victim,type,AbilityStats.Npc(victim,144)+AbilityStats.Npc(victim,stat)),ability,raw,type);
         }
         private static ushort Apply(int attack,int defend,int total,ushort ability,int raw,int type)
         {
