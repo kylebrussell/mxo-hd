@@ -91,4 +91,3 @@ public sealed record ZionAfter1212RidePlan(ushort World,uint Key,double[] Pose,s
         if(Snapshot(before)!=Snapshot(after))throw new InvalidDataException("Saved ride identity changed before ordinary door request");
     }
 }
-
