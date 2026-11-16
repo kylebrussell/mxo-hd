@@ -72,6 +72,34 @@ public static partial class Scenarios
                     Check.Equal(phase,active.RootElement.GetProperty("Phase").GetInt32(),"Actual phase checkpoint index");
                     phaseCheckpoints.Add(new{Mission=id,Phase=phase,Checkpoint=checkpoint});
                 }
+                MissionOutsideUploadProof.Token? outside=null;
+                async Task<MissionProgress.SavedState> OutsideCurrent()=>await MervFollowupCurrent(context,p)??throw new ScenarioFailure("Owned current mission required for outside continuation");
+                async Task UploadOutside()
+                {
+                    if(!strictFollowupApproach){await ZionUpload(p);return;}
+                    var current=await OutsideCurrent();
+                    bool firstOutside=outside==null;
+                    if(firstOutside)
+                    {
+                        var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                        var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
+                        outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,OutsideCurrent,
+                            ()=>MervFollowupRide(context,p,false,phaseCheckpoints,id,phase,unfinishedOutside:true),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),phaseCheckpoints.Add);
+                    }
+                    else MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
+                    if(firstOutside)await MoveForMissionTest(p,17000,495,2200); // ONLY after ordinary down/ACK.
+                    ViewCreation? booth=null;
+                    await p.WaitUntilAsync(()=>(booth=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife()))!=null,"Exact current-life outside booth",TimeSpan.FromSeconds(10));
+                    p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(booth!)} 04 00");await p.WaitForRpcAsync("81 18");
+                }
+                async Task ReturnInside()
+                {
+                    if(outside==null)return;var current=await OutsideCurrent();MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
+                    var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                    var standing=street?.Floor.Standing??npc?.Floor.Standing??throw new ScenarioFailure("Return trip requires exact saved floor Standing");
+                    await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,OutsideCurrent,()=>MervFollowupRide(context,p,true,phaseCheckpoints,id,phase),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),phaseCheckpoints.Add,returningInside:true);
+                    outside=null;
+                }
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
                 while(goals.Any(g=>!Done((int)g.Attribute("goal")!)))
                 {
@@ -80,6 +108,7 @@ public static partial class Scenarios
                         .OrderBy(g=>(int?)g.Attribute("optional")==1?0:1).FirstOrDefault();
                     Check.That(goal!=null,$"Mission{id} phase{phase+1} has an eligible remaining goal");
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;
+                    if(strictFollowupApproach&&type!="Upload")await ReturnInside();
                     step=$"mission-{id}-phase-{phase+1}-goal-{number}-{type}";
                     Console.WriteLine($"  Prima{id} phase{phase+1} goal{number} {type}");
                     XElement Npc(string key)=>mission.Elements("npc").Single(n=>(string)n.Attribute("id")! == key);
@@ -197,13 +226,13 @@ public static partial class Scenarios
                                 }
                             }
                             if(to=="exit") {if(strictFollowupApproach)await MervFollowupRide(context,p,false,phaseCheckpoints,id,phase,authoredExit,number,exitOwner,escortIntentCursor);else await LeaveMissionArea(p);}
-                            else if(to=="hardline")await ZionUpload(p);
+                            else if(to=="hardline")await UploadOutside();
                             else if(to.StartsWith("npc:"))await PrimaNpc(context,p,Npc(to[4..]),viewsStart,true,strictFollowupApproach);
                             else if(to.StartsWith("object:")) {if(strictFollowupApproach)await MervFollowupObject(context,p,int.Parse(to[7..]),viewsStart,phaseCheckpoints);else await ZionObject(context,p,int.Parse(to[7..]));}
                             else throw new Exception("Unsupported escort destination "+to);
                             break;
                         }
-                        case "Upload":await ZionUpload(p);break;
+                        case "Upload":await UploadOutside();break;
                         case "DefeatAll":
                         {
                             var names=new HashSet<string>(new[]{"Machine Program","Zion Soldier","Exile Soldier"});
@@ -234,7 +263,8 @@ public static partial class Scenarios
                         string hex=await context.Database.ScalarAsync($"SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId={p.CharId}");
                         string? raw=MervFollowupCheckpointFixture.DecodeHex(hex);
                         var actual=raw==null?null:System.Text.Json.JsonSerializer.Deserialize<MissionProgress.SavedState>(raw,MervFollowupFields);
-                        if(MervFollowupApproachFixture.OwnsWaitingPhase(actual,id,phase))await MervFollowupRide(context,p,false,phaseCheckpoints,id,phase);
+                        if(outside!=null&&MervFollowupApproachFixture.OwnsWaitingPhase(actual,id,phase)){MissionOutsideUploadProof.RequireCurrent(outside,actual!,p.World.CurrentOwnViewLife());await MervFollowupWaitTransition(context,p,id,phase);}
+                        else if(MervFollowupApproachFixture.OwnsWaitingPhase(actual,id,phase))await MervFollowupRide(context,p,false,phaseCheckpoints,id,phase);
                         else phaseCheckpoints.Add(new{Operation="legitimate-auto-advance-before-exit",Mission=id,CompletedPhase=phase,ActualMission=actual?.Mission,ActualPhase=actual?.Phase,Checkpoint=raw});
                     }
                     else await LeaveMissionArea(p);

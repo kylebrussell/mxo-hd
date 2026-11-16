@@ -1,3 +1,5 @@
+> Local outside-trip correction depends explicitly on frozen271 `11f30740` pending its native acceptance/merge. Before Upload or escort-to-hardline,213 now requires ordinary unfinished car DOWN, fresh current-own-life011c and exact client ACK before outside movement aid. Repeated same-booth Upload reuses a current-life/site token; later interior actions require ordinary UP and ACK. The default shared Prima behavior stays off. No new fresh/native result is claimed.
+
 ## Current post269 native entry gate
 
 Start a new normal Flood Critical chain with only earlier receipts. Follow the public approach waypoint, hover/pick and Open the actual exterior Door, walk through into the lobby, then Open the distinct car door. Public Open must not teleport floors. Use the current saved Street Floor/Lobby Standing for car context. Stop on absent hover, solid facade, unsupported passage or wrong floor. Headless movement aids do not establish collision or picking. Do not reuse the997 checkpoint or use `?missionfloor` as native proof. This new local qualification is pending; no new whole-case/native pass is claimed.

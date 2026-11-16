@@ -48,12 +48,14 @@ public static partial class Scenarios
             await Task.Delay(25);
         }
     }
-    private static async Task MervFollowupRide(ScenarioContext context,HeadlessPlayer p,bool enter,List<object> evidence,int expectedMission,int expectedPhase,Mission? authoredExit=null,int? exitEscortGoal=null,MissionProgress.SavedState? exitOwner=null,int? exitIntentCursor=null)
+    private static async Task MervFollowupRide(ScenarioContext context,HeadlessPlayer p,bool enter,List<object> evidence,int expectedMission,int expectedPhase,Mission? authoredExit=null,int? exitEscortGoal=null,MissionProgress.SavedState? exitOwner=null,int? exitIntentCursor=null,bool unfinishedOutside=false)
     {
+        Check.That(!unfinishedOutside||!enter,"Unfinished outside trip is a downride only");
+        var initialLife=p.World.CurrentOwnViewLife();
         int intent=exitIntentCursor??p.World.RpcSnapshot().Count;
         var saved=await MervFollowupCurrent(context,p);
         var before=exitOwner??saved;
-        if(!enter&&!MervFollowupApproachFixture.CanDepart(saved,expectedMission,expectedPhase,authoredExit,exitEscortGoal))
+        if(!enter&&!unfinishedOutside&&!MervFollowupApproachFixture.CanDepart(saved,expectedMission,expectedPhase,authoredExit,exitEscortGoal))
         {
             if(exitEscortGoal.HasValue)
             {
@@ -75,7 +77,7 @@ public static partial class Scenarios
         int log=context.Server.DebugLog().Length; var beforeArrival=p.World.CreationSnapshot();
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c=='\n');
-        if(!enter)
+        if(!enter&&!unfinishedOutside)
         {
             var current=await MervFollowupCurrent(context,p);
             if(!MervFollowupApproachFixture.CanDepart(current,expectedMission,expectedPhase,authoredExit,exitEscortGoal))
@@ -89,9 +91,11 @@ public static partial class Scenarios
                 evidence.Add(new{Operation="legitimate-auto-advance-before-door-send",Mission=expectedMission,CompletedPhase=expectedPhase,ActualMission=current?.Mission,ActualPhase=current?.Phase});return;
             }
         }
-        if(enter)Check.That(MervFollowupElevatorFixture.SameEntry(saved,await MervFollowupCurrent(context,p)),
+        if(enter||unfinishedOutside)Check.That(MervFollowupElevatorFixture.SameEntry(saved,await MervFollowupCurrent(context,p)),
             "Current accepted entry/site/witness remains identical immediately before ordinary door request");
-        var ownWorld=p.World.CurrentOwnViewLife();int viewCursor=ownWorld.Events.Count==0?ownWorld.OwnBirthSection+1:ownWorld.Events.Max(e=>e.Section)+1;
+        var ownWorld=p.World.CurrentOwnViewLife();
+        if(unfinishedOutside)Check.That(initialLife.Current&&ownWorld.Current&&ReferenceEquals(initialLife.Owner,ownWorld.Owner)&&initialLife.Life==ownWorld.Life,"Unfinished down request retains original current owner/life");
+        int viewCursor=ownWorld.Events.Count==0?ownWorld.OwnBirthSection+1:ownWorld.Events.Max(e=>e.Section)+1;
         string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
         if(!enter&&exitEscortGoal.HasValue)await MervFollowupWaitEscortExit(context,p,before!,authoredExit!,exitEscortGoal.Value,intent);
         else if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary saved-door elevator ride",TimeSpan.FromSeconds(15));
@@ -133,7 +137,7 @@ public static partial class Scenarios
                     evidence.Add(MervBound326Approach.Capture(saved,actual,actualNav,p.World.CurrentOwnViewLife(),selectedRide.Measured));
             }
         }
-        if(!enter)
+        if(!enter&&!unfinishedOutside)
         {
             await MervFollowupWaitTransition(context,p,expectedMission,expectedPhase);
             var current=await MervFollowupCurrent(context,p);
