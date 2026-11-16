@@ -220,7 +220,7 @@ public static partial class Scenarios
                                     if(checkpointRecreatedCarriedNpcs && mission.Elements("phase").Skip(phase+1).SelectMany(a=>a.Elements("objective")).Any(o=>((string?)o.Attribute("npc"))?.Split(',').Contains(key)==true))
                                     {
                                         string checkpoint=await CarriedMissionNpcFixture.ReadOwnedAsync(context,p);
-                                        carried[npcId]=CarriedMissionNpcFixture.Capture(checkpoint,id,phase,npcId,(string)npc.Attribute("handle")!,true);
+                                        carried[npcId]=CarriedMissionNpcFixture.Capture(checkpoint,id,phase,npcId,(string)npc.Attribute("handle")!,true,p.World.CurrentOwnViewLife());
                                         carriedEvidence.Add(new{Operation="capture",Checkpoint=checkpoint,Token=carried[npcId]});
                                     }
                                 }
