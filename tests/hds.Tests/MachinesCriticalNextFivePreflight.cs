@@ -32,7 +32,14 @@ public static class MachinesCriticalNextFivePreflight
             var mission=missions.Single(m=>m.id==id);var used=new List<MissionSite>();double x=17000,z=2300;
             for(int phaseIndex=0;phaseIndex<mission.phases.Count;phaseIndex++)
             {
-                var phase=mission.phases[phaseIndex];int seed=MissionStaging.QaSiteSeed("1","mxotest_offline_machines_next",MachinesCriticalNextFiveFixture.Seed.ToString(),id,phaseIndex)!.Value;
+                var phase=mission.phases[phaseIndex];
+                if(phase.site==null)
+                {
+                    bool noSite=MachinesNoSiteUploadFixture.IsNoSiteUpload(mission,phaseIndex);
+                    rows.Add(new{Mission=id,Phase=phaseIndex,Success=noSite,NoSite=true,Refusal=noSite?null:"UnsupportedNoSiteGeometry",Origin=new[]{x,z}});
+                    if(!noSite)failed++;x=17000;z=2200;continue;
+                }
+                int seed=MissionStaging.QaSiteSeed("1","mxotest_offline_machines_next",MachinesCriticalNextFiveFixture.Seed.ToString(),id,phaseIndex)!.Value;
                 var rng=new Random(seed);int npcs=mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(phase);
                 var neighbourhoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
                 bool Eligible(MissionSite candidate)=>MissionInteriorSites.Eligible(phase,candidate,out _,npcs);

@@ -51,9 +51,32 @@ public static partial class Scenarios
         async Task Ride(bool enter)
         {
             var before=(await Saved(enter?"before-entry":"before-exit"))!;
-            await MachinesNextRide(context,p,enter,arrivalProofs.Add);if(enter)outsideAfterUpload=false;
+            var requestLife=p.World.CurrentOwnViewLife();int viewCursor=-1,packetLine=-1,logOffset=-1;
+            var street=MervFollowupStreetEntry.ForSite(before);var npc=MissionNpcInteriorRide.ForSite(before);
+            var standing=enter?null:street?.Lobby.Standing??npc?.Lobby.Standing;
+            var boundary=new MissionOutsideUploadProof.RequestBoundary();
+            void Mark()=>boundary.Mark(()=>{requestLife=p.World.CurrentOwnViewLife();viewCursor=p.World.ViewSnapshot().Count;packetLine=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(c=>c=='\n');logOffset=context.Server.DebugLog().Length;});
+            await MachinesNextRide(context,p,enter,arrivalProofs.Add,beforeRequest:!enter&&standing!=null?Mark:null);
+            if(enter){outsideAfterUpload=false;outside=null;}
             var after=await Saved(enter?"after-entry-observation":"after-exit-observation");
             if(enter)Check.That(after!=null&&after.Mission==before.Mission&&after.Phase==before.Phase&&after.Identity==before.Identity&&after.Started==before.Started,"Ordinary entry keeps exact current mission/phase owner");
+            if(!enter&&standing!=null)
+            {
+                boundary.RequireMarked();MissionOutsideUploadProof.RequirePhysicalTrip(context.Server.DebugLog()[logOffset..],standing);
+                NpcInteriorComputerState.Teleport? arrival=null;
+                await p.WaitUntilAsync(()=>{try{arrival=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),requestLife,viewCursor,standing);return true;}catch(InvalidDataException){return false;}},"Completed interior exit actual typed lobby arrival",TimeSpan.FromSeconds(15));
+                MissionMidphaseReturnFixture.Arrival? receipt=null;
+                await p.WaitUntilAsync(()=>{try{receipt=MissionMidphaseReturnFixture.RequireArrival(InteriorAdmissionDeliveryProof.Read(PacketPath()),p.CharId,packetLine,arrival!);return true;}catch(InvalidDataException){return false;}},"Completed interior exit exact ACK",TimeSpan.FromSeconds(10));
+                var xml=new System.Xml.XmlDocument();xml.Load(Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"machines_1_2_*.xml").Single(f=>(int)XElement.Load(f).Attribute("id")! == before.Mission));
+                var authored=MissionXml.Parse(xml.DocumentElement!);
+                if(after!=null&&MachinesNoSiteUploadFixture.IsNoSiteUpload(authored,after.Phase))
+                {
+                    MachinesNoSiteUploadFixture.RequireTransition(before,after,authored);
+                    outside=new MissionOutsideUploadProof.Token(after,p.World.CurrentOwnViewLife());
+                    MissionOutsideUploadProof.RequireCurrent(outside,after,requestLife);outsideAfterUpload=false;
+                }
+                arrivalProofs.Add(new{Kind="Completed ordinary downride BEFORE no-site/outside phase",before.Mission,CompletedPhase=before.Phase,TypedArrival=arrival,Receipt=receipt,NextPhase=after?.Phase,MovementAid=false});
+            }
             // entered means the legacy content-area trigger played, not immediate floor arrival.
             // Published route/NPC/object approaches enter naturally; no pose/flag is changed here.
         }
@@ -63,12 +86,16 @@ public static partial class Scenarios
             Check.That(ids.Contains(current.Mission),"Outside Upload retains the selected Machines mission");
             if(!outsideAfterUpload)
             {
-                var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
-                var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
-                outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,
-                    async()=>(await Saved("ordinary-lobby-before-outside-aid"))!,
-                    mark=>MachinesNextRide(context,p,false,arrivalProofs.Add,waitForPhaseAdvance:false,beforeRequest:mark),
-                    standing,PacketPath(),context.Server.DebugLog,arrivalProofs.Add);
+                if(outside==null)
+                {
+                    var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                    var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
+                    outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,
+                        async()=>(await Saved("ordinary-lobby-before-outside-aid"))!,
+                        mark=>MachinesNextRide(context,p,false,arrivalProofs.Add,waitForPhaseAdvance:false,beforeRequest:mark),
+                        standing,PacketPath(),context.Server.DebugLog,arrivalProofs.Add);
+                }
+                else MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
                 // Disclosed outside point movement only AFTER the ordinary downride/ACK cutpoint proof.
                 await MoveForMissionTest(p,17000,495,2200);outsideAfterUpload=true;
             }
@@ -141,7 +168,15 @@ public static partial class Scenarios
                 int nextCreationCursor=viewsStart;
                 var killed=new HashSet<(ushort,byte)>();
                 bool Done(int n)=>p.World.RpcSnapshot().Skip(rpcStart).Any(r=>BytePattern.Parse($"80 a0 {n:x2} 06 00 01").IsMatch(r.Bytes));
-                await Ride(true);
+                var authoredDoc=new System.Xml.XmlDocument();authoredDoc.LoadXml(mission.ToString());var authoredMission=MissionXml.Parse(authoredDoc.DocumentElement!);
+                if(MachinesNoSiteUploadFixture.IsNoSiteUpload(authoredMission,phase))
+                {
+                    var noSite=(await Saved("authored-no-site-upload-after-real-downride"))!;
+                    MachinesNoSiteUploadFixture.RequireState(noSite,authoredMission);
+                    Check.That(outside!=null,"No-site Upload follows an actual completed ordinary downride/ACK");
+                    MissionOutsideUploadProof.RequireCurrent(outside!,noSite,p.World.CurrentOwnViewLife());
+                }
+                else await Ride(true);
                 if(id is 201204 or 201205)
                 {
                     var followerState=(await Saved("follower-phase-carry"))!;Check.Equal(phase,followerState.Phase,"Follower belongs to current active mission phase");
