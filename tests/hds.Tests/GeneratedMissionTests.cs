@@ -304,7 +304,7 @@ public class GeneratedMissionTests
         {
             MissionPhase phase = mission.phases[p];
             string where = file + " phase " + (p + 1);
-            Assert.True(phase.site != null || phase.waypoints.Count > 0, where + ": nowhere to go");
+            Assert.True(phase.site != null || phase.waypoints.Count > 0 || HeadlessClient.MachinesNoSiteUploadFixture.IsNoSiteUpload(mission, p), where + ": nowhere to go");
             Assert.Contains(phase.missionObjectives, o => !o.optional && o.type != MissionGoalType.Protect);
             HashSet<int> goals = phase.missionObjectives.Select(o => o.goal).ToHashSet();
             HashSet<ushort> objects = phase.objects.Select(o => o.id).ToHashSet();
