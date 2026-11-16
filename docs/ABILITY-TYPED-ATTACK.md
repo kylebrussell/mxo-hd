@@ -11,13 +11,13 @@ In client.dll SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f
 | 1 | 524 ranged | Existing `Attack(true)` including its established 996 convention |
 | 2 | 342 viral | General163 + capped direct342 + OURS level-scaled1147 bonus + existing Blind penalty |
 | 3 | 522 melee | Existing `Attack(false)` exactly |
-| 4 | 1032 thrown | General163 + capped direct1032 + existing Blind penalty |
+| 4 | 1032 thrown | General163 + capped direct1032 + OURS level-scaled1145 bonus + existing Blind penalty |
 | 6 | 1005 withdrawal | Existing `Attack(false)` fallback; withdrawal unchanged |
 | 0/unknown | native sentinel4096 | Existing `Attack(false)` fallback |
 
 The native API is `getCombatTacticBonusType` (string628c8738/method table629c2878). Selected-stat accumulator625c5df0 calls6251fe10 at625c5e6e and reads the selected stat at625c5e86. All eight recovered direct callers are in client status/display calculation paths, so this is **not proof of the authoritative retail gameplay producer**. Recovered `interlock/combat_resolution.py:getCTandDTotals` consumes precomputed tacticalValue without selecting its stat.
 
-General totals, caps, melee/ranged policy, Blind, rolls and damage formulas retain their established behavior. Viral1147 now contributes through an explicitly OURS level-scaled percentage convention, shared with normal free-cast viral contests; see [the consumer policy](ABILITY-VIRAL-ACCURACY-BONUS.md). The exact retail coefficient is still unknown. Thrown1145 remains unlinked. Captured Upgrade Attacks314 provides direct342+108 for20s; Howitzer1087's captured direct342+13 is unchanged.
+General totals, caps, melee/ranged policy, Blind, rolls and damage formulas retain their established behavior. Viral1147 now contributes through an explicitly OURS level-scaled percentage convention, shared with normal free-cast viral contests; see [the consumer policy](ABILITY-VIRAL-ACCURACY-BONUS.md). The exact retail coefficient is still unknown. Thrown1145 now uses the same explicit OURS level-percent convention; see [Thrown Accuracy Bonus](ABILITY-THROWN-ACCURACY-BONUS.md). Captured Upgrade Attacks314 provides direct342+108 for20s; Howitzer1087's captured direct342+13 is unchanged.
 
 The normal handler overwrites cast time from catalog (`AbilityHandler`), then only zero-cast abilities can enter `QueueRoundAbility`. All player viral TestFunction2 abilities currently have positive casts and route to `AbilityTargets` after casting. This PR does not change that admission or make those casts contested. Viral support here is diagnostic/future queued-executor coverage, not proof of an accessible queued viral player move. No internal effect ability is loaded to evade that boundary.
 

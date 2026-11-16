@@ -33,6 +33,7 @@ namespace hds
         {
             private readonly Domain domain; private readonly string fingerprint;
             internal Binding(string fingerprint,Domain domain) {this.fingerprint=fingerprint;this.domain=domain;}
+            internal MissionNpcInteriorEntry FloorEntry=>domain.Floor; internal MissionNpcInteriorEntry LobbyEntry=>domain.Lobby;
             internal string Refusal(int roles) => domain.Refusal??(domain.Allows(roles)?null:"InsufficientCertifiedNpcCapacity");
             internal bool Matches(MissionSite site,int roles,E floor,E.Entry floorEntry,E lobby,E.Entry lobbyEntry) => MissionOpenFloorSite.CatalogFingerprint(site)==fingerprint&&domain.Matches(site,roles,floor,floorEntry,lobby,lobbyEntry);
         }

@@ -9,6 +9,11 @@ public partial class MissionNpcInteriorCheckpointTests
         Assert.Equal(reset.Take(26).Skip(2),DoorLifecycle.BuildResetUpdate());
         var log=QaLife(QaOwn(),QaDoor(view:6,key:0x2260056c),QaDoor(state:0x834),reset);
         Assert.Equal(0x834u,NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()).State);
+        // The same reset appeared in Zion section65 before a later NPC elevator ride.
+        // It must not poison the independently framed own2 arrival either.
+        var before=log.Snapshot();var teleport=QaTeleport();
+        log.Observe(false,teleport,4,WireFormat.FindCreations(teleport));
+        Assert.Equal(4,NpcInteriorComputerState.FreshTeleport(log.Snapshot(),before,4,QaDestination).Section);
         var ownReset=BitConverter.GetBytes((ushort)9).Concat(DoorLifecycle.BuildResetUpdate()).ToArray();
         log=QaLife(QaOwn(),QaDoor(state:0x834),ownReset);
         Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(log.Snapshot(),QaExpectedDoor()));

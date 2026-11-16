@@ -105,6 +105,17 @@ namespace hds
 
         public void processObjectInteraction(StaticWorldObject staticWorldObject, GameObjectItem item)
         {
+            var publicRequest=MissionPublicDoors.CaptureRequest(Store.currentClient);
+            var publicDoor=MissionPublicDoors.Resolve(staticWorldObject);
+            if(publicDoor.State==MissionPublicDoors.Kind.Refused)
+            {Output.WriteDebugLog("[DOOR] Declared public door refused: "+publicDoor.Refusal);return;}
+            if(publicDoor.State==MissionPublicDoors.Kind.Resolved)
+            {
+                // Select the original native schema before constructing or opening this SAME static key.
+                var pose=publicDoor.Pose;
+                publicRequest.Publish(staticWorldObject,publicDoor,()=>ProcessObjectInteractionCore(staticWorldObject,item,new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Resolved,pose.Position,pose.Quaternion),pose.Goid));
+                return;
+            }
             ushort type=MissionSites.Goid(staticWorldObject);
             if(type==417||type==419||MissionInteriorDoorTypes.IsSupported(type))
             {
@@ -116,9 +127,9 @@ namespace hds
             }
             ProcessObjectInteractionCore(staticWorldObject,item,null);
         }
-        private void ProcessObjectInteractionCore(StaticWorldObject staticWorldObject,GameObjectItem item,MissionElevatorPoses.Overlay snapshot)
+        private void ProcessObjectInteractionCore(StaticWorldObject staticWorldObject,GameObjectItem item,MissionElevatorPoses.Overlay snapshot,ushort? effectiveGoid=null)
         {
-            UInt16 typeId = NumericalUtils.ByteArrayToUint16(staticWorldObject.type, 1);
+            UInt16 typeId = effectiveGoid??NumericalUtils.ByteArrayToUint16(staticWorldObject.type, 1);
             Output.WriteDebugLog("[DOOR] Use of static " + staticWorldObject.mxoStaticId + " type " + typeId +
                                  " (" + item.getName() + ")");
 

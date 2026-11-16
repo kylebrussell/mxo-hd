@@ -54,7 +54,10 @@ namespace hds
                 StartCore(client,progress.mission,transaction,progress,null,plan);plan.RequirePublished(client);return true;
             },true);
 
-        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null,MissionNpcInteriorAdmission.Plan npcPrepared=null)
+        internal static bool StartStreet(WorldClient client,MissionProgress progress,MissionStreetAdmission.Plan plan,ushort transaction)=>
+            MissionPersistence.Mutate(client,()=>{if(!plan.BeforeCurrent(client)||!plan.BindOutput(client))return false;StartCore(client,progress.mission,transaction,progress,null,null,plan);plan.RequirePublished(client);return true;},true);
+
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction,MissionProgress preparedProgress=null,MissionOpenFloorAdmission.Plan prepared=null,MissionNpcInteriorAdmission.Plan npcPrepared=null,MissionStreetAdmission.Plan streetPrepared=null)
         {
             lock (client.playerData.missionSync)
             {
@@ -81,7 +84,8 @@ namespace hds
                     }
                 }
 
-                if(npcPrepared!=null)MissionStaging.StageNpcPrepared(client,progress,npcPrepared);
+                if(streetPrepared!=null){streetPrepared.RequireStaging(client);MissionStaging.StageStreetPrepared(client,progress,streetPrepared);progress.streetPending=null;streetPrepared.RequirePublished(client);}
+                else if(npcPrepared!=null)MissionStaging.StageNpcPrepared(client,progress,npcPrepared);
                 else if(prepared==null)MissionStaging.Stage(client, progress);
                 else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
                 SendPhase(client, progress);
@@ -1123,12 +1127,14 @@ namespace hds
                     header ?? "30000100000000000000000000003c00", areaA, areaB));
             }
 
+            var street=MissionStreetGuidance.Project(client,progress);
             for (int i = 0; i < progress.waypoints.Count; i++)
             {
-                MissionWaypoint door = progress.waypoints[i];
+                MissionWaypoint door = i==0&&street!=null?street:progress.waypoints[i];
                 client.messageQueue.addRpcMessage(ServerPackets.BuildMissionWaypoint(door.x, door.y, door.z, (byte)i, door.doorHex));
             }
 
+            progress.streetShownWaypoint=MissionStreetGuidance.Signature(street);
             SendObjectives(client, progress, restoring);
 
             if(provideItems) GiveProvidedItems(client, progress);
@@ -1361,7 +1367,8 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
             MissionStaging.IntroduceDeferredObjects(client,progress);
-            bool sent = GiveProvidedItems(client, progress);
+            bool sent = MissionStreetGuidance.Tick(client,progress);
+            sent |= GiveProvidedItems(client, progress);
             SwitchSides(client, progress); // Retry a side change that was waiting for a safe placement.
             MissionStaging.Follow(client, progress, x, y, z);
             sent |= TickObjects(client, progress, x, y, z);
@@ -1449,7 +1456,7 @@ namespace hds
                     Finish(client, progress);
                     return;
                 }
-                MissionOpenFloorAdmission.Plan openFloorPlan=null;MissionNpcInteriorAdmission.Plan npcPlan=null;
+                MissionOpenFloorAdmission.Plan openFloorPlan=null;MissionNpcInteriorAdmission.Plan npcPlan=null;MissionStreetAdmission.Plan streetPlan=null;
                 if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
                 {
                     if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
@@ -1466,7 +1473,7 @@ namespace hds
                     if(!openFloorPlan.BeforeCurrent(client))return;
                     // Admit the exact choice durably before tearing down the old phase.
                     // A later staging/SQL rollback restores this same pending choice.
-                    if(openFloorPlan.Adopted)
+                    if(openFloorPlan.Adopted||openFloorPlan.HasStreet)
                     {
                         progress.pendingOpenFloor=openFloorPlan.Selection.WithRefusal(null);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
                         MissionPersistence.Save(client);
@@ -1485,13 +1492,23 @@ namespace hds
                     }
                     if(!prepared){Output.WriteDebugLog("[MISSION] NPC next-phase refused: "+refusal);return;}
                 }
+                if(MissionStreetAdmission.Candidate(progress,progress.phaseIndex+1))
+                {
+                    bool accepted=MissionStreetAdmission.TryPrepare(client,progress,progress.phaseIndex+1,out streetPlan,out string refusal);
+                    if(streetPlan==null||!streetPlan.BeforeCurrent(client))return;
+                    progress.streetPending=streetPlan.Pending;MissionPersistence.Save(client);
+                    if(!MissionStreetAdmission.PendingDurable(client.playerData,streetPlan.Pending)||!streetPlan.BeforeCurrent(client))return;
+                    if(!accepted){Output.WriteDebugLog("[MISSION] Ordinary street next phase refused: "+refusal);return;}
+                    if(!streetPlan.BindOutput(client))return;
+                }
                 if(openFloorPlan!=null&&!openFloorPlan.BindOutput(client))return;
                 if(npcPlan!=null&&!npcPlan.BindOutput(client))return;
                 MissionStaging.DespawnObjects(client, progress);
                 progress.NextPhase();
                 progress.pendingOpenFloor=null;
                 Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                if(npcPlan!=null)
+                if(streetPlan!=null){streetPlan.RequireStaging(client);MissionStaging.StageStreetPrepared(client,progress,streetPlan);progress.streetPending=null;streetPlan.RequirePublished(client);}
+                else if(npcPlan!=null)
                 {
                     npcPlan.RequireStaging(client);MissionStaging.StageNpcPrepared(client,progress,npcPlan);npcPlan.RequirePublished(client);progress.npcInteriorPending=null;
                 }

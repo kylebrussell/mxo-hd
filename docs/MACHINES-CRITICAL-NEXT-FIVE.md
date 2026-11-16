@@ -1,6 +1,10 @@
 # Machines critical next five after Disturbing Trends
 
-## Qualified normal-wire producer
+## Source refresh only — current master 4cbf7365
+
+This object-only normal merge preserves current master public-street access and merged ability/runtime changes. The sole remaining production delta is the existing Policy5 fair whole-phase search in MissionOpenFloorPhasePlanner; data is exactly master. Existing Machines QA and both registries are retained. This refreshed source has NOT been locally built or run: storage limits prohibit data checkout/builds/servers. No new native source/binary pins or native pass are claimed. The following live results remain attributed to the historical frozen producer; final combined CI qualifies only the refreshed source tree.
+
+## Qualified historical normal-wire producer
 
 Compiled producer `c6d65ccec8f0cf5bdae960ff2ee59d161848b115` passed the whole-five case in **265.3 seconds**, held exit 0. All 13 phases completed; missions 201202-201206 each earned one receipt and the next actual Critical offer was 201207 Coroner's Report. Mission payouts total 696,170 XP and 413,000 Info; actual gains also include 384,080 combat XP and 51,250 corpse Info. Wallet changed 296082500 XP/1000 Info to 297162750 XP/465250 Info, independently matched to wire events and SQL. Selected progress, items and rewards were not seeded.
 

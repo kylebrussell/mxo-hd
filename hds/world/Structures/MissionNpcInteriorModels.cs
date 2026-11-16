@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace hds
 {
@@ -73,9 +74,11 @@ namespace hds
     internal sealed class MissionNpcInteriorPending
     {
         public int Version { get; } public string Kind { get; } public MissionNpcInteriorSelection Selection { get; } public MissionNpcInteriorWitness Witness { get; } public string Refusal { get; }
-        [JsonConstructor] public MissionNpcInteriorPending(int version, string kind, MissionNpcInteriorSelection selection, MissionNpcInteriorWitness witness, string refusal)
-        { Version = version; Kind = kind; Selection = selection; Witness = witness; Refusal = refusal; }
-        internal MissionNpcInteriorPending WithRefusal(string refusal) => new MissionNpcInteriorPending(Version, Kind, Selection, Witness, refusal);
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] public JsonElement Street {get;}
+        [JsonConstructor] public MissionNpcInteriorPending(int version, string kind, MissionNpcInteriorSelection selection, MissionNpcInteriorWitness witness, string refusal,JsonElement street=default)
+        { Version = version; Kind = kind; Selection = selection; Witness = witness; Refusal = refusal; Street=street.ValueKind==JsonValueKind.Undefined?default:street.Clone(); }
+        internal MissionNpcInteriorPending WithRefusal(string refusal) => new MissionNpcInteriorPending(Version, Kind, Selection, Witness, refusal,Street);
+        internal MissionNpcInteriorPending WithStreet(JsonElement street)=>new MissionNpcInteriorPending(Version,Kind,Selection,Witness,Refusal,street);
     }
     internal sealed class MissionNpcInteriorEnvelope
     {
