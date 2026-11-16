@@ -37,4 +37,22 @@ public class MissionOutsideContinuationTests
         var method=typeof(Scenarios).GetMethod("MervFollowupRide",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
         Assert.Equal(false,method.GetParameters().Single(p=>p.Name=="unfinishedOutside").DefaultValue);
     }
+    [Fact] public void NoRequestOrDuplicateRequestCannotSupplyTransportAuthority()
+    {
+        var b=new MissionOutsideUploadProof.RequestBoundary();Assert.Throws<InvalidDataException>(b.RequireMarked);
+        int captures=0;b.Mark(()=>captures++);b.RequireMarked();Assert.Throws<InvalidDataException>(()=>b.Mark(()=>captures++));Assert.Equal(1,captures);
+    }
+    [Fact] public void ApproachTeleportOrGroundDoorNoOpIsNotAnOrdinaryMissionTrip()
+    {
+        var target=new[]{3700d,95,13100};
+        Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequirePhysicalTrip("[TELEPORT] Teleported to 3700,95,13100",target));
+        Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequirePhysicalTrip("[MISSION] Elevator: to95",target));
+        Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequirePhysicalTrip("[MISSION] Teleported to 3700,1295,13100",target));
+        MissionOutsideUploadProof.RequirePhysicalTrip("[MISSION] Teleported to 3700,95,13100",target);
+    }
+    [Fact] public void RequestHookIsDefaultNullForExistingTrips()
+    {
+        var m=typeof(Scenarios).GetMethod("MervFollowupRide",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
+        Assert.Null(m.GetParameters().Single(p=>p.Name=="beforeRequest").DefaultValue);
+    }
 }

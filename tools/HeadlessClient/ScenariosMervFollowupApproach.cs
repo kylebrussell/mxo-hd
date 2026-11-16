@@ -48,7 +48,7 @@ public static partial class Scenarios
             await Task.Delay(25);
         }
     }
-    private static async Task MervFollowupRide(ScenarioContext context,HeadlessPlayer p,bool enter,List<object> evidence,int expectedMission,int expectedPhase,Mission? authoredExit=null,int? exitEscortGoal=null,MissionProgress.SavedState? exitOwner=null,int? exitIntentCursor=null,bool unfinishedOutside=false)
+    private static async Task MervFollowupRide(ScenarioContext context,HeadlessPlayer p,bool enter,List<object> evidence,int expectedMission,int expectedPhase,Mission? authoredExit=null,int? exitEscortGoal=null,MissionProgress.SavedState? exitOwner=null,int? exitIntentCursor=null,bool unfinishedOutside=false,Action? beforeRequest=null)
     {
         Check.That(!unfinishedOutside||!enter,"Unfinished outside trip is a downride only");
         var initialLife=p.World.CurrentOwnViewLife();
@@ -96,7 +96,7 @@ public static partial class Scenarios
         var ownWorld=p.World.CurrentOwnViewLife();
         if(unfinishedOutside)Check.That(initialLife.Current&&ownWorld.Current&&ReferenceEquals(initialLife.Owner,ownWorld.Owner)&&initialLife.Life==ownWorld.Life,"Unfinished down request retains original current owner/life");
         int viewCursor=ownWorld.Events.Count==0?ownWorld.OwnBirthSection+1:ownWorld.Events.Max(e=>e.Section)+1;
-        string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+        string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";beforeRequest?.Invoke();p.SendRpc(request);
         if(!enter&&exitEscortGoal.HasValue)await MervFollowupWaitEscortExit(context,p,before!,authoredExit!,exitEscortGoal.Value,intent);
         else if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary saved-door elevator ride",TimeSpan.FromSeconds(15));
         evidence.Add(new{Operation="ordinary-door",saved.Mission,saved.Phase,Enter=enter,DoorKey=key,Request=request,AuthoredExitEscort=exitEscortGoal,IntentRpcCursor=intent,PhysicalTeleportObserved=context.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),Waypoint=door,Lobby=lobby,RideLog=context.Server.DebugLog()[log..]});

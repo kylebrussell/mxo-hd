@@ -84,7 +84,7 @@ public static partial class Scenarios
                         var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
                         var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
                         outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,OutsideCurrent,
-                            ()=>MervFollowupRide(context,p,false,phaseCheckpoints,id,phase,unfinishedOutside:true),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),phaseCheckpoints.Add);
+                            mark=>MervFollowupRide(context,p,false,phaseCheckpoints,id,phase,unfinishedOutside:true,beforeRequest:mark),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),context.Server.DebugLog,phaseCheckpoints.Add);
                     }
                     else MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
                     if(firstOutside)await MoveForMissionTest(p,17000,495,2200); // ONLY after ordinary down/ACK.
@@ -97,7 +97,7 @@ public static partial class Scenarios
                     if(outside==null)return;var current=await OutsideCurrent();MissionOutsideUploadProof.RequireCurrent(outside,current,p.World.CurrentOwnViewLife());
                     var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
                     var standing=street?.Floor.Standing??npc?.Floor.Standing??throw new ScenarioFailure("Return trip requires exact saved floor Standing");
-                    await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,OutsideCurrent,()=>MervFollowupRide(context,p,true,phaseCheckpoints,id,phase),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),phaseCheckpoints.Add,returningInside:true);
+                    await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,OutsideCurrent,mark=>MervFollowupRide(context,p,true,phaseCheckpoints,id,phase,beforeRequest:mark),standing,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),context.Server.DebugLog,phaseCheckpoints.Add,returningInside:true);
                     outside=null;
                 }
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
