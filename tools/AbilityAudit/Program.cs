@@ -5,6 +5,7 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    1044 => "OURS additive interlock attack-base initiative; health snapshot sourced, retail consumer unresolved",
     519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
     212 when typeof(AbilityCatalog).Assembly.GetType("hds.PunishingBlows") != null => "OURS current Daze/Stun/OffBalance damage percent (PunishingBlows consumer present)",
     204 => "stealth detection",
@@ -28,6 +29,7 @@ static string Consumer(ushort stat) => stat switch
     177 => "direct UDB0 caster area radius percent (AbilityTargets and reviewed caster-area97/38 NPC/PvP only; linked1055 unresolved)",
     127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
+    1047 when typeof(AbilityCatalog).Assembly.GetType("hds.DeflectCode") != null => "OURS positive percent shortening of new known hostile controls after raw575, total33% floor; retail coefficient unresolved",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     954 or 955 => "native client Compile60 IC timer; OURS server scheduling, known CBB IC prototypes only; [evidence](COMPILE-ORDINARY-IC.md)",
@@ -69,6 +71,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
             "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; interlock not wired" : "",
