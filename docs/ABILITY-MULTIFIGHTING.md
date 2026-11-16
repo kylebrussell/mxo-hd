@@ -6,7 +6,11 @@ One-on-one NPC combat remains neutral. Arbitrary multi-NPC fights, historical op
 
 ## Normal proof
 
-`multifighting-interlock` requires MXO_MULTIFIGHTING_SOURCE_SHA256. It creates four ordinary level50 players with the same owned prerequisite closure (2/113/130/185/143/116/135, plus fixed style17), changes only140 normally, and runs two/three direct opponents in off/on/off stages. Assertions cover actual deterministic inputs and retained complete wire records; they do not require a random hit or causal damage difference. Helpers, hostile-PvP settings and seeded health are disclosed fixture aids. No RNG override, injected buff or forced target relationship is used. Not yet run.
+`multifighting-interlock` requires MXO_MULTIFIGHTING_SOURCE_SHA256. It creates four ordinary level50 players with the same owned prerequisite closure (2/113/130/185/143/116/135, plus fixed style17), changes only140 normally, and runs two/three direct opponents in off/on/off stages. Assertions cover actual deterministic inputs and retained complete wire records; they do not require a random hit or causal damage difference. Helpers, hostile-PvP settings and seeded health are disclosed fixture aids. No RNG override, injected buff or forced target relationship is used. Gameplay and actual-mode bootstrap have not run. No native proof or READY claim.
+
+Source `e4bfe45f` qualified on master `773b5e59`:171 focused tests and6373 full Release tests passed (4m14s), followed by actual Debug/Release NativeQa builds, both read-only plans/provenance and exact-one case discovery. All four hardlink properties were true. AbilityAudit compiled after restoring its missing assets file; no generated audit snapshot is committed. Earlier language-version/regex zero-test compile failures remain in Temp proof logs.
+
+Actual newest HDS is Debug `E4F9D2BE39D2F41533FBC09B927C3B9414454319EE6A3506EE045C4384718160`; Release driver `71D5CCA50FF869927F060B74DCFCABC74204B82C20E46F2DAFE3F3E41564C881`; Release runner `DC0A77896FDB67109F32DEBFD0340D2217C6D5C9CBE263D6C63BE14A3BD27167`. Exact timestamps/paths are retained in `Temp/mxo-multifighting-interlock-20261115/freeze-e4bfe45f.json`.
 
 ## One-pass native checklist
 
