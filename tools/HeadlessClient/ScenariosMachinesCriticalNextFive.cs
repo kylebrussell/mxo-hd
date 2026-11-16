@@ -84,6 +84,11 @@ public static partial class Scenarios
         {
             var current=(await Saved("before-outside-upload"))!;
             Check.That(ids.Contains(current.Mission),"Outside Upload retains the selected Machines mission");
+            if(current.OpenFloorCurrentSiteIndex==-1)
+            {
+                Check.That(outside!=null,"No-site Upload requires its proven previous-exit token");
+                MissionNoSiteActorHistory.RequireStable(outside!.Checkpoint,current);
+            }
             if(!outsideAfterUpload)
             {
                 if(outside==null)
@@ -175,6 +180,7 @@ public static partial class Scenarios
                     MachinesNoSiteUploadFixture.RequireState(noSite,authoredMission);
                     Check.That(outside!=null,"No-site Upload follows an actual completed ordinary downride/ACK");
                     MissionOutsideUploadProof.RequireCurrent(outside!,noSite,p.World.CurrentOwnViewLife());
+                    MissionNoSiteActorHistory.RequireStable(outside!.Checkpoint,noSite);
                 }
                 else await Ride(true);
                 if(id is 201204 or 201205)

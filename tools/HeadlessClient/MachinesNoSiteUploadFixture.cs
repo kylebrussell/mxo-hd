@@ -11,12 +11,14 @@ public static class MachinesNoSiteUploadFixture
     }
     public static void RequireState(MissionProgress.SavedState state,Mission authored)
     {
-        if(state.Version!=2||!Guid.TryParseExact(state.Identity,"N",out _)||state.Started<=0||state.Instance==0||state.Mission!=authored.id||!IsNoSiteUpload(authored,state.Phase)||state.OpenFloorCurrentSiteIndex!=-1||state.Waypoints.Length!=0||state.Exits.Length!=0||state.Objects.Count!=0||state.Mobs.Count!=0)
+        if(state.Version!=2||!Guid.TryParseExact(state.Identity,"N",out _)||state.Started<=0||state.Instance==0||state.Mission!=authored.id||!IsNoSiteUpload(authored,state.Phase)||state.OpenFloorCurrentSiteIndex!=-1||state.Waypoints.Length!=0||state.Exits.Length!=0||state.Objects.Count!=0)
             throw new InvalidDataException("Only an authored no-site/zero-geometry/all-Upload current phase can omit entry");
+        MissionNoSiteActorHistory.RequireHistoricalContext(state);
     }
     public static void RequireTransition(MissionProgress.SavedState before,MissionProgress.SavedState after,Mission authored)
     {
         RequireState(after,authored);
+        MissionNoSiteActorHistory.RequireTransition(before,after);
         if(before.Mission!=after.Mission||before.Identity!=after.Identity||before.Instance!=after.Instance||before.Started!=after.Started||after.Phase!=before.Phase+1)
             throw new InvalidDataException("No-site Upload must follow the exact committed previous-phase exit");
         var fields=new JsonSerializerOptions{IncludeFields=true};
