@@ -263,10 +263,10 @@ namespace hds
             if(state.Version==1&&p.objects.Values.Any(o=>o.goid==357&&MissionOpenFloorAdmission.Target(o.goid,o.spot)))
                 throw new MissionPlacementRestoreException(p,"Legacy free Mainframe357 lacks an adopted witness");
             MissionBoundObjectPoses.ValidateRestored(p);
-            MissionBoundFurniturePoses.ValidateRestored(p);
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             MissionNpcInteriorCheckpoint.ValidateGeometry(p,npcInterior,npcProvider??MissionNpcInteriorEvidenceProvider.Instance);
             if(street!=null)MissionStreetCheckpoint.ValidateGeometry(p,street,streetDataset??MissionPublicDoors.CurrentDataset(),streetLookup??(key=>DataLoader.getInstance().getObjectValues(key,mission.district)),siteCatalog);
+            foreach(var obj in p.objects.Values)MissionStreetFurnitureRoutes.BindValidatedCurrent(p,obj);
             return p;
         }
     }

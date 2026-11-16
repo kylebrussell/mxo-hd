@@ -137,6 +137,29 @@ namespace hds
    if(s.Phase!=p.phaseIndex||s.FurnitureRoutes.ValueKind==JsonValueKind.Undefined)return;var expected=Read(s.FurnitureRoutes).Choices.OrderBy(c=>c.ObjectId).ToArray();var actual=p.objects.Values.OrderBy(o=>o.def.id).ToArray();
    Need(actual.Length==expected.Length&&actual.Select((o,i)=>o.OpenFloor==null&&o.def.id==expected[i].ObjectId&&o.goid==expected[i].Goid&&MissionNpcInteriorPlanning.RawJson(o.spot)==expected[i].RawSpotJson).All(v=>v),"ChangedCurrentChoices");
   }
+  // Called only after the current fresh/pending/restore V3 route has passed full validation.
+  // The closure is runtime-only and rechecks its exact owner/source/selection before every pose use.
+  internal static void BindValidatedCurrent(MissionProgress p,MissionObjectState state)
+  {
+   state.FurniturePresentation=null;
+   if(!p.streetWitnesses.TryGetValue(p.phaseIndex,out var selected)||selected.FurnitureRoutes.ValueKind==JsonValueKind.Undefined)return;
+   ValidateShapeOwner(p,selected);
+   if(!MissionBoundFurniturePoses.SupportsGoid(state.goid))return;
+   var expected=Read(selected.FurnitureRoutes).Choices.SingleOrDefault(c=>c.ObjectId==state.def?.id);
+   Need(expected!=null&&expected.Goid==state.goid&&state.OpenFloor==null&&expected.RawSpotJson==MissionNpcInteriorPlanning.RawJson(state.spot),"PresentationSource");
+   string signature=JsonSerializer.Serialize(selected,MissionProgress.SaveJson);int phase=p.phaseIndex;var owner=p.mission;
+   var identity=p.persistenceId;var started=p.startedAt;var source=state.spot;var definition=state.def;
+   MissionComputerAnchors.Pose Current()
+   {
+    Need(ReferenceEquals(p.mission,owner)&&p.persistenceId==identity&&p.startedAt==started&&p.phaseIndex==phase&&p.site!=null&&
+      p.streetWitnesses.TryGetValue(phase,out var now)&&ReferenceEquals(now,selected)&&JsonSerializer.Serialize(now,MissionProgress.SaveJson)==signature&&
+      now.Site.Fingerprint==MissionOpenFloorSite.CatalogFingerprint(p.site)&&ReferenceEquals(state.spot,source)&&ReferenceEquals(state.def,definition)&&
+      p.objects.TryGetValue(expected.ObjectId,out var actual)&&ReferenceEquals(actual,state)&&state.OpenFloor==null&&state.goid==expected.Goid&&
+      MissionNpcInteriorPlanning.RawJson(source)==expected.RawSpotJson,"ChangedPresentationBinding");
+    Need(MissionBoundFurniturePoses.TryCurrent(state,out var pose,out string why),why);return pose;
+   }
+   state.FurniturePresentation=Current;_ = Current();
+  }
   internal static MissionNpcInteriorDoor[] CurrentDoors(MissionProgress p)
   {
    if(p?.site==null||!p.streetWitnesses.TryGetValue(p.phaseIndex,out var s)||s.FurnitureRoutes.ValueKind==JsonValueKind.Undefined)return Array.Empty<MissionNpcInteriorDoor>();

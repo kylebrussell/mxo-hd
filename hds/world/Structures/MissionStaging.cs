@@ -14,6 +14,7 @@ namespace hds
         public StaticWorldObject spot;  // the furniture or spawner it's bound to
         public UInt16 goid;
         public UInt64 entity;
+        internal Func<MissionComputerAnchors.Pose> FurniturePresentation; // Validated current V3 only; never serialized.
         public MissionOpenFloorPlacement OpenFloor; // null for untouched legacy objects
         public bool lootOpen;           // a Search window is showing
         public bool putOpen;            // the empty Put container window is showing
@@ -197,12 +198,12 @@ namespace hds
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
             // NPC-only replay owns no object choices/RNG; fresh paths retain249 source-pool preparation.
             var objectChoices=streetPrepared!=null?streetPrepared.Choices():prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
-            if(streetPrepared!=null)foreach(var c in objectChoices){var state=new MissionObjectState{spot=c.Spot,goid=c.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
+            if(streetPrepared!=null)foreach(var c in objectChoices){var state=new MissionObjectState{spot=c.Spot,goid=c.Goid};MissionBoundObjectPoses.RequireCurrent(state);}
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
                 {
                     var state=new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null};
-                    MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);
+                    MissionBoundObjectPoses.RequireCurrent(state);
                 }
 
             var streetSelection=MissionStreetCoverage.Stage(progress,site,streetPrepared!=null?System.Text.Json.JsonSerializer.SerializeToElement(streetPrepared.Pending.Selection,MissionProgress.SaveJson):prepared!=null?prepared.Selection.Street:npcPrepared?.Pending?.Street??default);
@@ -536,7 +537,7 @@ namespace hds
                 throw new MissionCheckpointException("Object source selection refused: "+refusal);
             var choices=SelectObjectsFromPools(phase,site,rng,pools).ToArray();
             foreach(var choice in choices)
-                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
+                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);}
             return choices;
         }
         internal static IEnumerable<ObjectChoice> SelectObjectsFromPools(MissionPhase phase,MissionSite site,Random rng,SourcePools pools)
@@ -595,7 +596,7 @@ namespace hds
         {
             var choices=SelectObjects(phase,site,rng).ToArray();
             foreach(var choice in choices)
-                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
+                if(choice.Spot!=null){var state=new MissionObjectState{spot=choice.Spot,goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);}
             return choices;
         }
         internal static ObjectChoice[] StageSourceChoices(MissionPhase phase,MissionSite site,Random rng,
@@ -631,6 +632,7 @@ namespace hds
                     entity = EntityBase + (UInt64)client.playerData.missionInstanceCounter * 1000UL + (UInt64)(progress.phaseIndex * 50 + def.id)
                 };
                 progress.objects[def.id] = state;
+                MissionStreetFurnitureRoutes.BindValidatedCurrent(progress,state);
                 SpawnObject(client, progress, state);
                 var pose = MissionObjectPoses.For(state);
                 Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + pose.X + "," +

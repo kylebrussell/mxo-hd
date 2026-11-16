@@ -20,7 +20,7 @@ public class NativeBoundFurnitureTests
   var raw=Source();string before=JsonSerializer.Serialize(raw,Options);Assert.True(Read(Profile()).TryResolve(raw,out var pose,out int region,out _));
   Assert.Equal((41445d,1049.98193359375,-27900d),(pose.X,pose.Y,pose.Z));Assert.Equal(114,region);Assert.Equal("00000000F304353F00000000F304353F",Convert.ToHexString(pose.Orientation));
   Assert.NotEqual(raw.pos_x,pose.X);Assert.NotEqual(raw.pos_y,pose.Y);Assert.NotEqual(raw.pos_z,pose.Z);Assert.Equal(before,JsonSerializer.Serialize(raw,Options));var q=pose.Orientation;q[0]=33;Assert.Equal(0,pose.Orientation[0]);
-  var effective=MissionObjectPoses.For(new(){spot=raw,goid=1450});Assert.Equal(pose.Y,effective.Y);
+  var effective=MissionObjectPoses.For(new(){spot=raw,goid=1450});Assert.Equal(raw.pos_y,effective.Y);
   Assert.Equal("95657513146af308f60d6e532624e143a572b649a1cad98c4601b9eb8ac1c234",MissionBoundObjectPoses.AuditedManifestSha256);
  }
  [Theory][InlineData("world")][InlineData("goid")][InlineData("key")][InlineData("position")][InlineData("quaternion")][InlineData("rotation")][InlineData("exterior")]
@@ -96,4 +96,28 @@ public class NativeBoundFurnitureTests
   switch(fault){case"version":w["Version"]=2;break;case"kind":envelope["Kind"]="Bound326Routes";break;case"profile":row["ProfileManifestSha256"]="bad";break;case"goid":row["Goid"]=326;break;case"owner":w["Identity"]="foreign";break;case"source":row["RawSourceJson"]="{}";break;case"standing":row["Standing"]![1]=2000;break;case"door":row["Doors"]![0]!["Goid"]=6959;break;}
   var saved=JsonSerializer.Deserialize<MissionProgress.SavedState>(node.ToJsonString(),Options)!;Assert.Throws<InvalidDataException>(()=>NativeBoundFurnitureProof.Read(Root,saved));
  }
+ [Theory][InlineData("unchanged")][InlineData("owner")][InlineData("phase")][InlineData("source")][InlineData("replacement")][InlineData("selection")][InlineData("goid")][InlineData("old-version")]
+ public void ValidatedCurrentPresentationIsBoundAndLegacyCannotAcquireIt(string change)
+ {
+  var prepared=NativeBoundFurnitureFixture.Prepare(Root);var saved=prepared.State;
+  var rows=(IEnumerable<StaticWorldObject>)typeof(NativeBoundFurnitureFixture).GetMethod("Rows",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{Root})!;
+  var all=rows.ToArray();var sites=MissionSites.Build(all,1);var selected=JsonSerializer.Deserialize<MissionStreetSelection>(JsonNode.Parse(prepared.Payload)!["StreetAccess"]!["Witnesses"]!.AsArray().Single(w=>(int)w!["Phase"]! ==1)!.ToJsonString(),Options)!;
+  var site=sites.Single(s=>s.elevatorDoor?.mxoStaticId==selected.Site.DoorKey&&MissionOpenFloorSite.CatalogFingerprint(s)==selected.Site.Fingerprint);
+  var xml=new System.Xml.XmlDocument();xml.Load(Path.Combine(Root,"data/missions/merovingian_1_2_10_into_the_hive.xml"));var mission=MissionXml.Parse(xml.DocumentElement!);
+  var progress=new MissionProgress(mission){persistenceId=saved.Identity,startedAt=saved.Started,phaseIndex=saved.Phase,site=site};progress.sites.Add(site);
+  var raw=saved.Objects.Single();var obj=new MissionObjectState{def=mission.phases[1].objects.Single(d=>d.id==raw.Id),spot=raw.Spot,goid=raw.Goid};progress.objects.Add((ushort)raw.Id,obj);
+  progress.streetWitnesses.Add(1,selected);var lookup=all.GroupBy(r=>r.mxoStaticId).ToDictionary(g=>g.Key,g=>g.First());
+  MissionStreetFurnitureRoutes.Validate(progress,selected,key=>lookup.GetValueOrDefault(key)!);MissionStreetFurnitureRoutes.RequireCurrentSources(progress,selected);
+  if(change=="old-version")
+  {
+   progress.streetWitnesses[1]=new MissionStreetSelection(1,selected.Mission,selected.Identity,selected.Started,selected.Phase,selected.Site,selected.Kind,selected.Context,null);
+   MissionStreetFurnitureRoutes.BindValidatedCurrent(progress,obj);Assert.Null(obj.FurniturePresentation);Assert.Equal(raw.Spot.pos_y,MissionObjectPoses.For(obj).Y);return;
+  }
+  MissionStreetFurnitureRoutes.BindValidatedCurrent(progress,obj);Assert.Equal(1049.98193359375,MissionObjectPoses.For(obj).Y);
+  switch(change){case"owner":progress.persistenceId="foreign";break;case"phase":progress.phaseIndex++;break;case"source":obj.spot.pos_x++;break;
+   case"replacement":progress.objects[(ushort)raw.Id]=new MissionObjectState();break;case"selection":progress.streetWitnesses.Remove(1);break;case"goid":obj.goid=1451;break;}
+  if(change=="unchanged")Assert.Equal(1049.98193359375,MissionObjectPoses.For(obj).Y);
+  else Assert.Throws<InvalidDataException>(()=>MissionObjectPoses.For(obj));
+ }
+
 }
