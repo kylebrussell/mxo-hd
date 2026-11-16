@@ -44,8 +44,9 @@ public sealed partial class MissionStreetAccessTests
     }
     [Fact] public void MatchingSelectedRawIdentitiesRemainEligibleAndFullyValidated()
     {
-        var f=Audited665Entries();var c=Load(665);
-        StaticWorldObject Lookup(uint key)=>key==f.Site.elevatorDoor.mxoStaticId?f.Site.elevatorDoor:key==f.Site.lobbyDoor.mxoStaticId?f.Site.lobbyDoor:Raw(c.Raw,key);
+        var f=Audited665Entries();var publicRaw=MissionNpcInteriorPlanning.ReadRaw(f.Context.Door.RawDoorJson);
+        // Preserve the real loader's two-byte GOID framing in the exact serialized public-door proof.
+        StaticWorldObject Lookup(uint key)=>key==f.Site.elevatorDoor.mxoStaticId?f.Site.elevatorDoor:key==f.Site.lobbyDoor.mxoStaticId?f.Site.lobbyDoor:key==publicRaw.mxoStaticId?publicRaw:throw new InvalidDataException("Unexpected proof lookup");
         Assert.True(f.Cache.AllowsCurrent(f.Site,false,Lookup));Assert.True(MissionStreetContexts.CurrentEntryIdentities(f.Context,Lookup,out var why),why);
         Assert.True(MissionStreetContexts.ValidateSelected(f.Context,f.Site,new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")),Lookup,out why),why);
     }
