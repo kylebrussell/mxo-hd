@@ -24,6 +24,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario(NativeBoundFurnitureFixture.Name,NativeBoundFurniture,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
+        new Scenario("native-furniture-admission-timing",NativeFurnitureAdmissionTiming,new Dictionary<string,string>(StillNpcs){["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
         new Scenario(WithdrawalFixture.Name,OrdinaryWithdrawalWire,WithdrawalFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario(MissionMidphaseReturnFixture.Name,MissionMidphaseReturn,MissionMidphaseReturnFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("open-world-first-level",OpenWorldFirstLevel,OpenWorldFirstLevelFixture.HeadlessEnvironment,Timeout:TimeSpan.FromMinutes(8)),
