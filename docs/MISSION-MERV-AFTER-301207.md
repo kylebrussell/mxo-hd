@@ -1,5 +1,14 @@
 # Flood critical wave after A Special Case
 
+## Latest retained failure and source-only500dc refresh
+
+The single granted dbde7326 stacked9894 run failed226.6s/held exit1 at301210 phase1 optional Search. Exactly301208/301209 receipts1 were earned; this is not a whole-five pass. Source Debug16C61F4B…, driver91E81006… remained frozen. Raw Temp/mxo-merv-after-301207-mxotest_run_1_3a64fa8657.json SHA2563BF006DBA70A8560BDE1F6ED4459AB4D082F24A61C559760EE6834DE705F7987, parser problems0. Independent cleanup exact schemaCOUNT0/all149 recorded creation identities gone; one numeric PID reused by unrelated newer creation, untouched. No bootstrap/retry. Failed producer45 primary binary copies retained at Temp/mxo-pr245-refresh-9894-20261116/archive-dbde-fresh-failure (manifest56E9B26AF2B9C7D6AFFBE8C98080CCE8D843425E89E4638C6F193E79D4E961E6).
+
+Actual failed object is genuine bound GO1450 DresserSlumWide1, source1032848568/sector985/static1208, raw42300/1145/-27045 and identity quaternion. Actual last ordinary RideRoot44150/1095/-27400 locates985/99/1 floor1000. Original GOB gives Model half84/49.98197174/29.19049835 and ordinary native Open100. All legacy five NAV samples fail, and the native-derived202.011189 envelope projection from that actual Root fails too. Thus no proved grounded approach exists at this current raw pose; no range/geometry bypass,326 relabel, source edit or800 fallback is introduced. Original/native scene placement remains an explicit primary gap.
+
+Normal master500dc merge preserves generic unmerged241 routes/schema-history and shared213 APIs. Mode now names actual500dc. Cloud dbde CI failed solely on missing tracked captured Bound326-101216-238-f4b06c4a2a.json; its exact fa06152b fixture is now included. Earlier446 focus omitted the new partial-class tests; the next affected qualification MUST include FullyQualifiedName~MissionNpcInteriorCheckpointTests plus NativeQa/Merv/Street/current-door/carry/Outside controls. No new local build or fresh proof for this latest source.
+
+
 ## Source-only refresh on master9894 (unqualified)
 
 This same-PR245 continuation merges master9894edab and selectively ports generic contracts from unmerged PR241/fa06152b and shared QA from unmerged PR213/8001ceb2. No local build, test, server or current whole-five proof has run for this source. CI is the first compilation check; DRAFT/HOLD remains until parent/core review and separately granted qualification. Historical proofs below retain their original pins. The earlier b3ade stale pre-approach entry failure is addressed by the current shared entry helper: approach, re-read exact owner/site/witness and current life, then the before-request marker immediately before ordinary80c8. No cached entered flag is accepted as a substitute.
