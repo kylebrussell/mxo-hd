@@ -14,7 +14,7 @@ public static class CarriedMissionNpcFixture
     {
         if(!root.TryGetProperty("Identity",out var identity)||identity.ValueKind!=JsonValueKind.String||!Guid.TryParseExact(identity.GetString(),"N",out _)||
             !root.TryGetProperty("Started",out var started)||started.ValueKind!=JsonValueKind.Number||!started.TryGetInt64(out long at)||at<=0||
-            !root.TryGetProperty("Instance",out var instance)||instance.ValueKind!=JsonValueKind.Number||!instance.TryGetInt32(out int id)||id<=0||id>ushort.MaxValue)
+            !root.TryGetProperty("Instance",out var instance)||instance.ValueKind!=JsonValueKind.Number||!instance.TryGetInt32(out int id)||id<0||id>ushort.MaxValue)
             throw new InvalidDataException("Malformed V2 carried accepted-owner scope");
         return(identity.GetString()!,at);
     }

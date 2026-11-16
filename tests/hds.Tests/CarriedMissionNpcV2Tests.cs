@@ -77,9 +77,21 @@ public class CarriedMissionNpcV2Tests
         Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(oldSnapshot,portable,state.ToJsonString(),1,true,1,current.Snapshot));
         state["Identity"]=new string('b',32);Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(current.Snapshot(),portable,state.ToJsonString(),1,true,1,current.Snapshot));
     }
+    [Fact] public void V2CurrentReceiptRequiresTheActualSessionReader()
+    {
+        var s=Actual();var log=Life();var token=Capture(s,log);s["Phase"]=1;byte[] birth=Birth();log.Observe(false,birth,1,WireFormat.FindCreations(birth));
+        Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(log.Snapshot(),token,s.ToJsonString(),1,true,1));
+    }
+    [Fact] public void V2InstanceUsesTheWireUInt16DomainIncludingZero()
+    {
+        var s=Actual();s["Instance"]=0;Assert.Equal(0,Capture(s,Life()).Instance);
+        s["Instance"]=-1;Assert.Throws<InvalidDataException>(()=>Capture(s,Life()));s["Instance"]=65536;Assert.Throws<InvalidDataException>(()=>Capture(s,Life()));
+    }
     [Fact] public void V1TokenRetainsLegacySerializedShape()
     {
-        var s=Actual();s["Version"]=1;var token=CarriedMissionNpcFixture.Capture(s.ToJsonString(),301207,0,1,"Sharmaine Tarn",true);
+        // Independent legacy shape; never relabel the captured V2 checkpoint as V1.
+        var s=JsonSerializer.SerializeToNode(new{Version=1,Mission=301207,Instance=51,Phase=0,Following=new[]{1},Mobs=new[]{new{Npc=1,Name="Sharmaine Tarn",Identity="d8c6dd0ceca741c28dbd85d1bba0c23a",Friendly=true,Giver=true,Dead=false,Health=1,X=1d,Y=95d,Z=3d}}})!.AsObject();
+        var token=CarriedMissionNpcFixture.Capture(s.ToJsonString(),301207,0,1,"Sharmaine Tarn",true);
         using var d=JsonDocument.Parse(JsonSerializer.Serialize(token));Assert.Null(token.CheckpointVersion);Assert.False(d.RootElement.TryGetProperty("AcceptedIdentity",out _));Assert.False(d.RootElement.TryGetProperty("CheckpointVersion",out _));
         s["Phase"]=1;Assert.NotNull(CarriedMissionNpcFixture.Resolve(s.ToJsonString(),token,1,true));
     }
