@@ -139,7 +139,7 @@ namespace hds
             p.npcInteriorPending = envelope.Pending; p.npcInteriorResolvedPhase = envelope.CurrentPhase;
             foreach (MissionNpcInteriorWitness witness in envelope.Witnesses) p.npcInteriorWitnesses.Add(witness.Selection.Phase, witness);
         }
-        private static E.Entry SavedEntry(E index, MissionNpcInteriorEntry saved, StaticWorldObject incoming = null)
+        internal static E.Entry SavedEntry(E index, MissionNpcInteriorEntry saved, StaticWorldObject incoming = null)
         {
             Require(index.Digest.Equals(saved.EvidenceDigest, StringComparison.OrdinalIgnoreCase), "ChangedNpcEvidenceDigest");
             StaticWorldObject selected = MissionNpcInteriorPlanning.ReadRaw(saved.RawDoorJson);
