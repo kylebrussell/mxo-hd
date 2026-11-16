@@ -13,7 +13,7 @@ public static partial class Scenarios
         if(hex=="NULL")throw new ScenarioFailure("Current owned Machines checkpoint required");
         return JsonSerializer.Deserialize<MissionProgress.SavedState>(MissionBoundCabinetFixture.DecodeCheckpointHex(hex),new JsonSerializerOptions{IncludeFields=true})!;
     }
-    private static async Task MachinesNextRide(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null,int creationStart=0)
+    private static async Task MachinesNextRide(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null,int creationStart=0,bool waitForPhaseAdvance=true,Action? beforeRequest=null)
     {
         var state=await MachinesNextCheckpoint(context,p);var door=state.Waypoints.Single();var lobby=state.Exits.Single();
         var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Ordinary Ride requires the current own-view life");
@@ -30,7 +30,7 @@ public static partial class Scenarios
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
         var requestLife=p.World.CurrentOwnViewLife();int ownCursor=requestLife.Events.Count==0?0:requestLife.Events[^1].Section+1;
         var rideDeadline=System.Diagnostics.Stopwatch.StartNew();
-        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";beforeRequest?.Invoke();p.SendRpc(request);
         if(door.y!=lobby[1])await p.WaitUntilAsync(()=>context.Server.DebugLog()[cursor..].Contains("[MISSION] Teleported to "),"ordinary saved-site static-door ride",TimeSpan.FromSeconds(15));
         string rideLog=context.Server.DebugLog()[cursor..];
         var transport=Regex.Matches(rideLog,@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
@@ -93,7 +93,7 @@ public static partial class Scenarios
                 note?.Invoke(new{Kind="First free body before route/NPC movement",state.Mission,state.Phase,obj.Id,RawSource=obj.Spot,FixedPlacement=obj.OpenFloor,Stationary=rode,TransportReceipt=receipt,ClientPositionInterestOnly=!rode,NativeRenderingProven=false});
             }
         }
-        if(!enter)
+        if(!enter&&waitForPhaseAdvance)
         {
             await p.WaitUntilAsync(()=>context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')").GetAwaiter().GetResult()!=state.Mission+":"+state.Phase,
                 "Ordinary exit persisted its next phase before reading another door",TimeSpan.FromSeconds(MachinesCriticalNextFiveFixture.PhaseTransitionSeconds));

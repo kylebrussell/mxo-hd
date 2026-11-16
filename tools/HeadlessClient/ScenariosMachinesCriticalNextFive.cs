@@ -15,6 +15,7 @@ public static partial class Scenarios
         Check.That(!ids.Append(MachinesCriticalNextFiveFixture.NextMission).Intersect(prerequisites).Any(),"Selected and next missions are never prerequisite grants");
         var actors=new List<HeadlessPlayer>{p};var checkpoints=new List<object>();var targets=new List<object>();var rewards=new List<object>();
         int missionCreationCursor=0;var followerIdentities=new Dictionary<int,string>();
+        MissionOutsideUploadProof.Token? outside=null;
         bool outsideAfterUpload=false;var arrivalProofs=new List<object>();var carryProofs=new List<object>();string step="entry";Exception? scenarioFailure=null;var caseClock=System.Diagnostics.Stopwatch.StartNew();
         ServerInstance? coldServer=null;object? coldProof=null;int initialPid=context.Server.ProcessId;
         string? retiredPackets=null,retiredDebug=null,retiredOutput=null;
@@ -58,7 +59,26 @@ public static partial class Scenarios
         }
         async Task Upload()
         {
-            await MoveForMissionTest(p,17000,495,2200);outsideAfterUpload=true;ViewCreation? booth=null;
+            var current=(await Saved("before-outside-upload"))!;
+            Check.That(ids.Contains(current.Mission),"Outside Upload retains the selected Machines mission");
+            if(!outsideAfterUpload)
+            {
+                var street=MervFollowupStreetEntry.ForSite(current);var npc=MissionNpcInteriorRide.ForSite(current);
+                var standing=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside trip requires exact saved lobby Standing");
+                outside=await MissionOutsideUploadProof.BeforeOutsideAsync(p,current,
+                    async()=>(await Saved("ordinary-lobby-before-outside-aid"))!,
+                    mark=>MachinesNextRide(context,p,false,arrivalProofs.Add,waitForPhaseAdvance:false,beforeRequest:mark),
+                    standing,PacketPath(),context.Server.DebugLog,arrivalProofs.Add);
+                // Disclosed outside point movement only AFTER the ordinary downride/ACK cutpoint proof.
+                await MoveForMissionTest(p,17000,495,2200);outsideAfterUpload=true;
+            }
+            else
+            {
+                // Two same-booth Uploads reuse the actual owned outside proof, not a fabricated second floor trip.
+                Check.That(outside!=null,"Existing outside Upload must retain its earned arrival token");
+                MissionOutsideUploadProof.RequireCurrent(outside!,current,p.World.CurrentOwnViewLife());
+            }
+            ViewCreation? booth=null;
             await p.WaitUntilAsync(()=>(booth=ZionCurrentUploadBooth.Find(p.World.CurrentOwnViewLife()))!=null,"exact still-live current Mara booth",TimeSpan.FromSeconds(10));
             targets.Add(new{Role="Upload booth",booth!.ViewId,booth.SpawnId,booth.RelatedStaticObjectId});
             p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(booth)} 04 00");await p.WaitForRpcAsync("81 18");
@@ -67,7 +87,17 @@ public static partial class Scenarios
         {
             var clock=System.Diagnostics.Stopwatch.StartNew();var life=p.World.CurrentOwnViewLife();
             TimeSpan Remaining(){var remaining=budget-clock.Elapsed;if(remaining<=TimeSpan.Zero)throw new TimeoutException("Current hostile reacquire exhausted original combat budget");return remaining;}
-            if(outsideAfterUpload)await Ride(true).WaitAsync(Remaining());
+            if(outsideAfterUpload)
+            {
+                var beforeUp=(await Saved("before-ordinary-return-up"))!;
+                Check.That(outside!=null,"Return up requires the owned outside token");
+                MissionOutsideUploadProof.RequireCurrent(outside!,beforeUp,p.World.CurrentOwnViewLife());
+                var street=MervFollowupStreetEntry.ForSite(beforeUp);var npc=MissionNpcInteriorRide.ForSite(beforeUp);
+                var standing=street?.Floor.Standing??npc?.Floor.Standing??throw new ScenarioFailure("Return requires exact saved floor Standing");
+                await MissionOutsideUploadProof.BeforeOutsideAsync(p,beforeUp,async()=>(await Saved("after-ordinary-return-up"))!,
+                    mark=>MachinesNextRide(context,p,true,arrivalProofs.Add,beforeRequest:mark),standing,PacketPath(),context.Server.DebugLog,arrivalProofs.Add,returningInside:true).WaitAsync(Remaining());
+                outsideAfterUpload=false;outside=null;
+            }
             var owned=(await Saved("reacquire-after-ordinary-entry"))!;ZionAfter1212RidePlan.SameEntry(before,owned);
             Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Ordinary hostile return retains actual current owner/life");
             var current=owned.Mobs.Single(m=>m.Npc==actor.Npc&&m.Identity==actor.Identity);
