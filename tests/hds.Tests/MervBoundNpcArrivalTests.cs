@@ -29,6 +29,7 @@ public sealed class MervBoundNpcArrivalTests
     }
     [Fact]public void OnlyAnActualGenuinelyBound326RequestsTheSampler()
     {
-        var s=State();var raw=s.SiteDoors[0];var other=JsonSerializer.Deserialize<StaticWorldObject>(JsonSerializer.Serialize(raw,new JsonSerializerOptions{IncludeFields=true}),new JsonSerializerOptions{IncludeFields=true})!;other.type=BitConverter.GetBytes((ushort)326);s.Objects=new[]{new MissionProgress.SavedObject{Id=1,Goid=326,Spot=other}};Assert.True(MervBound326Approach.NeedsArrival(s));s.Objects[0].Goid=3;Assert.False(MervBound326Approach.NeedsArrival(s));
+        var s=State();var raw=s.SiteDoors[0];var other=JsonSerializer.Deserialize<StaticWorldObject>(JsonSerializer.Serialize(raw,new JsonSerializerOptions{IncludeFields=true}),new JsonSerializerOptions{IncludeFields=true})!;other.type=BitConverter.GetBytes((ushort)326);s.Objects=new(){new MissionProgress.SavedObject{Id=1,Goid=326,Spot=other}};Assert.True(MervBound326Approach.NeedsArrival(s));s.Objects[0].Goid=3;Assert.False(MervBound326Approach.NeedsArrival(s));
     }
 }
+
