@@ -9,7 +9,7 @@ namespace hds
   static bool Point(double[] p)=>p!=null&&p.Length==3&&p.All(double.IsFinite);
     static float[] Basis(string hex)
     {
-        byte[] b;try{b=Convert.FromHexString(hex);}catch(Exception e)when(e is FormatException or ArgumentNullException){throw new InvalidDataException("Invalid native quaternion",e);}
+   byte[] b;try{b=Convert.FromHexString(hex);}catch(Exception e)when(e is FormatException || e is ArgumentNullException){throw new InvalidDataException("Invalid native quaternion",e);}
         if(b.Length!=16)throw new InvalidDataException("Invalid native quaternion");var q=Enumerable.Range(0,4).Select(i=>BitConverter.ToSingle(b,i*4)).ToArray();
         if(q.Any(v=>!float.IsFinite(v))||Math.Abs(q.Sum(v=>(double)v*v)-1)>1e-5)throw new InvalidDataException("Invalid native quaternion");
         float x=q[0],y=q[1],z=q[2],w=q[3],tx=2*x,ty=2*y,tz=2*z,xx=tx*x,xy=ty*x,xz=tz*x,yy=ty*y,yz=tz*y,zz=tz*z,xw=tx*w,yw=ty*w,zw=tz*w;
