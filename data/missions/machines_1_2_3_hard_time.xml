@@ -10,7 +10,7 @@
      the next mission of the sub-chapter.
      Gaps: where the Filefolder was found isn't said; it is in a filing cabinet or desk. Retail's uploads had no area
      of their own; they are phases 2 and 4 here (Agent Gray's line asks for the upload before the next waypoint), and
-     those phases' sites are only a place for their waypoint: the uploads are done at any hardline. Agent Gray's
+     those phases have no site: the uploads are done at any hardline before the next building waypoint. Agent Gray's
      "These humans have such feeble security measures." came between the Package and its upload, so it is phase 3's
      complete line. The hostiles' barks are on the named ones but only play if the player talks to them, since they
      attack on sight; the generated Zionites' (Zion Martial Arts Initiate: "For the One!"; Zion Guardian Patcher:
@@ -42,7 +42,7 @@
     </objective>
     <complete><say contact="1">One of the humans has escaped with the Package. Our sensors have tracked him... I will update your waypoint with his location once you have uploaded those two items at a hardline.</say></complete>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="0">
+  <phase enemy="Zion" enemies="0">
     <objective goal="1" text="Upload the Flyer at a hardline" type="Upload" item="6796" />
     <objective goal="2" text="Upload the Filefolder at a hardline" type="Upload" item="6795" />
   </phase>
@@ -57,7 +57,7 @@
     </objective>
     <complete><say contact="1">These humans have such feeble security measures.</say></complete>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="0">
+  <phase enemy="Zion" enemies="0">
     <objective goal="1" text="Upload the Package at a hardline" type="Upload" item="6817" />
   </phase>
   <finish>Well done, {player}. You are proving to be a reliable resource for us.</finish>
