@@ -33,3 +33,5 @@ Current XML leaves reward reference levels unannotated, so the existing policy u
 5. Open/use the junction box and defeat the current Exiles. Record that this is the existing untimed Stakeout reconstruction. Verify one receipt per mission, NULL active payload and next **Weapons of Terror** offer.
 
 No native teleport substitutes for doors or walking. Headless movement/combat aids and fixture HP/IS are disclosed; they do not prove native collision, picking or unaided survival. Parent proofs remain attributed to their original producers. Draft/HOLD pending complete-checkout CI, parent merges and a separately granted live qualification.
+
+The first complete-checkout CI failed before tests because the older parent241 proof reader lacked parent264’s actor-index route API. The exact264 reader was restored, preserving its per-actor role checks; no runtime change was needed. That failed run remains retained, and the corrected source awaits new CI.
