@@ -71,6 +71,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
             "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; interlock not wired" : "",
