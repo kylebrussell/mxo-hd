@@ -230,11 +230,39 @@ public static partial class Scenarios
             var bounds=MissionBound326Approach.Load(context.RepositoryRoot,obj);
             MissionBound326Approach.Sample? Locate(double[] point)=>NavMesh.Locate(1,point[0],point[1],point[2],out var n)?new(point,n.sector,n.region,n.polygon,n.floorY):null;
             MissionBound326Approach.Sample? Project(double[] point,double radius,double[] actual)=>NavMesh.Project(1,point[0],point[1],point[2],out var n,radius,actual,false)?new(n.Position,n.location.sector,n.location.region,n.location.polygon,n.location.floorY):null;
-            var selected=MissionBound326Approach.Select(bounds,new(from,root.sector,root.region,root.floorY),new(Locate,Project));
-            var beforeMove=await ZionAfter1212Checkpoint(context,p);MissionOutsideContinuation.Require(state,beforeMove);
-            Check.That(life.Current,"Bound approach owner life remains current");
-            note?.Invoke(new{Kind="Audited native326 current-component NAV approach",state.Mission,state.Phase,ObjectId=objectId,Source=obj.Spot,ActualRideRoot=from,Bounds=bounds,Approach=selected,NativeCollisionClearanceProven=false});
-            await MoveForMissionTest(p,selected.Standing[0],selected.Standing[1],selected.Standing[2]);
+            var route=MissionBound326RouteProof.Read(state,objectId,bounds,new(from,root.sector,root.region,root.floorY),Locate);
+            if(route!=null)
+            {
+                // An owned V2 route is consumed, never projected/reselected. Midpoints are movement aids, not collision proof.
+                var steps=MissionBound326RouteProof.Steps(context.RepositoryRoot,route);
+                async Task SameRoute(){MissionBound326RouteProof.RequireCurrent(route,await ZionAfter1212Checkpoint(context,p));Check.That(life.Current,"Bound route own life remains current");}
+                foreach(var step in steps)
+                {
+                    await SameRoute();
+                    foreach(uint key in step.Doors)
+                    {
+                        await SameRoute();var door=route.Doors.Single(d=>d.Key==key);var requestLife=p.World.CurrentOwnViewLife();int views=p.World.ViewSnapshot().Count,rpc=p.World.RpcSnapshot().Count;
+                        Check.That(requestLife.Current&&requestLife.OwnViewReady,"Current own life before required portal Open");
+                        int debugCursor=context.Server.DebugLog().Length;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+                        NpcInteriorComputerState.DoorObservation? opened=null;string? useLine=null;
+                        await p.WaitUntilAsync(()=>{try{var now=p.World.CurrentOwnViewLife();if(!ReferenceEquals(now.Owner,requestLife.Owner)||now.Life!=requestLife.Life||!requestLife.Current)return false;useLine=MissionBound326RouteProof.RequireDoorUse(context.Server.DebugLog(),debugCursor,door);opened=MissionBound326RouteProof.RequireOpen(now,requestLife,door);return true;}catch(InvalidDataException){return false;}},"Actual owned same-floor route door Open before crossing",TimeSpan.FromSeconds(15));
+                        p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");await SameRoute();
+                        Check.That(requestLife.Current,"Portal Open does not change own life");
+                        _=MissionBound326RouteProof.RequireOpen(p.World.CurrentOwnViewLife(),requestLife,door);
+                        note?.Invoke(new{Kind="Bound326 required own-GOID portal Open before crossing",state.Mission,state.Phase,ObjectId=objectId,Door=door,Request=request,ViewCursor=views,RpcCursor=rpc,DebugCursor=debugCursor,ActualDoorUse=useLine,Current=opened,ServerBarrier="8148/8149",Exact03PacketAckProven=false,NativePassageProven=false});
+                    }
+                    await SameRoute();await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
+                }
+                note?.Invoke(new{Kind="Owned fixed bound326 route consumed",state.Mission,state.Phase,ObjectId=objectId,Source=obj.Spot,ActualRideRoot=from,Bounds=bounds,Route=route.Route,NativeCollisionClearanceProven=false});
+            }
+            else
+            {
+                var selected=MissionBound326Approach.Select(bounds,new(from,root.sector,root.region,root.floorY),new(Locate,Project));
+                var beforeMove=await ZionAfter1212Checkpoint(context,p);MissionOutsideContinuation.Require(state,beforeMove);
+                Check.That(life.Current,"Bound approach owner life remains current");
+                note?.Invoke(new{Kind="Audited native326 current-component NAV approach",state.Mission,state.Phase,ObjectId=objectId,Source=obj.Spot,ActualRideRoot=from,Bounds=bounds,Approach=selected,NativeCollisionClearanceProven=false});
+                await MoveForMissionTest(p,selected.Standing[0],selected.Standing[1],selected.Standing[2]);
+            }
             }
             else
             {
