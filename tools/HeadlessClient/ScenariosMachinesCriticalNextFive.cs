@@ -51,11 +51,11 @@ public static partial class Scenarios
         async Task Ride(bool enter)
         {
             var before=(await Saved(enter?"before-entry":"before-exit"))!;
-            var requestLife=p.World.CurrentOwnViewLife();int viewCursor=-1,packetLine=-1,logOffset=-1;
+            var requestLife=p.World.CurrentOwnViewLife();var originalLife=requestLife;int viewCursor=-1,packetLine=-1,logOffset=-1;
             var street=MervFollowupStreetEntry.ForSite(before);var npc=MissionNpcInteriorRide.ForSite(before);
             var standing=enter?null:street?.Lobby.Standing??npc?.Lobby.Standing;
             var boundary=new MissionOutsideUploadProof.RequestBoundary();
-            void Mark()=>boundary.Mark(()=>{requestLife=p.World.CurrentOwnViewLife();viewCursor=p.World.ViewSnapshot().Count;packetLine=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(c=>c=='\n');logOffset=context.Server.DebugLog().Length;});
+            void Mark()=>boundary.Mark(()=>{requestLife=p.World.CurrentOwnViewLife();Check.That(originalLife.Current&&requestLife.Current&&ReferenceEquals(originalLife.Owner,requestLife.Owner)&&originalLife.Life==requestLife.Life,"Completed exit request retains exact owner/life");viewCursor=p.World.ViewSnapshot().Count;packetLine=InteriorAdmissionDeliveryProof.Read(PacketPath()).Count(c=>c=='\n');logOffset=context.Server.DebugLog().Length;});
             await MachinesNextRide(context,p,enter,arrivalProofs.Add,beforeRequest:!enter&&standing!=null?Mark:null);
             if(enter){outsideAfterUpload=false;outside=null;}
             var after=await Saved(enter?"after-entry-observation":"after-exit-observation");
