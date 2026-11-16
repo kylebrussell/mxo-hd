@@ -191,3 +191,12 @@ The first current run2943ab36 failed133.6s at the outdoor-stage QA guard after e
 
 
 No-area carry can occur after the previous completed departure. After the existing qualified normal Quit/reservation/same-character login, the driver compares unchanged accepted progress/items/history and every historical actor field, then mints a fresh current-life receipt. It never changes the old token's owner or borrows its live view. Foreign acceptance, changed items/phase/instance and same-owner pseudo-relog controls refuse. This source-order correction was made before the next live attempt.
+
+
+### Native-bound QA approach correction (2026-11-16)
+
+The retained 6772 whole-chain run failed after 252 seconds at 101216 Search, after earning 101213–101215. Source 219152925 (sector209/static541) has immutable raw CSV position30615/947/13760, but its audited original GO326 centre is28440/882/11585. Projecting the raw position within800 fails. From the actual measured RideRoot28682.38430103502/895/14317.92706453424, the existing NAV projection of the native centre yields28480/895/11480 (region48/poly138/floor800), native OBB distance²6499.999 and unchanged server600 reach. This is NAV approach evidence, not native collision, walking or picking proof.
+
+The QA-only generic MissionBound326Approach uses the existing audited bounds, actual grounded root via Locate (not NPC spawn-inset selfprojection), native100 and server600. It applies only to bound326; other objects keep their prior path. The accepted mission/site/raw-source and current own life remain guarded. No runtime, data, placement, range or portal policy changes. The failed schema was independently absent and all64 observed process identities gone; earlier failures remain retained.
+
+The content validator now permits only genuinely actor/object/wave-free, site-null, all-Upload authored phases without a waypoint. The first compile failure and subsequent627-pass/1-negative-assertion mismatch are retained. Corrected affected focus:628 passed. New whole-chain and native qualification are not yet run on this correction.

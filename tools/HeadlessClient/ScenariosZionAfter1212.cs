@@ -223,13 +223,27 @@ public static partial class Scenarios
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
             var ride=Regex.Matches(context.Server.DebugLog(),@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
             double[] from=Enumerable.Range(1,3).Select(i=>double.Parse(ride.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
-            Check.That(NavMesh.Locate(1,from[0],from[1],from[2],out _),"Actual mission Ride root is on current floor NAV");
-            var rootSector=SectorProperties.At(1,from[0],from[2]);var objectSector=SectorProperties.At(1,obj.Spot.pos_x,obj.Spot.pos_z);
-            double flat=(from[0]-obj.Spot.pos_x)*(from[0]-obj.Spot.pos_x)+(from[2]-obj.Spot.pos_z)*(from[2]-obj.Spot.pos_z);
-            Check.That(rootSector!=null&&objectSector!=null&&(rootSector.sector==objectSector.sector||flat<=1600d*1600d),"NAV projection must retain its root-component anchor rather than drop a distant cross-sector origin");
-            Check.That(NavMesh.Project(1,obj.Spot.pos_x,obj.Spot.pos_y,obj.Spot.pos_z,out var bound,maxDistance:800,reachableFrom:from),"Bound native furniture has current-component NAV approach");
-            note?.Invoke(new{Kind="Bound native furniture NAV-only approach",Mission=state.Mission,Phase=state.Phase,ObjectId=objectId,Source=obj.Spot,ActualRideRoot=from,Standing=new[]{bound.x,bound.y,bound.z},NativeCollisionClearanceProven=false});
-            await MoveForMissionTest(p,bound.x,bound.y,bound.z);
+            Check.That(NavMesh.Locate(1,from[0],from[1],from[2],out var root),"Actual mission Ride root is on current floor NAV");
+            if(obj.Goid==326)
+            {
+            var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Current own life for bound approach");
+            var bounds=MissionBound326Approach.Load(context.RepositoryRoot,obj);
+            MissionBound326Approach.Sample? Locate(double[] point)=>NavMesh.Locate(1,point[0],point[1],point[2],out var n)?new(point,n.sector,n.region,n.polygon,n.floorY):null;
+            MissionBound326Approach.Sample? Project(double[] point,double radius,double[] actual)=>NavMesh.Project(1,point[0],point[1],point[2],out var n,radius,actual,false)?new(n.Position,n.location.sector,n.location.region,n.location.polygon,n.location.floorY):null;
+            var selected=MissionBound326Approach.Select(bounds,new(from,root.sector,root.region,root.floorY),new(Locate,Project));
+            var beforeMove=await ZionAfter1212Checkpoint(context,p);MissionOutsideContinuation.Require(state,beforeMove);
+            Check.That(life.Current,"Bound approach owner life remains current");
+            note?.Invoke(new{Kind="Audited native326 current-component NAV approach",state.Mission,state.Phase,ObjectId=objectId,Source=obj.Spot,ActualRideRoot=from,Bounds=bounds,Approach=selected,NativeCollisionClearanceProven=false});
+            await MoveForMissionTest(p,selected.Standing[0],selected.Standing[1],selected.Standing[2]);
+            }
+            else
+            {
+                var rootSector=SectorProperties.At(1,from[0],from[2]);var objectSector=SectorProperties.At(1,obj.Spot.pos_x,obj.Spot.pos_z);
+                double flat=(from[0]-obj.Spot.pos_x)*(from[0]-obj.Spot.pos_x)+(from[2]-obj.Spot.pos_z)*(from[2]-obj.Spot.pos_z);
+                Check.That(rootSector!=null&&objectSector!=null&&(rootSector.sector==objectSector.sector||flat<=1600d*1600d),"NAV projection must retain its root-component anchor rather than drop a distant cross-sector origin");
+                Check.That(NavMesh.Project(1,obj.Spot.pos_x,obj.Spot.pos_y,obj.Spot.pos_z,out var bound,maxDistance:800,reachableFrom:from),"Bound native furniture has current-component NAV approach");
+                await MoveForMissionTest(p,bound.x,bound.y,bound.z);
+            }
             // The current owned phase, not a fabricated post-phase birth, is authoritative.
             var owned=await ZionAfter1212Checkpoint(context,p);ZionCurrentBoundBody.Result? currentBody=null;
             await p.WaitUntilAsync(()=>
