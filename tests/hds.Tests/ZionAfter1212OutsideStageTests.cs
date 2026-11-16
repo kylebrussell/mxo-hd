@@ -34,4 +34,26 @@ public class ZionAfter1212OutsideStageTests
         if(fault=="actor")s.Mobs.Add(new MissionProgress.SavedMob());if(fault=="object")s.Objects.Add(new MissionProgress.SavedObject());
         Assert.Throws<InvalidDataException>(()=>ZionAfter1212OutsideStage.Require(Mission(),1,s));
     }
+    static OwnViewLifeSnapshot Life()
+    {
+        var own=new PlayerCharacter();own.UnsetRelatedStaticObjId();own.DisableAllAttributes();
+        byte[] bytes=new byte[]{1,0}.Concat(new hds.resources.gameobjects.ObjectManager().GenerateCreationPacket(own,0,1).getBytes()).Concat(BitConverter.GetBytes((ushort)2)).Concat(new byte[]{0}).ToArray();
+        var log=new OwnViewLifeLog();log.Observe(false,bytes,0,WireFormat.FindCreations(bytes));return log.Snapshot();
+    }
+    [Fact] public void QualifiedNormalCarryMintsNewReceiptFromUnchangedDurableScope()
+    {
+        var old=Life();var token=new MissionOutsideUploadProof.Token(State(),old);var fresh=Life();
+        var rebound=ZionAfter1212OutsideStage.AfterVerifiedCarry(token,State(),fresh);
+        MissionOutsideUploadProof.RequireCurrent(rebound,State(),fresh);
+        Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequireCurrent(token,State(),fresh));
+        Assert.Throws<InvalidDataException>(()=>ZionAfter1212OutsideStage.AfterVerifiedCarry(token,State(),old));
+    }
+    [Theory] [InlineData("owner")] [InlineData("phase")] [InlineData("instance")] [InlineData("item")]
+    public void ANewSessionCannotBorrowAnotherDurableDeparture(string fault)
+    {
+        var token=new MissionOutsideUploadProof.Token(State(),Life());var s=State();
+        if(fault=="owner")s.Identity=new string('b',32);if(fault=="phase")s.Phase++;if(fault=="instance")s.Instance++;if(fault=="item")s.Items[6831]=6;
+        Assert.Throws<InvalidDataException>(()=>ZionAfter1212OutsideStage.AfterVerifiedCarry(token,s,Life()));
+    }
+
 }

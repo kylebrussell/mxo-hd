@@ -21,4 +21,14 @@ public static class ZionAfter1212OutsideStage
         if(historicalBaseline!=null)MissionNoSiteActorHistory.RequireStable(historicalBaseline,s);
         else if(s.Mobs.Count!=0)throw new InvalidDataException("Historical actors need the actual prior-departure baseline");
     }
+    // Invoked only after CarryRelogAsync has qualified normal Quit/reservation/new authentication.
+    // Mint a fresh live receipt from unchanged durable authority; never mutate/reuse the old owner.
+    public static MissionOutsideUploadProof.Token AfterVerifiedCarry(MissionOutsideUploadProof.Token before,MissionProgress.SavedState restored,OwnViewLifeSnapshot fresh)
+    {
+        if(!fresh.Current||!fresh.OwnViewReady||ReferenceEquals(before.Life.Owner,fresh.Owner))throw new InvalidDataException("Qualified carry must have a fresh authenticated own life");
+        MissionOutsideContinuation.Require(before.Checkpoint,restored);
+        MissionNoSiteActorHistory.RequireStable(before.Checkpoint,restored);
+        return new(restored,fresh);
+    }
+
 }

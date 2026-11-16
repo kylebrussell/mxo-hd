@@ -57,7 +57,18 @@ public static partial class Scenarios
                 if(evidenceOptions?.ExactZionAfter1212==true)
                 {
                     var next=await diagnostics!.CarryRelogAsync(id);
-                    if(!ReferenceEquals(next,p)){p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();}
+                    if(!ReferenceEquals(next,p))
+                    {
+                        p=next;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();
+                        if(outsideOnly)
+                        {
+                            Check.That(noSiteContinuation!=null,"Qualified outdoor carry retains its durable departure token");
+                            var restored=await ZionAfter1212Checkpoint(context,p);
+                            noSiteContinuation=ZionAfter1212OutsideStage.AfterVerifiedCarry(noSiteContinuation!,restored,p.World.CurrentOwnViewLife());
+                            ZionAfter1212OutsideStage.Require(authoredMission,phase,restored,noSiteContinuation.Checkpoint);
+                            diagnostics.Note(new{Kind="Fresh no-area receipt after qualified normal carry relog",restored.Mission,restored.Phase,restored.Identity,restored.Started,restored.Instance,HistoricalActors=restored.Mobs.Select(m=>m.Identity).ToArray(),Life=p.World.CurrentOwnViewLife().Life});
+                        }
+                    }
                 }
                 if(diagnostics!=null)await diagnostics.PhaseAsync(id,phase);
                 var goals=area.Elements("objective").Where(g=>(string)g.Attribute("type")! != "Protect").ToList();
