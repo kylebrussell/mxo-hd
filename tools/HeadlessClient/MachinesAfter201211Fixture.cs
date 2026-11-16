@@ -17,6 +17,7 @@ public static class MachinesAfter201211Fixture
  public static (uint Xp,uint Info) ExpectedReward(int id)=>id switch
  {201212=>(88000,59500),201213=>(88000,59500),201214=>(93500,63000),201215=>(61625,63000),201216=>(93500,63000),_=>throw new ArgumentOutOfRangeException(nameof(id))};
  public static IEnumerable<XElement> RequiredActions(XElement phase)=>phase.Elements("objective").Where(g=>(string?)g.Attribute("type")!="Protect"&&(int?)g.Attribute("optional")!=1);
+ public static int[] TrackedFollowerIds(XElement mission,int phase)=>mission.Elements("phase").ElementAt(phase).Elements("objective").Where(g=>(string?)g.Attribute("type") is "Protect" or "Escort").SelectMany(g=>((string)g.Attribute("npc")!).Split(',').Select(int.Parse)).Distinct().ToArray();
  public static int[] ProtectedIds(XElement mission,int phase)=>mission.Elements("phase").ElementAt(phase).Elements("objective").Where(g=>(string?)g.Attribute("type")=="Protect").SelectMany(g=>((string)g.Attribute("npc")!).Split(',').Select(int.Parse)).Distinct().ToArray();
  public static string[] NpcReferences(XElement goal)
  {var ids=((string?)goal.Attribute("npc")??throw new InvalidDataException("NPC goal references required")).Split(',');if(ids.Length==0||ids.Any(x=>!ushort.TryParse(x,out var id)||id==0)||ids.Distinct().Count()!=ids.Length)throw new InvalidDataException("Exact distinct authored NPC references required");return (string?)goal.Attribute("type")=="Loot"?ids.Take(1).ToArray():ids;}

@@ -48,6 +48,9 @@ public class MachinesAfter201211Tests
   Assert.DoesNotContain(MachinesAfter201211Fixture.RequiredActions(Mission(201216).Elements("phase").First()),g=>(string?)g.Attribute("type")=="DefeatAll");
   Assert.Equal(new[]{1},MachinesAfter201211Fixture.ProtectedIds(Mission(201213),0));Assert.Equal(new[]{1},MachinesAfter201211Fixture.ProtectedIds(Mission(201213),1));Assert.Equal(new[]{1},MachinesAfter201211Fixture.ProtectedIds(Mission(201215),1));
  }
+ [Theory][InlineData(201213,0)][InlineData(201213,1)][InlineData(201214,0)][InlineData(201214,1)][InlineData(201215,0)][InlineData(201215,1)]
+ public void EscortIdentityIsTrackedEvenWithoutAProtectObjective(int mission,int phase)
+ {Assert.Equal(new[]{1},MachinesAfter201211Fixture.TrackedFollowerIds(Mission(mission),phase));}
  [Theory][InlineData("1,1")][InlineData("0")][InlineData("")][InlineData("other")]
  public void UnknownOrDuplicateNpcReferenceCannotBecomeAnotherTarget(string value)
  {Assert.Throws<InvalidDataException>(()=>MachinesAfter201211Fixture.NpcReferences(new XElement("objective",new XAttribute("type","Talk"),new XAttribute("npc",value))));}

@@ -214,11 +214,11 @@ public static partial class Scenarios
                     MissionNoSiteActorHistory.RequireStable(outside!.Checkpoint,noSite);
                 }
                 else await Ride(true);
-                foreach(int protectedId in MachinesAfter201211Fixture.ProtectedIds(mission,phase))
+                foreach(int protectedId in MachinesAfter201211Fixture.TrackedFollowerIds(mission,phase))
                 {
-                    var followerState=(await Saved("protected-witness-phase"))!;Check.Equal(phase,followerState.Phase,"Protected witness belongs to current phase");
-                    var follower=followerState.Mobs.Single(m=>m.Npc==protectedId);Check.That(!follower.Dead&&follower.Health>0,"Protected witness alive on ordinary entry");
-                    int identityKey=id*1000+protectedId;if(followerIdentities.TryGetValue(identityKey,out string? priorFollower))Check.Equal(priorFollower,follower.Identity,"Same protected witness identity");else followerIdentities[identityKey]=follower.Identity;
+                    var followerState=(await Saved("protected-witness-phase"))!;Check.Equal(phase,followerState.Phase,"Tracked escort/protect actor belongs to current phase");
+                    var follower=followerState.Mobs.Single(m=>m.Npc==protectedId);Check.That(!follower.Dead&&follower.Health>0,"Tracked escort/protect actor alive on ordinary entry");
+                    int identityKey=id*1000+protectedId;if(followerIdentities.TryGetValue(identityKey,out string? priorFollower))Check.Equal(priorFollower,follower.Identity,"Same escort/protect actor identity across phase carry");else followerIdentities[identityKey]=follower.Identity;
                 }
                 var goals=MachinesAfter201211Fixture.RequiredActions(area).ToList();
                 while(goals.Any(g=>!Done((int)g.Attribute("goal")!)))
