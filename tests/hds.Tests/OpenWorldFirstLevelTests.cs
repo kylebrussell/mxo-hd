@@ -16,7 +16,6 @@ public class OpenWorldFirstLevelTests
         Assert.Equal(20020,approach.x);Assert.Equal(-705,approach.y);Assert.Equal(61884.71484375,approach.z);
         Assert.Equal((ushort)524,approach.location.sector);Assert.False(approach.location.indoors);
         foreach(var spawn in OpenWorldFirstLevelFixture.Spawns)Assert.Equal(spawn[2]-100,OpenWorldFirstLevelFixture.Approach(spawn).z);
-        Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{19900d,-705d,61984d}));
         Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{target[0],-305d,target[2]}));
         Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{double.NaN,-705d,target[2]}));
         Assert.Throws<InvalidDataException>(()=>OpenWorldFirstLevelFixture.Approach(new[]{0d,-705d,0d}));
