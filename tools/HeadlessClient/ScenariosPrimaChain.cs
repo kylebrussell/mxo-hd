@@ -163,6 +163,19 @@ public static partial class Scenarios
                             break;
                         }
                         case "Upload":
+                            if(evidenceOptions?.ExactZionNextFive==true)
+                            {
+                                var beforeOutside=await ZionNextFiveCheckpoint(context,p);
+                                var street=MervFollowupStreetEntry.ForSite(beforeOutside);
+                                var npc=MissionNpcInteriorRide.ForSite(beforeOutside);
+                                var lobbyStanding=street?.Lobby.Standing??npc?.Lobby.Standing??throw new ScenarioFailure("Outside Upload requires exact saved measured lobby Standing");
+                                await MissionOutsideUploadProof.BeforeOutsideAsync(p,beforeOutside,
+                                    ()=>ZionNextFiveCheckpoint(context,p),
+                                    mark=>ZionNextFiveRide(context,p,false,diagnostics!.Note,waitForPhaseAdvance:false,beforeRequest:mark),
+                                    lobbyStanding,Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt"),context.Server.DebugLog,diagnostics!.Note);
+                                var next=await diagnostics.CarryRelogAsync(id,outsideReady:true);
+                                if(!ReferenceEquals(next,p)){p=next;ends=p.Received("80 a2 00").Count;rpcStart=0;viewsStart=0;sectionsStart=0;killed.Clear();restoredDone.UnionWith((await ZionNextFiveCheckpoint(context,p)).Done);}
+                            }
                             if(evidenceOptions?.FreshUploadBooth==true)
                             {
                                 // Opt-in218: historical creations can name a removed pre-mission booth.

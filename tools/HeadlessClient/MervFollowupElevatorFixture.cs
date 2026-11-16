@@ -6,8 +6,9 @@ public static class MervFollowupElevatorFixture
     public sealed record Ride(ushort District,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness)
     {
         public MissionNpcInteriorProof.Plan? Npc {get;init;}
-        public bool Measured => Witness!=null||Npc!=null;
-        public double[] Approach => Npc==null?new[]{Pose[0],Pose[1]-50,Pose[2]}:(Key==Npc.Floor.Key?Npc.Floor:Npc.Lobby).Standing!;
+        public MervFollowupStreetEntry.Plan? Street {get;init;}
+        public bool Measured => Witness!=null||Npc!=null||Street!=null;
+        public double[] Approach => Street!=null?(Key==Street.Floor.Key?Street.Floor:Street.Lobby).Standing!:Npc==null?new[]{Pose[0],Pose[1]-50,Pose[2]}:(Key==Npc.Floor.Key?Npc.Floor:Npc.Lobby).Standing!;
     }
     static bool Point(double[]? p)=>p?.Length==3&&p.All(double.IsFinite);
     static bool Same(double[]? a,double[]? b)=>Point(a)&&Point(b)&&a!.SequenceEqual(b!);
@@ -34,6 +35,8 @@ public static class MervFollowupElevatorFixture
             throw new InvalidDataException("Current raw site identity differs");
         if(raw.metrId!=1||selected!=null&&selected.District!=1||state.Objects.Any(o=>o.Spot?.metrId!=1||o.OpenFloor!=null&&o.OpenFloor.World!=1))
             throw new InvalidDataException("Fixture world/selected site/raw object/open-floor world differs");
+        var street=MervFollowupStreetEntry.ForSite(state);
+        if(street!=null){var entry=enter?street.Lobby:street.Floor;return new(raw.metrId,entry.Key,entry.Position,entry.Quaternion,null){Street=street};}
         var npc=MissionNpcInteriorRide.ForSite(state);
         if(npc!=null)
         {
@@ -78,7 +81,7 @@ public static class MervFollowupElevatorFixture
         if(current==null||before.Version!=current.Version||before.Mission!=current.Mission||before.Phase!=current.Phase||
             before.Identity!=current.Identity||before.Started!=current.Started||before.Instance!=current.Instance)return false;
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,StreetWitness=MervFollowupStreetEntry.ForSite(s)?.Raw,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         return Snapshot(before)==Snapshot(current);
     }
     public static void RequireOverlay(Ride selected,ViewCreation view)
@@ -122,6 +125,15 @@ public static class MervFollowupElevatorFixture
     }
     public static void RequireRoot(Ride selected,bool enter,double[] actual,ushort sector,ushort region,double floorY,IEnumerable<double[]> freeRoots)
     {
+        if(selected.Street!=null)
+        {
+            var street=selected.Street;var target=enter?street.Floor:street.Lobby;
+            var node=street.Raw.GetProperty("Context").GetProperty(enter?"Floor":"Lobby").GetProperty("Node");
+            if(!Same(actual,target.Standing)||sector!=(target.Key>>20)||region!=node.GetProperty("Region").GetUInt16()||
+                !double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||enter&&freeRoots.Any(r=>!Same(r,actual)))
+                throw new InvalidDataException("Actual Street arrival differs from owned measured Standing/NAV");
+            return;
+        }
         if(selected.Npc!=null)
         {
             var npc=selected.Npc;var target=enter?npc.Floor:npc.Lobby;

@@ -19,7 +19,7 @@ public static partial class Scenarios
     {
         await ZionNextFiveRide(context,p,false,note);
     }
-    private static async Task ZionNextFiveRide(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null)
+    private static async Task ZionNextFiveRide(ScenarioContext context,HeadlessPlayer p,bool enter,Action<object>? note=null,bool waitForPhaseAdvance=true,Action? beforeRequest=null)
     {
         var state=await ZionNextFiveCheckpoint(context,p);var door=state.Waypoints.Single();var lobby=state.Exits.Single();
         var authored=Directory.GetFiles(Path.Combine(context.RepositoryRoot,"data","missions"),"zion_1_2_*.xml").Select(XElement.Load).Single(m=>(int)m.Attribute("id")! == state.Mission);
@@ -46,7 +46,7 @@ public static partial class Scenarios
         string packetPath=Path.Combine(context.Server.WorkingDirectory,"PacketLog.txt");
         int packetCursor=InteriorAdmissionDeliveryProof.Read(packetPath).Count(c=>c==10);
         var beforeRide=p.World.CurrentOwnViewLife();int viewCursor=beforeRide.Events.Count==0?beforeRide.OwnBirthSection+1:beforeRide.Events.Max(e=>e.Section)+1;
-        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";p.SendRpc(request);
+        int cursor=context.Server.DebugLog().Length,rpc=p.World.RpcSnapshot().Count;string request=$"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00";beforeRequest?.Invoke();p.SendRpc(request);
         if(door.y!=lobby[1])
         {
             var remaining=TimeSpan.FromSeconds(15)-(exitFollowers.Length>0?rideBudget.Elapsed:TimeSpan.Zero);
@@ -93,7 +93,7 @@ public static partial class Scenarios
                 note?.Invoke(new{Kind="First free body before route/NPC movement",state.Mission,state.Phase,obj.Id,RawSource=obj.Spot,FixedPlacement=obj.OpenFloor,Stationary=rode,TransportReceipt=receipt,ClientPositionInterestOnly=!rode,NativeRenderingProven=false});
             }
         }
-        if(!enter)
+        if(!enter&&waitForPhaseAdvance)
         {
             await p.WaitUntilAsync(()=>context.Database.ScalarAsync($"SELECT IFNULL((SELECT CONCAT(JSON_EXTRACT(payload,'$.Mission'),':',JSON_EXTRACT(payload,'$.Phase')) FROM char_active_missions WHERE charId={p.CharId}),'NULL')").GetAwaiter().GetResult()!=state.Mission+":"+state.Phase,
                 "Ordinary exit persisted its next phase before reading another door",TimeSpan.FromSeconds(20));
