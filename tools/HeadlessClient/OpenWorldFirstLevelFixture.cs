@@ -6,6 +6,12 @@ public static class OpenWorldFirstLevelFixture
     public static double[] Start=>new[]{19403d,-705d,60401d};
     public static double[][] Spawns=>new[]{new[]{19403d,-705d,60701d},new[]{20097d,-705d,61491d}};
     public static Dictionary<string,string> Environment=>new(){["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]="world",["MXO_PACKET_LOG"]="1"};
+    // Only the assisted wire case uses ?tp to the independently checked outdoor approaches.
+    // Native QA retains Environment and has no developer commands or difficulty overrides.
+    public static Dictionary<string,string> HeadlessEnvironment
+    {
+        get { var environment=Environment;environment["MXO_DEV_COMMANDS"]="1";return environment; }
+    }
     public static CharacterSeed Seed=>new("FirstLevel"){X=19403,Y=-705,Z=60401,Level=1,Experience=0,Info=1000,Health=150,MaxHealth=150,InnerStrength=100,MaxInnerStrength=100,OwnedLoadedAbilities=new[]{((ushort)2,(ushort)1)}};
     public static void RequireSource(string? pin,string actual)
     {if(pin==null||pin.Length!=64||pin.Any(c=>!Uri.IsHexDigit(c))||!pin.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("First-level proof requires exact "+SourcePin);}

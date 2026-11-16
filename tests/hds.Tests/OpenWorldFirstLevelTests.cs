@@ -36,5 +36,10 @@ public class OpenWorldFirstLevelTests
     {
         var plan=new OpenWorldFirstLevelMode().Plan;Assert.Equal(new ushort[]{2},plan.Abilities);Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.DoesNotContain("MXO_AGGRO",plan.EnvironmentOverrides.Keys);Assert.DoesNotContain("MXO_MOB_WANDER",plan.EnvironmentOverrides.Keys);
         var seed=OpenWorldFirstLevelFixture.Seed;Assert.Equal(0,seed.Experience);Assert.Equal(1,seed.Level);Assert.Equal(150,seed.MaxHealth);Assert.Equal(100,seed.MaxInnerStrength);
+        Assert.Equal("0",plan.EnvironmentOverrides["MXO_DEV_COMMANDS"]);
+        var wire=OpenWorldFirstLevelFixture.HeadlessEnvironment;
+        Assert.Equal("1",wire["MXO_DEV_COMMANDS"]);
+        Assert.Equal(OpenWorldFirstLevelFixture.Environment.Keys.OrderBy(k=>k),wire.Keys.OrderBy(k=>k));
+        foreach(var pair in OpenWorldFirstLevelFixture.Environment.Where(p=>p.Key!="MXO_DEV_COMMANDS"))Assert.Equal(pair.Value,wire[pair.Key]);
     }
 }

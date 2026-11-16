@@ -21,6 +21,8 @@ public static class MervFollowupViewFrames
             // PlayerPackets mode/health/IS, MissionPackets key, SocialPackets team.
             foreach(var shape in new[]{("0280808080808002",11),("0280808040",9),("0280808010",9),("028040",9),("028020",9)})
                 if(Has(2,shape.Item1)&&Fits(shape.Item2)){frame=Make(Kind.Attribute,shape.Item2);return true;}
+            // CombatPackets.BuildEnterCombatMode: state0c, NoiseLevel0 and one u32 ConditionStateFlags value.
+            if(Has(2,"03010c008084008080808001")&&Fits(18)){frame=Make(Kind.Attribute,18);return true;}
             // CombatPackets.SendLeaveCombatMode: action0 plus flags attribute.
             if(Has(2,"0301000080808080808001")&&Fits(17)){frame=Make(Kind.Attribute,17);return true;}
             if(Has(2,"0328")&&Has(5,"010c")&&(Has(8,"8100")||Has(8,"0010")))
