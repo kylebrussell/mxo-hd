@@ -99,6 +99,6 @@ public class OrdinaryWithdrawalInputTests
         var produced=CombatInterlock.BuildRoundResult(1,true,new CombatInterlock.Move(),new CombatInterlock.Move(),123,CombatRules.Withdraw,0,0,0,0,0,combatResult:1);
         Assert.Equal(89,produced.Length);Assert.True(WithdrawalFixture.WithdrawalRound(produced));
         Assert.True(WithdrawalFixture.WithdrawalRound(r));Assert.False(WithdrawalFixture.WithdrawalRound(r[..88]));Assert.False(WithdrawalFixture.WithdrawalRound(new byte[]{99}.Concat(r).ToArray()));
-        r[61]=0;Assert.False(WithdrawalFixture.WithdrawalRound(r));BitConverter.GetBytes(0x200u).CopyTo(r,61);BitConverter.GetBytes(0).CopyTo(r,65);Assert.False(WithdrawalFixture.WithdrawalRound(r));
+        r[62]=0;Assert.False(WithdrawalFixture.WithdrawalRound(r));BitConverter.GetBytes(0x200u).CopyTo(r,61);BitConverter.GetBytes(0).CopyTo(r,65);Assert.False(WithdrawalFixture.WithdrawalRound(r));
     }
 }
