@@ -910,14 +910,22 @@ namespace hds
                 return false;
             }
 
-            bool current = site == progress.site && !progress.waitingForExit;
-            if (current && ExitEscortRide(client,progress,site,used,px,py,pz)) current=false;
-            StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
             var targetWitness=progress.ElevatorFor(site);
-            double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
             var npcTarget=MissionNpcInteriorAdmission.ForSite(progress,site);
+            var streetTarget=MissionStreetCoverage.ForSite(progress,site);
+            var direction=MissionElevatorTrips.Choose(site,used,py,ReferenceEquals(site,progress.site),progress.waitingForExit,
+                targetWitness,npcTarget,streetTarget?.Context.Floor,streetTarget?.Context.Lobby);
+            if(direction==MissionElevatorDirection.None)return false;
+            // Preserve the existing escort readiness rule: a down-ride must not collect
+            // distant followers and manufacture their open exit goal.
+            if(direction==MissionElevatorDirection.Down&&ReferenceEquals(site,progress.site)&&!progress.waitingForExit&&
+                progress.OpenObjectives().Any(o=>o.type==MissionGoalType.Escort&&o.escortTo=="exit")&&
+                !ExitEscortRide(client,progress,site,used,px,py,pz))return false;
+            bool current=direction==MissionElevatorDirection.Up;
+            StaticWorldObject target = current ? site.elevatorDoor : site.lobbyDoor;
+            double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
             if(npcTarget!=null)targetY=(current?npcTarget.Floor:npcTarget.Lobby).Position[1];
-            var streetTarget=MissionStreetCoverage.ForSite(progress,site);if(streetTarget!=null)targetY=(current?streetTarget.Context.Floor:streetTarget.Context.Lobby).Position[1];
+            if(streetTarget!=null)targetY=(current?streetTarget.Context.Floor:streetTarget.Context.Lobby).Position[1];
             if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
