@@ -74,7 +74,7 @@ namespace hds
             return matches[0];
         }
         internal static bool OwnsDoor(MissionProgress p,StaticWorldObject raw)=>p!=null&&raw!=null&&raw.metrId==p.mission.district&&p.streetWitnesses.Values.Any(s=>
-            MissionNpcInteriorPlanning.ReadRaw(s.Context.Floor.RawDoorJson).mxoStaticId==raw.mxoStaticId||MissionNpcInteriorPlanning.ReadRaw(s.Context.Lobby.RawDoorJson).mxoStaticId==raw.mxoStaticId);
+            MissionNpcInteriorPlanning.ReadRaw(s.Context.Floor.RawDoorJson).mxoStaticId==raw.mxoStaticId||MissionNpcInteriorPlanning.ReadRaw(s.Context.Lobby.RawDoorJson).mxoStaticId==raw.mxoStaticId)||p!=null&&raw!=null&&raw.metrId==p.mission.district&&MissionStreetBoundRoutes.CurrentDoors(p).Any(d=>d.Key==raw.mxoStaticId);
         internal static MissionElevatorPoses.Overlay Overlay(MissionProgress p,StaticWorldObject raw)
         {
             if(p==null||raw==null||raw.metrId!=p.mission.district)return null;MissionElevatorPoses.Overlay resolved=null;
@@ -92,6 +92,22 @@ namespace hds
                     resolved=candidate;
                 }
             }
+            try
+            {
+                var required=MissionStreetBoundRoutes.CurrentDoors(p).SingleOrDefault(d=>d.Key==raw.mxoStaticId);
+                if(required!=null)
+                {
+                    if(p.restoreRefusal!=null)return new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Refused,refusal:"QuarantinedBoundStreetRoute");
+                    var selected=p.streetWitnesses[p.phaseIndex];
+                    MissionStreetBoundRoutes.Validate(p,selected,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district));MissionStreetBoundRoutes.RequireCurrentSources(p,selected);
+                    var expected=MissionNpcInteriorPlanning.ReadRaw(required.RawDoorJson);
+                    if(MissionNpcInteriorPlanning.RawJson(raw)!=MissionNpcInteriorPlanning.RawJson(expected))throw new InvalidDataException("ChangedBoundDoorOwnGoidSignature");
+                    var candidate=new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Resolved,MissionElevatorPoses.Position(required.Position),required.Quaternion);
+                    if(resolved!=null&&(!resolved.Position.Equals(candidate.Position)||resolved.Quaternion!=candidate.Quaternion))throw new InvalidDataException("ConflictingBoundDoorContext");return candidate;
+                }
+            }
+            catch(Exception ex) when(ex is InvalidDataException||ex is MissionCheckpointException||ex is JsonException||ex is ArgumentException)
+            {return new MissionElevatorPoses.Overlay(MissionElevatorPoses.OverlayKind.Refused,refusal:"InvalidBoundStreetDoor:"+ex.Message);}
             return resolved;
         }
     }
