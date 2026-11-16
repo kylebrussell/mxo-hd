@@ -34,7 +34,7 @@ public class CarriedMissionNpcV2Tests
     {
         var s=Actual();string before=s.ToJsonString();var log=Life();var token=Capture(s,log);
         Assert.Equal(2,token.CheckpointVersion);Assert.Equal("58e93f06e97749438f822859316dbffb",token.AcceptedIdentity);Assert.Equal(s["Started"]!.GetValue<long>(),token.AcceptedStarted);Assert.Equal(51,token.Instance);
-        Assert.Equal("4dff45092f8c4b3988cc54a076c38a35",token.Identity);Assert.Equal(before,s.ToJsonString());Assert.Same(log.Snapshot().Owner,token.OwnerLife!.Owner);
+        Assert.Equal("4dff45092f8c4b3988cc54a076c38a35",token.Identity);Assert.Equal(before,s.ToJsonString());Assert.True(token.OwnerLife!.Current);Assert.Equal(log.Snapshot().Life,token.OwnerLife.Life);
         // A unit-only later-phase projection tests identity continuity; it is not an earned phase or seeded server.
         s["Phase"]=1;var point=CarriedMissionNpcFixture.Resolve(s.ToJsonString(),token,1,true);Assert.Equal(new CarriedMissionNpcFixture.Point(65750,2695,-10400),point);
         byte[] birth=Birth();log.Observe(false,birth,1,WireFormat.FindCreations(birth));var view=CarriedMissionNpcFixture.CurrentLiveView(log.Snapshot(),token,s.ToJsonString(),1,true,1);Assert.Equal((ushort)87,view.View.ViewId);
