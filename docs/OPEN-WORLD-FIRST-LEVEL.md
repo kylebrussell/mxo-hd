@@ -1,0 +1,16 @@
+# First earned open-world level
+
+QA-only candidate on master773b5e59. Mode/case `open-world-first-level`. This covers level1 to2 only, not1–50 progression, all district populations or travel. No gameplay/data changes, developer damage/XP commands, gang injection, difficulty/stat/RNG overrides or selected rewards are used. Native walking/picking, survival and presentation remain unproved until the checklist runs.
+
+The normal world loader retains captured OpenWorld Chopper Runner rows19403/-705/60701 (RSI5e010088) and20097/-705/61491 (RSI5d010088), level1/75HP. Their1051-unit separation survives normal500-unit dedup. Offline exact NAV: start19403/-705/60401 is outdoor sector524/region4/poly3, first actor524/4/poly2 and second524/2/poly0, floor-800; direct projection from the start retains all three points. This proves NAV grounding, not visible wall-free native walking. Native NPC wandering/aggro remain at normal defaults; Choppers are passive until attacked under existing policy.
+
+CSR starts with level1/XP0/cash1000/HP150/IS100, only owned loaded Awakened2 at1. Normal current kill policy gives391XP per full solo level1 kill; two kills total782, crossing level2 threshold500. Formula/rank policy already exists in KillExperience, sourced experience.py ComputeExperience and capture-inferred weakling67; this package adds no formula. rshooks.GoUpALevel and the retail own-view level update establish maxHP200/maxIS103 and FX280005b9. Corpse money is random5*0..99; zero is legitimate. Loot/item outcomes are observed rather than forced.
+
+## Claude-only one pass (up to8 minutes)
+
+1. Start the discovered mode and log in CSR110 only. Confirm actual level1/XP0, HP150/IS100 and no injected progress. No helper needs to fight. Do not invoke weaken, kill or addexp. If the world/target is inaccessible or character dies, STOP and retain the failure; do not reseed difficulty.
+2. Walk the short outdoor segment to first existing Chopper Runner near19403/-705/60701. Use ordinary target/combat UI with fists. Retain native health exchanges and the earned391XP. Loot the corpse with normal radial/TakeAll and record money/items, including legitimate zero cash. Do not count a developer-command defeat.
+3. Walk about10.5m to second Runner near20097/-705/61491. Ordinary combat/loot again. Expect782XP total and level2 effect/stats; record actual damage/duration. Two kills are expected; no near-threshold XP seed. If more kills are needed, report the discrepancy rather than silently expand.
+4. `/quit` normally, wait33s, relog SAME running fixture without reset/reseed. Verify level2/782XP and exact cash/items persist; no repeated kill award. Stop fixture/resetCSR110 through the normal native harness.
+
+Headless proof remains pending. Its ordinary combat and loot records use current-life typed NPC generations, original spawn/RSI association, latest movement, normal reward/cash SQL, one-use awards and current-session logout/relog. It uses explicit wire movement aids to NAV-validated approaches, so cannot establish native walking/passage. Mandatory `MXO_FIRST_LEVEL_SOURCE_SHA256` pins the actual server assembly for controlled runs. Actual inherited mode bootstrap will only prove fixture seed/auth, not gameplay or native UI.
