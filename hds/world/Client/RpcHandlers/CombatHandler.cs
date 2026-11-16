@@ -292,6 +292,7 @@ namespace hds
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
             if (!ControlActions.CanUseAbilities(player)) ability = null;
+            bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
             UInt16 playerDamage, npcDamage;
@@ -302,7 +303,7 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    InterlockInitiative.Attack(player, ability), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
+                    WithdrawalInput.Attack(player,ability,ordinaryWithdrawal), AbilityStats.SpecialDefense(mob, ability), ordinaryWithdrawal) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
@@ -713,6 +714,7 @@ namespace hds
 
         /// <summary>The player asked to withdraw (RPC 44 01): each round tries until it succeeds.</summary>
         private bool withdrawing;
+        private bool ordinaryWithdrawalRequested;
 
         /// <summary>
         /// Finds a mob by its combined view+spawn ID from the client's perspective.
@@ -1422,7 +1424,7 @@ namespace hds
         /// <summary>
         /// Handle player leaving combat (fleeing or disengaging).
         /// </summary>
-        public void ProcessLeaveCloseCombat(ref byte[] rpcData)
+        public void ProcessLeaveCloseCombat(ref byte[] rpcData, bool ordinaryRpc = false)
         {
             if ((pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee) &&
                 !ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
@@ -1433,7 +1435,7 @@ namespace hds
             if (pvpGunfire != null || pvpFight != null)
             {
                 pvpGunfire?.Stop();
-                pvpFight?.RequestWithdraw(client);
+                pvpFight?.RequestWithdraw(client,ordinaryRpc);
                 return;
             }
 
@@ -1447,6 +1449,7 @@ namespace hds
                 if (!withdrawing)
                 {
                     withdrawing = true;
+                    ordinaryWithdrawalRequested = ordinaryRpc;
                     SendNextMove(session, CombatInterlock.KindNextMoveChanged);
                     client.FlushQueue();
                     Output.WriteDebugLog("[COMBAT] Withdrawing: tried with the next round");

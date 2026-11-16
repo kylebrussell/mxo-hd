@@ -167,12 +167,14 @@ namespace hds
         /// </summary>
         public static bool RollHit(Random rng, CombatTactic attacker, int attackerLevel, CombatTactic defender, int defenderLevel,
             out UInt16 attackRoll, out UInt16 defenseRoll, CombatTacticType attackerType = CombatTacticType.Normal,
-            int attackBonus = 0, int defenseBonus = 0)
+            int attackBonus = 0, int defenseBonus = 0, bool ordinaryWithdrawal = false)
         {
             CombatTactics.Tactic a = CombatTactics.Get(attacker);
             CombatTactics.Tactic d = CombatTactics.Get(defender);
-            int attackBase = (int)(Math.Max(0, attackerLevel + attackBonus) * (100 + a.TacticPercent) / 100 * CombatTactics.TypeAttackRollMultiplier(attackerType));
+            int attackBase = ordinaryWithdrawal ? WithdrawalInput.AttackBase(attackerLevel,attackBonus,attacker) :
+                (int)(Math.Max(0, attackerLevel + attackBonus) * (100 + a.TacticPercent) / 100 * CombatTactics.TypeAttackRollMultiplier(attackerType));
             attackRoll = TacticRoll(rng, attackBase, AttackRollRange);
+            if(ordinaryWithdrawal)Output.WriteDebugLog("[WITHDRAW ROLL OURS] tactic="+attacker+" level="+attackerLevel+" input="+attackBonus+" base="+attackBase+" roll="+attackRoll);
             defenseRoll = TacticRoll(rng, Math.Max(0, defenderLevel + defenseBonus) * (100 + d.DefensePercent) / 100, DefenseRollRange);
             return attacker != CombatTactic.Block && attackRoll > defenseRoll;
         }
