@@ -44,6 +44,11 @@ namespace hds
             State state = client.playerData.passives;
             lock (state) return state.Loaded.TryGetValue(AbilityCatalog.Canonical(ability), out ushort level) ? level : 0;
         }
+        public static bool IsLoaded(WorldClient client, ushort ability)
+        {
+            State state=client.playerData.passives;
+            lock(state)return state.Loaded.ContainsKey(AbilityCatalog.Canonical(ability));
+        }
 
         public static void Load(WorldClient client, bool newWorld = false)
         {

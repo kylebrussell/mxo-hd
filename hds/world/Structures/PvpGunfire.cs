@@ -144,6 +144,8 @@ namespace hds
 
         private void Fire(bool firstShot)
         {
+            //Foreign fight/registry snapshots precede this shooter's lock and its RNG lock.
+            var gunPenalty=SharpshooterFreeFire.AgainstPlayer(Shooter,Target,GunOf(Shooter));
             bool died = false;
             lock (sync)
             {
@@ -162,11 +164,12 @@ namespace hds
                 noiseLevel = RangedWeapons.NextNoiseLevel(noiseLevel, RangedWeapons.Noise(gun));
 
                 FreeAttacks.Shot shot;
+                int rangedAttack=gunPenalty.AddToAttack(AbilityStats.Attack(shooter,true),gun);
                 lock (rng)
                 {
                     shot = FreeAttacks.Fire(rng, PvpFlag.LevelOf(shooter), shooter.playerData.combatTactic, CombatTactics.Type(shooter),
                         PvpFlag.LevelOf(target), target.playerData.combatTactic, gun,
-                        AbilityStats.Attack(shooter, true), AbilityStats.Defense(target, true),
+                        rangedAttack, AbilityStats.Defense(target, true),
                         AbilityStats.Player(shooter, 1139), AbilityStats.Player(shooter, 171) / 100.0,
                         AbilityStats.Toughness(target, true), () => !MobiusCode.PreventsFreeAttack(target));
                 }

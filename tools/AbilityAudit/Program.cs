@@ -70,6 +70,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
+        sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
+            "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; interlock not wired" : "",
         registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
         conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
         conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),
@@ -119,6 +121,7 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
     JsonSerializer.SerializeToElement(row).EnumerateObject()
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "sharpshooter" || p.Value.GetString() != "")
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
         .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
         .Where(p => p.Name != "proxy_technician" || p.Value.GetString() != "")

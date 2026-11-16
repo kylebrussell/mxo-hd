@@ -331,6 +331,7 @@ public static partial class Scenarios
         }),
         new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
         new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
+        new Scenario("sharpshooter-freefire", SharpshooterWire, SharpshooterFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
         new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
         new Scenario("pvp-opponents-entry", PvpOpponentsEntry, PvpOpponentsFixture.Environment),
