@@ -75,6 +75,14 @@ public class ReverseBulldogTests
         foreach(var m in markers)m.OnExpiredAt?.Invoke(f.Subject,m,f.Now+1);
         Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Target==102);Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Parent==734);Assert.Equal((ushort)10000,f.Mob.getHealthC());
     }
+    [Fact]public void DeflectCodeShortensTheActualTerminalStunAndLeavesItsIndependentTimer()
+    {
+        using var f=new Fixture(true);AbilityPassives.SetLoaded(f.Target!,new(ushort,ushort)[]{(23,50)});
+        f.Arm();f.Due(f.Now+.02);
+        var stun=Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Target==102);Assert.Equal(7.2f,stun.Seconds,4);
+        AbilityPassives.SetLoaded(f.Target!,Array.Empty<(ushort,ushort)>());Assert.Equal(7.2f,stun.Seconds,4);
+        f.Due(f.Now+.11);Assert.Equal(16,Assert.Single(f.Subject.Effects.Snapshot(),m=>m.Parent==734).Seconds);
+    }
     [Fact]public void PreexistingImmunityBlocksBothCallbacksWithoutReplacingIt()
     {
         using var f=new Fixture();var old=new TimedEffects.Active {Target=681,Proc=TempMods.Proc.State,Seconds=30,RecordId=91};f.Subject.Effects.Apply(734,new[]{old},f.Now);
