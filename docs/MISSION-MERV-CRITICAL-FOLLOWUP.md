@@ -1,3 +1,28 @@
+# Merovingian critical follow-up
+
+Current runtime/tools producer: `a093145e`, based on master `9894edab`. The normal whole-five case passed in **180.8s**:301203–301207 each have one retained receipt, five completion summaries, terminal payloadNULL and no parser problems. It then completed an ordinary relog with unchanged EXP/cash (`296599086:516500`), no replayed summary and the actual301208 *Necessary Action* offer. Only22 earlier receipts were seeded; all selected progress was earned.
+
+The case retained real unfinished car DOWN→typed own011c→exact client ACK before outside Upload aids in301203 and301207 (ACK sequences554 and2120). Sharmaine's V2 identity survived the phase transition and resolved through current view91/spawn89. The live relog was **after completing the chain**; active-mission carry across a new session is covered by the two-owner unit control and remains a native checklist gate.
+
+The actual `merovingian-critical-followup` bootstrap passed in26.5s on the same producer. This is mode seed/authentication/state serialization with the inherited no-op hook, not another gameplay or native-client pass. The case and bootstrap schemas independently counted0; all53 and8 observed process identities were gone.600ms polling does not prove complete short-lived process history.
+
+Validation: affected242, final carry/V1/provider49 and current-base integration39 tests passed (overlapping subsets); actual Debug/Release NativeQa builds, both read-only plans/build-info and exact-one case discovery passed. Source CI43813711465 passed6861 units +12 audit-policy +43 static-export controls. No local full repeat was needed. Historical failed producers/raw proofs remain below; the passing producer does not relabel them. Final documentation-only publication uses the same binaries.
+
+The raw proof is `Temp/mxo-merv-critical-followup-mxotest_run_1_dac8b172d1.json`; wrapper/cleanup/bootstrap artifacts are under `Temp/mxo-source-refresh-261-241-20261115`. Headless movement and weaken aids do not prove native collision, picking, walking or combat survival.
+
+## One-pass native checklist
+
+1. Start discovered mode `merovingian-critical-followup`, CSR110. Use Missions/Phone→Flood→Critical and accept301203 normally; continue301204–301207 in authored order. Do not grant selected progress/items/rewards.
+2. At each public approach, require actual Door hover/Open, walk into the lobby and use the separate metal car door. Stop and retain the current checkpoint/scene/key if hover or passage fails; `?missionfloor`/teleport does not qualify this gate.
+3. Perform the ordinary NPC radial Talk/combat/loot and object Open/Take/Search paths. Require the actual bound cabinet to render, pick and Open; follow current persisted poses, not historical coordinates.
+4. Before outside Upload in301203/301207, use the floor car DOWN, walk out through the public door and use the hardline. Return through the public door/car UP if interior goals remain. Consecutive uploads at one booth do not invent another floor trip.
+5. In301207 recruit/escort Sharmaine normally. With the fixture server still running, normal Quit/relog while carrying must preserve the same accepted mission/NPC and allow the later giver interaction. Continue without reseeding/resetting progress.
+6. Finish once, verify one receipt/payout per selected mission and the next301208 offer. Native rendering, passage, picking and active-carry relog remain unclaimed until this pass.
+
+## Retained historical source and failure notes
+
+Earlier status statements below refer to their named producer, not the current qualified producer.
+
 > Current source is normally merged with native-passed master `9894edab`, preserving its withdrawal support and every scenario registration. The only PR213 runtime delta remains the existing resolver allocation optimization. V2 carried-NPC tokens are portable accepted mission/NPC identities, with no retained world log; each fresh current-session view receipt uses the current `WorldSession.CurrentOwnViewLife` provider. The legitimate two-owner handoff, ended-old-stream/foreign-event/foreign-acceptance and independent V1-shape controls pass. Historical0a geometry lineage and all old failed-producer proofs remain separately identified. No corrected whole-five/native pass is claimed.
 
 > The8cd changed whole case remains FAIL138.1s after earning301203–301206 exactly once each, with parser problems empty.301203 bound Search and an actual unfinished downride/typed011c/ACK608 passed before outside Upload.301207 phase0 Escort stopped because a QA carry reader accepted only checkpointVersion1; the actual correct owned following Sharmaine checkpoint wasVersion2. Explicit V1/V2 support now binds portable V2 tokens to accepted Identity/Started/Instance; each current view receipt independently verifies its fresh own-life, preserving all requested mission/phase/NPC/UUID/friendly/follower checks; no version rewrite or runtime change. The old raw hash and all43identity/schema cleanup remain retained. This correction has no new whole-case/native proof yet.
@@ -16,7 +41,6 @@ Start a new normal Flood Critical chain with only earlier receipts. Follow the p
 
 > Source-only refresh onto master `0a96282c` (269 public access +270): new whole-case characters seed earlier receipts before Margin and normally offer/accept the chain, so new missions enroll current certified Street admission. No old997 checkpoint is injected or migrated. The99752.9s FAIL at301203 bound326 remains historical: sector1120 car26/building11 is excluded for fresh selection, not repaired. This merge and package-only savedStreet reader have NO new local/fresh/native proof; CI pending, HOLD. Runtime is master plus the preexisting resolver allocation optimization only.
 
-# Merovingian critical follow-up
 
 ## Current native review candidate
 
