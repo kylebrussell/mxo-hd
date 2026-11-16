@@ -1,23 +1,23 @@
 # Merovingian critical follow-up
 
-Current runtime/tools producer: `a093145e`, based on master `9894edab`. The normal whole-five case passed in **180.8s**:301203–301207 each have one retained receipt, five completion summaries, terminal payloadNULL and no parser problems. It then completed an ordinary relog with unchanged EXP/cash (`296599086:516500`), no replayed summary and the actual301208 *Necessary Action* offer. Only22 earlier receipts were seeded; all selected progress was earned.
+Current runtime/tools producer: `a093145e`, based on master `9894edab`. The normal whole-five case passed in **180.8s**: 301203–301207 each have one retained receipt, five completion summaries, terminal payload NULL and no parser problems. It then completed an ordinary relog with unchanged EXP/cash (`296599086:516500`), no replayed summary and the actual 301208 *Necessary Action* offer. Only 22 earlier receipts were seeded; all selected progress was earned.
 
-The case retained real unfinished car DOWN→typed own011c→exact client ACK before outside Upload aids in301203 and301207 (ACK sequences554 and2120). Sharmaine's V2 identity survived the phase transition and resolved through current view91/spawn89. The live relog was **after completing the chain**; active-mission carry across a new session is covered by the two-owner unit control and remains a native checklist gate.
+The case retained real unfinished car DOWN→typed own 011c→exact client ACK before outside Upload aids in 301203 and 301207 (ACK sequences 554 and 2120). Sharmaine's V2 identity survived the phase transition and resolved through current view 91/spawn 89. The live relog was **after completing the chain**; active-mission carry across a new session is covered by the two-owner unit control and remains a native checklist gate.
 
-The actual `merovingian-critical-followup` bootstrap passed in26.5s on the same producer. This is mode seed/authentication/state serialization with the inherited no-op hook, not another gameplay or native-client pass. The case and bootstrap schemas independently counted0; all53 and8 observed process identities were gone.600ms polling does not prove complete short-lived process history.
+The actual `merovingian-critical-followup` bootstrap passed in 26.5s on the same producer. This is mode seed/authentication/state serialization with the inherited no-op hook, not another gameplay or native-client pass. The case and bootstrap schemas independently counted 0; all 53 and 8 observed process identities were gone. 600ms polling does not prove complete short-lived process history.
 
-Validation: affected242, final carry/V1/provider49 and current-base integration39 tests passed (overlapping subsets); actual Debug/Release NativeQa builds, both read-only plans/build-info and exact-one case discovery passed. Source CI43813711465 passed6861 units +12 audit-policy +43 static-export controls. No local full repeat was needed. Historical failed producers/raw proofs remain below; the passing producer does not relabel them. Final documentation-only publication uses the same binaries.
+Validation: affected 242, final carry/V1/provider 49 and current-base integration 39 tests passed (overlapping subsets); actual Debug/Release NativeQa builds, both read-only plans/build-info and exact-one case discovery passed. Source CI 43813711465 passed 6861 unit tests, 12 policy tests and 43 static-export controls. No local full repeat was needed. Historical failed producers/raw proofs remain below; the passing producer does not relabel them. Final documentation-only publication uses the same binaries.
 
-The raw proof is `Temp/mxo-merv-critical-followup-mxotest_run_1_dac8b172d1.json`; wrapper/cleanup/bootstrap artifacts are under `Temp/mxo-source-refresh-261-241-20261115`. Headless movement and weaken aids do not prove native collision, picking, walking or combat survival.
+The raw proof is `%TEMP%/mxo-merv-critical-followup-mxotest_run_1_dac8b172d1.json`; wrapper/cleanup/bootstrap artifacts are under `%TEMP%/mxo-source-refresh-261-241-20261115`. Headless movement and weaken aids do not prove native collision, picking, walking or combat survival.
 
 ## One-pass native checklist
 
-1. Start discovered mode `merovingian-critical-followup`, CSR110. Use Missions/Phone→Flood→Critical and accept301203 normally; continue301204–301207 in authored order. Do not grant selected progress/items/rewards.
+1. Start discovered mode `merovingian-critical-followup`, CSR110. Use Missions/Phone→Flood→Critical and accept 301203 normally; continue 301204–301207 in authored order. Do not grant selected progress/items/rewards.
 2. At each public approach, require actual Door hover/Open, walk into the lobby and use the separate metal car door. Stop and retain the current checkpoint/scene/key if hover or passage fails; `?missionfloor`/teleport does not qualify this gate.
 3. Perform the ordinary NPC radial Talk/combat/loot and object Open/Take/Search paths. Require the actual bound cabinet to render, pick and Open; follow current persisted poses, not historical coordinates.
-4. Before outside Upload in301203/301207, use the floor car DOWN, walk out through the public door and use the hardline. Return through the public door/car UP if interior goals remain. Consecutive uploads at one booth do not invent another floor trip.
-5. In301207 recruit/escort Sharmaine normally. With the fixture server still running, normal Quit/relog while carrying must preserve the same accepted mission/NPC and allow the later giver interaction. Continue without reseeding/resetting progress.
-6. Finish once, verify one receipt/payout per selected mission and the next301208 offer. Native rendering, passage, picking and active-carry relog remain unclaimed until this pass.
+4. Before outside Upload in 301203/301207, use the floor car DOWN, walk out through the public door and use the hardline. Return through the public door/car UP if interior goals remain. Consecutive uploads at one booth do not invent another floor trip.
+5. In 301207 recruit/escort Sharmaine normally. With the fixture server still running, normal Quit/relog while carrying must preserve the same accepted mission/NPC and allow the later giver interaction. Continue without reseeding/resetting progress.
+6. Finish once, verify one receipt/payout per selected mission and the next 301208 offer. Native rendering, passage, picking and active-carry relog remain unclaimed until this pass.
 
 ## Retained historical source and failure notes
 
