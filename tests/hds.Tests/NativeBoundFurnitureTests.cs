@@ -87,7 +87,7 @@ public class NativeBoundFurnitureTests
   var old=NativeBoundFurnitureFixture.VerifyCapture(NativeBoundFurnitureFixture.Capture);var prepared=NativeBoundFurnitureFixture.Prepare(Root);var route=NativeBoundFurnitureProof.Read(Root,prepared.State);
   Assert.Equal(old.Done,prepared.State.Done);Assert.Equal(old.Identity,prepared.State.Identity);Assert.Equal(JsonSerializer.Serialize(old.Objects,Options),JsonSerializer.Serialize(prepared.State.Objects,Options));
   Assert.Equal(3,route.Selection.GetProperty("Version").GetInt32());Assert.Equal("BoundFurnitureRoutes",route.Selection.GetProperty("FurnitureRoutes").GetProperty("Kind").GetString());
-  var steps=NativeBoundFurnitureProof.Steps(Root,route);Assert.Contains(steps,s=>s.Doors.Contains(1032848039));Assert.Equal(114,(int)route.Region);Assert.Equal((ushort)6958,Assert.Single(route.Doors).Goid);Assert.DoesNotContain(NativeBoundFurnitureFixture.EarlierReceipts,id=>id==301210);
+  var steps=NativeBoundFurnitureProof.Steps(Root,route);Assert.Contains(steps,s=>s.Doors.Contains(1032848039u));Assert.Equal(114,(int)route.Region);Assert.Equal((ushort)6958,Assert.Single(route.Doors).Goid);Assert.DoesNotContain(NativeBoundFurnitureFixture.EarlierReceipts,id=>id==301210);
  }
  [Theory][InlineData("version")][InlineData("kind")][InlineData("profile")][InlineData("goid")][InlineData("owner")][InlineData("source")][InlineData("standing")][InlineData("door")]
  public void RecognizedRouteCorruptionRefusesInsteadOfUpgrading(string fault)
