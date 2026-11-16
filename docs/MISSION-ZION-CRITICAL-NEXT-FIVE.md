@@ -46,3 +46,9 @@ Claude alone owns native/client lock and merges; main 110 reset belongs to that 
 ## Retained history
 
 Latest b510/0d failures remain harness-only failures, corrected by the qualified actual NPC ride and strict 26-byte DoorReset reader; no failure is relabelled PASS. Earlier 7c 227.7s/source-specific 74.6s proofs and prior placement/escort/counter failures remain historical with raw packets/pins. Anonymous `RawSource` fields may be `{}`: use complete saved checkpoint strings and actual 03 records. A fixed seed does not imply identical sources across preview positions or candidate pools.
+
+## Latest-master mechanical checks
+
+Qualified merge source `e9e7e474` passed 297 focused Release tests, both actual Debug/Release NativeQa builds, both read-only plans/build-info and exact-one `zion-critical-next-five` discovery. All four hardlink properties were true. No new full suite or server was run; final CI qualifies the publication head. Relative to 4bb, 15 production files are exact incoming master blobs; four preexisting diagnostic files remain exact 4bb, and data is identical to both 4bb/master. Only the mode's base/proof-producer metadata labels changed; fixture seed SQL/environment/abilities and inherited no-op hook did not.
+
+Actual refreshed newest Debug HDS `A8CF6259EEF0C78F12EE9CA89A18B3A15E3FC9EAC0C615B7EC8473A2A71E4966`; Release driver `8ED4E529E5D149F9366F8347560982F5226A0997B080EE5C7169CB7F433CC8C8`; runner `10B99F2F055EE6D090104DC86E3100AEC4C87AE5E7F1220C4F288E0ADD09A12E`. Timestamps/paths: `Temp/mxo-refresh-dependents-20261115/pr218/freeze-e9e7e474.json`. These are new mechanical-build pins, not the 4bb gameplay producer. Archive contains 23 available original primary files; original Release hds.pdb was absent and that absence is recorded.
