@@ -127,7 +127,7 @@ public static partial class Scenarios
                     Check.That(root.SequenceEqual(plan.Npc.Floor.Standing!),"NPC-v2 ordinary Ride uses its exact owned Standing");
                     for(int actor=0;actor<plan.Npc.Witness.GetProperty("Actors").GetArrayLength();actor++)
                     {
-                        var route=MissionNpcInteriorProof.Route(context.RepositoryRoot,plan.Npc,actor);
+                        var route=ZionAfter1212ActorRoute.Route(context.RepositoryRoot,plan.Npc,actor);
                         note?.Invoke(new{Kind="Independently audited NPC actor topology",Actor=actor,Route=route,NativePassageProven=false,HeadlessPortalOpenProven=false});
                     }
                 }
