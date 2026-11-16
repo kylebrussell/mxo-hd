@@ -28,6 +28,13 @@ namespace hds
 
         /// <summary>The NPC this player is in close combat with, if any (simulacra assist it).</summary>
         public Mob CurrentNpcTarget => currentSession != null && currentSession.IsActive ? currentSession.DefenderMob : null;
+        internal Mob CurrentNpcOpponentFor(WorldClient owner)
+        {
+            if (!ReferenceEquals(client, owner)) return null;
+            var session = currentSession;
+            var opponent = session?.CurrentNpcOpponent(owner);
+            return ReferenceEquals(currentSession, session) ? opponent : null;
+        }
 
         /// <summary>
         /// Legacy fields - kept for backwards compatibility during transition.
@@ -295,7 +302,7 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    AbilityStats.SpecialAttack(player, ability), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
+                    InterlockInitiative.Attack(player, ability), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
@@ -1123,9 +1130,11 @@ namespace hds
             // Retail's free attack (FreeAttacks): tactic rolls, then the gun's damage less the absorbed share
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            var gunPenalty=SharpshooterFreeFire.AgainstNpc(player,target,weapon);
+            int rangedAttack=gunPenalty.AddToAttack(AbilityStats.Attack(player,true),weapon);
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, CombatTactics.Type(player),
                 target != null ? target.getLevel() : 1, session.DefenderTactic, weapon,
-                AbilityStats.Attack(player, true), target != null ? AbilityStats.Defense(target, true) : 0,
+                rangedAttack, target != null ? AbilityStats.Defense(target, true) : 0,
                 AbilityStats.Player(player, 1139), AbilityStats.Player(player, 171) / 100.0,
                 target != null ? AbilityStats.Toughness(target, true) : 0);
             bool hit = shot.Hit;
@@ -1299,8 +1308,11 @@ namespace hds
 
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            uint npcWeapon=mob.getWeapon();
+            var gunPenalty=SharpshooterFreeFire.FromNpc(mob,player,npcWeapon);
+            int rangedAttack=gunPenalty.AddToAttack(AbilityStats.Attack(mob,true),npcWeapon);
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
-                playerLevel, session.AttackerTactic, mob.getWeapon(), AbilityStats.Attack(mob, true), AbilityStats.Defense(player, true),
+                playerLevel, session.AttackerTactic, npcWeapon, rangedAttack, AbilityStats.Defense(player, true),
                 AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true), () => !MobiusCode.PreventsFreeAttack(player));
             bool hit = shot.Hit;
 

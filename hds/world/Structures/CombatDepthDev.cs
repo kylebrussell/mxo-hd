@@ -13,6 +13,7 @@ namespace hds
             if (command == "mobius") return MobiusCodeQa.Run(caller,args);
             if (command == "hurtme") return ConcentrationDamageQa.Run(caller,args);
             if (command == "specialattack") return TypedAttackDiagnostic.Run(caller,args);
+            if (command == "initiative" && args.Length==1) return InterlockInitiative.Diagnostic(caller);
             if (command == "specialdefense")
             {
                 // Paired seeded production contests; fixture-only. No live round's RNG or health is changed.
