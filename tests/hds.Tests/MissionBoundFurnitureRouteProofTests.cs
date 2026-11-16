@@ -84,8 +84,8 @@ public sealed class MissionBoundFurnitureRouteProofTests
   var polygon=evidence.RootElement.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==114).GetProperty("Polygons")[157];var edges=polygon.GetProperty("Edges").EnumerateArray().ToArray();var edge=edges[3];
   Assert.Equal("Local",edge.GetProperty("Reference").GetString());Assert.Equal(71,edge.GetProperty("Neighbor").GetInt32());
   Assert.Equal(new[]{42610d,1000,-27800},edge.GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()));
-  Assert.Equal(new[]{42600d,1000,-27800},edges[0].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()));
-  Assert.Equal(10d,Math.Abs(edge.GetProperty("Vertex")[0].GetDouble()-edges[0].GetProperty("Vertex")[0].GetDouble()));
+  Assert.Equal(new[]{42600d,1000,-27800},edges[4].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()));
+  Assert.Equal(10d,Math.Abs(edge.GetProperty("Vertex")[0].GetDouble()-edges[4].GetProperty("Vertex")[0].GetDouble()));
   Assert.Equal(30d,NavMesh.MinOpenEdge); // Existing generated/open-floor policy is unchanged, not applied to original local links.
   Assert.Equal(plan.Standing,MissionBoundFurnitureRouteProof.Steps(Root,plan)[^1].Standing);
  }
