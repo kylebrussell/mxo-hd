@@ -97,7 +97,9 @@ public class MervFollowupElevatorFixtureTests
         var old=Door();var stateUpdate=new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x834)).ToArray();
         var observation=MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,stateUpdate),ride);
         Assert.Equal(0x834u,observation.State);
-        Assert.Throws<InvalidDataException>(()=>MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray()),ride));
+        var closing=Life(Own(),old,new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray());
+        Assert.Null(MervFollowupElevatorFixture.CurrentOverlay(closing,ride).State);
+        Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(closing,new MissionNpcInteriorProof.Door(ride.Key,419,ride.Pose,ride.Quaternion!,null,"")));
         Assert.Equal(1,observation.BirthSection);Assert.Equal(ride.Key,observation.View.RelatedStaticObjectId);
         Assert.Equal((ushort)9,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),Door(key:0x0d100020,view:10,spawn:5),old),ride).View.ViewId);
         Assert.Equal((byte)5,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,new byte[]{1,0,1,1,0,9,0},Door(spawn:5)),ride).View.SpawnId);
