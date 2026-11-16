@@ -20,3 +20,9 @@ Use discovered mode `multifighting-interlock` in its disposable CSR110 fixture. 
 2. Withdraw CSR and all helpers normally (`stop` helper action); wait for ordinary teardown. Use Hardline/LA to load owned 140. Repeat: opponents2 penalty 0 and opponents3 penalty -5. Natural hit/damage outcomes can vary.
 3. Withdraw all; unload only 140 through Hardline/LA. Repeat baseline. A healthy one-on-one fight has penalty 0 both ways.
 4. Save raw packets/logs, actual current loadout and visible outcome. Stop on unrelated client/transport failure. This is not a native multi-NPC or retail-complete claim.
+
+## Combined master checkpoint
+
+`7eb4b77f` normally merges master `6a040a2e` (Desperation). Both attack inputs now wrap the existing `InterlockInitiative.Attack(actor, ability)` exactly once; defence wrappers are unchanged. The initiative helper's TF6 exclusion is preserved. Combined focus including Desperation/Initiative passed 188 tests; both actual builds/plans/provenance and exact-one discovery passed. The 6,373-test full result remains attributed to earlier `e4bfe45f`; final CI covers the combined tree. A failed merge script assumed two conflict blocks instead of the single contiguous block and left markers; its zero-test compile failure is retained before the corrected checkpoint.
+
+Current frozen newest Debug HDS `59A8311A1D3FBF6EE71EB5CFF6BAE8DA773BDE283A90272C898ABEBBCD3566B9`; Release driver `620D37BE775F6E27CA0FE6F2987477C14F43DFBED070FB19187B3DB929C9C62C`; runner `9BCF03EAC2DCC897D7473339368CAB21B1D89BCFB5D67C18C3AE69F506E9ECE7`. Exact timestamps and paths: `freeze-7eb4b77f.json` in the same Temp proof directory. No fresh gameplay or bootstrap yet.
