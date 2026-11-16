@@ -84,6 +84,7 @@ internal sealed class PrimaChainEvidence : IDisposable
             restoredBaselines.Add(previousRecords.Count+index);
         }
         string afterRaw=await Payload();var after=JsonSerializer.Deserialize<MissionProgress.SavedState>(afterRaw,new JsonSerializerOptions{IncludeFields=true})!;
+        if(options.ExactZionNextFive)ZionCarryRelogFixture.Require(before,after,actor.World.CurrentOwnViewLife());
         Check.Equal(before.Identity,after.Identity,"Carry relog identity");Check.Equal(before.Started,after.Started,"Carry relog acceptance");Check.Equal(before.Phase,after.Phase,"Carry relog actual phase");
         Check.That(before.Done.Order().SequenceEqual(after.Done.Order())&&before.EverDone.Order().SequenceEqual(after.EverDone.Order()),"Carry relog retains earned goal history");
         Check.Equal(inventoryBefore,await MissionInventory(),"Actual owned mission inventory rows retain slot and raw count through carry relog");

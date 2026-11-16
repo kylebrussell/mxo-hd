@@ -1314,15 +1314,12 @@ namespace hds
 
         private static void TickAll()
         {
-            MissionTickQaDiagnostics.Active("tickall-before-clients-lock");
             List<WorldClient> clients;
             lock (WorldServer.Clients)
             {
                 clients = new List<WorldClient>(WorldServer.Clients.Values);
-                MissionTickQaDiagnostics.CaptureRegistration(WorldServer.Clients);
             }
 
-            MissionTickQaDiagnostics.Active("tickall-clients-snapshot");
             foreach (WorldClient client in clients)
             {
                 // Store.currentClient is per thread: the inventory and database code a tick reaches (a searched item going into
@@ -1333,9 +1330,7 @@ namespace hds
                     if (client?.playerData?.missionProgress != null)
                     {
                         Store.currentClient = client;
-                        MissionTickQaDiagnostics.Record(client,"tickall-before-tick");
                         Tick(client);
-                        MissionTickQaDiagnostics.Record(client,"tickall-after-tick");
                     }
                 }
                 catch (Exception ex)
@@ -1352,24 +1347,15 @@ namespace hds
         /// <summary>Where the player walked to: lines set off by a place, and leaving a finished phase.</summary>
         private static void Tick(WorldClient client)
         {
-            MissionTickQaDiagnostics.Record(client,"tick-before-mission-lock");
             lock (client.playerData.missionSync)
             {
-                MissionTickQaDiagnostics.Record(client,"tick-inside-mission-lock");
-                if(!MissionTickQaDiagnostics.Gate(client,"alive",client.Alive) ||
-                    !MissionTickQaDiagnostics.Gate(client,"onWorld",client.playerData.getOnWorld()) ||
-                    MissionTickQaDiagnostics.Gate(client,"worldChangePending",client.playerData.worldChangePending) ||
-                    MissionTickQaDiagnostics.Gate(client,"districtMismatch",client.playerData.getDistrictId()!=client.playerData.activeMission?.district))
-                {MissionTickQaDiagnostics.Record(client,"tick-gate-rejected");return;}
-                MissionTickQaDiagnostics.Record(client,"tick-gate-accepted");
+                if(!client.Alive || !client.playerData.getOnWorld() || client.playerData.worldChangePending || client.playerData.getDistrictId()!=client.playerData.activeMission?.district)return;
                 MissionPersistence.Mutate(client,()=>TickMission(client));
-                MissionTickQaDiagnostics.Record(client,"tick-after-mutate");
             }
         }
 
         private static void TickMission(WorldClient client)
         {
-            MissionTickQaDiagnostics.Record(client,"tickmission-action-entry");
             MissionProgress progress = client.playerData.missionProgress;
             MissionPhase phase = progress?.Phase;
             if (phase == null)
@@ -1463,9 +1449,7 @@ namespace hds
                 }
             }
 
-            bool exiting=progress.IsExiting(x,y,z);
-            MissionTickQaDiagnostics.Record(client,"tickmission-isexiting",detail:"result="+exiting+";position="+x+","+y+","+z);
-            if (exiting)
+            if (progress.IsExiting(x, y, z))
             {
                 if (progress.phaseIndex == progress.mission.phases.Count - 1)
                 {
@@ -1475,14 +1459,9 @@ namespace hds
                 MissionOpenFloorAdmission.Plan openFloorPlan=null;MissionNpcInteriorAdmission.Plan npcPlan=null;MissionStreetAdmission.Plan streetPlan=null;
                 if(MissionOpenFloorAdmission.Requires(progress.mission.phases[progress.phaseIndex+1]))
                 {
-                    MissionTickQaDiagnostics.Record(client,"next-admission-before");
-                    bool prepared=MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal);
-                    MissionTickQaDiagnostics.Record(client,"next-admission-return",detail:"prepared="+prepared+";refusal="+refusal+";selected="+(selected!=null));
-                    if(!prepared)
+                    if(!MissionOpenFloorAdmission.TryPrepare(client,progress,progress.phaseIndex+1,progress,out openFloorPlan,out var selected,out string refusal))
                     {
-                        bool pendingCurrent=selected!=null&&openFloorPlan?.BeforeCurrent(client)==true;
-                        MissionTickQaDiagnostics.Record(client,"next-admission-refused-current",detail:"BeforeCurrent="+pendingCurrent+";refusal="+refusal);
-                        if(pendingCurrent)
+                        if(selected!=null&&openFloorPlan?.BeforeCurrent(client)==true)
                         {
                             bool changed=progress.pendingOpenFloor==null||progress.pendingOpenFloor.Refusal!=refusal;
                             progress.pendingOpenFloor=selected.WithRefusal(refusal);MissionOpenFloorAdmission.MarkPendingCheckpoint(progress);
@@ -1491,9 +1470,7 @@ namespace hds
                         }
                         return;
                     }
-                    bool preparedCurrent=openFloorPlan.BeforeCurrent(client);
-                    MissionTickQaDiagnostics.Record(client,"next-admission-success-current",detail:"BeforeCurrent="+preparedCurrent);
-                    if(!preparedCurrent)return;
+                    if(!openFloorPlan.BeforeCurrent(client))return;
                     // Admit the exact choice durably before tearing down the old phase.
                     // A later staging/SQL rollback restores this same pending choice.
                     if(openFloorPlan.Adopted||openFloorPlan.HasStreet)

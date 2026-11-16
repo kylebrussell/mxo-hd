@@ -56,12 +56,9 @@ namespace hds
         }
         internal static T Mutate<T>(WorldClient client,Func<T> action,bool beginMission=false,bool abortBlocked=false)
         {
-            MissionTickQaDiagnostics.Record(client,"mutate-before-mission-lock");
             lock(client.playerData.missionSync)
             {
-                MissionTickQaDiagnostics.Record(client,"mutate-inside-mission-lock");
-                if(client.playerData.missionProgress?.restoreRefusal!=null&&!abortBlocked)
-                {MissionTickQaDiagnostics.Record(client,"mutate-quarantine-return");return default(T);}
+                if(client.playerData.missionProgress?.restoreRefusal!=null&&!abortBlocked)return default(T);
                 if(MissionOutput.Buffered(client.messageQueue)||client.playerData.missionProgress==null&&!beginMission)return action();
                 Mob[] previousActors;
                 lock(client.playerData.missionMobs)previousActors=client.playerData.missionMobs.ToArray();
@@ -69,11 +66,7 @@ namespace hds
                 {
                     try
                     {
-                        MissionTickQaDiagnostics.Record(client,"mutate-before-action");
-                        T result=action();
-                        MissionTickQaDiagnostics.Record(client,"mutate-after-action-before-save");
-                        Save(client);
-                        MissionTickQaDiagnostics.Record(client,"mutate-after-save");
+                        T result=action();Save(client);
                         output.Commit();client.FlushQueue();return result;
                     }
                     catch(Exception ex)

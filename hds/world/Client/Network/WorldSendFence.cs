@@ -10,8 +10,6 @@ internal sealed class WorldSendFence
     private long epoch;
     private bool resetPending;
 
-    // Non-atomic QA observation only; never use this tuple as a transport authority.
-    internal (long Epoch,bool ResetPending) DiagnosticObservation => (Interlocked.Read(ref epoch),Volatile.Read(ref resetPending));
     public long Capture() { lock (sync) return epoch; }
     // Observation only, not serialized execution. Read the epoch on both sides
     // so an entire reset/resume between reads cannot validate an older lifetime.
