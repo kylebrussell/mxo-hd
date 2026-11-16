@@ -7,7 +7,7 @@ public static class NpcInteriorComputerState
     public sealed record Observation(Capability Capability,uint State);
     public sealed record DoorObservation(ViewCreation View,Capability Capability,uint State);
     public sealed record Teleport(long Life,int Section,int Offset,byte Id,ushort Sector,ushort Region,ushort Polygon,float X,float Y,float Z,string Raw);
-    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||(MissionInteriorDoorTypes.IsSupported(goid)||goid==417||goid==419);
+    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||MissionSites.Furniture.Contains(goid)||(MissionInteriorDoorTypes.IsSupported(goid)||goid==417||goid==419);
     sealed class Live
     {
         public required ViewCreation View;public required string Raw;public int Birth;public uint State;public bool Known=true;

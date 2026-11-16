@@ -13,5 +13,6 @@
     <ProjectReference Include="..\..\hds\Hardline Dreams MxO server.csproj" />
     <ProjectReference Include="..\PacketResearch\PacketResearch.csproj" />
     <EmbeddedResource Include="Fixtures/mission-midphase-return.native-batch.json" />
+    <EmbeddedResource Include="Fixtures/native-bound-furniture-1450.capture.json" />
   </ItemGroup>
 </Project>
