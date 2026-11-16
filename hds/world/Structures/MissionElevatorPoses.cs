@@ -93,6 +93,7 @@ namespace hds
         internal static Overlay ResolveOverlay(MissionProgress progress,StaticWorldObject raw,MissionElevatorAnchors.Dataset dataset=null)
         {
             if(progress==null||raw==null)return new Overlay(OverlayKind.Legacy);
+            var street=MissionStreetCoverage.Overlay(progress,raw);if(street!=null)return street;
             var npc=MissionNpcInteriorAdmission.Overlay(progress,raw);if(npc!=null)return npc;
             Overlay resolved=null;
             foreach(var site in progress.sites)
@@ -139,7 +140,7 @@ namespace hds
                 if(!ReferenceEquals(client.playerData,owner))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorOwner");
                 var progress=owner.missionProgress;var snapshot=ResolveOverlay(progress,raw,dataset);
                 if(!ReferenceEquals(client.playerData,owner)||!ReferenceEquals(owner.missionProgress,progress))return new Overlay(OverlayKind.Refused,refusal:"ChangedMissionDoorProgress");
-                if(snapshot.Kind!=OverlayKind.Refused&&MissionNpcInteriorAdmission.OwnsDoor(progress,raw))
+                if(snapshot.Kind!=OverlayKind.Refused&&(MissionNpcInteriorAdmission.OwnsDoor(progress,raw)||MissionStreetCoverage.OwnsDoor(progress,raw)))
                 {
                     var stamp=new MissionRideStamp(client,progress);
                     if(!stamp.Current)return new Overlay(OverlayKind.Refused,refusal:"StaleNpcDoorLifetime");
@@ -160,12 +161,14 @@ namespace hds
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,StaticWorldObject used)
         {
+            if(MissionStreetCoverage.ForSite(progress,site)!=null)return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
             if(MissionNpcInteriorAdmission.ForSite(progress,site)!=null)return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
             if(progress.ElevatorFor(site)==null)return MissionSites.InShaft(site,used);
             return used!=null&&(site.shaft.Any(door=>door.mxoStaticId==used.mxoStaticId)||InShaft(progress,site,used.pos_x,used.pos_z));
         }
         internal static bool InShaft(MissionProgress progress,MissionSite site,double x,double z)
         {
+            var street=MissionStreetCoverage.ForSite(progress,site);if(street!=null)return new[]{street.Context.Floor.Position,street.Context.Lobby.Position}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
             var npc=MissionNpcInteriorAdmission.ForSite(progress,site);
             if(npc!=null)return new[]{npc.Floor.Position,npc.Lobby.Position}.Any(p=>Math.Pow(x-p[0],2)+Math.Pow(z-p[2],2)<=900*900);
             var witness=progress.ElevatorFor(site);if(witness==null)return MissionSites.InShaft(site,x,z);

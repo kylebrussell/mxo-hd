@@ -194,6 +194,8 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 def server(i):
     if i == 1149:
+        if any(m['consumer'] != 'total only' for m in coverage[i].get('buff_stats', [])):
+            return "OURS: capped Initiative1044 adds attack-base points once in NPC/PvP interlock, excluding escape/freefire/freecast; sourced20s health snapshot, IS10/reuse90/buffer10; retail gameplay caller unresolved; [policy](DESPERATION-INITIATIVE.md)"
         return "COSMETIC:20s health/InitiativeBonus snapshot1044; IS10/reuse90/buffer10; expiry/death/unload cleanup; no recovered combat consumer; [source boundary](DESPERATION.md)"
     if i == 7:
         return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
@@ -209,6 +211,8 @@ def server(i):
         parts.append(r['utility'])
     if i in UTILITY_NOTES:
         parts.append(UTILITY_NOTES[i])
+    if r.get('multifighting'):
+        parts.append(r['multifighting'])
     if r['cost_source'] != 'fallback':
         parts.append(f"IS {r['cost']} ({r['cost_source']})")
     if r['cooldown']:
@@ -231,6 +235,8 @@ def server(i):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):
         parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
+    if r.get('sharpshooter'):
+        parts.append(r['sharpshooter'])
     if r.get('health_callback'):
         parts.append(r['health_callback'])
     if r['healing'] and not r.get('health_callback'):
@@ -248,7 +254,8 @@ def server(i):
         if r.get('tactical_toggle'):
             parts.append('script tactical toggle; precise/energized combat attack and damage multipliers; mutual refusal')
         elif i == 49:
-            parts.append('Gaussian Blur kBlur0x40 self/watchers/late views; stored Combat Evasion+25 has no engagement consumer')
+            entry_consumer = any(m['stat'] == 520 and m['consumer'] != 'total only' for m in (r.get('buff_stats') or []))
+            parts.append('Gaussian Blur kBlur0x40 self/watchers/late views; ' + ('OURS direct520+25 raises deterministic new PvP entry resistance only under current217; no retail contest/shield HP' if entry_consumer else 'stored Combat Evasion+25 has no engagement consumer'))
         elif r['buff_source'] in ('stored character level', 'stored learned level'):
             consumers = sorted({m['consumer'] for m in r['buff_stats'] if m['consumer'] != 'total only'})
             parts.append('buff records + ' + ('learned-level' if r['buff_source'] == 'stored learned level' else 'caster-level') + ' stat snapshot; ' + (', '.join(consumers) if consumers else 'numeric totals only; gameplay consumer missing'))
@@ -310,10 +317,12 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
-    if i in PETS or r.get('proxy_technician'):
+    if i in PETS or r.get('proxy_technician') or r.get('sharpshooter') or r.get('multifighting'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if i in (49, 1149) or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
+    if i == 49 and not any(m['stat'] == 520 and m['consumer'] != 'total only' for m in (r.get('buff_stats') or [])):
+        return 'cosmetic'
+    if (i == 1149 and not any(m['consumer'] != 'total only' for m in (r.get('buff_stats') or []))) or (r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats'])):
         return 'cosmetic'
     if r.get('stealth_shield') or r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'

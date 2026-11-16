@@ -59,7 +59,7 @@ namespace hds
         {
             bool forced=TryQaDraw(source,ability,out int a,out int d);
             if(!forced){a=Random.Shared.Next(32768);d=Random.Shared.Next(32768);}
-            var result=Evaluate(AbilityStats.Player(source,342),defense,AbilityStats.Player(source,637),cd,(int)source.playerData.combatTactic,tactic,a,d);
+            var result=Evaluate(AbilityStats.ViralAccuracy(source),defense,AbilityStats.Player(source,637),cd,(int)source.playerData.combatTactic,tactic,a,d);
             result.Forced=forced;return result;
         }
         private static bool Visible(WorldClient c,ulong entity)

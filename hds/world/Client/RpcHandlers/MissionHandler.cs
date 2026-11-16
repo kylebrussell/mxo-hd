@@ -46,6 +46,7 @@ namespace hds
                 {
                     return false;
                 }
+                MissionProgress streetProgress=null;MissionStreetAdmission.Plan streetPlan=null;
                 MissionProgress openFloorProgress=null;MissionOpenFloorAdmission.Plan openFloorPlan=null;
                 MissionProgress npcProgress=null;MissionNpcInteriorAdmission.Plan npcPlan=null;
                 if(MissionOpenFloorAdmission.Requires(mission.phases.FirstOrDefault()))
@@ -58,7 +59,7 @@ namespace hds
                         client.FlushQueue();return false;
                     }
                 }
-                else if(MissionNpcInteriorAdmission.Candidate(mission.phases.FirstOrDefault()))
+                else if(MissionNpcInteriorAdmission.Candidate(mission,0))
                 {
                     npcProgress=new MissionProgress(mission);
                     if(!MissionNpcInteriorAdmission.TryPrepare(client,npcProgress,0,out npcPlan,out string refusal)||npcPlan!=null&&!npcPlan.BeforeCurrent(client))
@@ -67,12 +68,19 @@ namespace hds
                         return false; // No instance/team/owner/preview/item/output change on failed initial admission.
                     }
                 }
+                if(MissionStreetCoverage.Enroll(mission)&&MissionStreetCheckpoint.KindFor(mission,0)=="Objects"&&!MissionOpenFloorAdmission.Requires(mission.phases[0]))
+                {
+                    streetProgress=new MissionProgress(mission);
+                    if(!MissionStreetAdmission.TryPrepare(client,streetProgress,0,out streetPlan,out string refusal)||!streetPlan.BeforeCurrent(client))
+                    {Output.WriteDebugLog("[MISSION] Ordinary street acceptance refused before mutation: "+refusal);return false;}
+                }
                 SocialHandler.EnsureTeam(client);
 
                 ushort previousInstance=data.missionInstanceCounter;
                 data.missionInstanceCounter++;
                 // Acceptance, NPCs and briefing publish only after their durable checkpoint (retail's order).
-                if(npcPlan!=null) {if(!MissionRuntime.StartNpcInterior(client,npcProgress,npcPlan,txn)){data.missionInstanceCounter=previousInstance;return false;}}
+                if(streetPlan!=null){if(!MissionRuntime.StartStreet(client,streetProgress,streetPlan,txn)){data.missionInstanceCounter=previousInstance;return false;}}
+                else if(npcPlan!=null) {if(!MissionRuntime.StartNpcInterior(client,npcProgress,npcPlan,txn)){data.missionInstanceCounter=previousInstance;return false;}}
                 else if(openFloorPlan==null) {if(!MissionRuntime.Start(client,mission,txn))return false;}
                 else if(!MissionRuntime.StartOpenFloor(client,openFloorProgress,openFloorPlan,txn)) {data.missionInstanceCounter=previousInstance;return false;}
                 UtilityAbilities.OnMissionAccepted(client);

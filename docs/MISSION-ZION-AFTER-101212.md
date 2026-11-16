@@ -1,3 +1,5 @@
+> Source-only refresh onto master `4cbf7365` (public-access269 +270): shared runtime/data and observers retained from master; story QA retained from066acb2e. The historical401.2s whole-five and mode proof below belong to43e847ff. This refreshed producer has no new local build, fresh-server or native qualification; HOLD pending CI and review.
+
 # Zion critical missions after101212 — shared room/door refresh
 
 Current preparation is based on actual master `08d961eb47810f754d3ab4cd55cd23f7dcc8b897`, preserving published PR241 `527913f3` ancestry through normal merges. It composes reviewed249 source preselection/cache,250 NPC-v2 measured entry,253 room roles,254/256 ordinary door/model handling,251 exact V1 restore and255 committed escort exit. No mission/site/name patch, XML/transcript change, range/budget/timer change or easier source/seed is added.

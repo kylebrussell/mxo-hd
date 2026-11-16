@@ -294,6 +294,7 @@ namespace hds
             internal virtual uint ConditionFlags => 0;
             internal virtual bool Alive => true;
             internal virtual int Determination => Math.Max(0, Effects.Total(575));
+            internal virtual int DeterminationBonus => DeflectCode.CappedBonus(Effects.Total(1047));
         }
 
         // ---- the server tick ----
@@ -499,7 +500,8 @@ namespace hds
             if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
                 foreach (Active m in mods)
                     if(effect.Ability!=AbilityReverseBulldog.Ability || m.Proc!=TempMods.Proc.Terminal)
-                        m.Seconds = AbilityControlDurations.Mitigate(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination);
+                        m.Seconds = DeflectCode.Duration(m.Seconds, caster.playerInstance.Level.getValue()[0], subject.Determination,
+                            subject.DeterminationBonus,m.Proc==TempMods.Proc.State&&m.Kind==TempMods.KindState?m.Target:(ushort)0);
 
             Active immunity = null;
             if (subject.Effects.Has(TempMods.ISDrainTargetAbility))
@@ -650,6 +652,7 @@ namespace hds
         internal override uint ConditionFlags => client.playerData.conditionStateFlags;
         internal override bool Alive => !client.playerData.isDead && !client.playerData.duelDeath;
         internal override int Determination => AbilityControlDurations.Determination(client);
+        internal override int DeterminationBonus => DeflectCode.PlayerBonus(client);
         private readonly WorldClient client;
         private readonly Dictionary<UInt16, KeyValuePair<int, double>> buffEnds = new Dictionary<UInt16, KeyValuePair<int, double>>();
 
@@ -838,6 +841,7 @@ namespace hds
                 Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " heals " + Name + " for " + damage);
                 return true;
             }
+            damage = PunishingBlows.Player(mod.Caster, client, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Player(mod.Caster, client, mod.Parent, damage, mod.DamageType);
             UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
@@ -974,6 +978,7 @@ namespace hds
             {
                 return false;
             }
+            damage = PunishingBlows.Npc(caster, mob, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Npc(caster, mob, mod.Parent, damage, mod.DamageType);
             // Each target keeps its DOT even when the caster's current fight changes. Death claiming and rewards

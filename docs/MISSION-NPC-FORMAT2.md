@@ -18,3 +18,11 @@ Validation before runtime integration:370/370 strict scene reads;25 focused cont
 4. Prefer an actual newly covered scene as evidence. If normal selection yields an older pilot, qualify that control rather than forcing another selection. Missing hover/passage/actors is a STOP with PacketLog and checkpoint retained. No missionfloor, TP, hidden Open or progress/item grants count.
 
 The normal `mission-npc-interior-route` headless case remains the201201 Take/carry/Give/completion control and must use its mandatory expected-source environment. Its independent proof reader handles format2 raw local floors and refuses unproved/partial portal steps. Native collision, render/hover and physical passage still require Claude's actual client check.
+
+## Actual normal-path result
+
+Frozen producer `01234d73` passed `mission-npc-interior-route` in88.0s. Normal201201 selected newly covered scene879: floor key36f0045c, node32/26, Standing(-2600,2895,-17300); lobby node35/10, Standing(-2600,95,-17300). The route ordinarily opened own-GO365 door36f0045e and reached Ophiuchi at measured marker36f006f9 (-4450,2895,-18300). This was the unchanged normal origin/layout profile, with no forced scene/source.
+
+The earned6783 disk remained owner1001/slot1/rawCount0 before and after33.006s normal reservation wait and relog. Give completed with one168042XP/133350info award, NULL active payload, one completion and next201202. Raw checkpoints/RPC/views and parserProblems[] are retained in Temp. The live map preflight took3398ms. The ordinary8098/8099 info exchange occurred within the same logged second (1s log resolution; no finer latency claim).
+
+The dedicated `mission-npc-scene-coverage` actual bootstrap also passed: its real plan/seeding/authentication/state serialization and inherited no-op AfterStart ran on one disposable server. It did not execute the101213 story or prove client Actions/render/passage. Both schemas were independently confirmed absent;19 gameplay and8 bootstrap observed process identities were gone. Polling does not establish a complete history of unobserved short-lived processes. Native hover/walking remain unproved and use the checklist above. The docs descendant does not relabel the01234 runtime producer.

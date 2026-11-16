@@ -62,6 +62,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\data\mission_street_access\1\public-index.json" LogicalName="hds.MissionPublicDoors.Index" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\Config.xml.dist">
       <Link>Config.xml.dist</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
