@@ -9,7 +9,7 @@ namespace hds
     internal static class MissionOpenFloorPhasePlanner
     {
         // OURS computational admission policy, not a retail geometry or feasibility claim.
-        internal const int SearchPolicyVersion=4;
+        internal const int SearchPolicyVersion=5;
         internal sealed class Limits
         {
             internal int BodyNodes {get;} internal int RouteGraphs {get;}
@@ -72,38 +72,69 @@ namespace hds
             }
             string lastRefusal="NoDisjointBodySet",exhausted=null;G.Result[] accepted=null;
             var testedSets=new HashSet<string>(StringComparer.Ordinal);
-            foreach(int wave in new[]{0,1})foreach(var order in Orders(inputs.Count))
+            foreach(int wave in new[]{0,1})
             {
-                attempts++;var bodies=new G.BodyCandidate[inputs.Count];
-                bool Search(int depth)
+                // Each existing order is a resumable DFS. One complete body set per turn
+                // prevents the first order's final object from consuming every route graph.
+                // The first trial is unchanged. All streams share the SAME work counters.
+                var orders=Orders(inputs.Count).ToArray();
+                var streams=new List<IEnumerator<G.BodyCandidate[]>>();
+                IEnumerable<G.BodyCandidate[]> Sets(int[] order)
                 {
-                    if(depth==order.Length)
+                    var bodies=new G.BodyCandidate[inputs.Count];
+                    IEnumerable<G.BodyCandidate[]> Search(int depth)
                     {
-                        // A wave/order may revisit the exact immutable body set. Its full graph result
-                        // cannot change, so do not charge another graph or crowd out mixed sets.
-                        string key=string.Join(";",bodies.Select(b=>BitConverter.DoubleToInt64Bits(b.Centre.X)+":"+
-                            BitConverter.DoubleToInt64Bits(b.Centre.Y)+":"+BitConverter.DoubleToInt64Bits(b.Centre.Z)));
-                        if(!testedSets.Add(key))return false;
-                        if(measured.RouteGraphs>=limits.RouteGraphs){exhausted="SearchExhausted:RouteGraphs";return false;}measured.RouteGraphs++;
-                        if(G.RouteBodySet(bodies,out var result,out var reason)){accepted=result;return true;}
-                        lastRefusal=reason;return false;
+                        if(depth==order.Length){yield return (G.BodyCandidate[])bodies.Clone();yield break;}
+                        int index=order[depth];
+                        foreach(var body in candidates[inputs[index].ObjectId].Enumerate(wave==0))
+                        {
+                            if(wave==0&&!body.RootReachableCentre)continue;
+                            if(measured.BodyNodes>=limits.BodyNodes){exhausted="SearchExhausted:BodyNodes";yield break;}
+                            measured.BodyNodes++;
+                            if(order.Take(depth).Any(i=>!G.BodiesClear(body,bodies[i])))continue;
+                            bodies[index]=body;
+                            foreach(var set in Search(depth+1))yield return set;
+                            if(exhausted!=null)yield break;
+                        }
+                        bodies[index]=null;
                     }
-                    int index=order[depth];
-                    var sequence=candidates[inputs[index].ObjectId];
-                    foreach(var body in sequence.Enumerate(wave==0))
-                    {
-                        if(wave==0&&!body.RootReachableCentre)continue;
-                        if(measured.BodyNodes>=limits.BodyNodes){exhausted="SearchExhausted:BodyNodes";return false;}measured.BodyNodes++;
-                        if(order.Take(depth).Any(i=>!G.BodiesClear(body,bodies[i])))continue;
-                        bodies[index]=body;if(Search(depth+1))return true;if(exhausted!=null)return false;
-                    }
-                    bodies[index]=null;return false;
+                    foreach(var set in Search(0))yield return set;
                 }
-                if(Search(0))
+                foreach(var order in orders)streams.Add(Sets(order).GetEnumerator());
+                var finished=new bool[streams.Count];bool remaining=true;
+                try
                 {
-                    plan=new Plan(inputs.Select((input,i)=>(input.ObjectId,Result:accepted[i])).ToDictionary(x=>x.ObjectId,x=>x.Result),order.Select(i=>inputs[i].ObjectId),attempts,watch.ElapsedMilliseconds,measured.BodyNodes,measured.RouteGraphs,measured.StaticRootGraphs);return true;
+                    while(remaining)
+                    {
+                        remaining=false;
+                        for(int i=0;i<streams.Count;i++)
+                        {
+                            if(finished[i])continue;
+                            if(!streams[i].MoveNext())
+                            {
+                                finished[i]=true;
+                                if(exhausted!=null){refusal=exhausted;return false;}
+                                continue;
+                            }
+                            remaining=true;attempts++;
+                            var bodies=streams[i].Current;
+                            string key=string.Join(";",bodies.Select(b=>BitConverter.DoubleToInt64Bits(b.Centre.X)+":"+
+                                BitConverter.DoubleToInt64Bits(b.Centre.Y)+":"+BitConverter.DoubleToInt64Bits(b.Centre.Z)));
+                            if(!testedSets.Add(key))continue;
+                            if(measured.RouteGraphs>=limits.RouteGraphs){refusal="SearchExhausted:RouteGraphs";return false;}
+                            measured.RouteGraphs++;
+                            if(G.RouteBodySet(bodies,out var result,out var reason))
+                            {
+                                accepted=result;
+                                plan=new Plan(inputs.Select((input,j)=>(input.ObjectId,Result:accepted[j])).ToDictionary(x=>x.ObjectId,x=>x.Result),
+                                    orders[i].Select(j=>inputs[j].ObjectId),attempts,watch.ElapsedMilliseconds,measured.BodyNodes,measured.RouteGraphs,measured.StaticRootGraphs);
+                                return true;
+                            }
+                            lastRefusal=reason;
+                        }
+                    }
                 }
-                if(exhausted!=null){refusal=exhausted;return false;}
+                finally{foreach(var stream in streams)stream.Dispose();}
             }
             refusal="NoWholePhasePlacement:"+lastRefusal+";orders="+attempts;return false;
         }
