@@ -33,6 +33,24 @@ namespace hds
             if(!previous.ContainsKey(end))return false;var result=new List<Node>();for(Node? n=end;n.HasValue;n=previous[n.Value])result.Add(n.Value);
             result.Reverse();path=result.ToArray();return true;
         }
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<(Node,double,uint),HashSet<Node>> streetRealms=new System.Collections.Concurrent.ConcurrentDictionary<(Node,double,uint),HashSet<Node>>();
+        internal bool StreetRealm(MissionNpcInteriorEntry saved,NavLocation at,uint shaft)
+        {
+            double floor=saved.Standing[1]-95;var root=new Node(saved.Node.Region,saved.Node.Polygon);
+            if(at.sector!=document.Sector||!at.indoors||!Same(at.floorY,floor))return false;
+            var nodes=streetRealms.GetOrAdd((root,floor,shaft),key=>
+            {
+                var found=new HashSet<Node>();var queue=new Queue<Node>();if(!Level(root,floor))return found;found.Add(root);queue.Enqueue(root);
+                while(queue.Count!=0)
+                {
+                    Node n=queue.Dequeue();foreach(Edge edge in Poly(n).Edges)if(LocalReference(edge))Add(new Node(n.Region,edge.Neighbor));
+                    foreach(Portal p in Outgoing(n).Where(p=>PortalUsable(p)&&p.DoorKeys.Length==0&&!p.DoorKeys.Contains(shaft)))Add(new Node(p.TargetRegion,p.TargetPolygon));
+                    void Add(Node next){if(Level(next,floor)&&found.Add(next))queue.Enqueue(next);}
+                }
+                return found;
+            });
+            return nodes.Contains(new Node(at.region,at.polygon));
+        }
         // This proves only the counted reciprocal public opening, never collision/pick success.
         private bool StreetOpening(MissionStreetAccessData outside,Portal portal,double floor)
         {

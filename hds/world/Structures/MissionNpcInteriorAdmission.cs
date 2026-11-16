@@ -34,6 +34,7 @@ namespace hds
             internal void RequireStaging(WorldClient c)
             {
                 if(Pending!=null&&!Adopted)throw new MissionCheckpointException("Refused NPC pending cannot stage");
+                if(Pending!=null&&Pending.Street.ValueKind!=JsonValueKind.Undefined)MissionStreetCheckpoint.Staging(Progress,Pending.Street,Selected.Site);
                 if(!WorldCurrent(c)||!ReferenceEquals(owner.missionProgress,Progress)||!ReferenceEquals(owner.activeMission,Progress.mission)||
                     Progress.phaseIndex!=phase||Progress.persistenceId!=identity||Progress.startedAt!=started||
                     (Pending!=null&&(Progress.phaseIndex!=Pending.Selection.Phase||Pending.Selection.Identity!=Progress.persistenceId||Pending.Selection.Started!=Progress.startedAt))||
@@ -66,6 +67,12 @@ namespace hds
                 {plan=Refused(c,p,phase,selected,refusal);return false;}
                 bool accepted=MissionNpcInteriorPlanning.Prepare(c,p,phase,selected.Site,provider,out _,out var pending,out refusal,domain);
                 if(!before.Current(c)){plan=null;refusal="StaleNpcBeforeAdmission";return false;}
+                if(accepted&&pending!=null)
+                {
+                    accepted=MissionStreetCoverage.TryPrepare(p,phase,selected.Site,out var street,out refusal);pending=pending.WithStreet(street);
+                    if(!accepted)pending=pending.WithRefusal(refusal);
+                    if(!before.Current(c)){plan=null;refusal="StaleStreetNpcOwner";return false;}
+                }
                 plan=pending==null?Refused(c,p,phase,selected,refusal):new Plan(c,p,phase,selected,pending);return accepted;
             }
             if(selected.Site==null)return true;
@@ -88,6 +95,7 @@ namespace hds
             if(exact==null||phase!=p.phaseIndex+1||!p.AllDone||!p.waitingForExit||pending.Selection.Phase!=phase||pending.Selection.Identity!=p.persistenceId||pending.Selection.Started!=p.startedAt)return false;
             plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(exact,null),pending,true);
             if(!plan.BeforeCurrent(c))return false;
+            if(!MissionStreetCoverage.Replay(p,pending.Street,out refusal))return false;
             if(pending.Witness==null){refusal=pending.Refusal;return false;}
             MissionNpcInteriorCheckpoint.ValidateGeometry(p,new MissionNpcInteriorEnvelope(2,MissionNpcInteriorPlanning.Kind,pending,null,Array.Empty<MissionNpcInteriorWitness>()),provider);
             refusal=null;return plan.BeforeCurrent(c);

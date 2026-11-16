@@ -60,6 +60,10 @@ namespace hds
         }
         private static bool Entry(MissionNpcInteriorEntry entry)=>entry!=null&&Digest(entry.EvidenceDigest)&&!string.IsNullOrWhiteSpace(entry.RawDoorJson)&&
             entry.Position?.Length==3&&entry.Standing?.Length==3&&entry.Position.All(double.IsFinite)&&entry.Standing.All(double.IsFinite)&&entry.Quaternion?.Length==32&&entry.Quaternion.All(Uri.IsHexDigit);
+        internal static bool Valid(Context c)=>c!=null&&c.Refusal==null&&Digest(c.Key)&&c.Key==Fingerprint(c)&&Digest(c.StreetDigest)&&Entry(c.Floor)&&Entry(c.Lobby)&&
+            c.Door!=null&&MissionInteriorDoorTypes.IsSupported(c.Door.Goid)&&c.Door.Position?.Length==3&&c.Door.Position.All(double.IsFinite)&&c.Door.Quaternion?.Length==32&&c.Door.Quaternion.All(Uri.IsHexDigit)&&
+            c.Outside?.Length>0&&c.Inside?.Length>0&&c.Inside[c.Inside.Length-1].Equals(c.Lobby.Node);
+        internal bool Allows(MissionSite site,bool npc)=>site!=null&&sites.TryGetValue(site,out var row)&&(npc?row.Item2:row.Item3).Refusal==null;
         internal bool TryGet(MissionSite site,bool npc,out Context context,out string refusal)
         {
             context=null;refusal="MissingStreetContextSite";

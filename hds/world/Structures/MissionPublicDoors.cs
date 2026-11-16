@@ -106,8 +106,12 @@ namespace hds
         internal static Result Resolve(StaticWorldObject raw)
         {
             if(raw==null||raw.metrId!=committed.World||!committedKeys.Contains(raw.mxoStaticId))return new Result(Kind.Legacy);
+            return CurrentDataset().Resolve(raw);
+        }
+        internal static Dataset CurrentDataset()
+        {
             string street=DataLoader.DataPath("mission_street_access","1"),interior=DataLoader.DataPath("mission_interior_evidence_v2","1");
-            return datasets.GetOrAdd(Path.GetFullPath(street)+"|"+Path.GetFullPath(interior),_=>new Dataset(street,interior)).Resolve(raw);
+            return datasets.GetOrAdd(Path.GetFullPath(street)+"|"+Path.GetFullPath(interior),_=>new Dataset(street,interior));
         }
     }
 }

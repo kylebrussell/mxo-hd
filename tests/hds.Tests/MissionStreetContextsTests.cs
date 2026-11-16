@@ -4,13 +4,13 @@ using E=hds.MissionInteriorEvidence;
 namespace hds.Tests;
 public sealed partial class MissionStreetAccessTests
 {
-    static (MissionSite Site,MissionStreetContexts.Context Context) StreetContext()
+    static (MissionSite Site,MissionStreetContexts.Context Context) StreetContext(string kind="Npc")
     {
         var c=Load(209);var floorRaw=Raw(c.Raw,0x0d100020);var lobbyRaw=Raw(c.Raw,0x0d100028);
         var floor=Lobby(c.Evidence,c.Interior,0x0d100020,47,193,28500,1295,14200);var lobby=Lobby(c.Evidence,c.Interior,0x0d100028,49,283,28500,495,14200);
         Assert.True(c.Evidence.TryStreetAccess(c.Outdoor,lobby,0x0d100028,key=>Raw(c.Raw,key),out var proof,out var why),why);
         var site=new MissionSite{metrId=1,elevatorDoor=floorRaw,lobbyDoor=lobbyRaw,minX=27000,maxX=30000,minZ=11000,maxZ=14900,floorY=1346};site.shaft.AddRange(new[]{lobbyRaw,floorRaw});
-        return(site,MissionStreetContexts.FromProof("Npc",MissionNpcDomainCertificates.Entry(floorRaw,c.Evidence,floor),MissionNpcDomainCertificates.Entry(lobbyRaw,c.Evidence,lobby),proof));
+        return(site,MissionStreetContexts.FromProof(kind,MissionNpcDomainCertificates.Entry(floorRaw,c.Evidence,floor),MissionNpcDomainCertificates.Entry(lobbyRaw,c.Evidence,lobby),proof));
     }
     static MissionStreetContexts.Document ContextDocument(MissionSite site,MissionStreetContexts.Context context,string inputs)
     {
