@@ -1,6 +1,29 @@
 ﻿# Flood critical wave after A Special Case
 
-## Source-only PR274 furniture integration (unqualified)
+## Current qualified candidate: ce6 / AAC furniture core
+
+The normal merged source is `ce6fc2d6e715d8039d8457bb71c496765cc5133b`; actual binaries were compiled at `a80eacdbf05591adc1cd7144bedc7ff0cb9cd283`, and ce6 changes only one stale test expectation. Four actual Debug/Release NativeQa and direct Headless builds passed with all four hardlink properties. Both configurations' selected/default plans and build-info, and exact-one case discovery passed. Affected tests:790 passed/one stale dependency-label assertion failed; the corrected assertion then passed with project references disabled and all six DLL hashes unchanged. Source CI passed7169 .NET +12/47 Python checks. The initial546 compile failure and a80 metadata failure remain retained. Final docs CI is pending for this documentation commit.
+
+**New whole-five proof:** one normal `merovingian-after-301207` case passed470.3s (held process471.27s, exit0). All301208–301212 receipts equal1, final payloadNULL, and next ordinary offer is Mod Box301214. Three current sessions report parser problems0. ComputerParts6827 is independently present in the owned inventory before normal logout and after login, after33.01s reservation release; the subsequent actual Give removes it. Completed relog preserves the ledger and does not replay completion. Mission awards343750XP/455000information, fighting192040XP and corpse loot43250information produce final296618290XP/499250information from296082500XP/1000information. No selected progress, items or rewards were seeded.
+
+The normal pool selected GO326 for301210's optional Search, then GO1433/source933233287 in301211. Actual V3GO1433 has native centre66440/1040/-10100, fixed Standing66360/1095/-10100 and28 saved nodes in sector890/region22. Actual ordinary car arrival was SSEQ526/ACK526 before the body Open. This route's `Doors` is empty; the whole case's required internal-door positive belongs to its older326 route. Core274's separate captured1450 gameplay proof is not relabeled as this whole-chain result. Movement aids along saved points remain headless aids, not native walking, collision, picking or rendering proof.
+
+A separate actual selected-mode bootstrap passed33.80s/held exit0: one server, one mode, zero helpers, zero custom hooks and one inherited no-op hook. It proves real seed/authentication and state serialization only, not more gameplay or an all-mode matrix. Whole schema `mxotest_run_1_d53e4384de` and bootstrap schema `mxotest_bootstrap_fa062ec687` independently returnedCOUNT0. All277 whole and8 bootstrap recorded canonical process identities are gone. The first whole audit saw one numeric PID reuse; root's later audit saw two, all different creation identities left untouched. The600ms inventory may miss short-lived children; this is not complete process-history coverage.
+
+Evidence retained under `Temp/mxo-pr245-core274-source-integration-20261116`:
+
+- Whole raw `Temp/mxo-merv-after-301207-mxotest_run_1_d53e4384de.json`: SHA256`B4CBBE0ED71A4C643E3E47C526A013F4C6CE67747A14012F7354D0149A595A3E`.
+- Combined independent proof `FINAL-ce6-independent-proof.json`: SHA256`70696033352FFA091C6E2C0163279DF4EA85FC3AC438031561C89D2520F0A3AF`.
+- Bootstrap `bootstrap-ce6fc2d6-once/actual-bootstrap/summary.json`: SHA256`58602DCBD80714B20C3CDAD6EC71E426E3719CD59305EFF23D81C058A3CC1384`.
+- Actual newest source is **Release** `4765C4432F8DD78434DF00465CE6BC7DB4B619AF6B8AA17E8ABCA62E832CA6FC`; Release driver`E35874AC53360154ED8FFF5843BFEBAB2FE47DDF723ACF3E3D81AB425BFF78A3`, runner`8F9D756C5AE39291D427BF27780B520276F5152EE45AD25DF3B2E4787F638D67`. Set `MXO_MERV_AFTER301207_SOURCE_SHA256` to that source hash for the headless case; do not substitute historical binaries.
+
+Dependencies are the composed generic PR241 Street/bound326/schema-history contracts and PR274/AAC native furniture admission/pose/routes, plus retained shared PR213 QA. This is a candidate for native testing, not a new native pass. Existing primary mechanic/reward reconstructions below remain explicit; known historical Tabor/native entry HOLD is not erased. Root alone controls READY after the final docs CI.
+
+### One-pass native checklist
+
+Reset only the CSR110 disposable fixture with NativeQa mode `merovingian-after-301207`; this resets its previous test progress/items. Start from normal Mara and Flood Call > Critical. Seeded receipts are only the27 earlier missions. Do not load captured active progress or reroll a source. Play301208–301212 once with ordinary public street entry, car up/down, required own-door Open and current NPC/prop radials. Inspect each bound object before Open, then use actual Search/Take/Hack, normal combat and corpse Loot. Carry ComputerParts6827 through ordinary Quit, wait at least33s for normal reservation release, relog and Give to Alvaro. Confirm one completion each, next Mod Box301214, unchanged completed-relog wallet and ordinary car/public exit when still indoors. Stop and report a missing native hover, passage, radial, mandatory goal or item; headless movement is not a substitute. No full retail mechanics, unaided survival or walking claim follows from the headless result.
+
+## Historical source-only PR274 furniture integration (unqualified)
 
 The current continuation normal-merges reviewed core `aac33496ef2afe609eb17adc5b79f850737a8077`. The prior `7f1940cd` producer remains retained with a verified byte-copy archive of45 primary binaries under `Temp/mxo-pr245-core274-source-integration-20261116/primary`; its failed gameplay attribution below is unchanged. No local build, tests or fresh whole-chain proof has run for this integration. DRAFT/HOLD remains.
 
