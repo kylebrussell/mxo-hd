@@ -32,6 +32,7 @@ public class MissionOutsideContinuationTests
         var other=CurrentLife();Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequireCurrent(token,State(),other.Life));
         first.Log.Observe(true,null,1,Array.Empty<ViewCreation>());Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequireCurrent(token,State(),first.Log.Snapshot()));
     }
+
     [Fact] public void NoRequestOrDuplicateRequestCannotSupplyTransportAuthority()
     {
         var b=new MissionOutsideUploadProof.RequestBoundary();Assert.Throws<InvalidDataException>(b.RequireMarked);
@@ -45,4 +46,5 @@ public class MissionOutsideContinuationTests
         Assert.Throws<InvalidDataException>(()=>MissionOutsideUploadProof.RequirePhysicalTrip("[MISSION] Teleported to 3700,1295,13100",target));
         MissionOutsideUploadProof.RequirePhysicalTrip("[MISSION] Teleported to 3700,95,13100",target);
     }
+
 }
