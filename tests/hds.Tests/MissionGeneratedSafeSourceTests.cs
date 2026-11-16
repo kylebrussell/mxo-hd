@@ -29,6 +29,14 @@ public class MissionGeneratedSafeSourceTests
         Assert.Equal(new ushort[]{1408,1410},choices.Select(c=>MissionSites.Goid(c.Spot)));Assert.Equal(new ushort[]{3,552},choices.Select(c=>c.Goid));Assert.Equal(2,rng.Draws);
         Assert.Equal((ushort)1416,MissionStaging.SelectObjects(phase,site,new Keys()).Last().Goid); // legacy API deliberately unchanged
     }
+    [Fact] public void FreshStageUnionUsesOnlySourcePoolChoicesOnce()
+    {
+        var phase=Phase("Computer","Safe");var site=Site(1410,1408);var random=new Keys();
+        var choices=MissionStaging.StageSourceChoices(phase,site,random,null!,0);
+        Assert.Equal(2,random.Draws); // Calling then discarding either selector would consume four draws.
+        Assert.Equal(new ushort[]{1408,1410},choices.Select(c=>MissionSites.Goid(c.Spot)));
+        Assert.Equal(new ushort[]{3,552},choices.Select(c=>c.Goid)); // Old generic Safe path would yield1416.
+    }
     [Fact] public void AuthoredOrderAndSameKindPriorityStillApplyWhenCapacityAllows()
     {
         var phase=Phase("Safe","Computer");var site=Site(1408,1410,1407);var choices=MissionStaging.SelectObjectsFromPools(phase,site,new Keys(),Pools(phase,site)).ToArray();

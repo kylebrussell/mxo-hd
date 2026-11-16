@@ -709,6 +709,17 @@ namespace hds
         }
 
 
+        internal bool IsCurrentEndpointOwner
+        {
+            get
+            {
+                var registry=WorldServer.Clients;
+                if(registry==null || key==null)return false;
+                lock(registry)return ReferenceEquals(registry,WorldServer.Clients) &&
+                    registry.TryGetValue(key,out var owner) && ReferenceEquals(owner,this);
+            }
+        }
+
         public bool Alive
         {
             get

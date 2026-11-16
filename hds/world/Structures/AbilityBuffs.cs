@@ -152,6 +152,30 @@ namespace hds
             public int Generation;
             public double Started;
             public Buff Definition;
+            internal DrainLifetime Drain;
+        }
+
+        internal sealed class DrainLifetime
+        {
+            internal readonly WorldClient Client;
+            internal readonly ClientData Data;
+            internal readonly PlayerCharacter Player;
+            internal readonly uint Character;
+            private readonly uint district;
+            internal readonly int World,Life;
+            internal readonly long Transport;
+            internal volatile bool Cancelled;
+            internal DrainLifetime(WorldClient client)
+            {
+                Client=client;Data=client.playerData;Player=client.playerInstance;
+                Character=Data.getCharID();district=Data.getDistrictId();World=Data.worldGeneration;Life=Data.lifeGeneration;
+                Transport=client.TransportFence?.Capture() ?? -1;
+            }
+            internal bool ScopeCurrent => ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,Player) &&
+                Data.getCharID()==Character && Data.getDistrictId()==district && Data.worldGeneration==World && Data.lifeGeneration==Life &&
+                Client.TransportFence!=null && Client.TransportFence.IsCurrent(Transport) && Client.Alive && Data.getOnWorld() &&
+                !Data.worldChangePending && !Data.waitForRPCShutDown;
+            internal bool Current => !Cancelled && ScopeCurrent;
         }
 
         public static byte[] BuildModifier(UInt16 kind, UInt16 recordId, UInt32 ability, UInt16 stat, Int32 value,
@@ -399,10 +423,16 @@ namespace hds
 
         public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
         {
-            lock (client.playerData.upgradeSync) return ApplyCore(client,abilityId,caster);
+            // Capture before ANY activation/upgrade lock: reset owns the transport gate first.
+            var drain=new DrainLifetime(client);
+            lock (drain.Data.upgradeSync)
+            {
+                if(!ReferenceEquals(client.playerData,drain.Data))return false;
+                return ApplyCore(client,abilityId,caster,drain);
+            }
         }
 
-        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster)
+        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster,DrainLifetime drain)
         {
             if (TacticalConflict(client, abilityId)) return false;
             if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
@@ -444,6 +474,7 @@ namespace hds
                     ids[i] = NextRecordId(data);
                 }
                 active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Started=TimeUtils.GetSimTimeSeconds(), Definition = buff };
+                if(buff.DrainAmount>0 && buff.DrainSeconds>0)active.Drain=drain;
                 data.activeBuffs[abilityId] = active;
             }
 
@@ -482,34 +513,95 @@ namespace hds
                 AbilityCatalog.Find(other)?.Number("Ability/StackingType")==stacking).ToList()) TimedEffects.RemoveParent(subject,other);
         }
 
+        // Confirmed quit ends existing drain capabilities even while the UDP endpoint remains reserved.
+        internal static void CancelDrains(WorldClient client)
+        {
+            var data=client?.playerData;if(data==null)return;
+            lock(data.activeBuffs)foreach(var active in data.activeBuffs.Values)
+                if(active.Drain!=null)active.Drain.Cancelled=true;
+        }
+
         private static void ScheduleDrain(WorldClient client, Active active)
         {
-            int world = client.playerData.worldGeneration;
-            DelayedActions.AfterFor(client, active.Definition.DrainSeconds, () =>
-            {
-                if (client.playerData.worldGeneration == world) TickDrain(client,active.AbilityId,active.Generation);
-            });
+            if(active.Drain==null || !active.Drain.Current)return;
+            DelayedActions.AfterFor(client,active.Definition.DrainSeconds,()=>TickActiveDrain(client,active));
         }
 
         public static void TickDrain(WorldClient client, ushort id, int generation)
         {
-            Active active;
-            lock(client.playerData.activeBuffs)
-                if(!client.playerData.activeBuffs.TryGetValue(id,out active) || active.Generation != generation) return;
-            Buff buff=active.Definition;
-            if(buff == null || buff.DrainAmount <= 0) return;
-            if(client.playerData.isDead || client.playerData.duelDeath || AbilityHandler.CurrentInnerStrength(client) < buff.DrainAmount)
+            var data=client.playerData;Active active;
+            lock(data.activeBuffs)
+                if(!data.activeBuffs.TryGetValue(id,out active) || active.Generation!=generation)return;
+            TickActiveDrain(client,active);
+        }
+
+        // Health-change listeners end by exact membership removal; none of these termination paths invokes that listener.
+        internal static bool PureDrainTermination(Buff buff) => buff!=null && buff.DrainAmount>0 && buff.DrainSeconds>0 &&
+            buff.Seconds==0 && buff.Exclusive && buff.Toggle && buff.RefundIS==0 && buff.TermHeal==0 &&
+            buff.TermSweepChance==0 &&
+            buff.MovementScale==0 && buff.DissemblingType==0 && buff.EffectId==0 && !buff.EvadeShield &&
+            buff.Modifiers!=null && buff.Modifiers.All(m=>(m.Kind==KindStat || m.Kind==TempMods.KindFx) &&
+                (m.Kind!=KindStat || m.Stat!=106 && m.Stat!=109 && m.Stat!=1056 && m.Stat!=1057));
+
+        internal static void TickActiveDrain(WorldClient client,Active active,Action beforeClaim=null,Action beforePublication=null)
+        {
+            var lease=active?.Drain;
+            if(lease==null || !ReferenceEquals(lease.Client,client))return;
+            if(!client.IsCurrentEndpointOwner || !lease.Current){lease.Cancelled=true;return;}
+            var data=lease.Data;bool claimed=false,shortfall=false;int missing=0;ushort remaining=0;
+            beforeClaim?.Invoke(); // Invocation-local scheduler test seam, outside every lock.
+            if(!client.TransportFence.TryRun(lease.Transport,()=>
             {
-                int shortfall=Math.Max(0,buff.DrainAmount-AbilityHandler.CurrentInnerStrength(client));
-                if(shortfall>0)
+                lock(data.activeBuffs)
                 {
-                    string name=TimedEffects.PlayerName(client);
-                    client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,id,name,name,shortfall));
+                    if(!lease.Current || !data.activeBuffs.TryGetValue(active.AbilityId,out var current) || !ReferenceEquals(current,active))return;
+                    var buff=active.Definition;if(!PureDrainTermination(buff))return;
+                    ushort available=NumericalUtils.ByteArrayToUint16(lease.Player.InnerStrengthAvailable.getValue(),1);
+                    shortfall=data.isDead || data.duelDeath || available<buff.DrainAmount;
+                    if(shortfall)
+                    {
+                        missing=Math.Max(0,buff.DrainAmount-available);
+                        data.activeBuffs.Remove(active.AbilityId);lease.Cancelled=true;
+                    }
+                    else
+                    {
+                        remaining=(ushort)Math.Max(0,available-buff.DrainAmount);
+                        lease.Player.InnerStrengthAvailable.setValue(remaining);
+                    }
+                    claimed=true;
                 }
-                Remove(client,id,generation:generation); client.FlushQueue(); return;
+            }) || !claimed){lease.Cancelled=true;return;}
+            beforePublication?.Invoke();
+            bool published=false;
+            if(!client.TransportFence.TryRun(lease.Transport,()=>
+            {
+                if(!lease.ScopeCurrent)return;
+                if(shortfall)
+                {
+                    lock(data.activeBuffs)if(data.activeBuffs.ContainsKey(active.AbilityId))return; // Never terminate a later activation.
+                    if(missing>0)
+                    {
+                        string name=StringUtils.charBytesToString_NZ(lease.Player.CharacterName.getValue());
+                        client.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated,true,active.AbilityId,name,name,missing),lease.World,lease.Transport);
+                    }
+                    foreach(var record in BuildRecords(active.AbilityId,active.Definition,active.RecordIds,true))
+                        client.messageQueue.AddWorldBoundRpc(record,lease.World,lease.Transport);
+                    client.messageQueue.AddWorldBoundRpc(BuildExclusive(active.AbilityId,false),lease.World,lease.Transport);
+                    AbilityCooldowns.StartCaptured(client,active.AbilityId,TimeUtils.GetSimTimeSeconds(),data,lease.Player,lease.World,lease.Life,lease.Transport);
+                    published=true;return;
+                }
+                if(!lease.Current)return;
+                client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfInnerStrength,PlayerViewAttributes.U16(remaining))),false);
+                published=true;
+            }))lease.Cancelled=true;
+            if(!published){lease.Cancelled=true;return;}
+            client.FlushQueue(); // Never flush/broadcast/term callbacks inside the transport or activation gates.
+            if(shortfall)Output.WriteDebugLog("[BUFF] "+active.AbilityId+" off");
+            else
+            {
+                Output.WriteDebugLog($"[BUFF-DRAIN] char{data.getCharID()} ability{active.AbilityId} generation{active.Generation} amount{active.Definition.DrainAmount} remaining{remaining}");
+                if(lease.Current)ScheduleDrain(client,active);
             }
-            new ServerPackets().sendISCurrent(client,AbilityHandler.SpendInnerStrength(client,(ushort)buff.DrainAmount));
-            ScheduleDrain(client,active);
         }
 
         /// <summary>
@@ -535,6 +627,7 @@ namespace hds
                     return false;
                 }
                 buff = active.Definition ?? buff;
+                if(active.Drain!=null)active.Drain.Cancelled=true;
                 data.activeBuffs.Remove(abilityId);
             }
             if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
