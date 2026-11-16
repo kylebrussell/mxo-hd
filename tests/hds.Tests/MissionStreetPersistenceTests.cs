@@ -99,5 +99,17 @@ public sealed partial class MissionStreetAccessTests
         Assert.Equal(TimeSpan.FromMinutes(6),scenario.Timeout);
     }
 
+    [Fact]public void RecognizedPendingStreetCannotLoseItsEnrollmentEnvelopeButOldPendingRemainsLegacy()
+    {
+        var m=StreetMission();var p=new MissionProgress(m){streetPolicy=true,persistenceId="owner",startedAt=123};p.itemSlots[6783]=40;var (site,_)=StreetContext("Objects");
+        var saved=p.CaptureWithNpcCatalog(47,Array.Empty<Mob>(),Array.Empty<MissionSite>());
+        var child=new MissionStreetSelection(1,m.id,p.persistenceId,p.startedAt,1,MissionOpenFloorSite.From(site),"Objects",null,"NoCertifiedPublicRoute");
+        saved.PendingOpenFloor=new MissionOpenFloorPendingAdmission(1,m.id,p.persistenceId,1,p.startedAt,MissionOpenFloorSite.From(site),Array.Empty<MissionOpenFloorChoice>(),"NoCertifiedPublicRoute",street:JsonSerializer.SerializeToElement(child,MissionProgress.SaveJson));
+        saved.StreetAccess=default;string exact=JsonSerializer.Serialize(saved,MissionProgress.SaveJson);
+        var ex=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,saved,new[]{site}));Assert.Contains("MissingStreetEnrollment",ex.Message);
+        Assert.Equal((ushort)40,ex.Progress.itemSlots[6783]);Assert.Equal(exact,JsonSerializer.Serialize(saved,MissionProgress.SaveJson));
+        saved.PendingOpenFloor=saved.PendingOpenFloor.WithStreet(default);Assert.Null(MissionStreetCheckpoint.PrepareRestore(p,saved,new[]{site},null!));
+    }
+
 }
 

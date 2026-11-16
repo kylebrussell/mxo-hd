@@ -86,7 +86,7 @@ namespace hds
         internal static MissionStreetEnvelope PrepareRestore(MissionProgress p,MissionProgress.SavedState state,IReadOnlyList<MissionSite> catalogue,MissionNpcInteriorEnvelope npc)
         {
             bool present=Present(state)||npc?.Pending!=null&&npc.Pending.Street.ValueKind!=JsonValueKind.Undefined;
-            if(!present)return null;Need(p,state.Version==2,"StreetRequiresVersion2");Need(p,!string.IsNullOrWhiteSpace(state.Identity),"StreetOwnerIdentity");catalogue=catalogue??MissionSites.For(p.mission.district);
+            if(!present)return null;Need(p,state.Version==2,"StreetRequiresVersion2");Need(p,state.StreetAccess.ValueKind!=JsonValueKind.Undefined,"MissingStreetEnrollment");Need(p,!string.IsNullOrWhiteSpace(state.Identity),"StreetOwnerIdentity");catalogue=catalogue??MissionSites.For(p.mission.district);
             Need(p,state.OpenFloorSites!=null&&state.OpenFloorCurrentSiteIndex.HasValue&&state.OpenFloorCurrentSiteIndex.Value>=-1&&state.OpenFloorCurrentSiteIndex.Value<state.OpenFloorSites.Length&&
                 state.OpenFloorSites.All(s=>s!=null&&s.Resolve(catalogue)!=null),"StreetExactHistory");
             if(state.PendingOpenFloor!=null)
