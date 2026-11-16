@@ -24,10 +24,10 @@ public static partial class Scenarios
    async Task Move(double[] at){await Same();await MoveForMissionTest(p,at[0],at[1],at[2]);}
    async Task Open(MissionNpcInteriorProof.Door door)
    {
-    await Same();var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Current own life immediately before ordinary80c8");int debug=context.Server.DebugLog().Length;
+    await Same();var life=p.World.CurrentOwnViewLife();Check.That(life.Current&&life.OwnViewReady,"Current own life immediately before ordinary80c8");int debug=context.Server.DebugLog().Length;int sections=p.World.ViewSnapshot().Count;
     p.SendRpc($"80 c8 {Le(door.Key)} 03 00");await Barrier();
     await p.WaitUntilAsync(()=>{try{var now=p.World.CurrentOwnViewLife();if(!ReferenceEquals(now.Owner,life.Owner)||now.Life!=life.Life||!life.Current)return false;_=NpcInteriorComputerState.CurrentDoor(now,door);return context.Server.DebugLog()[debug..].Contains($"[DOOR] Use of static {door.Key} type {door.Goid}");}catch(InvalidDataException){return false;}},"Actual exact own-GOID door use plus current Open",TimeSpan.FromSeconds(15));
-    await Barrier();await Same();_=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door);proof.Add(new{Step=step,Door=door,DebugCursor=debug,Current=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door),NativePassageProven=false});
+    await Barrier();await Same();Check.Equal(0,MissionPublicStreetWire.Teleports(p.World.CurrentOwnViewLife(),life,sections).Count,"Ordinary noncar Open never performs an elevator ride");_=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door);proof.Add(new{Step=step,Door=door,DebugCursor=debug,Current=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),door),NativePassageProven=false});
    }
    async Task Ride(MissionNpcInteriorProof.Door requested,double[] expected)
    {

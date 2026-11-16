@@ -19,6 +19,9 @@ public sealed class NativeBoundFurnitureMode:NativeQaMode
  }
  public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
  {
+  var server=context.ActualServer??throw new InvalidOperationException("Actual owned furniture server required");
+  if(context.OwnedDatabase==null||server.DatabaseName!=context.OwnedDatabase.Name||server.ConfiguredAddress!=context.Address||server.HasExited)
+   throw new InvalidOperationException("Actual furniture server/schema/address differs");
   var prepared=NativeBoundFurnitureFixture.Default;bool checkedOwned=false;
   if(context.OwnedDatabase!=null)
   {

@@ -187,7 +187,7 @@ namespace hds
                                row.GetProperty("PrefabSha256").ValueKind!=JsonValueKind.Null)))
                     throw new InvalidDataException("BoundPoseSourceProvenance");
                 double legacyRotation=row.GetProperty("LegacyRotation").GetDouble();if(!double.IsFinite(legacyRotation))throw new InvalidDataException("BoundPoseLegacyRotation");
-                var entry=new Entry{NavSha256=row.GetProperty("NavSha256").GetString(),Minimum=minimum,Maximum=maximum,LegacyRotation=legacyRotation,Legacy=Point(row,"LegacyPosition",false),LegacyQuaternion=Quaternion(row.GetProperty("LegacyQuaternion").GetString()),
+                var entry=new Entry{Goid=row.GetProperty("Goid").GetUInt16(),NavSha256=row.GetProperty("NavSha256").GetString(),Minimum=minimum,Maximum=maximum,LegacyRotation=legacyRotation,Legacy=Point(row,"LegacyPosition",false),LegacyQuaternion=Quaternion(row.GetProperty("LegacyQuaternion").GetString()),
                     Pose=new MissionComputerAnchors.Pose(centre[0],centre[1],centre[2],Quaternion(row.GetProperty("Quaternion").GetString())),Region=region};
                 if(!result.entries.TryAdd(key,entry))throw new InvalidDataException("AmbiguousBoundPoseIdentity");
             }

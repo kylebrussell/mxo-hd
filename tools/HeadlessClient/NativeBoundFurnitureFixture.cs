@@ -55,7 +55,7 @@ public static class NativeBoundFurnitureFixture
   Need((int)old["Version"]! ==1&&old["FurnitureRoutes"]==null&&old["BoundRoutes"]==null,"Only explicit old capture input, not a runtime upgrade");
   var all=Rows(repo).ToArray();var expected=captured.OpenFloorSites![captured.OpenFloorCurrentSiteIndex!.Value];
   var fingerprint=typeof(MissionOpenFloorSite).GetMethod("CatalogFingerprint",Flags)!;
-  var sites=MissionSites.Build(all,1);var site=sites.Single(s=>s.elevatorDoor.mxoStaticId==expected.DoorKey&&(string)fingerprint.Invoke(null,new object[]{s})! ==expected.Fingerprint);
+  var sites=MissionSites.Build(all,1);var site=sites.Single(s=>s.elevatorDoor?.mxoStaticId==expected.DoorKey&&(string)fingerprint.Invoke(null,new object[]{s})! ==expected.Fingerprint);
   var xml=new XmlDocument();xml.Load(Path.Combine(repo,"data/missions/merovingian_1_2_10_into_the_hive.xml"));var mission=MissionXml.Parse(xml.DocumentElement!);
   var progress=new MissionProgress(mission){persistenceId=captured.Identity,startedAt=captured.Started,phaseIndex=1,site=site};progress.sites.Add(site);
   foreach(var o in captured.Objects)progress.objects.Add((ushort)o.Id,new MissionObjectState{def=mission.phases[1].objects.Single(d=>d.id==o.Id),spot=o.Spot,goid=o.Goid});
