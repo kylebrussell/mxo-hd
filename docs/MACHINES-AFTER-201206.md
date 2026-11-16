@@ -2,7 +2,7 @@
 
 This package adds the default-off `machines-critical-after-201206` headless case and NativeQa mode for Agent Gray's next five available critical missions. It is a source-only draft: no local build, fresh server or native pass has been performed.
 
-It descends normally from PR264 producer `391f6e5e` and master `9894edab`. PR264 and PR241 are explicit unmerged dependencies. Only the generic bound-route/current-entry/runtime and strict reader fixes needed from PR241 `fa06152b` are composed; the Zion story driver and phase-planner changes are not imported. Existing data, missions, objectives, source choices, ranges and timers are unchanged.
+It descends normally from PR264 producer `391f6e5e` and master `9894edab`. The publication branch now normally merges master `500dc117` (native-passed PR264). PR241 remains an explicit unmerged dependency. Only the generic bound-route/current-entry/runtime and strict reader fixes needed from PR241 `fa06152b` are composed; the Zion story driver and phase-planner changes are not imported. Existing data, missions, objectives, source choices, ranges and timers are unchanged.
 
 | ID | Title | Phases / objectives | Current XML XP / information |
 |---|---|---|---|
@@ -35,3 +35,5 @@ Current XML leaves reward reference levels unannotated, so the existing policy u
 No native teleport substitutes for doors or walking. Headless movement/combat aids and fixture HP/IS are disclosed; they do not prove native collision, picking or unaided survival. Parent proofs remain attributed to their original producers. Draft/HOLD pending complete-checkout CI, parent merges and a separately granted live qualification.
 
 The first complete-checkout CI failed before tests because the older parent241 proof reader lacked parent264’s actor-index route API. The exact264 reader was restored, preserving its per-actor role checks; no runtime change was needed. That failed run remains retained, and the corrected source awaits new CI.
+
+Qualification before the master refresh: `b1ca660a` actual Debug/Release NativeQa and Headless builds passed, and 345 affected Release tests passed. The earlier cloud compile failure and subsequent 6828/1 cloud result are retained; the latter exposed the omitted companion schema-history reader, restored exactly from PR241. This refreshed source has not been built or run locally yet. No new mission gameplay or native claim is made.
