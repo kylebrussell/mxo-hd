@@ -22,7 +22,7 @@ public static partial class Scenarios
         var objectOrder=MissionXml.Parse(authoredDocument.DocumentElement!).phases[state.Phase].objects.Select(o=>o.id).ToArray();
         var plan=ZionAfter1212RidePlan.Select(state,enter,new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(context.RepositoryRoot,"data",f))),objectOrder);
         uint key=plan.Key;var pose=plan.Pose;
-        await MoveForMissionTest(p,pose[0],pose[1]-50,pose[2]);
+        var approach=plan.Approach;await MoveForMissionTest(p,approach[0],approach[1],approach[2]);
         ZionAfter1212RidePlan.SameEntry(state,await MachinesNextCheckpoint(context,p));
         Check.That(life.Current&&p.World.CurrentOwnViewLife().Life==life.Life,"Current own-view life retained immediately before Ride wire request");
         var pending=enter?state.Objects.Where(o=>o.OpenFloor!=null&&o.OpenFloor.SourceGoid!=o.Goid&&ZionCurrentFixedBody.Find(p.World.CurrentOwnViewLife(),o,state.Instance)==null).ToArray():Array.Empty<MissionProgress.SavedObject>();
@@ -57,8 +57,9 @@ public static partial class Scenarios
                 Check.That(actual!=null,"Measured ordinary entry must produce an actual Ride root");
                 double[] root=Enumerable.Range(1,3).Select(i=>double.Parse(actual!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
                 SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-                ushort region=plan.Npc!=null?checked((ushort)plan.Npc.Witness.GetProperty("Floor").GetProperty("Node").GetProperty("Region").GetInt32()):plan.Witness!.Region;
+                ushort region=plan.Street!=null?plan.Street.Raw.GetProperty("Context").GetProperty("Floor").GetProperty("Node").GetProperty("Region").GetUInt16():plan.Npc!=null?checked((ushort)plan.Npc.Witness.GetProperty("Floor").GetProperty("Node").GetProperty("Region").GetInt32()):plan.Witness!.Region;
                 Check.That(NavMesh.Locate(plan.World,root[0],root[1],root[2],out var nav)&&nav.sector==state.SiteDoors[state.OpenFloorCurrentSiteIndex!.Value].sectorID&&nav.region==region&&Math.Abs(root[1]-(nav.floorY+95))<=.01,"Actual measured Ride root is grounded on the selected floor NAV layer, including NPC-only phases");
+                if(plan.Street!=null)Check.That(root.SequenceEqual(plan.Street.Floor.Standing!),"Street Objects ordinary Ride retains exact saved Standing and current floor layer");
                 if(plan.Npc!=null)
                 {
                     Check.That(root.SequenceEqual(plan.Npc.Floor.Standing!),"NPC-v2 ordinary Ride uses its exact owned Standing");
@@ -71,9 +72,9 @@ public static partial class Scenarios
                 foreach(var obj in state.Objects.Where(o=>o.OpenFloor!=null))Check.That(obj.OpenFloor!.Route.Take(3).SequenceEqual(root),"Every current fixed object retains the actual measured Ride root");
                 ZionAfter1212RidePlan.SameEntry(state,await MachinesNextCheckpoint(context,p));
             }
-            var expectedDoor=plan.Npc==null?new MissionNpcInteriorProof.Door(key,overlay!.Goid,pose,plan.Quaternion!,null,""):(enter?plan.Npc.Lobby:plan.Npc.Floor);
+            var expectedDoor=plan.Street!=null?(enter?plan.Street.Lobby:plan.Street.Floor):plan.Npc==null?new MissionNpcInteriorProof.Door(key,overlay!.Goid,pose,plan.Quaternion!,null,""):(enter?plan.Npc.Lobby:plan.Npc.Floor);
             var observedDoor=NpcInteriorComputerState.CurrentDoor(p.World.CurrentOwnViewLife(),expectedDoor);
-            note?.Invoke(new{Kind="Current measured elevator witness",Witness=plan.Witness,NpcWitness=plan.Npc?.Raw,RequestedKey=key,DoorView=overlay!.ViewId,DoorSpawn=overlay.SpawnId,CurrentState=observedDoor.State,Offered=ObjectStates.Offered(overlay.Goid,observedDoor.State)});
+            note?.Invoke(new{Kind="Current measured elevator witness",Witness=plan.Witness,NpcWitness=plan.Npc?.Raw,StreetWitness=plan.Street?.Raw,RequestedKey=key,DoorView=overlay!.ViewId,DoorSpawn=overlay.SpawnId,CurrentState=observedDoor.State,Offered=ObjectStates.Offered(overlay.Goid,observedDoor.State)});
         }
         if(enter&&pending.Length>0)
         {
