@@ -12,5 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\hds\Hardline Dreams MxO server.csproj" />
     <ProjectReference Include="..\PacketResearch\PacketResearch.csproj" />
+    <EmbeddedResource Include="Fixtures/mission-midphase-return.native-batch.json" />
   </ItemGroup>
 </Project>

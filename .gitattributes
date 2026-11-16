@@ -8,3 +8,6 @@ data/mission_safe_anchors.csv text eol=lf
 
 # Preserve the exact pinned primary evidence bytes, including their original line endings.
 research/protocol/mission-open-floor-*.json -text whitespace=cr-at-eol
+
+# The captured MySQL batch is hash-pinned with its original CRLF ending.
+tools/HeadlessClient/Fixtures/mission-midphase-return.native-batch.json -text whitespace=cr-at-eol
