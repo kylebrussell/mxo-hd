@@ -69,6 +69,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
         conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
