@@ -46,4 +46,23 @@ public sealed partial class MissionStreetAccessTests
         Assert.Equal((ushort)4095,MissionPublicStreetWire.Ack(server+client,1001,0,arrival).TeleportSequence);
         Assert.Throws<InvalidDataException>(()=>MissionPublicStreetWire.Ack(server,1001,0,arrival));Assert.Throws<InvalidDataException>(()=>MissionPublicStreetWire.Ack(server+client,1002,0,arrival));Assert.Throws<InvalidDataException>(()=>MissionPublicStreetWire.Ack(client+server,1001,0,arrival));
     }
+    [Theory][InlineData(0x00100000u)][InlineData(0x01100000u)]
+    public void NormalOwnEnterCombatProducerHasExactEighteenByteBoundaryBeforePublicDoor(uint flags)
+    {
+        byte[] raw=hds.ServerPackets.BuildEnterCombatMode(flags);Assert.Equal(18,raw.Length);
+        Assert.Equal(Convert.FromHexString("020003010C008084008080808001"),raw[..14]);
+        Assert.True(MervFollowupViewFrames.TryRead(raw,0,12,out var frame));Assert.Equal(18,frame.Length);Assert.Equal(MervFollowupViewFrames.Kind.Attribute,frame.Type);
+        Assert.False(MervFollowupViewFrames.TryRead(raw[..^1],0,12,out _));Assert.False(MervFollowupViewFrames.TryRead(raw,0,599,out _));
+        var foreign=(byte[])raw.Clone();foreign[0]=3;Assert.False(MervFollowupViewFrames.TryRead(foreign,0,12,out _));
+        var unknown=(byte[])raw.Clone();unknown[4]=0x0d;Assert.False(MervFollowupViewFrames.TryRead(unknown,0,12,out _));
+    }
+    [Fact]public void RetainedAmbientNpcUpdatesAndOwnCombatEntryConsumeExactlyTheOriginalFiftyBytes()
+    {
+        // Failed e3ff run section27: NPC14 movement +flags, then own2 enter-combat. Public343 arrives at section59.
+        var raw=Convert.FromHexString("0E00020E007A008884460080F743000020450E00048080808080800200001000020003010C00808400808080800100001000");
+        Assert.Equal(50,raw.Length);int offset=0;foreach(var expected in new[]{(Goid:(ushort)599,Length:18),(Goid:(ushort)599,Length:14),(Goid:(ushort)12,Length:18)})
+        {Assert.True(MervFollowupViewFrames.TryRead(raw,offset,expected.Goid,out var frame));Assert.Equal(expected.Length,frame.Length);offset+=frame.Length;}
+        Assert.Equal(raw.Length,offset);Assert.Equal(hds.ServerPackets.BuildEnterCombatMode(0x00100000),raw[32..]);
+    }
+
 }
