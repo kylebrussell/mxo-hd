@@ -1,30 +1,61 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace HeadlessClient;
 /// <summary>Read-only disposable fixture evidence; never grants items or mutates mission/NPC state.</summary>
 public static class CarriedMissionNpcFixture
 {
-    public sealed record Token(int Mission,int Instance,int OriginPhase,ushort Npc,string Name,string Identity,bool Friendly);
+    public sealed record Token(int Mission,int Instance,int OriginPhase,ushort Npc,string Name,string Identity,bool Friendly)
+    {
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public int? CheckpointVersion {get;init;}
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public string? AcceptedIdentity {get;init;}
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public long? AcceptedStarted {get;init;}
+    }
+    static (string Identity,long Started) V2Owner(JsonElement root)
+    {
+        if(!root.TryGetProperty("Identity",out var identity)||identity.ValueKind!=JsonValueKind.String||!Guid.TryParseExact(identity.GetString(),"N",out _)||
+            !root.TryGetProperty("Started",out var started)||started.ValueKind!=JsonValueKind.Number||!started.TryGetInt64(out long at)||at<=0||
+            !root.TryGetProperty("Instance",out var instance)||instance.ValueKind!=JsonValueKind.Number||!instance.TryGetInt32(out int id)||id<0||id>ushort.MaxValue)
+            throw new InvalidDataException("Malformed V2 carried accepted-owner scope");
+        return(identity.GetString()!,at);
+    }
     public sealed record Point(double X,double Y,double Z);
     private static JsonElement Mob(JsonElement root,int mission,int phase,ushort npc,string name,bool friendly,bool giver)
     {
-        if(root.GetProperty("Version").GetInt32()!=1 || root.GetProperty("Mission").GetInt32()!=mission || root.GetProperty("Phase").GetInt32()!=phase)
+        int version=root.GetProperty("Version").GetInt32();
+        if((version!=1&&version!=2) || root.GetProperty("Mission").GetInt32()!=mission || root.GetProperty("Phase").GetInt32()!=phase)
             throw new InvalidDataException("Wrong owned checkpoint mission/phase/version");
+        if(version==2)_=V2Owner(root);
         var rows=root.GetProperty("Mobs").EnumerateArray().Where(m=>m.GetProperty("Npc").GetUInt16()==npc).ToArray();
         if(rows.Length!=1)throw new InvalidDataException("Expected one exact carried NPC identity");var m=rows[0];
         if(m.GetProperty("Name").GetString()!=name || m.GetProperty("Dead").GetBoolean() || m.GetProperty("Health").GetInt32()<=0 || m.GetProperty("Friendly").GetBoolean()!=friendly || giver&&!m.GetProperty("Giver").GetBoolean())
             throw new InvalidDataException("Carried NPC name/life/side/giver mismatch");
         return m;
     }
-    public static Token Capture(string payload,int mission,int phase,ushort npc,string name,bool friendly)
+    public static Token Capture(string payload,int mission,int phase,ushort npc,string name,bool friendly,OwnViewLifeSnapshot? ownerLife=null)
     {
         using var doc=JsonDocument.Parse(payload);var root=doc.RootElement;var m=Mob(root,mission,phase,npc,name,friendly,false);
         if(!root.GetProperty("Following").EnumerateArray().Any(n=>n.GetUInt16()==npc))throw new InvalidDataException("NPC was not actually following before the phase transition");
         string identity=m.GetProperty("Identity").GetString()!;if(!Guid.TryParseExact(identity,"N",out _))throw new InvalidDataException("Invalid carried identity");
-        return new(mission,root.GetProperty("Instance").GetInt32(),phase,npc,name,identity,friendly);
+        var token=new Token(mission,root.GetProperty("Instance").GetInt32(),phase,npc,name,identity,friendly);
+        if(root.GetProperty("Version").GetInt32()==2)
+        {
+            var owner=V2Owner(root);
+            if(ownerLife==null||!ownerLife.Current||!ownerLife.OwnViewReady)throw new InvalidDataException("V2 carried capture requires its current own-view life");
+            token=token with{CheckpointVersion=2,AcceptedIdentity=owner.Identity,AcceptedStarted=owner.Started};
+        }
+        return token;
     }
     public static Point Resolve(string payload,Token token,int phase,bool giver)
     {
         using var doc=JsonDocument.Parse(payload);var root=doc.RootElement;var m=Mob(root,token.Mission,phase,token.Npc,token.Name,token.Friendly,giver);
+        int expectedVersion=token.CheckpointVersion??1;
+        if((expectedVersion!=1&&expectedVersion!=2)||root.GetProperty("Version").GetInt32()!=expectedVersion)throw new InvalidDataException("Carried checkpoint version cannot change or downgrade");
+        if(expectedVersion==2)
+        {
+            var owner=V2Owner(root);
+            if(owner.Identity!=token.AcceptedIdentity||owner.Started!=token.AcceptedStarted)
+                throw new InvalidDataException("Carried NPC belongs to another V2 acceptance");
+        }
         if(phase<=token.OriginPhase || root.GetProperty("Instance").GetInt32()!=token.Instance || m.GetProperty("Identity").GetString()!=token.Identity)
             throw new InvalidDataException("Carried checkpoint identity/instance/phase mismatch");
         var point=new Point(m.GetProperty("X").GetDouble(),m.GetProperty("Y").GetDouble(),m.GetProperty("Z").GetDouble());
@@ -32,6 +63,11 @@ public static class CarriedMissionNpcFixture
     }
     // Opt-in only for this chain's observed recreated-on-new-phase path. No historical retained/deleted-view fallback.
     public static ViewCreation RecreatedView(IReadOnlyList<ViewCreation> rows,int phaseCursor,Token token,Point? expected=null)
+    {
+        if(token.CheckpointVersion.HasValue)throw new InvalidDataException("V2 carried evidence requires the current-own-life reader");
+        return RecreatedViewCore(rows,phaseCursor,token,expected);
+    }
+    private static ViewCreation RecreatedViewCore(IReadOnlyList<ViewCreation> rows,int phaseCursor,Token token,Point? expected=null)
     {
         bool SideMatches(ViewCreation v)
         {
@@ -91,10 +127,23 @@ public static class CarriedMissionNpcFixture
         internal bool GenerationKnown = true;
     }
 
+    // Portable accepted-NPC identity is separate from this particular current session's receipt.
+    // Event object provenance rejects mixing another log's records even when both life counters are zero.
+    private static OwnViewLifeSnapshot RequireV2Stream(OwnViewLifeSnapshot stream,Func<OwnViewLifeSnapshot>? readCurrent)
+    {
+        if(!stream.Current||!stream.OwnViewReady||stream.Owner==null||readCurrent==null)throw new InvalidDataException("Current V2 carried session reader required");
+        // The caller supplies WorldSession.CurrentOwnViewLife, which owns its snapshot lock.
+        var current=readCurrent();
+        if(!current.Current||!current.OwnViewReady||!ReferenceEquals(current.Owner,stream.Owner)||current.Life!=stream.Life||current.OwnBirthSection!=stream.OwnBirthSection||current.Events.Count<stream.Events.Count||
+            Enumerable.Range(0,stream.Events.Count).Any(i=>!ReferenceEquals(current.Events[i],stream.Events[i])))
+            throw new InvalidDataException("V2 carried receipt contains stale or foreign session events");
+        return current;
+    }
     public static CurrentView CurrentLiveView(OwnViewLifeSnapshot stream, Token token, string checkpoint,
-        int phase, bool giver, int phaseSectionCursor)
+        int phase, bool giver, int phaseSectionCursor,Func<OwnViewLifeSnapshot>? readCurrent=null)
     {
         Point expected = Resolve(checkpoint, token, phase, giver);
+        if(token.CheckpointVersion==2)stream=RequireV2Stream(stream,readCurrent);
         if (!stream.Current || !stream.OwnViewReady || stream.OwnBirthSection < 0 || stream.Events.Any(e => e.Life != stream.Life))
             throw new InvalidDataException("No current own-view life; previous-life events are inadmissible");
         var live = new Dictionary<ushort, LiveView>();
@@ -179,11 +228,12 @@ public static class CarriedMissionNpcFixture
         var candidates = live.Values.Where(v => v.View.Goid == 599 && v.View.Name == token.Name).ToArray();
         if (candidates.Length != 1) throw new InvalidDataException("Expected exactly one current live carried generation");
         var selected = candidates[0];
-        _ = RecreatedView(new[] { selected.View }, 0, token); // name, side and exact owned instance key, no history search
+        _ = RecreatedViewCore(new[] { selected.View }, 0, token); // name, side and exact owned instance key, no history search
         var latest = selected.Position;
         if (!selected.GenerationKnown || latest == null || !double.IsFinite(latest.X) || !double.IsFinite(latest.Y) || !double.IsFinite(latest.Z) ||
             Math.Abs(latest.X - expected.X) >= 1 || Math.Abs(latest.Y - expected.Y) >= 1 || Math.Abs(latest.Z - expected.Z) >= 1)
             throw new InvalidDataException("Latest current live carried position does not match current owned XYZ");
+        if(token.CheckpointVersion==2)_=RequireV2Stream(stream,readCurrent);
         if (!stream.Current) throw new InvalidDataException("Own-view life changed while reading carried generation");
         return new CurrentView(selected.View, latest, selected.Birth, selected.PositionSection, selected.PositionBytes,
             stream.Life, selected.Birth < phaseSectionCursor);

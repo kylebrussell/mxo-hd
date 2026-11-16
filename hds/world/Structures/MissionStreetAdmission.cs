@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.IO;
 using System.Text.Json;
 namespace hds
 {
@@ -23,6 +24,7 @@ namespace hds
                 if(!WorldCurrent(c)||!ReferenceEquals(owner.missionProgress,Progress)||!ReferenceEquals(owner.activeMission,Progress.mission)||Pending.Selection.Phase!=Progress.phaseIndex||
                     Pending.Selection.Mission!=Progress.mission.id||Pending.Selection.Identity!=Progress.persistenceId||Pending.Selection.Started!=Progress.startedAt||Pending.Selection.Refusal!=null||
                     Pending.Selection.Context==null||Pending.Selection.Site.Fingerprint!=MissionOpenFloorSite.CatalogFingerprint(Selected.Site))throw new MissionCheckpointException("Stale or refused ordinary street admission");
+                MissionStreetBoundRoutes.Validate(Progress,Pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,Progress.mission.district),Pending.Choices);
             }
             internal MissionStaging.ObjectChoice[] Choices()=>Pending.Choices.Select(c=>new MissionStaging.ObjectChoice(Progress.Phase.objects.Single(d=>d.id==c.ObjectId),c.ReadSpot(),c.Goid)).ToArray();
             internal void RequirePublished(WorldClient c)
@@ -37,6 +39,7 @@ namespace hds
                 plan=new Plan(c,p,phase,new MissionStaging.SiteSelection(site,null),pending);if(!plan.BeforeCurrent(c))return false;
                 if(pending.Selection.Refusal!=null){refusal=pending.Selection.Refusal;return false;}
                 if(!MissionStreetContexts.ValidateSelected(pending.Selection.Context,site,MissionPublicDoors.CurrentDataset(),key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),out refusal))return false;
+                MissionStreetBoundRoutes.Validate(p,pending.Selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),pending.Choices);
                 foreach(var choice in pending.Choices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid});
                 return plan.BeforeCurrent(c);
             }
@@ -56,6 +59,19 @@ namespace hds
             if(!before.Current(c)){refusal="StaleOrdinaryStreetSelection";return false;}
             MissionStreetSelection selection=json.ValueKind==JsonValueKind.Undefined?new MissionStreetSelection(1,p.mission.id,p.persistenceId,p.startedAt,phase,MissionOpenFloorSite.From(selected.Site),"Objects",null,refusal??"OrdinaryStreetContextUnavailable"):
                 JsonSerializer.Deserialize<MissionStreetSelection>(json.GetRawText(),MissionProgress.SaveJson);
+            if(accepted)
+            {
+                try
+                {
+                    selection=MissionStreetBoundRoutes.Build(p,selection,choices,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district));
+                    MissionStreetBoundRoutes.Validate(p,selection,key=>DataLoader.getInstance().getObjectValues(key,p.mission.district),choices);
+                }
+                catch(Exception ex) when(ex is InvalidDataException||ex is MissionCheckpointException||ex is JsonException||ex is ArgumentException)
+                {
+                    refusal="OrdinaryBoundRouteRefused:"+ex.Message;accepted=false;
+                    selection=new MissionStreetSelection(1,selection.Mission,selection.Identity,selection.Started,selection.Phase,selection.Site,selection.Kind,selection.Context,refusal);
+                }
+            }
             plan=new Plan(c,p,phase,selected,new MissionStreetPending(selection,choices));return accepted&&plan.BeforeCurrent(c);
         }
         internal static bool PendingDurable(ClientData owner,MissionStreetPending expected)

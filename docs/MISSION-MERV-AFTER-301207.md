@@ -1,5 +1,16 @@
 # Flood critical wave after A Special Case
 
+## Source-only refresh on master9894 (unqualified)
+
+This same-PR245 continuation merges master9894edab and selectively ports generic contracts from unmerged PR241/fa06152b and shared QA from unmerged PR213/8001ceb2. No local build, test, server or current whole-five proof has run for this source. CI is the first compilation check; DRAFT/HOLD remains until parent/core review and separately granted qualification. Historical proofs below retain their original pins. The earlier b3ade stale pre-approach entry failure is addressed by the current shared entry helper: approach, re-read exact owner/site/witness and current life, then the before-request marker immediately before ordinary80c8. No cached entered flag is accepted as a substitute.
+
+Production is master9894 plus exactly eight reviewed PR241 generic runtime files: strict current Street floor/lobby identity filtering/replay and immutable bound326 routes/own-GOID door ownership. No241 story, actor fixture or reward ledger is imported. The245 bound consumer reads the saved route, validates current owner/source/phase/life, opens required exact own-GOID doors normally, checks current Open after8148/8149, and follows saved nodes/Standing without Project. Legacy native326 keeps the qualified213 limited native100 sampler; neither branch gains800-unit escape or a guessed range. Retired view schemas authorize framing only, never actor revival. Portable V2 carry tokens are durable identity-only; current observation must qualify the new own life.245 still carries ComputerParts by its original typed inventory path, not a fabricated NPC carry.
+
+Archive45 primary binary files: Temp/mxo-pr245-refresh-9894-20261116/archive-4b93. Retained old source ref codex/archive-pr245-4b93. Explicit data audit:382 old changed data paths, zero unique differences from master9894; all five XML stories/rewards unchanged. Mode metadata now names actual9894 and explicit unmerged241/213 dependencies. Known story/reward reconstructions and historical Tabor/native limits remain below.
+
+Native checklist remains ordinary public street/car and required internal doors, actual current NPC/prop radials and normal combat, ComputerParts6827 carry/Quit/relog/Give, one receipt per mission and next301214. Test teleport/weaken/layout aids are headless-only and disclosed. No current native walking/picking/rendering or whole-chain claim.
+
+
 Status: current general-domain refresh for the SAME PR245. Production/data match the qualified PR249/251/255/261 union; no site-specific workaround. Historical48a native HOLD at the Tabor door remains retained. Current headless evidence is partial: b3ade earned301208 and301209 before a QA stale-entry snapshot stopped301210. This is not a whole-five or native pass. Earlier proofs below retain their original producer attribution.
 
 The actual ordered ContactOffer output selects Necessary Action301208(order1208), New Concerns301209(1209), Into the Hive301210(1210), The Black Box301211(1211), Researching the Black Arts301212(1212), then Mod Box301214. Unit tests advance actual contact history one earned receipt at a time and assert each offer. An initial filename-based chapter-boundary inference was wrong; the failed preflight was retained in Temp and corrected before any fresh run. No301301-303 story is included.

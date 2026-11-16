@@ -44,6 +44,7 @@ public static class MervAfterCurrentBoundBody
         if(current.Mission!=scope.Mission||current.Phase!=scope.Phase||current.Instance!=scope.Instance||current.Identity!=scope.Identity||current.Started!=scope.Started||
             Descriptor(o)!=scope.Descriptor||Site(current)!=scope.Site)throw new InvalidDataException("Bound mission/phase/source/site scope changed");
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own-view life");
+        var schemas=new CurrentViewSchemas();
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool ownSeen=false;
         foreach(var e in stream.Events)
         {
@@ -52,7 +53,7 @@ public static class MervAfterCurrentBoundBody
             if(e.Section==stream.OwnBirthSection)
             {
                 var own=creations.LastOrDefault(c=>c.Creation.ViewId==2&&c.Creation.Goid==12)??throw new InvalidDataException("Actual current own2 birth absent");
-                at=own.Offset+own.Length;ownSeen=true;
+                schemas.Birth(own.Creation);at=own.Offset+own.Length;ownSeen=true;
             }
             if(!ownSeen)throw new InvalidDataException("Own2 must precede mission bodies");
             while(at<bytes.Length)
@@ -60,7 +61,7 @@ public static class MervAfterCurrentBoundBody
                 var birth=creations.FirstOrDefault(c=>c.Offset==at);
                 if(birth!=null)
                 {
-                    var v=birth.Creation;string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    var v=birth.Creation;schemas.Birth(birth.Creation);string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
                     if(!live.TryGetValue(v.ViewId,out var previous)||previous.Raw!=raw)
                     {
                         if(previous!=null)retired.Add((previous.View.ViewId,previous.View.SpawnId));
@@ -69,8 +70,8 @@ public static class MervAfterCurrentBoundBody
                     }
                     at+=birth.Length;continue;
                 }
-                ushort? goid=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)
-                    ?addressed.View.Goid:at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                ushort? goid=at+2<=bytes.Length?schemas.Lookup(BitConverter.ToUInt16(bytes,at),at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)
+                    ?addressed.View.Goid:at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null):null;
                 if(!MervAfterCombatFrames.TryRead(bytes,at,goid,out var frame))
                     throw new InvalidDataException($"Unknown/truncated bound-body current-life frame at section{e.Section} offset{at}");
                 if(frame.Type==MervAfterCombatFrames.Kind.Delete)

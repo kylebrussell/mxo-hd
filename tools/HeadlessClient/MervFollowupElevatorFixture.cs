@@ -3,7 +3,13 @@ namespace HeadlessClient;
 /// <summary>QA-only selection of the already persisted current mission elevator; no new key/pose policy.</summary>
 public static class MervFollowupElevatorFixture
 {
-    public sealed record Ride(ushort District,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness);
+    public sealed record Ride(ushort District,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness)
+    {
+        public MissionNpcInteriorProof.Plan? Npc {get;init;}
+        public MervFollowupStreetEntry.Plan? Street {get;init;}
+        public bool Measured => Witness!=null||Npc!=null||Street!=null;
+        public double[] Approach => Street!=null?(Key==Street.Floor.Key?Street.Floor:Street.Lobby).Standing!:Npc==null?new[]{Pose[0],Pose[1]-50,Pose[2]}:(Key==Npc.Floor.Key?Npc.Floor:Npc.Lobby).Standing!;
+    }
     static bool Point(double[]? p)=>p?.Length==3&&p.All(double.IsFinite);
     static bool Same(double[]? a,double[]? b)=>Point(a)&&Point(b)&&a!.SequenceEqual(b!);
     static bool Quaternion(string? q){try{return q!=null&&Convert.FromHexString(q).Length==16;}catch(FormatException){return false;}}
@@ -29,6 +35,14 @@ public static class MervFollowupElevatorFixture
             throw new InvalidDataException("Current raw site identity differs");
         if(raw.metrId!=1||selected!=null&&selected.District!=1||state.Objects.Any(o=>o.Spot?.metrId!=1||o.OpenFloor!=null&&o.OpenFloor.World!=1))
             throw new InvalidDataException("Fixture world/selected site/raw object/open-floor world differs");
+        var street=MervFollowupStreetEntry.ForSite(state);
+        if(street!=null){var entry=enter?street.Lobby:street.Floor;return new(raw.metrId,entry.Key,entry.Position,entry.Quaternion,null){Street=street};}
+        var npc=MissionNpcInteriorRide.ForSite(state);
+        if(npc!=null)
+        {
+            var entry=enter?npc.Lobby:npc.Floor;
+            return new(raw.metrId,entry.Key,entry.Position,entry.Quaternion,null){Npc=npc};
+        }
         var matches=(state.ElevatorWitnesses??Array.Empty<MissionElevatorWitness>()).Where(v=>v!=null&&v.SiteFingerprint==selected?.Fingerprint).ToArray();
         if(matches.Length>1)throw new InvalidDataException("Ambiguous selected elevator witness");
         if(matches.Length==1)
@@ -67,42 +81,38 @@ public static class MervFollowupElevatorFixture
         if(current==null||before.Version!=current.Version||before.Mission!=current.Mission||before.Phase!=current.Phase||
             before.Identity!=current.Identity||before.Started!=current.Started||before.Instance!=current.Instance)return false;
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcEntry=MissionNpcInteriorRide.ForSite(s)?.Raw,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,Street=s.StreetAccess.ValueKind==System.Text.Json.JsonValueKind.Undefined?null:s.StreetAccess.GetRawText(),Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         return Snapshot(before)==Snapshot(current);
     }
     public static void RequireOverlay(Ride selected,ViewCreation view)
     {
-        if(selected.Witness==null||view.RelatedStaticObjectId!=selected.Key||!new ushort[]{417,419}.Contains(view.Goid)||!view.Attributes.TryGetValue("Position",out var p)||p.Length!=24||
+        if(!selected.Measured||view.RelatedStaticObjectId!=selected.Key||!new ushort[]{417,419}.Contains(view.Goid)||!view.Attributes.TryGetValue("Position",out var p)||p.Length!=24||
             !Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==selected.Pose[i])||!view.Attributes.TryGetValue("Orientation",out var q)||
             !q.SequenceEqual(Convert.FromHexString(selected.Quaternion!)))throw new InvalidDataException("Requested measured door overlay differs");
     }
-    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection,uint State);
-    public static NpcInteriorComputerState.DoorObservation? CurrentOpenPortal(OwnViewLifeSnapshot stream,MissionNpcInteriorProof.Door selected)
-    {
-        try{return NpcInteriorComputerState.CurrentDoor(stream,selected);}
-        catch(InvalidDataException){return null;}
-    }
+    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection);
     public static DoorObservation CurrentOverlay(OwnViewLifeSnapshot stream,Ride selected)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for measured door");
+        var schemas=new CurrentViewSchemas();
         var live=new Dictionary<ushort,(ViewCreation View,string Raw,int Birth,bool Known)>();var retired=new HashSet<(ushort,byte)>();bool own=false;
         foreach(var e in stream.Events)
         {
             if(e.Section<stream.OwnBirthSection)continue;var bytes=e.Bytes;var births=WireFormat.FindCreationEvents(bytes);int at=0;
-            if(e.Section==stream.OwnBirthSection){var self=births.LastOrDefault(c=>c.Creation.ViewId==2&&c.Creation.Goid==12)??throw new InvalidDataException("Actual own2 birth absent");at=self.Offset+self.Length;own=true;}
+            if(e.Section==stream.OwnBirthSection){var self=births.LastOrDefault(c=>c.Creation.ViewId==2&&c.Creation.Goid==12)??throw new InvalidDataException("Actual own2 birth absent");schemas.Birth(self.Creation);at=self.Offset+self.Length;own=true;}
             if(!own)throw new InvalidDataException("Door cannot precede current own2");
             while(at<bytes.Length)
             {
                 var birth=births.FirstOrDefault(c=>c.Offset==at);
                 if(birth!=null)
                 {
-                    var v=birth.Creation;var raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    var v=birth.Creation;schemas.Birth(birth.Creation);var raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
                     if(!live.TryGetValue(v.ViewId,out var prior)||prior.Raw!=raw)
                     {if(prior.View!=null)retired.Add((prior.View.ViewId,prior.View.SpawnId));live[v.ViewId]=(v,raw,e.Section,!retired.Contains((v.ViewId,v.SpawnId)));}
                     at+=birth.Length;continue;
                 }
-                ushort? kind=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
-                    at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                ushort? kind=at+2<=bytes.Length?schemas.Lookup(BitConverter.ToUInt16(bytes,at),at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
+                    at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null):null;
                 if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException("Unknown/truncated current measured-door life");
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete){if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
                 else if(live.TryGetValue(frame.View,out var changed)&&frame.PositionOffset>=0&&changed.View.Goid!=599)live[frame.View]=(changed.View,changed.Raw,changed.Birth,false);
@@ -112,11 +122,26 @@ public static class MervFollowupElevatorFixture
         var matches=live.Values.Where(v=>v.View.RelatedStaticObjectId==selected.Key).ToArray();
         if(!own||matches.Length!=1||!matches[0].Known)throw new InvalidDataException("Missing/ambiguous/deleted/reused current measured door key");
         var chosen=matches[0];RequireOverlay(selected,chosen.View);if(!stream.Current)throw new InvalidDataException("Door own life changed");
-        var open=NpcInteriorComputerState.CurrentDoor(stream,new MissionNpcInteriorProof.Door(selected.Key,chosen.View.Goid,selected.Pose,selected.Quaternion!,null,""));
-        return new(open.View,open.Capability.Life,open.Capability.Birth,open.State);
+        return new(chosen.View,stream.Life,chosen.Birth);
     }
     public static void RequireRoot(Ride selected,bool enter,double[] actual,ushort sector,ushort region,double floorY,IEnumerable<double[]> freeRoots)
     {
+        if(selected.Street!=null)
+        {
+            var street=selected.Street;var target=enter?street.Floor:street.Lobby;
+            var node=street.Raw.GetProperty("Context").GetProperty(enter?"Floor":"Lobby").GetProperty("Node");
+            if(!Same(actual,target.Standing)||sector!=(target.Key>>20)||region!=node.GetProperty("Region").GetUInt16()||!double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||enter&&freeRoots.Any(r=>!Same(r,actual)))throw new InvalidDataException("Actual Street arrival differs from exact saved Standing/NAV");
+            return;
+        }
+        if(selected.Npc!=null)
+        {
+            var npc=selected.Npc;var target=enter?npc.Floor:npc.Lobby;
+            var entry=npc.Witness.GetProperty(enter?"Floor":"Lobby");var node=entry.GetProperty("Node");
+            if(!Same(actual,target.Standing)||sector!=(target.Key>>20)||region!=node.GetProperty("Region").GetUInt16()||
+                !double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||enter&&freeRoots.Any(r=>!Same(r,actual)))
+                throw new InvalidDataException("Actual NPC arrival differs from owned measured Standing/NAV");
+            return;
+        }
         var w=selected.Witness??throw new InvalidDataException("Measured root requires selected witness");
         uint key=enter?w.FloorKey:w.LobbyKey;ushort expected=enter?w.Region:w.LobbyRegion;
         if(!Point(actual)||sector!=(key>>20)||region!=expected||!double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||

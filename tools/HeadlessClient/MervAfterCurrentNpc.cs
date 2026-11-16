@@ -67,6 +67,7 @@ public static class MervAfterCurrentNpc
         Point expected=new(actor.X,actor.Y,actor.Z);
         if (!stream.Current || !stream.OwnViewReady || stream.OwnBirthSection < 0 || stream.Events.Any(e => e.Life != stream.Life))
             throw new InvalidDataException("No current own-view life; previous-life events are inadmissible");
+        var schemas=new CurrentViewSchemas();
         var live = new Dictionary<ushort, LiveView>();
         var retired = new HashSet<(ushort View, byte Spawn)>();
         bool ownBirthSeen = false;
@@ -81,7 +82,7 @@ public static class MervAfterCurrentNpc
                 var own = creations.LastOrDefault(c => c.Creation.ViewId == 2 && c.Creation.Goid == 12);
                 if (own == null) throw new InvalidDataException("Current own-view birth is absent");
                 ownBirthSeen = true;
-                start = own.Offset + own.Length;
+                schemas.Birth(own.Creation);start = own.Offset + own.Length;
             }
             if (!ownBirthSeen) throw new InvalidDataException("Current own-view birth must precede carried objects");
             int cursor=start;
@@ -90,7 +91,7 @@ public static class MervAfterCurrentNpc
                 var birth=creations.FirstOrDefault(c=>c.Offset==cursor);
                 if(birth!=null)
                 {
-                    var view=birth.Creation;
+                    var view=birth.Creation;schemas.Birth(birth.Creation);
                     if(live.TryGetValue(view.ViewId,out var previous)&&previous.View.SpawnId==view.SpawnId&&
                         previous.View.Goid==view.Goid&&previous.View.Attributes.Count==view.Attributes.Count&&
                         previous.View.Attributes.All(a=>view.Attributes.TryGetValue(a.Key,out var bytes)&&bytes.SequenceEqual(a.Value)))
@@ -104,8 +105,8 @@ public static class MervAfterCurrentNpc
                         GenerationKnown=!retired.Contains((view.ViewId,view.SpawnId))};
                     cursor+=birth.Length;continue;
                 }
-                ushort? goid=cursor+2<=section.Length&&live.TryGetValue(BitConverter.ToUInt16(section,cursor),out var addressed)
-                    ?addressed.View.Goid:cursor+2<=section.Length&&BitConverter.ToUInt16(section,cursor)==2?(ushort)12:null;
+                ushort? goid=cursor+2<=section.Length?schemas.Lookup(BitConverter.ToUInt16(section,cursor),cursor+2<=section.Length&&live.TryGetValue(BitConverter.ToUInt16(section,cursor),out var addressed)
+                    ?addressed.View.Goid:cursor+2<=section.Length&&BitConverter.ToUInt16(section,cursor)==2?(ushort)12:null):null;
                 if(!MervAfterCombatFrames.TryRead(section,cursor,goid,out var frame))
                 {
                     // An ambiguous current-life stream cannot be repaired by a later NPC birth.

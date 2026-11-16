@@ -41,7 +41,7 @@ public class MervAfter301207Tests
         Assert.Equal("301208",Assert.Single(p.EnvironmentOverrides).Value);Assert.Equal((17000,2300),(p.X,p.Z));Assert.Equal(new ushort[]{2,17,1006,77},p.Abilities);
         Assert.DoesNotContain(p.AfterHelpers,s=>s.Contains("char_active_missions")||s.Contains("INSERT INTO inventory"));
         Assert.Single(Scenarios.All,s=>s.Name==mode.Name);
-        Assert.Equal("08d961eb47810f754d3ab4cd55cd23f7dcc8b897",p.ExtraQaMetadata["QaBaseMaster"].GetString());
-        Assert.Equal("PR249/251/255/261 general shared union",p.ExtraQaMetadata["CombinedCoreDependency"].GetString());
+        Assert.Equal("9894edab3d9bdc09c5eec77e081afc1f22864fa3",p.ExtraQaMetadata["QaBaseMaster"].GetString());
+        Assert.Equal("UNMERGED PR241/fa06152b generic Street bound-route and schema-history contracts; PR213/8001ceb2 shared QA contracts",p.ExtraQaMetadata["CombinedCoreDependency"].GetString());
     }
 }
