@@ -48,4 +48,12 @@ public class MissionNoSiteActorHistoryTests
         var baseline=Captured();var current=Captured();current.Mobs[6].Health++;
         Assert.Throws<InvalidDataException>(()=>MissionNoSiteActorHistory.RequireStable(baseline,current));
     }
+    [Theory] [InlineData("pending")] [InlineData("current")] [InlineData("legacy")]
+    public void TopLevelFreePlacementAuthorityCannotMasqueradeAsNoSiteHistory(string fault)
+    {
+        var s=Captured();
+        if(fault=="pending")s.PendingOpenFloor=new MissionOpenFloorPendingAdmission(1,s.Mission,s.Identity,s.Phase,s.Started,s.OpenFloorSites![0],Array.Empty<MissionOpenFloorChoice>(),null);
+        if(fault=="current")s.OpenFloorPhase=s.Phase;if(fault=="legacy")s.OpenFloorLegacyPhase=s.Phase;
+        Assert.Throws<InvalidDataException>(()=>MissionNoSiteActorHistory.RequireHistoricalContext(s));
+    }
 }

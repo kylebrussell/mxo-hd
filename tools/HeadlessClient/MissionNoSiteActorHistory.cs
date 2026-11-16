@@ -9,7 +9,7 @@ public static class MissionNoSiteActorHistory
     public static void RequireHistoricalContext(MissionProgress.SavedState state)
     {
         Need(state!=null&&state.Version==2&&state.Mission>0&&Guid.TryParseExact(state.Identity,"N",out _)&&state.Started>0&&state.Instance>0&&
-            state.OpenFloorCurrentSiteIndex==-1&&state.Waypoints.Length==0&&state.Exits.Length==0&&state.Objects.Count==0,"No-site progress has a current owner and no current geometry");
+            state.OpenFloorCurrentSiteIndex==-1&&state.PendingOpenFloor==null&&state.OpenFloorPhase==null&&state.OpenFloorLegacyPhase==null&&state.Waypoints.Length==0&&state.Exits.Length==0&&state.Objects.Count==0,"No-site progress has a current owner and no current geometry");
         void History(JsonElement envelope,bool npc)
         {
             if(envelope.ValueKind==JsonValueKind.Undefined)return;
