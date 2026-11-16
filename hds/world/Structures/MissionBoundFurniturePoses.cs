@@ -14,6 +14,39 @@ namespace hds
     internal sealed class MissionBoundFurniturePoses
     {
         internal const string AuditedManifestSha256="ECAE0AEE396F5754B30818EC73E9A652A42BE42B6584CB5F46BA5C63524AA13E";
+        // Exact original GOB Model half-extents; no inferred range or model-family conversion.
+        internal const string OriginalGobSha256="3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103";
+        private static readonly Dictionary<ushort,string> modelHalfHex=new Dictionary<ushort,string>
+        {
+            {573,"00002042000096420000d041"},
+            {1431,"08eda74229fe1f4202311942"},
+            {1432,"9872b442790f204285072642"},
+            {1433,"8e63b4420000204200002042"},
+            {1434,"c771b3420000204200002042"},
+            {1435,"c771b342b907204200002042"},
+            {1438,"fff8f1425c03204200002042"},
+            {1439,"9446f04200002042f6ff1f42"},
+            {1443,"0000304200009b422486e941"},
+            {1444,"000030428aed47422486e941"},
+            {1445,"0000a8428aed47422486e941"},
+            {1446,"0000304200009b422486e941"},
+            {1447,"0000304200009b422486e941"},
+            {1448,"000030428aed47422486e941"},
+            {1449,"000030428aed47422486e941"},
+            {1450,"0000a8428aed47422486e941"},
+            {1451,"0000a8428aed47422486e941"},
+            {6987,"fff8f1425c03204200002042"},
+            {37913,"000080420000e642cf761f42"},
+            {38484,"000080420000e642cf761f42"},
+        };
+        internal static bool SupportsGoid(ushort goid)=>modelHalfHex.ContainsKey(goid);
+        internal static float[] ModelHalf(ushort goid)
+        {
+            if(!modelHalfHex.TryGetValue(goid,out string hex))throw new ArgumentOutOfRangeException(nameof(goid));
+            byte[] bytes=Convert.FromHexString(hex);
+            return Enumerable.Range(0,3).Select(i=>BitConverter.Int32BitsToSingle(
+                System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(i*4,4)))).ToArray();
+        }
         internal sealed class Entry
         {
             internal ushort Goid;
