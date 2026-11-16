@@ -36,6 +36,20 @@ public class MissionOpenFloorSearchWorkTests
         Assert.Equal("SearchExhausted:RouteGraphs",why);Assert.Equal(1,work.RouteGraphs);Assert.Equal(1,work.BodyNodes);
     }
 
+    [Fact] public void FirstCompleteTrialIsUnchangedWhenItAlreadySucceeds()
+    {
+        const string q="0000000000000000000000000000803f";
+        var id=new G.Id(127,1,1);G.Point[] room={new(-500,-500),new(500,-500),new(500,500),new(-500,500)};
+        G.Request At(ushort key,double x)=>new(1,G.SourceModelPresence.Model6Absent,"literal absence",new(new(x,145,0),q,key,1415),new(new(x,0,0),q,key,1415),"literal anchor",
+            new OpenFloorModelBounds(3,new(-10,-10,-10),new(10,10,10),"literal bounds"),MissionOpenFloorUsableRange.Profile.InitialClient400(3,5,new(43,25,40),"literal range"),
+            new[]{new G.Surface(id,room,0,0,0)},new(id,new(-300,95,-300),"literal root"),new(-500,500,-500,500),new(1,true,new(-500,500,-500,500),-100,1000,Array.Empty<G.StaticObstacle>(),"literal coverage"));
+        var inputs=new[]{new P.Input(1,At(1,-80)),new P.Input(2,At(2,80))};
+        var first=inputs.Select(i=>{Assert.True(G.TryBodySequence(i.Request,out var seq,out string why,out _),why);return seq.Enumerate(true).First();}).ToArray();
+        Assert.True(G.BodiesClear(first[0],first[1]));Assert.True(G.RouteBodySet(first,out var expected,out string reason),reason);
+        Assert.True(P.TryPlan(inputs,out var plan,out reason,out var work,P.Limits.Default),reason);Assert.Equal(1,work.RouteGraphs);Assert.Equal(new ushort[]{1,2},plan.Order);
+        for(int i=0;i<2;i++){var actual=plan.Results[(ushort)(i+1)];Assert.Equal(expected[i].Centre,actual.Centre);Assert.Equal(expected[i].Standing,actual.Standing);Assert.Equal(expected[i].Route,actual.Route);Assert.Equal(expected[i].RoutePolygons,actual.RoutePolygons);}
+    }
+
     [Fact] public void EmptyGeometryHasStableNonemptyFailureThatCanBeMemoized()
     {
         var r=Input(1);var impossible=new G.Request(r.World,r.SourceModel,r.SourceModelEvidence,r.RawSource,r.Anchor,r.AnchorEvidence,
