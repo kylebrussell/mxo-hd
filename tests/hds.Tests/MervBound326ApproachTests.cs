@@ -64,7 +64,7 @@ public class MervBound326ApproachTests
     [Fact] public void MissingRootReferenceCannotFallBackToAnUnrelatedNearestComponent()
     {
         var c=Case();int targetCalls=0;var good=Fake(c.Arrival);
-        var nav=new MervBound326Approach.Nav(good.Locate,(p,r,from)=>{if(r==0)return null;targetCalls++;return good.Project(p,r,from);});
+        var nav=new MervBound326Approach.Nav(_=>null,(p,r,from)=>{targetCalls++;return good.Project(p,r,from);});
         Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Select(Bounds(),c.Arrival,nav));Assert.Equal(0,targetCalls);
     }
     [Fact] public void CandidateIsCastToFloat32AndRecheckedRatherThanUsingTheDouble()

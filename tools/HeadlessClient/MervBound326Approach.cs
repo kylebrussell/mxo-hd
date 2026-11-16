@@ -141,15 +141,16 @@ public static class MervBound326Approach
         double errorNorm=Math.Sqrt(error2);double radius=errorNorm<1?(100+Math.Sqrt(25*25+80*80+30*30))/Math.Sqrt(1-errorNorm):double.NaN;
         if(!double.IsFinite(radius))throw new InvalidDataException("Unbounded native basis");return radius;
     }
-    public static Result Select(Bounds bounds,Arrival arrival,Nav nav)=>SelectCore(bounds,arrival,nav,true);
+    public static Result Select(Bounds bounds,Arrival arrival,Nav nav)=>SelectCore(bounds,arrival,nav);
     // Actual legacy player arrivals need raw NAV membership, not the NPC spawn-inset placement policy.
-    static Result SelectCore(Bounds bounds,Arrival arrival,Nav nav,bool requireInsetRoot)
+    static Result SelectCore(Bounds bounds,Arrival arrival,Nav nav)
     {
         if(bounds.SourceKey==0||bounds.Region<0||!Point(bounds.Centre)||!Point(bounds.Minimum)||!Point(bounds.Maximum)||!Point(arrival.Root)||arrival.Sector!=(bounds.SourceKey>>20)||arrival.Region!=bounds.Region||
             !double.IsFinite(arrival.FloorY)||bounds.Minimum.Where((v,i)=>v>=bounds.Maximum[i]||bounds.Centre[i]!=(double)(float)((float)(v+bounds.Maximum[i])*.5f)).Any())throw new InvalidDataException("Bound/arrival bounds/floor identity");
-        var root=nav.Locate(arrival.Root);var self=requireInsetRoot?nav.Project(arrival.Root,0,arrival.Root):root;
+        // A captured player arrival needs exact grounded NAV membership, not NPC spawn-inset placement.
+        var root=nav.Locate(arrival.Root);
         bool Root(Sample? p)=>p!=null&&p.Sector==arrival.Sector&&p.Region==arrival.Region&&p.FloorY==arrival.FloorY&&p.Position.SequenceEqual(arrival.Root)&&p.Position[1]==p.FloorY+95;
-        if(!Root(root)||!Root(self))throw new InvalidDataException("Root reference cannot fall back");
+        if(!Root(root))throw new InvalidDataException("Root reference cannot fall back");
         double envelope=Envelope(bounds);var candidate=nav.Project(bounds.Centre,envelope,arrival.Root)??throw new InvalidDataException("No nearest native-range NAV candidate");
         if(!Point(candidate.Position))throw new InvalidDataException("Nonfinite projected candidate");
         var point=candidate.Position.Select(v=>(double)(float)v).ToArray();if(!Point(point))throw new InvalidDataException("Unrepresentable projected candidate");var located=nav.Locate(point);
@@ -165,7 +166,7 @@ public static class MervBound326Approach
         RequireLegacyScope(state,id,arrival,life);var bounds=Load(repository,state.Objects.Single(o=>o.Id==id));
         Sample? Locate(double[] p)=>NavMesh.Locate(1,p[0],p[1],p[2],out var at)?new(p.ToArray(),at.sector,at.region,at.polygon,at.floorY):null;
         Sample? Project(double[] p,double radius,double[] root)=>NavMesh.Project(1,p[0],p[1],p[2],out var at,radius,root,false)?new(at.Position,at.location.sector,at.location.region,at.location.polygon,at.location.floorY):null;
-        var result=SelectCore(bounds,arrival,new(Locate,Project),false);RequireLegacyScope(state,id,arrival,life);return result;
+        var result=SelectCore(bounds,arrival,new(Locate,Project));RequireLegacyScope(state,id,arrival,life);return result;
     }
     public static Result Choose(string repository,MissionProgress.SavedState state,int id,Arrival arrival,OwnViewLifeSnapshot life)
     {
