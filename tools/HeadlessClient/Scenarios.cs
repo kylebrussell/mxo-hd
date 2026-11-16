@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("open-world-first-level",OpenWorldFirstLevel,OpenWorldFirstLevelFixture.HeadlessEnvironment,Timeout:TimeSpan.FromMinutes(8)),
         new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
         new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
