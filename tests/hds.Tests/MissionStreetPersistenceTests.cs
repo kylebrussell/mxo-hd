@@ -39,5 +39,17 @@ public sealed partial class MissionStreetAccessTests
         var envelope=JsonSerializer.Deserialize<MissionStreetEnvelope>(saved.StreetAccess.GetRawText(),MissionProgress.SaveJson)!;
         MissionStreetCheckpoint.ValidateGeometry(restored,envelope,null!,null!,new[]{site}); // Refusal has no geometry/provider authority.
     }
+    [Fact]public void PublicApproachProjectionDoesNotRewriteOwnedCarOrExitAuthority()
+    {
+        var m=StreetMission();var p=new MissionProgress(m){phaseIndex=1,streetPolicy=true,persistenceId="street-owner",startedAt=123};var (site,c)=StreetContext("Objects");
+        p.streetWitnesses.Add(1,new MissionStreetSelection(1,m.id,p.persistenceId,p.startedAt,1,MissionOpenFloorSite.From(site),"Objects",c,null));
+        var car=new MissionWaypoint{x=c.Floor.Position[0],y=c.Floor.Position[1],z=c.Floor.Position[2],doorHex="2000100d"};p.waypoints.Add(car);p.exits.Add(c.Lobby.Position);
+        string before=JsonSerializer.Serialize(new{p.waypoints,p.exits},MissionProgress.SaveJson);
+        var shown=MissionStreetGuidance.Project(p,(NavLocation?)null);
+        Assert.Equal(c.Door.Position,new[]{shown.x,shown.y,shown.z});Assert.NotEqual(car.doorHex,shown.doorHex);
+        Assert.Equal(before,JsonSerializer.Serialize(new{p.waypoints,p.exits},MissionProgress.SaveJson));
+        p.restoreRefusal="quarantined";Assert.Null(MissionStreetGuidance.Project(p,(NavLocation?)null));
+    }
+
 }
 
