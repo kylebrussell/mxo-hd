@@ -80,6 +80,7 @@ public static partial class Scenarios
         new Scenario("conditional-daze-fixture-disabled", ConditionalDazeFixtureDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("conditional-dazed-stun", ConditionalDazedStun, StillNpcs),
         new Scenario("sever-artery-states",SeverArteryStates,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_SEVER_STATE_QA"]="1"}),
+        new Scenario("thrown-accuracy-bonus",ThrownAccuracyWire,ThrownAccuracyFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("multifighting-interlock",MultifightingWire,MultifightingFixture.Environment,Timeout:TimeSpan.FromMinutes(7)),
         new Scenario("combat-insight-engagement",CombatInsightWire,CombatInsightFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("punishing-blows",PunishingBlowsWire,PunishingBlowsFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
