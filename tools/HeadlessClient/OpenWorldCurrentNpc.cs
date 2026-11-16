@@ -11,7 +11,8 @@ public static class OpenWorldCurrentNpc
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life");
         var live = new Dictionary<ushort, LiveView>();
         var retired = new HashSet<(ushort View, byte Spawn)>();
-        bool ownBirthSeen = false;
+        bool ownBirthSeen = false;byte ownSpawn=0;
+        var combat=new OpenWorldCombatFrames(id=>id==2?new(12,ownSpawn,ownBirthSeen):live.TryGetValue(id,out var v)?new(v.View.Goid,v.View.SpawnId,v.GenerationKnown):null,2u);
         foreach (var e in stream.Events)
         {
             if (e.Section < stream.OwnBirthSection) continue;
@@ -22,7 +23,8 @@ public static class OpenWorldCurrentNpc
             {
                 var own = creations.LastOrDefault(c => c.Creation.ViewId == 2 && c.Creation.Goid == 12);
                 if (own == null) throw new InvalidDataException("Current own-view birth is absent");
-                ownBirthSeen = true;
+                ownBirthSeen = true;ownSpawn=own.Creation.SpawnId;
+                combat=new OpenWorldCombatFrames(id=>id==2?new(12,ownSpawn,true):live.TryGetValue(id,out var v)?new(v.View.Goid,v.View.SpawnId,v.GenerationKnown):null,2u|((uint)ownSpawn<<16));
                 start = own.Offset + own.Length;
             }
             if (!ownBirthSeen) throw new InvalidDataException("Current own-view birth must precede ambient objects");
@@ -45,6 +47,11 @@ public static class OpenWorldCurrentNpc
                         Dead=view.Attributes.TryGetValue("IsDead",out var dead)&&dead.Length==1&&dead[0]!=0,
                         GenerationKnown=!retired.Contains((view.ViewId,view.SpawnId))};
                     cursor+=birth.Length;continue;
+                }
+                if(combat.TryRead(section,cursor,out var combatFrame))
+                {
+                    if(combatFrame.DeletedView is ushort deleted&&live.Remove(deleted,out var removedCombat))retired.Add((removedCombat.View.ViewId,removedCombat.View.SpawnId));
+                    cursor+=combatFrame.Length;continue;
                 }
                 ushort? goid=cursor+2<=section.Length&&live.TryGetValue(BitConverter.ToUInt16(section,cursor),out var addressed)
                     ?addressed.View.Goid:cursor+2<=section.Length&&BitConverter.ToUInt16(section,cursor)==2?(ushort)12:null;
