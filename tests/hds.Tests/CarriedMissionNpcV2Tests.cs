@@ -34,7 +34,7 @@ public class CarriedMissionNpcV2Tests
     {
         var s=Actual();string before=s.ToJsonString();var log=Life();var token=Capture(s,log);
         Assert.Equal(2,token.CheckpointVersion);Assert.Equal("58e93f06e97749438f822859316dbffb",token.AcceptedIdentity);Assert.Equal(s["Started"]!.GetValue<long>(),token.AcceptedStarted);Assert.Equal(51,token.Instance);
-        Assert.Equal("4dff45092f8c4b3988cc54a076c38a35",token.Identity);Assert.Equal(before,s.ToJsonString());Assert.True(token.OwnerLife!.Current);Assert.Equal(log.Snapshot().Life,token.OwnerLife.Life);
+        Assert.Equal("4dff45092f8c4b3988cc54a076c38a35",token.Identity);Assert.Equal(before,s.ToJsonString());Assert.DoesNotContain(typeof(CarriedMissionNpcFixture.Token).GetProperties(),p=>p.PropertyType==typeof(OwnViewLifeSnapshot));
         // A unit-only later-phase projection tests identity continuity; it is not an earned phase or seeded server.
         s["Phase"]=1;var point=CarriedMissionNpcFixture.Resolve(s.ToJsonString(),token,1,true);Assert.Equal(new CarriedMissionNpcFixture.Point(65750,2695,-10400),point);
         byte[] birth=Birth();log.Observe(false,birth,1,WireFormat.FindCreations(birth));var view=CarriedMissionNpcFixture.CurrentLiveView(log.Snapshot(),token,s.ToJsonString(),1,true,1);Assert.Equal((ushort)87,view.View.ViewId);
@@ -50,15 +50,32 @@ public class CarriedMissionNpcV2Tests
         if(fault=="no-life"){Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.Capture(s.ToJsonString(),301207,0,1,"Sharmaine Tarn",true));return;}
         Assert.Throws<InvalidDataException>(()=>Capture(s,log));
     }
-    [Theory] [InlineData("acceptance")] [InlineData("started")] [InlineData("instance")] [InlineData("version")] [InlineData("uuid")] [InlineData("reset")] [InlineData("other-life")] [InlineData("dead")] [InlineData("side")]
+    [Theory] [InlineData("acceptance")] [InlineData("started")] [InlineData("instance")] [InlineData("version")] [InlineData("uuid")] [InlineData("old-stream")] [InlineData("foreign-events")] [InlineData("dead")] [InlineData("side")]
     public void V2ContinuationCannotBorrowAnotherAcceptanceActorOrOwnLife(string fault)
     {
         var s=Actual();var log=Life();var token=Capture(s,log);s["Phase"]=1;
         if(fault=="acceptance")s["Identity"]=new string('b',32);if(fault=="started")s["Started"]=s["Started"]!.GetValue<long>()+1;if(fault=="instance")s["Instance"]=52;if(fault=="version")s["Version"]=1;if(fault=="uuid")s["Mobs"]![0]!["Identity"]=new string('c',32);
         if(fault=="dead")s["Mobs"]![0]!["Dead"]=true;if(fault=="side")s["Mobs"]![0]!["Friendly"]=false;
-        if(fault=="reset")log.Observe(true,null,1,Array.Empty<ViewCreation>());
-        if(fault=="other-life"){var other=Life();byte[] birth=Birth();other.Observe(false,birth,1,WireFormat.FindCreations(birth));Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(other.Snapshot(),token,s.ToJsonString(),1,true,1));return;}
+        if(fault=="old-stream"){var stale=log.Snapshot();log.EndLife();Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(stale,token,s.ToJsonString(),1,true,1));return;}
+        if(fault=="foreign-events")
+        {
+            byte[] birth=Birth();log.Observe(false,birth,1,WireFormat.FindCreations(birth));var old=log.Snapshot();log.EndLife();
+            var other=Life();other.Observe(false,birth,1,WireFormat.FindCreations(birth));var forged=other.Snapshot() with{Events=old.Events};
+            Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(forged,token,s.ToJsonString(),1,true,1));return;
+        }
         Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.Resolve(s.ToJsonString(),token,1,true));
+    }
+    [Fact] public void LegitimateNewSessionUsesPortableAcceptedIdentityAndFreshCurrentBody()
+    {
+        var state=Actual();var old=Life();var token=Capture(state,old);var oldSnapshot=old.Snapshot();old.EndLife();
+        // Unit-only same accepted mission/NPC at a later phase; no checkpoint is seeded into a server.
+        state["Phase"]=1;var current=Life();byte[] birth=Birth();current.Observe(false,birth,1,WireFormat.FindCreations(birth));
+        string serialized=JsonSerializer.Serialize(token);Assert.DoesNotContain("OwnerLife",serialized);
+        var portable=JsonSerializer.Deserialize<CarriedMissionNpcFixture.Token>(serialized)!;
+        var receipt=CarriedMissionNpcFixture.CurrentLiveView(current.Snapshot(),portable,state.ToJsonString(),1,true,1);
+        Assert.Equal((ushort)87,receipt.View.ViewId);Assert.Equal(new CarriedMissionNpcFixture.Point(65750,2695,-10400),receipt.Position);
+        Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(oldSnapshot,portable,state.ToJsonString(),1,true,1));
+        state["Identity"]=new string('b',32);Assert.Throws<InvalidDataException>(()=>CarriedMissionNpcFixture.CurrentLiveView(current.Snapshot(),portable,state.ToJsonString(),1,true,1));
     }
     [Fact] public void V1TokenRetainsLegacySerializedShape()
     {
