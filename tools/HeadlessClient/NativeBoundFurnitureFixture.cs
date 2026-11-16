@@ -28,7 +28,7 @@ public static class NativeBoundFurnitureFixture
  {
   Need(Convert.ToHexString(SHA256.HashData(capture))==CapturedSha256,"Captured bytes differ");var s=JsonSerializer.Deserialize<MissionProgress.SavedState>(capture,Fields)!;
   var o=s.Objects.Single();Need(s.Version==2&&s.Mission==301210&&s.Phase==1&&s.Identity=="bc7cfe770db746209313034b307ca1cd"&&s.Started==1794824876&&s.Instance==49&&
-   s.Done.SequenceEqual(new[]{1})&&!s.Done.Contains(3)&&s.Items.Count==1&&s.Items.GetValueOrDefault((ushort)6854)==1&&o.Id==1&&o.Goid==1450&&o.OpenFloor==null&&o.Spot.mxoStaticId==SourceKey&&
+   s.Done.SequenceEqual(new[]{1})&&!s.Done.Contains(3)&&s.Items.Count==1&&s.Items.GetValueOrDefault(6854u)==1&&o.Id==1&&o.Goid==1450&&o.OpenFloor==null&&o.Spot.mxoStaticId==SourceKey&&
    new[]{o.Spot.pos_x,o.Spot.pos_y,o.Spot.pos_z}.SequenceEqual(new[]{42300d,1145,-27045})&&o.Spot.quat=="0000000000000000000000000000803f","Exact captured owner/source/goals/items");
   Need(EarlierReceipts.Length==29&&EarlierReceipts.Distinct().Count()==29&&!EarlierReceipts.Contains(301210),"Earlier receipt boundary");return s;
  }
