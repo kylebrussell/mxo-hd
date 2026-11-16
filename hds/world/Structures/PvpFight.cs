@@ -476,9 +476,22 @@ namespace hds
             }
         }
 
-        internal sealed record MultifightingMember(Side Side,Side Other,MultifightingInterlock.Owner Owner,WorldClient Client,
-            bool Endpoint,long Transport,bool Loaded);
-        internal sealed record MultifightingRound(long Version,MultifightingMember[] Members);
+        internal sealed class MultifightingMember
+        {
+            internal readonly Side Side,Other;
+            internal readonly MultifightingInterlock.Owner Owner;
+            internal readonly WorldClient Client;
+            internal readonly bool Endpoint,Loaded;
+            internal readonly long Transport;
+            internal MultifightingMember(Side side,Side other,MultifightingInterlock.Owner owner,WorldClient client,bool endpoint,long transport,bool loaded)
+            {Side=side;Other=other;Owner=owner;Client=client;Endpoint=endpoint;Transport=transport;Loaded=loaded;}
+        }
+        internal sealed class MultifightingRound
+        {
+            internal readonly long Version;
+            internal readonly MultifightingMember[] Members;
+            internal MultifightingRound(long version,MultifightingMember[] members){Version=version;Members=members;}
+        }
         internal MultifightingRound CaptureMultifighting()
         {
             MultifightingMember[] snapshot;long version;
@@ -492,7 +505,7 @@ namespace hds
             {
                 var item=snapshot[i];if(item.Owner==null || item.Client?.TransportFence==null)continue;
                 bool endpoint=item.Owner.EndpointCurrent();long transport=item.Client.TransportFence.Capture();
-                snapshot[i]=item with {Endpoint=endpoint,Transport=transport,Loaded=MultifightingInterlock.Loaded(item.Client)};
+                snapshot[i]=new MultifightingMember(item.Side,item.Other,item.Owner,item.Client,endpoint,transport,MultifightingInterlock.Loaded(item.Client));
             }
             return new MultifightingRound(version,snapshot);
         }
