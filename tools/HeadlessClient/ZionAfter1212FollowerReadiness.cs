@@ -47,6 +47,7 @@ public static class ZionAfter1212FollowerReadiness
     private static Dictionary<ushort,Live> Read(OwnViewLifeSnapshot stream,string handle)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("Wrong current NPC own life");
+        var schemas=new CurrentViewSchemas();
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool own=false;
         foreach(var e in stream.Events)
         {
@@ -54,7 +55,7 @@ public static class ZionAfter1212FollowerReadiness
             if(e.Section==stream.OwnBirthSection)
             {
                 var self=births.LastOrDefault(b=>b.Creation.ViewId==2&&b.Creation.Goid==12&&b.Creation.Name==handle)??throw new InvalidDataException("Wrong current own2 identity");
-                at=self.Offset+self.Length;own=true;
+                schemas.Birth(self.Creation);at=self.Offset+self.Length;own=true;
             }
             if(!own)throw new InvalidDataException("Follower precedes current own2");
             while(at<bytes.Length)
@@ -62,7 +63,7 @@ public static class ZionAfter1212FollowerReadiness
                 var birth=births.FirstOrDefault(b=>b.Offset==at);
                 if(birth!=null)
                 {
-                    var v=birth.Creation;string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    var v=birth.Creation;schemas.Birth(v);string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
                     if(!live.TryGetValue(v.ViewId,out var prior)||prior.Raw!=raw)
                     {
                         if(prior!=null)retired.Add((prior.View.ViewId,prior.View.SpawnId));
@@ -72,8 +73,7 @@ public static class ZionAfter1212FollowerReadiness
                     }
                     at+=birth.Length;continue;
                 }
-                ushort? kind=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
-                    at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                ushort? kind=at+2<=bytes.Length?schemas.Lookup(BitConverter.ToUInt16(bytes,at),live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:null):null;
                 if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException("Unknown/truncated current escort view frame");
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}

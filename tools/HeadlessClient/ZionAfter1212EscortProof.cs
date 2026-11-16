@@ -19,7 +19,7 @@ public static class ZionAfter1212EscortProof
     public static bool CanApproach(MissionProgress.SavedState state, Mission mission, int goal)
     {
         var objective = Objective(state, mission, goal);
-        return objective != null && state.Flags != null &&
+        return objective != null && state.Flags.TryGetValue("entered", out bool entered) && entered &&
             (!state.Flags.TryGetValue("failed", out bool failed) || !failed) && objective.Npcs.Count > 0 &&
             objective.Npcs.All(id => id != 0 && state.Following.Contains(id) &&
                 state.Mobs.Count(m => m.Npc == id && !m.Dead && m.Health > 0) == 1);
@@ -33,7 +33,7 @@ public static class ZionAfter1212EscortProof
         return objective != null && current != null && current.Mission == before.Mission && current.Phase == before.Phase &&
             current.Identity == before.Identity && current.Started == before.Started && current.Instance == before.Instance &&
             current.Done.Contains(goal) && current.EverDone.Contains(goal) &&
-            !current.Flags.GetValueOrDefault("failed") &&
+            current.Flags.GetValueOrDefault("entered") && !current.Flags.GetValueOrDefault("failed") &&
             current.Flags.GetValueOrDefault("waitingForExit") && current.Flags.GetValueOrDefault("goalsCompleteSent") &&
             current.Flags.GetValueOrDefault("leaveNotNeeded") &&
             mission.phases[before.Phase].missionObjectives.Where(o => !o.optional).All(o => current.Done.Contains(o.goal)) &&
