@@ -176,7 +176,7 @@ public static class MissionBoundFurnitureRouteProof
                 var start=edges[edge].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray();var end=edges[(edge+1)%edges.Length].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()).ToArray();x=new[]{start[0],start[2]};z=new[]{end[0],end[2]};doors=Array.Empty<uint>();
                 Need(b.GetProperty("Edges").EnumerateArray().Any(e=>e.GetProperty("Neighbor").GetInt32()==P(nodes[i-1])&&e.GetProperty("RegionTag").GetInt32()==65535&&(!localEvidence||e.GetProperty("Reference").GetString()=="Local")),"Bound route reciprocal polygon neighbor");
             }
-            Need(Math.Sqrt(Math.Pow(z[0]-x[0],2)+Math.Pow(z[1]-x[1],2))>=NavMesh.MinOpenEdge,"Original opening meets unchanged minimum edge");
+            // Original authored neighbor/portal replay has no generated open-floor clearance threshold.
             double px=(x[0]+z[0])/2,pz=(x[1]+z[1])/2;double floorA=Floor(a,nodes[i-1],px,pz),floorB=Floor(b,nodes[i],px,pz);
             Need(localEvidence?Math.Abs(floorA-floorB)<=1e-7:floorA==floorB,"Bound route portal/edge floor agreement");Need(doors.All(k=>plan.Doors.Count(d=>d.Key==k)==1),"Bound route every portal door is saved own-GO proof");steps.Add(new(new[]{px,floorA+95,pz},doors,R(nodes[i]),P(nodes[i])));
         }

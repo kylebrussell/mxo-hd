@@ -75,4 +75,19 @@ public sealed class MissionBoundFurnitureRouteProofTests
   float dresser=MissionBoundFurnitureRouteProof.NativeDistance(p,c,q,new[]{84f,49.981971740722656f,29.19049835205078f});
   float cabinet=MissionBoundFurnitureRouteProof.NativeDistance(p,c,q,new[]{25f,80f,30f});Assert.Equal(5013.984375f,dresser);Assert.NotEqual(dresser,cabinet);
  }
+ [Fact] public void ActualOriginalTenUnitLocalEdgeIsNotAGeneratedOpenFloorClearanceGate()
+ {
+  var prepared=NativeBoundFurnitureFixture.Prepare(Root);var plan=MissionBoundFurnitureRouteProof.Read(Root,prepared.State,1)!;
+  var nodes=plan.Route.GetProperty("Nodes").EnumerateArray().ToArray();
+  Assert.Contains(Enumerable.Range(1,nodes.Length-1),i=>nodes[i-1].GetProperty("Region").GetInt32()==114&&nodes[i-1].GetProperty("Polygon").GetInt32()==157&&nodes[i].GetProperty("Region").GetInt32()==114&&nodes[i].GetProperty("Polygon").GetInt32()==71);
+  using var evidence=JsonDocument.Parse(MissionNpcInteriorProof.EvidencePayload(Root,985,plan.Selection.GetProperty("FurnitureRoutes").GetProperty("EvidenceDigest").GetString()!));
+  var polygon=evidence.RootElement.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==114).GetProperty("Polygons")[157];var edges=polygon.GetProperty("Edges").EnumerateArray().ToArray();var edge=edges[3];
+  Assert.Equal("Local",edge.GetProperty("Reference").GetString());Assert.Equal(71,edge.GetProperty("Neighbor").GetInt32());
+  Assert.Equal(new[]{42610d,1000,-27800},edge.GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()));
+  Assert.Equal(new[]{42600d,1000,-27800},edges[0].GetProperty("Vertex").EnumerateArray().Select(v=>v.GetDouble()));
+  Assert.Equal(10d,Math.Abs(edge.GetProperty("Vertex")[0].GetDouble()-edges[0].GetProperty("Vertex")[0].GetDouble()));
+  Assert.Equal(30d,NavMesh.MinOpenEdge); // Existing generated/open-floor policy is unchanged, not applied to original local links.
+  Assert.Equal(plan.Standing,MissionBoundFurnitureRouteProof.Steps(Root,plan)[^1].Standing);
+ }
+
 }
