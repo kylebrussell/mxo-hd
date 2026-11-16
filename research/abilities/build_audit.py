@@ -194,6 +194,8 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 
 def server(i):
     if i == 1149:
+        if any(m['consumer'] != 'total only' for m in coverage[i].get('buff_stats', [])):
+            return "OURS: capped Initiative1044 adds attack-base points once in NPC/PvP interlock, excluding escape/freefire/freecast; sourced20s health snapshot, IS10/reuse90/buffer10; retail gameplay caller unresolved; [policy](DESPERATION-INITIATIVE.md)"
         return "COSMETIC:20s health/InitiativeBonus snapshot1044; IS10/reuse90/buffer10; expiry/death/unload cleanup; no recovered combat consumer; [source boundary](DESPERATION.md)"
     if i == 7:
         return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
@@ -320,7 +322,7 @@ def status(i):
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
     if i == 49 and not any(m['stat'] == 520 and m['consumer'] != 'total only' for m in (r.get('buff_stats') or [])):
         return 'cosmetic'
-    if i == 1149 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
+    if (i == 1149 and not any(m['consumer'] != 'total only' for m in (r.get('buff_stats') or []))) or (r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats'])):
         return 'cosmetic'
     if r.get('stealth_shield') or r.get('health_callback') or r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or r.get('style') or r.get('special') or 'HyperJump' in abilities[i]['name']:
         return 'partial'
