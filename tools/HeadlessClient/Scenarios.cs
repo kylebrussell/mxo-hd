@@ -28,6 +28,7 @@ public static partial class Scenarios
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
+        new Scenario(MissionPublicStreetProof.Name,MissionPublicStreetRoute,MissionPublicStreetEnvironment(),Timeout:TimeSpan.FromMinutes(6)),
         new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),
         new Scenario(MissionNpcInteriorProof.Name,c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.NpcInteriorRoute,true,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.NpcInteriorRoute),Timeout:TimeSpan.FromMinutes(6)),
         new Scenario("interior-admission-machines",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.Machines),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Machines)),

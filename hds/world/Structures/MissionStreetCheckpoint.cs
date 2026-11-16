@@ -86,7 +86,7 @@ namespace hds
         internal static MissionStreetEnvelope PrepareRestore(MissionProgress p,MissionProgress.SavedState state,IReadOnlyList<MissionSite> catalogue,MissionNpcInteriorEnvelope npc)
         {
             bool present=Present(state)||npc?.Pending!=null&&npc.Pending.Street.ValueKind!=JsonValueKind.Undefined;
-            if(!present)return null;Need(p,state.Version==2,"StreetRequiresVersion2");catalogue=catalogue??MissionSites.For(p.mission.district);
+            if(!present)return null;Need(p,state.Version==2,"StreetRequiresVersion2");Need(p,!string.IsNullOrWhiteSpace(state.Identity),"StreetOwnerIdentity");catalogue=catalogue??MissionSites.For(p.mission.district);
             Need(p,state.OpenFloorSites!=null&&state.OpenFloorCurrentSiteIndex.HasValue&&state.OpenFloorCurrentSiteIndex.Value>=-1&&state.OpenFloorCurrentSiteIndex.Value<state.OpenFloorSites.Length&&
                 state.OpenFloorSites.All(s=>s!=null&&s.Resolve(catalogue)!=null),"StreetExactHistory");
             if(state.PendingOpenFloor!=null)
@@ -117,6 +117,11 @@ namespace hds
                 var envelope=JsonSerializer.Deserialize<MissionStreetEnvelope>(state.StreetAccess.GetRawText(),MissionProgress.SaveJson);
                 Need(p,envelope!=null&&envelope.Version==1&&envelope.Kind=="StreetAccess"&&envelope.Enabled&&envelope.Witnesses!=null&&envelope.Witnesses.Select(w=>w?.Phase).Distinct().Count()==envelope.Witnesses.Length,"StreetEnvelope");
                 if(envelope.Pending!=null)ValidateCarrier(p,envelope.Pending,catalogue);
+                if(state.OpenFloorCurrentSiteIndex.Value>=0&&KindFor(p.mission,p.phaseIndex)!=null)
+                {
+                    var current=state.OpenFloorSites[state.OpenFloorCurrentSiteIndex.Value];
+                    Need(p,envelope.Witnesses.Any(w=>w!=null&&w.Phase==p.phaseIndex&&w.Site?.Fingerprint==current.Fingerprint),"MissingCurrentStreetContext");
+                }
                 foreach(var row in envelope.Witnesses)
                 {
                     Selection(p,row,catalogue,false);Need(p,state.OpenFloorSites?.Count(s=>s.Fingerprint==row.Site.Fingerprint)==1,"StreetSiteHistory");

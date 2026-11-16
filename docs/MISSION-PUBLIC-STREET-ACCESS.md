@@ -16,4 +16,8 @@ The source export represents370 world1 scenes;370 typed readers passed offline,3
 4. Inside, require the marker to switch to the car. Use the ordinary elevator and verify the current mission actors are visible/reachable through supported ordinary doors.
 5. On the authored exit, ride down and walk out through the public door. Check that a phase advance or completion does not remove ordinary world-door use.
 
-No native pass, full mission completion, public collision fix or doorless passage is claimed yet. The headless ordinary street/Open/lobby/car case is still pending qualification.
+The dedicated `mission-public-street-route` case uses the same normal101213 profile and one ordinary offer/accept. It reads the actual persisted public route, observes the public809e marker, sends normal80c8 Open and requires the current native own-GO/key/pose/quaternion and OPEN0834 with no elevator teleport. It then follows original NAV edge/portal midpoints into the lobby, observes the car marker and requires a fresh car arrival plus its actual client receipt. Its movement uses disclosed headless TP aids; it stops at floor arrival without claiming NPC visibility, native passage, mission completion or rewards. The source pin environment is mandatory inside this case.
+
+The current focused source controls include the captured Mara door, the independently working879 control, old-checkpoint opt-out, exact pending refusal, owned-item quarantine, missing current context, and return guidance after phase advance. Public doors resolve independently of active mission ownership, so completion does not remove ordinary exit use. Bound-only furniture is included; empty Upload phases remain outside NPC placement. World2 and unproved doorless openings remain out of scope.
+
+No native pass, full mission completion, public collision fix or doorless passage is claimed yet. Headless execution and the actual mode bootstrap remain pending until separately qualified.

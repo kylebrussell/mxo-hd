@@ -62,5 +62,42 @@ public sealed partial class MissionStreetAccessTests
         Assert.Contains(plan.ReadyMessages,m=>m.Contains("WALK through")&&m.Contains("car waypoint")&&m.Contains("Stop on brick"));
     }
 
+    [Theory][InlineData(null)][InlineData("")][InlineData(" ")]
+    public void EmptyEnrollmentStillRequiresTheExistingVersionTwoOwnerIdentity(string? identity)
+    {
+        var m=StreetMission();var p=new MissionProgress(m){streetPolicy=true,persistenceId="owner",startedAt=123};p.itemSlots[6783]=40;
+        var saved=p.CaptureWithNpcCatalog(47,Array.Empty<Mob>(),Array.Empty<MissionSite>());saved.Identity=identity!;
+        var ex=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,saved,Array.Empty<MissionSite>()));
+        Assert.Equal((ushort)40,ex.Progress.itemSlots[6783]);Assert.Contains("StreetOwnerIdentity",ex.Message);
+    }
+    [Fact]public void EnrolledCurrentInteriorCannotSilentlyDropItsFixedPublicContext()
+    {
+        var m=StreetMission();var (site,_)=StreetContext("Objects");
+        var saved=new MissionProgress.SavedState{Version=2,Mission=m.id,Phase=1,Identity="owner",Started=123,Items=new(){{6783,40}},
+            OpenFloorSites=new[]{MissionOpenFloorSite.From(site)},OpenFloorCurrentSiteIndex=0,SiteDoors=new[]{site.elevatorDoor},
+            StreetAccess=JsonSerializer.SerializeToElement(new MissionStreetEnvelope(1,"StreetAccess",true,Array.Empty<MissionStreetSelection>()),MissionProgress.SaveJson)};
+        string exact=JsonSerializer.Serialize(saved,MissionProgress.SaveJson);
+        var ex=Assert.Throws<MissionPlacementRestoreException>(()=>MissionProgress.RestoreFromCatalog(m,saved,new[]{site}));
+        Assert.Contains("MissingCurrentStreetContext",ex.Message);Assert.Equal((ushort)40,ex.Progress.itemSlots[6783]);Assert.Equal(exact,JsonSerializer.Serialize(saved,MissionProgress.SaveJson));
+    }
+
+    [Fact]public void PriorLobbyKeepsPublicExitGuidanceAfterPhaseAdvanceAndWorldDoorOutlivesCompletion()
+    {
+        var m=StreetMission();m.phases[1].objects.Clear();var p=new MissionProgress(m){phaseIndex=1,streetPolicy=true,persistenceId="owner",startedAt=123};var (site,c)=StreetContext("Objects");
+        p.streetWitnesses.Add(0,new MissionStreetSelection(1,m.id,p.persistenceId,p.startedAt,0,MissionOpenFloorSite.From(site),"Objects",c,null));
+        var lobby=new NavLocation{sector=209,region=49,polygon=283,floorY=400,indoors=true};
+        var shown=MissionStreetGuidance.Project(p,lobby);Assert.Equal(c.Door.Position,new[]{shown.x,shown.y,shown.z});
+        Assert.Null(MissionStreetGuidance.Project(p,new NavLocation{sector=209,region=16,polygon=18,floorY=400,indoors=false}));
+        p.streetWitnesses.Clear();Assert.Null(MissionStreetGuidance.Project(p,lobby));
+        var raw=MissionNpcInteriorPlanning.ReadRaw(c.Door.RawDoorJson);var worldDoor=new MissionPublicDoors.Dataset(DirectoryFor("mission_street_access"),DirectoryFor("mission_interior_evidence_v2")).Resolve(raw);
+        Assert.Equal(MissionPublicDoors.Kind.Resolved,worldDoor.State);Assert.Equal(c.Door.Goid,worldDoor.Pose.Goid); // No active mission lease or owner needed.
+    }
+    [Fact]public void ActualRegisteredPublicCaseHasComputedEnvironmentAndExistingSixMinuteOuterBudget()
+    {
+        var scenario=Assert.Single(HeadlessClient.Scenarios.All.Where(s=>s.Name==HeadlessClient.MissionPublicStreetProof.Name));
+        Assert.NotNull(scenario.Environment);Assert.Equal("101213",scenario.Environment!["MXO_MISSION_SITE_QA_SEED"]);Assert.Equal("1",scenario.Environment["MXO_PACKET_LOG"]);
+        Assert.Equal(TimeSpan.FromMinutes(6),scenario.Timeout);
+    }
+
 }
 
