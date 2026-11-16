@@ -28,6 +28,13 @@ namespace hds
 
         /// <summary>The NPC this player is in close combat with, if any (simulacra assist it).</summary>
         public Mob CurrentNpcTarget => currentSession != null && currentSession.IsActive ? currentSession.DefenderMob : null;
+        internal Mob CurrentNpcOpponentFor(WorldClient owner)
+        {
+            if (!ReferenceEquals(client, owner)) return null;
+            var session = currentSession;
+            var opponent = session?.CurrentNpcOpponent(owner);
+            return ReferenceEquals(currentSession, session) ? opponent : null;
+        }
 
         /// <summary>
         /// Legacy fields - kept for backwards compatibility during transition.
@@ -285,6 +292,7 @@ namespace hds
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
             if (!ControlActions.CanUseAbilities(player)) ability = null;
+            bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
             UInt16 playerDamage, npcDamage;
@@ -295,14 +303,14 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    AbilityStats.SpecialAttack(player, ability), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
+                    WithdrawalInput.Attack(player,ability,ordinaryWithdrawal), AbilityStats.SpecialDefense(mob, ability), ordinaryWithdrawal) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
                 playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
                     AbilityStats.Player(player, 1142), AbilityStats.Toughness(mob, false));
-                playerDamage = (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier());
+                playerDamage = PunishingBlows.Npc(player, mob, (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier()));
                 npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer,
                     CombatTacticType.Normal, AbilityStats.Npc(mob, 1142), AbilityStats.Toughness(player, false));
                 playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
@@ -706,6 +714,7 @@ namespace hds
 
         /// <summary>The player asked to withdraw (RPC 44 01): each round tries until it succeeds.</summary>
         private bool withdrawing;
+        private bool ordinaryWithdrawalRequested;
 
         /// <summary>
         /// Finds a mob by its combined view+spawn ID from the client's perspective.
@@ -1123,9 +1132,11 @@ namespace hds
             // Retail's free attack (FreeAttacks): tactic rolls, then the gun's damage less the absorbed share
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            var gunPenalty=SharpshooterFreeFire.AgainstNpc(player,target,weapon);
+            int rangedAttack=gunPenalty.AddToAttack(AbilityStats.Attack(player,true),weapon);
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, CombatTactics.Type(player),
                 target != null ? target.getLevel() : 1, session.DefenderTactic, weapon,
-                AbilityStats.Attack(player, true), target != null ? AbilityStats.Defense(target, true) : 0,
+                rangedAttack, target != null ? AbilityStats.Defense(target, true) : 0,
                 AbilityStats.Player(player, 1139), AbilityStats.Player(player, 171) / 100.0,
                 target != null ? AbilityStats.Toughness(target, true) : 0);
             bool hit = shot.Hit;
@@ -1151,7 +1162,7 @@ namespace hds
             if (hit)
             {
                 // Staggered adds its share, as in close combat. Retail's gun damage has no distance falloff.
-                damage = (UInt16)Math.Round(shot.Damage * target.IncomingDamageMultiplier());
+                damage = PunishingBlows.Npc(player, target, (UInt16)Math.Round(shot.Damage * target.IncomingDamageMultiplier()));
                 died = session.ApplyDamageToDefender(damage, 0);
             }
             Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage + " (" + shot.Absorbed + " absorbed)" : "miss")} (roll {shot.AttackRoll} vs {shot.DefenseRoll})");
@@ -1299,8 +1310,11 @@ namespace hds
 
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            uint npcWeapon=mob.getWeapon();
+            var gunPenalty=SharpshooterFreeFire.FromNpc(mob,player,npcWeapon);
+            int rangedAttack=gunPenalty.AddToAttack(AbilityStats.Attack(mob,true),npcWeapon);
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
-                playerLevel, session.AttackerTactic, mob.getWeapon(), AbilityStats.Attack(mob, true), AbilityStats.Defense(player, true),
+                playerLevel, session.AttackerTactic, npcWeapon, rangedAttack, AbilityStats.Defense(player, true),
                 AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true), () => !MobiusCode.PreventsFreeAttack(player));
             bool hit = shot.Hit;
 
@@ -1410,7 +1424,7 @@ namespace hds
         /// <summary>
         /// Handle player leaving combat (fleeing or disengaging).
         /// </summary>
-        public void ProcessLeaveCloseCombat(ref byte[] rpcData)
+        public void ProcessLeaveCloseCombat(ref byte[] rpcData, bool ordinaryRpc = false)
         {
             if ((pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee) &&
                 !ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
@@ -1421,7 +1435,7 @@ namespace hds
             if (pvpGunfire != null || pvpFight != null)
             {
                 pvpGunfire?.Stop();
-                pvpFight?.RequestWithdraw(client);
+                pvpFight?.RequestWithdraw(client,ordinaryRpc);
                 return;
             }
 
@@ -1435,6 +1449,7 @@ namespace hds
                 if (!withdrawing)
                 {
                     withdrawing = true;
+                    ordinaryWithdrawalRequested = ordinaryRpc;
                     SendNextMove(session, CombatInterlock.KindNextMoveChanged);
                     client.FlushQueue();
                     Output.WriteDebugLog("[COMBAT] Withdrawing: tried with the next round");

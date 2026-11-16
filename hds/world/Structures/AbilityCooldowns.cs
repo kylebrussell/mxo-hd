@@ -239,6 +239,36 @@ namespace hds
             });
         }
 
+        // Same metadata/timer records as Start, but explicit owner and world scope for asynchronous drain termination.
+        // Caller owns the outer transport admission. This method never flushes, broadcasts or calls arbitrary effects.
+        internal static void StartCaptured(WorldClient client,ushort ability,double now,ClientData data,PlayerCharacter player,int world,int life,long transport)
+        {
+            ability=AbilityCatalog.Canonical(ability);
+            if(!TryGet(ability,out Cooldown cd))return;
+            uint character=data.getCharID(),district=data.getDistrictId();
+            bool Current()=>ReferenceEquals(client.playerData,data) && ReferenceEquals(client.playerInstance,player) &&
+                data.getCharID()==character && data.getDistrictId()==district && data.worldGeneration==world && data.lifeGeneration==life &&
+                client.TransportFence.IsCurrent(transport) && client.Alive && data.getOnWorld() && !data.worldChangePending;
+            void Timer(ushort id,byte kind,float seconds)
+            {
+                double end=now+seconds;lock(data.cooldownEndsAt)data.cooldownEndsAt[id]=end;
+                client.messageQueue.AddWorldBoundRpc(BuildTimer(id,kind,seconds,true),world,transport);
+                DelayedActions.AfterFor(client,seconds,()=>
+                {
+                    bool published=false;
+                    client.TransportFence.TryRun(transport,()=>
+                    {
+                        if(!Current())return;
+                        lock(data.cooldownEndsAt)if(!data.cooldownEndsAt.TryGetValue(id,out var current)||current!=end)return;
+                        client.messageQueue.AddWorldBoundRpc(BuildTimer(id,kind,seconds,false),world,transport);published=true;
+                    });
+                    if(published)client.FlushQueue();
+                });
+            }
+            Timer(ability,OwnTimer,cd.Seconds);
+            if(cd.Group!=0)Timer(cd.Group,GroupTimer,cd.GroupSeconds);
+        }
+
         public static bool TryGet(UInt16 id, out Cooldown cooldown)
         {
             id = AbilityCatalog.Canonical(id);

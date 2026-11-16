@@ -96,7 +96,7 @@ namespace hds
 
         public MissionProgress(Mission mission)
         {
-            this.mission = mission;
+            this.mission = mission;streetPolicy=MissionStreetCoverage.Enroll(mission);
             waypoints = Phase?.waypoints ?? new List<MissionWaypoint>();
         }
 

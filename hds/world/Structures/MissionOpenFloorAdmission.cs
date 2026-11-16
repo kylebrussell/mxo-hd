@@ -49,10 +49,11 @@ namespace hds
                 world=expectedWorld;life=expectedLife;transport=expectedTransport;character=expectedCharacter;
             }
             internal bool Adopted => Poses.Count>0;
-            internal bool BindOutput(WorldClient c) => !Adopted||MissionOutput.BindCurrent(c.messageQueue,c.TransportFence,transport,world);
+            internal bool HasStreet=>Selection.Street.ValueKind!=JsonValueKind.Undefined;
+            internal bool BindOutput(WorldClient c) => !(Adopted||HasStreet)||MissionOutput.BindCurrent(c.messageQueue,c.TransportFence,transport,world);
             internal bool WorldCurrent(WorldClient c) => ReferenceEquals(c.playerData,owner)&&owner.getCharID()==character&&c.Alive&&owner.getOnWorld()&&
                 !owner.worldChangePending&&!owner.waitForRPCShutDown&&owner.worldGeneration==world&&owner.lifeGeneration==life&&
-                owner.getDistrictId()==Progress.mission.district&&c.TransportFence.Capture()==transport;
+                owner.getDistrictId()==Progress.mission.district&&c.TransportFence.Capture()==transport&&(!HasStreet||!owner.isDead&&c.TransportFence.IsCurrent(transport));
             internal bool BeforeCurrent(WorldClient c) => WorldCurrent(c)&&ReferenceEquals(owner.missionProgress,before)&&
                 (before==null||before.phaseIndex==beforePhase)&&Selection.Started==Progress.startedAt&&Selection.Mission==Progress.mission.id&&Selection.Identity==Progress.persistenceId&&
                 Progress.phaseIndex==(ReferenceEquals(before,Progress)?beforePhase:Selection.Phase)&&
@@ -62,6 +63,7 @@ namespace hds
                 if(!WorldCurrent(c)||!ReferenceEquals(owner.missionProgress,p)||!ReferenceEquals(p,Progress)||p.phaseIndex!=Selection.Phase||
                     p.startedAt!=Selection.Started||MissionOpenFloorSite.CatalogFingerprint(Site)!=Selection.Site.Fingerprint)
                     throw new MissionCheckpointException("Stale open-floor placement admission");
+                if(HasStreet)MissionStreetCheckpoint.Staging(p,Selection.Street,Site);
             }
         }
         internal static bool TryPrepare(WorldClient client,MissionProgress progress,int phaseIndex,MissionProgress before,
@@ -76,7 +78,8 @@ namespace hds
             Mission mission=progress.mission;if(phaseIndex<0||phaseIndex>=mission.phases.Count||!Requires(mission.phases[phaseIndex])) {refusal="NotAopen-floorPhase";return false;}
             MissionPhase phase=mission.phases[phaseIndex];MissionSite site=null;MissionOpenFloorChoice[] choices=null;
             int requiredNpcs=mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(phase);
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,requiredNpcs);
+            var street=progress.streetPolicy?MissionStreetCoverage.Filter(mission,phaseIndex):null;bool fresh=progress.pendingOpenFloor==null;
+            bool Eligible(MissionSite s)=>(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,requiredNpcs);
             if(progress.pendingOpenFloor!=null)
             {
                 selected=progress.pendingOpenFloor;
@@ -108,11 +111,25 @@ namespace hds
             if(!Current()) {selected=null;refusal="StaleWorld";return false;}
             plan=new Plan(client,progress,phaseIndex,site,selected,new Dictionary<ushort,MissionOpenFloorPlacement>(),before,beforePhase,data,world,life,transport,character);
             if(site==null) {refusal="NoSite";return false;}
+            if(fresh)
+            {
+                bool accepted=MissionStreetCoverage.TryPrepare(progress,phaseIndex,site,out var streetJson,out refusal);selected=selected.WithStreet(streetJson);
+                if(!Current()){selected=null;refusal="StaleStreetOwner";return false;}
+                plan=new Plan(client,progress,phaseIndex,site,selected,new Dictionary<ushort,MissionOpenFloorPlacement>(),before,beforePhase,data,world,life,transport,character);
+                if(!accepted)return false;
+            }
+            else if(!MissionStreetCoverage.Replay(progress,selected.Street,out refusal))return false;
             bool hasTargets=choices.Any(c=>Target(c.Goid,c.ReadSpot()));
             if(hasTargets&&(!ValidSite(site)||selected.Site.Resolve(siteCatalog??MissionSites.For(mission.district))==null||!ChoicesValid(phase,site,choices))) {refusal="MissingAmbiguousOrRepeatedObjectSource";return false;}
             bool geometry=TryGeometry(mission,phaseIndex,site,choices,out var poses,out refusal,selected);
             if(!Current()||MissionOpenFloorSite.CatalogFingerprint(site)!=selected.Site.Fingerprint) {selected=null;refusal="StaleWorldOrSource";return false;}
             if(!geometry)return false;
+            if(selected.Street.ValueKind!=JsonValueKind.Undefined)
+            {
+                var captured=MissionStreetCheckpoint.Prepared(progress,selected.Street,site,phaseIndex).Context;
+                if(poses.Values.Any(p=>!p.RootSurface.SequenceEqual(new ushort[]{site.elevatorDoor.sectorID,captured.Floor.Node.Region,captured.Floor.Node.Polygon})))
+                {refusal="StreetAndObjectEntryDisagree";return false;}
+            }
             plan=new Plan(client,progress,phaseIndex,site,selected,poses,before,beforePhase,data,world,life,transport,character);return true;
         }
         internal static bool TryGeometry(Mission mission,int phaseIndex,MissionSite site,IReadOnlyList<MissionOpenFloorChoice> choices,

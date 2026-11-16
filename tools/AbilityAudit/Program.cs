@@ -5,6 +5,10 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
+    1005 when typeof(AbilityCatalog).Assembly.GetType("hds.WithdrawalInput") != null => "Primary direct1005 and withdrawal tactic factors; OURS ordinary44 caller/level baseline; linked1045 coefficient unimplemented; TF6 unchanged",
+    1044 => "OURS additive interlock attack-base initiative; health snapshot sourced, retail consumer unresolved",
+    519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
+    212 when typeof(AbilityCatalog).Assembly.GetType("hds.PunishingBlows") != null => "OURS current Daze/Stun/OffBalance damage percent (PunishingBlows consumer present)",
     204 => "stealth detection",
     209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",
@@ -15,8 +19,11 @@ static string Consumer(ushort stat) => stat switch
     1011 or 1029 or 1030 => "typed combat-special defence in interlock",
     183 => "typed combat-special defence and PARTIAL modeled free-cast viral defence (NPC neutral tactic)",
     342 => "PARTIAL modeled primary TF2 free-cast viral attack; native base/link totals unresolved",
+    1145 when typeof(AbilityStats).GetMethod("ThrownAccuracy") != null => "OURS level-scaled percent to queued TF4 thrown accuracy, once; direct1032 separate; native coefficient unresolved",
+    1147 => "OURS level-scaled percentage bonus to normal free-cast and diagnostic viral accuracy; retail coefficient unresolved",
     637 => "PARTIAL modern free-cast viral consistency; native table with OURS settings/64-significand policy",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
+    1146 or 1148 when typeof(AbilityCatalog).Assembly.GetType("hds.TypedResistanceBonuses") != null => "OURS level-scaled percentage to existing typed viral/thrown resistance points, once;4*level+20 scale; retail coefficient unresolved",
     157 or 1033 => "OURS normalized typed ability health damage/DOT resistance; native caller/base unresolved",
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
@@ -24,6 +31,7 @@ static string Consumer(ushort stat) => stat switch
     177 => "direct UDB0 caster area radius percent (AbilityTargets and reviewed caster-area97/38 NPC/PvP only; linked1055 unresolved)",
     127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
+    1047 when typeof(AbilityCatalog).Assembly.GetType("hds.DeflectCode") != null => "OURS positive percent shortening of new known hostile controls after raw575, total33% floor; retail coefficient unresolved",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     954 or 955 => "native client Compile60 IC timer; OURS server scheduling, known CBB IC prototypes only; [evidence](COMPILE-ORDINARY-IC.md)",
@@ -65,7 +73,10 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
+        sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
+            "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; interlock not wired" : "",
         registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
         conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
         conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),
@@ -115,6 +126,7 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
     JsonSerializer.SerializeToElement(row).EnumerateObject()
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "sharpshooter" || p.Value.GetString() != "")
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
         .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)
         .Where(p => p.Name != "proxy_technician" || p.Value.GetString() != "")

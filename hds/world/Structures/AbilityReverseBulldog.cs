@@ -103,7 +103,7 @@ namespace hds
             {
                 seconds=AbilityControlDurations.Scale(cast.Source,TempMods.StunAbility,seconds);
                 if(!(subject is PlayerEffects && ReferenceEquals(subject.Context,cast.Source)) && AbilityHostile.IsDebuff(Ability))
-                    seconds=AbilityControlDurations.Mitigate(seconds,cast.Source.playerInstance.Level.getValue()[0],subject.Determination);
+                    seconds=DeflectCode.Duration(seconds,cast.Source.playerInstance.Level.getValue()[0],subject.Determination,subject.DeterminationBonus,TempMods.StunAbility);
             }
             if(seconds<=0 || HasTimer(subject,null,now))return;
             var child=new TimedEffects.Active {Kind=stun?TempMods.KindState:TempMods.KindPlain,Target=stun?TempMods.StunAbility:TempMods.ISDrainTargetAbility,

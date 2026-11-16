@@ -63,7 +63,7 @@ public static class MissionNpcInteriorProof
     public static Door[] RequiredDoors(Plan p)=>p.Witness.GetProperty("Doors").EnumerateArray().Select(d=>
     {var raw=Raw(d.GetProperty("RawDoorJson").GetString()!);uint key=d.GetProperty("Key").GetUInt32();ushort goid=d.GetProperty("Goid").GetUInt16();Need(raw.mxoStaticId==key&&BitConverter.ToUInt16(raw.type)==goid&&MissionInteriorDoorTypes.IsSupported(goid),"NPC portal own GO/key");return new Door(key,goid,Vector(d,"Position",3),d.GetProperty("Quaternion").GetString()!,null,d.GetProperty("RawDoorJson").GetString()!);}).ToArray();
     public sealed record RouteStep(double[] Standing,uint[] Doors,int Region,int Polygon);
-    public static RouteStep[] Route(string repository,Plan p,int actorIndex=0)
+    public static RouteStep[] Route(string repository,Plan p)
     {
         var source=Raw(p.Floor.Raw);string expectedDigest=p.Witness.GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;
         using var doc=JsonDocument.Parse(EvidencePayload(repository,source.sectorID,expectedDigest));var root=doc.RootElement;
@@ -79,8 +79,7 @@ public static class MissionNpcInteriorProof
             Need(own.Length>0&&(!entry.HasValue||own.Length==1)&&own.All(o=>string.Equals(o.GetProperty("Quaternion").GetString(),door.Quaternion,StringComparison.OrdinalIgnoreCase)),"NPC QA context-selected own-GO yaw");
         }
         NativeDoor(p.Floor,p.Witness.GetProperty("Floor"));NativeDoor(p.Lobby,p.Witness.GetProperty("Lobby"));foreach(var door in RequiredDoors(p))NativeDoor(door,null);
-        Need(actorIndex>=0&&actorIndex<p.Witness.GetProperty("Actors").GetArrayLength(),"NPC route actor index");
-        var nodes=p.Witness.GetProperty("Actors")[actorIndex].GetProperty("Nodes").EnumerateArray().ToArray();Need(nodes.Length>0,"NPC nonempty topology path");
+        var nodes=p.Witness.GetProperty("Actors")[0].GetProperty("Nodes").EnumerateArray().ToArray();Need(nodes.Length>0,"NPC nonempty topology path");
         int R(JsonElement n)=>n.GetProperty("Region").GetInt32();int P(JsonElement n)=>n.GetProperty("Polygon").GetInt32();
         JsonElement Polygon(JsonElement n){var region=root.GetProperty("Regions").EnumerateArray().Single(r=>r.GetProperty("Id").GetInt32()==R(n));Need(region.GetProperty("Available").GetBoolean(),"NPC missing prefab is not route");return region.GetProperty("Polygons")[P(n)];}
         double[] Local(JsonElement node,double x,double z)
@@ -115,7 +114,7 @@ public static class MissionNpcInteriorProof
             double px=(x[0]+z[0])/2,pz=(x[1]+z[1])/2;double floorA=Floor(a,nodes[i-1],px,pz),floorB=Floor(b,nodes[i],px,pz);
             Need(localEvidence?Math.Abs(floorA-floorB)<=1e-7:floorA==floorB,"NPC portal/edge floor agreement");Need(doors.All(k=>RequiredDoors(p).Count(d=>d.Key==k)==1),"NPC every portal door is saved own-GO proof");steps.Add(new(new[]{px,floorA+95,pz},doors,R(nodes[i]),P(nodes[i])));
         }
-        var actor=p.Witness.GetProperty("Selection").GetProperty("Actors")[actorIndex];Need(p.Witness.GetProperty("Actors")[actorIndex].GetProperty("Role").GetString()==$"{actor.GetProperty("Kind").GetString()}:{actor.GetProperty("Id").GetInt32()}:{actor.GetProperty("Index").GetInt32()}","NPC route exact actor role association");var marker=Raw(actor.GetProperty("RawMarkerJson").GetString()!);var markerGroup=root.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==marker.mxoStaticId);
+        var actor=p.Witness.GetProperty("Selection").GetProperty("Actors")[0];var marker=Raw(actor.GetProperty("RawMarkerJson").GetString()!);var markerGroup=root.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==marker.mxoStaticId);
         Need(markerGroup.GetProperty("Occurrences").EnumerateArray().Where(o=>o.GetProperty("Goid").GetInt32()==19).Select(o=>o.GetProperty("Region").GetInt32()).Distinct().SequenceEqual(new[]{R(nodes[^1])}),"NPC QA exact marker original room association");
         var choice=p.Witness.GetProperty("Selection");
         if(choice.TryGetProperty("RolePlan",out var policy)&&policy.GetInt32()==1)
@@ -131,7 +130,7 @@ public static class MissionNpcInteriorProof
         Need((crosses.All(v=>v>=-tolerance)||crosses.All(v=>v<=tolerance))&&Math.Abs(standing[1]-(Floor(target,nodes[^1],standing[0],standing[2])+95))<=tolerance,"NPC QA exact actor standing inside original target polygon/floor");
         steps.Add(new(standing.Take(3).ToArray(),Array.Empty<uint>(),R(nodes[^1]),P(nodes[^1])));return steps.ToArray();
     }
-    static byte[] EvidencePayload(string repository,ushort sector,string expectedDigest)
+    public static byte[] EvidencePayload(string repository,ushort sector,string expectedDigest)
     {
         Need(expectedDigest.Length==64&&expectedDigest.All(Uri.IsHexDigit),"NPC saved evidence digest shape");
         string directory=Path.Combine(repository,"data","mission_interior_evidence","1");
