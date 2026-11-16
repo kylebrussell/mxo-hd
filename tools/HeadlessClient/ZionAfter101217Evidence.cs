@@ -104,7 +104,7 @@ internal sealed class ZionAfter101217Evidence : IDisposable
         {
             var own=actor.World.CreationSnapshot().Last(v=>v.ViewId==2).Attributes["Position"];Check.Equal(24,own.Length,"Restored actual own XYZ framing");
             double[] root=Enumerable.Range(0,3).Select(i=>BitConverter.ToDouble(own,i*8)).ToArray();
-            await actor.WaitUntilAsync(()=>free.All(o=>ZionAfter101217Fixture.CurrentBody(actor.World.CreationSnapshot(),o,after.Instance)!=null),"Restored current free bodies after stationary actual own-arrival receipt",TimeSpan.FromSeconds(15));
+            await actor.WaitUntilAsync(()=>free.All(o=>ZionCurrentFixedBody.Find(actor.World.CurrentOwnViewLife(),o,after.Instance)!=null),"Restored current free bodies after stationary actual own-arrival receipt",TimeSpan.FromSeconds(15));
             string packet=InteriorAdmissionDeliveryProof.Read(packetPath);
             foreach(var obj in free)arrivals.Add(new{obj.Id,RawSource=obj.Spot,FixedPlacement=obj.OpenFloor,Receipt=InteriorAdmissionDeliveryProof.Require(packet,actor.CharId,packetCursor,root,obj.Goid,obj.OpenFloor!.Centre),Stationary=true,NativeRenderingProven=false});
         }

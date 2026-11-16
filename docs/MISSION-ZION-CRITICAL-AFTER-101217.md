@@ -38,7 +38,6 @@ Headless movement/weaken assistance does not prove collision clearance, native r
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212OutsideStage.cs`|`6904e345b25e9efc43bc79a8af589a1a700449ff`|
 |`fa06152b`|`tools/HeadlessClient/ZionCurrentUploadBooth.cs`|`8256c5f9ad57b68728b539231d916230cf452902`|
 |`fa06152b`|`tools/HeadlessClient/ZionAfter1212Fixture.cs`|`7da1e618d81b6d919520b2a125bec13ff1f36ac5`|
-|`fa06152b`|`tools/HeadlessClient/MissionNpcInteriorProof.cs`|`210bf79d6636904d2eaea041f6cfd727a01870d7`|
 |`3a70a57c`|`tools/HeadlessClient/MervFollowupStreetEntry.cs`|`13e0409cf6ed72dd66c9959b440f7d99e22f82d9`|
 |`3a70a57c`|`tools/HeadlessClient/MissionBound326Approach.cs`|`e66648e6839d99cf68729714eb7c1b8f64445785`|
 |`3a70a57c`|`tools/HeadlessClient/MissionBound326RouteProof.cs`|`43368be4391646f4d35deb5be9881fbeee10791e`|
@@ -50,3 +49,5 @@ Headless movement/weaken assistance does not prove collision clearance, native r
 |`3a70a57c`|`tools/HeadlessClient/MissionBoundFurnitureRouteProof.cs`|`c472e3e441648c147e66ad1370a8c1788b99ebc1`|
 
 The273 qualified Ride/Object implementations are adapted into new package-local methods solely for the new XML pattern/names; their source template is retained in Temp. The old shared ScenariosMachinesQualifiedRide.cs remains exactly core34. No whole Machine or Merv selected story driver is imported.
+
+Cloud build `43884982147` retained five compiler errors and ran no tests. The older imported NPC route helper was removed in favor of the exact core34 helper (including its actor-index API); the carry body lookup uses the current own-life typed reader. This remains an uncompiled source candidate pending cloud qualification.

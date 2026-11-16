@@ -8,7 +8,7 @@ public static class ZionAfter101217Fixture
     public static readonly uint[] MissionInformation={94500,94500,94500,98000,98000};
     public const string SourcePin="MXO_ZION_AFTER101217_SOURCE_SHA256";
     public static void RequirePin(string? expected,string actual)
-    {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Zion after1212 requires exact source pin via "+SourcePin);}
+    {if(expected==null||expected.Length!=64||expected.Any(c=>!Uri.IsHexDigit(c))||!expected.Equals(actual,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Zion after101217 requires exact source pin via "+SourcePin);}
     public const int NextMission=102101,LayoutSeed=101301;
     public const string NextTitle="Better Killing Through Chemistry";
     public static byte NpcLevel(ViewCreation target)
