@@ -14,13 +14,15 @@ namespace hds
     internal sealed class MissionBoundObjectPoses
     {
         internal const string AuditedManifestSha256="95657513146af308f60d6e532624e143a572b649a1cad98c4601b9eb8ac1c234";
-        private sealed class Entry
+        internal sealed class Entry
         {
             internal double[] Legacy;
             internal double LegacyRotation;
             internal byte[] LegacyQuaternion;
             internal MissionComputerAnchors.Pose Pose;
             internal int Region;
+            internal double[] Minimum,Maximum;
+            internal string NavSha256;
         }
         private readonly Dictionary<uint,Entry> entries=new Dictionary<uint,Entry>();
         private readonly ushort sector;
@@ -49,6 +51,17 @@ namespace hds
             {refusal="UnavailableOrInvalidBound326Profile";return false;}
         }
 
+        internal sealed class Bounds
+        {
+            internal readonly string NavSha256;internal readonly MissionComputerAnchors.Pose Pose;internal readonly int Region;internal readonly double[] Minimum,Maximum;
+            internal Bounds(Entry entry){NavSha256=entry.NavSha256;Pose=entry.Pose;Region=entry.Region;Minimum=(double[])entry.Minimum.Clone();Maximum=(double[])entry.Maximum.Clone();}
+        }
+        internal static bool TryBounds(MissionObjectState state,out Bounds bounds,out string refusal)
+        {
+            bounds=null;if(!TryCurrentRegion(state,out _,out _,out refusal))return false;
+            string path=DataLoader.DataPath("mission_bound_poses","1",state.spot.sectorID+".json.gz");
+            var index=cache[path].Value;bounds=new Bounds(index.entries[state.spot.mxoStaticId]);return true;
+        }
         internal static void RequireCurrent(MissionObjectState state)
         {
             if(Supported(state)&&!TryCurrent(state,out _,out string why))
@@ -129,7 +142,7 @@ namespace hds
                                row.GetProperty("PrefabSha256").ValueKind!=JsonValueKind.Null)))
                     throw new InvalidDataException("BoundPoseSourceProvenance");
                 double legacyRotation=row.GetProperty("LegacyRotation").GetDouble();if(!double.IsFinite(legacyRotation))throw new InvalidDataException("BoundPoseLegacyRotation");
-                var entry=new Entry{LegacyRotation=legacyRotation,Legacy=Point(row,"LegacyPosition",false),LegacyQuaternion=Quaternion(row.GetProperty("LegacyQuaternion").GetString()),
+                var entry=new Entry{NavSha256=row.GetProperty("NavSha256").GetString(),Minimum=minimum,Maximum=maximum,LegacyRotation=legacyRotation,Legacy=Point(row,"LegacyPosition",false),LegacyQuaternion=Quaternion(row.GetProperty("LegacyQuaternion").GetString()),
                     Pose=new MissionComputerAnchors.Pose(centre[0],centre[1],centre[2],Quaternion(row.GetProperty("Quaternion").GetString())),Region=region};
                 if(!result.entries.TryAdd(key,entry))throw new InvalidDataException("AmbiguousBoundPoseIdentity");
             }

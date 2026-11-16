@@ -79,15 +79,31 @@ namespace hds
         }
         internal static Context Refused(string kind,string reason)
         {var context=new Context(null,kind,reason,null,null,null,null,null,null);return context.WithKey(Fingerprint(context));}
+        // Necessary current-dispatch compatibility only. Never certifies geometry or resolves a different raw alias.
+        private static bool SameCurrentEntryIdentity(StaticWorldObject selected,StaticWorldObject actual)=>selected!=null&&actual!=null&&
+            selected.type!=null&&selected.type.Length>=2&&actual.type!=null&&actual.type.Length>=2&&actual.metrId==selected.metrId&&
+            actual.sectorID==selected.sectorID&&actual.mxoStaticId==selected.mxoStaticId&&MissionSites.Goid(actual)==MissionSites.Goid(selected);
+        internal static bool CurrentEntryIdentities(Context context,Func<uint,StaticWorldObject> lookup,out string refusal)
+        {
+            refusal="MissingCurrentStreetEntryIdentity";if(context?.Floor==null||context.Lobby==null||lookup==null)return false;
+            var floor=MissionNpcInteriorPlanning.ReadRaw(context.Floor.RawDoorJson);var lobby=MissionNpcInteriorPlanning.ReadRaw(context.Lobby.RawDoorJson);
+            if(!SameCurrentEntryIdentity(floor,lookup(floor.mxoStaticId))){refusal="ChangedStreetFloorRawIdentityOrGoid";return false;}
+            if(!SameCurrentEntryIdentity(lobby,lookup(lobby.mxoStaticId))){refusal="ChangedStreetLobbyRawIdentityOrGoid";return false;}
+            refusal=null;return true;
+        }
+        internal bool AllowsCurrent(MissionSite site,bool npc,Func<uint,StaticWorldObject> lookup)=>Allows(site,npc)&&lookup!=null&&
+            SameCurrentEntryIdentity(site.elevatorDoor,lookup(site.elevatorDoor.mxoStaticId))&&SameCurrentEntryIdentity(site.lobbyDoor,lookup(site.lobbyDoor.mxoStaticId));
         internal static bool ValidateSelected(Context context,MissionSite site,MissionPublicDoors.Dataset dataset,Func<uint,StaticWorldObject> lookup,out string refusal)
         {
             refusal="InvalidSelectedStreetContext";if(context==null||context.Refusal!=null||site==null||lookup==null||
                 context.Floor.RawDoorJson!=MissionNpcInteriorPlanning.RawJson(site.elevatorDoor)||context.Lobby.RawDoorJson!=MissionNpcInteriorPlanning.RawJson(site.lobbyDoor))return false;
+            var currentFloor=lookup(site.elevatorDoor.mxoStaticId);var currentLobby=lookup(site.lobbyDoor.mxoStaticId);
+            if(!CurrentEntryIdentities(context,key=>key==site.elevatorDoor.mxoStaticId?currentFloor:currentLobby,out refusal))return false;
             if(!dataset.TryScene(site.metrId,site.elevatorDoor.sectorID,out E floor,out _,out refusal)||
                 !dataset.TryScene(site.metrId,site.lobbyDoor.sectorID,out E lobby,out var outdoor,out refusal))return false;
             try
             {
-                MissionNpcInteriorCheckpoint.SavedEntry(floor,context.Floor);var saved=MissionNpcInteriorCheckpoint.SavedEntry(lobby,context.Lobby);
+                MissionNpcInteriorCheckpoint.SavedEntry(floor,context.Floor,currentFloor);var saved=MissionNpcInteriorCheckpoint.SavedEntry(lobby,context.Lobby,currentLobby);
                 if(!lobby.TryStreetAccess(outdoor,saved,site.lobbyDoor.mxoStaticId,lookup,out var proof,out refusal))return false;
                 Context actual=FromProof(context.Kind,context.Floor,context.Lobby,proof);
                 if(JsonSerializer.Serialize(actual)!=JsonSerializer.Serialize(context)){refusal="ChangedSelectedStreetContext";return false;}
