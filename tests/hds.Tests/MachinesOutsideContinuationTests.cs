@@ -29,4 +29,10 @@ public class MachinesOutsideContinuationTests
         MissionOutsideContinuation.Require(before,after,preserveGoalsAndItems:false);
         after.Phase++;Assert.Throws<InvalidDataException>(()=>MissionOutsideContinuation.Require(before,after,preserveGoalsAndItems:false));
     }
+    [Fact] public void ExistingMachinesTripsKeepCompletedPhaseWaitAndNoRequestHookByDefault()
+    {
+        var method=typeof(Scenarios).GetMethod("MachinesNextRide",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
+        Assert.Equal(true,method.GetParameters().Single(p=>p.Name=="waitForPhaseAdvance").DefaultValue);
+        Assert.Null(method.GetParameters().Single(p=>p.Name=="beforeRequest").DefaultValue);
+    }
 }
