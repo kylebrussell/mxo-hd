@@ -3,7 +3,7 @@ namespace NativeQa.Modes;
 public sealed class OpenWorldFirstLevelMode:NativeQaMode
 {
     public override string Name=>"open-world-first-level";
-    public override NativeQaModePlan Plan {get;}=new(new ushort[]{2},19403,60401,Array.Empty<string>(),
+    public override NativeQaModePlan Plan {get;}=new(new ushort[]{2},19403,60401,new[]{"DELETE FROM inventory WHERE charId=110"},
         new[]{"UPDATE char_abilities SET level=1 WHERE char_id=110"},
         new[]{"UPDATE characters SET level=1,exp=0,cash=1000,y=-705,healthC=150,healthM=150,innerStrC=100,innerStrM=100,pvpflag=0 WHERE charId=110"},
         environmentOverrides:OpenWorldFirstLevelFixture.Environment,
