@@ -45,13 +45,14 @@ public static partial class Scenarios
             {
                 int rpcStart=p.World.RpcSnapshot().Count,viewsStart=p.World.CreationSnapshot().Count,sectionsStart=p.World.ViewSnapshot().Count;
                 var killed=new HashSet<(ushort,byte)>();
+                var optionalProof=new ZionAfter101217OptionalProof(accepted,phase,authoredMission.phases.Count-1,proof=>diagnostics!.Note(new{Kind="Strict same-phase optional earned proof",Proof=proof}));
                 bool Done(int n)
                 {
                     string hex=context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(payload) FROM char_active_missions WHERE charId={p.CharId}),'NULL')").GetAwaiter().GetResult();
                     var current=ZionAfter1212CheckpointPayload.Read(hex);MissionProgress.SavedState? receipt=null;long completions=0;
                     if(current==null){receipt=ZionAfter1212CheckpointPayload.Read(context.Database.ScalarAsync($"SELECT IFNULL((SELECT HEX(receipt) FROM char_active_missions WHERE charId={p.CharId}),'NULL')").GetAwaiter().GetResult());completions=context.Database.LongAsync($"SELECT IFNULL((SELECT completions FROM char_missions WHERE charId={p.CharId} AND missionId={id}),0)").GetAwaiter().GetResult();}
                     var goal=area.Elements("objective").Single(g=>(int)g.Attribute("goal")! ==n);
-                    return DisturbingTrendsProgressProof.GoalDone(accepted,phase,authoredMission.phases.Count-1,n,(int?)goal.Attribute("optional")==1,current,receipt,completions,p.World.RpcSnapshot().Select(r=>r.Bytes).ToArray(),rpcStart,rpcStart);
+                    return optionalProof.Done(n,(int?)goal.Attribute("optional")==1,current,receipt,completions,p.World.RpcSnapshot().Select(r=>r.Bytes).ToArray(),rpcStart,rpcStart,p.World);
                 }
                 bool outsideOnly=ZionAfter1212OutsideStage.Matches(authoredMission,phase);
                 if(outsideOnly)
@@ -109,6 +110,9 @@ public static partial class Scenarios
                     var goal=goals.Where(g=>!Done((int)g.Attribute("goal")!) && ((int?)g.Attribute("after") is not int after || Done(after)))
                         .OrderBy(g=>(int?)g.Attribute("optional")==1?0:1).FirstOrDefault();
                     Check.That(goal!=null,$"Mission{id} phase{phase+1} has an eligible remaining goal");
+                    int candidate=(int)goal!.Attribute("goal")!;
+                    if((int?)goal.Attribute("optional")!=1&&goals.Where(g=>(int?)g.Attribute("optional")!=1&&(int)g.Attribute("goal")! !=candidate).All(g=>Done((int)g.Attribute("goal")!)))
+                        foreach(var optional in goals.Where(g=>(int?)g.Attribute("optional")==1))Check.That(Done((int)optional.Attribute("goal")!),"Every optional goal must be strictly earned before the last mandatory action");
                     string type=(string)goal!.Attribute("type")!;int number=(int)goal.Attribute("goal")!;if(type!="Upload")currentUploadBooth=null;
                     if(type!="Upload")await ReturnInside();
                     uint goalItem=(uint?)goal.Attribute("item")??0;var itemBefore=goalItem==0?null:await ZionAfter101217Inventory(context,p,goalItem);
