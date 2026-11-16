@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Xml;
 using hds;
+using HeadlessClient;
 
 namespace hds.Tests;
 
@@ -9,15 +10,12 @@ public class MissionMidphaseElevatorTests
     static string Root()
     {
         var at=new DirectoryInfo(AppContext.BaseDirectory);
-        while(at!=null&&!File.Exists(Path.Combine(at.FullName,"tests/hds.Tests/Fixtures/MissionMidphase101208.json")))at=at.Parent;
+        while(at!=null&&!File.Exists(Path.Combine(at.FullName,"tools/HeadlessClient/HeadlessClient.csproj")))at=at.Parent;
         return at?.FullName??throw new DirectoryNotFoundException();
     }
     static (MissionSite Site,MissionNpcInteriorWitness Npc) Captured()
     {
-        // This retained MySQL batch dump doubled the embedded JSON quote escapes.
-        // Decode that capture framing only; production checkpoint parsing is unchanged.
-        string batch=File.ReadAllText(Path.Combine(Root(),"tests/hds.Tests/Fixtures/MissionMidphase101208.json"));
-        using var json=JsonDocument.Parse(batch.Replace(@"\\u0022",@"\u0022"));
+        using var json=JsonDocument.Parse(MissionMidphaseReturnFixture.Payload);
         var saved=json.RootElement;
         Assert.Equal(101208,saved.GetProperty("Mission").GetInt32());
         Assert.False(saved.GetProperty("Flags").GetProperty("waitingForExit").GetBoolean());
@@ -53,6 +51,21 @@ public class MissionMidphaseElevatorTests
         Assert.Equal(MissionElevatorDirection.None,MissionElevatorTrips.Choose(site,other,495,true,false,null,npc));
         Assert.Equal(MissionElevatorDirection.None,MissionElevatorTrips.Choose(site,site.lobbyDoor,495,true,false,null,npc));
         Assert.Equal(MissionElevatorDirection.None,MissionElevatorTrips.Choose(site,site.elevatorDoor,495,true,false,null,npc));
+    }
+    [Fact]
+    public void AnotherShaftFloorDoesNotQueueAnyMissionRide()
+    {
+        var (site,_)=Captured();
+        var other=new StaticWorldObject {metrId=1,sectorID=258,mxoStaticId=0x10200001,pos_x=3789,pos_y=545,pos_z=13559,type=BitConverter.GetBytes((ushort)417)};
+        site.shaft.Add(other);
+        var definition=new Mission {id=101208,district=1};definition.phases.Add(new MissionPhase());
+        var p=new MissionProgress(definition){site=site};p.sites.Add(site);
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData=new ClientData {missionProgress=p};client.playerInstance=new PlayerCharacter();client.messageQueue=new MessageQueue();
+        client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(3789,495,13559));
+        Assert.True(MissionElevatorPoses.InShaft(p,site,other));
+        Assert.False(MissionStaging.OnElevator(client,other));
+        Assert.Empty(client.messageQueue.RPCMessagesQueue);Assert.Empty(client.messageQueue.ObjectMessagesQueue);
     }
     [Fact]
     public void HistoricalAndCompletedSitesDoNotOfferAnotherUpRide()
