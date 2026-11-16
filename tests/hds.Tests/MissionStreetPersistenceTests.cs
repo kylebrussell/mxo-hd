@@ -51,5 +51,16 @@ public sealed partial class MissionStreetAccessTests
         p.restoreRefusal="quarantined";Assert.Null(MissionStreetGuidance.Project(p,(NavLocation?)null));
     }
 
+    [Fact]public void DiscoveredPublicModeUsesNormalRoomProfileWithoutSelectedProgressOrHiddenOpen()
+    {
+        var plan=NativeQa.NativeQaModes.RequireKnown("mission-public-street-access").Plan;
+        Assert.Equal("101213",plan.EnvironmentOverrides["MXO_MISSION_SITE_QA_SEED"]);Assert.Equal("1",plan.EnvironmentOverrides["MXO_PACKET_LOG"]);
+        Assert.Equal((17000,2300),(plan.X,plan.Z));Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
+        string receipts=Assert.Single(plan.BeforeLoadout);Assert.Contains("(110,101212)",receipts);Assert.DoesNotContain("(110,101213)",receipts);
+        Assert.Equal(new NativeQa.Modes.MissionNpcRoomRolesMode().Plan.Abilities,plan.Abilities);
+        Assert.All(plan.AfterLoadout,sql=>Assert.DoesNotContain("char_active_missions",sql,StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(plan.ReadyMessages,m=>m.Contains("WALK through")&&m.Contains("car waypoint")&&m.Contains("Stop on brick"));
+    }
+
 }
 
