@@ -95,7 +95,7 @@ public static class MervFollowupElevatorFixture
         try{return NpcInteriorComputerState.CurrentDoor(stream,selected);}
         catch(InvalidDataException){return null;}
     }
-    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection);
+    public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection,uint? State=null);
     public static DoorObservation CurrentOverlay(OwnViewLifeSnapshot stream,Ride selected)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for measured door");
@@ -127,7 +127,10 @@ public static class MervFollowupElevatorFixture
         var matches=live.Values.Where(v=>v.View.RelatedStaticObjectId==selected.Key).ToArray();
         if(!own||matches.Length!=1||!matches[0].Known)throw new InvalidDataException("Missing/ambiguous/deleted/reused current measured door key");
         var chosen=matches[0];RequireOverlay(selected,chosen.View);if(!stream.Current)throw new InvalidDataException("Door own life changed");
-        return new(chosen.View,stream.Life,chosen.Birth);
+        // Overlay identity does not imply Open. Publish State only when the strict current-state reducer proves it.
+        uint? state=null;
+        try{state=NpcInteriorComputerState.CurrentDoor(stream,new MissionNpcInteriorProof.Door(selected.Key,chosen.View.Goid,selected.Pose,selected.Quaternion!,null,"")).State;}catch(InvalidDataException){}
+        return new(chosen.View,stream.Life,chosen.Birth,state);
     }
     public static void RequireRoot(Ride selected,bool enter,double[] actual,ushort sector,ushort region,double floorY,IEnumerable<double[]> freeRoots)
     {
