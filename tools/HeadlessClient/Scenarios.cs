@@ -66,6 +66,7 @@ public static partial class Scenarios
         new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("direct-debuff-radius", DirectDebuffRadius, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("debuff-radius-native-fixture", DebuffRadiusNativeFixture, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="1",["MXO_PVP_MAX_SAFE_LEVEL"]="15",["MXO_DEBUFF_RADIUS_QA"]="1"})),
+        new Scenario("merv-critical-followup", MervCriticalFollowup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("merv-prima-chain", MervPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="210110"}),
         new Scenario("proxy-technician-control", ProxyTechnicianControlRefusal, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("proxy-technician-friendly-attacks", ProxyTechnicianFriendlyAttacks, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1",["MXO_PROXY_TECHNICIAN_QA_ROLL"]="80" }),
