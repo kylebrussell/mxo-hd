@@ -3,7 +3,12 @@ namespace HeadlessClient;
 /// <summary>QA-only selection of the already persisted current mission elevator; no new key/pose policy.</summary>
 public static class MervFollowupElevatorFixture
 {
-    public sealed record Ride(ushort District,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness);
+    public sealed record Ride(ushort District,uint Key,double[] Pose,string? Quaternion,MissionElevatorWitness? Witness)
+    {
+        public MissionNpcInteriorProof.Plan? Npc {get;init;}
+        public bool Measured => Witness!=null||Npc!=null;
+        public double[] Approach => Npc==null?new[]{Pose[0],Pose[1]-50,Pose[2]}:(Key==Npc.Floor.Key?Npc.Floor:Npc.Lobby).Standing!;
+    }
     static bool Point(double[]? p)=>p?.Length==3&&p.All(double.IsFinite);
     static bool Same(double[]? a,double[]? b)=>Point(a)&&Point(b)&&a!.SequenceEqual(b!);
     static bool Quaternion(string? q){try{return q!=null&&Convert.FromHexString(q).Length==16;}catch(FormatException){return false;}}
@@ -29,6 +34,12 @@ public static class MervFollowupElevatorFixture
             throw new InvalidDataException("Current raw site identity differs");
         if(raw.metrId!=1||selected!=null&&selected.District!=1||state.Objects.Any(o=>o.Spot?.metrId!=1||o.OpenFloor!=null&&o.OpenFloor.World!=1))
             throw new InvalidDataException("Fixture world/selected site/raw object/open-floor world differs");
+        var npc=MissionNpcInteriorRide.ForSite(state);
+        if(npc!=null)
+        {
+            var entry=enter?npc.Lobby:npc.Floor;
+            return new(raw.metrId,entry.Key,entry.Position,entry.Quaternion,null){Npc=npc};
+        }
         var matches=(state.ElevatorWitnesses??Array.Empty<MissionElevatorWitness>()).Where(v=>v!=null&&v.SiteFingerprint==selected?.Fingerprint).ToArray();
         if(matches.Length>1)throw new InvalidDataException("Ambiguous selected elevator witness");
         if(matches.Length==1)
@@ -67,12 +78,12 @@ public static class MervFollowupElevatorFixture
         if(current==null||before.Version!=current.Version||before.Mission!=current.Mission||before.Phase!=current.Phase||
             before.Identity!=current.Identity||before.Started!=current.Started||before.Instance!=current.Instance)return false;
         var options=new System.Text.Json.JsonSerializerOptions{IncludeFields=true};
-        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
+        string Snapshot(MissionProgress.SavedState s)=>System.Text.Json.JsonSerializer.Serialize(new{s.Waypoints,s.Exits,s.SiteDoors,s.OpenFloorSites,s.OpenFloorCurrentSiteIndex,s.ElevatorWitnesses,NpcWitness=MissionNpcInteriorRide.ForSite(s)?.Raw,Objects=s.Objects.Select(o=>new{o.Id,o.Goid,o.Spot,o.OpenFloor})},options);
         return Snapshot(before)==Snapshot(current);
     }
     public static void RequireOverlay(Ride selected,ViewCreation view)
     {
-        if(selected.Witness==null||view.RelatedStaticObjectId!=selected.Key||!new ushort[]{417,419}.Contains(view.Goid)||!view.Attributes.TryGetValue("Position",out var p)||p.Length!=24||
+        if(!selected.Measured||view.RelatedStaticObjectId!=selected.Key||!new ushort[]{417,419}.Contains(view.Goid)||!view.Attributes.TryGetValue("Position",out var p)||p.Length!=24||
             !Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==selected.Pose[i])||!view.Attributes.TryGetValue("Orientation",out var q)||
             !q.SequenceEqual(Convert.FromHexString(selected.Quaternion!)))throw new InvalidDataException("Requested measured door overlay differs");
     }
@@ -111,6 +122,15 @@ public static class MervFollowupElevatorFixture
     }
     public static void RequireRoot(Ride selected,bool enter,double[] actual,ushort sector,ushort region,double floorY,IEnumerable<double[]> freeRoots)
     {
+        if(selected.Npc!=null)
+        {
+            var npc=selected.Npc;var target=enter?npc.Floor:npc.Lobby;
+            var entry=npc.Witness.GetProperty(enter?"Floor":"Lobby");var node=entry.GetProperty("Node");
+            if(!Same(actual,target.Standing)||sector!=(target.Key>>20)||region!=node.GetProperty("Region").GetUInt16()||
+                !double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||enter&&freeRoots.Any(r=>!Same(r,actual)))
+                throw new InvalidDataException("Actual NPC arrival differs from owned measured Standing/NAV");
+            return;
+        }
         var w=selected.Witness??throw new InvalidDataException("Measured root requires selected witness");
         uint key=enter?w.FloorKey:w.LobbyKey;ushort expected=enter?w.Region:w.LobbyRegion;
         if(!Point(actual)||sector!=(key>>20)||region!=expected||!double.IsFinite(floorY)||Math.Abs(actual[1]-(floorY+95))>1e-7||
