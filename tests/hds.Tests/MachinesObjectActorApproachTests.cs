@@ -33,7 +33,7 @@ public class MachinesObjectActorApproachTests
  {
   var f=Fixture();var s=State(f);var life=Life(f);var actor=s.Mobs.Single(m=>m.Npc==1);
   if(change=="floor")actor.Y+=400;if(change=="otherregion"){actor.X=17000;actor.Z=2200;}
-  if(change=="dead")actor.Dead=true;if(change=="missing")s.Mobs=Array.Empty<MissionProgress.SavedMob>();
+  if(change=="dead")actor.Dead=true;if(change=="missing")s.Mobs.Clear();
   Assert.Throws<InvalidDataException>(()=>MachinesObjectActorApproach.Read(Root,s,1,life.Snapshot()));
  }
  [Fact] public void RouteCannotBorrowAnotherOrRetiredOwnLife()

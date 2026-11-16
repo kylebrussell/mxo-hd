@@ -26,7 +26,7 @@ public static class MachinesObjectActorApproach
  {
   Need(life.Current&&life.OwnViewReady,"Objects actor current own life");
   var street=ZionAfter1212StreetEntry.ForSite(state)??throw new InvalidDataException("Owned Objects Street entry required");
-  Need(street.Raw.GetProperty("Kind").GetString()=="Objects"&&street.Raw.GetProperty("Version").GetInt32()==1&&state.Objects.Length>0&&
+  Need(street.Raw.GetProperty("Kind").GetString()=="Objects"&&street.Raw.GetProperty("Version").GetInt32()==1&&state.Objects.Count>0&&
    state.Objects.Any(o=>o.OpenFloor!=null),"Only existing certified free Objects stage");
   string actorJson=Actor(state,npc);var actor=state.Mobs.Single(m=>m.Npc==npc);var target=new[]{actor.X,actor.Y,actor.Z};
   var raw=JsonSerializer.Deserialize<StaticWorldObject>(street.Floor.Raw,Fields)!;var floor=street.Raw.GetProperty("Context").GetProperty("Floor");
