@@ -491,10 +491,10 @@ namespace hds
             internal readonly Side Side,Other;
             internal readonly MultifightingInterlock.Owner Owner;
             internal readonly WorldClient Client;
-            internal readonly bool Endpoint,Loaded;
+            internal readonly bool Endpoint;
             internal readonly long Transport;
-            internal MultifightingMember(Side side,Side other,MultifightingInterlock.Owner owner,WorldClient client,bool endpoint,long transport,bool loaded)
-            {Side=side;Other=other;Owner=owner;Client=client;Endpoint=endpoint;Transport=transport;Loaded=loaded;}
+            internal MultifightingMember(Side side,Side other,MultifightingInterlock.Owner owner,WorldClient client,bool endpoint,long transport)
+            {Side=side;Other=other;Owner=owner;Client=client;Endpoint=endpoint;Transport=transport;}
         }
         internal sealed class MultifightingRound
         {
@@ -508,14 +508,14 @@ namespace hds
             lock(sync)
             {
                 version=membershipVersion;
-                snapshot=members.Where(s=>s.Present).Select(s=>new MultifightingMember(s,s.Other,s.MultifightingOwner,s.Client,false,0,false)).ToArray();
+                snapshot=members.Where(s=>s.Present).Select(s=>new MultifightingMember(s,s.Other,s.MultifightingOwner,s.Client,false,0)).ToArray();
             }
             // Both registry observation and locking transport capture precede the real round/fight/RNG locks.
             for(int i=0;i<snapshot.Length;i++)
             {
                 var item=snapshot[i];if(item.Owner==null || item.Client?.TransportFence==null)continue;
                 bool endpoint=item.Owner.EndpointCurrent();long transport=item.Client.TransportFence.Capture();
-                snapshot[i]=new MultifightingMember(item.Side,item.Other,item.Owner,item.Client,endpoint,transport,MultifightingInterlock.Loaded(item.Client));
+                snapshot[i]=new MultifightingMember(item.Side,item.Other,item.Owner,item.Client,endpoint,transport);
             }
             return new MultifightingRound(version,snapshot);
         }
@@ -527,13 +527,17 @@ namespace hds
                 if(round==null || !IsActive || round.Version!=membershipVersion)return value;
                 bool Current(MultifightingMember m)=>m.Endpoint && m.Owner!=null && m.Side.Present &&
                     ReferenceEquals(m.Side.Client,m.Client) && ReferenceEquals(m.Side.Other,m.Other) && ReferenceEquals(m.Side.MultifightingOwner,m.Owner) &&
-                    m.Owner.Current(this,m.Transport,m.Loaded);
+                    m.Owner.Current(this,m.Transport);
                 var own=round.Members.SingleOrDefault(m=>ReferenceEquals(m.Side,actor));
                 if(own==null || !Current(own))return value;
                 int count=round.Members.Where(m=>!ReferenceEquals(m.Client,own.Client) && Current(m) && m.Owner.Data.getDistrictId()==own.Owner.Data.getDistrictId() &&
                     (ReferenceEquals(m.Other,actor)||ReferenceEquals(own.Other,m.Side))).Select(m=>m.Client).Distinct().Count();
-                int penalty=MultifightingInterlock.Penalty(count,own.Loaded);
-                Output.WriteDebugLog($"[MULTIFIGHTING OURS] {PvpFlag.Name(own.Client)} opponents{count} loaded{own.Loaded} penalty{penalty} {role}{value}->{value+penalty}");
+                //140 belongs to the actor, not its opponents. Read current membership from the captured data;
+                //an unrelated load/unload must not erase a live link, and unload cannot reuse an older benefit.
+                bool loaded=MultifightingInterlock.Loaded(own.Owner.Data);
+                if(!Current(own))return value;
+                int penalty=MultifightingInterlock.Penalty(count,loaded);
+                Output.WriteDebugLog($"[MULTIFIGHTING OURS] {PvpFlag.Name(own.Client)} opponents{count} loaded{loaded} penalty{penalty} {role}{value}->{value+penalty}");
                 return value+penalty;
             }
         }

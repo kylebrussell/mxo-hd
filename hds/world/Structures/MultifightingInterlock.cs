@@ -9,9 +9,9 @@ namespace hds
         public const int Threshold=1;
         public static int Penalty(int currentOpponents,bool loaded) =>
             CombatRules.MultiOnOnePenalty(currentOpponents,currentOpponents,loaded,Threshold);
-        internal static bool Loaded(WorldClient client)
+        internal static bool Loaded(ClientData data)
         {
-            var state=client.playerData.passives;
+            var state=data.passives;
             lock(state)return state.Loaded.ContainsKey(Ability);
         }
         // Created before the fight lock, never allowed to adopt a replacement world/player/session.
@@ -37,12 +37,12 @@ namespace hds
                 lock(registry)return ReferenceEquals(registry,WorldServer.Clients) &&
                     registry.TryGetValue(key,out var current) && ReferenceEquals(current,Client);
             }
-            internal bool Current(PvpFight fight,long transport,bool loaded) =>
+            internal bool Current(PvpFight fight,long transport) =>
                 ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,player) &&
                 Data.getCharID()==character && Data.getDistrictId()==district && Data.worldGeneration==world && Data.lifeGeneration==life &&
                 Client.Alive && Data.getOnWorld() && !Data.isDead && !Data.duelDeath && !Data.worldChangePending &&
                 PvpCombat.HealthOf(Client)>0 && ReferenceEquals(handler.pvpFight,fight) &&
-                Client.TransportFence!=null && Client.TransportFence.IsCurrent(transport) && Loaded(Client)==loaded;
+                Client.TransportFence!=null && Client.TransportFence.IsCurrent(transport);
         }
     }
 }

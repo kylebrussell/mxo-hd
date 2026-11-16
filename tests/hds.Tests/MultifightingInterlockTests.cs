@@ -75,7 +75,9 @@ public class MultifightingInterlockTests : IDisposable
     public void LoadedChangeAfterSnapshotCannotGrantBenefitAndEndedFightCannotApply()
     {
         var(f,s)=Group();s[0].Client.playerData.passives.Loaded[140]=50;var round=f.CaptureMultifighting();
-        s[0].Client.playerData.passives.Loaded.Clear();Assert.Equal(100,f.MultifightingInput(s[0],100,"test",round));
+        s[0].Client.playerData.passives.Loaded.Clear();Assert.Equal(90,f.MultifightingInput(s[0],100,"test",round));
+        s[2].Client.playerData.passives.Loaded[140]=50;Assert.Equal(90,f.MultifightingInput(s[0],100,"test",round));
+        s[0].Client.playerData.passives.Loaded[140]=0;Assert.Equal(100,f.MultifightingInput(s[0],100,"test",round));
         Set(f,"<IsActive>k__BackingField",false);Assert.Equal(100,Input(f,s[0]));
     }
     [Fact]
