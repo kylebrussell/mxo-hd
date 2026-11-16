@@ -33,6 +33,7 @@ namespace hds
         public sealed class Side
         {
             public WorldClient Client;
+            internal MultifightingInterlock.Owner MultifightingOwner;
             public byte Slot;
             public bool Present = true;
             public Side Other;
@@ -94,13 +95,14 @@ namespace hds
         private byte[] centre;
         private CombatPresentation presentation;
         private readonly List<Side> members = new List<Side>();
+        private long membershipVersion;
         public const int MaximumFighters = 6;
         public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
 
         private PvpFight(WorldClient attacker, WorldClient defender)
         {
-            Attacker = new Side { Client = attacker, Slot = 1 };
-            Defender = new Side { Client = defender, Slot = 2 };
+            Attacker = new Side { Client = attacker, Slot = 1, MultifightingOwner = new MultifightingInterlock.Owner(attacker) };
+            Defender = new Side { Client = defender, Slot = 2, MultifightingOwner = new MultifightingInterlock.Owner(defender) };
             Attacker.Other = Defender;
             Defender.Other = Attacker;
             members.Add(Attacker); members.Add(Defender);
@@ -118,6 +120,7 @@ namespace hds
                 if (!IsActive || side?.Present != true || opponent?.Present != true || side == opponent) return false;
                 if (side.Other == opponent) return true;
                 client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
+                membershipVersion++;
                 side.Other = opponent;
                 side.OpponentHandle = PvpCombat.HandleOf(client, target);
                 client.messageQueue.addRpcMessage(CombatHandler.BuildCloseCombatEcho(request));
@@ -131,6 +134,7 @@ namespace hds
         public bool Join(WorldClient client, WorldClient target, byte[] request)
         {
             Side joined, opponent;
+            var multifightingOwner=new MultifightingInterlock.Owner(client);
             lock (sync)
             {
                 opponent = SideOf(target);
@@ -140,10 +144,10 @@ namespace hds
                 byte slot = Enumerable.Range(1, MaximumFighters).Select(i => (byte)i).First(i => !members.Any(s => s.Present && s.Slot == i));
                 CombatManager.GetHandler(client).LeaveOtherFights();
                 TradeHandler.Abort(client);
-                joined = new Side { Client = client, Other = opponent, Slot = slot,
+                joined = new Side { Client = client, Other = opponent, Slot = slot, MultifightingOwner = multifightingOwner,
                     OpponentHandle = PvpCombat.HandleOf(client, target), Move = NewMove(1, client.playerData.combatTactic) };
                 joined.Move.First = true;
-                members.Add(joined);
+                members.Add(joined);membershipVersion++;
                 CombatHandler handler = CombatManager.GetHandler(client);
                 handler.pvpFight = this; handler.isCombatRunning = true;
                 client.playerData.combatGeneration++;
@@ -472,6 +476,45 @@ namespace hds
             }
         }
 
+        internal sealed record MultifightingMember(Side Side,Side Other,MultifightingInterlock.Owner Owner,WorldClient Client,
+            bool Endpoint,long Transport,bool Loaded);
+        internal sealed record MultifightingRound(long Version,MultifightingMember[] Members);
+        internal MultifightingRound CaptureMultifighting()
+        {
+            MultifightingMember[] snapshot;long version;
+            lock(sync)
+            {
+                version=membershipVersion;
+                snapshot=members.Where(s=>s.Present).Select(s=>new MultifightingMember(s,s.Other,s.MultifightingOwner,s.Client,false,0,false)).ToArray();
+            }
+            // Both registry observation and locking transport capture precede the real round/fight/RNG locks.
+            for(int i=0;i<snapshot.Length;i++)
+            {
+                var item=snapshot[i];if(item.Owner==null || item.Client?.TransportFence==null)continue;
+                bool endpoint=item.Owner.EndpointCurrent();long transport=item.Client.TransportFence.Capture();
+                snapshot[i]=item with {Endpoint=endpoint,Transport=transport,Loaded=MultifightingInterlock.Loaded(item.Client)};
+            }
+            return new MultifightingRound(version,snapshot);
+        }
+        internal int MultifightingInput(Side actor,int value,string role,MultifightingRound round)
+        {
+            // Called under sync by the executor; also serialized here for direct controls.
+            lock(sync)
+            {
+                if(round==null || !IsActive || round.Version!=membershipVersion)return value;
+                bool Current(MultifightingMember m)=>m.Endpoint && m.Owner!=null && m.Side.Present &&
+                    ReferenceEquals(m.Side.Client,m.Client) && ReferenceEquals(m.Side.Other,m.Other) && ReferenceEquals(m.Side.MultifightingOwner,m.Owner) &&
+                    m.Owner.Current(this,m.Transport,m.Loaded);
+                var own=round.Members.SingleOrDefault(m=>ReferenceEquals(m.Side,actor));
+                if(own==null || !Current(own))return value;
+                int count=round.Members.Where(m=>!ReferenceEquals(m.Client,own.Client) && Current(m) && m.Owner.Data.getDistrictId()==own.Owner.Data.getDistrictId() &&
+                    (ReferenceEquals(m.Other,actor)||ReferenceEquals(own.Other,m.Side))).Select(m=>m.Client).Distinct().Count();
+                int penalty=MultifightingInterlock.Penalty(count,own.Loaded);
+                Output.WriteDebugLog($"[MULTIFIGHTING OURS] {PvpFlag.Name(own.Client)} opponents{count} loaded{own.Loaded} penalty{penalty} {role}{value}->{value+penalty}");
+                return value+penalty;
+            }
+        }
+
         private void ResolvePair(Side first, Side second, bool opening, bool counter)
         {
             WorldClient dead = null, killer = null;
@@ -479,6 +522,7 @@ namespace hds
             Side landedBy = null;
             bool sneakOpener = false;
             Side withdrew = null;
+            var multifighting=CaptureMultifighting();
             lock (sync)
             {
                 if (!IsActive || !first.Present || !second.Present)
@@ -524,10 +568,10 @@ namespace hds
                 lock (rng)
                 {
                     pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
-                        AbilityStats.SpecialAttack(p.Client, pAbility), AbilityStats.SpecialDefense(n.Client, pAbility)) &&
+                        MultifightingInput(p,AbilityStats.SpecialAttack(p.Client, pAbility),"attack",multifighting), MultifightingInput(n,AbilityStats.SpecialDefense(n.Client, pAbility),"defence",multifighting)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
-                        AbilityStats.SpecialAttack(n.Client, nAbility), AbilityStats.SpecialDefense(p.Client, nAbility)) &&
+                        MultifightingInput(n,AbilityStats.SpecialAttack(n.Client, nAbility),"attack",multifighting), MultifightingInput(p,AbilityStats.SpecialDefense(p.Client, nAbility),"defence",multifighting)) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
@@ -675,7 +719,7 @@ namespace hds
                     RemoveMember(reason, SideOf(who));
                     return;
                 }
-                IsActive = false;
+                IsActive = false;membershipVersion++;
                 presentation?.End(delay);
                 timer?.Stop();
                 timer?.Dispose();
@@ -727,7 +771,7 @@ namespace hds
 
         private void RemoveMember(EndReason reason, Side removed)
         {
-            removed.Present = false;
+            removed.Present = false;membershipVersion++;
             var controller = CombatManager.GetHandler(removed.Client);
             controller.pvpFight = null; controller.isCombatRunning = false;
             presentation.RemoveFighter(removed.Client, removed.Slot);
