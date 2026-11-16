@@ -1,3 +1,5 @@
+> Current local checkpoint: runtime/tools producer `562a93b8` includes exact frozen271 `11f30740` plus the unchanged PR213 resolver allocation optimization. The first outside-focus compile at34fb failed on a missing QA decoder dependency; correction85564 passed233 affected tests. Actual Debug and Release NativeQa builds, both plans/build-info and exact-one case discovery passed. No local full repeat, new whole-case, startup or native pass is claimed. The historical source-only and failed-run notes below retain their original producer attribution. DRAFT/HOLD until271 native acceptance/merge and a newly granted corrected whole-case proof.
+
 > Local outside-trip correction depends explicitly on frozen271 `11f30740` pending its native acceptance/merge. Before Upload or escort-to-hardline,213 now requires ordinary unfinished car DOWN, fresh current-own-life011c and exact client ACK before outside movement aid. Repeated same-booth Upload reuses a current-life/site token; later interior actions require ordinary UP and ACK. The default shared Prima behavior stays off. No new fresh/native result is claimed.
 
 ## Current post269 native entry gate
