@@ -65,20 +65,29 @@ public static class MissionBound326RouteProof
     {Need(before.Current&&current.Current&&current.OwnViewReady&&ReferenceEquals(current.Owner,before.Owner)&&current.Life==before.Life,"portal Open current own-life owner");return NpcInteriorComputerState.CurrentDoor(current,expected);}
     public static void RequireCurrent(Plan plan,MissionProgress.SavedState current)
     {MissionOutsideContinuation.Require(plan.Before,current);var now=ZionAfter1212StreetEntry.ForSite(current);Need(now!=null&&now.Raw.GetRawText()==plan.Selection.GetRawText(),"current owner/source/route identity");}
+    // Original TryWoodDoor uses the selected raw GOID globally; a portal may approach it from the companion side.
+    public static void RequireOwnGoidDoorEvidence(JsonElement group,JsonElement regions,ushort goid,double[] position,string quaternion)
+    {
+        var own=group.GetProperty("Occurrences").EnumerateArray().Where(o=>o.GetProperty("Goid").GetUInt16()==goid).ToArray();
+        Need(own.Length>0&&own.All(o=>o.GetProperty("ModelPosition").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(position)&&string.Equals(o.GetProperty("Quaternion").GetString(),quaternion,StringComparison.OrdinalIgnoreCase)),"Bound route QA global own-GO pose consensus");
+        Need(own.All(o=>regions.EnumerateArray().Any(r=>r.GetProperty("Id").GetInt32()==o.GetProperty("Region").GetInt32()&&r.GetProperty("Available").GetBoolean())),"Bound route QA available own-GO evidence");
+    }
     public static Step[] Steps(string repository,Plan plan)
     {
         var source=Raw(plan.Floor.Raw);string expectedDigest=plan.Selection.GetProperty("Context").GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;
         using var doc=JsonDocument.Parse(MissionNpcInteriorProof.EvidencePayload(repository,source.sectorID,expectedDigest));var root=doc.RootElement;
         bool localEvidence=root.GetProperty("Format").GetInt32()==2;
         Need(root.GetProperty("World").GetInt32()==1&&root.GetProperty("Sector").GetInt32()==source.sectorID,"Bound route QA explicit world/sector");
-        void NativeDoor(Door door,JsonElement? entry,int? sourceRegion=null)
+        void NativeDoor(Door door,JsonElement? entry)
         {
             var raw=Raw(door.Raw);using var ownDoc=JsonDocument.Parse(MissionNpcInteriorProof.EvidencePayload(repository,raw.sectorID,entry?.GetProperty("EvidenceDigest").GetString()??expectedDigest));var group=ownDoc.RootElement.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==door.Key);
             Need(group.GetProperty("Legacy").EnumerateArray().Any(l=>
             {var s=l.GetProperty("Signature");return s.GetProperty("Goid").GetUInt16()==door.Goid&&s.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z})&&s.GetProperty("Rotation").GetDouble()==raw.rot&&string.Equals(s.GetProperty("Quaternion").GetString(),raw.quat,StringComparison.OrdinalIgnoreCase);}),"Bound route QA exact legacy source signature");
-            var occurrences=group.GetProperty("Occurrences").EnumerateArray().ToArray();var positionScope=MissionInteriorDoorTypes.IsSupported(door.Goid)?occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid&&(!sourceRegion.HasValue||o.GetProperty("Region").GetInt32()==sourceRegion)):occurrences;Need(positionScope.Any()&&positionScope.All(o=>o.GetProperty("ModelPosition").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(door.Position)),"Bound route QA native position consensus");
-            var own=occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid&&(!entry.HasValue||o.GetProperty("Region").GetInt32()==entry.Value.GetProperty("Node").GetProperty("Region").GetInt32())&&(!sourceRegion.HasValue||o.GetProperty("Region").GetInt32()==sourceRegion)).ToArray();
+            if(!entry.HasValue){MissionBound326RouteProof.RequireOwnGoidDoorEvidence(group,ownDoc.RootElement.GetProperty("Regions"),door.Goid,door.Position,door.Quaternion);return;}
+            var occurrences=group.GetProperty("Occurrences").EnumerateArray().ToArray();var positionScope=MissionInteriorDoorTypes.IsSupported(door.Goid)?occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid):occurrences;Need(positionScope.Any()&&positionScope.All(o=>o.GetProperty("ModelPosition").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(door.Position)),"Bound route QA native position consensus");
+            var own=occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid&&(!entry.HasValue||o.GetProperty("Region").GetInt32()==entry.Value.GetProperty("Node").GetProperty("Region").GetInt32())).ToArray();
             Need(own.Length>0&&(!entry.HasValue||own.Length==1)&&own.All(o=>string.Equals(o.GetProperty("Quaternion").GetString(),door.Quaternion,StringComparison.OrdinalIgnoreCase)),"Bound route QA context-selected own-GO yaw");
+            Need(own.All(o=>ownDoc.RootElement.GetProperty("Regions").EnumerateArray().Any(r=>r.GetProperty("Id").GetInt32()==o.GetProperty("Region").GetInt32()&&r.GetProperty("Available").GetBoolean())),"Bound route QA available own-GO evidence");
         }
         NativeDoor(plan.Floor,plan.Selection.GetProperty("Context").GetProperty("Floor"));NativeDoor(plan.Lobby,plan.Selection.GetProperty("Context").GetProperty("Lobby"));
         var nodes=plan.Route.GetProperty("Nodes").EnumerateArray().ToArray();Need(nodes.Length>0,"Bound route nonempty topology path");
@@ -116,7 +125,7 @@ public static class MissionBound326RouteProof
             {
                 var edges=root.GetProperty("Portals").EnumerateArray().Where(q=>q.GetProperty("SourceRegion").GetInt32()==R(nodes[i-1])&&q.GetProperty("SourcePolygon").GetInt32()==P(nodes[i-1])&&q.GetProperty("TargetRegion").GetInt32()==R(nodes[i])&&q.GetProperty("TargetPolygon").GetInt32()==P(nodes[i])).ToArray();Need(edges.Length==1,"Bound route unique original portal");var edge=edges[0];if(localEvidence)Need(edge.GetProperty("Transition").GetString()=="SameFloor","Bound route route cannot cross an unproved/partial/different-floor portal");
                 Need(root.GetProperty("Portals").EnumerateArray().Count(q=>q.GetProperty("SourceRegion").GetInt32()==R(nodes[i])&&q.GetProperty("SourcePolygon").GetInt32()==P(nodes[i])&&q.GetProperty("TargetRegion").GetInt32()==R(nodes[i-1])&&q.GetProperty("TargetPolygon").GetInt32()==P(nodes[i-1])&&q.GetProperty("SourceEdge").GetInt32()==edge.GetProperty("TargetEdge").GetInt32()&&q.GetProperty("TargetEdge").GetInt32()==edge.GetProperty("SourceEdge").GetInt32())==1,"Bound route reciprocal portal");
-                var ends=edge.GetProperty("Endpoints");x=ends[0].EnumerateArray().Select(v=>v.GetDouble()).ToArray();z=ends[1].EnumerateArray().Select(v=>v.GetDouble()).ToArray();doors=edge.GetProperty("DoorKeys").EnumerateArray().Select(v=>v.GetUInt32()).ToArray();foreach(uint key in doors){Need(plan.Doors.Count(d=>d.Key==key)==1,"crossing requires one saved door");NativeDoor(plan.Doors.Single(d=>d.Key==key),null,R(nodes[i-1]));}
+                var ends=edge.GetProperty("Endpoints");x=ends[0].EnumerateArray().Select(v=>v.GetDouble()).ToArray();z=ends[1].EnumerateArray().Select(v=>v.GetDouble()).ToArray();doors=edge.GetProperty("DoorKeys").EnumerateArray().Select(v=>v.GetUInt32()).ToArray();foreach(uint key in doors){Need(plan.Doors.Count(d=>d.Key==key)==1,"crossing requires one saved door");NativeDoor(plan.Doors.Single(d=>d.Key==key),null);}
             }
             else
             {
