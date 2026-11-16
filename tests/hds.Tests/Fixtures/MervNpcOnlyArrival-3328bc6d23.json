@@ -1,0 +1,592 @@
+{
+  "Version": 2,
+  "Identity": "c5c76f5f27474215b975679a5d0ccfd0",
+  "Mission": 301203,
+  "Instance": 47,
+  "Started": 1794792011,
+  "Phase": 0,
+  "Kills": 0,
+  "Flags": {
+    "waitingForExit": false,
+    "entered": false,
+    "failed": false,
+    "inventoryFullNotice": false,
+    "completionNotice": false,
+    "entryItemExchanged": false,
+    "goalsCompleteSent": false,
+    "leaveNotNeeded": false
+  },
+  "Done": [],
+  "EverDone": [],
+  "Fired": [],
+  "Arrived": [],
+  "Killed": [],
+  "Following": [],
+  "Waves": [],
+  "PendingNpcs": [],
+  "PendingWaves": [],
+  "JustArrived": [],
+  "WavesJustArrived": [],
+  "JustSwitched": [],
+  "Sides": {},
+  "Items": {},
+  "Reserved": {},
+  "ReservedWaves": {},
+  "NpcElapsed": {},
+  "WaveElapsed": {},
+  "GoalElapsed": {},
+  "Waypoints": [
+    {
+      "x": 25700,
+      "y": 2145,
+      "z": 13800,
+      "doorHex": "bb03100d"
+    }
+  ],
+  "Exits": [
+    [
+      25700,
+      545,
+      13800
+    ]
+  ],
+  "SiteDoors": [
+    {
+      "exterior": false,
+      "pos_x": 25700,
+      "pos_y": 2145,
+      "pos_z": 13800,
+      "rot": 180,
+      "quat": "0000000000000000000000000000803f",
+      "sectorID": 209,
+      "metrId": 1,
+      "mxoStaticId": 219153339,
+      "staticId": 955,
+      "type": "oQE=",
+      "strType": null
+    }
+  ],
+  "Objects": [],
+  "OpenFloorCurrentSiteIndex": 0,
+  "OpenFloorSites": [
+    {
+      "District": 1,
+      "DoorKey": 219153339,
+      "DoorX": 25700,
+      "DoorY": 2145,
+      "DoorZ": 13800,
+      "Fingerprint": "99A18457FD6FC20D9BAD86EF90CA704125560FA199771D7E43BDBB539BDE53D6"
+    }
+  ],
+  "NpcInterior": {
+    "Version": 2,
+    "Kind": "NpcInterior",
+    "Pending": null,
+    "CurrentPhase": 0,
+    "Witnesses": [
+      {
+        "Version": 2,
+        "Kind": "NpcInterior",
+        "Selection": {
+          "Mission": 301203,
+          "Identity": "c5c76f5f27474215b975679a5d0ccfd0",
+          "Started": 1794792011,
+          "Phase": 0,
+          "Site": {
+            "District": 1,
+            "DoorKey": 219153339,
+            "DoorX": 25700,
+            "DoorY": 2145,
+            "DoorZ": 13800,
+            "Fingerprint": "99A18457FD6FC20D9BAD86EF90CA704125560FA199771D7E43BDBB539BDE53D6"
+          },
+          "RolePlan": 1,
+          "Actors": [
+            {
+              "Kind": "Npc",
+              "Id": 1,
+              "Index": 0,
+              "WirePhase": 0,
+              "Deferred": false,
+              "RawMarkerJson": "{\"exterior\":false,\"pos_x\":24450,\"pos_y\":2145,\"pos_z\":15500,\"rot\":169.999984379,\"quat\":\"00000000c87eb2bd000000009e067f3f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153161,\"staticId\":777,\"type\":\"EwA=\",\"strType\":null}",
+              "Standing": [
+                24450,
+                2095,
+                15500,
+                169.999984379
+              ]
+            },
+            {
+              "Kind": "Npc",
+              "Id": 2,
+              "Index": 0,
+              "WirePhase": 0,
+              "Deferred": false,
+              "RawMarkerJson": "{\"exterior\":false,\"pos_x\":24700,\"pos_y\":2145,\"pos_z\":15450,\"rot\":187.000000621,\"quat\":\"000000000a0e7a3d00000000c3857f3f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153148,\"staticId\":764,\"type\":\"EwA=\",\"strType\":null}",
+              "Standing": [
+                24700,
+                2095,
+                15450,
+                187.000000621
+              ]
+            },
+            {
+              "Kind": "Npc",
+              "Id": 3,
+              "Index": 0,
+              "WirePhase": 0,
+              "Deferred": false,
+              "RawMarkerJson": "{\"exterior\":false,\"pos_x\":24200,\"pos_y\":2145,\"pos_z\":13700,\"rot\":47.9999910779,\"quat\":\"000000001ede69bf00000000c73fd03e\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153165,\"staticId\":781,\"type\":\"EwA=\",\"strType\":null}",
+              "Standing": [
+                24200,
+                2095,
+                13700,
+                47.9999910779
+              ]
+            }
+          ]
+        },
+        "Floor": {
+          "RawDoorJson": "{\"exterior\":false,\"pos_x\":25700,\"pos_y\":2145,\"pos_z\":13800,\"rot\":180,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153339,\"staticId\":955,\"type\":\"oQE=\",\"strType\":null}",
+          "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+          "Quaternion": "000000000000803f0000000000000000",
+          "Node": {
+            "Region": 70,
+            "Polygon": 26
+          },
+          "Position": [
+            25700,
+            2145,
+            13800
+          ],
+          "Standing": [
+            25700,
+            2095,
+            13600
+          ]
+        },
+        "Lobby": {
+          "RawDoorJson": "{\"exterior\":false,\"pos_x\":25700,\"pos_y\":545,\"pos_z\":13800,\"rot\":180,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153353,\"staticId\":969,\"type\":\"oQE=\",\"strType\":null}",
+          "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+          "Quaternion": "000000000000803f0000000000000000",
+          "Node": {
+            "Region": 72,
+            "Polygon": 10
+          },
+          "Position": [
+            25700,
+            545,
+            13800
+          ],
+          "Standing": [
+            25700,
+            495,
+            13600
+          ]
+        },
+        "Actors": [
+          {
+            "Role": "Npc:1:0",
+            "Target": {
+              "Region": 54,
+              "Polygon": 24
+            },
+            "Nodes": [
+              {
+                "Region": 70,
+                "Polygon": 26
+              },
+              {
+                "Region": 70,
+                "Polygon": 3
+              },
+              {
+                "Region": 70,
+                "Polygon": 2
+              },
+              {
+                "Region": 70,
+                "Polygon": 4
+              },
+              {
+                "Region": 70,
+                "Polygon": 19
+              },
+              {
+                "Region": 70,
+                "Polygon": 25
+              },
+              {
+                "Region": 70,
+                "Polygon": 24
+              },
+              {
+                "Region": 70,
+                "Polygon": 1
+              },
+              {
+                "Region": 54,
+                "Polygon": 5
+              },
+              {
+                "Region": 54,
+                "Polygon": 136
+              },
+              {
+                "Region": 54,
+                "Polygon": 138
+              },
+              {
+                "Region": 54,
+                "Polygon": 137
+              },
+              {
+                "Region": 54,
+                "Polygon": 125
+              },
+              {
+                "Region": 54,
+                "Polygon": 16
+              },
+              {
+                "Region": 54,
+                "Polygon": 18
+              },
+              {
+                "Region": 54,
+                "Polygon": 14
+              },
+              {
+                "Region": 54,
+                "Polygon": 10
+              },
+              {
+                "Region": 54,
+                "Polygon": 161
+              },
+              {
+                "Region": 54,
+                "Polygon": 162
+              },
+              {
+                "Region": 54,
+                "Polygon": 165
+              },
+              {
+                "Region": 54,
+                "Polygon": 105
+              },
+              {
+                "Region": 54,
+                "Polygon": 103
+              },
+              {
+                "Region": 54,
+                "Polygon": 104
+              },
+              {
+                "Region": 54,
+                "Polygon": 107
+              },
+              {
+                "Region": 54,
+                "Polygon": 21
+              },
+              {
+                "Region": 54,
+                "Polygon": 24
+              }
+            ]
+          },
+          {
+            "Role": "Npc:2:0",
+            "Target": {
+              "Region": 54,
+              "Polygon": 23
+            },
+            "Nodes": [
+              {
+                "Region": 70,
+                "Polygon": 26
+              },
+              {
+                "Region": 70,
+                "Polygon": 3
+              },
+              {
+                "Region": 70,
+                "Polygon": 2
+              },
+              {
+                "Region": 70,
+                "Polygon": 4
+              },
+              {
+                "Region": 70,
+                "Polygon": 19
+              },
+              {
+                "Region": 70,
+                "Polygon": 25
+              },
+              {
+                "Region": 70,
+                "Polygon": 24
+              },
+              {
+                "Region": 70,
+                "Polygon": 1
+              },
+              {
+                "Region": 54,
+                "Polygon": 5
+              },
+              {
+                "Region": 54,
+                "Polygon": 136
+              },
+              {
+                "Region": 54,
+                "Polygon": 138
+              },
+              {
+                "Region": 54,
+                "Polygon": 137
+              },
+              {
+                "Region": 54,
+                "Polygon": 125
+              },
+              {
+                "Region": 54,
+                "Polygon": 16
+              },
+              {
+                "Region": 54,
+                "Polygon": 18
+              },
+              {
+                "Region": 54,
+                "Polygon": 14
+              },
+              {
+                "Region": 54,
+                "Polygon": 10
+              },
+              {
+                "Region": 54,
+                "Polygon": 161
+              },
+              {
+                "Region": 54,
+                "Polygon": 162
+              },
+              {
+                "Region": 54,
+                "Polygon": 165
+              },
+              {
+                "Region": 54,
+                "Polygon": 105
+              },
+              {
+                "Region": 54,
+                "Polygon": 103
+              },
+              {
+                "Region": 54,
+                "Polygon": 104
+              },
+              {
+                "Region": 54,
+                "Polygon": 20
+              },
+              {
+                "Region": 54,
+                "Polygon": 23
+              }
+            ]
+          },
+          {
+            "Role": "Npc:3:0",
+            "Target": {
+              "Region": 54,
+              "Polygon": 4
+            },
+            "Nodes": [
+              {
+                "Region": 70,
+                "Polygon": 26
+              },
+              {
+                "Region": 70,
+                "Polygon": 3
+              },
+              {
+                "Region": 70,
+                "Polygon": 2
+              },
+              {
+                "Region": 70,
+                "Polygon": 4
+              },
+              {
+                "Region": 70,
+                "Polygon": 19
+              },
+              {
+                "Region": 70,
+                "Polygon": 25
+              },
+              {
+                "Region": 70,
+                "Polygon": 24
+              },
+              {
+                "Region": 70,
+                "Polygon": 1
+              },
+              {
+                "Region": 54,
+                "Polygon": 5
+              },
+              {
+                "Region": 54,
+                "Polygon": 136
+              },
+              {
+                "Region": 54,
+                "Polygon": 138
+              },
+              {
+                "Region": 54,
+                "Polygon": 137
+              },
+              {
+                "Region": 54,
+                "Polygon": 125
+              },
+              {
+                "Region": 54,
+                "Polygon": 16
+              },
+              {
+                "Region": 54,
+                "Polygon": 115
+              },
+              {
+                "Region": 54,
+                "Polygon": 13
+              },
+              {
+                "Region": 54,
+                "Polygon": 127
+              },
+              {
+                "Region": 54,
+                "Polygon": 3
+              },
+              {
+                "Region": 54,
+                "Polygon": 4
+              }
+            ]
+          }
+        ],
+        "Doors": [
+          {
+            "Key": 219153147,
+            "Goid": 580,
+            "RawDoorJson": "{\"exterior\":false,\"pos_x\":24900,\"pos_y\":2145,\"pos_z\":13800,\"rot\":180,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219153147,\"staticId\":763,\"type\":\"RAI=\",\"strType\":null}",
+            "Quaternion": "000000000000803f0000000000000000",
+            "Position": [
+              24900,
+              2145,
+              13800
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "Mobs": [
+    {
+      "Identity": "f29a2de0cd3843729de85c9a756b6df3",
+      "RewardExperience": 0,
+      "Lootable": false,
+      "Loot": null,
+      "Npc": 1,
+      "Phase": 0,
+      "Name": "Alpha",
+      "Rsi": "58010058",
+      "Level": 50,
+      "Health": 2150,
+      "MaxHealth": 2150,
+      "Weapon": 2564,
+      "Rotation": 0,
+      "X": 24450,
+      "Y": 2095,
+      "Z": 15500,
+      "Dead": false,
+      "ScriptedCorpse": false,
+      "Aggro": 0,
+      "Friendly": true,
+      "Hostile": false,
+      "Giver": false,
+      "Taker": false,
+      "Wave": null
+    },
+    {
+      "Identity": "d078237347874fd59d61b899f67d9517",
+      "RewardExperience": 0,
+      "Lootable": false,
+      "Loot": null,
+      "Npc": 2,
+      "Phase": 0,
+      "Name": "Fortuna",
+      "Rsi": "60010058",
+      "Level": 50,
+      "Health": 2150,
+      "MaxHealth": 2150,
+      "Weapon": 2568,
+      "Rotation": 0,
+      "X": 24700,
+      "Y": 2095,
+      "Z": 15450,
+      "Dead": false,
+      "ScriptedCorpse": false,
+      "Aggro": 3,
+      "Friendly": false,
+      "Hostile": false,
+      "Giver": false,
+      "Taker": false,
+      "Wave": null
+    },
+    {
+      "Identity": "d6c2dfc8e8cf4b4993d0dcb43950bce7",
+      "RewardExperience": 0,
+      "Lootable": false,
+      "Loot": null,
+      "Npc": 3,
+      "Phase": 0,
+      "Name": "Chimay",
+      "Rsi": "d8040058",
+      "Level": 50,
+      "Health": 2150,
+      "MaxHealth": 2150,
+      "Weapon": 2568,
+      "Rotation": 0,
+      "X": 24200,
+      "Y": 2095,
+      "Z": 13700,
+      "Dead": false,
+      "ScriptedCorpse": false,
+      "Aggro": 3,
+      "Friendly": false,
+      "Hostile": false,
+      "Giver": false,
+      "Taker": false,
+      "Wave": null
+    }
+  ]
+}

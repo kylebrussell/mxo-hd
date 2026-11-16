@@ -122,7 +122,7 @@ public static partial class Scenarios
             }
             evidence.Add(new{Operation="selected-measured-elevator-overlay",Key=key,Pose=pose,selectedRide.Witness,overlay.ViewId,overlay.SpawnId,currentDoor.OwnLife,currentDoor.BirthSection,ObservedCurrentAfterRequest=true,NewCreationNotRequired=true});
         }
-        if(enter)
+        if(enter&&MervBound326Approach.NeedsArrival(saved))
         {
             var actualArrival=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(actualArrival!=null)

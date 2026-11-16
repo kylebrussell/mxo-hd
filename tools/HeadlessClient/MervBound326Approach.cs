@@ -19,8 +19,9 @@ public static class MervBound326Approach
     { public bool DirectRouteProven=>false;public bool CollisionProven=>false;public bool NativePickingProven=>false; }
     public sealed record Nav(Func<double[],Sample?> Locate,Func<double[],double,double[],Sample?> Project);
     static bool Point(double[] p)=>p?.Length==3&&p.All(double.IsFinite);
-    static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.Waypoints,s.Exits,Door=s.SiteDoors.LastOrDefault(),s.OpenFloorCurrentSiteIndex,s.OpenFloorSites,s.ElevatorWitnesses},Fields);
+    static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.Waypoints,s.Exits,Door=s.SiteDoors.LastOrDefault(),s.OpenFloorCurrentSiteIndex,s.OpenFloorSites,s.ElevatorWitnesses,NpcInterior=s.NpcInterior.ValueKind==JsonValueKind.Undefined?null:s.NpcInterior.GetRawText()},Fields);
     public enum ProofScope { Legacy, Measured }
+    public static bool NeedsArrival(MissionProgress.SavedState state)=>state.Objects.Any(o=>o.Goid==326&&o.OpenFloor==null&&o.Spot?.metrId==1&&MissionSites.Goid(o.Spot)==326);
     public static ProofScope Classify(MissionProgress.SavedState state)
     {
         if(state.Waypoints.Length!=1||state.Exits.Length!=1||!Point(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!Point(state.Exits[0]))throw new InvalidDataException("Invalid current door/lobby identity");
@@ -52,7 +53,14 @@ public static class MervBound326Approach
             }
         }
         var current=witnesses.Where(w=>w.SiteFingerprint==site.Fingerprint).ToArray();if(current.Length>1)throw new InvalidDataException("Duplicate current measured witnesses");
-        if(current.Length==0){if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");RequireRawFloor();return ProofScope.Legacy;}
+        if(current.Length==0)
+        {
+            if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");
+            // NPC-v2 car authority is distinct from a free-prop elevator witness. The qualified reader
+            // validates exact current/historical ownership, raw site, measured waypoint/lobby and quaternion.
+            if(MissionNpcInteriorRide.ForSite(state)!=null)return ProofScope.Measured;
+            RequireRawFloor();return ProofScope.Legacy;
+        }
         var w=current[0];if(w.FloorKey!=key||!w.Floor.SequenceEqual(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!w.Lobby.SequenceEqual(state.Exits[0])||w.LobbyKey==0)throw new InvalidDataException("Current measured witness differs from selected door");
         return ProofScope.Measured;
     }
