@@ -103,4 +103,14 @@ public class OrdinaryWithdrawalInputTests
         Assert.True(WithdrawalFixture.WithdrawalRound(r));Assert.False(WithdrawalFixture.WithdrawalRound(r[..88]));Assert.False(WithdrawalFixture.WithdrawalRound(new byte[]{99}.Concat(r).ToArray()));
         r[62]=0;Assert.False(WithdrawalFixture.WithdrawalRound(r));BitConverter.GetBytes(0x200u).CopyTo(r,61);BitConverter.GetBytes(0).CopyTo(r,65);Assert.False(WithdrawalFixture.WithdrawalRound(r));
     }
+    [Fact] public void BlockHookUsesCapturedWholeModifierAndPrimaryWriterNotGuessedDescriptorPrefix()
+    {
+        byte[] raw=Convert.FromHexString("80BC1500150100F5030000F403030000000000000000");Assert.Equal(22,raw.Length);Assert.True(WithdrawalFixture.BlockRecord(raw));
+        Assert.True(WithdrawalFixture.BlockRecord(AbilityBuffs.BuildModifier(0x15,0x115,1013,1012,3,false,0)));
+        for(int n=0;n<22;n++)Assert.False(WithdrawalFixture.BlockRecord(raw[..n]));
+        foreach(int at in new[]{0,1,2,3,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21})
+        {var wrong=(byte[])raw.Clone();wrong[at]^=1;Assert.False(WithdrawalFixture.BlockRecord(wrong));}
+        Assert.False(WithdrawalFixture.BlockRecord(new byte[]{99}.Concat(raw).ToArray()));Assert.False(WithdrawalFixture.BlockRecord(raw.Concat(new byte[]{0}).ToArray()));
+    }
+
 }

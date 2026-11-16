@@ -12,7 +12,24 @@ public sealed class OrdinaryWithdrawalMode:NativeQaMode
         readyMessages:new[]{"Seven normal parents stay loaded. Enter CloseCombat with ordinaryPower vs QAEnemyBlock. AFTER each engagement select/verify requested active style (radialCC may reset17):17 then1112 then17. Direct1005=65/72/65; chooseBlock then normalWithdraw; bases115/122/115. Use actual Actions/style hotbar and leftCloseCombat picker; do not assume pre-entrySpyStyle survives radialCC. No1045coefficient or producer changes, stats/reset/devcontrol/RNG override. docs/ABILITY-ORDINARY-WITHDRAWAL.md."});
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        var enemy=await HeadlessPlayer.LoginAsync(context.Address,"QAEnemy","QAEnemy");context.Helpers.Add("QAEnemy",enemy);await PvpOpponentsFixture.EnterAsync(enemy);
-        enemy.SkipReceived();enemy.SendRpc("42 03 00 00 00 00 00");return (await enemy.WaitForRpcAsync("80 bc ?? ?? f5 03 00 80 f4 03 00 80")).Bytes;
+        var server=context.ActualServer??throw new InvalidOperationException("Actual owned server required for Block state proof");
+        if(context.OwnedDatabase==null||server.DatabaseName!=context.OwnedDatabase.Name||!context.OwnedDatabase.Name.StartsWith(ThrowawayDatabase.Prefix,StringComparison.Ordinal)||server.ConfiguredAddress!=context.Address||server.HasExited)
+            throw new InvalidOperationException("Actual Block helper server/schema/address differs");
+        var enemy=await HeadlessPlayer.LoginAsync(context.Address,"QAEnemy","QAEnemy");context.Helpers.Add("QAEnemy",enemy);Check.Equal(6114u,enemy.CharId,"Actual owned QAEnemy identity");
+        await PvpOpponentsFixture.EnterAsync(enemy);int cursor=enemy.World.RpcSnapshot().Count,log=server.DebugLog().Length;bool passed=false;Exception? failure=null;byte[]? ack=null;
+        try
+        {
+            enemy.SkipReceived();enemy.SendRpc("42 03 00 00 00 00 00");
+            ack=(await enemy.WaitForRpcAsync(r=>WithdrawalFixture.BlockRecord(r.Bytes),"Fresh complete1013→1012=Block modifier",TimeSpan.FromSeconds(10))).Bytes;
+            await enemy.WaitUntilAsync(()=>server.DebugLog()[log..].Contains("[COMBAT] Tactic changed to Block (Normal)"),"Actual server assigned ordinaryBlock after42",TimeSpan.FromSeconds(10));
+            Check.Equal(0,enemy.World.Problems.Count,"Actual helper parser healthy");passed=true;return ack;
+        }
+        catch(Exception e){failure=e;throw;}
+        finally
+        {
+            Directory.CreateDirectory(context.OutputDirectory);
+            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory,"ordinary-block-hook-proof.json"),System.Text.Json.JsonSerializer.Serialize(new{Passed=passed,Failure=failure?.ToString(),Character=enemy.CharId,RpcCursor=cursor,Request="42030000000000",Ack=ack==null?null:Convert.ToHexString(ack),
+                Modifier=ack==null?null:InvisibilityDurationFixture.Read(ack),ServerStateLog=server.DebugLog()[log..],ServerPid=server.ProcessId,Schema=server.DatabaseName,server.SourceAssemblySha256,Rpc=enemy.World.RpcSnapshot().Select(r=>r.Hex),Problems=enemy.World.Problems},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        }
     }
 }

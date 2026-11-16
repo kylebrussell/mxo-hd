@@ -9,5 +9,10 @@ public static class WithdrawalFixture
     public static CharacterSeed Seed(string handle,bool enemy)=>new(handle){X=enemy?17120:17000,Y=495,Z=2300,Level=50,
         Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=enemy?2:1,Health=20000,MaxHealth=20000,InnerStrength=2000,MaxInnerStrength=2000,
         OwnedLoadedAbilities=Abilities.Select(a=>(a,(ushort)50)).ToArray()};
+    public static bool BlockRecord(byte[] bytes)
+    {
+        var m=InvisibilityDurationFixture.Read(bytes); // Existing complete22-byte typed80bc reader.
+        return m!=null&&bytes[6]==0&&m.Kind==0x15&&m.Parent==1013&&m.Target==1012&&m.Value==3&&!m.Off&&BitConverter.SingleToInt32Bits(m.Seconds)==0;
+    }
     public static bool WithdrawalRound(byte[] rpc)=>rpc.Length==89&&rpc[0]==0x45&&(BitConverter.ToUInt32(rpc,61)&0x200)!=0&&BitConverter.ToInt32(rpc,65)>0;
 }
