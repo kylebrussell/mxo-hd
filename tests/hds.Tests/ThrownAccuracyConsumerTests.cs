@@ -12,7 +12,7 @@ public class ThrownAccuracyConsumerTests
         typeof(WorldClient).GetField("lastFlushTick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(c,long.MaxValue);return c;
     }
     static AbilityItem Move(ushort id){var m=new AbilityItem();m.setAbilityID(id);return m;}
-    static void Stat(WorldClient c,ushort id,int value)=>TimedEffects.ForPlayer(c).Effects.Apply(id,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=id,Value=value,Seconds=60}},hds.shared.TimeUtils.GetSimTimeSeconds());
+    static void Stat(WorldClient c,ushort id,int value)=>TimedEffects.ForPlayer(c).Effects.Apply(id,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=id,Value=value,Seconds=60}},TimeUtils.GetSimTimeSeconds());
     [Fact]
     public void PrimaryRawLinkAndThreeExistingProducersAreExact()
     {
@@ -47,7 +47,7 @@ public class ThrownAccuracyConsumerTests
         var c=Client();Stat(c,1032,20);Stat(c,163,3);AbilityPassives.SetLoaded(c,new (ushort,ushort)[]{(164,50)});
         Assert.Equal(28,AbilityStats.SpecialAttack(c,Move(134)));Assert.Equal(3,AbilityStats.Attack(c,false));
         Assert.True(TempMods.TryGet(TempMods.BlindAbility,out var blind));
-        TimedEffects.ForPlayer(c).Effects.Apply(TempMods.BlindAbility,blind.Mods.Select(m=>new TimedEffects.Active{Proc=m.Proc,Target=m.Target,Value=m.MinValue,Seconds=m.Seconds}),hds.shared.TimeUtils.GetSimTimeSeconds());
+        TimedEffects.ForPlayer(c).Effects.Apply(TempMods.BlindAbility,blind.Mods.Select(m=>new TimedEffects.Active{Proc=m.Proc,Target=m.Target,Value=m.MinValue,Seconds=m.Seconds}),TimeUtils.GetSimTimeSeconds());
         Assert.Equal(-2,AbilityStats.SpecialAttack(c,Move(134)));
         //164's existing1028 damage producer is not created or consumed again by the accuracy helper.
         Assert.Equal(10,AbilityStats.Player(c,1028));Assert.Equal((ushort)110,AbilityStats.ScaleAbilityDamage(c,279,100));
