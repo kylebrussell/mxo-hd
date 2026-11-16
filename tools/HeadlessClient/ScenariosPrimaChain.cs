@@ -134,7 +134,7 @@ public static partial class Scenarios
                                     point=CarriedMissionNpcFixture.Resolve(checkpoint,token!,phase,type=="Get");
                                     await p.WaitUntilAsync(()=>
                                     {
-                                        try{observed=CarriedMissionNpcFixture.CurrentLiveView(p.World.CurrentOwnViewLife(),token!,checkpoint,phase,type=="Get",sectionsStart);return true;}
+                                        try{observed=CarriedMissionNpcFixture.CurrentLiveView(p.World.CurrentOwnViewLife(),token!,checkpoint,phase,type=="Get",sectionsStart,p.World.CurrentOwnViewLife);return true;}
                                         catch(InvalidDataException){return false;}
                                     },"latest current-generation carried NPC XYZ from actual wire",TimeSpan.FromSeconds(10));
                                     view=observed!.View;

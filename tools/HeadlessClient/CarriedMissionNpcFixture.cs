@@ -129,19 +129,21 @@ public static class CarriedMissionNpcFixture
 
     // Portable accepted-NPC identity is separate from this particular current session's receipt.
     // Event object provenance rejects mixing another log's records even when both life counters are zero.
-    private static void RequireV2Stream(OwnViewLifeSnapshot stream)
+    private static OwnViewLifeSnapshot RequireV2Stream(OwnViewLifeSnapshot stream,Func<OwnViewLifeSnapshot>? readCurrent)
     {
-        if(!stream.Current||!stream.OwnViewReady||stream.Owner==null)throw new InvalidDataException("No current V2 carried own-view session");
-        var current=stream.Owner.Snapshot();
-        if(!current.Current||current.Life!=stream.Life||current.OwnBirthSection!=stream.OwnBirthSection||current.Events.Count!=stream.Events.Count||
-            Enumerable.Range(0,current.Events.Count).Any(i=>!ReferenceEquals(current.Events[i],stream.Events[i])))
+        if(!stream.Current||!stream.OwnViewReady||stream.Owner==null||readCurrent==null)throw new InvalidDataException("Current V2 carried session reader required");
+        // The caller supplies WorldSession.CurrentOwnViewLife, which owns its snapshot lock.
+        var current=readCurrent();
+        if(!current.Current||!current.OwnViewReady||!ReferenceEquals(current.Owner,stream.Owner)||current.Life!=stream.Life||current.OwnBirthSection!=stream.OwnBirthSection||current.Events.Count<stream.Events.Count||
+            Enumerable.Range(0,stream.Events.Count).Any(i=>!ReferenceEquals(current.Events[i],stream.Events[i])))
             throw new InvalidDataException("V2 carried receipt contains stale or foreign session events");
+        return current;
     }
     public static CurrentView CurrentLiveView(OwnViewLifeSnapshot stream, Token token, string checkpoint,
-        int phase, bool giver, int phaseSectionCursor)
+        int phase, bool giver, int phaseSectionCursor,Func<OwnViewLifeSnapshot>? readCurrent=null)
     {
         Point expected = Resolve(checkpoint, token, phase, giver);
-        if(token.CheckpointVersion==2)RequireV2Stream(stream);
+        if(token.CheckpointVersion==2)stream=RequireV2Stream(stream,readCurrent);
         if (!stream.Current || !stream.OwnViewReady || stream.OwnBirthSection < 0 || stream.Events.Any(e => e.Life != stream.Life))
             throw new InvalidDataException("No current own-view life; previous-life events are inadmissible");
         var live = new Dictionary<ushort, LiveView>();
@@ -231,7 +233,7 @@ public static class CarriedMissionNpcFixture
         if (!selected.GenerationKnown || latest == null || !double.IsFinite(latest.X) || !double.IsFinite(latest.Y) || !double.IsFinite(latest.Z) ||
             Math.Abs(latest.X - expected.X) >= 1 || Math.Abs(latest.Y - expected.Y) >= 1 || Math.Abs(latest.Z - expected.Z) >= 1)
             throw new InvalidDataException("Latest current live carried position does not match current owned XYZ");
-        if(token.CheckpointVersion==2)RequireV2Stream(stream);
+        if(token.CheckpointVersion==2)_=RequireV2Stream(stream,readCurrent);
         if (!stream.Current) throw new InvalidDataException("Own-view life changed while reading carried generation");
         return new CurrentView(selected.View, latest, selected.Birth, selected.PositionSection, selected.PositionBytes,
             stream.Life, selected.Birth < phaseSectionCursor);
