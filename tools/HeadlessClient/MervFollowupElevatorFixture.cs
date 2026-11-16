@@ -90,6 +90,11 @@ public static class MervFollowupElevatorFixture
             !Enumerable.Range(0,3).All(i=>BitConverter.ToDouble(p,i*8)==selected.Pose[i])||!view.Attributes.TryGetValue("Orientation",out var q)||
             !q.SequenceEqual(Convert.FromHexString(selected.Quaternion!)))throw new InvalidDataException("Requested measured door overlay differs");
     }
+    public static NpcInteriorComputerState.DoorObservation? CurrentOpenPortal(OwnViewLifeSnapshot stream,MissionNpcInteriorProof.Door selected)
+    {
+        try{return NpcInteriorComputerState.CurrentDoor(stream,selected);}
+        catch(InvalidDataException){return null;}
+    }
     public sealed record DoorObservation(ViewCreation View,long OwnLife,int BirthSection);
     public static DoorObservation CurrentOverlay(OwnViewLifeSnapshot stream,Ride selected)
     {

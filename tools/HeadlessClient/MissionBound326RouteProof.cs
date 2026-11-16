@@ -28,7 +28,7 @@ public static class MissionBound326RouteProof
     static bool Wire(double[] a,double[] b)=>a.Length==3&&b.Length==3&&a.All(double.IsFinite)&&b.All(double.IsFinite)&&Enumerable.Range(0,3).All(i=>BitConverter.SingleToInt32Bits((float)a[i])==BitConverter.SingleToInt32Bits((float)b[i]));
     public static Plan? Read(MissionProgress.SavedState state,int objectId,MissionBound326Approach.Bounds bounds,MissionBound326Approach.Arrival arrival,Func<double[],MissionBound326Approach.Sample?> locate)
     {
-        var street=ZionAfter1212StreetEntry.ForSite(state);if(street==null)return null;
+        var street=MervFollowupStreetEntry.ForSite(state);if(street==null)return null;
         SelectionVersion(street.Raw);if(street.Raw.GetProperty("Version").GetInt32()==1)return null;
         Need(street.Raw.GetProperty("Phase").GetInt32()==state.Phase,"current route phase, not historical adoption");
         var objects=state.Objects.Where(o=>o.Id==objectId).ToArray();Need(objects.Length==1,"one current object");var obj=objects[0];
@@ -64,7 +64,7 @@ public static class MissionBound326RouteProof
     public static NpcInteriorComputerState.DoorObservation RequireOpen(OwnViewLifeSnapshot current,OwnViewLifeSnapshot before,Door expected)
     {Need(before.Current&&current.Current&&current.OwnViewReady&&ReferenceEquals(current.Owner,before.Owner)&&current.Life==before.Life,"portal Open current own-life owner");return NpcInteriorComputerState.CurrentDoor(current,expected);}
     public static void RequireCurrent(Plan plan,MissionProgress.SavedState current)
-    {MissionOutsideContinuation.Require(plan.Before,current);var now=ZionAfter1212StreetEntry.ForSite(current);Need(now!=null&&now.Raw.GetRawText()==plan.Selection.GetRawText(),"current owner/source/route identity");}
+    {MissionOutsideContinuation.Require(plan.Before,current);var now=MervFollowupStreetEntry.ForSite(current);Need(now!=null&&now.Raw.GetRawText()==plan.Selection.GetRawText(),"current owner/source/route identity");}
     public static Step[] Steps(string repository,Plan plan)
     {
         var source=Raw(plan.Floor.Raw);string expectedDigest=plan.Selection.GetProperty("Context").GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;
