@@ -25,6 +25,12 @@ public partial class MissionNpcInteriorCheckpointTests
   var live=ReadFollowerFrames(log.Snapshot(),handle);Assert.True(live.Contains((ushort)7));Assert.False(live.Contains((ushort)46));Assert.False(live.Contains((ushort)47));
   var snapshot=log.Snapshot();log.EndLife();Assert.Throws<InvalidDataException>(()=>ReadFollowerFrames(snapshot,handle));
  }
+ [Fact] public void FixedBodyConsumerAlsoFramesRetiredNpcWithoutInventingAFreeBody()
+ {
+  var obj=new hds.MissionProgress.SavedObject{Goid=548,OpenFloor=new hds.MissionOpenFloorPlacement(4,1,101217,3,1,5,1412,548,new string('a',64),new string('b',64),"0000000000000000000000000000803f",new double[]{1,2,3},new double[]{1,2,3},new double[]{1,2,3},Array.Empty<ushort>(),Array.Empty<ushort>(),Array.Empty<ushort>())};
+  var log=QaLife(QaOwn(),QaNpc(QaState(),46,8),QaNpc(QaState(),47,9),Convert.FromHexString("01000101002E0001000101002F00"),Convert.FromHexString(MachinesRetiredMoves));
+  Assert.Null(ZionCurrentFixedBody.Find(log.Snapshot(),obj,42));
+ }
  [Theory] [InlineData("unknown")] [InlineData("truncated")] [InlineData("reused")]
  public void FollowerSchemaHistoryCannotFrameUnknownTruncatedOrReusedLiveKind(string change)
  {
