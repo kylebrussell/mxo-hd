@@ -12,7 +12,7 @@ public static class MervBound326Approach
     const string ManifestSha="95657513146af308f60d6e532624e143a572b649a1cad98c4601b9eb8ac1c234";
     static readonly JsonSerializerOptions Fields=new(){IncludeFields=true};
     public sealed record Arrival(int Mission,int Phase,ushort Instance,string Identity,long Started,string Site,double[] Root,ushort Sector,ushort Region,double FloorY,long OwnLife,bool VerifiedMeasured=false)
-    { public string Operation=>"bound326-arrival-context"; [JsonIgnore] internal OwnViewLifeSnapshot? Token {get;init;} }
+    { public string Operation=>"bound326-arrival-context"; [JsonIgnore] internal OwnViewLifeSnapshot? Token {get;init;} [JsonIgnore] internal string? LegacySources {get;init;} [JsonIgnore] internal string? LegacyContext {get;init;} }
     public sealed record Bounds(uint SourceKey,double[] Centre,double[] Minimum,double[] Maximum,string Quaternion,int Region);
     public sealed record Sample(double[] Position,ushort Sector,ushort Region,ushort Polygon,double FloorY);
     public sealed record Result(double[] Standing,Sample Nav,double Envelope,float NativeDistanceSquared,double[] NativeMinimum,double[] NativeMaximum)
@@ -20,6 +20,8 @@ public static class MervBound326Approach
     public sealed record Nav(Func<double[],Sample?> Locate,Func<double[],double,double[],Sample?> Project);
     static bool Point(double[] p)=>p?.Length==3&&p.All(double.IsFinite);
     static string Site(MissionProgress.SavedState s)=>JsonSerializer.Serialize(new{s.Waypoints,s.Exits,Door=s.SiteDoors.LastOrDefault(),s.OpenFloorCurrentSiteIndex,s.OpenFloorSites,s.ElevatorWitnesses,NpcInterior=s.NpcInterior.ValueKind==JsonValueKind.Undefined?null:s.NpcInterior.GetRawText()},Fields);
+    static string Sources(MissionProgress.SavedState s)=>JsonSerializer.Serialize(s.Objects.OrderBy(o=>o.Id).Select(o=>new{o.Id,o.Goid,o.Spot}),Fields);
+    static string Context(Arrival a)=>JsonSerializer.Serialize(new{a.Root,a.Sector,a.Region,a.FloorY,a.VerifiedMeasured});
     public enum ProofScope { Legacy, Measured }
     public static bool NeedsArrival(MissionProgress.SavedState state)=>state.Objects.Any(o=>o.Goid==326&&o.OpenFloor==null&&o.Spot?.metrId==1&&MissionSites.Goid(o.Spot)==326);
     public static ProofScope Classify(MissionProgress.SavedState state)
@@ -74,7 +76,8 @@ public static class MervBound326Approach
     {
         if(!Point(root)||!life.Current||!life.OwnViewReady)throw new InvalidDataException("No actual current arrival life");
         if(verifiedMeasured&&Classify(state)!=ProofScope.Measured)throw new InvalidDataException("No selected measured witness was verified");
-        return new(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,Site(state),root.ToArray(),nav.sector,nav.region,nav.floorY,life.Life,verifiedMeasured){Token=life};
+        var captured=new Arrival(state.Mission,state.Phase,state.Instance,state.Identity,state.Started,Site(state),root.ToArray(),nav.sector,nav.region,nav.floorY,life.Life,verifiedMeasured){Token=life,LegacySources=Sources(state)};
+        return captured with{LegacyContext=Context(captured)};
     }
     public static void RequireScope(MissionProgress.SavedState state,int id,Arrival arrival,OwnViewLifeSnapshot life)
     {
@@ -84,6 +87,17 @@ public static class MervBound326Approach
             !state.Flags.TryGetValue("entered",out bool entered)||!entered||state.Flags.GetValueOrDefault("failed"))throw new InvalidDataException("Bound approach arrival scope changed");
         var obj=state.Objects.Single(o=>o.Id==id);
         if(obj.Goid!=326||obj.OpenFloor!=null||obj.Spot?.metrId!=1||MissionSites.Goid(obj.Spot)!=326)throw new InvalidDataException("Only genuinely bound326 uses this sampler");
+    }
+    public static void RequireLegacyScope(MissionProgress.SavedState state,int id,Arrival? arrival,OwnViewLifeSnapshot life)
+    {
+        RequireLegacy(state,arrival); // Never downgrade a missing/corrupt adopted witness to legacy authority.
+        if(arrival==null||arrival.VerifiedMeasured||arrival.Token==null||!arrival.Token.Current||!life.Current||!life.OwnViewReady||
+            !ReferenceEquals(arrival.Token.Owner,life.Owner)||arrival.OwnLife!=life.Life||state.Mission<=0||state.Phase<0||state.Instance==0||
+            !Guid.TryParseExact(state.Identity,"N",out _)||state.Started<=0||state.Mission!=arrival.Mission||state.Phase!=arrival.Phase||state.Instance!=arrival.Instance||
+            state.Identity!=arrival.Identity||state.Started!=arrival.Started||Site(state)!=arrival.Site||Sources(state)!=arrival.LegacySources||Context(arrival)!=arrival.LegacyContext||
+            state.Flags.GetValueOrDefault("failed"))throw new InvalidDataException("Legacy bound approach lost its actual arrival owner/life/source context");
+        var obj=state.Objects.Single(o=>o.Id==id);
+        if(obj.Goid!=326||obj.OpenFloor!=null||obj.Spot?.metrId!=1||MissionSites.Goid(obj.Spot)!=326)throw new InvalidDataException("Only genuinely bound326 uses this legacy approach");
     }
     public static Bounds Load(string repository,MissionProgress.SavedObject obj)
     {
@@ -126,11 +140,13 @@ public static class MervBound326Approach
         double errorNorm=Math.Sqrt(error2);double radius=errorNorm<1?(100+Math.Sqrt(25*25+80*80+30*30))/Math.Sqrt(1-errorNorm):double.NaN;
         if(!double.IsFinite(radius))throw new InvalidDataException("Unbounded native basis");return radius;
     }
-    public static Result Select(Bounds bounds,Arrival arrival,Nav nav)
+    public static Result Select(Bounds bounds,Arrival arrival,Nav nav)=>SelectCore(bounds,arrival,nav,true);
+    // Actual legacy player arrivals need raw NAV membership, not the NPC spawn-inset placement policy.
+    static Result SelectCore(Bounds bounds,Arrival arrival,Nav nav,bool requireInsetRoot)
     {
         if(bounds.SourceKey==0||bounds.Region<0||!Point(bounds.Centre)||!Point(bounds.Minimum)||!Point(bounds.Maximum)||!Point(arrival.Root)||arrival.Sector!=(bounds.SourceKey>>20)||arrival.Region!=bounds.Region||
             !double.IsFinite(arrival.FloorY)||bounds.Minimum.Where((v,i)=>v>=bounds.Maximum[i]||bounds.Centre[i]!=(double)(float)((float)(v+bounds.Maximum[i])*.5f)).Any())throw new InvalidDataException("Bound/arrival bounds/floor identity");
-        var root=nav.Locate(arrival.Root);var self=nav.Project(arrival.Root,0,arrival.Root);
+        var root=nav.Locate(arrival.Root);var self=requireInsetRoot?nav.Project(arrival.Root,0,arrival.Root):root;
         bool Root(Sample? p)=>p!=null&&p.Sector==arrival.Sector&&p.Region==arrival.Region&&p.FloorY==arrival.FloorY&&p.Position.SequenceEqual(arrival.Root)&&p.Position[1]==p.FloorY+95;
         if(!Root(root)||!Root(self))throw new InvalidDataException("Root reference cannot fall back");
         double envelope=Envelope(bounds);var candidate=nav.Project(bounds.Centre,envelope,arrival.Root)??throw new InvalidDataException("No nearest native-range NAV candidate");
@@ -142,6 +158,13 @@ public static class MervBound326Approach
         float distance=NativeDistanceSquared(point,bounds);
         if(!float.IsFinite(distance)||distance<=0||distance>10000||!ContainerActions.InReach(point.SelectMany(BitConverter.GetBytes).ToArray(),bounds.Centre[0],bounds.Centre[1],bounds.Centre[2]))throw new InvalidDataException("Native100/server range failed");
         return new(point,located,envelope,distance,bounds.Minimum.ToArray(),bounds.Maximum.ToArray());
+    }
+    public static Result ChooseLegacy(string repository,MissionProgress.SavedState state,int id,Arrival arrival,OwnViewLifeSnapshot life)
+    {
+        RequireLegacyScope(state,id,arrival,life);var bounds=Load(repository,state.Objects.Single(o=>o.Id==id));
+        Sample? Locate(double[] p)=>NavMesh.Locate(1,p[0],p[1],p[2],out var at)?new(p.ToArray(),at.sector,at.region,at.polygon,at.floorY):null;
+        Sample? Project(double[] p,double radius,double[] root)=>NavMesh.Project(1,p[0],p[1],p[2],out var at,radius,root,false)?new(at.Position,at.location.sector,at.location.region,at.location.polygon,at.location.floorY):null;
+        var result=SelectCore(bounds,arrival,new(Locate,Project),false);RequireLegacyScope(state,id,arrival,life);return result;
     }
     public static Result Choose(string repository,MissionProgress.SavedState state,int id,Arrival arrival,OwnViewLifeSnapshot life)
     {

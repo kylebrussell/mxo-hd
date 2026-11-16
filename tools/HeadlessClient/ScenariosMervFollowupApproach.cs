@@ -195,15 +195,16 @@ public static partial class Scenarios
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
             var pose=MissionObjectPoses.For(new MissionObjectState{spot=owned.Spot,goid=owned.Goid});centre=new[]{pose.X,pose.Y,pose.Z};quaternion=Convert.ToHexString(pose.Orientation);
             double[]? standing=null;
-            if(owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)
+            if(owned.Goid==326)
             {
                 var arrival=evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault()??throw new ScenarioFailure("No current actual arrival context for bound326");
-                var result=MervBound326Approach.Choose(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife());
-                standing=result.Standing;evidence.Add(new{Operation="native326-NAV-approach",saved.Mission,saved.Phase,Object=id,Source=owned.Spot.mxoStaticId,Arrival=arrival,Result=result});
+                bool measured=MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured;
+                var result=measured?MervBound326Approach.Choose(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife()):
+                    MervBound326Approach.ChooseLegacy(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife());
+                standing=result.Standing;evidence.Add(new{Operation="native326-NAV-approach",saved.Mission,saved.Phase,Object=id,Source=owned.Spot.mxoStaticId,Arrival=arrival,Result=result,Legacy=!measured,MeasuredAuthority=measured});
             }
             else
             {
-                if(owned.Goid==326)MervBound326Approach.RequireLegacy(saved,evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault());
                 foreach(var d in new[]{(100d,0d),(-100d,0d),(0d,100d),(0d,-100d),(0d,0d)})
                     if(NavMesh.Locate(owned.Spot.metrId,pose.X+d.Item1,pose.Y,pose.Z+d.Item2,out var at))
                     {
@@ -213,7 +214,7 @@ public static partial class Scenarios
             }
             Check.That(standing!=null,"Bound source requires a NAV-grounded in-range approach");
             await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification=owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Legacy?
-                "legacy bound326 five-point NAV/server-range only; native range/route/picking not proved":
+                "legacy bound326 actual-arrival/native100/NAV-component approach; no measured witness, direct route/collision/picking proof":
                 owned.Goid==326?"measured bound326 native100/NAV-component witness; no direct route/collision/picking proof":
                 "bound source NAV/range only; no route/collision/picking proof";
         }
@@ -225,7 +226,7 @@ public static partial class Scenarios
         if(owned.Goid==326&&owned.OpenFloor==null)
         {
             if(MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)MervBound326Approach.RequireScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().Last(),p.World.CurrentOwnViewLife());
-            else MervBound326Approach.RequireLegacy(after,evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault());
+            else MervBound326Approach.RequireLegacyScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault(),p.World.CurrentOwnViewLife());
         }
         evidence.Add(new{Operation="current-object-approach",saved.Mission,saved.Phase,Object=id,SourceAndWitness=original,Centre=centre,Quaternion=quaternion,Qualification=qualification});
         return Current()!;
