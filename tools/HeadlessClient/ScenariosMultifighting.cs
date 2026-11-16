@@ -13,11 +13,13 @@ public static partial class Scenarios
         {
             for(int i=0;i<4;i++){var p=await context.AddPlayerAsync(MultifightingFixture.Seed("Multi"+i,i));players.Add(p);await PvpOpponentsFixture.EnterAsync(p);}
             var central=players[0];
+            string parents=await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={central.CharId} AND ability_id<>2147627008 ORDER BY slot");
             async Task Load(bool on)
             {
                 central.SkipReceived();SetAbilityLoaded(central,MultifightingFixture.Slot,140,50,on);
                 await central.WaitForRpcAsync(on?"80 b2 8c 00":"80 b3 8c 00");
                 Check.Equal(on?1L:0L,await context.Database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={central.CharId} AND slot=402 AND ability_id=2147627008"),"Actual owned140 normal loaded state");
+                Check.Equal(parents,await context.Database.ExecuteAsync($"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={central.CharId} AND ability_id<>2147627008 ORDER BY slot"),"Same owned loaded parents before/after only140");
             }
             async Task Group(bool loaded)
             {

@@ -6,7 +6,7 @@ One-on-one NPC combat remains neutral. Arbitrary multi-NPC fights, historical op
 
 ## Normal proof
 
-`multifighting-interlock` requires MXO_MULTIFIGHTING_SOURCE_SHA256. It creates four ordinary level50 players with the same owned parent loadout, changes only140 normally, and runs two/three direct opponents in off/on/off stages. Assertions cover actual deterministic inputs and retained complete wire records; they do not require a random hit or causal damage difference. Helpers, hostile-PvP settings and seeded health are disclosed fixture aids. No RNG override, injected buff or forced target relationship is used. Not yet run.
+`multifighting-interlock` requires MXO_MULTIFIGHTING_SOURCE_SHA256. It creates four ordinary level50 players with the same owned prerequisite closure (2/113/130/185/143/116/135, plus fixed style17), changes only140 normally, and runs two/three direct opponents in off/on/off stages. Assertions cover actual deterministic inputs and retained complete wire records; they do not require a random hit or causal damage difference. Helpers, hostile-PvP settings and seeded health are disclosed fixture aids. No RNG override, injected buff or forced target relationship is used. Not yet run.
 
 ## One-pass native checklist
 

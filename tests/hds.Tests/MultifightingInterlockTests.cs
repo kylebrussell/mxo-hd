@@ -78,6 +78,13 @@ public class MultifightingInterlockTests : IDisposable
         s[0].Client.playerData.passives.Loaded.Clear();Assert.Equal(100,f.MultifightingInput(s[0],100,"test",round));
         Set(f,"<IsActive>k__BackingField",false);Assert.Equal(100,Input(f,s[0]));
     }
+    [Fact]
+    public void DuplicateOpponentClientCountsOnceAndOtherDistrictCannotJoinTheCount()
+    {
+        var(f,s)=Group();s[3].Client=s[2].Client;s[3].MultifightingOwner=s[2].MultifightingOwner;s[3].Other=s[0];
+        Assert.Equal(90,Input(f,s[0]));
+        s[2].Client.playerData.setDistrictId(2);Assert.Equal(100,Input(f,s[0]));
+    }
     public void Dispose()
     {
         foreach(var c in clients){CombatManager.GetHandler(c).pvpFight=null;CombatManager.RemoveClient(c);c.Alive=false;}
