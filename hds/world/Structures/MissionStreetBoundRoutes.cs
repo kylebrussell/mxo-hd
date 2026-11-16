@@ -97,7 +97,8 @@ namespace hds
    {
     var raw=MissionNpcInteriorPlanning.ReadRaw(row.RawSourceJson);Need(MissionBoundObjectPoses.TryBounds(new MissionObjectState{spot=raw,goid=326},out var bounds,out string why),why);
     Need(bounds.NavSha256==index.NavSourceSha256&&raw.metrId==p.mission.district&&raw.sectorID==(selected.Site.DoorKey>>20)&&row.Region==bounds.Region&&row.NativePosition.SequenceEqual(MissionBound326Range.Centre(bounds))&&row.NativeQuaternion==Convert.ToHexString(bounds.Pose.Orientation)&&MissionBound326Range.Valid(row.Standing,bounds),"ChangedFixedSourceOrStanding");
-    Need(NavMesh.Locate(raw.metrId,row.Standing[0],row.Standing[1],row.Standing[2],out var at)&&at.sector==raw.sectorID&&at.region==row.Region&&at.polygon==row.Target.Polygon&&row.Standing[1]==at.floorY+95&&at.floorY==selected.Context.Floor.Standing[1]-95,"ChangedFixedFloor");
+    Need(NavMesh.Locate(raw.metrId,row.Standing[0],row.Standing[1],row.Standing[2],out var at)&&at.sector==raw.sectorID&&at.region==row.Region&&row.Standing[1]==at.floorY+95&&at.floorY==selected.Context.Floor.Standing[1]-95,"ChangedFixedFloor");
+    // Target is the fixed containing E polygon; Nav.Locate may choose another polygon on a shared edge.
     var selectedDoors=row.Doors.ToDictionary(d=>d.Key,d=>MissionNpcInteriorPlanning.ReadRaw(d.RawDoorJson));
     StaticWorldObject Door(uint key){Need(selectedDoors.TryGetValue(key,out var savedRaw),"MissingSavedDoor");var current=lookup(key);Need(current!=null&&Same(current,savedRaw),"ChangedSelectedOwnGoidDoor");return current;}
     Need(index.ValidatePointRoute(entry,row.Region,row.Standing,row.Nodes.Select(n=>new E.Node(n.Region,n.Polygon)).ToArray(),Door,out var doors,out why),why);
