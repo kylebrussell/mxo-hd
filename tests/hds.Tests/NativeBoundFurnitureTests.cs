@@ -78,8 +78,10 @@ public class NativeBoundFurnitureTests
  [Fact]public void InactiveLegacyApiIsPreservedButDeniedEnrollmentNeverFallsBack()
  {
   var field=typeof(MissionStreetCoverage).GetField("current",BindingFlags.Static|BindingFlags.NonPublic)!;var before=field.GetValue(null);var phase=Phase("Furniture");var site=new MissionSite{metrId=1};site.containers.Add(Row(1450,2));
-  try{field.SetValue(null,null);Assert.True(MissionStaging.TrySourcePools(phase,site,0,out var pools,out _));Assert.Null(pools);
-   var state=typeof(MissionStreetCoverage).GetNestedType("State",BindingFlags.NonPublic)!;field.SetValue(null,Activator.CreateInstance(state,BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[]{null,"DeniedFixtureEnrollment"},null));Assert.False(MissionStaging.TrySourcePools(phase,site,0,out _,out string why));Assert.Equal("DeniedFixtureEnrollment",why);}
+  try{field.SetValue(null,null);Assert.True(MissionStaging.TrySourcePools(phase,site,0,out var pools,out _));Assert.Null(pools);Assert.True(MissionInteriorSites.Eligible(phase,site,out _));
+   var state=typeof(MissionStreetCoverage).GetNestedType("State",BindingFlags.NonPublic)!;field.SetValue(null,Activator.CreateInstance(state,BindingFlags.Instance|BindingFlags.NonPublic,null,new object?[]{null,"DeniedFixtureEnrollment"},null));Assert.False(MissionStaging.TrySourcePools(phase,site,0,out _,out string why));Assert.Equal("DeniedFixtureEnrollment",why);
+   Assert.False(MissionInteriorSites.Eligible(phase,site,out string chooserWhy));Assert.Equal("DeniedFixtureEnrollment",chooserWhy);
+   Assert.True(MissionInteriorSites.SelectedSiteEligible(phase,site,out _));}
   finally{field.SetValue(null,before);}
  }
  [Fact]public void CapturedFixtureUsesFreshBuilderWithoutChangingOriginalRawGoalsItems()
