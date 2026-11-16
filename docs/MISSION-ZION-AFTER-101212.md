@@ -1,6 +1,6 @@
 # Zion critical missions 101213–101217
 
-Backend-qualified producer `76923e9e` on master base `9894edab`; native verification is pending. The five-mission chain passes with ordinary car requests, earned items, carry relogs, exact rewards and a cold restart. Native walking, collision, rendering, picking and unaided survival remain separate checks.
+**HOLD: refreshing onto master `500dc117` after PR264 merged.** No current-base native READY is claimed. The retained proof below belongs to producer `76923e9e` on historical base `9894edab`; current-base qualification is pending. The five-mission chain passes with ordinary car requests, earned items, carry relogs, exact rewards and a cold restart. Native walking, collision, rendering, picking and unaided survival remain separate checks.
 
 ## Resulting behavior
 
@@ -11,7 +11,7 @@ Backend-qualified producer `76923e9e` on master base `9894edab`; native verifica
 - Outside Upload checks require an actual ordinary Down request, matching physical trip, current-life typed arrival and exact ACK before movement aids. No-site phases retain historical actors under exact owner/phase continuity.
 - QA readers retain known birth schemas only to frame late updates for deleted views. Those schemas grant no live authority; unknown/truncated frames and deleted/reused targets remain refused.
 
-## Current proof
+## Retained historical proof (base9894edab)
 
 | Check | Result |
 |---|---|
@@ -30,11 +30,11 @@ The actual 101216 phase2 save contains the emitted Version2 route for source2495
 
 Four physical Down/ACK records precede outside work: 101213p3 seq84; 101214p0→no-area seq368; 101216p1 seq88; 101216p2 seq612. Sequence numbers belong to their recorded sessions.
 
-Current raw: `Temp/mxo-zion-critical-after-101212-mxotest_run_1_62921efaf4.json`, SHA256 `2D0D06FA1CFA83E1935B9156371383E63A3AF10A1B5A9C85DB279F3A673A5A61`. Independent33-check summary: `Temp/mxo-241-c9-door-diagnosis-20261116/final-769-independent-proof.json`, SHA256 `3803D1518F51659BF93D4731FCC5304A888C6313ECC37A198C80500422953637`.
+Historical raw: `Temp/mxo-zion-critical-after-101212-mxotest_run_1_62921efaf4.json`, SHA256 `2D0D06FA1CFA83E1935B9156371383E63A3AF10A1B5A9C85DB279F3A673A5A61`. Independent33-check summary: `Temp/mxo-241-c9-door-diagnosis-20261116/final-769-independent-proof.json`, SHA256 `3803D1518F51659BF93D4731FCC5304A888C6313ECC37A198C80500422953637`.
 
 Process observation uses600ms polling and cannot establish exhaustive short-lived descendant history. Schema absence and exact recorded creation identities were checked independently.
 
-## Frozen native producer
+## Retained historical producer (not current READY)
 
 Worktree: `C:/Users/russe/Developer/mxo-wt/codex-zion-after1212-zero-cash-ledger`. Use its qualified Release runner and actual newest Release server; do not rebuild this producer while native QA uses it.
 

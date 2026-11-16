@@ -25,7 +25,7 @@ public partial class MissionNpcInteriorCheckpointTests
         var view=new ViewCreation(9,419,7,new Dictionary<string,byte[]>{{"Position",entry.Pose.SelectMany(BitConverter.GetBytes).ToArray()},{"Orientation",Convert.FromHexString(entry.Quaternion!)}}){RelatedStaticObjectId=entry.Key};
         entry.RequireOverlay(view);Assert.Throws<InvalidDataException>(()=>entry.RequireOverlay(view with{RelatedStaticObjectId=entry.Key+1}));
         Assert.Equal(raw,JsonSerializer.Serialize(state,MissionProgress.SaveJson));
-        Assert.NotEmpty(MissionNpcInteriorProof.Route(Repo,npc));Assert.Throws<InvalidDataException>(()=>ZionAfter1212ActorRoute.Route(Repo,npc,1));
+        Assert.NotEmpty(MissionNpcInteriorProof.Route(Repo,npc));Assert.Throws<InvalidDataException>(()=>MissionNpcInteriorProof.Route(Repo,npc,1));
     }
     [Theory][InlineData("world")][InlineData("owner")][InlineData("duplicate")][InlineData("missing")][InlineData("key")][InlineData("pose")][InlineData("site")][InlineData("future")]
     public void BadNpcAuthorityNeverFallsBackToRawCsv(string change)

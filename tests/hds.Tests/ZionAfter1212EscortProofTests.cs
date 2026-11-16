@@ -51,7 +51,7 @@ public class ZionAfter1212EscortProofTests
     }
 
     [Theory]
-    [InlineData("valid")][InlineData("dead")][InlineData("unfollowed")][InlineData("outside")]
+    [InlineData("valid")][InlineData("dead")][InlineData("unfollowed")][InlineData("entered-flag-cleared")]
     [InlineData("failed")][InlineData("already-done")][InlineData("wrong-mission")]
     public void DoorApproachRequiresActualCurrentEscortCapability(string change)
     {
@@ -60,11 +60,14 @@ public class ZionAfter1212EscortProofTests
         {
             case "dead":state.Mobs[0].Dead=true;break;
             case "unfollowed":state.Following=Array.Empty<ushort>();break;
-            case "outside":state.Flags["entered"]=false;break;
+            case "entered-flag-cleared":state.Flags["entered"]=false;break;
             case "failed":state.Flags["failed"]=true;break;
             case "already-done":state.Done=new[]{1,2,3};break;
             case "wrong-mission":state.Mission++;break;
         }
-        Assert.Equal(change=="valid",ZionAfter1212EscortProof.CanApproach(state,mission,3));
+        // The persisted entered flag is not a position or current-view witness.
+        // Master permits this observation during ordinary car transitions; movement
+        // remains separately fenced by current-life and saved route/door evidence.
+        Assert.Equal(change=="valid"||change=="entered-flag-cleared",ZionAfter1212EscortProof.CanApproach(state,mission,3));
     }
 }

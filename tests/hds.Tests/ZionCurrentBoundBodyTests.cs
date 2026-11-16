@@ -104,4 +104,7 @@ public sealed class ZionCurrentBoundBodyTests
     [Theory][InlineData(0)][InlineData(3)]
     public void UnknownCheckpointEnvelopeNeverAuthorizesBoundBody(int version)
     {var state=State();state.Version=version;Assert.Throws<InvalidDataException>(()=>ZionCurrentBoundBody.Capture(state,1));}
+
+    [Fact] public void ObservationBeforeContentAreaEntryDoesNotRewriteTheFlag()
+    {var state=State();state.Flags["entered"]=false;var scope=ZionCurrentBoundBody.Capture(state,1);Assert.NotNull(ZionCurrentBoundBody.Require(Stream(Own(),Birth()),scope,state));Assert.False(state.Flags["entered"]);}
 }
