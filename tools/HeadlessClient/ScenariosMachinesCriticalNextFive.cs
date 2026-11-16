@@ -75,7 +75,7 @@ public static partial class Scenarios
                     outside=new MissionOutsideUploadProof.Token(after,p.World.CurrentOwnViewLife());
                     MissionOutsideUploadProof.RequireCurrent(outside,after,requestLife);outsideAfterUpload=false;
                 }
-                arrivalProofs.Add(new{Kind="Completed ordinary downride BEFORE no-site/outside phase",before.Mission,CompletedPhase=before.Phase,TypedArrival=arrival,Receipt=receipt,NextPhase=after?.Phase,MovementAid=false});
+                arrivalProofs.Add(new{Kind="Completed ordinary downride BEFORE no-site/outside phase",before.Mission,CompletedPhase=before.Phase,TypedArrival=arrival,Receipt=receipt,NextPhase=after?.Phase,Before=before,After=after,MovementAid=false});
             }
             // entered means the legacy content-area trigger played, not immediate floor arrival.
             // Published route/NPC/object approaches enter naturally; no pose/flag is changed here.
