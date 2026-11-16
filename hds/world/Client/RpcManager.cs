@@ -56,7 +56,7 @@ namespace hds{
 		            CombatManager.GetHandler(Store.currentClient).ProcessRequestCloseCombat(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_LEAVE_COMBAT:
-			        CombatManager.GetHandler(Store.currentClient).ProcessLeaveCloseCombat(ref rpcData);
+			        CombatManager.GetHandler(Store.currentClient).ProcessLeaveCloseCombat(ref rpcData,ordinaryRpc:true);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_COMBAT_STANCE:

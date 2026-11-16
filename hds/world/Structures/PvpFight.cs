@@ -45,6 +45,7 @@ namespace hds
             public AbilityItem QueuedAbility;
             public bool SneakOpener;
             public bool Withdrawing;
+            internal bool OrdinaryWithdrawalRequested;
             public UInt16 RoundRecord;
             public UInt16 CombatEffectRecordId;
             /// <summary>The fight is over but this side's client still has the combat view (see <see cref="End"/>).</summary>
@@ -453,7 +454,7 @@ namespace hds
         }
 
         /// <summary>RPC 44: the player wants out. It is tried at each round until their roll beats the opponent's.</summary>
-        public void RequestWithdraw(WorldClient client)
+        public void RequestWithdraw(WorldClient client, bool ordinaryRpc = false)
         {
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
             lock (sync)
@@ -464,6 +465,7 @@ namespace hds
                     return;
                 }
                 side.Withdrawing = true;
+                side.OrdinaryWithdrawalRequested = ordinaryRpc;
                 SendMoveChanged(side);
                 Output.WriteDebugLog("[PVP] " + PvpFlag.Name(client) + " is withdrawing");
             }
@@ -583,6 +585,8 @@ namespace hds
                 if (!counter) nAbility = null;
                 if (!ControlActions.CanUseAbilities(p.Client)) pAbility = null;
                 if (!ControlActions.CanUseAbilities(n.Client)) nAbility = null;
+                bool pWithdrawal=WithdrawalInput.Ordinary(p.Withdrawing,opening,pAbility,p.OrdinaryWithdrawalRequested);
+                bool nWithdrawal=WithdrawalInput.Ordinary(n.Withdrawing,opening,nAbility,n.OrdinaryWithdrawalRequested);
                 if (!opening)
                 {
                     p.QueuedAbility = null;
@@ -595,10 +599,10 @@ namespace hds
                 lock (rng)
                 {
                     pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
-                        MultifightingInput(p,InterlockInitiative.Attack(p.Client,pAbility),"attack",multifighting), MultifightingInput(n,AbilityStats.SpecialDefense(n.Client, pAbility),"defence",multifighting)) &&
+                        MultifightingInput(p,WithdrawalInput.Attack(p.Client,pAbility,pWithdrawal),"attack",multifighting), MultifightingInput(n,AbilityStats.SpecialDefense(n.Client, pAbility),"defence",multifighting), pWithdrawal) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
-                        MultifightingInput(n,InterlockInitiative.Attack(n.Client,nAbility),"attack",multifighting), MultifightingInput(p,AbilityStats.SpecialDefense(p.Client, nAbility),"defence",multifighting)) &&
+                        MultifightingInput(n,WithdrawalInput.Attack(n.Client,nAbility,nWithdrawal),"attack",multifighting), MultifightingInput(p,AbilityStats.SpecialDefense(p.Client, nAbility),"defence",multifighting), nWithdrawal) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
