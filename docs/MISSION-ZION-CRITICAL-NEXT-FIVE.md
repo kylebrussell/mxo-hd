@@ -1,4 +1,15 @@
-# Zion critical missions 101208-101212
+﻿# Zion critical missions 101208-101212
+
+## Native0940 HOLD and current lobby-marker correction (source only)
+
+Claude's e4b93363 native run passed101208/101209 and101210phase0, including ordinary car exits, carry Quit/relog and walked Maynard escort-to-lobby. It stopped in101210phase1 at the selected lobby: no visible/targetable car was established. No merge/native success for the whole five is claimed. Native evidence remains verbatim at `Temp/mxo-claude-pr218-native-0940`; source/ref and45 primary binaries were preserved before this edit at `Temp/mxo-pr218-native-lobby-primary-20261116` (archive manifest SHA256`2AA7D1CC600AB98A21DF5CF9B1277CF20DA5389FEA33F1B79640659CBB8ECAAD`). Earlier headless proofs below retain their original pins.
+
+The capture proves a separate guidance error: while inside lobby879/28, logicalRPC109/SSEQ1536 sent809e with upstairs floor key921699392 at-2800/2945/-8300. The exact current physical lobby car is saved as key921699406 at-2800/145/-8300, with Standing-2600/95/-8300. Both original counted SIDI bounds and reciprocal28→46 portal put its plane at x=-2800/z[-8400,-8200]; no raw-CSV pose substitution is justified. The current shared `MissionStreetGuidance.Project` lobby branch used Floor(current), also unchanged in reviewed241/core274 sources.
+
+This narrow source correction selects the existing saved Lobby key/Position for current-lobby entry guidance only. Internal floor Waypoints/Exits, inside-floor/down guidance, completed-departure public exit, historical contexts and restore/owner/phase guards remain unchanged. No statics, overlays, source/site selection, ranges, timers or transport are changed. New controls use the verbatim0940 checkpoint (SHA256`20784EF7E2BAAFBF4EB38F765F9BE8D48F5B0B28CFB746475569AEED8D2AE872`), actual809e writer/literal bytes and current-floor/completed/history/quarantine/foreign authority cases. Local compilation and new live checks are not yet run at this source checkpoint.
+
+**This is a marker correction, not a renderer fix.** A future native check must ordinary-walk to the exact saved lobby Standing and face west/decreasingX toward x=-2800,z=-8300; record a genuine hover/radial key before acting. Do not follow the old upstairs marker to a different wall, infer human error, force a teleport, or declare the car visible from offline geometry. Root/Claude alone coordinate native/reset/lock. The original native failure remains HOLD until directly rechecked.
+
 
 Source refresh onto native-passed master `500dc117afedb2d95cf1229558564d67982f79c1` (PR264 included). Production/data match that master exactly. At clean producer `e35da0b609bafeb6341c9ad3c1dec9d10d20fa94`, 153 affected Release tests passed; actual NativeQa Debug and Release builds, known/default plans, build-info and exact-one case discovery passed with all four hardlink flags. The current-base whole case and actual selected-mode startup passed as recorded below; native rendering/walking remain unproved. The 223.2-second game and inherited mode bootstrap below remain historical evidence on master9894, not proof of this refreshed producer. PR218 remains DRAFT until final CI and root READY review. Mode QaBaseMaster now names500dc; HistoricalQaBaseMaster and older producer labels retain their original attribution.
 
