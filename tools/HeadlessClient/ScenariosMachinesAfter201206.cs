@@ -155,9 +155,13 @@ public static partial class Scenarios
                     await MoveForMissionTest(p,point.Standing[0],point.Standing[1],point.Standing[2]).WaitAsync(Remaining());
                 }
                 await Barrier().WaitAsync(Remaining());
-                var observed=(await Saved("objects-actor-route-arrived"))!;
-                MachinesObjectActorApproach.RequireCurrent(approach,observed,p.World.CurrentOwnViewLife());
-                Check.That(ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,observed.Mobs.Single(m=>m.Npc==actor.Npc),observed.Instance)!=null,"Object-stage approached actor has exact current live identity/position");
+                ViewCreation? introduced=null;
+                while(introduced==null)
+                {
+                    var observed=(await Saved("objects-actor-route-arrived").WaitAsync(Remaining()))!;
+                    introduced=MachinesObjectActorApproach.Observe(approach,observed,p.World.CurrentOwnViewLife(),p.Handle);
+                    if(introduced==null)await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(20,Remaining().TotalMilliseconds)));
+                }
                 targets.Add(new{Kind="Objects actor approach",Actor=current.Identity,approach.Steps,RequiredDoors=Array.Empty<uint>(),NativeWalkingProven=false,MovementAid="Disclosed certified same-region local-edge points; no Project or synthetic NPC witness"});
             }
             await MoveForMissionTest(p,current.X+100,current.Y,current.Z).WaitAsync(Remaining());await Barrier().WaitAsync(Remaining());

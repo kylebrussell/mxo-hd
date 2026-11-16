@@ -22,6 +22,11 @@ public static class MachinesObjectActorApproach
   ZionAfter1212RidePlan.SameEntry(p.Before,state);
   Need(ZionAfter1212StreetEntry.ForSite(state)?.Raw.GetRawText()==p.StreetRaw&&Actor(state,p.Npc)==p.ActorJson,"Objects actor exact accepted source/pose identity");
  }
+ public static ViewCreation? Observe(Plan plan,MissionProgress.SavedState current,OwnViewLifeSnapshot life,string handle)
+ {
+  RequireCurrent(plan,current,life);
+  return ZionAfter1212FollowerReadiness.CurrentNpc(life,handle,current.Mobs.Single(m=>m.Npc==plan.Npc),current.Instance);
+ }
  public static Plan Read(string repository,MissionProgress.SavedState state,ushort npc,OwnViewLifeSnapshot life)
  {
   Need(life.Current&&life.OwnViewReady,"Objects actor current own life");

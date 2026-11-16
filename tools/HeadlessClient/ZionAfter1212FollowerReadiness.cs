@@ -29,7 +29,7 @@ public static class ZionAfter1212FollowerReadiness
             var old=before.Mobs.Single(m=>m.Npc==id);var mobs=current.Mobs.Where(m=>m.Npc==id).ToArray();
             if(mobs.Length!=1||!current.Following.Contains(id)||!Guid.TryParseExact(old.Identity,"N",out _)||mobs[0].Identity!=old.Identity||mobs[0].Dead||mobs[0].Health==0||
                 mobs[0].Name!=old.Name||mobs[0].Friendly!=old.Friendly||mobs[0].Phase!=old.Phase)throw new InvalidDataException("Wrong live following identity");
-            var mob=mobs[0];bool Match(Live v)=>v.View.Goid==599&&v.View.Name==mob.Name&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
+            var mob=mobs[0];byte[] name=CharacterNameBytes(mob.Name);bool Match(Live v)=>v.View.Goid==599&&v.View.Attributes.TryGetValue("CharacterName",out var actualName)&&actualName.SequenceEqual(name)&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
                 v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
                 (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
                     v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
@@ -87,12 +87,21 @@ public static class ZionAfter1212FollowerReadiness
         }
         if(!stream.Current)throw new InvalidDataException("NPC own life changed");return live;
     }
+    // Mob.CharacterName -> Attribute(size32).setValue(string) -> ASCII bytes copied/truncated/zero-padded.
+    // Compare every wire byte; identical truncated names still require unique current candidates.
+    public static byte[] CharacterNameBytes(string savedName)
+    {
+        if(savedName==null)throw new InvalidDataException("Saved NPC name required");
+        var bytes=new byte[32];var source=System.Text.Encoding.ASCII.GetBytes(savedName);
+        Array.Copy(source,bytes,Math.Min(source.Length,bytes.Length));return bytes;
+    }
     public static ViewCreation? CurrentNpc(OwnViewLifeSnapshot stream,string handle,MissionProgress.SavedMob mob,ushort instance)
     {
         if(instance==0||!Guid.TryParseExact(mob.Identity,"N",out _)||mob.Level<=0||mob.Level>255)throw new InvalidDataException("Current saved NPC identity required");
+        byte[] name=CharacterNameBytes(mob.Name);
         bool Match(Live v)
         {
-            if(v.View.Goid!=599||v.View.Name!=mob.Name||!v.Known||v.Position==null||v.Dead!=mob.Dead||
+            if(v.View.Goid!=599||!v.View.Attributes.TryGetValue("CharacterName",out var actualName)||!actualName.SequenceEqual(name)||!v.Known||v.Position==null||v.Dead!=mob.Dead||
                 !v.View.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new[]{(byte)mob.Level}))return false;
             bool keyPresent=v.View.Attributes.TryGetValue("MissionKey",out var key);
             if((mob.Friendly&&!keyPresent)||keyPresent&&(key!.Length!=4||key[0]!=mob.Phase||BitConverter.ToUInt16(key,1)!=instance||key[3]!=2))return false;

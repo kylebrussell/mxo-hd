@@ -36,6 +36,15 @@ public class MachinesObjectActorApproachTests
   if(change=="dead")actor.Dead=true;if(change=="missing")s.Mobs.Clear();
   Assert.Throws<InvalidDataException>(()=>MachinesObjectActorApproach.Read(Root,s,1,life.Snapshot()));
  }
+ [Fact] public void ExactActorIntroductionMayArriveAfterApproachBarrier()
+ {
+  var f=Fixture();var s=State(f);var life=Life(f);var plan=MachinesObjectActorApproach.Read(Root,s,1,life.Snapshot());
+  Assert.Null(MachinesObjectActorApproach.Observe(plan,s,life.Snapshot(),"MachinesAfter201206"));
+  using var retained=ZionCurrentNpcWireNameTests.Retained();var birth=Convert.FromHexString(retained.RootElement.GetProperty("Birth").GetString()!);
+  life.Observe(false,birth,1,WireFormat.FindCreations(birth));var view=MachinesObjectActorApproach.Observe(plan,s,life.Snapshot(),"MachinesAfter201206");Assert.NotNull(view);Assert.Equal((ushort)31,view.ViewId);
+  var changed=State(f);changed.Mobs[0].Identity=new string('f',32);Assert.Throws<InvalidDataException>(()=>MachinesObjectActorApproach.Observe(plan,changed,life.Snapshot(),"MachinesAfter201206"));
+  life.EndLife();Assert.Throws<InvalidDataException>(()=>MachinesObjectActorApproach.Observe(plan,s,life.Snapshot(),"MachinesAfter201206"));
+ }
  [Fact] public void RouteCannotBorrowAnotherOrRetiredOwnLife()
  {
   var f=Fixture();var s=State(f);var life=Life(f);var p=MachinesObjectActorApproach.Read(Root,s,1,life.Snapshot());
