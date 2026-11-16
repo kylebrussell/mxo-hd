@@ -130,7 +130,7 @@ public static class MissionNpcInteriorProof
         Need((crosses.All(v=>v>=-tolerance)||crosses.All(v=>v<=tolerance))&&Math.Abs(standing[1]-(Floor(target,nodes[^1],standing[0],standing[2])+95))<=tolerance,"NPC QA exact actor standing inside original target polygon/floor");
         steps.Add(new(standing.Take(3).ToArray(),Array.Empty<uint>(),R(nodes[^1]),P(nodes[^1])));return steps.ToArray();
     }
-    static byte[] EvidencePayload(string repository,ushort sector,string expectedDigest)
+    public static byte[] EvidencePayload(string repository,ushort sector,string expectedDigest)
     {
         Need(expectedDigest.Length==64&&expectedDigest.All(Uri.IsHexDigit),"NPC saved evidence digest shape");
         string directory=Path.Combine(repository,"data","mission_interior_evidence","1");

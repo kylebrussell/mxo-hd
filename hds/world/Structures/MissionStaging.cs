@@ -93,7 +93,8 @@ namespace hds
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
             Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(mission,0);
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
+            var street=MissionStreetCoverage.Filter(mission,0);
+            bool Eligible(MissionSite s)=>(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible) ??
                                   MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods, requiredFurniture: furniture,admissible:Eligible);
             data.missionPreviewFor = mission;
@@ -127,6 +128,7 @@ namespace hds
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
         public static bool Stage(WorldClient client, MissionProgress progress) => StageCore(client,progress,null);
         internal static bool StagePrepared(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan) => StageCore(client,progress,plan);
+        internal static bool StageStreetPrepared(WorldClient client,MissionProgress progress,MissionStreetAdmission.Plan plan)=>StageCore(client,progress,null,null,plan);
         internal static bool StageNpcPrepared(WorldClient client,MissionProgress progress,MissionNpcInteriorAdmission.Plan plan) => StageCore(client,progress,null,plan);
         internal sealed class SiteSelection
         {
@@ -148,13 +150,14 @@ namespace hds
             List<string> hoods=phase.neighbourhoods.Count>0?phase.neighbourhoods:mission.neighbourhoods;
             int npcs=mission.npcs.Count(n=>n.at==at)+SpotsForWaves(phase),objects=PlacesNeeded(phase),furniture=FurnitureNeeded(phase);
             Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(progress.mission,phaseIndex);
-            bool Eligible(MissionSite s)=>MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
+            var street=progress.streetPolicy?MissionStreetCoverage.Filter(mission,phaseIndex):null;
+            bool Eligible(MissionSite s)=>(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             if(site!=null&&!Eligible(site))site=null;
             site=site??MissionSites.Choose(sites,phase.site,px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
                 ??MissionSites.Choose(sites,"Any",px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);
             return new SiteSelection(site,rng);
         }
-        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared,MissionNpcInteriorAdmission.Plan npcPrepared=null)
+        private static bool StageCore(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan prepared,MissionNpcInteriorAdmission.Plan npcPrepared=null,MissionStreetAdmission.Plan streetPrepared=null)
         {
             MissionPhase phase = progress.Phase;
             Mission mission = progress.mission;
@@ -172,8 +175,8 @@ namespace hds
             Random rng=null;MissionSite site;
             if(prepared==null)
             {
-                if(npcPrepared!=null)npcPrepared.RequireStaging(client);
-                var selected=npcPrepared?.Selected??ChooseSiteAt(client,progress,progress.phaseIndex,px,pz);rng=selected.Random;site=selected.Site;
+                if(npcPrepared!=null)npcPrepared.RequireStaging(client);if(streetPrepared!=null)streetPrepared.RequireStaging(client);
+                var selected=streetPrepared?.Selected??npcPrepared?.Selected??ChooseSiteAt(client,progress,progress.phaseIndex,px,pz);rng=selected.Random;site=selected.Site;
                 client.playerData.missionPreview = null;
                 client.playerData.missionPreviewFor = null;
                 if (site == null)
@@ -193,12 +196,14 @@ namespace hds
             // No layout RNG is consumed between site choice and object placement. Materialize the
             // same choices here so an unsupported bound record fails before any NPC/global mob exists.
             // NPC-only replay owns no object choices/RNG; fresh paths retain249 source-pool preparation.
-            var objectChoices=prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
+            var objectChoices=streetPrepared!=null?streetPrepared.Choices():prepared==null?StageSourceChoices(phase,site,rng,npcPrepared,placed.Count+SpotsForWaves(phase)):null;
+            if(streetPrepared!=null)foreach(var c in objectChoices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=c.Spot,goid=c.Goid});
             if(prepared!=null)
                 foreach(var c in prepared.Selection.Choices)
                     MissionBoundObjectPoses.RequireCurrent(new MissionObjectState {spot=c.ReadSpot(),goid=c.Goid,
                         OpenFloor=prepared.Poses.TryGetValue(c.ObjectId,out var fixedPose)?fixedPose:null});
 
+            var streetSelection=MissionStreetCoverage.Stage(progress,site,streetPrepared!=null?System.Text.Json.JsonSerializer.SerializeToElement(streetPrepared.Pending.Selection,MissionProgress.SaveJson):prepared!=null?prepared.Selection.Street:npcPrepared?.Pending?.Street??default);
             progress.site = site;
             if(npcPrepared?.Adopted==true)
             {
@@ -209,6 +214,7 @@ namespace hds
             var lobbyDoor=elevatorWitness==null?new MissionOpenFloorResolver.Position(site.lobbyDoor.pos_x,site.lobbyDoor.pos_y,site.lobbyDoor.pos_z):MissionElevatorPoses.Position(elevatorWitness.Lobby);
             var npcWitness=MissionNpcInteriorAdmission.Current(progress);
             if(npcWitness!=null){floorDoor=MissionElevatorPoses.Position(npcWitness.Floor.Position);lobbyDoor=MissionElevatorPoses.Position(npcWitness.Lobby.Position);}
+            if(streetSelection!=null){floorDoor=MissionElevatorPoses.Position(streetSelection.Context.Floor.Position);lobbyDoor=MissionElevatorPoses.Position(streetSelection.Context.Lobby.Position);}
             progress.sites.Add(site);
             progress.waypoints = new List<MissionWaypoint>
             {
@@ -589,12 +595,12 @@ namespace hds
             return choices;
         }
         internal static ObjectChoice[] StageSourceChoices(MissionPhase phase,MissionSite site,Random rng,
-            MissionNpcInteriorAdmission.Plan npcPrepared,int reserved) => npcPrepared?.Replayed==true&&npcPrepared.Adopted
+            MissionNpcInteriorAdmission.Plan npcPrepared,int reserved) => npcPrepared?.ObjectReplay==true
                 ?StageObjectChoices(phase,site,rng,npcPrepared):PrepareSourcePoolChoices(phase,site,rng,reserved);
 
         internal static ObjectChoice[] StageObjectChoices(MissionPhase phase,MissionSite site,Random rng,MissionNpcInteriorAdmission.Plan npcPrepared)
         {
-            if(npcPrepared?.Replayed==true&&npcPrepared.Adopted)
+            if(npcPrepared?.ObjectReplay==true)
             {
                 if(phase.objects.Count!=0||!ReferenceEquals(npcPrepared.Progress.Phase,phase)||!ReferenceEquals(npcPrepared.Selected.Site,site))
                     throw new MissionCheckpointException("Changed NPC-only replay object definitions/site");
@@ -911,6 +917,7 @@ namespace hds
             double targetY=targetWitness==null?target.pos_y:(current?targetWitness.Floor[1]:targetWitness.Lobby[1]);
             var npcTarget=MissionNpcInteriorAdmission.ForSite(progress,site);
             if(npcTarget!=null)targetY=(current?npcTarget.Floor:npcTarget.Lobby).Position[1];
+            var streetTarget=MissionStreetCoverage.ForSite(progress,site);if(streetTarget!=null)targetY=(current?streetTarget.Context.Floor:streetTarget.Context.Lobby).Position[1];
             if (Math.Abs(py - targetY) < 200)
             {
                 return false; // already on that floor
@@ -945,6 +952,7 @@ namespace hds
             double floorY=witness==null?site.elevatorDoor.pos_y:witness.Floor[1];
             var npcFloor=MissionNpcInteriorAdmission.ForSite(progress,site);
             if(npcFloor!=null){floorKey=MissionNpcInteriorPlanning.ReadRaw(npcFloor.Floor.RawDoorJson).mxoStaticId;floorY=npcFloor.Floor.Position[1];}
+            var streetFloor=MissionStreetCoverage.ForSite(progress,site);if(streetFloor!=null){floorKey=site.elevatorDoor.mxoStaticId;floorY=streetFloor.Context.Floor.Position[1];}
             return used.metrId==site.elevatorDoor.metrId && used.mxoStaticId==floorKey && Math.Abs(y-floorY)<200 &&
                 MissionRuntime.ReadyExitEscort(client,progress,x,y,z);
         }
@@ -975,10 +983,12 @@ namespace hds
                 var saved=ReferenceEquals(target,site.elevatorDoor)?npcWitness.Floor:npcWitness.Lobby;
                 x=saved.Standing[0];y=saved.Standing[1];z=saved.Standing[2];
             }
+            var street=MissionStreetCoverage.ForSite(progress,site);
+            if(street!=null){var saved=ReferenceEquals(target,site.elevatorDoor)?street.Context.Floor:street.Context.Lobby;x=saved.Standing[0];y=saved.Standing[1];z=saved.Standing[2];}
             // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
             // lets the player through walls: stand on the nearest polygon to the door instead
             Output.WriteDebugLog("[MISSION] Elevator navigation start");
-            if (npcWitness==null&&PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
+            if (npcWitness==null&&street==null&&PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), measured.X, y, measured.Z, out NavLocation car) &&
                 !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
             {
                 x = NearestOnMesh(client, measured.X, y, measured.Z, out z);

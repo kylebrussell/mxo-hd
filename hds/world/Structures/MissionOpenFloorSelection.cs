@@ -57,15 +57,17 @@ namespace hds
         public MissionOpenFloorChoice[] Choices => (MissionOpenFloorChoice[])choices.Clone();
         public string Refusal { get; }
         [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public MissionElevatorWitness Elevator { get; }
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] public JsonElement Street {get;}
         private FailureMemo failureMemo=new FailureMemo();
         private sealed class FailureMemo { internal string Key,Refusal; }
         internal bool TryFailedGeometry(string key,out string refusal)
         {refusal=failureMemo.Key==key?failureMemo.Refusal:null;return refusal!=null;}
         internal void RememberFailedGeometry(string key,string refusal)
         {if(!string.IsNullOrEmpty(key)&&!string.IsNullOrEmpty(refusal)){failureMemo.Key=key;failureMemo.Refusal=refusal;}}
-        [JsonConstructor] public MissionOpenFloorPendingAdmission(int policy,int mission,string identity,int phase,long started,MissionOpenFloorSite site,MissionOpenFloorChoice[] choices,string refusal,MissionElevatorWitness elevator=null)
-        {Policy=policy;Mission=mission;Identity=identity;Phase=phase;Started=started;Site=site;this.choices=(MissionOpenFloorChoice[])(choices??Array.Empty<MissionOpenFloorChoice>()).Clone();Refusal=refusal;Elevator=elevator;}
-        internal MissionOpenFloorPendingAdmission WithRefusal(string reason) => new MissionOpenFloorPendingAdmission(Policy,Mission,Identity,Phase,Started,Site,choices,reason,Elevator){failureMemo=failureMemo};
+        [JsonConstructor] public MissionOpenFloorPendingAdmission(int policy,int mission,string identity,int phase,long started,MissionOpenFloorSite site,MissionOpenFloorChoice[] choices,string refusal,MissionElevatorWitness elevator=null,JsonElement street=default)
+        {Policy=policy;Mission=mission;Identity=identity;Phase=phase;Started=started;Site=site;this.choices=(MissionOpenFloorChoice[])(choices??Array.Empty<MissionOpenFloorChoice>()).Clone();Refusal=refusal;Elevator=elevator;Street=street.ValueKind==JsonValueKind.Undefined?default:street.Clone();}
+        internal MissionOpenFloorPendingAdmission WithStreet(JsonElement street)=>new MissionOpenFloorPendingAdmission(Policy,Mission,Identity,Phase,Started,Site,choices,Refusal,Elevator,street){failureMemo=failureMemo};
+        internal MissionOpenFloorPendingAdmission WithRefusal(string reason) => new MissionOpenFloorPendingAdmission(Policy,Mission,Identity,Phase,Started,Site,choices,reason,Elevator,Street){failureMemo=failureMemo};
     }
 
 }
