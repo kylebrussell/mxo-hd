@@ -71,7 +71,7 @@ namespace hds
             float seconds=AbilityControlDurations.Scale(marker.Caster,state,marker.Value);
             // addStateMod supplies10; retain the normal class4/hostile duration policy used by Apply.
             if(marker.Caster!=null&&!(subject is PlayerEffects p&&ReferenceEquals(p.Context,marker.Caster))&&AbilityHostile.IsDebuff(marker.Parent))
-                seconds=AbilityControlDurations.Mitigate(seconds,marker.Caster.playerInstance.Level.getValue()[0],subject.Determination);
+                seconds=DeflectCode.Duration(seconds,marker.Caster.playerInstance.Level.getValue()[0],subject.Determination,subject.DeterminationBonus,state);
             return seconds;
         }
         internal static void Bind(TimedEffects.Subject subject,TimedEffects.Active marker)
