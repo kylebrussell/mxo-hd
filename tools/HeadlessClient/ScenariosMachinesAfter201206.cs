@@ -31,12 +31,13 @@ public static partial class Scenarios
         async Task<ViewCreation> MachineNpc(XElement definition,int cursor,bool introduced)
         {
             var state=(await Saved("npc-target-before"))!;int id=(int)definition.Attribute("id")!;
-            var expected=state;var originalLife=p.World.CurrentOwnViewLife();
+            var expected=state;
             var current=state.Mobs.Single(m=>m.Npc==id);
             if(outsideAfterUpload)await Reacquire(current,state,TimeSpan.FromSeconds(15));
             if(MissionNpcInteriorRide.ForSite(state)!=null)await MachinesNextCertifiedActorRoute(context,p,state,current,targets.Add);
             await MoveForMissionTest(p,current.X+100,current.Y,current.Z);await Barrier();
-            ViewCreation? view=null;var deadline=DateTime.UtcNow.AddSeconds(15);
+            var originalLife=p.World.CurrentOwnViewLife();
+            ViewCreation? view=null;var lookup=System.Diagnostics.Stopwatch.StartNew();
             do
             {
                 state=(await Saved("npc-target-current"))!;
@@ -44,7 +45,7 @@ public static partial class Scenarios
                 view=MachinesCurrentNpcObservation.Read(expected,state,(ushort)id,originalLife,p.World.CurrentOwnViewLife(),p.Handle);
                 if(view!=null)break;
                 await Task.Delay(20);
-            }while(DateTime.UtcNow<deadline);
+            }while(lookup.Elapsed<TimeSpan.FromSeconds(15));
             if(view==null)throw new TimeoutException("Current saved NPC identity/side/latest position");
             current=state.Mobs.Single(m=>m.Npc==id);
             targets.Add(new{Role="NPC",state.Mission,state.Phase,state.Identity,state.Instance,Definition=id,Current=current,view!.ViewId,view.SpawnId,

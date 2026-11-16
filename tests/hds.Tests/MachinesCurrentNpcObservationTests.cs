@@ -27,6 +27,13 @@ public class MachinesCurrentNpcObservationTests
   Assert.NotNull(actual);Assert.Equal(view,actual.ViewId);Assert.Equal(spawn,actual.SpawnId);
   Assert.Null(MachinesCurrentNpcObservation.Read(before,before,npc,life,log.Snapshot(),"MachinesAfter201206"));
  }
+ [Fact] public void LookupLifeAnchorsAfterProvedApproachNotAnEarlierTransportLife()
+ {
+  var (before,current,old)=Capture();var beforeApproach=old.Snapshot();old.EndLife();
+  var arrived=Capture();var lookupLife=arrived.Log.Snapshot();
+  Assert.Throws<InvalidDataException>(()=>MachinesCurrentNpcObservation.Read(before,current,1,beforeApproach,lookupLife,"MachinesAfter201206"));
+  Assert.NotNull(MachinesCurrentNpcObservation.Read(before,current,1,lookupLife,arrived.Log.Snapshot(),"MachinesAfter201206"));
+ }
  [Theory][InlineData("identity")][InlineData("started")][InlineData("mission")][InlineData("phase")][InlineData("instance")][InlineData("uuid")][InlineData("side")][InlineData("npcphase")][InlineData("position")]
  public void FreshPairCannotRetargetAcceptedOrNpcAuthority(string change)
  {
