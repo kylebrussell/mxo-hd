@@ -20,6 +20,7 @@ public static partial class Scenarios
                 // Disclosed point movement aid; native walking/collision must be checked independently.
                 await MoveForMissionTest(p,nav.x,nav.y,nav.z);var refreshed=OpenWorldCurrentNpc.Require(p.World.CurrentOwnViewLife(),source[0],source[1],source[2]);
                 Check.Equal(target.View.SpawnId,refreshed.View.SpawnId,"Same target generation before ordinary combat");
+                Check.That(CombatHandler.InMeleeReach((float)(Math.Sqrt(Math.Pow(nav.x-refreshed.Position[0],2)+Math.Pow(nav.y-refreshed.Position[1],2)+Math.Pow(nav.z-refreshed.Position[2],2))/100)),"Current target remains within ordinary melee reach after assisted move");
                 int cursor=p.World.RpcSnapshot().Count;p.SendRpc("3d 01");p.SendRpc($"40 {Le(refreshed.View.ViewId)} {Le((ushort)refreshed.View.SpawnId)} 00 00 00 00 00 00 00");
                 await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(cursor).Any(r=>OpenWorldFirstLevelFixture.FightingGain(r.Bytes,391)),"Ordinary full-damage kill awards literal391XP",TimeSpan.FromSeconds(120));
                 Check.Equal(1,p.World.RpcSnapshot().Skip(cursor).Count(r=>OpenWorldFirstLevelFixture.FightingGain(r.Bytes,391)),"One kill reward");
