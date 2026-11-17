@@ -11,7 +11,7 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
     {
         get => plans.GetOrAdd(Environment.GetEnvironmentVariable("MXO_QA_MISSION_ID")??"1205",BuildPlan);
     }
-    private static NativeQaModePlan BuildPlan(string value)
+    internal static NativeQaModePlan BuildPlan(string value)
     {
             string? root=AppContext.BaseDirectory;
             while(root!=null&&!File.Exists(Path.Combine(root,"hds.sln")))root=Path.GetDirectoryName(root);
