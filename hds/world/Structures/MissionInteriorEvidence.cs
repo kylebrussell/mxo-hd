@@ -291,17 +291,29 @@ namespace hds
             if (group.Occurrences.Any(o => !o.ModelPosition.SequenceEqual(first))) { refusal = "InteriorDoorPositionDisagreement"; return false; }
             position = Point(first); refusal = null; return true;
         }
-        internal bool TryWoodDoor(StaticWorldObject raw, out DoorPose pose, out string refusal)
+        internal bool TryWoodDoor(StaticWorldObject raw, out DoorPose pose, out string refusal) =>
+            TryWoodDoorCore(raw,null,null,out pose,out refusal);
+        internal bool TryWoodDoorFromRoom(StaticWorldObject raw,ushort source,ushort target,out DoorPose pose,out string refusal) =>
+            TryWoodDoorCore(raw,source,target,out pose,out refusal);
+        private bool TryWoodDoorCore(StaticWorldObject raw,ushort? source,ushort? target,out DoorPose pose,out string refusal)
         {
-            pose = null;
-            refusal = "UncertifiedInteriorDoorSignature";
-            if (!Raw(raw, out Group group)) return false;
-            ushort goid = MissionSites.Goid(raw);
-            if (!MissionInteriorDoorTypes.IsSupported(goid)) { refusal = "UnsupportedInteriorWoodDoorType"; return false; }
-            Occurrence[] own = group.Occurrences.Where(o => o.Goid == goid).ToArray();
-            if (own.Length == 0 || own.Any(o => o.Quaternion != own[0].Quaternion || !o.ModelPosition.SequenceEqual(own[0].ModelPosition))) { refusal = "AmbiguousOwnGoidDoorOrientation"; return false; }
-            if (own.Any(o => !Available(o.Region))) { refusal = "MissingOwnGoidDoorPrefabEvidence"; return false; }
-            pose = new DoorPose(raw.mxoStaticId, own[0]); refusal = null; return true;
+            pose=null;refusal="UncertifiedInteriorDoorSignature";
+            if(!Raw(raw,out Group group))return false;
+            ushort goid=MissionSites.Goid(raw);
+            if(!MissionInteriorDoorTypes.IsSupported(goid)){refusal="UnsupportedInteriorWoodDoorType";return false;}
+            Occurrence[] own=group.Occurrences.Where(o=>o.Goid==goid).ToArray();
+            // A room may choose a face, never a different physical door or an unavailable prefab.
+            if(own.Length==0||own.Any(o=>!o.ModelPosition.SequenceEqual(own[0].ModelPosition)))
+            {refusal="AmbiguousOwnGoidDoorOrientation";return false;}
+            if(own.Any(o=>!Available(o.Region))){refusal="MissingOwnGoidDoorPrefabEvidence";return false;}
+            if(source.HasValue)
+            {
+                var from=own.Where(o=>o.Region==source.Value).ToArray();
+                own=from.Length>0?from:own.Where(o=>o.Region==target.Value).ToArray();
+            }
+            if(own.Length==0||own.Any(o=>o.Quaternion!=own[0].Quaternion))
+            {refusal="AmbiguousOwnGoidDoorOrientation";return false;}
+            pose=new DoorPose(raw.mxoStaticId,own[0]);refusal=null;return true;
         }
         internal bool TryEntry(StaticWorldObject raw, Func<G.Position, MissionOpenFloorEntry.Result> calculate, out Entry entry, out string refusal)
         {
@@ -487,11 +499,16 @@ namespace hds
             if (!previous.ContainsKey(end)) { refusal = "NoAuthoredSameFloorInteriorRoute"; return false; }
             List<Node> path = new List<Node>(); List<Portal> crossings = new List<Portal>(); Node cursor = end;
             while (true) { path.Add(cursor); Step step = previous[cursor]; if (step == null) break; if (step.Portal != null) crossings.Add(step.Portal); cursor = step.Before; }
-            path.Reverse(); List<DoorPose> doors = new List<DoorPose>();
+            path.Reverse(); crossings.Reverse(); List<DoorPose> doors = new List<DoorPose>();
             foreach (uint key in crossings.SelectMany(p => p.DoorKeys).Distinct())
             {
                 StaticWorldObject raw = selectedDoor?.Invoke(key);
-                if (raw == null || raw.mxoStaticId != key || !TryWoodDoor(raw, out DoorPose pose, out refusal)) { refusal = "UnsupportedRequiredPortalDoor:" + key.ToString("x8") + ":" + (refusal ?? "MissingSelectedRawDoor"); return false; }
+                var crossing=crossings.First(p=>p.DoorKeys.Contains(key));
+                DoorPose pose=null;
+                bool valid=raw!=null&&raw.mxoStaticId==key&&(rawMarkerJson==null
+                    ?TryWoodDoorFromRoom(raw,crossing.SourceRegion,crossing.TargetRegion,out pose,out refusal)
+                    :TryWoodDoor(raw,out pose,out refusal));
+                if (!valid) { refusal = "UnsupportedRequiredPortalDoor:" + key.ToString("x8") + ":" + (refusal ?? "MissingSelectedRawDoor"); return false; }
                 doors.Add(pose);
             }
             proof = new NpcRoute(rawMarkerJson, end, path.ToArray(), doors.ToArray()); refusal = null; return true;
@@ -501,17 +518,17 @@ namespace hds
             doors=null;refusal="ChangedFixedBoundRoute";
             if(entry==null||!ReferenceEquals(entry.Owner,this)||!Vector(standing,3)||nodes==null||nodes.Length==0||!nodes[0].Equals(entry.Node)||nodes[nodes.Length-1].Region!=targetRegion||
                 nodes.Distinct().Count()!=nodes.Length||!nodes.All(n=>Level(n,entry.Standing.Y-95))||!Contains(Poly(nodes[nodes.Length-1]),new G.Position(standing[0],standing[1],standing[2])))return false;
-            var keys=new List<uint>();
+            var keys=new Dictionary<uint,Portal>();
             for(int i=1;i<nodes.Length;i++)
             {
                 Node before=nodes[i-1],next=nodes[i];
                 if(before.Region==next.Region&&Poly(before).Edges.Any(e=>LocalReference(e)&&e.Neighbor==next.Polygon))continue;
                 var portals=Outgoing(before).Where(p=>PortalUsable(p)&&p.TargetRegion==next.Region&&p.TargetPolygon==next.Polygon).ToArray();
-                if(portals.Length!=1)return false;keys.AddRange(portals[0].DoorKeys);
+                if(portals.Length!=1)return false;foreach(uint key in portals[0].DoorKeys)if(!keys.ContainsKey(key))keys.Add(key,portals[0]);
             }
             var result=new List<DoorPose>();
-            foreach(uint key in keys.Distinct())
-            {var selected=selectedDoor?.Invoke(key);if(selected==null||selected.mxoStaticId!=key||!TryWoodDoor(selected,out var pose,out refusal))return false;result.Add(pose);}
+            foreach(var pair in keys)
+            {uint key=pair.Key;var portal=pair.Value;var selected=selectedDoor?.Invoke(key);if(selected==null||selected.mxoStaticId!=key||!TryWoodDoorFromRoom(selected,portal.SourceRegion,portal.TargetRegion,out var pose,out refusal))return false;result.Add(pose);}
             doors=result.ToArray();refusal=null;return true;
         }
 

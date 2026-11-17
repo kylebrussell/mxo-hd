@@ -75,4 +75,22 @@ public partial class MissionNpcInteriorCheckpointTests
         var ambiguous=doc.Groups.Single(g=>g.Key==0x34a00268);var signature=ambiguous.Legacy[0].Signature;
         Assert.False(index.TryWoodDoor(Raw(ambiguous.Key,6958,signature.Position[0],signature.Position[1],signature.Position[2],signature.Rotation,signature.Quaternion),out _,out _));
     }
+    [Fact] public void FixedFurnitureRoutesChooseTheDoorFaceInTheCrossedRoom()
+    {
+        var index=E.LoadAudited(SceneDirectory,1,47);
+        using var f=File.OpenRead(Path.Combine(SceneDirectory,"47.json.gz"));
+        using var z=new System.IO.Compression.GZipStream(f,System.IO.Compression.CompressionMode.Decompress);
+        var doc=JsonSerializer.Deserialize<E.Document>(z)!;var group=doc.Groups.Single(g=>g.Key==0x02f003bc);
+        var signature=group.Legacy.First(l=>l.Signature.Goid==6958).Signature;
+        var raw=Raw(group.Key,6958,signature.Position[0],signature.Position[1],signature.Position[2],signature.Rotation,signature.Quaternion);
+        Assert.False(index.TryWoodDoor(raw,out _,out _));
+        foreach(var own in group.Occurrences.Where(o=>o.Goid==6958))
+        {
+            Assert.True(index.TryWoodDoorFromRoom(raw,own.Region,ushort.MaxValue,out var pose,out var why),why);
+            Assert.Equal(own.Quaternion,pose.Quaternion);Assert.Equal(own.ModelPosition,new[]{pose.Position.X,pose.Position.Y,pose.Position.Z});
+        }
+        Assert.False(index.TryWoodDoorFromRoom(raw,ushort.MaxValue,ushort.MaxValue,out _,out _));
+        raw.pos_x++;Assert.False(index.TryWoodDoorFromRoom(raw,20,38,out _,out _));
+    }
+
 }

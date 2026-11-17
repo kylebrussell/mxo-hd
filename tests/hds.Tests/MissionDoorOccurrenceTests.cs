@@ -21,4 +21,11 @@ public class MissionDoorOccurrenceTests
         Assert.Empty(MissionDoorOccurrences.ForPortal(group,goid,from,999));
         Assert.Empty(MissionDoorOccurrences.ForPortal(group,9999,from,to));
     }
+    [Fact] public void OppositeFacesWithTheSameSchemaAreQualifiedBySourceRoom()
+    {
+        using var doc=JsonDocument.Parse("""{"Occurrences":[{"Goid":6958,"Region":20,"Quaternion":"a"},{"Goid":6958,"Region":38,"Quaternion":"b"}]}""");
+        Assert.Equal("a",Assert.Single(MissionDoorOccurrences.ForPortal(doc.RootElement,6958,20,38)).GetProperty("Quaternion").GetString());
+        Assert.Equal("b",Assert.Single(MissionDoorOccurrences.ForPortal(doc.RootElement,6958,38,20)).GetProperty("Quaternion").GetString());
+    }
+
 }
