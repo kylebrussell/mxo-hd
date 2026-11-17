@@ -4,8 +4,11 @@ namespace HeadlessClient;
 public static class OpenWorldCurrentNpc
 {
     public sealed record Current(ViewCreation View,double[] Position,bool Dead,long Life)
-    { public IReadOnlyList<double[]> Positions {get;init;}=Array.Empty<double[]>(); }
-    sealed class LiveView { public ViewCreation View=null!; public Point? Position; public int Birth,PositionSection; public string PositionBytes=""; public bool DynamicBirth,Dead,GenerationKnown; public List<double[]> Trail=new(); }
+    {
+        public IReadOnlyList<double[]> Positions {get;init;}=Array.Empty<double[]>();
+        public Mob.Animations? LastMotion {get;init;}
+    }
+    sealed class LiveView { public ViewCreation View=null!; public Point? Position; public int Birth,PositionSection; public string PositionBytes=""; public bool DynamicBirth,Dead,GenerationKnown; public List<double[]> Trail=new(); public Mob.Animations? LastMotion; }
     sealed record Point(double X,double Y,double Z);
     public static Current Require(OwnViewLifeSnapshot stream,double x,double y,double z,bool expectedDead=false)
         =>Require(stream,x,y,z,"Chopper Runner",1,Convert.FromHexString(x==19403?"5E010088":"5D010088"),expectedDead);
@@ -73,6 +76,8 @@ public static class OpenWorldCurrentNpc
                         int pos=cursor+frame.PositionOffset;
                         current.Position=new(BitConverter.ToSingle(section,pos),BitConverter.ToSingle(section,pos+4),BitConverter.ToSingle(section,pos+8));
                         current.Trail.Add(new[]{current.Position.X,current.Position.Y,current.Position.Z});
+                        if(frame.Type==MervFollowupViewFrames.Kind.Movement&&frame.Length==18)
+                            current.LastMotion=(Mob.Animations)section[cursor+4];
                         current.PositionSection=e.Section;current.PositionBytes=Convert.ToHexString(section.AsSpan(pos,12));
                     }
                     if(frame.Type==MervFollowupViewFrames.Kind.Death)current.Dead=true;
@@ -87,7 +92,7 @@ public static class OpenWorldCurrentNpc
         if(chosenPosition==null||!new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z}.All(double.IsFinite)||chosen.Dead!=expectedDead||!chosenView.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new[]{expectedLevel})||chosenView.Attributes.ContainsKey("MissionKey")||chosenView.Attributes.ContainsKey("DontAttack")||!chosenView.Attributes.TryGetValue("IsEnemy",out var enemy)||!enemy.SequenceEqual(new byte[]{1})||!chosenView.Attributes.TryGetValue("IsFriendly",out var friendly)||!friendly.SequenceEqual(new byte[]{0})||!stream.Current)throw new InvalidDataException("Ambient level/death/life/mission scope differs");
         var original=chosenView.Attributes["Position"];
         return new(chosenView,new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z},chosen.Dead,stream.Life)
-        {Positions=new[]{new[]{BitConverter.ToDouble(original),BitConverter.ToDouble(original,8),BitConverter.ToDouble(original,16)}}.Concat(chosen.Trail).ToArray()};
+        {Positions=new[]{new[]{BitConverter.ToDouble(original),BitConverter.ToDouble(original,8),BitConverter.ToDouble(original,16)}}.Concat(chosen.Trail).ToArray(),LastMotion=chosen.LastMotion};
     }
 }
 

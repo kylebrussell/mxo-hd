@@ -10,6 +10,8 @@ namespace hds
     {
         // Preserve the old wander travel-time calculation. Chase speed is a local gameplay default.
         public const double WalkSpeed = .176 * 500 / .9586, ChaseSpeed = 400, WanderRadius = 500;
+        private const int MinimumIdleSeconds = 8, MaximumIdleSeconds = 15;
+        private const double SelectionGraceSeconds = 2;
         private sealed class Motion
         {
             public double Updated, WaitUntil;
@@ -28,8 +30,9 @@ namespace hds
         {
             var seed=QaSeed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                 Environment.GetEnvironmentVariable("MXO_QA_MOB_WANDER_SEED"));
-            return new Motion{Updated=now,WaitUntil=now+5,Life=mob.DeathGeneration,
-                Random=seed.HasValue?new Random(unchecked(seed.Value^(int)mob.getEntityId())):new Random()};
+            var random=seed.HasValue?new Random(unchecked(seed.Value^(int)mob.getEntityId())):new Random();
+            return new Motion{Updated=now,WaitUntil=now+random.Next(MinimumIdleSeconds,MaximumIdleSeconds+1),
+                Life=mob.DeathGeneration,Random=random};
         }
         public static bool Chasing(Mob mob) { lock(sync)return moving.TryGetValue(mob,out var state)&&state.Target!=null; }
         private static double[] Position(Mob mob)=>new[]{mob.getXPos(),mob.getYPos(),mob.getZPos()};
@@ -66,18 +69,35 @@ namespace hds
                 state.Target=client;state.Goal=null;return true;
             }
         }
-        private static void Stop(Mob mob,Motion state,double now)
+        private static void Stop(Mob mob,Motion state,double now,bool publishArrival=false)
         {
-            if(state.Walking){mob.currentState=(int)Mob.statusList.STANDING;mob.updateAnimation((byte)Mob.Animations.STAND);}
-            state.Walking=false;state.Goal=null;state.Target=null;state.WaitUntil=now+state.Random.Next(5,15);
+            if(state.Walking||publishArrival)
+            {
+                mob.currentState=(int)Mob.statusList.STANDING;
+                mob.updateAnimation((byte)Mob.Animations.STAND);
+            }
+            state.Walking=false;state.Goal=null;state.Target=null;
+            state.WaitUntil=now+state.Random.Next(MinimumIdleSeconds,MaximumIdleSeconds+1);
         }
         internal static void Tick(List<WorldClient> clients,Dictionary<ulong,Mob> mobs,double now)
         {
             var visible=new HashSet<Mob>();
+            var selected=new HashSet<Mob>();
             foreach(var client in clients)
                 if(client?.playerData!=null&&client.Alive&&client.playerData.getOnWorld()&&!client.playerData.waitForRPCShutDown)
+                {
+                    var data=client.playerData;
+                    ushort targetView=data.currentSelectedTargetViewId;
+                    ushort targetSpawn=data.currentSelectedTargetSpawnId;
                     foreach(var view in client.viewMan.Snapshot())
-                        if(view.viewCreated&&mobs.TryGetValue(view.entityId,out var mob)&&Ordinary(mob))visible.Add(mob);
+                    {
+                        if(!view.viewCreated||view.viewNeedsToBeDeleted||!mobs.TryGetValue(view.entityId,out var mob)||
+                            !Ordinary(mob)||mob.getDistrict()!=data.getDistrictId())continue;
+                        visible.Add(mob);
+                        // The native client selects the NPC when opening its radial.
+                        if(!data.isDead&&view.ViewID==targetView&&view.spawnId==targetSpawn)selected.Add(mob);
+                    }
+                }
             lock(sync)
             {
                 foreach(var old in moving.Keys.Where(m=>!visible.Contains(m)).ToArray())moving.Remove(old);
@@ -86,8 +106,22 @@ namespace hds
                     if(!moving.TryGetValue(mob,out var state)||state.Life!=mob.DeathGeneration)moving[mob]=state=New(mob,now);
                     double elapsed=now-state.Updated;state.Updated=now;
                     if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Walking=false;continue;}
+                    if(state.Target==null&&selected.Contains(mob))
+                    {
+                        if(state.Goal!=null||state.Walking)Stop(mob,state,now);
+                        state.WaitUntil=Math.Max(state.WaitUntil,now+SelectionGraceSeconds);
+                        continue;
+                    }
                     if(!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects))
-                    {if(state.Walking){mob.updateAnimation((byte)Mob.Animations.STAND);state.Walking=false;}continue;}
+                    {
+                        if(state.Walking)
+                        {
+                            mob.currentState=(int)Mob.statusList.STANDING;
+                            mob.updateAnimation((byte)Mob.Animations.STAND);
+                            state.Walking=false;
+                        }
+                        continue;
+                    }
                     var from=Position(mob);double speed=WalkSpeed;
                     if(state.Target!=null)
                     {
@@ -115,15 +149,19 @@ namespace hds
                                 out var goal,maxDistance:25,reachableFrom:from,requireDirect:true)&&!goal.location.indoors&&Math.Abs(goal.y-from[1])<=150)
                             {state.Goal=new[]{goal.x,goal.y,goal.z};break;}
                         }
-                        if(state.Goal==null)state.WaitUntil=now+5;
+                        if(state.Goal==null)state.WaitUntil=now+MinimumIdleSeconds;
                     }
                     if(state.Goal==null)continue;
                     if(!Step(mob.getDistrict(),from,state.Goal,elapsed,speed,out var next)){Stop(mob,state,now);continue;}
                     double[] goalAt=state.Goal;
                     mob.setXPos(next.x);mob.setYPos(next.y);mob.setZPos(next.z);
                     mob.setRotation(MobAggro.YawTowards(from[0],from[2],goalAt[0],goalAt[2]));
+                    if(state.Target==null&&Math.Pow(next.x-goalAt[0],2)+Math.Pow(next.z-goalAt[2],2)<1)
+                    {
+                        Stop(mob,state,now,publishArrival:true);
+                        continue;
+                    }
                     mob.currentState=(int)Mob.statusList.WALKING;state.Walking=true;mob.updateAnimation((byte)Mob.Animations.WALK);
-                    if(Math.Pow(next.x-goalAt[0],2)+Math.Pow(next.z-goalAt[2],2)<1&&state.Target==null)Stop(mob,state,now);
                 }
             }
         }

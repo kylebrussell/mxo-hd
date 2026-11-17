@@ -21,10 +21,32 @@ public static partial class Scenarios
     {
         var seed=OpenWorldFirstLevelFixture.Seed with {Handle="WanderOne",Level=50};
         var players=await context.AddPlayersInWorldAsync(seed,seed with{Handle="WanderTwo",X=19423});
-        var a=players[0];var b=players[1];OpenWorldCurrentNpc.Current? observed=null;
-        await a.WaitUntilAsync(()=>{try{observed=MotionNpc(a);return observed.Positions.Count>=4&&GroundDistance(observed.Positions[0],observed.Position)>20;}catch(InvalidDataException){return false;}},"ordinary NPC sends continuous walking updates",TimeSpan.FromSeconds(25));
+        var a=players[0];var b=players[1];
+        await a.WaitUntilAsync(()=>{try{return MotionNpc(a).Positions.Count>=4;}catch(InvalidDataException){return false;}},"ordinary NPC sends continuous walking updates",TimeSpan.FromSeconds(30));
         await b.WaitUntilAsync(()=>{try{return GroundDistance(MotionNpc(b).Position,MotionNpc(a).Position)<.1;}catch(InvalidDataException){return false;}},"both viewers receive the same motion",TimeSpan.FromSeconds(10));
-        observed=MotionNpc(a);MotionFloor(context,observed.Positions,MobMotion.WalkSpeed);
+        bool BothStanding()=>MotionNpc(a).LastMotion==Mob.Animations.STAND&&MotionNpc(b).LastMotion==Mob.Animations.STAND;
+        await a.WaitUntilAsync(BothStanding,"both viewers see the NPC stand at the end of a leg",TimeSpan.FromSeconds(15));
+        int idleFrames=MotionNpc(a).Positions.Count;
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        Check.Equal(idleFrames,MotionNpc(a).Positions.Count,"No movement frames during the idle pause");
+
+        await a.WaitUntilAsync(()=>MotionNpc(a).LastMotion==Mob.Animations.WALK,"wandering resumes between pauses",TimeSpan.FromSeconds(15));
+        void Select(HeadlessPlayer player)
+        {
+            var view=MotionNpc(player).View;
+            player.SendRpc($"81 51 {Le(view.ViewId)} {view.SpawnId:x2} 00");
+        }
+        Select(a);
+        await a.WaitUntilAsync(BothStanding,"native target RPC stops an active wander leg for both viewers",TimeSpan.FromSeconds(3));
+        int heldFrames=MotionNpc(b).Positions.Count;
+        Select(b);
+        a.SendRpc("81 51 00 00 00 00");
+        await Task.Delay(TimeSpan.FromSeconds(16));
+        Check.Equal(heldFrames,MotionNpc(b).Positions.Count,"The second viewer holds wander beyond a normal idle pause");
+        b.SendRpc("81 51 00 00 00 00");
+        await b.WaitUntilAsync(()=>MotionNpc(b).LastMotion==Mob.Animations.WALK,"wandering resumes after the final viewer clears selection",TimeSpan.FromSeconds(20));
+
+        var observed=MotionNpc(a);MotionFloor(context,observed.Positions,MobMotion.WalkSpeed);
         Check.That(observed.Positions.All(p=>GroundDistance(p,new[]{19403d,-705,60701})<=MobMotion.WanderRadius+26),"Wander remains within its spawn neighborhood");
     }
     private static async Task WorldNpcChase(ScenarioContext context)
