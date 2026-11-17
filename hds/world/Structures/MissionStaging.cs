@@ -264,6 +264,7 @@ namespace hds
             List<MissionNpc> besideObjects = new List<MissionNpc>();
             foreach (MissionNpc npc in placed)
             {
+                if(npcWitness!=null&&MissionNpcInteriorPlanning.UsesPlayerAtArrival(npc.arrival))continue;
                 double[] spot = NextSpot();
                 if (npc.arrival.Late)
                 {

@@ -65,6 +65,7 @@ namespace hds
     internal static class MissionNpcInteriorPlanning
     {
         internal const string Kind = "NpcInterior";
+        internal static bool UsesPlayerAtArrival(MissionArrival arrival) => arrival?.AtPlayer == true && arrival.Late;
         internal sealed class Role
         {
             internal readonly string Kind; internal readonly int Id, Index; internal readonly byte WirePhase; internal readonly bool Deferred;
@@ -90,6 +91,8 @@ namespace hds
             List<Role> selected = new List<Role>();
             foreach (MissionNpc npc in mission.npcs.Where(n => n.at == phaseIndex + 1))
             {
+                // The ordinary arrival handler places these beside the player on the live floor.
+                if (UsesPlayerAtArrival(npc.arrival)) continue;
                 if (npc.arrival == null || npc.arrival.at != null) { refusal = "UnsupportedNpcRelativeArrival"; return false; }
                 selected.Add(new Role("Npc", npc.id, 0, npc.phase, npc.arrival.Late));
             }
