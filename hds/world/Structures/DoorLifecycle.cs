@@ -65,6 +65,27 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        internal static void PublishOpen(WorldClient client,GameObject door,ulong entityId,ushort goid)
+        {
+            var packets=new ServerPackets();
+            var view=client.viewMan.FindViewForEntity(entityId);
+            // The same static car can be opened in successive phases with different measured poses.
+            // A live view suppresses creation packets, so retire it if the new presentation changed.
+            if(view?.viewCreated==true&&(view.GoID!=goid||view.gameObject==null||
+                !view.gameObject.GetCreationAttributes().AsSpan().SequenceEqual(door.GetCreationAttributes())))
+            {
+                lock(client.playerData.openDoors)
+                    client.playerData.openDoors.RemoveAll(open=>open.ViewId==view.ViewID);
+                client.viewMan.removeViewByViewId(view.ViewID);
+                packets.sendDeleteViewPacket(client,view.ViewID);
+            }
+            packets.SendSpawnGameObject(client,door,entityId);
+            view=client.viewMan.FindViewForEntity(entityId);
+            if(view==null)return;
+            view.gameObject=door;
+            Opened(client,view.ViewID,entityId,goid);
+        }
+
         /// <summary>Records that the client sees this door open, re-opening it if it was already closing.</summary>
         public static void Opened(WorldClient client, UInt16 viewId, UInt64 entityId, UInt16 goid = 0)
         {
