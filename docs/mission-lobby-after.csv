@@ -1,0 +1,470 @@
+mission id,pass/fail,failure class,detail,seconds
+1201,PASS,,"All required objectives, completion summary and receipt",118.4
+1203,PASS,,"All required objectives, completion summary and receipt",117.3
+1204,PASS,,"All required objectives, completion summary and receipt",105.3
+1205,PASS,,"All required objectives, completion summary and receipt",85.7
+1206,PASS,,"All required objectives, completion summary and receipt",128.2
+1207,PASS,,"All required objectives, completion summary and receipt",180.8
+1208,PASS,,"All required objectives, completion summary and receipt",192.7
+1430,PASS,,"All required objectives, completion summary and receipt",166.4
+1674,PASS,,"All required objectives, completion summary and receipt",69.3
+1760,PASS,,"All required objectives, completion summary and receipt",29.7
+2101,PASS,,"All required objectives, completion summary and receipt",101.7
+2102,PASS,,"All required objectives, completion summary and receipt",83.6
+2103,PASS,,"All required objectives, completion summary and receipt",61.3
+2104,PASS,,"All required objectives, completion summary and receipt",37.5
+2105,PASS,,"All required objectives, completion summary and receipt",45.6
+2106,PASS,,"All required objectives, completion summary and receipt",63.1
+2107,FAIL,elevator,phase 1 departure: Sweep2107: timed out after 12s waiting for ordinary elevator transport.,44.0
+2108,FAIL,elevator,phase 1 departure: Sweep2108: timed out after 15s waiting for next phase or completion.,46.2
+2109,PASS,,"All required objectives, completion summary and receipt",51.1
+2110,FAIL,elevator,phase 1 departure: Sweep2110: timed out after 15s waiting for next phase or completion.,35.3
+2201,PASS,,"All required objectives, completion summary and receipt",70.6
+2202,FAIL,elevator,phase 1 departure: Sweep2202: timed out after 15s waiting for next phase or completion.,40.7
+2203,PASS,,"All required objectives, completion summary and receipt",75.6
+2204,PASS,,"All required objectives, completion summary and receipt",92.4
+2205,PASS,,"All required objectives, completion summary and receipt",103.3
+2206,FAIL,lobby car,phase 1 entry: Sweep2206: timed out after 12s waiting for ordinary elevator transport.,36.2
+2207,PASS,,"All required objectives, completion summary and receipt",114.2
+2208,PASS,,"All required objectives, completion summary and receipt",53.5
+2209,PASS,,"All required objectives, completion summary and receipt",116.7
+2210,PASS,,"All required objectives, completion summary and receipt",118.6
+2301,PASS,,"All required objectives, completion summary and receipt",43.4
+2302,PASS,,"All required objectives, completion summary and receipt",24.0
+2303,PASS,,"All required objectives, completion summary and receipt",27.5
+2304,PASS,,"All required objectives, completion summary and receipt",46.7
+2305,PASS,,"All required objectives, completion summary and receipt",45.2
+2306,PASS,,"All required objectives, completion summary and receipt",43.0
+2307,PASS,,"All required objectives, completion summary and receipt",49.7
+2308,PASS,,"All required objectives, completion summary and receipt",58.9
+2309,PASS,,"All required objectives, completion summary and receipt",55.2
+2310,FAIL,elevator,phase 2 goal 2 Escort: Sweep2310: timed out after 12s waiting for objective acknowledgement and saved progress.,52.9
+20001,PASS,,"All required objectives, completion summary and receipt",35.0
+101101,PASS,,"All required objectives, completion summary and receipt",41.7
+101102,PASS,,"All required objectives, completion summary and receipt",32.2
+101103,PASS,,"All required objectives, completion summary and receipt",39.6
+101201,PASS,,"All required objectives, completion summary and receipt",22.6
+101202,PASS,,"All required objectives, completion summary and receipt",48.1
+101203,PASS,,"All required objectives, completion summary and receipt",27.2
+101204,PASS,,"All required objectives, completion summary and receipt",30.7
+101205,PASS,,"All required objectives, completion summary and receipt",46.1
+101206,PASS,,"All required objectives, completion summary and receipt",46.1
+101207,PASS,,"All required objectives, completion summary and receipt",26.7
+101208,PASS,,"All required objectives, completion summary and receipt",34.8
+101209,PASS,,"All required objectives, completion summary and receipt",85.0
+101210,PASS,,"All required objectives, completion summary and receipt",33.7
+101211,PASS,,"All required objectives, completion summary and receipt",24.8
+101212,PASS,,"All required objectives, completion summary and receipt",21.5
+101213,PASS,,"All required objectives, completion summary and receipt",54.1
+101214,PASS,,"All required objectives, completion summary and receipt",34.2
+101215,PASS,,"All required objectives, completion summary and receipt",55.4
+101216,PASS,,"All required objectives, completion summary and receipt",64.8
+101217,PASS,,"All required objectives, completion summary and receipt",112.8
+101301,FAIL,elevator,phase 3 departure: Sweep101301: timed out after 15s waiting for next phase or completion.,104.9
+101302,PASS,,"All required objectives, completion summary and receipt",78.7
+101303,PASS,,"All required objectives, completion summary and receipt",147.8
+101304,FAIL,elevator,phase 3 goal 2 Escort: Companion readiness: Wrong live following identity,78.9
+101306,PASS,,"All required objectives, completion summary and receipt",63.4
+102101,FAIL,prop placement,phase 3 goal 2 Search: Bound/arrival bounds/floor identity,49.5
+102102,PASS,,"All required objectives, completion summary and receipt",108.0
+102103,PASS,,"All required objectives, completion summary and receipt",50.2
+102104,FAIL,elevator,phase 2 departure: Sweep102104: timed out after 15s waiting for next phase or completion.,97.8
+102105,PASS,,"All required objectives, completion summary and receipt",66.5
+102201,PASS,,"All required objectives, completion summary and receipt",124.7
+102202,PASS,,"All required objectives, completion summary and receipt",59.6
+102203,PASS,,"All required objectives, completion summary and receipt",133.6
+102204,PASS,,"All required objectives, completion summary and receipt",65.8
+102205,PASS,,"All required objectives, completion summary and receipt",60.6
+102301,PASS,,"All required objectives, completion summary and receipt",54.2
+102302,PASS,,"All required objectives, completion summary and receipt",53.0
+102303,PASS,,"All required objectives, completion summary and receipt",55.8
+102304,PASS,,"All required objectives, completion summary and receipt",86.4
+102305,PASS,,"All required objectives, completion summary and receipt",107.4
+103101,FAIL,elevator,phase 1 departure: Sweep103101: timed out after 15s waiting for next phase or completion.,31.7
+103102,PASS,,"All required objectives, completion summary and receipt",71.2
+103103,PASS,,"All required objectives, completion summary and receipt",69.4
+103104,PASS,,"All required objectives, completion summary and receipt",56.4
+103105,PASS,,"All required objectives, completion summary and receipt",124.1
+103201,PASS,,"All required objectives, completion summary and receipt",44.3
+103202,PASS,,"All required objectives, completion summary and receipt",85.5
+103203,PASS,,"All required objectives, completion summary and receipt",97.6
+103204,PASS,,"All required objectives, completion summary and receipt",53.7
+103205,PASS,,"All required objectives, completion summary and receipt",71.2
+103301,PASS,,"All required objectives, completion summary and receipt",89.7
+103302,PASS,,"All required objectives, completion summary and receipt",70.7
+103303,PASS,,"All required objectives, completion summary and receipt",81.2
+103304,PASS,,"All required objectives, completion summary and receipt",164.6
+103305,FAIL,elevator,phase 2 departure: Sweep103305: timed out after 12s waiting for ordinary elevator transport.,56.1
+104101,PASS,,"All required objectives, completion summary and receipt",66.6
+104102,PASS,,"All required objectives, completion summary and receipt",83.7
+104103,PASS,,"All required objectives, completion summary and receipt",68.5
+104104,PASS,,"All required objectives, completion summary and receipt",68.4
+104105,PASS,,"All required objectives, completion summary and receipt",71.9
+104201,PASS,,"All required objectives, completion summary and receipt",70.1
+104202,PASS,,"All required objectives, completion summary and receipt",109.3
+104203,FAIL,elevator,phase 2 departure: Sweep104203: timed out after 12s waiting for ordinary elevator transport.,58.7
+104204,PASS,,"All required objectives, completion summary and receipt",67.3
+104205,PASS,,"All required objectives, completion summary and receipt",71.6
+104301,PASS,,"All required objectives, completion summary and receipt",58.0
+104302,PASS,,"All required objectives, completion summary and receipt",60.8
+104303,PASS,,"All required objectives, completion summary and receipt",70.4
+104304,FAIL,elevator,phase 1 departure: Sweep104304: timed out after 12s waiting for ordinary elevator transport.,91.6
+104305,PASS,,"All required objectives, completion summary and receipt",68.7
+105101,PASS,,"All required objectives, completion summary and receipt",52.1
+105102,PASS,,"All required objectives, completion summary and receipt",61.0
+107202,PASS,,"All required objectives, completion summary and receipt",58.0
+108304,PASS,,"All required objectives, completion summary and receipt",49.1
+109201,PASS,,"All required objectives, completion summary and receipt",64.1
+109202,PASS,,"All required objectives, completion summary and receipt",99.8
+109203,PASS,,"All required objectives, completion summary and receipt",64.7
+109204,PASS,,"All required objectives, completion summary and receipt",73.9
+109205,PASS,,"All required objectives, completion summary and receipt",108.3
+109301,PASS,,"All required objectives, completion summary and receipt",52.0
+109302,PASS,,"All required objectives, completion summary and receipt",56.0
+109303,PASS,,"All required objectives, completion summary and receipt",66.5
+109304,PASS,,"All required objectives, completion summary and receipt",51.4
+109305,PASS,,"All required objectives, completion summary and receipt",46.4
+110205,PASS,,"All required objectives, completion summary and receipt",58.8
+111105,PASS,,"All required objectives, completion summary and receipt",59.7
+111203,PASS,,"All required objectives, completion summary and receipt",57.6
+111204,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,81.7
+111302,PASS,,"All required objectives, completion summary and receipt",42.2
+111303,PASS,,"All required objectives, completion summary and receipt",39.1
+201101,PASS,,"All required objectives, completion summary and receipt",35.5
+201102,PASS,,"All required objectives, completion summary and receipt",44.6
+201103,PASS,,"All required objectives, completion summary and receipt",88.7
+201201,PASS,,"All required objectives, completion summary and receipt",54.2
+201202,PASS,,"All required objectives, completion summary and receipt",63.9
+201203,FAIL,elevator,phase 1 departure: Street current index,37.7
+201204,PASS,,"All required objectives, completion summary and receipt",41.0
+201205,PASS,,"All required objectives, completion summary and receipt",53.4
+201206,PASS,,"All required objectives, completion summary and receipt",42.2
+201207,PASS,,"All required objectives, completion summary and receipt",90.6
+201208,PASS,,"All required objectives, completion summary and receipt",114.1
+201209,FAIL,prop placement,phase 1 goal 1 Search: Bound source requires a NAV-grounded in-range approach,26.0
+201210,PASS,,"All required objectives, completion summary and receipt",105.3
+201211,PASS,,"All required objectives, completion summary and receipt",32.8
+201212,FAIL,elevator,phase 1 departure: Sweep201212: timed out after 12s waiting for ordinary elevator transport.,38.3
+201213,PASS,,"All required objectives, completion summary and receipt",93.7
+201214,PASS,,"All required objectives, completion summary and receipt",53.0
+201215,PASS,,"All required objectives, completion summary and receipt",61.5
+201216,PASS,,"All required objectives, completion summary and receipt",38.6
+201217,PASS,,"All required objectives, completion summary and receipt",153.8
+201301,FAIL,prop placement,phase 1 goal 1 Search: Bound source requires a NAV-grounded in-range approach,24.0
+201302,PASS,,"All required objectives, completion summary and receipt",96.5
+201303,PASS,,"All required objectives, completion summary and receipt",106.0
+201304,PASS,,"All required objectives, completion summary and receipt",92.1
+202101,PASS,,"All required objectives, completion summary and receipt",101.1
+202102,PASS,,"All required objectives, completion summary and receipt",64.2
+202103,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,40.2
+202104,PASS,,"All required objectives, completion summary and receipt",46.6
+202105,PASS,,"All required objectives, completion summary and receipt",139.4
+202201,PASS,,"All required objectives, completion summary and receipt",60.0
+202202,PASS,,"All required objectives, completion summary and receipt",65.6
+202203,FAIL,elevator,phase 1 departure: Sweep202203: timed out after 12s waiting for ordinary elevator transport.,40.2
+202204,PASS,,"All required objectives, completion summary and receipt",83.8
+202205,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,93.1
+202301,PASS,,"All required objectives, completion summary and receipt",62.8
+202302,PASS,,"All required objectives, completion summary and receipt",54.6
+202303,PASS,,"All required objectives, completion summary and receipt",102.9
+202304,PASS,,"All required objectives, completion summary and receipt",47.5
+202305,PASS,,"All required objectives, completion summary and receipt",49.2
+203101,PASS,,"All required objectives, completion summary and receipt",48.4
+203102,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,43.5
+203103,PASS,,"All required objectives, completion summary and receipt",44.3
+203104,PASS,,"All required objectives, completion summary and receipt",255.2
+203105,PASS,,"All required objectives, completion summary and receipt",91.2
+203201,PASS,,"All required objectives, completion summary and receipt",47.8
+203202,FAIL,elevator,phase 1 departure: Sweep203202: timed out after 12s waiting for ordinary elevator transport.,45.9
+203203,PASS,,"All required objectives, completion summary and receipt",90.1
+203204,PASS,,"All required objectives, completion summary and receipt",38.4
+203205,PASS,,"All required objectives, completion summary and receipt",60.4
+203301,PASS,,"All required objectives, completion summary and receipt",68.8
+203302,PASS,,"All required objectives, completion summary and receipt",129.2
+203303,PASS,,"All required objectives, completion summary and receipt",59.4
+203304,PASS,,"All required objectives, completion summary and receipt",31.0
+203305,FAIL,NPC role placement,phase 3 departure: Sweep203305: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival,71.3
+204101,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,51.9
+204102,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,30.6
+204103,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,31.4
+204104,PASS,,"All required objectives, completion summary and receipt",65.8
+204105,PASS,,"All required objectives, completion summary and receipt",25.2
+204201,PASS,,"All required objectives, completion summary and receipt",100.2
+204202,PASS,,"All required objectives, completion summary and receipt",109.1
+204203,PASS,,"All required objectives, completion summary and receipt",38.2
+204204,PASS,,"All required objectives, completion summary and receipt",128.9
+204205,PASS,,"All required objectives, completion summary and receipt",120.2
+204301,PASS,,"All required objectives, completion summary and receipt",66.7
+204302,PASS,,"All required objectives, completion summary and receipt",71.0
+204303,PASS,,"All required objectives, completion summary and receipt",43.5
+204304,PASS,,"All required objectives, completion summary and receipt",72.5
+204305,PASS,,"All required objectives, completion summary and receipt",110.5
+205101,PASS,,"All required objectives, completion summary and receipt",126.8
+205102,PASS,,"All required objectives, completion summary and receipt",58.9
+205103,PASS,,"All required objectives, completion summary and receipt",40.9
+205104,PASS,,"All required objectives, completion summary and receipt",81.4
+205105,PASS,,"All required objectives, completion summary and receipt",83.8
+205201,PASS,,"All required objectives, completion summary and receipt",77.7
+205202,PASS,,"All required objectives, completion summary and receipt",75.7
+205203,FAIL,elevator,phase 1 goal 2 Escort: Sweep205203: timed out after 12s waiting for ordinary elevator transport.,51.8
+205204,FAIL,prop placement,phase 3 goal 2 Use: Bound/arrival bounds/floor identity,63.0
+205301,FAIL,room/NAV placement,phase 2 departure: Sweep205301: timed out after 15s waiting for next phase or completion.; [MISSION] Box next-phase admission deferred: NoGeometricBodyCandidates,72.2
+205302,PASS,,"All required objectives, completion summary and receipt",76.3
+205303,PASS,,"All required objectives, completion summary and receipt",157.3
+205304,PASS,,"All required objectives, completion summary and receipt",72.1
+205305,PASS,,"All required objectives, completion summary and receipt",91.2
+206101,FAIL,prop placement,phase 3 goal 1 Use: Bound/arrival bounds/floor identity,46.5
+206102,FAIL,prop placement,phase 4 goal 1 Search: Bound source requires a NAV-grounded in-range approach,126.7
+206103,PASS,,"All required objectives, completion summary and receipt",94.4
+206104,PASS,,"All required objectives, completion summary and receipt",131.2
+206105,PASS,,"All required objectives, completion summary and receipt",120.9
+206201,PASS,,"All required objectives, completion summary and receipt",63.4
+206202,PASS,,"All required objectives, completion summary and receipt",56.4
+206203,PASS,,"All required objectives, completion summary and receipt",66.3
+206204,PASS,,"All required objectives, completion summary and receipt",75.0
+206205,PASS,,"All required objectives, completion summary and receipt",62.0
+206301,PASS,,"All required objectives, completion summary and receipt",79.0
+206302,PASS,,"All required objectives, completion summary and receipt",99.9
+206303,PASS,,"All required objectives, completion summary and receipt",67.1
+206304,PASS,,"All required objectives, completion summary and receipt",53.9
+206305,PASS,,"All required objectives, completion summary and receipt",65.9
+207101,PASS,,"All required objectives, completion summary and receipt",77.8
+207102,PASS,,"All required objectives, completion summary and receipt",60.3
+207103,PASS,,"All required objectives, completion summary and receipt",68.7
+207104,PASS,,"All required objectives, completion summary and receipt",66.3
+207105,PASS,,"All required objectives, completion summary and receipt",77.4
+207201,PASS,,"All required objectives, completion summary and receipt",77.3
+207202,PASS,,"All required objectives, completion summary and receipt",95.8
+207203,PASS,,"All required objectives, completion summary and receipt",49.4
+207204,PASS,,"All required objectives, completion summary and receipt",68.5
+207205,PASS,,"All required objectives, completion summary and receipt",75.6
+207301,PASS,,"All required objectives, completion summary and receipt",84.2
+207302,PASS,,"All required objectives, completion summary and receipt",66.6
+207303,PASS,,"All required objectives, completion summary and receipt",53.8
+207304,PASS,,"All required objectives, completion summary and receipt",55.4
+207305,PASS,,"All required objectives, completion summary and receipt",57.2
+208101,PASS,,"All required objectives, completion summary and receipt",64.9
+208102,PASS,,"All required objectives, completion summary and receipt",53.7
+208103,FAIL,prop placement,phase 1 goal 3 Search: Bound source requires a NAV-grounded in-range approach,24.4
+208104,PASS,,"All required objectives, completion summary and receipt",57.9
+208105,PASS,,"All required objectives, completion summary and receipt",63.2
+208201,PASS,,"All required objectives, completion summary and receipt",77.6
+208202,PASS,,"All required objectives, completion summary and receipt",59.8
+208203,PASS,,"All required objectives, completion summary and receipt",85.5
+208204,PASS,,"All required objectives, completion summary and receipt",139.8
+208205,PASS,,"All required objectives, completion summary and receipt",65.6
+208301,PASS,,"All required objectives, completion summary and receipt",126.4
+208302,PASS,,"All required objectives, completion summary and receipt",110.4
+208303,FAIL,prop placement,phase 3 goal 5 Use: Bound source requires a NAV-grounded in-range approach,43.4
+208304,PASS,,"All required objectives, completion summary and receipt",60.8
+208305,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,92.3
+209101,PASS,,"All required objectives, completion summary and receipt",125.5
+209102,PASS,,"All required objectives, completion summary and receipt",95.7
+209103,PASS,,"All required objectives, completion summary and receipt",139.0
+209104,PASS,,"All required objectives, completion summary and receipt",72.2
+209105,PASS,,"All required objectives, completion summary and receipt",67.7
+209201,PASS,,"All required objectives, completion summary and receipt",75.4
+209202,PASS,,"All required objectives, completion summary and receipt",82.3
+209203,PASS,,"All required objectives, completion summary and receipt",121.7
+209204,PASS,,"All required objectives, completion summary and receipt",133.3
+209205,PASS,,"All required objectives, completion summary and receipt",53.5
+209301,PASS,,"All required objectives, completion summary and receipt",42.0
+209302,PASS,,"All required objectives, completion summary and receipt",62.7
+209303,PASS,,"All required objectives, completion summary and receipt",57.1
+209304,PASS,,"All required objectives, completion summary and receipt",64.7
+209305,FAIL,prop placement,phase 3 goal 2 Search: Bound/arrival bounds/floor identity,67.5
+210101,PASS,,"All required objectives, completion summary and receipt",120.6
+210102,PASS,,"All required objectives, completion summary and receipt",53.1
+210103,PASS,,"All required objectives, completion summary and receipt",68.7
+210104,PASS,,"All required objectives, completion summary and receipt",74.6
+210105,PASS,,"All required objectives, completion summary and receipt",62.7
+210201,FAIL,lobby car,phase 4 entry: Sweep210201: timed out after 12s waiting for ordinary elevator transport.,85.7
+210202,PASS,,"All required objectives, completion summary and receipt",108.7
+210203,FAIL,prop placement,phase 1 goal 2 Use: Bound source requires a NAV-grounded in-range approach,32.4
+210204,PASS,,"All required objectives, completion summary and receipt",76.8
+210205,FAIL,prop placement,phase 1 goal 1 Use: Bound source requires a NAV-grounded in-range approach,71.5
+210301,PASS,,"All required objectives, completion summary and receipt",55.6
+210302,PASS,,"All required objectives, completion summary and receipt",70.5
+210303,PASS,,"All required objectives, completion summary and receipt",67.0
+210304,PASS,,"All required objectives, completion summary and receipt",55.8
+210305,PASS,,"All required objectives, completion summary and receipt",112.0
+211101,PASS,,"All required objectives, completion summary and receipt",49.6
+211102,PASS,,"All required objectives, completion summary and receipt",49.3
+211103,PASS,,"All required objectives, completion summary and receipt",113.4
+211104,PASS,,"All required objectives, completion summary and receipt",64.6
+211105,PASS,,"All required objectives, completion summary and receipt",66.1
+211201,PASS,,"All required objectives, completion summary and receipt",46.8
+211202,PASS,,"All required objectives, completion summary and receipt",37.9
+211203,PASS,,"All required objectives, completion summary and receipt",60.0
+211204,PASS,,"All required objectives, completion summary and receipt",56.5
+211205,PASS,,"All required objectives, completion summary and receipt",64.0
+211301,PASS,,"All required objectives, completion summary and receipt",52.6
+211302,PASS,,"All required objectives, completion summary and receipt",37.9
+211303,PASS,,"All required objectives, completion summary and receipt",31.1
+212101,PASS,,"All required objectives, completion summary and receipt",55.0
+212102,PASS,,"All required objectives, completion summary and receipt",58.7
+212103,PASS,,"All required objectives, completion summary and receipt",45.0
+301101,PASS,,"All required objectives, completion summary and receipt",69.5
+301102,PASS,,"All required objectives, completion summary and receipt",53.8
+301103,PASS,,"All required objectives, completion summary and receipt",71.6
+301201,PASS,,"All required objectives, completion summary and receipt",29.4
+301202,PASS,,"All required objectives, completion summary and receipt",54.6
+301203,PASS,,"All required objectives, completion summary and receipt",113.2
+301204,PASS,,"All required objectives, completion summary and receipt",45.4
+301205,PASS,,"All required objectives, completion summary and receipt",50.8
+301206,PASS,,"All required objectives, completion summary and receipt",29.8
+301207,PASS,,"All required objectives, completion summary and receipt",41.2
+301208,PASS,,"All required objectives, completion summary and receipt",39.2
+301209,PASS,,"All required objectives, completion summary and receipt",41.2
+301210,PASS,,"All required objectives, completion summary and receipt",104.6
+301211,PASS,,"All required objectives, completion summary and receipt",38.5
+301212,PASS,,"All required objectives, completion summary and receipt",58.1
+301214,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,33.1
+301215,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,43.1
+301216,PASS,,"All required objectives, completion summary and receipt",97.3
+301301,PASS,,"All required objectives, completion summary and receipt",66.9
+301302,PASS,,"All required objectives, completion summary and receipt",69.7
+301303,PASS,,"All required objectives, completion summary and receipt",146.0
+301304,PASS,,"All required objectives, completion summary and receipt",136.3
+301305,PASS,,"All required objectives, completion summary and receipt",59.5
+301306,PASS,,"All required objectives, completion summary and receipt",64.3
+302101,PASS,,"All required objectives, completion summary and receipt",60.0
+302102,PASS,,"All required objectives, completion summary and receipt",51.0
+302103,PASS,,"All required objectives, completion summary and receipt",122.8
+302104,PASS,,"All required objectives, completion summary and receipt",73.0
+302105,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,89.5
+302201,PASS,,"All required objectives, completion summary and receipt",61.8
+302202,PASS,,"All required objectives, completion summary and receipt",62.3
+302203,PASS,,"All required objectives, completion summary and receipt",169.9
+302204,PASS,,"All required objectives, completion summary and receipt",77.1
+302205,PASS,,"All required objectives, completion summary and receipt",101.2
+302301,PASS,,"All required objectives, completion summary and receipt",56.3
+302302,PASS,,"All required objectives, completion summary and receipt",52.4
+302303,PASS,,"All required objectives, completion summary and receipt",124.3
+302304,PASS,,"All required objectives, completion summary and receipt",72.6
+302305,PASS,,"All required objectives, completion summary and receipt",69.4
+303101,PASS,,"All required objectives, completion summary and receipt",64.8
+303102,PASS,,"All required objectives, completion summary and receipt",64.3
+303103,PASS,,"All required objectives, completion summary and receipt",71.4
+303104,FAIL,elevator,phase 3 departure: Sweep303104: timed out after 12s waiting for ordinary elevator transport.,80.4
+303105,FAIL,other,phase 2 goal 5 Escort: Sweep303105: timed out after 15s waiting for current owned NPC.,47.5
+304101,PASS,,"All required objectives, completion summary and receipt",60.9
+304102,FAIL,prop placement,phase 4 goal 1 Search: Bound approach arrival scope changed,65.3
+304103,FAIL,prop placement,phase 2 goal 1 Search: Bound/arrival bounds/floor identity,33.2
+304104,PASS,,"All required objectives, completion summary and receipt",61.9
+304105,PASS,,"All required objectives, completion summary and receipt",55.0
+304201,PASS,,"All required objectives, completion summary and receipt",66.9
+304202,PASS,,"All required objectives, completion summary and receipt",121.2
+304203,PASS,,"All required objectives, completion summary and receipt",125.1
+304204,PASS,,"All required objectives, completion summary and receipt",36.1
+304301,PASS,,"All required objectives, completion summary and receipt",93.5
+304302,PASS,,"All required objectives, completion summary and receipt",95.5
+304303,PASS,,"All required objectives, completion summary and receipt",75.2
+304304,PASS,,"All required objectives, completion summary and receipt",65.0
+304305,PASS,,"All required objectives, completion summary and receipt",53.4
+305101,PASS,,"All required objectives, completion summary and receipt",57.3
+305102,PASS,,"All required objectives, completion summary and receipt",37.5
+305103,PASS,,"All required objectives, completion summary and receipt",64.7
+305104,PASS,,"All required objectives, completion summary and receipt",55.5
+305105,FAIL,elevator,phase 2 departure: Sweep305105: timed out after 12s waiting for ordinary elevator transport.,57.3
+305201,FAIL,prop placement,phase 3 goal 1 Search: Bound source requires a NAV-grounded in-range approach,44.7
+305202,PASS,,"All required objectives, completion summary and receipt",56.4
+305203,PASS,,"All required objectives, completion summary and receipt",86.0
+305204,PASS,,"All required objectives, completion summary and receipt",85.4
+305205,PASS,,"All required objectives, completion summary and receipt",51.0
+305301,PASS,,"All required objectives, completion summary and receipt",100.7
+305302,PASS,,"All required objectives, completion summary and receipt",60.2
+305303,PASS,,"All required objectives, completion summary and receipt",104.1
+305304,PASS,,"All required objectives, completion summary and receipt",68.9
+305305,PASS,,"All required objectives, completion summary and receipt",66.5
+306101,PASS,,"All required objectives, completion summary and receipt",60.6
+306102,PASS,,"All required objectives, completion summary and receipt",55.1
+306103,PASS,,"All required objectives, completion summary and receipt",53.8
+306104,FAIL,other,phase 4 goal 12 Escort: Sweep306104: timed out after 15s waiting for current owned NPC.,71.9
+306105,FAIL,prop placement,phase 2 goal 2 Search: Bound/arrival bounds/floor identity,33.3
+306201,PASS,,"All required objectives, completion summary and receipt",65.9
+306202,PASS,,"All required objectives, completion summary and receipt",127.9
+306203,PASS,,"All required objectives, completion summary and receipt",54.9
+306204,PASS,,"All required objectives, completion summary and receipt",55.6
+306205,PASS,,"All required objectives, completion summary and receipt",75.3
+306301,PASS,,"All required objectives, completion summary and receipt",143.7
+306302,PASS,,"All required objectives, completion summary and receipt",72.4
+306303,PASS,,"All required objectives, completion summary and receipt",120.8
+306304,PASS,,"All required objectives, completion summary and receipt",129.6
+306305,PASS,,"All required objectives, completion summary and receipt",57.5
+307101,PASS,,"All required objectives, completion summary and receipt",105.9
+307102,PASS,,"All required objectives, completion summary and receipt",72.5
+307103,FAIL,other,phase 4 goal 6 Escort: Sweep307103: timed out after 15s waiting for current owned NPC.,92.3
+307104,FAIL,lobby car,phase 1 entry: Sweep307104: timed out after 12s waiting for ordinary elevator transport.,33.6
+307105,PASS,,"All required objectives, completion summary and receipt",57.7
+307201,PASS,,"All required objectives, completion summary and receipt",104.5
+307202,PASS,,"All required objectives, completion summary and receipt",61.6
+307203,PASS,,"All required objectives, completion summary and receipt",71.1
+307204,PASS,,"All required objectives, completion summary and receipt",82.5
+307205,PASS,,"All required objectives, completion summary and receipt",69.1
+307301,PASS,,"All required objectives, completion summary and receipt",96.2
+307302,PASS,,"All required objectives, completion summary and receipt",84.8
+307303,PASS,,"All required objectives, completion summary and receipt",110.9
+307304,PASS,,"All required objectives, completion summary and receipt",65.0
+307305,PASS,,"All required objectives, completion summary and receipt",58.3
+308101,PASS,,"All required objectives, completion summary and receipt",50.4
+308102,PASS,,"All required objectives, completion summary and receipt",60.6
+308103,PASS,,"All required objectives, completion summary and receipt",53.3
+308104,PASS,,"All required objectives, completion summary and receipt",50.6
+308105,PASS,,"All required objectives, completion summary and receipt",52.1
+308201,PASS,,"All required objectives, completion summary and receipt",58.4
+308202,PASS,,"All required objectives, completion summary and receipt",62.9
+308203,FAIL,NPC role placement,phase 3 departure: Sweep308203: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival,66.3
+308204,PASS,,"All required objectives, completion summary and receipt",60.1
+308205,PASS,,"All required objectives, completion summary and receipt",69.0
+308301,PASS,,"All required objectives, completion summary and receipt",46.7
+308302,PASS,,"All required objectives, completion summary and receipt",56.7
+308303,PASS,,"All required objectives, completion summary and receipt",47.8
+308304,PASS,,"All required objectives, completion summary and receipt",118.3
+308305,PASS,,"All required objectives, completion summary and receipt",109.4
+309101,PASS,,"All required objectives, completion summary and receipt",70.8
+309102,PASS,,"All required objectives, completion summary and receipt",61.8
+309103,FAIL,NPC role placement,phase 2 departure: Sweep309103: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival,110.8
+309104,PASS,,"All required objectives, completion summary and receipt",66.2
+309105,PASS,,"All required objectives, completion summary and receipt",60.4
+309201,PASS,,"All required objectives, completion summary and receipt",60.5
+309202,PASS,,"All required objectives, completion summary and receipt",67.5
+309203,PASS,,"All required objectives, completion summary and receipt",52.9
+309204,PASS,,"All required objectives, completion summary and receipt",55.0
+309205,PASS,,"All required objectives, completion summary and receipt",49.6
+309301,PASS,,"All required objectives, completion summary and receipt",55.7
+309302,PASS,,"All required objectives, completion summary and receipt",62.8
+309303,PASS,,"All required objectives, completion summary and receipt",63.1
+309304,PASS,,"All required objectives, completion summary and receipt",114.4
+309305,PASS,,"All required objectives, completion summary and receipt",49.3
+310101,PASS,,"All required objectives, completion summary and receipt",63.8
+310102,FAIL,prop placement,phase 2 goal 4 Search: Bound/arrival bounds/floor identity,38.4
+310103,PASS,,"All required objectives, completion summary and receipt",58.5
+310104,PASS,,"All required objectives, completion summary and receipt",57.4
+310105,PASS,,"All required objectives, completion summary and receipt",74.2
+310201,PASS,,"All required objectives, completion summary and receipt",118.6
+310202,FAIL,prop placement,phase 2 goal 2 Use: Bound/arrival bounds/floor identity,32.9
+310203,PASS,,"All required objectives, completion summary and receipt",77.7
+310204,PASS,,"All required objectives, completion summary and receipt",55.6
+310205,PASS,,"All required objectives, completion summary and receipt",140.3
+310301,PASS,,"All required objectives, completion summary and receipt",60.0
+310302,PASS,,"All required objectives, completion summary and receipt",127.3
+310303,PASS,,"All required objectives, completion summary and receipt",61.4
+310304,PASS,,"All required objectives, completion summary and receipt",70.1
+310305,PASS,,"All required objectives, completion summary and receipt",114.1
+311101,PASS,,"All required objectives, completion summary and receipt",55.5
+311102,PASS,,"All required objectives, completion summary and receipt",114.2
+311103,PASS,,"All required objectives, completion summary and receipt",61.8
+311104,PASS,,"All required objectives, completion summary and receipt",56.1
+311105,PASS,,"All required objectives, completion summary and receipt",60.7
+311201,PASS,,"All required objectives, completion summary and receipt",51.5
+311202,PASS,,"All required objectives, completion summary and receipt",45.7
+311203,PASS,,"All required objectives, completion summary and receipt",54.7
+311204,PASS,,"All required objectives, completion summary and receipt",71.1
+311205,PASS,,"All required objectives, completion summary and receipt",65.9
+311301,PASS,,"All required objectives, completion summary and receipt",53.6
+311302,PASS,,"All required objectives, completion summary and receipt",53.6
+311303,PASS,,"All required objectives, completion summary and receipt",97.5
+312101,PASS,,"All required objectives, completion summary and receipt",54.5
+312102,PASS,,"All required objectives, completion summary and receipt",50.6
+312103,PASS,,"All required objectives, completion summary and receipt",48.9
