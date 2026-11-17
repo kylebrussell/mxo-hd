@@ -52,6 +52,18 @@ public class NpcLootTests
     }
 
     [Fact]
+    public void AnotherCorpseRecreatesTheClientsLocallyClosedCachedWindow()
+    {
+        var client=new HeadlessClient.CorpseLootWindowState();
+        client.Receive(NpcLoot.BuildLootWindow(1,new uint[]{6791},new byte[]{8}));
+        Assert.True(client.Visible);client.CloseLocally();
+        client.Receive(NpcLoot.BuildLootWindow(2,new uint[]{6799},new byte[]{8}));
+        Assert.False(client.Visible); // The old reply alone reproduces client6202088b's cached return.
+        foreach(var reply in NpcLoot.BuildLootPresentation(2,new uint[]{6799},new byte[]{8}))client.Receive(reply);
+        Assert.True(client.Visible);
+    }
+
+    [Fact]
     public void CodeBitTierFollowsLevel()
     {
         Assert.Equal(7332u, NpcLoot.CodeBitFor(5));   // Code Bit 1
