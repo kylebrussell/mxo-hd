@@ -15,6 +15,10 @@ public static class MervFollowupViewFrames
         bool Fits(int length)=>at+length<=bytes.Length;
         Frame Make(Kind kind,int length,int position=-1)=>new(kind,length,view,position);
         if(Has(0,"0100010100")&&Fits(7)){frame=new(Kind.Delete,7,BitConverter.ToUInt16(bytes,at+5));return true;}
+        // MobPackets.SendNpcUpdateAnimation can arrive after a view's deletion. Consume the
+        // complete movement frame without reviving an unowned body or assigning it a class.
+        if((goid==null||goid==599)&&Has(2,"020e")&&Fits(18))
+        {frame=Make(Kind.Movement,18,6);return true;}
         if(view==2&&goid==12)
         {
             if(Has(2,"011c")&&Fits(28)){frame=Make(Kind.OwnTeleport,28);return true;}
@@ -39,7 +43,6 @@ public static class MervFollowupViewFrames
             if(Has(2,"0480808040")&&Fits(9)){frame=Make(Kind.Attribute,9);return true;}
             if(Has(2,"04808080c0")&&Has(9,"c0")&&Has(14,"01")&&Fits(16))
             {frame=Make(Kind.Attribute,16);return true;}
-            if(Has(2,"020e")&&Fits(18)){frame=Make(Kind.Movement,18,6);return true;}
             if(Has(2,"022a")&&Has(5,"010c")&&(Has(8,"8100")||Has(8,"0010"))&&Has(14,"00")&&Fits(27))
             {frame=Make(Kind.Movement,27,15);return true;}
             // Only stance13 has a closed emitting producer. A27-byte prefix is incomplete.
