@@ -7,6 +7,7 @@ namespace hds
         private static MissionWaypoint Door(uint key,double[] position)=>new MissionWaypoint{x=position[0],y=position[1],z=position[2],doorHex=BitConverter.ToString(BitConverter.GetBytes(key)).Replace("-","").ToLowerInvariant()};
         private static MissionWaypoint Public(MissionStreetSelection selection)=>Door(selection.Context.Door.Key,selection.Context.Door.Position);
         private static MissionWaypoint Floor(MissionStreetSelection selection)=>Door(selection.Site.DoorKey,selection.Context.Floor.Position);
+        private static MissionWaypoint Lobby(MissionStreetSelection selection)=>Door(MissionNpcInteriorPlanning.ReadRaw(selection.Context.Lobby.RawDoorJson).mxoStaticId,selection.Context.Lobby.Position);
         private static bool Inside(MissionStreetSelection selection,bool lobby,NavLocation at)
         {
             var entry=lobby?selection.Context.Lobby:selection.Context.Floor;var raw=MissionNpcInteriorPlanning.ReadRaw(entry.RawDoorJson);
@@ -20,7 +21,7 @@ namespace hds
             if(at.HasValue&&current!=null)
             {
                 if(Inside(current,false,at.Value)&&current.Context.Floor.Standing[1]!=current.Context.Lobby.Standing[1])return Floor(current);
-                if(Inside(current,true,at.Value))return progress.waitingForExit&&progress.HasGeneratedDeparture?Public(current):Floor(current);
+                if(Inside(current,true,at.Value))return progress.waitingForExit&&progress.HasGeneratedDeparture?Public(current):Lobby(current);
             }
             if(at.HasValue)
                 foreach(var old in progress.streetWitnesses.Values.Where(s=>s.Phase<progress.phaseIndex).OrderByDescending(s=>s.Phase))
