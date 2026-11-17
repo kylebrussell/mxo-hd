@@ -8,6 +8,13 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class MissionCatalogEntranceTests
 {
+    [Theory][InlineData(1205,0)][InlineData(101210,1)][InlineData(301209,3)]
+    public void CatalogWorkerUsesTheSameMissionSeedAsAnIndividualServer(int mission,int phase)
+    {
+        Assert.Equal(MissionStaging.QaSiteSeed("1","mxotest_sweep",mission.ToString(),mission,phase),MissionStaging.QaSiteSeed("1","mxotest_sweep","catalog",mission,phase));
+        Assert.Null(MissionStaging.QaSiteSeed("1","realityhd","catalog",mission,phase));
+        Assert.Null(MissionStaging.QaSiteSeed("0","mxotest_sweep","catalog",mission,phase));
+    }
     static string Repo { get { string p=AppContext.BaseDirectory; while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!; return p; } }
 
     [Fact]

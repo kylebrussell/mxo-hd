@@ -113,6 +113,7 @@ namespace hds
 
         public static int? QaSiteSeed(string dev,string database,string raw,int mission,int phase)
         {
+            if(raw=="catalog")raw=mission.ToString(System.Globalization.CultureInfo.InvariantCulture);
             if(dev!="1" || database==null || !database.StartsWith("mxotest_",StringComparison.Ordinal) || database.Length<=8 ||
                 !database.All(c=>char.IsAsciiLetterOrDigit(c)||c=='_') || !int.TryParse(raw,out int seed) || seed<0) return null;
             return unchecked(seed ^ mission*31 ^ phase*104729);

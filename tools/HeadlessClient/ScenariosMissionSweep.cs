@@ -18,11 +18,12 @@ public static partial class Scenarios
         public string Contact => (string?)Xml.Attribute("contact") ?? "Tyndall";
     }
     private sealed record SweepRow(int Mission, string Result, string FailureClass, string Detail, double Seconds);
-    private sealed class SweepStep { public string Class = "other"; public string Detail = "login"; }
+    private sealed class SweepStep { public string Class = "other"; public string Detail = "login"; public HeadlessPlayer? Player; }
     private static readonly ConcurrentDictionary<(string Root,ushort District),MissionSite[]> sweepSites=new();
 
-    public static async Task<int> RunMissionSweep(string root, int parallel, string output, string? filter, bool listOnly)
+    public static async Task<int> RunMissionSweep(string root, int parallel, string output, string? filter, bool listOnly,int batchSize=1)
     {
+        if(batchSize<1||batchSize>16)throw new ArgumentOutOfRangeException(nameof(batchSize));
         var catalog = Directory.GetFiles(Path.Combine(root,"data","missions"),"*.xml")
             .Select(f=>new SweepMission(f,XElement.Load(f))).OrderBy(m=>m.Id).ToArray();
         if(catalog.Select(m=>m.Id).Distinct().Count()!=catalog.Length) throw new InvalidDataException("Duplicate mission IDs");
@@ -36,6 +37,7 @@ public static partial class Scenarios
         SectorProperties.Load(Path.Combine(root,"data","sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root,"data","navmesh"));
         var rows=new List<SweepRow>(); var gate=new object(); using var slots=new SemaphoreSlim(parallel);
+        var warm=new ConcurrentBag<(ScenarioContext Context,int Uses)>();
         void Write()
         {
             string Csv(string s)=>"\""+s.Replace("\"","\"\"").Replace("\r"," ").Replace("\n"," ")+"\"";
@@ -48,11 +50,16 @@ public static partial class Scenarios
         var tasks=selected.Select(async mission=>
         {
             await slots.WaitAsync(); var watch=Stopwatch.StartNew(); var step=new SweepStep(); string? failure=null;
-            ScenarioContext? context=null;
+            ScenarioContext? context=null;int uses=0,debugStart=0;
             try
             {
-                var env=new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=mission.Id.ToString(),["MXO_PACKET_LOG"]="0"};
-                context=await ScenarioContext.StartAsync(root,"sweep_"+mission.Id,env);
+                if(batchSize>1&&warm.TryTake(out var prior)){context=prior.Context;uses=prior.Uses;}
+                else
+                {
+                    var env=new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=batchSize>1?"catalog":mission.Id.ToString(),["MXO_PACKET_LOG"]="0"};
+                    context=await ScenarioContext.StartAsync(root,"sweep_"+mission.Id,env);
+                }
+                debugStart=context.Server.DebugLog().Length;
                 double holdSeconds=mission.Xml.Descendants("objective").Where(g=>(string?)g.Attribute("type")=="Survive")
                     .Sum(g=>(double?)g.Attribute("seconds")??0);
                 double arrivalSeconds=mission.Xml.Descendants().Attributes("spawnDelay").Select(a=>(double)a).DefaultIfEmpty(0).Max();
@@ -65,23 +72,29 @@ public static partial class Scenarios
                 failure=step.Detail+": "+ex.Message.Split(" Received ")[0];
                 if(context!=null)
                 {
-                    string debug=context.Server.DebugLog();
+                    string debug=context.Server.DebugLog()[debugStart..];
                     string? refusal=debug.Split('\n').LastOrDefault(l=>l.Contains("refused")||l.Contains("admission deferred"));
                     if(refusal!=null){failure+="; "+refusal.Trim();if(refusal.Contains("NPC"))step.Class="NPC role placement";else if(refusal.Contains("Box")||refusal.Contains("street"))step.Class="room/NAV placement";}
                     await File.WriteAllTextAsync(Path.Combine(output,mission.Id+".log"),failure+"\n"+debug);
                     await File.WriteAllTextAsync(Path.Combine(output,mission.Id+"-state.json"),
-                        await context.Database.ScalarAsync("SELECT IFNULL(payload,'null') FROM char_active_missions ORDER BY charId LIMIT 1"));
+                        await context.Database.ScalarAsync("SELECT IFNULL(payload,'null') FROM char_active_missions WHERE charId="+(step.Player?.CharId??0)));
                 }
             }
             finally
             {
-                if(context!=null){await context.DisposeAsync();Directory.Delete(context.Server.WorkingDirectory,true);}
+                step.Player?.Dispose();
+                if(context!=null)
+                {
+                    if(failure==null&&!context.Server.HasExited&&uses+1<batchSize)warm.Add((context,uses+1));
+                    else {await context.DisposeAsync();Directory.Delete(context.Server.WorkingDirectory,true);}
+                }
                 var row=new SweepRow(mission.Id,failure==null?"PASS":"FAIL",failure==null?"":step.Class,failure??"All required objectives, completion summary and receipt",watch.Elapsed.TotalSeconds);
                 lock(gate){rows.Add(row);Write();Console.WriteLine($"[{rows.Count}/{selected.Length}] {row.Result} {mission.Id} {row.FailureClass} {row.Detail}");}
                 slots.Release();
             }
         }).ToArray();
         await Task.WhenAll(tasks);
+        while(warm.TryTake(out var last)){await last.Context.DisposeAsync();Directory.Delete(last.Context.Server.WorkingDirectory,true);}
         Console.WriteLine(File.ReadAllText(Path.Combine(output,"counts.md")));
         return rows.Any(r=>r.Result=="FAIL")?1:0;
     }
@@ -100,6 +113,7 @@ public static partial class Scenarios
          DistrictId=contactSpot?.metrId??((int?)m.Xml.Attribute("district")??1),District=contactSpot?.metrId==2?"dt":(string?)m.Xml.Attribute("districtName")??"slums",
          MerovingianReputation=(int?)m.Xml.Attribute("minReputation")??0,
          OwnedLoadedAbilities=new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
+        step.Player=p;
         await p.EnterWorldAsync();
         if(entry!=0){Stage("other","ticket acceptance");p.SendRpc("59 01");}
         else
