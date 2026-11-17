@@ -104,8 +104,14 @@ namespace hds
                     flags.Add(0);
                 }
             }
-            client.messageQueue.addRpcMessage(BuildLootWindow(corpse?.Info ?? 0, items, flags));
+            foreach(var rpc in BuildLootPresentation(corpse?.Info ?? 0,items,flags))
+                client.messageQueue.addRpcMessage(rpc);
         }
+
+        // Client6202088b returns a cached container without showing it. Close the previous UI
+        // before replacing its selection;811a clears that cache, then8119 creates a visible window.
+        internal static byte[][] BuildLootPresentation(UInt32 info,IList<UInt32> items,IList<byte> flags) =>
+            new[]{ServerPackets.BuildLootClosed(),BuildLootWindow(info,items,flags)};
 
         /// <summary>Grants the selected corpse once, retaining every item that does not fit.</summary>
         public static bool TryTakeAll(WorldClient client)
