@@ -41,4 +41,11 @@ public class MervBound326ActualStreetRootTests
         var provider=new MervBound326Approach.Nav(Locate,(p,r,from)=>{targetCalls++;return null;});
         Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Select(b,a,provider));Assert.Equal(0,targetCalls);
     }
+    [Fact] public void ACurrentStreetCarWitnessRemainsAuthoritativeWhenPropsUseOpenFloorPlacement()
+    {
+        var c=Case();c.State.OpenFloorPhase=c.State.Phase;
+        Assert.Equal(MervBound326Approach.ProofScope.Measured,MervBound326Approach.Classify(c.State));
+        c.State.StreetAccess=default;c.State.NpcInterior=default;
+        Assert.Throws<InvalidDataException>(()=>MervBound326Approach.Classify(c.State));
+    }
 }
