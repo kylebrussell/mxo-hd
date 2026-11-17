@@ -217,7 +217,9 @@ public sealed class ServerInstance : IDisposable
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
         IReadOnlyDictionary<string, string>? extraEnvironment = null, string? missionFixture = null)
     {
-        string serverDll = FindServerDll(repositoryRoot);
+        string serverDll = Path.GetFullPath(Environment.GetEnvironmentVariable("MXO_HEADLESS_SERVER_DLL") ?? FindServerDll(repositoryRoot));
+        if(!File.Exists(serverDll)||!File.Exists(Path.ChangeExtension(serverDll,"runtimeconfig.json")))
+            throw new FileNotFoundException("Headless server build is unavailable",serverDll);
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
         EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(serverDll)!,workingDirectory,databaseName,extraEnvironment);
