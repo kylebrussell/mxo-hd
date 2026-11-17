@@ -1,3 +1,5 @@
+using HeadlessClient;
+
 namespace NativeQa.Modes;
 
 /// <summary>Actual compiler60 timing pair. No recipe, combat or random overrides.</summary>
@@ -28,4 +30,20 @@ UPDATE char_abilities SET is_loaded=0 WHERE char_id=110 AND ability_id={0x800000
         DevCommands:true,GmCharacter110:false,FixedCallbackRolls:false,SeedDisguiseTool:false,
         Bootstrap:"",StealthShieldQa:false,HealthCallbackQa:false,CompileItemsQa:false,
         extraQaMetadata:new Dictionary<string,object?> { ["OrdinaryIcCompileQa"]=true });
+
+    public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    {
+        var database = context.OwnedDatabase ?? throw new InvalidOperationException("Compile QA requires a disposable database.");
+        Check.Equal(1L, await database.LongAsync(
+            "SELECT COUNT(*) FROM inventory WHERE charId=110 AND slot=1 AND goid=1271"),
+            "Compiler is in the starting bag");
+        Check.Equal(2L, await database.LongAsync(
+            "SELECT COUNT(*) FROM char_abilities WHERE char_id=110 AND ((slot=400 AND ability_id=5044864 AND level=2) " +
+            "OR (slot=401 AND ability_id=307072 AND level=1)) AND is_loaded=0"),
+            "Both ordinary archive codes are seeded");
+        Check.Equal(4L, await database.LongAsync(
+            "SELECT COUNT(*) FROM char_abilities WHERE char_id=110 AND slot BETWEEN 300 AND 303 AND is_loaded=0"),
+            "Minor Repairs and its owned prerequisites start unloaded");
+        return Array.Empty<byte>();
+    }
 }
