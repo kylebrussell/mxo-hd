@@ -24,18 +24,13 @@ public static partial class Scenarios
     public static async Task<int> RunMissionSweep(string root, int parallel, string output, string? filter, bool listOnly,int batchSize=1)
     {
         if(batchSize<1||batchSize>16)throw new ArgumentOutOfRangeException(nameof(batchSize));
-        var catalog = Directory.GetFiles(Path.Combine(root,"data","missions"),"*.xml")
-            .Select(f=>new SweepMission(f,XElement.Load(f))).OrderBy(m=>m.Id).ToArray();
-        if(catalog.Select(m=>m.Id).Distinct().Count()!=catalog.Length) throw new InvalidDataException("Duplicate mission IDs");
+        var catalog = LoadSweepCatalog(root);
         var terms=(filter??"").Split(',',StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries);
         var selected=catalog.Where(m=>filter==null||terms.Any(t=>int.TryParse(t,out int id)?m.Id==id:m.Title.Contains(t,StringComparison.OrdinalIgnoreCase))).ToArray();
         if(selected.Length==0)throw new ArgumentException("No catalog missions match the filter");
         if(listOnly){foreach(var m in selected)Console.WriteLine($"{m.Id} {m.Title}");return 0;}
         Directory.CreateDirectory(output);
-        MissionContacts.Load(Path.Combine(root,"data","mission_contacts.csv"));
-        MissionContactNpcs.Load(Path.Combine(root,"data","mission_contact_npcs.csv"));
-        SectorProperties.Load(Path.Combine(root,"data","sector_properties.csv"));
-        NavMesh.UseDirectory(Path.Combine(root,"data","navmesh"));
+        LoadSweepWorldData(root);
         var rows=new List<SweepRow>(); var gate=new object(); using var slots=new SemaphoreSlim(parallel);
         var warm=new ConcurrentBag<(ScenarioContext Context,int Uses)>();
         void Write()
@@ -100,20 +95,112 @@ public static partial class Scenarios
         return rows.Any(r=>r.Result=="FAIL")?1:0;
     }
 
-    private static async Task SweepOne(ScenarioContext c,SweepMission m,SweepMission[] catalog,SweepStep step)
+    private static SweepMission[] LoadSweepCatalog(string root)
     {
-        void Stage(string kind,string detail){step.Class=kind;step.Detail=detail;}
+        var catalog = Directory.GetFiles(Path.Combine(root, "data", "missions"), "*.xml")
+            .Select(f => new SweepMission(f, XElement.Load(f))).OrderBy(m => m.Id).ToArray();
+        if (catalog.Select(m => m.Id).Distinct().Count() != catalog.Length)
+            throw new InvalidDataException("Duplicate mission IDs");
+        return catalog;
+    }
+
+    private static void LoadSweepWorldData(string root)
+    {
+        MissionContacts.Load(Path.Combine(root, "data", "mission_contacts.csv"));
+        MissionContactNpcs.Load(Path.Combine(root, "data", "mission_contact_npcs.csv"));
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+    }
+
+    public static async Task<MissionProgress.SavedState> StartCatalogPhaseAsync(ScenarioContext context,
+        HeadlessPlayer player, int missionId, int area)
+    {
+        var catalog = LoadSweepCatalog(context.RepositoryRoot);
+        var mission = catalog.Single(m => m.Id == missionId);
+        var phases = mission.Xml.Elements("phase").ToArray();
+        if (area < 1 || area > phases.Length) throw new ArgumentOutOfRangeException(nameof(area));
+        LoadSweepWorldData(context.RepositoryRoot);
+
+        var step = new SweepStep();
+        try
+        {
+            await SweepOne(context, mission, catalog, step, player, area - 1);
+            return await CheckCatalogPhaseAsync(context, player, mission, area);
+        }
+        catch (Exception error)
+        {
+            throw new ScenarioFailure($"Mission {missionId}, area {area}, {step.Detail}: {error.Message}");
+        }
+    }
+
+    private static async Task<MissionProgress.SavedState> CheckCatalogPhaseAsync(ScenarioContext context,
+        HeadlessPlayer player, SweepMission mission, int area)
+    {
+        var saved = await MervFollowupCheckpoint(context, player);
+        Check.Equal(mission.Id, saved.Mission, "Selected mission checkpoint");
+        Check.Equal(area - 1, saved.Phase, "Selected phase checkpoint");
+        Check.Equal(0L, await context.Database.LongAsync(
+            $"SELECT COUNT(*) FROM char_missions WHERE charId={player.CharId} AND missionId={mission.Id}"),
+            "The selected mission is still uncompleted");
+
+        var authored = ParseSweepMission(mission);
+        var phase = authored.phases[area - 1];
+        if (phase.site != null)
+        {
+            Check.That(saved.SiteDoors.Length > 0 && saved.Waypoints.Length > 0 && saved.Exits.Length > 0,
+                "Generated phase has a staged site, waypoint and exit");
+            Check.That(!saved.Flags.GetValueOrDefault("entered"), "Generated phase entry remains available for native QA");
+        }
+        Check.That(!phase.missionObjectives.Any(goal => saved.Done.Contains(goal.goal)),
+            "Selected phase objectives are still open");
+
+        foreach (var prop in phase.objects)
+            Check.That(saved.Objects.Any(obj => obj.Id == prop.id && obj.Goid != 0),
+                $"Required phase prop {prop.id} is staged");
+        foreach (var npc in authored.npcs.Where(n => n.at == area && !n.arrival.Late))
+            Check.That(saved.Mobs.Any(m => m.Npc == npc.id && (npc.dead ? m.Dead : !m.Dead && m.Health > 0)),
+                $"Required phase NPC {npc.handle} ({npc.id}) is staged");
+
+        var earlierEscorts = authored.phases.Take(area - 1).SelectMany(p => p.missionObjectives)
+            .Where(g => g.type == MissionGoalType.Escort).SelectMany(g => g.Npcs);
+        var carriedEscorts = phase.missionObjectives.Where(g => g.type == MissionGoalType.Escort)
+            .SelectMany(g => g.Npcs).Intersect(earlierEscorts)
+            .Where(id => authored.npcs.Any(n => n.id == id && n.at < area));
+        foreach (ushort id in carriedEscorts)
+            Check.That(saved.Following.Contains(id) && saved.Mobs.Any(m => m.Npc == id && !m.Dead && m.Health > 0),
+                $"Required carried escort {id} is following and alive");
+        return saved;
+    }
+
+    private static Mission ParseSweepMission(SweepMission mission)
+    {
+        var document = new System.Xml.XmlDocument();
+        document.LoadXml(mission.Xml.ToString());
+        return MissionXml.Parse(document.DocumentElement!);
+    }
+
+    private static Task<HeadlessPlayer> AddSweepPlayerAsync(ScenarioContext c, SweepMission m,
+        SweepMission[] catalog, MissionContactSpot? contactSpot)
+    {
         var items=new List<(int,uint,int)>(); uint entry=(uint?)m.Xml.Attribute("entryItem")??0;
         if(entry!=0)items.Add((1,entry,0));
-        var contactSpot=MissionContactNpcs.All.FirstOrDefault(x=>x.Contact?.name==m.Contact);
         var origin=(Environment.GetEnvironmentVariable("MXO_SWEEP_START")??"17000,495,2300").Split(',').Select(v=>double.Parse(v,CultureInfo.InvariantCulture)).ToArray();
         if(origin.Length!=3||origin.Any(v=>!double.IsFinite(v)))throw new ArgumentException("MXO_SWEEP_START must be x,y,z in world units");
-        var p=await c.AddPlayerAsync(PrimaActorSeed("Sweep"+m.Id,m.Org==0?(byte)1:m.Org,origin[0],origin[2],50) with
+        return c.AddPlayerAsync(PrimaActorSeed("Sweep"+m.Id,m.Org==0?(byte)1:m.Org,origin[0],origin[2],50) with
         {CompletedMissions=catalog.Where(x=>x.Id!=m.Id).Select(x=>x.Id).ToArray(),Items=items,
          Y=origin[1],
          DistrictId=contactSpot?.metrId??((int?)m.Xml.Attribute("district")??1),District=contactSpot?.metrId==2?"dt":(string?)m.Xml.Attribute("districtName")??"slums",
          MerovingianReputation=(int?)m.Xml.Attribute("minReputation")??0,
          OwnedLoadedAbilities=new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
+    }
+
+    private static async Task SweepOne(ScenarioContext c, SweepMission m, SweepMission[] catalog, SweepStep step,
+        HeadlessPlayer? preparedPlayer = null, int? stopBeforePhase = null)
+    {
+        void Stage(string kind,string detail){step.Class=kind;step.Detail=detail;}
+        var contactSpot=MissionContactNpcs.All.FirstOrDefault(x=>x.Contact?.name==m.Contact);
+        var p = preparedPlayer ?? await AddSweepPlayerAsync(c, m, catalog, contactSpot);
+        uint entry=(uint?)m.Xml.Attribute("entryItem")??0;
         step.Player=p;
         await p.EnterWorldAsync();
         if(entry!=0){Stage("other","ticket acceptance");p.SendRpc("59 01");}
@@ -137,10 +224,15 @@ public static partial class Scenarios
         }
         if(entry!=0)await p.WaitForRpcAsync("80 9e 00",TimeSpan.FromSeconds(20));
         var accepted=await MervFollowupCheckpoint(c,p);Check.Equal(m.Id,accepted.Mission,"Accepted mission ID");
-        var document=new System.Xml.XmlDocument();document.LoadXml(m.Xml.ToString());var authored=MissionXml.Parse(document.DocumentElement!);
+        var authored=ParseSweepMission(m);
         var notes=new List<object>();int summaryCursor=p.World.RpcSnapshot().Count;
         for(int phase=0;phase<authored.phases.Count;phase++)
         {
+            if (phase == stopBeforePhase)
+            {
+                Stage("phase-start", $"area {phase + 1} checkpoint");
+                return;
+            }
             var area=m.Xml.Elements("phase").ElementAt(phase);int cursor=p.World.RpcSnapshot().Count;
             var current=await MervFollowupCheckpoint(c,p);
             if(Environment.GetEnvironmentVariable("MXO_SWEEP_START")!=null)

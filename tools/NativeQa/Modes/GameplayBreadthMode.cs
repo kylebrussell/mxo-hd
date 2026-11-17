@@ -9,7 +9,8 @@ public sealed class GameplayBreadthMode:NativeQaMode
     public override NativeQaModePlan Plan {get;}=new(new ushort[]{2},19403,60401,
         new[]{"DELETE FROM inventory WHERE charId=110"},new[]{"UPDATE char_abilities SET level=1 WHERE char_id=110"},
         new[]{"UPDATE characters SET level=2,exp=4900,alignment=3,cash=1000,y=-705,rotation=0,healthC=200,healthM=200,innerStrC=103,innerStrM=103,pvpflag=0 WHERE charId=110",
-            $"UPDATE characters SET x={TeamMissionFixture.HelperX},y={TeamMissionFixture.Y},z={TeamMissionFixture.Z},alignment=3,pvpflag=0 WHERE handle='QAEnemy'"},
+            $"UPDATE characters SET x={TeamMissionFixture.HelperX},y={TeamMissionFixture.Y},z={TeamMissionFixture.Z},alignment=3,pvpflag=0 WHERE handle='QAEnemy'",
+            $"UPDATE characters SET x={TeamMissionFixture.HolderX},y={TeamMissionFixture.Y},z={TeamMissionFixture.Z},alignment=3,pvpflag=0 WHERE handle='QAFriend'"},
         DevCommands:true,missionFixture:"team-progress.xml",
         environmentOverrides:new(){["MXO_MOBS"]="world",["MXO_AGGRO"]="1",["MXO_MOB_WANDER"]="1",["MXO_QA_MOB_WANDER_SEED"]="42"},
         readyMessages:new[]{"CSR110 starts level2/XP4900. Watch the Chopper wander, then kill one normally: expect335XP, level3/5235XP, MaxHP250/MaxIS106; relog without reseeding.",
@@ -19,12 +20,43 @@ public sealed class GameplayBreadthMode:NativeQaMode
     {
         if(context.OwnedDatabase==null||!context.OwnedDatabase.Name.StartsWith("mxotest_",StringComparison.Ordinal)||context.ActualServer==null)
             throw new InvalidOperationException("Gameplay breadth requires an owned fixture server.");
-        var helper=await HeadlessPlayer.LoginAsync(context.Address,"QAEnemy","QAEnemy");
-        context.Helpers.Add("QAEnemy",helper);await helper.EnterWorldAsync();
+        var helper = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy");
+        context.Helpers.Add("QAEnemy", helper);
+        await helper.EnterWorldAsync();
+        // Observe a whole aggro retry interval while a separate character verifies the actual mission actors.
+        await Task.WhenAll(CheckTeamMissionAsync(context), Task.Delay(TimeSpan.FromSeconds(hds.MobAggro.RetrySeconds + 1)));
+        NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer, helper);
         var chase=WorldNpcMotionFixture.Chase(Path.GetDirectoryName(context.ActualServer.SourceAssembly)!);
-        Console.WriteLine($"READY chase: ?tp {chase.Start.x:0.###} {chase.Start.y:0.###} {chase.Start.z:0.###} 0 0 0; nearby {chase.Name}. Withdraw after the approach, then return to Mara.");
+        Console.WriteLine($"Chase:  ?tp {chase.Start.x:0.###} {chase.Start.y:0.###} {chase.Start.z:0.###} 0 0 0; nearby {chase.Name}. Withdraw after the approach, then return to Mara.");
         _=RunHelper(context,helper);
         return Array.Empty<byte>();
+    }
+    private static async Task CheckTeamMissionAsync(NativeQaBootstrapContext context)
+    {
+        using var probe = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
+        await probe.EnterWorldAsync();
+        probe.SendRpc("80 94 05 00 03");
+        await probe.WaitForTextAsync("Team Progress Fixture");
+        await probe.WaitForRpcAsync("80 97 05 00");
+        probe.SendRpc("80 98 06 00 00 00 01 02 00");
+        await probe.WaitForRpcAsync("80 99");
+        probe.SendRpc("80 9b 07 00 01");
+        await probe.WaitForRpcAsync("80 9c");
+        foreach (string name in new[] { "Team Security", "Team Contact" })
+        {
+            var actor = await probe.WaitForViewNamedAsync(name);
+            Check.That(actor.Goid == 599 && actor.Attributes.TryGetValue("Health", out var hp)
+                && hp.Length == 2 && BitConverter.ToUInt16(hp) > 0, $"{name} is present and alive");
+        }
+        NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, probe);
+        probe.SendRpc("80 a6");
+        await probe.WaitForRpcAsync("80 a2 08");
+        probe.SkipReceived();
+        probe.SendRpc("80 fe 00");
+        await probe.WaitForRpcAsync("80 fd");
+        Check.Equal(0, probe.World.Problems.Count, "Team mission fixture probe has no wire errors");
+        Check.Equal(0L, await context.OwnedDatabase!.LongAsync($"SELECT COUNT(*) FROM char_active_missions " +
+            $"WHERE charId={probe.CharId} AND payload IS NOT NULL"), "The probe aborted its own active mission");
     }
     private static async Task RunHelper(NativeQaBootstrapContext context,HeadlessPlayer helper)
     {

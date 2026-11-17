@@ -65,6 +65,8 @@ Directory.CreateDirectory(Path.Combine(qaRoot, "responses"));
 using FileStream clientLock = new(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 await clientLock.WriteAsync(Encoding.UTF8.GetBytes($"Codex native ability QA {Environment.ProcessId}, CSR_Tester 110, {commit}"));
 await clientLock.FlushAsync();
+string statePath = Path.Combine(qaRoot, "state.json");
+await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new { Status = "Preparing", BuildCommit = commit }));
 await File.AppendAllTextAsync(handoff, $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Took mxo-client.lock for native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database; helper players are headless QA fixtures. Main110 will be reset to Mara, full health, flag0 and mission986 only before release.\n");
 using ThrowawayDatabase database = await ThrowawayDatabase.CreateAsync(root, "native_ability");
 ServerInstance? server = null;
@@ -92,8 +94,9 @@ try
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""),
         fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture));
-    byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers,OwnedDatabase:database,ActualServer:server));
-    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
+    byte[] shieldAck = await NativeQaReadiness.BootstrapAsync(fixtureMode,
+        new NativeQaBootstrapContext(qaRoot, helperNames, helpers, OwnedDatabase: database, ActualServer: server, RepositoryRoot: root));
+    await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
@@ -192,6 +195,12 @@ try
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());
         await Task.Delay(500);
     }
+}
+catch (Exception error)
+{
+    await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new { Status = "Blocked", BuildCommit = commit, Error = error.Message }));
+    if (server != null) await File.WriteAllTextAsync(Path.Combine(qaRoot, "server.log"), server.FullOutput());
+    throw;
 }
 finally
 {
