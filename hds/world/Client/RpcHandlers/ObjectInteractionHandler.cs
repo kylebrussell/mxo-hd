@@ -253,6 +253,9 @@ namespace hds
                 // Case 03 is not only a staticWorldObject ...
                 case (int) objectTypesStatic.DOOR:
 
+                    lock(Store.currentClient.playerData.missionSync)
+                        objectValues=MissionElevatorPoses.RequestedRawDoor(Store.currentClient.playerData.missionProgress,objectValues);
+
                     Output.writeToLogForConsole("[OI HELPER] INTERACT WITH DOOR | Object ID :" + id + " Sector ID : " +
                                                 numericSectorId);
 

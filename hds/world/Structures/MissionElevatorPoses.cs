@@ -84,6 +84,20 @@ namespace hds
                 floor.Evidence+";"+lobby.Evidence,Array.Empty<string>(),raw.mxoStaticId,lobbyRaw.mxoStaticId,lobby.Region);return true;
         }
         internal enum OverlayKind { Legacy,Resolved,Refused }
+        // A native dump can repeat a static ID for two different elevator classes/poses.
+        // Keep the selected mission site's original row; the normal overlay validation still decides whether it is usable.
+        internal static StaticWorldObject RequestedRawDoor(MissionProgress progress,StaticWorldObject first)
+        {
+            if(progress==null||first==null||first.metrId!=progress.mission.district)return first;
+            bool Matches(StaticWorldObject d)=>d!=null&&
+                d.metrId==first.metrId&&d.mxoStaticId==first.mxoStaticId&&
+                (MissionSites.Goid(d)==417||MissionSites.Goid(d)==419);
+            var candidates=new[]{progress.site?.elevatorDoor,progress.site?.lobbyDoor}.Where(Matches).ToArray();
+            // Departure can stage the next phase before the old car's queued request is handled.
+            if(candidates.Length==0)candidates=progress.sites.SelectMany(s=>new[]{s.elevatorDoor,s.lobbyDoor}).Where(Matches)
+                .DistinctBy(MissionNpcInteriorPlanning.RawJson).ToArray();
+            return candidates.Length==1?candidates[0]:first;
+        }
         internal sealed class Overlay
         {
             internal readonly OverlayKind Kind;internal readonly G.Position Position;internal readonly string Quaternion,Refusal;
