@@ -77,8 +77,9 @@ public partial class MissionNpcInteriorCheckpointTests
     }
     [Fact] public void FixedFurnitureRoutesChooseTheDoorFaceInTheCrossedRoom()
     {
-        var index=E.LoadAudited(SceneDirectory,1,47);
-        using var f=File.OpenRead(Path.Combine(SceneDirectory,"47.json.gz"));
+        string directory=Path.Combine(Repo,"data","mission_interior_evidence_v2","1");
+        var index=E.LoadActive(directory,1,47);
+        using var f=File.OpenRead(Path.Combine(directory,"47.json.gz"));
         using var z=new System.IO.Compression.GZipStream(f,System.IO.Compression.CompressionMode.Decompress);
         var doc=JsonSerializer.Deserialize<E.Document>(z)!;var group=doc.Groups.Single(g=>g.Key==0x02f003bc);
         var signature=group.Legacy.First(l=>l.Signature.Goid==6958).Signature;
