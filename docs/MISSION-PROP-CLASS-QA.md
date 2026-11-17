@@ -1,8 +1,9 @@
-Use `mission-catalog-sample`, `MXO_QA_MISSION_ID=101216,201209,301210`, CSR_Tester110 only.
-These three uncompleted samples share one fixture; other receipts are setup. Layout choices are deterministic.
-Call Tyndall for101216, Agent Gray for201209, Flood for301210; use `?org 1/2/3` between organisations.
+Use `mission-catalog-sample`, `MXO_QA_MISSION_ID=101216,201209,301210,205102,208302`, CSR_Tester110 only.
+These uncompleted samples share one fixture. Other receipts are setup and layout choices are deterministic.
+Call Tyndall for 101216, Agent Gray for 201209, 205102 and 208302, and Flood for 301210. Use `?org 1/2/3` between organisations.
 Follow the measured entrance positions printed when each phase starts.
 Use ordinary public doors and elevator cars in both directions.
+In 205102, check that the phase 2 downride leads to Achilles's hideout. In 208302, check that the phase 4 lobby car opens and takes both agents up to Pace.
 Find each bound prop on its floor; require a visible model and genuine hover/picking.
 Walk through the required internal doors and use normal Open/Take/Hack/Give actions.
 Confirm each action advances its objective and grants the expected mission item once.
