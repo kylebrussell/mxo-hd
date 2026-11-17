@@ -24,7 +24,9 @@ public static partial class Scenarios
         var catalog = Directory.GetFiles(Path.Combine(root,"data","missions"),"*.xml")
             .Select(f=>new SweepMission(f,XElement.Load(f))).OrderBy(m=>m.Id).ToArray();
         if(catalog.Select(m=>m.Id).Distinct().Count()!=catalog.Length) throw new InvalidDataException("Duplicate mission IDs");
-        var selected=catalog.Where(m=>filter==null||(int.TryParse(filter,out int id)?m.Id==id:m.Title.Contains(filter,StringComparison.OrdinalIgnoreCase))).ToArray();
+        var terms=(filter??"").Split(',',StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries);
+        var selected=catalog.Where(m=>filter==null||terms.Any(t=>int.TryParse(t,out int id)?m.Id==id:m.Title.Contains(t,StringComparison.OrdinalIgnoreCase))).ToArray();
+        if(selected.Length==0)throw new ArgumentException("No catalog missions match the filter");
         if(listOnly){foreach(var m in selected)Console.WriteLine($"{m.Id} {m.Title}");return 0;}
         Directory.CreateDirectory(output);
         await ThrowawayDatabase.DropInterruptedSweepAsync();
@@ -50,7 +52,10 @@ public static partial class Scenarios
             {
                 var env=new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]=mission.Id.ToString(),["MXO_PACKET_LOG"]="0"};
                 context=await ScenarioContext.StartAsync(root,"sweep_"+mission.Id,env);
-                await SweepOne(context,mission,catalog,step).WaitAsync(TimeSpan.FromMinutes(4));
+                double holdSeconds=mission.Xml.Descendants("objective").Where(g=>(string?)g.Attribute("type")=="Survive")
+                    .Sum(g=>(double?)g.Attribute("seconds")??0);
+                double arrivalSeconds=mission.Xml.Descendants().Attributes("spawnDelay").Select(a=>(double)a).DefaultIfEmpty(0).Max();
+                await SweepOne(context,mission,catalog,step).WaitAsync(TimeSpan.FromSeconds(240+holdSeconds+arrivalSeconds));
                 var problems=context.ClientProblems().Concat(context.ServerProblems()).ToArray();
                 if(problems.Length>0)throw new ScenarioFailure(string.Join("; ",problems));
             }
@@ -90,7 +95,7 @@ public static partial class Scenarios
          MerovingianReputation=(int?)m.Xml.Attribute("minReputation")??0,
          OwnedLoadedAbilities=new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
         await p.EnterWorldAsync();
-        if(entry!=0){Stage("room/NAV placement","ticket acceptance");p.SendRpc("80 c6 01");}
+        if(entry!=0){Stage("other","ticket acceptance");p.SendRpc("59 01");}
         else
         {
         int list=p.World.RpcSnapshot().Count;
@@ -99,7 +104,9 @@ public static partial class Scenarios
         else
         {
             Stage("other","contact "+m.Contact);Check.That(contactSpot!=null,"Known neighborhood contact");p.SendChat("?contact "+contactSpot!.contactId);
-            var contact=await p.WaitForViewNamedAsync(m.Contact);p.SendRpc($"80 c7 {MissionNpcId(contact)} 02 00");await p.WaitForRpcAsync("80 97");
+            ViewCreation? contact=null;
+            await p.WaitUntilAsync(()=>(contact=p.ViewsOfGoid(6520).LastOrDefault(v=>v.Attributes.TryGetValue("ContactID",out var id)&&id.Length==4&&BitConverter.ToUInt32(id)==contactSpot.contactId))!=null,"neighborhood contact",TimeSpan.FromSeconds(15));
+            p.SendRpc($"80 c7 {MissionNpcId(contact!)} 02 00");await p.WaitForRpcAsync("80 97");
         }
         var entries=p.World.RpcSnapshot().Skip(list).Select(r=>r.Bytes).Where(b=>b.Length>17&&b[0]==0x80&&b[1]==0x96).ToArray();
         var chosen=entries.SingleOrDefault(b=>Encoding.ASCII.GetString(b,17,b.Length-18)==m.Title)??throw new ScenarioFailure("Mission absent from contact list");
@@ -166,7 +173,17 @@ public static partial class Scenarios
                     }
                     case "Escort":
                     {
-                        foreach(string key in ((string)goal.Attribute("npc")!).Split(',')){await SweepNpc(c,p,ushort.Parse(key));await Task.Delay(850);}
+                        foreach(string key in ((string)goal.Attribute("npc")!).Split(','))
+                        {
+                            ushort follower=ushort.Parse(key);await SweepNpc(c,p,follower);
+                            await p.WaitUntilAsync(()=>
+                            {
+                                var s=MervFollowupCurrent(c,p).GetAwaiter().GetResult();
+                                return s==null||s.Phase!=phase||s.Following.Contains(follower);
+                            },"escort starts following",TimeSpan.FromSeconds(6));
+                            if(await Done(n))break;
+                        }
+                        if(await Done(n))break;
                         string to=(string?)goal.Attribute("to")??"exit";
                         if(to=="exit"){Stage("elevator",step.Detail);await SweepRide(c,p,await MervFollowupCheckpoint(c,p),area,false,notes);}
                         else if(to=="hardline")await ZionUpload(p);
@@ -179,7 +196,7 @@ public static partial class Scenarios
                     case "Survive":await Task.Delay(TimeSpan.FromSeconds((int?)goal.Attribute("seconds")??30));break;
                     case "DefeatAll":
                     {
-                        for(int tries=0;tries<80&&!await Done(n);tries++)
+                        while(!await Done(n))
                         {
                             var s=await MervFollowupCheckpoint(c,p);var target=s.Mobs.LastOrDefault(x=>!x.Friendly&&!x.Dead&&x.Health>0);
                             if(target==null){await Task.Delay(500);continue;}
@@ -205,6 +222,8 @@ public static partial class Scenarios
     private static async Task<ViewCreation> SweepNpc(ScenarioContext c,HeadlessPlayer p,ushort npc,string? identity=null)
     {
         MissionProgress.SavedMob Find(MissionProgress.SavedState s)=>s.Mobs.Single(m=>identity==null?m.Npc==npc:m.Identity==identity);
+        await p.WaitUntilAsync(()=>MervFollowupCheckpoint(c,p).GetAwaiter().GetResult().Mobs.Any(m=>identity==null?m.Npc==npc:m.Identity==identity),
+            "scheduled mission NPC arrival",TimeSpan.FromSeconds(45));
         var saved=await MervFollowupCheckpoint(c,p);var initial=Find(saved);
         await MoveForMissionTest(p,initial.X+100,initial.Y,initial.Z);
         ViewCreation? current=null;
@@ -212,7 +231,8 @@ public static partial class Scenarios
         {
             var state=MervFollowupCheckpoint(c,p).GetAwaiter().GetResult();var mob=Find(state);
             mob.Name=Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(mob.Name).Take(32).ToArray()).TrimEnd('\0');
-            current=ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,mob,state.Instance);
+            try{current=ZionAfter1212FollowerReadiness.CurrentNpc(p.World.CurrentOwnViewLife(),p.Handle,mob,state.Instance);}
+            catch(InvalidDataException){return false;}
             return current!=null;
         },"current owned NPC",TimeSpan.FromSeconds(15));
         return current!;
@@ -222,9 +242,27 @@ public static partial class Scenarios
     {
         if(s.SiteDoors.Length==0){if(enter)await EnterMissionArea(c,p);else await LeaveMissionArea(p);return;}
         var rows=new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(c.RepositoryRoot,"data",f)));
-        var ride=MervFollowupElevatorFixture.Select(s,enter,rows,area.Elements("object").Select(o=>(ushort)(int)o.Attribute("id")!).ToArray());
+        var ride=s.SiteDoors.Last().metrId==1?MervFollowupElevatorFixture.Select(s,enter,rows,area.Elements("object").Select(o=>(ushort)(int)o.Attribute("id")!).ToArray()):SweepLegacyDistrictRide(c,s,enter);
         await MoveForMissionTest(p,ride.Approach[0],ride.Approach[1],ride.Approach[2]);
         if(!enter){var now=await MervFollowupCurrent(c,p);if(now==null||now.Phase>s.Phase)return;}
+        if(!enter)
+        {
+            var followers=ZionAfter1212FollowerReadiness.OpenFollowers(area.Parent!,s);
+            if(followers.Length>0)
+            {
+                static void WireNames(MissionProgress.SavedState state)
+                {foreach(var mob in state.Mobs)mob.Name=Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(mob.Name).Take(32).ToArray()).TrimEnd('\0');}
+                WireNames(s);var life=p.World.CurrentOwnViewLife();var wait=Stopwatch.StartNew();
+                while(true)
+                {
+                    var current=await MervFollowupCurrent(c,p);if(current==null||current.Phase>s.Phase)return;
+                    WireNames(current);
+                    try{ZionAfter1212FollowerReadiness.Require(p.World.CurrentOwnViewLife(),life.Life,p.Handle,s,current,followers,ride.Approach);break;}
+                    catch(InvalidDataException){if(wait.Elapsed>TimeSpan.FromSeconds(15))throw new ScenarioFailure("Companions did not reach the departure point");}
+                    await Task.Delay(200);
+                }
+            }
+        }
         int log=c.Server.DebugLog().Length;p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(ride.Key))} 03 00");
         if(s.Waypoints[0].y!=s.Exits[0][1])await p.WaitUntilAsync(()=>c.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary elevator transport",TimeSpan.FromSeconds(12));
         if(enter&&ride.Measured)await p.WaitUntilAsync(()=>{try{MervFollowupElevatorFixture.CurrentOverlay(p.World.CurrentOwnViewLife(),ride);return true;}catch(InvalidDataException){return false;}},"elevator view",TimeSpan.FromSeconds(10));
@@ -238,5 +276,38 @@ public static partial class Scenarios
                 notes.Add(MervBound326Approach.Capture(s,root,nav,p.World.CurrentOwnViewLife(),ride.Measured));
             }
         }
+        if(enter)
+        {
+            var current=await MervFollowupCurrent(c,p);
+            if(current==null||current.Phase!=s.Phase||current.Flags.GetValueOrDefault("entered"))return;
+            var areaPosition=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog(),@"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator ").Last();
+            double D(int n)=>double.Parse(areaPosition.Groups[n].Value,CultureInfo.InvariantCulture);
+            // Disclosed movement aid: exercise the area's enter hooks after the real car request.
+            var actual=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            var root=actual==null?ride.Approach:Enumerable.Range(1,3).Select(i=>double.Parse(actual.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+            if(!NavMesh.Project(ride.District,D(1),D(2),D(3),out var inside,reachableFrom:root))return;
+            await MoveForMissionTest(p,inside.x,inside.y,inside.z);
+            await p.WaitUntilAsync(()=>{var now=MervFollowupCurrent(c,p).GetAwaiter().GetResult();return now==null||now.Phase>s.Phase||now.Flags.GetValueOrDefault("entered");},
+                "mission-area enter hooks",TimeSpan.FromSeconds(6));
+        }
+    }
+
+    private static MervFollowupElevatorFixture.Ride SweepLegacyDistrictRide(ScenarioContext c,MissionProgress.SavedState s,bool enter)
+    {
+        Check.That(s.Waypoints.Length==1&&s.Exits.Length==1&&!s.Objects.Any(o=>o.OpenFloor!=null)&&s.ElevatorWitnesses?.Length is null or 0,
+            "Other-district entry requires its unchanged legacy door");
+        var raw=s.SiteDoors.Last();var floor=s.Waypoints[0];
+        uint floorKey=BitConverter.ToUInt32(Convert.FromHexString(floor.doorHex));
+        Check.That(raw.mxoStaticId==floorKey&&new[]{floor.x,floor.y,floor.z}.SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z}),"Legacy floor identity");
+        var pose=enter?s.Exits[0]:new[]{floor.x,floor.y,floor.z};uint key=floorKey;
+        if(enter)
+        {
+            var keys=Directory.EnumerateFiles(Path.Combine(c.RepositoryRoot,"data"),"staticObjects*.csv").SelectMany(File.ReadLines)
+                .Where(l=>l.StartsWith(raw.metrId+",",StringComparison.Ordinal)).Select(l=>l.Split(','))
+                .Where(f=>f.Length>=11&&new ushort[]{417,419}.Contains(BitConverter.ToUInt16(Convert.FromHexString(f[4])))&&Enumerable.Range(0,3).All(i=>double.Parse(f[6+i],CultureInfo.InvariantCulture)==pose[i]))
+                .Select(f=>BitConverter.ToUInt32(Convert.FromHexString(f[2]))).Distinct().ToArray();
+            Check.That(keys.Length==1,"Unique current-district lobby car");key=keys[0];
+        }
+        return new(raw.metrId,key,pose,null,null);
     }
 }
