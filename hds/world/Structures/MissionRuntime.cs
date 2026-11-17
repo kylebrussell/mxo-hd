@@ -318,6 +318,8 @@ namespace hds
                 return;
             }
 
+            if(mob.missionInstance!=0&&!client.playerData.missionMobs.Contains(mob))return;
+
             if (mob.isFriendly)
             {
                 // An NPC the player was to protect or escort
@@ -687,7 +689,8 @@ namespace hds
         public static UInt32 LootItemFor(ClientData data, Mob mob)
         {
             MissionProgress progress = data.missionProgress;
-            if (progress == null || mob == null || mob.missionNpcId == 0)
+            if (progress == null || mob == null || mob.missionNpcId == 0 ||
+                mob.missionInstance!=0&&!data.missionMobs.Contains(mob))
             {
                 return 0;
             }

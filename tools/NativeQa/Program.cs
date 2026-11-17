@@ -90,7 +90,8 @@ try
     if (sourceAssemblySha256 != snapshotAssemblySha256)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name,
-        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""));
+        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""),
+        fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture));
     byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers,OwnedDatabase:database,ActualServer:server));
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,

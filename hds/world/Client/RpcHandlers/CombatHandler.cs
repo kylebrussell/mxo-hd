@@ -959,10 +959,21 @@ namespace hds
         private static void RewardNpcDefeat(WorldClient attacker, Mob mob)
         {
             if(attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob))
-                MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob));
-            else RewardNpcDefeatCore(attacker,mob);
+                MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob,attacker));
+            else
+            {
+                var holder=MissionTeamProgress.Holder(attacker,mob);
+                if(holder==null){RewardNpcDefeatCore(attacker,mob,null);return;}
+                uint earned=0;
+                if(MissionPersistence.MutateKill(holder,mob,()=>earned=RewardNpcDefeatCore(attacker,mob,holder)))
+                {
+                    if(earned>0)PlayerRewards.GrantExperience(attacker,earned);
+                    new ServerPackets().sendSystemChatMessage(attacker,"Your teammate's mission progress has been updated.","BROADCAST");
+                    attacker.FlushQueue();
+                }
+            }
         }
-        private static void RewardNpcDefeatCore(WorldClient attacker, Mob mob)
+        private static uint RewardNpcDefeatCore(WorldClient attacker, Mob mob,WorldClient missionOwner)
         {
             // Award experience
             // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
@@ -971,17 +982,18 @@ namespace hds
             UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
             // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
             bool inTutorial = TutorialMission.Of(attacker) != null;
-            bool ownedMission=attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob);
+            bool ownedMission=ReferenceEquals(missionOwner,attacker);
             if (!inTutorial)
             {
                 if(ownedMission)mob.MissionRewardExperience=expGained;
-                else PlayerRewards.GrantExperience(attacker, expGained);
+                else if(missionOwner==null)PlayerRewards.GrantExperience(attacker, expGained);
             }
 
             Output.WriteDebugLog(ownedMission?$"[COMBAT] Mission kill quoted {expGained} experience (checkpoint applies signed INT cap)":$"[COMBAT] Awarded {expGained} experience");
 
-            MissionRuntime.OnMobDefeated(attacker, mob);
-            UInt32 missionItem = MissionRuntime.LootItemFor(attacker.playerData, mob);
+            var missionActor=missionOwner??attacker;
+            MissionRuntime.OnMobDefeated(missionActor, mob);
+            UInt32 missionItem = MissionRuntime.LootItemFor(missionActor.playerData, mob);
 
             // Retail's pocket change (rshooks.RunPocketChange): level x 5 x 0..99 info, none in the tutorial
             Random rand = new Random();
@@ -994,11 +1006,12 @@ namespace hds
             {
                 drops.Insert(0, CollectorHandler.FunctionData);
             }
-            NpcLoot.Drop(attacker, mob, lootMoney, missionItem, drops);
+            NpcLoot.Drop(missionActor, mob, lootMoney, missionItem, drops);
             Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {drops.Count + (missionItem == 0 ? 0 : 1)} items");
             // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
             // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
             attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();
+            return inTutorial?0:expGained;
         }
 
         /// <summary>

@@ -45,13 +45,14 @@ namespace hds
             finally { deferredContainerCheckpoint = previous; }
         }
         [ThreadStatic] private static WorldClient deferredKill;
-        internal static void MutateKill(WorldClient client,Mob mob,Action action)
+        internal static bool MutateKill(WorldClient client,Mob mob,Action action)
         {
-            Mutate(client,()=>
+            return Mutate(client,()=>
             {
                 var previous=deferredKill;deferredKill=client;
                 try {action();mob.MissionDeathSettled=true;}
                 finally {deferredKill=previous;}
+                return true;
             });
         }
         internal static T Mutate<T>(WorldClient client,Func<T> action,bool beginMission=false,bool abortBlocked=false)

@@ -143,6 +143,11 @@ namespace hds.world.Structures
             }
         }
 
+        public bool ShareTeam(UInt32 first,UInt32 second)
+        {
+            lock(sync)return first!=0&&second!=0&&teams.Values.Any(t=>t.HasMember(first)&&t.HasMember(second));
+        }
+
         /// <summary>Adds the player and returns their place in the member list (0 = leader), or -1 when the team is gone.</summary>
         public int AddTeamMember(UInt32 teamId, UInt32 charId, string handle)
         {

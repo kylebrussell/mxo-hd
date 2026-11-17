@@ -625,49 +625,8 @@ namespace hds
 
         public void DoMobUpdate(object e)
         {
-            if (pet != null) return; // simulacra move with CoderPets, not the wander timer
-            if (!ControlActions.CanMove(TimedEffects.ForMob(this).Effects))
-            {
-                mobUpdateTimer = new Timer(DoMobUpdate, this, 1000, 0);
-                return;
-            }
-            if (isUpdateable)
-            {
-                var nextMoveTime = 5;
-                var rand = new Random();
-                switch (currentState)
-                {
-                    case (int) statusList.WALKING_BACK:
-                    case (int) statusList.WALKING:
-                        // stop npc
-                        currentState = (int) statusList.STANDING;
-                        setXPos(destination.x);
-                        setZPos(destination.z);
-                        updateAnimation((byte) Animations.STAND);
-                        nextMoveTime = rand.Next(5, 15);
-                        break;
-                    case (int) statusList.STANDING_BACK:
-                    case (int) statusList.STANDING:
-                        if (!WanderEnabled)
-                        {
-                            break; // stay at the spawn point (MXO_MOB_WANDER=0)
-                        }
-                        // Starts walking
-                        currentState = (int) statusList.WALKING;
-                        // ToDo: start walking NPC and recalculate
-                        nextMoveTime = generatePathTable();
-                        updateAnimation((byte) Animations.WALK);
-                        // Generate walking packet message (raw)
-                        break;
-                    case (int) statusList.COMBAT:
-                        // ToDo: he should attack the player who is in combat with him
-                        // But he shouldnt move
-                        break;
-                }
-
-                mobUpdateTimer = new Timer(DoMobUpdate, this, nextMoveTime * 1000, 0);
-            }
-            
+            // Movement runs once per visibility pass in MobMotion. A new viewer must not start another timer.
+            // Mission actors and pets remain with their mission/pet controller.
         }
 
         // A deflection effect is not a damage/aggro event. Reuse the established view attributes and counter under its lock.

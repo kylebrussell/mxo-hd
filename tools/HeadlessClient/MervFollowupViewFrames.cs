@@ -19,6 +19,12 @@ public static class MervFollowupViewFrames
         // complete movement frame without reviving an unowned body or assigning it a class.
         if((goid==null||goid==599)&&Has(2,"020e")&&Fits(18))
         {frame=Make(Kind.Movement,18,6);return true;}
+        // PlayerViewAttributes/PvpFlag broadcasts use the other-player indices, not own-view indices.
+        if(view!=2&&goid==12)
+        {
+            foreach(var shape in new[]{("028080808004",12),("02808010",8)})
+                if(Has(2,shape.Item1)&&Fits(shape.Item2)){frame=Make(Kind.Attribute,shape.Item2);return true;}
+        }
         if(view==2&&goid==12)
         {
             if(Has(2,"011c")&&Fits(28)){frame=Make(Kind.OwnTeleport,28);return true;}
