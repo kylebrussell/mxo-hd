@@ -58,6 +58,19 @@ public sealed class GameplayBreadthMode:NativeQaMode
         Check.Equal(0L, await context.OwnedDatabase!.LongAsync($"SELECT COUNT(*) FROM char_active_missions " +
             $"WHERE charId={probe.CharId} AND payload IS NOT NULL"), "The probe aborted its own active mission");
     }
+    private static bool IsAssistChat(byte[] message)
+    {
+        if (message.Length < 15 || message[0] != 0x2e) return false;
+        const byte tell = 0x11;
+        if (message[1] != tell && (message[1] != ChatTypes.Area || BitConverter.ToUInt32(message, 3) != 110))
+            return false;
+
+        return hds.SocialRequests.TryReadSized(message, BitConverter.ToInt32(message, 7), out string sender)
+            && sender[(sender.LastIndexOf('+') + 1)..].Equals("CSR_Tester", StringComparison.OrdinalIgnoreCase)
+            && hds.SocialRequests.TryReadSized(message, BitConverter.ToInt32(message, 11), out string text)
+            && text.Trim().Equals("assist", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static async Task RunHelper(NativeQaBootstrapContext context,HeadlessPlayer helper)
     {
         int cursor=helper.World.RpcSnapshot().Count;bool joined=false,assist=false,attacked=false;
@@ -75,7 +88,7 @@ public sealed class GameplayBreadthMode:NativeQaMode
                         helper.SendRpc(new byte[]{0x6f,3,8,0,0,0,0,0}.Concat(BitConverter.GetBytes((ushort)name.Length)).Concat(name).ToArray());
                     }
                     if(b.Length>=2&&b[0]==0x80&&b[1]==0x8e)joined=true;
-                    if(b.Length>7&&b[0]==0x2e&&BitConverter.ToUInt32(b,3)==110&&Encoding.UTF8.GetString(b).Contains("assist",StringComparison.OrdinalIgnoreCase))assist=true;
+                    if (IsAssistChat(b)) assist = true;
                 }
                 cursor=records.Count;
                 if(joined&&assist&&!attacked)
