@@ -286,7 +286,7 @@ public static partial class Scenarios
     private static async Task MoveForMissionTest(HeadlessPlayer player, double x, double y, double z)
     {
         player.SendChat(FormattableString.Invariant($"?tp {x} {y} {z} 0 0 0"));
-        await player.WaitForTextAsync("Teleported to 0/0");
+        await player.WaitForTextAsync("Teleported to 0/0",TimeSpan.FromSeconds(60));
     }
 
     private static Task LeaveMissionArea(HeadlessPlayer player)

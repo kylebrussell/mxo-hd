@@ -254,8 +254,8 @@ public static partial class Scenarios
         await MoveForMissionTest(p,ride.Approach[0],ride.Approach[1],ride.Approach[2]);
         if(enter&&ride.Street!=null)
         {
-            var floor=ride.Street.Floor;
-            byte[] expected=ServerPackets.BuildMissionWaypoint(floor.Position[0],floor.Position[1],floor.Position[2],0,Convert.ToHexString(BitConverter.GetBytes(floor.Key)));
+            var lobby=ride.Street.Lobby;
+            byte[] expected=ServerPackets.BuildMissionWaypoint(lobby.Position[0],lobby.Position[1],lobby.Position[2],0,Convert.ToHexString(BitConverter.GetBytes(lobby.Key)));
             await p.WaitUntilAsync(()=>p.World.RpcSnapshot().LastOrDefault(r=>r.Bytes.Length==35&&r.Bytes[0]==0x80&&r.Bytes[1]==0x9e&&r.Bytes[2]==0)?.Bytes.SequenceEqual(expected)==true,
                 "measured car waypoint inside the lobby",TimeSpan.FromSeconds(15));
         }

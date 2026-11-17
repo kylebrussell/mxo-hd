@@ -227,7 +227,7 @@ namespace hds
             progress.exits.Clear();
             progress.exits.Add(new[] { lobbyDoor.X,lobbyDoor.Y,lobbyDoor.Z });
             Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor in " + site.neighbourhood + " (" + site.CentreX + "," + site.floorY + "," +
-                                 site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
+                                 site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + floorDoor.X + "," + floorDoor.Y + "," + floorDoor.Z + ", " + site.npcSpots.Count + " NPC spots; lobby car " + MissionSites.DoorHex(site.lobbyDoor) + " at " + lobbyDoor.X + "," + lobbyDoor.Y + "," + lobbyDoor.Z);
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
             IEnumerable<double[]> sourceSpots=site.npcSpots;
