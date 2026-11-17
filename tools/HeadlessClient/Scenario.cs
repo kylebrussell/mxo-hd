@@ -23,6 +23,7 @@ public sealed record CharacterSeed(string Handle)
 
     /// <summary>OrganizationID (the alignment column): 0 none, 1 Zion, 2 Machines, 3 Merovingian.</summary>
     public int Organization { get; init; }
+    public int MerovingianReputation { get; init; }
 
     /// <summary>Bag or worn items: slot, goid, and a stack count where it matters.</summary>
     public IReadOnlyList<(int Slot, uint Goid, int Count)> Items { get; init; } = Array.Empty<(int, uint, int)>();
@@ -122,6 +123,8 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
             foreach(var value in seed.AttributeValues.OrderBy(v=>v.Key))
                 sql+=$"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({id},{hds.CharacterAttributes.SlotOf(value.Key)},{hds.CharacterAttributes.RowValueOf(value.Key)},{value.Value},0);\n";
         }
+        if(seed.MerovingianReputation!=0)
+            sql += $"UPDATE characters SET repMero={seed.MerovingianReputation} WHERE charId={id};\n";
         if (seed.CompletedMissions != null)
         {
             if (seed.CompletedMissions.Any(id=>id<=0)) throw new ArgumentException("Invalid prior mission receipt");

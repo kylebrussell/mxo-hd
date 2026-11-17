@@ -175,6 +175,17 @@ public sealed class ThrowawayDatabase : IDisposable
             new ThrowawayDatabase(name).Dispose();
         }
     }
+
+    public static async Task DropInterruptedSweepAsync()
+    {
+        const string list = "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot -N -B -e \"SHOW DATABASES LIKE 'mxotest\\\\_sweep\\\\_%';\"";
+        string names=await RunInContainerAsync(list,Prefix+"list",null);
+        foreach(string name in names.Split('\n',StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries))
+        {
+            if(!name.StartsWith(Prefix+"sweep_",StringComparison.Ordinal))throw new InvalidDataException("Unexpected sweep database");
+            new ThrowawayDatabase(name).Dispose();
+        }
+    }
 }
 
 /// <summary>A server process with its own ports, working directory and database.</summary>
