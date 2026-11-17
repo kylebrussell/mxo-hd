@@ -31,7 +31,6 @@ public static partial class Scenarios
         if(selected.Length==0)throw new ArgumentException("No catalog missions match the filter");
         if(listOnly){foreach(var m in selected)Console.WriteLine($"{m.Id} {m.Title}");return 0;}
         Directory.CreateDirectory(output);
-        await ThrowawayDatabase.DropInterruptedSweepAsync();
         MissionContacts.Load(Path.Combine(root,"data","mission_contacts.csv"));
         MissionContactNpcs.Load(Path.Combine(root,"data","mission_contact_npcs.csv"));
         SectorProperties.Load(Path.Combine(root,"data","sector_properties.csv"));
