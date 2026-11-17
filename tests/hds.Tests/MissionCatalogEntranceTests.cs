@@ -8,6 +8,17 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class MissionCatalogEntranceTests
 {
+    [Fact]
+    public void OutdoorUploadPhaseDoesNotReuseThePreviousAreasElevator()
+    {
+        var state=new MissionProgress.SavedState{Version=2,Mission=201203,Phase=1,
+            SiteDoors=new[]{new StaticWorldObject()},OpenFloorCurrentSiteIndex=-1,
+            Waypoints=Array.Empty<MissionWaypoint>(),Exits=Array.Empty<double[]>()};
+        var message=Assert.Single(MissionCatalogEntrances.Describe(state));
+        Assert.Contains("Mission 201203 phase 1",message);
+        Assert.Contains("outdoor phase; no current street door or elevator",message);
+    }
+
     [Theory][InlineData(1205,0)][InlineData(101210,1)][InlineData(301209,3)]
     public void CatalogWorkerUsesTheSameMissionSeedAsAnIndividualServer(int mission,int phase)
     {
