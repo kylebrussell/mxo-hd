@@ -33,6 +33,6 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
             if(ticket!=0)setup.Add($"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,{ticket},1,0,0)");
             return new(new ushort[]{2,17,45,1006,77},(int)x,(int)z,Array.Empty<string>(),Array.Empty<string>(),setup.ToArray(),
                 DevCommands:true,environmentOverrides:new(){["MXO_MISSION_SITE_QA_SEED"]=id.ToString(),["MXO_AGGRO"]="0",["MXO_MOB_WANDER"]="0"},
-                readyMessages:new[]{$"Catalog mission {id}: {(string?)mission.Attribute("title")}; contact {contact}. Earlier receipts are fixture setup; this mission is uncompleted.","Use ordinary mission interactions and elevator rides. Movement and weaken commands are available for travel/combat assistance."});
+                readyMessages:new[]{$"Catalog mission {id}: {(string?)mission.Attribute("title")}; contact {contact}. Earlier receipts are fixture setup; this mission is uncompleted.","Each accepted phase prints its measured street Door, lobby car and standing positions here. Use ordinary interactions and elevator rides; movement/weaken commands are available as assistance."});
     }
 }
