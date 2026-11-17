@@ -185,7 +185,12 @@ public sealed class WorldSession : IDisposable
 
             try
             {
+                if (stop.IsCancellationRequested) return;
                 Handle(received.Buffer);
+            }
+            catch (ObjectDisposedException) when (stop.IsCancellationRequested)
+            {
+                return; // A final acknowledgement raced normal client shutdown.
             }
             catch (Exception ex)
             {
