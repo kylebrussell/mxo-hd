@@ -4,6 +4,25 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
+    private static async Task CorpseLootUiReopen(ScenarioContext context)
+    {
+        var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("CorpseUi"){Level=50,X=24499,Y=495,Z=-1498,Health=5000,MaxHealth=5000}))[0];
+        var first=await p.WaitForViewNamedAsync("WinterFrost");var second=await p.WaitForViewNamedAsync("Trainman");
+        var ui=new CorpseLootWindowState();
+        int cursor=p.World.RpcSnapshot().Count;
+        await DefeatMissionNpc(p,first);
+        foreach(var rpc in p.World.RpcSnapshot().Skip(cursor))ui.Receive(rpc.Bytes);
+        Check.That(ui.Visible,"First corpse creates a visible container window");
+        ui.CloseLocally();p.SendRpc("81 1a");p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");
+        cursor=p.World.RpcSnapshot().Count;
+        await DefeatMissionNpc(p,second);
+        foreach(var rpc in p.World.RpcSnapshot().Skip(cursor))ui.Receive(rpc.Bytes);
+        Check.That(ui.Visible,"Second corpse reactivates the locally closed cached window");
+        p.SendRpc("81 1f");await p.WaitForRpcAsync("81 20");
+        p.SkipReceived();p.SendRpc($"80 c7 {MissionNpcId(second)} 05 00");await p.WaitForRpcAsync("81 19");
+        p.SendRpc("81 1f");await p.WaitForRpcAsync("81 20");
+    }
+
     private static async Task ContainerAndCorpseLoot(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "machines_01_the_end_of_the_beginning.xml");

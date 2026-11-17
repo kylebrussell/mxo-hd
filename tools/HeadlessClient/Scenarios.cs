@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("corpse-loot-ui-reopen",CorpseLootUiReopen,StillNpcs),
         new Scenario(WithdrawalFixture.Name,OrdinaryWithdrawalWire,WithdrawalFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario(MissionMidphaseReturnFixture.Name,MissionMidphaseReturn,MissionMidphaseReturnFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("open-world-first-level",OpenWorldFirstLevel,OpenWorldFirstLevelFixture.HeadlessEnvironment,Timeout:TimeSpan.FromMinutes(8)),
