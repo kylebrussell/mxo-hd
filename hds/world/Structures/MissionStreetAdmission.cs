@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text.Json;
@@ -33,6 +34,33 @@ namespace hds
         }
         internal static bool TryPrepare(WorldClient c,MissionProgress p,int phase,out Plan plan,out string refusal)
         {
+            if(PrepareCandidate(c,p,phase,out plan,out refusal))return true;
+            if(p.streetPending!=null||plan?.Selected.Site==null||!RoomRefusal(refusal))return false;
+
+            // A floor can have furniture capacity but lack a route from its measured entry.
+            // Keep the selected source immutable once any pending choice has been saved.
+            var rejected=new HashSet<MissionSite>{plan.Selected.Site};
+            for(int attempt=0;attempt<MissionOpenFloorAdmission.AdditionalSiteAttempts&&plan.BeforeCurrent(c);attempt++)
+            {
+                bool accepted=PrepareCandidate(c,p,phase,out var alternative,out string reason,rejected);
+                if(accepted&&plan.BeforeCurrent(c))
+                {
+                    plan=alternative;refusal=null;
+                    return true;
+                }
+                if(!RoomRefusal(reason)||alternative?.Selected.Site==null||!rejected.Add(alternative.Selected.Site))break;
+            }
+            return false;
+        }
+
+        private static bool RoomRefusal(string refusal) => refusal ==
+            "OrdinaryBoundRouteRefused:BoundStreetRoute:NoNativeFurnitureStandingOrAuthoredRoute" || refusal ==
+            "OrdinaryBoundRouteRefused:BoundStreetRoute:NoAuthoredSameFloorInteriorRoute" || refusal ==
+            "OrdinaryBoundRouteRefused:FurnitureStreetRoute:NoNativeFurnitureStandingOrAuthoredRoute" || refusal ==
+            "OrdinaryBoundRouteRefused:FurnitureStreetRoute:NoAuthoredSameFloorInteriorRoute";
+
+        private static bool PrepareCandidate(WorldClient c,MissionProgress p,int phase,out Plan plan,out string refusal,ISet<MissionSite> rejected=null)
+        {
             plan=null;refusal=null;var before=new MissionNpcInteriorBefore(c,p,phase);if(!before.Current(c)){refusal="StaleOrdinaryStreetOwner";return false;}
             if(p.streetPending!=null)
             {
@@ -45,7 +73,7 @@ namespace hds
                 foreach(var choice in pending.Choices){var state=new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}
                 return plan.BeforeCurrent(c);
             }
-            var selected=MissionStaging.ChooseSite(c,p,phase);if(!before.Current(c)||selected.Site==null){refusal="NoCertifiedOrdinaryStreetSite";return false;}
+            var selected=MissionStaging.ChooseSite(c,p,phase,rejected);if(!before.Current(c)||selected.Site==null){refusal="NoCertifiedOrdinaryStreetSite";return false;}
             var definitions=p.mission.phases[phase];int npcs=p.mission.npcs.Count(n=>n.at==phase+1)+MissionStaging.SpotsForWaves(definitions);
             MissionOpenFloorChoice[] choices=Array.Empty<MissionOpenFloorChoice>();JsonElement json=default;bool accepted=false;
             try
