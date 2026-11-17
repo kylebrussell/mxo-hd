@@ -47,6 +47,16 @@ public class MissionBoundObjectPoseTests
         double lo=BitConverter.Int32BitsToSingle(0x3f800001),hi=BitConverter.Int32BitsToSingle(0x3f800002);
         Assert.Equal(hi,MissionBoundObjectPoses.Midpoint(lo,hi));Assert.NotEqual((lo+hi)*.5,MissionBoundObjectPoses.Midpoint(lo,hi));
     }
+    [Fact] public void MixedBoxPhaseCannotBindACabinetInAnotherPrefabAtTheSameHeight()
+    {
+        var cabinet=new StaticWorldObject{metrId=1,sectorID=1334,staticId=1990,mxoStaticId=1398802374,
+            type=BitConverter.GetBytes((ushort)326),pos_x=47840,pos_y=4947,pos_z=21530,rot=89.9999883795,
+            quat="00000000f204353f00000000f304353f"};
+        Assert.True(MissionStaging.BoundSourceInRoom(cabinet,63));
+        Assert.False(MissionStaging.BoundSourceInRoom(cabinet,108));
+        Assert.True(MissionStaging.BoundSourceInRoom(cabinet,null));
+        cabinet.pos_x++;Assert.False(MissionStaging.BoundSourceInRoom(cabinet,63));
+    }
     [Theory][InlineData("valid")][InlineData("missing-manifest")][InlineData("manifest-world")][InlineData("manifest-format")]
     [InlineData("filename")][InlineData("sector")][InlineData("rows")][InlineData("duplicate")][InlineData("missing-payload")]
     [InlineData("hash")][InlineData("coherent-payload-edit")][InlineData("truncated-with-declared-hash")]

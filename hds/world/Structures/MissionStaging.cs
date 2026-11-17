@@ -490,15 +490,18 @@ namespace hds
             pools=null;refusal=null;
             if(MissionBoundFurnitureAdmission.Applies(phase,site))return MissionBoundFurnitureAdmission.TryPools(phase,site,out pools,out refusal);
             if(!MissionOpenFloorAdmission.Requires(phase)||site==null)return true;
+            if(!TryLegacyBoundRoom(phase,site,out int? boundRoom,out refusal))return false;
             var taken=new HashSet<StaticWorldObject>();var remaining=new List<MissionObjectDef>();
             var nativeAssignments=new Dictionary<MissionObjectDef,StaticWorldObject>();
             foreach(var def in phase.objects)
             {
-                var real=site.realObjects.FirstOrDefault(o=>!taken.Contains(o)&&
+                var candidates=site.realObjects.Where(o=>!taken.Contains(o)&&
                     string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)],def.kind,StringComparison.OrdinalIgnoreCase));
+                var real=candidates.FirstOrDefault(o=>BoundSourceInRoom(o,boundRoom));
+                if(real==null&&candidates.Any()){refusal="BoundPropOutsideArrivalRoom";return false;}
                 if(real!=null){taken.Add(real);nativeAssignments.Add(def,real);}else remaining.Add(def);
             }
-            var rows=site.objectSpots.Concat(site.containers).ToArray();
+            var rows=site.objectSpots.Concat(site.containers).Where(r=>BoundSourceInRoom(r,boundRoom)).ToArray();
             bool freeSafe=remaining.Any(d=>string.Equals(d.kind,"Safe",StringComparison.OrdinalIgnoreCase));
             GeneratedSafeAssignment safeAssignment=null;
             if(freeSafe)
@@ -508,10 +511,17 @@ namespace hds
                 safeAssignment=new GeneratedSafeAssignment(nativeAssignments,remaining,rows,site.containers);
                 if(!safeAssignment.Complete()){refusal="InsufficientCompatibleGeneratedSafeSources";return false;}
             }
+            if(boundRoom.HasValue)
+            {
+                int availableSpawners=rows.Count(site.objectSpots.Contains),availableFurniture=rows.Count(site.containers.Contains);
+                int spawnedNeeded=remaining.Count(d=>ObjectGoids.ContainsKey(d.kind)),boundNeeded=remaining.Count-spawnedNeeded;
+                if(availableFurniture<boundNeeded+Math.Max(0,spawnedNeeded-availableSpawners))
+                {refusal="InsufficientArrivalRoomSources";return false;}
+            }
             bool mayAdopt=remaining.Any(d=>ObjectGoids.ContainsKey(d.kind)&&rows.Any(raw=>MissionOpenFloorAdmission.Target(ExpectedConcrete(d,raw),raw)));
-            if(!mayAdopt){if(safeAssignment!=null)pools=new SourcePools(null,rows,safeAssignment);return true;} // No fresh Safe can escape unsupported as legacy.
+            if(!mayAdopt){if(safeAssignment!=null||boundRoom.HasValue)pools=new SourcePools(null,rows,safeAssignment);return true;} // No fresh Safe can escape unsupported as legacy.
             if(!MissionElevatorPoses.TrySelectionContext(site,out var context,out refusal))return false;
-            if(context==null){if(safeAssignment!=null)pools=new SourcePools(null,rows,safeAssignment);return true;} // Existing legacy geometry contract.
+            if(context==null){if(safeAssignment!=null||boundRoom.HasValue)pools=new SourcePools(null,rows,safeAssignment);return true;} // Existing legacy geometry contract.
             foreach(var raw in taken)
                 if(!MissionElevatorPoses.CompatibleSource(site,raw,context,out refusal))return false;
             var allowed=rows.Where(raw=>MissionElevatorPoses.CompatibleSource(site,raw,context,out _)).ToArray();
@@ -528,6 +538,21 @@ namespace hds
             }
             if(!MissionInteriorSites.TryAllocate(site,npcCount,out _,out refusal,context))return false;
             pools=new SourcePools(context,allowed,safeAssignment);return true;
+        }
+        private static bool TryLegacyBoundRoom(MissionPhase phase,MissionSite site,out int? room,out string refusal)
+        {
+            room=null;refusal=null;
+            if(site?.metrId!=1||!MissionOpenFloorAdmission.Requires(phase)||MissionBoundFurnitureAdmission.Applies(phase,site)||
+                !site.realObjects.Concat(site.containers).Any(o=>MissionSites.Goid(o)==326||MissionBoundFurniturePoses.SupportsGoid(MissionSites.Goid(o))))return true;
+            if(!MissionStreetCoverage.TryFurnitureContext(site,out var street,out refusal))return false;
+            if(street!=null)room=street.Floor.Node.Region;
+            return true;
+        }
+        internal static bool BoundSourceInRoom(StaticWorldObject raw,int? room)
+        {
+            if(!room.HasValue)return true;ushort goid=MissionSites.Goid(raw);var state=new MissionObjectState{spot=raw,goid=goid};
+            if(goid==326)return MissionBoundObjectPoses.TryCurrentRegion(state,out _,out int region,out _)&&region==room.Value;
+            return !MissionBoundFurniturePoses.SupportsGoid(goid)||MissionBoundFurniturePoses.TryBounds(state,out var bounds,out _)&&bounds.Region==room.Value;
         }
         // Shared exact chooser. Staging materializes it before publishing any phase entities.
         internal static IEnumerable<ObjectChoice> SelectObjects(MissionPhase phase,MissionSite site,Random rng)
@@ -548,9 +573,10 @@ namespace hds
                 foreach(var choice in pools.SafeAssignment.Select(phase,site,rng))yield return choice;
                 yield break;
             }
+            if(!TryLegacyBoundRoom(phase,site,out int? boundRoom,out string refusal))throw new MissionCheckpointException(refusal);
             // Preserve one existing key/draw per ORIGINAL row, even for prefiltered sources.
             List<StaticWorldObject> furniture = site.containers.Select(s=>new{Spot=s,Key=rng.Next()})
-                .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
+                .Where(s=>BoundSourceInRoom(s.Spot,boundRoom)&&(pools==null||pools.Allows(s.Spot))).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
             List<StaticWorldObject> spawners = site.objectSpots.Select(s=>new{Spot=s,Key=rng.Next()})
                 .Where(s=>pools==null||pools.Allows(s.Spot)).OrderBy(s=>s.Key).Select(s=>s.Spot).ToList();
             HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
@@ -558,7 +584,7 @@ namespace hds
             {
                 StaticWorldObject spot;
                 UInt16 goid;
-                StaticWorldObject real = site.realObjects.FirstOrDefault(o => !taken.Contains(o) &&
+                StaticWorldObject real = site.realObjects.FirstOrDefault(o => !taken.Contains(o) && BoundSourceInRoom(o,boundRoom) &&
                     string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)], def.kind, StringComparison.OrdinalIgnoreCase));
                 if (real != null)
                 {
