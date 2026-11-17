@@ -23,6 +23,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario(NativeBoundFurnitureFixture.Name,NativeBoundFurniture,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
+        new Scenario("native-furniture-admission-timing",NativeFurnitureAdmissionTiming,new Dictionary<string,string>(StillNpcs){["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
         new Scenario(WithdrawalFixture.Name,OrdinaryWithdrawalWire,WithdrawalFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario(MissionMidphaseReturnFixture.Name,MissionMidphaseReturn,MissionMidphaseReturnFixture.Environment,Timeout:TimeSpan.FromMinutes(3)),
         new Scenario("open-world-first-level",OpenWorldFirstLevel,OpenWorldFirstLevelFixture.HeadlessEnvironment,Timeout:TimeSpan.FromMinutes(8)),
@@ -67,6 +69,7 @@ public static partial class Scenarios
         new Scenario("direct-debuff-radius", DirectDebuffRadius, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("debuff-radius-native-fixture", DebuffRadiusNativeFixture, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_PVP_SERVER"]="1",["MXO_PVP_MAX_SAFE_LEVEL"]="15",["MXO_DEBUFF_RADIUS_QA"]="1"})),
         new Scenario("merv-critical-followup", MervCriticalFollowup, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101",["MXO_PACKET_LOG"]="1"}),
+        new Scenario("merovingian-after-301207",MervAfter301207,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301208",["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(15)),
         new Scenario("merv-prima-chain", MervPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="210110"}),
         new Scenario("proxy-technician-control", ProxyTechnicianControlRefusal, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("proxy-technician-friendly-attacks", ProxyTechnicianFriendlyAttacks, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1",["MXO_PROXY_TECHNICIAN_QA_ROLL"]="80" }),
@@ -283,12 +286,14 @@ public static partial class Scenarios
         new Scenario("mission-objective-ui-relog", MissionObjectiveUiRelog, StillNpcs),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("zion-critical-opening", ZionCriticalOpening, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101101"}),
+        new Scenario("zion-critical-after-101212",ZionCriticalAfter1212,ZionAfter1212Environment,Timeout:TimeSpan.FromMinutes(15)),
         new Scenario("zion-critical-followup",ZionCriticalFollowup,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="101203"}),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-critical-opening",MervCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merv-propaganda-count", MervPropagandaCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="301101"}),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("machines-critical-next-five", MachinesCriticalNextFive, MachinesCriticalNextFiveFixture.Environment, Timeout: TimeSpan.FromMinutes(20)),
+        new Scenario("machines-critical-after-201206", MachinesAfter201206, MachinesAfter201206Fixture.Environment, Timeout: TimeSpan.FromMinutes(20)),
         new Scenario("machines-critical-opening",MachinesCriticalOpening,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101"}),
         new Scenario("poster-hunt-count", PosterHuntCount, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202"}),
         new Scenario("poster-box-floor", PosterBoxFloorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201202",[PosterBoxFloorProbe.EnvironmentKey]="1"}),

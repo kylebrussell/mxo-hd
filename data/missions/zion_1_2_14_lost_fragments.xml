@@ -11,8 +11,8 @@
      three behind. Each fragment is a different item here (Frags 6785, Data 6787, Data_CD 6831, Access_Code 6782), each
      with its own Upload; one hardline use uploads all four. The barks are on the NPCs but only play if the player talks
      to them, since they attack on sight. Retail's upload had no area of its own; it is a second phase here so that
-     Tyndall's "that accounts for all four Frags" line can play once all four are taken (phase 1's complete). Phase 2's
-     site is only a place for its waypoint: the uploads are done at any hardline. Tyndall's generic "Contact me when you
+     Tyndall's "that accounts for all four Frags" line can play once all four are taken (phase 1's complete). Phase 2 has
+     no generated site or waypoint: the uploads are done at any hardline. Tyndall's generic "Contact me when you
      are ready for your next assignment." isn't repeated. -->
 <mission id="101214" title="Lost Fragments" description="Collect the code fragments Zion needs to build its junction box repair programs." plot="1"
          order="1214" org="1" contact="Tyndall" exp="68750" info="91000">
@@ -37,7 +37,7 @@
     <objective goal="4" text="Get the fourth Data Fragment from the Agent" type="Loot" npc="4" item="6782" />
     <complete><say contact="1">Excellent, Warrior, that accounts for all four Frags. Now leave the building and upload them at a hardline.</say></complete>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="0">
+  <phase enemy="Machines" enemies="0">
     <objective goal="1" text="Upload the first Data Fragment at a hardline" type="Upload" item="6785">
       <done><say contact="1">Receiving the Data Fragments now. Stand by for an update, {player}.</say></done>
     </objective>

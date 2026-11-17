@@ -10,6 +10,5 @@ public class MervFollowupStandaloneScopeTests
             Assert.Equal(false,method.GetParameters().Single(p=>p.Name==name).DefaultValue);
         Assert.Null(method.GetParameters().Single(p=>p.Name=="actorLevel").DefaultValue);
         Assert.Single(Scenarios.All,s=>s.Name=="merv-critical-followup");
-        Assert.DoesNotContain(Scenarios.All,s=>s.Name=="merovingian-after-301207");
     }
 }

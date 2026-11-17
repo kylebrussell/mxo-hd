@@ -1,0 +1,129 @@
+{
+  "Format": 1,
+  "Kind": "NativeBoundFurnitureModelContracts",
+  "SourceGobSha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "SourceClientSha256": "cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a",
+  "FactoryPosition": "6231ae73..aeff:f32(f32(minimum+maximum)*0.5),then-double",
+  "Models": [
+    {
+      "Goid": 573,
+      "Name": "Bedroom Dresser",
+      "ModelHalfExtentsHex": "00002042000096420000d041",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1431,
+      "Name": "MediumDesk1",
+      "ModelHalfExtentsHex": "08eda74229fe1f4202311942",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1432,
+      "Name": "MediumDesk2",
+      "ModelHalfExtentsHex": "9872b442790f204285072642",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1433,
+      "Name": "MediumDesk3",
+      "ModelHalfExtentsHex": "8e63b4420000204200002042",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1434,
+      "Name": "MediumDesk4",
+      "ModelHalfExtentsHex": "c771b3420000204200002042",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1435,
+      "Name": "MediumDesk5",
+      "ModelHalfExtentsHex": "c771b342b907204200002042",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1438,
+      "Name": "LargeDesk1",
+      "ModelHalfExtentsHex": "fff8f1425c03204200002042",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1439,
+      "Name": "LargeDesk2",
+      "ModelHalfExtentsHex": "9446f04200002042f6ff1f42",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1443,
+      "Name": "DresserLarge",
+      "ModelHalfExtentsHex": "0000304200009b422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1444,
+      "Name": "DresserMedium",
+      "ModelHalfExtentsHex": "000030428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1445,
+      "Name": "DresserWide",
+      "ModelHalfExtentsHex": "0000a8428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1446,
+      "Name": "DresserSlumLarge1",
+      "ModelHalfExtentsHex": "0000304200009b422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1447,
+      "Name": "DresserSlumLarge2",
+      "ModelHalfExtentsHex": "0000304200009b422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1448,
+      "Name": "DresserSlumMedium1",
+      "ModelHalfExtentsHex": "000030428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1449,
+      "Name": "DresserSlumMedium2",
+      "ModelHalfExtentsHex": "000030428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1450,
+      "Name": "DresserSlumWide1",
+      "ModelHalfExtentsHex": "0000a8428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 1451,
+      "Name": "DresserSlumWide2",
+      "ModelHalfExtentsHex": "0000a8428aed47422486e941",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 6987,
+      "Name": "LargeDeskMetal",
+      "ModelHalfExtentsHex": "fff8f1425c03204200002042",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 37913,
+      "Name": "Supply Cabinet",
+      "ModelHalfExtentsHex": "000080420000e642cf761f42",
+      "OpenMaxDistance": 100
+    },
+    {
+      "Goid": 38484,
+      "Name": "Supply Cabinet Alternate Texture",
+      "ModelHalfExtentsHex": "000080420000e642cf761f42",
+      "OpenMaxDistance": 100
+    }
+  ]
+}

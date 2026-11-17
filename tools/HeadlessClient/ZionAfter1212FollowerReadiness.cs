@@ -29,7 +29,7 @@ public static class ZionAfter1212FollowerReadiness
             var old=before.Mobs.Single(m=>m.Npc==id);var mobs=current.Mobs.Where(m=>m.Npc==id).ToArray();
             if(mobs.Length!=1||!current.Following.Contains(id)||!Guid.TryParseExact(old.Identity,"N",out _)||mobs[0].Identity!=old.Identity||mobs[0].Dead||mobs[0].Health==0||
                 mobs[0].Name!=old.Name||mobs[0].Friendly!=old.Friendly||mobs[0].Phase!=old.Phase)throw new InvalidDataException("Wrong live following identity");
-            var mob=mobs[0];bool Match(Live v)=>v.View.Goid==599&&v.View.Name==mob.Name&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
+            var mob=mobs[0];byte[] name=CharacterNameBytes(mob.Name);bool Match(Live v)=>v.View.Goid==599&&v.View.Attributes.TryGetValue("CharacterName",out var actualName)&&actualName.SequenceEqual(name)&&v.View.Attributes.TryGetValue("MissionKey",out var key)&&key.Length==4&&key[0]==mob.Phase&&BitConverter.ToUInt16(key,1)==current.Instance&&key[3]==2&&
                 v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
                 (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
                     v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
@@ -51,6 +51,7 @@ public static class ZionAfter1212FollowerReadiness
     private static Dictionary<ushort,Live> Read(OwnViewLifeSnapshot stream,string handle)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("Wrong current NPC own life");
+        var schemas=new CurrentViewSchemas();
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool own=false;
         foreach(var e in stream.Events)
         {
@@ -58,7 +59,7 @@ public static class ZionAfter1212FollowerReadiness
             if(e.Section==stream.OwnBirthSection)
             {
                 var self=births.LastOrDefault(b=>b.Creation.ViewId==2&&b.Creation.Goid==12&&b.Creation.Name==handle)??throw new InvalidDataException("Wrong current own2 identity");
-                at=self.Offset+self.Length;own=true;
+                schemas.Birth(self.Creation);at=self.Offset+self.Length;own=true;
             }
             if(!own)throw new InvalidDataException("Follower precedes current own2");
             while(at<bytes.Length)
@@ -66,7 +67,7 @@ public static class ZionAfter1212FollowerReadiness
                 var birth=births.FirstOrDefault(b=>b.Offset==at);
                 if(birth!=null)
                 {
-                    var v=birth.Creation;string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    var v=birth.Creation;schemas.Birth(v);string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
                     if(!live.TryGetValue(v.ViewId,out var prior)||prior.Raw!=raw)
                     {
                         if(prior!=null)retired.Add((prior.View.ViewId,prior.View.SpawnId));
@@ -76,9 +77,8 @@ public static class ZionAfter1212FollowerReadiness
                     }
                     at+=birth.Length;continue;
                 }
-                ushort? kind=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
-                    at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
-                if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException($"Unknown escort frame: class {kind}, {Convert.ToHexString(bytes.AsSpan(at,Math.Min(36,bytes.Length-at)))}");
+                ushort? kind=at+2<=bytes.Length?schemas.Lookup(BitConverter.ToUInt16(bytes,at),live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:null):null;
+                if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException($"Unknown current view frame: class {kind}");
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
                 else if(live.TryGetValue(frame.View,out var changed))
@@ -91,12 +91,21 @@ public static class ZionAfter1212FollowerReadiness
         }
         if(!stream.Current)throw new InvalidDataException("NPC own life changed");return live;
     }
+    // Mob.CharacterName -> Attribute(size32).setValue(string) -> ASCII bytes copied/truncated/zero-padded.
+    // Compare every wire byte; identical truncated names still require unique current candidates.
+    public static byte[] CharacterNameBytes(string savedName)
+    {
+        if(savedName==null)throw new InvalidDataException("Saved NPC name required");
+        var bytes=new byte[32];var source=System.Text.Encoding.ASCII.GetBytes(savedName);
+        Array.Copy(source,bytes,Math.Min(source.Length,bytes.Length));return bytes;
+    }
     public static ViewCreation? CurrentNpc(OwnViewLifeSnapshot stream,string handle,MissionProgress.SavedMob mob,ushort instance)
     {
         if(instance==0||!Guid.TryParseExact(mob.Identity,"N",out _)||mob.Level<=0||mob.Level>255)throw new InvalidDataException("Current saved NPC identity required");
+        byte[] name=CharacterNameBytes(mob.Name);
         bool Match(Live v)
         {
-            if(v.View.Goid!=599||v.View.Name!=mob.Name||!v.Known||v.Position==null||v.Dead!=mob.Dead||
+            if(v.View.Goid!=599||!v.View.Attributes.TryGetValue("CharacterName",out var actualName)||!actualName.SequenceEqual(name)||!v.Known||v.Position==null||v.Dead!=mob.Dead||
                 !v.View.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new[]{(byte)mob.Level}))return false;
             bool keyPresent=v.View.Attributes.TryGetValue("MissionKey",out var key);
             if((mob.Friendly&&!keyPresent)||keyPresent&&(key!.Length!=4||key[0]!=mob.Phase||BitConverter.ToUInt16(key,1)!=instance||key[3]!=2))return false;

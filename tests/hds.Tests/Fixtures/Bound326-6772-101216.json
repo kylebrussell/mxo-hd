@@ -1,0 +1,349 @@
+{
+  "RawProofSha256": "90E305D586550497BBD7FD424CBC12754C70763376721493E58BAF5AC4DF8FF0",
+  "State": {
+    "Version": 2,
+    "Identity": "c177e151746548c0a92198dc40142fa2",
+    "Mission": 101216,
+    "Instance": 50,
+    "Started": 1794810466,
+    "Phase": 0,
+    "Kills": 0,
+    "Flags": {
+      "waitingForExit": false,
+      "entered": false,
+      "failed": false,
+      "inventoryFullNotice": false,
+      "completionNotice": false,
+      "entryItemExchanged": false,
+      "goalsCompleteSent": false,
+      "leaveNotNeeded": false
+    },
+    "Done": [],
+    "EverDone": [],
+    "Fired": [],
+    "Arrived": [],
+    "Killed": [],
+    "Following": [],
+    "Waves": [],
+    "PendingNpcs": [],
+    "PendingWaves": [],
+    "JustArrived": [],
+    "WavesJustArrived": [],
+    "JustSwitched": [],
+    "Sides": {},
+    "Items": {},
+    "Reserved": {},
+    "ReservedWaves": {},
+    "NpcElapsed": {},
+    "WaveElapsed": {},
+    "GoalElapsed": {},
+    "Waypoints": [
+      {
+        "x": 28500,
+        "y": 945,
+        "z": 14400,
+        "doorHex": "2400100d"
+      }
+    ],
+    "Exits": [
+      [
+        28500,
+        545,
+        14400
+      ]
+    ],
+    "SiteDoors": [
+      {
+        "exterior": false,
+        "pos_x": 28800,
+        "pos_y": 945,
+        "pos_z": 14700,
+        "rot": -90.9999883795,
+        "quat": "00000000f20435bf00000000f304353f",
+        "sectorID": 209,
+        "metrId": 1,
+        "mxoStaticId": 219152420,
+        "staticId": 36,
+        "type": "owE=",
+        "strType": null
+      }
+    ],
+    "Objects": [
+      {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 30615,
+          "pos_y": 947,
+          "pos_z": 13760,
+          "rot": 90,
+          "quat": "0000000000000000000000000000803f",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219152925,
+          "staticId": 541,
+          "type": "RgE=",
+          "strType": null
+        },
+        "Goid": 326,
+        "Unlocked": false,
+        "State": 0
+      }
+    ],
+    "OpenFloorCurrentSiteIndex": 0,
+    "OpenFloorSites": [
+      {
+        "District": 1,
+        "DoorKey": 219152420,
+        "DoorX": 28800,
+        "DoorY": 945,
+        "DoorZ": 14700,
+        "Fingerprint": "1541BD37CCD62BCA6EF1B0810544823727BAB645730713ABBD3A520F101E5AF0"
+      }
+    ],
+    "StreetAccess": {
+      "Version": 1,
+      "Kind": "StreetAccess",
+      "Enabled": true,
+      "Witnesses": [
+        {
+          "Version": 1,
+          "Mission": 101216,
+          "Identity": "c177e151746548c0a92198dc40142fa2",
+          "Started": 1794810466,
+          "Phase": 0,
+          "Site": {
+            "District": 1,
+            "DoorKey": 219152420,
+            "DoorX": 28800,
+            "DoorY": 945,
+            "DoorZ": 14700,
+            "Fingerprint": "1541BD37CCD62BCA6EF1B0810544823727BAB645730713ABBD3A520F101E5AF0"
+          },
+          "Kind": "Objects",
+          "Context": {
+            "Key": "07B545DFBE0890262FE25EACF57B98E9202F965FA912958CB0CAAAB65C9CD67D",
+            "Kind": "Objects",
+            "Refusal": null,
+            "StreetDigest": "2941A74D15C078CE28F0DFF828D39A750F4E851651D8E97EADB43057ED58AF4F",
+            "Floor": {
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":28800,\"pos_y\":945,\"pos_z\":14700,\"rot\":-90.9999883795,\"quat\":\"00000000f20435bf00000000f304353f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152420,\"staticId\":36,\"type\":\"owE=\",\"strType\":null}",
+              "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+              "Quaternion": "00000000f304353300000000ffff7f3f",
+              "Node": {
+                "Region": 48,
+                "Polygon": 291
+              },
+              "Position": [
+                28500,
+                945,
+                14400
+              ],
+              "Standing": [
+                28682.38430103502,
+                895,
+                14317.92706453424
+              ]
+            },
+            "Lobby": {
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":28800,\"pos_y\":545,\"pos_z\":14700,\"rot\":-90.9999883795,\"quat\":\"00000000f20435bf00000000f304353f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152424,\"staticId\":40,\"type\":\"owE=\",\"strType\":null}",
+              "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+              "Quaternion": "00000000f304353300000000ffff7f3f",
+              "Node": {
+                "Region": 49,
+                "Polygon": 283
+              },
+              "Position": [
+                28500,
+                545,
+                14400
+              ],
+              "Standing": [
+                28682.38430103502,
+                495,
+                14317.92706453424
+              ]
+            },
+            "Door": {
+              "Key": 219152386,
+              "Goid": 343,
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":25900,\"pos_y\":545,\"pos_z\":14800,\"rot\":180,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152386,\"staticId\":2,\"type\":\"ZwE=\",\"strType\":null}",
+              "Quaternion": "00000000f204353f00000000f40435bf",
+              "Position": [
+                27200,
+                545,
+                13900
+              ]
+            },
+            "Outside": [
+              {
+                "Region": 18,
+                "Polygon": 0
+              },
+              {
+                "Region": 19,
+                "Polygon": 0
+              },
+              {
+                "Region": 25,
+                "Polygon": 0
+              },
+              {
+                "Region": 23,
+                "Polygon": 0
+              },
+              {
+                "Region": 16,
+                "Polygon": 10
+              },
+              {
+                "Region": 16,
+                "Polygon": 11
+              },
+              {
+                "Region": 16,
+                "Polygon": 12
+              },
+              {
+                "Region": 16,
+                "Polygon": 3
+              },
+              {
+                "Region": 16,
+                "Polygon": 19
+              }
+            ],
+            "Inside": [
+              {
+                "Region": 49,
+                "Polygon": 7
+              },
+              {
+                "Region": 49,
+                "Polygon": 251
+              },
+              {
+                "Region": 49,
+                "Polygon": 252
+              },
+              {
+                "Region": 49,
+                "Polygon": 41
+              },
+              {
+                "Region": 49,
+                "Polygon": 29
+              },
+              {
+                "Region": 49,
+                "Polygon": 14
+              },
+              {
+                "Region": 49,
+                "Polygon": 51
+              },
+              {
+                "Region": 49,
+                "Polygon": 105
+              },
+              {
+                "Region": 49,
+                "Polygon": 135
+              },
+              {
+                "Region": 49,
+                "Polygon": 283
+              }
+            ]
+          },
+          "Refusal": null
+        }
+      ]
+    },
+    "Mobs": [
+      {
+        "Identity": "4a428779f84b4eb4a0df6abff0200b54",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1,
+        "Phase": 0,
+        "Name": "Rufus Hentzel",
+        "Rsi": "35000024",
+        "Level": 50,
+        "Health": 2150,
+        "MaxHealth": 2150,
+        "Weapon": 0,
+        "Rotation": 0,
+        "X": 30105,
+        "Y": 895,
+        "Z": 12700,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": true,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "f004755c45ec40c9a49eb8862407d6d7",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 2,
+        "Phase": 0,
+        "Name": "Adalberto Giggleman",
+        "Rsi": "38000024",
+        "Level": 50,
+        "Health": 2150,
+        "MaxHealth": 2150,
+        "Weapon": 0,
+        "Rotation": 0,
+        "X": 30850,
+        "Y": 885,
+        "Z": 14600,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": true,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "1fc8dd48cc684fd4bd17993baf9d3725",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 3,
+        "Phase": 0,
+        "Name": "Angelo O'Nanski",
+        "Rsi": "35000024",
+        "Level": 50,
+        "Health": 2150,
+        "MaxHealth": 2150,
+        "Weapon": 0,
+        "Rotation": 0,
+        "X": 30150,
+        "Y": 895,
+        "Z": 13350,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": true,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      }
+    ]
+  },
+  "ActualRoot": [
+    28682.38430103502,
+    895,
+    14317.92706453424
+  ]
+}

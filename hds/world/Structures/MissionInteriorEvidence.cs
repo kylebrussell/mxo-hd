@@ -457,6 +457,22 @@ namespace hds
             if (target == null) { refusal = "NpcStandingOutsideOriginalRoom"; return false; }
             Node end = new Node(room.Id, (ushort)target.Index); double floor = entry.Standing.Y - 95;
             if (!Level(entry.Node, floor) || !Level(end, floor)) { refusal = "NoAuthoredSameFloorInteriorRoute"; return false; }
+            return TryPointRouteCore(entry,end,JsonSerializer.Serialize(marker,MissionProgress.SaveJson),selectedDoor,out proof,out refusal);
+        }
+        internal string NavSourceSha256=>document.NavSha256;
+        internal bool TryPointRoute(Entry entry,ushort targetRegion,double[] standing,Func<uint,StaticWorldObject> selectedDoor,out NpcRoute proof,out string refusal)
+        {
+            proof=null;refusal="InvalidBoundPointRoute";
+            if(entry==null||!ReferenceEquals(entry.Owner,this)||!Vector(standing,3)||!Available(targetRegion))return false;
+            var point=new G.Position(standing[0],standing[1],standing[2]);
+            Polygon target=regions[targetRegion].Polygons.LastOrDefault(p=>Contains(p,point));
+            if(target==null)return false;
+            return TryPointRouteCore(entry,new Node(targetRegion,(ushort)target.Index),null,selectedDoor,out proof,out refusal);
+        }
+        private bool TryPointRouteCore(Entry entry,Node end,string rawMarkerJson,Func<uint,StaticWorldObject> selectedDoor,out NpcRoute proof,out string refusal)
+        {
+            proof=null;refusal="NoAuthoredSameFloorInteriorRoute";double floor=entry.Standing.Y-95;
+            if(!Level(entry.Node,floor)||!Level(end,floor))return false;
             Queue<Node> queue = new Queue<Node>(); Dictionary<Node, Step> previous = new Dictionary<Node, Step>(); previous.Add(entry.Node, null); queue.Enqueue(entry.Node);
             while (queue.Count != 0)
             {
@@ -478,8 +494,27 @@ namespace hds
                 if (raw == null || raw.mxoStaticId != key || !TryWoodDoor(raw, out DoorPose pose, out refusal)) { refusal = "UnsupportedRequiredPortalDoor:" + key.ToString("x8") + ":" + (refusal ?? "MissingSelectedRawDoor"); return false; }
                 doors.Add(pose);
             }
-            proof = new NpcRoute(JsonSerializer.Serialize(marker, MissionProgress.SaveJson), end, path.ToArray(), doors.ToArray()); refusal = null; return true;
+            proof = new NpcRoute(rawMarkerJson, end, path.ToArray(), doors.ToArray()); refusal = null; return true;
         }
+        internal bool ValidatePointRoute(Entry entry,ushort targetRegion,double[] standing,Node[] nodes,Func<uint,StaticWorldObject> selectedDoor,out DoorPose[] doors,out string refusal)
+        {
+            doors=null;refusal="ChangedFixedBoundRoute";
+            if(entry==null||!ReferenceEquals(entry.Owner,this)||!Vector(standing,3)||nodes==null||nodes.Length==0||!nodes[0].Equals(entry.Node)||nodes[nodes.Length-1].Region!=targetRegion||
+                nodes.Distinct().Count()!=nodes.Length||!nodes.All(n=>Level(n,entry.Standing.Y-95))||!Contains(Poly(nodes[nodes.Length-1]),new G.Position(standing[0],standing[1],standing[2])))return false;
+            var keys=new List<uint>();
+            for(int i=1;i<nodes.Length;i++)
+            {
+                Node before=nodes[i-1],next=nodes[i];
+                if(before.Region==next.Region&&Poly(before).Edges.Any(e=>LocalReference(e)&&e.Neighbor==next.Polygon))continue;
+                var portals=Outgoing(before).Where(p=>PortalUsable(p)&&p.TargetRegion==next.Region&&p.TargetPolygon==next.Polygon).ToArray();
+                if(portals.Length!=1)return false;keys.AddRange(portals[0].DoorKeys);
+            }
+            var result=new List<DoorPose>();
+            foreach(uint key in keys.Distinct())
+            {var selected=selectedDoor?.Invoke(key);if(selected==null||selected.mxoStaticId!=key||!TryWoodDoor(selected,out var pose,out refusal))return false;result.Add(pose);}
+            doors=result.ToArray();refusal=null;return true;
+        }
+
     }
 }
 

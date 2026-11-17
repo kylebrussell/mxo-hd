@@ -1,0 +1,550 @@
+{
+  "SourceRawSha256": "FB355AA5E49410066DF37DDFDB7DA179A29DEA763C9D3655A89F60D08D13C5DF",
+  "Payload": {
+    "Version": 2,
+    "Identity": "c1ed24a5447e46f5b213799d10223447",
+    "Mission": 201211,
+    "Instance": 51,
+    "Started": 1794838979,
+    "Phase": 0,
+    "Kills": 5,
+    "Flags": {
+      "waitingForExit": false,
+      "entered": true,
+      "failed": false,
+      "inventoryFullNotice": false,
+      "completionNotice": false,
+      "entryItemExchanged": false,
+      "goalsCompleteSent": false,
+      "leaveNotNeeded": false
+    },
+    "Done": [
+      1
+    ],
+    "EverDone": [
+      1
+    ],
+    "Fired": [],
+    "Arrived": [],
+    "Killed": [
+      1053,
+      1052,
+      1051,
+      1050,
+      2
+    ],
+    "Following": [],
+    "Waves": [],
+    "PendingNpcs": [],
+    "PendingWaves": [],
+    "JustArrived": [],
+    "WavesJustArrived": [],
+    "JustSwitched": [],
+    "Sides": {},
+    "Items": {},
+    "Reserved": {},
+    "ReservedWaves": {},
+    "NpcElapsed": {},
+    "WaveElapsed": {},
+    "GoalElapsed": {},
+    "Waypoints": [
+      {
+        "x": 28500,
+        "y": 1345,
+        "z": 14400,
+        "doorHex": "2000100d"
+      }
+    ],
+    "Exits": [
+      [
+        28500,
+        545,
+        14400
+      ]
+    ],
+    "SiteDoors": [
+      {
+        "exterior": false,
+        "pos_x": 28800,
+        "pos_y": 1345,
+        "pos_z": 14700,
+        "rot": -90.9999883795,
+        "quat": "00000000f20435bf00000000f304353f",
+        "sectorID": 209,
+        "metrId": 1,
+        "mxoStaticId": 219152416,
+        "staticId": 32,
+        "type": "owE=",
+        "strType": null
+      }
+    ],
+    "Objects": [
+      {
+        "Id": 1,
+        "Spot": {
+          "exterior": false,
+          "pos_x": 29870,
+          "pos_y": 1436,
+          "pos_z": 13360,
+          "rot": 270,
+          "quat": "000000000000803f000000002ebd3bb3",
+          "sectorID": 209,
+          "metrId": 1,
+          "mxoStaticId": 219152760,
+          "staticId": 376,
+          "type": "hwU=",
+          "strType": null
+        },
+        "Goid": 548,
+        "Unlocked": false,
+        "State": 0,
+        "OpenFloor": {
+          "Policy": 4,
+          "World": 1,
+          "Mission": 201211,
+          "Phase": 0,
+          "ObjectId": 1,
+          "SourceKey": 219152760,
+          "SourceGoid": 1415,
+          "ConcreteGoid": 548,
+          "RawFingerprint": "239B50146759F44478E1E3556CED3E4BBD8C97BAA99604E73FE8EEFC2D23BC22",
+          "InputFingerprint": "0F2E47B05ABDB85DA65622ECDDC12E87AB41540867198981B62BB947F7F873FD",
+          "Quaternion": "00000000F204353F00000000F40435BF",
+          "Centre": [
+            28840,
+            1240,
+            13758.4287109375
+          ],
+          "Standing": [
+            28840,
+            1295,
+            13856.83203125
+          ],
+          "Route": [
+            28641.421356237308,
+            1295,
+            14258.57864376269,
+            28700,
+            1295,
+            14285,
+            28800,
+            1295,
+            14285,
+            28805,
+            1295,
+            14200,
+            28882.724609375,
+            1295,
+            14000,
+            28840,
+            1295,
+            13856.83203125
+          ],
+          "Surface": [
+            209,
+            47,
+            226
+          ],
+          "RootSurface": [
+            209,
+            47,
+            192
+          ],
+          "RouteSurfaces": [
+            209,
+            47,
+            192,
+            209,
+            47,
+            191,
+            209,
+            47,
+            221,
+            209,
+            47,
+            63,
+            209,
+            47,
+            56
+          ]
+        }
+      }
+    ],
+    "OpenFloorCurrentSiteIndex": 0,
+    "OpenFloorPhase": 0,
+    "OpenFloorSites": [
+      {
+        "District": 1,
+        "DoorKey": 219152416,
+        "DoorX": 28800,
+        "DoorY": 1345,
+        "DoorZ": 14700,
+        "Fingerprint": "CBA90BD052592F00D5F89B23ACBAF3C5D13A5315357586285D0D2010F5B9BFD9"
+      }
+    ],
+    "ElevatorWitnesses": [
+      {
+        "Version": 1,
+        "SiteFingerprint": "CBA90BD052592F00D5F89B23ACBAF3C5D13A5315357586285D0D2010F5B9BFD9",
+        "Region": 47,
+        "LobbyRegion": 49,
+        "FloorKey": 219152416,
+        "LobbyKey": 219152424,
+        "Floor": [
+          28500,
+          1345,
+          14400
+        ],
+        "Lobby": [
+          28500,
+          545,
+          14400
+        ],
+        "FloorQuaternion": "00000000f304353300000000ffff7f3f",
+        "LobbyQuaternion": "00000000f304353300000000ffff7f3f",
+        "Evidence": "original-elevator-group:0d100020:legacy:3F50152A215E7BEB1093F61BAE5B01C4834378E9F07E0DB54A166DD58F5A9ACE:selected-record:6E07A0B1B0B3A60FB0CAA702B347E29EF1309669B6EECD3370614D608517B46D;original-elevator-group:0d100028:legacy:1CA524C9F17DE2D9B3DBDA71219ADEB1769D34657C2A6B88E73CF75ECF5FD3EA:selected-record:CE7647A84BBFCE742314CCC5B41AF985F8177844BFC8388BCF2EE89F71C84B40",
+        "Sources": [
+          "{\"exterior\":false,\"pos_x\":29870,\"pos_y\":1436,\"pos_z\":13360,\"rot\":270,\"quat\":\"000000000000803f000000002ebd3bb3\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152760,\"staticId\":376,\"type\":\"hwU=\",\"strType\":null}"
+        ]
+      }
+    ],
+    "StreetAccess": {
+      "Version": 1,
+      "Kind": "StreetAccess",
+      "Enabled": true,
+      "Witnesses": [
+        {
+          "Version": 1,
+          "Mission": 201211,
+          "Identity": "c1ed24a5447e46f5b213799d10223447",
+          "Started": 1794838979,
+          "Phase": 0,
+          "Site": {
+            "District": 1,
+            "DoorKey": 219152416,
+            "DoorX": 28800,
+            "DoorY": 1345,
+            "DoorZ": 14700,
+            "Fingerprint": "CBA90BD052592F00D5F89B23ACBAF3C5D13A5315357586285D0D2010F5B9BFD9"
+          },
+          "Kind": "Objects",
+          "Context": {
+            "Key": "F88E99B99E15CDF362C5D966FEA877D7E08823D18E21FD5E5FBBEC2B7FE0EB37",
+            "Kind": "Objects",
+            "Refusal": null,
+            "StreetDigest": "2941A74D15C078CE28F0DFF828D39A750F4E851651D8E97EADB43057ED58AF4F",
+            "Floor": {
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":28800,\"pos_y\":1345,\"pos_z\":14700,\"rot\":-90.9999883795,\"quat\":\"00000000f20435bf00000000f304353f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152416,\"staticId\":32,\"type\":\"owE=\",\"strType\":null}",
+              "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+              "Quaternion": "00000000f304353300000000ffff7f3f",
+              "Node": {
+                "Region": 47,
+                "Polygon": 192
+              },
+              "Position": [
+                28500,
+                1345,
+                14400
+              ],
+              "Standing": [
+                28641.421356237308,
+                1295,
+                14258.57864376269
+              ]
+            },
+            "Lobby": {
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":28800,\"pos_y\":545,\"pos_z\":14700,\"rot\":-90.9999883795,\"quat\":\"00000000f20435bf00000000f304353f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152424,\"staticId\":40,\"type\":\"owE=\",\"strType\":null}",
+              "EvidenceDigest": "24C9C995C579F41E78766CB5EF942663825F84BDD7123D400FB4AD53529BD6B6",
+              "Quaternion": "00000000f304353300000000ffff7f3f",
+              "Node": {
+                "Region": 49,
+                "Polygon": 283
+              },
+              "Position": [
+                28500,
+                545,
+                14400
+              ],
+              "Standing": [
+                28641.421356237308,
+                495,
+                14258.57864376269
+              ]
+            },
+            "Door": {
+              "Key": 219152386,
+              "Goid": 343,
+              "RawDoorJson": "{\"exterior\":false,\"pos_x\":25900,\"pos_y\":545,\"pos_z\":14800,\"rot\":180,\"quat\":\"0000000000000000000000000000803f\",\"sectorID\":209,\"metrId\":1,\"mxoStaticId\":219152386,\"staticId\":2,\"type\":\"ZwE=\",\"strType\":null}",
+              "Quaternion": "00000000f204353f00000000f40435bf",
+              "Position": [
+                27200,
+                545,
+                13900
+              ]
+            },
+            "Outside": [
+              {
+                "Region": 18,
+                "Polygon": 0
+              },
+              {
+                "Region": 19,
+                "Polygon": 0
+              },
+              {
+                "Region": 25,
+                "Polygon": 0
+              },
+              {
+                "Region": 23,
+                "Polygon": 0
+              },
+              {
+                "Region": 16,
+                "Polygon": 10
+              },
+              {
+                "Region": 16,
+                "Polygon": 11
+              },
+              {
+                "Region": 16,
+                "Polygon": 12
+              },
+              {
+                "Region": 16,
+                "Polygon": 3
+              },
+              {
+                "Region": 16,
+                "Polygon": 19
+              }
+            ],
+            "Inside": [
+              {
+                "Region": 49,
+                "Polygon": 7
+              },
+              {
+                "Region": 49,
+                "Polygon": 251
+              },
+              {
+                "Region": 49,
+                "Polygon": 252
+              },
+              {
+                "Region": 49,
+                "Polygon": 41
+              },
+              {
+                "Region": 49,
+                "Polygon": 29
+              },
+              {
+                "Region": 49,
+                "Polygon": 14
+              },
+              {
+                "Region": 49,
+                "Polygon": 51
+              },
+              {
+                "Region": 49,
+                "Polygon": 105
+              },
+              {
+                "Region": 49,
+                "Polygon": 135
+              },
+              {
+                "Region": 49,
+                "Polygon": 283
+              }
+            ]
+          },
+          "Refusal": null
+        }
+      ]
+    },
+    "Mobs": [
+      {
+        "Identity": "1e3668ef9cdb44c49b2470150e8f9798",
+        "RewardExperience": 0,
+        "Lootable": false,
+        "Loot": null,
+        "Npc": 1,
+        "Phase": 0,
+        "Name": "Merovingian Martial Arts Initiate",
+        "Rsi": "9c0000b4",
+        "Level": 50,
+        "Health": 1,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29740,
+        "Y": 1295,
+        "Z": 13660,
+        "Dead": false,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "290c7f37af464cb2afbc9a7cb7420382",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 13000,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 2,
+        "Phase": 0,
+        "Name": "Elite Guard",
+        "Rsi": "c6020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29470,
+        "Y": 1295,
+        "Z": 13615.0048828125,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": false,
+        "Giver": false,
+        "Taker": false,
+        "Wave": null
+      },
+      {
+        "Identity": "9faa462ea81d40759b04f9a499641942",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 8000,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 1050,
+        "Phase": 0,
+        "Name": "Exile Soldier",
+        "Rsi": "c6020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29740,
+        "Y": 1295,
+        "Z": 14034.5146484375,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": true,
+        "Giver": false,
+        "Taker": false,
+        "Wave": 0
+      },
+      {
+        "Identity": "f27e7286e96d4aefa6cb12c152faa531",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 11500,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 1051,
+        "Phase": 0,
+        "Name": "Exile Soldier",
+        "Rsi": "c5020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29740,
+        "Y": 1295,
+        "Z": 14150,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": true,
+        "Giver": false,
+        "Taker": false,
+        "Wave": 0
+      },
+      {
+        "Identity": "c30c8a2a2cde4feb93d0e75232cf003c",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 20250,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 1052,
+        "Phase": 0,
+        "Name": "Exile Soldier",
+        "Rsi": "ca020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29740,
+        "Y": 1295,
+        "Z": 14484.5146484375,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": true,
+        "Giver": false,
+        "Taker": false,
+        "Wave": 0
+      },
+      {
+        "Identity": "29708a694f914055b0b6ebccff495fc4",
+        "RewardExperience": 19204,
+        "Lootable": true,
+        "Loot": {
+          "Info": 0,
+          "MissionItem": 0,
+          "Items": []
+        },
+        "Npc": 1053,
+        "Phase": 0,
+        "Name": "Exile Soldier",
+        "Rsi": "c6020058",
+        "Level": 50,
+        "Health": 0,
+        "MaxHealth": 2150,
+        "Weapon": 2568,
+        "Rotation": 0,
+        "X": 29740,
+        "Y": 1295,
+        "Z": 14600,
+        "Dead": true,
+        "ScriptedCorpse": false,
+        "Aggro": 0,
+        "Friendly": false,
+        "Hostile": true,
+        "Giver": false,
+        "Taker": false,
+        "Wave": 0
+      }
+    ]
+  },
+  "Own": "01000C0C0001CDAB15884C61737400000000000000000000000000000000000000000000000000000000904669727374000000000000000000000000000000000000000000000000000000809888130184D007C600004D616368696E65734166746572323031323036000000000000000000000000008813E902000000E9030000160003000000000004000000000000D007BD00000000009AD0400000000000F07E400000000000F8A140000032220000C000100000880014020000020000"
+}

@@ -13,6 +13,7 @@ namespace hds
                     if(MissionBoundObjectPoses.TryCurrent(state,out var bound,out string refusal))return bound;
                     throw new MissionCheckpointException("Bound326 pose refused: "+refusal);
                 }
+                if(state?.FurniturePresentation!=null)return state.FurniturePresentation();
                 return MissionComputerAnchors.For(state);
             }
             var pose=state.OpenFloor;if(state.def==null||!pose.Basic(state.spot,state.goid,state.def.id))throw new InvalidOperationException("InvalidOpenFloorPose");
