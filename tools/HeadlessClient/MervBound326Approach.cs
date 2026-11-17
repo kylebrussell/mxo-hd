@@ -59,9 +59,9 @@ public static class MervBound326Approach
         {
             // NPC-v2 car authority is distinct from a free-prop elevator witness. The qualified reader
             // validates exact current/historical ownership, raw site, measured waypoint/lobby and quaternion.
-            if(MissionNpcInteriorRide.ForSite(state)!=null)return ProofScope.Measured;
             if(MervFollowupStreetEntry.ForSite(state)!=null)return ProofScope.Measured;
             if(adopted)throw new InvalidDataException("Current adopted phase lacks measured witness");
+            if(MissionNpcInteriorRide.ForSite(state)!=null)return ProofScope.Measured;
             RequireRawFloor();return ProofScope.Legacy;
         }
         var w=current[0];if(w.FloorKey!=key||!w.Floor.SequenceEqual(new[]{state.Waypoints[0].x,state.Waypoints[0].y,state.Waypoints[0].z})||!w.Lobby.SequenceEqual(state.Exits[0])||w.LobbyKey==0)throw new InvalidDataException("Current measured witness differs from selected door");
