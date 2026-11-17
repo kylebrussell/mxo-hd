@@ -6,6 +6,6 @@ PASS requires all required objectives, a completion summary, one selected receip
 Movement and weaken commands accelerate testing; headless passes do not establish native rendering, picking or collision.
 Use before/after complete sweeps for shared fixes; Claude checks three to five representative missions per class.
 Set `MXO_QA_MISSION_ID` and use NativeQa mode `mission-catalog-sample` to check any catalog mission through the ordinary UI.
-For travel, sample 1205, 2110 and 307101: normal contact acceptance, objectives, companion travel and departure; expect one completion.
+Native samples: 1205 (escort elevator), 104101 (three followers), 102301 (lobby cars), 2201 (props); complete normally once.
 Claude owns the native client lock, character reset and merge.
 The baseline uses assisted street travel; native samples establish visible doors, walking and picking.
