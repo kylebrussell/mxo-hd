@@ -215,7 +215,7 @@ public static partial class Scenarios
             current=await MervFollowupCurrent(c,p);
             if(current!=null&&current.Phase==phase&&current.Flags.GetValueOrDefault("waitingForExit")&&!current.Flags.GetValueOrDefault("leaveNotNeeded"))
             {Stage("elevator",$"phase {phase+1} departure");await SweepRide(c,p,current,area,false,notes);}
-            await p.WaitUntilAsync(()=>{var s=MervFollowupCurrent(c,p).GetAwaiter().GetResult();return s==null||s.Phase==phase+1;},"next phase or completion",TimeSpan.FromSeconds(15));
+            await p.WaitUntilAsync(()=>{var s=MervFollowupCurrent(c,p).GetAwaiter().GetResult();return s==null||s.Phase==phase+1;},"next phase or completion",TimeSpan.FromSeconds(60));
         }
         Stage("payload/receipt","completion");
         await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(summaryCursor).Any(r=>r.Bytes.AsSpan().StartsWith(new byte[]{0x80,0xa2,0})),"completion summary",TimeSpan.FromSeconds(10));
