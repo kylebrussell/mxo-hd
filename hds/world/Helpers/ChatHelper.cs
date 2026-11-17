@@ -235,10 +235,11 @@ namespace hds
                 if (command.Equals("?missionfloor") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: the elevator ride a player gets from the current mission site's elevator, without finding its door
-                    MissionSite site = Store.currentClient.playerData.missionProgress?.site;
-                    if (site?.elevatorDoor != null)
+                    var progress = Store.currentClient.playerData.missionProgress;
+                    var door = progress?.waypoints.FirstOrDefault();
+                    if (progress?.site?.elevatorDoor != null && door != null)
                     {
-                        MissionStaging.OnElevator(Store.currentClient, site.elevatorDoor.pos_x, site.elevatorDoor.pos_z);
+                        MissionStaging.OnElevator(Store.currentClient, door.x, door.z);
                     }
                 }
 

@@ -93,8 +93,11 @@ public static partial class Scenarios
         var items=new List<(int,uint,int)>(); uint entry=(uint?)m.Xml.Attribute("entryItem")??0;
         if(entry!=0)items.Add((1,entry,0));
         var contactSpot=MissionContactNpcs.All.FirstOrDefault(x=>x.Contact?.name==m.Contact);
-        var p=await c.AddPlayerAsync(PrimaActorSeed("Sweep"+m.Id,m.Org==0?(byte)1:m.Org,17000,2300,50) with
+        var origin=(Environment.GetEnvironmentVariable("MXO_SWEEP_START")??"17000,495,2300").Split(',').Select(v=>double.Parse(v,CultureInfo.InvariantCulture)).ToArray();
+        if(origin.Length!=3||origin.Any(v=>!double.IsFinite(v)))throw new ArgumentException("MXO_SWEEP_START must be x,y,z in world units");
+        var p=await c.AddPlayerAsync(PrimaActorSeed("Sweep"+m.Id,m.Org==0?(byte)1:m.Org,origin[0],origin[2],50) with
         {CompletedMissions=catalog.Where(x=>x.Id!=m.Id).Select(x=>x.Id).ToArray(),Items=items,
+         Y=origin[1],
          DistrictId=contactSpot?.metrId??((int?)m.Xml.Attribute("district")??1),District=contactSpot?.metrId==2?"dt":(string?)m.Xml.Attribute("districtName")??"slums",
          MerovingianReputation=(int?)m.Xml.Attribute("minReputation")??0,
          OwnedLoadedAbilities=new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
@@ -126,6 +129,8 @@ public static partial class Scenarios
         {
             var area=m.Xml.Elements("phase").ElementAt(phase);int cursor=p.World.RpcSnapshot().Count;
             var current=await MervFollowupCheckpoint(c,p);
+            if(Environment.GetEnvironmentVariable("MXO_SWEEP_START")!=null)
+                foreach(string message in MissionCatalogEntrances.Describe(current))Console.WriteLine(message);
             if(current.Waypoints.Length>0&&area.Attribute("site")!=null)
             {Stage("lobby car",$"phase {phase+1} entry");await SweepRide(c,p,current,area,true,notes);}
             var completed=new HashSet<int>();
@@ -264,6 +269,13 @@ public static partial class Scenarios
             var ready=await MervFollowupCurrent(c,p);if(ready==null||ready.Phase>s.Phase)return;s=ready;
         }
         await MoveForMissionTest(p,ride.Approach[0],ride.Approach[1],ride.Approach[2]);
+        if(enter&&ride.Street!=null)
+        {
+            var floor=ride.Street.Floor;
+            byte[] expected=ServerPackets.BuildMissionWaypoint(floor.Position[0],floor.Position[1],floor.Position[2],0,Convert.ToHexString(BitConverter.GetBytes(floor.Key)));
+            await p.WaitUntilAsync(()=>p.World.RpcSnapshot().LastOrDefault(r=>r.Bytes.Length==35&&r.Bytes[0]==0x80&&r.Bytes[1]==0x9e&&r.Bytes[2]==0)?.Bytes.SequenceEqual(expected)==true,
+                "measured car waypoint inside the lobby",TimeSpan.FromSeconds(15));
+        }
         if(!enter){var now=await MervFollowupCurrent(c,p);if(now==null||now.Phase>s.Phase)return;}
         if(!enter)
         {
