@@ -91,7 +91,8 @@ public class MissionGeneratedEscortExitTests : IDisposable
     }
     [Fact] public void LegacyGroundAndFarExitControlsRemain()
     {
-        var(c,p,f)=Captured();Assert.True(p.AtExit(80000,2895,-16700));
+        var(c,p,f)=Captured();Assert.False(p.AtExit(80000,2895,-16700));
+        p.entered=true;Assert.True(p.AtExit(80000,2895,-16700));
         p.site.lobbyDoor=p.site.elevatorDoor;Assert.True(p.AtExit(54200,2895,-16700));
         Assert.False(MissionStaging.ExitEscortRide(c,p,p.site,p.site.elevatorDoor,54200,2895,-16700));
         p.site=null;Assert.True(p.AtExit(54200,2895,-16700));

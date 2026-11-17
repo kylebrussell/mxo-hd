@@ -75,9 +75,10 @@ public static partial class Scenarios
                     string debug=context.Server.DebugLog()[debugStart..];
                     string? refusal=debug.Split('\n').LastOrDefault(l=>l.Contains("refused")||l.Contains("admission deferred"));
                     if(refusal!=null){failure+="; "+refusal.Trim();if(refusal.Contains("NPC"))step.Class="NPC role placement";else if(refusal.Contains("Box")||refusal.Contains("street"))step.Class="room/NAV placement";}
-                    await File.WriteAllTextAsync(Path.Combine(output,mission.Id+".log"),failure+"\n"+debug);
-                    await File.WriteAllTextAsync(Path.Combine(output,mission.Id+"-state.json"),
-                        await context.Database.ScalarAsync("SELECT IFNULL(payload,'null') FROM char_active_missions WHERE charId="+(step.Player?.CharId??0)));
+                    await File.WriteAllTextAsync(Path.Combine(output,mission.Id+".log"),failure+"\n"+debug+"\n"+context.Server.FullOutput());
+                    try{await File.WriteAllTextAsync(Path.Combine(output,mission.Id+"-state.json"),
+                        await context.Database.ScalarAsync("SELECT IFNULL(payload,'null') FROM char_active_missions WHERE charId="+(step.Player?.CharId??0)));}
+                    catch(Exception diagnostic){await File.AppendAllTextAsync(Path.Combine(output,mission.Id+".log"),"\nCheckpoint unavailable: "+diagnostic.Message);}
                 }
             }
             finally
@@ -231,9 +232,9 @@ public static partial class Scenarios
                 await p.WaitUntilAsync(()=>Done(n).GetAwaiter().GetResult(),"objective acknowledgement and saved progress",TimeSpan.FromSeconds(60));
             }
             current=await MervFollowupCurrent(c,p);
-            if(current!=null&&current.Phase==phase&&current.Flags.GetValueOrDefault("waitingForExit"))
+            if(current!=null&&current.Phase==phase&&current.Flags.GetValueOrDefault("waitingForExit")&&!current.Flags.GetValueOrDefault("leaveNotNeeded"))
             {Stage("elevator",$"phase {phase+1} departure");await SweepRide(c,p,current,area,false,notes);}
-            await p.WaitUntilAsync(()=>{var s=MervFollowupCurrent(c,p).GetAwaiter().GetResult();return s==null||s.Phase==phase+1;},"next phase or completion",TimeSpan.FromSeconds(15));
+            await p.WaitUntilAsync(()=>{var s=MervFollowupCurrent(c,p).GetAwaiter().GetResult();return s==null||s.Phase==phase+1;},"next phase or completion",TimeSpan.FromSeconds(60));
         }
         Stage("payload/receipt","completion");
         await p.WaitUntilAsync(()=>p.World.RpcSnapshot().Skip(summaryCursor).Any(r=>r.Bytes.AsSpan().StartsWith(new byte[]{0x80,0xa2,0})),"completion summary",TimeSpan.FromSeconds(10));
@@ -265,6 +266,22 @@ public static partial class Scenarios
         if(s.SiteDoors.Length==0){if(enter)await EnterMissionArea(c,p);else await LeaveMissionArea(p);return;}
         var rows=new[]{"staticObjects_slums_1.csv","staticObjects_slums_2.csv"}.SelectMany(f=>File.ReadLines(Path.Combine(c.RepositoryRoot,"data",f)));
         var ride=s.SiteDoors.Last().metrId==1?MervFollowupElevatorFixture.Select(s,enter,rows,area.Elements("object").Select(o=>(ushort)(int)o.Attribute("id")!).ToArray()):SweepLegacyDistrictRide(c,s,enter);
+        if(!enter)
+        {
+            // Several independent escort goals can require the same ride. Meet all their NPCs first.
+            foreach(ushort id in ZionAfter1212FollowerReadiness.OpenFollowers(area.Parent!,s))
+            {
+                var current=await MervFollowupCurrent(c,p);if(current==null||current.Phase>s.Phase)return;
+                if(current.Following.Contains(id))continue;
+                await SweepNpc(c,p,id);
+                await p.WaitUntilAsync(()=>
+                {
+                    var now=MervFollowupCurrent(c,p).GetAwaiter().GetResult();
+                    return now==null||now.Phase>s.Phase||now.Following.Contains(id);
+                },"recruit every open exit escort",TimeSpan.FromSeconds(6));
+            }
+            var ready=await MervFollowupCurrent(c,p);if(ready==null||ready.Phase>s.Phase)return;s=ready;
+        }
         await MoveForMissionTest(p,ride.Approach[0],ride.Approach[1],ride.Approach[2]);
         if(enter&&ride.Street!=null)
         {
@@ -311,6 +328,7 @@ public static partial class Scenarios
             var arrival=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(arrival!=null)arrivalRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
         }
+        if(arrivalRoot!=null)p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(arrivalRoot));
         if(enter&&ride.Measured)
         {
             string reason="No car observation";
