@@ -26,16 +26,17 @@ public static partial class Scenarios
     private static async Task ContainerAndCorpseLoot(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "machines_01_the_end_of_the_beginning.xml");
-        await EnterMissionArea(context, player);
-        const string placement = @"\[MISSION\] Object 1 \(Safe\) is a (\d+)";
-        await player.WaitUntilAsync(() => Regex.IsMatch(context.Server.DebugLog(), placement),
-            "Safe placement", TimeSpan.FromSeconds(15));
-        ushort goid = ushort.Parse(Regex.Matches(context.Server.DebugLog(), placement).Last().Groups[1].Value);
-        await player.WaitUntilAsync(() => player.ViewsOfGoid(goid).Count > 0 && player.ViewsOfGoid(599).Count > 0,
-            "Safe and hostile NPC views", TimeSpan.FromSeconds(15));
-        ViewCreation safe = player.ViewsOfGoid(goid).Last();
-        player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
-        await player.WaitForRpcAsync("81 19");
+        var evidence=new List<object>();
+        var saved=await MervFollowupCheckpoint(context,player);
+        var mission=System.Xml.Linq.XElement.Load(Path.Combine(context.RepositoryRoot,"data/missions/machines_01_the_end_of_the_beginning.xml"));
+        await SweepRide(context,player,saved,mission.Elements("phase").ElementAt(saved.Phase),true,evidence);
+        async Task OpenSafe()
+        {
+            var safe=await MervFollowupObject(context,player,1,0,evidence);
+            player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
+            await player.WaitForRpcAsync("81 19");
+        }
+        await OpenSafe();
         await DefeatMissionNpc(player, player.ViewsOfGoid(599).Last());
         await FreeLastBagSlot(player);
         player.SendRpc("81 1f");
@@ -44,14 +45,12 @@ public static partial class Scenarios
             "Taking a corpse's loot leaves the previously opened safe untouched");
         Check.Equal(0, player.Received("80 a0 01 06 00 01").Count, "Corpse loot cannot complete the safe's objective");
 
-        player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
-        await player.WaitForRpcAsync("81 19");
+        await OpenSafe();
         player.SendRpc("81 1a");
         player.SendRpc("81 1f");
         await player.WaitForRpcAsync("81 20");
         Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6799"), "Closed mission loot selection cannot grant its item");
-        player.SendRpc($"80 c7 {MissionNpcId(safe)} 03 00");
-        await player.WaitForRpcAsync("81 19");
+        await OpenSafe();
         player.SendRpc("81 1f");
         await player.WaitForRpcAsync("5e 60 00 8f 1a 00 00");
         await player.WaitForRpcAsync("80 a0 01 06 00 01");
