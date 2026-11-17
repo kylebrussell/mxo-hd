@@ -299,8 +299,9 @@ public static partial class Scenarios
         {
             if(ride.Street!=null||ride.Npc!=null)
             {
+                var destination=ride.Street!=null?(enter?ride.Street.Floor:ride.Street.Lobby).Standing!:(enter?ride.Npc!.Floor:ride.Npc!.Lobby).Standing!;
                 NpcInteriorComputerState.Teleport? observed=null;
-                await p.WaitUntilAsync(()=>{try{observed=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),rideLife,rideCursor,ride.Approach);return true;}catch(InvalidDataException){return false;}},"ordinary elevator arrival on the wire",TimeSpan.FromSeconds(12));
+                await p.WaitUntilAsync(()=>{try{observed=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),rideLife,rideCursor,destination);return true;}catch(InvalidDataException){return false;}},"ordinary elevator arrival on the wire",TimeSpan.FromSeconds(12));
                 arrivalRoot=new[]{(double)observed!.X,observed.Y,observed.Z};
             }
             else await p.WaitUntilAsync(()=>c.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary elevator transport",TimeSpan.FromSeconds(12));
