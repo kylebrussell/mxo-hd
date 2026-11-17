@@ -253,7 +253,8 @@ public static partial class Scenarios
         new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
         new Scenario("large02-prefab-door", Large02PrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
-        new Scenario("team-shared-mission-kill",TeamSharedMissionKill,StillNpcs,"team-progress.xml"),
+        new Scenario("team-shared-mission-kill",TeamSharedMissionKill,new Dictionary<string,string>(StillNpcs)
+            {["MXO_MOBS"]="world",["MXO_AGGRO"]="1",["MXO_MOB_WANDER"]="1"},"team-progress.xml"),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("team-new-leader-and-boot", TeamNewLeaderAndBoot),
         new Scenario("socialbot-on-a-team", SocialBotOnATeam),

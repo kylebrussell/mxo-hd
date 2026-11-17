@@ -9,11 +9,11 @@ public sealed class GameplayBreadthMode:NativeQaMode
     public override NativeQaModePlan Plan {get;}=new(new ushort[]{2},19403,60401,
         new[]{"DELETE FROM inventory WHERE charId=110"},new[]{"UPDATE char_abilities SET level=1 WHERE char_id=110"},
         new[]{"UPDATE characters SET level=2,exp=4900,alignment=3,cash=1000,y=-705,rotation=0,healthC=200,healthM=200,innerStrC=103,innerStrM=103,pvpflag=0 WHERE charId=110",
-            "UPDATE characters SET x=17050,y=495,z=2693,alignment=3,pvpflag=0 WHERE handle='QAEnemy'"},
+            $"UPDATE characters SET x={TeamMissionFixture.HelperX},y={TeamMissionFixture.Y},z={TeamMissionFixture.Z},alignment=3,pvpflag=0 WHERE handle='QAEnemy'"},
         DevCommands:true,missionFixture:"team-progress.xml",
         environmentOverrides:new(){["MXO_MOBS"]="world",["MXO_AGGRO"]="1",["MXO_MOB_WANDER"]="1",["MXO_QA_MOB_WANDER_SEED"]="42"},
         readyMessages:new[]{"CSR110 starts level2/XP4900. Watch the Chopper wander, then kill one normally: expect335XP, level3/5235XP, MaxHP250/MaxIS106; relog without reseeding.",
-            "Use the printed chase setup and watch the NPC approach before interlock. Then ?tp 17020 495 2693 0 0 0, invite QAEnemy to your team, call Flood and accept Team Progress Fixture. Tell QAEnemy 'assist'; it accepts your invite and fights Team Security. Your goal1 must tick; talk to Team Contact for one completion. See docs/GAMEPLAY-BREADTH-QA.md."});
+            $"For the team check, use ?tp {TeamMissionFixture.HolderX} {TeamMissionFixture.Y} {TeamMissionFixture.Z} 0 0 0. Invite QAEnemy to your team, call Flood and accept Team Progress Fixture, then tell QAEnemy 'assist'. Verify goal 1 credits its kill and talk to Team Contact for one completion. See docs/GAMEPLAY-BREADTH-QA.md."});
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {

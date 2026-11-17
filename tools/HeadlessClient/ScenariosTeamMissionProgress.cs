@@ -1,11 +1,17 @@
 namespace HeadlessClient;
 
+public static class TeamMissionFixture
+{
+    public const int HolderX = 23828, HelperX = 23878, Y = 495, Z = 13984;
+}
+
 public static partial class Scenarios
 {
     private static async Task TeamSharedMissionKill(ScenarioContext context)
     {
-        var players=await context.AddPlayersInWorldAsync(new CharacterSeed("TeamHolder"){Level=50,Organization=3},
-            new CharacterSeed("TeamHelper"){Level=50,X=17050},new CharacterSeed("TeamOutsider"){Level=50,X=17070});
+        var seed=new CharacterSeed("TeamHolder"){Level=50,Organization=3,X=TeamMissionFixture.HolderX,Y=TeamMissionFixture.Y,Z=TeamMissionFixture.Z};
+        var players=await context.AddPlayersInWorldAsync(seed,seed with {Handle="TeamHelper",X=TeamMissionFixture.HelperX},
+            seed with {Handle="TeamOutsider",Z=TeamMissionFixture.Z+70});
         var owner=players[0];var helper=players[1];var outsider=players[2];
         owner.SendRpc(GroupInvite(Team,helper.Handle,""));await helper.WaitForRpcAsync("80 8f 0c 00");
         helper.SendRpc(InviteAnswer(Team,0,owner.Handle));await helper.WaitForRpcAsync("80 8e");
