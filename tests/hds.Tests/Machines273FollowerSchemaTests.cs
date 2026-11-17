@@ -37,7 +37,7 @@ public partial class MissionNpcInteriorCheckpointTests
   var own=QaOwn();var handle=Assert.Single(WireFormat.FindCreations(own)).Name!;
   var sections=new List<byte[]>{own,QaNpc(QaState()),QaNpc(QaState(),46,8),Convert.FromHexString("01000101002E00")};
   if(change=="reused")sections.Add(QaDoor(view:46,spawn:10));
-  sections.Add(change=="unknown"?Convert.FromHexString("6300020E00A800F4C9460080F74300105646"):change=="truncated"?Convert.FromHexString(MachinesRetiredMoves[..34]):Convert.FromHexString(MachinesRetiredMoves[..36]));
+  sections.Add(change=="unknown"?Convert.FromHexString("630004808080406400"):change=="truncated"?Convert.FromHexString(MachinesRetiredMoves[..34]):Convert.FromHexString(MachinesRetiredMoves[..36]));
   Assert.Throws<InvalidDataException>(()=>ReadFollowerFrames(QaLife(sections.ToArray()).Snapshot(),handle));
  }
 }

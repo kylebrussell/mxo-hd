@@ -38,7 +38,7 @@ public partial class MissionNpcInteriorCheckpointTests
     public void SchemaHistoryCannotAuthorizeUnknownReusedOrDeletedViews(string change)
     {
         var sections=new List<byte[]>{QaOwn(),QaNpc(QaState(),13,4),QaDoor(state:0x834),Convert.FromHexString("01000101000D00")};
-        if(change=="nohistory")sections.RemoveAt(1);
+        if(change=="nohistory"){sections.RemoveAt(1);sections.Add(Convert.FromHexString("0D0004808080406400"));}
         if(change=="reuse")sections.Add(QaDoor(view:13,spawn:6,key:0x2260056c));
         if(change=="unknown")sections.Add(new byte[]{99,88});
         var move=Convert.FromHexString(C9RetiredMoves[..36]);sections.Add(change=="truncated"?move[..^1]:move);

@@ -72,7 +72,7 @@ public static class MissionNpcInteriorProof
         void NativeDoor(Door door,JsonElement? entry)
         {
             var raw=Raw(door.Raw);using var ownDoc=JsonDocument.Parse(EvidencePayload(repository,raw.sectorID,entry?.GetProperty("EvidenceDigest").GetString()??expectedDigest));var group=ownDoc.RootElement.GetProperty("Groups").EnumerateArray().Single(g=>g.GetProperty("Key").GetUInt32()==door.Key);
-            Need(group.GetProperty("Legacy").EnumerateArray().Any(l=>
+            Need((entry.HasValue ? group.GetProperty("Legacy").EnumerateArray().ToArray() : new[]{MissionDoorOccurrences.OriginalLegacy(group)}).Any(l=>
             {var s=l.GetProperty("Signature");return s.GetProperty("Goid").GetUInt16()==door.Goid&&s.GetProperty("Position").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(new[]{raw.pos_x,raw.pos_y,raw.pos_z})&&s.GetProperty("Rotation").GetDouble()==raw.rot&&string.Equals(s.GetProperty("Quaternion").GetString(),raw.quat,StringComparison.OrdinalIgnoreCase);}),"NPC QA exact legacy source signature");
             var occurrences=group.GetProperty("Occurrences").EnumerateArray().ToArray();var positionScope=MissionInteriorDoorTypes.IsSupported(door.Goid)?occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid):occurrences;Need(positionScope.Any()&&positionScope.All(o=>o.GetProperty("ModelPosition").EnumerateArray().Select(v=>v.GetDouble()).SequenceEqual(door.Position)),"NPC QA native position consensus");
             var own=occurrences.Where(o=>o.GetProperty("Goid").GetUInt16()==door.Goid&&(!entry.HasValue||o.GetProperty("Region").GetInt32()==entry.Value.GetProperty("Node").GetProperty("Region").GetInt32())).ToArray();
