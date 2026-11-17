@@ -379,7 +379,7 @@ namespace hds
                             foreach (Mob mob in WorldServer.mobs)
                             {
                                 double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
-                                if (!mob.getIsDead() && dx * dx + dz * dz < 5000 * 5000 && mob.getHealthC() > health)
+                                if (!mob.isFriendly && !mob.getIsDead() && dx * dx + dz * dz < 5000 * 5000 && mob.getHealthC() > health)
                                 {
                                     mob.setHealthC(health);
                                     weakened++;
