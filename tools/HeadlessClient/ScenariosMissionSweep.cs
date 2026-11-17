@@ -292,8 +292,24 @@ public static partial class Scenarios
                 }
             }
         }
-        int log=c.Server.DebugLog().Length;p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(ride.Key))} 03 00");
-        if(s.Waypoints[0].y!=s.Exits[0][1])await p.WaitUntilAsync(()=>c.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary elevator transport",TimeSpan.FromSeconds(12));
+        int log=c.Server.DebugLog().Length,rideCursor=p.World.ViewSnapshot().Count;var rideLife=p.World.CurrentOwnViewLife();
+        p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(ride.Key))} 03 00");
+        double[]? arrivalRoot=null;
+        if(s.Waypoints[0].y!=s.Exits[0][1])
+        {
+            if(ride.Street!=null||ride.Npc!=null)
+            {
+                NpcInteriorComputerState.Teleport? observed=null;
+                await p.WaitUntilAsync(()=>{try{observed=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),rideLife,rideCursor,ride.Approach);return true;}catch(InvalidDataException){return false;}},"ordinary elevator arrival on the wire",TimeSpan.FromSeconds(12));
+                arrivalRoot=new[]{(double)observed!.X,observed.Y,observed.Z};
+            }
+            else await p.WaitUntilAsync(()=>c.Server.DebugLog()[log..].Contains("[MISSION] Teleported to "),"ordinary elevator transport",TimeSpan.FromSeconds(12));
+        }
+        if(arrivalRoot==null)
+        {
+            var arrival=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            if(arrival!=null)arrivalRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+        }
         if(enter&&ride.Measured)
         {
             string reason="No car observation";
@@ -302,10 +318,9 @@ public static partial class Scenarios
         }
         if(enter&&MervBound326Approach.NeedsArrival(s))
         {
-            var match=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
-            if(match!=null)
+            if(arrivalRoot!=null)
             {
-                var root=Enumerable.Range(1,3).Select(i=>double.Parse(match.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+                var root=arrivalRoot;
                 Check.That(NavMesh.Locate(ride.District,root[0],root[1],root[2],out var nav),"Arrival NAV floor");
                 notes.Add(MervBound326Approach.Capture(s,root,nav,p.World.CurrentOwnViewLife(),ride.Measured));
             }
