@@ -1,19 +1,22 @@
 using System.Xml.Linq;
+using System.Collections.Concurrent;
 
 namespace NativeQa.Modes;
 
 public sealed class MissionCatalogSampleMode : NativeQaMode
 {
     public override string Name => "mission-catalog-sample";
+    private readonly ConcurrentDictionary<string,NativeQaModePlan> plans = new(StringComparer.Ordinal);
     public override NativeQaModePlan Plan
     {
-        get
-        {
+        get => plans.GetOrAdd(Environment.GetEnvironmentVariable("MXO_QA_MISSION_ID")??"1205",BuildPlan);
+    }
+    private static NativeQaModePlan BuildPlan(string value)
+    {
             string? root=AppContext.BaseDirectory;
             while(root!=null&&!File.Exists(Path.Combine(root,"hds.sln")))root=Path.GetDirectoryName(root);
             if(root==null)throw new DirectoryNotFoundException("Mission catalog repository");
             var catalog=Directory.GetFiles(Path.Combine(root,"data","missions"),"*.xml").Select(XElement.Load).ToArray();
-            string value=Environment.GetEnvironmentVariable("MXO_QA_MISSION_ID")??"1205";
             if(!int.TryParse(value,out int id))throw new ArgumentException("MXO_QA_MISSION_ID must be a catalog mission ID");
             var mission=catalog.SingleOrDefault(m=>(int)m.Attribute("id")! == id)??throw new ArgumentException("Unknown catalog mission "+id);
             int org=(int?)mission.Attribute("org")??1,district=(int?)mission.Attribute("district")??1;
@@ -31,6 +34,5 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
             return new(new ushort[]{2,17,45,1006,77},(int)x,(int)z,Array.Empty<string>(),Array.Empty<string>(),setup.ToArray(),
                 DevCommands:true,environmentOverrides:new(){["MXO_MISSION_SITE_QA_SEED"]=id.ToString(),["MXO_AGGRO"]="0",["MXO_MOB_WANDER"]="0"},
                 readyMessages:new[]{$"Catalog mission {id}: {(string?)mission.Attribute("title")}; contact {contact}. Earlier receipts are fixture setup; this mission is uncompleted.","Use ordinary mission interactions and elevator rides. Movement and weaken commands are available for travel/combat assistance."});
-        }
     }
 }

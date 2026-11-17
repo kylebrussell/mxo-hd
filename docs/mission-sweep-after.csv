@@ -1,0 +1,470 @@
+mission id,pass/fail,failure class,detail,seconds
+1201,PASS,"","All required objectives, completion summary and receipt",86.6
+1203,PASS,"","All required objectives, completion summary and receipt",85.0
+1204,PASS,"","All required objectives, completion summary and receipt",82.1
+1205,PASS,"","All required objectives, completion summary and receipt",99.2
+1206,PASS,"","All required objectives, completion summary and receipt",97.4
+1207,PASS,"","All required objectives, completion summary and receipt",156.2
+1208,PASS,"","All required objectives, completion summary and receipt",157.8
+1430,PASS,"","All required objectives, completion summary and receipt",96.7
+1674,PASS,"","All required objectives, completion summary and receipt",73.1
+1760,PASS,"","All required objectives, completion summary and receipt",66.4
+2101,PASS,"","All required objectives, completion summary and receipt",118.9
+2102,PASS,"","All required objectives, completion summary and receipt",114.7
+2103,PASS,"","All required objectives, completion summary and receipt",93.8
+2104,PASS,"","All required objectives, completion summary and receipt",71.8
+2105,PASS,"","All required objectives, completion summary and receipt",70.0
+2106,PASS,"","All required objectives, completion summary and receipt",97.2
+2107,FAIL,"elevator","phase 1 departure: Sweep2107: timed out after 12s waiting for ordinary elevator transport.",66.7
+2108,PASS,"","All required objectives, completion summary and receipt",99.2
+2109,PASS,"","All required objectives, completion summary and receipt",86.3
+2110,FAIL,"lobby car","phase 2 entry: Sweep2110: timed out after 12s waiting for ordinary elevator transport.",96.8
+2201,PASS,"","All required objectives, completion summary and receipt",103.1
+2202,PASS,"","All required objectives, completion summary and receipt",103.0
+2203,FAIL,"other","login: Sweep2203: timed out after 10s waiting for 80 97 05 00.",66.5
+2204,PASS,"","All required objectives, completion summary and receipt",94.3
+2205,PASS,"","All required objectives, completion summary and receipt",82.0
+2206,PASS,"","All required objectives, completion summary and receipt",88.8
+2207,FAIL,"lobby car","phase 2 entry: Sweep2207: timed out after 10s waiting for elevator view.",98.6
+2208,PASS,"","All required objectives, completion summary and receipt",87.0
+2209,FAIL,"lobby car","phase 3 entry: Sweep2209: timed out after 10s waiting for elevator view.",113.9
+2210,PASS,"","All required objectives, completion summary and receipt",134.7
+2301,FAIL,"lobby car","phase 2 entry: Sweep2301: timed out after 10s waiting for elevator view.",92.1
+2302,PASS,"","All required objectives, completion summary and receipt",61.5
+2303,PASS,"","All required objectives, completion summary and receipt",80.5
+2304,PASS,"","All required objectives, completion summary and receipt",83.4
+2305,PASS,"","All required objectives, completion summary and receipt",79.8
+2306,PASS,"","All required objectives, completion summary and receipt",98.0
+2307,PASS,"","All required objectives, completion summary and receipt",112.0
+2308,PASS,"","All required objectives, completion summary and receipt",115.2
+2309,PASS,"","All required objectives, completion summary and receipt",115.4
+2310,FAIL,"elevator","phase 2 goal 2 Escort: Sweep2310: timed out after 12s waiting for objective acknowledgement and saved progress.",96.9
+20001,PASS,"","All required objectives, completion summary and receipt",79.2
+101101,PASS,"","All required objectives, completion summary and receipt",95.6
+101102,PASS,"","All required objectives, completion summary and receipt",78.3
+101103,PASS,"","All required objectives, completion summary and receipt",111.9
+101201,PASS,"","All required objectives, completion summary and receipt",79.9
+101202,PASS,"","All required objectives, completion summary and receipt",118.1
+101203,PASS,"","All required objectives, completion summary and receipt",79.4
+101204,PASS,"","All required objectives, completion summary and receipt",87.7
+101205,PASS,"","All required objectives, completion summary and receipt",107.3
+101206,PASS,"","All required objectives, completion summary and receipt",109.7
+101207,PASS,"","All required objectives, completion summary and receipt",80.1
+101208,PASS,"","All required objectives, completion summary and receipt",62.5
+101209,PASS,"","All required objectives, completion summary and receipt",95.4
+101210,PASS,"","All required objectives, completion summary and receipt",83.1
+101211,PASS,"","All required objectives, completion summary and receipt",77.6
+101212,PASS,"","All required objectives, completion summary and receipt",69.9
+101213,PASS,"","All required objectives, completion summary and receipt",122.0
+101214,PASS,"","All required objectives, completion summary and receipt",82.8
+101215,PASS,"","All required objectives, completion summary and receipt",112.9
+101216,FAIL,"lobby car","phase 3 entry: Sweep101216: timed out after 12s waiting for ordinary elevator transport.; [MISSION] Elevator door refused before overlay: InvalidStreetCarAlias:ChangedNpcDoorRawIdentityOrGoid",100.6
+101217,PASS,"","All required objectives, completion summary and receipt",152.1
+101301,FAIL,"lobby car","phase 3 entry: Sweep101301: timed out after 6s waiting for mission-area enter hooks.",93.8
+101302,FAIL,"lobby car","phase 5 entry: Sweep101302: timed out after 10s waiting for elevator view.",132.8
+101303,PASS,"","All required objectives, completion summary and receipt",148.3
+101304,FAIL,"elevator","phase 3 goal 2 Escort: Companions did not reach the departure point",106.3
+101306,PASS,"","All required objectives, completion summary and receipt",93.3
+102101,FAIL,"prop placement","phase 3 goal 2 Search: Bound/arrival bounds/floor identity",77.0
+102102,PASS,"","All required objectives, completion summary and receipt",90.4
+102103,PASS,"","All required objectives, completion summary and receipt",93.0
+102104,FAIL,"elevator","phase 2 departure: Sweep102104: timed out after 15s waiting for next phase or completion.",105.1
+102105,PASS,"","All required objectives, completion summary and receipt",119.7
+102201,PASS,"","All required objectives, completion summary and receipt",132.9
+102202,PASS,"","All required objectives, completion summary and receipt",111.3
+102203,PASS,"","All required objectives, completion summary and receipt",140.4
+102204,PASS,"","All required objectives, completion summary and receipt",116.8
+102205,PASS,"","All required objectives, completion summary and receipt",106.4
+102301,FAIL,"lobby car","phase 2 entry: Sweep102301: timed out after 10s waiting for elevator view.",77.0
+102302,PASS,"","All required objectives, completion summary and receipt",85.4
+102303,PASS,"","All required objectives, completion summary and receipt",97.4
+102304,PASS,"","All required objectives, completion summary and receipt",112.0
+102305,FAIL,"lobby car","phase 3 entry: Sweep102305: timed out after 10s waiting for elevator view.",94.5
+103101,PASS,"","All required objectives, completion summary and receipt",91.0
+103102,PASS,"","All required objectives, completion summary and receipt",136.4
+103103,PASS,"","All required objectives, completion summary and receipt",133.5
+103104,PASS,"","All required objectives, completion summary and receipt",95.1
+103105,PASS,"","All required objectives, completion summary and receipt",127.2
+103201,PASS,"","All required objectives, completion summary and receipt",84.8
+103202,PASS,"","All required objectives, completion summary and receipt",78.2
+103203,PASS,"","All required objectives, completion summary and receipt",80.3
+103204,PASS,"","All required objectives, completion summary and receipt",94.3
+103205,PASS,"","All required objectives, completion summary and receipt",117.2
+103301,PASS,"","All required objectives, completion summary and receipt",148.3
+103302,PASS,"","All required objectives, completion summary and receipt",118.8
+103303,PASS,"","All required objectives, completion summary and receipt",119.1
+103304,PASS,"","All required objectives, completion summary and receipt",146.8
+103305,FAIL,"elevator","phase 2 departure: Sweep103305: timed out after 12s waiting for ordinary elevator transport.",90.7
+104101,FAIL,"elevator","phase 1 goal 2 Escort: Companions did not reach the departure point",67.4
+104102,FAIL,"lobby car","phase 4 entry: Sweep104102: timed out after 10s waiting for elevator view.",96.8
+104103,FAIL,"lobby car","phase 2 entry: Sweep104103: timed out after 10s waiting for elevator view.",67.4
+104104,PASS,"","All required objectives, completion summary and receipt",106.6
+104105,PASS,"","All required objectives, completion summary and receipt",109.3
+104201,FAIL,"lobby car","phase 1 entry: Sweep104201: timed out after 12s waiting for ordinary elevator transport.; [MISSION] Elevator door refused before overlay: InvalidStreetCarAlias:ChangedNpcDoorRawIdentityOrGoid",59.7
+104202,PASS,"","All required objectives, completion summary and receipt",102.0
+104203,PASS,"","All required objectives, completion summary and receipt",110.2
+104204,PASS,"","All required objectives, completion summary and receipt",93.1
+104205,PASS,"","All required objectives, completion summary and receipt",113.2
+104301,PASS,"","All required objectives, completion summary and receipt",83.8
+104302,PASS,"","All required objectives, completion summary and receipt",103.4
+104303,PASS,"","All required objectives, completion summary and receipt",101.9
+104304,FAIL,"elevator","phase 1 departure: Sweep104304: timed out after 12s waiting for ordinary elevator transport.",61.8
+104305,PASS,"","All required objectives, completion summary and receipt",102.4
+105101,PASS,"","All required objectives, completion summary and receipt",82.5
+105102,PASS,"","All required objectives, completion summary and receipt",85.4
+107202,PASS,"","All required objectives, completion summary and receipt",89.7
+108304,PASS,"","All required objectives, completion summary and receipt",73.9
+109201,PASS,"","All required objectives, completion summary and receipt",88.0
+109202,PASS,"","All required objectives, completion summary and receipt",77.6
+109203,FAIL,"lobby car","phase 4 entry: Sweep109203: timed out after 10s waiting for elevator view.",109.0
+109204,PASS,"","All required objectives, completion summary and receipt",110.9
+109205,PASS,"","All required objectives, completion summary and receipt",101.3
+109301,PASS,"","All required objectives, completion summary and receipt",86.5
+109302,PASS,"","All required objectives, completion summary and receipt",98.0
+109303,PASS,"","All required objectives, completion summary and receipt",115.0
+109304,PASS,"","All required objectives, completion summary and receipt",79.1
+109305,PASS,"","All required objectives, completion summary and receipt",69.2
+110205,PASS,"","All required objectives, completion summary and receipt",90.0
+111105,PASS,"","All required objectives, completion summary and receipt",94.1
+111203,PASS,"","All required objectives, completion summary and receipt",96.6
+111204,FAIL,"prop placement","phase 2 goal 2 Search: Bound/arrival bounds/floor identity",60.9
+111302,PASS,"","All required objectives, completion summary and receipt",84.0
+111303,PASS,"","All required objectives, completion summary and receipt",66.8
+201101,PASS,"","All required objectives, completion summary and receipt",71.6
+201102,PASS,"","All required objectives, completion summary and receipt",65.0
+201103,PASS,"","All required objectives, completion summary and receipt",59.0
+201201,PASS,"","All required objectives, completion summary and receipt",77.0
+201202,PASS,"","All required objectives, completion summary and receipt",103.9
+201203,FAIL,"elevator","phase 2 departure: One current mission door/lobby required",73.7
+201204,PASS,"","All required objectives, completion summary and receipt",70.3
+201205,PASS,"","All required objectives, completion summary and receipt",92.6
+201206,PASS,"","All required objectives, completion summary and receipt",80.3
+201207,PASS,"","All required objectives, completion summary and receipt",65.6
+201208,PASS,"","All required objectives, completion summary and receipt",87.3
+201209,FAIL,"lobby car","phase 1 entry: Sweep201209: timed out after 12s waiting for ordinary elevator transport.; [MISSION] Elevator door refused before overlay: InvalidStreetCarAlias:ChangedNpcDoorRawIdentityOrGoid",57.8
+201210,PASS,"","All required objectives, completion summary and receipt",86.0
+201211,PASS,"","All required objectives, completion summary and receipt",65.2
+201212,FAIL,"elevator","phase 1 departure: Sweep201212: timed out after 12s waiting for ordinary elevator transport.",62.7
+201213,FAIL,"lobby car","phase 2 entry: Sweep201213: timed out after 10s waiting for elevator view.",80.3
+201214,PASS,"","All required objectives, completion summary and receipt",86.6
+201215,PASS,"","All required objectives, completion summary and receipt",79.0
+201216,PASS,"","All required objectives, completion summary and receipt",59.3
+201217,FAIL,"lobby car","phase 4 entry: Sweep201217: timed out after 10s waiting for elevator view.",107.5
+201301,FAIL,"prop placement","phase 1 goal 1 Search: Bound source requires a NAV-grounded in-range approach",44.4
+201302,FAIL,"elevator","phase 3 goal 2 Escort: Companions did not reach the departure point",98.0
+201303,PASS,"","All required objectives, completion summary and receipt",125.7
+201304,PASS,"","All required objectives, completion summary and receipt",133.0
+202101,PASS,"","All required objectives, completion summary and receipt",83.4
+202102,FAIL,"lobby car","phase 2 entry: Current adopted phase lacks measured witness",64.2
+202103,FAIL,"prop placement","phase 2 goal 1 Search: Bound/arrival bounds/floor identity",62.7
+202104,PASS,"","All required objectives, completion summary and receipt",75.5
+202105,FAIL,"lobby car","phase 3 entry: Sweep202105: timed out after 10s waiting for elevator view.",92.9
+202201,PASS,"","All required objectives, completion summary and receipt",88.8
+202202,PASS,"","All required objectives, completion summary and receipt",98.3
+202203,FAIL,"elevator","phase 1 departure: Sweep202203: timed out after 12s waiting for ordinary elevator transport.",69.0
+202204,PASS,"","All required objectives, completion summary and receipt",106.2
+202205,FAIL,"lobby car","phase 2 entry: Current adopted phase lacks measured witness",62.2
+202301,PASS,"","All required objectives, completion summary and receipt",90.7
+202302,PASS,"","All required objectives, completion summary and receipt",85.7
+202303,PASS,"","All required objectives, completion summary and receipt",83.6
+202304,PASS,"","All required objectives, completion summary and receipt",74.7
+202305,PASS,"","All required objectives, completion summary and receipt",78.1
+203101,PASS,"","All required objectives, completion summary and receipt",72.3
+203102,FAIL,"prop placement","phase 2 goal 2 Search: Bound/arrival bounds/floor identity",85.2
+203103,PASS,"","All required objectives, completion summary and receipt",75.3
+203104,PASS,"","All required objectives, completion summary and receipt",291.3
+203105,PASS,"","All required objectives, completion summary and receipt",71.6
+203201,PASS,"","All required objectives, completion summary and receipt",85.7
+203202,FAIL,"elevator","phase 1 departure: Sweep203202: timed out after 12s waiting for ordinary elevator transport.",69.8
+203203,PASS,"","All required objectives, completion summary and receipt",78.1
+203204,PASS,"","All required objectives, completion summary and receipt",76.8
+203205,PASS,"","All required objectives, completion summary and receipt",75.5
+203301,PASS,"","All required objectives, completion summary and receipt",98.7
+203302,PASS,"","All required objectives, completion summary and receipt",108.8
+203303,PASS,"","All required objectives, completion summary and receipt",83.0
+203304,PASS,"","All required objectives, completion summary and receipt",62.5
+203305,FAIL,"NPC role placement","phase 3 departure: Sweep203305: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival",107.4
+204101,FAIL,"prop placement","phase 2 goal 2 Search: Bound/arrival bounds/floor identity",65.3
+204102,FAIL,"prop placement","phase 2 goal 1 Search: Bound/arrival bounds/floor identity",47.4
+204103,FAIL,"prop placement","phase 2 goal 1 Search: Bound/arrival bounds/floor identity",65.8
+204104,FAIL,"other","phase 2 goal 2 Escort: Sweep204104: timed out after 6s waiting for escort starts following.",85.5
+204105,PASS,"","All required objectives, completion summary and receipt",54.6
+204201,PASS,"","All required objectives, completion summary and receipt",75.0
+204202,PASS,"","All required objectives, completion summary and receipt",80.2
+204203,PASS,"","All required objectives, completion summary and receipt",59.7
+204204,PASS,"","All required objectives, completion summary and receipt",97.7
+204205,FAIL,"lobby car","phase 4 entry: Sweep204205: timed out after 10s waiting for elevator view.",118.8
+204301,PASS,"","All required objectives, completion summary and receipt",87.5
+204302,FAIL,"lobby car","phase 3 entry: Current adopted phase lacks measured witness",73.2
+204303,PASS,"","All required objectives, completion summary and receipt",70.0
+204304,PASS,"","All required objectives, completion summary and receipt",113.3
+204305,PASS,"","All required objectives, completion summary and receipt",113.9
+205101,PASS,"","All required objectives, completion summary and receipt",83.9
+205102,PASS,"","All required objectives, completion summary and receipt",77.3
+205103,PASS,"","All required objectives, completion summary and receipt",73.3
+205104,PASS,"","All required objectives, completion summary and receipt",115.7
+205105,PASS,"","All required objectives, completion summary and receipt",112.1
+205201,PASS,"","All required objectives, completion summary and receipt",93.5
+205202,PASS,"","All required objectives, completion summary and receipt",91.3
+205203,FAIL,"lobby car","phase 4 entry: Sweep205203: timed out after 10s waiting for elevator view.",107.5
+205204,FAIL,"prop placement","phase 3 goal 2 Use: Bound/arrival bounds/floor identity",69.1
+205301,FAIL,"room/NAV placement","phase 2 departure: Sweep205301: timed out after 15s waiting for next phase or completion.; [MISSION] Box next-phase admission deferred: NoGeometricBodyCandidates",90.1
+205302,FAIL,"elevator","phase 3 goal 2 Escort: Companions did not reach the departure point",87.6
+205303,PASS,"","All required objectives, completion summary and receipt",111.1
+205304,PASS,"","All required objectives, completion summary and receipt",86.2
+205305,PASS,"","All required objectives, completion summary and receipt",113.2
+206101,FAIL,"prop placement","phase 3 goal 1 Use: Bound/arrival bounds/floor identity",72.5
+206102,FAIL,"prop placement","phase 4 goal 1 Search: Bound source requires a NAV-grounded in-range approach",78.5
+206103,PASS,"","All required objectives, completion summary and receipt",109.3
+206104,PASS,"","All required objectives, completion summary and receipt",98.2
+206105,PASS,"","All required objectives, completion summary and receipt",104.8
+206201,PASS,"","All required objectives, completion summary and receipt",87.5
+206202,PASS,"","All required objectives, completion summary and receipt",84.3
+206203,PASS,"","All required objectives, completion summary and receipt",97.5
+206204,PASS,"","All required objectives, completion summary and receipt",111.5
+206205,PASS,"","All required objectives, completion summary and receipt",91.5
+206301,FAIL,"lobby car","phase 4 entry: Sweep206301: timed out after 10s waiting for elevator view.",99.0
+206302,PASS,"","All required objectives, completion summary and receipt",79.7
+206303,PASS,"","All required objectives, completion summary and receipt",109.1
+206304,PASS,"","All required objectives, completion summary and receipt",89.7
+206305,PASS,"","All required objectives, completion summary and receipt",101.1
+207101,PASS,"","All required objectives, completion summary and receipt",123.6
+207102,PASS,"","All required objectives, completion summary and receipt",104.3
+207103,FAIL,"lobby car","phase 2 entry: Sweep207103: timed out after 10s waiting for elevator view.",70.9
+207104,PASS,"","All required objectives, completion summary and receipt",103.3
+207105,PASS,"","All required objectives, completion summary and receipt",130.1
+207201,PASS,"","All required objectives, completion summary and receipt",121.1
+207202,PASS,"","All required objectives, completion summary and receipt",117.3
+207203,PASS,"","All required objectives, completion summary and receipt",81.3
+207204,PASS,"","All required objectives, completion summary and receipt",110.0
+207205,PASS,"","All required objectives, completion summary and receipt",110.3
+207301,PASS,"","All required objectives, completion summary and receipt",139.6
+207302,PASS,"","All required objectives, completion summary and receipt",105.4
+207303,PASS,"","All required objectives, completion summary and receipt",87.6
+207304,PASS,"","All required objectives, completion summary and receipt",93.4
+207305,PASS,"","All required objectives, completion summary and receipt",89.5
+208101,PASS,"","All required objectives, completion summary and receipt",105.4
+208102,PASS,"","All required objectives, completion summary and receipt",91.2
+208103,FAIL,"lobby car","phase 1 entry: Sweep208103: timed out after 12s waiting for ordinary elevator transport.; [MISSION] Elevator door refused before overlay: InvalidStreetCarAlias:ChangedNpcDoorRawIdentityOrGoid",55.7
+208104,PASS,"","All required objectives, completion summary and receipt",98.0
+208105,PASS,"","All required objectives, completion summary and receipt",100.1
+208201,PASS,"","All required objectives, completion summary and receipt",113.6
+208202,PASS,"","All required objectives, completion summary and receipt",94.6
+208203,PASS,"","All required objectives, completion summary and receipt",114.3
+208204,PASS,"","All required objectives, completion summary and receipt",116.5
+208205,PASS,"","All required objectives, completion summary and receipt",102.8
+208301,PASS,"","All required objectives, completion summary and receipt",91.3
+208302,FAIL,"lobby car","phase 4 entry: Sweep208302: timed out after 10s waiting for elevator view.",145.8
+208303,FAIL,"lobby car","phase 3 entry: Sweep208303: timed out after 12s waiting for ordinary elevator transport.; [MISSION] Elevator door refused before overlay: InvalidStreetCarAlias:ChangedNpcDoorRawIdentityOrGoid",90.7
+208304,PASS,"","All required objectives, completion summary and receipt",110.5
+208305,FAIL,"lobby car","phase 2 entry: Current adopted phase lacks measured witness",69.8
+209101,PASS,"","All required objectives, completion summary and receipt",114.0
+209102,PASS,"","All required objectives, completion summary and receipt",133.8
+209103,FAIL,"lobby car","phase 4 entry: Sweep209103: timed out after 10s waiting for elevator view.",126.7
+209104,PASS,"","All required objectives, completion summary and receipt",110.8
+209105,PASS,"","All required objectives, completion summary and receipt",118.8
+209201,PASS,"","All required objectives, completion summary and receipt",116.7
+209202,PASS,"","All required objectives, completion summary and receipt",117.3
+209203,PASS,"","All required objectives, completion summary and receipt",115.6
+209204,PASS,"","All required objectives, completion summary and receipt",107.3
+209205,PASS,"","All required objectives, completion summary and receipt",85.9
+209301,PASS,"","All required objectives, completion summary and receipt",85.0
+209302,PASS,"","All required objectives, completion summary and receipt",109.5
+209303,PASS,"","All required objectives, completion summary and receipt",101.8
+209304,PASS,"","All required objectives, completion summary and receipt",101.7
+209305,FAIL,"prop placement","phase 3 goal 2 Search: Bound/arrival bounds/floor identity",73.9
+210101,PASS,"","All required objectives, completion summary and receipt",99.4
+210102,PASS,"","All required objectives, completion summary and receipt",90.7
+210103,PASS,"","All required objectives, completion summary and receipt",111.2
+210104,PASS,"","All required objectives, completion summary and receipt",114.6
+210105,PASS,"","All required objectives, completion summary and receipt",93.7
+210201,FAIL,"lobby car","phase 4 entry: Sweep210201: timed out after 10s waiting for elevator view.",110.7
+210202,PASS,"","All required objectives, completion summary and receipt",97.3
+210203,FAIL,"prop placement","phase 1 goal 2 Use: Bound source requires a NAV-grounded in-range approach",56.9
+210204,PASS,"","All required objectives, completion summary and receipt",111.0
+210205,FAIL,"prop placement","phase 1 goal 1 Use: Bound source requires a NAV-grounded in-range approach",48.6
+210301,PASS,"","All required objectives, completion summary and receipt",96.7
+210302,PASS,"","All required objectives, completion summary and receipt",124.1
+210303,PASS,"","All required objectives, completion summary and receipt",108.0
+210304,PASS,"","All required objectives, completion summary and receipt",96.8
+210305,PASS,"","All required objectives, completion summary and receipt",100.6
+211101,PASS,"","All required objectives, completion summary and receipt",84.0
+211102,PASS,"","All required objectives, completion summary and receipt",72.2
+211103,PASS,"","All required objectives, completion summary and receipt",95.7
+211104,PASS,"","All required objectives, completion summary and receipt",106.2
+211105,PASS,"","All required objectives, completion summary and receipt",102.4
+211201,PASS,"","All required objectives, completion summary and receipt",83.0
+211202,PASS,"","All required objectives, completion summary and receipt",77.2
+211203,PASS,"","All required objectives, completion summary and receipt",107.2
+211204,FAIL,"elevator","phase 3 goal 2 Escort: Companions did not reach the departure point",99.4
+211205,PASS,"","All required objectives, completion summary and receipt",127.0
+211301,PASS,"","All required objectives, completion summary and receipt",85.6
+211302,PASS,"","All required objectives, completion summary and receipt",80.7
+211303,PASS,"","All required objectives, completion summary and receipt",74.3
+212101,PASS,"","All required objectives, completion summary and receipt",91.3
+212102,FAIL,"elevator","phase 2 goal 2 Escort: Companions did not reach the departure point",90.8
+212103,PASS,"","All required objectives, completion summary and receipt",95.0
+301101,PASS,"","All required objectives, completion summary and receipt",107.8
+301102,PASS,"","All required objectives, completion summary and receipt",96.5
+301103,PASS,"","All required objectives, completion summary and receipt",134.9
+301201,PASS,"","All required objectives, completion summary and receipt",71.1
+301202,PASS,"","All required objectives, completion summary and receipt",106.5
+301203,PASS,"","All required objectives, completion summary and receipt",99.7
+301204,PASS,"","All required objectives, completion summary and receipt",92.2
+301205,PASS,"","All required objectives, completion summary and receipt",89.0
+301206,PASS,"","All required objectives, completion summary and receipt",68.4
+301207,PASS,"","All required objectives, completion summary and receipt",94.8
+301208,PASS,"","All required objectives, completion summary and receipt",88.9
+301209,PASS,"","All required objectives, completion summary and receipt",80.9
+301210,PASS,"","All required objectives, completion summary and receipt",101.7
+301211,PASS,"","All required objectives, completion summary and receipt",83.4
+301212,PASS,"","All required objectives, completion summary and receipt",103.5
+301214,FAIL,"prop placement","phase 2 goal 1 Search: Bound/arrival bounds/floor identity",75.2
+301215,FAIL,"prop placement","phase 2 goal 2 Search: Bound/arrival bounds/floor identity",82.0
+301216,PASS,"","All required objectives, completion summary and receipt",149.4
+301301,PASS,"","All required objectives, completion summary and receipt",120.3
+301302,PASS,"","All required objectives, completion summary and receipt",112.6
+301303,PASS,"","All required objectives, completion summary and receipt",134.6
+301304,PASS,"","All required objectives, completion summary and receipt",106.9
+301305,PASS,"","All required objectives, completion summary and receipt",98.1
+301306,PASS,"","All required objectives, completion summary and receipt",111.7
+302101,PASS,"","All required objectives, completion summary and receipt",95.2
+302102,PASS,"","All required objectives, completion summary and receipt",92.6
+302103,PASS,"","All required objectives, completion summary and receipt",121.3
+302104,PASS,"","All required objectives, completion summary and receipt",108.5
+302105,FAIL,"prop placement","phase 2 goal 2 Search: Bound/arrival bounds/floor identity",65.6
+302201,PASS,"","All required objectives, completion summary and receipt",87.5
+302202,PASS,"","All required objectives, completion summary and receipt",84.6
+302203,PASS,"","All required objectives, completion summary and receipt",135.9
+302204,PASS,"","All required objectives, completion summary and receipt",99.9
+302205,PASS,"","All required objectives, completion summary and receipt",147.5
+302301,PASS,"","All required objectives, completion summary and receipt",100.7
+302302,PASS,"","All required objectives, completion summary and receipt",86.1
+302303,PASS,"","All required objectives, completion summary and receipt",105.2
+302304,PASS,"","All required objectives, completion summary and receipt",98.7
+302305,PASS,"","All required objectives, completion summary and receipt",104.3
+303101,PASS,"","All required objectives, completion summary and receipt",106.2
+303102,PASS,"","All required objectives, completion summary and receipt",113.3
+303103,PASS,"","All required objectives, completion summary and receipt",112.5
+303104,PASS,"","All required objectives, completion summary and receipt",110.1
+303105,FAIL,"elevator","phase 1 goal 3 Escort: Companions did not reach the departure point",75.4
+304101,PASS,"","All required objectives, completion summary and receipt",105.1
+304102,FAIL,"prop placement","phase 4 goal 1 Search: Bound approach arrival scope changed",115.0
+304103,FAIL,"prop placement","phase 2 goal 1 Search: Bound/arrival bounds/floor identity",72.7
+304104,PASS,"","All required objectives, completion summary and receipt",120.1
+304105,PASS,"","All required objectives, completion summary and receipt",102.4
+304201,PASS,"","All required objectives, completion summary and receipt",110.1
+304202,PASS,"","All required objectives, completion summary and receipt",109.0
+304203,PASS,"","All required objectives, completion summary and receipt",114.5
+304204,PASS,"","All required objectives, completion summary and receipt",81.7
+304301,PASS,"","All required objectives, completion summary and receipt",80.1
+304302,PASS,"","All required objectives, completion summary and receipt",89.7
+304303,PASS,"","All required objectives, completion summary and receipt",109.4
+304304,PASS,"","All required objectives, completion summary and receipt",121.1
+304305,PASS,"","All required objectives, completion summary and receipt",100.5
+305101,PASS,"","All required objectives, completion summary and receipt",103.1
+305102,PASS,"","All required objectives, completion summary and receipt",89.3
+305103,PASS,"","All required objectives, completion summary and receipt",122.4
+305104,PASS,"","All required objectives, completion summary and receipt",105.4
+305105,PASS,"","All required objectives, completion summary and receipt",105.4
+305201,FAIL,"prop placement","phase 3 goal 1 Search: Bound source requires a NAV-grounded in-range approach",87.1
+305202,PASS,"","All required objectives, completion summary and receipt",101.0
+305203,PASS,"","All required objectives, completion summary and receipt",133.4
+305204,FAIL,"lobby car","phase 4 entry: Sweep305204: timed out after 10s waiting for elevator view.",125.1
+305205,PASS,"","All required objectives, completion summary and receipt",99.5
+305301,PASS,"","All required objectives, completion summary and receipt",97.1
+305302,PASS,"","All required objectives, completion summary and receipt",108.5
+305303,PASS,"","All required objectives, completion summary and receipt",90.9
+305304,PASS,"","All required objectives, completion summary and receipt",130.7
+305305,PASS,"","All required objectives, completion summary and receipt",118.3
+306101,PASS,"","All required objectives, completion summary and receipt",123.6
+306102,PASS,"","All required objectives, completion summary and receipt",104.4
+306103,PASS,"","All required objectives, completion summary and receipt",107.0
+306104,FAIL,"elevator","phase 3 goal 9 Escort: Companions did not reach the departure point",118.7
+306105,FAIL,"lobby car","phase 2 entry: Current adopted phase lacks measured witness",81.4
+306201,PASS,"","All required objectives, completion summary and receipt",108.4
+306202,PASS,"","All required objectives, completion summary and receipt",131.1
+306203,PASS,"","All required objectives, completion summary and receipt",97.2
+306204,PASS,"","All required objectives, completion summary and receipt",100.8
+306205,PASS,"","All required objectives, completion summary and receipt",107.4
+306301,PASS,"","All required objectives, completion summary and receipt",124.0
+306302,PASS,"","All required objectives, completion summary and receipt",118.7
+306303,PASS,"","All required objectives, completion summary and receipt",96.4
+306304,PASS,"","All required objectives, completion summary and receipt",111.0
+306305,PASS,"","All required objectives, completion summary and receipt",91.2
+307101,PASS,"","All required objectives, completion summary and receipt",133.7
+307102,PASS,"","All required objectives, completion summary and receipt",112.2
+307103,FAIL,"elevator","phase 2 goal 3 Escort: Companions did not reach the departure point",90.9
+307104,PASS,"","All required objectives, completion summary and receipt",89.2
+307105,PASS,"","All required objectives, completion summary and receipt",100.5
+307201,PASS,"","All required objectives, completion summary and receipt",100.4
+307202,PASS,"","All required objectives, completion summary and receipt",100.6
+307203,PASS,"","All required objectives, completion summary and receipt",112.2
+307204,FAIL,"elevator","phase 1 goal 3 Escort: Companions did not reach the departure point",90.7
+307205,PASS,"","All required objectives, completion summary and receipt",113.1
+307301,PASS,"","All required objectives, completion summary and receipt",125.8
+307302,FAIL,"lobby car","phase 4 entry: Sweep307302: timed out after 10s waiting for elevator view.",105.0
+307303,PASS,"","All required objectives, completion summary and receipt",106.1
+307304,PASS,"","All required objectives, completion summary and receipt",120.9
+307305,PASS,"","All required objectives, completion summary and receipt",103.5
+308101,PASS,"","All required objectives, completion summary and receipt",98.8
+308102,PASS,"","All required objectives, completion summary and receipt",108.2
+308103,PASS,"","All required objectives, completion summary and receipt",101.8
+308104,PASS,"","All required objectives, completion summary and receipt",102.3
+308105,PASS,"","All required objectives, completion summary and receipt",107.8
+308201,PASS,"","All required objectives, completion summary and receipt",114.8
+308202,PASS,"","All required objectives, completion summary and receipt",111.6
+308203,FAIL,"NPC role placement","phase 3 departure: Sweep308203: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival",104.0
+308204,PASS,"","All required objectives, completion summary and receipt",88.0
+308205,FAIL,"lobby car","phase 2 entry: Current adopted phase lacks measured witness",66.0
+308301,PASS,"","All required objectives, completion summary and receipt",95.7
+308302,PASS,"","All required objectives, completion summary and receipt",99.7
+308303,PASS,"","All required objectives, completion summary and receipt",90.0
+308304,PASS,"","All required objectives, completion summary and receipt",102.8
+308305,PASS,"","All required objectives, completion summary and receipt",93.8
+309101,PASS,"","All required objectives, completion summary and receipt",111.1
+309102,PASS,"","All required objectives, completion summary and receipt",85.9
+309103,FAIL,"NPC role placement","phase 2 departure: Sweep309103: timed out after 15s waiting for next phase or completion.; [MISSION] NPC next-phase refused: UnsupportedNpcRelativeArrival",79.4
+309104,PASS,"","All required objectives, completion summary and receipt",94.1
+309105,PASS,"","All required objectives, completion summary and receipt",88.8
+309201,PASS,"","All required objectives, completion summary and receipt",90.0
+309202,PASS,"","All required objectives, completion summary and receipt",112.7
+309203,PASS,"","All required objectives, completion summary and receipt",92.2
+309204,PASS,"","All required objectives, completion summary and receipt",87.5
+309205,PASS,"","All required objectives, completion summary and receipt",79.8
+309301,PASS,"","All required objectives, completion summary and receipt",78.6
+309302,PASS,"","All required objectives, completion summary and receipt",87.8
+309303,PASS,"","All required objectives, completion summary and receipt",92.9
+309304,PASS,"","All required objectives, completion summary and receipt",91.9
+309305,PASS,"","All required objectives, completion summary and receipt",83.9
+310101,PASS,"","All required objectives, completion summary and receipt",102.4
+310102,FAIL,"prop placement","phase 2 goal 4 Search: Bound/arrival bounds/floor identity",80.6
+310103,PASS,"","All required objectives, completion summary and receipt",94.7
+310104,PASS,"","All required objectives, completion summary and receipt",117.3
+310105,PASS,"","All required objectives, completion summary and receipt",120.1
+310201,PASS,"","All required objectives, completion summary and receipt",116.0
+310202,FAIL,"prop placement","phase 2 goal 2 Use: Bound/arrival bounds/floor identity",80.0
+310203,PASS,"","All required objectives, completion summary and receipt",120.3
+310204,PASS,"","All required objectives, completion summary and receipt",99.0
+310205,FAIL,"lobby car","phase 4 entry: Sweep310205: timed out after 10s waiting for elevator view.",111.3
+310301,PASS,"","All required objectives, completion summary and receipt",99.2
+310302,PASS,"","All required objectives, completion summary and receipt",107.9
+310303,PASS,"","All required objectives, completion summary and receipt",100.1
+310304,PASS,"","All required objectives, completion summary and receipt",108.7
+310305,PASS,"","All required objectives, completion summary and receipt",115.5
+311101,PASS,"","All required objectives, completion summary and receipt",98.6
+311102,PASS,"","All required objectives, completion summary and receipt",115.3
+311103,PASS,"","All required objectives, completion summary and receipt",116.7
+311104,PASS,"","All required objectives, completion summary and receipt",97.6
+311105,PASS,"","All required objectives, completion summary and receipt",101.0
+311201,PASS,"","All required objectives, completion summary and receipt",88.8
+311202,PASS,"","All required objectives, completion summary and receipt",80.3
+311203,PASS,"","All required objectives, completion summary and receipt",90.5
+311204,PASS,"","All required objectives, completion summary and receipt",90.8
+311205,PASS,"","All required objectives, completion summary and receipt",77.5
+311301,PASS,"","All required objectives, completion summary and receipt",67.1
+311302,FAIL,"elevator","phase 1 departure: Sweep311302: timed out after 12s waiting for ordinary elevator transport.",71.2
+311303,PASS,"","All required objectives, completion summary and receipt",71.5
+312101,FAIL,"lobby car","phase 3 entry: Sweep312101: timed out after 10s waiting for elevator view.",78.0
+312102,PASS,"","All required objectives, completion summary and receipt",59.4
+312103,PASS,"","All required objectives, completion summary and receipt",56.1
