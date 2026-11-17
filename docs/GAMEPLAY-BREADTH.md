@@ -14,7 +14,9 @@ player-facing failure. A row covers the behavior described in that row.
 | Teams | native-verified | High | An ordinary helper kill credited the holder's goal and Team Contact awarded one completion on PR281 `6a8f2c15`. [Native checklist](GAMEPLAY-BREADTH-QA.md) |
 | Teams | headless-only | High | Shared loot and relog coverage. Helper HUD and mission-item actions remain open. |
 | Crews and factions | headless-only | Medium | Create, invite, ranks and removal. The crew/faction scenarios exercise role permissions. |
-| Chat and emotes | headless-only | Medium | Channels, moderation and paired emote acceptance/refusal. |
+| Area chat | native-verified | Medium | CSR sent the command that triggered the teammate helper during native PR281 QA. |
+| Chat and emotes | headless-only | Medium | Group chat and paired emote acceptance/refusal. |
+| Chat rooms | broken | Medium | The stock client rejects the room commands. The server still handles the room routes in headless QA. [Native chat command check](CLIENT-ACTIONS.md#chat-rooms) |
 | Trade | native-verified | High | The Secure Trade window, item/info exchange, Clear and Cancel with the QA bot. [Secure Trade](SECURE-TRADE.md) |
 | Trade | headless-only | High | Player-targeted offer, incoming partner controls, accept reset and refusals. [Secure Trade](SECURE-TRADE.md) |
 | Marketplace | headless-only | High | Purchase, fee and seller persistence across world and Loading Area. |
