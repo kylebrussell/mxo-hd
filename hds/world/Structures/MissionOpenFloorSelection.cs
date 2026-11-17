@@ -38,7 +38,7 @@ namespace hds
             Real=s.realObjects.Select(SpotFingerprint).ToArray(),Shaft=s.shaft.Select(SpotFingerprint).ToArray()}));
         internal static MissionOpenFloorSite From(MissionSite s) => new MissionOpenFloorSite(s.metrId,s.elevatorDoor.mxoStaticId,
             s.elevatorDoor.pos_x,s.elevatorDoor.pos_y,s.elevatorDoor.pos_z,CatalogFingerprint(s));
-        internal MissionSite Resolve(IEnumerable<MissionSite> sites)
+        public MissionSite Resolve(IEnumerable<MissionSite> sites)
         {
             var matching=sites.Where(s=>s?.elevatorDoor!=null&&s.metrId==District&&s.elevatorDoor.mxoStaticId==DoorKey&&
                 s.elevatorDoor.pos_x==DoorX&&s.elevatorDoor.pos_y==DoorY&&s.elevatorDoor.pos_z==DoorZ&&CatalogFingerprint(s)==Fingerprint).Take(2).ToArray();

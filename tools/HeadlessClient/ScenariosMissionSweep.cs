@@ -289,10 +289,14 @@ public static partial class Scenarios
         {
             var current=await MervFollowupCurrent(c,p);
             if(current==null||current.Phase!=s.Phase||current.Flags.GetValueOrDefault("entered"))return;
-            var door=current.SiteDoors.Last();
-            var site=SweepSites(c.RepositoryRoot,door.metrId).Single(x=>x.elevatorDoor!=null&&
+            var door=current.SiteDoors[current.OpenFloorCurrentSiteIndex??(current.SiteDoors.Length-1)];
+            var sites=SweepSites(c.RepositoryRoot,door.metrId);
+            var candidates=sites.Where(x=>x.elevatorDoor!=null&&
                 x.elevatorDoor.mxoStaticId==door.mxoStaticId&&x.elevatorDoor.pos_x==door.pos_x&&
-                x.elevatorDoor.pos_y==door.pos_y&&x.elevatorDoor.pos_z==door.pos_z);
+                x.elevatorDoor.pos_y==door.pos_y&&x.elevatorDoor.pos_z==door.pos_z).ToArray();
+            var site=current.OpenFloorSites!=null&&current.OpenFloorCurrentSiteIndex is int index?
+                current.OpenFloorSites[index].Resolve(sites):candidates.Length==1?candidates[0]:null;
+            if(site==null)return;
             // Disclosed movement aid: exercise the area's enter hooks after the real car request.
             var actual=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             var root=actual==null?ride.Approach:Enumerable.Range(1,3).Select(i=>double.Parse(actual.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
