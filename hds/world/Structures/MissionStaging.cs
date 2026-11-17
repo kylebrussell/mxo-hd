@@ -113,6 +113,7 @@ namespace hds
 
         public static int? QaSiteSeed(string dev,string database,string raw,int mission,int phase)
         {
+            if(raw=="catalog")raw=mission.ToString(System.Globalization.CultureInfo.InvariantCulture);
             if(dev!="1" || database==null || !database.StartsWith("mxotest_",StringComparison.Ordinal) || database.Length<=8 ||
                 !database.All(c=>char.IsAsciiLetterOrDigit(c)||c=='_') || !int.TryParse(raw,out int seed) || seed<0) return null;
             return unchecked(seed ^ mission*31 ^ phase*104729);
@@ -227,7 +228,7 @@ namespace hds
             progress.exits.Clear();
             progress.exits.Add(new[] { lobbyDoor.X,lobbyDoor.Y,lobbyDoor.Z });
             Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor in " + site.neighbourhood + " (" + site.CentreX + "," + site.floorY + "," +
-                                 site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
+                                 site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + floorDoor.X + "," + floorDoor.Y + "," + floorDoor.Z + ", " + site.npcSpots.Count + " NPC spots; lobby car " + MissionSites.DoorHex(site.lobbyDoor) + " at " + lobbyDoor.X + "," + lobbyDoor.Y + "," + lobbyDoor.Z);
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
             IEnumerable<double[]> sourceSpots=site.npcSpots;

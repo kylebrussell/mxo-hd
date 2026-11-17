@@ -8,6 +8,24 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class MissionCatalogEntranceTests
 {
+    [Fact]
+    public void OutdoorUploadPhaseDoesNotReuseThePreviousAreasElevator()
+    {
+        var state=new MissionProgress.SavedState{Version=2,Mission=201203,Phase=1,
+            SiteDoors=new[]{new StaticWorldObject()},OpenFloorCurrentSiteIndex=-1,
+            Waypoints=Array.Empty<MissionWaypoint>(),Exits=Array.Empty<double[]>()};
+        var message=Assert.Single(MissionCatalogEntrances.Describe(state));
+        Assert.Contains("Mission 201203 phase 1",message);
+        Assert.Contains("outdoor phase; no current street door or elevator",message);
+    }
+
+    [Theory][InlineData(1205,0)][InlineData(101210,1)][InlineData(301209,3)]
+    public void CatalogWorkerUsesTheSameMissionSeedAsAnIndividualServer(int mission,int phase)
+    {
+        Assert.Equal(MissionStaging.QaSiteSeed("1","mxotest_sweep",mission.ToString(),mission,phase),MissionStaging.QaSiteSeed("1","mxotest_sweep","catalog",mission,phase));
+        Assert.Null(MissionStaging.QaSiteSeed("1","realityhd","catalog",mission,phase));
+        Assert.Null(MissionStaging.QaSiteSeed("0","mxotest_sweep","catalog",mission,phase));
+    }
     static string Repo { get { string p=AppContext.BaseDirectory; while(!File.Exists(Path.Combine(p,"hds.sln")))p=Path.GetDirectoryName(p)!; return p; } }
 
     [Fact]
@@ -41,12 +59,21 @@ public class MissionCatalogEntranceTests
         Assert.Contains(lines,l=>l.Contains("Lobby car 1183842843 at -3500,145,-6400")&&l.Contains("stand -3500,95,-6200"));
         Assert.All(lines,l=>Assert.DoesNotContain("-2800",l));
         var mission=new Mission{id=1205,district=1};
+        mission.phases.Add(new MissionPhase{site="Normal"});mission.phases.Add(new MissionPhase{site="Normal"});
         var progress=new MissionProgress(mission){phaseIndex=1,site=site};
         progress.streetWitnesses.Add(1,new MissionStreetSelection(1,1205,progress.persistenceId,progress.startedAt,1,MissionOpenFloorSite.From(site),"Npc",context,null!));
         NavMesh.UseDirectory(Path.Combine(Repo,"data/navmesh"));
         Assert.True(NavMesh.Locate(1,-3500,95,-6200,out var at));
         var waypoint=MissionStreetGuidance.Project(progress,at);
-        Assert.Equal(MissionSites.DoorHex(floor),waypoint.doorHex);
-        Assert.Equal(context.Floor.Position,new[]{waypoint.x,waypoint.y,waypoint.z});
+        Assert.Equal(MissionSites.DoorHex(raw),waypoint.doorHex);
+        Assert.Equal(context.Lobby.Position,new[]{waypoint.x,waypoint.y,waypoint.z});
+        Assert.True(NavMesh.Locate(1,-3500,495,-6200,out var upstairs));
+        Assert.Equal(MissionSites.DoorHex(floor),MissionStreetGuidance.Project(progress,upstairs).doorHex);
+        progress.waitingForExit=true;
+        Assert.Equal(MissionSites.DoorHex(raw),MissionStreetGuidance.Project(progress,at).doorHex);
+        progress.CommitGeneratedFloor(1,site,raw);
+        Assert.Equal(1183842312u,BitConverter.ToUInt32(Convert.FromHexString(MissionStreetGuidance.Project(progress,at).doorHex)));
+        progress.phaseIndex=2;
+        Assert.Equal(1183842312u,BitConverter.ToUInt32(Convert.FromHexString(MissionStreetGuidance.Project(progress,at).doorHex)));
     }
 }

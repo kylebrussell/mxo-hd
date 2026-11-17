@@ -13,11 +13,13 @@ string logDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless-logs");
 bool listOnly = false;
 bool dropLeftovers = false;
 bool missionSweep = false;
+int missionBatch = 1;
 for (int i = 0; i < args.Length; i++)
 {
     switch (args[i])
     {
         case "--mission-sweep": missionSweep = true; break;
+        case "--mission-batch": missionBatch = int.Parse(args[++i]); break;
         case "--parallel": parallel = int.Parse(args[++i]); break;
         case "--repeat": repeat = int.Parse(args[++i]); break;
         case "--filter": filter = args[++i]; break;
@@ -31,7 +33,7 @@ for (int i = 0; i < args.Length; i++)
 }
 
 string root = FindRepositoryRoot();
-if (missionSweep) return await Scenarios.RunMissionSweep(root, parallel, logDirectory, filter, listOnly);
+if (missionSweep) return await Scenarios.RunMissionSweep(root, parallel, logDirectory, filter, listOnly, missionBatch);
 List<Scenario> selected = Scenarios.All
     .Where(s => filter == null || s.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
     .SelectMany(s => Enumerable.Repeat(s, repeat))
