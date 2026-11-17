@@ -33,9 +33,13 @@ public static class ZionAfter1212FollowerReadiness
                 v.View.Attributes.TryGetValue("Level",out var level)&&level.Length==1&&level[0]==mob.Level&&
                 (mob.Friendly?v.View.Attributes.TryGetValue("DontAttack",out var safe)&&safe.SequenceEqual(new byte[]{1})&&(!v.View.Attributes.TryGetValue("IsEnemy",out var side)||side.SequenceEqual(new byte[]{0})):
                     v.View.Attributes.TryGetValue("IsEnemy",out var enemy)&&enemy.SequenceEqual(new byte[]{1}));
-            var matches=live.Values.Where(Match).ToArray();
+            double[] saved={mob.X,mob.Y,mob.Z};
+            // Retail mission groups can share name, level and side. Their current positions distinguish the bodies.
+            var matches=live.Values.Where(v=>Match(v)&&v.Position!=null&&
+                Enumerable.Range(0,3).All(i=>Math.Abs(v.Position[i]-saved[i])<1)).ToArray();
             if(matches.Length!=1||!matches[0].Known||matches[0].Dead||matches[0].Position==null)throw new InvalidDataException("No unique current live escort view");
-            var chosen=matches[0];var position=chosen.Position!;double[] saved={mob.X,mob.Y,mob.Z};
+            var chosen=matches[0];var position=chosen.Position!;
+            if(result.Any(r=>r.View==chosen.View.ViewId))throw new InvalidDataException("Escort view already belongs to another follower");
             if(position.Any(v=>!double.IsFinite(v))||Enumerable.Range(0,3).Any(i=>Math.Abs(position[i]-saved[i])>=1)||
                 Enumerable.Range(0,3).Sum(i=>Math.Pow(position[i]-player[i],2))>1500d*1500d||
                 Enumerable.Range(0,3).Sum(i=>Math.Pow(saved[i]-player[i],2))>1500d*1500d)throw new InvalidDataException("Current follower has not reached existing escort range");
@@ -74,7 +78,7 @@ public static class ZionAfter1212FollowerReadiness
                 }
                 ushort? kind=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:
                     at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
-                if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException("Unknown/truncated current escort view frame");
+                if(!MervFollowupViewFrames.TryRead(bytes,at,kind,out var frame))throw new InvalidDataException($"Unknown escort frame: class {kind}, {Convert.ToHexString(bytes.AsSpan(at,Math.Min(36,bytes.Length-at)))}");
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var old))retired.Add((old.View.ViewId,old.View.SpawnId));}
                 else if(live.TryGetValue(frame.View,out var changed))

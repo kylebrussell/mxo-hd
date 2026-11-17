@@ -175,6 +175,17 @@ public sealed class ThrowawayDatabase : IDisposable
             new ThrowawayDatabase(name).Dispose();
         }
     }
+
+    public static async Task DropInterruptedSweepAsync()
+    {
+        const string list = "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot -N -B -e \"SHOW DATABASES LIKE 'mxotest\\\\_sweep\\\\_%';\"";
+        string names=await RunInContainerAsync(list,Prefix+"list",null);
+        foreach(string name in names.Split('\n',StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries))
+        {
+            if(!name.StartsWith(Prefix+"sweep_",StringComparison.Ordinal))throw new InvalidDataException("Unexpected sweep database");
+            new ThrowawayDatabase(name).Dispose();
+        }
+    }
 }
 
 /// <summary>A server process with its own ports, working directory and database.</summary>
@@ -206,7 +217,9 @@ public sealed class ServerInstance : IDisposable
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
         IReadOnlyDictionary<string, string>? extraEnvironment = null, string? missionFixture = null)
     {
-        string serverDll = FindServerDll(repositoryRoot);
+        string serverDll = Path.GetFullPath(Environment.GetEnvironmentVariable("MXO_HEADLESS_SERVER_DLL") ?? FindServerDll(repositoryRoot));
+        if(!File.Exists(serverDll)||!File.Exists(Path.ChangeExtension(serverDll,"runtimeconfig.json")))
+            throw new FileNotFoundException("Headless server build is unavailable",serverDll);
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
         EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(serverDll)!,workingDirectory,databaseName,extraEnvironment);

@@ -41,7 +41,7 @@ public class ZionAfter1212FollowerReadinessTests
         var sections=new List<string>{Own,birth,Far,Near};
         if(change=="delete"||change=="reuse")sections.Add("01000101000400");if(change=="reuse")sections.Add(Maynard);
         if(change=="unknown")sections.Add("63AA");if(change=="truncated")sections.Add(Near[..^2]);
-        if(change=="duplicate"){var b=B(Maynard);b[5]=3;b[^3]=9;sections.Add(Convert.ToHexString(b));}
+        if(change=="duplicate")sections.Add(Birth(9,53234.16015625,-16114.6416015625));
         Assert.Throws<InvalidDataException>(()=>Ready(Log(sections.ToArray()),State(),State(53234.16015625,-16114.6416015625)));
     }
     [Fact] public void Existing1500BoundaryRequiresBothCurrentSavedAndWirePositions()
@@ -50,6 +50,27 @@ public class ZionAfter1212FollowerReadinessTests
         Assert.Single(Ready(Log(Own,Maynard,Move(52700)),State(),State(52700,-16700)));
         Assert.Throws<InvalidDataException>(()=>Ready(Log(Own,Maynard,Move(52700.5f)),State(),State(52699.9,-16700)));
         Assert.Throws<InvalidDataException>(()=>Ready(Log(Own,Maynard,Move(52699.9f)),State(),State(52700.5,-16700)));
+    }
+    static string Birth(byte view,double x,double z)
+    {
+        var b=B(Maynard);b[5]=view;b[^3]=view;
+        BitConverter.GetBytes(x).CopyTo(b,b.AsSpan().IndexOf(BitConverter.GetBytes(52550d)));
+        BitConverter.GetBytes(z).CopyTo(b,b.AsSpan().IndexOf(BitConverter.GetBytes(-15700d)));
+        return Convert.ToHexString(b);
+    }
+    [Fact] public void EquallyNamedFollowersUseTheirOwnCurrentPositionAndCannotShareOneBody()
+    {
+        var log=Log(Own,Birth(4,53000,-16100),Birth(9,53100,-16100));
+        MissionProgress.SavedState Group()
+        {
+            var s=State(53000,-16100);s.Following=new ushort[]{1,2};
+            s.Mobs.Add(new(){Npc=2,Identity=new string('c',32),Name="Maynard Berman",Phase=0,Friendly=true,Health=2150,Level=50,X=53100,Y=2895,Z=-16100});return s;
+        }
+        var stream=log.Snapshot();var before=Group();var current=Group();
+        var observations=ZionAfter1212FollowerReadiness.Require(stream,stream.Life,"ZionNextFive",before,current,new ushort[]{1,2},new[]{54200d,2895,-16700});
+        Assert.Equal(new ushort[]{4,9},observations.Select(o=>o.View));
+        current.Mobs[1].X=53000;
+        Assert.Throws<InvalidDataException>(()=>ZionAfter1212FollowerReadiness.Require(stream,stream.Life,"ZionNextFive",before,current,new ushort[]{1,2},new[]{54200d,2895,-16700}));
     }
     [Fact] public void OwnSessionLifeAndHandleMustRemainCurrent()
     {
