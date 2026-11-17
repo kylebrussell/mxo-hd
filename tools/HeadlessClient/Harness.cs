@@ -228,8 +228,8 @@ public sealed class ServerInstance : IDisposable
             // A fixture replaces only this disposable server's mission catalog. Production data stays untouched.
             string missions = Path.Combine(workingDirectory, "data", "missions");
             Directory.CreateDirectory(missions);
-            File.Copy(Path.Combine(repositoryRoot, "tools", "HeadlessClient", "Fixtures", missionFixture),
-                Path.Combine(missions, missionFixture));
+            string fixtureSource=Path.IsPathRooted(missionFixture)?missionFixture:Path.Combine(repositoryRoot,"tools","HeadlessClient","Fixtures",missionFixture);
+            File.Copy(fixtureSource,Path.Combine(missions,Path.GetFileName(missionFixture)));
         }
 
         if (extraEnvironment != null && extraEnvironment.TryGetValue("HEADLESS_HARDLINE_UPLOAD_REQUIRED",out string upload))

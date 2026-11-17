@@ -41,7 +41,7 @@ namespace hds
         /// <summary>Whether this NPC would attack a player of this level at this distance (in units).</summary>
         public static bool WouldAttack(Mob mob, double distanceUnits, int playerLevel)
         {
-            if (mob == null || mob.isFriendly || mob.getIsDead() || !mob.getIsSpawned() || mob.getCombatTarget() != null)
+            if (mob == null || mob.isFriendly || mob.getIsDead() || !mob.getIsSpawned() || mob.getCombatTarget() != null || MobMotion.Chasing(mob))
             {
                 return false;
             }
@@ -200,7 +200,7 @@ namespace hds
             Attack(client, mob, view, x, z);
         }
 
-        private static void Attack(WorldClient client, Mob mob, ClientView view, double px, double pz)
+        internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double pz)
         {
             if (ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
             double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
@@ -214,6 +214,12 @@ namespace hds
             }
 
             if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects)) return;
+
+            if (mob.missionInstance==0 && dx*dx+dz*dz>MeleeDistanceUnits*MeleeDistanceUnits)
+            {
+                if(MobMotion.BeginChase(client,mob))Output.WriteDebugLog("[AGGRO] "+mob.getName()+" pursues "+client.playerData.getCharID());
+                return;
+            }
 
             // The NPC closes in and faces the player
             StopPoint(px, pz, mob.getXPos(), mob.getZPos(), MeleeDistanceUnits, out double x, out double z);

@@ -17,6 +17,7 @@ public sealed class NativeQaModePlan
     public IReadOnlyDictionary<string,string> EnvironmentOverrides { get; }
     public IReadOnlyDictionary<string,JsonElement> ExtraQaMetadata { get; }
     public IReadOnlyList<string> ReadyMessages { get; }
+    public string? MissionFixture { get; }
     public bool SeedDisguiseTool { get; }
     public bool DevCommands { get; }
     public bool GmCharacter110 { get; }
@@ -27,7 +28,7 @@ public sealed class NativeQaModePlan
     public bool CompileItemsQa { get; }
     public NativeQaModePlan(ushort[] abilities, int x, int z, string[] beforeLoadout, string[] afterLoadout,
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
-        bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null)
+        bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
@@ -41,6 +42,9 @@ public sealed class NativeQaModePlan
             return JsonSerializer.SerializeToElement(p.Value);
         },StringComparer.Ordinal));
         ReadyMessages=Array.AsReadOnly((string[])(readyMessages ?? Array.Empty<string>()).Clone());
+        if(missionFixture!=null&&(Path.GetFileName(missionFixture)!=missionFixture||!missionFixture.EndsWith(".xml",StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("A mission fixture must name one XML file.",nameof(missionFixture));
+        MissionFixture=missionFixture;
         this.SeedDisguiseTool=SeedDisguiseTool;
         this.DevCommands=DevCommands; this.GmCharacter110=GmCharacter110; this.FixedCallbackRolls=FixedCallbackRolls;
         this.Bootstrap=Bootstrap; this.StealthShieldQa=StealthShieldQa; this.HealthCallbackQa=HealthCallbackQa; this.CompileItemsQa=CompileItemsQa;

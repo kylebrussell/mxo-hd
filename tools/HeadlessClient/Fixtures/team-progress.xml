@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Disposable team-contribution fixture, not production mission content. -->
+<mission id="399911" title="Team Progress Fixture" description="A teammate defeats the holder's target."
+ plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="50" info="60">
+ <npc id="1" handle="Team Security" type="HOSTILE" x="17100" y="495" z="2700" rsi="ec020058" level="1" maxHP="25" attacksOnSight="0"/>
+ <npc id="2" handle="Team Contact" type="FRIENDLY" x="17150" y="495" z="2700" rsi="a8060090"/>
+ <phase leave="0">
+  <objective goal="1" text="Defeat the team target" type="Defeat" npc="1"/>
+  <objective goal="2" text="Report the team victory" type="Talk" npc="2" after="1"/>
+ </phase>
+</mission>

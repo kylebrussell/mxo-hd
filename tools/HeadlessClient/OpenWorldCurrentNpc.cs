@@ -3,10 +3,13 @@ namespace HeadlessClient;
 /// <summary>Current-life ambient observer using qualified typed frames, without resynchronization.</summary>
 public static class OpenWorldCurrentNpc
 {
-    public sealed record Current(ViewCreation View,double[] Position,bool Dead,long Life);
-    sealed class LiveView { public ViewCreation View=null!; public Point? Position; public int Birth,PositionSection; public string PositionBytes=""; public bool DynamicBirth,Dead,GenerationKnown; }
+    public sealed record Current(ViewCreation View,double[] Position,bool Dead,long Life)
+    { public IReadOnlyList<double[]> Positions {get;init;}=Array.Empty<double[]>(); }
+    sealed class LiveView { public ViewCreation View=null!; public Point? Position; public int Birth,PositionSection; public string PositionBytes=""; public bool DynamicBirth,Dead,GenerationKnown; public List<double[]> Trail=new(); }
     sealed record Point(double X,double Y,double Z);
     public static Current Require(OwnViewLifeSnapshot stream,double x,double y,double z,bool expectedDead=false)
+        =>Require(stream,x,y,z,"Chopper Runner",1,Convert.FromHexString(x==19403?"5E010088":"5D010088"),expectedDead);
+    public static Current Require(OwnViewLifeSnapshot stream,double x,double y,double z,string name,byte expectedLevel,byte[] moreInfo,bool expectedDead=false,double birthRadius=500)
     {
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life");
         var live = new Dictionary<ushort, LiveView>();
@@ -59,7 +62,7 @@ public static class OpenWorldCurrentNpc
                 {
                     // An ambiguous current-life stream cannot be repaired by a later NPC birth.
                     // Only a wholly new qualified own life starts a separate observation.
-                    throw new InvalidDataException($"Unknown/truncated current-life frame at section{e.Section} offset{cursor}");
+                    throw new InvalidDataException($"Unknown/truncated current-life frame at section{e.Section} offset{cursor}: {Convert.ToHexString(section.AsSpan(cursor,Math.Min(24,section.Length-cursor)))}");
                 }
                 if(frame.Type==MervFollowupViewFrames.Kind.Delete)
                 {if(live.Remove(frame.View,out var removed))retired.Add((removed.View.ViewId,removed.View.SpawnId));}
@@ -69,6 +72,7 @@ public static class OpenWorldCurrentNpc
                     {
                         int pos=cursor+frame.PositionOffset;
                         current.Position=new(BitConverter.ToSingle(section,pos),BitConverter.ToSingle(section,pos+4),BitConverter.ToSingle(section,pos+8));
+                        current.Trail.Add(new[]{current.Position.X,current.Position.Y,current.Position.Z});
                         current.PositionSection=e.Section;current.PositionBytes=Convert.ToHexString(section.AsSpan(pos,12));
                     }
                     if(frame.Type==MervFollowupViewFrames.Kind.Death)current.Dead=true;
@@ -77,11 +81,13 @@ public static class OpenWorldCurrentNpc
             }
         }
         if (!ownBirthSeen) throw new InvalidDataException("No current own-view birth");
-        var candidates=live.Values.Where(v=>v.View.Goid==599&&v.View.Name=="Chopper Runner"&&v.DynamicBirth&&v.GenerationKnown&&v.View.Attributes.TryGetValue("Position",out var raw)&&raw.Length==24&&Math.Pow(BitConverter.ToDouble(raw)-x,2)+Math.Pow(BitConverter.ToDouble(raw,16)-z,2)<=250000&&Math.Abs(BitConverter.ToDouble(raw,8)-y)<1&&v.View.Attributes.TryGetValue("MoreInfoID",out var rsi)&&rsi.SequenceEqual(Convert.FromHexString(x==19403?"5E010088":"5D010088"))).ToArray();
+        var candidates=live.Values.Where(v=>v.View.Goid==599&&v.View.Name==name&&v.DynamicBirth&&v.GenerationKnown&&v.View.Attributes.TryGetValue("Position",out var raw)&&raw.Length==24&&Math.Pow(BitConverter.ToDouble(raw)-x,2)+Math.Pow(BitConverter.ToDouble(raw,16)-z,2)<=birthRadius*birthRadius&&Math.Abs(BitConverter.ToDouble(raw,8)-y)<1&&v.View.Attributes.TryGetValue("MoreInfoID",out var rsi)&&rsi.SequenceEqual(moreInfo)).ToArray();
         if(candidates.Length!=1)throw new InvalidDataException("Expected one original ambient generation");
         var chosen=candidates[0];var chosenView=chosen.View;var chosenPosition=chosen.Position;
-        if(chosenPosition==null||!new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z}.All(double.IsFinite)||chosen.Dead!=expectedDead||!chosenView.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new byte[]{1})||chosenView.Attributes.ContainsKey("MissionKey")||chosenView.Attributes.ContainsKey("DontAttack")||!chosenView.Attributes.TryGetValue("IsEnemy",out var enemy)||!enemy.SequenceEqual(new byte[]{1})||!chosenView.Attributes.TryGetValue("IsFriendly",out var friendly)||!friendly.SequenceEqual(new byte[]{0})||!stream.Current)throw new InvalidDataException("Ambient level/death/life/mission scope differs");
-        return new(chosenView,new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z},chosen.Dead,stream.Life);
+        if(chosenPosition==null||!new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z}.All(double.IsFinite)||chosen.Dead!=expectedDead||!chosenView.Attributes.TryGetValue("Level",out var level)||!level.SequenceEqual(new[]{expectedLevel})||chosenView.Attributes.ContainsKey("MissionKey")||chosenView.Attributes.ContainsKey("DontAttack")||!chosenView.Attributes.TryGetValue("IsEnemy",out var enemy)||!enemy.SequenceEqual(new byte[]{1})||!chosenView.Attributes.TryGetValue("IsFriendly",out var friendly)||!friendly.SequenceEqual(new byte[]{0})||!stream.Current)throw new InvalidDataException("Ambient level/death/life/mission scope differs");
+        var original=chosenView.Attributes["Position"];
+        return new(chosenView,new[]{chosenPosition.X,chosenPosition.Y,chosenPosition.Z},chosen.Dead,stream.Life)
+        {Positions=new[]{new[]{BitConverter.ToDouble(original),BitConverter.ToDouble(original,8),BitConverter.ToDouble(original,16)}}.Concat(chosen.Trail).ToArray()};
     }
 }
 
