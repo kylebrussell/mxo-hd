@@ -1,0 +1,117 @@
+{
+  "cases": [
+    {
+      "name": "zion101209-phase1-1444",
+      "district": 1,
+      "sectors": [
+        555
+      ],
+      "rawPosition": [
+        31950,
+        1349,
+        -6600
+      ],
+      "rawQuaternion": "00000000f20435bf00000000f304353f",
+      "root": {
+        "surface": [
+          555,
+          45,
+          94
+        ],
+        "standing": [
+          31850,
+          1295,
+          -6620
+        ],
+        "evidence": "Peer normal source selection: ApproachProjected and ApproachValidated true at exact polygon555/45/94 in mxo-zion-next-five-offline-selection.json. Caller-supplied standing context; normal elevator-to-root walking not proven."
+      },
+      "context": "Unchanged normal offline Choose/PlaceObjects seed101208; source1444/key22B00254. Explicit validated approach root, not a claim of native entry."
+    },
+    {
+      "name": "zion101209-phase2-1415",
+      "district": 1,
+      "sectors": [
+        1214
+      ],
+      "rawPosition": [
+        6715,
+        1022,
+        15005
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          1214,
+          65,
+          6
+        ],
+        "standing": [
+          6900,
+          895,
+          15150
+        ],
+        "evidence": "EXPLICIT ANALYTIC CALLER INPUT: normal selected site NPC standing XZ6900/15150 lies in polygon1214/65/6 at NAVsurface800. StandingY895 is exact NAV+95, distinct from source NPC896. No normal player entry-to-root bridge is established."
+      },
+      "context": "Unchanged normal offline selection source1415/key4BE0055B. Original Project(FALSE) candidate6715/895/15005 is NEVER used as root. This result is conditional on explicit analytic root, not normal mission reachability."
+    },
+    {
+      "name": "native209-open-floor-control",
+      "district": 1,
+      "sectors": [
+        209
+      ],
+      "rawPosition": [
+        25100,
+        2040,
+        14100
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          209,
+          63,
+          3
+        ],
+        "standing": [
+          25579.31146596289,
+          2095,
+          13959.481277120463
+        ],
+        "evidence": "Existing normal mission landing context saved in mxo-box-qa-entry-path.json and validated by NavMesh Project in mxo-box-qa-grounding.json. Native209 tested the final open-floor asset, not this entire NAV route."
+      },
+      "context": "Known209 open-floor Box control, same sector component as existing normal mission landing."
+    },
+    {
+      "name": "native203-failed-source",
+      "district": 1,
+      "sectors": [
+        209
+      ],
+      "rawPosition": [
+        23940,
+        2100,
+        15050
+      ],
+      "rawQuaternion": "0000000000000000000000000000803f",
+      "root": {
+        "surface": [
+          209,
+          63,
+          3
+        ],
+        "standing": [
+          25579.31146596289,
+          2095,
+          13959.481277120463
+        ],
+        "evidence": "Same explicit normal landing context as209, not a guessed far-side room root."
+      },
+      "context": "Existing failed203 source1415/key0d1003dc. No source geometry/seed changes; planner may propose another reachable geometric point, not clear decoration."
+    }
+  ],
+  "evidenceInputs": {
+    "peerSelectionSha256": "1772f50cc3006435889f56f1a142eed6277c47ea7b5f83e53759486273be92a3",
+    "peerSelectionScope": "Normal offline Choose/PlaceObjects at fixed101208, input17000/2300 eachphase, per-mission exclusions; no live wire or native entry proof.",
+    "assetBaseSha256": "10ed8bc5b72e6b13d3b92c65e6e98944a9bc90287a0829615cb7892837d90af2"
+  }
+}
