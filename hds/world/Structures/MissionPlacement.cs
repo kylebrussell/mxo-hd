@@ -13,7 +13,7 @@ namespace hds
             List<double[]> taken = occupied?.ToList() ?? new List<double[]>();
             bool Free(NavPoint at) => (site == null || (at.x >= site.minX && at.x <= site.maxX &&
                 at.z >= site.minZ && at.z <= site.maxZ)) &&
-                !taken.Any(p => Math.Abs(p[1] - at.y) < 150 && Distance(p, at.Position) < 100 * 100) && (admissible==null||admissible(at));
+                !taken.Any(p => NpcOverlap(p,at.Position)) && (admissible==null||admissible(at));
             bool Project(double[] target,double radius,out NavPoint placed)
             {
                 if(projector==null)return NavMesh.Project(district,target[0],target[1],target[2],out placed,
@@ -91,6 +91,8 @@ namespace hds
             return NavMesh.Project(district, site.CentreX, site.floorY - 50, site.CentreZ, out NavPoint anchor)
                 ? anchor.Position : null;
         }
+
+        internal static bool NpcOverlap(double[] a,double[] b) => Math.Abs(a[1]-b[1])<150&&Distance(a,b)<100*100;
 
         private static double Distance(double[] a, double[] b) =>
             (a[0] - b[0]) * (a[0] - b[0]) + (a[2] - b[2]) * (a[2] - b[2]);

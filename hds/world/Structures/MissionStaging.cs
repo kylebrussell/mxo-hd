@@ -871,25 +871,17 @@ namespace hds
         /// <summary>Walks following NPCs after the player. Called from the mission tick.</summary>
         public static void Follow(WorldClient client, MissionProgress progress, double px, double py, double pz)
         {
-            foreach (ushort id in progress.following.ToList())
+            var followers=LivingFollowers(client,progress);
+            foreach (Mob mob in followers)
             {
-                Mob mob = MissionRuntime.FindNpc(client.playerData, id);
-                if (mob == null || mob.getIsDead())
-                {
-                    continue;
-                }
-
                 double dx = px - mob.getXPos(), dz = pz - mob.getZPos(), dy = py - mob.getYPos();
                 double flat = Math.Sqrt(dx * dx + dz * dz);
-                if (flat <= FollowDistance + 50 && Math.Abs(dy) < 200)
+                bool catchUp=flat>FollowSnap||Math.Abs(dy)>=200;
+                if (catchUp || flat <= FollowDistance + 50)
                 {
-                    continue;
-                }
-
-                if (flat > FollowSnap || Math.Abs(dy) >= 200)
-                {
-                    // The player took the elevator or ran off: catch up behind them
-                    PlaceBeside(mob, px, py, pz);
+                    var occupied=followers.Where(other=>other!=mob).Select(FollowerPosition).ToArray();
+                    if(catchUp||occupied.Any(position=>MissionPlacement.NpcOverlap(position,FollowerPosition(mob))))
+                        PlaceBeside(mob,px,py,pz,occupied);
                     continue;
                 }
 
@@ -903,10 +895,17 @@ namespace hds
             }
         }
 
-        public static void PlaceBeside(Mob mob, double px, double py, double pz)
+        private static Mob[] LivingFollowers(WorldClient client,MissionProgress progress) =>
+            progress.following.Select(id=>MissionRuntime.FindNpc(client.playerData,id))
+                .Where(mob=>mob!=null&&!mob.getIsDead()).ToArray();
+
+        private static double[] FollowerPosition(Mob mob) => new[]{mob.getXPos(),mob.getYPos(),mob.getZPos()};
+
+        public static void PlaceBeside(Mob mob, double px, double py, double pz, IEnumerable<double[]> occupied=null)
         {
-            if (!NavMesh.Project((ushort)mob.getDistrict(), px + 150, py, pz + 100, out NavPoint placed,
-                reachableFrom: new[] { px, py, pz }, requireDirect: true)) return;
+            var player=new[]{px,py,pz};
+            if (!MissionPlacement.Resolve((ushort)mob.getDistrict(),new[]{px+150,py,pz+100},player,
+                Array.Empty<double[]>(),true,out NavPoint placed,out _,occupied)) return;
             mob.setXPos(placed.x);
             mob.setYPos(placed.y);
             mob.setZPos(placed.z);
@@ -1041,14 +1040,7 @@ namespace hds
             stamp.RequireCurrent();
             Teleport(client, x, y, z);
             progress.CommitGeneratedFloor(progress.phaseIndex, site, target);
-            foreach (ushort id in progress.following)
-            {
-                Mob mob = MissionRuntime.FindNpc(client.playerData, id);
-                if (mob != null && !mob.getIsDead())
-                {
-                    PlaceBeside(mob, x, y, z);
-                }
-            }
+            OnFloorReached(client,x,y,z);
 
             client.FlushQueue();
         }
@@ -1083,13 +1075,11 @@ namespace hds
                 return;
             }
 
-            foreach (ushort id in progress.following)
+            var occupied=new List<double[]>();
+            foreach (Mob mob in LivingFollowers(client,progress))
             {
-                Mob mob = MissionRuntime.FindNpc(client.playerData, id);
-                if (mob != null && !mob.getIsDead())
-                {
-                    PlaceBeside(mob, x, y, z);
-                }
+                PlaceBeside(mob,x,y,z,occupied);
+                occupied.Add(FollowerPosition(mob));
             }
         }
 
