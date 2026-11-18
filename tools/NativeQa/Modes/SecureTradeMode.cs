@@ -51,7 +51,11 @@ public sealed class SecureTradeMode : NativeQaMode
         if (action == "open")
         {
             var target = await partner.WaitForViewNamedAsync("CSR_Tester");
-            partner.SendRpc($"81 82 {WireFormat.ToHex(BitConverter.GetBytes(target.ViewId))} {target.SpawnId:x2} 00 00 00 00 00 00 03 00");
+            partner.SendRpc(BuildPartnerOffer(request, target.ViewId, target.SpawnId));
+            var reply = await partner.WaitForRpcAsync("81 83");
+            uint status = BitConverter.ToUInt32(reply.Bytes, 4);
+            if (status != TradePackets.RequestOk)
+                throw new InvalidOperationException($"Trade open was refused (status 0x{status:x8}). Check the selected bag slot and trade state.");
             return;
         }
 
@@ -69,5 +73,13 @@ public sealed class SecureTradeMode : NativeQaMode
         partner.SendRpc($"81 85 {code:x2} {(information == 0 ? 0 : 1):x2} {WireFormat.ToHex(BitConverter.GetBytes(information))} 6b 00");
     }
 
+    public static string BuildPartnerOffer(JsonElement request, ushort viewId, byte spawnId)
+    {
+        byte slot = 3;
+        if (request.TryGetProperty("slot", out var selection) &&
+            (selection.ValueKind != JsonValueKind.Number || !selection.TryGetByte(out slot) || slot is < 1 or > 96))
+            throw new ArgumentException("Trade open requires a bag slot from 1 to 96.");
 
+        return $"81 82 {WireFormat.ToHex(BitConverter.GetBytes(viewId))} {spawnId:x2} 00 00 00 00 00 00 {slot:x2} 00";
+    }
 }

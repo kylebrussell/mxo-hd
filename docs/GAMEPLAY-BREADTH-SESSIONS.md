@@ -31,8 +31,9 @@ before issuing the next action.
    send `accept`, then `reset`. Verify the partner-state label changes both ways.
 3. Have QAFriend send `accept` again, then tick Accept natively. Verify one completion, one bit
    transferred and CSR Info 1,250. Slot 4 stays occupied.
-4. Have QAFriend send `open`. Verify the incoming window shows one Code Bit 2 from QAFriend. Cancel
-   natively. Reopen from CSR slot 4 and have QAFriend send `cancel`. Verify both cancellations
+4. Have QAFriend send `open` with JSON field `"slot":3`. Verify the incoming window shows one Code Bit 2 from QAFriend. Cancel
+   natively. Use another bag slot (1–96) if QAFriend moved or received the item. The default is slot 3.
+   Reopen from CSR slot 4 and have QAFriend send `cancel`. Verify both cancellations
    close the window, unlock the slot and leave balance/items unchanged.
 5. Relog in the same fixture and verify CSR's inventory and balance. Capture native request,
    incoming offer, partner update, completion and cancel. [Trade reference](SECURE-TRADE.md)

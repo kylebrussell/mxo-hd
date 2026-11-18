@@ -81,50 +81,24 @@ The repair now translates06 ConstructID ONLY for the six registered maps12..17 i
 
 Current-context repair validation at frozen8bd20266eb2074ed4243e55f844589494e9eda17:22 focused checks PASS, including all six mappings, no truncation aliases and every existing private PvP book-map fallback. Both actual read-only configurations/plans/DLL hashes PASS. Fresh la-hardline-sync PASS51.0s (driver51.1s), exit0, peak1/disposed/ownserver0. Actual DebugA8C9126DDE92D1CE3F65EDF05893D879D067DAF60191ED9747D572CBDAC6AFFE; Release98CF3CDAB57DE3DB0434BC15666106F5EE32164A1FECB8B057C498ACFCA172EE was build/read-only only. Unique preteardown mxo-hardline-sync-mxotest_run_1_0eb5aac0e5.json and pairedlog retain actual06current8 at initial/relog/LAreturn,08and80fa8/2, sourceDLL/rawRPCs. SQL remains16/37700/495/31700. The earlier e8de31d native failure and prior51.9s wire pass remain explicitly distinct. No native UI success is inferred.
 
-## Loading Area after Reconstruct
+## Native Loading Area result
 
-PR287 reached the picker and received two `6d` status replies. Clicking Jack into the
-Matrix on list and map selections sent no `80 ff`. The retail death capture sends
-`81 09` alone, waits for the transport acknowledgement, then sends the `06` map
-load with experience and information. Character and world settings follow the
-client's readiness request before the first `6d` reply.
+PR291 confirmed an ordinary booth exit and Reconstruct at Mara Central. Jack In
+sent 80 ff and CSR_Tester returned standing and movable. The Medium03
+registration fixture and scale-diagnostics also returned successfully. In the
+800×600 Loading Area window, some desktop clicks missed the bottom-right
+button. A posted click reached it on PR291 and the earlier PR160 build. The
+earlier missed clicks therefore cannot identify a server failure.
 
-The server now uses that sequence after both Reconstruct and a hardline exit to
-Loading Area. The headless Reconstruct test checks the separate reset and map
-lists, character setup before the first hardline response, and a new self view
-after selecting Mara C. The native check still needs to show the button itself
-sending `80 ff`. [PR287 native observation](https://github.com/kylebrussell/mxo-hd/pull/287#issuecomment-6966592182)
-## Jack In after entering the Loading Area
+The retail PvP-death capture sends 81 09, receives an acknowledgement, and
+loads construct 901 with the map and balances. The client sends 6c and 05.
+Character and world settings precede 6d and the successful 80 ff. The ordinary
+exit capture shows the same readiness exchange. The PR291 server batches the
+transition and map, as in the earlier PR175 wire trace.
 
-PR290 reached the Loading Area from Reconstruct and from an ordinary hardline.
-Both paths stalled before the client sent 80 ff. The affected client sent its
-first 6c before it received the map, then sent 05 separately. The Character tab
-drew the default female RSI while retaining CSR_Tester's name and equipment list.
+The Character and Equipment previews still draw the default female model and
+empty clothes slots. The character name, level, abilities and equipment list
+are present. The retail exchange examined so far has no standalone RSI update
+for those previews.
 
-The retail PvP death capture sends 81 09, acknowledges it, and loads construct
-901 with 06, experience and information. The client sends 6c and 05 together.
-Ability and world-setting records follow, then 6d, and the client can send 80 ff.
-The ordinary exit capture contains the same map and readiness exchange. Neither
-includes a player RSI spawn or a separate appearance RPC in that exchange. The
-PvP sample has two view records for TeamInfo, including the character and
-construct IDs. The successful Rajko Mara C return contains no corresponding
-TeamInfo update before 80 ff.
-
-The successful PR175 native trace at 8e70b56 has 81 09 immediately before 06
-in one setup batch, a combined 6c and 05 from the client, then 6d and
-80 ff 08 00 00 00 02 00 00 00. Its map uses the same weather/rez override as
-PR290. Restore that known-working batch for both entry paths, including
-ordinary character setup and settings. The client transition handler at
-6217d757 and the map handler at 62172540 coordinate transport readiness through
-the same state flag. The separation in PR290 produced an early hardline query
-in both failed native samples.
-
-The native Jack In sender reads the selected construct and hardline at
-62171600. Its path has no appearance check, and the captured LA traffic
-provides no basis for a new appearance packet. The default RSI remains open.
-Headless tests check the shared packet and both return paths. The native test
-must confirm that the real button sends 80 ff after ordinary exit and after
-Reconstruct.
-
-[PR175 native pass](https://github.com/kylebrussell/mxo-hd/pull/175) ·
-[PR290 native observations](https://github.com/kylebrussell/mxo-hd/pull/290)
+[PR291 native results](https://github.com/kylebrussell/mxo-hd/pull/291#issuecomment-6978033553)
