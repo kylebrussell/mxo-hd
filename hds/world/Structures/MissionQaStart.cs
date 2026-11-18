@@ -145,8 +145,19 @@ namespace hds
                 progress.following.Add(id);
             }
 
-            foreach (var npc in progress.mission.npcs.Where(n => (n.at == 0 || n.at == progress.phaseIndex + 1) && !n.arrival.Late))
+            var goalActors = new HashSet<ushort>();
+            foreach (var goal in phase.missionObjectives.Where(goal => !goal.optional))
             {
+                goalActors.UnionWith(goal.Npcs);
+                if (goal.type == MissionGoalType.Escort && goal.escortTo.StartsWith("npc:", StringComparison.Ordinal) &&
+                    ushort.TryParse(goal.escortTo.Substring(4), out ushort receiver))
+                    goalActors.Add(receiver);
+            }
+            foreach (var npc in progress.mission.npcs)
+            {
+                bool declaredHere = npc.at == 0 || npc.at == progress.phaseIndex + 1;
+                bool required = declaredHere ? !npc.arrival.Late : goalActors.Contains(npc.id);
+                if (!required) continue;
                 var actor = MissionRuntime.FindNpc(client.playerData, npc.id);
                 if (actor == null || (npc.dead ? !actor.getIsDead() : actor.getIsDead() || actor.getHealthC() == 0))
                     throw new MissionCheckpointException($"QA phase is missing required NPC {npc.handle}");
