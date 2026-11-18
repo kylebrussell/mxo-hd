@@ -50,6 +50,15 @@
     },
     "438": {
       "family": "friendly-resurrection"
+    },
+    "466": {
+      "checks": {
+        "periodic": {
+          "source": "tempmods.py ViralDOT, ability_catalog.json 466 UpdateFuncInterval and actions_combat.log.txt:16649–17449 tick trace",
+          "runtime": "TempMods.TryGet, TimedEffects.Active.NextTick and PlayerEffects.Ticked",
+          "test": "ability-health-parity stock 43-byte 466 cast and five damage/resistance lines before timed removal, plus AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry"
+        }
+      }
     }
   }
 }
