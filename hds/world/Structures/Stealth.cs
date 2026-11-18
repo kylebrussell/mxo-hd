@@ -186,19 +186,22 @@ namespace hds
             catch { return false; }
         }
 
-        /// <summary>The stealth level the native test reads: the state's Stealth modifier plus any passive Stealth.</summary>
-        public static int StealthLevelOf(WorldClient client) => (Current(client)?.StealthLevel ?? 0) + AbilityPassives.Total(client, StealthAbility);
+        /// <summary>The stealth level the native test reads: the state's Stealth modifier plus loaded and active Stealth.</summary>
+        public static int StealthLevelOf(WorldClient client) => (Current(client)?.StealthLevel ?? 0) + AbilityStats.Player(client, StealthAbility);
 
         /// <summary>StealthAwareness: the creation value (1, BootingHelper) plus Stealth Detection totals (Awakened, Stealth Awareness).</summary>
         public static int AwarenessOf(WorldClient client)
         {
             byte[] raw = client.playerInstance.StealthAwareness.getValue();
             int baseline = raw != null && raw.Length > 0 ? raw[0] : 0;
-            return baseline + AbilityStats.Player(client, StealthDetectionAbility);
+            return Math.Clamp(baseline + AbilityStats.Player(client, StealthDetectionAbility), 0, byte.MaxValue);
         }
 
-        /// <summary>Our choice: an NPC's StealthAwareness is its level (retail creation records carried per-NPC values we can't recover).</summary>
-        public static int AwarenessOf(Mob mob) => mob.getLevel();
+        /// <summary>Use the recorded NPC_BASE byte when available; synthetic NPCs retain the level fallback.</summary>
+        public static int AwarenessOf(Mob mob) => Math.Clamp((mob.CapturedStealthAwareness ?? mob.getLevel()) +
+            AbilityStats.Npc(mob, StealthDetectionAbility), 0, byte.MaxValue);
+
+        private static int NoiseOf(WorldClient client) => client.playerInstance.NoiseLevel.getValue()[0];
 
         public static int AbilityLevel(WorldClient client, UInt16 ability)
         {
@@ -261,7 +264,7 @@ namespace hds
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
             if (def.Kind == Kind.Disguise && EnemyWatching(client, InvisibilityProximityUnits))
                 return "You cannot disguise while an enemy is watching.";
-            if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits))
+            if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits, ignoreBlinded: true))
                 return "You cannot become invisible near enemies."; // InvisibilityGrant_Test
             if (def.Kind == Kind.Imparted && (BitsOf(client) & Invisible) != 0) return "You are already invisible.";
             return null;
@@ -383,7 +386,7 @@ namespace hds
         /// <summary>SneakUpdate: an enemy player in range, facing the sneaker, who passes sneakTest reveals them.</summary>
         private static void Update(WorldClient client, State state)
         {
-            if (DetectedByPlayer(client, state)) End(client, "revealed", true);
+            if (DetectedByPlayer(client, state)) End(client, "revealed", true, state.Generation);
         }
 
         /// <summary>ISDrainWithAbilityDeactivation: take the value; when there isn't enough Inner Strength the ability ends.</summary>
@@ -490,6 +493,13 @@ namespace hds
 
         // ---- detection ----
 
+        private static double PeriodicDetectionRange(WorldClient client, State state)
+        {
+            // GetSneakLevel reads the current grant. Developer fixtures can create a state without a loaded grant.
+            int learned = AbilityPassives.Level(client, SneakGrantAbility);
+            return DetectionRangeUnits(learned > 0 ? learned : state.Level);
+        }
+
         private static bool Enemy(WorldClient sneaker, WorldClient other)
         {
             // utility.py: getEnemiesInRadius and CanFight(subject, opponent)
@@ -503,12 +513,13 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref x, ref y, ref z);
         }
 
-        private static IEnumerable<(WorldClient Other, double Distance)> EnemiesFacing(WorldClient client, double range)
+        private static IEnumerable<(WorldClient Other, double Distance)> EnemiesFacing(WorldClient client, double range, bool ignoreBlinded)
         {
             Position(client, out double x, out double y, out double z);
             foreach (WorldClient other in SocialHandler.OnlineWhere(c => c != client && c.playerData.getDistrictId() == client.playerData.getDistrictId()
                 && !c.playerData.isDead && c.playerData.getOnWorld()))
             {
+                if (ignoreBlinded && TimedEffects.ForPlayer(other).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds())) continue;
                 Position(other, out double ox, out double oy, out double oz);
                 double d = Math.Sqrt((ox - x) * (ox - x) + (oz - z) * (oz - z));
                 if (d > range || !MobAggro.SameFloor(oy, y) || !Enemy(client, other)) continue;
@@ -519,7 +530,7 @@ namespace hds
         }
 
         /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (floor-mesh sight approximation; see NavMesh.HasSightPath).</summary>
-        public static bool EnemyWatching(WorldClient client, double range) => EnemiesFacing(client, range).Any();
+        public static bool EnemyWatching(WorldClient client, double range, bool ignoreBlinded = false) => EnemiesFacing(client, range, ignoreBlinded).Any();
 
         /// <summary>Degrees between the observer's facing (its yaw byte) and the direction to the target, 0..180.</summary>
         public static double DegreesOff(double ox, double oz, byte yaw, double tx, double tz)
@@ -539,7 +550,7 @@ namespace hds
         /// </summary>
         public static bool DetectedByPlayer(WorldClient client, State state)
         {
-            double range = DetectionRangeUnits(state.Level);
+            double range = PeriodicDetectionRange(client, state);
             int sl = StealthLevelOf(client);
             Position(client, out double x, out double y, out double z);
             string who = TimedEffects.PlayerName(client);
@@ -558,7 +569,7 @@ namespace hds
                 if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), ox, oy, oz, x, y, z))
                 { Output.WriteDebugLog("[STEALTH] detect " + seen + ": floor-mesh sight blocked"); continue; }
                 int roll = Roll(random), sa = AwarenessOf(other);
-                if (SneakTest(sa, sl, 0, (float)distance, roll))
+                if (SneakTest(sa, sl, NoiseOf(client), (float)distance, roll))
                 {
                     Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(other) + " sees " + who +
                         " (SA " + sa + " SL " + sl + " d " + (int)distance + " roll " + roll + ")");
@@ -582,16 +593,15 @@ namespace hds
             if (now < s.NextNpcCheck) return true;
             s.NextNpcCheck = now + UpdateSeconds;
             Position(client, out double x, out double y, out double z);
-            double range = DetectionRangeUnits(s.Level);
+            double range = PeriodicDetectionRange(client, s);
             int sl = StealthLevelOf(client);
             foreach (var (mob, distance) in willing)
             {
                 if (distance > range || !InFrustum(mob.getXPos(), mob.getZPos(), (byte)mob.getRotation(), x, z)) continue;
                 if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), mob.getXPos(), mob.getYPos(), mob.getZPos(), x, y, z)) continue;
-                if (SneakTest(AwarenessOf(mob), sl, 0, (float)distance, Roll(random)))
+                if (SneakTest(AwarenessOf(mob), sl, NoiseOf(client), (float)distance, Roll(random)))
                 {
-                    End(client, mob.getName() + " sees through the sneak");
-                    return false;
+                    return !End(client, mob.getName() + " sees through the sneak", true, s.Generation);
                 }
             }
             return true;

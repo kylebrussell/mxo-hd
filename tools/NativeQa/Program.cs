@@ -132,6 +132,8 @@ try
     DateTime deadline = DateTime.UtcNow.AddHours(4);
     while (!File.Exists(Path.Combine(qaRoot,"stop")) && DateTime.UtcNow < deadline && !server.HasExited)
     {
+        if (fixtureMode is NativeQa.Modes.StealthDetectionMode)
+            await NativeQa.Modes.StealthDetectionMode.RecordResultAsync(qaRoot, server, helpers);
         if (fixtureMode.Name == "mission-catalog-sample")
         {
             string checkpoint = await database.ScalarAsync("SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId=110");

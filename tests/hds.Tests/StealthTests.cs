@@ -28,6 +28,26 @@ public class StealthTests
         Assert.Equal(Stealth.SneakTest(25, 25, 0, 300, 10), Stealth.SneakTest(25 + 256, 25, 0, 300, 10));
     }
 
+    [Theory]
+    [InlineData(49, 25, 2, 2, false)]
+    [InlineData(50, 25, 2, 2, true)]
+    [InlineData(99, 4, 0, 25, false)]
+    [InlineData(0, 200, 0, 25, true)]
+    public void ConcealmentContestUsesTheShippedStrictThreshold(int roll, int detection, int duration, int ability, bool revealed)
+        => Assert.Equal(revealed, ConcealmentDetection.Detects(roll, detection, duration, ability));
+
+    [Fact]
+    public void ParsedNpcAwarenessOverrulesLevelFallback()
+    {
+        var mob = new Mob();
+        mob.setLevel(50);
+        Assert.Equal(50, Stealth.AwarenessOf(mob));
+        mob.CapturedStealthAwareness = 0;
+        Assert.Equal(0, Stealth.AwarenessOf(mob));
+        mob.CapturedStealthAwareness = 17;
+        Assert.Equal(17, Stealth.AwarenessOf(mob));
+    }
+
     [Fact]
     public void RollAndRangeFollowTheScripts()
     {

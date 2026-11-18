@@ -7,6 +7,7 @@ namespace hds
 {
     public class Mob
     {
+        public byte? CapturedStealthAwareness { get; set; }
         private ulong entityID;
         private ushort mobID;       
         private ushort district;
@@ -534,7 +535,7 @@ namespace hds
                 themob.MissionKey.setValue(new byte[] { missionPhase, (byte)missionInstance, (byte)(missionInstance >> 8), 0x02 });
             }
 
-            themob.StealthAwareness.setValue(0x11);
+            themob.StealthAwareness.setValue(CapturedStealthAwareness ?? (byte)0x11);
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
