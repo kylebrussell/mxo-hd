@@ -65,6 +65,29 @@ public static partial class Scenarios
         Check.That(GroundDistance(current.Position,new[]{approach.x,approach.y,approach.z})<=MobAggro.MeleeDistanceUnits+1,"NPC closes to melee without teleporting");
     }
 
+    private static async Task WorldNpcCornerStationary(ScenarioContext context)
+    {
+        WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);
+        var end = WorldNpcCornerFixture.Turn;
+        var seed = OpenWorldFirstLevelFixture.Seed with
+        {
+            Handle = "StationaryCornerTarget", X = end[0], Y = end[1], Z = end[2],
+            Level = 2, Experience = 5100, Health = 5000, MaxHealth = 5000
+        };
+        var actor = (await context.AddPlayersInWorldAsync(seed))[0];
+        await actor.WaitForRpcAsync("46", TimeSpan.FromSeconds(20));
+        await actor.WaitUntilAsync(() => WorldNpcCornerFixture.Distance(WorldNpcCornerFixture.Observe(actor).Position, end) <=
+            MobAggro.MeleeDistanceUnits + 1, "The named Goof reached the stationary far-side player", TimeSpan.FromSeconds(3));
+        var caught = WorldNpcCornerFixture.Observe(actor);
+        Check.That(caught.Positions.Count >= 4, "NPC sent intermediate grounded steps");
+        Check.That(caught.Positions.Zip(caught.Positions.Skip(1), WorldNpcCornerFixture.Straight).All(clear => clear),
+            "No observed pursuit segment crossed the blocked corner");
+        MotionFloor(context, caught.Positions, MobMotion.ChaseSpeed);
+        Check.That(context.Server.DebugLog().Contains($"[AGGRO] Blackwood Goof attacks {actor.CharId} "),
+            "Interlock started from the selected world Goof");
+        Console.WriteLine($"Stationary Mara corner: {caught.Positions.Count} grounded points and interlock with no movement input.");
+    }
+
     private static async Task WorldNpcCornerChase(ScenarioContext context)
     {
         WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);

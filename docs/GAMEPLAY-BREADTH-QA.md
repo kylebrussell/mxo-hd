@@ -14,14 +14,15 @@ Claude owns native QA, lock, reset and merge; reset110 to Mara, full health, PvP
 
 ### NPC chase around the Mara corner
 
-1. Start `npc-corner-chase`. CSR starts at the printed sidewalk stand in Mara.
-2. Move to `19041,95,-9744` and watch the Blackwood Goof at `18924,95,-8852` start pursuing.
-3. Turn right and run to `20218,95,-9510`. Watch for the Goof coming around the corner and reaching interlock.
+1. Start `npc-corner-chase`. CSR starts at the far-side Mara marker `20218,95,-9510`.
+2. Stay at spawn and watch the Blackwood Goof come around the corner from `18924,95,-8852`.
+   Check that ordinary interlock starts without any movement input.
 
-Bootstrap checks the world NPC and three outdoor NAV markers without starting combat.
-The `world-npc-corner-chase` headless scenario sends position updates for the player's turn
-and watches the same NPC traverse grounded segments to interlock. The railing regression
-test uses a synthetic floor gap with a route around its end.
+This fixture widens the ordinary aggro radius to 15 m. The bootstrap checks the live Goof,
+the blocked shortcut, the grounded route, and CSR's seeded position. Its higher-level
+observer leaves the Goof at its post for CSR. The `world-npc-corner-stationary` scenario
+checks the automatic approach without a client movement packet. The moving-player scenario
+and the railing-gap regression remain separate checks.
 
 The server plans portal waypoints for a blocked pursuit and checks the final approach
 before starting melee. The 7.6005 `NPC_BASE` template stores `CharMvt/Walk Speed`

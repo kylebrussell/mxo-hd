@@ -8,20 +8,27 @@ public sealed class NpcCornerChaseMode : NativeQaMode
     public override string Name => "npc-corner-chase";
 
     public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2 },
-        WorldNpcCornerFixture.StandX, WorldNpcCornerFixture.StandZ, Array.Empty<string>(), Array.Empty<string>(),
+        WorldNpcCornerFixture.FarX, WorldNpcCornerFixture.FarZ, Array.Empty<string>(), Array.Empty<string>(),
         new[]
         {
+            $"UPDATE characters SET x={WorldNpcCornerFixture.FarX},y={WorldNpcCornerFixture.FarY},z={WorldNpcCornerFixture.FarZ}," +
+            $"level=2,exp={PlayerProgression.ExperienceForLevel(2)},healthC=2000,healthM=2000,rotation={WorldNpcCornerFixture.FarYaw},pvpflag=0 " +
+            "WHERE charId=110;",
+            // The bootstrap observer can see the spawn without drawing it away before CSR logs in.
             $"UPDATE characters SET x={WorldNpcCornerFixture.StandX},y={WorldNpcCornerFixture.StandY},z={WorldNpcCornerFixture.StandZ}," +
-            $"level=2,exp={PlayerProgression.ExperienceForLevel(2)},healthC=2000,healthM=2000,rotation=0,pvpflag=0 " +
-            "WHERE charId=110 OR handle='QAFriend';"
+            $"level=20,exp={PlayerProgression.ExperienceForLevel(20)},pvpflag=0 WHERE handle='QAFriend';"
         },
-        environmentOverrides: WorldNpcCornerFixture.Environment, readyMessages: new[] { WorldNpcCornerFixture.Directions });
+        environmentOverrides: WorldNpcCornerFixture.StationaryEnvironment, readyMessages: new[] { WorldNpcCornerFixture.Directions });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Missing corner chase fixture server.");
         string root = context.RepositoryRoot ?? throw new InvalidOperationException("Missing corner chase repository.");
         WorldNpcCornerFixture.CheckGeometry(root);
+        var database = context.OwnedDatabase ?? throw new InvalidOperationException("Missing disposable corner chase database.");
+        Check.Equal(1L, await database.LongAsync("SELECT COUNT(*) FROM characters WHERE charId=110 AND level=2 AND " +
+            $"x={WorldNpcCornerFixture.FarX} AND y={WorldNpcCornerFixture.FarY} AND z={WorldNpcCornerFixture.FarZ}"),
+            "CSR is seeded at the stationary far-side mark");
 
         using var probe = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
         await probe.EnterWorldAsync();
