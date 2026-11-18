@@ -104,9 +104,6 @@ namespace hds{
                 uint quote=VendorPricing.GetSellPrice(item.Goid);
                 if(quote==0){ClientActionsHandler.Notice(client,"This item cannot be sold.");return;}
                 client.messageQueue.addRpcMessage(ServerPackets.BuildVendorItemSellAck(item.Goid,item.Count,quote,true));
-                // Stock 7.6005 formats an Appraise result but can hide its local chat line.
-                // Also put the quote on the normal server system-message path.
-                ClientActionsHandler.Notice(client, "You can sell this item for " + quote + " information.");
             }
         }
     }

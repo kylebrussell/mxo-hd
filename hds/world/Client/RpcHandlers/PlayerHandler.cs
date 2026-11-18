@@ -57,18 +57,16 @@ namespace hds
             uint districtId = Store.currentClient.playerData.getDistrictId();
 
             // In the Loading Area the client sends the same 05 but retail never spawned a character there: after
-            // 81 09 + 06 la.metr it only got settings and the hardline status (6d), and showed the hardline
+            // 81 09 + 06 la.metr it received settings and hardline status (6d) and showed the hardline
             // picker (crashover2k exit_to_loadingarea, died_in_pvp). A self-spawn puts the client in world mode,
             // standing on the LA rooftop with no picker.
             if (Store.currentClient.playerData.DistrictIsLA())
             {
-                if (Store.currentClient.playerData.LoadingAreaMapPending) return;
                 if (TutorialMission.JackIntoRichland(Store.currentClient))
                 {
                     return;
                 }
 
-                SendLoadingAreaSettings(Store.currentClient);
                 Output.WriteDebugLog("[LA] Spawn ready in the Loading Area: no self-spawn, waiting for a hardline pick");
                 return;
             }
@@ -125,7 +123,7 @@ namespace hds
 
             ServerPackets packets = new ServerPackets();
 
-            packets.sendWorldCMD(Store.currentClient, Store.currentClient.playerData.getDistrictId(), Store.worldConfig.weather); // Genereal Summer Sky
+            packets.sendWorldCMD(Store.currentClient, Store.currentClient.playerData.getDistrictId(), Store.worldConfig.weather);
             //packets.sendWorldCMD(Store.currentClient, Store.currentClient.playerData.getDistrictId(),"Massive");
             //packets.sendWorldCMD(Store.currentClient, Store.currentClient.playerData.getDistrictId(),"WinterSky3"); // Winter is coming to MxO
             // packets.SendServerSettingString(Store.currentClient,"WR_RezEvents","bluesky2");
@@ -136,23 +134,6 @@ namespace hds
             packets.sendEXPCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getExperience());
             packets.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
             SendCharacterSetup(packets, Store.currentClient);
-        }
-
-        internal static void SendLoadingAreaMap(WorldClient client)
-        {
-            var packets = new ServerPackets();
-            packets.sendWorldCMD(client, client.playerData.getDistrictId(), Store.worldConfig.weather);
-            packets.sendEXPCurrent(client, (UInt32)client.playerData.getExperience());
-            packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
-        }
-
-        internal static void SendLoadingAreaSettings(WorldClient client)
-        {
-            if (client.playerData.LoadingAreaMapPending || client.playerData.LoadingAreaSettingsSent) return;
-            client.playerData.LoadingAreaSettingsSent = true;
-            var packets = new ServerPackets();
-            SendCharacterSetup(packets, client);
-            packets.SendWorldSetup(client);
         }
 
         private static void SendCharacterSetup(ServerPackets packets, WorldClient client)

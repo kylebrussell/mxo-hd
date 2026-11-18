@@ -491,7 +491,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
     /// </summary>
     private static async Task SecureTrade(ScenarioContext context)
     {
-        (HeadlessPlayer alice, HeadlessPlayer bob, ViewCreation bobView, _) = await TwoNearby(context,
+        (HeadlessPlayer alice, HeadlessPlayer bob, ViewCreation bobView, ViewCreation aliceView) = await TwoNearby(context,
             new CharacterSeed("Alice") { Items = new[] { (3, NpcLoot.CodeBit1, 1) } },
             new CharacterSeed("Bob") { X = 17120, Info = 500 });
 
@@ -519,8 +519,10 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
 
         bob.SendRpc($"81 85 00 01 {Le(50u)} 6b 00");
         await alice.WaitForRpcAsync($"81 86 01 00 01 {Le(50u)} 6b");
-        await alice.WaitForRpcAsync(acceptanceRefresh);
+        await alice.WaitForRpcAsync("81 87 1e 00 00 8e");
         await bob.WaitForRpcAsync($"81 86 01 01 01 {Le(50u)} 6b");
+        Check.Equal(0, bob.Received("81 87 1e 00 00 8e").Count, "Only prior acceptances get a reset notice");
+        Check.Equal(1, alice.Received(acceptanceRefresh).Count, "Partner edits only send the genuine offer change");
 
         bob.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
         await bob.WaitForRpcAsync("81 87 1c 00 00 8e");
@@ -549,6 +551,17 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         Check.Equal((long)NpcLoot.CodeBit1, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={bob.CharId} AND slot={bobSlot}"), "Item in Bob's slot in the database");
         Check.Equal(1250L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={alice.CharId}"), "Alice's information in the database");
         Check.Equal(250L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={bob.CharId}"), "Bob's information in the database");
+
+        // Start the reverse trade after completion. Alice receives an incoming window and still owes a new accept.
+        bob.SendRpc($"81 82 {Le(aliceView.ViewId)} {aliceView.SpawnId:x2} 00 01 {Le(5u)} 6b 00");
+        await bob.WaitForRpcAsync("81 83 ?? ?? 00 00 00 00");
+        await alice.WaitForRpcAsync("81 84");
+        await alice.WaitForRpcAsync(acceptanceRefresh);
+        bob.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
+        await alice.WaitForRpcAsync("81 87 1d 00 00 8e");
+        Check.Equal(1, alice.Received("81 87 19 00 00 8e").Count, "The previous settlement leaves no acceptance in the incoming trade");
+        alice.SendRpc($"81 85 03 00 {Le(0u)} 6b 00");
+        await alice.WaitForRpcAsync("81 87 1b 00 00 8e");
     }
 
     private static async Task TradeCancelAndRefusals(ScenarioContext context)

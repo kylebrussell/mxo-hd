@@ -122,3 +122,26 @@ an own-slot removal using the `6b` no-slot sentinel. At `62108c40`, the client
 runs the checkbox and partner-label reset before (62107b20) returns for `6b`.
 This refresh carries no item, information or new acceptance. The visual state
 needs a native retest. [PR287 native observation](https://github.com/kylebrussell/mxo-hd/pull/287#issuecomment-6966592182)
+## PR290 native checkbox evidence
+
+PR290 verified settlement required a fresh accept after a partner edit. The
+visual checkmark persisted after the edit and also appeared in an incoming
+window after completion. Outgoing windows opened clear.
+
+The PR290 trace records the +50 partner edit, both 81 86 records, and then a
+single 81 85 action 4 from CSR_Tester with no intervening action 5. The click
+handler at 62108e2f reads the checked bit and sends 4 when checked or 5 when
+unchecked after the click. The offer update at 62108c51 and the synthetic
+refresh both clear bit 0x40 of the CUICheck at 6244b860. Its draw handler at
+6244baf9 uses mask 0x44 for the checked/pressed image. Clearing the checked
+bit can therefore leave the same image drawn from bit 0x04. The incoming
+window's appearance still needs native diagnosis.
+
+The server retains the logical reset on opening. It sends the genuine offer
+delta on an edit and adds the native 81 87 YOURESET notice for each player
+whose prior acceptance was revoked. That status displays the reset in the
+System tab. Server settlement still requires both fresh acceptances. Native
+QA should record the notice, the checkbox with the pointer outside it, and
+the first 81 85 action in a reopened incoming window.
+
+[PR290 native observations](https://github.com/kylebrussell/mxo-hd/pull/290)

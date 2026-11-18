@@ -246,9 +246,19 @@ namespace hds
             UInt32 instanceData = item != null ? TradePackets.Descriptor(item.Purity, item.Quantity) : 0;
             Send(owner, TradePackets.BuildChanged(add, true, info, slot, 0, 0, quantity));
             Send(partner, TradePackets.BuildChanged(add, false, info, TradePackets.NoSlot, classData, instanceData, quantity));
-            // Refresh after the client has redrawn the partner's offer, using the
-            // no-slot path so the refresh cannot remove any offered item or information.
-            Send(partner, TradePackets.BuildAcceptanceRefresh());
+        }
+
+        private static void NotifyAcceptanceReset(TradeSession session)
+        {
+            bool requesterAccepted = session.RequesterOffer.Accepted;
+            bool targetAccepted = session.TargetOffer.Accepted;
+            session.ClearAccepts();
+            // OfferChanged clears the client's checked bit. This native status gives the player
+            // explicit feedback even if their client continues drawing the selected image.
+            if (requesterAccepted)
+                Send(session.Requester, TradePackets.BuildStatus(TradePackets.StatusYouReset));
+            if (targetAccepted)
+                Send(session.Target, TradePackets.BuildStatus(TradePackets.StatusYouReset));
         }
 
         private static void AddToOffer(TradeSession session, WorldClient client, TradeOffer offer, WorldClient partner, TradeRequests.Change change)
@@ -261,8 +271,8 @@ namespace hds
                     return;
                 }
                 offer.Info += change.Info;
-                session.ClearAccepts();
                 SendChange(client, partner, true, change.Info, null);
+                NotifyAcceptanceReset(session);
                 return;
             }
 
@@ -277,8 +287,8 @@ namespace hds
                 return;
             }
             offer.Items[item.Slot] = item;
-            session.ClearAccepts();
             SendChange(client, partner, true, 0, item);
+            NotifyAcceptanceReset(session);
         }
 
         private static void RemoveFromOffer(TradeSession session, WorldClient client, TradeOffer offer, WorldClient partner, TradeRequests.Change change)
@@ -287,16 +297,16 @@ namespace hds
             {
                 UInt32 amount = (UInt32)Math.Min(offer.Info, change.Info);
                 offer.Info -= amount;
-                session.ClearAccepts();
                 SendChange(client, partner, false, amount, null);
+                NotifyAcceptanceReset(session);
                 return;
             }
 
             if (offer.Items.TryGetValue(change.Slot, out TradeItem item))
             {
                 offer.Items.Remove(change.Slot);
-                session.ClearAccepts();
                 SendChange(client, partner, false, 0, item);
+                NotifyAcceptanceReset(session);
             }
         }
 
@@ -312,7 +322,7 @@ namespace hds
             }
             offer.Items.Clear();
             offer.Info = 0;
-            session.ClearAccepts();
+            NotifyAcceptanceReset(session);
         }
 
         private static void End(TradeSession session)

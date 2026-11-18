@@ -15,11 +15,6 @@ namespace hds
         public void processHardlineStatusRequest(ref byte[] packet)
         {
             if (packet.Length < 8 || !HardlineRegistration.TryMap(BitConverter.ToUInt32(packet,0),out UInt16 district)) return;
-            if (Store.currentClient.playerData.DistrictIsLA())
-            {
-                if (Store.currentClient.playerData.LoadingAreaMapPending) return;
-                PlayerHandler.SendLoadingAreaSettings(Store.currentClient);
-            }
             List<UInt16> hardlines = HardlineRegistration.Known(Store.currentClient.playerData.getCharID(),district);
             Output.WriteDebugLog("[HARDLINE] Status for district " + district + ": " + hardlines.Count + " hardlines");
             new ServerPackets().SendHardlineStatus(Store.currentClient, (ushort)BitConverter.ToUInt32(packet,0), hardlines);
@@ -312,8 +307,7 @@ namespace hds
         /// normal selections use80ff. Retail answers8107, then loads tutorial_v2 on a private construct.</summary>
         public static void EnterTutorial(WorldClient client, byte[] payload)
         {
-            if (payload.Length != 0 || !client.playerData.DistrictIsLA() || client.playerData.worldChangePending ||
-                client.playerData.LoadingAreaMapPending) return;
+            if (payload.Length != 0 || !client.playerData.DistrictIsLA() || client.playerData.worldChangePending) return;
             CraftingSession.End(client);
             client.playerData.setOnWorld(false);
             MissionPersistence.Save(client);
@@ -331,8 +325,7 @@ namespace hds
         /// <summary>80 ff &lt;district u32&gt; &lt;hardline u32&gt;: the player picked a hardline in the Loading Area.</summary>
         public void ProcessLoadingAreaHardline(ref byte[] packet)
         {
-            if (packet.Length < 8 || !Store.currentClient.playerData.DistrictIsLA() || Store.currentClient.playerData.worldChangePending ||
-                Store.currentClient.playerData.LoadingAreaMapPending)
+            if (packet.Length < 8 || !Store.currentClient.playerData.DistrictIsLA() || Store.currentClient.playerData.worldChangePending)
             {
                 Output.WriteDebugLog("[LA] 80 ff ignored (not in the Loading Area or too short)");
                 return;

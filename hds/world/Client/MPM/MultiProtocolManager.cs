@@ -101,15 +101,11 @@ namespace hds{
                     Store.currentClient.playerData.openDoors.Clear(); // their views went with the old world
                 }
                 PlayerHandler handler = new PlayerHandler();
-                resetClient.playerData.LoadingAreaMapPending = resetClient.playerData.DistrictIsLA();
-                resetClient.playerData.LoadingAreaSettingsSent = false;
-                resetClient.playerData.LoadingAreaResetRpc = null;
-                if (resetClient.playerData.LoadingAreaMapPending)
+                if (resetClient.playerData.DistrictIsLA())
                 {
-                    // Retail enters the LA transport state with a standalone 81 09,
-                    // then waits for its acknowledgement before sending the map load.
-                    resetClient.playerData.LoadingAreaResetRpc =
-                        resetClient.messageQueue.QueueTrackedRpc(new byte[] { 0x81, 0x09 });
+                    // Send the LA batch before potentially long friend and ignore lists.
+                    handler.processPlayerSetup();
+                    handler.processAttributes();
                 }
                 else
                 {
@@ -118,16 +114,6 @@ namespace hds{
                 }
                 }
                 finally { resetClient.TransportFence.Resume(resetEpoch); }
-                if (resetClient.playerData.LoadingAreaMapPending)
-                    resetClient.FlushQueue(force: true);
-            }
-            else if (AckFlags.Get(1) && Store.currentClient.playerData.LoadingAreaMapPending &&
-                Store.currentClient.playerData.LoadingAreaResetRpc == null && Store.currentClient.playerData.DistrictIsLA())
-            {
-                var client = Store.currentClient;
-                client.playerData.LoadingAreaMapPending = false;
-                PlayerHandler.SendLoadingAreaMap(client);
-                client.FlushQueue(force: true);
             }
 
 
