@@ -114,6 +114,7 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
         {
             Check.Equal(110u, player.CharId, "Disposable native character");
             await player.EnterWorldAsync();
+            byte[] origin = player.World.CreationSnapshot().Single(v => v.ViewId == 2).Attributes["Position"];
             foreach (var (mission, area) in samples)
             {
                 string request = $"?missionphase {mission} {area}";
@@ -135,17 +136,35 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
                     "Probe has no completion receipt for the selected mission");
                 NativeQaReadiness.RequireNoAmbientAggro(server, player);
                 string[] approaches = MissionCatalogObjectApproaches.Find(staged!, root).Select(obj => obj.Describe()).ToArray();
-                foreach (string approach in approaches)
+                string[] escortExit = PigeonEscortExitFixture.Describe(staged!);
+                foreach (string approach in approaches.Concat(escortExit))
                     Console.WriteLine($"READY {mission}:{area} bootstrap {approach}");
+                bool checkedEscort = PigeonEscortExitFixture.IsSample(staged!);
+                if (checkedEscort)
+                {
+                    await using var scenario = ScenarioContext.UseOwnedServer(root, database, server);
+                    await Scenarios.CheckPigeonEscortExitAsync(scenario, player, staged!);
+                    Console.WriteLine("205204:2 escort probe passed: Talk, follower at the car, downride, goal 2 and living follower in area 3.");
+                }
                 proof.Add(new { Mission = mission, Area = area, staged!.Following, staged.Items,
                     Actors = staged.Mobs.Select(m => new { m.Npc, m.Name, m.Health, m.Dead }),
                     Props = staged.Objects.Select(o => o.Id), Entrance = MissionCatalogEntrances.Describe(staged, root),
-                    ObjectApproaches = approaches });
+                    ObjectApproaches = approaches, EscortExit = escortExit, EscortExitChecked = checkedEscort });
 
                 player.SkipReceived();
                 player.SendRpc("80 a6");
                 await player.WaitForRpcAsync("80 a2 08");
                 Check.Equal("", await database.ScalarAsync(payload), "Ordinary abort clears the probe mission");
+                if (checkedEscort)
+                {
+                    double x = BitConverter.ToDouble(origin, 0), y = BitConverter.ToDouble(origin, 8),
+                        z = BitConverter.ToDouble(origin, 16);
+                    player.SendChat(FormattableString.Invariant($"?tp {x} {y} {z} 0 0 0"));
+                    await player.WaitForTextAsync("Teleported to 0/0");
+                    Check.Equal(0L, await database.LongAsync(
+                        $"SELECT COUNT(*) FROM char_missions WHERE charId=110 AND missionId={mission}"),
+                        "Escort probe leaves the selected receipt unearned");
+                }
             }
             player.SkipReceived();
             player.SendRpc("80 fe 00");
