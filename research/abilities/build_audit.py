@@ -4,6 +4,7 @@ dotnet run --project tools/AbilityAudit
 python research/abilities/build_audit.py
 """
 from audit_links import rebase_links
+from parity_progress import Evidence, summarize
 import argparse
 import collections
 import csv
@@ -17,8 +18,10 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output-dir', type=Path, help='Write the current Markdown, CSV and coverage review bundle here')
 parser.add_argument('--source-base-url', help='Pinned HTTPS repository blob URL for portable artifact evidence links')
 parser.add_argument('--coverage', type=Path, help='Executable AbilityAudit JSON inventory (default: ignored artifacts/ability-audit/server_coverage.json)')
+parser.add_argument('--baseline', type=Path, help='Prior generated CSV for status transitions and remaining-item changes')
 parser.add_argument('--update-markdown-snapshot', action='store_true', help='Explicit docs-only historical snapshot refresh')
 args=parser.parse_args()
+baseline = args.baseline.read_text(encoding='utf-8-sig') if args.baseline else None
 if args.output_dir and args.update_markdown_snapshot:
     parser.error('--output-dir and --update-markdown-snapshot are separate workflows')
 artifact_dir=args.output_dir or ROOT / 'artifacts/ability-audit'
@@ -350,6 +353,70 @@ def status(i):
     return 'missing'
 
 
+def remaining_items(i, current_status, runtime_summary):
+    if current_status == 'inaccessible':
+        return {'access': 'Resolve the stored character level 99 prerequisite against the retail level cap'}
+
+    r, f = coverage[i], fields(i)
+    modifiers = mods(i)
+    targets = {goid(m.get('TargetAttribute', 0)) for m in modifiers} - {0}
+    states = {goid(m.get('TargetState', 0)) for m in modifiers} - {0}
+    hooks = callbacks(i)
+    open_items = {}
+
+    def labels(ids):
+        return ', '.join(name(key) for key in sorted(ids))
+
+    if current_status == 'missing':
+        open_items['executor'] = ('Identify Disrupt Connection’s stock tool or caster and recover its effect'
+                                  if i == 1124 else 'Recover and execute the intended native action')
+    if r['direct_damage'] or r['dot']:
+        open_items['damage'] = 'Verify sourced damage scaling and target resistance in combat'
+    if r['healing']:
+        open_items['healing'] = 'Verify the exact healing total for a known caster and target'
+    periodic = sorted({m.get('StatModUpdateFunc') for m in modifiers
+                       if str(m.get('StatModUpdateFunc')).endswith(('DOT', 'HOT'))})
+    if periodic or r['dot']:
+        open_items['periodic'] = f"Verify tick interval, count and total for {', '.join(periodic) or 'the stored DOT'}"
+    if r.get('resurrection'):
+        open_items['resurrection'] = 'Verify consent, restored vitals and this ability’s resurrection motion'
+    if states or r.get('conditional_stun') or r.get('conditional_powerless'):
+        open_items['controls'] = ('Verify duration, breaks, immunity and presentation for ' +
+                                  (labels(states) if states else 'the conditional control'))
+    if f.get('Ability/RadiusOfEffect') or f.get('Ability/AngleOfEffect'):
+        radius = f.get('Ability/RadiusOfEffect', 'native default')
+        angle = f.get('Ability/AngleOfEffect', 'native default')
+        open_items['area'] = f'Verify target shape and admission with stored radius {radius} and angle {angle}'
+    if f.get('Ability/TestFunction') or f.get('Ability/HasDeflectionInterlockMove') or r['direct_damage']:
+        open_items['targeting'] = 'Verify applicable line of sight, cast target, hit and deflection rules'
+    stats = targets - {108}
+    if stats:
+        open_items['stats'] = 'Verify base, links or runtime consumption for ' + labels(stats)
+    consumers = [m for key in ('passives', 'buff_stats', 'style') for m in (r.get(key) or [])]
+    unused = {m['stat'] for m in consumers if m['consumer'] == 'total only'}
+    if unused:
+        open_items['consumer'] = 'Wire or verify the gameplay consumer for ' + labels(unused)
+    if r.get('stealth') or targets.intersection({204, 209, 646}) or f.get('Ability/DetectionDifficultyChange'):
+        open_items['stealth-detection'] = 'Verify the stored visibility or detection contest and reveal rules'
+    if r.get('aura'):
+        open_items['aura'] = 'Verify aura membership, pulse, drain and cancellation'
+    if i == 967 or any(m.get('ProcTriggerChance') not in (None, 0, 1) for m in modifiers):
+        open_items['proc'] = ('Verify the 1% chance of 10s immunity' if i == 967 else
+                             'Verify stored proc probability, eligibility and resulting effect')
+    if r.get('special_move_style') or r.get('special_animation'):
+        open_items['choreography'] = 'Verify style-specific special-move exchange and presentation'
+    if i in PETS or r.get('proxy_technician'):
+        open_items['pets'] = 'Verify the sourced owner, target, lifecycle or combat effect'
+    if hooks:
+        open_items['script'] = 'Verify callback coverage for ' + ', '.join(hooks)
+    if 'OURS' in runtime_summary or 'unresolved' in runtime_summary:
+        open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
+    if not open_items and current_status == 'cosmetic':
+        open_items['consumer'] = 'Identify the gameplay effect or establish the discipline is metadata only'
+    open_items['behavior-tests'] = 'Account for every listed shipped behavior with executable coverage and a test'
+    return open_items
+
+
 seeds = {i for i in abilities if fields(i).get('Ability/AbilityClass', 0) == 0 and
          (fields(i).get('Ability/InventoryMemCost', 0) > 0 or fields(i).get('Ability/IsDiscipline')) and not abilities[i]['name'].startswith('NPC')}
 player = set(seeds)
@@ -359,10 +426,22 @@ while True:
     if not new:
         break
     player.update(new)
-counts = collections.Counter(status(i) for i in player)
+evidence = Evidence.load(ROOT / 'research/abilities/evidence', player)
+rows = []
+for i in sorted(player):
+    access = 'memory' if fields(i).get('Ability/InventoryMemCost', 0) > 0 else 'discipline' if i in seeds else 'grant'
+    if any(i in coverage[p]['grants'] for p in player if p != i):
+        access += ', grant'
+    current_status, runtime_summary = status(i), server(i)
+    remaining = remaining_items(i, current_status, runtime_summary)
+    final_status, remaining = evidence.evaluate(i, current_status, remaining)
+    rows.append([str(i), name(i), access, role(i), tree(i), expected(i), runtime_summary, final_status,
+                 '; '.join(f'{key}: {detail}' for key, detail in remaining.items())])
+counts = collections.Counter(row[7] for row in rows)
+progress = summarize(rows, baseline)
 header = f'''# Player ability parity audit
 
-This is a conservative audit of the shipped 7.6005 templates against the executable server on this branch. **No ability is declared retail-complete merely because it sends an animation or a modifier record.** Counts: {len(player)} player-loadable candidates and their granted abilities ({len(seeds)} memory/discipline candidates, {len(player - seeds)} additional grants); {', '.join(f'{v} {k}' for k, v in sorted(counts.items()))}. No full-parity `done` claims yet.
+This is a conservative audit of the shipped 7.6005 templates against the executable server on this branch. **No ability is declared retail-complete merely because it sends an animation or a modifier record.** Counts: {len(player)} player-loadable candidates and their granted abilities ({len(seeds)} memory/discipline candidates, {len(player - seeds)} additional grants); {', '.join(f'{v} {k}' for k, v in sorted(counts.items()))}.
 
 ## Inventory and evidence
 
@@ -376,7 +455,7 @@ Read alongside [`abilities.py`](../research/client-scripts/abilities.py), [`temp
 
 ## Status meanings and shared gaps
 
-- **done**: all identified behavior and relevant gameplay paths validated. None assigned yet.
+- **done**: every identified behavior executes and has test evidence, the family has a native-verified representative, and the remaining column is empty.
 - **partial**: some real effects execute; a listed behavior, scaling, target rule, condition or native presentation remains incomplete.
 - **missing**: intended effect lacks an executor; an animation, cost or generic damage fallback does not count.
 - **inaccessible**: primary client load prerequisite exceeds the retail character cap; no effect parity is claimed.
@@ -396,20 +475,20 @@ Concentration564 now consumes loaded modifiers for damage cast-through on explic
 
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 
+## Remaining work and status delta
+
+```text
+{progress}
+```
+
 ## Per-ability table
 
 Access `memory` means the stored memory cost is positive; `discipline` means its discipline flag is set; `grant` means reachable through a player candidate. A grant can also carry memory metadata. Values are raw unless explicitly described as captured.
 
-| ID / ability | Access | Archetype / tree | Shipped behavior / callbacks | Server behavior | Status |
-|---|---|---|---|---|---|
+| ID / ability | Access | Archetype / tree | Shipped behavior / callbacks | Server behavior | Status | Remaining |
+|---|---|---|---|---|---|---|
 '''
-rows = []
-for i in sorted(player):
-    access = 'memory' if fields(i).get('Ability/InventoryMemCost', 0) > 0 else 'discipline' if i in seeds else 'grant'
-    if any(i in coverage[p]['grants'] for p in player if p != i):
-        access += ', grant'
-    rows.append([str(i), name(i), access, role(i), tree(i), expected(i), server(i), status(i)])
-table = '\n'.join('| ' + ' | '.join([f'{r[0]} {r[1]}', r[2], f'{r[3]} / {r[4]}', r[5], r[6], r[7]]) + ' |' for r in rows)
+table = '\n'.join('| ' + ' | '.join([f'{r[0]} {r[1]}', r[2], f'{r[3]} / {r[4]}', r[5], r[6], r[7], r[8]]) + ' |' for r in rows)
 appendix = '''\n\n## Canonical inventory outside the player table
 
 These records are not silently dropped. Scope is the stored class or an explicit NPC name; other class-0 records require evidence that they are loadable rather than item/event/internal actions. Their full decoded fields remain in the JSON catalog.
@@ -440,10 +519,11 @@ markdown_path.write_text(markdown, encoding='utf-8', newline='\r\n')
 csv_path=artifact_dir / 'ABILITY-PARITY.csv' if args.output_dir else ROOT / 'docs/ABILITY-PARITY.csv'
 with csv_path.open('w', newline='', encoding='utf-8') as stream:
     writer = csv.writer(stream, lineterminator='\r\n')
-    writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status'])
+    writer.writerow(['id', 'ability', 'access', 'archetype', 'tree', 'shipped_behavior', 'server_behavior', 'status', 'remaining'])
     writer.writerows(rows)
 if not args.update_markdown_snapshot:
     if csv_path.resolve() != (artifact_dir / 'ABILITY-PARITY.csv').resolve():
         (artifact_dir / 'ABILITY-PARITY.csv').write_text(csv_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
     (artifact_dir / 'server_coverage.json').write_text(coverage_path.read_text(encoding='utf-8'),encoding='utf-8',newline='\r\n')
-print(f'{len(player)} player candidates/grants, {len(abilities) - len(player)} other templates; {dict(counts)}')
+print(f'{len(player)} player candidates/grants, {len(abilities) - len(player)} other templates')
+print(progress)
