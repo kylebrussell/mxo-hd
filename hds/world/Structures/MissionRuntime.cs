@@ -1554,7 +1554,7 @@ namespace hds
             bool sent = false;
             foreach (MissionObjectState state in progress.objects.Values)
             {
-                if (MissionStaging.IsClickable(state.goid))
+                if (MissionStaging.IsClickable(state.PresentationGoid))
                 {
                     continue;
                 }

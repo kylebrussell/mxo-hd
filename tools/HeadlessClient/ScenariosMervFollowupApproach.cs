@@ -196,7 +196,7 @@ public static partial class Scenarios
             await MoveForMissionTest(p,D(1),D(2),D(3)); // Current phase only; test movement, not native walking proof.
         }
     }
-    private static async Task<ViewCreation> MervFollowupObject(ScenarioContext context,HeadlessPlayer p,int id,int cursor,List<object> evidence)
+    private static async Task<ViewCreation> MervFollowupObject(ScenarioContext context,HeadlessPlayer p,int id,int cursor,List<object> evidence,MissionObjectDef? definition=null)
     {
         var saved=await MervFollowupCheckpoint(context,p);var owned=saved.Objects.Single(o=>o.Id==id);
         string Raw(MissionProgress.SavedObject o)=>JsonSerializer.Serialize(new{o.Id,o.Spot,o.Goid,o.OpenFloor},MervFollowupFields);
@@ -301,7 +301,14 @@ public static partial class Scenarios
                 owned.Goid==326?"measured bound326 native100/NAV-component witness; no direct route/collision/picking proof":
                 "bound source NAV/range only; no route/collision/picking proof";
         }
-        ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),owned.Goid,centre,quaternion,saved.Instance);
+        var objectState = new MissionObjectState { def = definition, spot = owned.Spot, goid = owned.Goid, OpenFloor = owned.OpenFloor };
+        if (objectState.PresentationGoid != owned.Goid)
+        {
+            var phone = MissionObjectPoses.ForPresentation(objectState);
+            centre = new[] { phone.X, phone.Y, phone.Z };
+            quaternion = Convert.ToHexString(phone.Orientation);
+        }
+        ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),objectState.PresentationGoid,centre,quaternion,saved.Instance);
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
         var after=await MervFollowupCheckpoint(context,p);
         Check.Equal(saved.Mission,after.Mission,"Approach retains selected mission");Check.Equal(saved.Phase,after.Phase,"Approach retains current phase");

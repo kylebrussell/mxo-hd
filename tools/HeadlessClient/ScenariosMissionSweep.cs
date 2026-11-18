@@ -279,7 +279,10 @@ public static partial class Scenarios
                     case "Search":case "Use":case "Put":
                     {
                         Stage("prop placement",step.Detail);int id=(int)goal.Attribute("object")!;uint item=(uint?)goal.Attribute("item")??0;
-                        var v=await MervFollowupObject(c,p,id,0,notes);
+                        var definition = authored.phases[phase].objects.Single(obj => obj.id == id);
+                        var v=await MervFollowupObject(c,p,id,0,notes,definition);
+                        if (string.Equals(definition.kind, "Phone", StringComparison.OrdinalIgnoreCase))
+                            Console.WriteLine($"PHONE GO {m.Id}:{phase + 1}:{id} {v.Goid}");
                         if(!MissionStaging.IsClickable(v.Goid))break;
                         string label=MissionStaging.IsComputer(v.Goid)?type=="Put"?"Put":type=="Use"||item==0?"Hack":"Take":"Open";
                         byte use=ObjectStates.UseNumber(v.Goid,label)??throw new ScenarioFailure("Missing "+label+" use");

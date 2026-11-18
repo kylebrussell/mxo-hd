@@ -46,6 +46,31 @@ public class MissionObjectTests
         Assert.False(MissionStaging.IsClickable(1401)); // Blinking_Desk_Phone
     }
 
+    [Theory]
+    [InlineData(326, false)]
+    [InlineData(1401, true)]
+    public void MissionPhonesKeepTheirSourceAndPresentAsDeskPhones(ushort sourceGoid, bool bound)
+    {
+        var source = new StaticWorldObject
+        {
+            metrId = 2, mxoStaticId = 42, type = BitConverter.GetBytes(sourceGoid),
+            pos_x = 10, pos_y = 145, pos_z = 20, quat = "0000000000000000000000000000803f"
+        };
+        var state = new MissionObjectState { def = new MissionObjectDef { kind = "Phone" }, spot = source, goid = sourceGoid };
+        Assert.Equal((ushort)1401, state.PresentationGoid);
+        Assert.False(MissionStaging.IsClickable(state.PresentationGoid));
+
+        var phone = new AttributeClass128("Blinking_Desk_Phone", state.PresentationGoid);
+        MissionStaging.ConfigureSourceBinding(phone, state);
+        Assert.Equal(bound ? source.mxoStaticId : uint.MaxValue, phone.GetRelatedStaticObjId());
+        var pose = MissionObjectPoses.ForPresentation(state);
+        Assert.Equal((source.pos_x, source.pos_z), (pose.X, pose.Z));
+        if (bound) Assert.Equal(source.pos_y, pose.Y);
+        else Assert.InRange(pose.Y, 164, 165);
+        Assert.Equal(sourceGoid, state.goid);
+        Assert.Equal(145, source.pos_y);
+    }
+
     [Fact]
     public void AComputerOffersTakeForAnItemAndHackOtherwise()
     {
