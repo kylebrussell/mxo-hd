@@ -93,8 +93,6 @@ namespace hds
         }
         internal static void Cancel(TimedEffects.Subject subject)
         {if(states.TryGetValue(subject,out var state))lock(state)state.Current=null;}
-        private static bool HasTimer(TimedEffects.Subject subject,TimedEffects.Active own,double now)=>subject.Effects.Snapshot().Any(m=>
-            !ReferenceEquals(m,own) && m.Parent==TempMods.ControlImmunityTimerAbility && m.Target==TempMods.ISDrainTargetAbility && now<m.Expires);
         private static void Apply(Receipt receipt,TimedEffects.Active marker,bool stun,double now)
         {
             var subject=receipt.Subject;var cast=receipt.Cast;
@@ -105,11 +103,11 @@ namespace hds
                 if(!(subject is PlayerEffects && ReferenceEquals(subject.Context,cast.Source)) && AbilityHostile.IsDebuff(Ability))
                     seconds=DeflectCode.Duration(seconds,cast.Source.playerInstance.Level.getValue()[0],subject.Determination,subject.DeterminationBonus,TempMods.StunAbility);
             }
-            if(seconds<=0 || HasTimer(subject,null,now))return;
+            if(seconds<=0 || subject.Effects.HasControlImmunity(now))return;
             var child=new TimedEffects.Active {Kind=stun?TempMods.KindState:TempMods.KindPlain,Target=stun?TempMods.StunAbility:TempMods.ISDrainTargetAbility,
                 Seconds=seconds,Proc=TempMods.Proc.State,Caster=cast.Source,CasterName=TimedEffects.PlayerName(cast.Source),TargetView=cast.View.ViewID};
             ushort parent=stun?Ability:TempMods.ControlImmunityTimerAbility;
-            bool Current()=>receipt.Current && !HasTimer(subject,child,now);
+            bool Current()=>receipt.Current && !subject.Effects.HasControlImmunity(now, child);
             if(!subject.Effects.AppendCallback(parent,child,now,Current,out var replaced))return;
             if(!Current()){subject.Effects.RollbackCallback(child,replaced,now);return;}
             // Output is bound to the captured world/transport, never owner work under that publication gate.

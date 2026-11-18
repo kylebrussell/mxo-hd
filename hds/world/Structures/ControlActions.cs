@@ -10,7 +10,15 @@ namespace hds
         public static bool CanMove(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.RootedAbility);
         public static bool CanUseAbilities(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.PowerlessAbility);
         public static bool CanUseWeapons(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.DisarmedAbility);
-        public static bool CanWithdraw(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.EnrageAbility);
+        // ConfuseInit in tempmods.py locks these three interlock inputs. Free casts still use CanUseAbilities.
+        public static bool CanChangeTactic(TimedEffects.Holder holder) => !Has(holder, TempMods.ConfuseAbility);
+        internal static bool CanPerformSpecialMove(TimedEffects.Holder holder, UInt16 ability) =>
+            !Has(holder, TempMods.ConfuseAbility) || !CombatStyles.IsSpecialMove(ability);
+
+        public static bool CanPerformSpecialMove(WorldClient client, UInt16 ability) =>
+            CanPerformSpecialMove(TimedEffects.ForPlayer(client).Effects, ability);
+        public static bool CanWithdraw(TimedEffects.Holder holder) =>
+            !Incapacitated(holder) && !Has(holder, TempMods.EnrageAbility) && !Has(holder, TempMods.ConfuseAbility);
         public static bool CanUseAbilities(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanUseAbilities(TimedEffects.ForPlayer(client).Effects);
         public static bool CanMove(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanMove(TimedEffects.ForPlayer(client).Effects);
 

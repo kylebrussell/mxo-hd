@@ -240,6 +240,13 @@ namespace hds
                 }
             }
 
+            /// <summary>The timer callback checks the parent and target tuple at the time of application.</summary>
+            internal bool HasControlImmunity(double now, Active except = null)
+            {
+                lock (active) return active.Exists(a => !ReferenceEquals(a, except) && a.Parent == TempMods.ControlImmunityTimerAbility &&
+                    a.Target == TempMods.ISDrainTargetAbility && now < a.Expires);
+            }
+
             public bool HasParent(UInt16 parent)
             {
                 lock (active)
@@ -504,7 +511,7 @@ namespace hds
                             subject.DeterminationBonus,m.Proc==TempMods.Proc.State&&m.Kind==TempMods.KindState?m.Target:(ushort)0);
 
             Active immunity = null;
-            if (subject.Effects.Has(TempMods.ISDrainTargetAbility))
+            if (subject.Effects.HasControlImmunity(now))
             {
                 int refused = mods.RemoveAll(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target));
                 if (refused > 0)
@@ -533,7 +540,7 @@ namespace hds
             List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion || effect.Ability==AbilityReverseBulldog.Ability);
             if (immunity != null)
             {
-                subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now);
+                replaced.AddRange(subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now));
             }
             Register(subject);
             foreach (Active old in replaced) AbilityConditionalControls.Term(subject, old, now);

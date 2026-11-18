@@ -143,6 +143,8 @@ namespace hds
         /// </summary>
         public void ProcessChangeTactic(ref byte[] packet)
         {
+            if (!ControlActions.CanChangeTactic(TimedEffects.ForPlayer(client).Effects)) return;
+
             CombatTactic? requested = packet.Length > 0 ? CombatTactics.FromRpc(packet[0]) : null;
             if (requested == null)
             {
@@ -291,7 +293,8 @@ namespace hds
             bool stunned = mob.IsStunned(now);
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
-            if (!ControlActions.CanUseAbilities(player)) ability = null;
+            if (!ControlActions.CanUseAbilities(player) ||
+                ability != null && !ControlActions.CanPerformSpecialMove(player, ability.getAbilityID())) ability = null;
             bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
