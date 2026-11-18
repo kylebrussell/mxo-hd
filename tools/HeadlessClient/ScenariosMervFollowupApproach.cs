@@ -196,7 +196,8 @@ public static partial class Scenarios
             await MoveForMissionTest(p,D(1),D(2),D(3)); // Current phase only; test movement, not native walking proof.
         }
     }
-    private static async Task<ViewCreation> MervFollowupObject(ScenarioContext context,HeadlessPlayer p,int id,int cursor,List<object> evidence,MissionObjectDef? definition=null)
+    private static async Task<ViewCreation> MervFollowupObject(ScenarioContext context,HeadlessPlayer p,int id,int cursor,List<object> evidence,
+        MissionObjectDef? definition=null,int? proximityGoal=null)
     {
         var saved=await MervFollowupCheckpoint(context,p);var owned=saved.Objects.Single(o=>o.Id==id);
         string Raw(MissionProgress.SavedObject o)=>JsonSerializer.Serialize(new{o.Id,o.Spot,o.Goid,o.OpenFloor},MervFollowupFields);
@@ -252,7 +253,7 @@ public static partial class Scenarios
                 {
                     committedRoute=route;
                     var life=p.World.CurrentOwnViewLife();
-                    async Task SameRoute(){MissionBound326RouteProof.RequireCurrent(route,await MervFollowupCheckpoint(context,p));Check.That(life.Current,"Bound route own life remains current");}
+                    async Task SameRoute(){MissionBound326RouteProof.RequireCurrent(route,await MervFollowupCheckpoint(context,p),proximityGoal);Check.That(life.Current,"Bound route own life remains current");}
                     foreach(var step in MissionBound326RouteProof.Steps(context.RepositoryRoot,route))
                     {
                         await SameRoute();
@@ -305,8 +306,9 @@ public static partial class Scenarios
         if (objectState.PresentationGoid != owned.Goid)
         {
             var phone = MissionObjectPoses.ForPresentation(objectState);
-            centre = new[] { phone.X, phone.Y, phone.Z };
-            quaternion = Convert.ToHexString(phone.Orientation);
+            // Keep the source XZ and orientation resolved above, including a persisted furniture route.
+            // Phone presentation only changes height relative to that source.
+            centre = new[] { centre[0], phone.Y, centre[2] };
         }
         ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),objectState.PresentationGoid,centre,quaternion,saved.Instance);
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
@@ -316,7 +318,7 @@ public static partial class Scenarios
         if(furnitureRoute!=null)MervAfterFurnitureApproach.Require(furnitureRoute,after,evidence.OfType<MervAfterFurnitureApproach.Arrival>().Last(),p.World.CurrentOwnViewLife());
         else if(owned.Goid==326&&owned.OpenFloor==null)
         {
-            if(committedRoute!=null)MissionBound326RouteProof.RequireCurrent(committedRoute,after);
+            if(committedRoute!=null)MissionBound326RouteProof.RequireCurrent(committedRoute,after,proximityGoal);
             else
             {
             if(MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)MervBound326Approach.RequireScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().Last(),p.World.CurrentOwnViewLife());
