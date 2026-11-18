@@ -92,7 +92,7 @@ public static partial class Scenarios
             caster.SendRpc("80 fc 01");var finish=await caster.WaitForRpcAsync("80 fd");caster.SendRpc("80 fe 01");var reset=await caster.WaitForRpcAsync("81 07");
             double boundaryMs=clock.Elapsed.TotalMilliseconds;Check.That(boundaryMs<seconds*1000,"Actual world reset precedes cast due time");
             Check.That(context.Server.DebugLog()[cancelLog..].Contains("[LA] Loading the Loading Area"),"Real departure changed world lifecycle");
-            caster.SendRpc("81 08");await caster.WaitForRpcAsync("81 09");caster.SendRpc("05");
+            caster.SendRpc("81 08");await caster.WaitForLoadingAreaAsync();caster.SendRpc("05");
             await caster.WaitUntilAsync(()=>caster.World.RpcSnapshot().Skip(cancelRpc).Any(r=>BytePattern.IndexOf(r.Bytes,System.Text.Encoding.UTF8.GetBytes("la.metr"),0)>=0),"Actual LA world command",TimeSpan.FromSeconds(4));
             await Task.Delay(2000);Check.That(!context.Server.DebugLog()[cancelLog..].Contains("[GHOST-STRIKE] accepted callback"),"Actual departure cancels callback");
             proof.Add(new{stage,ToolGrant=departureGrant,seconds,boundaryMs,CastBar=bar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelLog..]});

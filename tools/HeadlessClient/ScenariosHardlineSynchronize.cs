@@ -35,7 +35,7 @@ public static partial class Scenarios
         booth=again.ViewsOfGoid(592).Last();
         again.SendRpc($"80 c7 {MissionNpcId(booth)} 05 00");await again.WaitForRpcAsync("80 fb 02 00 00 00 01");
         again.SendRpc("80 fc 01");await again.WaitForRpcAsync("80 fd");again.SendRpc("80 fe 01");await again.WaitForRpcAsync("81 07");
-        again.SendRpc("81 08");await again.WaitForRpcAsync("81 09");again.SendRpc("05");
+        again.SendRpc("81 08");await again.WaitForLoadingAreaAsync();again.SendRpc("05");
         again.SendRpc("6c 08 00 00 00 00 00 00 00");
         await again.WaitForRpcAsync("6d 08 00 00 00 08 00 01 01 00 00 02 00 00 00 00");
         int loads=again.Received("06").Count;

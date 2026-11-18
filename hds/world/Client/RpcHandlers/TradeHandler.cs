@@ -106,6 +106,7 @@ namespace hds
                 session.TargetOffer.Items[0] = new TradeItem { Slot = 0, Goid = BotItem, Purity = 0, Quantity = 1 };
                 Sessions[client] = session;
                 Send(client, TradePackets.BuildOffered(BotName, BotInfo, BotItem, TradePackets.Descriptor(0, 1), 1));
+                Send(client, TradePackets.BuildAcceptanceRefresh());
                 Output.WriteDebugLog("[TRADE] Session open: " + NameOf(client) + " with " + BotName);
             }
         }
@@ -161,6 +162,8 @@ namespace hds
 
                 Send(client, TradePackets.BuildRequestResult(targetName, TradePackets.RequestOk, request.Info, request.Slot, request.ItemQuantity));
                 Send(target, TradePackets.BuildOffered(NameOf(client), request.Info, classData, instanceData, quantity));
+                Send(client, TradePackets.BuildAcceptanceRefresh());
+                Send(target, TradePackets.BuildAcceptanceRefresh());
                 Output.WriteDebugLog("[TRADE] Session open: " + NameOf(client) + " with " + targetName);
             }
         }
@@ -243,6 +246,9 @@ namespace hds
             UInt32 instanceData = item != null ? TradePackets.Descriptor(item.Purity, item.Quantity) : 0;
             Send(owner, TradePackets.BuildChanged(add, true, info, slot, 0, 0, quantity));
             Send(partner, TradePackets.BuildChanged(add, false, info, TradePackets.NoSlot, classData, instanceData, quantity));
+            // Refresh after the client has redrawn the partner's offer, using the
+            // no-slot path so the refresh cannot remove any offered item or information.
+            Send(partner, TradePackets.BuildAcceptanceRefresh());
         }
 
         private static void AddToOffer(TradeSession session, WorldClient client, TradeOffer offer, WorldClient partner, TradeRequests.Change change)

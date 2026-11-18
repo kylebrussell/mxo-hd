@@ -21,7 +21,7 @@ public static partial class Scenarios
         await p.EnterWorldAsync();await p.WaitUntilAsync(()=>p.ViewsOfGoid(592).Count>0,"Source medium03 booth",TimeSpan.FromSeconds(20));
         var booth=p.ViewsOfGoid(592).Last();p.SendRpc($"80 c7 {MissionNpcId(booth)} 05 00");await p.WaitForRpcAsync("80 fb 02 00 00 00 01");
         p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");
-        p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");await Task.Delay(300);
+        p.SendRpc("81 08");await p.WaitForLoadingAreaAsync();p.SendRpc("05");await Task.Delay(300);
         p.SendRpc("6c 08 00 00 00 00 00 00 00");
         await p.WaitForRpcAsync(discovery?"6d 08 00 00 00 08 00 01 00 00":"6d 08 00 00 00 08 00 01 01 00 00 02 00 00 00 00");
         int resets=p.Received("81 07").Count;

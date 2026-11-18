@@ -96,7 +96,7 @@ public static partial class Scenarios
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},400,{CodeStorage.BaseValue(7332)},0,0)");
         p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
         p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");
-        p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");await Task.Delay(300);
+        p.SendRpc("81 08");await p.WaitForLoadingAreaAsync();p.SendRpc("05");await Task.Delay(300);
         p.SendRpc($"60 {Le(7333u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},400,{AbilityGoid(17)},1,0)");
         p.SendRpc($"60 {Le(7332u)} 90 01 00 00 00");await p.WaitForRpcAsync("61 01");

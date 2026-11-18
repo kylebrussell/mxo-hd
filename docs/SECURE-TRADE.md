@@ -110,3 +110,15 @@ Client-side checks: my item slot locked at 0x621c9c80 ([inv + (slot+0x28)*0xC] =
 - Display of specific abort/validation reasons: ID_SECURE_TRADE_SESSION_VALIDATION_FAILED_*, ..._PARTNER_DISCONNECTED, ..._ABORTED etc have no immediate reference. Retail probably sent them by a generic StringID record. Which one is unknown.
 - Retail server's real order and validation rules: no captures.
 - Exact meaning of drag source types and UI event 'TrOk' placement (no strings; UI layout not parsed).
+
+## PR287 checkbox follow-up
+
+PR287 verified ordinary partner offers, cancellation and settlement. The Accept
+checkbox stayed visually checked after the partner edited an offer and when a
+new window opened. The server still required a fresh accept before settlement.
+
+The server now follows window open and partner offer changes with `81 86` for
+an own-slot removal using the `6b` no-slot sentinel. At `62108c40`, the client
+runs the checkbox and partner-label reset before (62107b20) returns for `6b`.
+This refresh carries no item, information or new acceptance. The visual state
+needs a native retest. [PR287 native observation](https://github.com/kylebrussell/mxo-hd/pull/287#issuecomment-6966592182)

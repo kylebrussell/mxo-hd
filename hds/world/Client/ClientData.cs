@@ -145,6 +145,9 @@ namespace hds
 
         public bool waitForRPCShutDown;
         public bool worldChangePending;
+        internal SequencedMessage LoadingAreaResetRpc;
+        internal bool LoadingAreaMapPending;
+        internal bool LoadingAreaSettingsSent;
         public UInt16 tutorialConstructId;
         internal ushort selfSpawnIdCounter;
         /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>

@@ -226,6 +226,9 @@ public sealed class WorldSession : IDisposable
         ushort serverSeq = (ushort)decrypted[2]!;
 
         WorldPayload payload = WireFormat.ParsePayload(plain);
+        // Retransmissions of the previous epoch's reset cannot contribute ACK history
+        // after HandleReset has cleared the sequence window.
+        if (payload.ResetRequested && resetAnswered) return;
         lock (sendLock)
         {
             receivedServerSeqs.Add(serverSeq);
@@ -265,12 +268,8 @@ public sealed class WorldSession : IDisposable
 
         if (payload.ResetRequested)
         {
-            // It stays on the server's packets until our answer arrives: answer once
-            if (!resetAnswered)
-            {
-                resetAnswered = true;
-                HandleReset();
-            }
+            resetAnswered = true;
+            HandleReset();
             return;
         }
         resetAnswered = false;

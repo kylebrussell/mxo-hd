@@ -61,7 +61,7 @@ public static partial class Scenarios
             cancelled.SendRpc("80 fc 01");var finish=await cancelled.WaitForRpcAsync("80 fd");cancelled.SendRpc("80 fe 01");var reset=await cancelled.WaitForRpcAsync("81 07");
             double boundaryMs=departureClock.Elapsed.TotalMilliseconds;Check.That(boundaryMs<castSeconds*1000,"Observable world reset arrives before the earliest cast completion");
             Check.That(context.Server.DebugLog()[cancelledStart..].Contains("[LA] Loading the Loading Area"),"Existing GoToLoadingArea changed district and world epoch before reset");
-            cancelled.SendRpc("81 08");await cancelled.WaitForRpcAsync("81 09");cancelled.SendRpc("05");
+            cancelled.SendRpc("81 08");await cancelled.WaitForLoadingAreaAsync();cancelled.SendRpc("05");
             await cancelled.WaitUntilAsync(()=>cancelled.World.RpcSnapshot().Skip(departureRpc).Any(r=>BytePattern.IndexOf(r.Bytes,System.Text.Encoding.UTF8.GetBytes("la.metr"),0)>=0),"Actual Loading Area world command",TimeSpan.FromSeconds(4));
             await Task.Delay(3000);
             measurements.Add(new{Stage=stage,WorldDeparture="80fc01 /80fd /80fe01 /8107 /8108 /8109 /05 +la.metr",BoundaryMs=boundaryMs,CastSeconds=castSeconds,CastBar=castBar.Hex,Finish=finish.Hex,Reset=reset.Hex,Log=context.Server.DebugLog()[cancelledStart..],ExpectedConditional=0});
