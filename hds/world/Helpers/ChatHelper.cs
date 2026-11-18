@@ -232,6 +232,11 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?missionphase"))
+                {
+                    MissionQaStart.Dispatch(Store.currentClient, commands);
+                }
+
                 if (command.Equals("?missionfloor") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: the elevator ride a player gets from the current mission site's elevator, without finding its door

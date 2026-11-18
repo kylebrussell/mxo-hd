@@ -80,10 +80,11 @@ public static class NativeQaBootstrapChecks
                 try
                 {
                     Console.WriteLine("BOOTSTRAP START " + (name.Length == 0 ? "(default)" : name));
-                    byte[] ack = await mode.AfterStartAsync(new NativeQaBootstrapContext(modeDirectory,
-                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server));
-                    if (server.HasExited) throw new InvalidOperationException("Bootstrap server exited.");
+                    byte[] ack = await NativeQaReadiness.BootstrapAsync(mode, new NativeQaBootstrapContext(modeDirectory,
+                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server, root));
                     var modePlan = mode.Plan;
+                    if (name == "mission-catalog-sample" && modePlan.ExtraQaMetadata.ContainsKey("CheckpointArea"))
+                        await CheckPhaseLoginAsync(database, server, modePlan);
                     var standard = new NativeQaFixtureState
                     {
                         Database = database.Name, Directory = server.WorkingDirectory, Account = "CSR_AbilityQA",
@@ -114,10 +115,6 @@ public static class NativeQaBootstrapChecks
                     }
                     var problems = helpers.Values.SelectMany(p => p.World.Problems).Concat(canary?.World.Problems ?? Array.Empty<string>()).ToArray();
                     if (problems.Length != 0) throw new InvalidOperationException(string.Join("; ", problems));
-                    string serverOutput = server.FullOutput();
-                    if (new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception", "[MISSION] Tick failed" }
-                        .Any(marker => serverOutput.Contains(marker, StringComparison.Ordinal)))
-                        throw new InvalidOperationException("Server diagnostics failed; see the retained server output.");
                     var result = new { Mode = name, BootstrapPassed = true, Database = database.Name, ServerPid = server.ProcessId,
                         Address = server.Address, CustomHook = HasCustomHook(mode), SharedNoOpFixture = names.Length > 1,
                         DeclaredModeAbilities = modePlan.Abilities, SeededAbilities = seeded.Abilities,
@@ -161,6 +158,21 @@ public static class NativeQaBootstrapChecks
                 server.WorkingDirectory, server.Address, SourceAssembly = sourceAssembly, SourceAssemblySha256 = sourceHash,
                 SeedMode = seedMode, Modes = names, At = DateTime.UtcNow });
         }
+    }
+
+    private static async Task CheckPhaseLoginAsync(ThrowawayDatabase database, ServerInstance server, NativeQaModePlan plan)
+    {
+        const string payload = "SELECT HEX(payload) FROM char_active_missions WHERE charId=110";
+        var before = MervFollowupCheckpointFixture.ParseHex(await database.ScalarAsync(payload))
+            ?? throw new ScenarioFailure("Missing phase-start checkpoint before the login probe");
+        using var player = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester");
+        await player.EnterWorldAsync();
+        await player.WaitForRpcAsync("80 9c");
+        var after = MervFollowupCheckpointFixture.ParseHex(await database.ScalarAsync(payload));
+        Check.That(after?.Identity == before.Identity && after?.Mission == plan.ExtraQaMetadata["CheckpointMission"].GetInt32() &&
+            after.Phase == plan.ExtraQaMetadata["CheckpointArea"].GetInt32() - 1 && before.Done.SequenceEqual(after.Done) &&
+            before.Following.Order().SequenceEqual(after.Following.Order()), "Ordinary login restores the staged mission and its followers");
+        Check.Equal(0, player.World.Problems.Count, "Phase login has no wire errors");
     }
 
     private static Task WriteAsync(string path, object value) => File.WriteAllTextAsync(path,

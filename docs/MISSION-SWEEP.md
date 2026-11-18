@@ -9,3 +9,45 @@ Set `MXO_QA_MISSION_ID` and use NativeQa mode `mission-catalog-sample` to check 
 Native samples: 1205 (escort elevator), 104101 (three followers), 102301 (lobby cars), 2201 (props); complete normally once.
 Claude owns the native client lock, character reset and merge.
 The baseline uses assisted street travel; native samples establish visible doors, walking and picking.
+
+### Direct mission samples in one Native QA login
+
+Set `MXO_QA_MISSION_SAMPLES` to comma-separated `mission:area` pairs and start
+`mission-catalog-sample` with a fresh fixture directory. Areas are one-based. Clear
+`MXO_QA_MISSION_PHASE` for a direct-sample session.
+
+```powershell
+$env:MXO_QA_MISSION_SAMPLES = '205204:2,205301:3,203305:4,308203:4,303105:1'
+```
+
+Wait for `state.json` to say `Ready`. Bootstrap starts each listed sample on the
+disposable CSR_Tester, checks its staged checkpoint, required actors and props,
+and aborts it normally before logging out. `mission-samples-bootstrap.json`
+records each staged area and available entrance. A failed sample blocks readiness.
+The catalog fixture disables ambient aggro. The aggro-enabled team fixture checks
+its required helper at startup and refuses readiness if an ambient NPC attacks it.
+
+In the native client, type `?missionphase 205204 2`. It accepts the exact mission ID
+and starts the requested area without a contact. The chat confirmation discloses
+skipped areas and staged carry-over. The command is enabled only for the live
+disposable CSR_Tester in the catalog profile. Finish or abort the active mission
+and leave combat before entering the next command. Use the same district and
+start from the fixture's hardline if you want the same site selection as the
+bootstrap probe.
+
+Direct starts stage carry-over from authored goals. They leave the requested
+area's goals open and do not award earlier receipts or rewards. A direct start
+can pick a different site than a continuous run. Watch late arrivals after their
+normal triggers. When no measured public entrance is recorded in Slums,
+the console can print an assisted lobby approach for the selected car. That
+approach skips the public door and must be recorded as assisted. Use the ordinary
+elevator from that lobby.
+
+### Earned checkpoint from earlier areas
+
+Use `MXO_QA_MISSION_ID` and `MXO_QA_MISSION_PHASE` for one mission when the
+actual earlier history matters. Clear `MXO_QA_MISSION_SAMPLES` first. Bootstrap
+accepts the selected ID, plays earlier areas headlessly, and quits before the
+selected floor. It uses the ordinary ticket path for ticket missions. Follow
+the printed entrance after native login. `mission-phase-start.json` records the
+earned scope. Clear both phase and sample options for a fresh contact-offer fixture.

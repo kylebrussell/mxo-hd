@@ -14,6 +14,7 @@ namespace hds
     {
         public readonly Mission mission;
         public int phaseIndex;
+        internal MissionQaStart qaStart; // transient fixture preparation, never persisted
         public bool waitingForExit;
         public int kills;
         public string persistenceId = Guid.NewGuid().ToString("N");
