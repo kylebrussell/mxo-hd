@@ -4,6 +4,24 @@ namespace hds.Tests;
 
 public partial class MissionNpcInteriorCheckpointTests
 {
+    [Fact]
+    public void DeferredPlayerArrivalsDoNotConsumeCertifiedRoomMarkers()
+    {
+        var mission=new Mission{district=1};
+        mission.phases.Add(new MissionPhase{site="Normal",enemy="Machines",enemies=2});
+        mission.npcs.Add(new MissionNpc{id=1,at=1,arrival=new MissionArrival{onEnter=true,at="player"}});
+        mission.npcs.Add(new MissionNpc{id=2,at=1,arrival=new MissionArrival{afterGoal=1}});
+        Assert.True(MissionNpcInteriorPlanning.Roles(mission,0,out var roles,out var refusal),refusal);
+        var actor=Assert.Single(roles.Where(role=>role.Kind=="Npc"));
+        Assert.Equal(2,actor.Id);
+        Assert.True(actor.Deferred);
+        Assert.Equal(2,roles.Count(role=>role.Kind=="Wave"));
+
+        mission.npcs[0].arrival.onEnter=false;
+        Assert.False(MissionNpcInteriorPlanning.Roles(mission,0,out _,out refusal));
+        Assert.Equal("UnsupportedNpcRelativeArrival",refusal);
+    }
+
     [Fact] public void WitnessedReplayWithFurnitureUsesActualStageChoicesWithoutNewRandomOrSelection()
     {
         var p=new MissionProgress(Definition()){phaseIndex=1,persistenceId="furniture-replay",startedAt=123};var c=Client(p);var site=Site();var provider=new Provider();
