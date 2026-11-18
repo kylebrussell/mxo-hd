@@ -13,7 +13,7 @@ public static partial class Scenarios
         await p.WaitForRpcAsync("80 fb 01 00 00 00 01");
         p.SendRpc("80 fc 01");await p.WaitForRpcAsync("80 fd");
         p.SendRpc("80 fe 01");await p.WaitForRpcAsync("81 07");
-        p.SendRpc("81 08");await p.WaitForRpcAsync("81 09");p.SendRpc("05");await Task.Delay(500);
+        p.SendRpc("81 08");await p.WaitForLoadingAreaAsync();p.SendRpc("05");await Task.Delay(500);
         p.SendRpc("80 ff 09 00 00 00 01 00 00 00");await p.WaitForRpcAsync("81 07");
         Check.Equal(17L,await context.Database.LongAsync($"SELECT districtId FROM characters WHERE charId={p.CharId}"),"Return to native hardline");
         Check.Equal("17700 -503 34100",await context.Database.ScalarAsync($"SELECT CONCAT(x,' ',y,' ',z) FROM characters WHERE charId={p.CharId}"),"Exact HDL arrival");

@@ -206,6 +206,7 @@ public static partial class Scenarios
         new Scenario("yuki-partial-world", YukiPartialWorld, StillNpcs),
         new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
         new Scenario("archive02-partial-world", Archive02PartialWorld, StillNpcs),
+        new Scenario("death-reconstruct-and-hardline-selection", DeathReconstructAndHardlineSelection, StillNpcs),
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("medium02-partial-world", Medium02PartialWorld, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
@@ -502,6 +503,9 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         Check.Equal("Alice", StringAtOffset(offered.Bytes, 2), "TradeOffered PartnerName");
         Check.Equal(NpcLoot.CodeBit1, BitConverter.ToUInt32(offered.Bytes, 9), "TradeOffered ClassData");
         Check.Equal((byte)1, offered.Bytes[0x11], "TradeOffered ItemQuantity");
+        const string acceptanceRefresh = "81 86 00 01 00 00 00 00 00 6b 00 00 00 00 00 00 00 00 00";
+        await alice.WaitForRpcAsync(acceptanceRefresh);
+        await bob.WaitForRpcAsync(acceptanceRefresh);
 
         // Bob offers information: 81 86 with YourItem=1 to him and 0 to Alice
         bob.SendRpc($"81 85 00 01 {Le(200u)} 6b 00");
@@ -515,6 +519,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
 
         bob.SendRpc($"81 85 00 01 {Le(50u)} 6b 00");
         await alice.WaitForRpcAsync($"81 86 01 00 01 {Le(50u)} 6b");
+        await alice.WaitForRpcAsync(acceptanceRefresh);
         await bob.WaitForRpcAsync($"81 86 01 01 01 {Le(50u)} 6b");
 
         bob.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
@@ -1078,7 +1083,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         seller.SendRpc("80 fe 01");
         await seller.WaitForRpcAsync("81 07");
         seller.SendRpc("81 08");
-        await seller.WaitForRpcAsync("81 09");
+        await seller.WaitForLoadingAreaAsync();
         seller.SendRpc("05");
         await Task.Delay(500);
 

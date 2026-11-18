@@ -129,6 +129,12 @@ public sealed class HeadlessPlayer : IDisposable
     /// <summary>Skips everything that has arrived so far, so later waits only see what comes next.</summary>
     public void SkipReceived() => rpcCursor = World.RpcSnapshot().Count;
 
+    public async Task WaitForLoadingAreaAsync()
+    {
+        await WaitForRpcAsync("81 09");
+        await WaitForRpcAsync("06 0e 00 85 03 00 00");
+    }
+
     /// <summary>All records so far that match, regardless of where the waits are.</summary>
     public List<RpcRecord> Received(string pattern)
     {

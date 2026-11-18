@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -62,11 +62,13 @@ namespace hds
             // standing on the LA rooftop with no picker.
             if (Store.currentClient.playerData.DistrictIsLA())
             {
+                if (Store.currentClient.playerData.LoadingAreaMapPending) return;
                 if (TutorialMission.JackIntoRichland(Store.currentClient))
                 {
                     return;
                 }
 
+                SendLoadingAreaSettings(Store.currentClient);
                 Output.WriteDebugLog("[LA] Spawn ready in the Loading Area: no self-spawn, waiting for a hardline pick");
                 return;
             }
@@ -133,28 +135,49 @@ namespace hds
 
             packets.sendEXPCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getExperience());
             packets.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
+            SendCharacterSetup(packets, Store.currentClient);
+        }
 
+        internal static void SendLoadingAreaMap(WorldClient client)
+        {
+            var packets = new ServerPackets();
+            packets.sendWorldCMD(client, client.playerData.getDistrictId(), Store.worldConfig.weather);
+            packets.sendEXPCurrent(client, (UInt32)client.playerData.getExperience());
+            packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
+        }
+
+        internal static void SendLoadingAreaSettings(WorldClient client)
+        {
+            if (client.playerData.LoadingAreaMapPending || client.playerData.LoadingAreaSettingsSent) return;
+            client.playerData.LoadingAreaSettingsSent = true;
+            var packets = new ServerPackets();
+            SendCharacterSetup(packets, client);
+            packets.SendWorldSetup(client);
+        }
+
+        private static void SendCharacterSetup(ServerPackets packets, WorldClient client)
+        {
             /*
-            long exp = Store.currentClient.playerData.getExperience();
-            long cash = Store.currentClient.playerData.getInfo();
+            long exp = client.playerData.getExperience();
+            long cash = client.playerData.getInfo();
             string expStr = "80e1" + StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray((UInt32)exp, 1)) + "00000000";
             string cashStr = "80df" + StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray((UInt32)cash, 1)) + "00000000";
             */
 
-            UInt32 charId = Store.currentClient.playerData.getCharID();
+            UInt32 charId = client.playerData.getCharID();
             Dictionary<byte, UInt16> attributes = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
             foreach (byte attribute in CharacterAttributes.All)
             {
                 UInt16 value = attributes.TryGetValue(attribute, out UInt16 stored)
                     ? stored
                     : CharacterAttributes.LegacyValue(attribute);
-                packets.sendAttribute(Store.currentClient, value, attribute);
+                packets.sendAttribute(client, value, attribute);
             }
 
             // Retail loaded Awakened's hidden Self Defense at its level with the attributes (80 b2 11 00 05 00 08 02).
             UInt16 awakened = Store.dbManager.WorldDbHandler.GetCurrentAbilityLevel(
                 DataLoader.getInstance().getAbilityByID(AbilityProgression.AwakenedAbility).getGOID(), charId);
-            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
+            client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
                 AbilityProgression.SelfDefenseAbility, awakened, AbilityProgression.HiddenSlot));
             foreach (var loaded in Store.dbManager.MarginDbHandler.LoadAbilities((int)charId))
                 if (loaded.getLoaded())
@@ -162,7 +185,7 @@ namespace hds
                     UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
                     if (id == AbilityProgression.AwakenedAbility) continue;
                     foreach (UInt16 grant in AbilityProgression.GrantsOf(id))
-                        if (!AbilityGrantRegistration.Handles(id, grant)) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                        if (!AbilityGrantRegistration.Handles(id, grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(id, loaded.getLevel()), AbilityProgression.HiddenSlot));
                 }
 
@@ -176,68 +199,68 @@ namespace hds
 
             
             Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(focusRPC)); // Focus 
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(beliefRPC)); // Belief
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(vitalityRPC)); // Vitality
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(perceptionRPC)); // Perception
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(reasonRPC)); // Reason
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(beliefRPC)); // Belief
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(vitalityRPC)); // Vitality
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(perceptionRPC)); // Perception
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes(reasonRPC)); // Reason
             */
-            //Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("808615A0070000000000000000000000000000000000000000210000000000230000000000")); // Cew and Faction Window ena
+            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("808615A0070000000000000000000000000000000000000000210000000000230000000000")); // Cew and Faction Window ena
             // Disable later
 
             //8167170020001C2200C60111000000000000002900000807006D786F656D750007006D786F656D750002000200000000000000
-            //Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2110011000802")); // What is this ? Check it later
+            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2110011000802")); // What is this ? Check it later
             /*
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4503110000020000001100110000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc450002000002000000cc00040000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000300000b0000003702330000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000400002d0000002304030000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000500002d0000002004030000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000600002d0000001904010000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000700002d0000004204010000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4500080000340000008302440000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000900004c0000001504040000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000a00004c0000000604040000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000b00004c0000001904020000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000c0000530000001504010000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000d0000530000001904010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4503110000020000001100110000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc450002000002000000cc00040000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000300000b0000003702330000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000400002d0000002304030000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000500002d0000002004030000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000600002d0000001904010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000700002d0000004204010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4500080000340000008302440000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000900004c0000001504040000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000a00004c0000000604040000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000b00004c0000001904020000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000c0000530000001504010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000d0000530000001904010000000000000000"));
             */
-            //Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b23a0400000802"));
+            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b23a0400000802"));
             /*
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45033a0400530000003a04000000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000e0000530000000604010000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000f00005f0000007c04050000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45001000005f0000000704050000000000000000"));
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4500110000620000000604010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45033a0400530000003a04000000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000e0000530000000604010000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45000f00005f0000007c04050000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45001000005f0000000704050000000000000000"));
+            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4500110000620000000604010000000000000000"));
             */
-            //Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2350400000802"));
+            //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2350400000802"));
 
             // Buddylist
             BuddylistHandler buddylistHandler = new BuddylistHandler();
-            buddylistHandler.ProcessAnnounceFriendOnline(Store.currentClient.playerData.getCharID(), StringUtils.charBytesToString_NZ(Store.currentClient.playerInstance.CharacterName.getValue()));
+            buddylistHandler.ProcessAnnounceFriendOnline(client.playerData.getCharID(), StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue()));
             ;
 
             ServerPackets pak = new ServerPackets();
 
             UInt32 factionId =
-                NumericalUtils.ByteArrayToUint32(Store.currentClient.playerInstance.FactionID.getValue(), 1);
+                NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(), 1);
             if (factionId > 0)
             {
                 Faction faction = Store.dbManager.WorldDbHandler.FetchFaction(factionId);
                 faction.masterPlayerCharId =
                     Store.dbManager.WorldDbHandler.GetCharIdByHandle(faction.masterPlayerHandle);
-                pak.SendFactionInfo(Store.currentClient, faction, false);
-                pak.SendFactionCrews(Store.currentClient, faction, false);
+                pak.SendFactionInfo(client, faction, false);
+                pak.SendFactionCrews(client, faction, false);
 
             }
             
             // Retail's login carried the Speed tactic's records (this used to send only one of them, as a test)
-            CombatTactics.SendCurrent(Store.currentClient);
+            CombatTactics.SendCurrent(client);
             
             // Retail sent one 80 86 at login: the crew for a crew member (AfterWhoruNeo) or the empty form for
             // a player without one (mxoemu3). This used to send the crew and then the empty form, with a fixed
             // char id, which emptied the crew window again.
-            UInt32 crewId = NumericalUtils.ByteArrayToUint32(Store.currentClient.playerInstance.CrewID.getValue(), 1);
-            SocialHandler.SendCrewInfo(Store.currentClient, crewId);
+            UInt32 crewId = NumericalUtils.ByteArrayToUint32(client.playerInstance.CrewID.getValue(), 1);
+            SocialHandler.SendCrewInfo(client, crewId);
         }
 
         public void processInitUDPSession(ref byte[] packetData)

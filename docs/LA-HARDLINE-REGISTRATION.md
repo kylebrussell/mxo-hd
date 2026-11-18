@@ -80,3 +80,17 @@ The repair now translates06 ConstructID ONLY for the six registered maps12..17 i
 
 
 Current-context repair validation at frozen8bd20266eb2074ed4243e55f844589494e9eda17:22 focused checks PASS, including all six mappings, no truncation aliases and every existing private PvP book-map fallback. Both actual read-only configurations/plans/DLL hashes PASS. Fresh la-hardline-sync PASS51.0s (driver51.1s), exit0, peak1/disposed/ownserver0. Actual DebugA8C9126DDE92D1CE3F65EDF05893D879D067DAF60191ED9747D572CBDAC6AFFE; Release98CF3CDAB57DE3DB0434BC15666106F5EE32164A1FECB8B057C498ACFCA172EE was build/read-only only. Unique preteardown mxo-hardline-sync-mxotest_run_1_0eb5aac0e5.json and pairedlog retain actual06current8 at initial/relog/LAreturn,08and80fa8/2, sourceDLL/rawRPCs. SQL remains16/37700/495/31700. The earlier e8de31d native failure and prior51.9s wire pass remain explicitly distinct. No native UI success is inferred.
+
+## Loading Area after Reconstruct
+
+PR287 reached the picker and received two `6d` status replies. Clicking Jack into the
+Matrix on list and map selections sent no `80 ff`. The retail death capture sends
+`81 09` alone, waits for the transport acknowledgement, then sends the `06` map
+load with experience and information. Character and world settings follow the
+client's readiness request before the first `6d` reply.
+
+The server now uses that sequence after both Reconstruct and a hardline exit to
+Loading Area. The headless Reconstruct test checks the separate reset and map
+lists, character setup before the first hardline response, and a new self view
+after selecting Mara C. The native check still needs to show the button itself
+sending `80 ff`. [PR287 native observation](https://github.com/kylebrussell/mxo-hd/pull/287#issuecomment-6966592182)

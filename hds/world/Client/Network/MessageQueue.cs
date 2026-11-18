@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Text;
@@ -65,7 +65,8 @@ namespace hds
 
         // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
         internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
-        private void QueueRpc(byte[] messageBlock,int? world,long transport)
+        internal SequencedMessage QueueTrackedRpc(byte[] messageBlock) => QueueRpc(messageBlock, null, 0);
+        private SequencedMessage QueueRpc(byte[] messageBlock,int? world,long transport)
         {
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
@@ -87,6 +88,7 @@ namespace hds
             {
                 RPCMessagesQueue.Add(message);
             }
+            return message;
         }
 
         // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.
@@ -115,14 +117,16 @@ namespace hds
             
         }
 
-        /// <summary>Drops the RPCs already sent: after a comm reset the client counts from 0 again.</summary>
-        public void ForgetSentRpcs()
+        /// <summary>Drops prior RPCs when the client resets its counters. LA starts with its own handshake.</summary>
+        public void ForgetSentRpcs() => ForgetSentRpcs(false);
+
+        internal void ForgetSentRpcs(bool enteringLoadingArea)
         {
             lock (RPCMessagesQueue.SyncRoot)
             {
                 for (int i = RPCMessagesQueue.Count - 1; i >= 0; i--)
                 {
-                    if (((SequencedMessage)RPCMessagesQueue[i]).rpcNumber >= 0)
+                    if (enteringLoadingArea || ((SequencedMessage)RPCMessagesQueue[i]).rpcNumber >= 0)
                     {
                         RPCMessagesQueue.RemoveAt(i);
                     }

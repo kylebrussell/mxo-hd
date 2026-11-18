@@ -101,6 +101,10 @@ namespace hds
             });
         }
 
+        // The native 81 86 handler clears acceptance before applying the change.
+        // An own-slot removal with NoSlot returns without touching inventory or the offer.
+        internal static byte[] BuildAcceptanceRefresh() => BuildChanged(false, true, 0, NoSlot, 0, 0, 0);
+
         /// <summary><c>81 87</c>: session status; the counts and the signed info change feed the client's trade summary.</summary>
         public static byte[] BuildStatus(UInt32 status, UInt32 itemsGiven = 0, UInt32 itemsReceived = 0, long infoChange = 0)
         {

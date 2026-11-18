@@ -12,15 +12,23 @@ public static partial class Scenarios
         // Native mode uses this exact existing opener; it does not rely on a rendered vendor NPC.
         p.SendChat("?clientactions vendor");await p.WaitForRpcAsync("81 0d");
         p.SendRpc("81 11 01 0b");await p.WaitForRpcAsync("81 12 01 92 2d 00 00 00 00 00 10 a8 02 00 00");
+        await p.WaitForTextAsync("You can sell this item for 680 information.");
         Check.Equal(1000L,await Cash(),"Tools-vendor shortcut appraisal keeps cash");
         Check.Equal(1L,await Items(11),"Tools-vendor shortcut appraisal keeps shirt");
         p.SendRpc("81 10 00 00 00 00 01");
         p.SendRpc("81 11 01 0b");await p.WaitForTextAsync("Open a vendor");
         p.SendRpc("80 c8 01 00 f0 04 02 00");await p.WaitForRpcAsync("81 0d"); // actual data-loaded vendor82837505
         p.SendRpc("81 11 01 0b");await p.WaitForRpcAsync("81 12 01 92 2d 00 00 00 00 00 10 a8 02 00 00");
+        await p.WaitForTextAsync("You can sell this item for 680 information.");
         Check.Equal(1000L,await Cash(),"Appraise keeps cash");Check.Equal(1L,await Items(11),"Appraise keeps item");
         p.SendRpc("81 11 01 0d");var ability=await p.WaitForRpcAsync("81 12 01 2e 00 00 00");
         Check.Equal(12600u,BitConverter.ToUInt32(ability.Bytes,11),"Source leveled full-price ability appraisal");
+        await p.WaitForTextAsync("You can sell this item for 12600 information.");
+        p.SendRpc("81 11 01 0c");
+        await p.WaitForRpcAsync("81 12 01 a4 1c 00 00 00 00 1c 10 0a 00 00 00");
+        await p.WaitForTextAsync("You can sell this item for 10 information.");
+        Check.Equal(8L,await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={p.CharId} AND slot=12"),
+            "Appraising the Code Bit stack preserves its eight units");
         p.SendRpc("81 11 00 0b");await p.WaitForRpcAsync("81 12 00 92 2d 00 00");
         Check.Equal(1680L,await Cash(),"Actual sale paid once");Check.Equal(0L,await Items(11),"Selected byte slot removed");
         p.SendRpc("81 11 00 0b");await p.WaitForTextAsync("nothing to sell");Check.Equal(1680L,await Cash(),"Duplicate sale cannot pay");

@@ -396,7 +396,9 @@ namespace hds
                     // A world generation can change after preparation. Drop only unnumbered producer-owned records.
                     thePacket.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
                     messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
-                    // The existing encoder still emits its ordinary bare ACK if no content remains.
+                    // A bare reset ACK can arrive after the client resets its sequence history.
+                    // The reliable reset RPC already acknowledges the last request.
+                    if (thePacket.IsEmpty && playerData.waitForRPCShutDown) return;
                     playerData.IncrementSseq();
 
                     byte[] finalData = thePacket.getFinalData(playerData);
@@ -510,6 +512,8 @@ namespace hds
                 lock (messageQueue.RPCMessagesQueue.SyncRoot)
                 {
                     messageQueue.RPCMessagesQueue.Remove(deletedAckRpc);
+                    if (ReferenceEquals(deletedAckRpc, playerData.LoadingAreaResetRpc))
+                        playerData.LoadingAreaResetRpc = null;
                 }
             }
         }

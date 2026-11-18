@@ -18,7 +18,7 @@ public static partial class Scenarios
         player.SendRpc("80 fe 01");
         await player.WaitForRpcAsync("81 07");
         player.SendRpc("81 08");
-        await player.WaitForRpcAsync("81 09");
+        await player.WaitForLoadingAreaAsync();
         player.SendRpc("05");
         await Task.Delay(500);
 

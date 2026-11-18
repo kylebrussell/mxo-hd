@@ -87,7 +87,7 @@ namespace hds{
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
                 // The client's counters started again: what was sent before can't be resent with its old counter
-                Store.currentClient.messageQueue.ForgetSentRpcs();
+                Store.currentClient.messageQueue.ForgetSentRpcs(resetClient.playerData.DistrictIsLA());
                 Store.currentClient.messageQueue.ForgetWorldObjects();
                 man04.ResetReceiveWindow();
                 Store.currentClient.viewMan.Clear();
@@ -101,10 +101,33 @@ namespace hds{
                     Store.currentClient.playerData.openDoors.Clear(); // their views went with the old world
                 }
                 PlayerHandler handler = new PlayerHandler();
-                handler.processAttributes();
-                handler.processPlayerSetup();
+                resetClient.playerData.LoadingAreaMapPending = resetClient.playerData.DistrictIsLA();
+                resetClient.playerData.LoadingAreaSettingsSent = false;
+                resetClient.playerData.LoadingAreaResetRpc = null;
+                if (resetClient.playerData.LoadingAreaMapPending)
+                {
+                    // Retail enters the LA transport state with a standalone 81 09,
+                    // then waits for its acknowledgement before sending the map load.
+                    resetClient.playerData.LoadingAreaResetRpc =
+                        resetClient.messageQueue.QueueTrackedRpc(new byte[] { 0x81, 0x09 });
+                }
+                else
+                {
+                    handler.processAttributes();
+                    handler.processPlayerSetup();
+                }
                 }
                 finally { resetClient.TransportFence.Resume(resetEpoch); }
+                if (resetClient.playerData.LoadingAreaMapPending)
+                    resetClient.FlushQueue(force: true);
+            }
+            else if (AckFlags.Get(1) && Store.currentClient.playerData.LoadingAreaMapPending &&
+                Store.currentClient.playerData.LoadingAreaResetRpc == null && Store.currentClient.playerData.DistrictIsLA())
+            {
+                var client = Store.currentClient;
+                client.playerData.LoadingAreaMapPending = false;
+                PlayerHandler.SendLoadingAreaMap(client);
+                client.FlushQueue(force: true);
             }
 
 
