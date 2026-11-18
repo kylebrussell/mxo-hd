@@ -1,6 +1,6 @@
 # Compile storage depletion
 
-Compiling the last item in a code-storage entry now queues `5f <slot u16 LE> 00` after removing its database row. Partial consumption still queues `69 00`; bag deletions still end in `01`. Both native `81 2e` and the dev compile command share `CraftingHandler.Compile` / `CodeStorageHandler.TakeOne`.
+Consuming the last item in a code-storage entry queues `5f <slot u16 LE> 00` after removing its database row. Partial consumption queues `69 00`. Bag deletions end in `01`. The legacy material-based `81 2e` route and the dev compile command share `CraftingHandler.Compile` and `CodeStorageHandler.TakeOne`.
 
 This is independent of PR #110's central-storage moves: that branch owns `62` and its own `CentralStorage.BuildRemove`; this change uses `CodeStorage.BuildRemove` and can merge in either order. No `60` implementation or storage-capacity change is included.
 
@@ -38,21 +38,46 @@ Native `81 2e` is covered headlessly; the deterministic commands above isolate r
 
 ## Native crafting and timed compile fixture
 
-Use `crafting-breadth` on a fresh disposable world. The Code Analyser is in
-bag slot 2, the Code Compiler in slot 3, and two Code Bit 5 in slot 4.
-The archive has two charges of Max Health Boost Pill 3.
+Use `crafting-breadth` on a disposable world. The Code Analyser is in bag slot 2
+and the Code Compiler is in slot 3. Slots 4–8 hold one each of the five shipped
+Health Pill 1.0 ingredients in recipe order.
 
-1. Use **Activate Item** on the Code Analyser to open the Writer. Select
-   **Function Subroutine: Consumable**. Verify that the two Code Bits disappear
-   and one fragment appears in the bag.
-2. Activate the Compiler. Start the roughly 18-second **Max Health Boost Pill 3**
-   operation. Before it finishes, use **Activate Item** on the Analyser in
-   slot 2. Verify that the Writer opens and both pill charges, Info and the
-   pill count stay intact.
-3. Activate the Compiler again and finish one ordinary operation. Expect one pill in
-   the bag, one charge used and 16,440 Info debited.
+| Bag slot | GOID | Ingredient |
+|---|---:|---|
+| 4 | 2435 | Class Routine: Item |
+| 5 | 2438 | Function Subroutine: Grant |
+| 6 | 7458 | Function Subroutine: Consumable |
+| 7 | 2472 | VariableFrag_C05 |
+| 8 | 2454 | VariableFrag_C15 |
 
-The Writer sends `81 2e` with the packed recipe and Analyser slot. The Compiler
-sends `60` for the timed archive item. Activating the Writer through `970`
-ends the mutually exclusive Compiler session and cancels any pending output.
-A target-clear packet alone leaves the timer running.
+1. Use **Activate Item** on the Code Analyser. In **Consumables → Consumable
+   Pills**, select **Health Pill 1.0** and write the code. Check for `81 2e` on
+   tool slot 2, five bag deletions and `81 2f` success. The new ordinary code
+   arrives in the archive with ten charges and is published with `5e`.
+2. Activate the Compiler in slot 3 after writing finishes. Select the new
+   **Health Pill 1.0** code and compile once. Check for `60` and `61` success,
+   one physical pill in the bag, and the archive code decreasing from ten
+   charges to nine. The pre-seeded **Health Boost 3.0** (GO 39413) remains
+   available for an 18-second comparison at 16,440 Info per charge.
+
+### Native evidence and cancellation
+
+At `5fe7d589`, two 18-second Health Boost 3.0 compiles depleted the two
+pre-seeded charges, delivered two pills and debited 16,440 Info each. The
+mid-timer window close sent only `81 51` target clear and the timer finished.
+The archive-only Compile list offered no Function Subroutine: Consumable.
+[First PR304 native check](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991090932)
+
+At `eeaee4a1`, the Analyser sent 970 and opened Write Code. It listed Health
+Pill 1.0 and Antidote 1.0 under Consumable Pills. The FFC0 fragment was absent.
+Activating the Analyser 5.5 seconds into Health Boost 3.0 sent no tool request.
+The operation completed, used one charge and debited 16,440 Info.
+[Second PR304 native check](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991534568)
+
+Mid-compile cancellation is unsupported in the stock client. The timer start
+at `0x620837ff` disables `Crafting_BG`, which contains the `CfCl` close control.
+Cursor hit testing skips its controls at `0x624296e6`, and the `61` completion
+reenables them at `0x62083857`. Server rollback on a valid session stop or
+tool switch is headless-only. The fixture exercises that path and checks past
+the old deadline for an intact charge count, unchanged Info and no delayed
+pill. Native QA can use the two completion steps above.

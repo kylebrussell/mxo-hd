@@ -80,13 +80,13 @@ namespace hds
                     CraftingRules.Find(request.Item)?.CantCraft != false || !CraftingRequests.Matches(request, recipe) ||
                     !KnownRecipes.Contains(request.Item) && !db.GetLearnedRecipes(client.playerData.getCharID()).Contains(request.Item))
                     return Finish(client, 0, 0, request?.Item ?? 0, "That compile request is not available.");
-                // The stock Writer sends the bare recipe GOID shifted left by seven. Restrict this
-                // mode to Code Bit fragments. The Compiler continues to own ordinary archive materialization.
-                bool compiler = CraftingSession.Authorized(client, request.ToolSlot);
-                bool writer = !compiler && request.SourceCode == (recipe.ResultGoid << 7) && Crafting.IsBitRecipe(recipe)
-                    && CraftingSession.Authorized(client, request.ToolSlot, CraftingSession.WriterAbility);
-                if (!compiler && !writer)
-                    return Finish(client, 0, 0, request.Item, "That compile request is not available.");
+                if (!CraftingSession.Authorized(client, request.ToolSlot))
+                {
+                    if (request.SourceCode != (recipe.ResultGoid << 7) ||
+                        !CraftingSession.Authorized(client, request.ToolSlot, CraftingSession.WriterAbility))
+                        return Finish(client, 0, 0, request.Item, "That compile request is not available.");
+                    return WriteOrdinaryCode(client, request.ToolSlot, recipe);
+                }
                 var available = bag.Concat(CodeStorageHandler.AsIngredients(db.GetCodeStorage(client.playerData.getCharID()))).ToList();
                 var slots = Crafting.MatchIngredients(recipe, available);
                 if (slots == null || !CraftingRules.HasResultSpace(request.Item, bag, slots))
@@ -94,13 +94,8 @@ namespace hds
                 var item = CraftingRules.Find(request.Item);
                 if (!item.Complexity.HasValue) return Finish(client, 0, 0, request.Item, "This item's crafting complexity is unknown.");
                 long cost = CraftingRules.InfoCost(item, Skill(client, 530));
-                if (writer)
-                    cost = (long)(cost * (100 - Math.Clamp(Skill(client, 956), 0, 100)) / 100.0);
                 if (client.playerData.getInfo() < cost) return Finish(client, 4, 0, request.Item, "Not enough information to compile this item.");
-                int specialization = Skill(client, Specialization(item.Category));
-                int skill = writer ? Math.Max(Skill(client, 649), specialization) : Skill(client, 706);
-                bool success = CraftingRules.Succeeds(skill, item.Complexity.Value, Roll(), writer ? 0 : specialization);
-                if (writer && !success) return Finish(client, 0, 0, request.Item, "Failed to write the code fragment.");
+                bool success = CraftingRules.Succeeds(Skill(client, 706), item.Complexity.Value, Roll(), Skill(client, Specialization(item.Category)));
                 long cash = client.playerData.getInfo() - cost;
                 db.SaveInfo(client, cash);
                 client.playerData.setInfo(cash);
@@ -109,6 +104,58 @@ namespace hds
                 string result = Compile(request.Item, out ushort resultSlot);
                 return Finish(client, resultSlot == 0 ? (byte)0 : (byte)1, (byte)resultSlot, request.Item, result);
             }
+        }
+
+        private static bool WriteOrdinaryCode(WorldClient client, byte tool, Crafting.Recipe recipe)
+        {
+            uint goid = recipe.ResultGoid;
+            var item = CraftingRules.Find(goid);
+            if (!OrdinaryItemCode.Supported(goid) || !item.DefaultCodeCharges.HasValue)
+                return Finish(client, 0, 0, goid, "That Write Code result is not supported.");
+            long cost = CraftingRules.InfoCost(item, Skill(client, 530));
+            cost = (long)(cost * (100 - Math.Clamp(Skill(client, 956), 0, 100)) / 100.0);
+            if (client.playerData.getInfo() < cost)
+                return Finish(client, 4, 0, goid, "Not enough information to write this code.");
+            int skill = Math.Max(Skill(client, 649), Skill(client, Specialization(item.Category)));
+            if (!CraftingRules.Succeeds(skill, item.Complexity.Value, Roll()))
+                return Finish(client, 0, 0, goid, "Failed to write the item code.");
+
+            CraftingRequests.WrittenCode result;
+            try
+            {
+                result = Store.dbManager.WorldDbHandler.WriteOrdinaryItemCode(
+                    client.playerData.getCharID(), recipe, tool, item.DefaultCodeCharges.Value, cost);
+            }
+            catch (Exception error)
+            {
+                Output.WriteDebugLog("[WRITECODE] Rolled back " + goid + ": " + error.Message);
+                return Finish(client, 0, 0, goid, "The item code could not be written.");
+            }
+            if (result.Result != 1)
+                return Finish(client, result.Result, 0, goid, result.Result switch
+                {
+                    3 => "Your code inventory is full.",
+                    4 => "Not enough information to write this code.",
+                    _ => "You need the recipe's ingredients and the active Code Analyser."
+                });
+
+            foreach (var (ingredient, remaining) in result.Ingredients)
+            {
+                ushort slot = (ushort)(ingredient.Slot & ~Crafting.StorageSlotFlag);
+                if (slot != ingredient.Slot)
+                    client.messageQueue.addRpcMessage(remaining == 0 ? CodeStorage.BuildRemove(slot)
+                        : CodeStorage.BuildUpdate(slot, ingredient.Goid, remaining));
+                else
+                    client.messageQueue.addRpcMessage(remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
+                        : ItemStacks.BuildStackCount(slot, remaining));
+            }
+            client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(result.Slot,
+                OrdinaryItemCode.Packed(goid << 7, item.DefaultCodeCharges.Value)));
+            client.playerData.setInfo(result.Cash);
+            new ServerPackets().SendInfoCurrent(client, (uint)result.Cash);
+            Output.WriteDebugLog("[WRITECODE] Wrote " + goid + " into code slot " + result.Slot);
+            // In the Writer, 6208cac2 passes result type and XP to the UI without reading the byte slot.
+            return Finish(client, 1, 0, goid, "Wrote code for " + ItemName(goid) + ".");
         }
 
         private static readonly Random random = new Random();

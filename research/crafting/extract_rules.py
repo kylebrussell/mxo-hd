@@ -22,6 +22,13 @@ rows = [[r['id'], r['name']] + [r['fields'].get(f) for f in fields]
         for r in data['abilities'] if any(f in r['fields'] for f in fields)]
 result = {k: data[k] for k in ('source', 'gob_sha256', 'schema_version')}
 result['columns'] = ['goid', 'name'] + fields
+# Export charges for the cookbook's ordinary IC codes, which use a direct count.
+recipe_goids = {int(row[0]) for line in Path('data/recipes.csv').read_text(encoding='utf-8').splitlines()
+    if (row := line.split(';', 1))[0].isdigit()}
+result['ordinary_code_charges'] = {r['id']: r['fields']['InvItem/DefaultCodeCharges']
+    for r in data['abilities'] if r['id'] in recipe_goids
+    and r['fields'].get('InvItem/GOCategoryID', 0) & 0xffff == 0x4349
+    and 1 <= r['fields'].get('InvItem/DefaultCodeCharges', 0) <= 127}
 header = json.dumps(result, indent=2)
 args.output.write_text(header[:-2] + ',\n  "items": [\n' + ',\n'.join(
     '    ' + json.dumps(row, separators=(',', ':')) for row in rows) + '\n  ]\n}\n')

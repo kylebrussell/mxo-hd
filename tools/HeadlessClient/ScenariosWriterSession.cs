@@ -12,6 +12,11 @@ public static partial class Scenarios
         player.SendRpc("80 b9 " + BitConverter.ToString(body).Replace('-', ' '));
     }
 
+    public static IReadOnlyList<uint> HealthPillMaterials { get; } = Array.AsReadOnly(new uint[] { 2435, 2438, 7458, 2472, 2454 });
+    public static string HealthPillWriterRequest(byte tool, uint chargeBits = 0) =>
+        $"81 2e {Le(2399u << 7 | chargeBits)} 09 00 {tool:x2} 05 00 " +
+        string.Join(' ', HealthPillMaterials.Select(item => $"{Le(1u)} {Le(item)}"));
+
     private static async Task WriterSessionAuthority(ScenarioContext context)
     {
         var p = await context.AddPlayerAsync(new CharacterSeed("WriterSession") { Level=50, InnerStrength=0, Health=500,
@@ -33,10 +38,10 @@ public static partial class Scenarios
         WriterTool(p,3,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
         CompilerTool(p,4,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
         // A Writer session cannot use a different tool or treat packed archive code as a recipe.
-        p.SendRpc($"81 2e {Le(7458u << 7)} 09 00 04 01 00 {Le(2u)} {Le(7336u)}");
-        await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
-        p.SendRpc($"81 2e {Le(7458u << 7 | 1)} 09 00 02 01 00 {Le(2u)} {Le(7336u)}");
-        await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
+        p.SendRpc(HealthPillWriterRequest(4));
+        await p.WaitForRpcAsync($"81 2f 00 00 {Le(2399u)}");
+        p.SendRpc(HealthPillWriterRequest(2, 1));
+        await p.WaitForRpcAsync($"81 2f 00 00 {Le(2399u)}");
         p.SendRpc($"81 31 {Le(970u)} 05 02 01"); await p.WaitForTextAsync("That inventory ability is not available.");
         WriterTool(p,2,false); await p.WaitForRpcAsync(ModPattern(970,968,true));
         await p.WaitForViewUpdateAsync(2,"01 28 ?? 40 00 00 00 10");

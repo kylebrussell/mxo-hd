@@ -12,14 +12,18 @@ namespace hds
         {
             public uint Goid, Category, ToolAbility;
             public string Name;
-            public int? Complexity, Price;
+            public int? Complexity, Price, DefaultCodeCharges;
             public bool CantCraft, CantDecompile, Learnable;
         }
         private static readonly Lazy<Dictionary<uint, Item>> items = new Lazy<Dictionary<uint, Item>>(() =>
         {
             using var data = JsonDocument.Parse(File.ReadAllText(DataLoader.DataPath("crafting_rules.json")));
+            var charges = data.RootElement.TryGetProperty("ordinary_code_charges", out var codeCharges)
+                ? codeCharges.EnumerateObject().ToDictionary(row => uint.Parse(row.Name), row => (int?)row.Value.GetInt32())
+                : new Dictionary<uint, int?>();
             return data.RootElement.GetProperty("items").EnumerateArray().Select(row => new Item {
                 Goid = row[0].GetUInt32(), Name = row[1].GetString(), Complexity = Number(row[2]), Price = Number(row[3]),
+                DefaultCodeCharges = charges.GetValueOrDefault(row[0].GetUInt32()),
                 Category = row[4].ValueKind == JsonValueKind.Null ? 0 : row[4].GetUInt32(), CantCraft = Number(row[5]) == 1,
                 CantDecompile = Number(row[6]) == 1, Learnable = Number(row[7]) == 1,
                 ToolAbility = row[8].ValueKind == JsonValueKind.Null ? 0 : row[8].GetUInt32()

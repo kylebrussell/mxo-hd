@@ -14,6 +14,15 @@ namespace hds
             public readonly Dictionary<uint, int> Fragments = new Dictionary<uint, int>();
             public uint Item => SourceItem(SourceCode);
         }
+        public sealed class WrittenCode
+        {
+            public byte Result;
+            public ushort Slot;
+            public long Cash;
+            public readonly List<(Crafting.InventoryItem Item, int Remaining)> Ingredients =
+                new List<(Crafting.InventoryItem, int)>();
+        }
+
         public sealed class InventoryAbility
         {
             public uint Ability;

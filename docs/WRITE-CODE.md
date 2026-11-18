@@ -37,14 +37,41 @@ Read-only disassembly of client.dll SHA256
   `CastValidTarget` using string `628c8a8c`; resource 970 stores target 0.
   Consequently this inventory-target packet cannot establish writer activation.
 
-## Remaining limits
+## Health Pill 1.0
 
-The Writer accepts the bounded `81 2e` path for known cookbook recipes made
-entirely from Code Bits. It applies the script's writing skill and success-only
-debit to the fragment result. General code synthesis, purity, stability, signal
-boosts, charges and experience still require source evidence. The
-[`crafting-breadth` fixture](CRAFTING-STORAGE-DEPLETION.md#native-crafting-and-timed-compile-fixture)
-checks this path and cancellation by switching tools.
+Lead designer Toby Ragaini described a two-step crafting process. The Writer
+combines recipe fragments into code, and the Compiler turns that code into an
+item. Prima's official guide (p. 255) describes reusable item codes with charges.
+[Lead designer interview](https://www.gamespot.com/articles/the-matrix-online-qanda-crafting-and-bullet-time/1100-6111928/)
+
+The bounded Analyser `81 2e` path accepts Health Pill 1.0 (GO 2399) and
+preserves the existing recipes made entirely from Code Bits. The shipped pill
+recipe `2435 2438 7458 2472 2454` and its ten default charges come from the GOB.
+The official Writer lists the pill under **Consumables → Consumable Pills**,
+with Function Subroutine: Consumable (GO 7458) serving as an ingredient.
+[PR304 Writer native check](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991534568)
+
+Writer success uses `81 2f`. At `0x6208cac2..0x6208cad8`, the client reads status,
+TypeID and XP while skipping the packet's slot byte. The callback at `0x6208c710`
+shows `5e0000ab`, which describes receiving the item's code in Inventory. The
+callback uses the selected recipe row and does not inspect either inventory for
+a result. The timed Compiler uses `60`/`61` to produce the physical pill.
+
+For Health Pill 1.0, this server publishes the generated code directly to a
+free code archive slot using `5e <slot u16> <TypeID 0 u32> <packed u32> 00`,
+with `(2399 << 7) | 10` as the packed word. The stock `5e` dispatch tests the
+last byte at `0x62179856`. The zero branch at `0x621798af` passes the packed
+word to `0x621e1a70`, which stores it unchanged in the archive array for
+slots below 520. Direct archive placement is a server choice that uses the
+existing client code-list protocol. The retail Writer's grant packet and
+original destination remain unverified.
+
+The stock client suppresses mid-compile tool activation. Rollback on a valid
+session stop or switch is exercised headlessly. The Health Pill recipe and
+native completion checks are in the
+[`crafting-breadth` fixture](CRAFTING-STORAGE-DEPLETION.md#native-crafting-and-timed-compile-fixture).
+Additional ordinary recipes, purity, stability, signal boosts and experience
+remain outside this bounded path.
 
 ## Runtime and validation
 
