@@ -21,10 +21,10 @@ public static partial class Scenarios
 
         ushort before = RefusalOwnValue(a, "InnerStrengthAvailable", "02 80 80 80 10");
         Cast(a, sixthSense, selected.ViewId);
-        var map = (await a.WaitForRpcAsync("80 c5 02 00 0a")).Bytes;
-        Check.Equal(13, map.Length, "Only two characters receive map entries");
-        var entries = new[] { WireFormat.ToHex(map[5..9]), WireFormat.ToHex(map[9..13]) };
-        Check.That(entries.Contains("0000f900") && entries.Contains("00080002"),
+        var map = (await a.WaitForRpcAsync("80 c5")).Bytes;
+        var entries = ReadMinimapPositions(map, 10);
+        Check.Equal(2, entries.Length, "Only two characters receive map entries");
+        Check.That(entries.Contains(((sbyte)0, (sbyte)-7, (byte)0)) && entries.Contains(((sbyte)8, (sbyte)0, (byte)2)),
             "The scan stays centred on the caster and encodes a yellow neutral and red hostile");
         await a.WaitForViewUpdateAsync(2, $"02 80 80 80 10 {Le((ushort)(before - 10))}");
         foreach (var target in new[] { neutral, enemy })

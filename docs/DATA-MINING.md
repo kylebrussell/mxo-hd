@@ -14,7 +14,7 @@ All integers below are little-endian. Offsets include the opcode. RPC framing al
 | `80 cd` | Twenty bytes: ID u16 +2, RezID u32 +4, position **three float32** at +8/+12/+16. Printer `0x621523b0`; consumer `0x621e0f70` adds an FX instance to a map keyed by ID, only if absent. Position is promoted to doubles, RezID becomes the FX resource. A changed/moving marker needs removal before replacement. |
 | `80 ce` | Four bytes: ID u16 +2. Consumer `0x621e0240` deletes that FX and keyed entry. |
 | `80 cf` | Two bytes, no fields. Consumer `0x621db3b0` deletes all keyed FX. Runtime uses individual `ce` removals for its own IDs. |
-| `80 c5` | Header: count u16 +2, DisplaySeconds u8 +4. Then count **four-byte** nested records: unused byte, DeltaX i8, DeltaZ i8, Relationship u8. Constructor `0x6213c1f0`, printer `0x621520d0`, dispatcher `0x621772df`. It clears minimap entry type 15 (`0x620ccc20`) and adds each ping with its duration (`0x620ccbf0`). `0x62016c02` reads signed offsets, multiplies by double **100** at `0x6286db58`, and adds the player's origin. Relationship 1 = green `ff00ff00`, 2 = red `ffff0000`, otherwise yellow `ff00ffff`. This is a minimap ping, not a floorplan-unlock record. |
+| `80 c5` | The u16 at +2 points to the Positions array relative to the opcode. DisplaySeconds is u8 at +4. Array offset zero means empty. A nonempty array starts at +5 in the encoder, with count u16 followed by count **four-byte** records (unused byte, DeltaX i8, DeltaZ i8, Relationship u8). Constructor `0x6213c1f0` calls `0x62129590` to read the offset and then the count. Dispatcher `0x621772df` reports the count, clears minimap entry type 15 (`0x620ccc20`) and adds each ping with its duration (`0x620ccbf0`). `0x62016c02` reads signed offsets, multiplies by double **100** at `0x6286db58`, and adds the player's origin. Relationship 1 = green `ff00ff00`, 2 = red `ffff0000`, otherwise yellow `ff00ffff`. |
 
 Examples pinned by unit tests:
 
@@ -23,7 +23,7 @@ Examples pinned by unit tests:
 # ID 0x1234, DataNode FX 0x28000462 at (100,200,-300)
 80 ce 34 12
 80 cb 5a 64
-80 c5 01 00 0a 00 fe 03 02
+80 c5 05 00 0a 01 00 00 fe 03 02
 # one red ping, (-2,+3) metres, 10 seconds
 ```
 

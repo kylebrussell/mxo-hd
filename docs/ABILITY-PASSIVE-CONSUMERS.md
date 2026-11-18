@@ -15,12 +15,14 @@ The audit retains the existing mechanics and their stated evidence limits. The [
 
 The [shipped callback](../research/client-scripts/ability/spy/misc.py#L80) scans living character movement objects within 1,500 world units. It reads Sixth Sense Detection 646, draws once from 0–99, skips friends and uses a strict greater-than comparison. The stored level function 2 has scale 4. Original Python 2.3 bytecode confirms the comparison to zero in the defender branch. A zero Stealth target has threshold 50. A nonzero Stealth target has threshold zero. The callback's radius takes precedence over the generic template's 8 m field.
 
-A loaded 149 uses the normal cast and 10 IS charge. Group allies are omitted using the server's mission-team, crew and faction membership. The server's PvP eligibility marks enemies, and other in-range players are neutral. NPCs require a current authorized view. The scan does not change Stealth or expose hidden characters as a selectable world view. Scanned players receive source scan and result notices. The caster sees the sourced FX and ten-second [minimap position record](DATA-MINING.md). The native binding from `sendPlayerPositions` and stock client display at this call site remain pending. This uses the same minimap entry type as map and locator pings.
+A loaded 149 uses the normal cast and 10 IS charge. Group allies are omitted using the server's mission-team, crew and faction membership. The server's PvP eligibility marks enemies, and other in-range players are neutral. NPCs require a current authorized view. Existing Stealth and view rules continue to govern target selection. Scanned players receive source scan and result notices. The caster receives the sourced FX and ten-second [minimap position record](DATA-MINING.md). This uses the same minimap entry type as map and locator pings. The native binding from `sendPlayerPositions` remains unresolved.
+
+The first native sample printed 453 detections with the malformed header `80 c5 01 00 0a`. The stock constructor `0x6213c1f0` calls `0x62129590`, which reads the array offset from +2, then reads the count at that offset. Offset 1 made it interpret `c5 01` as the count. The shared encoder now places the count at +5. The corrected marker awaits a native retest.
 
 ## Native sample
 
 Use NativeQa mode `sixth-sense` at the PR head. The disposable bootstrap checks both live helper positions, both PvP flags, ambient aggro, the one-marker scan, the near helper's discovery and the far helper's exclusion. It writes `sixth-sense-bootstrap.json`. No caster commands or forced roll are required in the real client.
 
 1. Jack in as CSR110 and stay at the seeded point `17000 495 2300`. Open the minimap and activate Sixth Sense once from Actions.
-2. Look for one red dot 8 m east for 10 seconds and a scan visual. QAFar at 16 m should have no dot. Record the actual output and `80 c5 01 00 0a 00 08 00 02`.
+2. Check that the client reports one detection and shows one red dot 8 m east for 10 seconds, along with the scan visual. Record the actual output and `80 c5 05 00 0a 01 00 00 08 00 02`.
 3. Check 10 IS spent and normal native fixture shutdown.

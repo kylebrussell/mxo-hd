@@ -40,7 +40,7 @@ public sealed class SixthSenseMode : NativeQaMode
         var far = await probe.WaitForViewNamedAsync(Far);
         probe.SendRpc(new byte[] { 0x80, 0xb9, 0x95, 0 }.Concat(BitConverter.GetBytes(far.ViewId)).ToArray());
         byte[] map = (await probe.WaitForRpcAsync(SixthSenseFixture.RedPing)).Bytes;
-        Check.Equal(9, map.Length, "Fixture scan returns just one red marker in range");
+        Check.Equal(11, map.Length, "Fixture scan returns just one red marker in range");
         await context.Helpers[Near].WaitForRpcAsync(SixthSenseFixture.Discovery);
         context.Helpers[Far].SendRpc("81 48");
         await context.Helpers[Far].WaitForRpcAsync("81 49");

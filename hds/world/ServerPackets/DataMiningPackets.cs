@@ -36,11 +36,26 @@ namespace hds
 
         public static byte[] Map(IEnumerable<Ping> positions, byte seconds)
         {
-            Ping[] p = positions.Take(128).ToArray(); // ours: bound one RPC well below the datagram limit
-            using var s = new MemoryStream(); using var w = new BinaryWriter(s);
-            w.Write((byte)0x80); w.Write((byte)0xc5); w.Write((ushort)p.Length); w.Write(seconds);
-            foreach (Ping v in p) { w.Write((byte)0); w.Write(v.X); w.Write(v.Z); w.Write(v.Relationship); }
-            return s.ToArray();
+            const ushort headerSize = 5;
+            Ping[] pings = positions.Take(128).ToArray(); // Bound one RPC well below the datagram limit.
+            using var stream = new MemoryStream();
+            using var writer = new BinaryWriter(stream);
+            writer.Write((byte)0x80);
+            writer.Write((byte)0xc5);
+            // client.dll 0x62129590 dereferences this offset from the opcode to read the array count.
+            writer.Write(pings.Length == 0 ? (ushort)0 : headerSize);
+            writer.Write(seconds);
+            if (pings.Length == 0) return stream.ToArray();
+
+            writer.Write((ushort)pings.Length);
+            foreach (Ping ping in pings)
+            {
+                writer.Write((byte)0);
+                writer.Write(ping.X);
+                writer.Write(ping.Z);
+                writer.Write(ping.Relationship);
+            }
+            return stream.ToArray();
         }
     }
 }
