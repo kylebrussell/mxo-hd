@@ -143,6 +143,8 @@ try
                     announcedEntrance = (progress.Identity, progress.Phase);
                     foreach (string message in MissionCatalogEntrances.Describe(progress, root))
                         Console.WriteLine("READY " + message);
+                    foreach (var approach in MissionCatalogObjectApproaches.Find(progress, root))
+                        Console.WriteLine("READY " + approach.Describe());
                 }
             }
         }

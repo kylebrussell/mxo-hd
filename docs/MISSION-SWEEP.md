@@ -23,7 +23,7 @@ $env:MXO_QA_MISSION_SAMPLES = '205204:2,205301:3,203305:4,308203:4,303105:1'
 Wait for `state.json` to say `Ready`. Bootstrap starts each listed sample on the
 disposable CSR_Tester, checks its staged checkpoint, required actors and props,
 and aborts it normally before logging out. `mission-samples-bootstrap.json`
-records each staged area and available entrance. A failed sample blocks readiness.
+records each staged area, available entrance and mission-object approaches. A failed sample blocks readiness.
 The catalog fixture disables ambient aggro. The aggro-enabled team fixture checks
 its required helper at startup and refuses readiness if an ambient NPC attacks it.
 
@@ -42,6 +42,12 @@ normal triggers. When no measured public entrance is recorded in Slums,
 the console can print an assisted lobby approach for the selected car. That
 approach skips the public door and must be recorded as assisted. Use the ordinary
 elevator from that lobby.
+
+After the actual phase starts, the console prints `READY Mission object` lines for its selected site.
+Use that output when the bootstrap picked a different site. Each verified point gives world coordinates,
+the yaw in hex and a copyable `?tp` command with the NAV sector, region and polygon. Board the ordinary
+elevator before using an object approach. Record the teleport as assisted and still use the native radial
+to search, loot or use the prop. For 205301 area 3, search and loot Furniture first, then use Computer.
 
 ### Earned checkpoint from earlier areas
 

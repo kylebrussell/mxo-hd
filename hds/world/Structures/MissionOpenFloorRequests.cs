@@ -5,6 +5,9 @@ namespace hds
 {
     internal static class MissionOpenFloorRequests
     {
+        // 40 world units leave room beyond the GO3 footprint at thin NAV corners.
+        private const double FreeComputerNavClearance=40;
+
         internal static bool TryCreate(StaticWorldObject raw,ushort concrete,MissionSite site,ushort world,out G.Request request,out string refusal,MissionPhase phase=null,ushort objectId=0,MissionElevatorWitness elevator=null)
         {
             request=null;refusal=null;
@@ -34,7 +37,8 @@ namespace hds
             if(!NavMesh.TryOpenFloorSurfaces(world,sectors,out var surfaces,out refusal))return false;
             request=new G.Request(world,presence,modelEvidence,new G.RawPose(new G.Position(raw.pos_x,raw.pos_y,raw.pos_z),raw.quat,raw.mxoStaticId,MissionSites.Goid(raw)),
                 new G.RawPose(new G.Position(anchor.X,anchor.Y,anchor.Z),Convert.ToHexString(anchor.Orientation),raw.mxoStaticId,MissionSites.Goid(raw)),anchorEvidence,
-                model,usable,surfaces,entry.Root,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ),scene);
+                model,usable,surfaces,entry.Root,new G.Bounds(site.minX,site.maxX,site.minZ,site.maxZ),scene,
+                navClearance:concrete==3?FreeComputerNavClearance:0);
             return true;
         }
         internal static bool TryComputerActions(MissionPhase phase,ushort objectId,out byte[] actions)

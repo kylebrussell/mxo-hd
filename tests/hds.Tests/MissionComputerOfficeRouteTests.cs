@@ -77,6 +77,36 @@ public class MissionComputerOfficeRouteTests
     }
 
     [Fact]
+    public void ReturnToSenderOverrideComputerClearsTheNativeWallJunction()
+    {
+        SectorProperties.Load(Path.Combine(Root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(Root, "data", "navmesh"));
+        var site = Assert.Single(MissionSites.Build(Statics(), 1), s => s.elevatorDoor?.mxoStaticId == 0x0d100024 &&
+            s.CentreX == 28500 && s.floorY == 946 && s.CentreZ == 13225);
+        var raw = Assert.Single(site.objectSpots.Concat(site.containers), s => s.mxoStaticId == 0x0d1001ed);
+        var doc = new XmlDocument();
+        doc.Load(Path.Combine(Root, "data", "missions", "machines_5_3_1_return_to_sender.xml"));
+        var mission = MissionXml.Parse(doc.DocumentElement!);
+        var choices = new[] { new MissionOpenFloorChoice(2, 3, JsonSerializer.Serialize(raw, MissionProgress.SaveJson)) };
+        Assert.True(MissionElevatorPoses.TryCreate(site, choices, out var elevator, out string refusal), refusal);
+        Assert.True(MissionOpenFloorRequests.TryCreate(raw, 3, site, 1, out var request, out refusal, mission.phases[2], 2, elevator), refusal);
+        var original = new G.Request(request.World, request.SourceModel, request.SourceModelEvidence, request.RawSource,
+            request.Anchor, request.AnchorEvidence, request.Model, request.Usable, request.Surfaces, request.Entry,
+            request.SiteBounds, request.Scene);
+        var saved = G.Plan(original);
+        Assert.True(saved.HasPlan, saved.Refusal);
+        Assert.Equal((28698.5625, 13502.57421875), (saved.Centre.X, saved.Centre.Z));
+        Assert.True(G.ValidateFixed(request, saved.InputFingerprint, saved.Surface, saved.Centre, saved.Route, out refusal), refusal);
+
+        Assert.True(P.TryPlan(new[] { new P.Input(2, request) }, out var plan, out refusal, out _, P.Limits.Default), refusal);
+        var planned = plan.Results[2];
+        double distance = Math.Sqrt(Math.Pow(planned.Centre.X - saved.Centre.X, 2) + Math.Pow(planned.Centre.Z - saved.Centre.Z, 2));
+        Assert.True(distance > 50,
+            $"The Computer still occupies the native wall junction at {planned.Centre.X}, {planned.Centre.Z}.");
+        Assert.True(G.ValidateRouteIds(request, planned.RoutePolygons, planned.Route));
+    }
+
+    [Fact]
     public void NativeReportedMerovingianSiteIsExcludedBeforeSelectingItsComputer()
     {
         SectorProperties.Load(Path.Combine(Root,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(Root,"data","navmesh"));

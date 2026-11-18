@@ -324,17 +324,22 @@ namespace hds
 
                 if (command.Equals("?tp") && commands.Length >= 7 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
-                    // Dev: ?tp <x> <y> <z> <sector hex> <region hex> <polygon hex> [teleport id hex]: a teleport naming the
-                    // place it lands in, as retail's did (world units, not /100)
+                    // Dev: ?tp <x> <y> <z> <sector hex> <region hex> <polygon hex> [teleport id hex or -] [yaw hex].
+                    // A dash allocates the usual next teleport id when supplying a yaw.
                     float tx = float.Parse(commands[1], System.Globalization.CultureInfo.InvariantCulture);
                     float ty = float.Parse(commands[2], System.Globalization.CultureInfo.InvariantCulture);
                     float tz = float.Parse(commands[3], System.Globalization.CultureInfo.InvariantCulture);
-                    Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(tx, ty, tz));
-                    Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(tx, ty, tz,
-                        Convert.ToUInt16(commands[4], 16), Convert.ToUInt16(commands[5], 16), Convert.ToUInt16(commands[6], 16),
-                        commands.Length > 7 ? Convert.ToByte(commands[7], 16) : (byte)(Store.currentClient.playerData.teleportCounter = (byte)(Store.currentClient.playerData.teleportCounter % 255 + 1)),
-                        Store.currentClient.playerInstance.YawInterval.getValue()[0]), false);
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, "Teleported to " + commands[4] + "/" + commands[5], "BROADCAST");
+                    var client = Store.currentClient;
+                    byte yaw = commands.Length > 8 ? Convert.ToByte(commands[8], 16) : client.playerInstance.YawInterval.getValue()[0];
+                    UInt16 sector = Convert.ToUInt16(commands[4], 16);
+                    UInt16 region = Convert.ToUInt16(commands[5], 16);
+                    UInt16 polygon = Convert.ToUInt16(commands[6], 16);
+                    byte teleport = commands.Length > 7 && commands[7] != "-" ? Convert.ToByte(commands[7], 16)
+                        : (client.playerData.teleportCounter = (byte)(client.playerData.teleportCounter % 255 + 1));
+                    client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(tx, ty, tz));
+                    if (commands.Length > 8) client.playerInstance.YawInterval.setValue(yaw);
+                    client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(tx, ty, tz, sector, region, polygon, teleport, yaw), false);
+                    new ServerPackets().sendSystemChatMessage(client, "Teleported to " + commands[4] + "/" + commands[5], "BROADCAST");
                 }
 
                 if (command.Equals("?tactic") && commands.Length == 2 &&

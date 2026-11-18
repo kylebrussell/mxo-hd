@@ -9,7 +9,7 @@ namespace hds
     internal static class MissionOpenFloorPhasePlanner
     {
         // OURS computational admission policy, not a retail geometry or feasibility claim.
-        internal const int SearchPolicyVersion=5;
+        internal const int SearchPolicyVersion=6;
         internal sealed class Limits
         {
             internal int BodyNodes {get;} internal int RouteGraphs {get;}
