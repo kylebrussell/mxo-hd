@@ -8,10 +8,16 @@ public sealed class LoadingAreaPreviewMode : NativeQaMode
     private const int StartX = 7800, StartZ = 13795;
     private const ushort Hardline = 49;
     private const string Probe = "QAFriend";
+    private const uint Shirt = 5907, Trousers = 6386;
 
     public override string Name => "loading-area-preview";
     public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2 }, StartX, StartZ,
-        Array.Empty<string>(), new[] { "UPDATE characters SET y=95,rotation=192 WHERE charId=110;" },
+        Array.Empty<string>(), new[] { $"""
+            UPDATE characters SET y=95,rotation=192 WHERE charId=110;
+            DELETE FROM inventory WHERE charId=110 AND slot IN (99,102);
+            INSERT INTO inventory (charId,goid,slot,count,purity) VALUES (110,{Shirt},99,0,3),(110,{Trousers},102,0,3);
+            UPDATE rsivalues SET shirt=1,shirtcolor=12,pants=1,pantscolor=9 WHERE charid=110;
+            """ },
         new[] { $"""
             UPDATE characters SET x={StartX},y=95,z={StartZ},rotation=192 WHERE handle='{Probe}';
             INSERT INTO inventory (charId,goid,slot,count,purity)
@@ -41,7 +47,9 @@ public sealed class LoadingAreaPreviewMode : NativeQaMode
             .Select(i => (Slot: inventory[i * 9], Item: BitConverter.ToUInt32(inventory, i * 9 + 1)))
             .Where(row => row.Slot is >= 97 and <= 104).OrderBy(row => row.Slot).ToArray();
         string slots = string.Join(",", worn.Select(row => $"{row.Slot}={row.Item}"));
-        Check.That(worn.Length > 0, "CSR has worn clothes for the visual check");
+        Check.That(worn.Any(row => row.Slot == 99 && row.Item == Shirt)
+            && worn.Any(row => row.Slot == 102 && row.Item == Trousers),
+            "CSR's fixture shirt and trousers are worn for the visual check");
         Check.Equal(await database.ScalarAsync(
             "SELECT GROUP_CONCAT(CONCAT(slot,'=',goid) ORDER BY slot SEPARATOR ',') FROM inventory WHERE charId=110 AND slot BETWEEN 97 AND 104"),
             slots, "The preview receives the exact occupied clothing slots from CSR");

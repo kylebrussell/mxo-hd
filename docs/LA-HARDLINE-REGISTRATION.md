@@ -115,7 +115,9 @@ Returning logins now fill the appearance record with the character's stored
 RSI and retain the existing trait offset. The regular inventory block
 supplies clothing at slots 97–104.
 
-Use `loading-area-preview` and wait for the readiness check. Compare CSR's
-model and outfit in the world with both Loading Area tabs after an ordinary
-exit from Mara Northwest. Select Mara Northwest and Jack In. The fixture
-enables the dev command `?die` to repeat the appearance check via Reconstruct.
+Use `loading-area-preview` and wait for the readiness check. It keeps CSR's
+base appearance and adds a matched shirt and trousers to the disposable
+outfit. Compare that model and outfit in the world with both Loading Area
+tabs after an ordinary exit from Mara Northwest. Select Mara Northwest and
+Jack In. The fixture enables the dev command `?die` to repeat the appearance
+check via Reconstruct.
