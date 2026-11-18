@@ -1047,11 +1047,12 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
 
         async Task Refused(HeadlessPlayer player, uint id, string status)
         {
+            int cursor = player.World.RpcSnapshot().Count;
             player.SkipReceived();
             player.SendRpc($"81 26 {Le(id)} 07");
             await player.WaitForRpcAsync($"81 27 {Le(id)} 07 {noItem} {status}");
-            Check.That(player.Received("5e").Count == 0 && player.Received("80 e4").Count == 0
-                && player.Received("80 e7").Count == 0, "Refusal sends no purchase updates");
+            Check.That(!player.World.RpcSnapshot().Skip(cursor).Any(r => r.Bytes is [0x5e, ..] or [0x80, 0xe4 or 0xe7, ..]),
+                $"Refusal sends no purchase updates to {player.Handle}");
         }
 
         seller.SendRpc(ListItem(300, 5));
