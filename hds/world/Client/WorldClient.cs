@@ -512,8 +512,6 @@ namespace hds
                 lock (messageQueue.RPCMessagesQueue.SyncRoot)
                 {
                     messageQueue.RPCMessagesQueue.Remove(deletedAckRpc);
-                    if (ReferenceEquals(deletedAckRpc, playerData.LoadingAreaResetRpc))
-                        playerData.LoadingAreaResetRpc = null;
                 }
             }
         }

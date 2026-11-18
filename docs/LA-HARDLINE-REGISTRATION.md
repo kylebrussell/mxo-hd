@@ -94,3 +94,37 @@ Loading Area. The headless Reconstruct test checks the separate reset and map
 lists, character setup before the first hardline response, and a new self view
 after selecting Mara C. The native check still needs to show the button itself
 sending `80 ff`. [PR287 native observation](https://github.com/kylebrussell/mxo-hd/pull/287#issuecomment-6966592182)
+## Jack In after entering the Loading Area
+
+PR290 reached the Loading Area from Reconstruct and from an ordinary hardline.
+Both paths stalled before the client sent 80 ff. The affected client sent its
+first 6c before it received the map, then sent 05 separately. The Character tab
+drew the default female RSI while retaining CSR_Tester's name and equipment list.
+
+The retail PvP death capture sends 81 09, acknowledges it, and loads construct
+901 with 06, experience and information. The client sends 6c and 05 together.
+Ability and world-setting records follow, then 6d, and the client can send 80 ff.
+The ordinary exit capture contains the same map and readiness exchange. Neither
+includes a player RSI spawn or a separate appearance RPC in that exchange. The
+PvP sample has two view records for TeamInfo, including the character and
+construct IDs. The successful Rajko Mara C return contains no corresponding
+TeamInfo update before 80 ff.
+
+The successful PR175 native trace at 8e70b56 has 81 09 immediately before 06
+in one setup batch, a combined 6c and 05 from the client, then 6d and
+80 ff 08 00 00 00 02 00 00 00. Its map uses the same weather/rez override as
+PR290. Restore that known-working batch for both entry paths, including
+ordinary character setup and settings. The client transition handler at
+6217d757 and the map handler at 62172540 coordinate transport readiness through
+the same state flag. The separation in PR290 produced an early hardline query
+in both failed native samples.
+
+The native Jack In sender reads the selected construct and hardline at
+62171600. Its path has no appearance check, and the captured LA traffic
+provides no basis for a new appearance packet. The default RSI remains open.
+Headless tests check the shared packet and both return paths. The native test
+must confirm that the real button sends 80 ff after ordinary exit and after
+Reconstruct.
+
+[PR175 native pass](https://github.com/kylebrussell/mxo-hd/pull/175) ·
+[PR290 native observations](https://github.com/kylebrussell/mxo-hd/pull/290)

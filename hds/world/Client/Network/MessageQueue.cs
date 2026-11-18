@@ -65,8 +65,7 @@ namespace hds
 
         // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
         internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
-        internal SequencedMessage QueueTrackedRpc(byte[] messageBlock) => QueueRpc(messageBlock, null, 0);
-        private SequencedMessage QueueRpc(byte[] messageBlock,int? world,long transport)
+        private void QueueRpc(byte[] messageBlock,int? world,long transport)
         {
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
@@ -88,7 +87,6 @@ namespace hds
             {
                 RPCMessagesQueue.Add(message);
             }
-            return message;
         }
 
         // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.

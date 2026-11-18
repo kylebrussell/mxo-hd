@@ -18,10 +18,9 @@ Client7.6005 DLL SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c
 
 Source`rshooks.VendorBuyback` already provides normal VendorPrice/10 and the ability upgrade premium sum(i+1)^2*200; existing full-price ability exceptions remain. Vendor selling of an ordinary stack still uses the existing per-entry quote; no unsourced vendor quantity formula is added. Existing NonSellable vendor refusals remain. The native CantBeRecycled fallback625d9ca0 is a component-membership check, not a proven generic NonSellable gate; no such ban is invented. All41,788 stored GOB VendorPrice rows exactly match the current vendor_prices.csv (zero mismatches or missing entries). Raw GOB has28 stored VendorPrice0 rows and only one stored CantBeRecycled (47096=false); absent defaults are not reconstructed here.
 
-PR287's native vendor session showed no Appraise text even though the client received the
-680-information shirt quote in a correctly shaped `81 12 01`. The 7.6005 Appraise
-handler at `621768dd` reads those fields and posts a local message without forcing it
-to the active chat pane. The server now also sends a system message with the same quote.
+PR290 confirmed the stock client prints its own Appraise result in the System
+tab. A second server chat line duplicated that result. The server sends the
+81 12 01 quote, which the client formats for display.
 
 The 10-information sale of eight Code Bit 1 items matches the shipped per-entry
 `VendorBuyback(itemTypeID)` rule. Code Bit 1 has VendorPrice 100, so buyback divides

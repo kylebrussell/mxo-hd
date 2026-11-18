@@ -38,7 +38,11 @@ public static partial class Scenarios
             await Operation("81 0e 00 00 00 00 01",true,true);Check.Equal(1000L,await Cash(),"Repurchase exact paid total");
             Check.Equal(original,await context.Database.ScalarAsync($"SELECT CONCAT(goid,':',count,':',purity) FROM inventory WHERE charId={p.CharId} AND goid=11666 AND purity=872415232"),"Exact raw count0/purity restored");
             Check.Equal(0L,await Receipt(),"Receipt consumed");step="duplicate-buyback";await Operation("81 0e 00 00 00 00 01",true,false);
-            step="stack-sale";await Operation("81 11 00 0c",false,true);long stackCash=await Cash();
+            step="stack-sale";
+            var stackSale = await Operation("81 11 00 0c", false, true);
+            Check.Equal(10u, BitConverter.ToUInt32(stackSale, 11), "Selling all eight Code Bits pays ten total");
+            long stackCash = await Cash();
+            Check.Equal(1010L, stackCash, "The wallet receives one ten-information credit");
             string session=await context.Database.ScalarAsync($"SELECT session_token FROM vendor_last_sale WHERE char_id={p.CharId}");
             step="poor";await context.Database.ExecuteAsync($"UPDATE characters SET cash=0 WHERE charId={p.CharId}");
             await Operation("81 0e 00 00 00 00 01",true,false);Check.Equal(1L,await Receipt(),"Poor refusal preserves receipt");

@@ -52,7 +52,15 @@ namespace hds
             pak.AddSizedTerminatedString(path);
             pak.AddSizedTerminatedString(enviromentOptions);
 
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            byte[] map = pak.ReturnFinalPacket();
+            // PR175's native client received 81 09 immediately before the LA map and could jack in.
+            // Keep other RPC producers from interleaving with this pair in the initial setup batch.
+            lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
+            {
+                if (client.playerData.DistrictIsLA())
+                    client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x09 });
+                client.messageQueue.addRpcMessage(map);
+            }
 
         }
 

@@ -12,24 +12,11 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 fd 00 00 00 00 01 01");
         player.SendRpc("80 fe 01");
         await player.WaitForRpcAsync("81 07");
-        int resetCursor = player.World.RpcSnapshot().Count;
         player.SendRpc("81 08 00 00 00 00");
-
-        var reset = await player.WaitForRpcAsync("81 09");
-        var loadingArea = await player.WaitForRpcAsync("06 0e 00 85 03 00 00");
-        Check.Equal(0, reset.Index, "LA acknowledgement starts its RPC list");
-        Check.Equal(0, loadingArea.Index, "The map starts a new list after the LA acknowledgement");
-        Check.That(reset.DatagramSequence != loadingArea.DatagramSequence, "LA acknowledgement and map use separate datagrams");
-        Check.That(player.World.RpcSnapshot().Skip(resetCursor).Count(r => r.DatagramSequence == reset.DatagramSequence) == 1,
-            "The acknowledgement is the only RPC in the initial Loading Area datagram");
-        var balances = await player.WaitForRpcAsync("80 e4");
-        Check.Equal(loadingArea.ListCounter, balances.ListCounter, "The map carries the current balances");
-        Check.That(!player.World.RpcSnapshot().Any(r => r.ListCounter == loadingArea.ListCounter && BytePattern.Parse("3a").IsMatch(r.Bytes)),
-            "Loading Area settings wait for the client readiness request");
+        await WaitForLoadingAreaSetupBatchAsync(player);
 
         int selfBefore = player.World.CreationSnapshot().Count(v => v.ViewId == 2);
         player.World.SendRpcs(WireFormat.FromHex("6c 01 00 00 00 00 00 00 00"), WireFormat.FromHex("05"));
-        await player.WaitForRpcAsync("3a 05 00 11 00 0a 00 50 76 50 53 65 72 76 65 72 00");
         var hardlines = await player.WaitForRpcAsync("6d 01 00 00 00 08 00 01");
         Check.That(BytePattern.Parse("00 98 00 00 00 00").Occurs(hardlines.Bytes), "Mara C is available in the picker");
         Check.Equal(selfBefore, player.World.CreationSnapshot().Count(v => v.ViewId == 2), "The picker has no LA self spawn");
@@ -44,6 +31,15 @@ public static partial class Scenarios
         Check.Equal(1L, await context.Database.LongAsync($"SELECT districtId FROM characters WHERE charId={player.CharId}"),
             "Reconstructed player saved in Richland");
         Check.Equal(0, player.World.Problems.Count, "No packet parser errors across LA entry or exit");
+    }
+
+    private static async Task WaitForLoadingAreaSetupBatchAsync(HeadlessPlayer player)
+    {
+        var transition = await player.WaitForRpcAsync("81 09");
+        var map = await player.WaitForRpcAsync("06 0e 00 85 03 00 00");
+        Check.Equal(transition.DatagramSequence, map.DatagramSequence, "LA transition and map arrive together");
+        Check.Equal(transition.ListCounter, map.ListCounter, "LA transition and map share an RPC list");
+        Check.Equal(transition.Index + 1, map.Index, "The map immediately follows the LA transition");
     }
 
     private static async Task DeathReconstructAndTutorialSelection(ScenarioContext context)
