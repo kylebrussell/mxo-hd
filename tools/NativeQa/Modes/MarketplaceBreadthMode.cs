@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Text.Json;
 using HeadlessClient;
 
@@ -72,8 +73,8 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
             """), "Listing removed both items from the seller bag");
         buyer.SendRpc($"81 24 {ItemCategory} {Le(0)} 00 00 00 00 19 00 {Le(999999999)} {Le(0)} 01 00 00");
         var search = await buyer.WaitForRpcAsync("81 25 09 00");
-        Check.That(BytePattern.Parse(Le(firstListing)).Occurs(search.Bytes) &&
-            BytePattern.Parse(Le(secondListing)).Occurs(search.Bytes), "Ordinary search returned both fixture listings");
+        Check.That(HasListing(search.Bytes, firstListing, FirstItem, FirstPrice) &&
+            HasListing(search.Bytes, secondListing, SecondItem, SecondPrice), "Ordinary search returned both fixture listings");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "marketplace-listings.json"),
             JsonSerializer.Serialize(new Listings(firstListing, secondListing)));
         return Array.Empty<byte>();
@@ -111,10 +112,27 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
 
     private static async Task RequirePurchase(ThrowawayDatabase database, uint buyer, uint item, uint cash)
     {
-        Check.Equal(1L, await database.LongAsync($"SELECT COALESCE(SUM(count),0) FROM inventory WHERE charId={buyer} AND goid={item} AND slot BETWEEN 1 AND 96"),
+        // Inventory persists single items with count 0 (ItemStacks.CountFromDb).
+        Check.Equal(1L, await database.LongAsync($"SELECT COALESCE(SUM(GREATEST(1,count)),0) FROM inventory WHERE charId={buyer} AND goid={item} AND slot BETWEEN 1 AND 96"),
             "The buyer received exactly one item");
         Check.Equal((long)cash, await database.LongAsync($"SELECT cash FROM characters WHERE charId={buyer}"),
             "The buyer paid exactly once");
+    }
+
+    private static bool HasListing(byte[] reply, uint listing, uint item, uint price)
+    {
+        const int headerSize = 11, rowSize = 22;
+        if (reply.Length < headerSize) return false;
+        int size = BinaryPrimitives.ReadUInt16LittleEndian(reply.AsSpan(9));
+        if (size % rowSize != 0 || size != reply.Length - headerSize) return false;
+        for (int offset = headerSize; offset < reply.Length; offset += rowSize)
+        {
+            var row = reply.AsSpan(offset, rowSize);
+            if (BinaryPrimitives.ReadUInt32LittleEndian(row) == item &&
+                BinaryPrimitives.ReadUInt32LittleEndian(row[8..]) == listing &&
+                BinaryPrimitives.ReadUInt32LittleEndian(row[12..]) == price) return true;
+        }
+        return false;
     }
 
     private static async Task EnterLoadingAreaAsync(HeadlessPlayer player)
