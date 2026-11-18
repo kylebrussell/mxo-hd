@@ -182,7 +182,7 @@ namespace hds
                         if(Math.Abs(from[1]-to[1])>150||Math.Pow(to[0]-mob.xBase,2)+Math.Pow(to[2]-mob.zBase,2)>25000000)
                         {Stop(mob,state,now);continue;}
                         bool straight=NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],to[0],to[1],to[2]);
-                        if(straight&&DistanceSquared(to,from)<=MobAggro.MeleeDistanceUnits*MobAggro.MeleeDistanceUnits)
+                        if(straight&&MobAggro.ReachedMeleeDistance(DistanceSquared(to,from)))
                         {
                             var view=target.viewMan.FindViewForEntity(mob.getEntityId());Stop(mob,state,now);
                             if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[1],to[2]);continue;

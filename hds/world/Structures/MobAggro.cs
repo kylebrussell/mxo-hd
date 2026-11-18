@@ -25,6 +25,11 @@ namespace hds
 
         /// <summary>How far from the player (units) the NPC stops: arm's length.</summary>
         public const double MeleeDistanceUnits = 150;
+        private const double MeleeArrivalDistance = MeleeDistanceUnits + .01;
+
+        // StopPoint can round just outside arm's length, too close for a further movement step.
+        internal static bool ReachedMeleeDistance(double squaredDistance) =>
+            squaredDistance <= MeleeArrivalDistance * MeleeArrivalDistance;
 
         private static double ReadDouble(string name, double fallback)
         {
@@ -215,7 +220,7 @@ namespace hds
 
             if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects)) return;
 
-            if (mob.missionInstance == 0 && (dx * dx + dz * dz > MeleeDistanceUnits * MeleeDistanceUnits ||
+            if (mob.missionInstance == 0 && (!ReachedMeleeDistance(dx * dx + dz * dz) ||
                 !NavMesh.HasSightPath(mob.getDistrict(), mob.getXPos(), mob.getYPos(), mob.getZPos(), px, py, pz)))
             {
                 if(MobMotion.BeginChase(client,mob))Output.WriteDebugLog("[AGGRO] "+mob.getName()+" pursues "+client.playerData.getCharID());
