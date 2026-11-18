@@ -13,9 +13,8 @@ internal static class NativeQaReadiness
         Check.That(!server.HasExited, "Fixture server is still running");
         foreach (var (name, helper) in context.Helpers)
         {
-            var life = helper.World.CurrentOwnViewLife();
-            Check.That(life.Current && life.OwnViewReady && helper.World.Problems.Count == 0,
-                $"Required helper {name} entered the world with a healthy connection");
+            Check.That(mode.HelperConnectionReady(helper) && helper.World.Problems.Count == 0,
+                $"Required helper {name} reached the expected session state with a healthy connection");
             Check.That(await database.LongAsync(
                 $"SELECT COUNT(*) FROM characters WHERE charId={helper.CharId} AND is_online=1 AND healthC>0") == 1,
                 $"Required helper {name} is online and alive");

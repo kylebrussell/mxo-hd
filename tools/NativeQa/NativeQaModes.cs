@@ -72,6 +72,11 @@ public abstract class NativeQaMode
     public abstract string Name { get; }
     public abstract NativeQaModePlan Plan { get; }
     public virtual Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => Task.FromResult(Array.Empty<byte>());
+    internal virtual bool HelperConnectionReady(HeadlessPlayer helper)
+    {
+        var life = helper.World.CurrentOwnViewLife();
+        return life.Current && life.OwnViewReady;
+    }
 }
 
 public static class NativeQaModes
