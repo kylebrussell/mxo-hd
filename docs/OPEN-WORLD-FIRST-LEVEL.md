@@ -51,3 +51,13 @@ Independent cleanup verified gameplay schema `mxotest_run_1_eddde28754` COUNT0/a
 Actual newest Debug hds SHA256 `D054BCECAD6AE3BD2B262986D200F33D2471F19A0C456FE42E2802A91F6F9251`; Release driver `36B8DACC9D0926CF9088AD98EFAAE1C3A7EC4879AA8D85B84C351C3443554FE6`; Release NativeQa `7DABD3F3492E359A6CEF590B7FF749EF14D8FA476B14F41783AC9196AE0B4A6E`. Actual Debug/Release builds, read-only plans/build-info and exact-one discovery passed;49 affected tests passed. CI43792244991 on c3a26985 passed6421 .NET tests plus12 policy/43 export checks. The final docs-only publication retains identical hds/data/tools/tests trees; its final CI is tracked separately in the PR.
 
 Raw proof `mxo-open-world-first-level-mxotest_run_1_eddde28754.json` SHA256 `D57114BF9978447EA5777391CE566C7A9A23110421A6151EB8963276F4597F5A`. Compact `mxo-open-world-next-package-20261115/final-c3a26985-proof.json` SHA256 `34B6506094DD5FFC223F88E7D44C09824B658B94507227987B0DDA5DDE0F0CB8` retains source, packets, both cleanup checks and bootstrap scope. No new live run or rebuild accompanies this documentation update.
+
+## Earned level four fixture
+
+Use `level-four-breadth`. The disposable CSR starts at level 3 with 20,900
+XP. The fixture verifies the live Runner and prints its grounded melee stand.
+
+1. Kill the printed level-one Chopper Runner through ordinary combat.
+2. Verify the level-up, 21,472 XP, max HP 300 and max IS 109 in the native HUD.
+3. Quit and relog on the same fixture. Verify level and maxima persist and
+   the kill's 572 XP is credited once.
