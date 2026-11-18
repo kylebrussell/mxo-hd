@@ -47,7 +47,8 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [x] Skip rows that are one NPC seen again: same name in the same district within 5 m (`MobSpawnFilter`). 13,141 rows become 5,560 NPCs. The 5 m is a judgement from looking at the client.
 - [x] Attack on sight only where the retail logs show it (`MobBehaviour`): zombies, Corrupted, listed gangs, and Agents against level 50+. Everything else is passive until attacked.
 - [x] Separate historical mission / instance-interior / encounter sightings from ambient city populations: `data/npc_spawns/` and [scope policy](NPC-SPAWN-SCOPE.md). All 13,141 source rows are preserved with provenance. Unknown nav context and public interiors remain; private interiors and Corrupted / Special Agent encounter families require runtime ownership.
-- [ ] Only slums, downtown and IT have static world data loaded; the other districts in the list are untested.
+- [x] Smoke-load the shipped construct static data. All 14 headless `partial-world` cases passed: Archive 01, Archive 02, Ashencourte, Data Mine, Sakura, Sati, Widow's Moor, Yuki, Large01, Large02, Medium01, Medium02, Medium03 and Small03. The cases cover world entry and their available transport or interaction samples. Zion Caves has a map identifier and no shipped static CSV or NAV pack.
+- [ ] Compare 3D hover and picking at 100% Windows scaling and at the QA display's current scaling. Native QA observed the pick roughly 10–20 pixels below and right of the model in a windowed client. World click requests carry the selected object and action. Mission prop creation uses a world-space pose and the client model's bounds. The current evidence points to the client's viewport or DPI conversion. Compare a shipped static and a mission prop with the camera held still.
 
 ## 6. Packet Research
 - [x] Inventory public MxO preservation packet/protocol resources.
