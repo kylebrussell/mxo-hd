@@ -5,8 +5,8 @@ public static partial class Scenarios
     // Captured7.6005 native reply: fixed0x36 bytes, no name/correlation echo; byte11 was ca.
     private static byte[] NativeResurrectionReply(ushort ability)
     {
-        byte[] reply=new byte[54];reply[0]=0x81;reply[1]=0x88;
-        BitConverter.GetBytes((uint)ability).CopyTo(reply,2);reply[11]=0xca;
+        byte[] reply = NativeRejuvenateConsent();
+        BitConverter.GetBytes((uint)ability).CopyTo(reply, 2);
         return reply;
     }
 
@@ -75,8 +75,9 @@ public static partial class Scenarios
             Check.Equal(restored,corpse.Received(ResurrectionLine).Count,"Corpse remains dead before consent");
             int viewsBefore=corpse.World.ViewSnapshot().Count;
             corpse.SendRpc(NativeResurrectionReply(ability)); // Native Yes: rebuilt fixed prefix, flags6/7 zero.
-            await corpse.WaitForViewUpdateAsync(2, "01 28 ?? 40 00 3f " + Le(ability));
-            await observer.WaitForViewUpdateAsync(watched.ViewId, "01 2a ?? 40 00 3f " + Le(ability) + " 00");
+            ushort motion = ability == 438 ? (ushort)375 : ability;
+            await corpse.WaitForViewUpdateAsync(2, "01 28 ?? 40 00 3f " + Le(motion));
+            await observer.WaitForViewUpdateAsync(watched.ViewId, "01 2a ?? 40 00 3f " + Le(motion) + " 00");
             await corpse.WaitForRpcAsync(ResurrectionLine+" 00 "+Le(ability)+" 00 00");
             var own=BytePattern.Parse("02 00 02 80 80 80 d1 00 "+(ability==325?"01 00 01 00":"4d 01 09 03")+" 80 80 01 00 00 00 00");
             await corpse.WaitUntilAsync(()=>corpse.World.ViewSnapshot().Skip(viewsBefore).Any(own.Occurs),

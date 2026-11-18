@@ -1,0 +1,55 @@
+{
+  "families": {
+    "targeted-direct-heal": {
+      "representative": 54,
+      "result": "pass",
+      "head": "88e95b47e7171ae8d2e896fd4f7112b325cc22d8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/103#issuecomment-6812841733",
+      "scope": "Stock Actions cast healed 400 to 442 under +15% influence; max-health cast capped at 575."
+    },
+    "friendly-resurrection": {
+      "representative": 416,
+      "result": "pass",
+      "head": "2f7495e8036a20a045fa406680a28a186f63129d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/290#issuecomment-6974177832",
+      "scope": "Native recipient declined, later accepted, stood with full HP; native observer saw a helper stand and move after accepting."
+    }
+  },
+  "abilities": {
+    "54": {
+      "family": "targeted-direct-heal",
+      "checks": {
+        "healing": {
+          "source": "data/ability_catalog.json 54 and client.dll 625ec512..625ec58a (type 3, HealDamage 174)",
+          "runtime": "AbilityHealing.Amount and AbilitySupport.Land",
+          "test": "AbilityParityTests.TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler and native 88e95b4 400 to 442"
+        }
+      }
+    },
+    "77": {
+      "family": "targeted-direct-heal"
+    },
+    "325": {
+      "family": "friendly-resurrection"
+    },
+    "326": {
+      "family": "friendly-resurrection"
+    },
+    "375": {
+      "family": "friendly-resurrection"
+    },
+    "416": {
+      "family": "friendly-resurrection",
+      "checks": {
+        "resurrection": {
+          "source": "health.py RejuvenateRSI_DirectObject and native 621d51d0/621d0330 approval serializer",
+          "runtime": "AbilityResurrection.Reply, RestoreVitals and DeathPresentation.Resuscitate",
+          "test": "PR290 stock dialog Yes/No and visible stand, plus ability-resurrection-resources full HP/IS wire updates"
+        }
+      }
+    },
+    "438": {
+      "family": "friendly-resurrection"
+    }
+  }
+}

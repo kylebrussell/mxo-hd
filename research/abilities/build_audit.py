@@ -246,7 +246,9 @@ def server(i):
         parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r.get('resurrection'):
-        parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS') + '; exact resurrect motion unverified')
+        motion = 'Revive RSI 375' if i == 438 else str(i)
+        parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS')
+                     + f'; Action_Resurrect 63 with {motion} motion context')
     if r.get('registered_grants'):
         parts.append('captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
     if r.get('conditional_thrown_damage'):
@@ -389,7 +391,8 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['area'] = f'Verify target shape and admission with stored radius {radius} and angle {angle}'
     if f.get('Ability/TestFunction') or f.get('Ability/HasDeflectionInterlockMove') or r['direct_damage']:
         open_items['targeting'] = 'Verify applicable line of sight, cast target, hit and deflection rules'
-    stats = targets - {108}
+    # Health and the periodic payload carrier are executable effects, not stats with a separate base/link.
+    stats = targets - {108, 1157}
     if stats:
         open_items['stats'] = 'Verify base, links or runtime consumption for ' + labels(stats)
     consumers = [m for key in ('passives', 'buff_stats', 'style') for m in (r.get(key) or [])]

@@ -139,6 +139,7 @@ public class AbilityParityTests
         AbilitySupport.Land(client, 169, 2);
         var hot = Assert.Single(TimedEffects.ForPlayer(client).Effects.Snapshot());
         Assert.Equal(TempMods.Proc.Hot, hot.Proc);
+        Assert.Equal(TempMods.DOTPlaceHolderAbility, hot.Target);
         Assert.Equal(100, Value(client.playerInstance.Health)); // no immediate heal; the stored 14 is the HOT's total
         Assert.Equal(15f, hot.Seconds);
         Assert.Equal(2.5, hot.Interval);
@@ -147,6 +148,47 @@ public class AbilityParityTests
         TimedEffects.RunDue(hot.Start + 15.1);
         Assert.Equal(110, Value(client.playerInstance.Health)); // five script-rounded two-point ticks before expiry
         Assert.True(TimedEffects.ForPlayer(client).Effects.IsEmpty);
+    }
+
+    [Fact]
+    public void TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler()
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (71, 50), (233, 50), (409, 50) });
+        Assert.Equal(15, AbilityStats.Influence(caster, 174));
+        Assert.Equal(42, AbilityHealing.Amount(caster, caster, 54));
+        Assert.Equal(16, AbilityHealing.Amount(caster, caster, 169));
+        Assert.Equal(15, AbilityHealing.Amount(caster, caster, 716));
+        AbilitySupport.Land(caster, 169, 2);
+        var effect = Assert.Single(TimedEffects.ForPlayer(caster).Effects.Snapshot());
+        Assert.Equal(3, effect.TickDamage);
+        TimedEffects.RemoveParent(TimedEffects.ForPlayer(caster), 169);
+    }
+
+    [Theory]
+    [InlineData(69, 2, 5.0, 5)]
+    [InlineData(141, 7, 2.5, 5)]
+    [InlineData(253, -1, 2.5, 3)]
+    [InlineData(281, 7, 5.0, 9)]
+    [InlineData(466, 2, 2.5, 5)]
+    public void DotUsesTheModifierTypeAndStoredCadenceUntilExpiry(ushort ability, int type, double interval, int count)
+    {
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        var dot = Assert.Single(TimedEffects.Instantiate(effect, new Random(7)), mod => mod.Proc == TempMods.Proc.Dot);
+        Assert.Equal(type, dot.DamageType);
+        Assert.Equal(interval, dot.Interval);
+        var holder = new TimedEffects.Holder();
+        holder.Apply(ability, new[] { dot }, 10);
+        var ticks = new List<TimedEffects.Active>();
+        var expired = new List<TimedEffects.Active>();
+        holder.Advance(10 + interval - .01, ticks, expired);
+        Assert.Empty(ticks);
+        holder.Advance(10 + interval, ticks, expired);
+        Assert.Single(ticks);
+        holder.Advance(10 + dot.Seconds, ticks, expired);
+        Assert.Equal(count, ticks.Count);
+        Assert.Same(dot, Assert.Single(expired));
     }
 
     [Fact]

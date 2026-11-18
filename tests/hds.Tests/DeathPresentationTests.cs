@@ -31,14 +31,15 @@ public class DeathPresentationTests
     }
 
     [Theory]
-    [InlineData(325)] [InlineData(326)] [InlineData(375)] [InlineData(416)]
-    public void ResurrectionUsesBuiltin63AndItsAbilityContextInsteadOfNamedEmote25(ushort ability)
+    [InlineData(325, 325)] [InlineData(326, 326)] [InlineData(375, 375)]
+    [InlineData(416, 416)] [InlineData(438, 375)]
+    public void ResurrectionUsesBuiltin63AndItsScriptAbilityContext(ushort ability, ushort motionAbility)
     {
         byte[] own = DeathPresentation.Build(true, 10, DeathPresentation.Standing, DeathPresentation.Resurrect,
-            ability, 0, 0, 0, 1);
+            AbilityResurrection.MotionAbility(ability), 0, 0, 0, 1);
         Assert.Equal(26, own.Length);
         Assert.Equal(new byte[] { 2, 0, 1, 0x28, 10, 0x40, 0, 0x3f }, own[..8]);
-        Assert.Equal(ability, BitConverter.ToUInt16(own, 8));
+        Assert.Equal(motionAbility, BitConverter.ToUInt16(own, 8));
         Assert.Equal(1u, BitConverter.ToUInt32(own, 22));
     }
 

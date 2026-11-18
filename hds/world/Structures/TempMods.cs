@@ -346,11 +346,12 @@ namespace hds
             foreach (Mod m in captured.Mods)
             {
                 Mod rule = source == null ? null : Array.Find(source.Mods, p => p.Target == m.Target && p.Proc == m.Proc);
+                bool typedDot = m.Proc == Proc.Dot && rule != null && source.Mods.Count(p => p.Target == m.Target && p.Proc == m.Proc) == 1;
                 mods.Add(new Mod { Kind = m.Kind, Target = m.Target, MinValue = m.MinValue, MaxValue = m.MaxValue,
                     Seconds = m.Seconds, Proc = m.Proc, Chance = rule?.Chance ?? m.Chance,
                     Break = rule?.Break ?? (m.Target == MezAbility ? BreakRule.Damage : m.Break),
                     BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
-                    Interval = m.Interval, DamageType = rule != null && source.Mods.Count(p=>p.Target==m.Target && p.Proc==m.Proc)==1 ? rule.DamageType : -1 });
+                    Interval = typedDot ? rule.Interval : m.Interval, DamageType = typedDot ? rule.DamageType : -1 });
             }
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;
