@@ -21,6 +21,44 @@ python research/abilities/build_audit.py --coverage artifacts/ability-audit/serv
 
 Local report links resolve from the actual output directory. CI adds `--source-base-url "https://github.com/kylebrussell/mxo-hd/blob/$GITHUB_SHA/"`, so source and manual links are pinned to the reviewed commit even after downloading the bundle; CSV/coverage links stay local. External URLs and line anchors are preserved. CI uploads all three outputs with read-only repository access. It does not push generated commits. The optional `--update-markdown-snapshot` flag explicitly refreshes the tracked snapshot; submit historical snapshot changes in a separate snapshot-only PR based on current master. Such a PR may change either or both historical files. CI rejects a historical snapshot change mixed with any other path, including gameplay, CSV or manual changes, and rejects deletion or renaming of a snapshot.
 
+## Track remaining work and compare a package
+
+The generator lists open checks by type and detail in each row's `remaining` field.
+A row can count toward multiple types. A reported change counts affected rows, and
+a status transition counts each row once. The baseline for AB0 has 561 rows, with
+544 partial, 15 cosmetic, one missing, one inaccessible and zero done.
+
+**Done** requires every identified behavior to execute and have a test, a passing
+stock-client representative in the row's family, and an empty `remaining` field.
+Runtime inventory or a headless fixture alone cannot qualify a native family.
+Review the evidence against the ability's shipped modifiers, callbacks and
+target rules before recording an item as closed.
+
+Use one reviewed JSON file per package in `research/abilities/evidence/` when a
+check closes. Its `abilities` object is keyed by numeric ability ID. Each row may
+set a `family` and provide `checks` indexed by the remaining-item type. Each
+check needs specific `source`, `runtime`, and `test` references. The
+`behavior-tests` entry must account for every identified behavior. The separate
+`families` object is keyed by family name. Each family record gives the
+`representative` ability ID, `result` of `pass`, the tested `head`, and the
+published `native` evidence URL. Assign that representative to the same family
+in its ability record. When recording a native pass, describe the observed scope
+so a presentation-only pass cannot close unverified gameplay checks.
+
+To compare the freshly built audit with the reviewed base, save the base CSV
+before regenerating:
+
+```powershell
+$baseline = Join-Path $env:TEMP 'mxo-ability-audit-base.csv'
+git show origin/master:docs/ABILITY-PARITY.csv | Set-Content -LiteralPath $baseline -Encoding utf8
+dotnet run --project tools/AbilityAudit
+python research/abilities/build_audit.py --baseline $baseline
+```
+
+The CLI and generated Markdown report status totals, status transitions and
+remaining-item totals and deltas. Include the status transition counts in the PR
+and the handoff. A baseline made before AB0 has no remaining-item counts.
+
 ## Port pending feature branches
 
 1. Merge updated master into the feature branch, retaining all feature behavior, source evidence and individual manuals.

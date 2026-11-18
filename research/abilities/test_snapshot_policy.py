@@ -69,7 +69,7 @@ class SnapshotPolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='mxo-coverage-default-') as temp:
             scripts=Path(temp)/'research/abilities'
             scripts.mkdir(parents=True)
-            for name in ['build_audit.py','audit_links.py']:
+            for name in ['build_audit.py','audit_links.py','parity_progress.py']:
                 shutil.copyfile(source/name,scripts/name)
             (scripts/'server_coverage.json').write_text('[]')
             result=subprocess.run([sys.executable,str(scripts/'build_audit.py')],text=True,capture_output=True)
