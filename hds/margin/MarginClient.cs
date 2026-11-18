@@ -392,7 +392,9 @@ namespace hds{
 
 
             PacketContent pak = new PacketContent();
-            pak.AddByteArray(CharacterPersonality.BackgroundPrefix(!isNewCreatedChar,marginCharacter.TraitId));
+            byte[] appearance = isNewCreatedChar ? null : CharacterAppearance.Build(
+                Store.dbManager.MarginDbHandler.LoadAppearance(charID), DataLoader.getInstance().newRSIItemsDb);
+            pak.AddByteArray(CharacterPersonality.BackgroundPrefix(!isNewCreatedChar, marginCharacter.TraitId, appearance));
             pak.AddStringWithFixedSized(marginCharacter.FirstName,31);
             pak.AddStringWithFixedSized(marginCharacter.LastName,31);
             pak.AddStringWithFixedSized(marginCharacter.Background,1023);

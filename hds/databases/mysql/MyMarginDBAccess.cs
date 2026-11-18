@@ -52,6 +52,12 @@ namespace hds.databases{
 	        }
         }
 
+        public Rsivalue LoadAppearance(int charId)
+        {
+            using var dbContext = CreateDbContext();
+            return dbContext.Rsivalues.SingleOrDefault(rsi => rsi.Charid == charId);
+        }
+
         public List<MarginInventoryItem> LoadInventory(int charId)
         {
 	        using (MatrixDbContext dbContext = CreateDbContext())

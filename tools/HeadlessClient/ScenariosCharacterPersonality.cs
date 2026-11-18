@@ -73,7 +73,12 @@ public static partial class Scenarios
                 await context.Database.ExecuteAsync($"UPDATE characters SET level=2,exp={PlayerProgression.ExperienceForLevel(2)} WHERE charId={a.Character}");
                 await ColdReturn(a.Character);
                 step="normal-attribute-"+trait;var player=await HeadlessPlayer.LoginAsync(address,a.User,"Personality"+trait);players.Add(player);Check.Equal(a.Character,player.CharId,"Cold return retains the exact normally created character");
-                Check.Equal(trait,BitConverter.ToUInt32(player.CharacterData[2],32),"Returning02 trait follows EXACT32header");await player.EnterWorldAsync();
+                byte[] profile = player.CharacterData[2];
+                uint[] appearance = Enumerable.Range(0,8).Select(i => BitConverter.ToUInt32(profile,4*i)).ToArray();
+                uint[] expectedAppearance = trait == 308 ? new uint[] { 0, 106, 103, 105, 0, 0, 102, 0 }
+                    : new uint[] { 0, 102, 100, 100, 0, 0, 108, 0 };
+                Check.That(expectedAppearance.SequenceEqual(appearance), "Returning 02 has the character's persisted appearance");
+                Check.Equal(trait,BitConverter.ToUInt32(profile,32),"Returning02 trait follows EXACT32header");await player.EnterWorldAsync();
                 foreach(byte attribute in CharacterAttributes.All){ushort value=CharacterAttributes.BaseValue(attribute,trait);await player.WaitUntilAsync(()=>player.World.RpcSnapshot().Any(r=>r.Bytes.SequenceEqual(new byte[]{0x80,0xb2,attribute,(byte)(value>>8),(byte)value,0,8,2})),"Actual initial attribute",TimeSpan.FromSeconds(10));}
                 byte raised=trait==308?(byte)78:(byte)82;int cursor=player.World.RpcSnapshot().Count;
                 player.SendRpc(new byte[]{0x80,0xb5,4,0,1,0,0,raised,0,0,0,1});

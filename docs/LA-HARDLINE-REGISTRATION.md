@@ -96,9 +96,26 @@ Character and world settings precede 6d and the successful 80 ff. The ordinary
 exit capture shows the same readiness exchange. The PR291 server batches the
 transition and map, as in the earlier PR175 wire trace.
 
-The Character and Equipment previews still draw the default female model and
-empty clothes slots. The character name, level, abilities and equipment list
-are present. The retail exchange examined so far has no standalone RSI update
-for those previews.
-
 [PR291 native results](https://github.com/kylebrussell/mxo-hd/pull/291#issuecomment-6978033553)
+
+## Loading Area character preview
+
+PR291 observed a default female model and empty clothing on the Character and
+Equipment tabs. The retained retail Margin replies for Trinitys and the Mara
+exit sample carry different appearance records in the first 32 bytes of
+returning character block `02`. These eight little-endian values carry skin
+tone, body, head, hair, hair color, tattoo, facial detail and detail color.
+The client decodes them at `62541d4e` and copies them into the preview cache
+at `62198fe7`. The two tabs build their models at `6202e1ff` and
+`6203c980`. They read equipped clothing from the inventory slots supplied
+by Margin block `05`.
+[Retail Mara exit capture](../research/packet-dumps/community-intake/20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected/logs/mxopackets2_RajkoPacketsNearTheEnd_PacketsSpawnedInMaraCThenExitedViaHardline.log.txt#L191)
+
+Returning logins now fill the appearance record with the character's stored
+RSI and retain the existing trait offset. The regular inventory block
+supplies clothing at slots 97–104.
+
+Use `loading-area-preview` and wait for the readiness check. Compare CSR's
+model and outfit in the world with both Loading Area tabs after an ordinary
+exit from Mara Northwest. Select Mara Northwest and Jack In. The fixture
+enables the dev command `?die` to repeat the appearance check via Reconstruct.

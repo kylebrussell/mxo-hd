@@ -21,10 +21,10 @@ namespace hds
             if(column<0)throw new ArgumentOutOfRangeException(nameof(attribute));
             return Bases[Resolve(trait)-Legacy,column];
         }
-        public static byte[] BackgroundPrefix(bool returning,uint? trait)
+        public static byte[] BackgroundPrefix(bool returning,uint? trait,byte[] appearance=null)
         {
             var packet=new PacketContent();
-            if(returning)packet.AddHexBytes("01000000640000007B0000006500000000000000000000006C00000000000000");
+            if(returning)packet.AddByteArray(appearance ?? CharacterAppearance.Build(null, Array.Empty<NewRSIItem>()));
             packet.AddUint32(Resolve(trait),1);
             return packet.ReturnFinalPacket();
         }
