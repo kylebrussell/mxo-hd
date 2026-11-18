@@ -75,11 +75,16 @@ public class DataMiningTests
     public void MapUsesFourByteNestedPositionRecordsAndSignedMetres()
     {
         var p = DataMiningPackets.Relative(10000,20000,9800,20300,2)!.Value;
-        Assert.Equal("80C501000A00FE0302",Convert.ToHexString(DataMiningPackets.Map(new[]{p},10)));
+        Assert.Equal("80C505000A010000FE0302",Convert.ToHexString(DataMiningPackets.Map(new[]{p},10)));
+        Assert.Equal("80C500000A",Convert.ToHexString(DataMiningPackets.Map(Array.Empty<DataMiningPackets.Ping>(),10)));
+        var neutral = new DataMiningPackets.Ping(8, 0, 0);
+        Assert.Equal("80C5050003020000FE030200080000", Convert.ToHexString(DataMiningPackets.Map(new[]{p,neutral},3)));
         Assert.Null(DataMiningPackets.Relative(0,0,12800,0,0));
         Assert.NotNull(DataMiningPackets.Relative(0,0,-12800,12700,0));
         Assert.Null(DataMiningPackets.Relative(0,0,double.NaN,0,0));
-        Assert.Equal(517,DataMiningPackets.Map(Enumerable.Repeat(p,1000),3).Length);
+        byte[] capped = DataMiningPackets.Map(Enumerable.Repeat(p, 1000), 3);
+        Assert.Equal(519, capped.Length);
+        Assert.Equal((ushort)128, BitConverter.ToUInt16(capped, BitConverter.ToUInt16(capped, 2)));
     }
 
     [Fact]

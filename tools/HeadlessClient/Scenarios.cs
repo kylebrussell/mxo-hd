@@ -168,6 +168,8 @@ public static partial class Scenarios
         new Scenario("hostile-fields-pvp", HostileFieldsPvp, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("hostile-fields-npc", HostileFieldsNpc, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
+        new Scenario("sixth-sense-scan", SixthSenseScan, new Dictionary<string,string>(StillNpcs)
+            { ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15" }),
         new Scenario("ability-memory-admission", AbilityMemoryAdmission, StillNpcs),
         new Scenario("ability-load-prerequisites", AbilityLoadPrerequisiteAdmission, StillNpcs),
         new Scenario("ability-memory-ui-compatibility", AbilityMemoryUiCompatibility, StillNpcs),

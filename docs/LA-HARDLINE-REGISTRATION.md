@@ -121,3 +121,23 @@ outfit. Compare that model and outfit in the world with both Loading Area
 tabs after an ordinary exit from Mara Northwest. Select Mara Northwest and
 Jack In. The fixture enables the dev command `?die` to repeat the appearance
 check via Reconstruct.
+
+## Hardline label after Reconstruct
+
+PR300 showed Richland/Mara (Northwest) in the Character tab after the booth
+exit and a blank field after Reconstruct. Both routes returned to hardline 49.
+[PR300 native results](https://github.com/kylebrussell/mxo-hd/pull/300#issuecomment-6983961037)
+
+In the retained retail captures, the booth opens `80 fb` with its hardline ID.
+Both finishes send `80 fd` with zero Status and ExitType 1. PlayerHasDied is 0
+for the booth and 1 for Reconstruct. The finish has no hardline ID, and the
+native dispatch at `6217d5be` uses ExitType for the transition. The Character
+tab obtains its text from the active hardline at `6202ef16`. The native
+`80 fa` handler at `621c7d96` changes that selection when MakeActive is 1.
+[Booth exit capture](../research/packet-dumps/community-intake/20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_proxy_second_pc_001_exit_to_loadingarea.log.txt#L58),
+[Reconstruct capture](../research/packet-dumps/community-intake/20260607T191353Z-hdneo-public-combat-pvp-rajko-state-selected/logs/mxopackets1_crashover2k_afterwhoruneo_proxy_003_pvp_and_tele_to_park_east_north_died_in_pvp.log.txt#L10695)
+
+Reconstruct publishes the nearest hardline as the active selection before
+`80 fd` when that hardline is already known. The inspected retail death
+exchange has no such extra record. The update supplies the existing named
+fallback to the stock client. Discovery requirements still govern selection.

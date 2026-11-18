@@ -28,6 +28,7 @@ static string Consumer(ushort stat) => stat switch
     159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
     564 => "Concentration cast-through for explicit interruptible templates (partial)",
+    SixthSense.Detection => "one-roll Sixth Sense scan against the shipped 0/50 Stealth threshold",
     177 => "direct UDB0 caster area radius percent (AbilityTargets and reviewed caster-area97/38 NPC/PvP only; linked1055 unresolved)",
     127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
@@ -39,6 +40,7 @@ static string Consumer(ushort stat) => stat switch
 };
 static string UtilityCoverage(ushort id) => id switch
 {
+    SixthSense.Ability => "loaded self cast; 1500-unit 3D scan, target scan/result notices, 10s 80 c5 display; stock map count/marker verified, FX presentation pending; relationship policy OURS; [evidence](ABILITY-PASSIVE-CONSUMERS.md)",
     971 or 972 => "owned AntiStun pill only: exact42763/42764, CanUseWhileStunned;1s cast, stored own900/600s and shared973600s; removes Stun/Mez tuples, halves actual remaining immunity when half>=1s; item/life/world/cast revalidation; [docs/ANTI-STUN-PILLS.md](ANTI-STUN-PILLS.md)",
     345 => "direct stat177 existing captured+21/30s UDB0 target-centred NPC/PvP area radius consumer; linked75/1055 unresolved; [evidence](ABILITY-DEBUFF-RADIUS.md)",
     38 => "PARTIAL caster-centred hostile area; strict reviewed97/38 producer, source3s stun and8s immunity input, ordinary TF2 contest; completion centre/server relationship policy OURS; [evidence](ABILITY-AREA-DISRUPTION.md)",

@@ -37,13 +37,51 @@ Read-only disassembly of client.dll SHA256
   `CastValidTarget` using string `628c8a8c`; resource 970 stores target 0.
   Consequently this inventory-target packet cannot establish writer activation.
 
-## Remaining limits
+## Health Pill 1.0
 
-Activation and cleanup do not implement the writer's code synthesis output path.
-Known recipe generation, code packing, purity/stability, signal boosts, charges,
-experience, and exact native presentation still require recovery or native checks.
-The existing compile and decompile economy is separate; do not manufacture a
-writer result or reinterpret the duplicate stored ID as an alias to claim parity.
+Lead designer Toby Ragaini described a two-step crafting process. The Writer
+combines recipe fragments into code, and the Compiler turns that code into an
+item. Prima's official guide (p. 255) describes reusable item codes with charges.
+[Lead designer interview](https://www.gamespot.com/articles/the-matrix-online-qanda-crafting-and-bullet-time/1100-6111928/)
+
+The Analyser `81 2e` path accepts known ordinary consumable recipes with
+stored charge counts. Health Pill 1.0 (GO 2399) uses the shipped cookbook recipe
+`2435 2438 7458 2472 2454`. Its ten default charges come from the GOB.
+The official Writer lists the pill under **Consumables → Consumable Pills**,
+with Function Subroutine: Consumable (GO 7458) serving as an ingredient.
+[PR304 Writer native check](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991534568)
+
+Native QA on `42e5dc0b` captured five `1b 87 <slot u16> <GOID u32>` rows after
+the fixed request fields. The stock producers at `0x6208b451` and `0x6208b558`
+use the descriptor's high bits for personal inventory (`0x8000`) and archive
+(`0x4000`). Only those bits identify the source. Each repeated row spends one
+copy, including repeated selections from a stack. The server verifies the named
+slots under the same database transaction as depletion and code creation.
+[Exact native request](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991905186)
+
+The Writer's `81 2f` jump table at `0x6208c9c8` uses status zero for success.
+Status 1 reports a contest failure with lost ingredients, 2 closes the window,
+3 reports full inventory, and 4 reports insufficient Info. A validation refusal
+preserves materials and uses 5 to reset the pending UI, with a server message.
+At `0x6208cac2..0x6208cad8`, the client reads status, TypeID and XP while
+skipping the slot byte. The success callback shows `5e0000ab` for the selected
+recipe. The timed Compiler uses `60`/`61` to produce the physical pill.
+
+For Health Pill 1.0, this server publishes the generated code directly to a
+free code archive slot using `5e <slot u16> <TypeID 0 u32> <packed u32> 00`,
+with `(2399 << 7) | 10` as the packed word. The stock `5e` dispatch tests the
+last byte at `0x62179856`. The zero branch at `0x621798af` passes the packed
+word to `0x621e1a70`, which stores it unchanged in the archive array for
+slots below 520. Direct archive placement is a server choice that uses the
+existing client code-list protocol. The retail Writer's grant packet and
+original destination remain unverified.
+
+The stock client suppresses mid-compile tool activation. Rollback on a valid
+session stop or switch is exercised headlessly. The Health Pill recipe and
+native completion checks are in the
+[`crafting-breadth` fixture](CRAFTING-STORAGE-DEPLETION.md#native-crafting-and-timed-compile-fixture).
+Additional ordinary recipes, purity, stability, signal boosts and experience
+remain outside this bounded path.
 
 ## Runtime and validation
 
@@ -52,8 +90,9 @@ the selected mode, exact tool slot, loaded grant, district and world generation.
 Starting another mode closes the prior record; repeated flag1 is idempotent. A
 matching flag0 closes only the selected mode/tool. Empty `81 1a` closes only a
 writer, retaining its existing container behavior. Short ordinary ability use and
-`81 31` cannot start the writer or create items. The compiler executors require a
-compiler session and cannot borrow writer authority.
+`81 31` cannot start the writer or create items. The timed `60` executor
+requires a Compiler session. For a Writer `81 2e` request, the active Analyser
+slot, exact bare recipe and selected ingredient slots must match.
 
 Both scripts enter stance3 (`StandType`, shipped movement table `629ce160`) and
 return to stance0 only when still typing. Positive damage, another ability,

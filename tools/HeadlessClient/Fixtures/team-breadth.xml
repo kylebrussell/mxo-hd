@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Isolated NativeQa team, health and mission-item fixture. -->
+<mission id="399912" title="Team Breadth Fixture" description="Recover and deliver a team dossier."
+ plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="50" info="60">
+ <npc id="1" handle="Team Guard" type="HOSTILE" x="23928" y="495" z="13984" rsi="ec020058" level="3" maxHP="110" attacksOnSight="0"/>
+ <npc id="2" handle="Team Receiver" type="FRIENDLY" x="23978" y="495" z="13984" rsi="a8060090"/>
+ <phase leave="0">
+  <objective goal="1" text="Defeat the team guard" type="Defeat" npc="1"/>
+  <objective goal="2" text="Recover the team dossier" type="Loot" npc="1" item="6799" after="1"/>
+  <objective goal="3" text="Give the dossier to Team Receiver" type="Give" npc="2" item="6799" after="2"/>
+ </phase>
+</mission>

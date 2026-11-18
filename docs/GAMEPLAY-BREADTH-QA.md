@@ -29,3 +29,19 @@ before starting melee. The 7.6005 `NPC_BASE` template stores `CharMvt/Walk Speed
 as a raw 1.0 with no known world-unit conversion. It has no stored `CharMvt/Run Speed`.
 The shipped `NPCMovementSpeedAbility` 809 targets the movement stat without a stored
 magnitude. Pursuit keeps the existing server default of 4 m/s.
+
+## Team HUD and shared mission loot
+
+Use `team-breadth` and wait for READY. QAFriend starts near CSR at Mara
+Northwest. Submit helper requests as JSON in the fixture's `requests` directory.
+
+1. Invite QAFriend to the mission team and send
+   `{"actor":"QAFriend","action":"team-breadth","step":"accept"}`.
+   Verify QAFriend's name and health in the team HUD.
+2. Call Flood and accept **Team Breadth Fixture**. Send
+   `{"actor":"QAFriend","action":"team-breadth","step":"assist"}`.
+   Watch the helper's health during ordinary combat. Keep CSR's attacks off
+   Team Guard so the helper earns the kill.
+3. Check that the kill ticks CSR's goal and opens the Loot window with a Dossier.
+   Take All, then Give the Dossier to Team Receiver. Verify the item leaves
+   the bag and the mission completes once.

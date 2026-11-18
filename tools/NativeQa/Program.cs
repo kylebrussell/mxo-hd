@@ -199,6 +199,8 @@ try
                     await NativeQa.Modes.SecureTradeMode.SendPartnerActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.SocialBreadthMode && action == "social")
                     result = await NativeQa.Modes.SocialBreadthMode.SendActionAsync(actor, q);
+                else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
+                    result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
                 else if (action == "stop") actor.SendRpc("44 00");

@@ -7,6 +7,101 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
+        public CraftingRequests.WrittenCode WriteOrdinaryItemCode(uint character, CraftingRequests.Compile request, int charges, long cost)
+        {
+            var refused = new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterRefused };
+            if (request.SelectedIngredients.Count == 0 || !OrdinaryItemCode.Supported(request.Item) ||
+                charges < 1 || charges > 127 || cost < 0)
+                return refused;
+
+            using var connection = new MySqlConnection(connectionString);
+            connection.Open();
+            EnsureTransactionalInventory(connection);
+            using var transaction = connection.BeginTransaction();
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.Parameters.AddWithValue("@char", character);
+            command.Parameters.AddWithValue("@cost", cost);
+            command.CommandText = "SELECT cash FROM characters WHERE charId=@char FOR UPDATE";
+            object balance = command.ExecuteScalar();
+            if (balance == null) return refused;
+            long cash = Convert.ToInt64(balance);
+            if (cash < cost) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoInfo };
+
+            var usedCodeSlots = new HashSet<int>();
+            var ambiguousCodeSlots = new HashSet<int>();
+            var available = new List<Crafting.InventoryItem>();
+            bool writingLoaded = false;
+            command.CommandText = "SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id=@char AND slot<520 FOR UPDATE";
+            using (var rows = command.ExecuteReader())
+            {
+                while (rows.Read())
+                {
+                    ushort slot = rows.GetUInt16(0);
+                    uint value = unchecked((uint)Convert.ToInt64(rows[1]));
+                    if (!usedCodeSlots.Add(slot)) ambiguousCodeSlots.Add(slot);
+                    if (value == (0x80000000u | 37u << 10) && rows.GetBoolean(3)) writingLoaded = true;
+                    if (CodeStorage.IsCode(value))
+                        available.Add(new Crafting.InventoryItem((ushort)(slot | Crafting.StorageSlotFlag),
+                            CodeStorage.GoidOf(value), rows.GetInt32(2) + 1));
+                }
+            }
+            if (!writingLoaded) return refused;
+            command.CommandText = "SELECT slot,goid,count FROM inventory WHERE charId=@char AND slot BETWEEN 0 AND 96 FOR UPDATE";
+            using (var rows = command.ExecuteReader())
+                while (rows.Read())
+                    available.Add(new Crafting.InventoryItem(rows.GetUInt16(0), rows.GetUInt32(1), rows.GetInt32(2)));
+
+            if (!available.Any(item => item.Slot == request.ToolSlot && item.Goid == CraftingSession.WriterTool)) return refused;
+            int? codeSlot = CentralStorage.FirstFreeSlot(usedCodeSlots);
+            if (!codeSlot.HasValue) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoSpace };
+            var receipt = new CraftingRequests.WrittenCode
+            {
+                Result = CraftingRequests.WriterSuccess, Slot = (ushort)codeSlot.Value, Cash = cash - cost
+            };
+            command.Parameters.AddWithValue("@slot", 0);
+            command.Parameters.AddWithValue("@id", 0);
+            command.Parameters.AddWithValue("@count", 0);
+            foreach (var (ingredient, quantity) in request.SelectedIngredients)
+            {
+                var matches = available.Where(item => item.Slot == ingredient.Slot).ToList();
+                if (matches.Count != 1 || matches[0].Goid != ingredient.Goid || matches[0].Count < quantity)
+                    return refused;
+                var item = matches[0];
+                int slot = ingredient.Slot & ~Crafting.StorageSlotFlag;
+                bool stored = slot != ingredient.Slot;
+                if (stored && ambiguousCodeSlots.Contains(slot)) return refused;
+                int remaining = item.Count - quantity;
+                command.Parameters["@slot"].Value = slot;
+                command.Parameters["@id"].Value = stored ? (object)CodeStorage.BaseValue(item.Goid) : item.Goid;
+                command.Parameters["@count"].Value = stored ? remaining - 1 : remaining;
+                if (stored)
+                    command.CommandText = remaining == 0
+                        ? "DELETE FROM char_abilities WHERE char_id=@char AND slot=@slot AND ability_id=@id"
+                        : "UPDATE char_abilities SET level=@count WHERE char_id=@char AND slot=@slot AND ability_id=@id";
+                else
+                    command.CommandText = remaining == 0
+                        ? "DELETE FROM inventory WHERE charId=@char AND slot=@slot AND goid=@id"
+                        : "UPDATE inventory SET count=@count WHERE charId=@char AND slot=@slot AND goid=@id";
+                if (command.ExecuteNonQuery() != 1) return refused;
+                receipt.Ingredients.Add((item, remaining));
+            }
+
+            command.Parameters["@slot"].Value = receipt.Slot;
+            command.Parameters["@id"].Value = request.Item << 7;
+            command.Parameters["@count"].Value = charges;
+            command.CommandText = "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name,added) " +
+                "VALUES(@char,@slot,@id,@count,0,'Written item code',NOW())";
+            if (command.ExecuteNonQuery() != 1) return refused;
+            if (cost != 0)
+            {
+                command.CommandText = "UPDATE characters SET cash=cash-@cost WHERE charId=@char AND cash>=@cost";
+                if (command.ExecuteNonQuery() != 1) return refused;
+            }
+            transaction.Commit();
+            return receipt;
+        }
+
         public OrdinaryItemCode.Entry GetOrdinaryItemCode(uint character, ushort slot)
         {
             using var connection = new MySqlConnection(connectionString); connection.Open();
