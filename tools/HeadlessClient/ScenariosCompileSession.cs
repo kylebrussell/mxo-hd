@@ -4,7 +4,7 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static void CompilerTool(HeadlessPlayer player, byte slot, bool activate)
+    public static void CompilerTool(HeadlessPlayer player, byte slot, bool activate)
     {
         byte[] body = new byte[41];
         BitConverter.GetBytes((ushort)969).CopyTo(body, 0);

@@ -4,13 +4,19 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static void WriterTool(HeadlessPlayer player, byte slot, bool activate)
+    public static void WriterTool(HeadlessPlayer player, byte slot, bool activate)
     {
         byte[] body = new byte[41]; BitConverter.GetBytes((ushort)970).CopyTo(body, 0);
         BitConverter.GetBytes((ushort)2).CopyTo(body, 2);
         body[34]=8; body[35]=slot; body[36]=activate ? (byte)1 : (byte)0;
         player.SendRpc("80 b9 " + BitConverter.ToString(body).Replace('-', ' '));
     }
+
+    public static IReadOnlyList<uint> HealthPillMaterials { get; } = Array.AsReadOnly(new uint[] { 2435, 2438, 7458, 2472, 2454 });
+    // Stock 7.6005 request captured in PR304's 42e5dc0b native QA.
+    public const string HealthPillWriterRequest = "81 2e 80 af 04 00 09 00 02 05 00 "
+        + "1b 87 04 00 83 09 00 00 1b 87 05 00 86 09 00 00 1b 87 06 00 22 1d 00 00 "
+        + "1b 87 07 00 a8 09 00 00 1b 87 08 00 96 09 00 00";
 
     private static async Task WriterSessionAuthority(ScenarioContext context)
     {
@@ -32,9 +38,16 @@ public static partial class Scenarios
         Check.Equal(1,p.Received(ModPattern(970,968)).Count,"Duplicate activation is idempotent");
         WriterTool(p,3,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
         CompilerTool(p,4,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
-        // Writer authority cannot authorize the compiler recipe path or inventory-target shortcut.
-        p.SendRpc($"81 2e {Le(7458u << 7)} 09 00 02 01 00 {Le(2u)} {Le(7336u)}");
-        await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
+        // A Writer session cannot use a different tool or treat packed archive code as a recipe.
+        byte[] recipe = WireFormat.FromHex(HealthPillWriterRequest);
+        recipe[8] = 4; // Compiler slot, while the Writer owns slot 2.
+        p.SendRpc(recipe);
+        await p.WaitForRpcAsync($"81 2f 05 00 {Le(2399u)}");
+        p.SkipReceived();
+        recipe[8] = 2;
+        recipe[2] |= 1; // Packed charge turns the bare Writer recipe into an archive code.
+        p.SendRpc(recipe);
+        await p.WaitForRpcAsync($"81 2f 05 00 {Le(2399u)}");
         p.SendRpc($"81 31 {Le(970u)} 05 02 01"); await p.WaitForTextAsync("That inventory ability is not available.");
         WriterTool(p,2,false); await p.WaitForRpcAsync(ModPattern(970,968,true));
         await p.WaitForViewUpdateAsync(2,"01 28 ?? 40 00 00 00 10");

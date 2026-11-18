@@ -8,6 +8,7 @@ namespace hds.databases.interfaces{
     
     public interface IWorldDBHandler
     {
+        CraftingRequests.WrittenCode WriteOrdinaryItemCode(uint character, CraftingRequests.Compile request, int charges, long cost);
         OrdinaryItemCode.Entry GetOrdinaryItemCode(UInt32 character, UInt16 slot);
         ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost);
         PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
