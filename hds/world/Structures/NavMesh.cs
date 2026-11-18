@@ -96,6 +96,15 @@ namespace hds
             }
         }
 
+        internal static bool TryPrefabRegion(ushort district, ushort sector, int placement, out int region)
+        {
+            region = -1;
+            if (!Load(district).sectors.TryGetValue(sector, out var source) ||
+                placement < 0 || placement >= source.placements.Length) return false;
+            region = source.regions.Length + placement;
+            return true;
+        }
+
         private static List<Polygon> ReadPolygons(BinaryReader r, bool wide = false)
         {
             int count = r.ReadUInt16();

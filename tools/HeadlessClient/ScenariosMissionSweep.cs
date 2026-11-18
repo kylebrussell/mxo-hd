@@ -426,7 +426,11 @@ public static partial class Scenarios
             var arrival=System.Text.RegularExpressions.Regex.Matches(c.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(arrival!=null)arrivalRoot=Enumerable.Range(1,3).Select(i=>double.Parse(arrival.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
         }
-        if(arrivalRoot!=null)p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(arrivalRoot));
+        if(arrivalRoot!=null)
+        {
+            p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(arrivalRoot));
+            if(enter)notes.Add(new SweepBoundArrival(s.Mission,s.Phase,s.Instance,arrivalRoot));
+        }
         if(enter&&ride.Measured)
         {
             string reason="No car observation";

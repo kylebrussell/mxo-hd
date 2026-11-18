@@ -14,19 +14,23 @@ namespace hds
         internal const string Header=MissionComputerAnchors.Header;
         private sealed class Entry
         {
-            internal ushort Goid;internal MissionComputerAnchors.Pose Native;internal double X,Y,Z;internal byte[] Quaternion;internal string Evidence;
+            internal ushort Goid;internal int Placement;internal MissionComputerAnchors.Pose Native;internal double X,Y,Z;internal byte[] Quaternion;internal string Evidence;
         }
         private readonly Dictionary<uint,Entry> rows=new Dictionary<uint,Entry>();
         internal int Count=>rows.Count;
         private static readonly ConcurrentDictionary<string,Lazy<MissionOpenFloorAnchors>> cache=new ConcurrentDictionary<string,Lazy<MissionOpenFloorAnchors>>(StringComparer.OrdinalIgnoreCase);
         internal static bool TryCurrent(StaticWorldObject raw,out MissionComputerAnchors.Pose pose,out string evidence)
         {
-            pose=null;evidence=null;if(raw==null||raw.metrId!=1)return false;
+            return TryCurrent(raw,out pose,out evidence,out _);
+        }
+        internal static bool TryCurrent(StaticWorldObject raw,out MissionComputerAnchors.Pose pose,out string evidence,out int placement)
+        {
+            pose=null;evidence=null;placement=-1;if(raw==null||raw.metrId!=1)return false;
             string path=DataLoader.DataPath("mission_open_floor","anchors_1",raw.sectorID+".csv.gz");
             try
             {
                 var index=cache.GetOrAdd(path,p=>new Lazy<MissionOpenFloorAnchors>(()=>{using(var file=File.OpenRead(p))using(var gz=new GZipStream(file,CompressionMode.Decompress))using(var reader=new StreamReader(gz,Encoding.UTF8))return Read(reader,raw.sectorID);})).Value;
-                return index.TryResolve(raw,out pose,out evidence);
+                return index.TryResolve(raw,out pose,out evidence,out placement);
             }
             catch(Exception ex) when(ex is IOException||ex is FormatException||ex is OverflowException||ex is ArgumentException){return false;}
         }
@@ -41,7 +45,7 @@ namespace hds
                 ushort goid=ushort.Parse(f[4],CultureInfo.InvariantCulture);
                 if(world!=1||s!=sector||s>0x7ff||id>0xfffff||key!=((s<<20)|id)||goid==0||uint.Parse(f[13],CultureInfo.InvariantCulture)==0||
                     int.Parse(f[14],CultureInfo.InvariantCulture)<-1||int.Parse(f[15],CultureInfo.InvariantCulture)<0)throw new InvalidDataException("AnchorIdentity");
-                var q=Quaternion(f[8]);var entry=new Entry{Goid=goid,Native=new MissionComputerAnchors.Pose(Number(f[5]),Number(f[6]),Number(f[7]),q),
+                var q=Quaternion(f[8]);var entry=new Entry{Goid=goid,Placement=int.Parse(f[14],CultureInfo.InvariantCulture),Native=new MissionComputerAnchors.Pose(Number(f[5]),Number(f[6]),Number(f[7]),q),
                     X=Number(f[9]),Y=Number(f[10]),Z=Number(f[11]),Quaternion=Quaternion(f[12]),Evidence="native-source-row:"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(line)))};
                 if(!index.rows.TryAdd(key,entry))throw new InvalidDataException("AmbiguousAnchorIdentity");
             }
@@ -49,14 +53,18 @@ namespace hds
         }
         internal bool TryResolve(StaticWorldObject raw,out MissionComputerAnchors.Pose pose,out string evidence)
         {
-            pose=null;evidence=null;
+            return TryResolve(raw,out pose,out evidence,out _);
+        }
+        private bool TryResolve(StaticWorldObject raw,out MissionComputerAnchors.Pose pose,out string evidence,out int placement)
+        {
+            pose=null;evidence=null;placement=-1;
             if(raw==null||raw.metrId!=1||raw.exterior||raw.sectorID>0x7ff||raw.staticId>0xfffff||raw.mxoStaticId!=((uint)raw.sectorID<<20|raw.staticId)||raw.type==null||
                 (raw.type.Length!=2&&raw.type.Length!=4)||(raw.type.Length==4&&(raw.type[2]!=0||raw.type[3]!=0))||!rows.TryGetValue(raw.mxoStaticId,out var entry)||MissionSites.Goid(raw)!=entry.Goid)return false;
             byte[] q;try{q=Quaternion(raw.quat??"");}catch(InvalidDataException){return false;}
             bool legacy=raw.pos_x==entry.X&&raw.pos_y==entry.Y&&raw.pos_z==entry.Z&&q.SequenceEqual(entry.Quaternion);
             bool canonical=raw.pos_x==entry.Native.X&&raw.pos_y==entry.Native.Y+145&&raw.pos_z==entry.Native.Z&&q.SequenceEqual(entry.Native.Orientation);
             if(!legacy&&!canonical)return false;
-            pose=entry.Native;evidence=entry.Evidence+(legacy?":legacy-input":":canonical-marker-input");return true;
+            pose=entry.Native;placement=entry.Placement;evidence=entry.Evidence+(legacy?":legacy-input":":canonical-marker-input");return true;
         }
         private static double Number(string value){double n=double.Parse(value,NumberStyles.Float,CultureInfo.InvariantCulture);if(!double.IsFinite(n))throw new InvalidDataException("NonfiniteAnchor");return n;}
         private static byte[] Quaternion(string value)

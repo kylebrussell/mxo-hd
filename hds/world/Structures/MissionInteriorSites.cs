@@ -30,8 +30,7 @@ namespace hds
             refusal=null;
             bool requiresOpenFloor=MissionOpenFloorAdmission.Requires(phase);
             if(!requiresOpenFloor)
-                return !checkSourcePool||!MissionBoundFurnitureAdmission.Applies(phase,site)||
-                    MissionStaging.TrySourcePools(phase,site,npcCount,out _,out refusal);
+                return !checkSourcePool||MissionStaging.TrySourcePools(phase,site,npcCount,out _,out refusal);
             // Bound and free props can share a phase. Check the whole source pool before
             // taking the native-object shortcut, which only waives free-prop geometry.
             MissionStaging.SourcePools pools=null;
@@ -52,8 +51,9 @@ namespace hds
                 bool Possible(StaticWorldObject s)
                 {
                     if(!MissionOpenFloorProfiles.TryUsable(MissionSites.Goid(s),out var usable))return true;
-                    OpenFloorOrientation orientation;try{orientation=new OpenFloorOrientation(s.quat);}catch(ArgumentException){return true;}
-                    return nativeRegion.CouldReachNative(new G.Position(s.pos_x,s.pos_y,s.pos_z),usable,orientation);
+                    var pose=MissionObjectPoses.For(new MissionObjectState{spot=s,goid=MissionSites.Goid(s)});
+                    OpenFloorOrientation orientation;try{orientation=new OpenFloorOrientation(Convert.ToHexString(pose.Orientation));}catch(ArgumentException){return true;}
+                    return nativeRegion.CouldReachNative(new G.Position(pose.X,pose.Y,pose.Z),usable,orientation);
                 }
                 // SelectObjects binds the first matching native row deterministically.
                 if(Possible(bound[0]))return true;
