@@ -33,7 +33,6 @@ public class MervFollowupTests
         Assert.Contains(plan.ReadyMessages,m=>m.Contains("public Door")&&m.Contains("Public Open must not perform a floor ride"));
         Assert.Equal("measured introduction/native floor preselection/cache/fresh generated Safe assignment",plan.ExtraQaMetadata["SharedPlacementScope"].GetString());
         Assert.Contains("merovingian-critical-followup",NativeQa.NativeQaModes.Names);
-        Assert.DoesNotContain("merovingian-after-301207",NativeQa.NativeQaModes.Names);
     }
     [Fact] public void HeadlessArrivalOracleEnablesPacketLoggingOnlyForItsOwnProfile()
     {

@@ -160,13 +160,7 @@ namespace hds
 
             // ToDo: We make a little Entity "Hack" so that we have a unique id : metrid + fullmxostatic_id is entity
             UInt64 entityId = UInt64.Parse("" + staticWorldObject.metrId + staticWorldObject.mxoStaticId);
-            new ServerPackets().SendSpawnGameObject(Store.currentClient, door, entityId);
-
-            ClientView view = Store.currentClient.viewMan.FindViewForEntity(entityId);
-            if (view != null)
-            {
-                DoorLifecycle.Opened(Store.currentClient, view.ViewID, entityId, typeId);
-            }
+            DoorLifecycle.PublishOpen(Store.currentClient,door,entityId,typeId);
 
             if (typeId == MissionSites.ElevatorDoor1 || typeId == MissionSites.ElevatorDoor2)
             {

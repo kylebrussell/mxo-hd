@@ -126,7 +126,23 @@ public static partial class Scenarios
             }
             evidence.Add(new{Operation="selected-measured-elevator-overlay",Key=key,Pose=pose,selectedRide.Witness,overlay.ViewId,overlay.SpawnId,currentDoor.OwnLife,currentDoor.BirthSection,ObservedCurrentAfterRequest=true,NewCreationNotRequired=true});
         }
-        if(enter&&MervBound326Approach.NeedsArrival(saved))
+        if(enter&&MervAfterFurnitureApproach.NeedsArrival(saved))
+        {
+            var current=await MervFollowupCheckpoint(context,p);
+            var selection=MervFollowupStreetEntry.ForSite(current)??throw new ScenarioFailure("Missing current V3 car context");
+            var expected=selection.Floor.Standing!;
+            NpcInteriorComputerState.Teleport? typed=null;
+            await p.WaitUntilAsync(()=>{try{typed=NpcInteriorComputerState.FreshTeleport(p.World.CurrentOwnViewLife(),ownWorld,viewCursor,expected);return true;}catch(InvalidDataException){return false;}},"Fresh V3 ordinary car arrival",TimeSpan.FromSeconds(15));
+            MissionMidphaseReturnFixture.Arrival? receipt=null;
+            await p.WaitUntilAsync(()=>{try{receipt=MissionMidphaseReturnFixture.RequireArrival(InteriorAdmissionDeliveryProof.Read(packetPath),p.CharId,packetCursor,typed!);return true;}catch(InvalidDataException){return false;}},"V3 ordinary arrival transport receipt",TimeSpan.FromSeconds(10));
+            var trip=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
+            Check.That(trip!=null,"V3 car has actual physical trip");
+            var actual=Enumerable.Range(1,3).Select(i=>double.Parse(trip!.Groups[i].Value,CultureInfo.InvariantCulture)).ToArray();
+            Check.That(NavMesh.Locate(selectedRide.District,actual[0],actual[1],actual[2],out var nav),"Actual V3 car Root has NAV");
+            evidence.Add(MervAfterFurnitureApproach.Capture(context.RepositoryRoot,current,actual,nav,p.World.CurrentOwnViewLife()));
+            evidence.Add(new{Operation="furniture-v3-ordinary-arrival",Arrival=typed,Receipt=receipt,RendererReadyProven=false});
+        }
+        if(enter&&!MervAfterFurnitureApproach.NeedsArrival(saved)&&MervBound326Approach.NeedsArrival(saved))
         {
             var actualArrival=Regex.Matches(context.Server.DebugLog()[log..],@"\[MISSION\] Teleported to ([-\d.]+),([-\d.]+),([-\d.]+)").LastOrDefault();
             if(actualArrival!=null)
@@ -183,7 +199,7 @@ public static partial class Scenarios
     {
         var saved=await MervFollowupCheckpoint(context,p);var owned=saved.Objects.Single(o=>o.Id==id);
         string Raw(MissionProgress.SavedObject o)=>JsonSerializer.Serialize(new{o.Id,o.Spot,o.Goid,o.OpenFloor},MervFollowupFields);
-        string original=Raw(owned);double[] centre;string quaternion;string qualification;
+        string original=Raw(owned);double[] centre;string quaternion;string qualification;MissionBound326RouteProof.Plan? committedRoute=null;MissionBoundFurnitureRouteProof.Plan? furnitureRoute=null;
         if(owned.OpenFloor!=null)
         {
             var w=MissionOpenFloorWitness.Read(JsonSerializer.SerializeToElement(owned.OpenFloor,MervFollowupFields));
@@ -197,15 +213,70 @@ public static partial class Scenarios
         {
             Check.That(!MervFollowupApproachFixture.RequiresWitness(owned)&&MissionSites.Goid(owned.Spot)==owned.Goid,"Only genuinely bound sources may lack an adopted witness");
             SectorProperties.Load(Path.Combine(context.RepositoryRoot,"data","sector_properties.csv"));NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot,"data","navmesh"));
-            var pose=MissionObjectPoses.For(new MissionObjectState{spot=owned.Spot,goid=owned.Goid});centre=new[]{pose.X,pose.Y,pose.Z};quaternion=Convert.ToHexString(pose.Orientation);
+            furnitureRoute=MissionBoundFurnitureRouteProof.SupportsGoid(owned.Goid)?MissionBoundFurnitureRouteProof.Read(context.RepositoryRoot,saved,id):null;
+            var pose=furnitureRoute==null?MissionObjectPoses.For(new MissionObjectState{spot=owned.Spot,goid=owned.Goid}):default;
+            centre=furnitureRoute==null?new[]{pose.X,pose.Y,pose.Z}:furnitureRoute.Centre;quaternion=furnitureRoute==null?Convert.ToHexString(pose.Orientation):furnitureRoute.Quaternion;
             double[]? standing=null;
-            if(owned.Goid==326)
+            if(furnitureRoute!=null)
+            {
+                var route=furnitureRoute;var arrival=evidence.OfType<MervAfterFurnitureApproach.Arrival>().LastOrDefault()??throw new ScenarioFailure("No actual V3 ordinary arrival");
+                centre=route.Centre;quaternion=route.Quaternion;
+                async Task SameFurniture(){MervAfterFurnitureApproach.Require(route,await MervFollowupCheckpoint(context,p),arrival,p.World.CurrentOwnViewLife());}
+                foreach(var step in MissionBoundFurnitureRouteProof.Steps(context.RepositoryRoot,route))
+                {
+                    await SameFurniture();
+                    foreach(uint key in step.Doors)
+                    {
+                        var door=route.Doors.Single(d=>d.Key==key);var requestLife=p.World.CurrentOwnViewLife();int sections=p.World.ViewSnapshot().Count;
+                        await SameFurniture();int debugCursor=context.Server.DebugLog().Length;
+                        p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00");
+                        await p.WaitUntilAsync(()=>{try{_=MissionBound326RouteProof.RequireDoorUse(context.Server.DebugLog(),debugCursor,door);_=MissionBound326RouteProof.RequireOpen(p.World.CurrentOwnViewLife(),requestLife,door);return true;}catch(InvalidDataException){return false;}},"V3 saved own-GO door current Open",TimeSpan.FromSeconds(15));
+                        p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");await SameFurniture();
+                        _=MissionBound326RouteProof.RequireOpen(p.World.CurrentOwnViewLife(),requestLife,door);
+                        Check.Equal(0,MissionPublicStreetWire.Teleports(p.World.CurrentOwnViewLife(),requestLife,sections).Count,"Internal Open is not a car trip");
+                        evidence.Add(new{Operation="furniture-v3-required-door",Door=door,DebugCursor=debugCursor,ExactPacketAckProven=false,NativePassageProven=false});
+                    }
+                    await SameFurniture();await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
+                }
+                standing=route.Standing;await SameFurniture();
+                evidence.Add(new{Operation="fixed-furniture-v3-route",saved.Mission,saved.Phase,Object=id,Route=route.Route,NativeCollisionClearanceProven=false});
+            }
+            else if(owned.Goid==326)
             {
                 var arrival=evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault()??throw new ScenarioFailure("No current actual arrival context for bound326");
+                var bounds=MissionBound326Approach.Load(context.RepositoryRoot,owned);
+                MissionBound326Approach.Sample? Locate(double[] point)=>NavMesh.Locate(1,point[0],point[1],point[2],out var at)?new(point,at.sector,at.region,at.polygon,at.floorY):null;
+                var route=MissionBound326RouteProof.Read(saved,id,bounds,new(arrival.Root,arrival.Sector,arrival.Region,arrival.FloorY),Locate);
+                if(route!=null)
+                {
+                    committedRoute=route;
+                    var life=p.World.CurrentOwnViewLife();
+                    async Task SameRoute(){MissionBound326RouteProof.RequireCurrent(route,await MervFollowupCheckpoint(context,p));Check.That(life.Current,"Bound route own life remains current");}
+                    foreach(var step in MissionBound326RouteProof.Steps(context.RepositoryRoot,route))
+                    {
+                        await SameRoute();
+                        foreach(uint key in step.Doors)
+                        {
+                            var door=route.Doors.Single(d=>d.Key==key);var requestLife=p.World.CurrentOwnViewLife();
+                            Check.That(requestLife.Current&&requestLife.OwnViewReady,"Current own life before required portal Open");
+                            int debugCursor=context.Server.DebugLog().Length;p.SendRpc($"80 c8 {WireFormat.ToHex(BitConverter.GetBytes(key))} 03 00");
+                            await p.WaitUntilAsync(()=>{try{var now=p.World.CurrentOwnViewLife();if(!ReferenceEquals(now.Owner,requestLife.Owner)||now.Life!=requestLife.Life||!requestLife.Current)return false;_=MissionBound326RouteProof.RequireDoorUse(context.Server.DebugLog(),debugCursor,door);_=MissionBound326RouteProof.RequireOpen(now,requestLife,door);return true;}catch(InvalidDataException){return false;}},"Owned route door actual use and Open",TimeSpan.FromSeconds(15));
+                            p.SkipReceived();p.SendRpc("81 48");await p.WaitForRpcAsync("81 49");await SameRoute();
+                            _=MissionBound326RouteProof.RequireOpen(p.World.CurrentOwnViewLife(),requestLife,door);
+                            evidence.Add(new{Operation="bound-route-portal",Door=door,DebugCursor=debugCursor,ExactPacketAckProven=false,NativePassageProven=false});
+                        }
+                        await SameRoute();await MoveForMissionTest(p,step.Standing[0],step.Standing[1],step.Standing[2]);
+                    }
+                    standing=route.Standing;await SameRoute();
+                    evidence.Add(new{Operation="fixed-bound326-route",saved.Mission,saved.Phase,Object=id,Route=route.Route,NativeCollisionClearanceProven=false});
+                }
+                else
+                {
                 bool measured=MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured;
                 var result=measured?MervBound326Approach.Choose(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife()):
                     MervBound326Approach.ChooseLegacy(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife());
                 standing=result.Standing;evidence.Add(new{Operation="native326-NAV-approach",saved.Mission,saved.Phase,Object=id,Source=owned.Spot.mxoStaticId,Arrival=arrival,Result=result,Legacy=!measured,MeasuredAuthority=measured});
+                }
             }
             else
             {
@@ -217,7 +288,7 @@ public static partial class Scenarios
                     }
             }
             Check.That(standing!=null,"Bound source requires a NAV-grounded in-range approach");
-            await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification=owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Legacy?
+            await MoveForMissionTest(p,standing![0],standing[1],standing[2]);qualification=furnitureRoute!=null?"V3 fixed native-profile path/Standing with actual ordinary car arrival and required own-GO Open; movement aids are not native walking":owned.Goid==326&&MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Legacy?
                 "legacy bound326 actual-arrival/native100/NAV-component approach; no measured witness, direct route/collision/picking proof":
                 owned.Goid==326?"measured bound326 native100/NAV-component witness; no direct route/collision/picking proof":
                 "bound source NAV/range only; no route/collision/picking proof";
@@ -227,10 +298,15 @@ public static partial class Scenarios
         var after=await MervFollowupCheckpoint(context,p);
         Check.Equal(saved.Mission,after.Mission,"Approach retains selected mission");Check.Equal(saved.Phase,after.Phase,"Approach retains current phase");
         Check.Equal(original,Raw(after.Objects.Single(o=>o.Id==id)),"Approach retains exact raw source and fixed witness DTO");
-        if(owned.Goid==326&&owned.OpenFloor==null)
+        if(furnitureRoute!=null)MervAfterFurnitureApproach.Require(furnitureRoute,after,evidence.OfType<MervAfterFurnitureApproach.Arrival>().Last(),p.World.CurrentOwnViewLife());
+        else if(owned.Goid==326&&owned.OpenFloor==null)
         {
+            if(committedRoute!=null)MissionBound326RouteProof.RequireCurrent(committedRoute,after);
+            else
+            {
             if(MervBound326Approach.Classify(saved)==MervBound326Approach.ProofScope.Measured)MervBound326Approach.RequireScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().Last(),p.World.CurrentOwnViewLife());
             else MervBound326Approach.RequireLegacyScope(after,id,evidence.OfType<MervBound326Approach.Arrival>().LastOrDefault(),p.World.CurrentOwnViewLife());
+            }
         }
         evidence.Add(new{Operation="current-object-approach",saved.Mission,saved.Phase,Object=id,SourceAndWitness=original,Centre=centre,Quaternion=quaternion,Qualification=qualification});
         return Current()!;

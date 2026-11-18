@@ -266,6 +266,7 @@ namespace hds
             if(state.Version==2)MissionOpenFloorAdmission.ValidateRestored(p,siteCatalog);
             MissionNpcInteriorCheckpoint.ValidateGeometry(p,npcInterior,npcProvider??MissionNpcInteriorEvidenceProvider.Instance);
             if(street!=null)MissionStreetCheckpoint.ValidateGeometry(p,street,streetDataset??MissionPublicDoors.CurrentDataset(),streetLookup??(key=>DataLoader.getInstance().getObjectValues(key,mission.district)),siteCatalog);
+            foreach(var obj in p.objects.Values)MissionStreetFurnitureRoutes.BindValidatedCurrent(p,obj);
             return p;
         }
     }

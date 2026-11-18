@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 namespace hds
@@ -8,9 +9,11 @@ namespace hds
     internal sealed class MissionStreetSelection
     {
         public int Version {get;}public int Mission {get;}public string Identity {get;}public long Started {get;}public int Phase {get;}
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)]public JsonElement BoundRoutes {get;}
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)]public JsonElement FurnitureRoutes {get;}
         public MissionOpenFloorSite Site {get;}public string Kind {get;}public MissionStreetContexts.Context Context {get;}public string Refusal {get;}
-        [JsonConstructor]public MissionStreetSelection(int version,int mission,string identity,long started,int phase,MissionOpenFloorSite site,string kind,MissionStreetContexts.Context context,string refusal)
-        {Version=version;Mission=mission;Identity=identity;Started=started;Phase=phase;Site=site;Kind=kind;Context=context;Refusal=refusal;}
+        [JsonConstructor]public MissionStreetSelection(int version,int mission,string identity,long started,int phase,MissionOpenFloorSite site,string kind,MissionStreetContexts.Context context,string refusal,JsonElement boundRoutes=default,JsonElement furnitureRoutes=default)
+        {Version=version;Mission=mission;Identity=identity;Started=started;Phase=phase;Site=site;Kind=kind;Context=context;Refusal=refusal;BoundRoutes=boundRoutes;FurnitureRoutes=furnitureRoutes.ValueKind==JsonValueKind.Undefined?default:furnitureRoutes.Clone();}
     }
     internal sealed class MissionStreetPending
     {
@@ -38,7 +41,11 @@ namespace hds
         {Fields(p,e,"RawDoorJson","EvidenceDigest","Quaternion","Node","Position","Standing");Fields(p,e.GetProperty("Node"),"Region","Polygon");}
         private static void SelectionShape(MissionProgress p,JsonElement e)
         {
-            Fields(p,e,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal");
+            if(e.ValueKind==JsonValueKind.Object&&e.TryGetProperty("FurnitureRoutes",out var furniture))
+            {Fields(p,e,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal","FurnitureRoutes");Need(p,e.GetProperty("Version").GetInt32()==3,"FurnitureRouteVersion");MissionStreetFurnitureRoutes.Shape(p,furniture);}
+            else if(e.ValueKind==JsonValueKind.Object&&e.TryGetProperty("BoundRoutes",out var bound))
+            {Fields(p,e,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal","BoundRoutes");Need(p,e.GetProperty("Version").GetInt32()==2,"BoundRouteVersion");MissionStreetBoundRoutes.Shape(p,bound);}
+            else Fields(p,e,"Version","Mission","Identity","Started","Phase","Site","Kind","Context","Refusal");
             Fields(p,e.GetProperty("Site"),"District","DoorKey","DoorX","DoorY","DoorZ","Fingerprint");
             JsonElement c=e.GetProperty("Context");if(c.ValueKind==JsonValueKind.Null)return;
             Fields(p,c,"Key","Kind","Refusal","StreetDigest","Floor","Lobby","Door","Outside","Inside");EntryShape(p,c.GetProperty("Floor"));EntryShape(p,c.GetProperty("Lobby"));
@@ -55,13 +62,15 @@ namespace hds
         private static bool SameEntry(MissionNpcInteriorEntry a,MissionNpcInteriorEntry b)=>JsonSerializer.Serialize(a,MissionProgress.SaveJson)==JsonSerializer.Serialize(b,MissionProgress.SaveJson);
         private static MissionSite Selection(MissionProgress p,MissionStreetSelection s,IReadOnlyList<MissionSite> catalogue,bool pending)
         {
-            Need(p,s!=null&&s.Version==1&&s.Mission==p.mission.id&&s.Identity==p.persistenceId&&s.Started==p.startedAt&&s.Phase>=0&&s.Phase<p.mission.phases.Count&&
+            Need(p,s!=null&&(s.Version==1&&s.BoundRoutes.ValueKind==JsonValueKind.Undefined&&s.FurnitureRoutes.ValueKind==JsonValueKind.Undefined||s.Version==2&&s.BoundRoutes.ValueKind==JsonValueKind.Object&&s.FurnitureRoutes.ValueKind==JsonValueKind.Undefined||s.Version==3&&s.FurnitureRoutes.ValueKind==JsonValueKind.Object&&s.BoundRoutes.ValueKind==JsonValueKind.Undefined)&&s.Mission==p.mission.id&&s.Identity==p.persistenceId&&s.Started==p.startedAt&&s.Phase>=0&&s.Phase<p.mission.phases.Count&&
                 (pending?s.Phase==p.phaseIndex+1:s.Phase<=p.phaseIndex)&&s.Site!=null&&s.Site.District==p.mission.district&&s.Kind==KindFor(p.mission,s.Phase),"StreetOwnerPhase");
             MissionSite site=s.Site.Resolve(catalogue);Need(p,site!=null,"MissingExactStreetSite");
             Need(p,s.Refusal==null||pending&&!string.IsNullOrWhiteSpace(s.Refusal),"StreetRefusalScope");
+            Need(p,s.Version!=2&&s.Version!=3||s.Context!=null&&s.Refusal==null,"BoundStreetCannotBeRefusalOnly");
             if(s.Context==null){Need(p,pending&&s.Refusal!=null,"MissingStreetContext");return site;}
             Need(p,MissionStreetContexts.Valid(s.Context)&&s.Context.Kind==s.Kind&&s.Context.Floor.RawDoorJson==MissionNpcInteriorPlanning.RawJson(site.elevatorDoor)&&
                 s.Context.Lobby.RawDoorJson==MissionNpcInteriorPlanning.RawJson(site.lobbyDoor)&&s.Context.Door.Key!=site.elevatorDoor.mxoStaticId&&s.Context.Door.Key!=site.lobbyDoor.mxoStaticId,"StreetSelectedContext");
+            MissionStreetBoundRoutes.ValidateShapeOwner(p,s);MissionStreetFurnitureRoutes.ValidateShapeOwner(p,s);
             StaticWorldObject raw=MissionNpcInteriorPlanning.ReadRaw(s.Context.Door.RawDoorJson);
             Need(p,raw!=null&&raw.metrId==site.metrId&&raw.mxoStaticId==s.Context.Door.Key,"StreetPublicRawIdentity");return site;
         }
@@ -154,13 +163,15 @@ namespace hds
             {
                 var site=row.Site.Resolve(p.sites);Need(p,site!=null,"StreetFixedHistorySite");
                 if(!MissionStreetContexts.ValidateSelected(row.Context,site,dataset,lookup,out string why))throw new MissionPlacementRestoreException(p,"Invalid fixed street context:"+why);
+                try{MissionStreetBoundRoutes.Validate(p,row,lookup);MissionStreetBoundRoutes.RequireCurrentSources(p,row);MissionStreetFurnitureRoutes.Validate(p,row,lookup);MissionStreetFurnitureRoutes.RequireCurrentSources(p,row);}
+                catch(Exception ex) when(ex is InvalidDataException||ex is IOException||ex is JsonException){throw new MissionPlacementRestoreException(p,"Invalid fixed bound route:"+ex.Message);}
             }
             if(envelope.Pending?.Selection.Refusal==null&&envelope.Pending!=null)
             {
                 var pending=envelope.Pending;var site=ValidateCarrier(p,pending,catalogue??MissionSites.For(p.mission.district));
                 if(!MissionStreetContexts.ValidateSelected(pending.Selection.Context,site,dataset,lookup,out string why))throw new MissionPlacementRestoreException(p,"Invalid pending street context:"+why);
-                try{foreach(var choice in pending.Choices)MissionBoundObjectPoses.RequireCurrent(new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid});}
-                catch(MissionCheckpointException ex){throw new MissionPlacementRestoreException(p,"Invalid pending street source:"+ex.Message);}
+                try{MissionStreetBoundRoutes.Validate(p,pending.Selection,lookup,pending.Choices);MissionStreetFurnitureRoutes.Validate(p,pending.Selection,lookup,pending.Choices);foreach(var choice in pending.Choices){var state=new MissionObjectState{spot=choice.ReadSpot(),goid=choice.Goid};MissionBoundObjectPoses.RequireCurrent(state);MissionBoundFurniturePoses.RequireCurrent(state);}}
+                catch(Exception ex) when(ex is MissionCheckpointException||ex is InvalidDataException||ex is IOException||ex is JsonException){throw new MissionPlacementRestoreException(p,"Invalid pending street source:"+ex.Message);}
             }
         }
     }

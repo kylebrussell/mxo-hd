@@ -335,13 +335,14 @@ public static partial class Scenarios
             try{await p.WaitUntilAsync(()=>{try{MervFollowupElevatorFixture.CurrentOverlay(p.World.CurrentOwnViewLife(),ride);return true;}catch(InvalidDataException ex){reason=ex.Message;return false;}},"elevator view",TimeSpan.FromSeconds(10));}
             catch(Exception ex){throw new ScenarioFailure($"{ex.Message.Split(" Received ")[0]} Car {ride.Key}: {reason}");}
         }
-        if(enter&&MervBound326Approach.NeedsArrival(s))
+        if(enter&&(MervAfterFurnitureApproach.NeedsArrival(s)||MervBound326Approach.NeedsArrival(s)))
         {
             if(arrivalRoot!=null)
             {
                 var root=arrivalRoot;
                 Check.That(NavMesh.Locate(ride.District,root[0],root[1],root[2],out var nav),"Arrival NAV floor");
-                notes.Add(MervBound326Approach.Capture(s,root,nav,p.World.CurrentOwnViewLife(),ride.Measured));
+                if(MervAfterFurnitureApproach.NeedsArrival(s))notes.Add(MervAfterFurnitureApproach.Capture(c.RepositoryRoot,s,root,nav,p.World.CurrentOwnViewLife()));
+                else notes.Add(MervBound326Approach.Capture(s,root,nav,p.World.CurrentOwnViewLife(),ride.Measured));
             }
         }
         if(enter)

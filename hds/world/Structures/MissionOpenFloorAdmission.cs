@@ -129,6 +129,14 @@ namespace hds
                 var captured=MissionStreetCheckpoint.Prepared(progress,selected.Street,site,phaseIndex).Context;
                 if(poses.Values.Any(p=>!p.RootSurface.SequenceEqual(new ushort[]{site.elevatorDoor.sectorID,captured.Floor.Node.Region,captured.Floor.Node.Polygon})))
                 {refusal="StreetAndObjectEntryDisagree";return false;}
+                // Mixed free props do not carry a fixed-furniture portal route. Their bound cabinets
+                // must share the arrival room, rather than another prefab on the same broad site floor.
+                foreach(var choice in choices.Where(c=>c.Goid==326&&MissionSites.Goid(c.ReadSpot())==326))
+                {
+                    var bound=new MissionObjectState{spot=choice.ReadSpot(),goid=326};
+                    if(!MissionBoundObjectPoses.TryCurrentRegion(bound,out _,out int region,out refusal))return false;
+                    if(region!=captured.Floor.Node.Region){refusal="BoundPropOutsideArrivalRoom";return false;}
+                }
             }
             plan=new Plan(client,progress,phaseIndex,site,selected,poses,before,beforePhase,data,world,life,transport,character);return true;
         }

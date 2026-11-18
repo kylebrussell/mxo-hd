@@ -28,14 +28,19 @@ namespace hds
         private static bool CheckSite(MissionPhase phase,MissionSite site,out string refusal,int npcCount,bool checkSourcePool,MissionElevatorWitness elevator=null)
         {
             refusal=null;
-            if(!MissionOpenFloorAdmission.Requires(phase))return true;
+            bool requiresOpenFloor=MissionOpenFloorAdmission.Requires(phase);
+            if(!requiresOpenFloor)
+                return !checkSourcePool||!MissionBoundFurnitureAdmission.Applies(phase,site)||
+                    MissionStaging.TrySourcePools(phase,site,npcCount,out _,out refusal);
+            // Bound and free props can share a phase. Check the whole source pool before
+            // taking the native-object shortcut, which only waives free-prop geometry.
+            MissionStaging.SourcePools pools=null;
+            if(checkSourcePool&&!MissionStaging.TrySourcePools(phase,site,npcCount,out pools,out refusal))return false;
             // With no runtime actors and enough same-kind native objects, SelectObjects never
             // creates a free prop. Preserve that existing bound-only path without a new NAV proof.
             if(npcCount==0&&site!=null&&phase.objects.Where(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase))
                 .GroupBy(o=>o.kind,StringComparer.OrdinalIgnoreCase).All(g=>site.realObjects.Count(s=>
                     MissionSites.RealObjects.TryGetValue(MissionSites.Goid(s),out var kind)&&string.Equals(kind,g.Key,StringComparison.OrdinalIgnoreCase))>=g.Count()))return true;
-            MissionStaging.SourcePools pools=null;
-            if(checkSourcePool&&!MissionStaging.TrySourcePools(phase,site,npcCount,out pools,out refusal))return false;
             elevator=elevator??pools?.Elevator;
             if(!TryAllocate(site,npcCount,out _,out refusal,elevator))return false;
             var first=phase.objects.FirstOrDefault();if(first==null)return true;

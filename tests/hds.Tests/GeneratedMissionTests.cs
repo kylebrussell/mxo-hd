@@ -304,7 +304,7 @@ public class GeneratedMissionTests
         {
             MissionPhase phase = mission.phases[p];
             string where = file + " phase " + (p + 1);
-            Assert.True(phase.site != null || phase.waypoints.Count > 0 || HeadlessClient.MachinesNoSiteUploadFixture.IsNoSiteUpload(mission, p), where + ": nowhere to go");
+            Assert.True(phase.site != null || phase.waypoints.Count > 0 || IsActorFreeUpload(mission,p), where + ": nowhere to go");
             Assert.Contains(phase.missionObjectives, o => !o.optional && o.type != MissionGoalType.Protect);
             HashSet<int> goals = phase.missionObjectives.Select(o => o.goal).ToHashSet();
             HashSet<ushort> objects = phase.objects.Select(o => o.id).ToHashSet();
@@ -372,4 +372,13 @@ public class GeneratedMissionTests
     {
         Assert.Equal("I'm \"here\"... -- now - go", MissionXml.Plain("I’m “here”… — now – go"));
     }
+    internal static bool IsActorFreeUpload(Mission mission,int index)
+    {
+        if(index<0||index>=mission.phases.Count)return false;
+        var p=mission.phases[index];
+        return p.site==null&&p.objects.Count==0&&!p.Waves().Any(w=>w.count>0)&&
+            !mission.npcs.Any(n=>n.at==0||n.at==index+1)&&p.missionObjectives.Count>0&&
+            p.missionObjectives.All(g=>g.type==MissionGoalType.Upload);
+    }
+
 }

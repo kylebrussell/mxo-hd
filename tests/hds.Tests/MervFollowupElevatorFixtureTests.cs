@@ -85,7 +85,7 @@ public class MervFollowupElevatorFixtureTests
     {
         var field=typeof(hds.GameObjectDefinitions).GetField("Object419")!;var o=(GameObject)Activator.CreateInstance(field.FieldType,field.Name,(ushort)419)!;
         if(dynamic)o.UnsetRelatedStaticObjId();else o.SetRelatedStaticObjId(key);o.DisableAllAttributes();
-        foreach(var pair in new[]{("Position",new[]{28500d,545,14400}.SelectMany(BitConverter.GetBytes).ToArray()),("Orientation",Convert.FromHexString(Q))})
+        foreach(var pair in new[]{("Position",new[]{28500d,545,14400}.SelectMany(BitConverter.GetBytes).ToArray()),("Orientation",Convert.FromHexString(Q)),("CurrentState",BitConverter.GetBytes(0x834u))})
         {var attr=(hds.Attribute)o.GetType().GetField(pair.Item1)!.GetValue(o)!;attr.enable();attr.setValue(pair.Item2);}
         return new byte[]{1,0}.Concat(new hds.resources.gameobjects.ObjectManager().GenerateCreationPacket(o,0,spawn).getBytes()).Concat(BitConverter.GetBytes(view)).Concat(new byte[]{0}).ToArray();
     }
@@ -94,11 +94,28 @@ public class MervFollowupElevatorFixtureTests
     [Fact]public void AlreadyCreatedExactBoundDoorRemainsCurrentWithoutNewCreation()
     {
         var ride=MervFollowupElevatorFixture.Select(State(),true,Array.Empty<string>());
-        var old=Door();var stateUpdate=new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray();
+        var old=Door();var stateUpdate=new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x834)).ToArray();
         var observation=MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,stateUpdate),ride);
+        Assert.Equal(0x834u,observation.State);
+        var closing=Life(Own(),old,new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray());
+        Assert.Null(MervFollowupElevatorFixture.CurrentOverlay(closing,ride).State);
+        Assert.Throws<InvalidDataException>(()=>NpcInteriorComputerState.CurrentDoor(closing,new MissionNpcInteriorProof.Door(ride.Key,419,ride.Pose,ride.Quaternion!,null,"")));
         Assert.Equal(1,observation.BirthSection);Assert.Equal(ride.Key,observation.View.RelatedStaticObjectId);
         Assert.Equal((ushort)9,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),Door(key:0x0d100020,view:10,spawn:5),old),ride).View.ViewId);
         Assert.Equal((byte)5,MervFollowupElevatorFixture.CurrentOverlay(Life(Own(),old,new byte[]{1,0,1,1,0,9,0},Door(spawn:5)),ride).View.SpawnId);
+    }
+    [Fact]public void PortalAlreadyOpenIsReusedButClosedDeletedOrReusedCannotSkipNormalOpen()
+    {
+        var door=new MissionNpcInteriorProof.Door(0x0d100028,419,new[]{28500d,545,14400},Q,null,"");
+        var birth=Door();var current=Life(Own(),birth);
+        Assert.NotNull(MervFollowupElevatorFixture.CurrentOpenPortal(current,door));
+        // Ordinary door use toggles state: a repeated route must not toggle a proven OPEN door closed.
+        var closed=Life(Own(),birth,new byte[]{9,0}.Concat(DoorLifecycle.BuildStateUpdate(0x838)).ToArray());
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(closed,door));
+        var delete=new byte[]{1,0,1,1,0,9,0};
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),birth,delete),door));
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),birth,delete,birth),door));
+        Assert.Null(MervFollowupElevatorFixture.CurrentOpenPortal(Life(Own(),Door(key:0x0d100020)),door));
     }
     [Fact]public void SamePoseWrongKeyDeletedReusedAmbiguousUnknownOrOldLifeCannotSupplyDoor()
     {

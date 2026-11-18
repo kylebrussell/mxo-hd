@@ -7,7 +7,7 @@ public static class NpcInteriorComputerState
     public sealed record Observation(Capability Capability,uint State);
     public sealed record DoorObservation(ViewCreation View,Capability Capability,uint State);
     public sealed record Teleport(long Life,int Section,int Offset,byte Id,ushort Sector,ushort Region,ushort Polygon,float X,float Y,float Z,string Raw);
-    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||(MissionInteriorDoorTypes.IsSupported(goid)||goid==417||goid==419);
+    static bool Tracked(ushort goid)=>MissionStaging.IsComputer(goid)||MissionSites.Furniture.Contains(goid)||(MissionInteriorDoorTypes.IsSupported(goid)||goid==417||goid==419);
     sealed class Live
     {
         public required ViewCreation View;public required string Raw;public int Birth;public uint State;public bool Known=true;
@@ -20,18 +20,19 @@ public static class NpcInteriorComputerState
     {
         teleports=new();
         if(!stream.Current||!stream.OwnViewReady||stream.OwnBirthSection<0||stream.Events.Any(e=>e.Life!=stream.Life))throw new InvalidDataException("No current own life for computer state");
+        var schemas=new CurrentViewSchemas();
         var live=new Dictionary<ushort,Live>();var retired=new HashSet<(ushort,byte)>();bool ownSeen=false;
         foreach(var e in stream.Events)
         {
             if(e.Section<stream.OwnBirthSection)continue;var bytes=e.Bytes;var births=WireFormat.FindCreationEvents(bytes);int at=0;
-            if(e.Section==stream.OwnBirthSection){var own=births.LastOrDefault(c=>c.Creation.ViewId==2&&c.Creation.Goid==12)??throw new InvalidDataException("No actual own2 birth");at=own.Offset+own.Length;ownSeen=true;}
+            if(e.Section==stream.OwnBirthSection){var own=births.LastOrDefault(c=>c.Creation.ViewId==2&&c.Creation.Goid==12)??throw new InvalidDataException("No actual own2 birth");schemas.Birth(own.Creation);at=own.Offset+own.Length;ownSeen=true;}
             if(!ownSeen)throw new InvalidDataException("Computer must follow own2");
             while(at<bytes.Length)
             {
                 var birth=births.FirstOrDefault(c=>c.Offset==at);
                 if(birth!=null)
                 {
-                    var view=birth.Creation;string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
+                    var view=birth.Creation;schemas.Birth(view);string raw=Convert.ToHexString(bytes.AsSpan(at,birth.Length));
                     if(!live.TryGetValue(view.ViewId,out var prior)||prior.Raw!=raw)
                     {
                         if(prior!=null)retired.Add((prior.View.ViewId,prior.View.SpawnId));
@@ -39,8 +40,7 @@ public static class NpcInteriorComputerState
                     }
                     at+=birth.Length;continue;
                 }
-                ushort? goid=at+2<=bytes.Length&&live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)
-                    ?addressed.View.Goid:at+2<=bytes.Length&&BitConverter.ToUInt16(bytes,at)==2?(ushort)12:null;
+                ushort? goid=at+2<=bytes.Length?schemas.Lookup(BitConverter.ToUInt16(bytes,at),live.TryGetValue(BitConverter.ToUInt16(bytes,at),out var addressed)?addressed.View.Goid:null):null;
                 if(!MervFollowupViewFrames.TryRead(bytes,at,goid,out var frame))
                     throw new InvalidDataException($"Unknown/truncated computer current-life frame at section{e.Section} offset{at}");
                 if(frame.Type==MervFollowupViewFrames.Kind.OwnTeleport)
