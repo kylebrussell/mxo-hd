@@ -4,7 +4,7 @@ using HeadlessClient;
 
 namespace NativeQa.Modes;
 
-public sealed class SocialBreadthMode : NativeQaMode
+public class SocialBreadthMode : NativeQaMode
 {
     private const uint CaptainCrew = 9101;
     private const uint PeerCrew = 9102;
@@ -14,23 +14,40 @@ public sealed class SocialBreadthMode : NativeQaMode
     private const string PeerCaptain = "QAOther";
     private const string Hug = "fd 0d 00 58";
     private const byte Crew = 2, Faction = 1;
+    private readonly bool seedFaction;
 
     public override string Name => "social-breadth";
+    public override NativeQaModePlan Plan { get; }
 
-    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2 }, 17000, 2300,
-        Array.Empty<string>(), new[] { "UPDATE characters SET y=495 WHERE charId=110;" },
-        new[] { $"""
-            INSERT INTO factions (id,name,master_player_handle,money) VALUES ({FactionId},'QAFaction','{Captain}',0);
-            INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank) VALUES
-                ({CaptainCrew},'QACrew','{Captain}',0,1,{FactionId},1),({PeerCrew},'QAPeerCrew','{PeerCaptain}',0,1,{FactionId},5);
-            UPDATE characters SET crewId={CaptainCrew},factionId={FactionId} WHERE charId=110;
-            UPDATE characters SET x=17120,y=495,z=2300 WHERE handle='{Member}';
-            UPDATE characters SET x=17220,y=495,z=2300,crewId={PeerCrew},factionId={FactionId} WHERE handle='{PeerCaptain}';
-            INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
-                SELECT crewId,charId,1,0,NOW() FROM characters WHERE charId=110 OR handle='{PeerCaptain}';
-            """ },
-        readyMessages: new[] { "CSR_Tester captains QACrew, the leading crew of the pre-seeded QAFaction. QAOther captains QAPeerCrew at rank 5. "
-            + "Run the chat, rank and paired-emote checks in docs/GAMEPLAY-BREADTH-PEERS.md." });
+    public SocialBreadthMode() : this(seedFaction: true) { }
+
+    protected SocialBreadthMode(bool seedFaction)
+    {
+        this.seedFaction = seedFaction;
+        uint faction = seedFaction ? FactionId : 0;
+        int captainRank = seedFaction ? 1 : 0;
+        int peerRank = seedFaction ? 5 : 0;
+        string factionInsert = seedFaction
+            ? $"INSERT INTO factions (id,name,master_player_handle,money) VALUES ({FactionId},'QAFaction','{Captain}',0);"
+            : string.Empty;
+        string instructions = seedFaction
+            ? "CSR_Tester captains QACrew, the leading crew of the pre-seeded QAFaction. QAOther captains QAPeerCrew at rank 5."
+            : "CSR_Tester and QAOther captain unaffiliated crews. Target QAOther, open Organization → Faction, use Name, then Recruit.";
+        Plan = new(new ushort[] { 2 }, 17000, 2300,
+            Array.Empty<string>(), new[] { "UPDATE characters SET y=495 WHERE charId=110;" },
+            new[] { $"""
+                {factionInsert}
+                INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank) VALUES
+                    ({CaptainCrew},'QACrew','{Captain}',0,1,{faction},{captainRank}),
+                    ({PeerCrew},'QAPeerCrew','{PeerCaptain}',0,1,{faction},{peerRank});
+                UPDATE characters SET crewId={CaptainCrew},factionId={faction} WHERE charId=110;
+                UPDATE characters SET x=17120,y=495,z=2300 WHERE handle='{Member}';
+                UPDATE characters SET x=17220,y=495,z=2300,crewId={PeerCrew},factionId={faction} WHERE handle='{PeerCaptain}';
+                INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
+                    SELECT crewId,charId,1,0,NOW() FROM characters WHERE charId=110 OR handle='{PeerCaptain}';
+                """ },
+            readyMessages: new[] { instructions + " See docs/GAMEPLAY-BREADTH-PEERS.md." });
+    }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -47,6 +64,30 @@ public sealed class SocialBreadthMode : NativeQaMode
         var captain = context.Helpers[PeerCaptain];
         await member.WaitForViewNamedAsync(PeerCaptain);
         await captain.WaitForViewNamedAsync(Member);
+        if (seedFaction)
+            await CheckSeededFactionAsync(database, captain);
+        else
+        {
+            var empty = await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} 00 00 00 00 01 00 00 00 00 00");
+            Check.Equal(15, empty.Bytes.Length, "QAOther received empty faction state at login");
+            Check.Equal(2L, await database.LongAsync($"""
+                SELECT COUNT(*) FROM characters c JOIN crew_members m ON m.char_id=c.charId AND m.crew_id=c.crewId
+                  JOIN crews r ON r.id=c.crewId
+                WHERE m.is_captain=1 AND r.org=1 AND r.master_player_handle=c.handle
+                  AND c.factionId=0 AND r.faction_id=0 AND r.faction_rank=0
+                  AND ((c.charId=110 AND r.id={CaptainCrew}) OR (c.charId={captain.CharId} AND r.id={PeerCrew}));
+                """), "Both unaffiliated crew captains are ready to found a faction");
+        }
+        Check.Equal(1L, await database.LongAsync($"""
+            SELECT COUNT(*) FROM characters WHERE charId={member.CharId} AND crewId=0 AND factionId=0;
+            """), "QAFriend is available for a crew invitation");
+        member.SkipReceived();
+        captain.SkipReceived();
+        return Array.Empty<byte>();
+    }
+
+    private static async Task CheckSeededFactionAsync(ThrowawayDatabase database, HeadlessPlayer captain)
+    {
         await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} {Le(FactionId)} 01");
         var roster = await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} {Le(FactionId)} 02");
         const int rosterHeader = 17, crewSize = 81;
@@ -63,12 +104,6 @@ public sealed class SocialBreadthMode : NativeQaMode
               AND ((c.charId=110 AND r.id={CaptainCrew} AND r.faction_rank=1)
                 OR (c.charId={captain.CharId} AND r.id={PeerCrew} AND r.faction_rank=5));
             """), "The seeded faction has both captains and their expected ranks");
-        Check.Equal(1L, await database.LongAsync($"""
-            SELECT COUNT(*) FROM characters WHERE charId={member.CharId} AND crewId=0 AND factionId=0;
-            """), "QAFriend is available for a crew invitation");
-        member.SkipReceived();
-        captain.SkipReceived();
-        return Array.Empty<byte>();
     }
 
     public static async Task<object> SendActionAsync(HeadlessPlayer actor, JsonElement request)
@@ -125,4 +160,11 @@ public sealed class SocialBreadthMode : NativeQaMode
     private static string ViewHandle(ViewCreation view) =>
         $"{WireFormat.ToHex(BitConverter.GetBytes(view.ViewId))} {view.SpawnId:x2} 00";
     private static string Le(uint value) => WireFormat.ToHex(BitConverter.GetBytes(value));
+}
+
+public sealed class FactionFoundingMode : SocialBreadthMode
+{
+    public FactionFoundingMode() : base(seedFaction: false) { }
+
+    public override string Name => "faction-founding";
 }

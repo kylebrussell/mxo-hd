@@ -38,6 +38,20 @@ at rank 5. QAFriend is nearby and unaffiliated.
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"hug-answer","accept":true}` |
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"hug-ask"}` |
 
+## Faction founding
+
+Use `faction-founding`. CSR_Tester and QAOther captain QACrew and QAPeerCrew.
+The fixture checks that both crews start unaffiliated.
+
+1. Target QAOther. Open **Organization › Faction**, choose **Name**, and enter
+   `QAFaction`. Choose **Recruit** with QAOther still targeted.
+2. Submit `{"actor":"QAOther","action":"social","step":"faction-answer","accept":true}`.
+3. Open the Faction roster and verify QACrew at rank 1 and QAPeerCrew at rank 5.
+
+The client enables the Faction menu after receiving faction state. A zero-faction
+`7c` record initializes that state and lets the menu open the founding panel.
+The panel's Recruit action sends `7a` for the named faction and selected captain.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300
