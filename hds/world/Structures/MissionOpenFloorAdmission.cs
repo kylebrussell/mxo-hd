@@ -309,8 +309,8 @@ namespace hds
                 var state=new MissionObjectState {def=def,spot=raw,goid=c.Goid,
                     entity=EntityBase+(ulong)client.playerData.missionInstanceCounter*1000UL+(ulong)(progress.phaseIndex*50+def.id),
                     OpenFloor=plan.Poses.TryGetValue(c.ObjectId,out var pose)?pose:null};
-                progress.objects.Add(c.ObjectId,state);SpawnObject(client,progress,state);var at=MissionObjectPoses.For(state);
-                Output.WriteDebugLog("[MISSION] Object "+def.id+" ("+def.kind+") is a "+c.Goid+" at "+at.X+","+at.Y+","+at.Z);
+                progress.objects.Add(c.ObjectId,state);SpawnObject(client,progress,state);var at=MissionObjectPoses.ForPresentation(state);
+                Output.WriteDebugLog("[MISSION] Object "+def.id+" ("+def.kind+") is a "+state.PresentationGoid+" at "+at.X+","+at.Y+","+at.Z);
                 if(state.OpenFloor!=null)Output.WriteDebugLog("[MISSION] Open-floor resolved source "+state.spot.mxoStaticId.ToString("x8")+" raw "+state.spot.pos_x+","+state.spot.pos_y+","+state.spot.pos_z+" fixed "+at.X+","+at.Y+","+at.Z);
             }
         }

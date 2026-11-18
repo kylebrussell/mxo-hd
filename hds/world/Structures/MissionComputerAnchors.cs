@@ -18,7 +18,7 @@ namespace hds
             private readonly byte[] orientation;
             private readonly string unchangedQuaternion;
             public byte[] Orientation => orientation==null ? StringUtils.hexStringToBytes(unchangedQuaternion) : (byte[])orientation.Clone();
-            internal Pose(double x, double y, double z, byte[] q) { X=x;Y=y;Z=z;orientation=(byte[])q.Clone(); }
+            public Pose(double x, double y, double z, byte[] q) { X=x;Y=y;Z=z;orientation=(byte[])q.Clone(); }
             internal Pose(double x, double y, double z, string q) { X=x;Y=y;Z=z;unchangedQuaternion=q; }
         }
         private sealed class Anchor

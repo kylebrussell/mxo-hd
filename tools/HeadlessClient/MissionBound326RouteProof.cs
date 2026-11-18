@@ -63,8 +63,23 @@ public static class MissionBound326RouteProof
     }
     public static NpcInteriorComputerState.DoorObservation RequireOpen(OwnViewLifeSnapshot current,OwnViewLifeSnapshot before,Door expected)
     {Need(before.Current&&current.Current&&current.OwnViewReady&&ReferenceEquals(current.Owner,before.Owner)&&current.Life==before.Life,"portal Open current own-life owner");return NpcInteriorComputerState.CurrentDoor(current,expected);}
-    public static void RequireCurrent(Plan plan,MissionProgress.SavedState current)
-    {MissionOutsideContinuation.Require(plan.Before,current);var now=MervFollowupStreetEntry.ForSite(current);Need(now!=null&&now.Raw.GetRawText()==plan.Selection.GetRawText(),"current owner/source/route identity");}
+    public static void RequireCurrent(Plan plan, MissionProgress.SavedState current, int? proximityGoal = null)
+    {
+        var before = plan.Before;
+        if (proximityGoal is int completed && !before.Done.Contains(completed) && current.Done.Contains(completed))
+        {
+            MissionOutsideContinuation.Require(before, current, preserveGoalsAndItems: false);
+            Need(current.Done.Order().SequenceEqual(before.Done.Append(completed).Order()) &&
+                current.EverDone.Order().SequenceEqual(before.EverDone.Append(completed).Distinct().Order()) &&
+                current.Items.OrderBy(item => item.Key).SequenceEqual(before.Items.OrderBy(item => item.Key)) &&
+                current.Following.Order().SequenceEqual(before.Following.Order()),
+                "proximity approach changed only the expected phone goal");
+        }
+        else
+            MissionOutsideContinuation.Require(before, current);
+        var now = MervFollowupStreetEntry.ForSite(current);
+        Need(now != null && now.Raw.GetRawText() == plan.Selection.GetRawText(), "current owner/source/route identity");
+    }
     public static Step[] Steps(string repository,Plan plan)
     {
         var source=Raw(plan.Floor.Raw);string expectedDigest=plan.Selection.GetProperty("Context").GetProperty("Floor").GetProperty("EvidenceDigest").GetString()!;

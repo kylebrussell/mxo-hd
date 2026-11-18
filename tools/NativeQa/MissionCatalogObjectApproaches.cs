@@ -10,6 +10,8 @@ internal static class MissionCatalogObjectApproaches
 {
     internal sealed record Approach(ushort ObjectId, string Kind, double[]? Centre, NavPoint? Stand, byte? Yaw)
     {
+        public string? Preview { get; init; }
+
         private static string Number(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
         public string Describe()
@@ -25,7 +27,8 @@ internal static class MissionCatalogObjectApproaches
             string xyz = string.Join(",", point.Position.Select(Number));
             string args = string.Join(" ", point.Position.Select(Number));
             return $"{prefix}: stand {xyz} face {Yaw:X2} (yaw hex). "
-                + $"Assisted: ?tp {args} {nav.sector:X} {nav.region:X} {nav.polygon:X} - {Yaw:X2}";
+                + $"Assisted: ?tp {args} {nav.sector:X} {nav.region:X} {nav.polygon:X} - {Yaw:X2}"
+                + (Preview == null ? "" : " " + Preview);
         }
     }
 
@@ -75,7 +78,33 @@ internal static class MissionCatalogObjectApproaches
             return TryNearby(obj, centre, street?.Floor.Standing, out stand)
                 ? Facing(obj.Id, kind, centre, stand)
                 : new Approach(obj.Id, kind, centre, null, null);
-        }).ToArray();
+        }).Select(approach => WithPirateBroadcastPreview(state, approach)).ToArray();
+    }
+
+    private static Approach WithPirateBroadcastPreview(MissionProgress.SavedState state, Approach approach)
+    {
+        if (state.Mission != 210203 || state.Phase != 0 || approach.ObjectId != 1 || approach.Centre is not { } centre)
+            return approach;
+        var saved = state.Objects.Single(obj => obj.Id == approach.ObjectId);
+        if (saved.Spot?.mxoStaticId != 249561936 || saved.Goid != 326)
+            return approach;
+
+        var source = new MissionObjectState { def = new MissionObjectDef { kind = "Phone" }, spot = saved.Spot, goid = saved.Goid };
+        var phone = MissionObjectPoses.ForPresentation(source);
+        double[] preview = { 9572, 2095, 6893 };
+        double dx = preview[0] - centre[0], dz = preview[2] - centre[2];
+        double reach = MissionRuntime.ObjectReachUnits;
+        if (phone.X != 9301 || Math.Abs(phone.Y - 2230.140896) > 0.001 || phone.Z != 6845
+            || dx * dx + dz * dz <= reach * reach
+            || !TryStand(saved.Spot.metrId, preview, out var view))
+            return approach;
+
+        byte yaw = MobAggro.YawTowards(view.x, view.z, phone.X, phone.Z);
+        return approach with
+        {
+            Preview = "Before triggering the goal, look at the top of the cardboard box on the gray cabinet by the door. "
+                + $"Preview: ?tp 9572 2095 6893 {view.location.sector:X} {view.location.region:X} {view.location.polygon:X} - {yaw:X2}"
+        };
     }
 
     private static double[] Vector(JsonElement vector) => vector.EnumerateArray().Select(v => v.GetDouble()).ToArray();

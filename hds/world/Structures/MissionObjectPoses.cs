@@ -75,5 +75,27 @@ namespace hds
             var pose=state.OpenFloor;if(state.def==null||!pose.Basic(state.spot,state.goid,state.def.id))throw new InvalidOperationException("InvalidOpenFloorPose");
             var centre=pose.Centre;return new MissionComputerAnchors.Pose(centre[0],centre[1],centre[2],pose.Quaternion);
         }
+
+        public static MissionComputerAnchors.Pose ForPresentation(MissionObjectState state, MissionComputerAnchors.Pose sourcePose = null)
+        {
+            var pose = sourcePose ?? For(state);
+            if (state.PresentationGoid == state.goid || !MissionBoundFurnitureRange.Supports(state.goid)
+                || MissionSites.Goid(state.spot) != state.goid)
+                return pose;
+
+            // Certified furniture heights include the native origin correction for the chosen source.
+            double top;
+            if (MissionBoundFurnitureRange.TryBounds(state, out var bounds, out _))
+                top = bounds.Maximum[1];
+            else
+            {
+                // Legacy static CSV rows include +145 Y over the model's floor-level origin.
+                const double staticOriginOffset = 145;
+                double height = state.goid == 326 ? 160 : 2 * MissionBoundFurniturePoses.ModelHalf(state.goid)[1];
+                top = state.spot.pos_y - staticOriginOffset + height;
+            }
+
+            return MissionPhonePlacement.At(state.spot, pose, top, bounds);
+        }
     }
 }

@@ -13,6 +13,9 @@ namespace hds
         public MissionObjectDef def;
         public StaticWorldObject spot;  // the furniture or spawner it's bound to
         public UInt16 goid;
+        // The saved GO identifies the selected source and its audited placement.
+        public ushort PresentationGoid => string.Equals(def?.kind, "Phone", StringComparison.OrdinalIgnoreCase)
+            ? MissionSites.PhoneGoId : goid;
         public UInt64 entity;
         internal Func<MissionComputerAnchors.Pose> FurniturePresentation; // Validated current V3 only; never serialized.
         public MissionOpenFloorPlacement OpenFloor; // null for untouched legacy objects
@@ -679,8 +682,8 @@ namespace hds
                 progress.objects[def.id] = state;
                 MissionStreetFurnitureRoutes.BindValidatedCurrent(progress,state);
                 SpawnObject(client, progress, state);
-                var pose = MissionObjectPoses.For(state);
-                Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + pose.X + "," +
+                var pose = MissionObjectPoses.ForPresentation(state);
+                Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + state.PresentationGoid + " at " + pose.X + "," +
                                      pose.Y + "," + pose.Z);
             }
         }
@@ -763,7 +766,7 @@ namespace hds
         // A generated proxy is independent of its spawner; unrelated same-prototype furniture keeps its existing binding.
         internal static void ConfigureSourceBinding(GameObject obj,MissionObjectState state)
         {
-            if(MissionSites.Goid(state.spot)==state.goid)obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
+            if(MissionSites.Goid(state.spot)==state.PresentationGoid)obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
             else obj.UnsetRelatedStaticObjId();
         }
 
@@ -779,13 +782,14 @@ namespace hds
         }
         private static void SpawnObjectNow(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
-            FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
+            ushort goid = state.PresentationGoid;
+            FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + goid);
             if (field == null)
             {
                 return;
             }
 
-            GameObject obj = (GameObject)Activator.CreateInstance(field.FieldType, field.Name, state.goid);
+            GameObject obj = (GameObject)Activator.CreateInstance(field.FieldType, field.Name, goid);
             // Bound to the static only when it's the same object, as retail bound its filing cabinets and dressers (08 <goid>
             // <static>). At a spawner marker retail spawned it free (0c, no static): the client's definitions give the
             // spawners no Info or Usable part, so a mission object bound to one couldn't be selected.
@@ -797,18 +801,18 @@ namespace hds
             // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });
             SetAttribute(obj, "UseCount", new byte[] { 1 });
-            if (IsComputer(state.goid))
+            if (IsComputer(goid))
             {
                 // In its default state a computer can't be selected
                 state.shownState = ComputerStateFor(progress, state);
                 SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(state.shownState, 1));
             }
-            else if (state.def.locked && UtilityAbilities.IsLockable(state.goid) &&
+            else if (state.def.locked && UtilityAbilities.IsLockable(goid) &&
                      !state.unlockedOnce)
             {
                 // Its LockedState offers Pick Lock and Unlock, not Open (UtilityAbilities: rule 4000 needs Open Locks)
                 SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(UtilityAbilities.LockedState, 1));
-                UtilityAbilities.RegisterLocked(client, state.entity, state.goid, () =>
+                UtilityAbilities.RegisterLocked(client, state.entity, goid, () =>
                 {
                     lock(client.playerData.missionSync)
                     {
@@ -823,7 +827,7 @@ namespace hds
 
         internal static void ApplyObjectPose(GameObject obj,MissionObjectState state)
         {
-            var pose=MissionObjectPoses.For(state);
+            var pose=MissionObjectPoses.ForPresentation(state);
             SetAttribute(obj,"Position",NumericalUtils.doublesToLtVector3d(pose.X,pose.Y,pose.Z));
             SetAttribute(obj,"Orientation",pose.Orientation);
         }

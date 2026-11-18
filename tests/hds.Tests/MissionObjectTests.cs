@@ -46,6 +46,65 @@ public class MissionObjectTests
         Assert.False(MissionStaging.IsClickable(1401)); // Blinking_Desk_Phone
     }
 
+    [Theory]
+    [InlineData(326, false)]
+    [InlineData(1401, true)]
+    public void MissionPhonesKeepTheirSourceAndPresentAsDeskPhones(ushort sourceGoid, bool bound)
+    {
+        var source = new StaticWorldObject
+        {
+            metrId = 2, mxoStaticId = 42, type = BitConverter.GetBytes(sourceGoid),
+            pos_x = 10, pos_y = 145, pos_z = 20, quat = "0000000000000000000000000000803f"
+        };
+        var state = new MissionObjectState { def = new MissionObjectDef { kind = "Phone" }, spot = source, goid = sourceGoid };
+        Assert.Equal((ushort)1401, state.PresentationGoid);
+        Assert.False(MissionStaging.IsClickable(state.PresentationGoid));
+
+        var phone = new AttributeClass128("Blinking_Desk_Phone", state.PresentationGoid);
+        MissionStaging.ConfigureSourceBinding(phone, state);
+        Assert.Equal(bound ? source.mxoStaticId : uint.MaxValue, phone.GetRelatedStaticObjId());
+        var pose = MissionObjectPoses.ForPresentation(state);
+        Assert.Equal((source.pos_x, source.pos_z), (pose.X, pose.Z));
+        if (bound) Assert.Equal(source.pos_y, pose.Y);
+        else Assert.InRange(pose.Y, 160.14, 160.15);
+        Assert.Equal(sourceGoid, state.goid);
+        Assert.Equal(145, source.pos_y);
+    }
+
+    [Fact]
+    public void APhoneBesideClutterUsesTheFirstTopThatClearsTheScene()
+    {
+        var source = new MissionComputerAnchors.Pose(10, 80, 20, Convert.FromHexString("0000000000000000000000000000803f"));
+        var coverage = new MissionOpenFloorResolver.Bounds(-200, 200, -200, 200);
+        var box = new MissionOpenFloorResolver.StaticObstacle("box", null, null, 140, 230,
+            new MissionOpenFloorResolver.Bounds(-30, 40, -15, 75).Polygon, "observed box");
+        var wall = new MissionOpenFloorResolver.StaticObstacle("wall", null, null, 255, 450,
+            new MissionOpenFloorResolver.Bounds(-150, 150, -15, 75).Polygon, "observed wall");
+        var scene = new MissionOpenFloorResolver.StaticScene(1, true, coverage, 0, 500, new[] { box, wall }, "complete test scene");
+
+        Assert.True(MissionPhonePlacement.TryClearSurface(scene, 42, source, 162, null, out var phone));
+        Assert.InRange(phone.Y, 230.14, 230.15);
+        Assert.Equal((source.X, source.Z), (phone.X, phone.Z));
+        Assert.Equal(80, source.Y);
+    }
+
+    [Fact]
+    public void AFreePhoneFitsAnExposedStripBetweenTabletopProps()
+    {
+        var source = new MissionComputerAnchors.Pose(0, 0, 0, Convert.FromHexString("0000000000000000000000000000803f"));
+        var tabletop = new MissionOpenFloorResolver.Bounds(-40, 40, -80, 80);
+        var near = new MissionOpenFloorResolver.StaticObstacle("near", null, null, 50, 70,
+            new MissionOpenFloorResolver.Bounds(-40, 40, -80, -20).Polygon, "props before gap");
+        var far = new MissionOpenFloorResolver.StaticObstacle("far", null, null, 50, 70,
+            new MissionOpenFloorResolver.Bounds(-40, 40, 40, 80).Polygon, "props after gap");
+        var scene = new MissionOpenFloorResolver.StaticScene(1, true, tabletop, 0, 500, new[] { near, far }, "complete test scene");
+
+        Assert.True(MissionPhonePlacement.TryClearSurface(scene, 42, source, 50, tabletop, out var phone));
+        Assert.Equal(0, phone.X);
+        Assert.InRange(phone.Z, 4, 5);
+        Assert.InRange(phone.Y, 50.14, 50.15);
+    }
+
     [Fact]
     public void AComputerOffersTakeForAnItemAndHackOtherwise()
     {
