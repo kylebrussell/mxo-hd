@@ -2,7 +2,8 @@
 
 `native-verified` identifies a named result observed in the real client. `headless-only` means the listed
 path has automated evidence and still needs native QA on the current behavior. `broken` marks a reproduced
-player-facing failure. A row covers the behavior described in that row.
+player-facing failure. `client-unsupported` marks a path the stock client does not expose.
+A row covers the behavior described in that row.
 
 | System | Evidence | Player impact | Verified scope or remaining check |
 |---|---|---|---|
@@ -22,7 +23,7 @@ player-facing failure. A row covers the behavior described in that row.
 | Area chat | native-verified | Medium | CSR sent the command that triggered the teammate helper during native PR281 QA. |
 | Crew chat and paired emotes | native-verified | Medium | PR293 verified crew chat both ways, the hug offer and accepted animation, and no paired animation on decline. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
 | Hug refusal feedback | native-verified | Low | PR295 showed the decline message in native System chat. [PR295 native QA](https://github.com/kylebrussell/mxo-hd/pull/295#issuecomment-6982587085) |
-| Chat rooms | broken | Medium | The stock client rejects the room commands. The server still handles the room routes in headless QA. [Native chat command check](CLIENT-ACTIONS.md#chat-rooms) |
+| Chat rooms | client-unsupported | Medium | Stock 7.6005 has no registered room command or room-join UI. The server handles the room requests in headless QA. [Client and server evidence](CLIENT-ACTIONS.md#chat-rooms-custom-channels) |
 | Trade | native-verified | High | The Secure Trade window, item/info exchange, Clear and Cancel with the QA bot. [Secure Trade](SECURE-TRADE.md) |
 | Trade | native-verified | High | PR287 observed player-targeted and incoming offers, partner Accepted/Considering labels, a 250-information settlement, both cancellation paths and relog. [Secure Trade](SECURE-TRADE.md) |
 | Trade Accept checkbox | native-verified | High | PR291 observed a clear checkbox after a partner edit with the pointer away, the reset notice, one settlement after a fresh accept, and a clear incoming window after completion. [Secure Trade](SECURE-TRADE.md) |
