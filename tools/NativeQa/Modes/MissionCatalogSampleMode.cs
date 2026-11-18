@@ -104,6 +104,7 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Missing catalog fixture server.");
         var database = context.OwnedDatabase ?? throw new InvalidOperationException("Missing catalog fixture database.");
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Missing catalog path.");
         Check.That(database.Name.StartsWith(ThrowawayDatabase.Prefix, StringComparison.Ordinal) &&
             server.DatabaseName == database.Name, "Direct samples require the matching disposable server");
         const string payload = "SELECT COALESCE((SELECT HEX(payload) FROM char_active_missions WHERE charId=110),'')";
@@ -133,9 +134,13 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
                     $"SELECT COUNT(*) FROM char_missions WHERE charId=110 AND missionId={mission}"),
                     "Probe has no completion receipt for the selected mission");
                 NativeQaReadiness.RequireNoAmbientAggro(server, player);
+                string[] approaches = MissionCatalogObjectApproaches.Find(staged!, root).Select(obj => obj.Describe()).ToArray();
+                foreach (string approach in approaches)
+                    Console.WriteLine($"READY {mission}:{area} bootstrap {approach}");
                 proof.Add(new { Mission = mission, Area = area, staged!.Following, staged.Items,
                     Actors = staged.Mobs.Select(m => new { m.Npc, m.Name, m.Health, m.Dead }),
-                    Props = staged.Objects.Select(o => o.Id), Entrance = MissionCatalogEntrances.Describe(staged, context.RepositoryRoot) });
+                    Props = staged.Objects.Select(o => o.Id), Entrance = MissionCatalogEntrances.Describe(staged, root),
+                    ObjectApproaches = approaches });
 
                 player.SkipReceived();
                 player.SendRpc("80 a6");
@@ -158,6 +163,9 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Phase start requires the catalog path.");
+        hds.SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        hds.NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
         var metadata = Plan.ExtraQaMetadata;
         if (metadata.TryGetValue("DirectMissionSamples", out var sampleValue))
         {
@@ -176,7 +184,6 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
 
         var server = context.ActualServer ?? throw new InvalidOperationException("Phase start requires a fixture server.");
         var database = context.OwnedDatabase ?? throw new InvalidOperationException("Phase start requires a disposable database.");
-        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Phase start requires the catalog path.");
         int mission = metadata["CheckpointMission"].GetInt32(), area = areaValue.GetInt32();
         await using var scenario = ScenarioContext.UseOwnedServer(root, database, server);
         string PayloadQuery = "SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId=110";
