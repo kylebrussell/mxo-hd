@@ -26,6 +26,14 @@ namespace hds
         private static UInt32 FactionIdOf(WorldClient client) =>
             NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(), 1);
 
+        internal static bool ShareGroup(WorldClient a, WorldClient b)
+        {
+            uint crew = CrewIdOf(a), faction = FactionIdOf(a);
+            var team = Groups.FindTeamOf(a.playerData.getCharID());
+            return crew != 0 && crew == CrewIdOf(b) || faction != 0 && faction == FactionIdOf(b) ||
+                team?.HasMember(b.playerData.getCharID()) == true;
+        }
+
         internal static WorldClient FindOnline(Func<WorldClient, bool> match)
         {
             lock (WorldServer.Clients)

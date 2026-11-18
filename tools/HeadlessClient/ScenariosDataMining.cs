@@ -85,7 +85,9 @@ public static partial class Scenarios
         var item=await UtilityFixture(p,596);
         Cast(p,621); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01"); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
         await p.WaitForRpcAsync("80 cd 00 00 62 04 00 28");
-        await p.WaitForRpcAsync("80 cb"); await p.WaitForRpcAsync("80 c5 01 00 0a");
+        await p.WaitForRpcAsync("80 cb");
+        var locatorPings = ReadMinimapPositions((await p.WaitForRpcAsync("80 c5")).Bytes, 10);
+        Check.Equal((byte)0, locatorPings.Single().Relationship, "Locator emits one yellow position");
         Cast(p,621); await p.WaitForRpcAsync("80 ce 00 00"); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00"); await p.WaitForRpcAsync(AbilityLine(0x7c000012));
         await context.Database.ExecuteAsync($"UPDATE inventory SET goid=423 WHERE charId={p.CharId} AND slot=30");
         Cast(p,621); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01"); await p.WaitForRpcAsync(AbilityLine(0x7c000011));
@@ -145,12 +147,38 @@ public static partial class Scenarios
         p.SendRpc("80 94 05 00 03"); await p.WaitForTextAsync("Locked Safe Fixture"); await p.WaitForRpcAsync("80 97 05 00");
         p.SendRpc("80 98 06 00 00 00 01 02 00"); await p.WaitForRpcAsync("80 99");
         p.SendRpc("80 9b 07 00 01"); await p.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(context,p);
+        // This wire check uses the saved object approach. The legacy elevator log format does not cover lobby cars.
         await ApproachMissionObjectFixture(context,p,1);
+        await p.WaitUntilAsync(() =>
+        {
+            var saved = MervFollowupCheckpoint(context, p).GetAwaiter().GetResult();
+            return saved.Flags.GetValueOrDefault("entered") && !saved.Done.Contains((ushort)1);
+        }, "mission area entry with the safe objective still open", TimeSpan.FromSeconds(12));
         p.SendChat("?utilitymap 7"); await p.WaitForTextAsync("Utility map fixture flags=7"); // deterministic presentation; pure retail roll has separate boundary tests
-        var reveal=await p.WaitForRpcAsync("80 c5 01 00 03");
-        Check.Equal(9,reveal.Bytes.Length,"native map header plus one nested four-byte position");
-        Check.Equal((byte)0,reveal.Bytes[8],"objective uses yellow relationship");
+        // The mission overlay can send an empty clear before the fixture's objective becomes visible.
+        var reveal = ReadMinimapPositions((await p.WaitForRpcAsync("80 c5 05 00 03")).Bytes, 3);
+        Check.Equal((byte)0, reveal.Single().Relationship, "Objective emits one yellow position");
         Check.Equal(0,p.World.Problems.Count,"mission map protocol");
+    }
+
+    // Follow the stock client's pointer read before reading count and the four-byte position records.
+    private static (sbyte X, sbyte Z, byte Relationship)[] ReadMinimapPositions(byte[] packet, byte seconds)
+    {
+        Check.That(packet.Length >= 5, "Minimap position header is present");
+        Check.Equal(seconds, packet[4], "Minimap display seconds");
+        int offset = BitConverter.ToUInt16(packet, 2);
+        if (offset == 0)
+        {
+            Check.Equal(5, packet.Length, "An empty native array has no trailing records");
+            return Array.Empty<(sbyte, sbyte, byte)>();
+        }
+        Check.That(offset >= 5 && offset <= packet.Length - 2, "Array offset points beyond the header and inside the packet");
+        int count = BitConverter.ToUInt16(packet, offset);
+        Check.Equal(offset + 2 + count * 4, packet.Length, "Nested count and stride match the complete packet");
+        return Enumerable.Range(0, count).Select(index =>
+        {
+            int first = offset + 2 + index * 4;
+            return (unchecked((sbyte)packet[first + 1]), unchecked((sbyte)packet[first + 2]), packet[first + 3]);
+        }).ToArray();
     }
 }

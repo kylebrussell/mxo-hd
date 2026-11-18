@@ -191,6 +191,23 @@ PETS = {
 }
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
+PASSIVE_LIMITS = {
+    18: 'discipline metadata; no stored stat or decoded gameplay callback',
+    35: 'ApplyAuraEffect pulses 697 on friendly simulacra; incoming viral casts on player pets are unsupported',
+    52: 'shipped ComputerHack can check the loaded Hacker ability; the numeric Computer Hacking contest follows an unconditional return',
+    75: 'the direct stat177 radius consumer has no recovered link to bonus1055; [evidence](ABILITY-DEBUFF-RADIUS.md)',
+    161: 'shipped BaseSneakAttackTestFn returns success before any detection contest; the declared dependency alone does not read the stat',
+    165: 'TapDataNode_Subject delegates to native activateTapDataNode; no recovered tapping executor; [evidence](DATA-MINING.md)',
+    297: 'shipped Encrypt/Decrypt reads the learned Cryptography ability; executable support for the separate Decryption Skill total is unresolved',
+    397: 'discipline metadata; no stored stat or decoded gameplay callback',
+    512: 'Repair Skill is stored but no shipped Python reader or item repair executor is established',
+    515: 'Code Writing Discount is read by WriteCodeTest; code-writing output and cost are unresolved',
+    537: 'discipline prerequisite with no stored stat or decoded gameplay callback; [evidence](DATA-MINING.md)',
+    622: 'tap skill total and locator prerequisite are available; native tapping and yield are unresolved; [evidence](DATA-MINING.md)',
+    697: 'stored selector19 targets friendly simulacra; stat183 has no supported incoming viral cast path for player pets',
+    1199: 'organization discipline metadata; no stored stat or decoded gameplay callback',
+}
+
 
 def server(i):
     if i == 1149:
@@ -250,6 +267,8 @@ def server(i):
     passive = [m for m in r.get('passives', []) if m['level50'] is not None]
     if passive:
         parts.append('loaded passive totals + records (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d} [{m['consumer']}]" for m in passive) + ')')
+    if i in PASSIVE_LIMITS:
+        parts.append(PASSIVE_LIMITS[i])
     if r['buff_source'] != 'none':
         if r.get('tactical_toggle'):
             parts.append('script tactical toggle; precise/energized combat attack and damage multipliers; mutual refusal')
