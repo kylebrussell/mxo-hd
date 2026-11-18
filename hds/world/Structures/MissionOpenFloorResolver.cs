@@ -90,6 +90,8 @@ namespace hds
         internal sealed class StaticScene
         {
             public ushort World {get;} public bool Complete {get;} public Bounds Coverage {get;} public double MinY {get;} public double MaxY {get;} public string Evidence {get;} public IReadOnlyList<StaticObstacle> Obstacles {get;}
+            // Fresh placement margin only. Saved poses continue to use their original validation and input hash.
+            internal double NavClearance {get;}
             private readonly Lazy<string> fingerprint;
             public string Fingerprint=>fingerprint.Value;
             public StaticScene(ushort world,bool complete,Bounds coverage,double minY,double maxY,IEnumerable<StaticObstacle> obstacles,string evidence)
@@ -123,11 +125,13 @@ namespace hds
             public OpenFloorModelBounds Model {get;} public MissionOpenFloorUsableRange.Profile Usable {get;}
             public IReadOnlyList<Surface> Surfaces {get;} public Root Entry {get;} public Bounds SiteBounds {get;} public StaticScene Scene {get;}
             public IReadOnlyList<Reservation> Reservations {get;}
+            // Fresh placement margin only. Saved poses continue to use their original validation and input hash.
+            internal double NavClearance {get;}
             private readonly Lazy<string> fingerprint;
             public string Fingerprint=>fingerprint.Value;
             public Request(ushort world,SourceModelPresence sourceModel,string sourceModelEvidence,RawPose rawSource,RawPose anchor,string anchorEvidence,OpenFloorModelBounds model,MissionOpenFloorUsableRange.Profile usable,
-                IEnumerable<Surface> surfaces,Root entry,Bounds siteBounds,StaticScene scene,IEnumerable<Reservation> reservations=null)
-            {World=world;SourceModel=sourceModel;SourceModelEvidence=sourceModelEvidence;RawSource=rawSource;Anchor=anchor;AnchorEvidence=anchorEvidence;Model=model;Usable=usable;Surfaces=Freeze(surfaces??Array.Empty<Surface>());Entry=entry;SiteBounds=siteBounds;Scene=scene;Reservations=Freeze(reservations??Array.Empty<Reservation>());fingerprint=new Lazy<string>(()=>Hash(new{Policy=PolicyVersion,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,Scene=Scene.Fingerprint,Surfaces=Surfaces.OrderBy(s=>s.Identity).ToArray(),Reservations}));}
+                IEnumerable<Surface> surfaces,Root entry,Bounds siteBounds,StaticScene scene,IEnumerable<Reservation> reservations=null,double navClearance=0)
+            {World=world;SourceModel=sourceModel;SourceModelEvidence=sourceModelEvidence;RawSource=rawSource;Anchor=anchor;AnchorEvidence=anchorEvidence;Model=model;Usable=usable;Surfaces=Freeze(surfaces??Array.Empty<Surface>());Entry=entry;SiteBounds=siteBounds;Scene=scene;NavClearance=navClearance;Reservations=Freeze(reservations??Array.Empty<Reservation>());fingerprint=new Lazy<string>(()=>Hash(new{Policy=PolicyVersion,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,SiteBounds.MinX,SiteBounds.MaxX,SiteBounds.MinZ,SiteBounds.MaxZ,Scene=Scene.Fingerprint,Surfaces=Surfaces.OrderBy(s=>s.Identity).ToArray(),Reservations}));}
             // Verify an old fixed pose against its ORIGINAL exact input before checking it under
             // the current constraints. This does not reselect or rewrite a saved centre/route.
             internal string LegacyFingerprint=>Hash(new{Policy=3,World,SourceModel,SourceModelEvidence,RawSource,Anchor,AnchorEvidence,Model,Usable,Entry,
@@ -135,7 +139,7 @@ namespace hds
                 Surfaces=Surfaces.OrderBy(s=>s.Identity).Select(s=>new{s.Identity,s.Vertices,s.FloorX,s.FloorZ,s.FloorC}).ToArray(),Reservations});
         }
         internal static Request WithReservations(Request r,IEnumerable<Reservation> reservations)=>new Request(r.World,r.SourceModel,r.SourceModelEvidence,r.RawSource,r.Anchor,r.AnchorEvidence,
-            r.Model,r.Usable,r.Surfaces,r.Entry,r.SiteBounds,r.Scene,reservations);
+            r.Model,r.Usable,r.Surfaces,r.Entry,r.SiteBounds,r.Scene,reservations,r.NavClearance);
         internal sealed class Result
         {
             public bool HasPlan=>Refusal==null; public string Refusal {get;} public Request Input {get;} public string InputFingerprint {get;}
@@ -733,6 +737,14 @@ namespace hds
         private static List<Candidate> RepresentedProposals(Context context,bool expanded,bool deduplicateEarly=true)
         {
             var r=context.Input;var offsets=context.Offsets;var component=context.Component;double guard=context.Guard,centreY=context.CentreY;var forbidden=context.Forbidden;
+            if(r.NavClearance>0)
+            {
+                // Require room around a generated prop at NAV edges. The physical footprint is still
+                // used for object collisions and range. This envelope is only for the floor search.
+                double margin=r.NavClearance;
+                var padding=new[]{new Point(-margin,-margin),new Point(-margin,margin),new Point(margin,-margin),new Point(margin,margin)};
+                offsets=Hull(offsets.SelectMany(p=>padding.Select(d=>new Point(p.X+d.X,p.Z+d.Z))));
+            }
             // Erode the UNION, not individual NAV subdivisions. Complement cells retain actual holes/walls;
             // Minkowski expansion excludes every centre whose full footprint would meet that complement.
             // The selected site is immutable. Only the internal proposal domain is restricted to proven coverage.
