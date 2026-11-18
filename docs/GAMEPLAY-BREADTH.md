@@ -37,7 +37,7 @@ A row covers the behavior described in that row.
 | Death and resurrection | native-verified | High | PR287 observed the down pose past nine seconds, decline followed by a fresh 416 offer, standing motion, restored HP/IS, movement and Death Effect. [Death presentation](DEATH-PRESENTATION.md) |
 | Remote resurrection | native-verified | High | From the outdoor PR290 fixture, CSR saw QAFriend go down, stand after resurrection, and move. The same helper could make a second 416 offer after a decline. [Death presentation](DEATH-PRESENTATION.md) |
 | NPC aggro and wander | native-verified | High | Grounded legs and idle pauses, selection/radial hold and chase to interlock on PR281 `5f74448f`. [Native checklist](GAMEPLAY-BREADTH-QA.md) |
-| NPC chase around corners | broken | High | Native QA observed a pursuit stop at a railing. Retail movement speeds remain open. |
+| NPC chase around corners | headless-only | High | A Blackwood Goof followed the Mara corner to interlock. The railing regression uses a synthetic NAV gap. Native retest and retail speed calibration are open. [NPC chase QA](GAMEPLAY-BREADTH-QA.md#npc-chase-around-the-mara-corner) |
 | PvP flagging | native-verified | Medium | Portrait/flag messages and ordinary attacks on a hostile flagged target. [PvP](PVP.md) |
 | Levelling past 2 | native-verified | High | Level 3/5235 XP, HP250/IS106 and persistence on normal relog on PR281 `5f74448f`. [Native checklist](GAMEPLAY-BREADTH-QA.md) |
 | Levelling past 3 | headless-only | High | A normal kill reaches level 4 with the corresponding maxima and persists on relog. |

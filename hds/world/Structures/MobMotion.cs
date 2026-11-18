@@ -12,11 +12,15 @@ namespace hds
         public const double WalkSpeed = .176 * 500 / .9586, ChaseSpeed = 400, WanderRadius = 500;
         private const int MinimumIdleSeconds = 8, MaximumIdleSeconds = 15;
         private const double SelectionGraceSeconds = 2;
+        private const double ChaseReplanDistance = 100;
         private sealed class Motion
         {
             public double Updated, WaitUntil;
             public double[] Goal;
             public WorldClient Target;
+            public NavPoint[] Path;
+            public double[] PathTarget;
+            public int Waypoint;
             public int Life;
             public bool Walking;
             public Random Random;
@@ -60,14 +64,59 @@ namespace hds
         internal static bool BeginChase(WorldClient client,Mob mob)
         {
             if(!Ordinary(mob)||client?.playerData==null)return false;
-            var from=Position(mob);var target=Position(client);
-            if(!Step(mob.getDistrict(),from,target,.5,ChaseSpeed,out _))return false;
             lock(sync)
             {
                 if(!moving.TryGetValue(mob,out var state))moving[mob]=state=New(mob,TimeUtils.GetSimTimeSeconds());
                 if(state.Target!=null&&!ReferenceEquals(state.Target,client))return false;
+                var from=Position(mob);var target=Position(client);
+                if(!NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],target[0],target[1],target[2]) ||
+                    !Step(mob.getDistrict(),from,target,.5,ChaseSpeed,out _))
+                {
+                    if(!PlanChase(mob.getDistrict(), state, from, target))return false;
+                }
+                else state.Path = null;
                 state.Target=client;state.Goal=null;return true;
             }
+        }
+
+        private static bool PlanChase(ushort district, Motion state, double[] from, double[] target)
+        {
+            state.Path = NavMesh.WalkingPath(district, from, target);
+            state.PathTarget = target;
+            state.Waypoint = 0;
+            return state.Path.Length != 0;
+        }
+
+        private static double DistanceSquared(double[] a, double[] b)
+        {
+            double dx = a[0] - b[0], dz = a[2] - b[2];
+            return dx * dx + dz * dz;
+        }
+
+        private static bool ChaseGoal(ushort district, Motion state, double[] from, double[] target, bool straight)
+        {
+            if (straight)
+            {
+                MobAggro.StopPoint(target[0], target[2], from[0], from[2], MobAggro.MeleeDistanceUnits, out double x, out double z);
+                state.Goal = new[] { x, target[1], z };
+                state.Path = null;
+                return true;
+            }
+
+            bool routeExpired = state.Path == null || state.Waypoint >= state.Path.Length ||
+                DistanceSquared(state.PathTarget, target) >= ChaseReplanDistance * ChaseReplanDistance;
+            if (routeExpired && !PlanChase(district, state, from, target)) return false;
+            while (state.Waypoint < state.Path.Length)
+            {
+                var goal = state.Path[state.Waypoint].Position;
+                if (DistanceSquared(from, goal) > 0.0001)
+                {
+                    state.Goal = goal;
+                    return true;
+                }
+                state.Waypoint++;
+            }
+            return false;
         }
         private static void Stop(Mob mob,Motion state,double now,bool publishArrival=false)
         {
@@ -76,7 +125,7 @@ namespace hds
                 mob.currentState=(int)Mob.statusList.STANDING;
                 mob.updateAnimation((byte)Mob.Animations.STAND);
             }
-            state.Walking=false;state.Goal=null;state.Target=null;
+            state.Walking=false;state.Goal=null;state.Target=null;state.Path=null;
             state.WaitUntil=now+state.Random.Next(MinimumIdleSeconds,MaximumIdleSeconds+1);
         }
         internal static void Tick(List<WorldClient> clients,Dictionary<ulong,Mob> mobs,double now)
@@ -105,7 +154,7 @@ namespace hds
                 {
                     if(!moving.TryGetValue(mob,out var state)||state.Life!=mob.DeathGeneration)moving[mob]=state=New(mob,now);
                     double elapsed=now-state.Updated;state.Updated=now;
-                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Walking=false;continue;}
+                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Path=null;state.Walking=false;continue;}
                     if(state.Target==null&&selected.Contains(mob))
                     {
                         if(state.Goal!=null||state.Walking)Stop(mob,state,now);
@@ -132,13 +181,14 @@ namespace hds
                         var to=Position(target);
                         if(Math.Abs(from[1]-to[1])>150||Math.Pow(to[0]-mob.xBase,2)+Math.Pow(to[2]-mob.zBase,2)>25000000)
                         {Stop(mob,state,now);continue;}
-                        if(Math.Pow(to[0]-from[0],2)+Math.Pow(to[2]-from[2],2)<=MobAggro.MeleeDistanceUnits*MobAggro.MeleeDistanceUnits)
+                        bool straight=NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],to[0],to[1],to[2]);
+                        if(straight&&MobAggro.ReachedMeleeDistance(DistanceSquared(to,from)))
                         {
                             var view=target.viewMan.FindViewForEntity(mob.getEntityId());Stop(mob,state,now);
-                            if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[2]);continue;
+                            if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[1],to[2]);continue;
                         }
-                        MobAggro.StopPoint(to[0],to[2],from[0],from[2],MobAggro.MeleeDistanceUnits,out double x,out double z);
-                        state.Goal=new[]{x,to[1],z};speed=ChaseSpeed;
+                        if(!ChaseGoal(mob.getDistrict(),state,from,to,straight)){Stop(mob,state,now);continue;}
+                        speed=ChaseSpeed;
                     }
                     else if(state.Goal==null&&Mob.WanderEnabled&&now>=state.WaitUntil)
                     {

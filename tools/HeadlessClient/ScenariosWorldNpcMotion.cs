@@ -64,4 +64,63 @@ public static partial class Scenarios
         MotionFloor(context,steps,MobMotion.ChaseSpeed);
         Check.That(GroundDistance(current.Position,new[]{approach.x,approach.y,approach.z})<=MobAggro.MeleeDistanceUnits+1,"NPC closes to melee without teleporting");
     }
+
+    private static async Task WorldNpcCornerStationary(ScenarioContext context)
+    {
+        WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);
+        var end = WorldNpcCornerFixture.Turn;
+        var seed = OpenWorldFirstLevelFixture.Seed with
+        {
+            Handle = "StationaryCornerTarget", X = end[0], Y = end[1], Z = end[2],
+            Level = 2, Experience = 5100, Health = 5000, MaxHealth = 5000
+        };
+        var actor = (await context.AddPlayersInWorldAsync(seed))[0];
+        await actor.WaitForRpcAsync("46", TimeSpan.FromSeconds(20));
+        await actor.WaitUntilAsync(() => WorldNpcCornerFixture.Distance(WorldNpcCornerFixture.Observe(actor).Position, end) <=
+            MobAggro.MeleeDistanceUnits + 1, "The named Goof reached the stationary far-side player", TimeSpan.FromSeconds(3));
+        var caught = WorldNpcCornerFixture.Observe(actor);
+        Check.That(caught.Positions.Count >= 4, "NPC sent intermediate grounded steps");
+        Check.That(caught.Positions.Zip(caught.Positions.Skip(1), WorldNpcCornerFixture.Straight).All(clear => clear),
+            "No observed pursuit segment crossed the blocked corner");
+        MotionFloor(context, caught.Positions, MobMotion.ChaseSpeed);
+        Check.That(context.Server.DebugLog().Contains($"[AGGRO] Blackwood Goof attacks {actor.CharId} "),
+            "Interlock started from the selected world Goof");
+        Console.WriteLine($"Stationary Mara corner: {caught.Positions.Count} grounded points and interlock with no movement input.");
+    }
+
+    private static async Task WorldNpcCornerChase(ScenarioContext context)
+    {
+        WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);
+        var start = WorldNpcCornerFixture.Aggro;
+        var end = WorldNpcCornerFixture.Turn;
+        var seed = OpenWorldFirstLevelFixture.Seed with
+        {
+            Handle = "CornerTarget", X = start[0], Y = start[1], Z = start[2],
+            Level = 2, Experience = 5100, Health = 5000, MaxHealth = 5000
+        };
+        var actor = (await context.AddPlayersInWorldAsync(seed))[0];
+        await actor.WaitUntilAsync(() =>
+        {
+            try { return WorldNpcCornerFixture.Observe(actor).Positions.Count >= 2; }
+            catch (InvalidDataException) { return false; }
+        }, "Blackwood Goof has started to pursue before the player turns", TimeSpan.FromSeconds(15));
+
+        for (int move = 1; move <= 6; move++)
+        {
+            var point = Enumerable.Range(0, 3).Select(i => start[i] + (end[i] - start[i]) * move / 6).ToArray();
+            actor.World.SendViewList(DisturbingTrendsFixture.ClientPosition(point));
+            await Task.Delay(100);
+        }
+        var turned = WorldNpcCornerFixture.Observe(actor);
+        Check.That(!WorldNpcCornerFixture.Straight(turned.Position, end), "Player reached the obstructed side during pursuit");
+        await actor.WaitForRpcAsync("46", TimeSpan.FromSeconds(18));
+        await actor.WaitUntilAsync(() => WorldNpcCornerFixture.Distance(WorldNpcCornerFixture.Observe(actor).Position, end) <=
+            MobAggro.MeleeDistanceUnits + 1, "The same NPC reached the player on the far side", TimeSpan.FromSeconds(3));
+        var caught = WorldNpcCornerFixture.Observe(actor);
+        Check.That(caught.Positions.Count > turned.Positions.Count + 1, "NPC sent intermediate movement around the corner");
+        MotionFloor(context, caught.Positions, MobMotion.ChaseSpeed);
+        Check.That(caught.Positions.Zip(caught.Positions.Skip(1), WorldNpcCornerFixture.Straight).All(clear => clear),
+            "No observed pursuit segment crossed the blocked corner");
+        Console.WriteLine($"Mara corner: {caught.Positions.Count} grounded points with ordinary interlock at the far marker.");
+    }
 }

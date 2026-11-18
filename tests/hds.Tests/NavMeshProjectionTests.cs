@@ -45,6 +45,48 @@ public class NavMeshProjectionTests
     }
 
     [Fact]
+    public void PursuitUsesTheSharedPortalAroundACorner()
+    {
+        var west = Room(1, 0, 0, 300, 800);
+        var north = Room(2, 300, 600, 1100, 800);
+        NavMesh.Surface[] floor = { west, north };
+        double[] origin = { 120, 95, 120 }, target = { 950, 95, 720 };
+        var path = CheckDetour(floor, west, north, origin, target);
+        Assert.Equal(new double[] { 300, 95, 700 }, path[0].Position);
+    }
+
+    [Fact]
+    public void PursuitGoesAroundARailingEvenWhenTheTargetIsInMeleeRangeAcrossIt()
+    {
+        var west = Room(1, 0, 0, 400, 800);
+        var east = Room(2, 500, 0, 900, 800);
+        var aroundEnd = Room(3, 400, 650, 500, 800);
+        NavMesh.Surface[] floor = { west, east, aroundEnd };
+        double[] origin = { 380, 95, 100 }, target = { 520, 95, 100 };
+        Assert.True(target[0] - origin[0] < MobAggro.MeleeDistanceUnits);
+        var path = CheckDetour(floor, west, east, origin, target);
+        Assert.Equal(new double[] { 400, 95, 725 }, path[0].Position);
+        Assert.Equal(new double[] { 500, 95, 725 }, path[1].Position);
+        Assert.Empty(NavMesh.WalkingPath(new[] { west, east }, west.location, east.location, target));
+    }
+
+    private static NavPoint[] CheckDetour(NavMesh.Surface[] floor, NavMesh.Surface start, NavMesh.Surface end,
+        double[] origin, double[] target)
+    {
+        bool Segment(double[] from, double[] to) => NavMesh.SampleSightPath(from[0], from[1], from[2], to[0], to[1], to[2],
+            (x, y, z) => floor.Any(p => p.Contains(x, z) && Math.Abs(p.Floor(x, z) + 95 - y) < 1));
+        Assert.False(Segment(origin, target));
+        var path = NavMesh.WalkingPath(floor, start.location, end.location, target);
+        Assert.Equal(target, path.Last().Position);
+        foreach (var waypoint in path)
+        {
+            Assert.True(Segment(origin, waypoint.Position));
+            origin = waypoint.Position;
+        }
+        return path;
+    }
+
+    [Fact]
     public void TheClosestFloorDoesNotMoveAnArrivalUpstairs()
     {
         NavMesh.Surface[] floors = { Room(0, 0, 0, 400, 800), Room(1, 0, 0, 1000, 800, 400) };

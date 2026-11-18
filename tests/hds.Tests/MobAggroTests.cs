@@ -39,6 +39,16 @@ public class MobAggroTests
     }
 
     [Fact]
+    public void RoundedStopPointStillCompletesTheMeleeApproach()
+    {
+        double rounded = Math.BitIncrement(MobAggro.MeleeDistanceUnits);
+        Assert.True(MobAggro.ReachedMeleeDistance(rounded * rounded));
+
+        double beyondArrival = MobAggro.MeleeDistanceUnits + .02;
+        Assert.False(MobAggro.ReachedMeleeDistance(beyondArrival * beyondArrival));
+    }
+
+    [Fact]
     public void NpcStopsAtArmsLengthFacingThePlayer()
     {
         MobAggro.StopPoint(0, 0, 1000, 0, 150, out double x, out double z);
