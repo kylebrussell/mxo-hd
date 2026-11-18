@@ -41,7 +41,19 @@ Local validation:82 focused vendor/request/pricing/reply tests and the full Rele
 
 `vendor-sell-recycle-economy` uses an isolated database and the existing data-loaded vendor82837505 (static0x04f00001) near(19155,495,5313). It covers no-session refusal, Appraise/no mutation, normal sale and replay, stack8 recycle40, leveled ability base recycle500, explicit zero price, unsupported flag0, SQLCHECK credit failure rollback/retry, signed cap with actual5 credit despite stale cache, and storage-entry one-unit payout.
 
-The first native run at91a16a2 passed Recycle cancel/confirm, the40-information Code Bit stack, the500-information ability code and Antibiotic Activate Item. Appraise/Sell was blocked: vendor82837505 has stock data but no rendered static NPC at its catalog coordinates. Those native actions are still untested.
+The first native run at `91a16a2` passed Recycle and Antibiotic activation. The
+vendor discovery attempt used stock ID 82837505 at (19155,495,5313). The shipped
+static table associates that ID with GO 38339 at (-40300,550,21400), about 616 m
+away. PR291 later verified Appraise through the tools vendor window.
+
+For ordinary world discovery, use the disposable `world-vendor-discovery`
+fixture. CSR starts at (-11550,1895,57400) facing the Baldwin Heights Clothing
+Merchant in Downtown. Its shipped object (GO 7105, static ID 293609406) and stock
+coordinates agree in X and Z, with the expected 50-unit height difference.
+Use the native vendor interaction, check that the clothing stock appears, then
+appraise the slot-11 shirt for 680 Info. Bootstrap checks the source, NAV point,
+ordinary stock packet and appraisal on a headless helper. Record native
+visibility, the interaction offered, and whether the window opens.
 
 Discovered NativeQa mode`vendor-economy` now prepares only disposable CSR110 at the known Mara street position(17000,495,2300). It seeds shirt11666 in slot11, Code Bit1x8 in12, Detect Vulnerability ability code level3 in13, Antibiotic1x4 in14, and10000 information. Dev commands are enabled for this mode so the existing `?clientactions vendor` command opens Mara tools-vendor fixture98 through the normal stock/session handler. No rendered NPC, GM permission or random override is required. Appraise and Sell are then ordinary native window actions; the shortcut does not execute either transaction.
 
