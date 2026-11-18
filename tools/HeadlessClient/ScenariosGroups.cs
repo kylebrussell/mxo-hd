@@ -153,6 +153,12 @@ INSERT INTO crew_members (crew_id, char_id, is_captain, is_first_mate, created_a
         await alice.EnterWorldAsync();
         await bob.EnterWorldAsync();
 
+        foreach (HeadlessPlayer captain in new[] { alice, bob })
+        {
+            RpcRecord empty = await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} 00 00 00 00 01 00 00 00 00 00");
+            Check.Equal(15, empty.Bytes.Length, "The unaffiliated captain received the empty faction header");
+        }
+
         // Alice founds a faction with her crew and invites Bob's (7a, then 6e 01 / 6f 01)
         byte[] factionName = Sized("Union");
         List<byte> found = new() { 0x7a };
@@ -164,7 +170,9 @@ INSERT INTO crew_members (crew_id, char_id, is_captain, is_first_mate, created_a
         await bob.WaitForRpcAsync("6e 01 06 00");
         bob.SendRpc(InviteAnswer(1, 0, "Alice"));
         await bob.WaitForRpcAsync("7c ?? ?? ?? ?? ?? ?? ?? ?? 02");
-        long factionId = await context.Database.LongAsync("SELECT id FROM factions WHERE name='Union'");
+        uint factionId = checked((uint)await context.Database.LongAsync("SELECT id FROM factions WHERE name='Union'"));
+        await alice.WaitForRpcAsync($"7c {Le(alice.CharId)} {Le(factionId)} 01");
+        await alice.WaitForRpcAsync($"7c {Le(alice.CharId)} {Le(factionId)} 02");
         Check.Equal(1L, await context.Database.LongAsync("SELECT faction_rank FROM crews WHERE id=9001"), "The founder's crew leads");
         Check.Equal(5L, await context.Database.LongAsync("SELECT faction_rank FROM crews WHERE id=9002"), "The newcomer starts at the bottom");
 
@@ -186,7 +194,7 @@ INSERT INTO crew_members (crew_id, char_id, is_captain, is_first_mate, created_a
         await bob.WaitForRpcAsync($"73 {Le(9002u)}");
         Check.Equal(0L, await context.Database.LongAsync("SELECT faction_id FROM crews WHERE id=9002"), "Beta out of the faction");
         Check.Equal(0L, await context.Database.LongAsync($"SELECT factionId FROM characters WHERE charId={bob.CharId}"), "Bob out of the faction");
-        Check.Equal(factionId, await context.Database.LongAsync("SELECT faction_id FROM crews WHERE id=9001"), "Alpha still in it");
+        Check.Equal((long)factionId, await context.Database.LongAsync("SELECT faction_id FROM crews WHERE id=9001"), "Alpha still in it");
     }
 
     /// <summary>80 92 as the Find Team Members window sends it: min, max, my faction only, then two empty arrays.</summary>

@@ -231,7 +231,10 @@ namespace hds
                     Store.dbManager.WorldDbHandler.GetCharIdByHandle(faction.masterPlayerHandle);
                 pak.SendFactionInfo(client, faction, false);
                 pak.SendFactionCrews(client, faction, false);
-
+            }
+            else if (!client.playerData.DistrictIsLA())
+            {
+                client.messageQueue.addRpcMessage(ServerPackets.BuildEmptyFactionInfoPacket(charId));
             }
             
             // Retail's login carried the Speed tactic's records (this used to send only one of them, as a test)

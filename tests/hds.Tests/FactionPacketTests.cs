@@ -23,6 +23,13 @@ public class FactionPacketTests
     // ---- 7c / SERVER_FACTION_PLAYER_INFO (mode 1) ---------------------------------------
 
     [Fact]
+    public void EmptyFactionInfoCarriesTheCharacterWithoutADataArray()
+    {
+        Assert.Equal("7C7856341200000000010000000000",
+            ToHex(ServerPackets.BuildEmptyFactionInfoPacket(0x12345678)));
+    }
+
+    [Fact]
     public void FactionInfoLayoutMatchesDecodedFieldOrder()
     {
         uint charId = 0x11223344;
