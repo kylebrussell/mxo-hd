@@ -90,7 +90,20 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 
 All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175), and **the 7.6005 client never sends any of them**. Its command handler (0x62256760) looks the typed word up in the chat manager's command map (+0xf0, 0x621c0900), then in the macro map (0x629ebe48 +0x40), and prints "Unrecognized command.  Please try again." (0x2e000002) when neither has it. The map is filled once from a fixed list of 116 string ids (0x62254020, looped up to 0x74 at 0x6225466e): `/orgnames` .. `/afk`, with no room command among them. No other code inserts into the map (the only other caller of the insert, 0x62253c20, is never called), and the ids 0x02000160..0x02000175 appear nowhere in client.dll except the handler's own switch, so its room cases are dead code. Nothing the server sends changes that: no feature flag (`81 49`, client-scripts/gameFeatures.py) or setting is read on the way. Checked in the real client (CSR_Tester, 75f540b): `/roomcreate`, `/roomenter` and `/room` all print "Unrecognized command" and send nothing.
 
-The server keeps its room code (the records are client.dll's, the rules ours: see "Chat rooms in detail"). It is reachable only through SocialBot and the headless client, and would serve a client build that registers the commands.
+The shipped `resource/misc/chat_commands.xml` Chat Types menu lists team,
+crew and faction chat, tells and shouts. Neither that menu nor the
+`chatCommands` lookup lists a room or channel-join command. In the same
+7.6005 binary, Chat Options binds Option, Stream and Color tabs at
+`6206eb34`, `6206eb00` and `6206eac4`. The stream setup at `6206db30`
+populates the four fixed chat-window tabs and applies local stream filters.
+The room-create sender `622461f0` and room-enter sender `622462e0` each
+have one direct caller, `62256d4f` and `62256b58` respectively, within the
+unregistered slash-command branch. The recovered client scripts have no room
+operation. The server cannot expose a room join in stock 7.6005 through a reply.
+
+SocialBot and the headless client exercise the server's room routes. The
+wire records are from the compiled-in client handlers and the room rules are
+server policy. [Room packet details](#chat-rooms-in-detail)
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
