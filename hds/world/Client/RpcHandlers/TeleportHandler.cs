@@ -253,6 +253,18 @@ namespace hds
             PvpFlag.ClearForRespawn(client);
 
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfRespawnHeal(maxHealth), false);
+            // The Character Summary reads the active hardline when the Loading Area opens.
+            // Reconstruct has no booth interaction to select it, so select the known fallback first.
+            ushort district = (ushort)client.playerData.getDistrictId();
+            if (HardlineNetwork.Covers(district))
+            {
+                ushort hardline = NearestHardlineAtPlayer(client, district);
+                if (HardlineRegistration.Known(client.playerData.getCharID(), district).Contains(hardline))
+                {
+                    var selected = HardlineBooths.BuildSynchronized(district, hardline);
+                    if (selected != null) client.messageQueue.addRpcMessage(selected);
+                }
+            }
             client.messageQueue.addRpcMessage(ServerPackets.BuildRespawnToLoadingArea());
             client.FlushQueue();
             Output.WriteDebugLog("[DEATH] Respawn: healed to " + maxHealth + ", sending the player to the Loading Area");
@@ -264,16 +276,21 @@ namespace hds
         /// </summary>
         private static void SaveNearestHardlineAsLocation(WorldClient client)
         {
-            double x = 0, y = 0, z = 0;
-            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
             UInt16 district = (UInt16)client.playerData.getDistrictId();
-            UInt16 hardline = NearestHardline(district, x, z);
+            UInt16 hardline = NearestHardlineAtPlayer(client, district);
             Output.WriteDebugLog("[LA] Fallback location: hardline " + hardline + " in district " + district);
 
             if (hardline != 0)
             {
                 MoveToHardline(client, district, hardline);
             }
+        }
+
+        private static ushort NearestHardlineAtPlayer(WorldClient client, ushort district)
+        {
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            return NearestHardline(district, x, z);
         }
 
         /// <summary>

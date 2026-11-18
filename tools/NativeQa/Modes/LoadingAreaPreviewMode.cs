@@ -27,7 +27,7 @@ public sealed class LoadingAreaPreviewMode : NativeQaMode
             """ },
         DevCommands: true, environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] { "Compare CSR's equipped outfit at Mara Northwest with both Loading Area previews after a booth exit. "
-            + "Jack back in at Mara Northwest, then use ?die and Reconstruct for a second preview check." });
+            + "Jack back in, then use ?die and Reconstruct. Check the Character tab shows Richland/Mara (Northwest) and the same outfit." });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -66,8 +66,32 @@ public sealed class LoadingAreaPreviewMode : NativeQaMode
         }, "the Mara Northwest hardline view", TimeSpan.FromSeconds(15));
         probe.SendRpc($"80 c7 {Le(booth!.ViewId)} {booth.SpawnId:x2} 00 {HardlineBooths.ActionExitToLoadingArea:x2} 00");
         await probe.WaitForRpcAsync($"80 fb {Le((uint)Hardline)} 01");
+        int activeRecords = probe.Received("80 fa").Count;
         probe.SendRpc("80 fc 01");
         await probe.WaitForRpcAsync("80 fd 00 00 00 00 01 00");
+        await RoundTripAsync(probe);
+        Check.Equal(activeRecords, probe.Received("80 fa").Count, "The ordinary booth exit does not select a new active hardline");
+
+        probe.SendChat("?die");
+        await probe.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60");
+        probe.SendRpc("81 4c");
+        await probe.WaitForRpcAsync($"80 fa {Le(1u)} {Le((uint)Hardline)} 01");
+        await probe.WaitForRpcAsync("80 fd 00 00 00 00 01 01");
+        await RoundTripAsync(probe);
+        Check.Equal(0, probe.World.Problems.Count, "Both Loading Area round trips are parser clean");
+        Check.Equal(1L, await database.LongAsync("SELECT COUNT(*) FROM characters WHERE charId=110 AND is_online=0"),
+            "CSR is available for native QA");
+        probe.SendRpc("80 fe 00");
+        await probe.WaitForRpcAsync("80 fd");
+
+        Console.WriteLine($"CSR preview descriptors {string.Join(",", appearance)}; worn slots {slots}; Reconstruct selects Mara Northwest (49)");
+        await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "loading-area-preview.txt"),
+            $"Appearance descriptors {string.Join(",", appearance)}{Environment.NewLine}Equipped slots {slots}{Environment.NewLine}Reconstruct selects Mara Northwest (49){Environment.NewLine}");
+        return Array.Empty<byte>();
+    }
+
+    private static async Task RoundTripAsync(HeadlessPlayer probe)
+    {
         probe.SendRpc("80 fe 01");
         await probe.WaitForRpcAsync("81 07");
         probe.SendRpc("81 08 00 00 00 00");
@@ -87,16 +111,7 @@ public sealed class LoadingAreaPreviewMode : NativeQaMode
             var life = probe.World.CurrentOwnViewLife();
             return life.Life != loading.Life && life.OwnViewReady;
         }, "a new player view after Jack In", TimeSpan.FromSeconds(15));
-        Check.Equal(0, probe.World.Problems.Count, "The full Loading Area round trip is parser clean");
-        Check.Equal(1L, await database.LongAsync("SELECT COUNT(*) FROM characters WHERE charId=110 AND is_online=0"),
-            "CSR is available for native QA");
-        probe.SendRpc("80 fe 00");
-        await probe.WaitForRpcAsync("80 fd");
-
-        Console.WriteLine($"CSR preview descriptors {string.Join(",", appearance)}; worn slots {slots}");
-        await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "loading-area-preview.txt"),
-            $"Appearance descriptors {string.Join(",", appearance)}{Environment.NewLine}Equipped slots {slots}{Environment.NewLine}");
-        return Array.Empty<byte>();
+        probe.SendRpc("0c 01");
     }
 
     private static string Le(uint value) => Convert.ToHexString(BitConverter.GetBytes(value));
