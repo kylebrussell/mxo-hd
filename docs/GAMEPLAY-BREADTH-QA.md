@@ -11,3 +11,19 @@ Tell QAEnemy `assist`; it accepts your invite and attacks through ordinary comba
 Goal1 must complete on your mission panel; talk to Team Contact for exactly one completion.
 Shared helper HUD/item interactions and retail movement-speed tuning remain open.
 Claude owns native QA, lock, reset and merge; reset110 to Mara, full health, PvP0 and mission986 only on release.
+
+## Team HUD and shared mission loot
+
+Use `team-breadth` and wait for READY. QAFriend starts near CSR at Mara
+Northwest. Submit helper requests as JSON in the fixture's `requests` directory.
+
+1. Invite QAFriend to the mission team and send
+   `{"actor":"QAFriend","action":"team-breadth","step":"accept"}`.
+   Verify QAFriend's name and health in the team HUD.
+2. Call Flood and accept **Team Breadth Fixture**. Send
+   `{"actor":"QAFriend","action":"team-breadth","step":"assist"}`.
+   Watch the helper's health during ordinary combat. Keep CSR's attacks off
+   Team Guard so the helper earns the kill.
+3. Check that the kill ticks CSR's goal and opens the Loot window with a Dossier.
+   Take All, then Give the Dossier to Team Receiver. Verify the item leaves
+   the bag and the mission completes once.
