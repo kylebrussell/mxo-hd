@@ -191,6 +191,8 @@ try
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));
+                else if (action == "trade" && fixtureMode is NativeQa.Modes.SecureTradeMode)
+                    await NativeQa.Modes.SecureTradeMode.SendPartnerActionAsync(actor, q);
                 else if (action == "stop") actor.SendRpc("44 00");
                 else if (action == "move")
                 {
