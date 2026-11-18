@@ -33,6 +33,10 @@ namespace hds
     {
         /// <summary>Info change reason retail used for a marketplace purchase (80 e7 / 80 e4 ... 05 00 00 00).</summary>
         public const UInt32 InfoReasonMarketplace = 5;
+        // Client Status string IDs registered by client.dll (LTPS_SP*).
+        public const UInt32 ItemNotInMarketplace = 0x0c000298;
+        public const UInt32 NotEnoughInformation = 0x0c00029a;
+        public const UInt32 InventoryFull = 0x0c0002ca;
 
         /// <summary>Retail's listing length field in 81 2c (1e 00 00 00); read as days on the market.</summary>
         public const UInt32 ListingDays = 30;
@@ -97,17 +101,23 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
-        /// <summary>81 27: purchase done. Listing id, the slot byte from the request, goid, descriptor, price, 0.</summary>
-        public static byte[] Bought(MarketListing listing, byte slot)
+        /// <summary>81 27: purchase result. Listing id, slot, goid, descriptor, price and Status (0 for success).</summary>
+        public static byte[] Bought(MarketListing listing, byte slot) =>
+            BuyResult(listing.Id, slot, listing.GoId, listing.Descriptor, listing.Price, 0);
+
+        public static byte[] BuyRefused(UInt32 listingId, byte requestedSlot, UInt32 status) =>
+            BuyResult(listingId, requestedSlot, 0, 0, 0, status);
+
+        private static byte[] BuyResult(UInt32 listingId, byte slot, UInt32 goid, UInt32 descriptor, UInt32 price, UInt32 status)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(0x8127, 0);
-            pak.AddUint32(listing.Id, 1);
+            pak.AddUint32(listingId, 1);
             pak.AddByte(slot);
-            pak.AddUint32(listing.GoId, 1);
-            pak.AddUint32(listing.Descriptor, 1);
-            pak.AddUint32(listing.Price, 1);
-            pak.AddUint32(0, 1);
+            pak.AddUint32(goid, 1);
+            pak.AddUint32(descriptor, 1);
+            pak.AddUint32(price, 1);
+            pak.AddUint32(status, 1);
             return pak.ReturnFinalPacket();
         }
 

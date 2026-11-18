@@ -153,7 +153,7 @@ namespace hds{
                 listing = Db.Find(listingId);
                 if (listing == null || listing.Sold)
                 {
-                    Notice(buyer, "That item has already been sold.");
+                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.ItemNotInMarketplace);
                     return;
                 }
 
@@ -163,7 +163,7 @@ namespace hds{
                 long info = buyer.playerData.getInfo();
                 if (info < cost)
                 {
-                    Notice(buyer, "You do not have enough information.");
+                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.NotEnoughInformation);
                     return;
                 }
 
@@ -172,13 +172,13 @@ namespace hds{
                 int free = occupied == 0 && requestedSlot < 97 ? requestedSlot : Db.FirstFreeSlot(buyerId);
                 if (free < 0)
                 {
-                    Notice(buyer, "Your inventory is full.");
+                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.InventoryFull);
                     return;
                 }
 
                 if (!Db.MarkSold(listingId))
                 {
-                    Notice(buyer, "That item has already been sold.");
+                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.ItemNotInMarketplace);
                     return;
                 }
 
@@ -204,6 +204,13 @@ namespace hds{
             {
                 PaySeller(listing);
             }
+        }
+
+        private static void RefuseBuy(WorldClient buyer, UInt32 listingId, byte requestedSlot, UInt32 status)
+        {
+            // The Loading Area purchase controls wait for the correlated 81 27 response.
+            buyer.messageQueue.addRpcMessage(MarketplacePackets.BuyRefused(listingId, requestedSlot, status));
+            buyer.FlushQueue();
         }
 
         /// <summary>Retail's seller side is not captured: pay at once, with the buyer's packets for an info change.</summary>

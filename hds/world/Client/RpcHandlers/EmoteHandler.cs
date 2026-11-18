@@ -269,6 +269,12 @@ namespace hds
 
             WorldClient requester = request.Requester;
             SocialHandler.Send(requester, AnimationPackets.EmoteAnswer(result, emoteId, Seen(requester, target), 0, true));
+            if (result == ResultRefused && emoteId == Hug)
+            {
+                // The stock client leaves an explicit /hug refusal silent.
+                new ServerPackets().sendSystemChatMessage(requester,
+                    SocialHandler.HandleOf(target) + " declined your hug.", "SYSTEM");
+            }
             Output.WriteDebugLog("[EMOTE] " + SocialHandler.HandleOf(target) + " answers " + SocialHandler.HandleOf(requester) +
                                  ": " + result);
             if (result == ResultAccepted)

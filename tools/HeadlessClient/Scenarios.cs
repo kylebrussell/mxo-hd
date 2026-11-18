@@ -1030,7 +1030,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         throw new ScenarioFailure($"{what}: expected {expected}, got {actual}");
     }
 
-    private const string MarketCategory = "49 54 4f 74"; // "ITOt", as in the retail listing
+    private const string MarketCategory = "46 43 42 30"; // FCB0, native Code Bit search
 
     private static string ListItem(uint price, byte slot) => $"81 2b {MarketCategory} {Le(price)} 01 {Le((ushort)slot)} 00 00 00 00";
 
@@ -1039,8 +1039,21 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(
             new CharacterSeed("Seller") { Items = new[] { (5, NpcLoot.CodeBit1, 1) } },
             new CharacterSeed("Buyer") { X = 17120 },
-            new CharacterSeed("Poor") { X = 17220, Info = 10 });
-        HeadlessPlayer seller = players[0], buyer = players[1], poor = players[2];
+            new CharacterSeed("Poor") { X = 17220, Info = 10 },
+            new CharacterSeed("Full") { X = 17320, Items = Enumerable.Range(0, 97).Select(slot => (slot, NpcLoot.CodeBit1, 1)).ToArray() });
+        HeadlessPlayer seller = players[0], buyer = players[1], poor = players[2], full = players[3];
+        const string noItem = "00 00 00 00 00 00 00 00 00 00 00 00";
+        string searchRequest = $"81 24 {MarketCategory} {Le(0u)} 00 00 00 00 19 00 {Le(999999999u)} {Le(0u)} 01 00 00";
+
+        async Task Refused(HeadlessPlayer player, uint id, string status)
+        {
+            int cursor = player.World.RpcSnapshot().Count;
+            player.SkipReceived();
+            player.SendRpc($"81 26 {Le(id)} 07");
+            await player.WaitForRpcAsync($"81 27 {Le(id)} 07 {noItem} {status}");
+            Check.That(!player.World.RpcSnapshot().Skip(cursor).Any(r => r.Bytes is [0x5e, ..] or [0x80, 0xe4 or 0xe7, ..]),
+                $"Refusal sends no purchase updates to {player.Handle}");
+        }
 
         seller.SendRpc(ListItem(300, 5));
         await seller.WaitForRpcAsync("5f 05 00 01");
@@ -1051,13 +1064,14 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={seller.CharId} AND slot=5"), "Seller's slot once listed");
 
         // It shows up in a search
-        buyer.SendRpc($"81 24 {MarketCategory} {Le(0u)} 00 00 00 00 19 00 {Le(999999999u)} {Le(0u)} 01 00 00");
+        buyer.SendRpc(searchRequest);
         RpcRecord search = await buyer.WaitForRpcAsync("81 25 09 00");
-        Check.That(BytePattern.Parse(Le(listing)).Occurs(search.Bytes), "Search reply holds the listing: " + search.Hex);
+        Check.That(BytePattern.Parse($"81 25 09 00 00 00 00 00 00 16 00 {Le(NpcLoot.CodeBit1)} ?? ?? ?? ?? {Le(listing)} {Le(300u)}")
+            .IsMatch(search.Bytes), "Code Bit search returns the listing and price");
 
-        // Too poor: nothing changes
-        poor.SendRpc($"81 26 {Le(listing)} 07");
-        await poor.WaitForTextAsync("do not have enough information");
+        await Refused(poor, listing, "9a 02 00 0c");
+        await Refused(full, listing, "ca 02 00 0c");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT is_sold FROM marketplace WHERE id={listing}"), "Refusals leave the listing available");
 
         buyer.SendRpc($"81 26 {Le(listing)} 07");
         await buyer.WaitForRpcAsync($"5e 07 00 {Le(NpcLoot.CodeBit1)}");
@@ -1073,9 +1087,13 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         Check.Equal(1300L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={poor.CharId}"), "Poor buyer's information");
 
-        // Too late
-        poor.SendRpc($"81 26 {Le(listing)} 07");
-        await poor.WaitForTextAsync("already been sold");
+        // The same connection can search again immediately after a refused stale Buy.
+        await Refused(buyer, listing, "98 02 00 0c");
+        await Refused(buyer, uint.MaxValue, "98 02 00 0c");
+        buyer.SendRpc(searchRequest);
+        await buyer.WaitForRpcAsync("81 25 09 00 00 00 00 00 00 00 00");
+        Check.Equal(700L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={buyer.CharId}"), "Stale purchase does not charge the buyer again");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={buyer.CharId} AND goid={NpcLoot.CodeBit1}"), "Stale purchase grants no duplicate");
     }
 
     /// <summary>
