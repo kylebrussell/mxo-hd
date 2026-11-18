@@ -52,11 +52,21 @@ public sealed class ScenarioContext : IAsyncDisposable
 
     public string RepositoryRoot { get; }
 
-    private ScenarioContext(string repositoryRoot, ThrowawayDatabase database, ServerInstance server)
+    private readonly bool ownsServer;
+
+    private ScenarioContext(string repositoryRoot, ThrowawayDatabase database, ServerInstance server, bool ownsServer = true)
     {
         RepositoryRoot = repositoryRoot;
         Database = database;
         Server = server;
+        this.ownsServer = ownsServer;
+    }
+
+    public static ScenarioContext UseOwnedServer(string repositoryRoot, ThrowawayDatabase database, ServerInstance server)
+    {
+        if (!database.Name.StartsWith(ThrowawayDatabase.Prefix, StringComparison.Ordinal) || server.DatabaseName != database.Name)
+            throw new ArgumentException("Scenario requires a matching disposable database and server.");
+        return new ScenarioContext(repositoryRoot, database, server, ownsServer: false);
     }
 
     public static async Task<ScenarioContext> StartAsync(string repositoryRoot, string label,
@@ -182,8 +192,11 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
         {
             player.Dispose();
         }
-        Server.Dispose();
-        await Task.Run(Database.Dispose);
+        if (ownsServer)
+        {
+            Server.Dispose();
+            await Task.Run(Database.Dispose);
+        }
     }
 }
 

@@ -40,6 +40,9 @@ namespace hds
 
         public static bool Start(WorldClient client, Mission mission, ushort transaction = 0) => MissionPersistence.Mutate(client,()=>{StartCore(client,mission,transaction);return true;},true);
 
+        internal static bool StartQa(WorldClient client, MissionProgress progress, ushort transaction) =>
+            MissionPersistence.Mutate(client, () => { StartCore(client, progress.mission, transaction, progress); return true; }, true);
+
         internal static bool StartOpenFloor(WorldClient client,MissionProgress progress,MissionOpenFloorAdmission.Plan plan,ushort transaction) =>
             MissionPersistence.Mutate(client,()=>
             {
@@ -88,10 +91,18 @@ namespace hds
                 else if(npcPrepared!=null)MissionStaging.StageNpcPrepared(client,progress,npcPrepared);
                 else if(prepared==null)MissionStaging.Stage(client, progress);
                 else {if(prepared.Adopted)progress.openFloorCheckpoint=true;MissionStaging.StagePrepared(client,progress,prepared);}
+                if (progress.qaStart != null)
+                {
+                    progress.qaStart.RequireStaged(client, progress);
+                    foreach (var item in progress.itemSlots)
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(item.Value, item.Key,
+                            ItemElement(progress, item.Key), data.missionInstanceCounter));
+                }
                 SendPhase(client, progress);
                 EnsureTimer();
                 if(npcPrepared!=null)npcPrepared.RequirePublished(client);
                 MissionPersistence.Save(client);
+                progress.qaStart = null;
             }
         }
 

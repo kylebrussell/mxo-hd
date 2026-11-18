@@ -5,6 +5,21 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using NativeQa;
 
+// Reject mistyped inspection flags before even resolving a fixture mode or creating a path.
+if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
+{
+    Console.WriteLine("NativeQa --fixture-plan [mode] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
+    Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids]");
+    return;
+}
+if (args.Length > 0 && args[0].StartsWith('-') &&
+    args[0] != "--fixture-plan" && args[0] != "--build-info" && args[0] != "--bootstrap-checks")
+{
+    Console.Error.WriteLine("Unknown NativeQa option: " + args[0] + ". Use --help for supported commands.");
+    Environment.ExitCode = 2;
+    return;
+}
+
 #if DEBUG
 const string configuration = "Debug";
 #else
@@ -44,6 +59,12 @@ if (args.Length > 0 && args[0] == "--build-info")
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
 var fixtureMode=NativeQaModes.RequireKnown(args.Length > 3 ? args[3] : "");
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());
+if (!File.Exists(Path.Combine(root,"SQL","reality_hd.sql")))
+{
+    Console.Error.WriteLine("NativeQa repository must contain SQL/reality_hd.sql: " + root);
+    Environment.ExitCode = 2;
+    return;
+}
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
 // Optional fifth argument keeps a focused native checklist small enough to avoid legacy UI scrolling.
@@ -65,6 +86,8 @@ Directory.CreateDirectory(Path.Combine(qaRoot, "responses"));
 using FileStream clientLock = new(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 await clientLock.WriteAsync(Encoding.UTF8.GetBytes($"Codex native ability QA {Environment.ProcessId}, CSR_Tester 110, {commit}"));
 await clientLock.FlushAsync();
+string statePath = Path.Combine(qaRoot, "state.json");
+await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new { Status = "Preparing", BuildCommit = commit }));
 await File.AppendAllTextAsync(handoff, $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Took mxo-client.lock for native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database; helper players are headless QA fixtures. Main110 will be reset to Mara, full health, flag0 and mission986 only before release.\n");
 using ThrowawayDatabase database = await ThrowawayDatabase.CreateAsync(root, "native_ability");
 ServerInstance? server = null;
@@ -92,8 +115,9 @@ try
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""),
         fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture));
-    byte[] shieldAck=await fixtureMode.AfterStartAsync(new NativeQaBootstrapContext(qaRoot,helperNames,helpers,OwnedDatabase:database,ActualServer:server));
-    await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
+    byte[] shieldAck = await NativeQaReadiness.BootstrapAsync(fixtureMode,
+        new NativeQaBootstrapContext(qaRoot, helperNames, helpers, OwnedDatabase: database, ActualServer: server, RepositoryRoot: root));
+    await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
@@ -104,6 +128,7 @@ try
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var entranceMessages = new HashSet<string>();
+    string? entranceMission = null;
     var handled = new HashSet<string>();
     DateTime deadline = DateTime.UtcNow.AddHours(4);
     while (!File.Exists(Path.Combine(qaRoot,"stop")) && DateTime.UtcNow < deadline && !server.HasExited)
@@ -115,8 +140,15 @@ try
             {
                 var progress = MervFollowupCheckpointFixture.ParseHex(checkpoint);
                 if (progress != null)
-                    foreach (string message in MissionCatalogEntrances.Describe(progress))
+                {
+                    if (entranceMission != progress.Identity)
+                    {
+                        entranceMission = progress.Identity;
+                        entranceMessages.Clear();
+                    }
+                    foreach (string message in MissionCatalogEntrances.Describe(progress, root))
                         if (entranceMessages.Add(message)) Console.WriteLine("READY " + message);
+                }
             }
         }
         if (File.Exists(Path.Combine(qaRoot,"helpers")) && helpers.Count == 0)
@@ -192,6 +224,12 @@ try
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());
         await Task.Delay(500);
     }
+}
+catch (Exception error)
+{
+    await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new { Status = "Blocked", BuildCommit = commit, Error = error.Message }));
+    if (server != null) await File.WriteAllTextAsync(Path.Combine(qaRoot, "server.log"), server.FullOutput());
+    throw;
 }
 finally
 {
