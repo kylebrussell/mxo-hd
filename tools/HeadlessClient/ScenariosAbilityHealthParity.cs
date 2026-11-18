@@ -44,8 +44,8 @@ public static partial class Scenarios
         caster.SendRpc(HealthCast("80 b9 d2 01 0a 00 a1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 6b 00 00 00 00 00", enemyView));
         var applied = await enemy.WaitForRpcAsync(ModPattern(466, 1157) + " 00 00 70 41", TimeSpan.FromSeconds(10));
         int total = BinaryPrimitives.ReadInt32LittleEndian(applied.Bytes.AsSpan(13));
-        // Loaded Infection Immunity (461) contributes +5% viral influence at level 50.
-        Check.That(total is >= 445 and <= 466, $"Plague Zone captured total scaled by +5% viral influence, actual {total}");
+        // Loaded Transmit Virus (95) contributes +15% viral influence at level 50.
+        Check.That(total is >= 487 and <= 510, $"Plague Zone captured total scaled by +15% viral influence, actual {total}");
         await ally.WaitForRpcAsync(ModPattern(169, 1157, true), TimeSpan.FromSeconds(20));
         await enemy.WaitForRpcAsync(ModPattern(466, 1157, true), TimeSpan.FromSeconds(20));
         MatchCollection hot = Regex.Matches(context.Server.DebugLog(), @"169 heals HealthAlly for (\d+)");

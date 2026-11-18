@@ -194,6 +194,8 @@ try
                     reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
                     reply[7] = q.GetProperty("accept").GetBoolean() ? (byte)0 : (byte)1;
                     actor.SendRpc(reply);
+                    if (fixtureMode is NativeQa.Modes.AbilityHealthParityMode && reply[6] == 0 && reply[7] == 0)
+                        result = await NativeQa.Modes.AbilityHealthParityMode.CheckRejuvenatedAsync(actor);
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));

@@ -23,6 +23,15 @@ public sealed class AbilityHealthParityMode : NativeQaMode
             "With QAFriend ordinarily dead, cast Rejuvenate RSI from the stock client and approve via the helper. Expect HP 500 and IS 1000 and an in-place stand. See docs/ABILITY-HEALTH-PARITY.md."
         });
 
+    internal static async Task<object> CheckRejuvenatedAsync(HeadlessPlayer actor)
+    {
+        await actor.WaitForViewUpdateAsync(2, "01 28 ?? 40 00 3f a0 01");
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 d1 00 e8 03 f4 01");
+        await actor.WaitForRpcAsync("81 67 ?? ?? ?? ?? 3e 28 00 c6 00 a0 01 00 00");
+        Check.Equal(0, actor.World.Problems.Count, "Rejuvenate approval framing");
+        return new { Ability = 416, Health = 500, InnerStrength = 1000, StandMotion = 63 };
+    }
+
     internal static byte[] RejuvenateReply(byte[] pending)
     {
         Check.That(pending.Length >= 6 && BinaryPrimitives.ReadUInt32LittleEndian(pending.AsSpan(2)) == 416,
