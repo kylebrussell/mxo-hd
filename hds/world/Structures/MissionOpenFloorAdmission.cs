@@ -8,6 +8,7 @@ namespace hds
     internal static class MissionOpenFloorAdmission
     {
         internal const string UnavailableMessage="The next mission area cannot be placed safely. Retry the exit or abort the mission.";
+        internal const int AdditionalSiteAttempts=4;
         internal static bool Requires(MissionPhase phase) => phase?.site!=null&&phase.objects.Any(o=>new[]{"Box","Computer","Safe","Mainframe"}.Contains(o.kind,StringComparer.OrdinalIgnoreCase));
         internal static bool Target(ushort goid,StaticWorldObject raw) => raw?.type!=null&&raw.type.Length>=2&&(goid==3||goid==357||goid==548||goid==552)&&MissionSites.Goid(raw)!=0&&MissionSites.Goid(raw)!=goid;
         internal static string MeshFingerprint(IReadOnlyList<MissionOpenFloorResolver.Surface> surfaces) => MissionOpenFloorSite.Hash(JsonSerializer.Serialize(
@@ -69,6 +70,29 @@ namespace hds
         internal static bool TryPrepare(WorldClient client,MissionProgress progress,int phaseIndex,MissionProgress before,
             out Plan plan,out MissionOpenFloorPendingAdmission selected,out string refusal,IReadOnlyList<MissionSite> siteCatalog=null)
         {
+            if(PrepareCandidate(client,progress,phaseIndex,before,out plan,out selected,out refusal,siteCatalog))return true;
+            if(progress.pendingOpenFloor!=null||refusal!="NoGeometricBodyCandidates"||plan?.Site==null)return false;
+
+            // A fresh source can prove unsuitable only after the full body search. Try other
+            // eligible sites before publishing a refusal. A committed choice uses exact replay.
+            var rejected=new HashSet<MissionSite>{plan.Site};
+            for(int attempt=0;attempt<AdditionalSiteAttempts&&plan.BeforeCurrent(client);attempt++)
+            {
+                bool accepted=PrepareCandidate(client,progress,phaseIndex,before,out var alternative,out var choice,out string reason,siteCatalog,rejected);
+                if(accepted&&plan.BeforeCurrent(client))
+                {
+                    plan=alternative;selected=choice;refusal=null;
+                    return true;
+                }
+                if(reason!="NoGeometricBodyCandidates"||alternative?.Site==null||!rejected.Add(alternative.Site))break;
+            }
+            return false;
+        }
+
+        private static bool PrepareCandidate(WorldClient client,MissionProgress progress,int phaseIndex,MissionProgress before,
+            out Plan plan,out MissionOpenFloorPendingAdmission selected,out string refusal,IReadOnlyList<MissionSite> siteCatalog,
+            HashSet<MissionSite> rejected=null)
+        {
             plan=null;selected=null;refusal=null;ClientData data=client.playerData;
             int world=data.worldGeneration,life=data.lifeGeneration,beforePhase=before?.phaseIndex??-1;long transport=client.TransportFence.Capture();uint character=data.getCharID();
             bool Current() => ReferenceEquals(client.playerData,data)&&client.Alive&&data.getOnWorld()&&!data.worldChangePending&&!data.waitForRPCShutDown&&
@@ -79,7 +103,7 @@ namespace hds
             MissionPhase phase=mission.phases[phaseIndex];MissionSite site=null;MissionOpenFloorChoice[] choices=null;
             int requiredNpcs=mission.npcs.Count(n=>n.at==phaseIndex+1)+MissionStaging.SpotsForWaves(phase);
             var street=progress.streetPolicy?MissionStreetCoverage.Filter(mission,phaseIndex):null;bool fresh=progress.pendingOpenFloor==null;
-            bool Eligible(MissionSite s)=>(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,requiredNpcs);
+            bool Eligible(MissionSite s)=>(rejected==null||!rejected.Contains(s))&&(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,requiredNpcs);
             if(progress.pendingOpenFloor!=null)
             {
                 selected=progress.pendingOpenFloor;

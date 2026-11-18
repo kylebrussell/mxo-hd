@@ -138,12 +138,12 @@ namespace hds
             internal SiteSelection(MissionSite site,Random random){Site=site;Random=random;}
         }
         // The original chooser, factored once. Preview clearing belongs to successful Stage, not failed admission.
-        internal static SiteSelection ChooseSite(WorldClient client,MissionProgress progress,int phaseIndex)
+        internal static SiteSelection ChooseSite(WorldClient client,MissionProgress progress,int phaseIndex,ISet<MissionSite> rejected=null)
         {
             double px=0,py=0,pz=0;NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(),ref px,ref py,ref pz);
-            return ChooseSiteAt(client,progress,phaseIndex,px,pz);
+            return ChooseSiteAt(client,progress,phaseIndex,px,pz,rejected);
         }
-        private static SiteSelection ChooseSiteAt(WorldClient client,MissionProgress progress,int phaseIndex,double px,double pz)
+        private static SiteSelection ChooseSiteAt(WorldClient client,MissionProgress progress,int phaseIndex,double px,double pz,ISet<MissionSite> rejected=null)
         {
             var mission=progress.mission;var phase=mission.phases[phaseIndex];int at=phaseIndex+1;
             var rng=LayoutRandom(mission.id,phaseIndex,unchecked((int)client.playerData.getCharID()*7919+mission.id*31+at+(int)progress.startedAt));
@@ -153,7 +153,8 @@ namespace hds
             int npcs=mission.npcs.Count(n=>n.at==at)+SpotsForWaves(phase),objects=PlacesNeeded(phase),furniture=FurnitureNeeded(phase);
             Func<MissionSite,bool> certified=MissionNpcCoverage.Filter(progress.mission,phaseIndex);
             var street=progress.streetPolicy?MissionStreetCoverage.Filter(mission,phaseIndex):null;
-            bool Eligible(MissionSite s)=>(street==null||street(s))&&MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
+            bool Eligible(MissionSite s)=>(rejected==null||!rejected.Contains(s))&&(street==null||street(s))&&
+                MissionInteriorSites.Eligible(phase,s,out _,npcs)&&(certified==null||certified(s));
             if(site!=null&&!Eligible(site))site=null;
             site=site??MissionSites.Choose(sites,phase.site,px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible)
                 ??MissionSites.Choose(sites,"Any",px,pz,npcs,objects,rng,progress.sites,hoods,requiredFurniture:furniture,admissible:Eligible);

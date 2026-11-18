@@ -69,22 +69,16 @@ namespace hds
   internal static MissionStreetSelection Build(MissionProgress p,MissionStreetSelection selected,MissionOpenFloorChoice[] choices,Func<uint,StaticWorldObject> lookup)
   {
    if(choices.Length==0||choices.Any(c=>c.Goid!=326||MissionSites.Goid(c.ReadSpot())!=326))return selected;
-   var index=Evidence(selected);var entry=MissionNpcInteriorCheckpoint.SavedEntry(index,selected.Context.Floor);var routes=new List<Route>();
+   var site=selected.Site.Resolve(MissionSites.For(p.mission.district));
+   Need(site!=null,"UnknownSelectedSite");
+   var routes=new List<Route>();
    foreach(var choice in choices)
    {
-    var raw=choice.ReadSpot();Need(MissionBoundObjectPoses.TryBounds(new MissionObjectState{spot=raw,goid=326},out var bounds,out string why),why);
-    Need(bounds.NavSha256==index.NavSourceSha256&&raw.metrId==p.mission.district&&raw.sectorID==(selected.Site.DoorKey>>20)&&bounds.Region>=0&&bounds.Region<=ushort.MaxValue,"SourceWorldSector");
-    double[] centre=MissionBound326Range.Centre(bounds),from=selected.Context.Floor.Standing;
-    Need(NavMesh.Locate(raw.metrId,from[0],from[1],from[2],out var at)&&at.sector==raw.sectorID&&at.region==entry.Node.Region&&at.polygon==entry.Node.Polygon&&from[1]==at.floorY+95,"ActualFixedEntry");
-    Need(NavMesh.Project(raw.metrId,centre[0],centre[1],centre[2],out var target,MissionBound326Range.Envelope(bounds),from,false),"NoNativeRangeStanding");
-    double[] standing=target.Position.Select(v=>(double)(float)v).ToArray();
-    Need(NavMesh.Locate(raw.metrId,standing[0],standing[1],standing[2],out var located)&&located.sector==raw.sectorID&&located.region==bounds.Region&&located.floorY==at.floorY&&standing[1]==located.floorY+95&&MissionBound326Range.Valid(standing,bounds),"NativeStandingScope");
-    Need(index.TryPointRoute(entry,(ushort)bounds.Region,standing,lookup,out var route,out why),why);
-    routes.Add(new Route{ObjectId=choice.ObjectId,RawSourceJson=choice.RawSpotJson,Region=(ushort)bounds.Region,NativePosition=centre,NativeQuaternion=Convert.ToHexString(bounds.Pose.Orientation),Standing=standing,
-     Target=new MissionNpcInteriorNode(route.Target.Region,route.Target.Polygon),Nodes=route.Nodes.Select(n=>new MissionNpcInteriorNode(n.Region,n.Polygon)).ToArray(),
-     Doors=route.RequiredDoors.OrderBy(d=>d.Key).Select(d=>new MissionNpcInteriorDoor(d.Key,d.Goid,MissionNpcInteriorPlanning.RawJson(lookup(d.Key)),d.Quaternion,new[]{d.Position.X,d.Position.Y,d.Position.Z})).ToArray()});
+    Need(MissionStreetFurnitureRoutes.TrySource(site,selected.Context,choice.ReadSpot(),lookup,out var route,out string why),why);
+    routes.Add(new Route{ObjectId=choice.ObjectId,RawSourceJson=choice.RawSpotJson,Region=route.Region,NativePosition=route.NativePosition,
+     NativeQuaternion=route.NativeQuaternion,Standing=route.Standing,Target=route.Target,Nodes=route.Nodes,Doors=route.Doors});
    }
-   var envelope=new Envelope{Version=1,Kind="Bound326Routes",EvidenceDigest=index.Digest,BoundManifest=MissionBoundObjectPoses.AuditedManifestSha256,Routes=routes.ToArray()};
+   var envelope=new Envelope{Version=1,Kind="Bound326Routes",EvidenceDigest=selected.Context.Floor.EvidenceDigest,BoundManifest=MissionBoundObjectPoses.AuditedManifestSha256,Routes=routes.ToArray()};
    return new MissionStreetSelection(2,selected.Mission,selected.Identity,selected.Started,selected.Phase,selected.Site,selected.Kind,selected.Context,null,JsonSerializer.SerializeToElement(envelope,MissionProgress.SaveJson));
   }
   // Replay uses saved points/nodes only. Never Project, choose a source, or consume RNG.

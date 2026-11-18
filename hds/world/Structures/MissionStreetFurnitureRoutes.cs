@@ -77,16 +77,17 @@ namespace hds
     Need(raw.metrId==site.metrId&&raw.sectorID==site.elevatorDoor.sectorID&&bounds.NavSha256==index.NavSourceSha256&&bounds.Region>=0&&bounds.Region<=ushort.MaxValue,"NativeEvidenceDomain");
     double[] centre=MissionBoundFurnitureRange.Centre(bounds),from=context.Floor.Standing;double floor=from[1]-95;
     Need(NavMesh.Locate(raw.metrId,from[0],from[1],from[2],out var root)&&root.sector==raw.sectorID&&root.region==entry.Node.Region&&root.polygon==entry.Node.Polygon&&root.floorY==floor,"FixedEntry");
-    double[][] candidates;
-    if(goid==326)
+    IEnumerable<double[]> Candidates()
     {
-     // Preserve the existing326 component projection, including refusal, in mixed new envelopes.
-     Need(NavMesh.Project(raw.metrId,centre[0],centre[1],centre[2],out var old,MissionBoundFurnitureRange.Envelope(bounds),from,false),"No326ComponentStanding");
-     candidates=new[]{old.Position.Select(v=>(double)(float)v).ToArray()};
+     // Keep the original cabinet approach when valid. Authored doors can connect rooms
+     // that the component projection cannot reach from the elevator.
+     if(goid==326&&NavMesh.Project(raw.metrId,centre[0],centre[1],centre[2],out var old,MissionBoundFurnitureRange.Envelope(bounds),from,false))
+      yield return old.Position.Select(v=>(double)(float)v).ToArray();
+     foreach(var point in index.FurniturePoints((ushort)bounds.Region,floor,centre,bounds.Minimum,bounds.Maximum))
+      yield return point;
     }
-    else candidates=index.FurniturePoints((ushort)bounds.Region,floor,centre,bounds.Minimum,bounds.Maximum);
     refusal="NoNativeFurnitureStandingOrAuthoredRoute";
-    foreach(var standing in candidates)
+    foreach(var standing in Candidates())
     {
      if(!MissionBoundFurnitureRange.Valid(standing,bounds)||!NavMesh.Locate(raw.metrId,standing[0],standing[1],standing[2],out var at)||
         at.sector!=raw.sectorID||at.region!=bounds.Region||at.floorY!=floor||standing[1]!=at.floorY+95)continue;
