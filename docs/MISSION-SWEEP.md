@@ -10,27 +10,44 @@ Native samples: 1205 (escort elevator), 104101 (three followers), 102301 (lobby 
 Claude owns the native client lock, character reset and merge.
 The baseline uses assisted street travel; native samples establish visible doors, walking and picking.
 
-### Start at a later area in Native QA
+### Direct mission samples in one Native QA login
 
-Set a single mission ID and a one-based area before starting `mission-catalog-sample`:
+Set `MXO_QA_MISSION_SAMPLES` to comma-separated `mission:area` pairs and start
+`mission-catalog-sample` with a fresh fixture directory. Areas are one-based. Clear
+`MXO_QA_MISSION_PHASE` for a direct-sample session.
 
 ```powershell
-$env:MXO_QA_MISSION_ID = '208302'
-$env:MXO_QA_MISSION_PHASE = '4'
-# Inspect the plan without starting a server or reserving the native client.
-dotnet tools/NativeQa/bin/Debug/net8.0/NativeQa.dll --fixture-plan mission-catalog-sample
+$env:MXO_QA_MISSION_SAMPLES = '205204:2,205301:3,203305:4,308203:4,303105:1'
 ```
 
-Use the usual NativeQa startup with this environment and a fresh fixture directory. Wait for
-`state.json` to say `Ready`. Bootstrap signs into the disposable copy of CSR_Tester, accepts the
-real offer, plays the earlier areas with headless assistance, and quits before entering the
-selected generated floor. The server keeps the earned goals, inventory and followers. Use the
-printed entrance and finish the selected area in the native client. For Of Two Minds area 4,
-check Green and Jones are following, use the lobby car, then bring them to Pace and finish with
-Morpheus. This starts after area 3, so use an ordinary full run to investigate the earlier areas.
+Wait for `state.json` to say `Ready`. Bootstrap starts each listed sample on the
+disposable CSR_Tester, checks its staged checkpoint, required actors and props,
+and aborts it normally before logging out. `mission-samples-bootstrap.json`
+records each staged area and available entrance. A failed sample blocks readiness.
+The catalog fixture disables ambient aggro. The aggro-enabled team fixture checks
+its required helper at startup and refuses readiness if an ambient NPC attacks it.
 
-Bootstrap requires the selected checkpoint, its fixed props and actors, and any previously
-recruited escorts required by the new area. Scripted late arrivals remain tied to their triggers.
-A preparation failure reports `Blocked` with the step that failed. `mission-phase-start.json`
-records the staged scope and the number of earlier areas played headlessly. Clear
-`MXO_QA_MISSION_PHASE` to restore the ordinary fresh-offer session.
+In the native client, type `?missionphase 205204 2`. It accepts the exact mission ID
+and starts the requested area without a contact. The chat confirmation discloses
+skipped areas and staged carry-over. The command is enabled only for the live
+disposable CSR_Tester in the catalog profile. Finish or abort the active mission
+and leave combat before entering the next command. Use the same district and
+start from the fixture's hardline if you want the same site selection as the
+bootstrap probe.
+
+Direct starts stage carry-over from authored goals. They leave the requested
+area's goals open and do not award earlier receipts or rewards. A direct start
+can pick a different site than a continuous run. Watch late arrivals after their
+normal triggers. When no measured public entrance is recorded in Slums,
+the console can print an assisted lobby approach for the selected car. That
+approach skips the public door and must be recorded as assisted. Use the ordinary
+elevator from that lobby.
+
+### Earned checkpoint from earlier areas
+
+Use `MXO_QA_MISSION_ID` and `MXO_QA_MISSION_PHASE` for one mission when the
+actual earlier history matters. Clear `MXO_QA_MISSION_SAMPLES` first. Bootstrap
+accepts the selected ID, plays earlier areas headlessly, and quits before the
+selected floor. It uses the ordinary ticket path for ticket missions. Follow
+the printed entrance after native login. `mission-phase-start.json` records the
+earned scope. Clear both phase and sample options for a fresh contact-offer fixture.

@@ -60,7 +60,7 @@ namespace hds
             target.persistenceId == identity && target.startedAt == started && phase >= 0 && phase < target.mission.phases.Count &&
             (before == null || ReferenceEquals(before.site, beforeSite) && (ReferenceEquals(before.npcInteriorPending, beforePending)||installed!=null&&ReferenceEquals(before,target)&&ReferenceEquals(before.npcInteriorPending,installed)) && before.sites.Count == beforeSites) &&
             ReferenceEquals(target.site, targetSite) && (ReferenceEquals(target.npcInteriorPending, targetPending)||installed!=null&&ReferenceEquals(target.npcInteriorPending,installed)) && target.sites.Count == targetSites &&
-            phase == (ReferenceEquals(before, target) ? beforePhase + 1 : 0);
+            phase == (ReferenceEquals(before, target) ? beforePhase + 1 : target.qaStart != null ? targetCurrentPhase : 0);
     }
     internal static class MissionNpcInteriorPlanning
     {

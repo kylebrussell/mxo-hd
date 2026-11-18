@@ -204,6 +204,12 @@ public static partial class Scenarios
         step.Player=p;
         await p.EnterWorldAsync();
         if(entry!=0){Stage("other","ticket acceptance");p.SendRpc("59 01");}
+        else if (preparedPlayer != null)
+        {
+            Stage("room/NAV placement", "direct catalog acceptance");
+            p.SendChat($"?missionphase {m.Id} 1");
+            await p.WaitForTextAsync($"QA READY mission {m.Id} area 1.");
+        }
         else
         {
         int list=p.World.RpcSnapshot().Count;

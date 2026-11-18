@@ -128,6 +128,7 @@ try
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var entranceMessages = new HashSet<string>();
+    string? entranceMission = null;
     var handled = new HashSet<string>();
     DateTime deadline = DateTime.UtcNow.AddHours(4);
     while (!File.Exists(Path.Combine(qaRoot,"stop")) && DateTime.UtcNow < deadline && !server.HasExited)
@@ -139,8 +140,15 @@ try
             {
                 var progress = MervFollowupCheckpointFixture.ParseHex(checkpoint);
                 if (progress != null)
-                    foreach (string message in MissionCatalogEntrances.Describe(progress))
+                {
+                    if (entranceMission != progress.Identity)
+                    {
+                        entranceMission = progress.Identity;
+                        entranceMessages.Clear();
+                    }
+                    foreach (string message in MissionCatalogEntrances.Describe(progress, root))
                         if (entranceMessages.Add(message)) Console.WriteLine("READY " + message);
+                }
             }
         }
         if (File.Exists(Path.Combine(qaRoot,"helpers")) && helpers.Count == 0)
