@@ -147,8 +147,13 @@ public static partial class Scenarios
         p.SendRpc("80 94 05 00 03"); await p.WaitForTextAsync("Locked Safe Fixture"); await p.WaitForRpcAsync("80 97 05 00");
         p.SendRpc("80 98 06 00 00 00 01 02 00"); await p.WaitForRpcAsync("80 99");
         p.SendRpc("80 9b 07 00 01"); await p.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(context,p);
+        // This wire check uses the saved object approach. The legacy elevator log format does not cover lobby cars.
         await ApproachMissionObjectFixture(context,p,1);
+        await p.WaitUntilAsync(() =>
+        {
+            var saved = MervFollowupCheckpoint(context, p).GetAwaiter().GetResult();
+            return saved.Flags.GetValueOrDefault("entered") && !saved.Done.Contains((ushort)1);
+        }, "mission area entry with the safe objective still open", TimeSpan.FromSeconds(12));
         p.SendChat("?utilitymap 7"); await p.WaitForTextAsync("Utility map fixture flags=7"); // deterministic presentation; pure retail roll has separate boundary tests
         // The mission overlay can send an empty clear before the fixture's objective becomes visible.
         var reveal = ReadMinimapPositions((await p.WaitForRpcAsync("80 c5 05 00 03")).Bytes, 3);

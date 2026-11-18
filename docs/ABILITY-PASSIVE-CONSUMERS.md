@@ -17,12 +17,12 @@ The [shipped callback](../research/client-scripts/ability/spy/misc.py#L80) scans
 
 A loaded 149 uses the normal cast and 10 IS charge. Group allies are omitted using the server's mission-team, crew and faction membership. The server's PvP eligibility marks enemies, and other in-range players are neutral. NPCs require a current authorized view. Existing Stealth and view rules continue to govern target selection. Scanned players receive source scan and result notices. The caster receives the sourced FX and ten-second [minimap position record](DATA-MINING.md). This uses the same minimap entry type as map and locator pings. The native binding from `sendPlayerPositions` remains unresolved.
 
-The first native sample printed 453 detections with the malformed header `80 c5 01 00 0a`. The stock constructor `0x6213c1f0` calls `0x62129590`, which reads the array offset from +2, then reads the count at that offset. Offset 1 made it interpret `c5 01` as the count. The shared encoder now places the count at +5. The corrected marker awaits a native retest.
+The first native sample printed 453 detections with the malformed header `80 c5 01 00 0a`. The stock constructor `0x6213c1f0` calls `0x62129590`, which reads the array offset from +2, then reads the count at that offset. Offset 1 made it interpret `c5 01` as the count. The shared encoder now places the count at +5. The native retest displayed one detection and one red marker beside the player's arrow in the Mara map panel. The marker was gone by the 12-second observation. The map's default zoom limited visual measurement of the offset. Headless checks verified the 8 m offset and 10 IS charge. A distinct native scan visual remains unverified. [Native retest](https://github.com/kylebrussell/mxo-hd/pull/308#issuecomment-6991689247)
 
 ## Native sample
 
 Use NativeQa mode `sixth-sense` at the PR head. The disposable bootstrap checks both live helper positions, both PvP flags, ambient aggro, the one-marker scan, the near helper's discovery and the far helper's exclusion. It writes `sixth-sense-bootstrap.json`. No caster commands or forced roll are required in the real client.
 
-1. Jack in as CSR110 and stay at the seeded point `17000 495 2300`. Open the minimap and activate Sixth Sense once from Actions.
+1. Jack in as CSR110 and stay at the seeded point `17000 495 2300`. Press M to open the Mara map panel and activate Sixth Sense from Actions or the hotbar.
 2. Check that the client reports one detection and shows one red dot 8 m east for 10 seconds, along with the scan visual. Record the actual output and `80 c5 05 00 0a 01 00 00 08 00 02`.
 3. Check 10 IS spent and normal native fixture shutdown.
