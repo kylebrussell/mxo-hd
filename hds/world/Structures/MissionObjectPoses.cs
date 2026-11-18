@@ -76,16 +76,14 @@ namespace hds
             var centre=pose.Centre;return new MissionComputerAnchors.Pose(centre[0],centre[1],centre[2],pose.Quaternion);
         }
 
-        public static MissionComputerAnchors.Pose ForPresentation(MissionObjectState state)
+        public static MissionComputerAnchors.Pose ForPresentation(MissionObjectState state, MissionComputerAnchors.Pose sourcePose = null)
         {
-            var pose = For(state);
+            var pose = sourcePose ?? For(state);
             if (state.PresentationGoid == state.goid || !MissionBoundFurnitureRange.Supports(state.goid)
                 || MissionSites.Goid(state.spot) != state.goid)
                 return pose;
 
-            // Place a free desk phone on the supporting furniture so its model clears the source.
-            // GO 1401 Model6's authored local Y half-extent is 4.40453577 world units.
-            const double phoneHalfHeight = 4.40453577041626;
+            // Certified furniture heights include the native origin correction for the chosen source.
             double top;
             if (MissionBoundFurnitureRange.TryBounds(state, out var bounds, out _))
                 top = bounds.Maximum[1];
@@ -97,7 +95,7 @@ namespace hds
                 top = state.spot.pos_y - staticOriginOffset + height;
             }
 
-            return new MissionComputerAnchors.Pose(pose.X, top + phoneHalfHeight, pose.Z, pose.Orientation);
+            return MissionPhonePlacement.At(state.spot, pose, top, bounds);
         }
     }
 }

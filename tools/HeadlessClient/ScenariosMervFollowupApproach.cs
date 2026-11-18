@@ -305,10 +305,11 @@ public static partial class Scenarios
         var objectState = new MissionObjectState { def = definition, spot = owned.Spot, goid = owned.Goid, OpenFloor = owned.OpenFloor };
         if (objectState.PresentationGoid != owned.Goid)
         {
-            var phone = MissionObjectPoses.ForPresentation(objectState);
-            // Keep the source XZ and orientation resolved above, including a persisted furniture route.
-            // Phone presentation only changes height relative to that source.
-            centre = new[] { centre[0], phone.Y, centre[2] };
+            // Reuse the audited source pose resolved above, including a persisted furniture route.
+            var source = new MissionComputerAnchors.Pose(centre[0], centre[1], centre[2], Convert.FromHexString(quaternion));
+            var phone = MissionObjectPoses.ForPresentation(objectState, source);
+            centre = new[] { phone.X, phone.Y, phone.Z };
+            quaternion = Convert.ToHexString(phone.Orientation);
         }
         ViewCreation? Current()=>MervFollowupApproachFixture.CurrentBody(p.World.CreationSnapshot(),objectState.PresentationGoid,centre,quaternion,saved.Instance);
         await p.WaitUntilAsync(()=>Current()!=null,"Current saved object XYZ/quaternion/owned-instance view",TimeSpan.FromSeconds(12));
