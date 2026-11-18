@@ -1067,12 +1067,13 @@ namespace hds
             // The first shot needs the target in range as much as the later ones do
             float metres = CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
                 targetMob.getXPos(), targetMob.getYPos(), targetMob.getZPos());
-            if (metres > RangedWeapons.RangeMetres(PlayerGun(client)))
+            bool visible = CombatSight.Between(client, targetMob);
+            if (metres > RangedWeapons.RangeMetres(PlayerGun(client)) || !visible)
             {
                 Output.WriteDebugLog($"[COMBAT] Range combat refused: target {metres:F1} m away");
                 client.playerInstance.CombatantMode.setValue(CombatantModeIdle);
                 client.messageQueue.addObjectMessage(ServerPackets.BuildCombatantModeUpdate(CombatantModeIdle), false);
-                new ServerPackets().sendSystemChatMessage(client, "Target is out of range.", "SYSTEM");
+                new ServerPackets().sendSystemChatMessage(client, visible ? "Target is out of range." : "Target is out of sight.", "SYSTEM");
                 client.FlushQueue();
                 return;
             }
@@ -1139,6 +1140,7 @@ namespace hds
             WorldClient player = session.Attacker;
             if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(player).Effects)) return false;
             Mob target = session.DefenderMob;
+            if (!CombatSight.Between(player, target)) return false;
             UInt32 weapon = PlayerGun(player);
             rangedNoiseLevel = RangedWeapons.NextNoiseLevel(rangedNoiseLevel, RangedWeapons.Noise(weapon));
 
@@ -1230,7 +1232,7 @@ namespace hds
             }
             float metres = CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
                 target.getXPos(), target.getYPos(), target.getZPos());
-            return metres <= RangedWeapons.RangeMetres(PlayerGun(session.Attacker));
+            return metres <= RangedWeapons.RangeMetres(PlayerGun(session.Attacker)) && CombatSight.Between(session.Attacker, target);
         }
 
         /// <summary>True when the player is within the reach of the NPC's gun.</summary>
@@ -1239,7 +1241,7 @@ namespace hds
             Mob mob = session.DefenderMob;
             float metres = CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
                 mob.getXPos(), mob.getYPos(), mob.getZPos());
-            return metres <= RangedWeapons.RangeMetres(mob.getWeapon());
+            return metres <= RangedWeapons.RangeMetres(mob.getWeapon()) && CombatSight.Between(session.Attacker, mob);
         }
 
         /// <summary>The gun the player fires: their Free Fire pick (RPC 3f), else the equipped item.</summary>
@@ -1315,7 +1317,7 @@ namespace hds
 
             float metres = CombatCalculator.CalculateDistanceMetres(player.playerInstance.Position.getValue(),
                 mob.getXPos(), mob.getYPos(), mob.getZPos());
-            if (metres > RangedWeapons.RangeMetres(mob.getWeapon()))
+            if (metres > RangedWeapons.RangeMetres(mob.getWeapon()) || !CombatSight.Between(player, mob))
             {
                 Output.WriteDebugLog($"[COMBAT] {mob.getName()} can't reach the player ({metres:F1} m)");
                 return false;

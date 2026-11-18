@@ -232,4 +232,18 @@ public class AbilityParityTests
     [InlineData(0, 895, 0, false)]
     public void AreaEffectsRespectRadiusAndFloor(double x, double y, double z, bool included) =>
         Assert.Equal(included, AbilityTargets.WithinArea(0, 495, 0, x, y, z, 4));
+
+    [Theory]
+    [InlineData(150, 50, true)]
+    [InlineData(150, -50, true)]
+    [InlineData(150, 80, false)]
+    [InlineData(-150, 0, false)]
+    [InlineData(0, 0, false)]
+    public void StoredGunConeUsesFullHorizontalArc(double x, double z, bool included)
+    {
+        var entry = AbilityCatalog.Find(493);
+        Assert.Equal(13d, entry.Number("Ability/CastDirectObjects"));
+        Assert.Equal(8d, entry.Number("Ability/RadiusOfEffect"));
+        Assert.Equal(included, AbilityTargets.InCone(1, 0, x, z, entry.Number("Ability/AngleOfEffect")));
+    }
 }

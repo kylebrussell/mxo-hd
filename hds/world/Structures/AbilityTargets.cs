@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace hds
 {
@@ -78,43 +77,59 @@ namespace hds
             Mob primary = FindMob(client, targetViewId, out _);
             if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
             if (primary.getIsDead() || primary.isFriendly) return false;
+            if (!CombatSight.Between(client, primary))
+            {
+                Output.WriteDebugLog($"[ABILITY] Sight blocked ability {ability.getAbilityID()} on view {targetViewId}");
+                return false;
+            }
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
                 primary.getXPos(), primary.getYPos(), primary.getZPos()) > range) return false;
-            var targets = new List<(Mob Mob, UInt16 View)> { (primary, targetViewId) };
-            double radius = AbilityRadius.TargetMetres(client, ability.getAbilityID());
-            if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
-            {
-                lock (WorldServer.mobs.SyncRoot)
-                    foreach (Mob mob in WorldServer.mobs)
-                    {
-                        if (mob == primary || mob.isFriendly || mob.getIsDead() || mob.getDistrict() != primary.getDistrict()) continue;
-                        var view = client.viewMan.FindViewForEntity(mob.getEntityId());
-                        if (view != null && WithinArea(primary.getXPos(), primary.getYPos(), primary.getZPos(),
-                            mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
-                    }
-            }
-            foreach (var target in targets) LandOne(client, ability, target.View, sneakOpener,origin,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
-            // Area hostile abilities also reach players around the target that PvP rules allow
-            if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
-                foreach (WorldClient player in AbilityHostile.PlayersInArea(client, primary.getXPos(), primary.getYPos(), primary.getZPos(), radius))
-                    PvpCombat.LandAbilityOn(client, ability, player,origin:origin);
+            var center = (primary.getXPos(), primary.getYPos(), primary.getZPos());
+            LandOne(client, ability, targetViewId, sneakOpener, origin, engageFoes, reverseBulldog, ghostStrike);
+            LandAround(client, ability, center, origin, engageFoes,
+                skipMob: primary);
             if (!primary.getIsDead() && primary.getHealthC() < primary.getHealthM()) MobAggro.Retaliate(client, primary);
             return true;
         }
 
-        /// <summary>An area ability that landed on a player also reaches the NPCs and PvP-legal players around them.</summary>
-        public static void LandAround(WorldClient client, AbilityItem ability, WorldClient primary, AbilityCastOrigin origin = AbilityCastOrigin.AlreadyResolved, AbilityEngageFoes.Cast engageFoes=null)
+        /// <summary>Expand a landed primary into the template's hostile area.</summary>
+        internal static void LandAround(WorldClient client, AbilityItem ability, (double X, double Y, double Z) primary,
+            AbilityCastOrigin origin, AbilityEngageFoes.Cast engageFoes, WorldClient skipPlayer = null, Mob skipMob = null)
         {
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double radius = AbilityRadius.TargetMetres(client, ability.getAbilityID());
-            if (definition?.Number("Ability/CastDirectObjects") != 3 || radius <= 0) return;
-            double x = 0, y = 0, z = 0;
-            NumericalUtils.LtVector3dToDoubles(primary.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            foreach (WorldClient player in AbilityHostile.PlayersInArea(client, x, y, z, radius, primary))
-                PvpCombat.LandAbilityOn(client, ability, player,origin:origin);
-            foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius)) LandOne(client, ability, view,origin:origin,engageFoes:engageFoes);
+            double selector = definition?.Number("Ability/CastDirectObjects") ?? 0;
+            double angle = definition?.Number("Ability/AngleOfEffect") ?? 0;
+            if (radius <= 0 || (selector != 3 && selector != 13) || (selector == 13 && (angle <= 0 || angle > 180))) return;
+
+            var center = selector == 13 ? CombatSight.Position(client) : primary;
+            bool Included(double x, double z) => selector != 13 ||
+                InCone(primary.X - center.X, primary.Z - center.Z, x - center.X, z - center.Z, angle);
+
+            // Snapshot both sets before landing any secondary effects.
+            var mobs = AbilityHostile.MobsInArea(client, center.X, center.Y, center.Z, radius, skipMob);
+            var players = AbilityHostile.PlayersInArea(client, center.X, center.Y, center.Z, radius, skipPlayer);
+            foreach (var (mob, view) in mobs)
+                if (Included(mob.getXPos(), mob.getZPos()))
+                    LandOne(client, ability, view, origin: origin, engageFoes: engageFoes);
+            foreach (var player in players)
+            {
+                var p = CombatSight.Position(player);
+                if (Included(p.X, p.Z))
+                    PvpCombat.LandAbilityOn(client, ability, player, origin: origin);
+            }
+        }
+
+        /// <summary>Selector 13 uses the selected enemy as its aim axis. The stored angle is a full horizontal arc.</summary>
+        internal static bool InCone(double aimX, double aimZ, double dx, double dz, double angle)
+        {
+            double aimLength = Math.Sqrt(aimX * aimX + aimZ * aimZ);
+            double length = Math.Sqrt(dx * dx + dz * dz);
+            if (aimLength == 0 || length == 0) return false;
+            double alignment = (aimX * dx + aimZ * dz) / (aimLength * length);
+            return alignment >= Math.Cos(angle * Math.PI / 360);
         }
 
         public static bool WithinArea(double x, double y, double z, double tx, double ty, double tz, double radiusMetres)
