@@ -40,6 +40,14 @@ namespace hds
             var loader=DataLoader.getInstance();
             return site=>state.Contexts!=null&&state.Contexts.AllowsCurrent(site,kind=="Npc",key=>loader.WorldObjectsById.Find(key,mission.district));
         }
+        internal static bool TryBoundArrivalSite(MissionSite site,out MissionNpcInteriorEntry arrival)
+        {
+            arrival=null;
+            var contexts=Volatile.Read(ref current)?.Contexts;
+            if(contexts==null||!contexts.TryGet(site,false,out var context,out _))return false;
+            arrival=context.Floor;
+            return true;
+        }
         internal static bool TryFurnitureContext(MissionSite site,out MissionStreetContexts.Context context,out string refusal)
         {
             context=null;refusal=null;var state=Volatile.Read(ref current);if(state==null)return true;

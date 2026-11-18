@@ -119,6 +119,25 @@ public class MissionComputerOfficeRouteTests
         Assert.NotNull(why);
         Assert.Equal(before,JsonSerializer.Serialize(site,new JsonSerializerOptions{IncludeFields=true}));
     }
+    [Theory]
+    [InlineData(219152518u, 1401, 28650, 2095, 12350, 28649.657413095472, 2095, 14267.324988390537, false)]
+    [InlineData(219152778u, 1401, 28480, 1281, 11970, 28641.421356237308, 1295, 14258.57864376269, true)]
+    [InlineData(249562193u, 3, 9080, 486, 5245, 11053.824541506416, 495, 6205.403424919894, false)]
+    [InlineData(1398800553u, 1401, 48277, 9280, 22770, 46500, 9295, 21800, false)]
+    public void BoundMissionPropsUseAuditedPosesAndStayInTheArrivalRoom(uint key, ushort goid,
+        double x, double y, double z, double arrivalX, double arrivalY, double arrivalZ, bool reachable)
+    {
+        SectorProperties.Load(Path.Combine(Root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(Root, "data", "navmesh"));
+        var raw = Assert.Single(Statics(), r => r.mxoStaticId == key && MissionSites.Goid(r) == goid);
+        string original = JsonSerializer.Serialize(raw, MissionProgress.SaveJson);
+        var pose = MissionObjectPoses.For(new MissionObjectState { spot = raw, goid = goid });
+        Assert.Equal((x, y, z), (pose.X, pose.Y, pose.Z));
+        Assert.Equal(reachable, MissionObjectPoses.TryBoundStanding(raw.metrId, goid, pose,
+            new[] { arrivalX, arrivalY, arrivalZ }, out _));
+        Assert.Equal(original, JsonSerializer.Serialize(raw, MissionProgress.SaveJson));
+    }
+
     [Fact]
     public void AlreadyBoundComputerOutsideTheArrivalRoomCannotSupplyItsNativeUsePoint()
     {

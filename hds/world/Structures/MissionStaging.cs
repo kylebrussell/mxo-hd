@@ -491,7 +491,18 @@ namespace hds
         {
             pools=null;refusal=null;
             if(MissionBoundFurnitureAdmission.Applies(phase,site))return MissionBoundFurnitureAdmission.TryPools(phase,site,out pools,out refusal);
-            if(!MissionOpenFloorAdmission.Requires(phase)||site==null)return true;
+            if(phase==null||site==null)return true;
+            bool phoneGoal=phase.objects.Any(def=>string.Equals(def.kind,"Phone",StringComparison.OrdinalIgnoreCase));
+            var rejectedPhones=new HashSet<StaticWorldObject>(FurnitureNeeded(phase)==0?Array.Empty<StaticWorldObject>():
+                site.containers.Where(r=>MissionSites.Goid(r)==MissionSites.PhoneGoId&&!MissionObjectPoses.BoundSourceCanReach(site,r,phoneGoal)));
+            if(!MissionOpenFloorAdmission.Requires(phase))
+            {
+                if(rejectedPhones.Count==0)return true;
+                var available=site.containers.Where(r=>!rejectedPhones.Contains(r)).ToArray();
+                if(available.Length<FurnitureNeeded(phase)){refusal="NoInteriorNativeUse:Phone";return false;}
+                pools=new SourcePools(null,site.objectSpots.Concat(available));
+                return true;
+            }
             if(!TryLegacyBoundRoom(phase,site,out int? boundRoom,out refusal))return false;
             var taken=new HashSet<StaticWorldObject>();var remaining=new List<MissionObjectDef>();
             var nativeAssignments=new Dictionary<MissionObjectDef,StaticWorldObject>();
@@ -501,9 +512,14 @@ namespace hds
                     string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)],def.kind,StringComparison.OrdinalIgnoreCase));
                 var real=candidates.FirstOrDefault(o=>BoundSourceInRoom(o,boundRoom));
                 if(real==null&&candidates.Any()){refusal="BoundPropOutsideArrivalRoom";return false;}
-                if(real!=null){taken.Add(real);nativeAssignments.Add(def,real);}else remaining.Add(def);
+                if(real!=null)
+                {
+                    if(!MissionObjectPoses.BoundSourceCanReach(site,real)){refusal="NoInteriorNativeUse:"+def.kind;return false;}
+                    taken.Add(real);nativeAssignments.Add(def,real);
+                }
+                else remaining.Add(def);
             }
-            var rows=site.objectSpots.Concat(site.containers).Where(r=>BoundSourceInRoom(r,boundRoom)).ToArray();
+            var rows=site.objectSpots.Concat(site.containers).Where(r=>!rejectedPhones.Contains(r)&&BoundSourceInRoom(r,boundRoom)).ToArray();
             bool freeSafe=remaining.Any(d=>string.Equals(d.kind,"Safe",StringComparison.OrdinalIgnoreCase));
             GeneratedSafeAssignment safeAssignment=null;
             if(freeSafe)
@@ -513,7 +529,7 @@ namespace hds
                 safeAssignment=new GeneratedSafeAssignment(nativeAssignments,remaining,rows,site.containers);
                 if(!safeAssignment.Complete()){refusal="InsufficientCompatibleGeneratedSafeSources";return false;}
             }
-            if(boundRoom.HasValue)
+            if(boundRoom.HasValue||rejectedPhones.Count>0)
             {
                 int availableSpawners=rows.Count(site.objectSpots.Contains),availableFurniture=rows.Count(site.containers.Contains);
                 int spawnedNeeded=remaining.Count(d=>ObjectGoids.ContainsKey(d.kind)),boundNeeded=remaining.Count-spawnedNeeded;
@@ -521,9 +537,9 @@ namespace hds
                 {refusal="InsufficientArrivalRoomSources";return false;}
             }
             bool mayAdopt=remaining.Any(d=>ObjectGoids.ContainsKey(d.kind)&&rows.Any(raw=>MissionOpenFloorAdmission.Target(ExpectedConcrete(d,raw),raw)));
-            if(!mayAdopt){if(safeAssignment!=null||boundRoom.HasValue)pools=new SourcePools(null,rows,safeAssignment);return true;} // No fresh Safe can escape unsupported as legacy.
+            if(!mayAdopt){if(safeAssignment!=null||boundRoom.HasValue||rejectedPhones.Count>0)pools=new SourcePools(null,rows,safeAssignment);return true;} // No fresh Safe can escape unsupported as legacy.
             if(!MissionElevatorPoses.TrySelectionContext(site,out var context,out refusal))return false;
-            if(context==null){if(safeAssignment!=null||boundRoom.HasValue)pools=new SourcePools(null,rows,safeAssignment);return true;} // Existing legacy geometry contract.
+            if(context==null){if(safeAssignment!=null||boundRoom.HasValue||rejectedPhones.Count>0)pools=new SourcePools(null,rows,safeAssignment);return true;} // Existing legacy geometry contract.
             foreach(var raw in taken)
                 if(!MissionElevatorPoses.CompatibleSource(site,raw,context,out refusal))return false;
             var allowed=rows.Where(raw=>MissionElevatorPoses.CompatibleSource(site,raw,context,out _)).ToArray();

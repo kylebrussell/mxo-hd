@@ -6,6 +6,7 @@ namespace HeadlessClient;
 public static partial class Scenarios
 {
     private static readonly JsonSerializerOptions MervFollowupFields=new(){IncludeFields=true};
+    private sealed record SweepBoundArrival(int Mission,int Phase,ushort Instance,double[] Root);
     private static async Task<MissionProgress.SavedState> MervFollowupCheckpoint(ScenarioContext context,HeadlessPlayer p)=>
         JsonSerializer.Deserialize<MissionProgress.SavedState>(await CarriedMissionNpcFixture.ReadOwnedAsync(context,p),MervFollowupFields)!;
     private static async Task<MissionProgress.SavedState?> MervFollowupCurrent(ScenarioContext context,HeadlessPlayer p)
@@ -277,6 +278,13 @@ public static partial class Scenarios
                     MervBound326Approach.ChooseLegacy(context.RepositoryRoot,saved,id,arrival,p.World.CurrentOwnViewLife());
                 standing=result.Standing;evidence.Add(new{Operation="native326-NAV-approach",saved.Mission,saved.Phase,Object=id,Source=owned.Spot.mxoStaticId,Arrival=arrival,Result=result,Legacy=!measured,MeasuredAuthority=measured});
                 }
+            }
+            else if (evidence.OfType<SweepBoundArrival>().LastOrDefault(a=>a.Mission==saved.Mission&&a.Phase==saved.Phase&&a.Instance==saved.Instance) is { } arrival &&
+                MissionObjectPoses.TryAuditedBinding(owned.Spot, owned.Goid, out var native))
+            {
+                Check.That(MissionObjectPoses.TryBoundStanding(owned.Spot.metrId,owned.Goid,native,arrival.Root,out var at),
+                    "Audited bound source requires a same-room NAV approach from the ordinary arrival");
+                standing=new[]{at.x,at.y,at.z};
             }
             else
             {
