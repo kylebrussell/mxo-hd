@@ -118,7 +118,9 @@ namespace hds
         }
 
         /// <summary>Drops prior RPCs when the client resets its counters. LA starts with its own handshake.</summary>
-        public void ForgetSentRpcs(bool enteringLoadingArea = false)
+        public void ForgetSentRpcs() => ForgetSentRpcs(false);
+
+        internal void ForgetSentRpcs(bool enteringLoadingArea)
         {
             lock (RPCMessagesQueue.SyncRoot)
             {
