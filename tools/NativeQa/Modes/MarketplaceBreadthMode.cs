@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text.Json;
 using HeadlessClient;
+using hds.databases;
 
 namespace NativeQa.Modes;
 
@@ -8,7 +9,7 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
 {
     private const string Seller = "QAFriend";
     private const string SecondBuyer = "QAOther";
-    private const string ItemCategory = "49 54 4f 74"; // ITOt
+    private const uint ItemCategory = 0x30424346; // FCB0, the native Code Bit search category
     private const uint FirstItem = 7332, SecondItem = 7333;
     private const uint FirstPrice = 300, SecondPrice = 420;
     private const uint StartingCash = 1000;
@@ -39,7 +40,7 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
                 SELECT charId,{SecondItem},6,1,0 FROM characters WHERE handle='{Seller}';
             """ },
         readyMessages: new[] { "Marketplace QA has two verified listings from QAFriend in Loading Area. "
-            + "Browse Code Bits, buy Code Bit 1 at 300, and use QAOther to consume the 420 listing for the stale-listing check. "
+            + "Search Codes > Code Fragments > Code Bit, buy Code Bit 1 at 300, and use QAOther to consume the 420 listing for the stale-listing check. "
             + "See docs/GAMEPLAY-BREADTH-PEERS.md." });
 
     private sealed record Listings(uint First, uint Second);
@@ -64,14 +65,14 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
         // Both listing replies followed the real Loading Area handshake on this same connection.
         loadingAreaSeller = seller;
         Check.Equal(2L, await database.LongAsync($"""
-            SELECT COUNT(*) FROM marketplace WHERE charID={seller.CharId} AND is_sold=0 AND
+            SELECT COUNT(*) FROM marketplace WHERE charID={seller.CharId} AND category='{MarketplaceDb.CategoryKey(ItemCategory)}' AND is_sold=0 AND
               ((id={firstListing} AND itemID={FirstItem} AND price={FirstPrice} AND delistPrice={FirstPrice / 20}) OR
                (id={secondListing} AND itemID={SecondItem} AND price={SecondPrice} AND delistPrice={SecondPrice / 20}));
             """), "Both native-format listings have the expected price and delist fee");
         Check.Equal(0L, await database.LongAsync($"""
             SELECT COUNT(*) FROM inventory WHERE charId={seller.CharId} AND slot IN (5,6);
             """), "Listing removed both items from the seller bag");
-        buyer.SendRpc($"81 24 {ItemCategory} {Le(0)} 00 00 00 00 19 00 {Le(999999999)} {Le(0)} 01 00 00");
+        buyer.SendRpc($"81 24 {Le(ItemCategory)} {Le(0)} 00 00 00 00 19 00 {Le(999999999)} {Le(0)} 01 00 00");
         var search = await buyer.WaitForRpcAsync("81 25 09 00");
         Check.That(HasListing(search.Bytes, firstListing, FirstItem, FirstPrice) &&
             HasListing(search.Bytes, secondListing, SecondItem, SecondPrice), "Ordinary search returned both fixture listings");
@@ -148,7 +149,7 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
 
     private static async Task<uint> ListAsync(HeadlessPlayer seller, uint item, uint price, byte slot)
     {
-        seller.SendRpc($"81 2b {ItemCategory} {Le(price)} 01 {slot:x2} 00 00 00 00 00");
+        seller.SendRpc($"81 2b {Le(ItemCategory)} {Le(price)} 01 {slot:x2} 00 00 00 00 00");
         await seller.WaitForRpcAsync($"5f {slot:x2} 00 01");
         var listed = await seller.WaitForRpcAsync("81 2c");
         Check.Equal(item, BitConverter.ToUInt32(listed.Bytes, 6), "Listed item");

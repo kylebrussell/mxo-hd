@@ -10,28 +10,28 @@ For each helper request, place a JSON file with a unique name in the fixture's
 
 ## Social
 
-Use the `social-breadth` mode. CSR_Tester captains QACrew. QAFriend is nearby
-and unaffiliated. QAOther is the nearby captain of QAPeerCrew.
+Use the `social-breadth` mode. QAFaction is already seeded with CSR_Tester
+captaining the leading QACrew at rank 1 and QAOther captaining QAPeerCrew
+at rank 5. QAFriend is nearby and unaffiliated.
 
 1. Use the Crew UI to invite QAFriend. Submit a refusal, check the native message,
    then send a new invitation and accept. Verify the roster and make QAFriend
    first mate.
 2. Send a native crew message. Ask QAFriend to reply and verify that the channel
    label and sender are correct.
-3. Found a faction and invite QAOther's crew. Accept with QAOther. Verify that
-   QACrew leads and QAPeerCrew joins at the lowest rank. Promote QAPeerCrew once,
-   check faction chat, then test the subordinate captain's attempted rank change.
-   Verify the native ranks and membership after removing QAPeerCrew.
-4. Target QAFriend and use `/hug`. Try refusal and acceptance in separate offers.
-   Then let QAFriend ask CSR and accept on the native client. Observe the offer
-   and both characters' animations, and check that a refusal plays no paired hug.
+3. Open the Faction roster after login and verify both crews. Promote QAPeerCrew
+   from rank 5 to 4 and check faction chat in both directions. Run QAOther's
+   `rank-refusal` while both crews are still members. Verify that the leading
+   crew's rank stays at 1, then remove QAPeerCrew in the roster.
+4. Target QAFriend and use `/hug`. A refusal should show “QAFriend declined your
+   hug.” in System chat. Check that the accepted animation plays only after an
+   accepted offer. Then have QAFriend ask CSR and accept on the native client.
 
 | Helper | Request |
 |---|---|
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"crew-answer","accept":false}` |
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"crew-answer","accept":true}` |
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"crew-chat"}` |
-| QAOther | `{"actor":"QAOther","action":"social","step":"faction-answer","accept":true}` |
 | QAOther | `{"actor":"QAOther","action":"social","step":"faction-chat"}` |
 | QAOther | `{"actor":"QAOther","action":"social","step":"rank-refusal"}` |
 | QAFriend | `{"actor":"QAFriend","action":"social","step":"hug-answer","accept":false}` |
@@ -46,13 +46,14 @@ listings, the seller's emptied slots, the recorded delist fees of 15 and 21,
 and an ordinary search result. The fixture writes the IDs to
 `marketplace-listings.json`.
 
-1. Enter Loading Area through the native client and open Marketplace. Search for
-   Code Bits. Buy Code Bit 1. Check one item in the native bag and a balance of
+1. Enter Loading Area through the native client and open Marketplace. Search
+   **Codes › Code Fragments › Code Bit**. Buy Code Bit 1. Check one item in the native bag and a balance of
    700 from the starting 1,000.
 2. Select the Code Bit 2 listing and leave it visible in the results. Submit
    QAOther's purchase and wait for its successful reply. Attempt to buy the same
-   listing from CSR without refreshing. Check the native refusal, unchanged bag
-   and cash, and that a fresh search drops the listing.
+   listing from CSR without refreshing. Check the native refusal and unchanged
+   bag and cash. In the same session, verify the controls respond and a fresh
+   search drops the sold listing.
 3. Submit the seller verification below. The fixture checks a live sale notice,
    the seller's balance of 1,720 in Loading Area and both buyers' inventories
    and balances in the disposable database.

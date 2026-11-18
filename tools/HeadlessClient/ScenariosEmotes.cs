@@ -35,10 +35,13 @@ public static partial class Scenarios
         Check.Equal(0, bob.Received("32").Count, "The target gets no 32");
 
         // Bob refuses the next one: Alice hears it, and nothing more plays
+        alice.SkipReceived();
+        bob.SkipReceived();
         alice.SendRpc(EmoteRecord(Hug, HandleBytes(bobForAlice)));
         await bob.WaitForRpcAsync($"31 {HugId}");
         bob.SendRpc($"32 02 {HugId} {HandleOf(aliceForBob)} 00 00 00 00 00");
-        await alice.WaitForRpcAsync($"32 02 {HugId}");
+        await alice.WaitForRpcAsync($"32 02 {HugId} {HandleOf(bobForAlice)} 00 00 00 00 01");
+        await alice.WaitForTextAsync("Bob declined your hug.");
 
         // A hug on nobody: "not a player"
         alice.SendRpc(EmoteRecord(Hug, new byte[4]));
