@@ -4,8 +4,8 @@ namespace NativeQa.Modes;
 public sealed class NativeBoundFurnitureMode:NativeQaMode
 {
  public override string Name=>NativeBoundFurnitureFixture.Name;
- private NativeQaModePlan? plan;
- public override NativeQaModePlan Plan=>plan??=Create();
+ private readonly Lazy<NativeQaModePlan> plan = new(Create);
+ public override NativeQaModePlan Plan => plan.Value;
  static NativeQaModePlan Create()
  {
   var p=NativeBoundFurnitureFixture.Default;var start=p.Public.Outside[0];
