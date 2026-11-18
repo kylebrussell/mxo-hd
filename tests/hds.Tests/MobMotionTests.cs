@@ -46,4 +46,25 @@ public class MobMotionTests
         Assert.False(next.location.indoors);Assert.InRange(fixture.Level,(byte)1,(byte)6);
     }
 
+    [Fact]
+    public void PursuitCanTraverseTheShippedMaraCornerFromItsAggroSpawn()
+    {
+        Load();
+        double[] at = { 18924, 95, -8852 };
+        double[] target = HeadlessClient.WorldNpcCornerFixture.Turn;
+        Assert.False(HeadlessClient.WorldNpcCornerFixture.Straight(at, target));
+        var path = NavMesh.WalkingPath(1, at, target);
+        Assert.True(path.Length > 1);
+        foreach (var waypoint in path)
+        {
+            for (int i = 0; i < 64 && HeadlessClient.WorldNpcCornerFixture.Distance(at, waypoint.Position) > .01; i++)
+            {
+                Assert.True(MobMotion.Step(1, at, waypoint.Position, .5, MobMotion.ChaseSpeed, out var next));
+                Assert.False(next.location.indoors);
+                at = next.Position;
+            }
+            Assert.InRange(HeadlessClient.WorldNpcCornerFixture.Distance(at, waypoint.Position), 0, .01);
+        }
+    }
+
 }

@@ -70,15 +70,28 @@ namespace hds
                 return new[] { bx, bz };
             }
 
-            public bool Connects(Surface other)
+            public bool Connects(Surface other) => TryPortal(other, out _, out _);
+
+            public bool TryPortal(Surface other, out double portalX, out double portalZ)
             {
+                portalX = portalZ = 0;
                 if (maxX + ConnectionSlack < other.minX || other.maxX + ConnectionSlack < minX ||
                     maxZ + ConnectionSlack < other.minZ || other.maxZ + ConnectionSlack < minZ) return false;
                 double x = (Math.Max(minX, other.minX) + Math.Min(maxX, other.maxX)) / 2;
                 double z = (Math.Max(minZ, other.minZ) + Math.Min(maxZ, other.maxZ)) / 2;
                 if (Math.Abs(Floor(x, z) - other.Floor(x, z)) > StepHeight) return false;
                 double[] overlap = Clip(vertices, other.vertices, 0);
-                if (Math.Abs(Area(overlap)) > 0.1) return true;
+                if (Math.Abs(Area(overlap)) > 0.1)
+                {
+                    for (int i = 0; i < overlap.Length; i += 2)
+                    {
+                        portalX += overlap[i];
+                        portalZ += overlap[i + 1];
+                    }
+                    portalX /= overlap.Length / 2;
+                    portalZ /= overlap.Length / 2;
+                    return true;
+                }
                 // Partial shared edges join room meshes and T junctions; touching at a corner does not.
                 for (int i = 0; i < vertices.Length; i += 2)
                 {
@@ -94,7 +107,12 @@ namespace hds
                         if (Math.Abs(dx * az - dz * ax) > ConnectionSlack * length ||
                             Math.Abs(dx * bz - dz * bx) > ConnectionSlack * length) continue;
                         double a = (ax * dx + az * dz) / length, b = (bx * dx + bz * dz) / length;
-                        if (Math.Min(length, Math.Max(a, b)) - Math.Max(0, Math.Min(a, b)) > ConnectionSlack) return true;
+                        double start = Math.Max(0, Math.Min(a, b)), end = Math.Min(length, Math.Max(a, b));
+                        if (end - start <= ConnectionSlack) continue;
+                        double middle = (start + end) / (2 * length);
+                        portalX = vertices[i] + middle * dx;
+                        portalZ = vertices[i + 1] + middle * dz;
+                        return true;
                     }
                 }
                 return false;

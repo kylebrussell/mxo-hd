@@ -186,7 +186,7 @@ namespace hds
             data.lastAggroAt = now;
             Mob mobToAttack = attacker;
             ClientView viewToAttack = attackerView;
-            DelayedActions.AfterFor(client, 0, () => Attack(client, mobToAttack, viewToAttack, px, pz));
+            DelayedActions.AfterFor(client, 0, () => Attack(client, mobToAttack, viewToAttack, px, py, pz));
         }
 
         public static void Retaliate(WorldClient client, Mob mob)
@@ -197,10 +197,10 @@ namespace hds
             if (view == null || !view.viewCreated) return;
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            Attack(client, mob, view, x, z);
+            Attack(client, mob, view, x, y, z);
         }
 
-        internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double pz)
+        internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double py, double pz)
         {
             if (ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
             double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
@@ -215,7 +215,8 @@ namespace hds
 
             if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects)) return;
 
-            if (mob.missionInstance==0 && dx*dx+dz*dz>MeleeDistanceUnits*MeleeDistanceUnits)
+            if (mob.missionInstance == 0 && (dx * dx + dz * dz > MeleeDistanceUnits * MeleeDistanceUnits ||
+                !NavMesh.HasSightPath(mob.getDistrict(), mob.getXPos(), mob.getYPos(), mob.getZPos(), px, py, pz)))
             {
                 if(MobMotion.BeginChase(client,mob))Output.WriteDebugLog("[AGGRO] "+mob.getName()+" pursues "+client.playerData.getCharID());
                 return;
@@ -240,5 +241,6 @@ namespace hds
             CombatManager.GetHandler(client).ProcessRequestCloseCombat(ref request, npcStarted: true);
             client.FlushQueue();
         }
+
     }
 }
