@@ -9,6 +9,7 @@ public static partial class Scenarios
         player.SendChat("?die");
         await player.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60");
         player.SendRpc("81 4c");
+        await player.WaitForRpcAsync("80 fa 01 00 00 00 98 00 00 00 01");
         await player.WaitForRpcAsync("80 fd 00 00 00 00 01 01");
         player.SendRpc("80 fe 01");
         await player.WaitForRpcAsync("81 07");
