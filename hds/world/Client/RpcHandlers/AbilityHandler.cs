@@ -77,6 +77,11 @@ namespace hds
                 Deny(AbilityID,"Load this data-node search ability before activating it.");
                 return;
             }
+            if (AbilityID == SixthSense.Ability && !SixthSense.CanCast(Store.currentClient))
+            {
+                Deny(AbilityID, "Load Sixth Sense and enter the Matrix before activating it.");
+                return;
+            }
 
             if (!CraftingSession.Handles(AbilityID)) CraftingSession.End(Store.currentClient);
 
@@ -256,6 +261,12 @@ namespace hds
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
+
+            if (AbilityID == SixthSense.Ability)
+            {
+                SixthSense.Land(client);
+                return;
+            }
 
             if (stealth)
             {
