@@ -150,7 +150,8 @@ public static partial class Scenarios
         await EnterMissionArea(context,p);
         await ApproachMissionObjectFixture(context,p,1);
         p.SendChat("?utilitymap 7"); await p.WaitForTextAsync("Utility map fixture flags=7"); // deterministic presentation; pure retail roll has separate boundary tests
-        var reveal = ReadMinimapPositions((await p.WaitForRpcAsync("80 c5")).Bytes, 3);
+        // The mission overlay can send an empty clear before the fixture's objective becomes visible.
+        var reveal = ReadMinimapPositions((await p.WaitForRpcAsync("80 c5 05 00 03")).Bytes, 3);
         Check.Equal((byte)0, reveal.Single().Relationship, "Objective emits one yellow position");
         Check.Equal(0,p.World.Problems.Count,"mission map protocol");
     }
