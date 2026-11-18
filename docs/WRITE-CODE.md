@@ -44,18 +44,28 @@ combines recipe fragments into code, and the Compiler turns that code into an
 item. Prima's official guide (p. 255) describes reusable item codes with charges.
 [Lead designer interview](https://www.gamespot.com/articles/the-matrix-online-qanda-crafting-and-bullet-time/1100-6111928/)
 
-The bounded Analyser `81 2e` path accepts Health Pill 1.0 (GO 2399) and
-preserves the existing recipes made entirely from Code Bits. The shipped pill
-recipe `2435 2438 7458 2472 2454` and its ten default charges come from the GOB.
+The Analyser `81 2e` path accepts known ordinary consumable recipes with
+stored charge counts. Health Pill 1.0 (GO 2399) uses the shipped cookbook recipe
+`2435 2438 7458 2472 2454`. Its ten default charges come from the GOB.
 The official Writer lists the pill under **Consumables → Consumable Pills**,
 with Function Subroutine: Consumable (GO 7458) serving as an ingredient.
 [PR304 Writer native check](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991534568)
 
-Writer success uses `81 2f`. At `0x6208cac2..0x6208cad8`, the client reads status,
-TypeID and XP while skipping the packet's slot byte. The callback at `0x6208c710`
-shows `5e0000ab`, which describes receiving the item's code in Inventory. The
-callback uses the selected recipe row and does not inspect either inventory for
-a result. The timed Compiler uses `60`/`61` to produce the physical pill.
+Native QA on `42e5dc0b` captured five `1b 87 <slot u16> <GOID u32>` rows after
+the fixed request fields. The stock producers at `0x6208b451` and `0x6208b558`
+use the descriptor's high bits for personal inventory (`0x8000`) and archive
+(`0x4000`). Only those bits identify the source. Each repeated row spends one
+copy, including repeated selections from a stack. The server verifies the named
+slots under the same database transaction as depletion and code creation.
+[Exact native request](https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6991905186)
+
+The Writer's `81 2f` jump table at `0x6208c9c8` uses status zero for success.
+Status 1 reports a contest failure with lost ingredients, 2 closes the window,
+3 reports full inventory, and 4 reports insufficient Info. A validation refusal
+preserves materials and uses 5 to reset the pending UI, with a server message.
+At `0x6208cac2..0x6208cad8`, the client reads status, TypeID and XP while
+skipping the slot byte. The success callback shows `5e0000ab` for the selected
+recipe. The timed Compiler uses `60`/`61` to produce the physical pill.
 
 For Health Pill 1.0, this server publishes the generated code directly to a
 free code archive slot using `5e <slot u16> <TypeID 0 u32> <packed u32> 00`,
@@ -82,7 +92,7 @@ matching flag0 closes only the selected mode/tool. Empty `81 1a` closes only a
 writer, retaining its existing container behavior. Short ordinary ability use and
 `81 31` cannot start the writer or create items. The timed `60` executor
 requires a Compiler session. For a Writer `81 2e` request, the active Analyser
-slot, exact bare recipe and ingredient quantities must match.
+slot, exact bare recipe and selected ingredient slots must match.
 
 Both scripts enter stance3 (`StandType`, shipped movement table `629ce160`) and
 return to stance0 only when still typing. Positive damage, another ability,

@@ -1,3 +1,4 @@
+using HeadlessClient;
 using hds;
 using hds.shared;
 
@@ -26,6 +27,44 @@ public class CraftingRequestTests
         bytes[4] = 1; // points inside the fixed header
         Assert.Null(CraftingRequests.ParseCompile(bytes.ToArray()));
         Assert.Null(CraftingRequests.ParseCompile(new byte[6]));
+    }
+
+    [Fact]
+    public void CapturedWriterRecipeRemembersEachSelectedBagSlot()
+    {
+        byte[] body = WireFormat.FromHex(Scenarios.HealthPillWriterRequest)[2..];
+        var recipe = new Crafting.Recipe { ResultGoid = 2399, Ingredients = new uint[] { 2435, 2438, 7458, 2472, 2454 } };
+        var request = CraftingRequests.ParseCompile(body, writer: true);
+        Assert.NotNull(request);
+        Assert.Equal(2, request.ToolSlot);
+        Assert.Equal(5, request.SelectedIngredients.Count);
+        for (int i = 0; i < recipe.Ingredients.Length; i++)
+            Assert.Equal(1, request.SelectedIngredients[((ushort)(4 + i), recipe.Ingredients[i])]);
+        Assert.True(CraftingRequests.Matches(request, recipe));
+        Assert.Null(CraftingRequests.ParseCompile(body));
+        Assert.Null(CraftingRequests.ParseCompile(body[..^1], writer: true));
+    }
+
+    [Fact]
+    public void WriterUsesStorageBitsAndCountsRepeatedSelections()
+    {
+        byte[] body = WireFormat.FromHex(Scenarios.HealthPillWriterRequest)[2..][..25];
+        body[7] = 2; // Two records from the same archive stack.
+        body[9] = 0x35;
+        body[10] = 0x4e;
+        body[11] = 0xff;
+        body[12] = 1;
+        body.AsSpan(9, 8).CopyTo(body.AsSpan(17, 8));
+        var request = CraftingRequests.ParseCompile(body, writer: true);
+        Assert.NotNull(request);
+        Assert.Equal(2, request.SelectedIngredients[((ushort)(Crafting.StorageSlotFlag | 511), 2435)]);
+        Assert.Equal(2, request.Fragments[2435]);
+        body[10] = 0xce; // Missing-ingredient sentinel cannot authorize consumption.
+        Assert.Null(CraftingRequests.ParseCompile(body, writer: true));
+        body[10] = 0x4e;
+        body[11] = 8;
+        body[12] = 2; // Archive slot 520 exceeds the client array.
+        Assert.Null(CraftingRequests.ParseCompile(body, writer: true));
     }
 
     [Fact]

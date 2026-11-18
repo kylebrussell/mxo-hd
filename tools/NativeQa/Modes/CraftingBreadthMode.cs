@@ -62,12 +62,24 @@ public sealed class CraftingBreadthMode : NativeQaMode
         string writerOn = "80 bc ?? ?? ?? ?? 00 ca 03 00 00 c8 03 ?? ?? ?? ?? 00";
         Scenarios.WriterTool(probe, AnalyzerSlot, true);
         await probe.WaitForRpcAsync(writerOn);
-        probe.SendRpc(Scenarios.HealthPillWriterRequest(AnalyzerSlot));
+        var staleSelection = WireFormat.FromHex(Scenarios.HealthPillWriterRequest);
+        staleSelection[^6] = 7; // The last ingredient claims slot 7, which holds a different GOID.
+        probe.SendRpc(staleSelection);
+        await probe.WaitForRpcAsync($"81 2f 05 00 {Le(WriterPill)}");
+        Check.Equal(5L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND ({MaterialSlots})"),
+            "A stale selected slot rolls back all material consumption");
+        Check.Equal(InitialInfo, await db.LongAsync($"SELECT cash FROM characters WHERE charId={id}"),
+            "A stale selected slot does not charge Info");
+        Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={id} AND ability_id={WriterPill << 7}"),
+            "A stale selected slot grants no code");
+
+        probe.SkipReceived();
+        probe.SendRpc(Scenarios.HealthPillWriterRequest);
         for (int slot = FirstMaterialSlot; slot < FirstMaterialSlot + Scenarios.HealthPillMaterials.Count; slot++)
             await probe.WaitForRpcAsync($"5f {slot:x2} 00 01");
         var written = await probe.WaitForRpcAsync($"5e ?? ?? 00 00 00 00 {Le(WriterPill << 7 | WriterDefaultCharges)} 00");
         ushort writerCodeSlot = BitConverter.ToUInt16(written.Bytes, 1);
-        await probe.WaitForRpcAsync($"81 2f 01 00 {Le(WriterPill)}");
+        await probe.WaitForRpcAsync($"81 2f 00 00 {Le(WriterPill)}");
         Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND ({MaterialSlots})"),
             "Writing consumes all five ingredients");
         Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid={WriterPill}"),
@@ -76,8 +88,8 @@ public sealed class CraftingBreadthMode : NativeQaMode
             $"AND slot={writerCodeSlot} AND ability_id={WriterPill << 7}"), "Written code persists with the stored default charges");
         long writtenInfo = await db.LongAsync($"SELECT cash FROM characters WHERE charId={id}");
         probe.SkipReceived();
-        probe.SendRpc(Scenarios.HealthPillWriterRequest(AnalyzerSlot));
-        await probe.WaitForRpcAsync($"81 2f 00 00 {Le(WriterPill)}");
+        probe.SendRpc(Scenarios.HealthPillWriterRequest);
+        await probe.WaitForRpcAsync($"81 2f 05 00 {Le(WriterPill)}");
         Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={id} AND ability_id={WriterPill << 7}"),
             "Replaying without ingredients cannot produce another code");
         Check.Equal(writtenInfo, await db.LongAsync($"SELECT cash FROM characters WHERE charId={id}"),
@@ -123,7 +135,7 @@ public sealed class CraftingBreadthMode : NativeQaMode
         Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={id} AND goid={BoostPill}"),
             "One pill appears in the bag");
         Check.Equal(0, probe.World.Problems.Count, "The crafting packets decode cleanly");
-        Console.WriteLine($"Crafting bootstrap verified Writer material depletion and code creation, one new-code compile, flag-zero rollback, and Health Boost completion in {elapsed.Elapsed.TotalSeconds:F2}s.");
+        Console.WriteLine($"Crafting bootstrap verified the captured Writer request, exact-slot rollback, new-code compile, flag-zero rollback, and Health Boost completion in {elapsed.Elapsed.TotalSeconds:F2}s.");
         return Array.Empty<byte>();
     }
 

@@ -15,7 +15,7 @@ Read-only disassembly of the installed 7.6005 `client.dll`, SHA256 `cb5ffcc6bb04
 
 ## Automated check
 
-`CodeStorageTests` asserts little-endian storage removal at low and high slots, the distinct bag flag, repeated ingredients, and exact-count exhaustion. `compile-storage-depletion` starts a fresh isolated server/database, exercises mixed bag/storage via the dev command, then repeated stored ingredients via native `81 2e`, checks update-before-delete ordering and no extra bag deletion, rejects a replay, and verifies the entry is gone at a second fresh server/login while an unrelated high-slot entry survives. It also tests enabled/disabled dev helpers.
+`CodeStorageTests` asserts little-endian storage removal at low and high slots, the distinct bag flag, repeated ingredients, and exact-count exhaustion. `compile-storage-depletion` starts a fresh isolated server/database, exercises mixed bag/storage via the dev command, then repeated stored ingredients via the legacy counted `81 2e` route, checks update-before-delete ordering and no extra bag deletion, rejects a replay, and verifies the entry is gone at a second fresh server/login while an unrelated high-slot entry survives. It also tests enabled/disabled dev helpers.
 
 ```powershell
 dotnet test tests/hds.Tests/hds.Tests.csproj --filter "FullyQualifiedName~CodeStorageTests|FullyQualifiedName~Crafting"
@@ -34,7 +34,7 @@ Use a disposable server/database and a fresh disposable character with no Code B
 5. Reconnect once: Code Bit 5 must remain absent and both result fragments must remain in the bag. A third `?compile 7458` must report missing ingredients, granting nothing.
 6. On a server without `MXO_DEV_COMMANDS=1`, `?compile 7458` must report that it is a dev command; `?codeupload` must not move items. Normal native `81 2e` remains available under its existing checks.
 
-Native `81 2e` is covered headlessly; the deterministic commands above isolate removal presentation from compile skill/recipe/tool setup. Native `60` from the Loading Area compile button is outside this fix. If chat is unavailable in the Loading Area, perform steps 1-3 in world and then step 4 without reconnecting; do not treat reconnect-only success as a live refresh pass.
+The counted `81 2e` route is covered headlessly; the deterministic commands above isolate removal presentation from compile skill/recipe/tool setup. Native `60` from the Loading Area compile button is outside this fix. If chat is unavailable in the Loading Area, perform steps 1-3 in world and then step 4 without reconnecting; do not treat reconnect-only success as a live refresh pass.
 
 ## Native crafting and timed compile fixture
 
@@ -52,8 +52,9 @@ Health Pill 1.0 ingredients in recipe order.
 
 1. Use **Activate Item** on the Code Analyser. In **Consumables → Consumable
    Pills**, select **Health Pill 1.0** and write the code. Check for `81 2e` on
-   tool slot 2, five bag deletions and `81 2f` success. The new ordinary code
-   arrives in the archive with ten charges and is published with `5e`.
+   tool slot 2, five bag deletions and `81 2f 00` success. The new ordinary
+   code arrives in the archive with ten charges and is published with `5e`.
+   The bootstrap replays the captured stock request bytes from PR304.
 2. Activate the Compiler in slot 3 after writing finishes. Select the new
    **Health Pill 1.0** code and compile once. Check for `60` and `61` success,
    one physical pill in the bag, and the archive code decreasing from ten
