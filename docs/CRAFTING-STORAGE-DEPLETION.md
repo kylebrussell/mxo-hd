@@ -35,3 +35,23 @@ Use a disposable server/database and a fresh disposable character with no Code B
 6. On a server without `MXO_DEV_COMMANDS=1`, `?compile 7458` must report that it is a dev command; `?codeupload` must not move items. Normal native `81 2e` remains available under its existing checks.
 
 Native `81 2e` is covered headlessly; the deterministic commands above isolate removal presentation from compile skill/recipe/tool setup. Native `60` from the Loading Area compile button is outside this fix. If chat is unavailable in the Loading Area, perform steps 1-3 in world and then step 4 without reconnecting; do not treat reconnect-only success as a live refresh pass.
+
+## Native crafting and timed compile fixture
+
+Use `crafting-breadth` on a fresh disposable world. The portable Code Compiler
+is in bag slot 3. Slot 4 holds a stack of two Code Bit 5. The archive has two
+charges of Max Health Boost Pill 3.
+
+1. Activate the Code Compiler. Select the known **Function Subroutine:
+   Consumable** recipe and compile it. Verify that the two Code Bits disappear
+   and one fragment appears in the bag.
+2. Select **Max Health Boost Pill 3** from the ordinary archive codes and
+   start its roughly 18-second operation. Try the compiler's cancel or
+   deactivate control before it finishes. Record the actual `969` flag-zero
+   request and verify that both charges, Info and the bag stay intact.
+3. Reopen the compiler and finish one ordinary operation. Expect one pill in
+   the bag, one charge used and 16,440 Info debited.
+
+The material recipe is the immediate `81 2e` path. The archive item is the
+timed `60` path. A window close that sends only target-clear can leave the
+timer running. Record that outcome separately from an actual cancellation.
