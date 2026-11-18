@@ -4,7 +4,7 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static void WriterTool(HeadlessPlayer player, byte slot, bool activate)
+    public static void WriterTool(HeadlessPlayer player, byte slot, bool activate)
     {
         byte[] body = new byte[41]; BitConverter.GetBytes((ushort)970).CopyTo(body, 0);
         BitConverter.GetBytes((ushort)2).CopyTo(body, 2);
@@ -32,8 +32,10 @@ public static partial class Scenarios
         Check.Equal(1,p.Received(ModPattern(970,968)).Count,"Duplicate activation is idempotent");
         WriterTool(p,3,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
         CompilerTool(p,4,false); p.SendChat("?writersession"); await p.WaitForTextAsync("active; tool slot 2");
-        // Writer authority cannot authorize the compiler recipe path or inventory-target shortcut.
-        p.SendRpc($"81 2e {Le(7458u << 7)} 09 00 02 01 00 {Le(2u)} {Le(7336u)}");
+        // A Writer session cannot use a different tool or treat packed archive code as a recipe.
+        p.SendRpc($"81 2e {Le(7458u << 7)} 09 00 04 01 00 {Le(2u)} {Le(7336u)}");
+        await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
+        p.SendRpc($"81 2e {Le(7458u << 7 | 1)} 09 00 02 01 00 {Le(2u)} {Le(7336u)}");
         await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
         p.SendRpc($"81 31 {Le(970u)} 05 02 01"); await p.WaitForTextAsync("That inventory ability is not available.");
         WriterTool(p,2,false); await p.WaitForRpcAsync(ModPattern(970,968,true));

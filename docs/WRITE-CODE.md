@@ -39,11 +39,12 @@ Read-only disassembly of client.dll SHA256
 
 ## Remaining limits
 
-Activation and cleanup do not implement the writer's code synthesis output path.
-Known recipe generation, code packing, purity/stability, signal boosts, charges,
-experience, and exact native presentation still require recovery or native checks.
-The existing compile and decompile economy is separate; do not manufacture a
-writer result or reinterpret the duplicate stored ID as an alias to claim parity.
+The Writer accepts the bounded `81 2e` path for known cookbook recipes made
+entirely from Code Bits. It applies the script's writing skill and success-only
+debit to the fragment result. General code synthesis, purity, stability, signal
+boosts, charges and experience still require source evidence. The
+[`crafting-breadth` fixture](CRAFTING-STORAGE-DEPLETION.md#native-crafting-and-timed-compile-fixture)
+checks this path and cancellation by switching tools.
 
 ## Runtime and validation
 
@@ -52,8 +53,9 @@ the selected mode, exact tool slot, loaded grant, district and world generation.
 Starting another mode closes the prior record; repeated flag1 is idempotent. A
 matching flag0 closes only the selected mode/tool. Empty `81 1a` closes only a
 writer, retaining its existing container behavior. Short ordinary ability use and
-`81 31` cannot start the writer or create items. The compiler executors require a
-compiler session and cannot borrow writer authority.
+`81 31` cannot start the writer or create items. The timed `60` executor
+requires a Compiler session. For a Writer `81 2e` request, the active Analyser
+slot, exact bare recipe and ingredient quantities must match.
 
 Both scripts enter stance3 (`StandType`, shipped movement table `629ce160`) and
 return to stance0 only when still typing. Positive damage, another ability,

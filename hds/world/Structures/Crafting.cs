@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace hds
 {
@@ -219,18 +220,17 @@ namespace hds
             return block;
         }
 
+        /// <summary>Whether the cookbook recipe creates a code fragment directly from Code Bits.</summary>
+        public static bool IsBitRecipe(Recipe recipe) =>
+            recipe.Ingredients.Length > 0 && recipe.Ingredients.All(ingredient => ingredient >= 7332 && ingredient <= 7339);
+
         /// <summary>Recipes made only of Code Bits (the code fragments), plus the health pills.</summary>
         public static List<UInt32> ExtraKnownRecipes()
         {
             List<UInt32> extra = new List<UInt32>();
             foreach (Recipe recipe in Recipes.Values)
             {
-                bool fromBits = recipe.Ingredients.Length > 0;
-                foreach (UInt32 ingredient in recipe.Ingredients)
-                {
-                    fromBits &= ingredient >= 7332 && ingredient <= 7339;
-                }
-                if (fromBits)
+                if (IsBitRecipe(recipe))
                 {
                     extra.Add(recipe.ResultGoid);
                 }

@@ -76,12 +76,17 @@ namespace hds
                 var request = CraftingRequests.ParseCompile(body);
                 var db = Store.dbManager.WorldDbHandler;
                 var bag = db.GetInventoryItems(client.playerData.getCharID());
-                if (request == null || !CraftingSession.Authorized(client, request.ToolSlot) || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
-                    !CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) ||
-                    !Crafting.Recipes.TryGetValue(request.Item, out var recipe) || CraftingRules.Find(request.Item)?.CantCraft != false ||
-                    !CraftingRequests.Matches(request, recipe) ||
+                if (request == null || !Ready(client) || !Crafting.Recipes.TryGetValue(request.Item, out var recipe) ||
+                    CraftingRules.Find(request.Item)?.CantCraft != false || !CraftingRequests.Matches(request, recipe) ||
                     !KnownRecipes.Contains(request.Item) && !db.GetLearnedRecipes(client.playerData.getCharID()).Contains(request.Item))
                     return Finish(client, 0, 0, request?.Item ?? 0, "That compile request is not available.");
+                // The stock Writer sends the bare recipe GOID shifted left by seven. Restrict this
+                // mode to Code Bit fragments. The Compiler continues to own ordinary archive materialization.
+                bool compiler = CraftingSession.Authorized(client, request.ToolSlot);
+                bool writer = !compiler && request.SourceCode == (recipe.ResultGoid << 7) && Crafting.IsBitRecipe(recipe)
+                    && CraftingSession.Authorized(client, request.ToolSlot, CraftingSession.WriterAbility);
+                if (!compiler && !writer)
+                    return Finish(client, 0, 0, request.Item, "That compile request is not available.");
                 var available = bag.Concat(CodeStorageHandler.AsIngredients(db.GetCodeStorage(client.playerData.getCharID()))).ToList();
                 var slots = Crafting.MatchIngredients(recipe, available);
                 if (slots == null || !CraftingRules.HasResultSpace(request.Item, bag, slots))
@@ -89,9 +94,13 @@ namespace hds
                 var item = CraftingRules.Find(request.Item);
                 if (!item.Complexity.HasValue) return Finish(client, 0, 0, request.Item, "This item's crafting complexity is unknown.");
                 long cost = CraftingRules.InfoCost(item, Skill(client, 530));
+                if (writer)
+                    cost = (long)(cost * (100 - Math.Clamp(Skill(client, 956), 0, 100)) / 100.0);
                 if (client.playerData.getInfo() < cost) return Finish(client, 4, 0, request.Item, "Not enough information to compile this item.");
-                int skill = Skill(client, 706);
-                bool success = CraftingRules.Succeeds(skill, item.Complexity.Value, Roll(), Skill(client, Specialization(item.Category)));
+                int specialization = Skill(client, Specialization(item.Category));
+                int skill = writer ? Math.Max(Skill(client, 649), specialization) : Skill(client, 706);
+                bool success = CraftingRules.Succeeds(skill, item.Complexity.Value, Roll(), writer ? 0 : specialization);
+                if (writer && !success) return Finish(client, 0, 0, request.Item, "Failed to write the code fragment.");
                 long cash = client.playerData.getInfo() - cost;
                 db.SaveInfo(client, cash);
                 client.playerData.setInfo(cash);
