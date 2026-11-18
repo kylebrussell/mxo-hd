@@ -41,7 +41,8 @@ public static partial class Scenarios
         await bob.WaitForRpcAsync($"31 {HugId}");
         bob.SendRpc($"32 02 {HugId} {HandleOf(aliceForBob)} 00 00 00 00 00");
         await alice.WaitForRpcAsync($"32 02 {HugId} {HandleOf(bobForAlice)} 00 00 00 00 01");
-        await alice.WaitForTextAsync("Bob declined your hug.");
+        var decline = await alice.WaitForTextAsync("Bob declined your hug.");
+        Check.That(decline.Bytes.AsSpan().StartsWith(new byte[] { 0x2e, 0xc7 }), "Decline uses the visible system notice format");
 
         // A hug on nobody: "not a player"
         alice.SendRpc(EmoteRecord(Hug, new byte[4]));

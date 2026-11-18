@@ -273,7 +273,7 @@ namespace hds
             {
                 // The stock client leaves an explicit /hug refusal silent.
                 new ServerPackets().sendSystemChatMessage(requester,
-                    SocialHandler.HandleOf(target) + " declined your hug.", "SYSTEM");
+                    SocialHandler.HandleOf(target) + " declined your hug.", "BROADCAST");
             }
             Output.WriteDebugLog("[EMOTE] " + SocialHandler.HandleOf(target) + " answers " + SocialHandler.HandleOf(requester) +
                                  ": " + result);

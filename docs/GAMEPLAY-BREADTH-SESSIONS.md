@@ -82,14 +82,31 @@ before issuing the next action.
 5. If time permits, verify a duel defeat stands the player in place without entering Loading
    Area. Compare the native render with server lifecycle evidence. [Death and helper instructions](DEATH-PRESENTATION.md)
 
-## Following sessions
+## Travel · `travel-breadth`
 
-- **Travel · 60 minutes.** Start with `la-hardline-registration`. Verify the radial and
-  Synchronize on map 16, return to it through Loading Area, then take an ordinary city
-  exit and subway ride. Record world transitions and post-ride interaction separately.
-- **Social · 60 minutes.** Group crew/faction invitation and ranks with crew chat and a paired
-  emote. Use a single social fixture with one captain and two scripted peers so ranks,
-  permission refusals and emote cancellation can be checked on the same login.
-- **Marketplace · 50 minutes.** Use a single disposable seller/listing fixture. Browse and
-  buy from CSR with the seller in Loading Area. Check resulting bag, cash and stale-listing UI.
-  The social and marketplace sessions need those peer/listing seeds before scheduling.
+The disposable fixture starts CSR at Mara Northwest with ambient aggro and
+wander disabled. Bootstrap runs the route on QAFriend and prints two NAV
+approaches. Wait for the ready state before logging in.
+
+1. Open the Mara Northwest hardline radial and use its travel option to go to
+   **Downtown › South Vauxton (Central)**. Confirm the Downtown world loads and
+   CSR can use the destination booth.
+2. Reach the South Vauxton Yellow Line platform. The printed Downtown platform
+   command is available if needed. Use the actual subway car when boarding is
+   offered. On its map, pick **Richland › Tabor Park (Yellow Line)** and confirm
+   the Richland world and player view reload at the platform.
+3. At Tabor Park, reopen the map from the arrival car and cancel. This checks
+   ordinary interaction after the ride on the same login.
+4. Go to Tabor Park (Central). Its street-level booth approach is printed.
+   Use its radial to exit to Loading Area, then select **Mara (Northwest)** and
+   **Jack into the Matrix**. Confirm the Mara booth radial responds after return.
+
+Report the hardline trip, subway arrival, post-ride action, and Loading Area
+return separately. Record any printed `?tp` commands as movement assistance.
+For the separate map-16 Synchronize check, use `la-hardline-registration`.
+[Hardline registration](LA-HARDLINE-REGISTRATION.md)
+
+## Social and marketplace
+
+Use the [peer fixtures](GAMEPLAY-BREADTH-PEERS.md) for crew, faction, paired
+emote and marketplace sessions.

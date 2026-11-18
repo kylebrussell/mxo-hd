@@ -13,20 +13,20 @@ player-facing failure. A row covers the behavior described in that row.
 | Hardline travel | native-verified | High | PR291 jacked back in from an ordinary booth exit in Richland and Medium03 using a posted click. [Hardline registration](LA-HARDLINE-REGISTRATION.md) |
 | Loading Area exit | native-verified | High | PR291 confirmed ordinary exit and Reconstruct at Mara Central, with a standing, movable return. The earlier Jack In failure came from missed desktop clicks in the 800×600 Loading Area window. [Loading Area](LA-HARDLINE-REGISTRATION.md) |
 | Loading Area Character and Equipment preview | broken | Low | PR291 showed the default female RSI and empty clothing slots despite the correct character summary. |
-| Subway | headless-only | Medium | Cross-district rides, refusal and continued packet flow after platform login. [Subway framing](SUBWAY-STATE-FRAMING.md) |
+| Subway | headless-only | Medium | The travel fixture takes a cross-district Yellow Line ride and then opens the map from the arrival car. [Travel fixture](GAMEPLAY-BREADTH-SESSIONS.md#travel--travel-breadth) |
 | Teams | native-verified | High | An ordinary helper kill credited the holder's goal and Team Contact awarded one completion on PR281 `6a8f2c15`. [Native checklist](GAMEPLAY-BREADTH-QA.md) |
 | Teams | headless-only | High | Shared loot and relog coverage. Helper HUD and mission-item actions remain open. |
 | Crews | native-verified | Medium | PR293 verified recruit, refusal, roster and First Mate. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
-| Faction ranks and chat | headless-only | Medium | The seeded faction supplies two ranked crews for roster, promotion, rank refusal, chat and removal. The native founding UI path remains unverified. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
+| Faction ranks and chat | native-verified | Medium | PR294 verified the seeded roster, promotion, rank refusal, `/fc` chat both ways and removal. The native founding UI path remains unverified. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
 | Area chat | native-verified | Medium | CSR sent the command that triggered the teammate helper during native PR281 QA. |
 | Crew chat and paired emotes | native-verified | Medium | PR293 verified crew chat both ways, the hug offer and accepted animation, and no paired animation on decline. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
-| Hug refusal feedback | headless-only | Low | The requester receives System chat when the target declines. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
+| Hug refusal feedback | headless-only | Low | PR294 observed a silent refusal on chat type `07`. The follow-up sends the same reply in visible notice format `c7` for native retest. [Social fixture](GAMEPLAY-BREADTH-PEERS.md) |
 | Chat rooms | broken | Medium | The stock client rejects the room commands. The server still handles the room routes in headless QA. [Native chat command check](CLIENT-ACTIONS.md#chat-rooms) |
 | Trade | native-verified | High | The Secure Trade window, item/info exchange, Clear and Cancel with the QA bot. [Secure Trade](SECURE-TRADE.md) |
 | Trade | native-verified | High | PR287 observed player-targeted and incoming offers, partner Accepted/Considering labels, a 250-information settlement, both cancellation paths and relog. [Secure Trade](SECURE-TRADE.md) |
 | Trade Accept checkbox | native-verified | High | PR291 observed a clear checkbox after a partner edit with the pointer away, the reset notice, one settlement after a fresh accept, and a clear incoming window after completion. [Secure Trade](SECURE-TRADE.md) |
 | Marketplace purchase | native-verified | High | PR293 verified item delivery, buyer and seller information, and purchase persistence across relog. [Marketplace fixture](GAMEPLAY-BREADTH-PEERS.md) |
-| Marketplace stale Buy and Code Bit search | headless-only | High | A refused Buy returns a status, and the fixture lists under the native Code Bit category. Retest search and controls after a competing buyer. [Marketplace fixture](GAMEPLAY-BREADTH-PEERS.md) |
+| Marketplace stale Buy and Code Bit search | native-verified | High | PR294 verified Code Bit search, the stale-listing refusal dialog and fresh search in the same session with buyer bag and Info intact. [Marketplace fixture](GAMEPLAY-BREADTH-PEERS.md) |
 | Crafting and compiling | native-verified | High | PR287 observed tool activation without an information debit, timed Health Boost 3.0 compiles with charge use, and one 9-information completion when closing the 2399 panel. [Ordinary compile](COMPILE-ORDINARY-IC.md) |
 | Crafting and compiling | headless-only | High | Current timing/pricing, charge and material depletion, cancellation and rollback. [Storage depletion](CRAFTING-STORAGE-DEPLETION.md) |
 | Death and resurrection | native-verified | High | Native duel defeat and reconstruction. [PvP](PVP.md) |
