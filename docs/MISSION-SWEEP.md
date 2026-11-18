@@ -49,6 +49,20 @@ the yaw in hex and a copyable `?tp` command with the NAV sector, region and poly
 elevator before using an object approach. Record the teleport as assisted and still use the native radial
 to search, loot or use the prop. For 205301 area 3, search and loot Furniture first, then use Computer.
 
+### Pigeon escort exit
+
+Use `MXO_QA_MISSION_SAMPLES=205204:2` with `mission-catalog-sample`, then type
+`?missionphase 205204 2` after logging in at the fixture hardline. Follow the
+printed street door and lobby car. The READY output also gives Pigeon's position
+and the NAV-valid stand and facing at the upstairs car.
+
+Talk to Pigeon, walk back to the upstairs car and wait for him to follow. Check
+that goal 2 stays open upstairs. Use the floor car with Pigeon beside you and
+verify that goal 2 ticks after the downride, area 3 opens and Pigeon is still
+following. Bootstrap exercises the same Talk and elevator requests with
+assisted player movement, then aborts the probe and returns to the starting
+hardline.
+
 ### Earned checkpoint from earlier areas
 
 Use `MXO_QA_MISSION_ID` and `MXO_QA_MISSION_PHASE` for one mission when the

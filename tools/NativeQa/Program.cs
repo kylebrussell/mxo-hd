@@ -145,6 +145,8 @@ try
                         Console.WriteLine("READY " + message);
                     foreach (var approach in MissionCatalogObjectApproaches.Find(progress, root))
                         Console.WriteLine("READY " + approach.Describe());
+                    foreach (string message in PigeonEscortExitFixture.Describe(progress))
+                        Console.WriteLine("READY " + message);
                 }
             }
         }
