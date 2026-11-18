@@ -52,6 +52,82 @@ public class AbilityScaledBuffTests
     }
 
     [Fact]
+    public void ReceiverCapsTheDirectHealthBuffWithoutChangingItsEffectRecord()
+    {
+        var caster = Client(50);
+        var target = Client(10);
+
+        Assert.Equal(500, PvpCombat.HealthOf(target));
+        Assert.True(AbilityBuffs.Apply(target, 417, caster));
+        Assert.Equal(500, AbilityBuffs.Total(target, 106)); // Source magnitude stays on the modifier record.
+        Assert.Equal(250, AbilityStats.Player(target, 106));
+        Assert.Equal(750, NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(), 1));
+        Assert.Equal(500, PvpCombat.HealthOf(target));
+
+        Assert.True(AbilityBuffs.Remove(target, 417));
+        Assert.Equal(500, NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(), 1));
+    }
+
+    [Fact]
+    public void CharacterStatsReadTheSavedBaseWithTheExistingLegacyFallback()
+    {
+        var character = Client(50);
+        Assert.Equal(24, AbilityStats.Player(character, CharacterAttributes.Focus));
+        character.playerData.attributeBases = new Dictionary<byte, ushort>
+        {
+            [CharacterAttributes.Focus] = 11,
+            [CharacterAttributes.Belief] = 5
+        };
+        Assert.Equal(11, AbilityStats.Player(character, CharacterAttributes.Focus));
+        Assert.Equal(5, AbilityStats.Player(character, CharacterAttributes.Belief));
+        Assert.Equal(26, AbilityStats.Player(character, CharacterAttributes.Vitality));
+        Assert.Equal(0, AbilityStats.Player(character, 575));
+    }
+
+    [Fact]
+    public void CapturedStatusBuffsFeedDefenseAccuracyAndDeterminationConsumers()
+    {
+        var target = Client(50);
+        AbilityPassives.SetLoaded(target, new (ushort, ushort)[] { (1102, 50) });
+        Assert.Equal(0, AbilityStats.Defense(target, false));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(target));
+        Assert.Equal(30f, AbilityControlDurations.Mitigate(30f, 20, AbilityControlDurations.Determination(target)));
+
+        Assert.True(AbilityBuffs.Apply(target, 1099, target));
+        Assert.True(AbilityBuffs.Apply(target, 314, target));
+        Assert.True(AbilityBuffs.Apply(target, 1102, target));
+        Assert.Equal(52, AbilityStats.Defense(target, false));
+        Assert.Equal(108, AbilityStats.ViralAccuracy(target));
+        Assert.Equal(10.2f, AbilityControlDurations.Mitigate(30f, 20, AbilityControlDurations.Determination(target)), 3);
+
+        Assert.True(AbilityBuffs.Remove(target, 1099));
+        Assert.True(AbilityBuffs.Remove(target, 314));
+        Assert.True(AbilityBuffs.Remove(target, 1102));
+        Assert.Equal(0, AbilityStats.Defense(target, false));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(target));
+        Assert.Equal(30f, AbilityControlDurations.Mitigate(30f, 20, AbilityControlDurations.Determination(target)));
+    }
+
+    [Fact]
+    public void DirectCostBuffAndDebuffAffectOrdinaryAbilitySpending()
+    {
+        var target = Client(50);
+        var source = Client(50);
+        const ushort probe = 314;
+
+        Assert.Equal((ushort)35, AbilityCosts.Effective(target, probe));
+        Assert.True(AbilityBuffs.Apply(target, 321, source));
+        Assert.Equal((ushort)30, AbilityCosts.Effective(target, probe));
+        Assert.True(AbilityBuffs.Remove(target, 321));
+        Assert.True(TempMods.TryGet(401, out var hostile));
+        var effects = TimedEffects.ForPlayer(target);
+        TimedEffects.Apply(effects, hostile, TimeUtils.GetSimTimeSeconds(), source, "Source");
+        Assert.Equal((ushort)42, AbilityCosts.Effective(target, probe));
+        Assert.True(TimedEffects.RemoveParent(effects, 401));
+        Assert.Equal((ushort)35, AbilityCosts.Effective(target, probe));
+    }
+
+    [Fact]
     public void ReplacingHealthBuffUsesTheNewCasterWithoutCompoundingAndRestoresTheBaseline()
     {
         var caster=Client(20);var target=Client(50);

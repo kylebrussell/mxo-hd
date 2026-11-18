@@ -77,6 +77,7 @@ namespace hds
         public readonly object loadoutSync = new object();
         public readonly object attributeSync = new object();
         public int attributeGeneration;
+        internal IReadOnlyDictionary<byte, ushort> attributeBases;
         public readonly object trainingSync = new object();
         public int trainingGeneration;
         // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.

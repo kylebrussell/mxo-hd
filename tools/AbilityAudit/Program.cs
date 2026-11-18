@@ -13,6 +13,7 @@ static string Consumer(ushort stat) => stat switch
     209 => "stealth level",
     106 or 109 or 1056 or 1057 => "maximum vital",
     112 or 114 or 1058 or 1059 => "regeneration",
+    117 => "direct Inner Strength cost reduction consumed by ordinary ability admission and spend; retail rounding unresolved",
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
     1032 => "OURS queued-special direct thrown accuracy (native UI selector inference)",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",

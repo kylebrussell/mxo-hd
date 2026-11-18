@@ -94,6 +94,8 @@ namespace hds
                 long transport=client.TransportFence.Capture();Result result;
                 try{result=Store.dbManager.WorldDbHandler.AllocateAttributes(character,raises);}
                 catch(Exception e){Output.WriteDebugLog("[ATTRIBUTE] char="+character+" allocation failed: "+e);result=new Result(false,"Attribute allocation could not be saved; nothing was changed.");}
+                // Persisted scores belong to this character even if the world-bound reply is discarded.
+                if (result.Committed) System.Threading.Volatile.Write(ref data.attributeBases, result.Values);
                 Finish(client,transport,world,()=>Current(client,data,generation,world,life,transport,character),result,raises,
                     ()=>TutorialMission.Of(client)?.OnAttributeRaised(),()=>client.FlushQueue());
             }

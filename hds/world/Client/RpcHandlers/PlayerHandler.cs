@@ -146,13 +146,12 @@ namespace hds
             */
 
             UInt32 charId = client.playerData.getCharID();
-            Dictionary<byte, UInt16> attributes = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
-            foreach (byte attribute in CharacterAttributes.All)
+            lock (client.playerData.attributeSync)
             {
-                UInt16 value = attributes.TryGetValue(attribute, out UInt16 stored)
-                    ? stored
-                    : CharacterAttributes.LegacyValue(attribute);
-                packets.sendAttribute(client, value, attribute);
+                var attributes = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
+                System.Threading.Volatile.Write(ref client.playerData.attributeBases, attributes);
+                foreach (byte attribute in CharacterAttributes.All)
+                    packets.sendAttribute(client, AbilityStats.CharacterBase(client, attribute), attribute);
             }
 
             // Retail loaded Awakened's hidden Self Defense at its level with the attributes (80 b2 11 00 05 00 08 02).
