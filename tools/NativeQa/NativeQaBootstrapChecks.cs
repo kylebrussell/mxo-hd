@@ -98,6 +98,8 @@ public static class NativeQaBootstrapChecks
                     await operativeSweep.VerifyHeadlessAsync(probe, server);
                 if (mode is Modes.AbilitySweepMartialArtistMode)
                     await Modes.AbilitySweepMartialArtistMode.VerifyBatchTwoAsync(probe, server);
+                if (mode is Modes.AbilityParityOperativeSweep2Mode operativeSweep2)
+                    await operativeSweep2.VerifyHeadlessAsync(probe);
                 if (seedMode == "style-choreography")
                 {
                     await CombatFixtureLoadout.VerifyWeaponSwapAsync(probe, database, "rifle", hds.CombatFixtureWeapons.Rifle);

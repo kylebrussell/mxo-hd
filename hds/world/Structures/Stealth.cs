@@ -294,9 +294,16 @@ namespace hds
             {
                 // VanishInit runs as the 2 s modifier's term function: reapplyAbility(InvisibilityGrant), no proximity test.
                 // Our choice: the fight the Spy vanishes from ends with it.
+                ClientData owner = client.playerData;
+                PlayerCharacter avatar = client.playerInstance;
+                int world = owner.worldGeneration, life = owner.lifeGeneration;
+                long transport = client.TransportFence.Capture();
                 DelayedActions.AfterFor(client, VanishDelaySeconds, () =>
                 {
-                    if (client.playerData.isDead) return;
+                    if (!client.TransportFence.IsCurrent(transport) || !client.Alive ||
+                        !ReferenceEquals(client.playerData, owner) || !ReferenceEquals(client.playerInstance, avatar) ||
+                        owner.worldGeneration != world || owner.lifeGeneration != life || !owner.getOnWorld() ||
+                        owner.worldChangePending || owner.isDead || owner.duelDeath) return;
                     CombatManager.GetHandler(client).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
                     Begin(client, Defs[InvisibilityGrantAbility], AbilityLevel(client, InvisibilityGrantAbility));
                 });

@@ -1,0 +1,208 @@
+{
+  "abilities": {
+    "1120": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1120 self-only selector 1 and fixed thrown upgrade modifiers +4 damage, +15 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "stats": {
+          "source": "GOB 1120 self-only selector 1 and fixed thrown upgrade modifiers +4 damage, +15 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "behavior-tests": {
+          "source": "GOB 1120 self-only selector 1 and fixed thrown upgrade modifiers +4 damage, +15 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        }
+      },
+      "family": "operative-knife-upgrades"
+    },
+    "1121": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1121 self-only selector 1 and fixed thrown upgrade modifiers +6 damage, +18 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "stats": {
+          "source": "GOB 1121 self-only selector 1 and fixed thrown upgrade modifiers +6 damage, +18 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "behavior-tests": {
+          "source": "GOB 1121 self-only selector 1 and fixed thrown upgrade modifiers +6 damage, +18 accuracy, +10 evasion.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        }
+      },
+      "family": "operative-knife-upgrades"
+    },
+    "1123": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1123 self-only selector 1 and fixed thrown upgrade modifiers +10 damage, +7 accuracy, +8 stealth.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "stats": {
+          "source": "GOB 1123 self-only selector 1 and fixed thrown upgrade modifiers +10 damage, +7 accuracy, +8 stealth.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        },
+        "behavior-tests": {
+          "source": "GOB 1123 self-only selector 1 and fixed thrown upgrade modifiers +10 damage, +7 accuracy, +8 stealth.",
+          "runtime": "AbilitySupport targets self with any selected enemy. AbilityBuffs replaces the class upgrade and combat/stealth reads the direct bonuses. Master Assassin reveal rules are a separate audit check.",
+          "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
+        }
+      },
+      "family": "operative-knife-upgrades"
+    },
+    "294": {
+      "checks": {
+        "stats": {
+          "source": "GOB 294 adds 80 Combat Evasion for 30 s.",
+          "runtime": "AbilityBuffs applies the caster modifier. CombatInsightEngagement uses direct 520 with current 217 in the existing server-side interlock gate. Removal restores the entry input.",
+          "test": "CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2 timed on/off wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 294 adds 80 Combat Evasion for 30 s.",
+          "runtime": "AbilityBuffs applies the caster modifier. CombatInsightEngagement uses direct 520 with current 217 in the existing server-side interlock gate. Removal restores the entry input.",
+          "test": "CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2 timed on/off wire records."
+        }
+      },
+      "family": "operative-shifty-evasion"
+    },
+    "363": {
+      "checks": {
+        "stats": {
+          "source": "GOB 363 uses learned-rank scale 0.2 for melee and ballistic defense bonuses and direct Determination.",
+          "runtime": "At rank 50 the three raw bonuses are +10. The two defense consumers add five points apiece at character level 50, and the duration-mitigation input receives +10 Determination. Reloading is idempotent and unloading restores all three.",
+          "test": "OperativeBatchTwoTests.ImprovedInvisibilitySuppliesRankedDefenseAndDetermination and ability-parity-operative-sweep-2 wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 363 uses learned-rank scale 0.2 for melee and ballistic defense bonuses and direct Determination.",
+          "runtime": "At rank 50 the three raw bonuses are +10. The two defense consumers add five points apiece at character level 50, and the duration-mitigation input receives +10 Determination. Reloading is idempotent and unloading restores all three.",
+          "test": "OperativeBatchTwoTests.ImprovedInvisibilitySuppliesRankedDefenseAndDetermination and ability-parity-operative-sweep-2 wire records."
+        }
+      },
+      "family": "operative-improved-invisibility-passive"
+    },
+    "113": {
+      "checks": {
+        "stats": {
+          "source": "GOB 113 evaluates function 3 at scale 0.2 and contributes +10 Force Combat Bonus at character level 50.",
+          "runtime": "Existing CombatInsightEngagement reads live stat 1048 exactly once and leaves ordinary accuracy unchanged. Retail entry coefficient remains a source-parity item.",
+          "test": "CombatInsightEngagementTests.RealLoaded113AndStored49ProduceTheFourBeforeAfterScores."
+        },
+        "behavior-tests": {
+          "source": "GOB 113 evaluates function 3 at scale 0.2 and contributes +10 Force Combat Bonus at character level 50.",
+          "runtime": "Existing CombatInsightEngagement reads live stat 1048 exactly once and leaves ordinary accuracy unchanged. Retail entry coefficient remains a source-parity item.",
+          "test": "CombatInsightEngagementTests.RealLoaded113AndStored49ProduceTheFourBeforeAfterScores."
+        }
+      }
+    },
+    "338": {
+      "checks": {
+        "stats": {
+          "source": "GOB 338 has fixed Thrown Accuracy Bonus +5 plus a separate loaded grant.",
+          "runtime": "AbilityPassives loads the bonus into the typed attack or damage input and removes it on unload. The internal grant follows load/unload/reload. Stock grant visibility remains open.",
+          "test": "OperativeBatchTwoTests.GrantsReconcileOnLoadUnloadAndRetry."
+        }
+      }
+    },
+    "389": {
+      "checks": {
+        "stats": {
+          "source": "GOB 389 has fixed Thrown Damage Bonus +5 plus a separate loaded grant.",
+          "runtime": "AbilityPassives loads the bonus into the typed attack or damage input and removes it on unload. The internal grant follows load/unload/reload. Stock grant visibility remains open.",
+          "test": "OperativeBatchTwoTests.GrantsReconcileOnLoadUnloadAndRetry."
+        }
+      }
+    },
+    "1132": {
+      "checks": {
+        "proc": {
+          "source": "GOB 1132 stores 50% for Dazed.",
+          "runtime": "TempMods and TimedEffects use the specified draw and state lifetime after a landed hit. Independent rolls and their boundary are exercised; target eligibility and stock presentation remain open.",
+          "test": "OperativeBatchTwoTests.ControlUsesSourcedDurationAndChance and ThroatCuttingThrowDrawsSeparatelyForOffBalanceAndDazed."
+        }
+      }
+    },
+    "340": {
+      "checks": {
+        "proc": {
+          "source": "GOB 340 stores 20% for Off-Balance and Dazed.",
+          "runtime": "TempMods and TimedEffects use the specified draw and state lifetime after a landed hit. Independent rolls and their boundary are exercised; target eligibility and stock presentation remain open.",
+          "test": "OperativeBatchTwoTests.ControlUsesSourcedDurationAndChance and ThroatCuttingThrowDrawsSeparatelyForOffBalanceAndDazed."
+        },
+        "script": {
+          "source": "tempmods.py ApplyPowerlessIfStaggered reads Staggered at modifier initialization and applies the stored six-second Powerless.",
+          "runtime": "The single initialization check feeds the action gate, retains sibling states, honors existing immunity and does not create an independent immunity timer.",
+          "test": "ConditionalPowerlessTests.CurrentHolderOrTacticConditionAddsSixSecondsWithoutNewTimer, ConditionArrivingLaterDoesNotRunAnExpiryCallback, and RefreshCleanseDeathAndWorldClearDoNotDuplicateOrRecreateState."
+        }
+      }
+    },
+    "347": {
+      "checks": {
+        "proc": {
+          "source": "GOB 347 stores 20% for Off-Balance and Staggered.",
+          "runtime": "TempMods and TimedEffects use the specified draw and state lifetime after a landed hit. Independent rolls and their boundary are exercised; target eligibility and stock presentation remain open.",
+          "test": "OperativeBatchTwoTests.ControlUsesSourcedDurationAndChance and ThroatCuttingThrowDrawsSeparatelyForOffBalanceAndDazed."
+        },
+        "script": {
+          "source": "tempmods.py ApplyStunEffectIfDazed calls ApplyStunWithTimer and GOB 347 stores a 0.01 s marker with payload four.",
+          "runtime": "The live term callback checks Dazed and independently starts the four-second stun and immunity. Canceling a marker leaves no delayed stun; a fresh valid marker works.",
+          "test": "OperativeBatchTwoTests.ConditionalStunCanRetryAfterClearingAStaleCast."
+        }
+      }
+    },
+    "348": {
+      "checks": {
+        "proc": {
+          "source": "GOB 348 stores 50% for Staggered.",
+          "runtime": "TempMods and TimedEffects use the specified draw and state lifetime after a landed hit. Independent rolls and their boundary are exercised; target eligibility and stock presentation remain open.",
+          "test": "OperativeBatchTwoTests.ControlUsesSourcedDurationAndChance and ThroatCuttingThrowDrawsSeparatelyForOffBalanceAndDazed."
+        }
+      }
+    },
+    "1134": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1134 stores -30 melee and ballistic accuracy, each for 8 s.",
+          "runtime": "The landed holder feeds both attack inputs, and expiry removes the penalties.",
+          "test": "OperativeBatchTwoTests.WardingBlowPenalizesBothAttackInputsUntilExpiry."
+        }
+      }
+    },
+    "1135": {
+      "checks": {
+        "script": {
+          "source": "GOB stores a signed health callback and a deferred Dazed stun marker of eight seconds.",
+          "runtime": "The root holder protects the first health event and ends the parent on subsequent damage. The deferred stun and timer append to the root, and canceled work cannot create a second stun.",
+          "test": "AbilityParityTests.ChanceRootProtectsItsFirstDamageThenBreaksAtTheScriptThreshold and OperativeBatchTwoTests.ConditionalStunCanRetryAfterClearingAStaleCast."
+        }
+      }
+    },
+    "341": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 341 stores ThrownDOT total 68, duration 30 seconds, and 2.5-second interval.",
+          "runtime": "The live timed holder rounds to six per tick, produces eleven ticks (66 before scaling/resistance) and ends before the terminal tick.",
+          "test": "OperativeBatchTwoTests.SeverArterySchedulesElevenTicksWithoutASecondTerminalTick."
+        }
+      }
+    },
+    "1118": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1118 uses 25 as the five-second drain payload and 30 as the separate 180-second term modifier's recast payload.",
+          "runtime": "The shadow state consumes 25 while active, terminates when the next drain cannot be paid and starts its 30-second cooldown on termination.",
+          "test": "OperativeBatchTwoTests.ShadowDrainsThenStopsAndStartsOnlyTheStoredTermRecast."
+        }
+      }
+    }
+  }
+}

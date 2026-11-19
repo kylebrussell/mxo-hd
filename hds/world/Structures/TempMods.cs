@@ -282,8 +282,9 @@ namespace hds
             { 279, E(279, Stat(877, -85, 15), Stat(519, -15, 15), Stat(878, -72, 15), Stat(115, -57, 15)) },
             // Sneak Attack Suplex, old_world Vector 15915: OffBalance, Staggered, Dazed for 15 s
             { 287, E(287, State(OffBalanceAbility, 15), State(StaggeredAbility, 15), State(DazeAbility, 15)) },
-            // Throat Cutting Throw, crashover2k proxy_003 5145 (OffBalance 8 s; Vector 32880 had Dazed 8 s)
-            { 340, E(340, State(OffBalanceAbility, 8)) },
+            // Throat Cutting Throw, crashover2k proxy_003 5145 (OffBalance) and Vector 32880 (Dazed).
+            // The captures show separate outcomes. TryGet attaches both stored independent proc chances.
+            { 340, E(340, State(OffBalanceAbility, 8), State(DazeAbility, 8)) },
             // Staggering Throw, old_world Vector 16171
             { 348, E(348, State(StaggeredAbility, 12)) },
             // Subduing Throw's captured4s stun is conditional on Dazed at the .01s marker's term.
