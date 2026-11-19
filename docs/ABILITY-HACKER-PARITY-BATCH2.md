@@ -16,7 +16,7 @@ Five rows have executable evidence for their remaining gameplay checks. Group He
 | 461 Infection Efficiency | Compare melee accuracy, ballistic damage and a timed stun while toggling normal load membership. |
 | 469 Destroyer | Record the 1088 grant becoming available and disappearing on load/unload. Measure the +5% stun duration while loaded. The A1 Corpsman profile has a different ancestry, so stage the Destroyer samples within a legal loadout for this tree. |
 
-To integrate 381 after the shared mode lands, add 381 to its Corpsman ability list and extend the heal loop with cost 20, amount 28 and no far recipient. Wait for the own four-second timer and omit the family wait, since 381 stores no family timer. This uses 59 learned-memory points including the shared ancestors. A separate 461/469 Destroyer setup uses 60 points.
+The NativeQa profile `ability-parity-hacker-a2-group-heal` stages 381 independently. Run `--fixture-plan ability-parity-hacker-a2-group-heal` for the setup and helper acceptance requests. At spawn, invite QAFriend at 7 m and QAFar at 9.25 m, leave QAOther at 3 m out of the team, select QAOther and use Group Heal from Actions. All start at 100 HP. CSR and QAFriend should reach 128 HP. QAFar and QAOther should remain at 100. The profile holds natural regeneration and covers 381. The other rows above need separate status, progression or combat fixtures.
 
 The disposable `hacker-a2-group-heal` scenario sends an ordinary full-length activation and verifies cast, debit, reuse, team radius and fresh HP updates for Group Heal. The prior native evidence for Repair RSI 3.0 (235) is tracked separately. This batch adds no duplicate 235 closure.
 
