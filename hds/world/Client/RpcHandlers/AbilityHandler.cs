@@ -114,6 +114,8 @@ namespace hds
             {
                 return;
             }
+            UInt32? selectedLocator = itemSlot.HasValue && UtilityAbilities.IsDataNodeSearch(AbilityID)
+                ? UtilityAbilities.ToolFor(Store.currentClient, AbilityID, itemSlot) : (UInt32?)null;
 
             // Internal pill abilities require their owned bag item, even if an ability was loaded.
             if (HealthBoostPills.Handles(AbilityID))
@@ -273,7 +275,7 @@ namespace hds
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
-                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
+                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, itemSlot, selectedLocator);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {

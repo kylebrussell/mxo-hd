@@ -185,13 +185,13 @@ namespace hds
         public static bool IsLockable(UInt16 goid) =>
             ObjectStates.Find(goid, LockedState) != null && ObjectStates.UsableLabelled(goid, "Pick Lock")?.executeRule == RuleDoorPickLock;
 
-        /// <summary>The first carried tool for the ability, or 0 (Inventory.findToolForAbility).</summary>
-        public static UInt32 ToolFor(WorldClient client, UInt16 ability)
+        /// <summary>The carried tool at the selected bag slot, or the first eligible tool for a slotless use.</summary>
+        public static UInt32 ToolFor(WorldClient client, UInt16 ability, UInt16? itemSlot = null)
         {
             if (!Tools.TryGetValue(ability, out UInt32[] tools)) return 0;
             foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()))
             {
-                if (item.Slot >= 1 && item.Slot <= 96 && tools.Contains(item.Goid) &&
+                if (item.Slot >= 1 && item.Slot <= 96 && (!itemSlot.HasValue || itemSlot.Value == item.Slot) && tools.Contains(item.Goid) &&
                     (!IsDataNodeSearch(ability) || Level(client, LocatorRequirement(item.Goid)) > 0)) return item.Goid;
             }
             return 0;
@@ -333,7 +333,7 @@ namespace hds
         public static int SecurityDifficulty(UInt16 goid) => goid == 466 ? 10 : 0;
 
         /// <summary>When a cast of one of these abilities ends.</summary>
-        public static void Land(WorldClient client, UInt16 ability, UInt16 targetView)
+        public static void Land(WorldClient client, UInt16 ability, UInt16 targetView, UInt16? itemSlot = null, UInt32? selectedLocator = null)
         {
             switch (ability)
             {
@@ -346,7 +346,7 @@ namespace hds
                     break;
                 case FindDataNode:
                 case LocateDataNode:
-                    ToggleFindDataNode(client,ability);
+                    ToggleFindDataNode(client, ability, itemSlot, selectedLocator);
                     break;
             }
             client.FlushQueue();
@@ -442,13 +442,13 @@ namespace hds
         /// the visual search, with the handheld Detect Luggables asks for the nearest luggable. Those searches are the
         /// client's 80 cb/cd/ce records, sent by DataMining.Check (docs/DATA-MINING.md).
         /// </summary>
-        private static void ToggleFindDataNode(WorldClient client, ushort ability)
+        private static void ToggleFindDataNode(WorldClient client, ushort ability, UInt16? itemSlot, UInt32? selectedLocator)
         {
             if (StopFindDataNode(client)) return;
             if (Level(client,ability) <= 0) return;
 
-            UInt32 tool = ToolFor(client, ability);
-            if (tool == 0)
+            UInt32 tool = ToolFor(client, ability, itemSlot);
+            if (tool == 0 || selectedLocator.HasValue && selectedLocator.Value != tool)
             {
                 client.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(ToolFail));
                 return;

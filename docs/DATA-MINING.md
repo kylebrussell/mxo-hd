@@ -80,6 +80,14 @@ The same session's preserved packet log proves that the disappearing596 was an a
 
 This establishes the native request and on-wire inventory transfer, not a visual bag-icon or drop/locator/map pass. No menu index or object type was guessed from the disappearing model.
 
+## Early-player locator and tap fixture
+
+Stock Tools activation specifies a personal bag slot. When both locator tools are carried, the selected item controls the search mode, range and expiry. If that slot no longer holds the selected locator when the cast finishes, the cast reports the tool-required message. The itemless short request used by existing scripted callers keeps its first-eligible-tool behavior. [Captured Tools request](../research/abilities/data-mining-actions.md)
+
+The level-10 `awakened-data-node-tools` mode loads the base locator and tap with their prerequisites. Its disposable replay starts a goggles search from slot 8 while the handheld is in slot 1, verifies its lifetime, checks wrong and replaced slot refusal, and then checks the handheld attenuation and expiry. After the handheld expires, restart the goggles so the node FX is visible. In Actions > Tools, use **Basic Data Tap** from slot 9 and save the real 165 request.
+
+The shipped GOB gives the basic tap a 6 m range and 750 Information per second. Tools 428 and 2530 also require 165, with the same range and rates 1,000 and 1,100. Node 606 stores access level 0, Information amount 1,100 and purity 50. The shipped callback delegates to the native tapping executor. Contemporary developer accounts confirm currency, experience and finite node depletion. The exact request, access rule, payout and depletion bookkeeping remain open. [Shipped callback](../research/client-scripts/ability/spy/misc.py#L193) [Developer interview](https://www.mmorpg.com/the-matrix-online/interviews/interview-with-dan-myers-2000114278)
+
 ## Validation and native checklist
 
 Unit tests pin byte layouts, signed-offset boundaries, payload limits, floor/district/range, level, singleton, exclusive-item and heavy rejection. Fresh-server cases: `data-mining-base-and-margin`, `data-mining-luggable-persistence`, `data-mining-full-bag`, `data-mining-locator`, `data-mining-mission-map` (`locked-safe.xml`). Headless validation proves these server contracts, not client rendering.
