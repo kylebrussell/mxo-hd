@@ -66,6 +66,65 @@ public class FreeCastViralLandingTests : IDisposable
         foreach(var client in WorldServer.Clients.Values){Assert.Empty(client.messageQueue.RPCMessagesQueue);Assert.Empty(client.messageQueue.ObjectMessagesQueue);}
         Assert.Equal(1000,PvpCombat.HealthOf(victim));
     }
+    [Fact]
+    public void FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres()
+    {
+        var caster = Client(110);
+        var friendly = Client(111);
+        var hostile = Client(112);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = friendly.playerData.pvpFlag = hostile.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        friendly.playerInstance.OrganizationID.setValue((byte)1);
+        hostile.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
+        friendly.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1000, 495, 0));
+        hostile.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(700, 495, 0));
+        var friendView = caster.viewMan.addView(111, 1);
+        friendView.viewCreated = true;
+        var enemyView = caster.viewMan.addView(112, 1);
+        enemyView.viewCreated = true;
+
+        Assert.Same(friendly, Assert.Single(AbilitySupport.Targets(caster, 237, friendView.ViewID)));
+        Assert.Empty(AbilitySupport.Targets(caster, 237, enemyView.ViewID));
+        AbilitySupport.Land(caster, 237, friendView.ViewID);
+        Assert.Equal(60, AbilityStats.Influence(friendly, 112));
+        Assert.Equal(0, AbilityStats.Influence(caster, 112));
+        Assert.Equal(0, AbilityStats.Influence(hostile, 112));
+        friendly.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1001, 495, 0));
+        Assert.Empty(AbilitySupport.Targets(caster, 237, friendView.ViewID));
+        Assert.True(AbilityBuffs.Remove(friendly, 237));
+        Assert.Equal(0, AbilityStats.Influence(friendly, 112));
+    }
+
+    [Theory]
+    [InlineData(399)]
+    [InlineData(468)]
+    public void RetiringPlayerViewCannotAnchorAHostileArea(ushort abilityId)
+    {
+        var caster = Client(110);
+        var primary = Client(111);
+        var secondary = Client(112);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = primary.playerData.pvpFlag = secondary.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        primary.playerInstance.OrganizationID.setValue((byte)2);
+        secondary.playerInstance.OrganizationID.setValue((byte)2);
+        var view = caster.viewMan.addView(111, 1);
+        view.viewCreated = true;
+        view.viewNeedsToBeDeleted = true;
+        caster.viewMan.addView(112, 1).viewCreated = true;
+        var ability = new AbilityItem();
+        ability.setAbilityID(abilityId);
+
+        Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, primary));
+        Assert.False(PvpCombat.LandAbility(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+        Assert.Empty(caster.messageQueue.RPCMessagesQueue);
+        Assert.Empty(primary.messageQueue.RPCMessagesQueue);
+        Assert.Empty(secondary.messageQueue.RPCMessagesQueue);
+        Assert.Empty(TimedEffects.ForPlayer(secondary).Effects.Snapshot());
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;
@@ -140,6 +199,7 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(336)]
     [InlineData(337)]
     [InlineData(343)]
+    [InlineData(468)]
     public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld(ushort abilityId)
     {
         var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{(abilityId,(ushort)50)});

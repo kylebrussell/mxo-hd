@@ -72,6 +72,26 @@ public class CombatInsightEngagementTests
         Assert.Equal(0,AbilityStats.Player(f.Source,519));Assert.Equal(unchangedAccuracy,AbilityStats.Player(f.Source,522));
     }
 
+    [Fact]
+    public void BottleneckFieldReducesTheLiveForceScoreUntilExpiry()
+    {
+        using var fixture = new Fixture();
+        fixture.Source.playerData.combatTactic = CombatTactic.Grab;
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var baseline));
+        Assert.True(TempMods.TryGet(402, out var bottleneck));
+        var subject = TimedEffects.ForPlayer(fixture.Source);
+        double start = TimeUtils.GetSimTimeSeconds();
+        TimedEffects.Apply(subject, bottleneck, start);
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var affected));
+        Assert.Equal(baseline.Force - 25, affected.Force);
+        Assert.Equal(baseline.Evade, affected.Evade);
+        foreach (ushort movement in new ushort[] { 115, 877, 878 })
+            Assert.Equal(-125, AbilityStats.Player(fixture.Source, movement));
+        TimedEffects.RunDue(start + 18.01);
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var restored));
+        Assert.Equal(baseline.Force, restored.Force);
+    }
+
     [Fact]public void Positive520NeverRecreatesRemovedOrSuppressed217()
     {
         using var f=new Fixture();Assert.True(AbilityBuffs.Apply(f.Target,49));

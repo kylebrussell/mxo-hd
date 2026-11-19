@@ -1,0 +1,16 @@
+{
+  "families": {
+    "hacker-group-heal-1-stock": {
+      "representative": 381,
+      "result": "pass",
+      "head": "6e81216dbe37e253ec7cef366f33557262441b0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/351#issuecomment-7012105784",
+      "scope": "The stock client cast 381 on a selected nonmember. After four seconds CSR and the near teammate each healed from 100 to 128. The far teammate at 9.25 m and the nearer nonmember did not heal. The disposable companion checks IS, reuse and the same four recipients."
+    }
+  },
+  "abilities": {
+    "381": {
+      "family": "hacker-group-heal-1-stock"
+    }
+  }
+}

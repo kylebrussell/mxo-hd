@@ -378,17 +378,115 @@ public class AbilityHostileTests
         Assert.True(field.Virus); // 0xc600001a "infects you", like captured UI Lag 1.0
     }
 
-    [Fact]
-    public void InefficiencyFieldRaisesInnerStrengthCostsUntilItExpires()
+    [Theory]
+    [InlineData(401, -20, -35, 30, 5)]
+    [InlineData(467, -30, -80, 32, 1)]
+    public void InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry(ushort ability, int costStat,
+        int regenStat, int castCost, int regeneration)
     {
         var victim = Client();
+        double carry = 0;
+        int NextRegen() => AbilityHandler.RegenAmount(false, ref carry, AbilityStats.Influence(victim, 114));
         Assert.Equal(25, AbilityCosts.Effective(victim, 359));
-        var applied = Land(victim, 467);
-        Assert.Equal(-30, AbilityStats.Player(victim, 117));
-        Assert.Equal(32, AbilityCosts.Effective(victim, 359)); // 25 - trunc(25 * -30 / 100)
-        Assert.Equal(-80, AbilityStats.Player(victim, 114));
+        Assert.Equal(8, NextRegen());
+        var applied = Land(victim, ability);
+        Assert.All(applied, effect => Assert.Equal(30f, effect.Seconds));
+        Assert.Equal(costStat, AbilityStats.Player(victim, 117));
+        Assert.Equal(castCost, AbilityCosts.Effective(victim, 359));
+        Assert.Equal(regenStat, AbilityStats.Player(victim, 114));
+        Assert.Equal(regeneration, NextRegen());
         TimedEffects.RunDue(applied[0].Expires + 0.01);
         Assert.Equal(25, AbilityCosts.Effective(victim, 359));
+        Assert.Equal(8, NextRegen());
+    }
+
+    [Fact]
+    public void DespoilerChangesMeleeAndBallisticAccuracyAndDamageForThirtySeconds()
+    {
+        var victim = Client();
+        int melee = AbilityStats.Attack(victim, false);
+        int ballistic = AbilityStats.Attack(victim, true);
+
+        var applied = Land(victim, 404);
+        Assert.Equal(4, applied.Count);
+        Assert.All(applied, effect => Assert.Equal(30f, effect.Seconds));
+        Assert.Equal(melee - 39, AbilityStats.Attack(victim, false));
+        Assert.Equal(ballistic - 39, AbilityStats.Attack(victim, true));
+        Assert.Equal(860, AbilityStats.ScaleTypedAbilityDamage(victim, 0, 1000));
+        Assert.Equal(860, AbilityStats.ScaleTypedAbilityDamage(victim, 1, 1000));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 2, 1000));
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(melee, AbilityStats.Attack(victim, false));
+        Assert.Equal(ballistic, AbilityStats.Attack(victim, true));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 0, 1000));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 1, 1000));
+    }
+
+    [Fact]
+    public void DisruptionFieldLowersTheViralContestDefenseUntilExpiry()
+    {
+        var victim = Client();
+        var viral = new AbilityItem();
+        viral.setAbilityID(329);
+        int before = AbilityStats.SpecialDefense(victim, viral);
+        int physical = AbilityStats.Defense(victim, false);
+
+        var applied = Assert.Single(Land(victim, 403));
+        Assert.Equal(23f, applied.Seconds);
+        Assert.Equal(before - 50, AbilityStats.SpecialDefense(victim, viral));
+        Assert.Equal(physical, AbilityStats.Defense(victim, false));
+
+        TimedEffects.RunDue(applied.Expires + 0.01);
+        Assert.Equal(before, AbilityStats.SpecialDefense(victim, viral));
+    }
+
+    [Fact]
+    public void UiLagRankTwoChangesBallisticAndThrownContestsUntilExpiry()
+    {
+        var victim = Client();
+        var throwing = new AbilityItem();
+        throwing.setAbilityID(134);
+        int ballisticAttack = AbilityStats.Attack(victim, true);
+        int ballisticDefense = AbilityStats.Defense(victim, true);
+        int thrownAttack = AbilityStats.ThrownAccuracy(victim);
+        int thrownDefense = AbilityStats.SpecialDefense(victim, throwing);
+
+        var applied = Land(victim, 465);
+        Assert.Equal(4, applied.Count);
+        Assert.All(applied, effect => Assert.Equal(17f, effect.Seconds));
+        Assert.Equal(ballisticAttack - 20, AbilityStats.Attack(victim, true));
+        Assert.Equal(ballisticDefense - 18, AbilityStats.Defense(victim, true));
+        Assert.Equal(thrownAttack - 20, AbilityStats.ThrownAccuracy(victim));
+        Assert.Equal(thrownDefense - 18, AbilityStats.SpecialDefense(victim, throwing));
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(ballisticAttack, AbilityStats.Attack(victim, true));
+        Assert.Equal(ballisticDefense, AbilityStats.Defense(victim, true));
+        Assert.Equal(thrownAttack, AbilityStats.ThrownAccuracy(victim));
+        Assert.Equal(thrownDefense, AbilityStats.SpecialDefense(victim, throwing));
+    }
+
+    [Theory]
+    [InlineData(0, 180)]
+    [InlineData(1, 181)]
+    [InlineData(2, 157)]
+    [InlineData(7, 1033)]
+    public void DestroyerIncreasesTakenDamageByReducingTheMatchingResistance(int damageType, ushort resistance)
+    {
+        var caster = Client();
+        var victim = Client();
+        int initial = AbilityStats.Player(victim, resistance);
+        ushort previous = TypedAbilityResistance.Player(caster, victim, 0, 400, damageType);
+        var applied = Land(victim, 1088, caster);
+        Assert.Equal(4, applied.Count);
+        Assert.Equal(initial - 120, AbilityStats.Player(victim, resistance));
+        ushort reduced = TypedAbilityResistance.Player(caster, victim, 0, 400, damageType);
+        Assert.True(reduced > previous);
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(initial, AbilityStats.Player(victim, resistance));
+        Assert.Equal(previous, TypedAbilityResistance.Player(caster, victim, 0, 400, damageType));
     }
 
     [Fact]
@@ -442,8 +540,10 @@ public class AbilityHostileTests
         Assert.Equal((ushort)1100, NextHealth());
     }
 
-    [Fact]
-    public void SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs()
+    [Theory]
+    [InlineData(379, 20, 35)]
+    [InlineData(424, 35, 25)]
+    public void SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs(ushort ability, int chance, float seconds)
     {
         var victim = Client();
         Land(victim, 343);
@@ -451,17 +551,17 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.Apply(victim, 327));
         var subject = TimedEffects.ForPlayer(victim);
         Assert.True(subject.Effects.HasParent(734));
-        Assert.True(AbilityHostile.ApplySweep(victim, victim, 424));
-        var pulse = subject.Effects.Snapshot().Single(a => a.Parent == 424);
+        Assert.True(AbilityHostile.ApplySweep(victim, victim, ability));
+        var pulse = subject.Effects.Snapshot().Single(a => a.Parent == ability);
         Assert.Equal(TempMods.Proc.Pulse, pulse.Proc);
-        Assert.Equal(35, pulse.Value);
-        Assert.Equal(25f, pulse.Seconds);
+        Assert.Equal(chance, pulse.Value);
+        Assert.Equal(seconds, pulse.Seconds);
         pulse.Value = 100; // force every roll
         TimedEffects.RunDue(pulse.Start + 5.01);
         Assert.False(subject.Effects.HasParent(343));
         Assert.False(subject.Effects.HasParent(315));
         Assert.True(subject.Effects.HasParent(734));
-        Assert.True(subject.Effects.HasParent(424));
+        Assert.True(subject.Effects.HasParent(ability));
         Assert.True(AbilityBuffs.IsActive(victim, 327));
     }
 
@@ -639,8 +739,10 @@ public class AbilityHostileTests
         Assert.True(subject.Effects.HasParent(379));
     }
 
-    [Fact]
-    public void DeleteUpgradeRemovesBuffsNotDebuffsAndNeverPicksTheLastOfSeveral()
+    [Theory]
+    [InlineData(324)]
+    [InlineData(377)]
+    public void DeleteUpgradeRemovesBuffsNotDebuffsAndNeverPicksTheLastOfSeveral(ushort ability)
     {
         var caster = Client(); var victim = Client();
         Land(victim, 343);
@@ -648,19 +750,108 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.Apply(victim, 344));
         var candidates = AbilityHostile.RemovableBuffs(victim);
         Assert.Equal(2, candidates.Count);
-        ushort removed = AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7));
+        ushort removed = AbilityHostile.RemoveRandomBuff(caster, victim, ability, new Random(7));
         Assert.Equal(candidates[0], removed); // randrange(0, 1) can only be 0
         Assert.False(AbilityBuffs.IsActive(victim, removed));
         Assert.True(TimedEffects.ForPlayer(victim).Effects.HasParent(343));
-        AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7));
+        AbilityHostile.RemoveRandomBuff(caster, victim, ability, new Random(7));
         Assert.Empty(AbilityHostile.RemovableBuffs(victim));
-        Assert.Equal(0, AbilityHostile.RemoveRandomBuff(caster, victim, 324, new Random(7)));
+        Assert.Equal(0, AbilityHostile.RemoveRandomBuff(caster, victim, ability, new Random(7)));
     }
 
     private sealed class ProcRoll(double value) : Random
     {
         public int Rolls;
         public override double NextDouble() { Rolls++; return value; }
+    }
+
+    [Theory]
+    [InlineData(0.499999, false, true)]
+    [InlineData(0.5, false, false)]
+    [InlineData(0.499999, true, false)]
+    public void DevastationFieldRollsAtLandingAndStunsOnlyOnTermWithoutImmunity(
+        double roll, bool immune, bool shouldStun)
+    {
+        var victim = Client();
+        var subject = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        if (immune)
+            subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new[]
+            {
+                new TimedEffects.Active { Kind = TempMods.KindPlain, Target = TempMods.ISDrainTargetAbility,
+                    Proc = TempMods.Proc.State, Seconds = 14 }
+            }, now);
+        try
+        {
+            Assert.True(TempMods.TryGet(468, out var effect));
+            var rng = new ProcRoll(roll);
+            var applied = TimedEffects.Apply(subject, effect, now, rng: rng);
+            Assert.Equal(1, rng.Rolls);
+            Assert.Equal(roll < 0.5, applied.Any(mod => mod.Proc == TempMods.Proc.Terminal));
+            Assert.False(subject.Effects.HasAt(TempMods.StunAbility, now));
+            TimedEffects.RunDue(now + 0.05);
+            Assert.False(subject.Effects.HasAt(TempMods.StunAbility, now + 0.05));
+            TimedEffects.RunDue(now + 0.11);
+            Assert.Equal(shouldStun, subject.Effects.HasAt(TempMods.StunAbility, now + 0.11));
+            if (shouldStun)
+            {
+                Assert.True(subject.Effects.HasControlImmunity(now + 6.10));
+                Assert.Equal(6, Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility).Seconds);
+                TimedEffects.RunDue(now + 6.12);
+                Assert.False(subject.Effects.HasAt(TempMods.StunAbility, now + 6.12));
+                Assert.False(subject.Effects.HasControlImmunity(now + 6.12));
+            }
+            else
+            {
+                Assert.Equal(immune, subject.Effects.HasControlImmunity(now + 0.11));
+            }
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Theory]
+    [InlineData(399, TempMods.PowerlessAbility, 10.14f, false, true)]
+    [InlineData(462, TempMods.EnrageAbility, 6f, true, false)]
+    public void HackerAreaControlsApplyOnlyTheirOwnActionGateUntilExpiry(
+        ushort ability, ushort state, float seconds, bool canUseAbilities, bool canWithdraw)
+    {
+        var victim = Client();
+        var applied = Assert.Single(Land(victim, ability), mod => mod.Target == state);
+        var holder = TimedEffects.ForPlayer(victim).Effects;
+        Assert.Equal(seconds, applied.Seconds);
+        Assert.Empty(holder.HealthChanged(1, belowMaximum: true, new Random(1)));
+        Assert.True(ControlActions.CanMove(holder));
+        Assert.True(ControlActions.CanUseWeapons(holder));
+        Assert.Equal(canUseAbilities, ControlActions.CanUseAbilities(holder));
+        Assert.Equal(canWithdraw, ControlActions.CanWithdraw(holder));
+        TimedEffects.RunDue(applied.Expires + 0.001);
+        Assert.True(ControlActions.CanUseAbilities(holder));
+        Assert.True(ControlActions.CanWithdraw(holder));
+    }
+
+    [Theory]
+    [InlineData(400, 59, 10)]
+    [InlineData(466, 424, 71)]
+    public void PlagueZoneAppliesFiveActualHealthTicksAndThenStops(ushort ability, int capturedTotal, int tick)
+    {
+        var victim = Client();
+        var subject = TimedEffects.ForPlayer(victim);
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        double now = TimeUtils.GetSimTimeSeconds();
+        var applied = Assert.Single(TimedEffects.Apply(subject, effect, now, rng: new MinimumDotRoll()));
+        Assert.Equal(capturedTotal, applied.Value);
+        Assert.Equal(1000, PvpCombat.HealthOf(victim));
+        TimedEffects.RunDue(now + 2.51);
+        Assert.Equal(1000 - tick, PvpCombat.HealthOf(victim));
+        TimedEffects.RunDue(applied.Expires + 0.01);
+        Assert.Equal(1000 - 5 * tick, PvpCombat.HealthOf(victim));
+        TimedEffects.RunDue(applied.Expires + 2.5);
+        Assert.Equal(1000 - 5 * tick, PvpCombat.HealthOf(victim));
+    }
+
+    private sealed class MinimumDotRoll : Random
+    {
+        public override int Next(int minValue, int maxValue) => minValue;
     }
 
     [Theory]
@@ -782,6 +973,36 @@ public class AbilityHostileTests
         AbilityHostile.ApplySweep(victim, victim, 320);
         Assert.Equal(320, AbilityHostile.RemoveRandomBuff(caster, victim, 377, new Random(1)));
         Assert.False(TimedEffects.ForPlayer(victim).Effects.HasParent(320));
+    }
+
+    [Theory]
+    [InlineData(378, 693)]
+    [InlineData(380, 692)]
+    public void DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse(ushort ability, ushort child)
+    {
+        var caster = Client(innerStrength: 13);
+        var clients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient> { ["deflect"] = caster };
+        try
+        {
+            AbilityAuras.Start(caster, ability);
+            Assert.True(AbilityAuras.IsOn(caster, ability));
+            Assert.True(AbilityBuffs.IsActive(caster, child));
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.Equal(6, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.True(AbilityAuras.IsOn(caster, ability));
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.False(AbilityAuras.IsOn(caster, ability));
+            Assert.Equal(6, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.Equal(6, AbilityHandler.CurrentInnerStrength(caster));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            AbilityBuffs.RemoveAll(caster);
+            WorldServer.Clients = clients;
+        }
     }
 
     [Fact]

@@ -1,0 +1,216 @@
+{
+  "abilities": {
+    "237": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 237 stores the friendly selected target within 10 m and +60% Health Regen Rate for 600 s.",
+          "runtime": "AbilitySupport.Targets resolves living friendly selections. AbilityBuffs applies the value and HealthRegen reads it until removal.",
+          "test": "FreeCastViralLandingTests.FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres checks exact boundary, opposing flag rejection, actual one-recipient apply and cleanup. AbilityScaledBuffTests.FastHealingRaisesNaturalHealthRegenAndReturnsItToBaseline checks consumed regen."
+        },
+        "stats": {
+          "source": "GOB 237 stores the friendly selected target within 10 m and +60% Health Regen Rate for 600 s.",
+          "runtime": "AbilitySupport.Targets resolves living friendly selections. AbilityBuffs applies the value and HealthRegen reads it until removal.",
+          "test": "FreeCastViralLandingTests.FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres checks exact boundary, opposing flag rejection, actual one-recipient apply and cleanup. AbilityScaledBuffTests.FastHealingRaisesNaturalHealthRegenAndReturnsItToBaseline checks consumed regen."
+        },
+        "behavior-tests": {
+          "source": "GOB 237 stores the friendly selected target within 10 m and +60% Health Regen Rate for 600 s.",
+          "runtime": "AbilitySupport.Targets resolves living friendly selections. AbilityBuffs applies the value and HealthRegen reads it until removal.",
+          "test": "FreeCastViralLandingTests.FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres checks exact boundary, opposing flag rejection, actual one-recipient apply and cleanup. AbilityScaledBuffTests.FastHealingRaisesNaturalHealthRegenAndReturnsItToBaseline checks consumed regen."
+        }
+      }
+    },
+    "377": {
+      "checks": {
+        "script": {
+          "source": "GOB 377 invokes RemoveRandomBuff. tempmods.py selects removable buff parents and retains the random range semantics.",
+          "runtime": "AbilityHostile.LandedOnPlayer invokes RemoveRandomBuff and the shared live-state cancellation path.",
+          "test": "AbilityHostileTests.DeleteUpgradeRemovesBuffsNotDebuffsAndNeverPicksTheLastOfSeveral observes real cancellation and candidate exclusion; DispelWithoutStoredChanceDoesNotConsumeAProcRoll confirms no extra roll gate."
+        }
+      }
+    },
+    "378": {
+      "checks": {
+        "stats": {
+          "source": "GOB 378 applies child 693 and runs ISDrainWithAbilityDeactivation for 7 IS every five seconds.",
+          "runtime": "AbilityAuras.Start sends the initial effect; Tick/PayDrain dispatches the child on paid pulses and stops the aura on shortfall.",
+          "test": "AbilityHostileTests.DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse checks the actual child, balance 13\u21926, deactivation and no later charge. The stock toggle and child pulse are recorded at https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005."
+        },
+        "script": {
+          "source": "GOB 378 applies child 693 and runs ISDrainWithAbilityDeactivation for 7 IS every five seconds.",
+          "runtime": "AbilityAuras.Start sends the initial effect; Tick/PayDrain dispatches the child on paid pulses and stops the aura on shortfall.",
+          "test": "AbilityHostileTests.DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse checks the actual child, balance 13\u21926, deactivation and no later charge. The stock toggle and child pulse are recorded at https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005."
+        }
+      }
+    },
+    "379": {
+      "checks": {
+        "script": {
+          "source": "GOB 379 starts NegativeConditionSweepPulse with 20% value, five-second interval and 35-second lifetime.",
+          "runtime": "AbilityHostile.ApplySweep/Pulse schedules the negative-condition sweep and admits cleansable live hostile parents.",
+          "test": "AbilityHostileTests.SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs checks the exact value/lifetime and first real pulse, and preserves the buff and separate immunity."
+        }
+      }
+    },
+    "380": {
+      "checks": {
+        "stats": {
+          "source": "GOB 380 applies child 692 and runs ISDrainWithAbilityDeactivation for 7 IS every five seconds.",
+          "runtime": "AbilityAuras.Start sends the initial effect; Tick/PayDrain dispatches the child on paid pulses and stops the aura on shortfall.",
+          "test": "AbilityHostileTests.DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse checks the actual child, balance 13\u21926, deactivation and no later charge. The stock toggle and child pulse are recorded at https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005."
+        },
+        "script": {
+          "source": "GOB 380 applies child 692 and runs ISDrainWithAbilityDeactivation for 7 IS every five seconds.",
+          "runtime": "AbilityAuras.Start sends the initial effect; Tick/PayDrain dispatches the child on paid pulses and stops the aura on shortfall.",
+          "test": "AbilityHostileTests.DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse checks the actual child, balance 13\u21926, deactivation and no later charge. The stock toggle and child pulse are recorded at https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005."
+        }
+      }
+    },
+    "381": {
+      "checks": {
+        "healing": {
+          "source": "GOB 381 supplies a four-second cast/reuse, 20 IS, team selector 9, raw radius 6 m and fixed type-3 heal 26.",
+          "runtime": "AbilitySupport and AbilityHealing apply the fixed value and caster influence, on eligible living team recipients within the buff-area radius.",
+          "test": "hacker-a2-group-heal verifies the full 43-byte activation, real 20 IS debit, own reuse, modified radius and +28 actual HP on caster and in-range teammate. It excludes a farther teammate and the selected nonmember."
+        },
+        "area": {
+          "source": "GOB 381 supplies a four-second cast/reuse, 20 IS, team selector 9, raw radius 6 m and fixed type-3 heal 26.",
+          "runtime": "AbilitySupport and AbilityHealing apply the fixed value and caster influence, on eligible living team recipients within the buff-area radius.",
+          "test": "hacker-a2-group-heal verifies the full 43-byte activation, real 20 IS debit, own reuse, modified radius and +28 actual HP on caster and in-range teammate. It excludes a farther teammate and the selected nonmember."
+        },
+        "behavior-tests": {
+          "source": "GOB 381 supplies a four-second cast/reuse, 20 IS, team selector 9, raw radius 6 m and fixed type-3 heal 26.",
+          "runtime": "AbilitySupport and AbilityHealing apply the fixed value and caster influence, on eligible living team recipients within the buff-area radius.",
+          "test": "hacker-a2-group-heal verifies the full 43-byte activation, real 20 IS debit, own reuse, modified radius and +28 actual HP on caster and in-range teammate. It excludes a farther teammate and the selected nonmember."
+        }
+      }
+    },
+    "398": {
+      "checks": {
+        "stats": {
+          "source": "GOB 398 supplies rank-scaled melee and ballistic defense plus Powerless duration while loaded.",
+          "runtime": "AbilityPassives maintains its loadout contribution; AbilityStats.Defense and AbilityControlDurations.Scale consume the stat inputs.",
+          "test": "AbilityScaledBuffTests.RepelCombatChangesBothDefenseInputsAndPowerlessDurationWhileLoaded checks both defenses, the scaled duration and return to baseline on unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 398 supplies rank-scaled melee and ballistic defense plus Powerless duration while loaded.",
+          "runtime": "AbilityPassives maintains its loadout contribution; AbilityStats.Defense and AbilityControlDurations.Scale consume the stat inputs.",
+          "test": "AbilityScaledBuffTests.RepelCombatChangesBothDefenseInputsAndPowerlessDurationWhileLoaded checks both defenses, the scaled duration and return to baseline on unload."
+        }
+      }
+    },
+    "400": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 400 supplies type-2 ViralDOT total 59, interval 2.5 s and 15 s lifetime. tempmods.py ViralDOT rounds each tick and applies damage and FX.",
+          "runtime": "AbilityHostile.ModOf resolves the DOT and TimedEffects.RunDue dispatches scheduled damage via PlayerEffects.Ticked.",
+          "test": "AbilityHostileTests.PlagueZoneAppliesFiveActualHealthTicksAndThenStops observes the first HP update, five 10-point actual ticks and no sixth tick. Shared viral tick FX is covered by AbilityTargetTests.PlagueZoneIsDamageOverTime."
+        },
+        "script": {
+          "source": "GOB 400 supplies type-2 ViralDOT total 59, interval 2.5 s and 15 s lifetime. tempmods.py ViralDOT rounds each tick and applies damage and FX.",
+          "runtime": "AbilityHostile.ModOf resolves the DOT and TimedEffects.RunDue dispatches scheduled damage via PlayerEffects.Ticked.",
+          "test": "AbilityHostileTests.PlagueZoneAppliesFiveActualHealthTicksAndThenStops observes the first HP update, five 10-point actual ticks and no sixth tick. Shared viral tick FX is covered by AbilityTargetTests.PlagueZoneIsDamageOverTime."
+        }
+      }
+    },
+    "401": {
+      "checks": {
+        "stats": {
+          "source": "GOB 401 stores \u221220% IS cost reduction and \u221235% IS regeneration for 30 s.",
+          "runtime": "AbilityCosts.Effective and AbilityHandler.RegenAmount consume the signed stat modifiers until TimedEffects expiry",
+          "test": "AbilityHostileTests.InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry."
+        }
+      }
+    },
+    "403": {
+      "checks": {
+        "stats": {
+          "source": "GOB 403 stores \u221250 Viral Defense for 23 s.",
+          "runtime": "TimedEffects publishes the stat consumed by FreeCastViralContest against the actor",
+          "test": "AbilityHostileTests.DisruptionFieldLowersTheViralContestDefenseUntilExpiry."
+        }
+      }
+    },
+    "404": {
+      "checks": {
+        "stats": {
+          "source": "GOB 404 stores \u221239 melee/ballistic accuracy and \u221214 melee/ballistic damage for 30 s.",
+          "runtime": "AbilityStats.Attack and ScaleTypedAbilityDamage consume actual hostile stat modifiers, removed by TimedEffects",
+          "test": "AbilityHostileTests.DespoilerChangesMeleeAndBallisticAccuracyAndDamageForThirtySeconds."
+        }
+      }
+    },
+    "461": {
+      "checks": {
+        "stats": {
+          "source": "GOB 461 stores melee accuracy, ballistic damage and Stun duration linked bonuses with rank function 2.",
+          "runtime": "AbilityPassives delivers the linked values to AbilityStats and AbilityControlDurations.",
+          "test": "AbilityScaledBuffTests.InfectionEfficiencyChangesMeleeAttackBallisticDamageAndStunWhileLoaded observes exact changes to all three consumers and their reversal."
+        },
+        "behavior-tests": {
+          "source": "GOB 461 stores melee accuracy, ballistic damage and Stun duration linked bonuses with rank function 2.",
+          "runtime": "AbilityPassives delivers the linked values to AbilityStats and AbilityControlDurations.",
+          "test": "AbilityScaledBuffTests.InfectionEfficiencyChangesMeleeAttackBallisticDamageAndStunWhileLoaded observes exact changes to all three consumers and their reversal."
+        }
+      }
+    },
+    "462": {
+      "checks": {
+        "controls": {
+          "source": "GOB 462 stores state 93 (Enraged) for six seconds. tempmods.py EnrageInit and EnrageTerm set and clear withdrawal admission.",
+          "runtime": "TimedEffects applies the stored state and ControlActions.CanWithdraw reads the live holder.",
+          "test": "AbilityHostileTests.HackerAreaControlsApplyOnlyTheirOwnActionGateUntilExpiry verifies withdrawal failure, ordinary movement/weapons/abilities, no damage break and expiry for exact 462."
+        }
+      }
+    },
+    "465": {
+      "checks": {
+        "stats": {
+          "source": "GOB 465 stores \u221220 ballistic/thrown accuracy and \u221218 ballistic/thrown defense for 17 s.",
+          "runtime": "AbilityStats.Attack, Defense and special move accuracy/defense consume the row until TimedEffects expiry",
+          "test": "AbilityHostileTests.UiLagRankTwoChangesBallisticAndThrownContestsUntilExpiry."
+        }
+      }
+    },
+    "467": {
+      "checks": {
+        "stats": {
+          "source": "GOB 467 stores \u221230% IS cost reduction and \u221280% IS regeneration for 30 s.",
+          "runtime": "AbilityCosts.Effective and AbilityHandler.RegenAmount consume the signed debuff values until TimedEffects expiry",
+          "test": "AbilityHostileTests.InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry."
+        }
+      }
+    },
+    "468": {
+      "checks": {
+        "proc": {
+          "source": "GOB 468 has a 50% proc on its 0.1 s term marker passing fixed value 6 to tempmods.py ApplyStunWithTimer.",
+          "runtime": "AbilityCatalog.Controls installs the marker. TimedEffects runs one roll per landed copy; AbilityConditionalControls.Term installs six-second stun and immunity only if immunity is absent.",
+          "test": "AbilityHostileTests.DevastationFieldRollsAtLandingAndStunsOnlyOnTermWithoutImmunity checks both sides of the 50% boundary, marker delay, immune rejection and actual stun/immunity expiry. The exact native refusal line is still open."
+        }
+      }
+    },
+    "469": {
+      "checks": {
+        "stats": {
+          "source": "GOB 469 has one +5% Stun Duration Bonus component and a load grant 1088. Its zero-valued grant pair has a retained capture in research/protocol/loaded-grant-membership.json.",
+          "runtime": "AbilityPassives expands membership and feeds AbilityControlDurations. AbilityGrantRegistration handles the associated stock membership packets.",
+          "test": "AbilityScaledBuffTests.HackerParentsPublishTheGrantedActionOnlyWhileLoaded checks real addition and removal packets for 1088, 10\u219210.5 s while loaded and return to 10 s after unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 469 has one +5% Stun Duration Bonus component and a load grant 1088. Its zero-valued grant pair has a retained capture in research/protocol/loaded-grant-membership.json.",
+          "runtime": "AbilityPassives expands membership and feeds AbilityControlDurations. AbilityGrantRegistration handles the associated stock membership packets.",
+          "test": "AbilityScaledBuffTests.HackerParentsPublishTheGrantedActionOnlyWhileLoaded checks real addition and removal packets for 1088, 10\u219210.5 s while loaded and return to 10 s after unload."
+        }
+      }
+    },
+    "1088": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1088 stores \u2212120 to all four typed resistances for 30 s.",
+          "runtime": "TypedAbilityResistance.Player reads the lowered resistance tiers and subsequent expiry",
+          "test": "AbilityHostileTests.DestroyerIncreasesTakenDamageByReducingTheMatchingResistance."
+        }
+      }
+    }
+  }
+}
