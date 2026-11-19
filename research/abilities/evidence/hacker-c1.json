@@ -101,20 +101,6 @@
         }
       }
     },
-    "390": {
-      "checks": {
-        "stats": {
-          "source": "GOB 390 supplies melee and ballistic defence bonuses +2 and loaded upgrade grant 1079.",
-          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
-          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals, SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration and HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval"
-        },
-        "behavior-tests": {
-          "source": "GOB 390 supplies melee and ballistic defence bonuses +2 and loaded upgrade grant 1079.",
-          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
-          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals, SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration and HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval"
-        }
-      }
-    },
     "391": {
       "checks": {
         "stats": {
@@ -268,15 +254,6 @@
           "source": "GOB 695 is a 3 m group child with 5 s melee and ballistic accuracy at caster-level scale 1.3.",
           "runtime": "AbilityAuras.Pulse delegates to AbilitySupport.Land and AbilityBuffs. AbilityStats.Attack consumes both mods.",
           "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength. The sourced level-50 two-stat pulse lands on a nearby teammate, expires after five seconds out of range and leaves attacks at baseline. Stock Status increased both accuracy bonuses from +50 to +114. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
-        }
-      }
-    },
-    "1079": {
-      "checks": {
-        "targeting": {
-          "source": "GOB 1079 specifies self-only selector 1.",
-          "runtime": "AbilitySupport.Targets selects caster irrespective of selected view, then AbilitySupport.Land applies the upgrade to that caster.",
-          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval asserts self selection with a non-self view and verifies resulting stats."
         }
       }
     },

@@ -1,10 +1,11 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
-[Collection("DelayedActions")]
+[Collection("AbilityParityWorld")]
 public class HackerBatchBParityTests
 {
     private static WorldClient Client(byte level = 50)
@@ -20,6 +21,7 @@ public class HackerBatchBParityTests
         client.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
         client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
         client.messageQueue = new MessageQueue();
+        client.viewMan = new ViewManager();
         typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, long.MaxValue);
         return client;
@@ -93,6 +95,76 @@ public class HackerBatchBParityTests
             AbilityHostile.PulseRandom = previous;
             AbilityBuffs.RemoveAll(player);
         }
+    }
+
+    [Fact]
+    public void FastHealing46AppliesOnlyToTheSelectedLivingFriendlyPlayerInRange()
+    {
+        var caster = Client();
+        var friend = Client();
+        var foe = Client();
+        foreach (var (player, id, organization) in new[]
+        {
+            (caster, 7010u, (byte)1), (friend, 7011u, (byte)1), (foe, 7012u, (byte)2)
+        })
+        {
+            player.playerData.setOnWorld(true);
+            player.playerData.setEntityId(id);
+            player.playerData.setCharID(id);
+            player.playerData.pvpFlag = true;
+            player.playerInstance.OrganizationID.setValue(organization);
+        }
+        friend.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1000, 495, 0));
+        foe.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(300, 495, 0));
+        var friendlyView = caster.viewMan.addView(7011, 1);
+        var hostileView = caster.viewMan.addView(7012, 1);
+        friendlyView.viewCreated = hostileView.viewCreated = true;
+        var previous = WorldServer.Clients;
+        var previousWorld = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            WorldServer.Clients = new() { ["caster"] = caster, ["friend"] = friend, ["foe"] = foe };
+            Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, foe));
+            AbilitySupport.Land(caster, 46, hostileView.ViewID);
+            Assert.Equal(0, AbilityStats.Influence(foe, 112));
+            Assert.Same(friend, Assert.Single(AbilitySupport.Targets(caster, 46, friendlyView.ViewID)));
+            AbilitySupport.Land(caster, 46, friendlyView.ViewID);
+            Assert.Equal(40, AbilityStats.Influence(friend, 112));
+            Assert.Equal(0, AbilityStats.Influence(caster, 112));
+            Assert.True(AbilityBuffs.Remove(friend, 46));
+            friend.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1001, 495, 0));
+            Assert.Empty(AbilitySupport.Targets(caster, 46, friendlyView.ViewID));
+            friend.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1000, 495, 0));
+            friend.playerData.isDead = true;
+            Assert.Empty(AbilitySupport.Targets(caster, 46, friendlyView.ViewID));
+            friend.playerData.isDead = false;
+            friendlyView.viewCreated = false;
+            Assert.Empty(AbilitySupport.Targets(caster, 46, friendlyView.ViewID));
+        }
+        finally
+        {
+            AbilityBuffs.RemoveAll(friend);
+            WorldServer.Clients = previous;
+            Store.world = previousWorld;
+        }
+    }
+
+    [Fact]
+    public void GuardianPatcherLoadsARecipientIndependentPassiveAndGrantsOnlyASelfUpgrade()
+    {
+        var player = Client();
+        Assert.False(AbilitySupport.Handles(51));
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)51, (ushort)50) });
+        Assert.Equal(1010, NumericalUtils.ByteArrayToUint16(player.playerInstance.MaxHealth.getValue(), 1));
+        Assert.True(AbilityPassives.IsLoaded(player, 1094));
+        Assert.Same(player, Assert.Single(AbilitySupport.Targets(player, 1094, 123)));
+        AbilitySupport.Land(player, 1094, 123);
+        Assert.Equal(20, AbilityStats.Player(player, 520));
+        Assert.True(AbilityBuffs.Remove(player, 1094));
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(player, 1094));
+        Assert.Equal(1000, NumericalUtils.ByteArrayToUint16(player.playerInstance.MaxHealth.getValue(), 1));
     }
 
     [Fact]

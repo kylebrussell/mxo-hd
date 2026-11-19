@@ -1,0 +1,46 @@
+{
+  "families": {
+    "stock-fast-healing-1": {
+      "representative": 46,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Stock applied the 600-second effect to the selected friendly teammate and removed it on helper dismissal. The hostile attempt applied no buff. The companion replay verifies the exact regeneration steps and refusal for both hostile and out-of-range targets."
+    },
+    "stock-fast-healing-2": {
+      "representative": 237,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Stock applied Fast Healing 2.0 to the same friendly teammate and cleared it on dismissal. The companion replay checks +60% regeneration, recipient admission and the restored baseline."
+    },
+    "stock-guardian-patcher": {
+      "representative": 51,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Three stock unload and reload cycles withdraw and restore one percentage point of Max Health Bonus and the granted 1094 action. The granted action applies only to the caster with a nonmember selected."
+    },
+    "stock-physician-grant": {
+      "representative": 418,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Stock unload reduces Healing Bonus from +58% to +53% and greys the 1098 slot. Reload restores both. The child is supplied by the live parent grant."
+    },
+    "stock-physician-team-heal": {
+      "representative": 1098,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Stock cast with the nonmember selected healed CSR from 472 to 688 and the 4 m teammate from 1500 to 1716. The 4.25 m teammate and the nearer nonmember received no cast heal."
+    }
+  },
+  "abilities": {
+    "46": { "family": "stock-fast-healing-1" },
+    "237": { "family": "stock-fast-healing-2" },
+    "51": { "family": "stock-guardian-patcher" },
+    "418": { "family": "stock-physician-grant" },
+    "1098": { "family": "stock-physician-team-heal" }
+  }
+}
