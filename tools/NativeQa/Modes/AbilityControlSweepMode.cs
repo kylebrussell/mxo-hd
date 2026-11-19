@@ -1,5 +1,7 @@
 using System.Buffers.Binary;
+using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using HeadlessClient;
 
 namespace NativeQa.Modes;
@@ -8,15 +10,15 @@ public sealed class AbilityControlSweepMode : NativeQaMode
 {
     private sealed record Sample(ushort Ability, string Label, string Npc, ushort State, float Seconds, int Immunity, float DebuffSeconds = 0);
 
-    // Freeze System and Code Stop use the same Mez state. Both ability families are visible as Pacify.
+    // Loaded Resist Contagion adds 5% stun duration; Effective Code adds 15% Mez duration.
     private static readonly Sample[] Samples =
     {
         new(40, "Code Freeze 1.0", "WinterFrost", 99, 25, 0),
         new(1081, "Ravager Downgrade", "Trainman", 91, 8, 0, DebuffSeconds: 30),
         new(43, "Disrupt Inputs 1.0", "Smithling", 90, 16, 0),
-        new(333, "Stun 2.0", "Trainman", 102, 5, 10),
-        new(393, "Code Stop 1.0", "Smithling", 85, 6, 12),
-        new(48, "Freeze System 1.0", "Blackwoods", 85, 6, 12),
+        new(333, "Stun 2.0", "Trainman", 102, 5.25f, 10),
+        new(393, "Code Stop 1.0", "Smithling", 85, 6.9f, 12),
+        new(48, "Freeze System 1.0", "Blackwoods", 85, 6.9f, 12),
         new(355, "Vector", "WinterFrost", 96, 8.94f, 8, DebuffSeconds: 30),
     };
 
@@ -37,7 +39,7 @@ public sealed class AbilityControlSweepMode : NativeQaMode
                 FormattableString.Invariant($"{sample.Label} ({sample.Ability}) on {sample.Npc}. Expect state {sample.State} for {sample.Seconds:g} s, immunity {sample.Immunity} s."))
             .Append("Use Actions in order. Confirm the cast and target FX, and the four immunity announcements. Wait out each immunity window before the next cast that grants immunity. The fixture fixes viral contest draws.")
             .Append("Four normal-size targets are spaced at least 3 m apart. WinterFrost and Trainman are west of the start, Blackwoods and Smithling are east.")
-            .ToArray(), testMobFixture: "ability-control-targets.csv");
+            .ToArray(), testMobFixture: "ability-control-targets.csv", loadAbilityAncestors: true);
 
     private static byte[] Request(ushort ability, ViewCreation target)
     {
@@ -90,10 +92,14 @@ public sealed class AbilityControlSweepMode : NativeQaMode
             int cursor = caster.World.RpcSnapshot().Count;
             byte[] request = Request(sample.Ability, target);
             caster.SendRpc(request);
-            string state = FormattableString.Invariant($"State {sample.State} 0 {sample.Seconds:g} s");
-            string npcEffects = $"[EFFECTS] {sample.Ability} on {sample.Npc}:";
-            await caster.WaitUntilAsync(() => server.DebugLog().Split('\n')
-                .Any(line => line.Contains(npcEffects, StringComparison.Ordinal) && line.Contains(state, StringComparison.Ordinal)),
+            string npcEffects = Regex.Escape($"[EFFECTS] {sample.Ability} on {sample.Npc}:");
+            var state = new Regex(npcEffects + $@"[^\r\n]*\bState {sample.State} 0 ([\d.]+) s");
+            await caster.WaitUntilAsync(() =>
+            {
+                Match match = state.Match(server.DebugLog());
+                return match.Success && float.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds)
+                    && Math.Abs(seconds - sample.Seconds) < 0.005f;
+            },
                 $"{sample.Label} applied its expected NPC control", TimeSpan.FromSeconds(12));
             if (sample.Immunity > 0)
                 await caster.WaitUntilAsync(() => caster.World.RpcSnapshot().Skip(cursor).Any(record => ImmunityMessage(record.Bytes, sample)),

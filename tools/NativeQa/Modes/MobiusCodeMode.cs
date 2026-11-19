@@ -13,7 +13,8 @@ public abstract class MobiusCodeFixtureMode:NativeQaMode
             extraQaMetadata:new(){["MobiusPartial"]=true,["MobiusCallbackBranch"]=branch,["MobiusCallbackArm"]="?combatdepth mobius "+branch+" next",["MobiusProcSeconds"]=10,["MobiusCombatRngFixed"]=false},
             readyMessages:new[]{
                 "CSR starts in the open street at 24800,495,-1498, flagged. Use QAEnemy for continuous rifle fire before casting. Arm with ?combatdepth mobius "+branch+" next, then use ordinary Mobius Code from Actions.",
-                "Use the separate QAOther melee helper against CSR_Tester during the 10-second positive proc. Expect reason 14 and the Mobius refusal log. Repeat the same helper action after expiry and expect an ordinary interlock. See docs/ABILITY-MOBIUS-FREE-ATTACK.md."});
+                "Use the separate QAOther melee helper against CSR_Tester during the 10-second positive proc. Expect reason 14 and the Mobius refusal log. Repeat the same helper action after expiry and expect an ordinary interlock. See docs/ABILITY-MOBIUS-FREE-ATTACK.md."},
+            loadAbilityAncestors:true);
     }
     public override NativeQaModePlan Plan {get;}
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -50,10 +51,9 @@ public abstract class MobiusCodeFixtureMode:NativeQaMode
 
     internal sealed record ForcedEntry(bool Opened, byte? RefusalReason, string Reply);
 
-    internal static async Task<object> VerifyInterlockAsync(ServerInstance server,
+    internal static async Task<object> VerifyInterlockAsync(ServerInstance server, HeadlessPlayer victim,
         HeadlessPlayer shooter, HeadlessPlayer challenger, bool positive)
     {
-        using var victim = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester");
         await victim.EnterWorldAsync();
         var aim = await shooter.WaitForViewNamedAsync(victim.Handle);
         var target = await challenger.WaitForViewNamedAsync(victim.Handle);

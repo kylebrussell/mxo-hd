@@ -5,11 +5,11 @@ namespace NativeQa.Modes;
 
 public abstract class AbilitySweepMode : NativeQaMode
 {
-    private const int CasterX = 24800;
-    private const int CasterZ = -1498;
-    private const int GroundY = 495;
+    private const int CasterX = CombatFixtureLoadout.CasterX;
+    private const int CasterZ = CombatFixtureLoadout.CasterZ;
+    private const int GroundY = CombatFixtureLoadout.GroundY;
     private const int FriendZ = -1298;
-    private const string MeleeDummy = "Melee Dummy";
+    private const string MeleeDummy = CombatFixtureLoadout.DummyName;
 
     protected sealed record Sample(ushort Id, string Ability, string Target, string Health, string State,
         string Duration, ushort Cost)
@@ -47,12 +47,17 @@ public abstract class AbilitySweepMode : NativeQaMode
             $"UPDATE characters SET x={EnemyX},y={GroundY},z={CasterZ},healthC=5000,healthM=5000 WHERE charId=6114"
         };
         if (petOrders)
+        {
             setup.Add("UPDATE characters SET pvpflag=1 WHERE charId=6111");
+            environment[hds.CombatFixtureWeapons.DisengageMode] = "1";
+        }
         if (firearms)
         {
-            setup.Add("DELETE FROM inventory WHERE charId=110 AND slot IN (10,11,12,105)");
-            setup.Add("INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,537,10,1,0),(110,692,11,1,0),(110,698,12,1,0)");
+            setup.Add(CombatFixtureLoadout.SeedWeapons);
+            environment[hds.CombatFixtureWeapons.WeaponMode] = "1";
         }
+        else if (isolatedMelee)
+            setup.Add($"DELETE FROM inventory WHERE charId=110 AND slot={hds.CombatFixtureWeapons.HandSlot}");
 
         var instructions = new List<string>
         {
@@ -69,15 +74,18 @@ public abstract class AbilitySweepMode : NativeQaMode
             instructions.Add("For Stun 2.0, select WinterFrost. Check Trainman at 3 m and Blackwoods at 6 m from that anchor.");
         }
         if (firearms)
-            instructions.Add("Equip the matching weapon before each style or special. Revolver bag 10, Automatic Rifle bag 11, SMG bag 12.");
+            instructions.Add("The revolver starts equipped. Use ?combatdepth fixture-weapon rifle, smg or handgun before the corresponding style. Use the single SMG for Covering Fire. A server-side swap ends the previous interlock.");
         if (petOrders)
-            instructions.Add("On Remote Proxy 5.0 and Logic Daemon 4.0 test Defensive assist, Passive clearing assist and direct Attack on Melee Dummy. A player-target Attack must never redirect to the dummy.");
+        {
+            instructions.Add("Before any interlock, summon a pet and set Passive and Follow. Select QAFriend and click pet Attack. Record the refusal or client suppression and verify that Melee Dummy stays untouched.");
+            instructions.Add("With your pet near Melee Dummy, cast Detonate Proxy before interlock. After the explosion resolves, use ?combatdepth fixture-disengage and wait for the HUD to clear. Then cast Static Blast out of combat. Finish any interlock checks afterwards.");
+        }
         Plan = new NativeQaModePlan(samples.Select(sample => sample.Id).Concat(support).Distinct().ToArray(),
-            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders,
+            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders || firearms,
             environmentOverrides: environment,
             extraQaMetadata: new() { ["AbilitySweepNativeStatus"] = "Pending", ["AbilitySweepSlots"] = samples.Length },
             readyMessages: instructions.Concat(Evidence).ToArray(),
-            testMobFixture: isolatedMelee ? "ability-sweep-melee.csv" : "ability-sweep-mobs.csv");
+            testMobFixture: isolatedMelee ? CombatFixtureLoadout.MeleeCsv : "ability-sweep-mobs.csv", loadAbilityAncestors: true);
     }
 
     public override NativeQaModePlan Plan { get; }
@@ -127,11 +135,7 @@ public abstract class AbilitySweepMode : NativeQaMode
         }
 
         if (Firearms)
-        {
-            Check.Equal(3L, await database.LongAsync(
-                "SELECT COUNT(*) FROM inventory WHERE charId=110 AND (slot,goid) IN ((10,537),(11,692),(12,698)) AND count=1"),
-                "CSR has the three sourced weapons in their documented bag slots");
-        }
+            await CombatFixtureLoadout.AssertWeaponSeedAsync(database);
 
         var targets = new List<object>();
         var expectedTargets = IsolatedMelee
@@ -147,12 +151,9 @@ public abstract class AbilitySweepMode : NativeQaMode
                 $"{name} is at its documented, distinct cast target position");
             ushort maxHp = BitConverter.ToUInt16(npc.Attributes["MaxHealth"]);
             if (IsolatedMelee)
-                Check.Equal((ushort)30000, maxHp, "The melee dummy is durable across repeated specials");
+                CombatFixtureLoadout.AssertDummy(friend, npc);
             targets.Add(new { Name = name, npc.ViewId, npc.SpawnId, Position = position, MaxHp = maxHp });
         }
-        if (IsolatedMelee)
-            Check.That(friend.World.CreationSnapshot().Where(view => view.Goid == 599).All(view => view.Name == MeleeDummy),
-                "The melee dummy has no nearby NPCs to intercept picks");
         foreach (var helper in context.Helpers.Values)
             NativeQaReadiness.RequireNoAmbientAggro(server, helper);
 
@@ -235,9 +236,9 @@ public sealed class AbilitySweepCoderMode : AbilitySweepMode
         new(589, "Proxy Technician", "self with live Proxy", "0", "aura 698 on pet; 5 IS per 5 s", "5 s per pulse", 15),
         new(616, "Logic Daemon 4.0", "self", "0 immediate; attack model damage unresolved",
             "Logic Daemon replaces Proxy; repeat follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 150),
-        new(33, "Static Blast 1.0", "Melee Dummy", "22 stored viral base; final range unresolved", "viral hit or deflect", "instant", 15),
         new(34, "Detonate Proxy", "own simulacrum near Melee Dummy", "NPC blast clamps pet HP to max HP / 10 through max HP / 4",
-            "NPC blast within 8 m; simulacrum receives 13000 damage", "instant blast / 0.5 s pet damage", 30)
+            "use out of combat; NPC blast within 8 m; simulacrum receives 13000 damage", "instant blast / 0.5 s pet damage", 30),
+        new(33, "Static Blast 1.0", "Melee Dummy out of combat", "22 stored viral base; final range unresolved", "viral hit or deflect", "instant", 15)
     }, new ushort[] { 2, 17, 18, 22, 23, 26, 27, 28, 29, 31, 32, 35, 36, 37, 585, 586, 588, 600, 602, 1008 },
     enemyHelper: true, isolatedMelee: true, petOrders: true) { }
 }
@@ -278,7 +279,7 @@ public sealed class AbilitySweepMartialArtistMode : AbilitySweepMode
         new(430, "Wooden Dummy Drill", "Melee Dummy in Kung-Fu interlock", "107 stored physical base",
             "choreography 8080; Powerless", "6 s input", 30),
         new(412, "Tomo Nage", "Melee Dummy in Aikido interlock", "113 stored physical base",
-            "choreography 742; Enraged and ballistic/melee resistance -100", "6 s Enraged / 12 s debuff inputs", 45)
+            "choreography 751; Enraged and ballistic/melee resistance -100", "6 s Enraged / 12 s debuff inputs", 45)
     }, new ushort[] { 2, 17, 101, 105, 113, 116, 124, 130, 135, 136, 137, 138, 139, 143, 145, 154, 185, 257, 258, 259, 264, 265, 269, 270, 271, 272, 405, 407, 429, 431 }, isolatedMelee: true) { }
 }
 

@@ -13,12 +13,12 @@ Use NativeQa mode `ability-controls-sweep` with the stock client. The disposable
 | 40 Code Freeze 1.0 | WinterFrost | Root 99 | 25 s | — |
 | 1081 Ravager Downgrade | Trainman | Confuse 91 | 8 s | — |
 | 43 Disrupt Inputs 1.0 | Smithling | Blind 90 | 16 s | — |
-| 333 Stun 2.0 | Trainman | Stun 102 | 5 s | 10 s |
-| 393 Code Stop 1.0 | Smithling | Mez 85 | 6 s | 12 s |
-| 48 Freeze System 1.0 | Blackwoods | Pacify, using Mez 85 | 6 s | 12 s |
+| 333 Stun 2.0 | Trainman | Stun 102 | 5.25 s | 10 s |
+| 393 Code Stop 1.0 | Smithling | Mez 85 | 6.9 s | 12 s |
+| 48 Freeze System 1.0 | Blackwoods | Pacify, using Mez 85 | 6.9 s | 12 s |
 | 355 Vector | WinterFrost | Powerless 96 | 8.94 s | 8 s |
 
-The bootstrap runs these ordinary casts with a disposable helper, validates the NPC state and duration and the caster's four localized immunity records, and writes `ability-controls-bootstrap.json`. It fixes the viral hit contest draws and lets its status effects expire before CSR enters. The common ordinary entity-target request is 43 bytes. The bootstrap retains the opaque bytes of the outgoing Stun 2.0 sample from `proxy_020` lines 140965–140967 and rewrites the ability id and live target handle, as the stock sender does at `621e5125` and `621e521e`. See the [stock layout and pinned DLL](ABILITY-USE-RECORD.md). The template preserves one actual selector and ground payload. Per-ability native captures, native FX and player-side status presentation remain pending.
+The listed durations include the fixture loadout's Resist Contagion and Effective Code bonuses. The bootstrap runs these ordinary casts with a disposable helper, validates the NPC state and duration and the caster's four localized immunity records, and writes `ability-controls-bootstrap.json`. It fixes the viral hit contest draws and lets its status effects expire before CSR enters. The common ordinary entity-target request is 43 bytes. The bootstrap retains the opaque bytes of the outgoing Stun 2.0 sample from `proxy_020` lines 140965–140967 and rewrites the ability id and live target handle, as the stock sender does at `621e5125` and `621e521e`. See the [stock layout and pinned DLL](ABILITY-USE-RECORD.md). The template preserves one actual selector and ground payload. Per-ability native captures, native FX and player-side status presentation remain pending.
 
 ## Remaining work
 

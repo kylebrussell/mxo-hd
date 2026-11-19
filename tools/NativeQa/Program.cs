@@ -129,7 +129,8 @@ try
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
         StealthShieldQa=fixturePlan.StealthShieldQa,ShieldReady=shieldAck.Length>0,CasterOrganization=fixturePlan.StealthShieldQa?1:(int?)null,CasterPvpFlag=fixturePlan.StealthShieldQa,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, LoadedAbilityAncestors=seeded.LoadedAncestors,
+        HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
         CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }), new JsonSerializerOptions { WriteIndented=true }));
     foreach(string message in fixturePlan.ReadyMessages) Console.WriteLine(message);
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");

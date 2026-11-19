@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace NativeQa;
 
-public sealed record NativeQaSeededLoadout(ushort[] Abilities, ushort[] DisciplineAncestors);
+public sealed record NativeQaSeededLoadout(ushort[] Abilities, ushort[] DisciplineAncestors, ushort[] LoadedAncestors);
 
 /// <summary>Shared pre-client seed sequence. Writes only the harness-owned disposable schema.</summary>
 public static class NativeQaFixtureSeeder
@@ -22,6 +22,28 @@ public static class NativeQaFixtureSeeder
             if (parent == 0 || !rows.TryGetValue(parent, out var p) ||
                 !p.GetProperty("fields").TryGetProperty("Ability/IsDiscipline", out var discipline) || discipline.GetInt32() == 0) continue;
             if (known.Add(parent)) pending.Enqueue(parent);
+        }
+        return known.Except(selected).Order().ToArray();
+    }
+
+    public static ushort[] RequiredAncestors(JsonElement catalog, IEnumerable<ushort> requested)
+    {
+        var rows = catalog.GetProperty("abilities").EnumerateArray().ToDictionary(row => row.GetProperty("id").GetUInt16());
+        var selected = requested.ToHashSet();
+        var known = new HashSet<ushort>(selected);
+        var pending = new Queue<ushort>(selected);
+        while (pending.TryDequeue(out ushort id))
+        {
+            if (!rows.TryGetValue(id, out var row)) continue;
+            foreach (var field in row.GetProperty("fields").EnumerateObject())
+            {
+                if (field.Name != "Ability/DisciplineBelongsTo" && field.Name != "Ability/CastRequiredCombatStance" &&
+                    !field.Name.EndsWith("/ReqAbilityID", StringComparison.Ordinal)) continue;
+                if (field.Value.ValueKind != JsonValueKind.Number || !field.Value.TryGetUInt32(out uint goid)) continue;
+                ushort prerequisite = AbilityCatalog.IdOf(goid);
+                if (prerequisite != 0 && rows.ContainsKey(prerequisite) && known.Add(prerequisite))
+                    pending.Enqueue(prerequisite);
+            }
         }
         return known.Except(selected).Order().ToArray();
     }
@@ -69,9 +91,10 @@ DELETE FROM char_abilities WHERE char_id=110;
             throw new ArgumentException("Custom native loadouts require known player-ability templates.");
         abilities = requestedAbilities;
     }
-    var disciplineAncestors = DisciplineAncestors(catalog.RootElement,abilities);
-    var loadedIds = abilities.ToHashSet();
-    string loadout = string.Join("\n", abilities.Distinct().Concat(disciplineAncestors).Select((id, slot) =>
+    var loadedAncestors = fixturePlan.LoadAbilityAncestors ? RequiredAncestors(catalog.RootElement, abilities) : Array.Empty<ushort>();
+    var loadedIds = abilities.Concat(loadedAncestors).ToHashSet();
+    var disciplineAncestors = DisciplineAncestors(catalog.RootElement,abilities).Except(loadedIds).ToArray();
+    string loadout = string.Join("\n", abilities.Distinct().Concat(loadedAncestors).Concat(disciplineAncestors).Select((id, slot) =>
         $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},{(loadedIds.Contains(id)?1:0)},'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
     foreach(string sql in fixturePlan.AfterLoadout) await database.ExecuteAsync(sql);
@@ -101,6 +124,6 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     }
     foreach(string sql in fixturePlan.AfterHelpers) await database.ExecuteAsync(sql);
 
-        return new NativeQaSeededLoadout(abilities, disciplineAncestors);
+        return new NativeQaSeededLoadout(abilities, disciplineAncestors, loadedAncestors);
     }
 }

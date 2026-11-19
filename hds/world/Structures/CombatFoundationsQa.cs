@@ -26,7 +26,7 @@ namespace hds
                     NavMesh.HasSightPath(1, SightX, SightY, SightZ, BlockedX, SightY, SightZ) ||
                     !NavMesh.HasSightPath(1, SightX, SightY, SightZ, ClearX, SightY, SightZ))
                     return "Combat foundation sight refused: the outdoor gap or the clear comparison could not be verified.";
-                if (!Equip(caller, 1, Rifle)) return "Combat foundation sight requires the fixture rifle in bag slot 1 or the hand.";
+                if (!CombatFixtureWeapons.Equip(caller, Rifle)) return "Combat foundation sight requires the fixture rifle.";
                 Move(caller, SightX, SightY, SightZ, yaw: 192);
                 Spawn("AB1 Blocked", BlockedX, SightY, SightZ);
                 Spawn("AB1 Clear", ClearX, SightY, SightZ);
@@ -34,7 +34,7 @@ namespace hds
             }
             if (mode == "cone")
             {
-                if (!Equip(caller, 2, DualSmgs)) return "Combat foundation cone requires the fixture dual SMGs in bag slot 2 or the hand.";
+                if (!CombatFixtureWeapons.Equip(caller, DualSmgs)) return "Combat foundation cone requires the fixture dual SMGs.";
                 Move(caller, 24800, 495, -1498, yaw: 64);
                 Spawn("AB1 Aim", 25200, 495, -1498);
                 Spawn("AB1 Inside", 25300, 495, -1378);
@@ -49,14 +49,6 @@ namespace hds
                 return "Dual SMGs equipped. Aim Direct Fire at AB1 Aim. AB1 Aim and AB1 Inside take damage. AB1 Outside stays full. AB1 Resisted is west and resists for 30 minutes. Logic Barrage deals 348 on a hit.";
             }
             return "Use ?combatdepth foundations-sight or foundations-cone.";
-        }
-
-        private static bool Equip(WorldClient caller, byte bagSlot, uint weapon)
-        {
-            if (SharpshooterFreeFire.EquippedWeapon(caller) == weapon) return true;
-            if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(bagSlot) != weapon) return false;
-            InventoryHandler.EquipWeapon(bagSlot);
-            return SharpshooterFreeFire.EquippedWeapon(caller) == weapon;
         }
 
         private static void Move(WorldClient caller, double x, double y, double z, byte yaw)

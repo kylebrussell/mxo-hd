@@ -387,7 +387,7 @@ namespace hds
         }
 
         /// <summary>Unequip the weapon to the slot the client chose (65 69 00 dst 00), or a free one.</summary>
-        private void UnequipWeapon(byte destSlot)
+        internal static void UnequipWeapon(byte destSlot)
         {
             UInt32 charId = Store.currentClient.playerData.getCharID();
             UInt16 toSlot = destSlot != 0 ? destSlot : Store.dbManager.WorldDbHandler.GetFirstNewSlot();

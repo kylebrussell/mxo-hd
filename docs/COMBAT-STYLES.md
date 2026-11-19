@@ -90,13 +90,13 @@ Sever Artery 341 is the catalog’s existing `RandomCombatStateChance` caller and 
 
 ### Native check for the rule bindings
 
-Use the `style-choreography` NativeQa mode at the test NPC cluster. Its ready messages print the style, move and expected ID. The fixture seeds a revolver, rifle and dual SMGs in bags 10–12 and grants the dual SMG proficiency.
+Use the `style-choreography` NativeQa mode with the isolated 30,000 HP Melee Dummy 3 m west. The fixture loads all shipped ability ancestors and required styles. Its Ready output prints the expected moves.
 
-1. Start with Self Defense 17 and land Head Butt 197. Check move 284.
+1. Use `?combatdepth fixture-weapon unarmed`, then select Self Defense 17 and land Head Butt 197. Check move 284.
 2. Select Aikido 101 and land Tomo Nage 412 and Punch Reversal 407. Check 751 and 827–829.
 3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
-4. Equip the revolver, rifle and dual SMGs in turn and select their matching styles. Land Pistol Slide 241, Body Shot 105 and Controlled Burst 250. Check 9527, 11364 and 21082, and their matching opening stance. Controlled Burst has a four-second cast before its round.
-5. Record each landed motion, its server move ID and the complete outgoing RPC. Use fresh test NPCs as needed and mark rejected, unavailable or visually wrong slots separately.
+4. Use `?combatdepth fixture-weapon handgun`, `rifle`, and `dual-smg` in turn. Re-enter interlock and select the matching style after each swap. Check Pistol Slide 241 (9527), Body Shot 105 (11364), Controlled Burst 250 (21082), and their opening stances. Wait through the four-second Controlled Burst cast and its round.
+5. Wait for each move to resolve before pressing another. Record each landed motion, its server move ID and the complete outgoing RPC.
 
 The headless scenario sends the stock-sized style, equip, close-combat and ability requests. It decodes the opening dual-weapon transition and checks the Tomo Nage and Controlled Burst IDs on delivered combat entries. The native fixture still awaits stock-client playback.
 

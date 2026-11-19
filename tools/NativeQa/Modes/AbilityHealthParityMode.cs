@@ -24,7 +24,7 @@ public sealed class AbilityHealthParityMode : NativeQaMode
             "On wounded QAFriend, Repair RSI 1.0 expects +10 HP with +15% healing influence. Emergency Repairs 1.0 expects five +3 HP ticks at 2.5 s intervals. Count the effect ticks separately from natural regeneration.",
             "Flag CSR and cast Plague Zone 2.0 on QAEnemy. After a hit, expect five ticks at 2.5 s; a deflection applies no DOT. Read the actual total and resistances in server logs.",
             "QAFriend and flagged QAEnemy are already in-world. Cast Rejuvenate RSI on dead QAFriend and approve via the helper. The helper prints current recipient maxima before approval and verifies full HP, full IS and an in-place stand. See docs/ABILITY-HEALTH-PARITY.md."
-        });
+        }, loadAbilityAncestors: true);
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -40,9 +40,8 @@ public sealed class AbilityHealthParityMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    internal static async Task<object> VerifyRejuvenateAsync(ServerAddress address, HeadlessPlayer recipient)
+    internal static async Task<object> VerifyRejuvenateAsync(HeadlessPlayer caster, HeadlessPlayer recipient)
     {
-        using var caster = await HeadlessPlayer.LoginAsync(address, "CSR_AbilityQA", "CSR_Tester");
         await caster.EnterWorldAsync();
         var target = await caster.WaitForViewNamedAsync(recipient.Handle);
         recipient.SendChat("?die");
