@@ -12,7 +12,8 @@ public sealed class HackerPassiveAndUpgradeMode : NativeQaMode
         (461, 0, new (ushort, int)[] { (1139, 5), (997, 5), (995, 15) }),
         (469, 1088, new (ushort, int)[] { (995, 5) }),
         (470, 1081, new (ushort, int)[] { (1056, 5), (1059, 5) }),
-        (318, 1095, new (ushort, int)[] { (1144, 1), (1140, 1) })
+        (318, 1095, new (ushort, int)[] { (1144, 1), (1140, 1) }),
+        (425, 1096, Array.Empty<(ushort, int)>())
     };
     private static readonly (ushort Stat, int Value)[] Upgrade =
         { (159, 25), (171, 25), (172, 25), (1034, 25), (162, 200) };
@@ -68,9 +69,9 @@ public sealed class HackerPassiveAndUpgradeMode : NativeQaMode
                 "Once CSR is in world, send helper chat ?tp 25200 495 -1498 0 0 0 for QAFriend and wait for its fresh nearby view.",
                 "At the Hardline or Load Area, capture source 461 (+5 Melee Accuracy Bonus, +5 Ballistic Damage Bonus, +15 Stun Duration Bonus), 469 (+5 Stun Duration Bonus and Destroyer grant), and 470 (+5 Max IS Bonus, +5 IS Regen Bonus and Ravager Downgrade grant). Use the individual source records to distinguish aggregate Status rows.",
                 $"Switch to the second profile through the stock Loadout. Retain shared abilities and unload these first-stage entries in descending dependency order or one selection and commit: {string.Join(",", unload)}. Capture removal of the three passive sources and both granted entries.",
-                $"Load the following second-stage entries in prerequisite order or one selection and commit: {string.Join(",", load)}. Confirm Upgrade Artist 318 adds +1 melee and ballistic resistance bonuses and grants 1095.",
+                $"Load the following second-stage entries in prerequisite order or one selection and commit: {string.Join(",", load)}. Confirm Upgrade Artist 318 adds +1 melee and ballistic resistance bonuses and grants 1095, and Upgrade Master 425 grants 1096.",
                 "Select QAFriend and cast the granted Upgrade Master Upgrade (1096). Capture the recipient's four +25 typed damage records and +200 Max Buffer for 300 seconds. Check the caster's 10-second reuse timer.",
-                "Unload the second-stage-only abilities and capture the 318 passive records and 1095 action going away. Reload the stage and capture those records returning once. Require an actual Actions entry for grant presentation."
+                "Unload the second-stage-only abilities and capture the 318 passive records and both 1095 and 1096 actions going away. Reload the stage and capture those records returning once. Require an actual Actions entry for grant presentation."
             });
     }
 
@@ -104,8 +105,6 @@ public sealed class HackerPassiveAndUpgradeMode : NativeQaMode
         await CheckPassivesAsync(actor, proof, Passives[..3], cursor, remove: true);
         cursor = await ChangeLoadoutAsync(actor, rows, load, load: true);
         await CheckPassivesAsync(actor, proof, Passives[3..], cursor, remove: false);
-        var grant = await ObserveAsync(actor, cursor, GrantRecord(1096, remove: false), "Upgrade Master grant");
-        proof.Add(new { Ability = 1096, Grant = grant.Hex });
 
         int ownBefore = actor.World.RpcSnapshot().Count;
         int friendBefore = friend.World.RpcSnapshot().Count;
@@ -161,11 +160,11 @@ public sealed class HackerPassiveAndUpgradeMode : NativeQaMode
             if (child == 0) continue;
             var grant = await ObserveAsync(actor, cursor, GrantRecord(child, remove), $"grant {parent}/{child} remove={remove}");
             proof.Add(new { Parent = parent, Child = child, Remove = remove, Grant = grant.Hex });
-            if (!AbilityGrantRegistration.Handles(parent, child)) continue;
             var registration = await ObserveAsync(actor, cursor, packet =>
-                ManageBonusRecord.TryDecode(packet.Bytes, out var record) && record!.Family == 0x345 &&
-                record.RecordId == child && record.SignedValue == 0 &&
-                Bonus(packet, parent, child, 0, 0, remove), $"registration {parent}/{child} remove={remove}");
+                ManageBonusRecord.TryDecode(packet.Bytes, out var record) && record!.Type == 0x45 &&
+                record.Locator == ((uint)child << 8 | 3) && record.SourceId == parent && record.TargetId == child &&
+                record.ValueBits == 0 && record.DurationBits == 0 && record.AddRemoveType == (remove ? 1 : 0),
+                $"registration {parent}/{child} remove={remove}");
             proof.Add(new { Parent = parent, Child = child, Remove = remove, Registration = registration.Hex });
         }
     }

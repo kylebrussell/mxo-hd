@@ -85,6 +85,46 @@ public class LoadedGrantMembershipTests
         Assert.Equal(load, Packets()[6]);
         Assert.Equal(add, Packets()[7]);
     }
+    [Theory]
+    [InlineData(470, 1081, "80bc4503390400d60100003904000000000000000000")]
+    [InlineData(425, 1096, "80bc4503480400a90100004804000000000000000000")]
+    public void HackerClassGrantsPublishZeroRankSourceRecordsOnLoadUnloadAndReload(
+        ushort parent, ushort child, string addHex)
+    {
+        Assert.True(AbilityGrantRegistration.ZeroGrant(AbilityCatalog.Find(parent), child));
+        Assert.True(AbilityGrantRegistration.Handles(parent, child));
+        Assert.False(AbilityGrantRegistration.Handles(parent == 470 ? (ushort)425 : (ushort)470, child));
+        Assert.DoesNotContain((parent, child), AbilityGrantRegistration.ObservedPairs);
+
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(client, new WorldSendFence());
+        client.playerData.setDistrictId(1);
+        client.playerData.setOnWorld(true);
+
+        client.playerData.passives.Loaded[parent] = 50;
+        AbilityGrantRegistration.LoadedChanged(client);
+        Assert.Empty(client.messageQueue.RPCMessagesQueue);
+        AbilityGrantRegistration.LoadingComplete(client, new byte[] { 1 });
+        AbilityGrantRegistration.LoadingComplete(client, new byte[] { 1 });
+        client.playerData.passives.Loaded.Remove(parent);
+        AbilityGrantRegistration.LoadedChanged(client);
+        client.playerData.passives.Loaded[parent] = 50;
+        AbilityGrantRegistration.LoadedChanged(client);
+        AbilityGrantRegistration.LoadedChanged(client);
+
+        var add = Convert.FromHexString(addHex);
+        var off = add.ToArray();
+        off[17] = 1;
+        var load = ServerPackets.BuildAbilityLoad(child, 0, AbilityProgression.HiddenSlot);
+        var unload = ServerPackets.BuildAbilityUnload(child);
+        var packets = client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Select(message => message.content.Skip(1).ToArray()).ToArray();
+        Assert.Equal(new[] { load, add, unload, off, load, add }, packets);
+    }
+
     [Fact] public void HistoricalZeroPairsScaledAndNativeToolQualificationsStaySeparate()
     {
         var writable=Assert.IsAssignableFrom<IList<(ushort Source,ushort Target)>>(AbilityGrantRegistration.ObservedPairs);
