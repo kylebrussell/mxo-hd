@@ -414,6 +414,60 @@ public class AbilityScaledBuffTests
     }
 
     [Fact]
+    public void RepelCombatChangesBothDefenseInputsAndPowerlessDurationWhileLoaded()
+    {
+        var caster = Client(50);
+        int melee = AbilityStats.Defense(caster, false);
+        int ballistic = AbilityStats.Defense(caster, true);
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (398, 50) });
+
+        Assert.Equal(melee + 2, AbilityStats.Defense(caster, false));
+        Assert.Equal(ballistic + 2, AbilityStats.Defense(caster, true));
+        Assert.Equal(6.9f, AbilityControlDurations.Scale(caster, TempMods.PowerlessAbility, 6f), 3);
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(melee, AbilityStats.Defense(caster, false));
+        Assert.Equal(ballistic, AbilityStats.Defense(caster, true));
+        Assert.Equal(6f, AbilityControlDurations.Scale(caster, TempMods.PowerlessAbility, 6f));
+    }
+
+    [Fact]
+    public void InfectionEfficiencyChangesMeleeAttackBallisticDamageAndStunWhileLoaded()
+    {
+        var caster = Client(50);
+        int melee = AbilityStats.Attack(caster, false);
+        int ballistic = AbilityStats.Attack(caster, true);
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (461, 50) });
+
+        Assert.Equal(melee + 2, AbilityStats.Attack(caster, false));
+        Assert.Equal(ballistic, AbilityStats.Attack(caster, true));
+        Assert.Equal(1049, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 1000));
+        Assert.Equal(4.6f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 4f), 3);
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(melee, AbilityStats.Attack(caster, false));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 1000));
+        Assert.Equal(4f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 4f));
+    }
+
+    [Fact]
+    public void FastHealingRaisesNaturalHealthRegenAndReturnsItToBaseline()
+    {
+        var caster = Client(50);
+        var target = Client(50);
+        ushort? NextHealth(WorldClient actor) => HealthRegen.Next(100, 500, false, false, 2, AbilityStats.Influence(actor, 112));
+        Assert.Equal((ushort)110, NextHealth(target));
+
+        Assert.True(AbilityBuffs.Apply(target, 237, caster));
+        Assert.Equal((ushort)116, NextHealth(target));
+        Assert.Equal((ushort)110, NextHealth(caster));
+        Assert.Equal(600f, target.playerData.activeBuffs[237].Definition.Seconds);
+
+        TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 601);
+        Assert.Equal((ushort)110, NextHealth(target));
+    }
+
+    [Fact]
     public void CapturedOverridesRemainAuthoritativeAndUnresolvedStylesAreExcluded()
     {
         Assert.True(AbilityScaledBuffs.Resolve(Client(20),327,out var buff));

@@ -378,17 +378,71 @@ public class AbilityHostileTests
         Assert.True(field.Virus); // 0xc600001a "infects you", like captured UI Lag 1.0
     }
 
-    [Fact]
-    public void InefficiencyFieldRaisesInnerStrengthCostsUntilItExpires()
+    [Theory]
+    [InlineData(401, -20, -35, 30, 5)]
+    [InlineData(467, -30, -80, 32, 1)]
+    public void InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry(ushort ability, int costStat,
+        int regenStat, int castCost, int regeneration)
     {
         var victim = Client();
+        double carry = 0;
+        int NextRegen() => AbilityHandler.RegenAmount(false, ref carry, AbilityStats.Influence(victim, 114));
         Assert.Equal(25, AbilityCosts.Effective(victim, 359));
-        var applied = Land(victim, 467);
-        Assert.Equal(-30, AbilityStats.Player(victim, 117));
-        Assert.Equal(32, AbilityCosts.Effective(victim, 359)); // 25 - trunc(25 * -30 / 100)
-        Assert.Equal(-80, AbilityStats.Player(victim, 114));
+        Assert.Equal(8, NextRegen());
+        var applied = Land(victim, ability);
+        Assert.All(applied, effect => Assert.Equal(30f, effect.Seconds));
+        Assert.Equal(costStat, AbilityStats.Player(victim, 117));
+        Assert.Equal(castCost, AbilityCosts.Effective(victim, 359));
+        Assert.Equal(regenStat, AbilityStats.Player(victim, 114));
+        Assert.Equal(regeneration, NextRegen());
         TimedEffects.RunDue(applied[0].Expires + 0.01);
         Assert.Equal(25, AbilityCosts.Effective(victim, 359));
+        Assert.Equal(8, NextRegen());
+    }
+
+    [Fact]
+    public void DespoilerChangesMeleeAndBallisticAccuracyAndDamageForThirtySeconds()
+    {
+        var victim = Client();
+        int melee = AbilityStats.Attack(victim, false);
+        int ballistic = AbilityStats.Attack(victim, true);
+
+        var applied = Land(victim, 404);
+        Assert.Equal(4, applied.Count);
+        Assert.All(applied, effect => Assert.Equal(30f, effect.Seconds));
+        Assert.Equal(melee - 39, AbilityStats.Attack(victim, false));
+        Assert.Equal(ballistic - 39, AbilityStats.Attack(victim, true));
+        Assert.Equal(860, AbilityStats.ScaleTypedAbilityDamage(victim, 0, 1000));
+        Assert.Equal(860, AbilityStats.ScaleTypedAbilityDamage(victim, 1, 1000));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 2, 1000));
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(melee, AbilityStats.Attack(victim, false));
+        Assert.Equal(ballistic, AbilityStats.Attack(victim, true));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 0, 1000));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 1, 1000));
+    }
+
+    [Theory]
+    [InlineData(0, 180)]
+    [InlineData(1, 181)]
+    [InlineData(2, 157)]
+    [InlineData(7, 1033)]
+    public void DestroyerIncreasesTakenDamageByReducingTheMatchingResistance(int damageType, ushort resistance)
+    {
+        var caster = Client();
+        var victim = Client();
+        int initial = AbilityStats.Player(victim, resistance);
+        ushort previous = TypedAbilityResistance.Player(caster, victim, 0, 400, damageType);
+        var applied = Land(victim, 1088, caster);
+        Assert.Equal(4, applied.Count);
+        Assert.Equal(initial - 120, AbilityStats.Player(victim, resistance));
+        ushort reduced = TypedAbilityResistance.Player(caster, victim, 0, 400, damageType);
+        Assert.True(reduced > previous);
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(initial, AbilityStats.Player(victim, resistance));
+        Assert.Equal(previous, TypedAbilityResistance.Player(caster, victim, 0, 400, damageType));
     }
 
     [Fact]
