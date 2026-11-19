@@ -282,6 +282,78 @@ public class AbilityHostileTests
         Assert.True(AbilityBuffs.IsActive(victim, 327));
     }
 
+    [Fact]
+    public void SweepPartyDoesNotCleanseOnLandingButPulsesWithTheStoredChance()
+    {
+        var recipient = Client();
+        Land(recipient, 315);
+        Assert.True(AbilityBuffs.Apply(recipient, 327));
+        var subject = TimedEffects.ForPlayer(recipient);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new ZeroRoll();
+            Assert.True(AbilityHostile.ApplySweep(recipient, recipient, 487));
+            var sweep = Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == 487);
+            Assert.True(subject.Effects.HasParent(315));
+            AbilityHostile.PulseRandom = new SweepRoll(30);
+            TimedEffects.RunDue(sweep.Start + 5.01);
+            Assert.True(subject.Effects.HasParent(315));
+            AbilityHostile.PulseRandom = new SweepRoll(29);
+            TimedEffects.RunDue(sweep.Start + 10.01);
+            Assert.False(subject.Effects.HasParent(315));
+            Assert.True(subject.Effects.HasParent(734));
+            Assert.True(AbilityBuffs.IsActive(recipient, 327));
+            TimedEffects.RunDue(sweep.Start + 25.01);
+            Assert.False(subject.Effects.HasParent(487));
+        }
+        finally { AbilityHostile.PulseRandom = previous; }
+    }
+
+    [Fact]
+    public void CancelUpgradeTwoRemovesOneRemovableParentAndKeepsItsOverflowUntilTerm()
+    {
+        var caster = Client();
+        var recipient = Client();
+        Assert.True(AbilityBuffs.Apply(recipient, 327));
+        var subject = TimedEffects.ForPlayer(recipient);
+        Assert.True(TempMods.TryGet(488, out var effect));
+        double start = TimeUtils.GetSimTimeSeconds();
+        TimedEffects.Apply(subject, effect, start, caster, "Source");
+        AbilityHostile.LandedOnPlayer(caster, recipient, 488, new ZeroRoll());
+        Assert.False(AbilityBuffs.IsActive(recipient, 327));
+        Assert.Equal(150, AbilityBuffBuffer.Reserved(recipient));
+        TimedEffects.RunDue(start + 5.01);
+        Assert.Equal(150, AbilityBuffBuffer.Reserved(recipient));
+        TimedEffects.RunDue(start + 50.01);
+        Assert.Equal(0, AbilityBuffBuffer.Reserved(recipient));
+    }
+
+    [Fact]
+    public void CombatAuraTwoChargesFifteenEachTickAndStopsOnShortfall()
+    {
+        var caster = Client(innerStrength: 30);
+        var previous = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        try
+        {
+            AbilityAuras.Start(caster, 485);
+            Assert.True(AbilityAuras.IsOn(caster, 485));
+            Assert.Equal(30, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityAuras.Tick(caster, 485, 1);
+            Assert.Equal(15, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityAuras.Tick(caster, 485, 1);
+            Assert.Equal(0, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityAuras.Tick(caster, 485, 1);
+            Assert.False(AbilityAuras.IsOn(caster, 485));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            WorldServer.Clients = previous;
+        }
+    }
+
     private sealed class ZeroRoll : Random
     {
         public override int Next(int maxValue) => 0;

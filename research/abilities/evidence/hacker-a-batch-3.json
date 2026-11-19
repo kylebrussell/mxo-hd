@@ -1,0 +1,112 @@
+{
+  "abilities": {
+    "383": {
+      "checks": {
+        "stats": {
+          "source": "GOB 383 specifies four 30-second modifiers. Retained proxy_024 has the applied values +6 ballistic damage, -317 Max IS, +21 ballistic defense and +46 ballistic accuracy. The server preserves these capture values where raw GOB values differ. Stored own reuse is 300 seconds.",
+          "runtime": "AbilityBuffs applies and expires all four stats. AbilityStats reads the ballistic modifiers in its damage and combat scores. AbilityBuffs vital aggregation clamps and restores Max IS. AbilityCooldowns applies own reuse.",
+          "test": "ForceEnhancerChangesBallisticCombatAndRestoresTheOriginalScores verifies ranged attack, defense and scaled damage, melee isolation, expiry, and the 300-second cooldown boundary. Max IS clamp, refresh and restoration are verified by AbilityParityTests; the exact signed modifier is checked by AbilityBuffTests. Stock PR312 saw 1/1 Max IS and recovery at expiry. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576"
+        },
+        "behavior-tests": {
+          "source": "GOB 383 specifies four 30-second modifiers. Retained proxy_024 has the applied values +6 ballistic damage, -317 Max IS, +21 ballistic defense and +46 ballistic accuracy. The server preserves these capture values where raw GOB values differ. Stored own reuse is 300 seconds.",
+          "runtime": "AbilityBuffs applies and expires all four stats. AbilityStats reads the ballistic modifiers in its damage and combat scores. AbilityBuffs vital aggregation clamps and restores Max IS. AbilityCooldowns applies own reuse.",
+          "test": "ForceEnhancerChangesBallisticCombatAndRestoresTheOriginalScores verifies ranged attack, defense and scaled damage, melee isolation, expiry, and the 300-second cooldown boundary. Max IS clamp, refresh and restoration are verified by AbilityParityTests; the exact signed modifier is checked by AbilityBuffTests. Stock PR312 saw 1/1 Max IS and recovery at expiry. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576"
+        }
+      }
+    },
+    "484": {
+      "checks": {
+        "stats": {
+          "source": "GOB 484 carries level-scaled pairs for viral damage and Max IS at 0.2, both physical resistance bonuses at 0.1 and thrown damage at 0.2.",
+          "runtime": "AbilityPassives rebuilds all five loaded contributions, AbilityBuffs recomputes Max IS, and AbilityStats applies both typed toughness bonuses and both typed damage influences.",
+          "test": "SupremeDamageResistanceFeedsItsCombatAndVitalConsumersWhileLoaded verifies 500 to 550 maximum IS, +11 melee and ballistic toughness, and 100 to 110 viral and thrown damage at learned level 50, then checks all five return to baseline on unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 484 carries level-scaled pairs for viral damage and Max IS at 0.2, both physical resistance bonuses at 0.1 and thrown damage at 0.2.",
+          "runtime": "AbilityPassives rebuilds all five loaded contributions, AbilityBuffs recomputes Max IS, and AbilityStats applies both typed toughness bonuses and both typed damage influences.",
+          "test": "SupremeDamageResistanceFeedsItsCombatAndVitalConsumersWhileLoaded verifies 500 to 550 maximum IS, +11 melee and ballistic toughness, and 100 to 110 viral and thrown damage at learned level 50, then checks all five return to baseline on unload."
+        }
+      },
+      "family": "loaded-hacker-damage-resistance"
+    },
+    "485": {
+      "checks": {
+        "stats": {
+          "source": "GOB 485 wires the two ISDrain-target slots to ApplyAuraEffect with child 696 and ISDrainWithAbilityDeactivation with amount 15, on a five-second interval.",
+          "runtime": "AbilityAuras starts the effect, resolves the linked child to friendly support and debits the caster after activation. A shortfall stops the aura.",
+          "test": "CombatAuraTwoChargesFifteenEachTickAndStopsOnShortfall verifies IS 30 to 15 to 0, then deactivation. Stock PR320 logged the expected 696 child pulse. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    },
+    "487": {
+      "checks": {
+        "area": {
+          "source": "GOB 487 uses CastDirectObjects 9 and a stored radius of 9 metres.",
+          "runtime": "AbilitySupport selects live same-district teammates around the caster, independently of the selected target.",
+          "test": "ability-force-multiplier-group-support selects the nearby non-teammate with the 43-byte activation. The 5 m and 7 m teammates receive the pulse, while the 10 m teammate and 4 m non-teammate do not. The caster receives the effect."
+        },
+        "script": {
+          "source": "GOB 487 calls NegativeConditionSweepPulse on a 5-second update for 25 seconds, storing chance 30 and no initial callback. The script walks removable debuff parents.",
+          "runtime": "AbilitySupport installs the pulse. TimedEffects invokes AbilityHostile.Pulse on updates, filters parents by cleansability and removes the record on expiry.",
+          "test": "SweepPartyDoesNotCleanseOnLandingButPulsesWithTheStoredChance verifies no immediate cleanse, miss at 30, cleanse at 29, retained immunity/buff and the 25-second expiry. ability-force-multiplier-group-support exercises recipient admission through live casts."
+        },
+        "behavior-tests": {
+          "source": "GOB 487 calls NegativeConditionSweepPulse on a 5-second update for 25 seconds, storing chance 30 and no initial callback. The script walks removable debuff parents.",
+          "runtime": "AbilitySupport installs the pulse. TimedEffects invokes AbilityHostile.Pulse on updates, filters parents by cleansability and removes the record on expiry.",
+          "test": "SweepPartyDoesNotCleanseOnLandingButPulsesWithTheStoredChance verifies no immediate cleanse, miss at 30, cleanse at 29, retained immunity/buff and the 25-second expiry. ability-force-multiplier-group-support exercises recipient admission through live casts."
+        }
+      },
+      "family": "group-negative-condition-sweep"
+    },
+    "489": {
+      "checks": {
+        "area": {
+          "source": "GOB 489 uses CastDirectObjects 9 and a stored radius of 6 metres.",
+          "runtime": "AbilitySupport selects live same-district teammates around the caster, independently of the selected target.",
+          "test": "ability-force-multiplier-group-support selects the nearby non-teammate with the 43-byte activation. The 5 m teammate receives both records, while the 7 m and 10 m teammates and 4 m non-teammate do not. The caster receives the effect."
+        },
+        "stats": {
+          "source": "GOB 489 stores a 300-second friendly duration for two function-3 modifiers at scale 0.5, targeting Viral Damage and Healing.",
+          "runtime": "AbilityBuffs snapshots the source level and applies both modifiers to each selected recipient. The recipient then uses them in AbilityStats viral damage and AbilityHealing.",
+          "test": "ImprovedHackingChangesTheRecipientsViralDamageAndHealingUntilExpiry verifies 100 to 110 viral damage and 70 to 77 healing for a recipient buffed by a level-20 caster, caster isolation and expiry. ability-force-multiplier-group-support checks ordinary cast and group delivery."
+        },
+        "behavior-tests": {
+          "source": "GOB 489 stores a 300-second friendly duration for two function-3 modifiers at scale 0.5, targeting Viral Damage and Healing.",
+          "runtime": "AbilityBuffs snapshots the source level and applies both modifiers to each selected recipient. The recipient then uses them in AbilityStats viral damage and AbilityHealing.",
+          "test": "ImprovedHackingChangesTheRecipientsViralDamageAndHealingUntilExpiry verifies 100 to 110 viral damage and 70 to 77 healing for a recipient buffed by a level-20 caster, caster isolation and expiry. ability-force-multiplier-group-support checks ordinary cast and group delivery."
+        }
+      },
+      "family": "group-viral-healing-influence"
+    },
+    "692": {
+      "family": "hacker-pulse-auras",
+      "checks": {
+        "stats": {
+          "source": "GOB 692 has five-second caster-level modifiers for ballistic and thrown defense, plus +10 Concentration. Its source is the linked child of 380.",
+          "runtime": "AbilityBuffs applies the source-level snapshot and routes defense to the matching special contest. Concentration is read by AbilityCastInterrupts. The Deflect Virus pseudo-stat runs the term callback through AbilityHealthCallbacks.",
+          "test": "LinkedDeflectBuffsChangeTheMatchingDefenseContestsThenExpire verifies +19/+9 resulting defense at caster level 20, cast-through chance and 5-second removal. DeflectVirusChildCarriesScaledDefencesAndRunsItsFourPercentTermCleanseOnce exercises the term callback."
+        },
+        "script": {
+          "source": "virii.py DeflectBullets1Effect_DirectObject queues PlayFX with duration 0.2 on parent 380. GOB 692 stores DoNothing on the FX initializer.",
+          "runtime": "Virii.ApplyDeflectEffect emits the saved parent/parent FX add and removal, then plays the effect on a current recipient. DoNothing has no side effect.",
+          "test": "ability-health-deflect-lineup sees the linked child, exact 0x28000824, 0.2s duration and off record on the live teammate."
+        }
+      }
+    },
+    "693": {
+      "family": "hacker-pulse-auras",
+      "checks": {
+        "stats": {
+          "source": "GOB 693 has five-second caster-level modifiers for viral and melee defense, plus a 4% term cleanse. Its source is the linked child of 378.",
+          "runtime": "AbilityBuffs applies the source-level snapshot and routes defense to the matching special contest. Concentration is read by AbilityCastInterrupts. The Deflect Virus pseudo-stat runs the term callback through AbilityHealthCallbacks.",
+          "test": "LinkedDeflectBuffsChangeTheMatchingDefenseContestsThenExpire verifies +19/+9 resulting defense at caster level 20, cast-through chance and 5-second removal. DeflectVirusChildCarriesScaledDefencesAndRunsItsFourPercentTermCleanseOnce exercises the term callback."
+        },
+        "script": {
+          "source": "virii.py DeflectVirus1Effect_DirectObject queues PlayFX with duration 0.2 on parent 378. GOB 693 stores DoNothing on the FX initializer. The 693 Sweep component names NegativeConditionSweepPulse as its term callback with stored value 4.",
+          "runtime": "Virii.ApplyDeflectEffect emits the saved parent/parent FX add and removal, then plays the effect on a current recipient. DoNothing has no side effect. AbilityBuffs invokes the negative-condition sweep on child removal using the saved TermSweepChance.",
+          "test": "ability-health-deflect-lineup sees the linked child, exact 0x28000820, 0.2s duration and off record on the live teammate. DeflectVirusChildCarriesScaledDefencesAndRunsItsFourPercentTermCleanseOnce exercises the 4% callback with a controlled roll and verifies no second removal."
+        }
+      }
+    }
+  }
+}
