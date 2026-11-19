@@ -6,12 +6,12 @@ Devastation Field (468) has a stored 50% proc on a 0.1-second terminal modifier 
 
 ## Ready for the combined Hacker sweep
 
-Five rows have executable evidence for their remaining gameplay checks. Group Heal fits the existing Corpsman sweep. The other samples need the indicated live conditions and legal loadouts. Count a row only after its stock result has been retained.
+Five rows have executable evidence for their remaining gameplay checks. Group Heal passed its stock replay. The other four need the indicated live conditions and legal loadouts.
 
 | Row | Required stock observation |
 | --- | --- |
 | 237 Fast Healing 2.0 | Select a wounded living teammate within 10 m and observe +60% Health Regen Rate and the associated tick change until removal. Try a farther player and a hostile selection. Use a profile with ordinary natural regeneration enabled; the Corpsman heal fixture holds it during setup. |
-| 381 Group Heal 1.0 | Hold the shared +10% healing and +24% radius loadout. Recruit the near and far helpers, keep the nearby third helper outside the team and select that nonmember for the cast. Expect +28 HP on caster and the teammate within 7.44 m. The farther teammate and nonmember receive nothing. In the combined Corpsman profile, QAFriend at 4 m is inside and QAFar at 9.25 m is outside. |
+| 381 Group Heal 1.0 | Stock cast on the selected nonmember healed CSR and the near teammate by 28 after four seconds. The 9.25 m teammate and the nonmember stayed at 100 HP. The retest plan staggers the stands at separate headings while retaining the same distances. [Native result](https://github.com/kylebrussell/mxo-hd/pull/351#issuecomment-7012105784) |
 | 398 Repel Combat | Compare melee and ballistic defense and the sourced Powerless duration before loading, while loaded and after unloading at rank 50. |
 | 461 Infection Efficiency | Compare melee accuracy, ballistic damage and a timed stun while toggling normal load membership. |
 | 469 Destroyer | Record the 1088 grant becoming available and disappearing on load/unload. Measure the +5% stun duration while loaded. The A1 Corpsman profile has a different ancestry, so stage the Destroyer samples within a legal loadout for this tree. |
