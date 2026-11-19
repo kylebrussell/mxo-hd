@@ -1,0 +1,5 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;WinterFrost;6;800;800;B3010058;24499;495;-1498;0;false;false
+1;slums;Trainman;5;500;500;B3010058;24499;495;-1198;0;false;false
+1;slums;Smithling;5;500;500;B3010058;25100;495;-1198;0;false;false
+1;slums;Blackwoods;5;500;500;B3010058;25100;495;-1498;0;false;false

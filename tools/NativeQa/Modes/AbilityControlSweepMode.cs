@@ -36,7 +36,8 @@ public sealed class AbilityControlSweepMode : NativeQaMode
         readyMessages: Samples.Select(sample =>
                 FormattableString.Invariant($"{sample.Label} ({sample.Ability}) on {sample.Npc}. Expect state {sample.State} for {sample.Seconds:g} s, immunity {sample.Immunity} s."))
             .Append("Use Actions in order. Confirm the cast and target FX, and the four immunity announcements. Wait out each immunity window before the next cast that grants immunity. The fixture fixes viral contest draws.")
-            .ToArray());
+            .Append("Four normal-size targets are spaced at least 3 m apart. WinterFrost and Trainman are west of the start, Blackwoods and Smithling are east.")
+            .ToArray(), testMobFixture: "ability-control-targets.csv");
 
     private static byte[] Request(ushort ability, ViewCreation target)
     {
@@ -66,6 +67,17 @@ public sealed class AbilityControlSweepMode : NativeQaMode
         var server = context.ActualServer ?? throw new InvalidOperationException("Control sweep requires the disposable QA server.");
         using var caster = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
         await caster.EnterWorldAsync();
+        var targets = new Dictionary<string, ViewCreation>();
+        foreach (string name in Samples.Select(sample => sample.Npc).Distinct())
+            targets.Add(name, await caster.WaitForViewNamedAsync(name));
+        foreach (var first in targets.Values)
+        foreach (var second in targets.Values.Where(view => view.ViewId > first.ViewId))
+        {
+            var a = EngageFoesFixture.Position(first);
+            var b = EngageFoesFixture.Position(second);
+            Check.That(a.Zip(b, (x, y) => (x - y) * (x - y)).Sum() >= 300 * 300,
+                $"Control targets {first.Name} and {second.Name} have separate pick positions");
+        }
         var proof = new List<object>();
         DateTime latestExpiry = DateTime.UtcNow;
         DateTime immunityExpiry = DateTime.UtcNow;
@@ -74,7 +86,7 @@ public sealed class AbilityControlSweepMode : NativeQaMode
             TimeSpan waitForImmunity = immunityExpiry - DateTime.UtcNow;
             if (sample.Immunity > 0 && waitForImmunity > TimeSpan.Zero)
                 await Task.Delay(waitForImmunity);
-            var target = await caster.WaitForViewNamedAsync(sample.Npc);
+            var target = targets[sample.Npc];
             int cursor = caster.World.RpcSnapshot().Count;
             byte[] request = Request(sample.Ability, target);
             caster.SendRpc(request);

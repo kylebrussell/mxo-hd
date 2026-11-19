@@ -11,6 +11,7 @@ public static partial class Scenarios
         {
             X = 17000, Y = 495, Z = 2300, Level = 50, Experience = (int)PlayerProgression.ExperienceForLevel(50), Organization = 1, Health = 5000, MaxHealth = 5000,
             InnerStrength = 2000, MaxInnerStrength = 2000,
+            Items = new[] { (1, 692u, 1), (2, 7899u, 1) },
             OwnedLoadedAbilities = new ushort[] { 2, 17, 158, 330, 493, 1006 }.Select(id => (id, (ushort)50)).ToArray()
         });
         await actor.EnterWorldAsync();
@@ -25,6 +26,9 @@ public static partial class Scenarios
 
         actor.SendChat("?combatdepth foundations-sight");
         await actor.WaitForTextAsync("across a mapped gap");
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 b4 02 00 00");
+        Check.Equal(692L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={actor.CharId} AND slot=105"),
+            "Sight command equipped the rifle in the stock hand slot");
         var blocked = await actor.WaitForViewNamedAsync("AB1 Blocked");
         var clear = await actor.WaitForViewNamedAsync("AB1 Clear");
         actor.SendRpc($"41 {HandleOf(blocked)}");
@@ -46,6 +50,9 @@ public static partial class Scenarios
 
         actor.SendChat("?combatdepth foundations-cone");
         await actor.WaitForTextAsync("AB1 Outside stays full");
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 db 1e 00 00");
+        Check.Equal(7899L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={actor.CharId} AND slot=105"),
+            "Cone command equipped the dual SMGs in the stock hand slot");
         var aim = await actor.WaitForViewNamedAsync("AB1 Aim");
         var inside = await actor.WaitForViewNamedAsync("AB1 Inside");
         var outside = await actor.WaitForViewNamedAsync("AB1 Outside");

@@ -119,20 +119,26 @@ public static class NativeQaBootstrapChecks
                     // This separate state describes the ACTUAL seeded server, including a shared baseline.
                     await WriteAsync(Path.Combine(modeDirectory, "state.json"), plan.StateWithMetadata(standard));
                     string? equipped = null;
+                    object? actionProof = null;
                     if (name.StartsWith("mobius-free-attack-", StringComparison.Ordinal))
                     {
                         equipped = await database.ScalarAsync("SELECT CONCAT("
                             + "(SELECT COUNT(*) FROM inventory WHERE charId=6114 AND slot=105 AND goid=692 AND count=1),':',"
                             + "(SELECT COUNT(*) FROM inventory WHERE charId=6114 AND slot=1))");
                         if (equipped != "1:0") throw new InvalidOperationException("QAEnemy rifle did not equip: " + equipped);
+                        actionProof = await Modes.MobiusCodeFixtureMode.VerifyInterlockAsync(server, helpers["QAEnemy"],
+                            helpers["QAOther"], name.EndsWith("-positive", StringComparison.Ordinal));
                     }
+                    if (name == "ability-health-parity")
+                        actionProof = await Modes.AbilityHealthParityMode.VerifyRejuvenateAsync(server.Address, helpers["QAFriend"]);
                     var problems = helpers.Values.SelectMany(p => p.World.Problems).Concat(canary?.World.Problems ?? Array.Empty<string>()).ToArray();
                     if (problems.Length != 0) throw new InvalidOperationException(string.Join("; ", problems));
                     var result = new { Mode = name, BootstrapPassed = true, Database = database.Name, ServerPid = server.ProcessId,
                         Address = server.Address, CustomHook = HasCustomHook(checkedMode), SharedNoOpFixture = names.Length > 1,
                         HotbarBytesVerified = characterUi?.Length,
                         DeclaredModeAbilities = modePlan.Abilities, SeededAbilities = seeded.Abilities,
-                        HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, StateSerialized = true, At = DateTime.UtcNow };
+                        HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, FixtureAction = actionProof,
+                        StateSerialized = true, At = DateTime.UtcNow };
                     results.Add(result);
                     await WriteAsync(Path.Combine(modeDirectory, "result.json"), result);
                     Console.WriteLine("BOOTSTRAP PASS " + (name.Length == 0 ? "(default)" : name));

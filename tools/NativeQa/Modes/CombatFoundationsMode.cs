@@ -6,7 +6,7 @@ namespace NativeQa.Modes;
 public sealed class CombatFoundationsMode : NativeQaMode
 {
     public override string Name => "combat-foundations";
-    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, 17, 158, 330, 493, 1006 }, 17000, 2300,
+    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, 17, 158, 330, 493, 1006 }, 24800, -1498,
         Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000,y=495 WHERE charId=110",
@@ -18,7 +18,7 @@ public sealed class CombatFoundationsMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, readyMessages:new[]
         {
-            "Enter ?combatdepth foundations-sight, equip the bag slot 1 rifle, and try ranged fire and Logic Barrage 4.0 against AB1 Blocked. Try Logic Barrage against AB1 Clear and check for 424 damage.",
-            "Enter ?combatdepth foundations-cone. Equip the bag slot 2 dual SMGs and aim Direct Fire at AB1 Aim. Only AB1 Aim and AB1 Inside should take damage. Logic Barrage against AB1 Resisted should deal 348 damage. See docs/COMBAT-FOUNDATIONS-QA.md."
+            "Enter ?combatdepth foundations-sight. The fixture equips the rifle and puts CSR at 22700,1095,16100 facing west. Try Free Fire and Logic Barrage 4.0 toward AB1 Blocked across the outdoor gap. Turn east to AB1 Clear and check 424 damage.",
+            "Enter ?combatdepth foundations-cone. The fixture equips dual SMGs. Aim Direct Fire at AB1 Aim. Only AB1 Aim and AB1 Inside should take damage. AB1 Resisted holds its effect for 30 minutes. Logic Barrage should deal 348. See docs/COMBAT-FOUNDATIONS-QA.md."
         });
 }

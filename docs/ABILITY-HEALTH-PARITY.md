@@ -19,13 +19,13 @@ The catalog stores raw values and proc timing. Most final retail coefficients, t
 | 169 Emergency Repairs 1.0 | Claude's native CSR PacketLog `455f0446826c:27051–27054` |
 | 466 Plague Zone 2.0 | `actions_combat.log.txt:16214–16216` |
 
-The exact 54-byte Rejuvenate Yes reply came from the stock recipient's native PR290 session, PacketLog `54d32748b0ba:8303–8306`. The previous headless cast for 416 was a six-byte helper shortcut. The new native fixture uses the stock client as caster and replays the captured reply from QAFriend. PR290 remains the evidence for the stock recipient's Application Request. The fresh three-cast replay contains no constructed resurrection request.
+The exact 54-byte Rejuvenate Yes reply came from the stock recipient in PR290, PacketLog `54d32748b0ba:8303–8306`. The bootstrap now replays the full stock PR316 cast from `53a738c0add2:36645` with the current corpse handle. In the native session, QAFriend receives the stock offer and uses the captured Yes reply.
 
 ## Native verification
 
-Run the normal NativeQa harness with mode `ability-health-parity`, this PR's tested head and a fresh output directory. Add the `helpers` marker after CSR enters. The preset uses level 50, +15% healing influence from 71/233/409 and +15% viral influence from 95, with CSR inventory empty in the disposable DB. Leave the starting combat style unchanged.
+Run NativeQa with mode `ability-health-parity` and a fresh output directory. QAFriend and flagged QAEnemy enter before Ready. The preset uses level 50, +15% healing influence from 71/233/409 and +15% viral influence from 95, with CSR inventory empty in the disposable DB.
 
 1. Ask QAFriend to use `?health 100`. Select QAFriend and cast Repair RSI 1.0 in stock Actions. Expect +10 HP from the cast. Use `[ABILITY] Healed` in DebugLog to separate the cast from natural regeneration.
 2. Prepare QAFriend at 100 HP again. Cast Emergency Repairs 1.0. Expect no instant heal and five +3 HP effect ticks 2.5 seconds apart. Use `[EFFECTS] 169 heals QAFriend` to count them.
 3. Flag CSR, ensure QAEnemy is flagged and select QAEnemy. Cast Plague Zone 2.0. After a hit expect five ticks 2.5 seconds apart. Add the resisted value to the applied amount to compare each tick with the raw 81–85 expectation.
-4. Send QAFriend `?die` via its helper and select the corpse. Cast Rejuvenate RSI from stock Actions. Send `{"actor":"QAFriend","action":"approve","accept":true}` through the helper. Verify the live offer, HP 500, IS 1000 and the standing transition at the same location.
+4. Send QAFriend `?die` via its helper and select the corpse. Cast Rejuvenate RSI from stock Actions. Send `{"actor":"QAFriend","action":"approve","accept":true}`. The helper queries and prints the recipient's live maxima with the death effect active. Check that the response confirms both restored values and the in-place stand.

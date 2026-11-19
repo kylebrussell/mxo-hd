@@ -367,7 +367,7 @@ namespace hds
         /// to a free bag slot, move this one into the weapon slot (65 src 00 69 00) and set the player's
         /// EquippedItemID.
         /// </summary>
-        private void EquipWeapon(byte sourceSlot)
+        internal static void EquipWeapon(byte sourceSlot)
         {
             UInt32 charId = Store.currentClient.playerData.getCharID();
             UInt32 weaponGoid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);

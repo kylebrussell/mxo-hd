@@ -6,7 +6,7 @@ Confuse blocks tactical changes, withdrawal and combat special moves. The same s
 
 ## Native QA
 
-Use NativeQa mode `ability-controls-sweep` with the stock client. The disposable CSR fixture starts at Richland `24800, 495, -1498` with a level 50 loadout. The test NPCs are available from spawn. Select each target and cast through Actions. Check the effect on that target, the cast and reuse feedback, and the immunity notices in System. Wait for each immunity window to pass before casting the next ability that grants immunity. Some spells can reach more than one of the test NPCs.
+Use NativeQa mode `ability-controls-sweep` with the stock client. The disposable CSR fixture starts at Richland `24800, 495, -1498` with a level 50 loadout. Four normal-size humanoid targets stand at least 3 m apart. WinterFrost and Trainman are west of the start, and Blackwoods and Smithling are east. Select each target through its visible model and cast through Actions. Check the target FX, reuse feedback and immunity notices in System. Wait for each immunity window before casting the next ability that grants immunity. Some spells can reach more than one target.
 
 | Ability | Select | Expected state | Duration | Immunity |
 | --- | --- | --- | ---: | ---: |
