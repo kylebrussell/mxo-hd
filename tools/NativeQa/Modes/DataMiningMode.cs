@@ -14,7 +14,7 @@ public sealed class DataMiningMode : NativeQaMode
         readyMessages: new[]
         {
             "Use ?utilityobject 606 for a node and ?utilityobject 596 for a light luggable. Capture their distinct search presentation with the handheld locator.",
-            "Use Locate Data Node 215, then independently Find Data Node 621. Check each activation ID, locator FX and handheld expiry after 10 s.",
+            "In Actions > Tools, use the handheld locator. It sends Locate Data Node 215. Time the 10 s handheld expiry and capture the locator FX. The stock input for mastery 621 remains unverified.",
             "With Detect Luggables 541 loaded, record the nearest light object's yellow minimap ping. Use ?utilitylocator 423 to switch to goggles.",
             "With See Luggables 540 loaded, record the visible aura around the light object. Pick it up and check the aura and locator clear."
         });

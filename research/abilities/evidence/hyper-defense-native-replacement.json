@@ -1,0 +1,19 @@
+{
+  "families": {
+    "hyper-defense-native-replacement": {
+      "representative": 1101,
+      "result": "pass",
+      "head": "0cea18d57e8620778115356fe4c397b054c72560",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/334#issuecomment-7008596858",
+      "scope": "The stock client cast 1101, 1100, 1099 and 10 in sequence. Status Bonuses started at +47 for each defense. Thrown Defense rose to +94 (+47), Viral Defense to +124 (+77), Melee Defense to +99 (+52), and Ballistic Defense to +98 (+51). Every new cast removed the previous defense bonus."
+    }
+  },
+  "abilities": {
+    "1100": {
+      "family": "hyper-defense-native-replacement"
+    },
+    "1101": {
+      "family": "hyper-defense-native-replacement"
+    }
+  }
+}
