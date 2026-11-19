@@ -7,7 +7,8 @@ namespace hds
     /// No emitter: each legal recipient receives the existing timed effect once.</summary>
     internal static class CasterHostileArea
     {
-        internal static bool Handles(ushort ability) => ability == 38 || ability == 97 || ability == 268 || ability == 406;
+        internal static bool Handles(ushort ability) =>
+            ability == 38 || ability == 47 || ability == 97 || ability == 268 || ability == 406;
         internal static void Land(WorldClient caster, AbilityItem ability)
         {
             if (ability == null || !Handles(ability.getAbilityID()) || caster == null || !caster.Alive ||

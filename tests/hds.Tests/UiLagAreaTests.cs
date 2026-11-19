@@ -148,6 +148,6 @@ public class UiLagAreaTests : IDisposable
     public void UiLagWrapperRejectsEveryOtherSelectorFourFamily(ushort id)
     {
         var c=Actor();var t=Target(c,111,100);UiLagArea.Land(c,Ability(id));
-        Assert.False(Affected(t));Assert.Equal(id==38,FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));
+        Assert.False(Affected(t));Assert.Equal(id is 38 or 47,FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));
     }
 }
