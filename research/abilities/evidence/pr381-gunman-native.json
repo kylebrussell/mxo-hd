@@ -1,0 +1,66 @@
+{
+  "families": {
+    "gunman-firearms-expert-passive": {
+      "representative": 125,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "Full stock rifle-profile unload removed Firearms Expert bonuses. Ordinary reload restored the source-specific +5 ballistic accuracy and +5 ballistic damage sub-rows."
+    },
+    "gunman-dual-handguns-passive": {
+      "representative": 239,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "After the acknowledged handgun unload sequence, Melee Resistance Bonus fell by 6 and Ballistic Accuracy Bonus fell by 5 while Soldier Upgrade and Firearms Expert stayed in place. The other aggregate damage and initiative changes were shared with other handgun entries."
+    },
+    "gunman-expert-rifleman-passive": {
+      "representative": 440,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "Stock Expert Rifleman reload produced +5 ballistic accuracy, +1 ballistic damage and +2 root duration. Its granted stock Action 1074 activated and replaced 1061, greyed out after unloading, then returned on reload."
+    },
+    "gunman-rifle-mastery-passive": {
+      "representative": 441,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "Stock Rifle Mastery added source-attributed +20 ballistic damage resistance, +10% stun duration and +15% root duration. The full ordinary unload removed its bonuses, and reloading restored the rifle profile."
+    },
+    "gunman-sniper-passive": {
+      "representative": 508,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "Stock Sniper produced +2 ballistic accuracy and damage sub-rows, removed during full unload and restored by ordinary reload. The 1136 Action was present, greyed out after unloading, and returned on reload."
+    },
+    "gunman-soldier-upgrade": {
+      "representative": 1061,
+      "result": "pass",
+      "head": "0f1dd5323c81a0ed4320f8faed1ddfbfe1cc3266",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/381#issuecomment-7020175543",
+      "scope": "Stock Soldier Upgrade activated from Actions in view 0 and showed self-only +50 max HP and +20 each melee and ballistic resistance. Immediate recast was refused during reuse, and stock 1074 removed it through ordinary class replacement."
+    }
+  },
+  "abilities": {
+    "125": {
+      "family": "gunman-firearms-expert-passive"
+    },
+    "239": {
+      "family": "gunman-dual-handguns-passive"
+    },
+    "440": {
+      "family": "gunman-expert-rifleman-passive"
+    },
+    "441": {
+      "family": "gunman-rifle-mastery-passive"
+    },
+    "508": {
+      "family": "gunman-sniper-passive"
+    },
+    "1061": {
+      "family": "gunman-soldier-upgrade"
+    }
+  }
+}
