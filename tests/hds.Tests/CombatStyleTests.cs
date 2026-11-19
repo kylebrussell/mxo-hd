@@ -93,6 +93,30 @@ public class CombatStyleTests
     }
 
     [Fact]
+    public void CoderStyleSuppliesTypedCombatInputsAndCleansUpOnSelectionChange()
+    {
+        var client = Client();
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (2, 50), (CombatStyles.CoderStyle, 50) });
+        int previousMelee = AbilityStats.Attack(client, false);
+        int previousViral = AbilityStats.ViralAccuracy(client);
+        int previousWithdrawal = WithdrawalInput.Attack(client, null!, true);
+        CombatStyles.Select(client, CombatStyles.CoderStyle);
+        Assert.Equal(64, AbilityStats.Attack(client, false));
+        Assert.Equal(64, AbilityStats.ViralAccuracy(client));
+        Assert.Equal(47, AbilityStats.Defense(client, false));
+        Assert.Equal(47, AbilityStats.Defense(client, true));
+        Assert.Equal(47, AbilityStats.Player(client, AbilityStats.SpecialDefenseStat(2)));
+        Assert.Equal(47, AbilityStats.Player(client, AbilityStats.SpecialDefenseStat(4)));
+        Assert.Equal(125, AbilityStats.ScaleTypedAbilityDamage(client, 0, 100));
+        Assert.Equal(125, AbilityStats.ScaleTypedAbilityDamage(client, 2, 100));
+        Assert.Equal(66, WithdrawalInput.Attack(client, null!, true));
+        CombatStyles.Select(client, CombatStyles.SelfDefense);
+        Assert.Equal(previousMelee, AbilityStats.Attack(client, false));
+        Assert.Equal(previousViral, AbilityStats.ViralAccuracy(client));
+        Assert.Equal(previousWithdrawal, WithdrawalInput.Attack(client, null!, true));
+    }
+
+    [Fact]
     public void SpecialMovesNeedTheirStoredStance()
     {
         Assert.Equal(CombatStyles.Karate, CombatStyles.RequiredStyle(CombatSpecials.BerserkerAttack));

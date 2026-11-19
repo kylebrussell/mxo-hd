@@ -35,8 +35,12 @@ namespace hds
         // constants.Crafting.CompileCompileCostMultiplier = .12, client.dll 6269fd01..fd70.
         public static long InfoCost(Item item, int discount = 0) => (long)((item.Price ?? 1000) * .12 *
             (1 - Math.Clamp(discount, 0, 100) / 100.0));
-        public static bool Succeeds(int skill, int complexity, int roll, int specialization = 0) =>
-            skill > 0 && 4 * (skill + specialization / 10) + roll > 4 * complexity + 50;
+        public static bool Succeeds(int skill, int complexity, int roll, int specialization = 0)
+        {
+            // CompileTest adds the positive category bonus before checking the effective skill.
+            int effectiveSkill = skill + Math.Max(0, specialization) / 10;
+            return effectiveSkill > 0 && 4 * effectiveSkill + roll > 4 * complexity + 50;
+        }
 
         /// <summary>Preflight result capacity after ingredients have gone, including a stack that loses its last item.</summary>
         public static bool HasResultSpace(uint result, IList<Crafting.InventoryItem> inventory, IList<ushort> consumed)

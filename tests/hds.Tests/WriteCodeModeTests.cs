@@ -44,9 +44,12 @@ public class WriteCodeModeTests
             Assert.Equal(mode=="write-code",plan.ExtraQaMetadata.TryGetValue("WriteCodeQa",out var writer)&&writer.GetBoolean());
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
             Assert.Equal(mode is "health-callbacks" or "zen-master",plan.FixedCallbackRolls);
-            Assert.Equal(mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" or
-                "ability-parity-coder-sweep" or "ability-parity-hacker-sweep" or "ability-evidence-direct-heals" ? "1" : "",
-                NativeQaFixturePlan.EnvironmentFor(mode)["MXO_DESPERATION_QA_HOLD_HEALTH"]);
+            const string holdHealthKey = "MXO_DESPERATION_QA_HOLD_HEALTH";
+            bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker";
+            bool groupedHold = mode is "ability-parity-coder-sweep" or "ability-parity-hacker-sweep" or "ability-evidence-direct-heals";
+            bool holdHealth = originalHold || groupedHold && plan.EnvironmentOverrides.GetValueOrDefault(holdHealthKey) == "1";
+            Assert.Equal(holdHealth ? "1" : "", NativeQaFixturePlan.EnvironmentFor(mode)[holdHealthKey]);
+            if (holdHealth) Assert.True(plan.DevCommands);
         }
         var writerPlan=NativeQaModes.Find("write-code").Plan;
         Assert.True(writerPlan.DevCommands);Assert.False(writerPlan.SeedDisguiseTool);Assert.False(writerPlan.CompileItemsQa);

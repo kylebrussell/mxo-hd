@@ -1,0 +1,16 @@
+{
+  "families": {
+    "coder-combat-style": {
+      "representative": 1008,
+      "result": "pass",
+      "head": "8963c828628024f00bdaf634f8a5ec748114dd98",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/341#issuecomment-7009073891",
+      "scope": "Stock switched to Coder Style from Self Defense and showed +64 Melee and Viral Accuracy, +26 Melee and Viral Damage and +66 Contested Withdraw. All four defenses retained +47 as both styles supply that amount. Returning to Self Defense restored all Status pages and Combat values. The companion replay measures all nine source-specific add and removal records."
+    }
+  },
+  "abilities": {
+    "1008": {
+      "family": "coder-combat-style"
+    }
+  }
+}
