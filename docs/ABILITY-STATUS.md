@@ -17,16 +17,20 @@ Start NativeQa in `ability-status` mode. Enter as CSR110. Stay at the seeded Mar
 | Hyper-Block 1099 | Melee Defense +52 |
 | Determination 1102 | Determination +150 |
 | Upgrade Attacks 314 | Viral Accuracy +108 for 20 seconds |
-| QAEnemy casts Destroy Resolve 354 | Max IS 2000 → 1942 and IS Regeneration −50 for 30 seconds |
-| QAEnemy casts Destroy Health 476 | Max HP 5000 → 4480 and Health Regeneration −20 for 40 seconds |
+| QAEnemy casts Destroy Resolve 354 | IS Regen Rate 30 → 15 → 30 (−50% for 30 seconds) |
+| QAEnemy casts Destroy Health 476 | Health Regen Rate 25 → 20 → 25 (−20% for 40 seconds) |
 
-Leave the two indefinite buffs active. Use the normal Actions window for the three player casts. During each debuff case place a fresh request JSON file in the fixture's `requests` directory. Use the corresponding response file to confirm the helper request was sent, then check Status after the cast completes. Wait for the maximum and corresponding regeneration bonus to return to baseline.
+Leave the two indefinite buffs active. Use the normal Actions window for the three player casts. During each debuff case place a fresh request JSON file in the fixture's `requests` directory. Use the corresponding response file to confirm the helper request was sent, then check Status after the cast completes. Wait for the displayed regeneration rate to return to baseline. The stock HUD test covers the regen rows. The headless own-view check covers Max IS 2000 → 1942 → 2000 and Max HP 5000 → 4480 → 5000.
 
 ```json
 {"actor":"QAEnemy","action":"status-debuff","ability":354}
 ```
 
 Repeat with 476. The disposable mode uses the existing scoped viral contest draws to isolate the numerical deltas. The self-checking `--bootstrap-checks` variant verifies the actual add and removal messages and the own-view vital updates in an isolated process before native QA is requested.
+
+The shipped debuffs target IS Regen Rate (114, −50) and Health Regen Rate (112, −20), both with `Ability/ValueType = 1`. The server publishes those signed values on the add and remove records. PR315's stock UI showed `30 × (1 − 50/100) = 15` and `25 × (1 − 20/100) = 20`. [PR315 native QA](https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958)
+
+The server's natural regeneration uses the same percentage multipliers. In a two-second out-of-combat tick at a deficit, Destroy Resolve halves IS recovery from 8 to 4. Destroy Health reduces max HP from 5000 to 4480 and multiplies the resulting HP recovery by 0.8, so the tick goes from 100 to `round(4480 × 0.01 × 2 × 0.8) = 72`. Both return to their original tick values on expiry. The stock Status row values and server tick amounts use different baselines.
 
 ## Stock request evidence
 
