@@ -862,12 +862,14 @@ public class AbilityScaledBuffTests
 
         int primary = Defense(primaryAttack);
         int secondary = Defense(secondaryAttack);
-        double start = TimeUtils.GetSimTimeSeconds();
         Assert.True(AbilityBuffs.Apply(recipient, child, caster));
+        float appliedBy = TimeUtils.GetSimTimeSeconds();
+        Assert.Equal(5f, recipient.playerData.activeBuffs[child].Definition.Seconds);
         Assert.Equal(primary + primaryBonus, Defense(primaryAttack));
         Assert.Equal(secondary + secondaryBonus, Defense(secondaryAttack));
         Assert.Equal(castThrough, CastThrough());
-        TimedEffects.RunDue(start + 5.01);
+        // The runtime schedules expiry during Apply. Capture the upper bound after that registration.
+        TimedEffects.RunDue(appliedBy + 5f);
         Assert.Equal(primary, Defense(primaryAttack));
         Assert.Equal(secondary, Defense(secondaryAttack));
         Assert.Equal(75, CastThrough());
