@@ -98,6 +98,7 @@ namespace hds
         internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
             Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
         // Publish source-qualified zero grants from the GOB through the loaded registry.
+        private static readonly (ushort Source, ushort Target)[] GunmanPassivePairs = { (440, 1074), (508, 1136) };
         private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
         private static readonly (ushort Source, ushort Target)[] SpyClassPairs = { (155, 1113) };
         private static readonly (ushort Source, ushort Target)[] PhysicianPairs = { (418, 1098) };
@@ -105,7 +106,7 @@ namespace hds
         private static readonly (ushort Source, ushort Target)[] RavagerAndUpgradeMasterPairs = { (470, 1081), (425, 1096) };
         private static readonly (ushort Source, ushort Target)[] NetworkAttackerPairs = { (483, 1080) };
         internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs =>
-            ObservedPairs.Concat(NativeToolPairs).Concat(UtilityMasterPairs).Concat(SpyClassPairs)
+            ObservedPairs.Concat(NativeToolPairs).Concat(GunmanPassivePairs).Concat(UtilityMasterPairs).Concat(SpyClassPairs)
                 .Concat(PhysicianPairs).Concat(UpgradeArtistPairs).Concat(RavagerAndUpgradeMasterPairs)
                 .Concat(NetworkAttackerPairs);
         // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.
