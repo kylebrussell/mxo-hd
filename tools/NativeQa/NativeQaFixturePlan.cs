@@ -12,7 +12,7 @@ public static class NativeQaFixturePlan
         var plan=NativeQaModes.Find(mode).Plan;
         var environment=new Dictionary<string,string>()
     {
-        ["MXO_DEV_COMMANDS"] = plan.DevCommands ? "1" : "0",
+        ["MXO_DEV_COMMANDS"] = (plan.DevCommands || mode == OperativePassiveLoadoutQa.Sweep3) ? "1" : "0",
         ["MXO_AUTH_PORT"] = "11000", ["MXO_MARGIN_PORT"] = "10000", ["MXO_WORLD_PORT"] = "10000",
         ["MXO_CONSOLE_PORT"] = "55557", ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0",
         ["MXO_AGGRO"] = "0", ["MXO_PACKET_LOG"] = "1",

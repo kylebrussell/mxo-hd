@@ -58,7 +58,7 @@
           "test": "TypedSpecialAttackTests.KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth, CombatInsightEngagementTests.OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline and ability-parity-operative-sweep-2."
         }
       },
-      "family": "operative-knife-upgrades"
+      "family": "operative-master-assassin-upgrade"
     },
     "294": {
       "checks": {
