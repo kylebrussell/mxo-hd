@@ -303,4 +303,65 @@ public class AbilityPassiveTests
         AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
         Assert.Equal(baseline, CoderPets.FixedHeal(caster, template));
     }
+
+    [Theory]
+    [InlineData(25, 5, 1, 4)]
+    [InlineData(50, 10, 2, 11)]
+    public void AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers(ushort rank, int viralDamage, int accuracyAndDefense, int ballisticResistance)
+    {
+        var caster = Client();
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (585, rank), (600, rank), (614, rank) });
+        Assert.Equal(viralDamage, AbilityStats.Influence(caster, 172));
+        Assert.True(AbilityStats.ScaleAbilityDamage(caster, 359, 100) > 100);
+        Assert.Equal((ushort)100, AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100));
+        Assert.Equal(accuracyAndDefense, AbilityStats.Attack(caster, false));
+        Assert.Equal(accuracyAndDefense, AbilityStats.Attack(caster, true));
+        Assert.Equal(accuracyAndDefense, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Defense(caster, true));
+        Assert.Equal(0, AbilityStats.Toughness(caster, false));
+        Assert.Equal(ballisticResistance, AbilityStats.Toughness(caster, true));
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal((ushort)100, AbilityStats.ScaleAbilityDamage(caster, 359, 100));
+        Assert.Equal(0, AbilityStats.Attack(caster, false));
+        Assert.Equal(0, AbilityStats.Attack(caster, true));
+        Assert.Equal(0, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Toughness(caster, true));
+    }
+
+    [Fact]
+    public void UtilityCoderFeedsMaximumHealthAndBothPhysicalResistances()
+    {
+        var caster = Client();
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 604, 100)));
+        AbilitySupport.Land(caster, 604, 100);
+        Assert.True(AbilityBuffs.IsActive(caster, 604));
+        Assert.Equal(550, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(100, Value(caster.playerInstance.Health));
+        Assert.Equal(20, AbilityStats.Toughness(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, true));
+        Assert.True(AbilityBuffs.Remove(caster, 604));
+        Assert.Equal(500, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(0, AbilityStats.Toughness(caster, false));
+        Assert.Equal(0, AbilityStats.Toughness(caster, true));
+    }
+
+    [Theory]
+    [InlineData(518, 1271u, 2399u, 654)]
+    [InlineData(521, 2399u, 1271u, 656)]
+    public void CraftSpecializationUsesTheLoadedSkillForTheShippedCategory(ushort ability, uint item, uint other, ushort stat)
+    {
+        var caster = Client();
+        ushort specialization = CraftingHandler.Specialization(CraftingRules.Find(item).Category);
+        ushort unrelated = CraftingHandler.Specialization(CraftingRules.Find(other).Category);
+        Assert.Equal(stat, specialization);
+        AbilityPassives.SetLoaded(caster, new[] { (ability, (ushort)50) });
+        Assert.Equal(50, CraftingHandler.Skill(caster, specialization));
+        Assert.Equal(0, CraftingHandler.Skill(caster, unrelated));
+        Assert.False(CraftingRules.Succeeds(1, 6, 50, CraftingHandler.Skill(caster, specialization)));
+        Assert.True(CraftingRules.Succeeds(1, 6, 51, CraftingHandler.Skill(caster, specialization)));
+        Assert.False(CraftingRules.Succeeds(1, 6, 51, CraftingHandler.Skill(caster, unrelated)));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0, CraftingHandler.Skill(caster, specialization));
+    }
 }
