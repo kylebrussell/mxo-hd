@@ -113,6 +113,11 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            if (!ControlActions.CanPerformSpecialMove(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "You cannot perform special moves while confused.");
+                return;
+            }
             if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");

@@ -152,6 +152,47 @@ public class TimedEffectsTests
     }
 
     [Fact]
+    public void ControlImmunityUsesOnlyTheLiveTimerTuple()
+    {
+        var subject = new RecordingSubject();
+        const double now = 5100;
+        var other = Mod(TempMods.ISDrainTargetAbility, 0, 30, TempMods.Proc.State, TempMods.KindPlain);
+        subject.Effects.Apply(StealthShieldAbilities.DisableEvasion, new[] { other }, now);
+
+        TimedEffects.Apply(subject, TempMods.Retail[333], now);
+        var original = Assert.Single(subject.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
+        Assert.Empty(TimedEffects.Apply(subject, TempMods.Retail[333], now + 9.99));
+
+        Assert.Single(TimedEffects.Apply(subject, TempMods.Retail[333], now + 10));
+        Assert.Contains(original, subject.LastReplaced);
+        var renewed = Assert.Single(subject.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
+        Assert.NotSame(original, renewed);
+        Assert.Equal(now + 20, renewed.Expires);
+        Assert.Contains(other, subject.Effects.Snapshot());
+    }
+
+    [Fact]
+    public void ConfuseBlocksInterlockInputsUntilTheStateExpires()
+    {
+        var holder = new TimedEffects.Holder();
+        double now = TimeUtils.GetSimTimeSeconds();
+        holder.Apply(273, new[] { Mod(TempMods.ConfuseAbility, 0, 4, TempMods.Proc.State, TempMods.KindState) }, now);
+
+        Assert.False(ControlActions.CanChangeTactic(holder));
+        Assert.False(ControlActions.CanWithdraw(holder));
+        Assert.False(ControlActions.CanPerformSpecialMove(holder, 259));
+        Assert.True(ControlActions.CanPerformSpecialMove(holder, 333));
+        Assert.True(ControlActions.CanUseAbilities(holder));
+        Assert.True(ControlActions.CanUseWeapons(holder));
+        Assert.True(ControlActions.CanMove(holder));
+
+        holder.Apply(273, new[] { Mod(TempMods.ConfuseAbility, 0, 4, TempMods.Proc.State, TempMods.KindState) }, now - 5);
+        Assert.True(ControlActions.CanChangeTactic(holder));
+        Assert.True(ControlActions.CanWithdraw(holder));
+        Assert.True(ControlActions.CanPerformSpecialMove(holder, 259));
+    }
+
+    [Fact]
     public void ServerTickTicksAndExpires()
     {
         var subject = new RecordingSubject();
@@ -184,6 +225,7 @@ public class TimedEffectsTests
     private sealed class RecordingSubject : TimedEffects.Subject
     {
         public TimedEffects.Active? LastImmunity;
+        public List<TimedEffects.Active> LastReplaced = new();
         public readonly List<int> Ticks = new List<int>();
         public readonly List<TimedEffects.Active> EndedMods = new List<TimedEffects.Active>();
         public bool LandTicks = true;
@@ -194,6 +236,7 @@ public class TimedEffectsTests
             List<TimedEffects.Active> replaced)
         {
             LastImmunity = immunity ?? LastImmunity;
+            LastReplaced = replaced;
         }
 
         internal override bool Ticked(TimedEffects.Active mod, int damage)

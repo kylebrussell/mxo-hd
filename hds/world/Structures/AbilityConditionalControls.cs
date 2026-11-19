@@ -34,8 +34,7 @@ namespace hds
                 !Handles(marker.Parent) || !subject.Alive || marker.Value <= 0) return;
             uint dazed = CombatInterlock.ConditionBit(CombatTactic.Speed);
             if (!subject.Effects.HasAt(TempMods.DazeAbility, now) && (subject.ConditionFlags & dazed) == 0) return;
-            if (subject.Effects.Snapshot().Any(m => m.Parent == TempMods.ControlImmunityTimerAbility &&
-                m.Target == TempMods.ISDrainTargetAbility && now < m.Expires)) return;
+            if (subject.Effects.HasControlImmunity(now)) return;
 
             var stun = new TimedEffects.Active { Kind = TempMods.KindState, Target = TempMods.StunAbility,
                 Seconds = marker.Value, Proc = TempMods.Proc.State, Caster = marker.Caster,
