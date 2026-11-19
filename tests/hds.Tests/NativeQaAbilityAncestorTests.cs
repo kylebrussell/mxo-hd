@@ -6,6 +6,16 @@ namespace hds.Tests;
 public sealed class NativeQaAbilityAncestorTests
 {
     [Fact]
+    public void GunmanProcSweepUsesTheIsolatedFirearmFixtureAndEightOrderedActions()
+    {
+        var plan = NativeQaModes.Find("ability-parity-gunman-proc-sweep").Plan;
+        Assert.Equal(new ushort[] { 147, 253, 256, 158, 247, 248, 250, 496 }, plan.Abilities.Take(8));
+        Assert.True(plan.LoadAbilityAncestors);
+        Assert.Equal(8, plan.ReadyMessages.Count(message => message.StartsWith("Slot ")));
+        Assert.Contains(plan.ReadyMessages, message => message.Contains("4 s stun / 4 s immunity on proc"));
+    }
+
+    [Fact]
     public void SweepAndChoreographyLoadoutsIncludeTheStockRequiredDisciplines()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -138,6 +138,18 @@ namespace hds
 
         public static bool IsExileWeapon(ushort id) => exileWeakness.ContainsKey(AbilityCatalog.Canonical(id));
 
+        // general.py passes Melee for stakes/water and Ranged for silver to dealAbilityDamage.
+        internal static int ExileDamageType(ushort id) => AbilityCatalog.Canonical(id) switch
+        {
+            WoodenStake => 0,
+            WoodenStakePlus => 0,
+            HolyWater => 0,
+            HolyWaterPlus => 0,
+            SilverBullet => 1,
+            SilverBulletPlus => 1,
+            _ => -1
+        };
+
         /// <summary>general.py's damage: 10, times 10 (75 for the Enhanced versions) against the matching weakness.</summary>
         public static ushort ExileDamage(ushort id, ushort targetWeakness)
         {

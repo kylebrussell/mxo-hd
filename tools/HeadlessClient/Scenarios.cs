@@ -250,6 +250,7 @@ public static partial class Scenarios
             ["MXO_CONDITIONAL_POWERLESS_QA"] = "1"
         }),
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
+        new Scenario("combat-exile-weapons", CombatExileWeapons, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
         new Scenario("compile-session-authority", CompileSessionAuthority, StillNpcs),

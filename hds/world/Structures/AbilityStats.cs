@@ -38,7 +38,9 @@ namespace hds
         {
             var entry = AbilityCatalog.Find(ability);
             var modifier = entry?.Modifiers.FirstOrDefault(m => m.Has("DamageType") && m.Number("DamageType") != 3);
-            int type = modifier == null ? (TempMods.TryGet(ability, out var effect) && effect.Virus ? 2 : -1) : (int)modifier.Number("DamageType");
+            int type = modifier != null ? (int)modifier.Number("DamageType") : CombatSpecials.ExileDamageType(ability);
+            if (modifier == null && type < 0 && TempMods.TryGet(ability, out var effect) && effect.Virus)
+                type = 2;
             return ScaleTypedAbilityDamage(caster, type, amount);
         }
 

@@ -82,8 +82,11 @@ public abstract class AbilitySweepMode : NativeQaMode
         }
         if (firearms)
         {
-            instructions.Add("The revolver starts equipped. Use ?combatdepth fixture-weapon rifle, smg or handgun before the corresponding style. Use the single SMG for Covering Fire. A server-side swap ends the previous interlock.");
-            instructions.Add("Use Immobilizing Shot (254) and Disabling Shot (255) before entering combat with the rifle. Expect a 2 s cast and an opening hit. In active combat, confirm both slots grey out.");
+            instructions.Add("The revolver starts equipped. Use ?combatdepth fixture-weapon rifle, smg or handgun before the corresponding style. A server-side swap ends the previous interlock.");
+            if (samples.Any(sample => sample.Id == 176))
+                instructions.Add("Use the single SMG for Covering Fire.");
+            if (samples.Any(sample => sample.Id == 254 || sample.Id == 255))
+                instructions.Add("Use Immobilizing Shot (254) and Disabling Shot (255) before entering combat with the rifle. Expect a 2 s cast and an opening hit. In active combat, confirm both slots grey out.");
         }
         if (petOrders)
         {
