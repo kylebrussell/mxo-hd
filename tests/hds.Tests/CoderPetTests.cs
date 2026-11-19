@@ -115,6 +115,28 @@ public class CoderPetTests
     }
 
     [Fact]
+    public void OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn()
+    {
+        var owner = Owner(43);
+        owner.viewMan = new ViewManager();
+        var pet = new CoderPets.Pet { Owner = owner, Mob = new Mob() };
+        pet.Mob.setEntityId(0xABCDEF);
+        var selected = owner.viewMan.addView(pet.Mob.getEntityId(), 40376);
+        selected.spawnId = 13;
+        selected.viewCreated = true;
+        var foreign = owner.viewMan.addView(0x123456, 40376);
+        foreign.spawnId = 13;
+        foreign.viewCreated = true;
+
+        Assert.True(CoderPets.MatchesSelection(owner, pet, 0, null));
+        Assert.True(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
+        Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 12));
+        Assert.False(CoderPets.MatchesSelection(owner, pet, foreign.ViewID, 13));
+        owner.viewMan.removeViewByViewId(selected.ViewID);
+        Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
+    }
+
+    [Fact]
     public void CreationMatchesRetailFreshSummon()
     {
         // MaraC capture line 78483: 0c b8 9d <spawn> cd ab, then 18 attributes of a level 7 Nuker Simulacrum
@@ -274,7 +296,7 @@ public class CoderPetTests
     public void PowerCastSnapshotsLevelAndRejectsOwnerLifeWorldAndPetReplacement()
     {
         var caster=Owner(110,50); var pet=ResourcePet(); pet.Owner=caster;
-        var cast=new CoderPets.PowerBoostCast(caster,pet);
+        var cast=new CoderPets.OwnPetCast(caster,pet);
         caster.playerInstance.Level.setValue((byte)20);
         CoderPets.ApplyPowerBoost(pet,cast.CasterLevel,10);
         Assert.Equal(25,pet.PowerMeleeDamage);

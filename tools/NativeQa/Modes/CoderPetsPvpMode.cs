@@ -7,7 +7,7 @@ public sealed class CoderPetsPvpMode : NativeQaMode
     public override string Name => "coder-pets-pvp";
 
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, 594, 616 }, PvpOpponentsFixture.X, PvpOpponentsFixture.Z,
+        new ushort[] { 2, 17, 27, 594, 616, 20, 25, 603 }, PvpOpponentsFixture.X, PvpOpponentsFixture.Z,
         Array.Empty<string>(), Array.Empty<string>(), new[] { PvpOpponentsFixture.NativeSql },
         DevCommands: true,
         environmentOverrides: new()
@@ -20,6 +20,7 @@ public sealed class CoderPetsPvpMode : NativeQaMode
         readyMessages: new[]
         {
             "CSR110 only. Use Actions to summon Remote Proxy 5.0 and Logic Daemon 4.0 in turn. Check Stay, Follow and Defensive assist on a Simulacra Dummy from ?pet dummy.",
+            "After the follow checks, use Fortify, Power Boost and Charge Simulacra in sequence. The pet log identifies the applied stats; use ?pet to inspect the current values.",
             "Same-org QAFriend and opposing-org QAEnemy both enter flagged. Only QAEnemy qualifies for ordinary player interlock. If the pet Attack button sends a player selection, it must never redirect to the dummy.",
             "See docs/NATIVEQA-CODER-PETS-PVP.md for the order of checks and expected observations."
         });

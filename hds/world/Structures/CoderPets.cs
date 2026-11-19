@@ -60,6 +60,13 @@ namespace hds
         public static bool TargetsOwnPet(UInt16 id) => id == DrainCode || id == FortifySimulacra || id == DetonateProxy ||
             id == ChargeSimulacra || id == PowerBoost || Repairs.Contains(id);
 
+        internal static string DisplayName(UInt16 id) => id switch
+        {
+            ChargeSimulacra => "Charge Simulacra",
+            DetonateProxy => "Detonate Proxy",
+            _ => null
+        };
+
         public static bool IsDaemonBoost(UInt16 id) => id == DaemonBoost1 || id == DaemonBoost2;
 
         public static bool Handles(UInt16 id) => Summons.ContainsKey(id) || TargetsOwnPet(id) || IsDaemonBoost(id);
@@ -245,11 +252,11 @@ namespace hds
         public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
             75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0) + ProxyTechnician.Accuracy(pet,now,Ranged(pet)), 5, 95);
 
-        public sealed class PowerBoostCast
+        public sealed class OwnPetCast
         {
             public readonly Pet Target;
             public readonly int CasterLevel, CasterLife, CasterWorld;
-            public PowerBoostCast(WorldClient caster, Pet target)
+            public OwnPetCast(WorldClient caster, Pet target)
             {
                 Target = target; CasterLevel = caster.playerInstance.Level.getValue()[0];
                 CasterLife = caster.playerData.lifeGeneration; CasterWorld = caster.playerData.worldGeneration;
@@ -257,22 +264,6 @@ namespace hds
             public bool Matches(WorldClient caster, Pet current) => Target != null && Target == current &&
                 Target.Owner == caster && !Target.Gone && !Target.Mob.getIsDead() &&
                 caster.playerData.lifeGeneration == CasterLife && caster.playerData.worldGeneration == CasterWorld;
-        }
-
-        // A 4s cast remains bound to the original pet and caster lifecycle, never a replacement pet.
-        public static PowerBoostCast CapturePowerBoost(WorldClient caster) => new PowerBoostCast(caster, Of(caster));
-
-        public static void LandPowerBoost(WorldClient caster, PowerBoostCast cast)
-        {
-            Pet pet = cast?.Target;
-            if (pet == null) return;
-            lock (pet)
-            {
-                if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) ||
-                    Refusal(caster, PowerBoost, 0) != null) return;
-                ApplyPowerBoost(pet, cast.CasterLevel, TimeUtils.GetSimTimeSeconds());
-                SendHit(pet, FirstFx(AbilityCatalog.Find(PowerBoost)));
-            }
         }
 
         public static void ApplyPowerBoost(Pet pet, int casterLevel, double now)
@@ -601,8 +592,9 @@ namespace hds
         // ---- Abilities -------------------------------------------------------------------------------------------
 
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
-        public static string Refusal(WorldClient caster, UInt16 id, UInt16 targetView)
+        internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn, out OwnPetCast cast)
         {
+            cast = null;
             if (Summons.ContainsKey(id))
             {
                 return CombatManager.GetHandler(caster).isCombatRunning ? "You cannot summon a simulacrum in combat." : null;
@@ -615,16 +607,23 @@ namespace hds
                 if (pet == null || pet.Mob.getIsDead()) return "You need an active simulacrum.";
                 // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
                 // selection (or the caster selected) the caster's own simulacrum is meant.
-                if (targetView > 2)
-                {
-                    Mob selected = AbilityTargets.FindMob(caster, targetView, out _);
-                    if ((selected != null && selected != pet.Mob) || (id == PowerBoost && selected == null)) return "That is not your simulacrum.";
-                }
-                double range = AbilityCatalog.Find(id)?.Number("Ability/SelectionRange", 16) ?? 16;
-                if (OwnerDistanceMetres(pet) > range) return "Your simulacrum is out of range.";
+                if (!MatchesSelection(caster, pet, targetView, targetSpawn)) return "That is not your simulacrum.";
+                if (!InAbilityRange(pet, id)) return "Your simulacrum is out of range.";
+                cast = new OwnPetCast(caster, pet);
             }
             return null;
         }
+
+        internal static bool MatchesSelection(WorldClient caster, Pet pet, UInt16 viewId, UInt16? spawn)
+        {
+            if (viewId <= 2) return true;
+            var view = caster.viewMan.getViewById(viewId);
+            return view?.viewCreated == true && view.entityId == pet.Mob.getEntityId() &&
+                (!spawn.HasValue || spawn.Value == view.spawnId);
+        }
+
+        private static bool InAbilityRange(Pet pet, UInt16 id) =>
+            OwnerDistanceMetres(pet) <= (AbilityCatalog.Find(id)?.Number("Ability/SelectionRange", 16) ?? 16);
 
         public static bool IsToggledOn(WorldClient caster, UInt16 id)
         {
@@ -640,7 +639,7 @@ namespace hds
         }
 
         /// <summary>The cast finished.</summary>
-        public static void Land(WorldClient caster, UInt16 id, UInt16 targetView)
+        internal static void Land(WorldClient caster, UInt16 id, OwnPetCast cast)
         {
             if (Summons.ContainsKey(id))
             {
@@ -654,16 +653,24 @@ namespace hds
                 BoostTick(caster, TimeUtils.GetSimTimeSeconds());
                 return;
             }
-            Pet pet = Of(caster);
-            if (pet == null || pet.Mob.getIsDead()) return;
-            lock (pet) LandOnPet(caster, pet, id);
+            Pet pet = cast?.Target;
+            if (pet == null) return;
+            lock (pet)
+            {
+                if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) ||
+                    (id == PowerBoost && (!InAbilityRange(pet, id) || CombatManager.GetHandler(caster).isCombatRunning)))
+                {
+                    Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
+                    return;
+                }
+                LandOnPet(caster, pet, id, cast.CasterLevel);
+            }
         }
 
-        private static void LandOnPet(WorldClient caster, Pet pet, UInt16 id)
+        private static void LandOnPet(WorldClient caster, Pet pet, UInt16 id, int casterLevel)
         {
             if (pet.Gone || pet.Mob.getIsDead()) return;
             double now = TimeUtils.GetSimTimeSeconds();
-            int casterLevel = caster.playerInstance.Level.getValue()[0];
             var entry = AbilityCatalog.Find(id);
             if (Repairs.Contains(id))
             {
@@ -679,12 +686,22 @@ namespace hds
                 pet.FortifyUntil = now + 600;
                 ApplyMaxHealth(pet);
                 SendHit(pet, FirstFx(entry));
+                Output.WriteDebugLog("[PET] Fortify Simulacra (20) pet=" + pet.SimulacraId + " maxHP=" + pet.Mob.getHealthM() +
+                    " resistance=" + pet.FortifyResistance + " duration=600");
+            }
+            else if (id == PowerBoost)
+            {
+                ApplyPowerBoost(pet, casterLevel, now);
+                SendHit(pet, FirstFx(entry));
+                Output.WriteDebugLog("[PET] Power Boost (25) pet=" + pet.SimulacraId + " melee=" + pet.PowerMeleeDamage +
+                    " ballistic=" + pet.PowerBallisticDamage + " duration=300");
             }
             else if (id == ChargeSimulacra)
             {
                 // Sourced 20% cost reduction / 50% regen bonus for 600 s; see explicit OURS baseline below.
                 Regenerate(pet, now);
                 pet.ChargeUntil = now + 600;
+                Output.WriteDebugLog("[PET] Charge Simulacra (603) pet=" + pet.SimulacraId + " costReduction=20% regenIncrease=50% duration=600");
             }
             else if (id == DetonateProxy)
             {

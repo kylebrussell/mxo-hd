@@ -15,6 +15,7 @@ namespace hds
             internal WorldClient Client; internal ClientData Data;
             internal ushort Ability; internal double End; internal float Seconds;
             internal int World,Life; internal long Generation; internal bool Completed;
+            internal Action Landing;
         }
         // A separate immutable reference keeps ownership distinct from a later cast with equal timestamps.
         public static Cast Begin(WorldClient client,ushort ability,float seconds)
@@ -52,7 +53,23 @@ namespace hds
                 action();return true;
             }
         }
-        public static void After(Cast cast,Action action) => DelayedActions.AfterFor(cast.Client,cast.Seconds,()=>Complete(cast,action));
+        public static void After(Cast cast, Action action)
+        {
+            lock (cast.Data.craftingSync) cast.Landing = action;
+            DelayedActions.AfterFor(cast.Client, cast.Seconds, () => Complete(cast, action));
+        }
+
+        /// <summary>Settle an expired reservation before another normal request can replace its generation.</summary>
+        internal static void FinishDue(WorldClient client, double now)
+        {
+            lock (client.playerData.craftingSync)
+            {
+                if (!states.TryGetValue(client, out var state)) return;
+                var cast = state.Current;
+                if (cast?.Landing != null && cast.Seconds > 0 && now >= cast.End)
+                    Complete(cast, cast.Landing);
+            }
+        }
         public static bool KnownInterruptible(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsInterruptable",-1)==1;
         public static int CastThroughPercent(int damage,ushort maximum,short concentration)
         {
