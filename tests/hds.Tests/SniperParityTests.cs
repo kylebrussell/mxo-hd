@@ -36,22 +36,44 @@ public class SniperParityTests
     {
         var missed = TimedEffects.ForPlayer(Client());
         var hit = TimedEffects.ForPlayer(Client());
+        var immune = TimedEffects.ForPlayer(Client());
         Assert.True(TempMods.TryGet(id, out var effect));
         var marker = Assert.Single(effect.Mods);
         Assert.Equal(delay, marker.Seconds);
         Assert.Equal(chance, marker.Chance);
         Assert.Equal(4, marker.MinValue);
         double now = TimeUtils.GetSimTimeSeconds();
+        immune.Effects.Apply(734, new[] { new TimedEffects.Active { Target = 681, Proc = TempMods.Proc.State, Seconds = 10 } }, now);
+        TimedEffects.Apply(immune, effect, now, rng: new FixedRoll(0));
         Assert.Empty(TimedEffects.Apply(missed, effect, now, rng: new FixedRoll(chance)));
         Assert.Single(TimedEffects.Apply(hit, effect, now, rng: new FixedRoll(chance - .01)));
         TimedEffects.RunDue(now + delay - .001);
         Assert.False(hit.Effects.Has(TempMods.StunAbility));
         TimedEffects.RunDue(now + delay + .001);
         Assert.False(missed.Effects.Has(TempMods.StunAbility));
+        Assert.False(immune.Effects.Has(TempMods.StunAbility));
         Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), active => active.Target == TempMods.StunAbility).Seconds);
         Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), active => active.Parent == TempMods.ControlImmunityTimerAbility).Seconds);
         TimedEffects.RunDue(now + delay + 4.01);
         Assert.True(hit.Effects.IsEmpty);
+        TimedEffects.Clear(immune);
+    }
+
+    [Fact]
+    public void SniperDisciplineGrantsTheUpgradeAndFeedsBallisticAttackAndDamage()
+    {
+        var client = Client();
+        AbilityPassives.SetLoaded(client, new[] { ((ushort)508, (ushort)50) }, true);
+        Assert.True(AbilityPassives.IsLoaded(client, 1136));
+        Assert.Equal(2, AbilityPassives.Total(client, 996));
+        Assert.Equal(2, AbilityStats.Influence(client, 171));
+        Assert.Equal(1, AbilityStats.Attack(client, true));
+        Assert.Equal(101, AbilityStats.ScaleTypedAbilityDamage(client, 1, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(client, 0, 100));
+        AbilityPassives.SetLoaded(client, Array.Empty<(ushort, ushort)>(), true);
+        Assert.False(AbilityPassives.IsLoaded(client, 1136));
+        Assert.Equal(0, AbilityStats.Attack(client, true));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(client, 1, 100));
     }
 
     [Theory]
