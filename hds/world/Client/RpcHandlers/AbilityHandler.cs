@@ -388,14 +388,28 @@ namespace hds
             {
                 return (UInt16)random.Next(from, to + 1);
             }
-            // Spinning Backsweep has an incomplete legacy range and one fixed thrown health modifier.
-            if (source?.Id == 152)
+            // These reviewed legacy rows omit a usable range and have one fixed, instant health modifier.
+            int? fixedType = source?.Id switch
             {
-                var shipped = source.Modifiers.SingleOrDefault(m => m.Target == 108 &&
-                    m.Number("DamageType", -1) == 7 && m.Number("WhenEnabled", -1) == 2 &&
-                    m.Number("DurationType", -1) == 1 && m.Number("MinValue") == m.Number("MaxValue"));
-                if (shipped != null && AbilityValues.TryValue(shipped, 0, 0, out int amount) && amount > 0)
-                    return (UInt16)amount;
+                36 => 2,   // Tinkering
+                130 => 1,  // Hindering Shot
+                152 => 7,  // Spinning Backsweep
+                _ => null
+            };
+            if (fixedType.HasValue)
+            {
+                var health = source.Modifiers.Where(m => m.Target == 108 && m.Number("WhenEnabled", -1) == 2).ToArray();
+                if (health.Length == 1)
+                {
+                    var shipped = health[0];
+                    if (shipped.Number("DamageType", -1) == fixedType.Value &&
+                        shipped.Number("DurationType", -1) == 1 &&
+                        shipped.Number("ValueFunction") == 0 &&
+                        shipped.Has("MinValue") && shipped.Has("MaxValue") &&
+                        shipped.Number("MinValue") == shipped.Number("MaxValue") &&
+                        AbilityValues.TryValue(shipped, 0, 0, out int amount) && amount > 0 && amount <= UInt16.MaxValue)
+                        return (UInt16)amount;
+                }
             }
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? random.Next(50, 81));

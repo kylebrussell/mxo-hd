@@ -241,6 +241,9 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     if r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
+    elif i in (36, 130):
+        base = 'viral 4' if i == 36 else 'ballistic 9'
+        parts.append(f'stored fixed {base} base when legacy endpoints are incomplete; complete damage and admission parity unresolved')
     elif i == 152:
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
