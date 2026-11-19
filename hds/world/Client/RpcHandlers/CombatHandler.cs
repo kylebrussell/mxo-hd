@@ -293,8 +293,7 @@ namespace hds
             bool stunned = mob.IsStunned(now);
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
-            if (!ControlActions.CanUseAbilities(player) ||
-                ability != null && !ControlActions.CanPerformSpecialMove(player, ability.getAbilityID())) ability = null;
+            if (!CombatAnimations.CanResolveQueuedAbility(player, ability)) ability = null;
             bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;

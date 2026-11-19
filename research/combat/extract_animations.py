@@ -1,7 +1,7 @@
 """Read the shipped 7.6005 ILDB without modifying the client.
 
-Export static tactic pairs for the melee styles with their own exchange sets (Self-Defense S, Aikido A,
-Karate K, Kung-Fu W) and their stand-to-tactic opening transitions. The letters come from the ILDB's own
+Export static tactic pairs for the martial-arts and weapon exchange sets, their stand-to-tactic
+transitions and special moves. The letters come from the ILDB's own
 group names: 'Stand Transitions:To KungFuAbility' holds 'Trans Stand-WS'..'Trans Stand-WB', and so on.
 IDs are assigned in file order starting at 255 (client.dll 62649920/62649a4a).
 The bounds identify interlock_master.ilmb in interface_interlock_materials.pkb;
@@ -13,6 +13,18 @@ import json
 import re
 import struct
 from pathlib import Path
+
+
+# The retail interlock rules carry length-prefixed canonical GOB ability symbols. Restrict this
+# extraction to reviewed close-combat bindings; similarly named single-round or generic moves
+# can have different rules. Punch Reversal has a family of tactic variants with the same symbol.
+SPECIAL_BINDINGS = {
+    250: ('controlledburstability', 'SubM Burst MR', 'SubM Special Moves'),
+    256: ('threeroundburstability', '3 round burst MR', 'Rifle Special Moves'),
+    407: ('punchreversalability', 'AikidoAbility RevSlamChicken', 'AikidoAbility Special Moves:AikidoAbility RevSlamChicken'),
+    412: ('tomonageability', 'AikidoAbility TomoNage', 'AikidoAbility Special Moves'),
+    532: ('machinegunkickability', 'Karate MachGunKick long', 'KarateAbility Special Moves'),
+}
 
 
 def extract(client):
@@ -34,6 +46,7 @@ def extract(client):
         return data[start + 2:start + 2 + size].decode('latin1').rstrip('\0')
 
     rows, next_id = [], 255
+    bound = set()
     for tag, start, end, _ in chunks(32, len(data)):
         assert tag == b'GRP '
         group = ''
@@ -45,16 +58,27 @@ def extract(client):
                     assert tag == b'MOVE'
                     row = dict(id=next_id, group=group)
                     next_id += 1
+                    rules = b''
                     for tag, e, f, _ in chunks(c, d):
                         if tag == b'DATA':
                             row['name'] = text(e)
                             row['flags'], row['duration_ms'] = struct.unpack_from('<IH', data, f - 6)
-                    if row['flags'] == 0x100 or (re.match(r'^[SAKW][SPDB] vs [SAKW][SPDB]:', group) and 'static' in row['name'] and
+                        elif tag == b'RULS':
+                            rules = data[e:f]
+                    if row['flags'] == 0x100:
+                        for ability, (symbol, move, rule_group) in SPECIAL_BINDINGS.items():
+                            encoded = symbol.encode('ascii')
+                            rule = b'\x06\x01' + struct.pack('<H', len(encoded)) + encoded + b'\0\0'
+                            if group == rule_group and row['name'].split(' vs ', 1)[0] == move and rule in rules:
+                                row['ability_rule'] = ability
+                                bound.add(ability)
+                    if row['flags'] == 0x100 or (re.match(r'^[ADGKPRSW][SPDB] vs [ADGKPRSW][SPDB]:', group) and 'static' in row['name'] and
                             row['flags'] in (1, 4, 8, 0x41, 0x48)) or row['id'] in (
                                 748, 8198, 9062, 23965, 23966, 23967) or re.match(
-                                r'^Stand Transitions:To (Self-Defense|AikidoAbility|KarateAbility|KungFuAbility)$', group):
+                                r'^Stand Transitions:To (Self-Defense|AikidoAbility|KarateAbility|KungFuAbility|Pistol|Rifle|SubM|DualWeapon)$', group):
                         rows.append(row)
     assert next_id - 255 == 25695
+    assert bound == SPECIAL_BINDINGS.keys()
     return dict(schema_version=1, resource_id=0x24000b8b,
                 source='MxO 7.6005 interlock_master.ilmb',
                 sha256=hashlib.sha256(data).hexdigest(), total_source_moves=25695, moves=rows)

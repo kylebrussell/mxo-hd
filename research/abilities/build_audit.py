@@ -325,13 +325,14 @@ def server(i):
         parts.append('load/unload/startup grants ' + ','.join(map(str, r['grants'])))
     style = [m for m in r.get('style', []) if m['level50'] is not None]
     if style:
-        parts.append('active-style modifiers via 3e/80 b9 (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); ' + ('weapon-specific interlock mapping unverified' if i in (129,147,158) else 'style interlock exchanges'))
+        parts.append('active-style modifiers via 3e/80 b9 (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); ' + ('stock weapon exchanges and opening transitions with a matching equipped gun' if r.get('weapon_style_exchange') else 'style interlock exchanges'))
     if r.get('special_move_style'):
         parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
     if r.get('sneak_bonus'):
         parts.append(f"stealth-started opener +{r['sneak_bonus']} scripted bonus (trigger/addition policy; COMBAT-DEPTH.md)")
     if r.get('special_animation'):
-        parts.append(f"named ILDB special choreography {r['special_animation']} (name mapping policy)")
+        source = 'canonical ability symbol in stock ILDB rule' if r.get('special_animation_rule') else 'name mapping policy'
+        parts.append(f"named ILDB special choreography {r['special_animation']} ({source})")
     if r.get('stealth_shield'):
         parts.append(r['stealth_shield'])
     if r.get('special'):
@@ -418,7 +419,11 @@ def remaining_items(i, current_status, runtime_summary):
     if i == 967 or any(m.get('ProcTriggerChance') not in (None, 0, 1) for m in modifiers):
         open_items['proc'] = ('Verify the 1% chance of 10s immunity' if i == 967 else
                              'Verify stored proc probability, eligibility and resulting effect')
-    if r.get('special_move_style') or r.get('special_animation'):
+    if r.get('weapon_style_exchange'):
+        open_items['choreography'] = 'Verify equipped-weapon exchanges and opening transitions in the stock client'
+    elif r.get('special_animation_rule'):
+        open_items['choreography'] = f"Verify native playback of ILDB move {r['special_animation']} and recover any other cast and outcome variants"
+    elif r.get('special_move_style') or r.get('special_animation'):
         open_items['choreography'] = 'Verify style-specific special-move exchange and presentation'
     if i in PETS or r.get('proxy_technician'):
         open_items['pets'] = 'Verify the sourced owner, target, lifecycle or combat effect'

@@ -66,6 +66,60 @@ public static partial class Scenarios
         Check.Equal(0, player.World.Problems.Count, "Style switching protocol");
     }
 
+    private static async Task RuleBoundStyleChoreography(ScenarioContext context)
+    {
+        // Retail requests: 40 target-u32 01 6b from the Uriah tutorial capture line 10645;
+        // 3e ability selection and 80 b9 ability-u16/view-u16 from docs/COMBAT-STYLES.md.
+        var artist = await context.AddPlayerAsync(NearNpc("RuleArtist") with
+        {
+            OwnedLoadedAbilities = new (ushort, ushort)[] { (101, 50), (412, 50) }
+        });
+        var gunman = await context.AddPlayerAsync(NearNpc("RuleGunman") with
+        {
+            Items = new (int, uint, int)[] { (1, 2503, 1) },
+            OwnedLoadedAbilities = new (ushort, ushort)[] { (158, 50), (246, 50), (250, 50) }
+        });
+        await artist.EnterWorldAsync();
+        await gunman.EnterWorldAsync();
+
+        var first = await artist.WaitForViewNamedAsync("Trainman");
+        SelectStyle(artist, 101);
+        await artist.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 65 00 00 00");
+        artist.SendRpc($"40 {HandleOf(first)} 01 6b");
+        ushort firstView = await WaitForCombatView(artist);
+        Cast(artist, 412, first.ViewId);
+        await AssertRuleMoveAsync(artist, firstView, 751, "Tomo Nage with its explicit ability rule");
+
+        var second = await gunman.WaitForViewNamedAsync("WinterFrost");
+        // Bag slot 1 to weapon slot 105 is the stock equip request (docs/CLIENT-SETUP-PLAN.md).
+        gunman.SendRpc("63 01 69");
+        await gunman.WaitForRpcAsync("65 01 00 69 00 00");
+        await gunman.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 c7 09 00 00");
+        SelectStyle(gunman, 158);
+        await gunman.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 9e 00 00 00");
+        ushort observedPrevious = CombatViewOf(gunman);
+        // An equipped weapon has its own selection; use the interlock button's stock request.
+        gunman.SendRpc($"40 {HandleOf(second)} 01 6b");
+        ushort secondView = await WaitForCombatView(gunman, observedPrevious);
+        await WaitForEntry(gunman, secondView);
+        byte[] opening = CombatEntries(gunman, secondView).First(e => BitConverter.ToUInt16(e, 32) == 1);
+        int transitionOffset = opening[0] == 1 ? 45 : 53;
+        uint transition = BitConverter.ToUInt32(opening, transitionOffset);
+        Check.That(transition >= 21076 && transition <= 21079, "Equipped dual SMGs enter a stock dual-weapon stance");
+        Check.Equal(0x24000b8bu, BitConverter.ToUInt32(opening, transitionOffset + 4), "Stock transition resource");
+
+        Cast(gunman, 250, second.ViewId);
+        await AssertRuleMoveAsync(gunman, secondView, 21082, "Completed Controlled Burst cast joins the current round");
+        Check.Equal(0, artist.World.Problems.Count + gunman.World.Problems.Count, "Rule-bound choreography protocol");
+    }
+
+    private static async Task AssertRuleMoveAsync(HeadlessPlayer player, ushort view, uint expected, string detail)
+    {
+        await player.WaitUntilAsync(() => CombatEntries(player, view).Any(entry =>
+            BitConverter.ToUInt32(entry, 61) == expected && BitConverter.ToUInt32(entry, 65) == 0x24000b8b),
+            detail, TimeSpan.FromSeconds(20));
+    }
+
     /// <summary>Taunt, thrown DOTs and Exile weapons against test NPCs.</summary>
     private static async Task CombatSpecialsNpc(ScenarioContext context)
     {

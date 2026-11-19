@@ -37,7 +37,7 @@ The only producer is `6219f0a0(u16)`. It builds `43 <u16>`, sends it and stores 
 
 - Only the active style's modifiers with `WhenEnabled 2` and `DurationType 2` count. They are evaluated with ValueFunction 2 at the style's learned level, using the native binary32 truncation of `AbilityValues`; for example Kung-Fu @50 gives MeleeAcc 10 + trunc(50 Ã— 1.3f) = 74. They join `AbilityPassives` totals, so accuracy, defence, damage influence and healing use them like other passive totals.
 - A selected style that isn't loaded (directly or as a grant) falls back to Self Defense, which Awakened grants.
-- Weapon styles can be active but add nothing here.
+- Handguns, Rifles and Submachine Guns apply their stored modifiers while active. Their weapon-specific presentation is covered below.
 - Hacker/Coder Style add viral accuracy and damage and Healing; Spy Style adds thrown and melee bonuses; each style has its own defence and Withdraw values (see the CSV).
 
 ## Special-move set
@@ -48,7 +48,9 @@ Abilities that have a stance but aren't special moves are **not** gated yet. Tha
 
 ## Style shown to other players
 
-`CurCombatExclusiveAbility` is a self-view-only attribute: Object12 has no other-view index for it. Other players see a style through the interlock. The ILDB's exchange groups are lettered by style, and its own groups give the letters: `Stand Transitions:To KungFuAbility` holds `Trans Stand-WS..WB`, `To KarateAbility` holds `KS..KB`, `To AikidoAbility` holds `AS..AB`, and `To Self-Defense` holds `SS..SB` (also MuayThai M, TaiChi T, Pistol P, SubM G, Rifle R, DualWeapon D). Tactic-pair exchanges exist for A D G K P R S W. Round entries now choose each fighter's exchange from the pair `<style><tactic> vs <style><tactic>` and its opening `Trans Stand-<style><tactic>`. Fighters and observers receive the same entry. NPCs use Self-Defense. Hacker, Coder and Spy Style have no exchange set of their own, so they use Self-Defense's; that is a choice. Missing pairs fall back to Self-Defense. `research/combat/extract_animations.py` now exports the S/A/K/W static pairs and their stand transitions (2,244 moves).
+`CurCombatExclusiveAbility` is a self-view-only attribute: Object12 has no other-view index for it. Other players see a style through the interlock. The ILDB's exchange groups are lettered by style, and its own groups give the letters: `Stand Transitions:To KungFuAbility` holds `Trans Stand-WS..WB`, `To KarateAbility` holds `KS..KB`, `To AikidoAbility` holds `AS..AB`, and `To Self-Defense` holds `SS..SB` (also MuayThai M, TaiChi T, Pistol P, SubM G, Rifle R, DualWeapon D). Tactic-pair exchanges exist for A D G K P R S W. Round entries now choose each fighter's exchange from the pair `<style><tactic> vs <style><tactic>` and its opening `Trans Stand-<style><tactic>`. Fighters and observers receive the same entry. NPCs use Self-Defense. Hacker, Coder and Spy Style have no exchange set of their own, so they use Self-Defense's; that is a choice. Missing pairs fall back to Self-Defense.
+
+The 7.6005 ILDB uses equipment rules for the Pistol (P), Rifle (R), SubM (G) and DualWeapon (D) sets. Their stand transition records carry `ranged_single_pistol`, `ranged_rifle`, `ranged_machine_gun` or both dual-weapon terms, respectively. The server selects those sets when a player has the matching combat discipline active and gun equipped. The equipped item and the Free Attack selection can differ. The active-discipline check and the fallback when they differ are server policy pending stock-client verification. `research/combat/extract_animations.py` exports 7,435 moves from resource `0x24000b8b`, including these static pairs, transitions and the reviewed special rules.
 
 ## Special attacks
 
@@ -67,6 +69,36 @@ Abilities that have a stance but aren't special moves are **not** gated yet. Tha
 The NPC templates that grant the NPCKilledOnlyBy* abilities are not shipped. Server policy assigns them by name: "Vampire" â†’ wood, "Werewolf"/"Lycan" â†’ silver, "Zombie" â†’ holy water. The holy-water link is supported by `tempmods.py` 2912/2940, where zombie-virus characters receive NPCKilledOnlyByHolyWater. Only zombies spawn in the current data. `?exileweakness wood|silver|holywater|none [NPC name]` (MXO_DEV_COMMANDS=1) sets a test NPC's weakness.
 
 Precise Blow 15 and Punishing Blows 16 are toggles (`IsAToggleAbility`, not `IsCombatExclusive` or `CombatSpecialMove`). They are not style specials and remain missing. Self Defense 17 is a style and is covered above.
+
+## Stock special-move bindings
+
+The shipped ILDB’s `RULS` chunks include length-prefixed GOB ability symbols. The extractor checks each symbol within the reviewed move group. A checked binding takes precedence over the legacy name table. For Punch Reversal, the selected record follows the opponent’s style and tactic where the ILDB supplies a variant.
+
+| Ability | Selected stock move | ID |
+|---|---|---|
+| Controlled Burst 250 | SubM Burst MR | 21082 |
+| Three Round Burst 256 | 3 round burst MR | 11367 |
+| Punch Reversal Catch Slam 407 | AikidoAbility RevSlamChicken vs SS, SP or SD | 827–829 |
+| Tomo Nage 412 | AikidoAbility TomoNage with the explicit Tomo Nage rule | 751 |
+| Machinegun Kick 532 | Karate MachGunKick long | 5934 |
+
+Controlled Burst and Three Round Burst keep their stored cast times. On cast completion, an actor with the required gun and active discipline queues the special when its target is already their interlock opponent. The round rechecks that loadout and plays the bound motion if the special lands. Moving the completed cast into the next interlock round is server scheduling policy. Exact retail cast scheduling, free-attack choreography, and distinct failure choreography still need evidence.
+
+Hindering Shot 130, Bullet Spray 247 and Sniper Shot 505 remain open. Their catalog symbols have no matching activation rule in the reviewed stock special groups. Wrist Throw 534 has a stock symbol in an Aikido-gated record, while its GOB stance is Karate, so the existing alias still needs reconciliation. Similarity of move names alone does not resolve these bindings.
+
+Sever Artery 341 is the catalog’s existing `RandomCombatStateChance` caller and already executes the shipped roll logic. The Exile weapon scripts test ownership of the three weakness grants. The available NPC spawn data lacks those grants, so the existing name-based classifications remain server policy.
+
+### Native check for the rule bindings
+
+Use the `style-choreography` NativeQa mode at the test NPC cluster. Its ready messages print the style, move and expected ID. The fixture seeds a revolver, rifle and dual SMGs in bags 10–12 and grants the dual SMG proficiency.
+
+1. Start with Self Defense 17 and land Head Butt 197. Check move 284.
+2. Select Aikido 101 and land Tomo Nage 412 and Punch Reversal 407. Check 751 and 827–829.
+3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
+4. Equip the revolver, rifle and dual SMGs in turn and select their matching styles. Land Pistol Slide 241, Body Shot 105 and Controlled Burst 250. Check 9527, 11364 and 21082, and their matching opening stance. Controlled Burst has a four-second cast before its round.
+5. Record each landed motion, its server move ID and the complete outgoing RPC. Use fresh test NPCs as needed and mark rejected, unavailable or visually wrong slots separately.
+
+The headless scenario sends the stock-sized style, equip, close-combat and ability requests. It decodes the opening dual-weapon transition and checks the Tomo Nage and Controlled Burst IDs on delivered combat entries. The native fixture still awaits stock-client playback.
 
 ## Validation
 

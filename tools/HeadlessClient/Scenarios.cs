@@ -227,6 +227,7 @@ public static partial class Scenarios
         new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,
             new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
         new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
+        new Scenario("combat-style-rule-choreography", RuleBoundStyleChoreography, StillNpcs),
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),

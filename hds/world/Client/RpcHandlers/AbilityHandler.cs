@@ -314,8 +314,8 @@ namespace hds
                 UInt16 targetView = hostileView;
                 // An instant ability on the current close-combat target is the player's next move in the fight, as in
                 // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
-                if (ability.getCastingTime() > 0 ||
-                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
+                bool queueWithRound = ability.getCastingTime() <= 0 || CombatAnimations.CanQueueGunCast(client, AbilityID);
+                if (!queueWithRound || !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
                     if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
                 }

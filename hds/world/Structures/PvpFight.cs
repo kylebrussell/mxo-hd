@@ -583,10 +583,8 @@ namespace hds
                 CombatTacticType pType = CombatTactics.Type(p.Client), nType = CombatTactics.Type(n.Client);
                 AbilityItem pAbility = opening ? null : p.QueuedAbility, nAbility = opening ? null : n.QueuedAbility;
                 if (!counter) nAbility = null;
-                if (!ControlActions.CanUseAbilities(p.Client) ||
-                    pAbility != null && !ControlActions.CanPerformSpecialMove(p.Client, pAbility.getAbilityID())) pAbility = null;
-                if (!ControlActions.CanUseAbilities(n.Client) ||
-                    nAbility != null && !ControlActions.CanPerformSpecialMove(n.Client, nAbility.getAbilityID())) nAbility = null;
+                if (!CombatAnimations.CanResolveQueuedAbility(p.Client, pAbility)) pAbility = null;
+                if (!CombatAnimations.CanResolveQueuedAbility(n.Client, nAbility)) nAbility = null;
                 bool pWithdrawal=WithdrawalInput.Ordinary(p.Withdrawing,opening,pAbility,p.OrdinaryWithdrawalRequested);
                 bool nWithdrawal=WithdrawalInput.Ordinary(n.Withdrawing,opening,nAbility,n.OrdinaryWithdrawalRequested);
                 if (!opening)
