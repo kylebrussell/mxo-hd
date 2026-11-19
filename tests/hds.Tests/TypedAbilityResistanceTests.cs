@@ -43,6 +43,44 @@ public class TypedAbilityResistanceTests
         Assert.Equal(100,TypedAbilityResistance.Player(source,target,371,100));AbilityBuffs.RemoveAll(target);
     }
     [Theory]
+    [InlineData(5, 1033)]
+    [InlineData(8, 157)]
+    public void AwakenedResistanceLeavesControlAndRegenerationOnTheirExistingPaths(ushort ability, ushort stat)
+    {
+        var target = Client();
+        var source = Client();
+        var effects = TimedEffects.ForPlayer(target);
+        ushort? HealthPerTick() =>
+            HealthRegen.Next(500, 1000, false, false, 2, AbilityStats.Influence(target, 112));
+        int InnerStrengthPerTick()
+        {
+            double carry = 0;
+            return AbilityHandler.RegenAmount(false, ref carry, AbilityStats.Influence(target, 114));
+        }
+
+        var health = HealthPerTick();
+        var innerStrength = InnerStrengthPerTick();
+        Assert.True(ControlActions.CanUseAbilities(target));
+        Assert.Equal((ushort)20, AbilityCosts.Effective(target, ability));
+        Assert.True(AbilityBuffs.Apply(target, ability));
+        Assert.Equal(75, AbilityStats.Player(target, stat));
+        Assert.Equal(health, HealthPerTick());
+        Assert.Equal(innerStrength, InnerStrengthPerTick());
+
+        Assert.True(TempMods.TryGet(315, out var stun));
+        TimedEffects.Apply(effects, stun, TimeUtils.GetSimTimeSeconds(), source, "Source");
+        Assert.False(ControlActions.CanUseAbilities(target));
+        Assert.False(ControlActions.CanMove(target));
+        Assert.Equal(75, AbilityStats.Player(target, stat));
+        Assert.Equal(health, HealthPerTick());
+        Assert.Equal(innerStrength, InnerStrengthPerTick());
+        Assert.True(TimedEffects.RemoveParent(effects, 315));
+        Assert.True(ControlActions.CanUseAbilities(target));
+        Assert.True(AbilityBuffs.Remove(target, ability));
+        Assert.Equal(0, AbilityStats.Player(target, stat));
+    }
+
+    [Theory]
     [InlineData("0","mxotest_x","1","65",1135)] [InlineData("1","mxo","1","65",1135)]
     [InlineData("1","mxotest_","1","65",1135)] [InlineData("1","mxotest_x;bad","1","65",1135)]
     [InlineData("1","mxotest_x","0","65",1135)] [InlineData("1","mxotest_x","1","49",1135)]
