@@ -58,6 +58,8 @@ namespace hds
             public int HealthChangedValue;
             public int DrainAmount;
             public double DrainSeconds;
+            public uint PeriodicFx;
+            public double PeriodicFxSeconds;
             /// <summary>Buffs of the same non-zero family replace each other.</summary>
             public int Family;
             public Modifier[] Modifiers;
@@ -74,6 +76,7 @@ namespace hds
             public bool EvadeShield;
         }
 
+        internal const ushort HyperSpeed = 12;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;
@@ -320,6 +323,12 @@ namespace hds
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((27, PlayerViewAttributes.U16(bits))));
         }
 
+        private static void PresentHyperSpeed(WorldClient client, float scale)
+        {
+            client.playerInstance.MovementScale.setValue(scale);
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale))));
+        }
+
         public static int Total(WorldClient client, UInt16 stat)
         {
             int total = 0;
@@ -504,6 +513,7 @@ namespace hds
             }
             RefreshVitals(client);
             if (buff.DissemblingType != 0) PresentDissembling(client);
+            if (abilityId == HyperSpeed) PresentHyperSpeed(client, buff.MovementScale);
             if (abilityId == MovementAccelerator)
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
@@ -516,6 +526,7 @@ namespace hds
                     TimedEffects.RemoveParent(TimedEffects.ForPlayer(client), abilityId);
             }
             if (buff.DrainAmount > 0 && buff.DrainSeconds > 0) ScheduleDrain(client, active);
+            if (buff.PeriodicFx != 0 && buff.PeriodicFxSeconds > 0) SchedulePeriodicFx(client, active);
             if (buff.Seconds > 0)
             {
                 // Comes off on the timed-effects server tick (TimedEffects.RunDue)
@@ -546,6 +557,42 @@ namespace hds
         {
             if(active.Drain==null || !active.Drain.Current)return;
             DelayedActions.AfterFor(client,active.Definition.DrainSeconds,()=>TickActiveDrain(client,active));
+        }
+
+        private static void SchedulePeriodicFx(WorldClient client, Active active)
+        {
+            if (active.Drain?.Current != true) return;
+            DelayedActions.AfterFor(client, active.Definition.PeriodicFxSeconds, () =>
+            {
+                if (TickPeriodicFx(client, active)) SchedulePeriodicFx(client, active);
+            });
+        }
+
+        internal static bool TickPeriodicFx(WorldClient client, Active active)
+        {
+            var lease = active.Drain;
+            uint effect = active.Definition.PeriodicFx;
+            if (effect == 0 || lease == null || !ReferenceEquals(lease.Client, client) ||
+                !client.IsCurrentEndpointOwner || !lease.Current) return false;
+
+            bool published = false;
+            byte counter = 0;
+            client.TransportFence.TryRun(lease.Transport, () =>
+            {
+                lock (lease.Data.activeBuffs)
+                {
+                    if (!lease.Current || lease.Data.isDead || lease.Data.duelDeath ||
+                        !lease.Data.activeBuffs.TryGetValue(active.AbilityId, out var current) ||
+                        !ReferenceEquals(current, active)) return;
+                    counter = ServerPackets.QueuePlayerAbilityEffect(client, effect);
+                    published = true;
+                }
+            });
+            if (!published) return false;
+            client.FlushQueue();
+            if (lease.Current)
+                PvpFlag.ToWatchers(client, ServerPackets.BuildPlayerAbilityEffect(effect, counter, false));
+            return true;
         }
 
         public static void TickDrain(WorldClient client, ushort id, int generation)
@@ -679,6 +726,7 @@ namespace hds
             }
             if (buff.MovementScale > 0 && !keepMovement)
             {
+                if (abilityId == HyperSpeed) PresentHyperSpeed(client, 0f);
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             }
             if (buff.EvadeShield)

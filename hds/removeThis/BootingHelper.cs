@@ -105,6 +105,13 @@ namespace hds
             }
 
 
+            // Late Object12 views need the same active speed and state as present observers.
+            if (BitConverter.ToSingle(client.playerInstance.MovementScale.getValue(), 0) != 0f)
+            {
+                client.playerInstance.MovementScale.enable();
+                client.playerInstance.DissemblingType.enable();
+            }
+
             client.playerInstance.CurExclusiveAbility.setValue(CurCombatExclusiveAbility); //TODO: see what's this
 
             // PvP (docs/PVP.md): the PvP flag and a duel in progress are part of what a client needs to know about a

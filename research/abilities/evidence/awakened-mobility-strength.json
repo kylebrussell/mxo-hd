@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "12": {
+      "checks": {
+        "script": {
+          "source": "HyperSpeedInit and HyperSpeedTerm in tempmods.py set and clear kHyperSpeed. The entilsar lastday2 capture supplies the 600-second bonus and +0.45 MovementScale. Object12 stores the corresponding observer and creation fields.",
+          "runtime": "AbilityBuffs preserves the captured owner update, stores the active scale, sends it to existing observers and clears it at removal. Player creation includes the nonzero scale and current presentation mask.",
+          "test": "The ability-parity-awakened-mobility disposable uses the full stock ability request, sees the timed +45 record and observer scale, brings a late observer in, and verifies the dismissal resets both observers."
+        }
+      }
+    },
+    "13": {
+      "checks": {
+        "script": {
+          "source": "GOB 13 schedules PlayHyperStrengthFX at three seconds with effect 0x280009d7 and ISDrainWithAbilityDeactivation at five seconds with value 25. Its shipped character prerequisite is 99.",
+          "runtime": "The activation's guarded lifetime schedules its periodic effect separately from the existing drain. Dismissal and drain shortfall retire the same activation and prevent later effects.",
+          "test": "The ability-parity-awakened-mobility disposable seeds 13 only for an explicitly forced profile, uses the ordinary 43-byte request, sees repeated FX and the live drain, then verifies switch-off. BuffDrainLifetimeTests.HyperStrengthEmitsItsOwnPeriodicEffectAndStopsAfterDrainShortfall verifies exact effect, learned melee damage, debit and shortfall cleanup."
+        }
+      }
+    }
+  }
+}

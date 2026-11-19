@@ -21,6 +21,13 @@ namespace hds
         public static void SendPlayerAbilityEffect(WorldClient recipient, UInt32 effect)
         {
             if (effect == 0) return;
+            byte counter = QueuePlayerAbilityEffect(recipient, effect);
+            recipient.FlushQueue();
+            PvpFlag.ToWatchers(recipient, BuildPlayerAbilityEffect(effect, counter, false));
+        }
+
+        internal static byte QueuePlayerAbilityEffect(WorldClient recipient, UInt32 effect)
+        {
             byte counter;
             lock (recipient.playerData)
             {
@@ -29,8 +36,7 @@ namespace hds
                 recipient.playerInstance.EffectCounter.setValue(counter);
             }
             recipient.messageQueue.addObjectMessage(BuildPlayerAbilityEffect(effect, counter, true), false);
-            recipient.FlushQueue();
-            PvpFlag.ToWatchers(recipient, BuildPlayerAbilityEffect(effect, counter, false));
+            return counter;
         }
 
         public static byte[] BuildPlayerAbilityEffect(UInt32 effect, byte counter, bool ownView)

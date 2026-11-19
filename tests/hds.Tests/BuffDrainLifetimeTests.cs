@@ -117,6 +117,33 @@ public class BuffDrainLifetimeTests
             {found.Add(id);Assert.True(AbilityBuffs.PureDrainTermination(buff),"Unhandled draining definition "+id);}
         Assert.Equal(new ushort[]{13,16,442,941,943},found.OrderBy(x=>x));
     }
+    [Fact]
+    public void HyperStrengthEmitsItsOwnPeriodicEffectAndStopsAfterDrainShortfall()
+    {
+        var client = Client();
+        using var owner = new BuffDrainTestOwner(client);
+        AbilityPassives.SetLoaded(client, new[] { ((ushort)13, (ushort)40) }, true);
+        Assert.True(AbilityBuffs.Apply(client, 13));
+        var active = client.playerData.activeBuffs[13];
+        Assert.Equal(80, AbilityBuffs.Total(client, 159));
+        Assert.Equal(3, active.Definition.PeriodicFxSeconds);
+        Assert.Equal(5, active.Definition.DrainSeconds);
+        Assert.Equal(25, active.Definition.DrainAmount);
+
+        Assert.True(AbilityBuffs.TickPeriodicFx(client, active));
+        Assert.Equal((byte)1, client.playerInstance.EffectCounter.getValue()[0]);
+        Assert.Equal(0x280009d7u, BitConverter.ToUInt32(client.playerInstance.EffectID.getValue()));
+        AbilityBuffs.TickActiveDrain(client, active);
+        Assert.Equal(75, AbilityHandler.CurrentInnerStrength(client));
+
+        client.playerInstance.InnerStrengthAvailable.setValue((ushort)24);
+        AbilityBuffs.TickActiveDrain(client, active);
+        Assert.False(AbilityBuffs.IsActive(client, 13));
+        Assert.Equal(0, AbilityBuffs.Total(client, 159));
+        Assert.False(AbilityBuffs.TickPeriodicFx(client, active));
+        Assert.Equal((byte)1, client.playerInstance.EffectCounter.getValue()[0]);
+    }
+
     [Theory][InlineData(941,7)][InlineData(943,6)]
     public void HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords(ushort id,int cost)
     {
