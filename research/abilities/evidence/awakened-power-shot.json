@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "14": {
+      "checks": {
+        "stats": {
+          "source": "GOB 14 packs a self WhenEnabled 1, instant ValueFunction 4 Current Inner Strength modifier; STA 0xc40001af identifies a caster IS boost.",
+          "runtime": "CombatSpecials.Landed reaches AwakenedPowerShot.Landed only after target admission and successful landing. Its separate source sample restores caster Inner Strength up to MaxInnerStrength and publishes the actual amount and caster FX.",
+          "test": "AwakenedPowerShotTests checks the cap, no change at cap or for a dead caster, and the source bounds and level-shaped center. The disposable ability-parity-awakened-power-shot mode exercises a full target request, actual health and IS updates, separate effect IDs and the 60 s reuse."
+        }
+      }
+    }
+  }
+}

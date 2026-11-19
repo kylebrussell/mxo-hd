@@ -60,6 +60,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             if (IsRifleOpener(id)) return "Rifles opener: 2-second cast outside combat; damage and effects at cast completion";
+            if (id == AwakenedPowerShot.Id) return "Power Shot: shipped function-4 melee damage and independent capped caster Inner Strength on landing; free-cast contest and native scaling pending";
             if (thrownDots.Contains(id)) return id == SeverArtery
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
@@ -176,6 +177,7 @@ namespace hds
         public static void Landed(WorldClient caster, ushort id)
         {
             id = AbilityCatalog.Canonical(id);
+            if (id == AwakenedPowerShot.Id) AwakenedPowerShot.Landed(caster);
             if (casterBuffs.Contains(id) && AbilityBuffs.Apply(caster, id)) caster.FlushQueue();
             if (id == SideRollEscape)
             {

@@ -1,0 +1,9 @@
+# Power Shot
+
+GOB 14 has separate instant components for melee damage to a valid enemy and a gain in current Inner Strength for the caster. Both store a 10–100 range and ValueFunction 4. The health component is WhenEnabled 2 and DamageType 0. The current Inner Strength component is WhenEnabled 1 and supplies the caster message 0xc40001af and a separate caster FX.
+
+Client 7.6005 function 62517ff0 dispatches function 4 to 625180c5. It interpolates the Gaussian center between the range midpoint and a high-level center biased 0.8 toward the maximum, with float intermediates. The constructor at 62818ff0 supplies the shipped binary32 0.8 and 62819050 supplies six standard deviations per range. The RNG clamps the draw in the stored range. The server uses the source level thresholds 12 and 50 with the caster's character level. It uses the existing Gaussian sampler, standard melee influence and the typed target resistance path. Exact retail server RNG and the level argument used on live server landings still need retail evidence.
+
+The caster draws independently after a successful target landing. The amount applied caps at the caster's maximum Inner Strength and the own-view value and boost message agree. An unsuccessful queued round bypasses this callback. The existing free-cast contest policy and generic pre-cast IS cost still need evidence.
+
+Use NativeQa mode `ability-parity-awakened-power-shot`. Start with low IS, select Melee Dummy and cast from Actions at rest. Capture the landed damage, separate target and caster effects, IS change and 60-second reuse. After reuse, repeat in Self Defense interlock and record whether the stock action sends, queues, hits or misses. Capture any named animation. This session can verify landed behavior on one build. A retail sample with known level and stats is still needed for final scaling, and free-cast deflection remains open.
