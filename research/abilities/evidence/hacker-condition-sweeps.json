@@ -2,11 +2,6 @@
   "abilities": {
     "379": {
       "checks": {
-        "script": {
-          "source": "GOB 379 stores a 35-second sweep with a five-second update and 20% NegativeConditionSweepPulse. tempmods.py checks each dispellable debuff parent once.",
-          "runtime": "AbilityHostile.ApplySweep installs one periodic record; TimedEffects drives it at the stored interval. AbilityHostile.Pulse preserves exempt debuffs and unrelated buffs.",
-          "test": "AbilityHostileTests.TimedSweepsWaitForTheirFirstTickAndRollAtTheStoredThreshold and GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius."
-        },
         "behavior-tests": {
           "source": "GOB 379 stores a 35-second sweep with a five-second update and 20% NegativeConditionSweepPulse. tempmods.py checks each dispellable debuff parent once.",
           "runtime": "AbilityHostile.ApplySweep installs one periodic record; TimedEffects drives it at the stored interval. AbilityHostile.Pulse preserves exempt debuffs and unrelated buffs.",
