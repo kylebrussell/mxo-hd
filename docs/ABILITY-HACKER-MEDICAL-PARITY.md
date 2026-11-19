@@ -8,7 +8,7 @@ After CSR enters and is controllable, stay at the spawn (24800, 495, −1498). S
 | --- | --- | --- |
 | QAFriend | 25200, 495, −1498 | 4 m east, in both healing tests |
 | QAFar | 24800, 495, −1073 | 4.25 m north, outside the Physician Heal radius |
-| QAOther | 24500, 495, −1498 | 3 m west, friendly nonmember |
+| QAOther | 24560, 495, −1318 | 3 m northwest, friendly nonmember |
 | QAEnemy | 24800, 495, −1798 | 3 m south, flagged opposing organization |
 
 Recruit QAFriend and QAFar through the stock Mission Team radial. Submit `{"actor":"QAFriend","action":"accept","inviter":"CSR_Tester"}` and repeat for QAFar after their invitations.
@@ -21,4 +21,4 @@ Recruit QAFriend and QAFar through the stock Mission Team radial. Submit `{"acto
 | 46 Fast Healing 1.0 | Move QAFar to 24800, 495, −398, or 11 m from CSR. With Self Defense active, try QAFar and hostile QAEnemy before casting on wounded QAFriend. Observe +40% Health Regen on QAFriend only and compare 100, 140, and 100 HP per natural two-second tick before, during and after helper `?dismissbuff 46`. |
 | 237 Fast Healing 2.0 | Repeat the same admission and natural regeneration comparison for +60% and 100, 160, and 100 HP per tick. |
 
-The 418 grant uses the shipped zero-valued 418→1098 relation and live readiness. Collect the stock Actions result in addition to the base ability and membership records. The merged A2 and B3 executable evidence accounts for the non-native checks on 237, 418 and 1098. The fixture stages all five native-family checks.
+The 418 grant uses the shipped zero-valued 418→1098 relation and live readiness. Stock confirmed the two Fast Healing ranks, both parent grants and Physician Heal. The disposable replay also checks the exact friendly-target refusal text for hostile and out-of-range attempts. [Native results](https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804)
