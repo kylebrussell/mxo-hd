@@ -527,6 +527,7 @@ namespace hds
             }
             if (buff.DrainAmount > 0 && buff.DrainSeconds > 0) ScheduleDrain(client, active);
             if (buff.PeriodicFx != 0 && buff.PeriodicFxSeconds > 0) SchedulePeriodicFx(client, active);
+            AwakenedTacticalToggles.Schedule(active, drain);
             if (buff.Seconds > 0)
             {
                 // Comes off on the timed-effects server tick (TimedEffects.RunDue)

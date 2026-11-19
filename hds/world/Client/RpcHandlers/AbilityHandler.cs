@@ -131,7 +131,7 @@ namespace hds
             }
             if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
             {
-                Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");
+                AwakenedTacticalToggles.Refuse(Store.currentClient, AbilityID);
                 return;
             }
             if (AbilityID == AbilityDisguise.Ability && !Stealth.IsOn(Store.currentClient, AbilityID) &&
