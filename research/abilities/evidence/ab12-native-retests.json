@@ -1,0 +1,117 @@
+{
+  "families": {
+    "rifle-interlock-special": {
+      "representative": 105,
+      "result": "pass",
+      "head": "77bc0c65",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509",
+      "scope": "Rifle equipped at login, Rifles reselected after Close Combat, Body Shot next-move announcement and landed animation 11364. Opening stand records and damage/ancillary modifier parity remain separate."
+    }
+  },
+  "abilities": {
+    "105": {
+      "family": "rifle-interlock-special",
+      "checks": {
+        "choreography": {
+          "source": "GOB 105 Rifles style requirement and shipped ILDB exchange 11364.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 11364 binding. The stock rifle run announced the next move and played 11364. https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509"
+        }
+      }
+    },
+    "146": {
+      "checks": {
+        "script": {
+          "source": "GOB 146 selects ThrownDOT. tempmods.py plays the tick FX and deals rounded type-7 damage.",
+          "runtime": "TempMods.DotTick, TimedEffects.Active.TickDamage and PlayerEffects/MobEffects.Ticked run the typed DOT callback.",
+          "test": "CombatStyleTests.ThrownDotsUseTheirStoredValuesAndTheScriptTick checks the GOB-backed templates; AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry checks the shared scheduler. Stock Poison Knife applied a 25-second thrown DOT with 3-point ticks. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        }
+      }
+    },
+    "241": {
+      "family": "handgun-interlock-special",
+      "checks": {
+        "choreography": {
+          "source": "GOB 241 Handguns style requirement and shipped ILDB exchange 9527.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 9527 binding. Stock Grab set Off Balance, allowing the move to queue and land 9527. https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509"
+        }
+      }
+    },
+    "250": {
+      "family": "smg-interlock-special"
+    },
+    "260": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 260 Kung-Fu style requirement and shipped ILDB exchange 8082.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 8082 binding. Stock Misdirect Punch landed 8082 after switching to Kung-Fu. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        }
+      }
+    },
+    "267": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 267 Karate style requirement and shipped ILDB exchange 5937.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 5937 binding. Stock Sky-High Sidekick landed 5937 after switching to Karate. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        }
+      }
+    },
+    "281": {
+      "checks": {
+        "script": {
+          "source": "GOB 281 selects ThrownDOT. tempmods.py plays the tick FX and deals rounded type-7 damage.",
+          "runtime": "TempMods.DotTick, TimedEffects.Active.TickDamage and PlayerEffects/MobEffects.Ticked run the typed DOT callback.",
+          "test": "CombatStyleTests.ThrownDotsUseTheirStoredValuesAndTheScriptTick checks the GOB-backed templates; AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry checks the shared scheduler. Stock Wounding Throw applied its separate 50-second thrown DOT. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        }
+      }
+    },
+    "354": {
+      "checks": {
+        "stats": {
+          "source": "GOB 354 and the stat 112/114 ValueType=1 definitions. Current and Max IS -58 with Max IS clamped first, and stat 114 at -50% for 30 seconds.",
+          "runtime": "TimedEffects applies the signed direct and percent stats, AbilityHostile handles the 354 current-IS component, and AbilityHandler/HealthRegen consume the regen modifiers.",
+          "test": "AbilityHostileTests.DestroyResolveTakesCurrentInnerStrengthAtOnce checks vital mutation; DestroyDebuffsScaleNaturalRegenUntilExpiry checks actual ticks and restored rates. ability-status checks max-vital updates and removal. Native Status confirms the percent regen changes. https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958 https://github.com/kylebrussell/mxo-hd/pull/327#issuecomment-7006496068"
+        }
+      }
+    },
+    "428": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 428 Kung-Fu style requirement and shipped ILDB exchange 8084.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 8084 binding. Stock Suicidal Butterfly landed 8084 in Kung-Fu. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        }
+      }
+    },
+    "430": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 430 Kung-Fu style requirement and shipped ILDB exchange 8080.",
+          "runtime": "CombatAnimations.Special selects the named ILDB move, and the interlock exchange sends it for a landed special.",
+          "test": "CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration covers the exact 8080 binding. Stock Wooden Dummy Drill landed 8080 in Kung-Fu. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        }
+      }
+    },
+    "476": {
+      "checks": {
+        "stats": {
+          "source": "GOB 476 and the stat 112/114 ValueType=1 definitions. Max HP -520 and stat 112 at -20% for 40 seconds.",
+          "runtime": "TimedEffects applies the signed direct and percent stats, AbilityHostile handles the 354 current-IS component, and AbilityHandler/HealthRegen consume the regen modifiers.",
+          "test": "AbilityHostileTests.DestroyHealthLowersMaximumAndRestoresItAfterwards checks vital mutation; DestroyDebuffsScaleNaturalRegenUntilExpiry checks actual ticks and restored rates. ability-status checks max-vital updates and removal. Native Status confirms the percent regen changes. https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958 https://github.com/kylebrussell/mxo-hd/pull/327#issuecomment-7006496068"
+        }
+      }
+    },
+    "647": {
+      "checks": {
+        "script": {
+          "source": "GOB 647 selects TauntAggro; tempmods.py calls AI.setMostHated for admitted NPCs.",
+          "runtime": "CombatSpecials.CastTaunt invokes ApplyNpcTaunt and the normal aggro consumer.",
+          "test": "EngageFoesTests exercises the shared ApplyNpcTaunt mutation with a live NPC and stale-source refusals. Stock Taunt made WinterFrost and nearby NPCs switch to CSR and pursue. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        }
+      }
+    }
+  }
+}

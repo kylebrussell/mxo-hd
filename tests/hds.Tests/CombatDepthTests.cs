@@ -79,6 +79,7 @@ public class CombatDepthTests
     }
     [Theory]
     [InlineData(197,284)] [InlineData(198,285)] [InlineData(287,19597)] [InlineData(267,5937)] [InlineData(412,751)]
+    [InlineData(105,11364)] [InlineData(241,9527)] [InlineData(260,8082)] [InlineData(428,8084)] [InlineData(430,8080)]
     public void SpecialsUseTheirOwnShippedMoveAndDuration(ushort ability,uint move)
     {
         var animation=CombatAnimations.Special(ability,true,CombatTactic.Speed)!;

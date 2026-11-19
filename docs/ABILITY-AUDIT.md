@@ -59,6 +59,8 @@ The CLI and generated Markdown report status totals, status transitions and
 remaining-item totals and deltas. Include the status transition counts in the PR
 and the handoff. A baseline made before AB0 has no remaining-item counts.
 
+The [ranked retest fixtures](ABILITY-EVIDENCE-RETESTS.md) document which stock observations can close current rows and how to run the matching headless checks.
+
 ## Port pending feature branches
 
 1. Merge updated master into the feature branch, retaining all feature behavior, source evidence and individual manuals.
