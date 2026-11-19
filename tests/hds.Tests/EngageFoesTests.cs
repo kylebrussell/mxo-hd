@@ -1,4 +1,5 @@
 using hds;
+using hds.shared;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -48,6 +49,35 @@ public class EngageFoesTests
         var entry=AbilityCatalog.Find(610);Assert.Equal(3,entry.Number("Ability/CastDirectObjects"));Assert.Equal(6,entry.Number("Ability/RadiusOfEffect"));
         Assert.Equal(50,entry.Number("Ability/AbilityInnerStrengthCost"));Assert.Equal(2,entry.CastSeconds);Assert.Equal(30,entry.Number("Ability/RecastTime"));
         Assert.True(TempMods.TryGet(610,out var effect));var mod=Assert.Single(effect.Mods);Assert.Equal((ushort)93,mod.Target);Assert.Equal(6,mod.Seconds);
+    }
+
+    [Fact]
+    public void TauntUsesTheCasterFourMetreBoundaryAndRejectsAnUnseenTarget()
+    {
+        using var f = new Fixture();
+        f.Source.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
+        f.Mob.setXPos(400);
+        f.Mob.setYPos(495);
+        var outside = new Mob();
+        outside.setEntityId(6100010);
+        outside.setDistrict(1);
+        outside.setXPos(401);
+        outside.setYPos(495);
+        outside.setHealthC(500);
+        var outsideView = f.Source.viewMan.addView(outside.getEntityId(), 599);
+        outsideView.viewCreated = true;
+        lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Add(outside);
+        try
+        {
+            Assert.Same(f.Mob, Assert.Single(CombatSpecials.CastTaunt(f.Source)));
+            Assert.Same(f.Source, CombatSpecials.MostHated(f.Mob));
+            Assert.Null(CombatSpecials.MostHated(outside));
+            f.Mob.setXPos(401);
+            outside.setXPos(399);
+            f.Source.viewMan.removeViewByViewId(outsideView.ViewID);
+            Assert.Empty(CombatSpecials.CastTaunt(f.Source));
+        }
+        finally { lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Remove(outside); }
     }
     [Fact]public void ActualLandedRecipientGetsOneOwnerAndNoDamage()
     {

@@ -123,3 +123,19 @@ Use `ability-parity-operative-sweep-2` on CSR110. Four rows have only stock-clie
 | Stealth admission, delayed callbacks and resource cleanup | 365, 366, 368, 1118 |
 
 Throat Cutting Throw (340) now draws separately for Dazed and Off-Balance. Existing conditional Powerless still checks the target's Staggered state at initialization. Master Shadow (1118) uses the 25-point drain and starts its separately stored 30-second recast when the state ends. Vanish (368) aborts delayed work attached to an obsolete life or world. Canny Strike's base value function, Smoke Bomb's area and callback, Enrage Duration, linked Contested Withdraw, native stealth presentation and remaining hit or base damage questions stay open.
+
+## Operative batch-three sweep
+
+Use `ability-parity-operative-sweep-3` after the Status readiness retest is available in the stock build. Confirm initial Self Defense values appear in Status. With Operative Target selected, activate Combat Evasion (110), Compel Close Combat (150), and Intensify Damage (185). Record caster-only add/off and the 15-second natural expiry of 185. For Combat Toughness (116), unload and reload at a Hardline or Load Area and record both +7 raw bonuses and their removal. These four rows are eligible to close once the stock observations pass.
+
+Additional samples are Find Weakness (123), Martial Arts Prowess (135), Stealth Awareness (156), and Desperate Speed (291). Prowess still uses the captured +40, whereas the shipped function yields raw +25 at level 50. Preserve both figures when recording the stock result. The Find Weakness closure uses the earlier stock Operative family observation and the current typed damage and expiry tests.
+
+| Executable review | Batch-three IDs |
+|---|---|
+| Self effects, health tick, resistance and combat inputs | 110, 116, 123, 124, 135, 143, 150, 156, 185, 291 |
+| Loaded grants, passive and stealth transitions | 151, 154, 175, 186, 290, 629, 1116, 1117 |
+| Thrown callbacks, timing and typed inputs | 146, 281, 387, 1128 |
+| Physical specials and mapped penalty switches | 105, 121, 130, 140, 145, 148 |
+| Utility selection, area and NPC reaction | 218, 647 |
+
+The standing tick keeps its existing rate. The Operative passive adds its health bonus on out-of-combat sitting ticks and stops contributing immediately on standing or unload. The exact retail sitting baseline remains open. Body Shot applies its two -5 physical resistance penalties to the landed target for 10 seconds. Base damage and stock modifier presentation remain open through their own audit items. Distracting Blow's separate aura callback and Shadow's movement and Actions registration checks remain open.

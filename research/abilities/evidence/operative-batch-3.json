@@ -1,0 +1,188 @@
+{
+  "abilities": {
+    "150": {
+      "checks": {
+        "stats": {
+          "source": "GOB 150 stores self-only selector 1 and +20 Force Combat 519 for 300 seconds.",
+          "runtime": "AbilitySupport ignores selection and applies only to the caster. The existing entry gate reads the direct combat input with an active 217 shield. Removing the timed effect restores the gate input.",
+          "test": "OperativeBatchThreeTests.SelfBuffsIgnoreHostileSelectionAndExpire, CombatInsightEngagementTests.CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate and ability-parity-operative-sweep-3."
+        },
+        "behavior-tests": {
+          "source": "GOB 150 stores self-only selector 1 and +20 Force Combat 519 for 300 seconds.",
+          "runtime": "AbilitySupport ignores selection and applies only to the caster. The existing entry gate reads the direct combat input with an active 217 shield. Removing the timed effect restores the gate input.",
+          "test": "OperativeBatchThreeTests.SelfBuffsIgnoreHostileSelectionAndExpire, CombatInsightEngagementTests.CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate and ability-parity-operative-sweep-3."
+        },
+        "area": {
+          "source": "GOB 150 stores self-only selector 1 and +20 Force Combat 519 for 300 seconds.",
+          "runtime": "AbilitySupport ignores selection and applies only to the caster. The existing entry gate reads the direct combat input with an active 217 shield. Removing the timed effect restores the gate input.",
+          "test": "OperativeBatchThreeTests.SelfBuffsIgnoreHostileSelectionAndExpire, CombatInsightEngagementTests.CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate and ability-parity-operative-sweep-3."
+        }
+      },
+      "family": "operative-force-combat"
+    },
+    "110": {
+      "checks": {
+        "stats": {
+          "source": "GOB 110 stores self-only selector 1 and +20 Combat Evasion 520 for 300 seconds.",
+          "runtime": "AbilitySupport ignores selection and applies only to the caster. The existing entry gate reads the direct combat input with an active 217 shield. Removing the timed effect restores the gate input.",
+          "test": "OperativeBatchThreeTests.SelfBuffsIgnoreHostileSelectionAndExpire, CombatInsightEngagementTests.CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate and ability-parity-operative-sweep-3."
+        },
+        "behavior-tests": {
+          "source": "GOB 110 stores self-only selector 1 and +20 Combat Evasion 520 for 300 seconds.",
+          "runtime": "AbilitySupport ignores selection and applies only to the caster. The existing entry gate reads the direct combat input with an active 217 shield. Removing the timed effect restores the gate input.",
+          "test": "OperativeBatchThreeTests.SelfBuffsIgnoreHostileSelectionAndExpire, CombatInsightEngagementTests.CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate and ability-parity-operative-sweep-3."
+        }
+      },
+      "family": "operative-caster-evasion"
+    },
+    "116": {
+      "checks": {
+        "stats": {
+          "source": "GOB 116 scales both resistance bonuses by 0.15 at learned rank, giving +7 each at rank 50.",
+          "runtime": "AbilityPassives supplies the percentage bonuses to melee and ballistic toughness. At character level 50 the actual toughness inputs increase 15 apiece, then restore on unload.",
+          "test": "OperativeBatchThreeTests.LoadedPassivesHaveScopedEffectsAndUnloadCleanly and ability-parity-operative-sweep-3."
+        },
+        "behavior-tests": {
+          "source": "GOB 116 scales both resistance bonuses by 0.15 at learned rank, giving +7 each at rank 50.",
+          "runtime": "AbilityPassives supplies the percentage bonuses to melee and ballistic toughness. At character level 50 the actual toughness inputs increase 15 apiece, then restore on unload.",
+          "test": "OperativeBatchThreeTests.LoadedPassivesHaveScopedEffectsAndUnloadCleanly and ability-parity-operative-sweep-3."
+        }
+      },
+      "family": "operative-toughness-passive"
+    },
+    "185": {
+      "checks": {
+        "stats": {
+          "source": "GOB 185 applies +1 melee and ballistic damage for 15 seconds on self.",
+          "runtime": "Both typed damage multipliers read the caster's timed buff and restore on expiry.",
+          "test": "OperativeBatchThreeTests.SelfDamageBuffsReachTheirTypedConsumersAndExpire and ability-parity-operative-sweep-3."
+        },
+        "behavior-tests": {
+          "source": "GOB 185 applies +1 melee and ballistic damage for 15 seconds on self.",
+          "runtime": "Both typed damage multipliers read the caster's timed buff and restore on expiry.",
+          "test": "OperativeBatchThreeTests.SelfDamageBuffsReachTheirTypedConsumersAndExpire and ability-parity-operative-sweep-3."
+        }
+      },
+      "family": "operative-intensify-damage"
+    },
+    "123": {
+      "checks": {
+        "stats": {
+          "source": "GOB 123 applies character-level value function 3 \u00d70.5 to Thrown Damage for 20 seconds.",
+          "runtime": "The existing scaled buff resolver supplies +25 at character level 50 and the thrown consumers use it until expiry.",
+          "test": "OperativeBatchThreeTests.SelfDamageBuffsReachTheirTypedConsumersAndExpire checks Poison Knife and Distracting Blow damage inputs. Prior native family observed Find Weakness and Martial Arts Prowess. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        },
+        "behavior-tests": {
+          "source": "GOB 123 applies character-level value function 3 \u00d70.5 to Thrown Damage for 20 seconds.",
+          "runtime": "The existing scaled buff resolver supplies +25 at character level 50 and the thrown consumers use it until expiry.",
+          "test": "OperativeBatchThreeTests.SelfDamageBuffsReachTheirTypedConsumersAndExpire checks Poison Knife and Distracting Blow damage inputs. Prior native family observed Find Weakness and Martial Arts Prowess. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        }
+      }
+    },
+    "143": {
+      "checks": {
+        "stats": {
+          "source": "GOB 143 grants Operative Upgrade 1060 and adds 50 to percent stat HealthSitRegenRate 526 while loaded.",
+          "runtime": "Headless actor ticks read the current sitting stance. With 1000 maximum HP standing grants 10 per second and sitting with the loaded passive grants 15. In combat the sitting bonus is excluded. Load/unload/reload gates the grant and the tick contribution.",
+          "test": "OperativeBatchThreeTests.OperativeIncreasesOnlySittingOutOfCombatRegenAndGrantsItsUpgrade, and ability-parity-operative-sweep-3 checks the raw record."
+        },
+        "behavior-tests": {
+          "source": "GOB 143 grants Operative Upgrade 1060 and adds 50 to percent stat HealthSitRegenRate 526 while loaded.",
+          "runtime": "Headless actor ticks read the current sitting stance. With 1000 maximum HP standing grants 10 per second and sitting with the loaded passive grants 15. In combat the sitting bonus is excluded. Load/unload/reload gates the grant and the tick contribution.",
+          "test": "OperativeBatchThreeTests.OperativeIncreasesOnlySittingOutOfCombatRegenAndGrantsItsUpgrade, and ability-parity-operative-sweep-3 checks the raw record."
+        }
+      }
+    },
+    "156": {
+      "checks": {
+        "stats": {
+          "source": "GOB 156 uses character-level scale 0.3 to provide 300 seconds of Stealth Detection, +6 at level 23 and +15 at level 50.",
+          "runtime": "Timed AbilityBuffs resolve caster level and Stealth.AwarenessOf feeds the current magnitude into the strict SneakTest. Full native discarding and reveal remain open.",
+          "test": "OperativeBatchThreeTests.StealthAwarenessUsesCasterLevelAndFeedsTheDetectionThreshold and ability-parity-operative-sweep-3."
+        },
+        "behavior-tests": {
+          "source": "GOB 156 uses character-level scale 0.3 to provide 300 seconds of Stealth Detection, +6 at level 23 and +15 at level 50.",
+          "runtime": "Timed AbilityBuffs resolve caster level and Stealth.AwarenessOf feeds the current magnitude into the strict SneakTest. Full native discarding and reveal remain open.",
+          "test": "OperativeBatchThreeTests.StealthAwarenessUsesCasterLevelAndFeedsTheDetectionThreshold and ability-parity-operative-sweep-3."
+        }
+      }
+    },
+    "105": {
+      "checks": {
+        "stats": {
+          "source": "Body Shot GOB 105 stores fixed target penalties -5 to melee and ballistic damage resistance, each for 10 seconds.",
+          "runtime": "Landed Body Shot now reaches the existing numeric tempmod executor even though its category is an attack. The target holder feeds both physical resistance inputs until their expiry.",
+          "test": "OperativeBatchThreeTests.PhysicalDebuffsReachTheLiveTimedHolder exercises both target stats at landing and expiry."
+        }
+      }
+    },
+    "145": {
+      "checks": {
+        "stats": {
+          "source": "GOB 145 stores -10 melee accuracy and defense for 10 seconds and an independent 10% Enraged proc.",
+          "runtime": "The landed holder feeds both combat inputs, regardless of the state proc. The separate chance gate and timed state representation use the catalog.",
+          "test": "OperativeBatchThreeTests.OverhandSmashUsesItsChanceAndIndependentAccuracyAndDefensePenalties."
+        },
+        "proc": {
+          "source": "GOB 145 stores -10 melee accuracy and defense for 10 seconds and an independent 10% Enraged proc.",
+          "runtime": "The landed holder feeds both combat inputs, regardless of the state proc. The separate chance gate and timed state representation use the catalog.",
+          "test": "OperativeBatchThreeTests.OverhandSmashUsesItsChanceAndIndependentAccuracyAndDefensePenalties."
+        }
+      }
+    },
+    "146": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 146 stores ThrownDOT total 17 and interval 2.5 seconds.",
+          "runtime": "The active holder consumes the stored interval, emitting 9 rounded ticks of 2 at unmodified payload and excluding the terminal boundary. Damage scaling and target resistance remain separate.",
+          "test": "OperativeBatchThreeTests.ShippedThrownDotUsesTypedRoundedTicksAndNoTerminalTick."
+        }
+      }
+    },
+    "281": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 281 stores ThrownDOT total 61 and interval 5 seconds.",
+          "runtime": "The active holder consumes the stored interval, emitting 9 rounded ticks of 6 at unmodified payload and excluding the terminal boundary. Damage scaling and target resistance remain separate.",
+          "test": "OperativeBatchThreeTests.ShippedThrownDotUsesTypedRoundedTicksAndNoTerminalTick."
+        }
+      }
+    },
+    "140": {
+      "checks": {
+        "script": {
+          "source": "The shipped Multi-Fighting init and term toggle the multi-on-one penalty state.",
+          "runtime": "Loaded membership drives the existing interlock penalty calculation and unloading reverses it. The unrecovered native threshold and caller scope remain open.",
+          "test": "OperativeBatchThreeTests.LoadingAndRemovingMultiFightingReversesThePenaltyInput, CombatRulesTests.MultiOnOnePenaltyIsFivePerOpponent."
+        }
+      }
+    },
+    "148": {
+      "checks": {
+        "script": {
+          "source": "The four shipped Sharpshooter callbacks turn ordinary firing-into-melee and short-range melee penalties off on application and restore them on termination.",
+          "runtime": "SharpshooterFreeFire captures loaded membership as both switches. Stale or changed membership must recapture rather than reusing an old penalty decision. Caller distance/count policy remains a separate source-parity item.",
+          "test": "SharpshooterFreeFireTests.CallbackOnly148UsesLoadedMembershipIncludingLevelZeroAndNormalRemoval, RecoveredMathAndExplicitOursDistanceBoundary, and ABypassedCountCannotBeReusedAfterWeaponOrLoadedStateChanges."
+        }
+      }
+    },
+    "1117": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1117 stores self-only selector 1 for Shadow Upgrade.",
+          "runtime": "AbilitySupport ignores a hostile selection and routes the fixed upgrade only to its caster. Duration and thrown/withdrawal values are read by their existing consumers; the invisibility movement link remains open.",
+          "test": "OperativeBatchThreeTests.ShadowUpgradeIsSelfOnlyAndSuppliesItsExistingDurationAndCombatInputs and InvisibilityDurationTests."
+        }
+      }
+    },
+    "647": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 647 calls TauntAggro in a 4 m radius of the caster.",
+          "runtime": "The initializer uses the existing current-district, hostile NPC selection and updates the admitted NPC owner. Retail area admission remains a separate audit item.",
+          "test": "EngageFoesTests.TauntUsesTheCasterFourMetreBoundaryAndRejectsAnUnseenTarget and prior stock Taunt observed multiple NPCs switching to the caster. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        }
+      }
+    }
+  }
+}
