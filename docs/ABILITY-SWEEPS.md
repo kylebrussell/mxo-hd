@@ -23,6 +23,10 @@ NativeQa discovers six fixed level-50 profiles. Each prints eight numbered actio
 - Cast UI Lag from the documented start with QAEnemy 2 m away. Its shipped 3 m radius is centered on the caster, regardless of selection. Capture a hit or deflect on QAEnemy.
 - For Stun 2.0 select WinterFrost. The stock tooltip and shipped selector describe a 4 m area around that selected enemy. Check that Trainman is eligible and Blackwoods is outside. Record a deflect separately from an out-of-radius target. See [debuff radius evidence](ABILITY-DEBUFF-RADIUS.md).
 
+### Martial Artist retest
+
+Use the Melee Dummy, activate Kung-Fu and choose a non-Block tactic. With at least 35 IS and no active reuse timer, press Suicidal Butterfly once just after a round and wait through two ordinary round intervals. Retain the outgoing 428 record, queued `47`, resolved `45` and combat result. A missed 428 may play a default blocked animation. A later special can replace a queued action. Check Piston Kicks and Tomo Nage one at a time after the result and applicable reuse window.
+
 The native Actions names and internal records can differ. Logic Barrage 1.0 (57) is `LogicBlast1`, Charge Simulacra (603) uses `AcousticDecoy1Ability`, Detonate Proxy (34) uses `StopProxy1Ability`, and Martial Arts Prowess (135) uses `MartialArtsAbility`.
 
 ## Source and limits
