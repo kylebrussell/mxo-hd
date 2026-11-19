@@ -805,7 +805,7 @@ namespace hds
             }
             else if (id == DetonateProxy)
             {
-                Detonate(caster, pet);
+                Detonate(pet);
             }
             else if (id == DrainCode)
             {
@@ -833,10 +833,12 @@ namespace hds
             return (int)(amount * (double)influence);
         }
 
-        public static void Detonate(WorldClient caster, Pet pet)
+        private static void Detonate(Pet pet)
         {
             int blast = DetonateValue(pet.Mob.getHealthC(), pet.Mob.getHealthM());
             var entry = AbilityCatalog.Find(StopProxyEffect);
+            var parent = AbilityCatalog.Find(DetonateProxy).Modifiers.Single(modifier =>
+                modifier.Text("StatModTermFunc") == "DetonateProxyEnd");
             double radius = entry?.Number("Ability/RadiusOfEffect", 8) ?? 8;
             UInt32 fx = (UInt32)(entry?.Number("Ability/ExecutionFX", 0) ?? 0);
             var hit = new List<Mob>();
@@ -847,11 +849,34 @@ namespace hds
                     if (AbilityTargets.WithinArea(pet.Mob.getXPos(), pet.Mob.getYPos(), pet.Mob.getZPos(), mob.getXPos(), mob.getYPos(), mob.getZPos(), radius))
                         hit.Add(mob);
                 }
-            foreach (Mob mob in hit) DamageForOwner(pet, mob, (UInt16)Math.Min(blast, UInt16.MaxValue), fx);
-            Output.WriteDebugLog("[PET] Detonate Proxy: " + blast + " to " + hit.Count + " NPC(s) within " + radius + " m");
+            int landed = 0;
+            foreach (Mob mob in hit)
+            {
+                if (mob.missionInstance != 0 && MissionRuntime.FindMissionMob(pet.Owner.playerData, mob.getEntityId()) != mob)
+                    continue;
+                ushort damage = DetonateDamage(pet, mob, blast);
+                // A pet-centred area can reach an NPC outside the owner's current view list.
+                // Credit the pet owner through the ordinary damage/death path either way.
+                var view = pet.Owner.viewMan.FindViewForEntity(mob.getEntityId());
+                ushort viewId = view?.viewCreated == true && !view.viewNeedsToBeDeleted ? view.ViewID : (ushort)0;
+                if (CombatManager.GetHandler(pet.Owner).ApplyAbilityToNpc(mob, viewId, damage, fx))
+                    landed++;
+            }
+            Output.WriteDebugLog(FormattableString.Invariant($"[PET] Detonate Proxy: {blast} to {landed} NPC(s) within {radius} m, pet {pet.SimulacraId}, start {TimeUtils.GetSimTimeSeconds():F3}"));
             // DetonateProxyEnd, when the 0.5 s tempmod ends: 13000 viral to the simulacrum
-            DelayedActions.After(0.5, () => DamagePet(pet, 13000, 0));
+            DelayedActions.After(parent.Number("Duration"), () =>
+            {
+                lock (pet)
+                {
+                    if (pet.Gone || pet.Mob.getIsDead()) return;
+                    Output.WriteDebugLog(FormattableString.Invariant($"[PET] Detonate Proxy term: pet {pet.SimulacraId}, at {TimeUtils.GetSimTimeSeconds():F3}"));
+                    DamagePetLocked(pet, 13000, 0);
+                }
+            });
         }
+
+        internal static ushort DetonateDamage(Pet pet, Mob victim, int blast) =>
+            TypedAbilityResistance.Npc(pet.Mob.getLevel(), victim, StopProxyEffect, blast);
 
         // ---- Health ----------------------------------------------------------------------------------------------
 

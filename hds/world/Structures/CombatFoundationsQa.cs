@@ -67,19 +67,28 @@ namespace hds
                 Spawn("AB1 Inside", 25300, 495, -1378);
                 Spawn("AB1 Outside", 25050, 495, -1048);
                 var resisted = Spawn("AB1 Resisted", 24600, 495, -1498);
-                TimedEffects.Apply(TimedEffects.ForMob(resisted), new TempMods.Effect
-                {
-                    Ability = 8,
-                    Mods = new[] { new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat,
-                        Target = 157, MinValue = 75, MaxValue = 75, Seconds = ResistSeconds } }
-                }, TimeUtils.GetSimTimeSeconds());
+                SeedViralResistance(resisted);
                 return "Dual SMGs equipped. Aim Direct Fire at AB1 Aim. AB1 Aim and AB1 Inside take damage. AB1 Outside stays full. AB1 Resisted is west and resists for 30 minutes.";
             }
-            return "Use ?combatdepth foundations-sight or foundations-cone.";
+            if (mode == "detonate")
+            {
+                Move(caller, 24800, 495, -1498, yaw: 64);
+                Spawn("Detonate Neutral", 25200, 495, -1498, level: 7);
+                SeedViralResistance(Spawn("Detonate Resisted", 24950, 495, -1898, level: 7));
+                return "Detonate fixture ready. Neighbouring level-seven targets are neutral and +75 viral resistance.";
+            }
+            return "Use ?combatdepth foundations-sight, foundations-cone or foundations-detonate.";
         }
 
         private static bool OutdoorStand(int x) => NavMesh.Locate(1, x, SightY, TestZ, out var location) &&
             !location.indoors && Math.Abs(location.floorY - (SightY - 95)) <= 100;
+
+        private static void SeedViralResistance(Mob target) => TimedEffects.Apply(TimedEffects.ForMob(target), new TempMods.Effect
+        {
+            Ability = 8,
+            Mods = new[] { new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat,
+                Target = 157, MinValue = 75, MaxValue = 75, Seconds = ResistSeconds } }
+        }, TimeUtils.GetSimTimeSeconds());
 
         private static void Move(WorldClient caller, double x, double y, double z, byte yaw)
         {
@@ -90,7 +99,7 @@ namespace hds
             caller.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(caller, (float)x, (float)y, (float)z), false);
         }
 
-        private static Mob Spawn(string name, double x, double y, double z)
+        private static Mob Spawn(string name, double x, double y, double z, ushort level = 50)
         {
             lock (WorldServer.mobs.SyncRoot)
             {
@@ -102,7 +111,7 @@ namespace hds
                 mob.setDistrict(1);
                 mob.setDistrictName("slums");
                 mob.setName(name);
-                mob.setLevel(50);
+                mob.setLevel(level);
                 mob.setHealthM(5000);
                 mob.setHealthC(5000);
                 mob.setMobId(0x01b3);

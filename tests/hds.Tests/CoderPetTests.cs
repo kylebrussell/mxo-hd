@@ -53,6 +53,36 @@ public class CoderPetTests
     }
 
     [Fact]
+    public void DetonateReadsViralResistanceAtThePetsLevel()
+    {
+        var pet = new CoderPets.Pet { Owner = Owner(43), Mob = new Mob() };
+        pet.Mob.setLevel(7);
+        var target = new Mob();
+        target.setName("Resistance target");
+        target.setLevel(7);
+        target.setHealthM(5000);
+        target.setHealthC(5000);
+        var recipient = TimedEffects.ForMob(target);
+        try
+        {
+            int raw = CoderPets.DetonateValue(337, 337);
+            Assert.Equal((ushort)84, CoderPets.DetonateDamage(pet, target, raw));
+            TimedEffects.Apply(recipient, new TempMods.Effect { Ability = 6, Mods = new[] {
+                new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 180,
+                    MinValue = 75, MaxValue = 75, Seconds = 30 } } }, TimeUtils.GetSimTimeSeconds());
+            Assert.Equal((ushort)84, CoderPets.DetonateDamage(pet, target, raw));
+            TimedEffects.Apply(recipient, new TempMods.Effect { Ability = 8, Mods = new[] {
+                new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 157,
+                    MinValue = 75, MaxValue = 75, Seconds = 30 } } }, TimeUtils.GetSimTimeSeconds());
+            ushort reduced = CoderPets.DetonateDamage(pet, target, raw);
+            Assert.Equal(TypedAbilityResistance.Amount(raw, 7, 7, 75), reduced);
+            Assert.NotEqual(TypedAbilityResistance.Amount(raw, 50, 7, 75), reduced);
+            Assert.InRange(reduced, (ushort)1, (ushort)83);
+        }
+        finally { TimedEffects.Clear(recipient); }
+    }
+
+    [Fact]
     public void OrdersParseAsClientBuildsThem()
     {
         // client.dll 620ef730 (81 7a, 4 bytes), 620ef832 (81 7b, 8 bytes), 620ef952 (81 7c, 5 bytes); window ID 0xfe

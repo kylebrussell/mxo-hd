@@ -53,6 +53,7 @@ namespace hds
 
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
+            if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
             // These Hacker controls and debuffs require a live selected enemy.

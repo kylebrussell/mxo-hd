@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "34": {
+      "checks": {
+        "stats": {
+          "source": "GOB 34 attaches DetonateProxyProc and DetonateProxyEnd to TargetAttribute 710 with MinValue and MaxValue zero. tempmods.py reads pet health and existing Viral Damage, then reapplies the one-point viral 1109. No Inner Strength drain is requested by either callback.",
+          "runtime": "CoderPets uses the callback carrier to compute the pet health clamp and resolve internal 1109 at the pet's level, without installing an IS drain. The normal target path consumes the viral resistance stat.",
+          "test": "CoderPetTests.DetonateValueFollowsTempmods and DetonateReadsViralResistanceAtThePetsLevel verify the bounds and viral versus melee resistance. The disposable ability-parity-coder-detonate-proxy fixture replays ordinary 34, verifies the typed target health updates and pet term, and refuses standalone 1109."
+        }
+      }
+    }
+  }
+}
