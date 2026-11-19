@@ -21,8 +21,8 @@ public sealed class AbilityParityCoderUtilityMode : NativeQaMode
         new[] { "UPDATE characters SET y=495,innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111)" },
         readyMessages: new[]
         {
-            "Open Status and capture Code Hardening 608's +5 melee and ballistic damage bonuses and Utility Master 620's +5 melee accuracy bonus. Check if 620 exposes its 1108 action.",
-            "Activate Utility Technician, then activate Utility Master's granted action. Capture self-only +100/+150 maximum HP, the two +20 resistance records, and +3/+6 melee defense. Capture the Technician removal before the Master adds.",
+            "In Actions, open Utility Master and confirm the Utility Master action appears after jack-in. Capture its 80 b2 hidden load and the 620-to-1108 type-45 grant add. 1108 is absent from owned Archive entries.",
+            "Activate Utility Technician, then put the granted Utility Master action on the hotbar and activate it. Capture self-only +100/+150 maximum HP, both +20 resistances, +3/+6 melee defense, and Technician removal before Master adds. If the action is absent, record the Actions tree and stop the replacement check.",
             "Summon Logic Daemon 3.0 and Patch Daemon 2.0 outside combat. Expect levels 34 and 43 at caster level 50, eight-second casts and 10-second reuse. Record registration and deactivation.",
             "While an owned daemon is attached, toggle Daemon Boost 1.0 on and off. Compare the lone 10 IS activation debit, the immediate pulse and the first 5 IS upkeep about five seconds after the pulse."
         }, loadAbilityAncestors: true);
@@ -31,7 +31,26 @@ public sealed class AbilityParityCoderUtilityMode : NativeQaMode
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("The utility sweep requires a disposable server.");
         using var owner = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend", stockCharacterLoad: true);
-        await owner.EnterWorldAsync();
+        var archive = AbilityMemoryUiFixture.Decode(owner.CharacterData[6]);
+        uint ownedMaster = 0x80000000u | (1108u << 10);
+        Check.That(archive.All(row => row.Descriptor != ownedMaster), "Utility Master action is absent from the owned archive");
+        await owner.EnterWorldAsync(loadingComplete: false);
+        byte[] load = hds.ServerPackets.BuildAbilityLoad(1108, 0, hds.AbilityProgression.HiddenSlot);
+        byte[] grant = Convert.FromHexString("80bc45035404006c0200005404000000000000000000");
+        bool IsGrant(RpcRecord rpc) => rpc.Bytes.AsSpan().SequenceEqual(grant);
+        bool IsLoad(RpcRecord rpc) => rpc.Bytes.AsSpan().SequenceEqual(load);
+        owner.SendRpc("81 48");
+        await owner.WaitForRpcAsync("81 49");
+        Check.That(!owner.World.RpcSnapshot().Any(rpc => IsGrant(rpc) || IsLoad(rpc)),
+            "Self spawn alone must not register the hidden action");
+        owner.SendRpc("0c 01");
+        await owner.WaitForRpcAsync(IsLoad, "Hidden-slot Utility Master ability load");
+        await owner.WaitForRpcAsync(IsGrant, "Source-qualified 620-to-1108 grant add after readiness");
+        owner.SendRpc("0c 01");
+        owner.SendRpc("81 48");
+        await owner.WaitForRpcAsync("81 49");
+        Check.Equal(1, owner.World.RpcSnapshot().Count(IsGrant), "Duplicate readiness does not add 1108 twice");
+        Check.Equal(1, owner.World.RpcSnapshot().Count(IsLoad), "Duplicate readiness does not reload 1108");
         await RequireModifiers(owner, 517, new[] { ((ushort)655, 50) }, 0, 0x45, false);
         await RequireModifiers(owner, 608, new[] { ((ushort)1139, 5), ((ushort)1142, 5) }, 0, 0x45, false);
         await RequireModifiers(owner, 620, new[] { ((ushort)997, 5) }, 0, 0x45, false);
@@ -41,8 +60,13 @@ public sealed class AbilityParityCoderUtilityMode : NativeQaMode
         await owner.WaitForRpcAsync("80 bd 01 65 02 04 00 00 f0 41 01");
         int replace = owner.World.RpcSnapshot().Count;
         SendSelf(owner, 1108); // 1108 is never seeded as owned. The loaded 620 parent is its only authority.
-        await RequireModifiers(owner, 1108, Master, replace, 0x15, false);
         await RequireModifiers(owner, 613, Technician, replace, 0x15, true);
+        await RequireModifiers(owner, 1108, Master, replace, 0x15, false);
+        var transition = owner.World.RpcSnapshot().Skip(replace)
+            .Select(rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var record) ? record : null)
+            .Where(record => record is { Family: 0x15, SourceId: 613 or 1108 }).ToArray();
+        Check.That(transition.Length == 8 && transition.Take(4).All(record => record!.SourceId == 613 && record.AddRemoveType == 1),
+            "All Technician removals precede Master application");
         await owner.WaitForRpcAsync("80 bd 01 54 04 04 00 00 f0 41 01");
 
         var pets = new List<object>();

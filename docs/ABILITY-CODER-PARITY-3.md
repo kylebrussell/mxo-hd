@@ -24,3 +24,13 @@ The first two samples could close four rows (608, 613, 620 and 1108) if the stoc
 | 613, 1108 Utility class buffs | Self routing, the four active stats and their replacement and cleanup have executable tests. Stock cast and presentation remain open. |
 | 620 Utility Master | Tested +5 melee-only accuracy, loaded grant access and cleanup. Stock action visibility requires a check. |
 | 607 Absorb Simulacra | The shipped callback checks owner identity. Damage type 5 and type 6 values and recipients still require executable support and stock evidence. |
+
+## Utility Master Actions retest
+
+In the first stock run, Utility Technician (613) applied its four caster bonuses, but Actions showed no Utility Master action under the 620 discipline. The native session did not send a 1108 cast. The preceding headless session cast 1108 and saw the four Technician records removed and four Master records added, which only verified server admission and application. [Stock report](https://github.com/kylebrussell/mxo-hd/pull/352#issuecomment-7011137184)
+
+The server now registers the stored zero-valued 620 → 1108 grant after live-avatar `0c 01`. The ability remains absent from the owned archive. The disposable bootstrap verifies hidden-slot `80 b2` load followed by the source-qualified `80 bc 45` grant add, exactly once with repeated readiness. It then verifies Technician removal before Master applies, plus both 30-second timers. The unit regression also covers parent unload and reload.
+
+In the stock client, confirm the Utility Master action appears in Actions, add it to the hotbar, and activate it immediately after Technician. Record Actions visibility, the outgoing `80 b9 54 04` request, +100 → +150 Max Health, +3 → +6 Melee Defense, both +20 resistances, and removal of all Technician records before the Master records. If absent, keep the tree screenshot and the two wire records, and leave the row open.
+
+The stock retest found the Utility Master action under Actions. Activating it from the stock hotbar applied the four expected caster values and replaced Technician in order. This verifies 1108, while the individual loaded bonus comparisons for 608 and 620 remain open. [Stock Utility Master retest](https://github.com/kylebrussell/mxo-hd/pull/360#issuecomment-7011602121)

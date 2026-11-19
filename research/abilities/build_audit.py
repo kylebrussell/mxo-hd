@@ -252,7 +252,8 @@ def server(i):
         parts.append('dead friendly player + native approval; ' + ('1 HP / 1 IS' if i == 325 else 'full HP / IS')
                      + f'; Action_Resurrect 63 with {motion} motion context')
     if r.get('registered_grants'):
-        parts.append('captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
+        parts.append('stored zero-valued 620→1108 live grant registration/load after avatar readiness; stock Actions visibility pending'
+                     if i == 620 else 'captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
     if r.get('conditional_thrown_damage'):
         parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
     if i == 120:
