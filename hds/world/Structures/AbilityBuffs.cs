@@ -463,7 +463,8 @@ namespace hds
             foreach (UInt16 other in replaced)
             {
                 // A movement buff put straight back on keeps its speed: don't send the speed reset in between.
-                Remove(client, other, false, other == abilityId, keepVitals: true);
+                if (Remove(client, other, false, other == abilityId, keepVitals: true) && other != abilityId)
+                    Output.WriteDebugLog($"[BUFF] {other} off (replaced by {abilityId})");
             }
 
             RemoveTimedFamilyConflicts(client,abilityId);

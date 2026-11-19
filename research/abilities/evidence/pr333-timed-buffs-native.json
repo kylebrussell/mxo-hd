@@ -1,0 +1,152 @@
+{
+  "families": {
+    "firearms-damage-timed-buff": {
+      "representative": 124,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279",
+      "scope": "Stock Firearms Skill raised Ballistic Damage by 25 and restored it after 20 seconds. The own-view IS debit was 20 at baseline."
+    },
+    "timed-inner-strength-cost-buff": {
+      "representative": 321,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279",
+      "scope": "Stock Efficiency displayed +15% for 300 seconds. Own-view IS debits were 17 instead of 20 for Firearms Skill and 9 instead of 10 for Repair RSI, with normal costs restored after expiry."
+    },
+    "physical-defense-timed-buff": {
+      "representative": 421,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279",
+      "scope": "Stock Enhanced Dodge raised Melee and Ballistic Defense by 47. Thrown Defense stayed at baseline. Both applied defenses expired at 300 seconds."
+    },
+    "corpsman-accuracy-timed-buffs": {
+      "representative": 373,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279",
+      "scope": "Stock Combat Training raised Melee Accuracy by 64. Weapons Boost sent a removal for the same record and added 64 Ballistic Accuracy. Weapons Boost returned to baseline at natural expiry."
+    },
+    "direct-maximum-health-buffs": {
+      "representative": 39,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279",
+      "scope": "Stock Bolster Health ranks 1 through 3 and Upgrade Health applied +50, +200, +500 and +500 to the 6,200 baseline. Own-view maxima and off/on records show replacement and no overlap. Bolster rank 1 also cast on a friendly recipient."
+    }
+  },
+  "abilities": {
+    "39": {
+      "family": "direct-maximum-health-buffs",
+      "checks": {
+        "stats": {
+          "source": "Shipped 39 adds 50 to Max Health 106 for 600s, with StackingType 3.",
+          "runtime": "AbilityBuffs.RefreshVitals publishes the actual maximum derived from the only active family modifier.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 39 adds 50 to Max Health 106 for 600s, with StackingType 3.",
+          "runtime": "AbilityBuffs.RefreshVitals publishes the actual maximum derived from the only active family modifier.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "124": {
+      "family": "firearms-damage-timed-buff",
+      "checks": {
+        "stats": {
+          "source": "Shipped 124 targets Ballistic Damage 171 with character-level value function 3, scale 0.5 and duration 20s.",
+          "runtime": "AbilityBuffs resolves the caster-level modifier. AbilityStats.ScaleAbilityDamage consumes it for ballistic attacks.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 124 targets Ballistic Damage 171 with character-level value function 3, scale 0.5 and duration 20s.",
+          "runtime": "AbilityBuffs resolves the caster-level modifier. AbilityStats.ScaleAbilityDamage consumes it for ballistic attacks.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "321": {
+      "family": "timed-inner-strength-cost-buff",
+      "checks": {
+        "stats": {
+          "source": "Shipped 321 adds 15 to Inner Strength Cost Reduction 117 for 300s.",
+          "runtime": "AbilityCosts.Effective consumes stat 117 for actual cast costs with integer rounding.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 321 adds 15 to Inner Strength Cost Reduction 117 for 300s.",
+          "runtime": "AbilityCosts.Effective consumes stat 117 for actual cast costs with integer rounding.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "322": {
+      "family": "direct-maximum-health-buffs",
+      "checks": {
+        "stats": {
+          "source": "Shipped 322 adds 200 to Max Health 106 for 600s, with StackingType 3.",
+          "runtime": "AbilityBuffs.RefreshVitals publishes the actual maximum derived from the only active family modifier.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 322 adds 200 to Max Health 106 for 600s, with StackingType 3.",
+          "runtime": "AbilityBuffs.RefreshVitals publishes the actual maximum derived from the only active family modifier.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "373": {
+      "family": "corpsman-accuracy-timed-buffs"
+    },
+    "374": {
+      "family": "corpsman-accuracy-timed-buffs"
+    },
+    "417": {
+      "family": "direct-maximum-health-buffs",
+      "checks": {
+        "stats": {
+          "source": "Shipped 417 applies character-level value function 3 at scale 10 to Max Health 106 for 300s, with StackingType 3.",
+          "runtime": "AbilityScaledBuffs snapshots the caster-level value; AbilityBuffs.RefreshVitals retains the same effective maximum when 417 replaces 419.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 417 applies character-level value function 3 at scale 10 to Max Health 106 for 300s, with StackingType 3.",
+          "runtime": "AbilityScaledBuffs snapshots the caster-level value; AbilityBuffs.RefreshVitals retains the same effective maximum when 417 replaces 419.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "419": {
+      "family": "direct-maximum-health-buffs",
+      "checks": {
+        "stats": {
+          "source": "Shipped 419 applies character-level value function 3 at scale 10 to Max Health 106 for 300s, with StackingType 3.",
+          "runtime": "AbilityScaledBuffs snapshots the caster-level value; AbilityBuffs.RefreshVitals publishes the resulting maximum.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 419 applies character-level value function 3 at scale 10 to Max Health 106 for 300s, with StackingType 3.",
+          "runtime": "AbilityScaledBuffs snapshots the caster-level value; AbilityBuffs.RefreshVitals publishes the resulting maximum.",
+          "test": "AbilityBuffTests.HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    },
+    "421": {
+      "family": "physical-defense-timed-buff",
+      "checks": {
+        "stats": {
+          "source": "Shipped 421 uses value function 3 and scale 0.96 for Melee Defense 1009 and Ballistic Defense 1010 for 300s.",
+          "runtime": "AbilityScaledBuffs snapshots the caster level and AbilityStats.Defense applies each matching typed stat.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        },
+        "behavior-tests": {
+          "source": "Shipped 421 uses value function 3 and scale 0.96 for Melee Defense 1009 and Ballistic Defense 1010 for 300s.",
+          "runtime": "AbilityScaledBuffs snapshots the caster level and AbilityStats.Defense applies each matching typed stat.",
+          "test": "AbilityEvidenceTimedBuffTests.NumericBuffsChangeTheirGameplayConsumerAndRestoreItOnDismissal. Paired stock observation: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7007872279"
+        }
+      }
+    }
+  }
+}
