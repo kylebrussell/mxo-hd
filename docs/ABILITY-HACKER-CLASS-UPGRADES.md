@@ -15,3 +15,10 @@ With **Class Upgrade Target** selected, add each available upgrade from Actions 
 After Howitzer, switch loadouts at a Hardline or Load Area. The fixture plan lists the exact Archive IDs under `UnloadForForceMultiplier` and `LoadForForceMultiplier`. Keep the shared records, including Pathogenist. Unload the first-stage-only records before loading the Force Multiplier chain. Completed memory should read 89. Then select Class Upgrade Target again and activate Force Multiplier Upgrade.
 
 A passing source-specific activation can close each corresponding row. Force Multiplier's existing source-backed sweep is a separate 5% check every five seconds. If the session also observes an early removal of an eligible debuff, capture the effect removal and normal pulse notification and distinguish them from natural expiry. A run without a successful roll proves activation and modifiers only.
+
+### Stage 2 Archive changes
+
+| Action | Archive entries |
+| --- | --- |
+| Unload | Code Freeze 2.0 (41), Network Hacker (64), Overheat 1.0 (65), Resist Contagion (73), Artillerist (335), Logic Bomb 1.0 (336), Code Nuke 2.0 (337), Dedicated Code (346), Howitzer (356), Logic Bomb 2.0 (357), Code Shield (358), Code Nuke 3.0 (359), Skript Kiddie (390), Effective Code (391), Code Rot 1.0 (392), Overheat 2.0 (394), Efficient Code (477), Code Flux (478), Combat Shutdown (480), Network Attacker (483) |
+| Load | Group Repairs 1.0 (50), Patcher (55), Restore Group 1.0 (56), Movement Accelerator 1.0 (62), Repair and Upgrade (71), Resist Combat (72), Resist Damage (74), Restore Health 1.0 (80), Team Patcher (92), Passive Code (170), Advanced Damage Resistance (376), Deflect Virus 1.0 (378), Sweep Party 1.0 (379), Force Enhancer (383), Supreme Damage Resistance (484), Combat Aura 2.0 (485), Sweep Party 2.0 (487), Force Multiplier (490) |
