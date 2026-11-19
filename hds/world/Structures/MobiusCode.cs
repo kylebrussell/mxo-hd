@@ -3,8 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace hds
 {
-    /// <summary>PARTIAL967: only the original ten-second incoming free-attack capability.
-    /// Forced interlock entry, susceptibility and presentation remain unimplemented.</summary>
+    /// <summary>The scoped, ten-second Mobius Code attack capabilities from MobiusCodeInit/Term.</summary>
     public static class MobiusCode
     {
         public const ushort Ability = 967;
@@ -47,8 +46,20 @@ namespace hds
         internal static void Land(Invocation invocation)
         {
             if(invocation==null)return;
-            Resolve(invocation,()=>MobiusCodeQa.Roll(invocation.Owner,NaturalRoll),()=>TimeUtils.GetSimTimeSeconds());
+            bool success = Resolve(invocation, () => MobiusCodeQa.Roll(invocation.Owner, NaturalRoll), () => TimeUtils.GetSimTimeSeconds());
+            if (invocation.Current) ServerPackets.SendPlayerAbilityEffect(invocation.Owner, HealingEffect(success));
         }
+        internal static uint HealingEffect(bool success) => success ? 0x12463110u : 0x12463112u;
+
+        // CLIENT_REQUEST_CLOSE_COMBAT body byte 4 is the decoded ForcedInterlock flag.
+        internal static bool PreventsForcedInterlock(WorldClient target, ReadOnlySpan<byte> request) =>
+            PreventsForcedInterlock(target, request, TimeUtils.GetSimTimeSeconds());
+
+        internal static bool PreventsForcedInterlock(WorldClient target, ReadOnlySpan<byte> request, double now) =>
+            request.Length > 4 && request[4] != 0 && PreventsFreeAttack(target, now);
+
+        internal static bool PreventsNpcInterlock(WorldClient target) => PreventsFreeAttack(target);
+
         // Validation precedes even the chance draw: synchronous heal callbacks can invalidate the invocation.
         internal static bool Resolve(Invocation invocation,Func<int> draw,Func<double> now)
         {

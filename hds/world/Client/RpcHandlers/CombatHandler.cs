@@ -576,6 +576,7 @@ namespace hds
 
         public void ProcessRequestCloseCombat(ref byte[] packet, bool npcStarted = false)
         {
+            if (npcStarted && MobiusCode.PreventsForcedInterlock(client, packet)) return;
             if (!npcStarted && ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects)) return;
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Close combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");

@@ -547,7 +547,12 @@ namespace hds
         /// <summary>Takes everything off a subject (death), with its packets.</summary>
         public static void Clear(Subject subject)
         {
-            if (subject is PlayerEffects player) { CraftingSession.End(player.Context); Stealth.Cleared(player.Context); }
+            if (subject is PlayerEffects player)
+            {
+                CraftingSession.End(player.Context);
+                Stealth.Cleared(player.Context);
+                AbilityAuras.Clear(player.Context, announce: true);
+            }
             AbilityReverseBulldog.Cancel(subject);
             List<Active> removed = subject.Effects.RemoveAll();
             if (removed.Count > 0)

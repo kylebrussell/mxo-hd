@@ -154,6 +154,37 @@ namespace hds
         public const UInt32 DeflectBullets1Fx = 0x28000824;  // FX_VIRUSCAST_SPLIT_DEFLECT_BULLETS_DEFLECTBULLETS1
         public const UInt32 DeflectVirus1Fx = 0x28000820;    // FX_VIRUSCAST_SPLIT_DEFLECT_VIRUS_DEFLECTVIRUS1
 
+        private static uint DeflectEffect(ushort parent) => parent switch
+        {
+            DeflectVirus1Ability => DeflectVirus1Fx,
+            DeflectBullets1Ability => DeflectBullets1Fx,
+            _ => 0
+        };
+
+        internal static void ApplyDeflectEffect(ushort parent, WorldClient caster, WorldClient target)
+        {
+            uint fx = DeflectEffect(parent);
+            if (fx == 0) return;
+
+            var source = new AbilityBuffs.DrainLifetime(caster);
+            var recipient = new AbilityBuffs.DrainLifetime(target);
+            if (!recipient.Current || recipient.Data.isDead || recipient.Data.duelDeath) return;
+
+            // virii.py schedules PlayFX via this 0.2s tempmod, with its original on/off record.
+            // Keep the saved record id and lifetime for this pulse and its recipient.
+            ushort record = AbilityBuffs.NextRecordId(recipient.Data);
+            byte[] Wire(bool off) => AbilityBuffs.BuildModifier(TempMods.KindFx, record, parent, parent, (int)fx, off, DeflectEffectSeconds);
+            target.messageQueue.AddWorldBoundRpc(Wire(false), recipient.World, recipient.Transport);
+            DelayedActions.AfterFor(target, DeflectEffectSeconds, () =>
+            {
+                if (!recipient.Current || recipient.Data.isDead || recipient.Data.duelDeath) return;
+                target.messageQueue.AddWorldBoundRpc(Wire(true), recipient.World, recipient.Transport);
+                if (source.Current && !source.Data.isDead && !source.Data.duelDeath)
+                    ServerPackets.SendPlayerAbilityEffect(target, fx);
+                target.FlushQueue();
+            });
+        }
+
         /// <summary>Equipment slots Corruption can destroy: the weapon and the hacker tool (virii.py 46-63).</summary>
         public const int WeaponSlot = 109, HackerToolSlot = 110;
 
