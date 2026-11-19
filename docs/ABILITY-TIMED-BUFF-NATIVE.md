@@ -13,8 +13,8 @@ Bolster Health and Upgrade Health shared one active modifier. Each replacement s
 | Bolster Health 3.0 (419) | `0x146` | 6,700 (+500) | 10342–10350 |
 | Upgrade Health (417) | `0x147` | 6,700 (+500) | 10540–10543 |
 
-Upgrade Health replaced Bolster Health 3.0 at the same maximum, so the server had no new own-view maximum to publish. The prior own-view maximum and both modifier records show the retained 6,700 maximum. The capture shows later casts replacing earlier ones in family 3 even when the incoming catalog priority is lower. It does not establish priority ordering for other buff families.
+Upgrade Health replaced Bolster Health 3.0 at the same maximum. The prior own-view maximum and both modifier records show the retained 6,700 maximum. In this capture, later casts replaced earlier ones in family 3 even when the incoming catalog priority was lower.
 
 Firearms Skill showed +25 Ballistic Damage for 20 seconds. Its baseline cast debited 20 IS (line 6738). With Efficiency, the same cast debited 17 IS (lines 8226–8257) and Repair RSI debited 9 IS (lines 8410–8452). Efficiency's +15% cost reduction and both of Enhanced Dodge's +47 defenses returned to baseline at expiry.
 
-The server previously suppressed its debug message when it replaced a buff. The replacement now logs both ability IDs. Packet order, cooldowns and modifier behavior follow the existing paths. The replacement tests replay the stock ability sequence and verify the active server stats, original record IDs and final expiry.
+The server previously suppressed its debug message when it replaced a buff. The replacement now logs both ability IDs. The replacement tests replay the stock ability sequence and verify the active server stats, original record IDs and final expiry.
