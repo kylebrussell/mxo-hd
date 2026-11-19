@@ -77,7 +77,7 @@ namespace hds
                     Proc = TempMods.Proc.State };
             ushort target = m.Target;
             // Controls separately read the immunity callback. Its presence must not discard Freeze's resistance modifier.
-            bool immunityInit = (ability == 47 || ability == 48) && target == 157 &&
+            bool immunityInit = (ability == 47 || ability == 48 || ability == 352) && target == 157 &&
                 m.Text("StatModInitFunc") == "AddControlImmunityTimer";
             if (target == 0 || target == 108 || target == TempMods.DOTPlaceHolderAbility ||
                 Scripted(m, allowInit: immunityInit) || !Fixed(m)) return null;

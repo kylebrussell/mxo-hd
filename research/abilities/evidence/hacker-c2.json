@@ -1,0 +1,258 @@
+{
+  "abilities": {
+    "318": {
+      "checks": {
+        "stats": {
+          "source": "GOB 318 grants upgrade 1095 and +1 to both melee and ballistic resistance bonus.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant and its totals, and AbilityStats.Toughness reads both linked bonuses.",
+          "test": "AbilityScaledBuffTests.HackerPassivesInstallLevelFiftyTotalsAndRemoveThemOnUnload asserts both stats, resulting melee and ballistic toughness, grant membership and removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 318 grants upgrade 1095 and +1 to both melee and ballistic resistance bonus.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant and its totals, and AbilityStats.Toughness reads both linked bonuses.",
+          "test": "AbilityScaledBuffTests.HackerPassivesInstallLevelFiftyTotalsAndRemoveThemOnUnload asserts both stats, resulting melee and ballistic toughness, grant membership and removal."
+        }
+      }
+    },
+    "319": {
+      "checks": {
+        "script": {
+          "source": "GOB 319 uses PersonalFirewallInit/Term for its armor bit and GenericConstHealthRegenEvent for a term heal of 250.",
+          "runtime": "AbilityScaledBuffs.TryScriptedTimed and AbilityBuffs.Apply/Remove own the exact presentation flag and execute the term heal.",
+          "test": "AbilityScaledBuffTests.PersonalFirewallTermHealsAndPreservesOtherPresentationBits checks the armor flag, all four resistance totals, heal and cleanup including death."
+        }
+      }
+    },
+    "320": {
+      "checks": {
+        "script": {
+          "source": "GOB 320 sets NegativeConditionSweepPulse every 5 s, 18% for 40 s. tempmods.py limits removal to removable debuff parents.",
+          "runtime": "AbilityHostile.ApplySweep builds and schedules the pulse. TimedEffects.RunDue invokes AbilityHostile.Pulse, which preserves exempt parents and other categories.",
+          "test": "AbilityHostileTests.ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily and SweepsOfOneStackingTypeReplaceEachOther"
+        },
+        "behavior-tests": {
+          "source": "GOB 320 sets NegativeConditionSweepPulse every 5 s, 18% for 40 s. tempmods.py limits removal to removable debuff parents.",
+          "runtime": "AbilityHostile.ApplySweep builds and schedules the pulse. TimedEffects.RunDue invokes AbilityHostile.Pulse, which preserves exempt parents and other categories.",
+          "test": "AbilityHostileTests.ConditionSweepPillWaitsForItsFirstUpdateAndReplacesItsSweepFamily and SweepsOfOneStackingTypeReplaceEachOther"
+        }
+      }
+    },
+    "324": {
+      "checks": {
+        "script": {
+          "source": "GOB 324 calls RemoveRandomBuff. tempmods.py chooses a removable UBF0 parent or sends a no-upgrade result.",
+          "runtime": "AbilityHostile.LandedOnPlayer dispatches RemoveRandomBuff without an extra proc draw.",
+          "test": "AbilityHostileTests.DispelWithoutStoredChanceDoesNotConsumeAProcRoll and DeleteUpgradeCanRemoveAnActiveSweep verify real positive removable buff and sweep paths."
+        },
+        "behavior-tests": {
+          "source": "GOB 324 calls RemoveRandomBuff. tempmods.py chooses a removable UBF0 parent or sends a no-upgrade result.",
+          "runtime": "AbilityHostile.LandedOnPlayer dispatches RemoveRandomBuff without an extra proc draw.",
+          "test": "AbilityHostileTests.DispelWithoutStoredChanceDoesNotConsumeAProcRoll and DeleteUpgradeCanRemoveAnActiveSweep verify real positive removable buff and sweep paths."
+        }
+      }
+    },
+    "350": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 350 stores ViralDOT total 100 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 100.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 88 HP total before expiry."
+        },
+        "script": {
+          "source": "GOB 350 stores ViralDOT total 100 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 100.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 88 HP total before expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 350 stores ViralDOT total 100 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 100.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 88 HP total before expiry."
+        }
+      }
+    },
+    "351": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 351 stores ViralDOT total 129 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 129.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 121 HP total before expiry."
+        },
+        "script": {
+          "source": "GOB 351 stores ViralDOT total 129 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 129.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 121 HP total before expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 351 stores ViralDOT total 129 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 129.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 121 HP total before expiry."
+        }
+      }
+    },
+    "352": {
+      "checks": {
+        "stats": {
+          "source": "GOB 352 combines the timed -48 Viral Resistance modifier for 12 s with AddControlImmunityTimer. Its Pacify lasts 6 s.",
+          "runtime": "AbilityCatalog.Controls builds the immunity and Pacify. AbilityHostile.ModOf keeps the combined stat modifier and AbilityStats.Player reads the active resistance.",
+          "test": "AbilityHostileTests.FreezeSystemTwoPacifiesAndAddsTheShippedViralResistancePenalty verifies both timed modifiers, active resistance, damage break and independent immunity cleanup."
+        },
+        "script": {
+          "source": "GOB 352 combines the timed -48 Viral Resistance modifier for 12 s with AddControlImmunityTimer. Its Pacify lasts 6 s.",
+          "runtime": "AbilityCatalog.Controls builds the immunity and Pacify. AbilityHostile.ModOf keeps the combined stat modifier and AbilityStats.Player reads the active resistance.",
+          "test": "AbilityHostileTests.FreezeSystemTwoPacifiesAndAddsTheShippedViralResistancePenalty verifies both timed modifiers, active resistance, damage break and independent immunity cleanup."
+        }
+      }
+    },
+    "353": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 353 stores ViralDOT total 94 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 450.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 418 HP total before expiry."
+        },
+        "script": {
+          "source": "GOB 353 stores ViralDOT total 94 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
+          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 450.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 418 HP total before expiry."
+        }
+      }
+    },
+    "420": {
+      "checks": {
+        "script": {
+          "source": "GOB 420 stores both RemoveRandomBuff and UpgradeSweepPulse. The 20 value belongs to the sweep chance, not stat111 Current Inner Strength.",
+          "runtime": "AbilityHostile.LandedOnPlayer runs both callbacks and does not mutate current Inner Strength.",
+          "test": "AbilityHostileTests.DeleteUpgradeTwoRunsBothDispelCallbacksWithoutSpendingTargetInnerStrength leaves the target debuff and resource untouched and removes both eligible buffs."
+        },
+        "stats": {
+          "source": "GOB 420 carries 20 on the UpgradeSweepPulse callback operand under target 710.",
+          "runtime": "AbilityHostile.UpgradeSweep reads the value as a percentile threshold for each removable buff.",
+          "test": "AbilityHostileTests.DeleteUpgradeTwoRunsBothDispelCallbacksWithoutSpendingTargetInnerStrength executes the callback with eligible repeat targets and deterministic RNG."
+        }
+      }
+    },
+    "424": {
+      "checks": {
+        "script": {
+          "source": "GOB 424 sets NegativeConditionSweepPulse every 5 s, 35% for 25 s. tempmods.py limits removal to removable debuff parents.",
+          "runtime": "AbilityHostile.ApplySweep builds and schedules the pulse. TimedEffects.RunDue invokes AbilityHostile.Pulse, which preserves exempt parents and other categories.",
+          "test": "AbilityHostileTests.SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs"
+        },
+        "behavior-tests": {
+          "source": "GOB 424 sets NegativeConditionSweepPulse every 5 s, 35% for 25 s. tempmods.py limits removal to removable debuff parents.",
+          "runtime": "AbilityHostile.ApplySweep builds and schedules the pulse. TimedEffects.RunDue invokes AbilityHostile.Pulse, which preserves exempt parents and other categories.",
+          "test": "AbilityHostileTests.SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs"
+        }
+      }
+    },
+    "941": {
+      "checks": {
+        "stats": {
+          "source": "GOB 941 runs ApplyAuraEffectOnHealthChange on a health event and charges 7 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        },
+        "consumer": {
+          "source": "GOB 941 runs ApplyAuraEffectOnHealthChange on a health event and charges 7 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        },
+        "script": {
+          "source": "GOB 941 runs ApplyAuraEffectOnHealthChange on a health event and charges 7 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        }
+      }
+    },
+    "942": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 942 uses neutral damage type 5 with range 50 to 150 under function 0.",
+          "runtime": "AbilityHealthCallbacks.Sample uses the half-open 15-bit draw and Reapply sends immediate damage to nearby hostile targets.",
+          "test": "AbilityHealthCallbackTests.NativeFunctionZeroUsesFifteenBitMultiplyAndExcludesUpperEndpoint checks the sampled high endpoint 149. Ability-health-reactive-area checks the exact 50 HP drop on the hostile recipient."
+        }
+      }
+    },
+    "943": {
+      "checks": {
+        "stats": {
+          "source": "GOB 943 runs ApplyNextAuraEffectHealthChance on a health event and charges 6 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        },
+        "consumer": {
+          "source": "GOB 943 runs ApplyNextAuraEffectHealthChance on a health event and charges 6 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        },
+        "script": {
+          "source": "GOB 943 runs ApplyNextAuraEffectHealthChance on a health event and charges 6 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks invokes the child effect and AbilityBuffs.TickActiveDrain maintains or ends the toggle.",
+          "test": "Ability-health-reactive-area exercises the health event, actual child HP update and toggle-off cleanup. BuffDrainLifetimeTests.HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords asserts the exact costs and shortfall."
+        }
+      }
+    },
+    "945": {
+      "checks": {
+        "aura": {
+          "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
+          "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+        },
+        "stats": {
+          "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
+          "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+        },
+        "script": {
+          "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
+          "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+        },
+        "behavior-tests": {
+          "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
+          "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+        }
+      }
+    },
+    "946": {
+      "checks": {
+        "area": {
+          "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
+          "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+        },
+        "stats": {
+          "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
+          "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+        },
+        "behavior-tests": {
+          "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
+          "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
+          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+        }
+      }
+    },
+    "1096": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1096 applies four +25 typed damage modifiers and +200 maximum buff buffer over 300 s.",
+          "runtime": "AbilityBuffs installs the snapshot and expiry. AbilityStats.ScaleTypedAbilityDamage and AbilityBuffBuffer.Maximum consume the active values.",
+          "test": "AbilityScaledBuffTests.UpgradeMasterAddsAndRemovesDamageAndAvailableBuffer verifies each damage type and max buffer addition, timed cleanup, and loaded parent grant removal."
+        },
+        "consumer": {
+          "source": "GOB 1096 applies four +25 typed damage modifiers and +200 maximum buff buffer over 300 s.",
+          "runtime": "AbilityBuffs installs the snapshot and expiry. AbilityStats.ScaleTypedAbilityDamage and AbilityBuffBuffer.Maximum consume the active values.",
+          "test": "AbilityScaledBuffTests.UpgradeMasterAddsAndRemovesDamageAndAvailableBuffer verifies each damage type and max buffer addition, timed cleanup, and loaded parent grant removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 1096 applies four +25 typed damage modifiers and +200 maximum buff buffer over 300 s.",
+          "runtime": "AbilityBuffs installs the snapshot and expiry. AbilityStats.ScaleTypedAbilityDamage and AbilityBuffBuffer.Maximum consume the active values.",
+          "test": "AbilityScaledBuffTests.UpgradeMasterAddsAndRemovesDamageAndAvailableBuffer verifies each damage type and max buffer addition, timed cleanup, and loaded parent grant removal."
+        }
+      }
+    }
+  }
+}

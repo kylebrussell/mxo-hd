@@ -182,6 +182,103 @@ public class AbilityScaledBuffTests
     }
 
     [Theory]
+    [InlineData(323, 720, 25, 5)]
+    [InlineData(423, 960, 45, 10)]
+    public void MovementAcceleratorsPublishTimedSpeedAndStealthModifiers(ushort id, int seconds, int speed, int stealth)
+    {
+        var target = Client(50);
+        Assert.True(AbilityBuffs.Apply(target, id));
+        var buff = target.playerData.activeBuffs[id];
+        Assert.Equal(seconds, buff.Definition.Seconds);
+        Assert.Equal(speed / 100f, buff.Definition.MovementScale);
+        Assert.Equal(speed, AbilityStats.Player(target, 115));
+        Assert.Equal(stealth, AbilityStats.Player(target, 877));
+        Assert.Equal(stealth, AbilityStats.Player(target, 878));
+        TimedEffects.RunDue(buff.Started + seconds + .01);
+        Assert.Equal(0, AbilityStats.Player(target, 115));
+        Assert.Equal(0, AbilityStats.Player(target, 877));
+        Assert.Equal(0, AbilityStats.Player(target, 878));
+    }
+
+    [Fact]
+    public void UpgradeMasterAddsAndRemovesDamageAndAvailableBuffer()
+    {
+        var target = Client(50);
+        int baseline = AbilityBuffBuffer.Maximum(target);
+        AbilityPassives.SetLoaded(target, new[] { ((ushort)425, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(target, 1096));
+        Assert.Equal(5, AbilityStats.Player(target, 1090));
+        Assert.True(AbilityBuffs.Apply(target, 1096));
+        var buff = target.playerData.activeBuffs[1096];
+        Assert.Equal(300, buff.Definition.Seconds);
+        Assert.Equal(baseline + 200, AbilityBuffBuffer.Maximum(target));
+        foreach (int kind in new[] { 0, 1, 2, 7 })
+            Assert.Equal(125, AbilityStats.ScaleTypedAbilityDamage(target, kind, 100));
+        TimedEffects.RunDue(buff.Started + 300.01);
+        Assert.Equal(baseline, AbilityBuffBuffer.Maximum(target));
+        foreach (int kind in new[] { 0, 1, 2, 7 })
+            Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, kind, 100));
+        AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(target, 1096));
+    }
+
+    [Theory]
+    [InlineData(317, new[] { 1144, 1140, 1090 }, new[] { 11, 11, 10 })]
+    [InlineData(318, new[] { 1144, 1140 }, new[] { 1, 1 })]
+    [InlineData(349, new[] { 1147, 1056 }, new[] { 5, 15 })]
+    [InlineData(422, new[] { 1139, 1142, 1146, 1148 }, new[] { 10, 10, 5, 5 })]
+    [InlineData(940, new[] { 520, 181 }, new[] { 50, 25 })]
+    public void HackerPassivesInstallLevelFiftyTotalsAndRemoveThemOnUnload(ushort id, int[] stats, int[] expected)
+    {
+        var target = Client(50);
+        AbilityPassives.SetLoaded(target, new[] { (id, (ushort)50) });
+        for (int i = 0; i < stats.Length; i++)
+            Assert.Equal(expected[i], AbilityStats.Player(target, (ushort)stats[i]));
+        if (id == 318)
+        {
+            Assert.True(AbilityPassives.IsLoaded(target, 1095));
+            Assert.Equal(2, AbilityStats.Toughness(target, false));
+            Assert.Equal(2, AbilityStats.Toughness(target, true));
+        }
+        AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>());
+        foreach (int stat in stats)
+            Assert.Equal(0, AbilityStats.Player(target, (ushort)stat));
+        Assert.False(AbilityPassives.IsLoaded(target, 1095));
+    }
+
+    [Theory]
+    [InlineData(321, 300, 15)]
+    [InlineData(322, 600, 200)]
+    [InlineData(419, 300, 500)]
+    [InlineData(421, 300, 47)]
+    public void ReviewedHackerBuffsReachTheirGameplayConsumers(ushort id, int seconds, int value)
+    {
+        var target = Client(50);
+        var consumer = id switch
+        {
+            321 => new Func<int>(() => AbilityCosts.Effective(target, 359)),
+            421 => () => AbilityStats.Defense(target, false),
+            _ => () => NumericalUtils.ByteArrayToUint16(target.playerInstance.MaxHealth.getValue(), 1)
+        };
+        int baseline = consumer();
+        Assert.True(AbilityBuffs.Apply(target, id));
+        var buff = target.playerData.activeBuffs[id];
+        Assert.Equal(seconds, buff.Definition.Seconds);
+        if (id == 321)
+        {
+            Assert.Equal(value, AbilityStats.Player(target, 117));
+            Assert.Equal(baseline - baseline * value / 100, consumer());
+        }
+        else
+        {
+            Assert.Equal(baseline + value, consumer());
+            if (id == 421) Assert.Equal(value, AbilityStats.Defense(target, true));
+        }
+        TimedEffects.RunDue(buff.Started + seconds + .01);
+        Assert.Equal(baseline, consumer());
+    }
+
+    [Theory]
     [InlineData(124,20,171,10)] [InlineData(170,50,174,25)] [InlineData(417,20,106,200)]
     [InlineData(173,20,522,25)] [InlineData(173,50,522,26)] [InlineData(421,50,1009,47)]
     public void TimedTemplatesUseCharacterLevelNativePrecisionAndPositiveCaps(ushort ability,int level,ushort stat,int value)
@@ -525,6 +622,9 @@ public class AbilityScaledBuffTests
         var c=Client(50); c.playerInstance.Health.setValue((ushort)100);
         Assert.True(AbilityBuffs.Apply(c,49)); Assert.True(AbilityBuffs.Apply(c,id));
         Assert.Equal(0x140,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));
+        Assert.Equal(id == 319 ? 80 : 40, AbilityStats.Player(c, 157));
+        foreach (ushort resistance in new ushort[] { 180, 181, 1033 })
+            Assert.Equal(id == 319 ? 20 : 10, AbilityStats.Player(c, resistance));
         Assert.True(AbilityBuffs.Remove(c,id));
         Assert.Equal(100+heal,PvpCombat.HealthOf(c));
         Assert.Equal(0x40,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));

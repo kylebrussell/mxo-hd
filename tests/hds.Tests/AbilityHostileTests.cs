@@ -3,7 +3,10 @@ using hds;
 
 namespace hds.Tests;
 
-[Collection("DelayedActions")]
+[CollectionDefinition("AbilityHostileWorld", DisableParallelization = true)]
+public class AbilityHostileWorldCollection { }
+
+[Collection("AbilityHostileWorld")]
 public class AbilityHostileTests
 {
     private static WorldClient Client(ushort health = 1000, ushort innerStrength = 200)
@@ -155,6 +158,80 @@ public class AbilityHostileTests
             WorldServer.Clients = previousClients;
             WorldServer.mobs = previousMobs;
         }
+    }
+
+    [Theory]
+    [InlineData(350, 100, 8)]
+    [InlineData(351, 129, 11)]
+    [InlineData(353, 450, 38)] // Runtime capture override; GOB total is 94.
+    public void VectorVirusDealsElevenRoundedViralTicksBeforeExpiry(ushort id, int total, int tickDamage)
+    {
+        var target = Client();
+        var effect = Assert.Single(Land(target, id));
+        Assert.Equal(total, effect.Value);
+        Assert.Equal(2, effect.DamageType);
+        Assert.Equal(2.5, effect.Interval);
+        Assert.Equal(30, effect.Seconds);
+        TimedEffects.RunDue(effect.Start + 2.49);
+        Assert.Equal(1000, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(effect.Start + 2.51);
+        Assert.Equal(1000 - tickDamage, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(effect.Expires + .01);
+        Assert.Equal(1000 - tickDamage * 11, PvpCombat.HealthOf(target));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+    }
+
+    [Theory]
+    [InlineData(947, 99, .1f)]
+    [InlineData(948, 102, .15f)]
+    public void PacketLossUsesItsStoredProcThresholdOnTheLandedEffect(ushort id, ushort stateId, float threshold)
+    {
+        Assert.True(TempMods.TryGet(id, out var effect));
+        var target = Client();
+        var holder = TimedEffects.ForPlayer(target);
+        double now = TimeUtils.GetSimTimeSeconds();
+        Assert.Empty(TimedEffects.Apply(holder, effect, now, rng: new ProcRoll(threshold)));
+        var applied = Assert.Single(TimedEffects.Apply(holder, effect, now, rng: new ProcRoll(threshold - .00001)));
+        Assert.Equal(stateId, applied.Target);
+        Assert.Equal(10, applied.Seconds);
+        TimedEffects.RunDue(applied.Expires + .01);
+        Assert.False(holder.Effects.HasParent(id));
+    }
+
+    [Fact]
+    public void FreezeSystemTwoPacifiesAndAddsTheShippedViralResistancePenalty()
+    {
+        var target = Client();
+        var effects = TimedEffects.ForPlayer(target);
+        var applied = Land(target, 352);
+        Assert.Equal(6, Assert.Single(applied, m => m.Target == TempMods.MezAbility).Seconds);
+        Assert.Equal(12, Assert.Single(applied, m => m.Target == 157).Seconds);
+        Assert.Equal(-48, AbilityStats.Player(target, 157));
+        Assert.False(ControlActions.CanUseAbilities(effects.Effects));
+        var immunity = Assert.Single(effects.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
+        TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
+        Assert.True(ControlActions.CanUseAbilities(effects.Effects));
+        Assert.True(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+        TimedEffects.RunDue(immunity.Expires + .01);
+        Assert.False(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+        Assert.Equal(0, AbilityStats.Player(target, 157));
+    }
+
+    [Fact]
+    public void DeleteUpgradeTwoRunsBothDispelCallbacksWithoutSpendingTargetInnerStrength()
+    {
+        var caster = Client();
+        var target = Client();
+        Assert.True(AbilityBuffs.Apply(target, 327));
+        Assert.True(AbilityBuffs.Apply(target, 344));
+        Land(target, 392);
+        var rng = new ZeroRoll();
+        AbilityHostile.LandedOnPlayer(caster, target, 420, rng);
+        Assert.False(AbilityBuffs.IsActive(target, 327));
+        Assert.False(AbilityBuffs.IsActive(target, 344));
+        Assert.True(TimedEffects.ForPlayer(target).Effects.HasParent(392));
+        Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target));
+        TimedEffects.RemoveParent(TimedEffects.ForPlayer(target), 392);
     }
 
     [Fact]
