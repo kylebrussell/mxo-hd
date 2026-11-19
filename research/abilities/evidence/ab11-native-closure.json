@@ -1,0 +1,114 @@
+{
+  "families": {
+    "smg-interlock-special": {
+      "representative": 176,
+      "result": "pass",
+      "head": "55203021",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269",
+      "scope": "Single-SMG Covering Fire sent the next-move notice and landed 21083 in an active interlock. The observed round did not establish the root proc or its break handling."
+    },
+    "gun-cone": {
+      "representative": 493,
+      "result": "pass",
+      "head": "da385433",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/324#issuecomment-7002216774",
+      "scope": "Dual-SMG Direct Fire hit the selected NPC and the staged inside NPC, and left the staged outside NPC untouched. Damage scaling and the enrage proc are separate checks."
+    }
+  },
+  "abilities": {
+    "126": {
+      "family": "handgun-interlock-special",
+      "checks": {
+        "choreography": {
+          "source": "GOB 126 required weapon/style and named stock ILDB move 9522.",
+          "runtime": "CombatAnimations.Special selects the move and the ordinary interlock exchange publishes it.",
+          "test": "combat-gun-special-queue-disarming verifies the next-move record and landed move 9522 from the captured activation. Stock PR326 repeated the same active-interlock exchange. https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269"
+        }
+      }
+    },
+    "176": {
+      "family": "smg-interlock-special",
+      "checks": {
+        "choreography": {
+          "source": "GOB 176 required weapon/style and named stock ILDB move 21083.",
+          "runtime": "CombatAnimations.Special selects the move and the ordinary interlock exchange publishes it.",
+          "test": "combat-gun-special-queue-covering verifies the next-move record and landed move 21083 from the captured activation. Stock PR326 repeated the same active-interlock exchange. https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269"
+        }
+      }
+    },
+    "197": {
+      "family": "martial-interlock-specials",
+      "checks": {
+        "choreography": {
+          "source": "GOB 197 Self Defense and Dazed target requirements; ILDB HeadButt 284.",
+          "runtime": "Mob publishes the tactic condition flag for native hotbar admission. CombatAnimations.Special resolves the queued move.",
+          "test": "martial-hotbar-conditions checks the selected target flag and its expiry. CombatDepthTests.SpecialsUseTheirOwnShippedMoveAndDuration asserts 284; the stock cast enabled against a Dazed target and landed 284. https://github.com/kylebrussell/mxo-hd/pull/323#issuecomment-7001857767"
+        }
+      }
+    },
+    "243": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 243 required weapon/style and named stock ILDB move 9518.",
+          "runtime": "CombatAnimations.Special selects the move and the ordinary interlock exchange publishes it.",
+          "test": "combat-gun-special-queue-aerial verifies the next-move record and landed move 9518 from the captured activation. Stock PR326 repeated the same active-interlock exchange. https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269"
+        }
+      }
+    },
+    "262": {
+      "family": "martial-interlock-specials",
+      "checks": {
+        "choreography": {
+          "source": "GOB 262 Kung-Fu and Staggered target requirements; ILDB Piston_Kicks 8085.",
+          "runtime": "Mob publishes the tactic condition flag for native hotbar admission. CombatAnimations.Special resolves the queued move.",
+          "test": "martial-hotbar-conditions checks the selected target flag and its expiry. CombatDepthTests.EveryConfiguredSpecialResolvesToARealShippedMove checks the configured bindings; the stock cast enabled against Staggered, queued 8085, and the hotbar returned grey after Stagger expired. https://github.com/kylebrussell/mxo-hd/pull/323#issuecomment-7001857767"
+        }
+      }
+    },
+    "330": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 330 uses a selected hostile target, a 20 m selection range and viral contest TestFunction 2.",
+          "runtime": "AbilityTargets.Land checks live hostile NPC admission, CombatSight and range; LandOne applies the free-cast viral contest before effects.",
+          "test": "combat-foundations sends the same cast against a blocked and a clear mapped NPC and checks no blocked health update. FreeCastViralLandingTests.ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld now exercises deflection with 330. Stock sight refusal and successful clear/resisted casts. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488 https://github.com/kylebrussell/mxo-hd/pull/322#issuecomment-7001788160"
+        }
+      }
+    },
+    "412": {
+      "family": "martial-interlock-specials"
+    },
+    "466": {
+      "checks": {
+        "script": {
+          "source": "GOB 466 uses ViralDOT, with type 2, duration 15 s and update interval 2.5 s. tempmods.py ViralDOT applies the rounded tick and VIRUSCRASH_FX.",
+          "runtime": "TempMods.DotTick, TimedEffects.Active.TickDamage and PlayerEffects/MobEffects.Ticked dispatch the periodic typed damage and tick FX.",
+          "test": "AbilityTargetTests.PlagueZoneIsDamageOverTime checks zero direct damage, exact rounding and tick FX. AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry and ability-health-parity check five timed ticks and applied total accounting. Stock observed five 83-point NPC ticks and death/loot. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
+        }
+      }
+    },
+    "493": {
+      "family": "gun-cone",
+      "checks": {
+        "area": {
+          "source": "GOB 493 selector 13, radius 8 m and angle 45 degrees.",
+          "runtime": "AbilityTargets.LandAround uses the caster as cone origin, the selected target to orient the cone, and AbilityRadius.TargetMetres plus InCone for secondary admission.",
+          "test": "AbilityParityTests.StoredGunConeUsesFullHorizontalArc checks the angular boundary; combat-foundations checks the primary and inside hit with no outside HP update. Stock Aim/Inside/Outside agrees. https://github.com/kylebrussell/mxo-hd/pull/324#issuecomment-7002216774"
+        }
+      }
+    },
+    "1102": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1102 self-cast non-toggle and its sole indefinite stat 575 modifier, function 2 at scale 3.0.",
+          "runtime": "AbilityScaledBuffs.TryToggle resolves effective learned rank and preserves the non-toggle flag; AbilityBuffs applies/removes the snapshot and AbilityControlDurations consumes the resulting stat total.",
+          "test": "AbilityScaledBuffTests.CapturedStatusBuffsFeedDefenseAccuracyAndDeterminationConsumers tests mitigation and removal; the rank-20 case checks +60, non-toggle semantics and immediate reuse timer. ability-status verifies the +150 wire modifier at rank 50; stock Status displayed the same +150 on refresh. https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958"
+        },
+        "behavior-tests": {
+          "source": "GOB 1102 self-cast non-toggle and its sole indefinite stat 575 modifier, function 2 at scale 3.0.",
+          "runtime": "AbilityScaledBuffs.TryToggle resolves effective learned rank and preserves the non-toggle flag; AbilityBuffs applies/removes the snapshot and AbilityControlDurations consumes the resulting stat total.",
+          "test": "AbilityScaledBuffTests.CapturedStatusBuffsFeedDefenseAccuracyAndDeterminationConsumers tests mitigation and removal; the rank-20 case checks +60, non-toggle semantics and immediate reuse timer. ability-status verifies the +150 wire modifier at rank 50; stock Status displayed the same +150 on refresh. https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958"
+        }
+      }
+    }
+  }
+}

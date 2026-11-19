@@ -84,14 +84,17 @@ public class FreeCastViralLandingTests : IDisposable
         }
         finally {AbilityBuffs.RemoveAll(c);AbilityBuffs.RemoveAll(target);}
     }
-    [Fact] public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld()
+    [Theory]
+    [InlineData(33)]
+    [InlineData(330)]
+    public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld(ushort abilityId)
     {
-        var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{((ushort)33,(ushort)50)});
+        var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{(abilityId,(ushort)50)});
         var visible=Client(111);var hidden=Client(112);var foreign=Client(113,2);var deleting=Client(114);
         var mob=new Mob();mob.setEntityId(1000);mob.setMobId(1);mob.setDistrict(1);mob.setName("Target");mob.setHealthC(1000);mob.setHealthM(1000);mob.setLevel(50);WorldServer.mobs.Add(mob);
         foreach(var c in new[]{caster,visible,foreign,deleting}){var v=c.viewMan.addView(1000,1);v.viewCreated=true;if(c==deleting)v.viewNeedsToBeDeleted=true;}
         foreach(var c in WorldServer.Clients.Values){c.messageQueue.RPCMessagesQueue.Clear();c.messageQueue.ObjectMessagesQueue.Clear();}
-        int state=mob.currentState;var ability=new AbilityItem();ability.setAbilityID(33);
+        int state=mob.currentState;var ability=new AbilityItem();ability.setAbilityID(abilityId);
         Assert.True(AbilityTargets.Land(caster,ability,caster.viewMan.FindViewForEntity(1000).ViewID,origin:AbilityCastOrigin.NormalFreeCast));
         Assert.Equal((ushort)1000,mob.getHealthC());Assert.Equal(state,mob.currentState);
         Assert.Equal(0,AbilityStats.Npc(mob,342));Assert.Equal(0,AbilityStats.Npc(mob,183));

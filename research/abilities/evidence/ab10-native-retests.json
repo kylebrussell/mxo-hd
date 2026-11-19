@@ -70,7 +70,7 @@
       "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576",
       "scope": "Adrenaline Booster, Calm Mind Calm Body and Consistent Technique produced stock 20 s self buffs; expiry notices were observed for 1 and 5."
     },
-    "toggle-self-buffs": {
+    "indefinite-self-stat-buffs": {
       "representative": 1099,
       "result": "pass",
       "head": "6b21603c",
@@ -180,7 +180,7 @@
       "family": "awakened-timed-self-buffs"
     },
     "10": {
-      "family": "toggle-self-buffs"
+      "family": "indefinite-self-stat-buffs"
     },
     "11": {
       "family": "hyper-jump"
@@ -290,7 +290,7 @@
       }
     },
     "184": {
-      "family": "toggle-self-buffs"
+      "family": "indefinite-self-stat-buffs"
     },
     "198": {
       "family": "martial-interlock-specials"
@@ -407,10 +407,10 @@
       "family": "hostile-timed-controls"
     },
     "1099": {
-      "family": "toggle-self-buffs"
+      "family": "indefinite-self-stat-buffs"
     },
     "1102": {
-      "family": "toggle-self-buffs"
+      "family": "indefinite-self-stat-buffs"
     },
     "1111": {
       "family": "sneak-toggle-detection"
