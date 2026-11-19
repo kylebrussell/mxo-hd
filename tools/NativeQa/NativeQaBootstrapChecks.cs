@@ -144,6 +144,8 @@ public static class NativeQaBootstrapChecks
                     }
                     if (name == "ability-health-parity")
                         actionProof = await Modes.AbilityHealthParityMode.VerifyRejuvenateAsync(probe!, helpers["QAFriend"]);
+                    if (name == "combat-foundations")
+                        actionProof = await Modes.CombatFoundationsMode.VerifyLogicBarrageAsync(server, probe!);
                     if (name == "ability-sweep-coder")
                         actionProof = await CoderSweepRetest.VerifyAsync(server, probe!);
                     var problems = helpers.Values.SelectMany(p => p.World.Problems).Concat(canary?.World.Problems ?? Array.Empty<string>()).ToArray();
