@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Text.Json;
 using HeadlessClient;
 using hds;
@@ -18,8 +19,8 @@ public sealed class AwakenedPowerShotMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[]
         {
-            "Start with a substantial Inner Strength deficit. Select Melee Dummy at 3m west, use Power Shot from Actions at rest, and retain the outgoing cast, enemy hit, own IS boost line and 60s reuse.",
-            "When reuse clears, repeat in Self Defense interlock. Capture the request and resolved round. On a miss the caster should receive no IS boost. Capture the native admission gate and named playback if available.",
+            "Start with a substantial Inner Strength deficit. Select Melee Dummy at 3m west and enter Self Defense interlock. The stock Power Shot icon is grey at rest. Then use Power Shot and retain the cast, queue, enemy hit, own IS boost line and 60s reuse.",
+            "If sampling a miss after reuse, retain the resolved round and verify no IS boost. Capture named playback if available.",
             "The effects roll independently. Record actual damage and actual caster IS delta. This test samples the landed mechanics, not a complete native distribution."
         });
 
@@ -29,9 +30,21 @@ public sealed class AwakenedPowerShotMode : NativeQaMode
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected the disposable Power Shot server.");
         await actor.EnterWorldAsync();
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
+        uint handle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+        string target = WireFormat.ToHex(BitConverter.GetBytes(handle));
+        actor.World.SendRpcs(Convert.FromHexString($"80b91100{target}0000000000000000000000000000000000000034097f00000000ff086b0000000000"),
+            WireFormat.FromHex($"40 {target} 01 6b"));
+        await actor.WaitForRpcAsync($"40 {target} 00 6b");
+        await actor.WaitForRpcAsync("47");
         int start = actor.World.RpcSnapshot().Count;
         int viewStart = actor.World.ViewSnapshot().Count;
-        byte[] request = EvidenceRetestWire.Cast(actor, 14, dummy);
+        // PR386 stock hotbar packet, PacketLog 1694–95, with the live target handle.
+        byte[] request = Convert.FromHexString("80b90e000400020000000000000000000000000000000000000000000e000000006b0000086b0000000000");
+        Check.Equal(43, request.Length, "Captured Power Shot request length");
+        BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), handle);
+        actor.SendRpc(request);
+        await actor.WaitUntilAsync(() => server.DebugLog().Contains("[COMBAT] PowerShotAbility is the next move"),
+            "Power Shot queues for the active interlock", TimeSpan.FromSeconds(10));
         var boost = await actor.WaitForRpcAsync("81 67 ?? ?? ?? ?? af 01 00 c4 01 0e 00 00 00");
         int gain = BitConverter.ToInt32(boost.Bytes, boost.Bytes.Length - sizeof(int));
         Check.That(gain is >= 10 and <= 100, "Power Shot publishes the actual independent IS gain");
