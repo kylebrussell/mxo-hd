@@ -151,6 +151,22 @@ public class AbilityParityTests
     }
 
     [Fact]
+    public void EmergencyRepairsClampsTheRuntimeTickAndLeavesFullHealthUntouched()
+    {
+        var client = Client();
+        client.playerInstance.Health.setValue((ushort)499);
+        AbilitySupport.Land(client, 169, 2);
+        var hot = Assert.Single(TimedEffects.ForPlayer(client).Effects.Snapshot());
+        Assert.Equal(499, PvpCombat.HealthOf(client));
+        Assert.Equal(2, hot.TickDamage);
+        TimedEffects.RunDue(hot.Start + 2.51);
+        Assert.Equal(500, PvpCombat.HealthOf(client));
+        TimedEffects.RunDue(hot.Expires + .01);
+        Assert.Equal(500, PvpCombat.HealthOf(client));
+        Assert.True(TimedEffects.ForPlayer(client).Effects.IsEmpty);
+    }
+
+    [Fact]
     public void TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler()
     {
         var caster = Client();

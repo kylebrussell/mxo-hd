@@ -69,6 +69,14 @@ public class UiLagAreaTests : IDisposable
             UiLagArea.Land(c,Ability());
             Assert.True(Affected(near));Assert.True(Affected(edge));Assert.False(Affected(far));Assert.False(Affected(c));
             Assert.Equal(4,TimedEffects.ForPlayer(near).Effects.Snapshot().Count(m=>m.Parent==97));
+            Assert.Equal(-14, AbilityStats.ViralAccuracy(near));
+            Assert.Equal(-10, AbilityStats.ThrownAccuracy(near));
+            var viral = new AbilityItem();
+            viral.setAbilityID(330);
+            var thrown = new AbilityItem();
+            thrown.setAbilityID(279);
+            Assert.Equal(-17, AbilityStats.SpecialDefense(near, viral));
+            Assert.Equal(-12, AbilityStats.SpecialDefense(near, thrown));
             Assert.Equal(1000,PvpCombat.HealthOf(near));Assert.Equal(0,AbilityStats.Player(far,342));
         }
         finally {foreach(var p in new[]{near,edge,far})TimedEffects.Clear(TimedEffects.ForPlayer(p));}
