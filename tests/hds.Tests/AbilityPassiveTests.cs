@@ -146,6 +146,7 @@ public class AbilityPassiveTests
     [InlineData(54, 37)]
     [InlineData(1098, 180)]
     [InlineData(169, 14)]
+    [InlineData(513, 13)]
     public void HealsUseTheirOwnTemplateRatherThanTheTargetsMaximum(ushort ability, ushort expected)
     {
         var caster = Client();
@@ -162,6 +163,19 @@ public class AbilityPassiveTests
         var client = Client();
         Assert.Empty(AbilitySupport.Targets(client, 30, 2));
         Assert.Equal(0, AbilityHealing.Amount(client, client, 30));
+    }
+
+    [Theory]
+    [InlineData(30, 20, 22)]
+    [InlineData(31, 34, 39)]
+    public void SimulacrumRepairUsesStoredHealthAndOnlyCasterInfluence(ushort ability, int baseline, int influenced)
+    {
+        var caster = Client();
+        Assert.Equal(0, AbilityHealing.Amount(caster, Client(), ability));
+        Assert.Equal(baseline, CoderPets.FixedHeal(caster, AbilityCatalog.Find(ability)));
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (71, 50), (233, 50), (370, 50) });
+        Assert.Equal(15, AbilityStats.Influence(caster, 174));
+        Assert.Equal(influenced, CoderPets.FixedHeal(caster, AbilityCatalog.Find(ability)));
     }
 
     [Fact]

@@ -180,13 +180,14 @@ DATA_MINING = {
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; native8176/77/78 window registration/removal/status; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
 PETS = {
     25: 'own live pet within10m, noncombat,50IS/4s;300s caster-level snapshot x0.5 melee159/ballistic171 percentage influence on Proxy hits only; ForceCombat519=40 has no consumer (partial)',
-    **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (28, 4, 7), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
+    **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
+    28: _summon.format(4, 7) + '; random proxy sheet; shipped create-then-destroy ordering unresolved',
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
     20: 'own simulacrum only; Max Health +level x15 for 600s; four resistances +level x2 consumed by retaliation (OURS rating curve)',
     603: 'own simulacrum only; 600s IS cost -20%/regen +50% consumed by bounded pet IS; base pool/cost/regen OURS',
     34: 'own simulacrum only; DetonateProxyProc blast clamp(health, max/10, max/4) to NPCs within 8m, then 13000 to the simulacrum',
-    19: 'own simulacrum only; 8000 to the simulacrum, +50 caster IS; DecoyDuration 60s unexplained',
+    19: 'own simulacrum only; 8000 to the simulacrum, +50 caster IS; DecoyDuration 60s unresolved',
     609: 'toggle; 5 IS/5s drain with deactivation; 699 typed Viral Damage172/Healing174 influence +level x0.5 within20m; Nuker hit/Healer heal percentage scaling; no Proxy damage',
     619: 'toggle; 5 IS/5s drain with deactivation; 700 accuracy +level x1.3 consumed by pet attack roll (OURS hit curve)',
     699: 'Daemon Boost 1.0 pulse: Viral Damage172/Healing174 influence +level x0.5 for5s; percentage Nuker damage/Healer heal only',
@@ -204,7 +205,7 @@ PASSIVE_LIMITS = {
     297: 'shipped Encrypt/Decrypt reads the learned Cryptography ability; executable support for the separate Decryption Skill total is unresolved',
     397: 'discipline metadata; no stored stat or decoded gameplay callback',
     512: 'Repair Skill is stored but no shipped Python reader or item repair executor is established',
-    515: 'Code Writing Discount is read by WriteCodeTest; code-writing output and cost are unresolved',
+    515: 'WriteCodeTest discount is applied to the supported ordinary Writer path; wider category/signal-boost behavior unresolved',
     537: 'discipline prerequisite with no stored stat or decoded gameplay callback; [evidence](DATA-MINING.md)',
     622: 'tap skill total and locator prerequisite are available; native tapping and yield are unresolved; [evidence](DATA-MINING.md)',
     697: 'stored selector19 targets friendly simulacra; stat183 has no supported incoming viral cast path for player pets',
@@ -240,7 +241,7 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     if r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
-    elif r['direct_damage'] and not r.get('health_callback'):
+    elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
         parts.append(('captured payload 264 / stored interval 2.5s' if i == 141 else

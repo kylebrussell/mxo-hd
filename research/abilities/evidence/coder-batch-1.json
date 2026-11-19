@@ -1,0 +1,226 @@
+{
+  "families": {
+    "ordinary-compiler-session": {
+      "representative": 969,
+      "result": "pass",
+      "head": "16ba6de6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6994044920",
+      "scope": "The stock Compiler activated with a loaded Compile Items parent and turned a ten-charge Health Pill code into one pill, with nine charges remaining."
+    },
+    "ordinary-code-writer": {
+      "representative": 970,
+      "result": "pass",
+      "head": "16ba6de6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/304#issuecomment-6994044920",
+      "scope": "The stock Analyser opened the Writer and wrote Health Pill 1.0 using its five selected ingredients, granting ten charges and charging nine Info in the baseline loadout."
+    }
+  },
+  "abilities": {
+    "19": {
+      "checks": {
+        "stats": {
+          "source": "GOB 19 stores +50 Current Inner Strength and 8000 damage. simulacra.py Decoy1_Test checks selected owner identity.",
+          "runtime": "CoderPets.Prepare checks the current owned live simulacrum and exact view/spawn if supplied. LandOnPet debits pet HP and publishes bounded caster IS.",
+          "test": "ability-parity-coder-sweep sees no timer without an own pet and +50 IS with a selected own pet and a 58 s reuse. CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn checks mismatched view and spawn."
+        },
+        "targeting": {
+          "source": "GOB 19 stores +50 Current Inner Strength and 8000 damage. simulacra.py Decoy1_Test checks selected owner identity.",
+          "runtime": "CoderPets.Prepare checks the current owned live simulacrum and exact view/spawn if supplied. LandOnPet debits pet HP and publishes bounded caster IS.",
+          "test": "ability-parity-coder-sweep sees no timer without an own pet and +50 IS with a selected own pet and a 58 s reuse. CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn checks mismatched view and spawn."
+        },
+        "script": {
+          "source": "GOB 19 stores +50 Current Inner Strength and 8000 damage. simulacra.py Decoy1_Test checks selected owner identity.",
+          "runtime": "CoderPets.Prepare checks the current owned live simulacrum and exact view/spawn if supplied. LandOnPet debits pet HP and publishes bounded caster IS.",
+          "test": "ability-parity-coder-sweep sees no timer without an own pet and +50 IS with a selected own pet and a 58 s reuse. CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn checks mismatched view and spawn."
+        }
+      }
+    },
+    "22": {
+      "checks": {
+        "pets": {
+          "source": "GOB 22 and simulacra.py specify the summon role, level clamp and owner-window dismissal.",
+          "runtime": "CoderPets.Land and SpawnFor create the identified role and assign ownership. The 81 7a Deactivate order removes that owner’s summoned entity.",
+          "test": "ability-parity-coder-sweep uses the complete stock summon producer and actual Deactivate order. It checks the pet's owner/master fields, role and clamped level, cast duration, reuse, native 81 76 and 81 77 records."
+        }
+      }
+    },
+    "23": {
+      "checks": {
+        "stats": {
+          "source": "GOB 23 supplies learned-rank function 2 at scale 0.2 to Determination Bonus 1047.",
+          "runtime": "AbilityPassives resolves and clears the loaded value in AbilityStats. The approximate duration consumer remains a separate check.",
+          "test": "DeflectCodeTests and deflect-code-duration verify the loadout, resulting modifier, duration changes and removal under the current server policy."
+        },
+        "behavior-tests": {
+          "source": "GOB 23 supplies learned-rank function 2 at scale 0.2 to Determination Bonus 1047.",
+          "runtime": "AbilityPassives resolves and clears the loaded value in AbilityStats. The approximate duration consumer remains a separate check.",
+          "test": "DeflectCodeTests and deflect-code-duration verify the loadout, resulting modifier, duration changes and removal under the current server policy."
+        }
+      }
+    },
+    "24": {
+      "family": "ordinary-compiler-session",
+      "checks": {
+        "stats": {
+          "source": "GOB 24 stores +33 to stat 955. Native 6207f650 includes stat 955 as the consumable-specific multiplier for ordinary IC results.",
+          "runtime": "OrdinaryItemCompile passes the loaded stat to OrdinaryItemCode.Seconds alongside compile skill and general reduction.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. OrdinaryItemCodeTests.NativeTimerUsesSignedTotalsAndFinalClamp covers the baseline, each reduction, and the final clamp."
+        },
+        "behavior-tests": {
+          "source": "GOB 24 stores +33 to stat 955. Native 6207f650 includes stat 955 as the consumable-specific multiplier for ordinary IC results.",
+          "runtime": "OrdinaryItemCompile passes the loaded stat to OrdinaryItemCode.Seconds alongside compile skill and general reduction.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. OrdinaryItemCodeTests.NativeTimerUsesSignedTotalsAndFinalClamp covers the baseline, each reduction, and the final clamp."
+        }
+      }
+    },
+    "27": {
+      "checks": {
+        "pets": {
+          "source": "GOB 27 and simulacra.py specify the summon role, level clamp and owner-window dismissal.",
+          "runtime": "CoderPets.Land and SpawnFor create the identified role and assign ownership. The 81 7a Deactivate order removes that owner’s summoned entity.",
+          "test": "ability-parity-coder-sweep uses the complete stock summon producer and actual Deactivate order. It checks the pet's owner/master fields, role and clamped level, cast duration, reuse, native 81 76 and 81 77 records."
+        }
+      }
+    },
+    "29": {
+      "checks": {
+        "pets": {
+          "source": "GOB 29 and simulacra.py specify the summon role, level clamp and owner-window dismissal.",
+          "runtime": "CoderPets.Land and SpawnFor create the identified role and assign ownership. The 81 7a Deactivate order removes that owner’s summoned entity.",
+          "test": "ability-parity-coder-sweep uses the complete stock summon producer and actual Deactivate order. It checks the pet's owner/master fields, role and clamped level, cast duration, reuse, native 81 76 and 81 77 records."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "30": {
+      "checks": {
+        "healing": {
+          "source": "GOB 30 uses a fixed type 3 health modifier of 20 for the owner's simulacrum.",
+          "runtime": "CoderPets.FixedHeal applies the caster's healing influence; the normal player heal excludes the ability.",
+          "test": "AbilityPassiveTests.SimulacrumRepairUsesStoredHealthAndOnlyCasterInfluence checks base 20, 22 with +15 influence, and no generic player heal."
+        }
+      }
+    },
+    "31": {
+      "checks": {
+        "healing": {
+          "source": "GOB 31 uses a fixed type 3 health modifier of 34 for the owner's simulacrum.",
+          "runtime": "CoderPets.FixedHeal applies the caster's healing influence; the normal player heal excludes the ability.",
+          "test": "AbilityPassiveTests.SimulacrumRepairUsesStoredHealthAndOnlyCasterInfluence checks base 34, 39 with +15 influence, and no generic player heal."
+        }
+      }
+    },
+    "32": {
+      "checks": {
+        "stats": {
+          "source": "GOB 32 uses learned-rank function 2 at scale 0.2 to stat 1147.",
+          "runtime": "AbilityPassives and AbilityStats.ViralAccuracy use the stored value and clear it on unload. The linked coefficient is an explicit modeled value.",
+          "test": "ViralAccuracyConsumerTests.LoadedRunProgramChangesActualViralTotalsAndUnloadingRemovesIt tests the effective attack input on load and unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 32 uses learned-rank function 2 at scale 0.2 to stat 1147.",
+          "runtime": "AbilityPassives and AbilityStats.ViralAccuracy use the stored value and clear it on unload. The linked coefficient is an explicit modeled value.",
+          "test": "ViralAccuracyConsumerTests.LoadedRunProgramChangesActualViralTotalsAndUnloadingRemovesIt tests the effective attack input on load and unload."
+        }
+      }
+    },
+    "37": {
+      "family": "ordinary-code-writer",
+      "checks": {
+        "stats": {
+          "source": "GOB 37 supplies learned-rank Code Writing 649 capped at 15 and grants 970. crafting_server.py WriteCodeTest chooses the higher of the skill and category specialization.",
+          "runtime": "CraftingHandler reads 649 in the active Writer session and uses it in the ordinary code contest.",
+          "test": "AbilityPassiveTests.NativeLevelFunctionsTruncateScaleThenApplyTheCap and LoadedPassivesReachStatsAndDoNotStackAliasesOrDuplicateRows cover the capped value and clearing. ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal."
+        },
+        "consumer": {
+          "source": "GOB 37 supplies learned-rank Code Writing 649 capped at 15 and grants 970. crafting_server.py WriteCodeTest chooses the higher of the skill and category specialization.",
+          "runtime": "CraftingHandler reads 649 in the active Writer session and uses it in the ordinary code contest.",
+          "test": "AbilityPassiveTests.NativeLevelFunctionsTruncateScaleThenApplyTheCap and LoadedPassivesReachStatsAndDoNotStackAliasesOrDuplicateRows cover the capped value and clearing. ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal."
+        }
+      }
+    },
+    "275": {
+      "checks": {
+        "stats": {
+          "source": "GOB 275 stores +10 to Crafting Cost Discount 530. crafting_server.py CalcItemInfoCost and the stock compiler cost reader use the stat.",
+          "runtime": "CraftingHandler passes stat 530 to CraftingRules.InfoCost, which applies the discount for recipe writing/compile, and OrdinaryItemCompile uses it in its quote and sustained charge debit.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. CraftingRequestTests.StoredItemRulesAndCompileCostMatchTheScriptAndBinary and OrdinaryItemCodeTests.NativeCostArithmeticBoundaryVectors cover the source formula and truncation."
+        },
+        "behavior-tests": {
+          "source": "GOB 275 stores +10 to Crafting Cost Discount 530. crafting_server.py CalcItemInfoCost and the stock compiler cost reader use the stat.",
+          "runtime": "CraftingHandler passes stat 530 to CraftingRules.InfoCost, which applies the discount for recipe writing/compile, and OrdinaryItemCompile uses it in its quote and sustained charge debit.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. CraftingRequestTests.StoredItemRulesAndCompileCostMatchTheScriptAndBinary and OrdinaryItemCodeTests.NativeCostArithmeticBoundaryVectors cover the source formula and truncation."
+        }
+      }
+    },
+    "277": {
+      "family": "ordinary-compiler-session",
+      "checks": {
+        "stats": {
+          "source": "GOB 277 supplies learned-rank compile skill 706 and grants 969. crafting_server.py CompileTest and native 6207f650 read the skill.",
+          "runtime": "AbilityPassives and AbilityProgression activate stat 706 and grant 969. CraftingSession checks its loaded parent, and the ordinary compiler reads 706 for timer and contest.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. compile-session-authority checks the active grant, unbound and stale requests, materialization and cleanup after parent unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 277 supplies learned-rank compile skill 706 and grants 969. crafting_server.py CompileTest and native 6207f650 read the skill.",
+          "runtime": "AbilityPassives and AbilityProgression activate stat 706 and grant 969. CraftingSession checks its loaded parent, and the ordinary compiler reads 706 for timer and contest.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal. compile-session-authority checks the active grant, unbound and stale requests, materialization and cleanup after parent unload."
+        }
+      }
+    },
+    "513": {
+      "checks": {
+        "healing": {
+          "source": "GOB 513 has a friendly selection, a fixed base 13 heal, a 4 s cast and 6 s reuse.",
+          "runtime": "AbilitySupport admits the selected live friendly player in range; AbilityHealing and HealSelf apply the caster influence to that target and publish HP.",
+          "test": "ability-parity-coder-sweep replays stock PR333 PacketLog fe292a523b89:5075–5076, confirms QAOther 100→113 and checks the 4 s cast and 6 s reuse. AbilityPassiveTests.HealsUseTheirOwnTemplateRatherThanTheTargetsMaximum verifies the base amount; the stock cast on a full target requested +15 under a different caster loadout. https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008005445"
+        },
+        "behavior-tests": {
+          "source": "GOB 513 has a friendly selection, a fixed base 13 heal, a 4 s cast and 6 s reuse.",
+          "runtime": "AbilitySupport admits the selected live friendly player in range; AbilityHealing and HealSelf apply the caster influence to that target and publish HP.",
+          "test": "ability-parity-coder-sweep replays stock PR333 PacketLog fe292a523b89:5075–5076, confirms QAOther 100→113 and checks the 4 s cast and 6 s reuse. AbilityPassiveTests.HealsUseTheirOwnTemplateRatherThanTheTargetsMaximum verifies the base amount; the stock cast on a full target requested +15 under a different caster loadout. https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008005445"
+        }
+      }
+    },
+    "515": {
+      "family": "ordinary-code-writer",
+      "checks": {
+        "stats": {
+          "source": "GOB 515 stores +25 to compile reduction 954 and Writer discount 956. Native 6207f650 reads 954, and crafting_server.py WriteCodeTest reads 956.",
+          "runtime": "CraftingHandler deducts the Writer percent after the base crafting cost. OrdinaryItemCompile reads 954 for the ordinary IC clock.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal."
+        },
+        "consumer": {
+          "source": "GOB 515 stores +25 to compile reduction 954 and Writer discount 956. Native 6207f650 reads 954, and crafting_server.py WriteCodeTest reads 956.",
+          "runtime": "CraftingHandler deducts the Writer percent after the base crafting cost. OrdinaryItemCompile reads 954 for the ordinary IC clock.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 515 stores +25 to compile reduction 954 and Writer discount 956. Native 6207f650 reads 954, and crafting_server.py WriteCodeTest reads 956.",
+          "runtime": "CraftingHandler deducts the Writer percent after the base crafting cost. OrdinaryItemCompile reads 954 for the ordinary IC clock.",
+          "test": "ability-parity-coder-sweep executes the captured PR304 Writer and ordinary Compiler requests. It checks nine exact startup modifier records, Info 100000→99994→85198, a 9.045 s server schedule, selected ingredient depletion, ten written charges, one compiled output and last-charge removal."
+        }
+      }
+    },
+    "969": {
+      "family": "ordinary-compiler-session"
+    },
+    "970": {
+      "family": "ordinary-code-writer"
+    },
+    "1008": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1008 stores nine learned-rank function-2 style modifiers. The level-50 values use the source float32 scales and signed truncation.",
+          "runtime": "CombatSelection selects the loaded style, AbilityPassives rebuilds the nine modifiers, and the typed combat callers read their respective style inputs.",
+          "test": "ability-parity-coder-sweep replays the 3e selection and verifies all nine exact values and removals. CombatStyleTests.CoderStyleSuppliesTypedCombatInputsAndCleansUpOnSelectionChange checks their combat inputs and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 1008 stores nine learned-rank function-2 style modifiers. The level-50 values use the source float32 scales and signed truncation.",
+          "runtime": "CombatSelection selects the loaded style, AbilityPassives rebuilds the nine modifiers, and the typed combat callers read their respective style inputs.",
+          "test": "ability-parity-coder-sweep replays the 3e selection and verifies all nine exact values and removals. CombatStyleTests.CoderStyleSuppliesTypedCombatInputsAndCleansUpOnSelectionChange checks their combat inputs and cleanup."
+        }
+      }
+    }
+  }
+}

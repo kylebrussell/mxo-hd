@@ -37,6 +37,7 @@ static string Consumer(ushort stat) => stat switch
     1047 when typeof(AbilityCatalog).Assembly.GetType("hds.DeflectCode") != null => "OURS positive percent shortening of new known hostile controls after raw575, total33% floor; retail coefficient unresolved",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
+    649 or 956 => "ordinary CBB consumable Code Writer contest or Info debit",
     954 or 955 => "native client Compile60 IC timer; OURS server scheduling, known CBB IC prototypes only; [evidence](COMPILE-ORDINARY-IC.md)",
     _ => "total only"
 };
@@ -49,7 +50,7 @@ static string UtilityCoverage(ushort id) => id switch
     38 => "PARTIAL caster-centred hostile area; strict reviewed97/38 producer, source3s stun and8s immunity input, ordinary TF2 contest; completion centre/server relationship policy OURS; [evidence](ABILITY-AREA-DISRUPTION.md)",
     74 => "UBF0 caster area radius percent via stat127; group support and friendly944 only; SweepBonus1052 consumer unresolved; [evidence](ABILITY-RESIST-DAMAGE.md)",
     CraftingSession.Ability => "tool-bound exclusive Compile UI session, flag1 activation/flag0 close, linked968 and toggle records, canonical60/812e authority and lifecycle cleanup; stored bit/fragment subset and recipe executor; equipment/ability-code economy unresolved; [docs/COMPILE-ITEMS.md](COMPILE-ITEMS.md)",
-    CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; code synthesis outputs/economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
+    CraftingSession.WriterAbility => "tool531-bound exclusive writer session, loaded970 grant from37, flag1 start/flag0 or811a close, linked968, typing stance and interruption cleanup;8131 is inventory-target7 and cannot activate970 target0; stock812e writes supported ordinary consumable codes with selected ingredient depletion and discounted Info debit; other categories, signal boosts and economy unresolved; [docs/WRITE-CODE.md](WRITE-CODE.md)",
     UtilityAbilities.DownloadMissionMap => "retail mission-accept roll and cumulative flags; visible 80 c5 objective/enemy/known-lock minimap pings; bit interpretation ours, floorplan/team reveal absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.DisarmTraps => "Disarm Traps on a followed TrappedState object (DisarmTraps_Test contest, lines 0x7600024e/f/0x76000250, Disarmed/Triggered state); trap damage and Detect Traps absent; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",
     UtilityAbilities.OpenLocks => "Pick Lock (rule 4000 DoorPickLock): Open Locks loaded + Lock_Pick/Digital_Camera tool, retail lines 0x7a000141/142/145; door or container moves to the script state; mission `locked=\"1\"` objects; [docs/UTILITY-ABILITIES.md](UTILITY-ABILITIES.md)",

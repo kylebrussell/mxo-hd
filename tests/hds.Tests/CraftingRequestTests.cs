@@ -107,6 +107,10 @@ public class CraftingRequestTests
         Assert.False(CraftingRules.Succeeds(0, 1, 100));
         Assert.False(CraftingRules.Succeeds(1, 1, 50)); // equal is failure
         Assert.True(CraftingRules.Succeeds(1, 1, 51));
+        Assert.False(CraftingRules.Succeeds(0, 5, 50, 50));
+        Assert.True(CraftingRules.Succeeds(0, 5, 51, 50));
+        Assert.False(CraftingRules.Succeeds(0, 1, 100, 9));
+        Assert.True(CraftingRules.Succeeds(1, 1, 51, -50));
         Assert.True(CraftingRules.Find(38538).CantDecompile); // PvP ticket
     }
 

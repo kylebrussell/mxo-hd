@@ -36,7 +36,7 @@ namespace hds
             return Math.Max(0, (long)total);
         }
         public static bool Succeeds(int skill, int complexity, int roll, int specialization) =>
-            CraftingRules.Succeeds(skill, complexity, roll, Math.Max(0, specialization));
+            CraftingRules.Succeeds(skill, complexity, roll, specialization);
         public static byte[] Update(ushort slot, uint value, int charges) => new byte[] { 0x69, 0, (byte)slot, (byte)(slot >> 8) }
             .Concat(BitConverter.GetBytes(Packed(value, charges))).Concat(new byte[2]).ToArray();
     }
