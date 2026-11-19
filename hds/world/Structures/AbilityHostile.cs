@@ -56,8 +56,8 @@ namespace hds
 
         private static bool Fixed(AbilityCatalog.Modifier m) => m.Has("MinValue") && m.Number("MinValue") == m.Number("MaxValue", m.Number("MinValue")) &&
             !m.Has("ValueScale") && m.Number("ValueFunction") == 0;
-        private static bool Scripted(AbilityCatalog.Modifier m, bool allowUpdate = false) =>
-            !string.IsNullOrEmpty(m.Text("StatModInitFunc")) || !string.IsNullOrEmpty(m.Text("StatModTermFunc")) ||
+        private static bool Scripted(AbilityCatalog.Modifier m, bool allowUpdate = false, bool allowInit = false) =>
+            !allowInit && !string.IsNullOrEmpty(m.Text("StatModInitFunc")) || !string.IsNullOrEmpty(m.Text("StatModTermFunc")) ||
             !string.IsNullOrEmpty(m.Text("StatModHealthChangedFunc")) || !allowUpdate && !string.IsNullOrEmpty(m.Text("StatModUpdateFunc"));
         private static bool Timed(AbilityCatalog.Modifier m) => m.Number("DurationType", -1) == 0 && m.Number("Duration") > 0;
 
@@ -76,7 +76,11 @@ namespace hds
                 return new TempMods.Mod { Kind = TempMods.KindFx, Target = ability, MinValue = value, MaxValue = value, Seconds = seconds,
                     Proc = TempMods.Proc.State };
             ushort target = m.Target;
-            if (target == 0 || target == 108 || target == TempMods.DOTPlaceHolderAbility || Scripted(m) || !Fixed(m)) return null;
+            // Controls separately read the immunity callback. Its presence must not discard Freeze's resistance modifier.
+            bool immunityInit = (ability == 47 || ability == 48) && target == 157 &&
+                m.Text("StatModInitFunc") == "AddControlImmunityTimer";
+            if (target == 0 || target == 108 || target == TempMods.DOTPlaceHolderAbility ||
+                Scripted(m, allowInit: immunityInit) || !Fixed(m)) return null;
             return new TempMods.Mod { Kind = TempMods.KindStat, Target = target, MinValue = value, MaxValue = value, Seconds = seconds,
                 Proc = TempMods.Proc.Stat, Chance = ability == 274 || ability == 412 ? (float)m.Number("ProcTriggerChance", 1) : 1 };
         }

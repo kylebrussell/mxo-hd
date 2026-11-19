@@ -1,0 +1,219 @@
+{
+  "families": {},
+  "abilities": {
+    "41": {
+      "checks": {
+        "stats": {
+          "source": "GOB 41 ForceCombat modifier 519 with fixed -20 and 19 seconds.",
+          "runtime": "TimedEffects applies 519 and CombatInsightEngagement.Calculate consumes it on the server's PvP entry score.",
+          "test": "HackerBatchB2ParityTests.CodeFreeze41ChangesMovementAndItsForceCombatInput checks movement refusal and force score 80 during the effect, and stat cleanup."
+        }
+      }
+    },
+    "47": {
+      "checks": {
+        "area": {
+          "source": "GOB 47 selector 4, caster-centered 3 m radius, TestFunction 2.",
+          "runtime": "CasterHostileArea.Land samples the caster's location and filters NPC/PvP targets by the 3 m radius and existing floor/view/relationship rules.",
+          "test": "AreaDisruptionTests.FreezeArea47UsesItsOwnThreeMetreCasterBoundaryAndViralContest hits at 3.00 m, excludes 3.01 m and the other floor, ignores selection and independently verifies deflection."
+        },
+        "stats": {
+          "source": "GOB 47 sets Pacify for 6 seconds and Viral Resistance -30 for 12 seconds; AddControlImmunityTimer takes that modifier's TimeLeft.",
+          "runtime": "AbilityHostile.ModOf retains the callback-bearing stat; TimedEffects separately enters Pacify and installs the immunity tuple. AbilityStats supplies 157 to typed resistance.",
+          "test": "HackerBatchB2ParityTests.FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity measures the landed resistance, gates ability use, rejects a heal as a break, breaks on damage, and distinguishes the 12-second immunity lifetime."
+        },
+        "behavior-tests": {
+          "source": "GOB 47 sets Pacify for 6 seconds and Viral Resistance -30 for 12 seconds; AddControlImmunityTimer takes that modifier's TimeLeft.",
+          "runtime": "AbilityHostile.ModOf retains the callback-bearing stat; TimedEffects separately enters Pacify and installs the immunity tuple. AbilityStats supplies 157 to typed resistance.",
+          "test": "HackerBatchB2ParityTests.FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity measures the landed resistance, gates ability use, rejects a heal as a break, breaks on damage, and distinguishes the 12-second immunity lifetime."
+        }
+      }
+    },
+    "48": {
+      "checks": {
+        "stats": {
+          "source": "GOB 48 sets Pacify for 6 seconds and Viral Resistance -20 for 12 seconds; AddControlImmunityTimer takes that modifier's TimeLeft.",
+          "runtime": "AbilityHostile.ModOf retains the callback-bearing stat; TimedEffects separately enters Pacify and installs the immunity tuple. AbilityStats supplies 157 to typed resistance.",
+          "test": "HackerBatchB2ParityTests.FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity measures the landed resistance, gates ability use, rejects a heal as a break, breaks on damage, and distinguishes the 12-second immunity lifetime."
+        },
+        "behavior-tests": {
+          "source": "GOB 48 sets Pacify for 6 seconds and Viral Resistance -20 for 12 seconds; AddControlImmunityTimer takes that modifier's TimeLeft.",
+          "runtime": "AbilityHostile.ModOf retains the callback-bearing stat; TimedEffects separately enters Pacify and installs the immunity tuple. AbilityStats supplies 157 to typed resistance.",
+          "test": "HackerBatchB2ParityTests.FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity measures the landed resistance, gates ability use, rejects a heal as a break, breaks on damage, and distinguishes the 12-second immunity lifetime."
+        }
+      }
+    },
+    "55": {
+      "checks": {
+        "healing": {
+          "source": "GOB 55 self-target type 3 heal with fixed base 21.",
+          "runtime": "AbilitySupport.Land applies the evaluated heal through HealSelf; captured 10-second accuracy debuffs are handled separately by AbilityBuffs.",
+          "test": "HackerBatchB2ParityTests.DirectHealsChangeHealthAndStopAtRecipientMaximum verifies +21, capping and expiry of the four captured accuracy debuffs."
+        }
+      }
+    },
+    "56": {
+      "checks": {
+        "healing": {
+          "source": "GOB 56 selector 9, caster-centered radius 6 m, one immediate heal with fixed base 8.",
+          "runtime": "AbilitySupport.Targets filters the caster and live same-world team recipients by radius. AbilitySupport.Land applies AbilityHealing.Amount and HealSelf.",
+          "test": "HackerBatchB2ParityTests.RestoreGroup56HealsNearbyTeamMembersAtTheRadiusBoundary verifies +8 for the caster and a member at 6.00 m, and unchanged HP for a member at 6.01 m and an adjacent non-member."
+        },
+        "area": {
+          "source": "GOB 56 selector 9, caster-centered radius 6 m, one immediate heal with fixed base 8.",
+          "runtime": "AbilitySupport.Targets filters the caster and live same-world team recipients by radius. AbilitySupport.Land applies AbilityHealing.Amount and HealSelf.",
+          "test": "HackerBatchB2ParityTests.RestoreGroup56HealsNearbyTeamMembersAtTheRadiusBoundary verifies +8 for the caster and a member at 6.00 m, and unchanged HP for a member at 6.01 m and an adjacent non-member."
+        },
+        "behavior-tests": {
+          "source": "GOB 56 selector 9, caster-centered radius 6 m, one immediate heal with fixed base 8.",
+          "runtime": "AbilitySupport.Targets filters the caster and live same-world team recipients by radius. AbilitySupport.Land applies AbilityHealing.Amount and HealSelf.",
+          "test": "HackerBatchB2ParityTests.RestoreGroup56HealsNearbyTeamMembersAtTheRadiusBoundary verifies +8 for the caster and a member at 6.00 m, and unchanged HP for a member at 6.01 m and an adjacent non-member."
+        }
+      }
+    },
+    "62": {
+      "checks": {
+        "stats": {
+          "source": "GOB 62 applies Movement Speed 115 +10 for 600 seconds. Stock Hyper-Speed removal captures the own-view MovementScale field.",
+          "runtime": "AbilitySupport.Land reaches the selected recipient. AbilityBuffs installs the modifier, emits 0.10 to the recipient, and removes it at the timed end.",
+          "test": "HackerBatchB2ParityTests.MovementAccelerator62PublishesRecipientScaleUntilExpiry verifies the selected recipient gets +10 and the exact +0.10 wire scale, the caster receives neither, and expiry sends zero."
+        },
+        "consumer": {
+          "source": "GOB 62 applies Movement Speed 115 +10 for 600 seconds. Stock Hyper-Speed removal captures the own-view MovementScale field.",
+          "runtime": "AbilitySupport.Land reaches the selected recipient. AbilityBuffs installs the modifier, emits 0.10 to the recipient, and removes it at the timed end.",
+          "test": "HackerBatchB2ParityTests.MovementAccelerator62PublishesRecipientScaleUntilExpiry verifies the selected recipient gets +10 and the exact +0.10 wire scale, the caster receives neither, and expiry sends zero."
+        },
+        "behavior-tests": {
+          "source": "GOB 62 applies Movement Speed 115 +10 for 600 seconds. Stock Hyper-Speed removal captures the own-view MovementScale field.",
+          "runtime": "AbilitySupport.Land reaches the selected recipient. AbilityBuffs installs the modifier, emits 0.10 to the recipient, and removes it at the timed end.",
+          "test": "HackerBatchB2ParityTests.MovementAccelerator62PublishesRecipientScaleUntilExpiry verifies the selected recipient gets +10 and the exact +0.10 wire scale, the caster receives neither, and expiry sends zero."
+        }
+      }
+    },
+    "65": {
+      "checks": {
+        "stats": {
+          "source": "GOB 65 grants -24 to both melee and ballistic resistance for 33 seconds.",
+          "runtime": "TimedEffects applies both numeric attributes and AbilityStats.Toughness consumes each for the corresponding attack type.",
+          "test": "HackerBatchB2ParityTests.HostileNumericEffectsFeedTheirOwnCombatConsumers verifies both toughness deltas and their removal at expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 65 grants -24 to both melee and ballistic resistance for 33 seconds.",
+          "runtime": "TimedEffects applies both numeric attributes and AbilityStats.Toughness consumes each for the corresponding attack type.",
+          "test": "HackerBatchB2ParityTests.HostileNumericEffectsFeedTheirOwnCombatConsumers verifies both toughness deltas and their removal at expiry."
+        }
+      }
+    },
+    "67": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 67 while-loaded grant of Pathogenist Upgrade 1085.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant and removes it when the loadout drops its parent.",
+          "test": "HackerBatchB2ParityTests.LoadedDisciplineGrantsTrackMembershipWhenTheParentUnloads checks underlying granted membership on load and unload."
+        }
+      }
+    },
+    "61": {
+      "checks": {
+        "stats": {
+          "source": "GOB 61 storage field 710 supplies drain 3 to ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityAuras.PayDrain reads the value, spends actual current IS and stops the aura on a shortfall.",
+          "test": "HackerBatchB2ParityTests.AuraDrainConsumesExactStrengthAndDeactivatesWhenNextPaymentCannotBeMade verifies payment amount and deactivation without a second debit. Area pulse and overlap remain open."
+        }
+      }
+    },
+    "89": {
+      "checks": {
+        "stats": {
+          "source": "GOB 89 storage field 710 supplies drain 12 to ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityAuras.PayDrain reads the value, spends actual current IS and stops the aura on a shortfall.",
+          "test": "HackerBatchB2ParityTests.AuraDrainConsumesExactStrengthAndDeactivatesWhenNextPaymentCannotBeMade verifies payment amount and deactivation without a second debit. Area pulse and overlap remain open."
+        }
+      }
+    },
+    "170": {
+      "checks": {
+        "stats": {
+          "source": "GOB 170 Healing 174 function 3 scale 0.5 and duration 20 seconds.",
+          "runtime": "AbilityBuffs snapshots the originating caster's character level. AbilityHealing supplies the changed heal to AbilitySupport.Land until expiry.",
+          "test": "HackerBatchB2ParityTests.PassiveCode170SnapshotsCasterLevelAndMagnifiesARealHeal measures 77 HP during the level-20 caster's buff and 70 after expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 170 Healing 174 function 3 scale 0.5 and duration 20 seconds.",
+          "runtime": "AbilityBuffs snapshots the originating caster's character level. AbilityHealing supplies the changed heal to AbilitySupport.Land until expiry.",
+          "test": "HackerBatchB2ParityTests.PassiveCode170SnapshotsCasterLevelAndMagnifiesARealHeal measures 77 HP during the level-20 caster's buff and 70 after expiry."
+        }
+      }
+    },
+    "409": {
+      "checks": {
+        "stats": {
+          "source": "GOB 409 applies +10 learned-rank-scaled melee and ballistic defense bonus and +5 Healing Bonus at rank 50.",
+          "runtime": "AbilityPassives feeds AbilityStats.Defense and AbilityHealing during actual Land; unload recomputes both.",
+          "test": "HackerBatchB2ParityTests.LoadedHealingBonusesReachTheHealthMutation verifies +5 for both modeled defense inputs, a 73 HP heal while loaded and 70 HP after unloading."
+        },
+        "behavior-tests": {
+          "source": "GOB 409 applies +10 learned-rank-scaled melee and ballistic defense bonus and +5 Healing Bonus at rank 50.",
+          "runtime": "AbilityPassives feeds AbilityStats.Defense and AbilityHealing during actual Land; unload recomputes both.",
+          "test": "HackerBatchB2ParityTests.LoadedHealingBonusesReachTheHealthMutation verifies +5 for both modeled defense inputs, a 73 HP heal while loaded and 70 HP after unloading."
+        }
+      }
+    },
+    "701": {
+      "checks": {
+        "stats": {
+          "source": "GOB 701 applies -14 melee and ballistic defense for five seconds.",
+          "runtime": "TimedEffects applies the pulse child's numeric effects; AbilityStats.Defense consumes them during the effect.",
+          "test": "HackerBatchB2ParityTests.HostileNumericEffectsFeedTheirOwnCombatConsumers verifies both defense changes and restored values after expiry. Aura admission is separate."
+        },
+        "behavior-tests": {
+          "source": "GOB 701 applies -14 melee and ballistic defense for five seconds.",
+          "runtime": "TimedEffects applies the pulse child's numeric effects; AbilityStats.Defense consumes them during the effect.",
+          "test": "HackerBatchB2ParityTests.HostileNumericEffectsFeedTheirOwnCombatConsumers verifies both defense changes and restored values after expiry. Aura admission is separate."
+        }
+      }
+    },
+    "1078": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1078 while-enabled values: 4 Viral Accuracy, 7 Concentration, 10 IS Regen Rate.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        },
+        "behavior-tests": {
+          "source": "GOB 1078 while-enabled values: 4 Viral Accuracy, 7 Concentration, 10 IS Regen Rate.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        }
+      }
+    },
+    "1080": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1080 while-enabled values: 9 Viral Accuracy, 7 Concentration, 12 IS Regen Rate.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        },
+        "behavior-tests": {
+          "source": "GOB 1080 while-enabled values: 9 Viral Accuracy, 7 Concentration, 12 IS Regen Rate.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        }
+      }
+    },
+    "1085": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1085 while-enabled values: 4 Viral Accuracy, 7 Concentration, 10 Virus Area Radius.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        },
+        "behavior-tests": {
+          "source": "GOB 1085 while-enabled values: 4 Viral Accuracy, 7 Concentration, 10 Virus Area Radius.",
+          "runtime": "AbilitySupport applies the class buff. AbilityStats and AbilityCastInterrupts use the accuracy and concentration, and AbilityHandler.RegenerateInnerStrength or AbilityRadius.TargetMetres use the remaining modifier.",
+          "test": "HackerBatchB2ParityTests.ClassUpgradesModifyViralAccuracyConcentrationAndTheirDistinctConsumer verifies the resulting combat, regeneration or radius values and dismisses the buff."
+        }
+      }
+    }
+  }
+}

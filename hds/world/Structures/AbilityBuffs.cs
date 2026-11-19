@@ -76,6 +76,7 @@ namespace hds
 
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
+        private const ushort MovementAccelerator = 62;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
 
@@ -456,7 +457,9 @@ namespace hds
                 foreach (UInt16 other in data.activeBuffs.Keys)
                 {
                     if (other == abilityId ||
-                        (buff.Family != 0 && TryGet(other, out Buff o) && o.Family == buff.Family))
+                        (buff.Family != 0 && TryGet(other, out Buff o) && o.Family == buff.Family) ||
+                        (abilityId == MovementAccelerator || other == MovementAccelerator) &&
+                        AbilityCatalog.Find(other)?.Number("Ability/StackingType") == AbilityCatalog.Find(abilityId)?.Number("Ability/StackingType"))
                     {
                         replaced.Add(other);
                     }
@@ -465,7 +468,7 @@ namespace hds
             foreach (UInt16 other in replaced)
             {
                 // A movement buff put straight back on keeps its speed: don't send the speed reset in between.
-                if (Remove(client, other, false, other == abilityId, keepVitals: true) && other != abilityId)
+                if (Remove(client, other, false, other == abilityId || buff.MovementScale > 0, keepVitals: true) && other != abilityId)
                     Output.WriteDebugLog($"[BUFF] {other} off (replaced by {abilityId})");
             }
 
@@ -497,6 +500,9 @@ namespace hds
             }
             RefreshVitals(client);
             if (buff.DissemblingType != 0) PresentDissembling(client);
+            if (abilityId == MovementAccelerator)
+                client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
+                    (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (abilityId == ForceMultiplierUpgrade)

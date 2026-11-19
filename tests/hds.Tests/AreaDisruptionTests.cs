@@ -54,7 +54,7 @@ public class AreaDisruptionTests : IDisposable
     [Fact] public void SourceControlValuesAndStrictApplicabilityRemainExact()
     {
         Assert.True(CasterHostileArea.Handles(38));Assert.True(CasterHostileArea.Handles(97));
-        foreach(ushort id in new ushort[]{47,694,1025,1109}){Assert.False(CasterHostileArea.Handles(id));Assert.False(FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));}
+        foreach(ushort id in new ushort[]{694,1025,1109}){Assert.False(CasterHostileArea.Handles(id));Assert.False(FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));}
         Assert.True(TempMods.TryGet(38,out var effect));var mod=Assert.Single(effect.Mods);Assert.Equal((ushort)102,mod.Target);Assert.Equal(3f,mod.Seconds);Assert.Equal(8f,effect.ImmunitySeconds);
         var row=AbilityCatalog.Find(38);Assert.Equal(14,row.Number("Ability/AbilityInnerStrengthCost"));Assert.Equal(43,row.Number("Ability/RecastTime"));Assert.Equal(2,row.Number("Ability/CastingTime"));
         Assert.False(AbilityCastInterrupts.KnownInterruptible(38));Assert.False(AbilityTargets.Retail.ContainsKey(38));
@@ -67,6 +67,35 @@ public class AreaDisruptionTests : IDisposable
         try{CasterHostileArea.Land(c,Ability());Assert.True(Affected(near));Assert.True(Affected(edge));Assert.False(Affected(far));Assert.False(Affected(floor));Assert.False(Affected(c));Assert.Equal(1000,PvpCombat.HealthOf(near));Assert.Single(TimedEffects.ForPlayer(near).Effects.Snapshot().Where(m=>m.Parent==38));}
         finally{foreach(var p in new[]{near,edge,far,floor})TimedEffects.Clear(TimedEffects.ForPlayer(p));}
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FreezeArea47UsesItsOwnThreeMetreCasterBoundaryAndViralContest(bool hit)
+    {
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", hit ? "32766" : "0");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", hit ? "0" : "32766");
+        var caster = Actor();
+        AbilityPassives.SetLoaded(caster, new[] { ((ushort)47, (ushort)50) });
+        var inside = Target(caster, 111, 300);
+        var outside = Target(caster, 112, 301);
+        var otherFloor = Target(caster, 113, 100, 645);
+        try
+        {
+            caster.playerData.currentSelectedTargetViewId = caster.viewMan.addView(9000, 1).ViewID;
+            CasterHostileArea.Land(caster, Ability(47));
+            Assert.Equal(hit, TimedEffects.ForPlayer(inside).Effects.Has(TempMods.MezAbility));
+            Assert.Equal(hit ? -30 : 0, AbilityStats.Player(inside, 157));
+            foreach (var player in new[] { caster, outside, otherFloor })
+                Assert.False(TimedEffects.ForPlayer(player).Effects.HasParent(47));
+            Assert.Equal(1000, PvpCombat.HealthOf(inside));
+        }
+        finally
+        {
+            foreach (var player in new[] { caster, inside, outside, otherFloor })
+                TimedEffects.Clear(TimedEffects.ForPlayer(player));
+        }
+    }
+
     [Fact]public void DeflectNeverAppliesControlOrDamage()
     {var c=Actor();var t=Target(c,111,100);CasterHostileArea.Land(c,Ability());Assert.False(Affected(t));Assert.Equal(1000,PvpCombat.HealthOf(t));Assert.Single(t.messageQueue.RPCMessagesQueue);}
     [Theory][InlineData(false)][InlineData(true)]
