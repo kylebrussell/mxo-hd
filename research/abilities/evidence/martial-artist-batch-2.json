@@ -5,6 +5,13 @@
       "result": "pass",
       "head": "808e03c2ffa26dafc5a2c7cb6106df4435d7281a",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433"
+    },
+    "martial-initiate-master-upgrades": {
+      "representative": 1062,
+      "result": "pass",
+      "head": "a33db2239ae1a1fee6e595762fafcb1b032405bc",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/346#issuecomment-7009791929",
+      "scope": "Stock hotbar casts applied the caster upgrades in succession. Status showed 1062 +70 max HP, +4 melee accuracy, +2 melee damage and +4 melee defense; 1063 replaced it with +90 max HP, +6 melee accuracy and +2 melee damage. The companion PacketLog 5298–5304 shows the 1062 records turn off, then 1063 activates with the +4 melee defense modifier as well."
     }
   },
   "abilities": {
