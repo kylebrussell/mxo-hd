@@ -1,0 +1,238 @@
+{
+  "abilities": {
+    "518": {
+      "checks": {
+        "stats": {
+          "source": "GOB 518 grants learned-rank crafting stat 654; crafting_server.py GetAbilityBonusByCategory checks IT tools.",
+          "runtime": "AbilityPassives supplies this skill, CraftingHandler.Specialization selects it by category, and the compile contest uses the matching skill.",
+          "test": "AbilityPassiveTests.CraftSpecializationUsesTheLoadedSkillForTheShippedCategory checks the two shipped prototype categories, positive and unrelated contests, and unload; ability-parity-coder-advanced checks +50 at login."
+        }
+      }
+    },
+    "521": {
+      "checks": {
+        "stats": {
+          "source": "GOB 521 grants learned-rank crafting stat 656; crafting_server.py GetAbilityBonusByCategory checks IC upgrades and consumables.",
+          "runtime": "AbilityPassives supplies this skill, CraftingHandler.Specialization selects it by category, and the compile contest uses the matching skill.",
+          "test": "AbilityPassiveTests.CraftSpecializationUsesTheLoadedSkillForTheShippedCategory checks the two shipped prototype categories, positive and unrelated contests, and unload; ability-parity-coder-advanced checks +50 at login."
+        }
+      }
+    },
+    "585": {
+      "checks": {
+        "stats": {
+          "source": "GOB 585 applies learned-rank 0.2 to Viral Damage Bonus 1031, linked to the direct 172 gameplay stat.",
+          "runtime": "AbilityPassives produces the bonus, and AbilityStats.Influence feeds it into typed viral damage.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        },
+        "behavior-tests": {
+          "source": "GOB 585 applies learned-rank 0.2 to Viral Damage Bonus 1031, linked to the direct 172 gameplay stat.",
+          "runtime": "AbilityPassives produces the bonus, and AbilityStats.Influence feeds it into typed viral damage.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
+    },
+    "586": {
+      "checks": {
+        "pets": {
+          "source": "GOB 586 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "589": {
+      "checks": {
+        "stats": {
+          "source": "GOB 589 stores parent IS cost 15, drain 5 every five seconds, init-and-update child 698, and fifteen-second reuse.",
+          "runtime": "AbilityAuras runs the two cadence-controlled callbacks and removes the parent on shortfall, unload or lifecycle change. ProxyTechnician tracks child application per current owned pet.",
+          "test": "ProxyTechnicianTests.SourcedDrainPaysAtEqualityAndShortfallPreservesTheRemainingResource and the proxy-technician-lifecycle and proxy-technician-friendly-attacks headless scenarios verify independent pulses, drain and removal. Published stock records include activation, child values and replacement of the summon. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        },
+        "aura": {
+          "source": "GOB 589 stores parent IS cost 15, drain 5 every five seconds, init-and-update child 698, and fifteen-second reuse.",
+          "runtime": "AbilityAuras runs the two cadence-controlled callbacks and removes the parent on shortfall, unload or lifecycle change. ProxyTechnician tracks child application per current owned pet.",
+          "test": "ProxyTechnicianTests.SourcedDrainPaysAtEqualityAndShortfallPreservesTheRemainingResource and the proxy-technician-lifecycle and proxy-technician-friendly-attacks headless scenarios verify independent pulses, drain and removal. Published stock records include activation, child values and replacement of the summon. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        },
+        "script": {
+          "source": "GOB 589 stores parent IS cost 15, drain 5 every five seconds, init-and-update child 698, and fifteen-second reuse.",
+          "runtime": "AbilityAuras runs the two cadence-controlled callbacks and removes the parent on shortfall, unload or lifecycle change. ProxyTechnician tracks child application per current owned pet.",
+          "test": "ProxyTechnicianTests.SourcedDrainPaysAtEqualityAndShortfallPreservesTheRemainingResource and the proxy-technician-lifecycle and proxy-technician-friendly-attacks headless scenarios verify independent pulses, drain and removal. Published stock records include activation, child values and replacement of the summon. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        },
+        "behavior-tests": {
+          "source": "GOB 589 stores parent IS cost 15, drain 5 every five seconds, init-and-update child 698, and fifteen-second reuse.",
+          "runtime": "AbilityAuras runs the two cadence-controlled callbacks and removes the parent on shortfall, unload or lifecycle change. ProxyTechnician tracks child application per current owned pet.",
+          "test": "ProxyTechnicianTests.SourcedDrainPaysAtEqualityAndShortfallPreservesTheRemainingResource and the proxy-technician-lifecycle and proxy-technician-friendly-attacks headless scenarios verify independent pulses, drain and removal. Published stock records include activation, child values and replacement of the summon. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        }
+      }
+    },
+    "593": {
+      "checks": {
+        "stats": {
+          "source": "GOB 593 stores learned-rank 0.2 for typed bonuses 1146/1148. The raw links are direct thrown 1033 and direct viral 157.",
+          "runtime": "AbilityPassives emits the values. The existing typed resistance consumer feeds the corresponding incoming damage channels. The retail coefficient remains open.",
+          "test": "TypedResistanceBonusTests.Real593ProducerLinksAndRemovalFeedTheConsumerOnce checks exact totals and cleanup; transmit-code-resistance checks damage on load and unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 593 stores learned-rank 0.2 for typed bonuses 1146/1148. The raw links are direct thrown 1033 and direct viral 157.",
+          "runtime": "AbilityPassives emits the values. The existing typed resistance consumer feeds the corresponding incoming damage channels. The retail coefficient remains open.",
+          "test": "TypedResistanceBonusTests.Real593ProducerLinksAndRemovalFeedTheConsumerOnce checks exact totals and cleanup; transmit-code-resistance checks damage on load and unload."
+        }
+      }
+    },
+    "594": {
+      "checks": {
+        "pets": {
+          "source": "GOB 594 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "595": {
+      "checks": {
+        "script": {
+          "source": "GOB 595 stores AddControlImmunityTimer with duration 12 s alongside its independent 6 s Stun.",
+          "runtime": "AbilityCatalog.Controls decodes the callback and stores the independent immunity duration used by TimedEffects.",
+          "test": "AbilityParityTests.AdvancedCoderControlTemplatesDriveExpiry asserts the exact 6 s state and 12 s immunity and exercises active/expired state boundaries."
+        }
+      }
+    },
+    "599": {
+      "checks": {
+        "stats": {
+          "source": "GOB 599 grants +5 Inner Strength Cost Modifier Bonus 1053 and ability 1107; the direct stat 117 definition links to 1053.",
+          "runtime": "AbilityPassives resolves and publishes +5 at login. The gameplay cost calculation still needs verified treatment of the linked bonus.",
+          "test": "ability-parity-coder-advanced checks the exact +5 passive record from 599 at login."
+        }
+      }
+    },
+    "600": {
+      "checks": {
+        "stats": {
+          "source": "GOB 600 stores learned-rank function 2 at scale 0.1 in accuracy stats 996 and 997.",
+          "runtime": "AbilityPassives emits the two stats; AbilityStats.Attack consumes their respective scaled melee and ballistic contributions.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        },
+        "behavior-tests": {
+          "source": "GOB 600 stores learned-rank function 2 at scale 0.1 in accuracy stats 996 and 997.",
+          "runtime": "AbilityPassives emits the two stats; AbilityStats.Attack consumes their respective scaled melee and ballistic contributions.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
+    },
+    "601": {
+      "checks": {
+        "pets": {
+          "source": "GOB 601 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "602": {
+      "checks": {
+        "pets": {
+          "source": "GOB 602 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      }
+    },
+    "603": {
+      "checks": {
+        "stats": {
+          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and \u221220% action cost.",
+          "runtime": "CoderPets updates the actual bounded pet pool and the cost of each available action, then ends the change naturally.",
+          "test": "CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration checks the real resource arithmetic and expiry; coder-pet-stock-buffs and coder-pet-resources use the ordinary own-pet casts and status."
+        },
+        "pets": {
+          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and \u221220% action cost.",
+          "runtime": "CoderPets updates the actual bounded pet pool and the cost of each available action, then ends the change naturally.",
+          "test": "CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration checks the real resource arithmetic and expiry; coder-pet-stock-buffs and coder-pet-resources use the ordinary own-pet casts and status."
+        }
+      }
+    },
+    "604": {
+      "checks": {
+        "stats": {
+          "source": "GOB 604 selects the caster and stores +50 Max Health plus +20 melee and ballistic resistance while active.",
+          "runtime": "AbilitySupport selects only the caster, and AbilityBuffs applies/removes all three stored values used by the maximum and resistance consumers.",
+          "test": "AbilityPassiveTests.UtilityCoderFeedsMaximumHealthAndBothPhysicalResistances checks self selection even when a different view is selected, exact max HP and both defenses, unchanged current HP on application, and cleanup."
+        },
+        "targeting": {
+          "source": "GOB 604 selects the caster and stores +50 Max Health plus +20 melee and ballistic resistance while active.",
+          "runtime": "AbilitySupport selects only the caster, and AbilityBuffs applies/removes all three stored values used by the maximum and resistance consumers.",
+          "test": "AbilityPassiveTests.UtilityCoderFeedsMaximumHealthAndBothPhysicalResistances checks self selection even when a different view is selected, exact max HP and both defenses, unchanged current HP on application, and cleanup."
+        }
+      }
+    },
+    "614": {
+      "checks": {
+        "stats": {
+          "source": "GOB 614 stores learned-rank function 2 at scale 0.1 in Ballistic Resistance Bonus 1140 and Melee Defense Bonus 1143.",
+          "runtime": "AbilityPassives emits the bonuses; AbilityStats.Toughness and Defense consume them in the matching combat channels.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        },
+        "behavior-tests": {
+          "source": "GOB 614 stores learned-rank function 2 at scale 0.1 in Ballistic Resistance Bonus 1140 and Melee Defense Bonus 1143.",
+          "runtime": "AbilityPassives emits the bonuses; AbilityStats.Toughness and Defense consume them in the matching combat channels.",
+          "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
+        }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
+    },
+    "616": {
+      "checks": {
+        "pets": {
+          "source": "GOB 616 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "617": {
+      "checks": {
+        "pets": {
+          "source": "GOB 617 sets the summon action; simulacra.py supplies the target sheet set, level clamp and owned-simulacrum teardown.",
+          "runtime": "CoderPets.SpawnFor makes the new owned entity and matching window record. Ordinary Deactivate removes that same pet.",
+          "test": "ability-parity-coder-advanced uses the full stock PR312 summon producer and the normal Simulacra window Deactivate order. It verifies the owner/master view fields, role and clamped level, cast and reuse timers, 81 76 registration and 81 77 removal."
+        }
+      }
+    },
+    "698": {
+      "family": "proxy-technician-pulses",
+      "checks": {
+        "stats": {
+          "source": "GOB 698 specifies selector 19, 20 m and five-second modifiers to stats 522/524, caster-level function 3 with scale 1.3.",
+          "runtime": "ProxyTechnician applies snapshots to live, nearby friendly simulacra and CoderPets uses the matching accuracy channel when a Proxy attacks.",
+          "test": "ProxyTechnicianTests.SnapshotUsesStoredBinary32CasterLevelAndFiveSecondDuration, ActualPetHitChanceConsumesOnlyTheMatchingProxyChannelAndExpiresTheSnapshot and RangeLossAndEnemyOwnerDoNotRefreshTheLastIndependentFiveSecondChild check the exact values, recipient checks and consuming hit roll. proxy-technician-friendly-attacks checks actual friendly and enemy pet attacks."
+        },
+        "area": {
+          "source": "GOB 698 specifies selector 19, 20 m and five-second modifiers to stats 522/524, caster-level function 3 with scale 1.3.",
+          "runtime": "ProxyTechnician applies snapshots to live, nearby friendly simulacra and CoderPets uses the matching accuracy channel when a Proxy attacks.",
+          "test": "ProxyTechnicianTests.SnapshotUsesStoredBinary32CasterLevelAndFiveSecondDuration, ActualPetHitChanceConsumesOnlyTheMatchingProxyChannelAndExpiresTheSnapshot and RangeLossAndEnemyOwnerDoNotRefreshTheLastIndependentFiveSecondChild check the exact values, recipient checks and consuming hit roll. proxy-technician-friendly-attacks checks actual friendly and enemy pet attacks."
+        },
+        "pets": {
+          "source": "GOB 698 specifies selector 19, 20 m and five-second modifiers to stats 522/524, caster-level function 3 with scale 1.3.",
+          "runtime": "ProxyTechnician applies snapshots to live, nearby friendly simulacra and CoderPets uses the matching accuracy channel when a Proxy attacks.",
+          "test": "ProxyTechnicianTests.SnapshotUsesStoredBinary32CasterLevelAndFiveSecondDuration, ActualPetHitChanceConsumesOnlyTheMatchingProxyChannelAndExpiresTheSnapshot and RangeLossAndEnemyOwnerDoNotRefreshTheLastIndependentFiveSecondChild check the exact values, recipient checks and consuming hit roll. proxy-technician-friendly-attacks checks actual friendly and enemy pet attacks."
+        }
+      }
+    }
+  },
+  "families": {
+    "advanced-coder-loaded-combat-passives": {
+      "representative": 585,
+      "result": "pass",
+      "head": "fad3773e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/349#issuecomment-7010210704",
+      "scope": "Stock CSR110 Status shows the relevant aggregate bonuses. The matching stock PacketLog contains separate type-45 individual add records for 585:1031 +10, 600:996/997 +5 each and 614:1140/1143 +5 each. The companion runtime tests isolate both ranks and reset on unload."
+    }
+  }
+}

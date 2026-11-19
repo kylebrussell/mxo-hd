@@ -97,6 +97,25 @@ public class AbilityParityTests
         Assert.True(holder.HasParent(734));
     }
 
+    [Theory]
+    [InlineData(595, TempMods.StunAbility, 6f, 12f)]
+    [InlineData(597, TempMods.EnrageAbility, 10f, 0f)]
+    [InlineData(588, TempMods.EnrageAbility, 12f, 0f)]
+    [InlineData(618, TempMods.StunAbility, 4f, 0f)]
+    [InlineData(618, TempMods.EnrageAbility, 8f, 0f)]
+    public void AdvancedCoderControlTemplatesDriveExpiry(ushort ability, ushort state, float seconds, float immunity)
+    {
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        var modifier = Assert.Single(effect.Mods, mod => mod.Proc == TempMods.Proc.State && mod.Target == state);
+        Assert.Equal(seconds, modifier.Seconds);
+        Assert.Equal(immunity, effect.ImmunitySeconds);
+
+        var holder = new TimedEffects.Holder();
+        holder.Apply(ability, TimedEffects.Instantiate(effect, new Random(1)), 100);
+        Assert.True(holder.HasAt(state, 100 + seconds - .01));
+        Assert.False(holder.HasAt(state, 100 + seconds));
+    }
+
     [Fact]
     public void ChanceRootProtectsItsFirstDamageThenBreaksAtTheScriptThreshold()
     {
