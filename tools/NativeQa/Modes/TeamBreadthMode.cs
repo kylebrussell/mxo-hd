@@ -46,11 +46,7 @@ public sealed class TeamBreadthMode : NativeQaMode
         var fighterView = await holder.WaitForViewNamedAsync(fighter.Handle);
         Check.Equal((ushort)HelperHealth, BitConverter.ToUInt16(fighterView.Attributes["Health"]),
             "The holder receives the helper's initial health");
-        var who = Sized(fighter.Handle);
-        holder.SendRpc(new byte[] { 0x6e, 3, 6, 0 }.Concat(BitConverter.GetBytes((ushort)(6 + who.Length)))
-            .Concat(who).Concat(Sized("")).ToArray());
-        await AcceptAsync(fighter, holder.Handle);
-        await holder.WaitForRpcAsync($"70 03 {WireFormat.ToHex(BitConverter.GetBytes(fighter.CharId))} 09 00");
+        await InviteAsync(holder, fighter);
 
         holder.SendRpc("80 94 05 00 03");
         await holder.WaitForTextAsync("Team Breadth Fixture");
@@ -100,6 +96,15 @@ public sealed class TeamBreadthMode : NativeQaMode
             default:
                 throw new ArgumentException("Use accept or assist for the team fixture.");
         }
+    }
+
+    internal static async Task InviteAsync(HeadlessPlayer inviter, HeadlessPlayer member)
+    {
+        var who = Sized(member.Handle);
+        inviter.SendRpc(new byte[] { 0x6e, 3, 6, 0 }.Concat(BitConverter.GetBytes((ushort)(6 + who.Length)))
+            .Concat(who).Concat(Sized("")).ToArray());
+        await AcceptAsync(member, inviter.Handle);
+        await inviter.WaitForRpcAsync($"70 03 {WireFormat.ToHex(BitConverter.GetBytes(member.CharId))} 09 00");
     }
 
     private static async Task AcceptAsync(HeadlessPlayer member, string inviter)

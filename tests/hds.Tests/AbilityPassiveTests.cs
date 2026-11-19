@@ -121,6 +121,24 @@ public class AbilityPassiveTests
     }
 
     [Fact]
+    public void SupremeDamageResistanceFeedsItsCombatAndVitalConsumersWhileLoaded()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)484, (ushort)50) });
+        Assert.Equal(550, Value(player.playerInstance.InnerStrengthMax));
+        Assert.Equal(11, AbilityStats.Toughness(player, ranged: false));
+        Assert.Equal(11, AbilityStats.Toughness(player, ranged: true));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(player, 2, 100));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(player, 7, 100));
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(500, Value(player.playerInstance.InnerStrengthMax));
+        Assert.Equal(0, AbilityStats.Toughness(player, ranged: false));
+        Assert.Equal(0, AbilityStats.Toughness(player, ranged: true));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(player, 2, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(player, 7, 100));
+    }
+
+    [Fact]
     public void DeathEffectReducesLearnedLevelPassivesAndRecoveryRestoresThem()
     {
         var client = Client();

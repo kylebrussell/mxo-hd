@@ -669,6 +669,80 @@ public class AbilityScaledBuffTests
 
 
     [Fact]
+    public void ImprovedHackingChangesTheRecipientsViralDamageAndHealingUntilExpiry()
+    {
+        var caster = Client(20);
+        var recipient = Client(50);
+        var patient = Client(50);
+        ushort Heal() => AbilityHealing.Amount(recipient, patient, 413);
+        ushort Damage() => AbilityStats.ScaleAbilityDamage(recipient, 330, 100);
+        Assert.Equal(70, Heal());
+        Assert.Equal(100, Damage());
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(AbilityBuffs.Apply(recipient, 489, caster));
+        Assert.Equal(77, Heal());
+        Assert.Equal(110, Damage());
+        Assert.Equal(100, AbilityStats.ScaleAbilityDamage(caster, 330, 100));
+        TimedEffects.RunDue(start + 299);
+        Assert.Equal(77, Heal());
+        TimedEffects.RunDue(start + 301);
+        Assert.Equal(70, Heal());
+        Assert.Equal(100, Damage());
+    }
+
+    [Fact]
+    public void ForceEnhancerChangesBallisticCombatAndRestoresTheOriginalScores()
+    {
+        var player = Client(50);
+        int attack = AbilityStats.Attack(player, true);
+        int defense = AbilityStats.Defense(player, true);
+        int meleeAttack = AbilityStats.Attack(player, false);
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(AbilityBuffs.Apply(player, 383));
+        Assert.Equal(attack + 46, AbilityStats.Attack(player, true));
+        Assert.Equal(defense + 21, AbilityStats.Defense(player, true));
+        Assert.Equal(meleeAttack, AbilityStats.Attack(player, false));
+        Assert.Equal(105, AbilityStats.ScaleTypedAbilityDamage(player, 1, 100));
+        AbilityCooldowns.Start(player, 383, start);
+        Assert.True(AbilityCooldowns.IsCoolingDown(player.playerData, 383, start + 299));
+        Assert.False(AbilityCooldowns.IsCoolingDown(player.playerData, 383, start + 301));
+        TimedEffects.RunDue(start + 31);
+        Assert.Equal(attack, AbilityStats.Attack(player, true));
+        Assert.Equal(defense, AbilityStats.Defense(player, true));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(player, 1, 100));
+    }
+
+    [Theory]
+    [InlineData(692, 254, 279, 19, 9, 80)]
+    [InlineData(693, 330, 198, 19, 9, 75)]
+    public void LinkedDeflectBuffsChangeTheMatchingDefenseContestsThenExpire(
+        ushort child, ushort primaryAttack, ushort secondaryAttack, int primaryBonus, int secondaryBonus, int castThrough)
+    {
+        var caster = Client(20);
+        var recipient = Client(50);
+        int Defense(ushort attack)
+        {
+            var move = new AbilityItem();
+            move.setAbilityID(attack);
+            return AbilityStats.SpecialDefense(recipient, move);
+        }
+        int CastThrough() => AbilityCastInterrupts.CastThroughPercent(1, 1000,
+            (short)AbilityStats.Influence(recipient, AbilityCastInterrupts.Concentration));
+
+        int primary = Defense(primaryAttack);
+        int secondary = Defense(secondaryAttack);
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(AbilityBuffs.Apply(recipient, child, caster));
+        Assert.Equal(primary + primaryBonus, Defense(primaryAttack));
+        Assert.Equal(secondary + secondaryBonus, Defense(secondaryAttack));
+        Assert.Equal(castThrough, CastThrough());
+        TimedEffects.RunDue(start + 5.01);
+        Assert.Equal(primary, Defense(primaryAttack));
+        Assert.Equal(secondary, Defense(secondaryAttack));
+        Assert.Equal(75, CastThrough());
+    }
+
+    [Fact]
     public void GroupNumericBuffsRequireBeneficialMetadataAndStillRejectCallbacks()
     {
         Assert.True(AbilityScaledBuffs.TryGet(489,20,out var buff));

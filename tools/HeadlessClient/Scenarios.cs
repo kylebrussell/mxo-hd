@@ -220,6 +220,7 @@ public static partial class Scenarios
         new Scenario("data-mining-mission-map", DataMiningMissionMap, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-mission-locked-safe", MissionLockedSafe, StillNpcs, "locked-safe.xml"),
         new Scenario("utility-recall-team", RecallTeam, StillNpcs),
+        new Scenario("ability-force-multiplier-group-support", ForceMultiplierGroupSupport, StillNpcs),
         new Scenario("widowsmoor-partial-world", WidowsMoorPartialWorld, StillNpcs),
         new Scenario("utility-security-and-traps", SecurityAndTraps, StillNpcs),
         new Scenario("yuki-partial-world", YukiPartialWorld, StillNpcs),

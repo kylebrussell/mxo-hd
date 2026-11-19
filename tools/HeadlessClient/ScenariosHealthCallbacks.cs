@@ -117,19 +117,27 @@ public static partial class Scenarios
         var enemy=await context.AddPlayerAsync(new CharacterSeed("DeflectEnemy") {X=17220,Level=50,Organization=2,InnerStrength=1000,MaxInnerStrength=1000});
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({p.CharId},{friend.CharId},{enemy.CharId})");
         await LoadAbilitiesAsync(context,p,1137);
+        await LoadAbilitiesAsync(context,enemy,2,17,477,478,480,481,483);
         foreach(var actor in new[]{p,friend,enemy}) await actor.EnterWorldAsync();
         p.SendRpc(GroupInvite(Team,friend.Handle,""));await friend.WaitForRpcAsync("80 8f 0c 00");
         friend.SendRpc(InviteAnswer(Team,0,p.Handle));await friend.WaitForRpcAsync("80 8e");await p.WaitForRpcAsync($"70 03 {Le(friend.CharId)} 09 00");
         Cast(p,380);await p.WaitForRpcAsync("80 bd 05 7c 01 00 00 00 00 00 01",TimeSpan.FromSeconds(8));
         var ballistic=await friend.WaitForRpcAsync(ModPattern(692,1010));Check.Equal(19,BitConverter.ToInt32(ballistic.Bytes,13),"Deflect uses caster20");
         await friend.WaitForRpcAsync(ModPattern(692,1011));
+        var bulletFx = await friend.WaitForRpcAsync(ModPattern(380,380));
+        Check.Equal(0x28000824, BitConverter.ToInt32(bulletFx.Bytes,13), "Deflect Bullets delayed FX");
+        Check.Equal(0.2f, BitConverter.ToSingle(bulletFx.Bytes,18), "Deflect Bullets FX delay");
+        await friend.WaitForRpcAsync(ModPattern(380,380,true));
         Check.That(friend.Received(ModPattern(692,564)).Count>0,"Concentration component accompanies the pulse");
         await friend.WaitUntilAsync(()=>friend.Received(ModPattern(692,1010)).Count>=2,"Deflect parent repeats its child",TimeSpan.FromSeconds(8));
         Cast(p,380);await p.WaitForRpcAsync("80 bd 05 7c 01 00 00 00 00 00 00");
         Cast(p,378);await friend.WaitForRpcAsync(ModPattern(693,183),TimeSpan.FromSeconds(8));
+        var virusFx = await friend.WaitForRpcAsync(ModPattern(378,378));
+        Check.Equal(0x28000820, BitConverter.ToInt32(virusFx.Bytes,13), "Deflect Virus delayed FX");
+        Check.Equal(0.2f, BitConverter.ToSingle(virusFx.Bytes,18), "Deflect Virus FX delay");
+        await friend.WaitForRpcAsync(ModPattern(378,378,true));
         friend.SendChat("?pvpflag on");await friend.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var victim=await enemy.WaitForViewNamedAsync(friend.Handle);
-        await PrepareFreeCastViralFixture(context,enemy,481);
         Cast(enemy,481,victim.ViewId);await friend.WaitForRpcAsync(ModPattern(481,481),TimeSpan.FromSeconds(8));
         await friend.WaitForRpcAsync(ModPattern(481,481,true),TimeSpan.FromSeconds(8)); // fixture roll0 < term sweep4
         Cast(p,378);await p.WaitForRpcAsync("80 bd 05 7a 01 00 00 00 00 00 00");
