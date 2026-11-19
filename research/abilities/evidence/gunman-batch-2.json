@@ -1,0 +1,191 @@
+{
+  "abilities": {
+    "1070": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1070 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 70, ballistic damage 2, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "stats": {
+          "source": "GOB 1070 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 70, ballistic damage 2, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "behavior-tests": {
+          "source": "GOB 1070 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 70, ballistic damage 2, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        }
+      }
+    },
+    "1074": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1074 is a self modifier with stacking type 37 and ballistic accuracy 9, max HP 120, ballistic damage 4, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "stats": {
+          "source": "GOB 1074 is a self modifier with stacking type 37 and ballistic accuracy 9, max HP 120, ballistic damage 4, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "behavior-tests": {
+          "source": "GOB 1074 is a self modifier with stacking type 37 and ballistic accuracy 9, max HP 120, ballistic damage 4, ballistic defense 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        }
+      }
+    },
+    "1075": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1075 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 100, ballistic damage 2, ballistic defense 6.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "stats": {
+          "source": "GOB 1075 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 100, ballistic damage 2, ballistic defense 6.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "behavior-tests": {
+          "source": "GOB 1075 is a self modifier with stacking type 37 and ballistic accuracy 4, max HP 100, ballistic damage 2, ballistic defense 6.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        }
+      }
+    },
+    "1076": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1076 is a self modifier with stacking type 37 and ballistic accuracy 3, max HP 110, ballistic damage 4, ballistic defense 10.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "stats": {
+          "source": "GOB 1076 is a self modifier with stacking type 37 and ballistic accuracy 3, max HP 110, ballistic damage 4, ballistic defense 10.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "behavior-tests": {
+          "source": "GOB 1076 is a self modifier with stacking type 37 and ballistic accuracy 3, max HP 110, ballistic damage 4, ballistic defense 10.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        }
+      }
+    },
+    "1060": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1060 is a self modifier with stacking type 37 and melee accuracy 4 and ballistic accuracy 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "stats": {
+          "source": "GOB 1060 is a self modifier with stacking type 37 and melee accuracy 4 and ballistic accuracy 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        },
+        "behavior-tests": {
+          "source": "GOB 1060 is a self modifier with stacking type 37 and melee accuracy 4 and ballistic accuracy 4.",
+          "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
+          "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
+        }
+      }
+    },
+    "125": {
+      "checks": {
+        "stats": {
+          "source": "GOB 125 loaded modifiers supply function-2 ballistic accuracy and damage bonuses.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 125 loaded modifiers supply function-2 ballistic accuracy and damage bonuses.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        }
+      }
+    },
+    "440": {
+      "checks": {
+        "stats": {
+          "source": "GOB 440 loaded modifiers supply ballistic accuracy and damage, Root duration, and grant 1074.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 440 loaded modifiers supply ballistic accuracy and damage, Root duration, and grant 1074.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        }
+      }
+    },
+    "441": {
+      "checks": {
+        "stats": {
+          "source": "GOB 441 loaded modifiers supply ballistic resistance, Root and Stun duration.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 441 loaded modifiers supply ballistic resistance, Root and Stun duration.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        }
+      }
+    },
+    "239": {
+      "checks": {
+        "stats": {
+          "source": "GOB 239 loaded modifiers supply melee resistance and ballistic accuracy and damage.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 239 loaded modifiers supply melee resistance and ballistic accuracy and damage.",
+          "runtime": "AbilityPassives loads scoped records and grants; AbilityStats and AbilityControlDurations feed typed combat consumers.",
+          "test": "AbilityScaledBuffTests.GunmanPassivesFeedTheirOwnCombatConsumersAndUnload checks exact combat deltas, duration scaling, grants where applicable and baseline upon unload."
+        }
+      }
+    },
+    "129": {
+      "checks": {
+        "stats": {
+          "source": "GOB 129 contains seven active-style modifiers. At rank 50 the computed defenses are 55 and direct withdrawal is 74.",
+          "runtime": "CombatStyles.Select feeds AbilityStats attack, influence and typed defenses, plus WithdrawalInput's direct 1005 path.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven consumers, then selects Self Defense."
+        }
+      }
+    },
+    "147": {
+      "checks": {
+        "stats": {
+          "source": "GOB 147 contains seven active-style modifiers. At rank 50 the computed defenses are 49 and direct withdrawal is 70.",
+          "runtime": "CombatStyles.Select feeds AbilityStats attack, influence and typed defenses, plus WithdrawalInput's direct 1005 path.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven consumers, then selects Self Defense."
+        }
+      }
+    },
+    "158": {
+      "checks": {
+        "stats": {
+          "source": "GOB 158 contains seven active-style modifiers. At rank 50 the computed defenses are 51 and direct withdrawal is 72.",
+          "runtime": "CombatStyles.Select feeds AbilityStats attack, influence and typed defenses, plus WithdrawalInput's direct 1005 path.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven consumers, then selects Self Defense."
+        }
+      }
+    },
+    "242": {
+      "checks": {
+        "stats": {
+          "source": "GOB 242 stores +20 melee, ballistic and thrown defense for 12 seconds in the three WhenEnabled 1 modifiers.",
+          "runtime": "CombatSpecials.Landed applies the three modifiers to the caster while preserving the ordinary hit. Typed round consumers use those values and TimedEffects schedules cleanup.",
+          "test": "AbilityScaledBuffTests.PistolEvasiveKeepsTheHitAndAppliesThreeDefensesOnlyToItsCaster and gunman-upgrades-and-evasive verify target damage, caster-only modifiers and all three expiry records."
+        }
+      }
+    }
+  }
+}

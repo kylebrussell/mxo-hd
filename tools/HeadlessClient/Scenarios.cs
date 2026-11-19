@@ -233,6 +233,7 @@ public static partial class Scenarios
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
         new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,
             new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
+        new Scenario("gunman-upgrades-and-evasive", GunmanUpgradesAndEvasive, StillNpcs),
         new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
         new Scenario("combat-gun-special-queue-disarming", c => CombatGunSpecialQueue(c, 126), StillNpcs),
         new Scenario("combat-gun-special-queue-covering", c => CombatGunSpecialQueue(c, 176), StillNpcs),

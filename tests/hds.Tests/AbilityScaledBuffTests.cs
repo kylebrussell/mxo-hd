@@ -16,6 +16,132 @@ public class AbilityScaledBuffTests
         return c;
     }
 
+    [Fact]
+    public void PistolEvasiveKeepsTheHitAndAppliesThreeDefensesOnlyToItsCaster()
+    {
+        var caster = Client(50);
+        var target = Client(50);
+        var attack = new AbilityItem();
+        attack.setAbilityID(279);
+        Assert.True(CombatSpecials.TargetsEnemy(242));
+        Assert.Null(CombatSpecials.Damage(242, null));
+        Assert.False(AbilitySupport.Handles(242));
+
+        CombatSpecials.Landed(caster, 242);
+        Assert.Equal(12f, caster.playerData.activeBuffs[242].Definition.Seconds);
+        Assert.Equal(20, AbilityStats.Defense(caster, false));
+        Assert.Equal(20, AbilityStats.Defense(caster, true));
+        Assert.Equal(20, AbilityStats.SpecialDefense(caster, attack));
+        Assert.Equal(0, AbilityStats.SpecialDefense(target, attack));
+        TimedEffects.RunDue(caster.playerData.activeBuffs[242].Started + 12.1);
+        Assert.Equal(0, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Defense(caster, true));
+        Assert.Equal(0, AbilityStats.SpecialDefense(caster, attack));
+    }
+
+    [Theory]
+    [InlineData(129, 55, 74)]
+    [InlineData(147, 49, 70)]
+    [InlineData(158, 51, 72)]
+    public void WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected(ushort style, int defense, int withdraw)
+    {
+        var actor = Client(50);
+        AbilityPassives.SetLoaded(actor, new[] { (style, (ushort)50), ((ushort)2, (ushort)50) });
+        CombatStyles.Select(actor, style);
+        Assert.Equal(64, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(13, AbilityStats.Influence(actor, 171));
+        Assert.Equal(defense, AbilityStats.Defense(actor, ranged: true));
+        Assert.Equal(defense, AbilityStats.Defense(actor, ranged: false));
+        foreach (ushort attack in new ushort[] { 330, 279 })
+        {
+            var item = new AbilityItem();
+            item.setAbilityID(attack);
+            Assert.Equal(defense, AbilityStats.SpecialDefense(actor, item));
+        }
+        Assert.Equal(withdraw, WithdrawalInput.Attack(actor, null, ordinary: true));
+        CombatStyles.Select(actor, 17);
+        Assert.Equal(50, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(12, AbilityStats.Influence(actor, 171));
+        Assert.Equal(47, AbilityStats.Defense(actor, ranged: true));
+    }
+
+    [Theory]
+    [InlineData(1076, 3, 110, 4, 10)]
+    [InlineData(1074, 9, 120, 4, 4)]
+    [InlineData(1070, 4, 70, 2, 4)]
+    [InlineData(1075, 4, 100, 2, 6)]
+    [InlineData(1060, 4, 0, 0, 0)]
+    public void SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade(
+        ushort ability, int accuracy, int health, int damage, int defense)
+    {
+        var actor = Client(50);
+        actor.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
+        Assert.Same(actor, Assert.Single(AbilitySupport.Targets(actor, ability, 99)));
+        AbilitySupport.Land(actor, ability, 99);
+        Assert.True(AbilityBuffs.IsActive(actor, ability));
+        Assert.Equal(accuracy, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(ability == 1060 ? accuracy : 0, AbilityStats.Attack(actor, ranged: false));
+        Assert.Equal(500 + health, NumericalUtils.ByteArrayToUint16(actor.playerInstance.MaxHealth.getValue(), 1));
+        Assert.Equal(500, PvpCombat.HealthOf(actor));
+        Assert.Equal(damage, AbilityStats.Influence(actor, 171));
+        Assert.Equal(defense, AbilityStats.Defense(actor, ranged: true));
+
+        ushort replacement = ability == 1076 ? (ushort)1074 : (ushort)1076;
+        AbilitySupport.Land(actor, replacement, 99);
+        Assert.False(AbilityBuffs.IsActive(actor, ability));
+        Assert.True(AbilityBuffs.Remove(actor, replacement));
+        Assert.Equal(0, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(0, AbilityStats.Attack(actor, ranged: false));
+        Assert.Equal(500, NumericalUtils.ByteArrayToUint16(actor.playerInstance.MaxHealth.getValue(), 1));
+        Assert.Equal(0, AbilityStats.Influence(actor, 171));
+        Assert.Equal(0, AbilityStats.Defense(actor, ranged: true));
+    }
+
+    [Theory]
+    [InlineData(128, 1, 1070)]
+    [InlineData(240, 2, 1075)]
+    public void LoadedGunmanAndGunslingerRetainTheShippedInitiativeBonusAndGrant(
+        ushort ability, int bonus, ushort grant)
+    {
+        var actor = Client(50);
+        AbilityPassives.SetLoaded(actor, new[] { (ability, (ushort)50) }, true);
+        Assert.Equal(bonus, AbilityPassives.Total(actor, 1046));
+        Assert.True(AbilityPassives.IsLoaded(actor, grant));
+        AbilityPassives.SetLoaded(actor, Array.Empty<(ushort, ushort)>(), true);
+        Assert.Equal(0, AbilityPassives.Total(actor, 1046));
+        Assert.False(AbilityPassives.IsLoaded(actor, grant));
+    }
+
+    [Theory]
+    [InlineData(125, 2, 5, 0, 0, 0, 0)]
+    [InlineData(440, 2, 1, 2, 0, 0, 1074)]
+    [InlineData(441, 0, 0, 15, 10, 20, 0)]
+    [InlineData(239, 2, 2, 0, 0, 0, 0)]
+    [InlineData(240, 0, 1, 0, 0, 0, 1075)]
+    public void GunmanPassivesFeedTheirOwnCombatConsumersAndUnload(
+        ushort ability, int accuracy, int damage, int rootBonus, int stunBonus, int toughness, ushort grant)
+    {
+        var actor = Client(50);
+        AbilityPassives.SetLoaded(actor, new[] { (ability, (ushort)50) }, true);
+        Assert.Equal(accuracy, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(0, AbilityStats.Attack(actor, ranged: false));
+        Assert.Equal(damage, AbilityStats.Influence(actor, 171));
+        Assert.Equal(10f * (1 + rootBonus / 100f), AbilityControlDurations.Scale(actor, TempMods.RootedAbility, 10), 3);
+        Assert.Equal(10f * (1 + stunBonus / 100f), AbilityControlDurations.Scale(actor, TempMods.StunAbility, 10), 3);
+        Assert.Equal(toughness, AbilityStats.Toughness(actor, ranged: true));
+        Assert.Equal(ability == 239 ? 13 : 0, AbilityStats.Toughness(actor, ranged: false));
+        if (grant != 0) Assert.True(AbilityPassives.IsLoaded(actor, grant));
+
+        AbilityPassives.SetLoaded(actor, Array.Empty<(ushort, ushort)>(), true);
+        Assert.Equal(0, AbilityStats.Attack(actor, ranged: true));
+        Assert.Equal(0, AbilityStats.Influence(actor, 171));
+        Assert.Equal(10f, AbilityControlDurations.Scale(actor, TempMods.RootedAbility, 10));
+        Assert.Equal(10f, AbilityControlDurations.Scale(actor, TempMods.StunAbility, 10));
+        Assert.Equal(0, AbilityStats.Toughness(actor, ranged: true));
+        Assert.Equal(0, AbilityStats.Toughness(actor, ranged: false));
+        if (grant != 0) Assert.False(AbilityPassives.IsLoaded(actor, grant));
+    }
+
     [Theory]
     [InlineData(1, 181, 30, 1, 254)]
     [InlineData(5, 1033, 30, 7, 279)]
