@@ -39,8 +39,8 @@ public sealed class HackerTeamPatcherMode : NativeQaMode
         }, readyMessages: new[]
         {
             "After stock CSR can move, stay on the seeded stand and send each helper a chat transport request. Example {\"actor\":\"QAFriend\",\"action\":\"chat\",\"text\":\"?tp 25400 495 -1498 0 0 0\"}.",
-            "Use QAFriend 25400/495/-1498 (6 m), QAFar 24800/495/-698 (8 m), friendly QAEnemy 24800/495/-2498 (10 m), and QAOther 24560/495/-1318 (3 m, clear of the WinterHelper stack). Recruit all but QAOther and send ordinary accept requests with inviter CSR_Tester.",
-            "Keep Self Defense and the seeded +15% Healing and +24% radius loadout. Select the nonmember QAOther. Cast 50 for +12 on CSR and QAFriend, 434 for +36 also on QAFar, then 435 for +34 also on QAEnemy. Wait for same-family reuse.",
+            "Use QAFriend 25400/495/-1498 (6 m), QAFar 24800/495/-698 (8 m), friendly QAEnemy 24800/495/-2498 (10 m), and QAOther 24560/495/-1318 (3 m, clear of the WinterHelper stack). Have QAFriend invite CSR_Tester through the helper request and accept the stock Mission Team dialog. Then have QAFriend invite QAFar and QAEnemy. Keep QAOther outside the team.",
+            "Keep Self Defense and the seeded +15% Healing and +24% radius loadout. Select the nonmember QAOther. Stock retest 434 only: use Trauma Surgeon > Restore Group 3.0. Expect +36 on CSR, QAFriend and QAFar, with no heal on the 10 m teammate QAEnemy or selected nonmember QAOther. Group Repairs 3.0 is 435.",
             "Move QAEnemy to 24800 495 -2698 (12 m) before Panicked Heal 437. 437 adds 141 to CSR, QAFriend and QAFar. QAEnemy and QAOther receive no cast heal. Wounds stay fixed apart from the casts.",
             "Total Dedication 433: observe +10% IS Regeneration Bonus and +5% Healing Bonus while loaded. Use ?qaunload 433 and ?qaload 433 and retain the exact remove and add records. See docs/ABILITY-HACKER-TEAM-PATCHER.md."
         });
@@ -73,8 +73,10 @@ public sealed class HackerTeamPatcherMode : NativeQaMode
         }
         var nonmember = context.Helpers["QAOther"];
         var target = await caster.WaitForViewNamedAsync(nonmember.Handle);
-        foreach (var stand in Stands.Where(stand => stand.Handle != nonmember.Handle))
-            await TeamBreadthMode.InviteAsync(caster, context.Helpers[stand.Handle]);
+        var leader = context.Helpers["QAFriend"];
+        await TeamBreadthMode.InviteAsync(leader, caster);
+        await TeamBreadthMode.InviteAsync(leader, context.Helpers["QAFar"]);
+        await TeamBreadthMode.InviteAsync(leader, context.Helpers["QAEnemy"]);
 
         var participants = context.Helpers.Values.Prepend(caster).ToArray();
         var health = participants.ToDictionary(actor => actor.Handle, _ => (ushort)100);

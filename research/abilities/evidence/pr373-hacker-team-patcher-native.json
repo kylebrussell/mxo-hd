@@ -1,0 +1,46 @@
+{
+  "families": {
+    "stock-team-patcher-group-repairs-1": {
+      "representative": 50,
+      "result": "pass",
+      "head": "e39d6cd3fa1803b9422eeea82d8a6dbb692ccf40",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7016153161",
+      "scope": "Stock Group Repairs 1.0 with QAOther selected healed CSR and the 6 m teammate by 12. The 8 m and 10 m teammates and near nonmember received no heal."
+    },
+    "stock-team-patcher-total-dedication": {
+      "representative": 433,
+      "result": "pass",
+      "head": "e39d6cd3fa1803b9422eeea82d8a6dbb692ccf40",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7016153161",
+      "scope": "Ordinary live unload and reload removed and restored ten percentage points of IS Regeneration Bonus and five of Healing Bonus. Loaded memory moved 62 to 59 to 62."
+    },
+    "stock-team-patcher-group-repairs-3": {
+      "representative": 435,
+      "result": "pass",
+      "head": "e39d6cd3fa1803b9422eeea82d8a6dbb692ccf40",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7016153161",
+      "scope": "Stock Group Repairs 3.0 with QAOther selected healed CSR and the 6 m, 8 m and 10 m teammates by 34 each. The nonmember received no heal."
+    },
+    "stock-team-patcher-panicked-heal": {
+      "representative": 437,
+      "result": "pass",
+      "head": "e39d6cd3fa1803b9422eeea82d8a6dbb692ccf40",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7016153161",
+      "scope": "Stock Panicked Heal with QAOther selected healed CSR and the 6 m and 8 m teammates by 141. The former 10 m teammate at 12 m and the near nonmember received no heal."
+    }
+  },
+  "abilities": {
+    "50": {
+      "family": "stock-team-patcher-group-repairs-1"
+    },
+    "433": {
+      "family": "stock-team-patcher-total-dedication"
+    },
+    "435": {
+      "family": "stock-team-patcher-group-repairs-3"
+    },
+    "437": {
+      "family": "stock-team-patcher-panicked-heal"
+    }
+  }
+}
