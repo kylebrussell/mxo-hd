@@ -22,7 +22,7 @@ public abstract class AbilitySweepMode : NativeQaMode
     // Slot order is the manual native hotbar checklist, independent of the margin archive slot numbers.
     protected AbilitySweepMode(Sample[] samples, ushort[] support, bool enemyHelper = false,
         bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false, bool petOrders = false,
-        bool martialConditions = false, string[]? additionalInstructions = null)
+        bool martialConditions = false, string[]? additionalInstructions = null, bool staggerFixture = false)
     {
         if (samples.Length != 8 || samples.Select(sample => sample.Id).Distinct().Count() != samples.Length)
             throw new ArgumentException("A sweep requires eight distinct representative actions.", nameof(samples));
@@ -43,10 +43,9 @@ public abstract class AbilitySweepMode : NativeQaMode
         if (hackerTargets)
             environment["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1";
         if (martialConditions)
-        {
             environment["MXO_CONDITIONAL_THROW_QA"] = "1";
+        if (martialConditions || staggerFixture)
             environment["MXO_CONDITIONAL_POWERLESS_QA"] = "1";
-        }
         var setup = new List<string>
         {
             $"UPDATE characters SET y={GroundY},healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110",
