@@ -235,8 +235,9 @@ try
                     result = await NativeQa.Modes.SocialBreadthMode.SendActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
                     result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
-                else if (fixtureMode is NativeQa.Modes.HackerParitySweepMode && action == "hacker-group-arrive")
-                    result = await NativeQa.Modes.HackerParitySweepMode.ArriveAsync(helpers);
+                else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")
+                    result = await NativeQa.Modes.HackerParitySweepMode.ArriveAsync(helpers,
+                        fixtureMode is NativeQa.Modes.HackerSecondPassMode ? NativeQa.Modes.HackerSecondPassMode.Stands : null);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
                 else if (action == "stop") actor.SendRpc("44 00");

@@ -10,9 +10,10 @@ namespace NativeQa.Modes;
 
 public sealed partial class HackerParitySweepMode : NativeQaMode
 {
-    private const int GroundY = 495, StandZ = -1498, StagingZ = 13984;
-    private static readonly (string Name, int X)[] GroupStands =
-        { ("QAFriend", 25200), ("QAFar", 25725), ("QAOther", 24500) };
+    internal const int GroundY = 495, StandZ = -1498;
+    private const int StagingZ = 13984;
+    private static readonly (string Name, int X, int Z)[] GroupStands =
+        { ("QAFriend", 25200, StandZ), ("QAFar", 25725, StandZ), ("QAOther", 24500, StandZ) };
 
     private sealed record SweepSection(ushort[] Abilities, string[] Instructions,
         Func<NativeQaBootstrapContext, HeadlessPlayer, Task<object>> Verify);
@@ -48,12 +49,7 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
         var sections = Sections();
         return new(new ushort[] { 2, 17 }.Concat(sections.SelectMany(section => section.Abilities)).Distinct().ToArray(),
             24800, -1498, Array.Empty<string>(), Array.Empty<string>(),
-            new[]
-            {
-                "UPDATE characters SET healthC=100,healthM=5000,innerStrC=65535,innerStrM=2000,y=495,alignment=1,pvpflag=0 WHERE charId IN (110,6111,6112,6113,6114)",
-                $"UPDATE characters SET x=CASE charId WHEN 6111 THEN {GroupStands[0].X} WHEN 6112 THEN {GroupStands[1].X} WHEN 6113 THEN {GroupStands[2].X} ELSE 24800 END,z=CASE WHEN charId=6114 THEN {StandZ} ELSE {StagingZ} END WHERE charId BETWEEN 6111 AND 6114",
-                "DELETE FROM inventory WHERE charId=110"
-            }, DevCommands: true, environmentOverrides: new()
+            WoundedGroupSeedSql(GroupStands), DevCommands: true, environmentOverrides: new()
             {
                 ["MXO_AGGRO"] = "0",
                 ["MXO_MOB_WANDER"] = "0",
@@ -63,10 +59,19 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
                 .Concat(sections.SelectMany(section => section.Instructions)).ToArray(), loadAbilityAncestors: true);
     }
 
-    public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    internal static string[] WoundedGroupSeedSql(IReadOnlyList<(string Name, int X, int Z)> stands) =>
+        new[]
+        {
+            "UPDATE characters SET healthC=100,healthM=5000,innerStrC=65535,innerStrM=2000,y=495,alignment=1,pvpflag=0 WHERE charId IN (110,6111,6112,6113,6114)",
+            $"UPDATE characters SET x=CASE charId WHEN 6111 THEN {stands[0].X} WHEN 6112 THEN {stands[1].X} WHEN 6113 THEN {stands[2].X} ELSE 24800 END,z=CASE WHEN charId=6114 THEN {StandZ} ELSE {StagingZ} END WHERE charId BETWEEN 6111 AND 6114",
+            "DELETE FROM inventory WHERE charId=110"
+        };
+
+    internal static async Task StartGroupHelpersAsync(NativeQaBootstrapContext context,
+        IReadOnlyList<(string Name, int X, int Z)>? stands = null)
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected the disposable Hacker sweep server.");
-        foreach (var (name, x) in GroupStands)
+        foreach (var (name, x, z) in stands ?? GroupStands)
         {
             var helper = await HeadlessPlayer.LoginAsync(context.Address, name, name);
             context.Helpers.Add(name, helper);
@@ -76,9 +81,14 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
                 $"{name} entered wounded for the group-heal checks");
             Check.Equal((X: (double)x, Y: (double)GroundY, Z: (double)StagingZ), Position(ownView),
                 $"{name} entered at its live staging position");
-            Console.WriteLine($"READY {name} live at {x},{GroundY},{StagingZ}. Arrival stand {x},{GroundY},{StandZ}.");
+            Console.WriteLine($"READY {name} live at {x},{GroundY},{StagingZ}. Arrival stand {x},{GroundY},{z}.");
             NativeQaReadiness.RequireNoAmbientAggro(server, helper);
         }
+    }
+
+    public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    {
+        await StartGroupHelpersAsync(context);
         // Native launch leaves CSR and its team empty for ordinary stock Actions and radial input.
         if (context.Server == null) return Array.Empty<byte>();
 
@@ -90,12 +100,12 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
             "CSR receives no premature player creation for the off-site helpers");
         await ArriveAsync(context.Helpers);
         var arrivals = new List<object>();
-        foreach (var (name, x) in GroupStands)
+        foreach (var (name, x, z) in GroupStands)
         {
             var view = await observer.WaitForViewNamedAsync(name);
-            Check.Equal((X: (double)x, Y: (double)GroundY, Z: (double)StandZ), Position(view),
+            Check.Equal((X: (double)x, Y: (double)GroundY, Z: (double)z), Position(view),
                 $"CSR receives {name}'s live remote view on the seeded stand after arrival");
-            arrivals.Add(new { Handle = name, view.ViewId, view.SpawnId, X = x, Y = GroundY, Z = StandZ });
+            arrivals.Add(new { Handle = name, view.ViewId, view.SpawnId, X = x, Y = GroundY, Z = z });
         }
 
         using var caster = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy");
@@ -110,22 +120,23 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    internal static async Task<object> ArriveAsync(IReadOnlyDictionary<string, HeadlessPlayer> helpers)
+    internal static async Task<object> ArriveAsync(IReadOnlyDictionary<string, HeadlessPlayer> helpers,
+        IReadOnlyList<(string Name, int X, int Z)>? stands = null)
     {
         var arrived = new List<object>();
-        foreach (var (name, x) in GroupStands)
+        foreach (var (name, x, z) in stands ?? GroupStands)
         {
             var helper = helpers[name];
-            helper.SendChat(FormattableString.Invariant($"?tp {x} {GroundY} {StandZ} 0 0 0"));
+            helper.SendChat(FormattableString.Invariant($"?tp {x} {GroundY} {z} 0 0 0"));
             await helper.WaitForTextAsync("Teleported to 0/0");
             await helper.WaitForViewNamedAsync("CSR_Tester");
-            Console.WriteLine($"READY {name} live on stand {x},{GroundY},{StandZ} and in view range of CSR.");
-            arrived.Add(new { Handle = name, X = x, Y = GroundY, Z = StandZ });
+            Console.WriteLine($"READY {name} live on stand {x},{GroundY},{z} and in view range of CSR.");
+            arrived.Add(new { Handle = name, X = x, Y = GroundY, Z = z });
         }
         return arrived;
     }
 
-    private static (double X, double Y, double Z) Position(ViewCreation view)
+    internal static (double X, double Y, double Z) Position(ViewCreation view)
     {
         byte[] position = view.Attributes["Position"];
         return (BitConverter.ToDouble(position, 0), BitConverter.ToDouble(position, 8), BitConverter.ToDouble(position, 16));
