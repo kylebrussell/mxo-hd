@@ -4,7 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace hds.Tests;
 
-[Collection("DelayedActions")]
+[CollectionDefinition("AbilityParityWorld", DisableParallelization = true)]
+public class AbilityParityWorldCollection { }
+
+[Collection("AbilityParityWorld")]
 public class AbilityParityTests
 {
     private static WorldClient Client()
@@ -43,8 +46,11 @@ public class AbilityParityTests
         var roster = new[] { caster, near, far, outsider, dead };
         for (int i = 0; i < roster.Length; i++)
         {
-            roster[i].playerData.setCharID((uint)(77600 + i));
+            uint character = (uint)(77600 + i);
+            roster[i].playerData.setCharID(character);
+            roster[i].playerData.setEntityId(character);
             roster[i].playerData.setOnWorld(true);
+            roster[i].viewMan = new();
         }
         near.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(radius * 100 - 1, 495, 0));
         far.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(radius * 100 + 1, 495, 0));
@@ -53,8 +59,12 @@ public class AbilityParityTests
         var groups = hds.world.Structures.SocialGroups.Instance;
         var team = groups.CreateTeam(77600, "Medic");
         var original = WorldServer.Clients;
+        var previousWorld = Store.world;
         try
         {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            var nearView = outsider.viewMan.addView(near.playerData.getEntityId(), 1);
+            nearView.viewCreated = true;
             groups.AddTeamMember(team.Id, 77601, "Near");
             groups.AddTeamMember(team.Id, 77602, "Far");
             groups.AddTeamMember(team.Id, 77604, "Dead");
@@ -66,9 +76,14 @@ public class AbilityParityTests
             Assert.Equal(100, PvpCombat.HealthOf(far));
             Assert.Equal(100, PvpCombat.HealthOf(outsider));
             Assert.Equal(0, PvpCombat.HealthOf(dead));
+            var expected = WorldServer.BuildViewUpdate(nearView.ViewID,
+                PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16((ushort)(100 + amount)))));
+            Assert.Contains(outsider.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
+                update => update.content.SequenceEqual(expected));
         }
         finally
         {
+            Store.world = previousWorld;
             WorldServer.Clients = original;
             foreach (var client in roster)
                 groups.RemoveTeamMember(team.Id, client.playerData.getCharID());
