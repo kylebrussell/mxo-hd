@@ -8,8 +8,11 @@ namespace NativeQa.Modes;
 public sealed class HackerConditionSweepMode : NativeQaMode
 {
     private const int X = 24800, Y = 495, Z = -1498, StagingZ = 13984;
-    private static readonly (string Handle, int X)[] Stands =
-        { ("QAFriend", X + 400), ("QAFar", X + 1200), ("QAOther", X - 300), ("QAEnemy", X - 500) };
+    private static readonly (string Handle, int X, int Z)[] Stands =
+    {
+        ("QAFriend", 25183, -1177), ("QAFar", 25719, -2269),
+        ("QAOther", 25100, -1498), ("QAEnemy", 24300, -1498)
+    };
 
     public override string Name => "ability-parity-hacker-condition-sweeps";
 
@@ -23,10 +26,14 @@ public sealed class HackerConditionSweepMode : NativeQaMode
             "UPDATE characters SET alignment=1 WHERE charId=110"
         },
         DevCommands: true, loadAbilityAncestors: true,
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
+        environmentOverrides: new()
+        {
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
+            ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15"
+        },
         readyMessages: new[]
         {
-            "After CSR enters, bring each helper to the stand via the helper chat request for ?tp X 495 -1498 0 0 0. X positions are QAFriend 25200, QAFar 26000, QAOther 24500, QAEnemy 24300. Helpers have the same loadout; CSR's actions use stock input.",
+            "After CSR enters, bring the helpers to separate stands via the helper chat request for ?tp X 495 Z 0 0 0. X/Z are QAFriend 25183/-1177, QAFar 25719/-2269, QAOther 25100/-1498, and QAEnemy 24300/-1498. Helpers have the same loadout; CSR's actions use stock input.",
             "Use Self Defense. Form a mission team with QAFriend and QAFar through the stock radial and ordinary helper accept. Leave QAOther and QAEnemy outside the team.",
             "From the normal Actions list cast 320 then 424 on self. Capture +18 for 40 s and +35 for 25 s, including replacement of 320. Cast 379 and capture caster and QAFriend +20 for 35 s. QAFar at 12 m and nearby QAOther should receive no sweep.",
             "Toggle Deflect Virus 1.0 (378) from Actions and observe the five-second 693 viral/melee defence records on CSR and QAFriend, followed by term or refresh records. Do not cast the internal 693 directly.",
@@ -37,7 +44,7 @@ public sealed class HackerConditionSweepMode : NativeQaMode
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected the disposable condition-sweep server.");
-        foreach (var (handle, _) in Stands)
+        foreach (var (handle, _, _) in Stands)
         {
             var helper = await HeadlessPlayer.LoginAsync(context.Address, handle, handle);
             context.Helpers.Add(handle, helper);
@@ -50,10 +57,10 @@ public sealed class HackerConditionSweepMode : NativeQaMode
         var caster = context.StockProbe ?? throw new InvalidOperationException("Expected the stock-profile CSR probe.");
         await caster.EnterWorldAsync();
         await caster.WaitForViewNamedAsync("WinterFrost");
-        foreach (var (handle, x) in Stands)
+        foreach (var (handle, x, z) in Stands)
         {
             var helper = context.Helpers[handle];
-            helper.SendChat(FormattableString.Invariant($"?tp {x} {Y} {Z} 0 0 0"));
+            helper.SendChat(FormattableString.Invariant($"?tp {x} {Y} {z} 0 0 0"));
             await helper.WaitForTextAsync("Teleported to 0/0");
             await caster.WaitForViewNamedAsync(handle);
         }
@@ -63,6 +70,22 @@ public sealed class HackerConditionSweepMode : NativeQaMode
 
         var grant = await caster.WaitForRpcAsync("80 b2 47 04 00 00 08 02");
         var proof = new List<string> { grant.Hex };
+        var enemy = context.Helpers["QAEnemy"];
+        var recipient = await enemy.WaitForViewNamedAsync(caster.Handle);
+        for (int attempt = 1; ; attempt++)
+        {
+            HackerParitySweepMode.SendCast(enemy, 86, recipient);
+            try
+            {
+                proof.Add((await ModifierAsync(caster, 86, 115, -50, 28)).Hex);
+                break;
+            }
+            catch (TimeoutException) when (attempt < 3)
+            {
+                // A natural deflection leaves the cast on its eight-second reuse.
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        }
         HackerParitySweepMode.SendCast(caster, 320);
         proof.Add((await ModifierAsync(caster, 320, 320, 18, 40)).Hex);
         HackerParitySweepMode.SendCast(caster, 424);
