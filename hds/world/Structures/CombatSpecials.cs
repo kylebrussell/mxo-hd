@@ -40,6 +40,13 @@ namespace hds
             { HolyWater, KilledOnlyByHolyWater }, { HolyWaterPlus, KilledOnlyByHolyWater },
         };
 
+        // The stock client gates these two Rifles shots outside combat (CastWhenUsed = 1).
+        public static bool IsRifleOpener(ushort id)
+        {
+            id = AbilityCatalog.Canonical(id);
+            return id == 254 || id == 255;
+        }
+
         public static bool Handles(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
@@ -50,6 +57,7 @@ namespace hds
         public static string Describe(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
+            if (IsRifleOpener(id)) return "Rifles opener: 2-second cast outside combat; damage and effects at cast completion";
             if (thrownDots.Contains(id)) return id == SeverArtery
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";

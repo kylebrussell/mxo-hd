@@ -119,7 +119,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         // Combat styles: the active style's while-enabled modifiers at level 50 (CombatStyles)
         style = CombatStyles.Modifiers(e.Id).Select(m => new { stat = m.Target, consumer = Consumer(m.Target),
             level50 = AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null }).ToArray(),
-        special_move_style = CombatStyles.IsSpecialMove(e.Id) ? CombatStyles.RequiredStyle(e.Id) : 0,
+        special_move_style = CombatStyles.IsSpecialMove(e.Id) && !CombatSpecials.IsRifleOpener(e.Id)
+            ? CombatStyles.RequiredStyle(e.Id) : 0,
         sneak_bonus = SneakAttacks.Bonus(e.Id,true),
         special_animation = CombatAnimations.Special(e.Id,true,CombatTactic.Speed)?.Id,
         special_animation_rule = CombatAnimations.HasAbilityRule(e.Id),
