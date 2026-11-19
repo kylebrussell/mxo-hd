@@ -85,6 +85,44 @@ public class FreeCastViralLandingTests : IDisposable
         finally {AbilityBuffs.RemoveAll(c);AbilityBuffs.RemoveAll(target);}
     }
     [Theory]
+    [InlineData(333, false)]
+    [InlineData(333, true)]
+    [InlineData(336, false)]
+    [InlineData(337, true)]
+    [InlineData(343, true)]
+    public void InvalidAreaPrimaryNeverStartsAContestOrExpandsToLiveNearbyViews(ushort abilityId, bool deleting)
+    {
+        var caster = Client(110);
+        Store.currentClient = caster;
+        AbilityPassives.SetLoaded(caster, new[] { (abilityId, (ushort)50) });
+        var primary = new Mob();
+        primary.setEntityId(1000);
+        primary.setDistrict(1);
+        primary.setHealthC(1000);
+        primary.setHealthM(1000);
+        var secondary = new Mob();
+        secondary.setEntityId(1001);
+        secondary.setDistrict(1);
+        secondary.setHealthC(1000);
+        secondary.setHealthM(1000);
+        WorldServer.mobs.Add(primary);
+        WorldServer.mobs.Add(secondary);
+        var stale = caster.viewMan.addView(1000, 1);
+        stale.viewCreated = deleting;
+        stale.viewNeedsToBeDeleted = deleting;
+        caster.viewMan.addView(1001, 1).viewCreated = true;
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(abilityId);
+        Assert.False(AbilityTargets.Land(caster, ability, stale.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+        Assert.Empty(caster.messageQueue.RPCMessagesQueue);
+        Assert.Empty(caster.messageQueue.ObjectMessagesQueue);
+        Assert.Equal((ushort)1000, secondary.getHealthC());
+    }
+
+    [Theory]
     [InlineData(33)]
     [InlineData(330)]
     [InlineData(40)]
@@ -92,6 +130,16 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(86)]
     [InlineData(354)]
     [InlineData(355)]
+    [InlineData(311)]
+    [InlineData(312)]
+    [InlineData(313)]
+    [InlineData(315)]
+    [InlineData(329)]
+    [InlineData(331)]
+    [InlineData(333)]
+    [InlineData(336)]
+    [InlineData(337)]
+    [InlineData(343)]
     public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld(ushort abilityId)
     {
         var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{(abilityId,(ushort)50)});

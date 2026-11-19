@@ -78,9 +78,13 @@ public static partial class Scenarios
 
     private static async Task AbilityParityControls(ScenarioContext context)
     {
-        // Paralyzing Throw is a Spy Style special move (CastRequiredCombatStance): the caster needs Spy Style loaded
-        var caster = await context.AddPlayerAsync(new CharacterSeed("Controller") { Level = 50, Organization = 1 });
-        await LoadAbilitiesAsync(context, caster, 1112);
+        // Paralyzing Throw uses Spy Style. The viral casts use 80ae after login, with their owned ancestors loaded.
+        var caster = await context.AddPlayerAsync(new CharacterSeed("Controller")
+        {
+            Level = 50, Organization = 1,
+            Experience = (int)hds.PlayerProgression.ExperienceForLevel(50),
+            OwnedLoadedAbilities = HackerRegressionAncestors(315, 329).Append(((ushort)1112, (ushort)50)).ToArray()
+        });
         var players = await context.AddPlayersInWorldAsync(
             new CharacterSeed("Victim") { X = 17120, Level = 50, Organization = 2 },
             new CharacterSeed("Rooted") { X = 17220, Level = 50, Organization = 2 });
@@ -98,11 +102,11 @@ public static partial class Scenarios
 
         caster.SendChat("?pvpflag on");
         await caster.WaitForViewUpdateAsync(2, OwnPvpFlagOn);
+        await PrepareFreeCastViralFixture(context,caster,315,329);
         var casterForVictim = await victim.WaitForViewNamedAsync("Controller");
         victim.SendRpc($"41 {HandleOf(casterForVictim)}");
         await victim.WaitForRpcAsync("81 68");
 
-        await PrepareFreeCastViralFixture(context,caster,315,329);
         Cast(caster, 315, victimView.ViewId);
         await victim.WaitForRpcAsync(ModPattern(315, 102), TimeSpan.FromSeconds(10));
         await victim.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 04 09 00 28 ??");
@@ -139,9 +143,17 @@ public static partial class Scenarios
         Check.Equal(0, victim.World.Problems.Count + rooted.World.Problems.Count, "Control protocol problems");
     }
 
+    private static (ushort Ability, ushort Level)[] HackerRegressionAncestors(params ushort[] abilities) =>
+        abilities.SelectMany(id => hds.AbilityPrerequisites.Current.Closure(id).Keys)
+            .Concat(new ushort[] { 2, 17 }).Distinct().Select(id => (id, (ushort)50)).ToArray();
+
     private static async Task AbilityParityArea(ScenarioContext context)
     {
-        var caster = (await context.AddPlayersInWorldAsync(NearNpc("AreaHacker")))[0];
+        var caster = (await context.AddPlayersInWorldAsync(NearNpc("AreaHacker") with
+        {
+            Level = 50, Experience = (int)hds.PlayerProgression.ExperienceForLevel(50),
+            OwnedLoadedAbilities = HackerRegressionAncestors(359, 466)
+        }))[0];
         var frost = await caster.WaitForViewNamedAsync("WinterFrost");
         var train = await caster.WaitForViewNamedAsync("Trainman");
         var smith = await caster.WaitForViewNamedAsync("Smithling");

@@ -74,9 +74,12 @@ namespace hds
         {
             if(engageFoes!=null && !engageFoes.Current)return false;
             if(reverseBulldog!=null && !reverseBulldog.Current)return false;
-            Mob primary = FindMob(client, targetViewId, out _);
+            Mob primary = FindMob(client, targetViewId, out var primaryView);
             if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId, sneakOpener,origin,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
-            if (primary.getIsDead() || primary.isFriendly) return false;
+            // A real deflection can still affect an area secondary. A stale/unspawned target
+            // is invalid before the contest and cannot supply the centre of that area.
+            if (!primaryView.viewCreated || primaryView.viewNeedsToBeDeleted || primary.getIsDead() || primary.isFriendly)
+                return false;
             if (!CombatSight.Between(client, primary))
             {
                 Output.WriteDebugLog($"[ABILITY] Sight blocked ability {ability.getAbilityID()} on view {targetViewId}");

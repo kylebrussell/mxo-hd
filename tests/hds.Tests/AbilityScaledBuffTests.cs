@@ -273,6 +273,111 @@ public class AbilityScaledBuffTests
         Assert.Equal(30f, AbilityControlDurations.Mitigate(30f, 20, AbilityControlDurations.Determination(target)));
     }
 
+    [Theory]
+    [InlineData(373, false)]
+    [InlineData(374, true)]
+    public void HackerAccuracyBuffUsesCasterLevelAndConsumedAttackStats(ushort id, bool ranged)
+    {
+        var caster = Client(20);
+        var recipient = Client(50);
+        int baseline = AbilityStats.Attack(recipient, ranged);
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, id, 999)));
+        int casterAttack = AbilityStats.Attack(caster, ranged);
+        AbilitySupport.Land(caster, id, 999);
+        Assert.Equal(casterAttack + 25, AbilityStats.Attack(caster, ranged));
+        Assert.Equal(baseline, AbilityStats.Attack(recipient, ranged));
+        Assert.True(AbilityBuffs.Remove(caster, id));
+        Assert.Equal(casterAttack, AbilityStats.Attack(caster, ranged));
+
+        caster.playerInstance.Level.setValue((byte)50);
+        AbilitySupport.Land(caster, id, 0);
+        Assert.Equal(casterAttack + 64, AbilityStats.Attack(caster, ranged));
+        Assert.True(AbilityBuffs.Remove(caster, id));
+        Assert.Equal(casterAttack, AbilityStats.Attack(caster, ranged));
+    }
+
+    [Theory]
+    [InlineData(310, 1083, 1)]
+    [InlineData(334, 1084, 5)]
+    [InlineData(335, 1086, 0)]
+    [InlineData(369, 1092, 0)]
+    public void HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution(ushort parent, ushort child, int viralBonus)
+    {
+        var caster = Client(50);
+        caster.playerData.setDistrictId(1);
+        caster.playerData.setOnWorld(true);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(caster, new WorldSendFence());
+        AbilityGrantRegistration.LoadingComplete(caster, new byte[] { 1 });
+        byte[][] Packets() => caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(r => r.content[1..]).ToArray();
+        int baseline = AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000);
+
+        AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(caster, child));
+        byte[] add = AbilityGrantRegistration.Record(new(parent, child, 0), false);
+        Assert.Single(Packets(), rpc => rpc.SequenceEqual(add));
+        Assert.Equal(baseline + viralBonus * 10 - (viralBonus == 0 ? 0 : 1), AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
+        Assert.Single(Packets(), rpc => rpc.SequenceEqual(add));
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(caster, child));
+        byte[] remove = AbilityGrantRegistration.Record(new(parent, child, 0), true);
+        Assert.Single(Packets(), rpc => rpc.SequenceEqual(remove));
+        Assert.Equal(baseline, AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+    }
+
+    [Theory]
+    [InlineData(1083, 4, 6, 0)]
+    [InlineData(1084, 10, 9, 0)]
+    [InlineData(1086, 2, 6, 10)]
+    public void HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects(
+        ushort ability, int damage, int accuracy, int radius)
+    {
+        var caster = Client(50);
+        AbilitySupport.Land(caster, ability, 999);
+        Assert.Equal(damage, AbilityStats.Influence(caster, 172));
+        Assert.Equal(accuracy, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(10, 500,
+            (short)AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration)));
+        Assert.Equal(4 * (1 + (double)(float)(radius / 100.0)), AbilityRadius.TargetMetres(caster, 333));
+        Assert.True(AbilityBuffs.Remove(caster, ability));
+        Assert.Equal(0, AbilityStats.Influence(caster, 172));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(4, AbilityRadius.TargetMetres(caster, 333));
+    }
+
+    [Theory]
+    [InlineData(309, 3, 10)]
+    [InlineData(346, 5, 0)]
+    public void HackerLoadedPassivesReachViralDamageAndCastThroughConsumers(
+        ushort ability, int bonusDamage, short concentration)
+    {
+        var caster = Client(50);
+        AbilityPassives.SetLoaded(caster, new[] { (ability, (ushort)50) });
+        Assert.Equal((int)(1000 * (double)(float)(1 + bonusDamage / 100.0)), AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        Assert.Equal(concentration, AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration));
+        Assert.Equal(75 + concentration / 2,
+            AbilityCastInterrupts.CastThroughPercent(10, 500, (short)AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration)));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        Assert.Equal(0, AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration));
+    }
+
+    [Fact]
+    public void CapturedCombatHackingChangesTwoDefenseConsumersAndThePaidCostUntilRemoval()
+    {
+        var caster = Client(50);
+        AbilitySupport.Land(caster, 344, 999);
+        Assert.Equal(22, AbilityStats.Defense(caster, false));
+        Assert.Equal(22, AbilityStats.Defense(caster, true));
+        Assert.Equal((ushort)16, AbilityCosts.Effective(caster, 315));
+        Assert.True(AbilityBuffs.Remove(caster, 344));
+        Assert.Equal(0, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Defense(caster, true));
+        Assert.Equal((ushort)20, AbilityCosts.Effective(caster, 315));
+    }
+
     [Fact]
     public void DirectCostBuffAndDebuffAffectOrdinaryAbilitySpending()
     {
