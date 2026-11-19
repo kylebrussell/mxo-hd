@@ -72,6 +72,38 @@ public class AbilityBuffTests
         Assert.Equal(0f, AbilityBuffs.Retail[217].Seconds);  // Evade Combat: until replaced
     }
 
+    [Theory]
+    [InlineData(9, 15, CombatTacticType.Energized)]
+    [InlineData(15, 9, CombatTacticType.Precise)]
+    public void AwakenedToggleChangesRealDamageAndContestUntilRemoval(ushort ability, ushort other, CombatTacticType type)
+    {
+        var client = NewClient();
+        int FreeDamage() => FreeAttacks.Damage(new Random(171), 100, 0, 0, 0, 1,
+            CombatTactic.Speed, CombatTactics.Type(client));
+        int CloseDamage() => CombatCalculator.CloseCombatDamage(new Random(171), 50, 50,
+            CombatTactic.Speed, out _, CombatTactics.Type(client), bonus: 100);
+        ushort AttackRoll()
+        {
+            CombatInterlock.RollHit(new Random(171), CombatTactic.Speed, 50, CombatTactic.Speed, 50,
+                out ushort attack, out _, CombatTactics.Type(client), attackBonus: 100);
+            return attack;
+        }
+
+        int normalFree = FreeDamage();
+        int normalClose = CloseDamage();
+        ushort normalRoll = AttackRoll();
+        Assert.True(AbilityBuffs.Apply(client, ability));
+        Assert.Equal(type, CombatTactics.Type(client));
+        Assert.False(AbilityBuffs.Apply(client, other));
+        Assert.Equal(ability == 9 ? 1 : -1, Math.Sign(FreeDamage() - normalFree));
+        Assert.Equal(ability == 9 ? 1 : -1, Math.Sign(CloseDamage() - normalClose));
+        Assert.Equal(ability == 9 ? -1 : 1, Math.Sign(AttackRoll() - normalRoll));
+        Assert.True(AbilityBuffs.Remove(client, ability));
+        Assert.Equal(normalFree, FreeDamage());
+        Assert.Equal(normalClose, CloseDamage());
+        Assert.Equal(normalRoll, AttackRoll());
+    }
+
     private static WorldClient NewClient()
     {
         WorldClient client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
