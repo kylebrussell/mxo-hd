@@ -1,0 +1,46 @@
+{
+  "families": {
+    "overheat-one-hostile": {
+      "representative": 65,
+      "result": "pass",
+      "head": "f2630093a95a12f0a879e7f2e5fa88e086d2bc13",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/376#issuecomment-7017044085",
+      "scope": "Stock cast landed on QAEnemy. Saved receiver PacketLog add765da64bb, lines 6702 and 7567, shows both -24 resistance records (180 and 181) with 33-second duration, then the matching removals."
+    },
+    "delete-upgrade-one-hostile": {
+      "representative": 324,
+      "result": "pass",
+      "head": "f2630093a95a12f0a879e7f2e5fa88e086d2bc13",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/376#issuecomment-7017044085",
+      "scope": "Stock cast removed the freshly reapplied 49 from QAEnemy with a matching off record."
+    },
+    "cancel-upgrade-one-hostile": {
+      "representative": 377,
+      "result": "pass",
+      "head": "f2630093a95a12f0a879e7f2e5fa88e086d2bc13",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/376#issuecomment-7017044085",
+      "scope": "Stock cast removed the helper's 600-second 49 from the selected QAEnemy with a matching off record."
+    },
+    "delete-upgrade-two-hostile": {
+      "representative": 420,
+      "result": "pass",
+      "head": "f2630093a95a12f0a879e7f2e5fa88e086d2bc13",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/376#issuecomment-7017044085",
+      "scope": "A single stock cast removed both freshly applied parents 49 and 110 from QAEnemy, with both off records. This exercises the additional sweep alongside the guaranteed single removal."
+    },
+    "combat-shutdown-hostile": {
+      "representative": 480,
+      "result": "pass",
+      "head": "f2630093a95a12f0a879e7f2e5fa88e086d2bc13",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/376#issuecomment-7017044085",
+      "scope": "Stock Actions offered 480 in the Network Attacker section after the loadout switch. Saved receiver PacketLog add765da64bb, lines 13627 and 13985, shows the four QAEnemy add and removal records: -61 to 522/524, -31 to 1009/1010, all with 25-second duration."
+    }
+  },
+  "abilities": {
+    "65": { "family": "overheat-one-hostile" },
+    "324": { "family": "delete-upgrade-one-hostile" },
+    "377": { "family": "cancel-upgrade-one-hostile" },
+    "420": { "family": "delete-upgrade-two-hostile" },
+    "480": { "family": "combat-shutdown-hostile" }
+  }
+}
