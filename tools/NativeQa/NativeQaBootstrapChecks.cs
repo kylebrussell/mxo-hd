@@ -125,7 +125,7 @@ public static class NativeQaBootstrapChecks
                 {
                     Console.WriteLine("BOOTSTRAP START " + (name.Length == 0 ? "(default)" : name));
                     byte[] ack = await NativeQaReadiness.BootstrapAsync(checkedMode, new NativeQaBootstrapContext(modeDirectory,
-                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server, root));
+                        NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server, root, probe));
                     var modePlan = checkedMode.Plan;
                     if (name == "mission-catalog-sample" && modePlan.ExtraQaMetadata.ContainsKey("CheckpointArea"))
                         await CheckPhaseLoginAsync(database, server, modePlan);
