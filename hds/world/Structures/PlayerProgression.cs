@@ -243,10 +243,11 @@ namespace hds
             return grants;
         }
 
-        /// <summary>Awakened and the separately proved function-2 Sneak grant follow their sourced levels.</summary>
+        /// <summary>Awakened and the stored function-2 Sneak and Disguise grants follow their sourced levels.</summary>
         public static UInt16 GrantLevel(UInt16 ability, UInt16 abilityLevel)
         {
             if(AbilitySneakGrant.TryLevel(ability,AbilitySneakGrant.Child,abilityLevel,out ushort sneak))return sneak;
+            if (AbilityDisguise.TryGrantLevel(ability, abilityLevel, out ushort disguise)) return disguise;
             return ability == AwakenedAbility ? abilityLevel : (UInt16)0;
         }
 

@@ -17,11 +17,43 @@ namespace hds
             internal Dictionary<ushort, int> Totals = new Dictionary<ushort, int>();
             internal AbilityShadowPresentation.Owned ShadowOwned;
             internal AbilityShadowPresentation.Emitted ShadowEmitted;
+            internal (int World, long Transport)? Presentation;
+            internal bool AvatarReady;
         }
         internal sealed class Active
         {
             internal ushort Ability, Stat, Record;
             internal int Value;
+        }
+
+        internal static bool BeginWorldPresentation(WorldClient client)
+        {
+            var owner = client.playerData;
+            long transport = client.TransportFence.Capture();
+            lock (owner.passives)
+            {
+                var stamp = (owner.worldGeneration, transport);
+                if (owner.passives.Presentation == stamp) return false;
+                owner.passives.Presentation = stamp;
+                owner.passives.AvatarReady = false;
+                return true;
+            }
+        }
+
+        internal static void LoadingComplete(WorldClient client, byte[] body)
+        {
+            if (body?.Length != 1 || body[0] != 1) return;
+            var owner = client.playerData;
+            var state = owner.passives;
+            lock (state)
+            {
+                var stamp = state.Presentation;
+                if (state.AvatarReady || !stamp.HasValue ||
+                    stamp.Value.World != owner.worldGeneration || !client.TransportFence.IsCurrent(stamp.Value.Transport) ||
+                    !DeathPenalty.CanPresent(owner)) return;
+                state.AvatarReady = true;
+            }
+            if (ReferenceEquals(client.playerData, owner)) Refresh(client);
         }
 
         public static IEnumerable<AbilityCatalog.Modifier> Modifiers(ushort ability)
@@ -116,13 +148,21 @@ namespace hds
         /// off, its 80 bd 05 toggle off, the new style's records on, its toggle on.</summary>
         public static void Refresh(WorldClient client, bool present = true, (ushort From, ushort To)? styleSwitch = null)
         {
-            State state = client.playerData.passives;
-            bool send = present && DeathPenalty.CanPresent(client.playerData);
+            var owner = client.playerData;
+            State state = owner.passives;
+            bool sendVitals = present && DeathPenalty.CanPresent(owner);
+            (int World, long Transport)? stamp;
             var messages = new List<byte[]>();
             // Vital refreshes take these locks in this order too; record ids share the active-buff allocator.
-            lock (client.playerData.activeBuffs)
+            lock (owner.activeBuffs)
             lock (state)
             {
+                stamp = state.Presentation;
+                // A spawned self view is insufficient. Native 0c01 follows live-avatar
+                // initialization, so only publish the loaded stats after that marker.
+                bool send = sendVitals && (!stamp.HasValue ||
+                    state.AvatarReady && stamp.Value.World == owner.worldGeneration &&
+                    client.TransportFence.IsCurrent(stamp.Value.Transport));
                 var current = new Dictionary<string, Active>();
                 var totals = new Dictionary<ushort, int>();
                 int characterLevel = client.playerInstance.Level.getValue()[0];
@@ -146,7 +186,7 @@ namespace hds
                         if (old.Value == value) continue;
                         messages.Add(Record(old, true));
                     }
-                    else active.Record = AbilityBuffs.NextRecordId(client.playerData);
+                    else active.Record = AbilityBuffs.NextRecordId(owner);
                     messages.Add(Record(active, false));
                 }
                 if (send)
@@ -166,8 +206,11 @@ namespace hds
                 }
                 state.Totals = totals;
             }
-            foreach (byte[] message in messages) client.messageQueue.addRpcMessage(message);
-            AbilityBuffs.RefreshVitals(client, send);
+            if (!ReferenceEquals(client.playerData, owner)) return;
+            foreach (byte[] message in messages)
+                if (stamp is { } expected) client.messageQueue.AddWorldBoundRpc(message, expected.World, expected.Transport);
+                else client.messageQueue.addRpcMessage(message);
+            AbilityBuffs.RefreshVitals(client, sendVitals);
         }
 
         // Style records are kind 0x15 in the same capture; loaded passives keep 0x45

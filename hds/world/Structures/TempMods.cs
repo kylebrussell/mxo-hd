@@ -356,6 +356,11 @@ namespace hds
             // The Tomo Nage capture did not show the separate ballistic resistance proc.
             if (id == 412 && source != null)
                 mods.AddRange(source.Mods.Where(m => m.Proc == Proc.Stat && m.Target == 181));
+            // Deadly Throw's capture contains its numeric penalties. The independent Daze and Stagger draws
+            // can both miss, so absence in that sample cannot override the stored probability rules.
+            if (id == 279 && source != null)
+                mods.AddRange(source.Mods.Where(m => m.Proc == Proc.State &&
+                    !captured.Mods.Any(c => c.Proc == m.Proc && c.Target == m.Target)));
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;
         }

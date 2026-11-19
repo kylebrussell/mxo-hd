@@ -410,6 +410,7 @@ namespace hds{
 
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
+                    AbilityPassives.LoadingComplete(Store.currentClient, rpcData);
                     AbilityGrantRegistration.LoadingComplete(Store.currentClient, rpcData);
                     MissionObjectiveReplay.LoadingComplete(Store.currentClient, rpcData);
                     FreeAttackBootstrap.LoadingComplete(Store.currentClient, rpcData);
