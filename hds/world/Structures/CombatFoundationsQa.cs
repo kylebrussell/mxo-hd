@@ -46,7 +46,7 @@ namespace hds
                     Mods = new[] { new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat,
                         Target = 157, MinValue = 75, MaxValue = 75, Seconds = ResistSeconds } }
                 }, TimeUtils.GetSimTimeSeconds());
-                return "Dual SMGs equipped. Aim Direct Fire at AB1 Aim. AB1 Aim and AB1 Inside take damage. AB1 Outside stays full. AB1 Resisted is west and resists for 30 minutes. Logic Barrage deals 348 on a hit.";
+                return "Dual SMGs equipped. Aim Direct Fire at AB1 Aim. AB1 Aim and AB1 Inside take damage. AB1 Outside stays full. AB1 Resisted is west and resists for 30 minutes.";
             }
             return "Use ?combatdepth foundations-sight or foundations-cone.";
         }
@@ -56,8 +56,8 @@ namespace hds
             CombatManager.GetHandler(caller).LeaveOtherFights();
             MissionStaging.Teleport(caller, x, y, z);
             caller.playerInstance.YawInterval.setValue(yaw);
-            caller.messageQueue.addObjectMessage(ServerPackets.BuildSelfPositionHandoff(yaw, (float)x, (float)y,
-                (float)z, CombatHandler.CombatStartTime()), false);
+            // Stock cross-site moves carry the destination NAV place in a teleport record.
+            caller.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(caller, (float)x, (float)y, (float)z), false);
         }
 
         private static Mob Spawn(string name, double x, double y, double z)
@@ -67,7 +67,7 @@ namespace hds
                 foreach (Mob existing in WorldServer.mobs)
                     if (existing.getName() == name) return existing;
 
-                var mob = new Mob();
+                var mob = new Mob { PassiveTarget = true };
                 mob.setEntityId(WorldServer.entityIdCounter++);
                 mob.setDistrict(1);
                 mob.setDistrictName("slums");

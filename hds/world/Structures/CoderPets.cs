@@ -954,7 +954,7 @@ namespace hds
         /// <summary>An NPC the simulacrum fights, and that isn't fighting a player, hits the simulacrum back each round.</summary>
         private static void Retaliate(Pet pet, Mob target, double now)
         {
-            if (target.getIsDead() || target.getCombatTarget() != null || target.IsStunned(now)) return;
+            if (target.PassiveTarget || target.getIsDead() || target.getCombatTarget() != null || target.IsStunned(now)) return;
             if (OwnerDistanceTo(pet, target) > LeashMetres || Distance(pet.Mob, target.getXPos(), target.getYPos(), target.getZPos()) > RangedRangeMetres * 100) return;
             pet.NextRetaliation = now + AttackPeriodSeconds;
             UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), pet.Mob.getLevel());

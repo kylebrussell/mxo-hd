@@ -24,8 +24,26 @@ public static partial class Scenarios
             actor.SendRpc(rpc);
         }
 
+        async Task CheckTeleport(int viewCursor, byte yaw, float x, float y, float z)
+        {
+            byte[] header = { 2, 0, 1, 0x1c };
+            byte[] destination = new[] { yaw }.Concat(BitConverter.GetBytes(x)).Concat(BitConverter.GetBytes(y))
+                .Concat(BitConverter.GetBytes(z)).ToArray();
+            await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(viewCursor).Any(record =>
+            {
+                int destinationAt = BytePattern.IndexOf(record, destination, 0);
+                int start = destinationAt - 11;
+                return start >= 0 && destinationAt + destination.Length + 4 <= record.Length &&
+                    record.AsSpan(start, header.Length).SequenceEqual(header) && record[start + 4] != 0 &&
+                    Enumerable.Range(0, 3).All(i => BitConverter.ToUInt16(record, start + 5 + i * 2) != ushort.MaxValue);
+            }), "The first setup sends an allocated stock teleport with a mapped destination, yaw and XYZ",
+                HeadlessPlayer.DefaultTimeout);
+        }
+
+        int sightViews = actor.World.ViewSnapshot().Count;
         actor.SendChat("?combatdepth foundations-sight");
         await actor.WaitForTextAsync("across a mapped gap");
+        await CheckTeleport(sightViews, 192, 22700, 1095, 16100);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 b4 02 00 00");
         Check.Equal(692L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={actor.CharId} AND slot=105"),
             "Sight command equipped the rifle in the stock hand slot");
@@ -48,8 +66,15 @@ public static partial class Scenarios
             "same cast lands for 424 on continuous mapped floor", TimeSpan.FromSeconds(12));
         await actor.WaitForViewUpdateAsync(clear.ViewId, hitRecord + " " + Le((ushort)4576));
 
+        // A direct close-combat request is permitted against a passive target. The setup
+        // must release this fight and carry the new NAV location in the first teleport.
+        actor.SendRpc($"40 {HandleOf(clear)} 01 6b");
+        await actor.WaitForRpcAsync($"40 {HandleOf(clear)} 00 6b");
+        await actor.WaitForRpcAsync("47");
+        int coneViews = actor.World.ViewSnapshot().Count;
         actor.SendChat("?combatdepth foundations-cone");
         await actor.WaitForTextAsync("AB1 Outside stays full");
+        await CheckTeleport(coneViews, 64, 24800, 495, -1498);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 db 1e 00 00");
         Check.Equal(7899L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={actor.CharId} AND slot=105"),
             "Cone command equipped the dual SMGs in the stock hand slot");
@@ -73,7 +98,9 @@ public static partial class Scenarios
         await actor.WaitForViewUpdateAsync(resisted.ViewId, hitRecord + " " + Le((ushort)4652));
         Check.That(!context.Server.DebugLog().Contains(Lands(493, outside)), "NPC within 8m but outside the cone stays untouched");
         Check.Equal(0, ViewUpdateValues(actor, outside.ViewId, NpcHealthUpdate).Count, "Outside NPC receives no hit update");
-        Console.WriteLine("  LOS blocked ranged and ability hits; Direct Fire hit two of three NPCs; Logic Barrage did 424 and 348 damage.");
+        Check.That(!context.Server.DebugLog().Contains("[AGGRO] AB1", StringComparison.Ordinal),
+            "Damage never causes a passive AB1 target to pursue or re-engage");
+        Console.WriteLine("  First sight and cone setup sent mapped teleports; passive AB1 targets stayed in place; Direct Fire hit two NPCs.");
         Check.Equal(0, actor.World.Problems.Count, "Combat foundation packet parsing");
     }
 }
