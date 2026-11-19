@@ -71,6 +71,8 @@ namespace hds
                 return;
             }
 
+            if (!AbilityPassives.BeginWorldPresentation(Store.currentClient) && Store.currentClient.playerData.getOnWorld()) return;
+
             // The weapon in the weapon slot is the one in hand (EquippedItemID); nothing set it before, so a
             // player who logged out holding a weapon came back empty-handed.
             UInt32 weapon = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(InventoryHandler.WeaponSlot);

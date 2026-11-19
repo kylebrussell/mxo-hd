@@ -90,3 +90,9 @@ The fixture also stages Weak Points (164), Wicked Aim (278), Assassin Upgrade (1
 | Utility rule, detection and disguise tool/rank coverage | 119, 142, 149, 1114 |
 
 Disguise (120) now propagates the stored function-2 level to its child and computes duration from that rank. Its stock Actions registration still needs evidence. Deadly Throw (279) retains the captured slows while restoring both independent 20% control draws. Crippling Throw (280) applies the signed health callback on its sibling Rooted effect, protecting the first health change and breaking the whole parent on subsequent qualifying damage. Cartwheel Escape (292) applies Combat Evasion only to the caster after its hostile landing.
+
+### Operative Status recheck
+
+The first stock Operative run received its initial passive and Self Defense modifier batch after self-spawn but before the client sent `0c 01`. Status remained empty even though server casts landed. The timed-buff reference run received its initial batch after the client had advanced its packet-status field. That field is copied from transport ingress and does not signal avatar initialization. The server now holds initial passive and style records until the exact live-avatar `0c 01` marker. The same startup still computes combat totals and creates the self view immediately.
+
+Before reviewing individual powers, open Status after jack-in and confirm Self Defense Combat values are populated. Capture the initial passive records and then repeat the Improved Sneak Attack (284) unload/reload at a Hardline or Load Area. Activate Cutthroat Upgrade (1119) with Operative Target selected and capture the self-only add records and their removal on replacement. The grouped headless check observes zero passive/style records before a processed feature request and malformed loading marker, one unique-record snapshot after the valid marker, and no replay on a duplicate marker.

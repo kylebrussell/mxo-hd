@@ -36,8 +36,24 @@ public sealed class AbilityParityOperativeSweepMode : NativeQaMode
 
     internal async Task VerifyHeadlessAsync(HeadlessPlayer actor, ServerInstance server)
     {
-        await actor.EnterWorldAsync();
+        await actor.EnterWorldAsync(loadingComplete: false);
         var target = await actor.WaitForViewNamedAsync("Operative Target");
+
+        List<ManageBonusRecord> StatusRecords()
+        {
+            var records = new List<ManageBonusRecord>();
+            foreach (var rpc in actor.World.RpcSnapshot())
+                if (ManageBonusRecord.TryDecode(rpc.Bytes, out var record) && record!.Duration == 0 &&
+                    record.LocatorHighByte == 0 && (record.Locator & 255) == 0 &&
+                    (record.Type == 0x45 || record.Type == 0x15 && CombatStyles.IsStyle((ushort)record.SourceId)))
+                    records.Add(record);
+            return records;
+        }
+        async Task Barrier()
+        {
+            actor.SendRpc("81 48");
+            await actor.WaitForRpcAsync("81 49");
+        }
 
         async Task Modifier(ushort id, ushort stat, int value, float seconds, bool remove = false)
         {
@@ -54,11 +70,27 @@ public sealed class AbilityParityOperativeSweepMode : NativeQaMode
             actor.SendRpc($"80 b9 {Le(id)} {Le(target.ViewId)}");
         }
 
+        await Barrier();
+        Check.Equal(0, StatusRecords().Count, "Self spawn and a processed features request precede initial Status publication");
+        actor.SendRpc("0c 00");
+        await Barrier();
+        Check.Equal(0, StatusRecords().Count, "Malformed loading completion does not publish Status");
+        actor.SendRpc("0c 01");
         await Modifier(284, 1042, 25, 0);
         await Modifier(284, 1043, 25, 0);
         await Modifier(284, 1039, 12, 0);
         await Modifier(164, 1145, 10, 0);
         await Modifier(278, 1145, 15, 0);
+        await Barrier();
+        var initialRecords = StatusRecords();
+        Check.That(initialRecords.Any(record => record.Type == 0x15 && record.SourceId == 17),
+            "The initial snapshot includes active Self Defense style modifiers");
+        Check.Equal(initialRecords.Count, initialRecords.Select(record => record.Locator).Distinct().Count(),
+            "Initial passive and style modifiers each have one active record");
+        actor.SendRpc("0c 01");
+        await Barrier();
+        Check.That(initialRecords.SequenceEqual(StatusRecords()),
+            "Repeated loading completion does not replay, clear, or duplicate any visible stat record");
 
         Cast(1119);
         await Modifier(1119, 1034, 3, 0);

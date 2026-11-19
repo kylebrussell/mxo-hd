@@ -22,6 +22,42 @@ public class OperativeParityTests
         return actor;
     }
 
+    [Fact]
+    public void WorldEntryPresentsLatestPassiveOnceAfterReadyWithoutResettingServerTotals()
+    {
+        var actor = Actor();
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(actor, new WorldSendFence());
+        Assert.True(AbilityPassives.BeginWorldPresentation(actor));
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)284, (ushort)30) }, newWorld: true);
+        actor.playerData.setOnWorld(true);
+        AbilityPassives.Refresh(actor);
+        Assert.Equal(15, AbilityPassives.Total(actor, 1042));
+        Assert.Empty(PassiveAdds());
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)284, (ushort)50) });
+        Assert.Equal(25, AbilityPassives.Total(actor, 1042));
+        AbilityPassives.LoadingComplete(actor, new byte[] { 0 });
+        Assert.Empty(PassiveAdds());
+        AbilityPassives.LoadingComplete(actor, new byte[] { 1 });
+        Assert.Equal(3, PassiveAdds().Length);
+        Assert.False(AbilityPassives.BeginWorldPresentation(actor)); // duplicate spawn input for this owner
+        AbilityPassives.LoadingComplete(actor, new byte[] { 1 });
+        Assert.Equal(3, PassiveAdds().Length);
+
+        actor.playerData.setOnWorld(false);
+        actor.playerData.setOnWorld(true);
+        AbilityPassives.LoadingComplete(actor, new byte[] { 1 });
+        Assert.Equal(3, PassiveAdds().Length); // the old presentation belongs to a different world
+        Assert.True(AbilityPassives.BeginWorldPresentation(actor));
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)284, (ushort)50) }, newWorld: true);
+        AbilityPassives.LoadingComplete(actor, new byte[] { 1 });
+        Assert.Equal(6, PassiveAdds().Length);
+
+        byte[][] PassiveAdds() => actor.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Where(message => message.content.AsSpan(1).StartsWith(new byte[] { 0x80, 0xbc, 0x45 }))
+            .Select(message => message.content).ToArray();
+    }
+
     [Theory]
     [InlineData(285, 1122, 0)]
     [InlineData(118, 1119, 0)]
