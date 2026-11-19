@@ -1,0 +1,30 @@
+{
+  "families": {
+    "operative-toughness-passive": {
+      "representative": 116,
+      "result": "pass",
+      "head": "3561fb210fd3bf6e3513e3e60cf06895d778c840",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/371#issuecomment-7015365597",
+      "scope": "Removing the loaded passive removed both ballistic and melee resistance bonus rows. Reload restored them with separate Combat Toughness +7% contributions in each row."
+    },
+    "operative-improved-invisibility-passive": {
+      "representative": 363,
+      "result": "pass",
+      "head": "3561fb210fd3bf6e3513e3e60cf06895d778c840",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/371#issuecomment-7015365597",
+      "scope": "Unload and reload changed the ballistic and melee defense bonus totals by 10 each and removed and restored the Improved Invisibility +10-point Determination contribution."
+    },
+    "operative-master-assassin-upgrade": {
+      "representative": 1123,
+      "result": "pass",
+      "head": "3561fb210fd3bf6e3513e3e60cf06895d778c840",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/371#issuecomment-7015365597",
+      "scope": "Stock activation showed attributed caster bonuses of Stealth +8, Thrown Accuracy +7 and Thrown Damage +10. The visibility and reveal contest still needs evidence."
+    }
+  },
+  "abilities": {
+    "116": { "family": "operative-toughness-passive" },
+    "363": { "family": "operative-improved-invisibility-passive" },
+    "1123": { "family": "operative-master-assassin-upgrade" }
+  }
+}
