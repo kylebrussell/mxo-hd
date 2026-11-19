@@ -1,0 +1,25 @@
+{
+  "families": {
+    "loaded-hacker-damage-resistance": {
+      "representative": 484,
+      "result": "pass",
+      "head": "48cbd9ba29eff8f2dd667e28e7f78fd7542ed48c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/356#issuecomment-7012381535",
+      "scope": "Stock unloaded and reloaded 484. CSR110 PacketLog 1d89a1a84022 packet-start lines 1909, 11524 and 12225 show exact add/remove/add: 1028 Thrown Damage +10, 1031 Viral Damage +10, 1056 Max Inner Strength +10, 1140 Ballistic Resistance +5 and 1144 Melee Resistance +5. The source 45→1056 record remains; no other contributor to 1028 or 1031 is present. The displayed Status totals and disappearing rows remain a separate presentation question."
+    },
+    "group-negative-condition-sweep": {
+      "representative": 487,
+      "result": "pass",
+      "head": "48cbd9ba29eff8f2dd667e28e7f78fd7542ed48c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/356#issuecomment-7012381535",
+      "scope": "Stock cast 487 with the opposing nonmember selected. PacketLog 1d89a1a84022 shows the 25-second pulse on QAFriend, QAFar and CSR at packet-start lines 10200, 10225, 10280, with no pulse on QAEnemy or QAOther. QAOther landed 481 on CSR at 09:38:41 (line 9795). The same locator's remove arrived at 09:39:13 (line 10768), 20 seconds after 487 began and 32 seconds into the stored 60-second debuff. DebugLog line 1725 records 487 removed 481 from CSR_Tester."
+    },
+    "group-viral-healing-influence": {
+      "representative": 489,
+      "result": "pass",
+      "head": "48cbd9ba29eff8f2dd667e28e7f78fd7542ed48c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/356#issuecomment-7012381535",
+      "scope": "Stock cast 489 with hostile nonmember QAOther selected. The receiver-labelled PacketLog 1d89a1a84022 contains +25 Viral Damage 172 and +25 Healing 174, each for 300 seconds, only on QAFriend at 5 m (packet-start 8977) and CSR (9023). The 8 m and 12 m teammates and selected nonmember did not receive those records."
+    }
+  }
+}
