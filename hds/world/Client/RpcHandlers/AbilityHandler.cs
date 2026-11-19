@@ -429,6 +429,19 @@ namespace hds
                 if (shipped != null && AbilityValues.TryValue(shipped, 0, 0, out int amount) && amount > 0)
                     return (UInt16)amount;
             }
+            // Overhand Smash has one fixed physical health component and no usable legacy range.
+            if (source?.Id == 145)
+            {
+                var health = source.Modifiers.Where(m => m.Target == 108 && m.Number("WhenEnabled", -1) == 2).ToArray();
+                if (health.Length == 1)
+                {
+                    var damage = health[0];
+                    if (damage.Number("DamageType", -1) == 0 && damage.Number("DurationType", -1) == 1 &&
+                        damage.Number("ValueFunction") == 0 && damage.Number("MinValue", -1) == damage.Number("MaxValue", -2) &&
+                        AbilityValues.TryValue(damage, 0, 0, out int amount) && amount > 0)
+                        return (UInt16)amount;
+                }
+            }
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? random.Next(50, 81));
         }

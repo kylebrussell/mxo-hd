@@ -243,6 +243,8 @@ def server(i):
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i == 152:
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
+    elif i == 145:
+        parts.append('stored fixed physical base 7 before typed influence and resistance; retail scaling unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
