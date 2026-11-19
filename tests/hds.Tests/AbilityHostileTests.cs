@@ -3,7 +3,10 @@ using hds;
 
 namespace hds.Tests;
 
-[Collection("DelayedActions")]
+[CollectionDefinition("AbilityHostileWorld", DisableParallelization = true)]
+public class AbilityHostileWorldCollection { }
+
+[Collection("AbilityHostileWorld")]
 public class AbilityHostileTests
 {
     private static WorldClient Client(ushort health = 1000, ushort innerStrength = 200)
@@ -127,6 +130,147 @@ public class AbilityHostileTests
         Assert.Equal(-60, AbilityStats.Player(victim, 183));
         TimedEffects.RunDue(defense.Expires + .01);
         Assert.Equal(0, AbilityStats.Player(victim, 183));
+    }
+
+    [Fact]
+    public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
+    {
+        var caster = Client();
+        var target = Client();
+        var distant = Client();
+        var ally = Client();
+        var unseen = Client();
+        var previousClients = WorldServer.Clients;
+        var previousMobs = WorldServer.mobs;
+        WorldServer.Clients = new();
+        WorldServer.mobs = new();
+        caster.viewMan = new();
+        var players = new[] { caster, target, distant, ally, unseen };
+        for (int i = 0; i < players.Length; i++)
+        {
+            var player = players[i];
+            uint id = (uint)(77650 + i);
+            player.playerData.setCharID(id);
+            player.playerData.setEntityId(id);
+            player.playerData.pvpFlag = true;
+            player.playerInstance.OrganizationID.setValue((byte)(player == caster || player == ally ? 1 : 2));
+            double x = player == caster ? 0 : player == distant ? 301 : 299;
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 0, 0));
+            WorldServer.Clients.Add(id.ToString(), player);
+            if (player != caster && player != unseen)
+                caster.viewMan.addView(id, 1).viewCreated = true;
+        }
+
+        try
+        {
+            Assert.True(AbilityAuras.Handles(945));
+            Assert.Equal(4, AbilityAuras.IntervalOf(945));
+            Assert.Equal(946, AbilityAuras.EffectOf(945));
+            Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, target));
+            AbilityAuras.Start(caster, 945);
+            Assert.True(AbilityAuras.IsOn(caster, 945));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target)); // no ApplyAuraEffect initializer
+
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(target));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            foreach (var excluded in new[] { distant, ally, unseen })
+                Assert.Equal(200, AbilityHandler.CurrentInnerStrength(excluded));
+
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)8);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(160, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(0, AbilityHandler.CurrentInnerStrength(target));
+
+            caster.playerInstance.InnerStrengthAvailable.setValue((ushort)19);
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.False(AbilityAuras.IsOn(caster, 945));
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(19, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(100, AbilityHandler.CurrentInnerStrength(target));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            WorldServer.Clients = previousClients;
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
+    [Theory]
+    [InlineData(350, 100, 8)]
+    [InlineData(351, 129, 11)]
+    [InlineData(353, 450, 38)] // Runtime capture override; GOB total is 94.
+    public void VectorVirusDealsElevenRoundedViralTicksBeforeExpiry(ushort id, int total, int tickDamage)
+    {
+        var target = Client();
+        var effect = Assert.Single(Land(target, id));
+        Assert.Equal(total, effect.Value);
+        Assert.Equal(2, effect.DamageType);
+        Assert.Equal(2.5, effect.Interval);
+        Assert.Equal(30, effect.Seconds);
+        TimedEffects.RunDue(effect.Start + 2.49);
+        Assert.Equal(1000, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(effect.Start + 2.51);
+        Assert.Equal(1000 - tickDamage, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(effect.Expires + .01);
+        Assert.Equal(1000 - tickDamage * 11, PvpCombat.HealthOf(target));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+    }
+
+    [Theory]
+    [InlineData(947, 99, .1f)]
+    [InlineData(948, 102, .15f)]
+    public void PacketLossUsesItsStoredProcThresholdOnTheLandedEffect(ushort id, ushort stateId, float threshold)
+    {
+        Assert.True(TempMods.TryGet(id, out var effect));
+        var target = Client();
+        var holder = TimedEffects.ForPlayer(target);
+        double now = TimeUtils.GetSimTimeSeconds();
+        Assert.Empty(TimedEffects.Apply(holder, effect, now, rng: new ProcRoll(threshold)));
+        var applied = Assert.Single(TimedEffects.Apply(holder, effect, now, rng: new ProcRoll(threshold - .00001)));
+        Assert.Equal(stateId, applied.Target);
+        Assert.Equal(10, applied.Seconds);
+        TimedEffects.RunDue(applied.Expires + .01);
+        Assert.False(holder.Effects.HasParent(id));
+    }
+
+    [Fact]
+    public void FreezeSystemTwoPacifiesAndAddsTheShippedViralResistancePenalty()
+    {
+        var target = Client();
+        var effects = TimedEffects.ForPlayer(target);
+        var applied = Land(target, 352);
+        Assert.Equal(6, Assert.Single(applied, m => m.Target == TempMods.MezAbility).Seconds);
+        Assert.Equal(12, Assert.Single(applied, m => m.Target == 157).Seconds);
+        Assert.Equal(-48, AbilityStats.Player(target, 157));
+        Assert.False(ControlActions.CanUseAbilities(effects.Effects));
+        var immunity = Assert.Single(effects.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
+        TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
+        Assert.True(ControlActions.CanUseAbilities(effects.Effects));
+        Assert.True(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+        TimedEffects.RunDue(immunity.Expires + .01);
+        Assert.False(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+        Assert.Equal(0, AbilityStats.Player(target, 157));
+    }
+
+    [Fact]
+    public void DeleteUpgradeTwoRunsBothDispelCallbacksWithoutSpendingTargetInnerStrength()
+    {
+        var caster = Client();
+        var target = Client();
+        Assert.True(AbilityBuffs.Apply(target, 327));
+        Assert.True(AbilityBuffs.Apply(target, 344));
+        Land(target, 392);
+        var rng = new ZeroRoll();
+        AbilityHostile.LandedOnPlayer(caster, target, 420, rng);
+        Assert.False(AbilityBuffs.IsActive(target, 327));
+        Assert.False(AbilityBuffs.IsActive(target, 344));
+        Assert.True(TimedEffects.ForPlayer(target).Effects.HasParent(392));
+        Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target));
+        TimedEffects.RemoveParent(TimedEffects.ForPlayer(target), 392);
     }
 
     [Fact]

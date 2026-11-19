@@ -222,6 +222,8 @@ namespace hds
                 if (!Current(client, id, generation)) break;
                 PvpFlag.OnFightStarts(client, true);
                 TimedEffects.ApplyToPlayer(target, effectId, name, client);
+                if (effectId == 946) // Trojan Horse's instant Current Inner Strength modifier.
+                    AbilityHostile.LandedOnPlayer(client, target, effectId);
                 if (damage > 0)
                 {
                     ushort targetDamage = PunishingBlows.Player(client, target, damage);

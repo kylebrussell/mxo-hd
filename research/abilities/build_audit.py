@@ -317,7 +317,10 @@ def server(i):
         parts.append(f"script {mobius['chance']}% / {mobius['seconds']:g}s: incoming weapon free fire and new forced interlock gates; branch healing FX; susceptibility and positive native proof unresolved; [evidence](ABILITY-MOBIUS-FREE-ATTACK.md)")
     if r.get('aura') and not r.get('proxy_technician'):
         a = r['aura']
-        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
+        recipients = 'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'
+        if i == 945:
+            recipients = 'hostile PvP players'
+        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {recipients} in its effect radius")
         if i in (42, 61, 89, 378, 380, 485):
             parts.append('source world/life/transport gates cancel old pulse work; active recipients retain their own expiry; [evidence](ABILITY-HACKER-CALLBACKS.md)')
         if i in (378, 380):
@@ -331,7 +334,8 @@ def server(i):
     if r.get('buff_buffer'):
         parts.append('native script buffer reservation min(Value,free); baseline100+4level is OURS; refuses new upgrades until removal/expiry')
     if r.get('instant_hostile'):
-        parts.append('instant script: removable buffs (UBF0) / current IS on landing')
+        parts.append('Trojan Horse pulse: hostile players lose 20 current IS, clamped at zero' if i == 946
+                     else 'instant script: removable buffs (UBF0) / current IS on landing')
     if r.get('buff_dispel'):
         parts.append('buff dispel on landing: ' + ', '.join(f"{m['callback']} {m['chance'] * 100:g}% proc" for m in r['buff_dispel']) + ' (existing server RNG policy; native sequence unverified)')
     if r['grants']:

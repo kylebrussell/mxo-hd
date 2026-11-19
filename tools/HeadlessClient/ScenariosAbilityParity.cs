@@ -76,6 +76,33 @@ public static partial class Scenarios
         Check.Equal(0, healer.World.Problems.Count, "Support protocol problems");
     }
 
+    private static async Task AbilityTrojanHorse(ScenarioContext context)
+    {
+        var caster = await context.AddPlayerAsync(NearNpc("TrojanCaster") with
+            { Organization = 1, Level = 50, InnerStrength = 2000, MaxInnerStrength = 2000 });
+        await LoadAbilitiesAsync(context, caster, 945);
+        var players = await context.AddPlayersInWorldAsync(
+            NearNpc("TrojanInside", 200) with { Organization = 2, Level = 50, InnerStrength = 2000, MaxInnerStrength = 2000 },
+            NearNpc("TrojanOutside", 400) with { Organization = 2, Level = 50, InnerStrength = 2000, MaxInnerStrength = 2000 },
+            NearNpc("TrojanFriendly", 100) with { Organization = 1, Level = 50, InnerStrength = 2000, MaxInnerStrength = 2000 });
+        await caster.EnterWorldAsync();
+        foreach (var player in players)
+            await caster.WaitForViewNamedAsync(player.Handle);
+        foreach (var player in players.Append(caster))
+        {
+            player.SendChat("?pvpflag on");
+            await player.WaitForViewUpdateAsync(2, OwnPvpFlagOn);
+        }
+
+        Cast(caster, 945);
+        await caster.WaitForRpcAsync("80 ac b1 03");
+        await players[0].WaitForViewUpdateAsync(2, "02 80 80 80 10 bc 07", TimeSpan.FromSeconds(10));
+        string log = context.Server.DebugLog();
+        Check.That(log.Contains("[HOSTILE] 946 IS 2000 -> 1980 on TrojanInside"), "Trojan Horse drains the hostile in radius");
+        Check.That(!log.Contains("on TrojanOutside") && !log.Contains("on TrojanFriendly"),
+            "No Trojan damage for friendly or out-of-radius actors");
+    }
+
     private static async Task AbilityParityControls(ScenarioContext context)
     {
         // Paralyzing Throw uses Spy Style. The viral casts use 80ae after login, with their owned ancestors loaded.
