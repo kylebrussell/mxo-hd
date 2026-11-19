@@ -33,7 +33,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         {
             "Level 19, rank 15, 44/50 memory. With the pistol equipped, use ordinary Close Combat on QAEnemy, reselect Handguns and use Disarming Shot (126). Capture the ordinary landed interlock move and its captured Ballistic Accuracy penalty of -34..-18 for 10 seconds. The shipped attached base is ballistic 11.",
             "Leave the fight, unequip the pistol, and use ordinary Close Combat on Melee Dummy. Reselect Aikido and use Iron Guard (139): physical base 12 and both caster-only +10 defense records for 12 seconds.",
-            "Reselect Kung-Fu, choose Grab and wait for the actual Off Balance (04) target condition. Use Guard Breaker (138) while the slot enables: physical base 36 and target -10 melee defense for 15 seconds. Save the actual outgoing stock requests and landed round records."
+            "For a Guard Breaker-only stock retest use ability-parity-starter-guard-breaker, which starts unarmed with an isolated NPC target and a sixty-second Off Balance setup."
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "126,138,139", ["NativeCloseableRows"] = 0 },
         testMobFixture: CombatFixtureLoadout.MeleeCsv);
@@ -88,7 +88,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
     private static string Le(ushort id) => WireFormat.ToHex(BitConverter.GetBytes(id));
     private static string Handle(ViewCreation target) => WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(target.ViewId, target.SpawnId)));
 
-    private static async Task Open(HeadlessPlayer caster, ViewCreation target)
+    internal static async Task Open(HeadlessPlayer caster, ViewCreation target)
     {
         string handle = Handle(target);
         caster.SkipReceived();
@@ -106,7 +106,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         await caster.WaitForRpcAsync($"46 {Handle(target)} 00");
     }
 
-    private static async Task Select(HeadlessPlayer caster, ViewCreation target, ushort style)
+    internal static async Task Select(HeadlessPlayer caster, ViewCreation target, ushort style)
     {
         int cursor = caster.World.ViewSnapshot().Count;
         var actual = BytePattern.Parse($"02 00 02 80 80 80 80 80 10 {Le(style)} 00 00");
@@ -118,7 +118,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
     private static void Use(HeadlessPlayer caster, ViewCreation target, ushort id) =>
         caster.SendRpc(new AbilityUseRecord(id, DuelPackets.Handle(target.ViewId, target.SpawnId), 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
 
-    private static async Task Land(HeadlessPlayer caster, ViewCreation target, ushort id, ServerInstance server,
+    internal static async Task Land(HeadlessPlayer caster, ViewCreation target, ushort id, ServerInstance server,
         int damage, string animation, bool pvp, bool offBalance = false)
     {
         string name = AbilityCatalog.Find(id).Name;
@@ -148,9 +148,9 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         }
     }
 
-    private static async Task AwaitOffBalance(HeadlessPlayer caster, ViewCreation target)
+    internal static async Task AwaitOffBalance(HeadlessPlayer caster, ViewCreation target, int? start = null)
     {
-        int cursor = caster.World.ViewSnapshot().Count;
+        int cursor = start ?? caster.World.ViewSnapshot().Count;
         byte[] prefix = WireFormat.FromHex($"{Le(target.ViewId)} 04 80 80 80 80 80 80 02");
         const uint condition = CombatInterlock.InCombatFlag | 0x04;
         await caster.WaitUntilAsync(() => caster.World.ViewSnapshot().Skip(cursor).Any(packet =>
@@ -159,7 +159,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
             int offset = index + prefix.Length;
             return index >= 0 && offset + sizeof(uint) <= packet.Length &&
                 (BitConverter.ToUInt32(packet, offset) & condition) == condition;
-        }), "natural Grab sets Off Balance 04 on the living dummy", TimeSpan.FromSeconds(100));
+        }), "target view shows active interlock and Off Balance 04", TimeSpan.FromSeconds(start.HasValue ? 10 : 100));
     }
 
     private static async Task<int> Modifier(HeadlessPlayer actor, ushort id, ushort stat, int value, int duration,
