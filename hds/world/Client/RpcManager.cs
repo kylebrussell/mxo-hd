@@ -69,6 +69,7 @@ namespace hds{
 
                 case (int)RPCRequestHeader.CLIENT_COMBAT_SELECTION:
                     CombatSelection.Process(Store.currentClient, rpcData);
+                    FreeAttackBootstrap.StyleSelection(Store.currentClient, rpcData);
                     break;
                 case (int)RPCRequestHeader.CLIENT_MARTIAL_ART:
                     CombatSelection.ProcessMartialArt(Store.currentClient, rpcData);

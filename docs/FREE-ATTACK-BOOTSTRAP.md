@@ -16,20 +16,20 @@ Margin character data type 05 sends the saved inventory before world entry. The 
 
 The native control `3f35506baa90` reproduced the full chain. A genuine grant sent `5e 06 00 05 0a 00 00 00 00 00 10 01` at PacketLog line 1455, and the client sent `3f 06 00 10 00 00 00` at line 1460. The top radial choice then sent `3d 01`, `41 04 00 02 00`, and `40 04 00 02 00 00 06` together at line 1586. The shot landed for 273.
 
-## Owned weapon experiments
+## Owned weapons
 
 Ordinary gun loot now uses descriptor `10`, also present in retail tutorial loot `crashover2k_002_create_mxoemu_character2.log.txt` lines 19367 and 19376. The vendor, tutorial-specific grant and existing dev grant already send their own captured item-add forms.
 
-| Disposable mode | Trigger and ordered server inventory records |
+| Path | Trigger and ordered server inventory records |
 | --- | --- |
-| `free-attack-bootstrap` | After initial fists and `0c 01`, a held gun is removed from the client's hand slot by `5f 69 00 01`, added with ordinary `5e` to a genuinely empty bag slot, then moved back to 105 with ordinary `65`. A bag-only gun uses `5f` followed by `5e` for its saved slot. |
-| `free-attack-equip` | An ordinary equip while Free Attack reports fists queues `5f` and `5e` for the source bag slot before the ordinary `65` moves. Normal EquippedItemID publication follows. |
+| Ordinary equip, including `free-attack-equip` | After world entry, equipping a single gun while Free Attack reports fists queues `5f` and `5e` for the source bag slot before the normal `65` moves and EquippedItemID update. In the stock run the client selected slot 11 and then slot 105 with kind 16. Radial Fire! produced `41` and a 159 damage shot. The rifle and displaced gun each appeared once. |
+| Disposable `free-attack-bootstrap` | Wait for initial fists, `0c 01`, and the first in-world `3e`. Send the held gun's `5f` and bag `5e` after the setup batch. Return it to slot 105 with `65` on a kind-16 report or after two seconds. A bag-only gun uses `5f` followed by `5e` for its saved slot. |
 
-The login sequence is a UI refresh for the same inventory item. The original Margin snapshot, persisted slot and inventory row ID remain intact. The intermediate bag slot exists only in the three ordered messages. A client report for that slot can resolve to zero before the expected follow-up `3f 69 00 10 00 00 00` resolves the actual hand item. The equip sequence uses existing database moves. Both compositions need native verification, including the hand-slot removal, selection-follow, and final paper doll state.
+The stock equip proof and the earlier login failure are recorded together. The earlier login sent the bag addition and immediate move-back in the same refresh and received no new selection. [PR332 native result](https://github.com/kylebrussell/mxo-hd/pull/332#issuecomment-7007468901)
 
-Headless replay checks exact packet order, an empty staging slot, the held and bag GOIDs, unchanged login inventory rows, one refresh per session, and isolation from a second client with an existing selection. The equip replay checks the original rifle row in the hand slot, the previous gun displaced to the bag, and the resulting own-view equipped attribute. Replays provide the client selection and Fire! requests explicitly to check the server's shot path.
+The delayed login test keeps the discovery slot visible until the client can select it. The Margin snapshot and persisted inventory stay intact. A temporary bag-slot report can resolve to zero before the follow-up hand-slot report resolves the actual gun. The replay checks both orders of the readiness reports, exactly one hand restoration on reply or timeout, and the original inventory row identities. The equip replay runs with regular production settings and checks that an existing Free Attack choice goes through the ordinary moves. Both replays provide the client requests explicitly.
 
 ## Native acceptance
 
-1. Run `free-attack-bootstrap` with a fresh client process. Capture initial fists and loading-complete, then the ordered `5f`, `5e`, and `65`. Check that the revolver remains equipped and there is no extra gun in the bag. Record any automatic `3f`, especially slot 105 kind 16. Right-click Melee Dummy and choose Fire!. Capture `41`, any companion `40`, and the ranged shot.
-2. Run `free-attack-equip` with another fresh client process. With fists showing, use `?combatdepth fixture-weapon rifle`. Capture the bag refresh, both moves, and EquippedItemID. Check that the client selects slot 105, the rifle is in hand, the previous gun appears once in the bag, and radial Fire! sends `41`.
+1. Run `free-attack-bootstrap` with a fresh client process. Capture initial fists, loading-complete, and the first `3e`. Then capture the delayed bag addition, any automatic bag `3f`, and the move back to 105. Check the final equipped item and inventory, including if the two-second timeout is used. Right-click Melee Dummy and choose Fire!. Capture final `3f 69` kind 16, `41`, and the shot.
+2. Run `free-attack-equip` with another fresh client process. With fists showing, use `?combatdepth fixture-weapon rifle`. The mode uses the production equip path. Capture the bag refresh, both moves, and EquippedItemID. Check that the client selects slot 105, the rifle is in hand, the previous gun appears once in the bag, and radial Fire! sends `41`.

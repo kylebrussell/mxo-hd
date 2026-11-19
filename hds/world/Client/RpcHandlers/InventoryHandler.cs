@@ -374,6 +374,7 @@ namespace hds
             ServerPackets pak = new ServerPackets();
 
             WorldClient client = Store.currentClient;
+            bool refresh = FreeAttackBootstrap.PrepareEquip(client, sourceSlot, weaponGoid);
             UInt16? displacedSlot = null;
             if (Store.dbManager.WorldDbHandler.IsSlotinUseByItem(WeaponSlot))
             {
@@ -384,7 +385,7 @@ namespace hds
             Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot, WeaponSlot, charId);
             lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
             {
-                FreeAttackBootstrap.BeforeEquip(client, sourceSlot, weaponGoid);
+                if (refresh) FreeAttackBootstrap.RefreshEquip(client, sourceSlot, weaponGoid);
                 if (displacedSlot.HasValue)
                     pak.sendInventoryItemMove(WeaponSlot, displacedSlot.Value, client);
                 pak.sendInventoryItemMove(sourceSlot, WeaponSlot, client);
