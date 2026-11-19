@@ -64,7 +64,7 @@ namespace hds
                 return null;
             }
             ClientView view = client.viewMan.getViewById(viewId);
-            if (view == null || !view.viewCreated)
+            if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted)
             {
                 return null;
             }

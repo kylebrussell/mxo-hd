@@ -655,6 +655,45 @@ public class AbilityScaledBuffTests
         Assert.Equal((ushort)20, AbilityCosts.Effective(caster, 315));
     }
 
+    [Theory]
+    [InlineData(469, 1088)]
+    [InlineData(236, 1097)]
+    public void HackerParentsPublishTheGrantedActionOnlyWhileLoaded(ushort parent, ushort child)
+    {
+        var caster = Client(50);
+        caster.playerData.setDistrictId(1);
+        caster.playerData.setOnWorld(true);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(caster, new WorldSendFence());
+        AbilityGrantRegistration.LoadingComplete(caster, new byte[] { 1 });
+        AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(caster, child));
+        byte[] add = AbilityGrantRegistration.Record(new(parent, child, 0), false);
+        byte[][] Packets() => caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(message => message.content[1..]).ToArray();
+        Assert.Single(Packets(), record => record.SequenceEqual(add));
+        if (parent == 469)
+            Assert.Equal(10.5f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 10), 3);
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(caster, child));
+        byte[] remove = AbilityGrantRegistration.Record(new(parent, child, 0), true);
+        Assert.Single(Packets(), record => record.SequenceEqual(remove));
+        Assert.Equal(10, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 10));
+    }
+
+    [Fact]
+    public void CorpsmanUpgradeFeedsCapturedConcentrationHealingAndRadiusThenRestoresTheBaseline()
+    {
+        var caster = Client(50);
+        AbilitySupport.Land(caster, 1092, 90);
+        Assert.Equal(7, AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration));
+        Assert.Equal(6, AbilityStats.Influence(caster, 174));
+        Assert.Equal(27, AbilityHealing.Amount(caster, caster, 381));
+        Assert.Equal(6 * (1 + (double)0.1f), AbilityRadius.Metres(caster, 381));
+        Assert.True(AbilityBuffs.Remove(caster, 1092));
+        Assert.Equal(26, AbilityHealing.Amount(caster, caster, 381));
+        Assert.Equal(6, AbilityRadius.Metres(caster, 381));
+    }
+
     [Fact]
     public void DirectCostBuffAndDebuffAffectOrdinaryAbilitySpending()
     {
