@@ -97,6 +97,24 @@ public class CombatInsightEngagementTests
         Assert.Equal(baseline.Evade, removed.Evade);
     }
 
+    [Theory]
+    [InlineData(294, 80)]
+    [InlineData(1120, 10)]
+    [InlineData(1121, 10)]
+    public void OperativeEvasionAffectsTheLiveContestAndReturnsToBaseline(ushort ability, int bonus)
+    {
+        using var fixture = new Fixture();
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var before));
+        Assert.True(AbilityBuffs.Apply(fixture.Target, ability));
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var active));
+        Assert.Equal(before.Evade + bonus, active.Evade);
+        Assert.Equal(before.Force, active.Force);
+
+        Assert.True(AbilityBuffs.Remove(fixture.Target, ability));
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var restored));
+        Assert.Equal(before.Evade, restored.Evade);
+    }
+
     [Theory][InlineData(0)][InlineData(1)][InlineData(2)][InlineData(3)][InlineData(4)][InlineData(5)][InlineData(6)]
     public void CapturedCurrentScopeRejectsOwnerWorldLifeResetAndViewReplacement(int change)
     {

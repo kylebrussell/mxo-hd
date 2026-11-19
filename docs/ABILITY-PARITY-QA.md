@@ -110,3 +110,16 @@ Use the extended `ability-sweep-martial-artist` fixture and add these actions fr
 | Interlock follow-ups | Reselect Kung-Fu once interlocked. Use Extreme Falling Kick (429) over successive eligible rounds to observe its 10% proc, four-second Stun and separate four-second immunity. Switch to Aikido for Iron Guard (139) and verify +10 melee/ballistic defense applied to the caster for 12 seconds on landing. |
 
 This sweep can close ten unique rows after native review (136, 137, 257, 258, 431, 861, 862, 868, 1062 and 1063). The interlock checks provide scoped evidence for their effects. Damage scaling and unresolved admission or animation checks remain open. The stock level-50 cap makes the level-99 Zen Master parent (871) inaccessible. Only the forced-level fixture ran its internal child (872), and direct activation is refused. The child remains partial while retail zero-amount restore chat at the IS cap is unverified. [Zen Master native evidence](https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433)
+## Operative batch-two sweep
+
+Use `ability-parity-operative-sweep-2` on CSR110. Four rows have only stock-client checks outstanding. Compare Improved Invisibility (363) loaded and unloaded at a Hardline, observing all three ranked passive records and visible Status where available. With Operative Target selected, activate Knife Thrower Upgrade (1120) and Master Knife Thrower Upgrade (1121) and record the caster modifiers and replacement. Activate Shifty Technique (294) and capture its +80 Combat Evasion and 30-second expiry. Capture the outgoing stock requests and original add/off records. Master Assassin Upgrade (1123) is an additional sample with a separate stealth contest check.
+
+| Executable review | Batch-two IDs |
+|---|---|
+| Evasion and typed class upgrades | 294, 1120, 1121, 1123 |
+| Loaded grants and passive inputs | 113, 338, 339, 363, 367, 384, 389 |
+| Landed controls, independent proc draws and conditional state callbacks | 287, 340, 347, 348, 364, 386, 1130, 1132, 1135 |
+| Typed damage inputs, timed accuracy, opener policies and periodic callbacks | 289, 295, 341, 385, 388, 1134 |
+| Stealth admission, delayed callbacks and resource cleanup | 365, 366, 368, 1118 |
+
+Throat Cutting Throw (340) now draws separately for Dazed and Off-Balance. Existing conditional Powerless still checks the target's Staggered state at initialization. Master Shadow (1118) uses the 25-point drain and starts its separately stored 30-second recast when the state ends. Vanish (368) aborts delayed work attached to an obsolete life or world. Canny Strike's base value function, Smoke Bomb's area and callback, Enrage Duration, linked Contested Withdraw, native stealth presentation and remaining hit or base damage questions stay open.
