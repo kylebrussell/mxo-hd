@@ -1,0 +1,244 @@
+{
+  "abilities": {
+    "1": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1 Adrenaline Booster uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 181 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        },
+        "behavior-tests": {
+          "source": "GOB 1 Adrenaline Booster uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 181 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        }
+      }
+    },
+    "5": {
+      "checks": {
+        "stats": {
+          "source": "GOB 5 Calm Mind, Calm Body uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 1033 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        },
+        "behavior-tests": {
+          "source": "GOB 5 Calm Mind, Calm Body uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 1033 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        }
+      }
+    },
+    "6": {
+      "checks": {
+        "stats": {
+          "source": "GOB 6 Consistent Technique uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 180 value 235 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        },
+        "behavior-tests": {
+          "source": "GOB 6 Consistent Technique uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 180 value 235 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        }
+      }
+    },
+    "8": {
+      "checks": {
+        "stats": {
+          "source": "GOB 8 Empty Mind uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 157 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        },
+        "behavior-tests": {
+          "source": "GOB 8 Empty Mind uses function 3 and scale 1.5 for 20 s. Consistent Technique has a retained retail value override.",
+          "runtime": "AbilityScaledBuffs or AbilityBuffs.Retail supplies the active record. AbilityStats and TypedAbilityResistance read the matching resistance.",
+          "test": "AbilityScaledBuffTests.AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires checks stat 157 value 30 at character level 20, typed damage reduction, other types, and exact lifetime boundaries."
+        }
+      }
+    },
+    "10": {
+      "checks": {
+        "stats": {
+          "source": "GOB 10 targets Ballistic Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1010, value 51, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        },
+        "behavior-tests": {
+          "source": "GOB 10 targets Ballistic Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1010, value 51, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        }
+      }
+    },
+    "1099": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1099 targets Melee Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1009, value 52, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        },
+        "behavior-tests": {
+          "source": "GOB 1099 targets Melee Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1009, value 52, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        }
+      }
+    },
+    "1100": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1100 targets Viral Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 183, value 77, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        },
+        "behavior-tests": {
+          "source": "GOB 1100 targets Viral Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 183, value 77, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        }
+      }
+    },
+    "1101": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1101 targets Thrown Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1011, value 47, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        },
+        "behavior-tests": {
+          "source": "GOB 1101 targets Thrown Defense and uses StackingType 40. Captured records supply values for 10/1099/1100. Function 2 supplies 1101 from learned rank.",
+          "runtime": "AbilityBuffs and AbilityScaledBuffs apply the corresponding family record. AbilityStats.SpecialDefense delivers it to the opposed attack type.",
+          "test": "AbilityScaledBuffTests.HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember checks stat 1011, value 47, typed contest and removal. awakened-hyper-defenses replays a signed removal and add for each switch."
+        }
+      }
+    },
+    "2": {
+      "checks": {
+        "stats": {
+          "source": "GOB 2 function-2 Stealth Detection scale .25 and Self Defense grant.",
+          "runtime": "AbilityPassives.SetLoaded supplies 204 and Stealth.AwarenessOf consumes it.",
+          "test": "AbilityScaledBuffTests.AwakenedGrantAndDetectionFollowTheLoadedRankAndUnload checks the rank-20 and rank-50 contributions and restored base."
+        }
+      }
+    },
+    "13": {
+      "checks": {
+        "stats": {
+          "source": "GOB 13 function-2 Melee Damage scale 2 and five-second drain.",
+          "runtime": "AbilityScaledBuffs.TryToggle and AbilityStats.ScaleTypedAbilityDamage consume the learned-rank contribution.",
+          "test": "AbilityScaledBuffTests.HyperStrengthFeedsPhysicalInfluenceOnlyWhileEnabled checks +40, physical input 100 to 139 with the existing binary32 factor and removal."
+        }
+      }
+    },
+    "16": {
+      "checks": {
+        "script": {
+          "source": "GOB 16 names ISDrainWithAbilityDeactivation and stores 1 IS per 1 s.",
+          "runtime": "AbilityBuffs schedules the drain and uses the current activation as the termination owner.",
+          "test": "AbilityScaledBuffTests.SourcedTogglesDrainAndDeactivateOnShortfall checks equality, shortfall and the stale callback."
+        }
+      }
+    },
+    "196": {
+      "checks": {
+        "stats": {
+          "source": "GOB 196 stores both resistances at 5 for 10 s and OnHealthReduceHealProc with a sampled 10..19 heal.",
+          "runtime": "AbilityHealthCallbacks applies the source-owned sample and AbilityStats.Toughness consumes both resistance records.",
+          "test": "AbilityHealthCallbackTests.IgnorePainSnapshotsOneRollAndHandlesExternalHealingWithoutRecursiveFullHeal verifies both resistance consumers, a real damage and external heal; ExpiryAndOldGenerationCannotFireOrRemoveARefreshedProc covers expiry and replacement."
+        },
+        "consumer": {
+          "source": "GOB 196 stores both resistances at 5 for 10 s and OnHealthReduceHealProc with a sampled 10..19 heal.",
+          "runtime": "AbilityHealthCallbacks applies the source-owned sample and AbilityStats.Toughness consumes both resistance records.",
+          "test": "AbilityHealthCallbackTests.IgnorePainSnapshotsOneRollAndHandlesExternalHealingWithoutRecursiveFullHeal verifies both resistance consumers, a real damage and external heal; ExpiryAndOldGenerationCannotFireOrRemoveARefreshedProc covers expiry and replacement."
+        },
+        "script": {
+          "source": "GOB 196 stores both resistances at 5 for 10 s and OnHealthReduceHealProc with a sampled 10..19 heal.",
+          "runtime": "AbilityHealthCallbacks applies the source-owned sample and AbilityStats.Toughness consumes both resistance records.",
+          "test": "AbilityHealthCallbackTests.IgnorePainSnapshotsOneRollAndHandlesExternalHealingWithoutRecursiveFullHeal verifies both resistance consumers, a real damage and external heal; ExpiryAndOldGenerationCannotFireOrRemoveARefreshedProc covers expiry and replacement."
+        },
+        "behavior-tests": {
+          "source": "GOB 196 stores both resistances at 5 for 10 s and OnHealthReduceHealProc with a sampled 10..19 heal.",
+          "runtime": "AbilityHealthCallbacks applies the source-owned sample and AbilityStats.Toughness consumes both resistance records.",
+          "test": "AbilityHealthCallbackTests.IgnorePainSnapshotsOneRollAndHandlesExternalHealingWithoutRecursiveFullHeal verifies both resistance consumers, a real damage and external heal; ExpiryAndOldGenerationCannotFireOrRemoveARefreshedProc covers expiry and replacement."
+        }
+      }
+    },
+    "197": {
+      "checks": {
+        "stats": {
+          "source": "GOB 197 stores a -10 Melee Accuracy modifier for 20 s.",
+          "runtime": "TempMods and TimedEffects apply it; AbilityStats.Attack uses it only for melee.",
+          "test": "AbilityScaledBuffTests.HeadButtLowersMeleeAccuracyUntilItsStoredExpiry checks both attack categories and expiry."
+        }
+      }
+    },
+    "198": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB names the Self Defense Cheap Shot move 285.",
+          "runtime": "CombatAnimations.Special selects it and the ordinary interlock emits its round entry.",
+          "test": "awakened-cheap-shot enters a live interlock, queues 198 and finds move 285 in the delivered round."
+        }
+      }
+    },
+    "215": {
+      "checks": {
+        "script": {
+          "source": "LocateDataNode_DirectObject in ability/spy/misc.py reads the selected locator type and starts search FX.",
+          "runtime": "UtilityAbilities selects the owned tool with the actual loaded prerequisite. DataMining publishes and expires the handheld search.",
+          "test": "data-mining-base-and-margin checks the canonical 215 activation, ten-second dismissal, replacement and tool-prerequisite refusal."
+        }
+      }
+    },
+    "540": {
+      "checks": {
+        "behavior-tests": {
+          "source": "LocateDataNode_DirectObject passes the loaded See Luggables flag for goggles. Utility object GOB 596 supplies the light object.",
+          "runtime": "DataMining adds the same-floor aura marker and removes it on pickup or loss of the tool.",
+          "test": "data-mining-locator checks the 80 cd aura addition, pickup removal and cleanup after losing the goggles."
+        }
+      }
+    },
+    "541": {
+      "checks": {
+        "behavior-tests": {
+          "source": "LocateDataNode_DirectObject passes the loaded Detect Luggables flag for handheld locators.",
+          "runtime": "DataMining selects the nearby light object for a yellow minimap ping.",
+          "test": "data-mining-locator places a node and light luggable, checks the handheld yellow position and clears it at stop."
+        }
+      }
+    },
+    "621": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 621 refers to base 215 and the tool definitions name their loaded prerequisite.",
+          "runtime": "UtilityAbilities keeps a distinct mastery activation ID. DataMining owns FX, search and cleanup.",
+          "test": "data-mining-locator and data-mining-base-and-margin verify distinct activation, tools, markers, expiry, pickup and unload refusal."
+        }
+      }
+    },
+    "628": {
+      "checks": {
+        "stats": {
+          "source": "GOB 628 function 2 adds 5 plus .5 times learned rank to Concentration 564.",
+          "runtime": "AbilityPassives contributes the total for interruptible AbilityCastInterrupt requests.",
+          "test": "AbilityCastInterruptTests.LoadedConcentrateChangesActualDamageOutcomeAtSame85Roll measures real hostile damage with and without the loaded passive under the same roll."
+        }
+      }
+    },
+    "1149": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1149 and the Desperation callback read current and maximum health once at application.",
+          "runtime": "AbilityDesperation snapshots the initiative modifier. InterlockInitiative reads it for ordinary round attack.",
+          "test": "InterlockInitiativeTests.RealHalfHealthSnapshotChangesInterlockRollsAndExpiryRestoresThem verifies actual interlock rolls, no resample after healing and restore on expiry. AbilityDesperationTests exercises the snapshot boundaries."
+        },
+        "script": {
+          "source": "GOB 1149 and the Desperation callback read current and maximum health once at application.",
+          "runtime": "AbilityDesperation snapshots the initiative modifier. InterlockInitiative reads it for ordinary round attack.",
+          "test": "InterlockInitiativeTests.RealHalfHealthSnapshotChangesInterlockRollsAndExpiryRestoresThem verifies actual interlock rolls, no resample after healing and restore on expiry. AbilityDesperationTests exercises the snapshot boundaries."
+        }
+      }
+    }
+  }
+}

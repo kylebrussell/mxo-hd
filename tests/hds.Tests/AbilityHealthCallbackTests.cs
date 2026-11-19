@@ -149,6 +149,8 @@ public class AbilityHealthCallbackTests
         try
         {
             AbilityHealthCallbacks.Random15=()=>32767;Assert.True(AbilityBuffs.Apply(c,196));
+            Assert.Equal(5, AbilityStats.Toughness(c, ranged: false));
+            Assert.Equal(5, AbilityStats.Toughness(c, ranged: true));
             AbilityHealthCallbacks.Random15=()=>0;
             Assert.False(PvpCombat.Damage(c,10));Assert.Equal(109,PvpCombat.HealthOf(c));
             AbilityHandler.HealSelf(c,10);Assert.Equal(138,PvpCombat.HealthOf(c)); // external heal plus one stored19

@@ -17,6 +17,125 @@ public class AbilityScaledBuffTests
     }
 
     [Theory]
+    [InlineData(1, 181, 30, 1, 254)]
+    [InlineData(5, 1033, 30, 7, 279)]
+    [InlineData(6, 180, 235, 0, 198)]
+    [InlineData(8, 157, 30, 2, 330)]
+    public void AwakenedResistanceChangesOnlyTheMatchingDamageAndExpires(
+        ushort ability, ushort stat, int magnitude, int type, ushort attack)
+    {
+        var defender = Client(20);
+        var attacker = Client(20);
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(AbilityBuffs.Apply(defender, ability));
+        Assert.Equal(magnitude, AbilityBuffs.Total(defender, stat));
+        Assert.Equal(20f, defender.playerData.activeBuffs[ability].Definition.Seconds);
+        int effective = AbilityStats.Player(defender, stat);
+        Assert.True(effective > 0);
+        if (type < 2)
+        {
+            Assert.Equal(effective, AbilityStats.Toughness(defender, ranged: type == 1));
+            Assert.Equal(0, AbilityStats.Toughness(defender, ranged: type != 1));
+        }
+        Assert.InRange(TypedAbilityResistance.Player(attacker, defender, attack, 200, type), (ushort)1, (ushort)199);
+        Assert.Equal(200, TypedAbilityResistance.Player(attacker, defender, attack, 200, (type + 1) % 3));
+        TimedEffects.RunDue(start + 19);
+        Assert.True(AbilityBuffs.IsActive(defender, ability));
+        TimedEffects.RunDue(start + 21);
+        Assert.False(AbilityBuffs.IsActive(defender, ability));
+        Assert.Equal(200, TypedAbilityResistance.Player(attacker, defender, attack, 200, type));
+    }
+
+    [Theory]
+    [InlineData(10, 1010, 51, 254)]
+    [InlineData(1099, 1009, 52, 198)]
+    [InlineData(1100, 183, 77, 330)]
+    [InlineData(1101, 1011, 47, 279)]
+    public void HyperDefensesFeedTheirOwnContestAndRemoveTheOldFamilyMember(
+        ushort ability, ushort stat, int captured, ushort opposing)
+    {
+        var defender = Client(50);
+        AbilityPassives.SetLoaded(defender, new[] { (ability, (ushort)50) }, true);
+        var move = new AbilityItem();
+        move.setAbilityID(opposing);
+        Assert.Equal(0, AbilityStats.SpecialDefense(defender, move));
+        Assert.True(AbilityBuffs.Apply(defender, ability));
+        Assert.Equal(captured, AbilityBuffs.Total(defender, stat));
+        Assert.Equal(AbilityStats.Player(defender, stat), AbilityStats.SpecialDefense(defender, move));
+        Assert.True(AbilityStats.SpecialDefense(defender, move) > 0);
+
+        ushort replacement = ability == 1099 ? (ushort)10 : (ushort)1099;
+        Assert.True(AbilityBuffs.Apply(defender, replacement));
+        Assert.False(AbilityBuffs.IsActive(defender, ability));
+        Assert.Equal(0, AbilityStats.SpecialDefense(defender, move));
+        AbilityBuffs.Remove(defender, replacement);
+    }
+
+    [Fact]
+    public void DuelistLinksDefensePowerlessDurationAndUpgrade()
+    {
+        var fighter = Client(50);
+        int baseline = InterlockInitiative.Attack(fighter, null);
+        AbilityPassives.SetLoaded(fighter, new[] { ((ushort)497, (ushort)50) }, true);
+        Assert.Equal(2, AbilityPassives.Total(fighter, 1046));
+        Assert.Equal(2, AbilityStats.Defense(fighter, ranged: true));
+        Assert.Equal(10.2f, AbilityControlDurations.Scale(fighter, TempMods.PowerlessAbility, 10f), 3);
+        Assert.True(AbilityPassives.IsLoaded(fighter, 1076));
+
+        AbilityPassives.SetLoaded(fighter, Array.Empty<(ushort, ushort)>(), true);
+        Assert.Equal(baseline, InterlockInitiative.Attack(fighter, null));
+        Assert.Equal(0, AbilityStats.Defense(fighter, ranged: true));
+        Assert.Equal(10f, AbilityControlDurations.Scale(fighter, TempMods.PowerlessAbility, 10f));
+        Assert.False(AbilityPassives.IsLoaded(fighter, 1076));
+    }
+
+    [Fact]
+    public void HyperStrengthFeedsPhysicalInfluenceOnlyWhileEnabled()
+    {
+        var actor = Client(50);
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)13, (ushort)20) }, true);
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(actor, 0, 100));
+        Assert.True(AbilityBuffs.Apply(actor, 13));
+        Assert.Equal(40, AbilityBuffs.Total(actor, 159));
+        Assert.Equal(139, AbilityStats.ScaleTypedAbilityDamage(actor, 0, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(actor, 1, 100));
+        Assert.True(AbilityBuffs.Remove(actor, 13));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(actor, 0, 100));
+    }
+
+    [Fact]
+    public void HeadButtLowersMeleeAccuracyUntilItsStoredExpiry()
+    {
+        var attacker = Client(50);
+        var target = Client(50);
+        Assert.True(TempMods.TryGet(197, out var effect));
+        double start = TimeUtils.GetSimTimeSeconds();
+        var active = Assert.Single(TimedEffects.Apply(TimedEffects.ForPlayer(target), effect, start, attacker, "Head Butt"));
+        Assert.Equal(20f, active.Seconds);
+        Assert.Equal(-10, AbilityStats.Attack(target, ranged: false));
+        Assert.Equal(0, AbilityStats.Attack(target, ranged: true));
+        TimedEffects.RunDue(active.Expires + 0.01);
+        Assert.Equal(0, AbilityStats.Attack(target, ranged: false));
+    }
+
+    [Fact]
+    public void AwakenedGrantAndDetectionFollowTheLoadedRankAndUnload()
+    {
+        var actor = Client(50);
+        actor.playerInstance.StealthAwareness.setValue((byte)1);
+        Assert.Equal(1, Stealth.AwarenessOf(actor));
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)2, (ushort)20) }, true);
+        Assert.Equal(20, AbilityPassives.Level(actor, 17));
+        Assert.Equal(6, Stealth.AwarenessOf(actor));
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)2, (ushort)50) }, true);
+        Assert.Equal(50, AbilityPassives.Level(actor, 17));
+        Assert.Equal(13, Stealth.AwarenessOf(actor));
+        AbilityPassives.SetLoaded(actor, Array.Empty<(ushort, ushort)>(), true);
+        Assert.False(AbilityPassives.IsLoaded(actor, 17));
+        Assert.Equal(1, Stealth.AwarenessOf(actor));
+    }
+
+    [Theory]
     [InlineData(124,20,171,10)] [InlineData(170,50,174,25)] [InlineData(417,20,106,200)]
     [InlineData(173,20,522,25)] [InlineData(173,50,522,26)] [InlineData(421,50,1009,47)]
     public void TimedTemplatesUseCharacterLevelNativePrecisionAndPositiveCaps(ushort ability,int level,ushort stat,int value)
@@ -196,15 +315,21 @@ public class AbilityScaledBuffTests
     public void TacticalTogglesReachCombatAndRejectTheirScriptConflict()
     {
         var c=Client(20);
+        ushort RoundDamage() => CombatCalculator.CloseCombatDamage(
+            new Random(731), 20, 20, CombatTactic.Speed, out _, CombatTactics.Type(c));
+        ushort normal = RoundDamage();
         Assert.True(AbilityBuffs.Apply(c,15));
         Assert.Equal(CombatTacticType.Precise,CombatTactics.Type(c));
+        Assert.True(RoundDamage() < normal);
         Assert.False(AbilityBuffs.Apply(c,9));
         Assert.True(AbilityBuffs.Remove(c,15));
         Assert.Equal(CombatTacticType.Normal,CombatTactics.Type(c));
         Assert.True(AbilityBuffs.Apply(c,9));
         Assert.Equal(CombatTacticType.Energized,CombatTactics.Type(c));
+        Assert.True(RoundDamage() > normal);
         Assert.False(AbilityBuffs.Apply(c,15));
         Assert.True(AbilityBuffs.Remove(c,9));
+        Assert.Equal(normal, RoundDamage());
     }
 
     [Fact]
