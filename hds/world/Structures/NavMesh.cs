@@ -234,10 +234,13 @@ namespace hds
         /// <summary>Conservative floor-mesh visibility approximation: a straight segment must stay on mapped
         /// floor within 100 units of the interpolated feet height. This is not a collision/eye raycast.
         /// Unknown endpoint coverage preserves legacy detection; mapped gaps obstruct it.</summary>
-        public static bool HasSightPath(ushort district, double x, double y, double z, double tx, double ty, double tz)
+        public static bool HasSightPath(ushort district, double x, double y, double z, double tx, double ty, double tz,
+            bool rejectUnmappedHeightDifference = true)
         {
-            if (Math.Abs(y - ty) > 150) return false;
+            bool differentFloor = Math.Abs(y - ty) > 150;
+            if (differentFloor && rejectUnmappedHeightDifference) return false;
             if (!Locate(district, x, y, z, out _) || !Locate(district, tx, ty, tz, out _)) return true;
+            if (differentFloor) return false;
             return SampleSightPath(x,y,z,tx,ty,tz,(sx,sy,sz) =>
                 Locate(district,sx,sy,sz,out var loc) && Math.Abs(loc.floorY-(sy-95)) <= 100);
         }

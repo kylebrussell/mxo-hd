@@ -52,7 +52,7 @@ namespace hds
         public static void Start(WorldClient shooter, WorldClient target, UInt32 targetHandle)
         {
             UInt32 gun = GunOf(shooter);
-            if (PvpCombat.MetresBetween(shooter, target) > RangedWeapons.RangeMetres(gun))
+            if (PvpCombat.MetresBetween(shooter, target) > RangedWeapons.RangeMetres(gun) || !CombatSight.Between(shooter, target))
             {
                 Output.WriteDebugLog("[PVP] " + PvpFlag.Name(shooter) + " can't reach " + PvpFlag.Name(target) + " with the gun");
                 shooter.playerInstance.CombatantMode.setValue(CombatHandler.CombatantModeIdle);
@@ -124,7 +124,7 @@ namespace hds
                     Stop();
                     return;
                 }
-                if (PvpCombat.MetresBetween(Shooter, t) > RangedWeapons.RangeMetres(GunOf(Shooter)))
+                if (PvpCombat.MetresBetween(Shooter, t) > RangedWeapons.RangeMetres(GunOf(Shooter)) || !CombatSight.Between(Shooter, t))
                 {
                     // As against NPCs: no shot out of range, and the fight ends after three shots' time (ours)
                     if (++outOfRangeTicks >= CombatHandler.MaxOutOfRangeTicks)
@@ -144,6 +144,7 @@ namespace hds
 
         private void Fire(bool firstShot)
         {
+            if (!CombatSight.Between(Shooter, Target)) return;
             //Foreign fight/registry snapshots precede this shooter's lock and its RNG lock.
             var gunPenalty=SharpshooterFreeFire.AgainstPlayer(Shooter,Target,GunOf(Shooter));
             bool died = false;

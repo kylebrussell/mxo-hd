@@ -143,6 +143,12 @@ public static partial class Scenarios
         new Scenario("area-disruption-hit", c=>AreaDisruptionWire(c,true), UiLagEnvironment(true)),
         new Scenario("area-disruption-deflect", c=>AreaDisruptionWire(c,false), UiLagEnvironment(false)),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
+        new Scenario("combat-foundations", CombatFoundations, StillNpcs.Concat(new Dictionary<string,string>
+        {
+            ["MXO_DEV_COMMANDS"] = "1", ["MXO_COMBAT_FOUNDATIONS_QA"] = "1",
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766",
+            ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
+        }).ToDictionary(p => p.Key, p => p.Value)),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
         new Scenario("combat-depth-mitigation", CombatDepthMitigation, FreeCastViralLandingEnvironment(StillNpcs)),

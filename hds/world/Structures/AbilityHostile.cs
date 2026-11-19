@@ -359,6 +359,7 @@ namespace hds
             if(!AbilityTargets.WithinArea(x,y,z,tx,ty,tz,radiusMetres))
                 return Math.Abs(ty-y)>=150?"floor":"radius";
             if(caster.viewMan.FindViewForEntity(candidate.playerData.getEntityId())==null)return "invisible";
+            if(!CombatSight.Clear(caster,x,y,z,tx,ty,tz))return "sight";
             verdict=PvpCombat.Check(caster,candidate);
             return verdict==PvpRules.Verdict.Allowed?"included":"pvp-"+verdict.Value;
         }
@@ -373,7 +374,8 @@ namespace hds
                 {
                     if (mob == skip || mob.isFriendly || mob.getIsDead() || mob.getDistrict() != district) continue;
                     var view = caster.viewMan.FindViewForEntity(mob.getEntityId());
-                    if (view != null && AbilityTargets.WithinArea(x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos(), radiusMetres))
+                    if (view != null && AbilityTargets.WithinArea(x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos(), radiusMetres) &&
+                        CombatSight.Clear(caster, x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos()))
                         found.Add((mob, view.ViewID));
                 }
             return found;

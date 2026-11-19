@@ -369,7 +369,7 @@ namespace hds
             }
             UInt32 handle = HandleOf(caster, target);
             double range = AbilityCatalog.Find(ability.getAbilityID())?.Number("Ability/SelectionRange") ?? 0;
-            if (range > 0 && MetresBetween(caster, target) > range)
+            if ((range > 0 && MetresBetween(caster, target) > range) || !CombatSight.Between(caster, target))
             {
                 caster.messageQueue.addRpcMessage(BuildCombatRefused(RefusedOutOfRange, false, handle));
                 caster.FlushQueue();
@@ -382,7 +382,7 @@ namespace hds
                 return true;
             }
             LandAbilityOn(caster, ability, target, sneakOpener,origin,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
-            AbilityTargets.LandAround(caster, ability, target,origin,engageFoes);
+            AbilityTargets.LandAround(caster, ability, CombatSight.Position(target), origin, engageFoes, skipPlayer: target);
             return true;
         }
 

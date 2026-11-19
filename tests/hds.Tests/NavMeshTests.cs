@@ -128,6 +128,9 @@ public class NavMeshTests
         Assert.False(NavMesh.HasSightPath(1,23540.7,1295,15548.3,23828.3,1295,13984.9));
         // Missing endpoint coverage remains explicitly unknown, preserving existing detection in unexported areas.
         Assert.True(NavMesh.HasSightPath(65535,0,95,0,100,95,100));
+        Assert.True(NavMesh.HasSightPath(65535,0,95,0,100,495,100,rejectUnmappedHeightDifference:false));
+        Assert.False(NavMesh.HasSightPath(1,23828.3,1295,13984.9,23828.3,495,13984.9,
+            rejectUnmappedHeightDifference:false));
     }
 
     [Fact]
