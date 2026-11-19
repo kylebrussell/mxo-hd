@@ -376,6 +376,8 @@ public static partial class Scenarios
         new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
         new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
         new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
+        new Scenario("stealth-active-detection", StealthActiveDetection, new Dictionary<string, string>(StillNpcs)
+            { ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15" }),
         new Scenario("stealth-sneak-observer", StealthSneakObserver, StillNpcs),
         new Scenario("stealth-breaks", StealthBreaks, StillNpcs),
         new Scenario("stealth-bot-hostile-observer", StealthBotHostileObserver, StillNpcs),

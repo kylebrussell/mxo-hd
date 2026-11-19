@@ -78,6 +78,11 @@ namespace hds
                 Deny(AbilityID,"Load this data-node search ability before activating it.");
                 return;
             }
+            if (AbilityID == ConcealmentDetection.Ability && AbilityPassives.Level(Store.currentClient, AbilityID) == 0)
+            {
+                Deny(AbilityID, "Load Detection before activating it.");
+                return;
+            }
             if (AbilityID == SixthSense.Ability && !SixthSense.CanCast(Store.currentClient))
             {
                 Deny(AbilityID, "Load Sixth Sense and enter the Matrix before activating it.");
@@ -265,6 +270,12 @@ namespace hds
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
+
+            if (AbilityID == ConcealmentDetection.Ability)
+            {
+                ConcealmentDetection.Land(client);
+                return;
+            }
 
             if (AbilityID == SixthSense.Ability)
             {

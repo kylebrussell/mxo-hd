@@ -27,12 +27,12 @@ Sneak, Improved Sneak, Escape and Evasion, Concealment, Invisibility, Impart Inv
 
 `ability/utility.py` SneakTest runs this every 5 s (Sneak's UpdateFuncInterval):
 
-- It checks every enemy within `300 + (2000 - 2000*min(level,50)/50)` units (level = the state's ability level) who faces the sneaker. Facing means `isObjWithinFrust`: ahead of them and less than 60 degrees off their facing.
+- It checks every enemy within `300 + (2000 - 2000*min(level,50)/50)` units (level = the current Sneak grant level, read by GetSneakLevel) who faces the sneaker. Facing means `isObjWithinFrust`: ahead of them and less than 60 degrees off their facing.
 - One success turns the ability off for everyone.
 - InitialSneakTest refuses Sneak, Concealment and Escape and Evasion while such an enemy is watching.
-- Invisibility is refused if an enemy within 800 units faces the player. Vanish skips this test ("Vanish Prox Override").
+- Invisibility is refused if an enemy within 800 units faces the player and is in sight. The callback skips enemies with the Blind temp mod. Vanish skips this test ("Vanish Prox Override").
 
-SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detection (204) totals, which come from Awakened's passive and Stealth Awareness. SL is the state's Stealth record plus any passive Stealth.
+SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detection (204) totals, which come from Awakened's passive and Stealth Awareness. SL is the state's Stealth record plus loaded and active Stealth totals. Player and NPC awareness is bounded to the byte input range so negative debuffs cannot wrap into high awareness.
 
 ## What breaks it
 
@@ -54,18 +54,18 @@ SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detec
   - Master Shadow (kShadowObject, evade state) keeps the view.
 - NPCs ignore invisible and shadowed players.
   - A sneaker is tested once every 5 s against the NPCs that would aggro and face them. One success ends the sneak, and the NPC then attacks as usual.
-  - Our choice: an NPC's StealthAwareness is its level. Retail creation records carried per-NPC values we can't map.
+  - Captured placement rows use the NPC_BASE StealthAwareness byte from column 22 (one-based); runtime stat204 modifiers also contribute. Synthesized NPCs with no captured byte retain the previous level fallback.
 - Vanish: after 2 s (its modifier's Duration, VanishInit as term function) Invisibility goes on without the proximity test. Our choice: the current fight ends with it.
 
 ## Not done
 
 - **Line of sight:** initial watching and periodic player/NPC detection now use a floor-mesh sight approximation. This blocks mapped gaps; it is not `physics.clearLine` collision parity. See [combat-depth evidence](COMBAT-DEPTH.md).
-- **Noise:** the noise level is passed as 0. Sneak's +10 Noise modifier feeds the native CharMvt.NoiseLevel, whose computation is not decoded.
+- **Noise:** the contest reads the current server-side NoiseLevel byte. Movement, ranged-noise decay and the mapping from stat509's modifier into that byte remain unrecovered. The fixture starts with zero noise.
 - **Movement:** sneak and invisible movement speeds rely on the client applying the stat records. Stance_Sneak / Stance_Invis animations (activateSneak, ConcealUpdate) are not sent. Concealment's "panic end" when not exclusive and its stand-still behaviour are missing.
 - **Vanish item:** Vanish's smoke-bomb requirement (`Inventory.hasItem(460)`, "SMOKE_BOMB_MISSING_ITEM") is not enforced.
-- **Detection ability:** the Detection ability (`general.py` Detection_DirectObject: random(100) + level against 50 + 4/8 per level, breaking invisibility or disguise) is not wired.
+- **Detection ability (298):** one random draw from 0–99 plus current Detect (638) must strictly exceed 50 + 8× the corresponding duration stat + 4× the loaded Disguise or Invisibility ability level. Successful Detection ends the actual disguise or invisibility state and plays `FX_WEAPON_CONCEALMENT_COUNTER_PLAYER`. Sneak and Master Shadow are separate states. The player cast uses the stored 12 m caster-centred enemy selector and the server's existing same-floor area/PvP policy, admitting hidden opponents without a view. Exact retail area admission/LOS, NPC Detection execution and native FX remain open.
 - **Stealth attacks:** the script constants75-1200 now add damage when the cast began hidden, with the snapshot retained through the stealth break. The trigger/addition is explicit server policy because the decompiled tests are stubs; see [combat depth](COMBAT-DEPTH.md).
-- **Disguise (1114):** missing. It needs the tool's ModelOverride and setModel, and kDisguised alone would only fake it.
+- **Presentation:** the periodic player's reveal strings still need verified string IDs. The existing Invisibility/Disguise activation proximity checks cover enemy players. Full NPC admission and the native exclusive-ability rules for interacting with world objects remain open.
 - **Out of scope:** Hyper-Sense (1101), Spy Style (1112), Find Weakness (123) and Stealth Awareness's record (156) are numeric beneficial buffs, which belong to the scaled-buffs work. Stealth Awareness's total already feeds detection through `AbilityStats`.
 
 ## Dev commands (MXO_DEV_COMMANDS=1)
@@ -82,3 +82,14 @@ SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detec
 5. Your character needs an organisation: PvP rules (`PvpRules.IsOpponent`) make nobody an opponent of a character with organisation 0, so the flagged bot is not your enemy and stays visible. `?stealthbot sneak pvp` says so (and logs `[STEALTH] ?stealthbot pvp for ...: you have no organisation`); use `?org 1` (or 2, 3) first. Then `?stealthbot sneak pvp`: DuelBot appears, then vanishes from your screen when it goes stealthed. Keep your back to it: it stays gone. Turn to face it (the bot sneaks at level 5: SL 5, a 21 m range, about a 40% chance per 5 s pass against StealthAwareness 1): within a few passes it should reappear. The facing test uses the yaw the server last got from your client, which changes only when your own view update carries it (turning or moving the character, not just the camera). DuelBot may stand off-axis (the nav mesh can push it 48 yaw steps round, about 63 degrees, just outside the 60-degree frustum), so turn or step towards it. Every 5 s pass logs `[STEALTH] detect <you> vs DuelBot: <m> m, <deg> deg off facing (yaw <n>): out of range | not facing | roll <r> missed`, or the `sees` line, as the sneak ends for everyone. The server log shows `[STEALTH] ... sees DuelBot`.
 6. `?stealth sneak` on yourself: check that your own character shows the invisibility effect, the Sneak icon is toggled on, and movement is slowed. `?health 300` (from full) should end it. `?stealth invis` and then any attack should end it.
 7. `?stealthbot off`, then `?stealth off`.
+
+## Low and high detection fixture
+
+Use NativeQa mode `stealth-detection` on the disposable CSR110 profile. It loads ordinary Sneak151 at 28 and enables PvP. QAFriend has awareness 1. QAFar has awareness 28, from the same baseline plus loaded level-50 Awakened (+12) and Detection (+15). They face west from x=18400 and x=18900 on y=495/z=2300. The helper bootstrap uses the ordinary captured world-entry `05` and `0c 01` records documented in [Client actions](CLIENT-ACTIONS.md). It checks positions, loadouts, PvP and the phase geometry before publishing readiness.
+
+1. Enter on CSR110 at (17000,495,2300). Use Sneak through Actions. Expect self translucency and the toggle on. If the ability is absent, record the Actions tree and stop the native check.
+2. Walk east to about x=17300, keeping z around 2300. Wait until the log reports a QAFriend miss with SA 1 and SL 28. QAFar is outside the 11.8 m contest range at this stop.
+3. Walk east to about x=17800. Allow up to ten five-second rolls for QAFar to succeed. Expect CSR to become visible and Sneak to toggle off. Keep CSR stationary during each wait.
+4. Collect `stealth-detection-result.json`. The helper check requires the low miss before the high success and both deletion/recreation histories. Record the native self animation and toggle separately. A high success ends Sneak globally, so both helpers regain CSR after the reveal.
+
+The active-Detection headless scenario uses the legacy gameplay harness request path to test the executor. A level-1 Detection cast cannot beat a level-25 Invisibility defense threshold of 150. A level-50 cast always beats it. The scenario checks removal, the recipient's counter FX and restored hostile views. This does not establish a native Detection request or its display. The native fixture exercises periodic Sneak only.
