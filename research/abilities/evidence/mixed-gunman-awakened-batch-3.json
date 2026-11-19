@@ -5,12 +5,12 @@
         "script": {
           "source": "general.py WoodenStakeAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-100 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 100-melee hit through an ordinary ability request."
         },
         "behavior-tests": {
           "source": "general.py WoodenStakeAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-100 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 100-melee hit through an ordinary ability request."
         }
       }
     },
@@ -19,12 +19,12 @@
         "script": {
           "source": "general.py SilverBulletAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-100 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 10-ranged unmatched hit through an ordinary ability request."
         },
         "behavior-tests": {
           "source": "general.py SilverBulletAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-100 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 10-ranged unmatched hit through an ordinary ability request."
         }
       }
     },
@@ -161,12 +161,12 @@
         "script": {
           "source": "general.py WoodenStakePlusAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-750 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the enhanced weak-target lethal hit through an ordinary ability request."
         },
         "behavior-tests": {
           "source": "general.py WoodenStakePlusAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-750 branch.",
           "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
-          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the enhanced weak-target lethal hit through an ordinary ability request."
         }
       }
     },
