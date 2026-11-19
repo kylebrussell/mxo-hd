@@ -411,6 +411,7 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
                     AbilityGrantRegistration.LoadingComplete(Store.currentClient, rpcData);
                     MissionObjectiveReplay.LoadingComplete(Store.currentClient, rpcData);
+                    FreeAttackBootstrap.LoadingComplete(Store.currentClient, rpcData);
 		            break; // no standalone reply; refresh registered grants and pending restored objectives
 		        case (int) RPCRequestHeader.CLIENT_FEATURES_REQUEST:
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());

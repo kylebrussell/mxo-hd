@@ -373,15 +373,22 @@ namespace hds
             UInt32 weaponGoid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
             ServerPackets pak = new ServerPackets();
 
+            WorldClient client = Store.currentClient;
+            UInt16? displacedSlot = null;
             if (Store.dbManager.WorldDbHandler.IsSlotinUseByItem(WeaponSlot))
             {
-                UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-                Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, freeSlot, charId);
-                pak.sendInventoryItemMove(WeaponSlot, freeSlot, Store.currentClient);
+                displacedSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+                Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, displacedSlot.Value, charId);
             }
 
             Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot, WeaponSlot, charId);
-            pak.sendInventoryItemMove(sourceSlot, WeaponSlot, Store.currentClient);
+            lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
+            {
+                FreeAttackBootstrap.BeforeEquip(client, sourceSlot, weaponGoid);
+                if (displacedSlot.HasValue)
+                    pak.sendInventoryItemMove(WeaponSlot, displacedSlot.Value, client);
+                pak.sendInventoryItemMove(sourceSlot, WeaponSlot, client);
+            }
             SetEquippedItem(weaponGoid);
             Output.WriteDebugLog("[INVENTORY] Equipped weapon " + weaponGoid + " from slot " + sourceSlot);
         }

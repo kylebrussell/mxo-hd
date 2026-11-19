@@ -150,6 +150,9 @@ namespace hds
         internal ushort selfSpawnIdCounter;
         /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>
         public UInt32 freeFireWeaponGoid;
+        internal bool? freeAttackBootstrapPending;
+        internal bool freeAttackBootstrapWorldReady;
+        internal bool freeAttackChoiceEmpty;
 	    public UInt32 lastSaveTime;
 
 	    public ClientData ()
