@@ -1,0 +1,15 @@
+{
+  "families": {
+    "stock-awakened-tactical-toggles": {
+      "representative": 9,
+      "result": "pass",
+      "head": "3d2fe3fd2753cb12fdf6fe3d3ac029ba27782022",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/387",
+      "scope": "The November 19 18:10 ET stock QA handoff reports exactly one yellow tactic refusal per cross-toggle attempt in both directions, retention of the active tactic, and clean switch-off. PacketLog b92deabd9797 shows four caster 80 ba reason 066b packets, no directional localized refusal packet, continued FX after each refusal and no matching FX after off. Earlier PR383 capture 58353c2f063b shows 13 on-window own-view pulses per ability. See docs/ABILITY-AWAKENED-COMBAT-ACTIVES.md for capture lines and the UI report's provenance."
+    }
+  },
+  "abilities": {
+    "9": { "family": "stock-awakened-tactical-toggles" },
+    "15": { "family": "stock-awakened-tactical-toggles" }
+  }
+}
