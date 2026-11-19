@@ -14,6 +14,13 @@
       "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7016153161",
       "scope": "Ordinary live unload and reload removed and restored ten percentage points of IS Regeneration Bonus and five of Healing Bonus. Loaded memory moved 62 to 59 to 62."
     },
+    "stock-team-patcher-restore-group-3": {
+      "representative": 434,
+      "result": "pass",
+      "head": "820753efc51e4c86839ff065fb12e6d9cf2fe514",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/373#issuecomment-7017805930",
+      "scope": "Stock activated Restore Group 3.0 from Actions with QAOther selected. With QAFriend leading the mission team, CSR and the 6 m and 8 m teammates each received 36 HP. The 10 m teammate and near nonmember received no cast heal. The cast with no target selected gave the same result."
+    },
     "stock-team-patcher-group-repairs-3": {
       "representative": 435,
       "result": "pass",
@@ -35,6 +42,9 @@
     },
     "433": {
       "family": "stock-team-patcher-total-dedication"
+    },
+    "434": {
+      "family": "stock-team-patcher-restore-group-3"
     },
     "435": {
       "family": "stock-team-patcher-group-repairs-3"
