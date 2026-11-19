@@ -50,7 +50,7 @@ internal static class CombatFixtureLoadout
         var dummy = await player.WaitForViewNamedAsync(DummyName);
         string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
         // The stock Free Attack dropdown sets the weapon separately from the paper doll.
-        // Retail Luizoé chose the new hand slot with 3f after equipping (Unknown log 11216).
+        // Retail Luizoé chose the new hand slot with 3f after equipping (Unknown log 11243).
         player.SendRpc("3f 69 00 10 00 00 00");
         await player.WaitUntilAsync(() => server.DebugLog().Contains("[COMBAT] Free Fire weapon: slot 105, kind 16, goid 2565"),
             "Stock Free Attack choice references the newly equipped fixture revolver", HeadlessPlayer.DefaultTimeout);
