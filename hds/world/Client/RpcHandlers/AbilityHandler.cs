@@ -49,6 +49,19 @@ namespace hds
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
+            bool powerShot = AbilityID == AwakenedPowerShot.Id;
+            uint? powerShotOpponent = null;
+            if (powerShot)
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                powerShotOpponent = CombatManager.GetHandler(Store.currentClient).PowerShotOpponent(currentTargetViewId, spawn);
+                if (!powerShotOpponent.HasValue)
+                {
+                    Deny(AbilityID, "Power Shot requires your current interlock opponent.");
+                    return;
+                }
+            }
+
             if (CombatSpecials.IsRifleOpener(AbilityID) && CombatManager.GetHandler(Store.currentClient).isCombatRunning)
             {
                 Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat);
@@ -62,8 +75,11 @@ namespace hds
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
             }
-            data.lastAbilityId = AbilityID;
-            data.lastAbilityTime = now;
+            if (!powerShot)
+            {
+                data.lastAbilityId = AbilityID;
+                data.lastAbilityTime = now;
+            }
 
             // CanUseWhileStunned belongs to the owned AntiStun item, never a free971/972 request.
             if (AntiStunPills.Handles(AbilityID))
@@ -231,6 +247,22 @@ namespace hds
                 Store.currentClient.messageQueue.addRpcMessage(
                     AbilityCooldowns.BuildDenied(AbilityID, AbilityCooldowns.DeniedBusy));
                 Store.currentClient.FlushQueue();
+                return;
+            }
+            if (powerShot)
+            {
+                var caster = Store.currentClient;
+                var handler = CombatManager.GetHandler(caster);
+                if (handler.PowerShotOpponent(currentTargetViewId, (ushort)(powerShotOpponent.Value >> 16)) != powerShotOpponent ||
+                    !handler.QueueRoundAbility(currentAbility, currentTargetViewId, requiredOpponent: powerShotOpponent))
+                {
+                    Deny(AbilityID, "Power Shot requires your current interlock opponent.");
+                    return;
+                }
+                data.lastAbilityId = AbilityID;
+                data.lastAbilityTime = now;
+                ProcessAbilityScript(currentAbility);
+                AbilityCooldowns.Start(caster, AbilityID, now);
                 return;
             }
             if (currentAbility.getCastingTime() > 0)
