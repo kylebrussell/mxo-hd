@@ -80,6 +80,16 @@ The same session's preserved packet log proves that the disappearing596 was an a
 
 This establishes the native request and on-wire inventory transfer, not a visual bag-icon or drop/locator/map pass. No menu index or object type was guessed from the disappearing model.
 
+## Early-player locator and tap fixture
+
+Use **Actions › Tools › Add Item to Hotbar** on both Data Node Goggles and Data Node Locator. Activating the items on the hotbar sends a 43-byte `80 b9` with the bag slot at record byte 37. The current stock captures use flag zero at byte 38, so the consumable parser left this slot unread. The locator now reads its own slot and uses the corresponding search mode, range and expiry. If the slot no longer holds the selected locator when the cast finishes, it reports the tool-required message. Slotless scripted requests keep their first-eligible-tool behavior. [PR385 stock capture](https://github.com/kylebrussell/mxo-hd/pull/385#issuecomment-7022171043)
+
+The level-10 `awakened-data-node-tools` mode loads the base locator and tap with their prerequisites. The replay uses the complete stock hotbar requests from PacketLog `226d05636f73` lines 1195–1196 and 1380–1381. It starts goggles from slot 8 while the handheld is in slot 1, verifies that goggles last past 10 seconds, checks wrong and replaced slot refusal, and then verifies attenuation and natural expiry for the handheld.
+
+The same session captured the Basic Data Tap hotbar request at lines 1727–1728. Ability 165 carried slot 9 and flag zero, with view and spawn zero. The request gave no refusal or payout, and the existing locator FX continued. [PR385 stock capture](https://github.com/kylebrussell/mxo-hd/pull/385#issuecomment-7022171043)
+
+The shipped GOB gives the basic tap a 6 m range and 750 Information per second. Tools 428 and 2530 also require 165, with the same range and rates 1,000 and 1,100. Node 606 stores access level 0, Information amount 1,100 and purity 50. The shipped callback delegates to the native tapping executor. Contemporary developer accounts confirm currency, experience and finite node depletion. The access rule, payout and depletion bookkeeping remain open. [Shipped callback](../research/client-scripts/ability/spy/misc.py#L193) [Developer interview](https://www.mmorpg.com/the-matrix-online/interviews/interview-with-dan-myers-2000114278)
+
 ## Validation and native checklist
 
 Unit tests pin byte layouts, signed-offset boundaries, payload limits, floor/district/range, level, singleton, exclusive-item and heavy rejection. Fresh-server cases: `data-mining-base-and-margin`, `data-mining-luggable-persistence`, `data-mining-full-bag`, `data-mining-locator`, `data-mining-mission-map` (`locked-safe.xml`). Headless validation proves these server contracts, not client rendering.

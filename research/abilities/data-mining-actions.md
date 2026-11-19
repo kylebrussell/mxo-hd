@@ -47,7 +47,7 @@ justified by this consumer.
 
 ## Actual activation route
 
-Use **Actions > Tools**, then double-click the locator item in the personal bag.
+In the later stock PR385 session, **Actions > Tools > Add Item to Hotbar** followed by hotbar activation produced the locator request. The goggles and handheld sent their distinct bag slots with flag zero. Double-clicking either Tools entry produced no request in that session. The code trace below describes the earlier Tools handler candidate. [PR385 native result](https://github.com/kylebrussell/mxo-hd/pull/385#issuecomment-7022171043)
 Tools item insertion at `0x620598f5` uses the Actions object's member `+0x84`;
 the weapon list uses `+0x80`, and the Abilities tree uses `+0x7c`.
 
