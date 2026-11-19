@@ -316,7 +316,7 @@ public class AbilityScaledBuffTests
     {
         var c=Client(20);
         ushort RoundDamage() => CombatCalculator.CloseCombatDamage(
-            new Random(731), 20, 20, CombatTactic.Speed, out _, CombatTactics.Type(c));
+            new Random(731), 20, 20, CombatTactic.Speed, out _, CombatTactics.Type(c), bonus: 100);
         ushort normal = RoundDamage();
         Assert.True(AbilityBuffs.Apply(c,15));
         Assert.Equal(CombatTacticType.Precise,CombatTactics.Type(c));
