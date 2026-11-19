@@ -794,6 +794,13 @@ namespace hds
             {
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true,
                     effect.Ability, caster, Name, (Int32)immunity.Seconds));
+                if (effect.Ability == AbilityHostile.FreezeSystem3 &&
+                    immunity.Caster is WorldClient source && source != client)
+                {
+                    source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true,
+                        effect.Ability, caster, Name, (Int32)immunity.Seconds));
+                    source.FlushQueue();
+                }
             }
             // A virus says "infects you" only (Vector, Zone of Powerlessness); other abilities name the state
             // ("Madbent's Spinning Flower has rendered you powerless!", entilsar lastday2 143646)
