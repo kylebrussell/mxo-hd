@@ -483,15 +483,6 @@ namespace hds
             {
                 pak.SendHyperSpeed(innerStrength);
             }
-            else if (AbilityBuffs.Retail.TryGetValue(currentAbility.getAbilityID(), out AbilityBuffs.Buff buff) &&
-                     buff.MovementScale > 0)
-            {
-                // Hyper-Sprint: its own speed (0.15) and effect; it used to get Hyper-Speed's.
-                byte counter = (byte)Store.currentClient.playerData.assignSpawnIdCounter();
-                Store.currentClient.messageQueue.addObjectMessage(
-                    AbilityBuffs.BuildMovementBuffUpdate(buff, innerStrength, counter), false);
-                Store.currentClient.FlushQueue();
-            }
             else
             {
                 pak.sendISCurrent(Store.currentClient, innerStrength);

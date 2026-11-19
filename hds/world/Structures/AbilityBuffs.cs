@@ -68,8 +68,7 @@ namespace hds
             public UInt16 DissemblingType;
             public UInt32 EffectId;
             /// <summary>
-            /// Evade Combat: using it again while it is on switches it off, and its cooldown starts when it ends
-            /// instead of when it is used.
+            /// Using it again while it is on switches it off. Its cooldown starts when it ends.
             /// </summary>
             public bool Toggle;
             /// <summary>Own-view EvadeShieldHealth ff while on, 00 when it ends (Evade Combat).</summary>
@@ -77,6 +76,7 @@ namespace hds
         }
 
         internal const ushort HyperSpeed = 12;
+        internal const ushort HyperSprint = 184;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;
@@ -113,7 +113,8 @@ namespace hds
             // Martial Arts
             { 135, new Buff { Seconds = 20, Modifiers = new[] { Stat(159, 40) } } },
             // Hyper-Sprint, luizoe old sniffer Unknown: MovementScale 0.15, EffectID 0x12463119, DissemblingType 04 00
-            { 184, new Buff { Exclusive = true, MovementScale = 0.15f, DissemblingType = 0x0400, EffectId = 0x12463119,
+            { HyperSprint, new Buff { Exclusive = true, Toggle = true, DrainAmount = 25, DrainSeconds = 5,
+                MovementScale = 0.15f, DissemblingType = 0x0400, EffectId = 0x12463119,
                 Modifiers = new[] { new Modifier(KindLinked, 0, 25), Stat(877, 15), Stat(878, 15), new Modifier(KindLinked, 115, 15) } } },
             // Evade Combat, evadecombat.txt: 80 bc 19 .. d9 00 00 00 70 02 .. and 80 bc 1d .. 70 02 00 00 00 00 ..
             // Evade Combat, evadecombat.txt; switched off by using it again (entilsar lastday2 21:57:08-09: the
@@ -249,7 +250,7 @@ namespace hds
         /// counter, DissemblingType (retail Hyper-Sprint: 02 00 02 80 88 9a 99 19 3e 80 90 &lt;IS&gt; b0 19 31 46 12
         /// &lt;ctr&gt; 02 00 04).
         /// </summary>
-        public static byte[] BuildMovementBuffUpdate(Buff buff, UInt16 innerStrength, byte counter)
+        public static byte[] BuildMovementBuffUpdate(Buff buff, UInt16 innerStrength, byte counter, ushort? dissemblingType = null)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
@@ -264,7 +265,7 @@ namespace hds
             pak.AddUint32(buff.EffectId, 1);
             pak.AddByte(counter);
             pak.AddByte(0x02);
-            pak.AddUint16(buff.DissemblingType, 1);
+            pak.AddUint16(dissemblingType ?? buff.DissemblingType, 1);
             return pak.ReturnFinalPacket();
         }
 
@@ -327,6 +328,28 @@ namespace hds
         {
             client.playerInstance.MovementScale.setValue(scale);
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale))));
+        }
+
+        private static byte[] ProjectSprintMovement(PlayerCharacter player, float scale, ushort bits)
+        {
+            player.MovementScale.setValue(scale);
+            player.DissemblingType.setValue(bits);
+            return PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale)), (27, PlayerViewAttributes.U16(bits)));
+        }
+
+        private static float RemainingMovementScale(ClientData data)
+        {
+            lock (data.activeBuffs)
+                return data.activeBuffs.Values.Where(active => active.Definition?.MovementScale > 0)
+                    .OrderByDescending(active => active.Generation).FirstOrDefault()?.Definition.MovementScale ?? 0f;
+        }
+
+        private static byte[] QueueSprintReset(WorldClient client, ClientData data, PlayerCharacter player)
+        {
+            float scale = RemainingMovementScale(data);
+            ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
+            client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, bits), false);
+            return ProjectSprintMovement(player, scale, bits);
         }
 
         public static int Total(WorldClient client, UInt16 stat)
@@ -512,7 +535,15 @@ namespace hds
                 client.messageQueue.addRpcMessage(record);
             }
             RefreshVitals(client);
-            if (buff.DissemblingType != 0) PresentDissembling(client);
+            if (abilityId == HyperSprint)
+            {
+                ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
+                byte counter = (byte)data.assignSpawnIdCounter();
+                client.messageQueue.addObjectMessage(BuildMovementBuffUpdate(buff,
+                    AbilityHandler.CurrentInnerStrength(client), counter, bits), false);
+                PvpFlag.ToWatchers(client, ProjectSprintMovement(client.playerInstance, buff.MovementScale, bits));
+            }
+            else if (buff.DissemblingType != 0) PresentDissembling(client);
             if (abilityId == HyperSpeed) PresentHyperSpeed(client, buff.MovementScale);
             if (abilityId == MovementAccelerator)
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
@@ -604,13 +635,16 @@ namespace hds
             TickActiveDrain(client,active);
         }
 
-        // Health-change listeners end by exact membership removal; none of these termination paths invokes that listener.
-        internal static bool PureDrainTermination(Buff buff) => buff!=null && buff.DrainAmount>0 && buff.DrainSeconds>0 &&
+        // The ordinary path only removes records. Sprint also has an explicit owner and observer reset below.
+        // Health-change listeners end by exact membership removal without invoking the listener.
+        internal static bool SupportsDrainTermination(ushort abilityId, Buff buff) => buff!=null && buff.DrainAmount>0 && buff.DrainSeconds>0 &&
             buff.Seconds==0 && buff.Exclusive && buff.Toggle && buff.RefundIS==0 && buff.TermHeal==0 &&
-            buff.TermSweepChance==0 &&
-            buff.MovementScale==0 && buff.DissemblingType==0 && buff.EffectId==0 && !buff.EvadeShield &&
-            buff.Modifiers!=null && buff.Modifiers.All(m=>(m.Kind==KindStat || m.Kind==TempMods.KindFx) &&
-                (m.Kind!=KindStat || m.Stat!=106 && m.Stat!=109 && m.Stat!=1056 && m.Stat!=1057));
+            buff.TermSweepChance==0 && !buff.EvadeShield && buff.Modifiers!=null &&
+            (abilityId == HyperSprint
+                ? ReferenceEquals(buff, Retail[HyperSprint])
+                : buff.MovementScale==0 && buff.DissemblingType==0 && buff.EffectId==0 &&
+                    buff.Modifiers.All(m=>(m.Kind==KindStat || m.Kind==TempMods.KindFx) &&
+                        (m.Kind!=KindStat || m.Stat!=106 && m.Stat!=109 && m.Stat!=1056 && m.Stat!=1057)));
 
         internal static void TickActiveDrain(WorldClient client,Active active,Action beforeClaim=null,Action beforePublication=null)
         {
@@ -624,7 +658,7 @@ namespace hds
                 lock(data.activeBuffs)
                 {
                     if(!lease.Current || !data.activeBuffs.TryGetValue(active.AbilityId,out var current) || !ReferenceEquals(current,active))return;
-                    var buff=active.Definition;if(!PureDrainTermination(buff))return;
+                    var buff=active.Definition;if(!SupportsDrainTermination(active.AbilityId,buff))return;
                     ushort available=NumericalUtils.ByteArrayToUint16(lease.Player.InnerStrengthAvailable.getValue(),1);
                     shortfall=data.isDead || data.duelDeath || available<buff.DrainAmount;
                     if(shortfall)
@@ -642,12 +676,18 @@ namespace hds
             }) || !claimed){lease.Cancelled=true;return;}
             beforePublication?.Invoke();
             bool published=false;
+            byte[] movementReset = null;
             if(!client.TransportFence.TryRun(lease.Transport,()=>
             {
                 if(!lease.ScopeCurrent)return;
                 if(shortfall)
                 {
-                    lock(data.activeBuffs)if(data.activeBuffs.ContainsKey(active.AbilityId))return; // Never terminate a later activation.
+                    lock (data.activeBuffs)
+                    {
+                        if (data.activeBuffs.ContainsKey(active.AbilityId)) return; // Never terminate a later activation.
+                        if (active.AbilityId == HyperSprint)
+                            movementReset = QueueSprintReset(client, data, lease.Player);
+                    }
                     if(missing>0)
                     {
                         string name=StringUtils.charBytesToString_NZ(lease.Player.CharacterName.getValue());
@@ -665,6 +705,8 @@ namespace hds
             }))lease.Cancelled=true;
             if(!published){lease.Cancelled=true;return;}
             client.FlushQueue(); // Never flush/broadcast/term callbacks inside the transport or activation gates.
+            if (movementReset != null && lease.ScopeCurrent && !IsActive(client, HyperSprint))
+                PvpFlag.ToWatchers(client, movementReset);
             if(shortfall)Output.WriteDebugLog("[BUFF] "+active.AbilityId+" off");
             else
             {
@@ -704,7 +746,7 @@ namespace hds
             if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
             PrisonDevices.Terminated(client, active);
-            if (buff.DissemblingType != 0) PresentDissembling(client);
+            if (buff.DissemblingType != 0 && !(abilityId == HyperSprint && !keepMovement)) PresentDissembling(client);
             if (!keepVitals) RefreshVitals(client);
             if (buff.RefundIS > 0)
             {
@@ -727,8 +769,14 @@ namespace hds
             }
             if (buff.MovementScale > 0 && !keepMovement)
             {
-                if (abilityId == HyperSpeed) PresentHyperSpeed(client, 0f);
-                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
+                if (abilityId == HyperSprint)
+                    PvpFlag.ToWatchers(client, QueueSprintReset(client, data, client.playerInstance));
+                else
+                {
+                    float scale = IsActive(client, HyperSprint) ? RemainingMovementScale(data) : 0f;
+                    if (abilityId == HyperSpeed) PresentHyperSpeed(client, scale);
+                    client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
+                }
             }
             if (buff.EvadeShield)
             {
