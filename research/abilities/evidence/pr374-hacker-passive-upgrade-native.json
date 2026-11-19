@@ -1,0 +1,46 @@
+{
+  "families": {
+    "infection-efficiency-loaded-stock": {
+      "representative": 461,
+      "result": "pass",
+      "head": "ce8ffbc5daf1ceb6909503d6cb0a5fd02a75440c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/374#issuecomment-7016773718",
+      "scope": "Unload and reload removed and restored 15 points of Stun Duration Bonus and the attributed +5% Melee Accuracy and Ballistic Damage contributions."
+    },
+    "destroyer-loaded-stock": {
+      "representative": 469,
+      "result": "pass",
+      "head": "ce8ffbc5daf1ceb6909503d6cb0a5fd02a75440c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/374#issuecomment-7016773718",
+      "scope": "Unload and reload removed and restored five points of Stun Duration Bonus and the Destroyer grant 1088 in stock Actions."
+    },
+    "ravager-loaded-stock": {
+      "representative": 470,
+      "result": "pass",
+      "head": "ce8ffbc5daf1ceb6909503d6cb0a5fd02a75440c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/374#issuecomment-7016773718",
+      "scope": "Unload and reload removed and restored five points each of Max Inner Strength Bonus and Inner Strength Regen Rate Bonus and the Ravager Downgrade grant 1081 in stock Actions."
+    },
+    "upgrade-artist-loaded-stock": {
+      "representative": 318,
+      "result": "pass",
+      "head": "ce8ffbc5daf1ceb6909503d6cb0a5fd02a75440c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/374#issuecomment-7016773718",
+      "scope": "Unload and reload removed and restored one point each of Ballistic and Melee Resistance Bonus and the 1095 Upgrade Artist Upgrade in stock Actions."
+    },
+    "upgrade-master-active-upgrade-stock": {
+      "representative": 1096,
+      "result": "pass",
+      "head": "ce8ffbc5daf1ceb6909503d6cb0a5fd02a75440c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/374#issuecomment-7016773718",
+      "scope": "Stock Actions showed 1096 under Upgrade Master, removed it on parent unload, and restored it on reload. A stock cast selected QAFriend, with a ten-second recast gate. The saved receiver PacketLog 84f669f1776d, lines 17935 and 18254, has the five add and removal records for QAFriend: +25 to 159/171/172/1034, +200 to 162, each with duration 300 seconds."
+    }
+  },
+  "abilities": {
+    "318": { "family": "upgrade-artist-loaded-stock" },
+    "461": { "family": "infection-efficiency-loaded-stock" },
+    "469": { "family": "destroyer-loaded-stock" },
+    "470": { "family": "ravager-loaded-stock" },
+    "1096": { "family": "upgrade-master-active-upgrade-stock" }
+  }
+}
