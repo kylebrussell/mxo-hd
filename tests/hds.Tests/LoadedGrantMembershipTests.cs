@@ -88,7 +88,9 @@ public class LoadedGrantMembershipTests
     [Theory]
     [InlineData(470, 1081, "80bc4503390400d60100003904000000000000000000")]
     [InlineData(425, 1096, "80bc4503480400a90100004804000000000000000000")]
-    public void HackerClassGrantsPublishZeroRankSourceRecordsOnLoadUnloadAndReload(
+    [InlineData(440, 1074, "80bc4503320400b80100003204000000000000000000")]
+    [InlineData(508, 1136, "80bc4503700400fc0100007004000000000000000000")]
+    public void ClassGrantsPublishZeroRankSourceRecordsOnLoadUnloadAndReload(
         ushort parent, ushort child, string addHex)
     {
         Assert.True(AbilityGrantRegistration.ZeroGrant(AbilityCatalog.Find(parent), child));
@@ -122,7 +124,8 @@ public class LoadedGrantMembershipTests
         var unload = ServerPackets.BuildAbilityUnload(child);
         var packets = client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
             .Select(message => message.content.Skip(1).ToArray()).ToArray();
-        Assert.Equal(new[] { load, add, unload, off, load, add }, packets);
+        Assert.Equal(new[] { load, add, unload, off, load, add }.Select(Convert.ToHexString),
+            packets.Select(Convert.ToHexString));
     }
 
     [Fact] public void HistoricalZeroPairsScaledAndNativeToolQualificationsStaySeparate()
