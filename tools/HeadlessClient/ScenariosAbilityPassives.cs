@@ -106,6 +106,10 @@ public static partial class Scenarios
             SetAbilityLoaded(caster, row.Slot, row.Ability, 50, false);
         await caster.WaitForRpcAsync(PassiveRecord(370, 1141, 5, true));
         Cast(caster, 54, seen.ViewId);
+        var castBar = await caster.WaitForRpcAsync("80 ac 36 00");
+        Check.Equal(2f, BitConverter.ToSingle(castBar.Bytes, castBar.Bytes.Length - 4), "Restore Health cast duration");
+        await caster.WaitForRpcAsync("80 bd 01 36 00 04 00 00 80 40 01");
+        await caster.WaitForRpcAsync("80 bd 01 ad 02 00 00 00 80 40 01");
         await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("Heal 54 -> HealAlly for 37"),
             "Unloading the passives restores the ordinary stored heal amount", TimeSpan.FromSeconds(10));
         Check.Equal(0, caster.World.Problems.Count, "Healing magnitude protocol");

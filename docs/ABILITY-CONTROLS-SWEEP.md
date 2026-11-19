@@ -22,4 +22,4 @@ The listed durations include the fixture loadout's Resist Contagion and Effectiv
 
 ## Remaining work
 
-ConfuseUpdate's `randomizeQueue()` and exact Determination Bonus weighting remain open. The NPC fixture observes the local combat notices and server duration, while existing player regressions cover modifier records and health-triggered breaks. The audit keeps all control rows open pending complete per-ability coverage and family-native results.
+ConfuseUpdate's `randomizeQueue()` and exact Determination Bonus weighting remain open. The NPC fixture observes the local combat notices and server duration, while existing player regressions cover modifier records and health-triggered breaks. The stock retest verified casts, state and duration on all seven assigned targets. The earlier run verified the four immunity announcements and refused controls through active immunity. Exact FX, native player-side presentation and other per-ability gates still need coverage. [Assigned-target retest](https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488) and [immunity retest](https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737).

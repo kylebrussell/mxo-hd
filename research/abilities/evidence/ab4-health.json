@@ -23,11 +23,28 @@
           "source": "data/ability_catalog.json 54 and client.dll 625ec512..625ec58a (type 3, HealDamage 174)",
           "runtime": "AbilityHealing.Amount and AbilitySupport.Land",
           "test": "AbilityParityTests.TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler and native 88e95b4 400 to 442"
+        },
+        "behavior-tests": {
+          "source": "GOB 54 stores one friendly direct object, 20 m selection, 2 s cast, 18 IS, own / family 685 reuse and fixed typed heal 37; 625ec512..625ec58a scales source influence.",
+          "runtime": "AbilityHandler cast admission and cooldown, AbilitySupport.Targets/Land, AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "ability-heal-magnitudes verifies the two-second cast bar, both four-second timer records, and a 37-point heal on a selected ally after unloading healing passives; AbilityBuffTests checks the 18 IS cost; AbilityPassiveTests.HealsUseTheirOwnTemplateRatherThanTheTargetsMaximum; AbilityParityTests.TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler; PR103 stock self cast +42 and max-HP cap. The shared selected-player admission path is exercised by ability-parity-support."
         }
       }
     },
     "77": {
-      "family": "targeted-direct-heal"
+      "family": "targeted-direct-heal",
+      "checks": {
+        "healing": {
+          "source": "GOB 77 fixes the typed heal at 9; 625ec512..625ec58a applies HealDamage 174.",
+          "runtime": "AbilityHealing.Amount, AbilitySupport.Land and AbilityHandler.HealSelf.",
+          "test": "ability-health-parity asserts +9 with no influence; PR316 stock QAFriend cast heals 244 to 254. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
+        },
+        "behavior-tests": {
+          "source": "GOB 77 stores one friendly direct object, 20 m selection, 2 s cast, 10 IS and 4 s own / family 686; stock self-cast capture gives both timer records.",
+          "runtime": "AbilityHandler cast admission, AbilityCooldowns.Retail, AbilitySupport.Targets/Land and AbilityHealing.Amount.",
+          "test": "ability-health-parity verifies the two-second cast bar and both four-second timer records. ability-parity-support verifies the selected ally is healed, the caster is unaffected and an NPC is refused; AbilityBuffTests checks cost 10, AbilityCooldownTests.CooldownRecordsMatchRetail checks own and family records, and AbilityPassiveTests.HealsUseTheirOwnTemplateRatherThanTheTargetsMaximum checks the fixed amount. PR316 verifies the influenced stock cast. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
+        }
+      }
     },
     "325": {
       "family": "friendly-resurrection"
@@ -44,7 +61,7 @@
         "resurrection": {
           "source": "health.py RejuvenateRSI_DirectObject and native 621d51d0/621d0330 approval serializer",
           "runtime": "AbilityResurrection.Reply, RestoreVitals and DeathPresentation.Resuscitate",
-          "test": "PR290 stock dialog Yes/No and visible stand, plus ability-resurrection-resources full HP/IS wire updates"
+          "test": "PR290 stock dialog Yes/No and visible stand; ability-resurrection-resources full HP/IS wire updates; PR321 stock cast and approval restored the measured 610 HP / 1090 IS maxima with motion 63. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
         }
       }
     },
@@ -54,9 +71,9 @@
     "466": {
       "checks": {
         "periodic": {
-          "source": "tempmods.py ViralDOT, ability_catalog.json 466 UpdateFuncInterval and actions_combat.log.txt:16649–17449 tick trace",
+          "source": "tempmods.py ViralDOT, ability_catalog.json 466 UpdateFuncInterval and actions_combat.log.txt:16649â€“17449 tick trace",
           "runtime": "TempMods.TryGet, TimedEffects.Active.NextTick and PlayerEffects.Ticked",
-          "test": "ability-health-parity stock 43-byte 466 cast and five damage/resistance lines before timed removal, plus AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry"
+          "test": "ability-health-parity stock 43-byte 466 cast and five damage/resistance lines before timed removal, plus AbilityParityTests.DotUsesTheModifierTypeAndStoredCadenceUntilExpiry; PR316 stock area cast measured five 83-point ticks on WinterFrost. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
         }
       }
     }

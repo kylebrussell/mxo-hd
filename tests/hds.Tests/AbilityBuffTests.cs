@@ -65,6 +65,7 @@ public class AbilityBuffTests
         Assert.Equal(25, AbilityCosts.Cost(184));    // Hyper-Sprint
         Assert.Equal(40, AbilityCosts.Cost(217));    // Evade Combat
         Assert.Equal(11, AbilityCosts.Cost(329));    // Logic Blast 3.0
+        Assert.Equal(18, AbilityCosts.Cost(54));    // Restore Health 2.0
         Assert.Equal(10, AbilityCosts.Cost(77));     // Repair RSI 1.0: shipped base cost, no retail override
         Assert.Equal(20f, AbilityBuffs.Retail[327].Seconds); // Overclock
         Assert.Equal(600f, AbilityBuffs.Retail[12].Seconds); // Hyper-Speed

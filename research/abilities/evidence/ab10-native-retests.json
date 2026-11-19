@@ -1,0 +1,419 @@
+{
+  "families": {
+    "hostile-timed-controls": {
+      "representative": 333,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "All seven cast on their assigned hostile NPCs and applied the expected state and duration. The earlier stock run confirmed the four immunity notices and cross-control refusal. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+    },
+    "targeted-heal-over-time": {
+      "representative": 169,
+      "result": "pass",
+      "head": "df867b77",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131",
+      "scope": "Emergency Repairs on a wounded friendly player stored 16 HP and delivered five +3 ticks without a direct heal."
+    },
+    "hostile-viral-direct": {
+      "representative": 330,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "Logic Barrage 4.0 was blocked across the mapped sight gap and hit clear/resisted targets for 525/431. The prior 424/348 comparison is at https://github.com/kylebrussell/mxo-hd/pull/314#issuecomment-6999038685. Logic Barrage 1.0 targeted a hostile NPC successfully in PR312, and the PR321 Coder retest landed Static Blast outside interlock."
+    },
+    "hostile-viral-area-dot": {
+      "representative": 466,
+      "result": "pass",
+      "head": "df867b77",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131",
+      "scope": "A flagged player deflected Plague Zone 2.0 and received no DOT. Six NPCs took the effect, with five ticks measured on WinterFrost and an NPC death and loot observed."
+    },
+    "hacker-pulse-auras": {
+      "representative": 42,
+      "result": "pass",
+      "head": "0c6c573e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005",
+      "scope": "Stock Actions toggled each aura, produced its expected child pulses and stopped it. Team overlap, recipient expiry, delayed FX and drain are separate checks."
+    },
+    "sneak-toggle-detection": {
+      "representative": 1111,
+      "result": "pass",
+      "head": "15067ad8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/317#issuecomment-6999564082",
+      "scope": "Stock Sneak toggle, translucency, a low-awareness miss, a high-awareness reveal and the return to opaque presentation were observed. Reveal messaging remains open."
+    },
+    "simulacrum-summons": {
+      "representative": 594,
+      "result": "pass",
+      "head": "b1cfc050",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962",
+      "scope": "Stock Remote Proxy 5.0 and Logic Daemon 4.0 summoned the correct pets and showed Defensive assist, Passive stop and direct attack. Lower-rank 27 and 22 summons were observed in https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576."
+    },
+    "simulacrum-detonation": {
+      "representative": 34,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "Detonate refused a dummy as direct target, then damaged the nearby NPC and removed the selected own pet."
+    },
+    "proxy-technician-pulses": {
+      "representative": 589,
+      "result": "pass",
+      "head": "b1cfc050",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962",
+      "scope": "Stock Proxy Technician pulsed the logged +64 melee and ballistic bonuses. PR312 also observed upkeep and following a replacement summon. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576"
+    },
+    "awakened-timed-self-buffs": {
+      "representative": 1,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576",
+      "scope": "Adrenaline Booster, Calm Mind Calm Body and Consistent Technique produced stock 20 s self buffs; expiry notices were observed for 1 and 5."
+    },
+    "toggle-self-buffs": {
+      "representative": 1099,
+      "result": "pass",
+      "head": "6b21603c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958",
+      "scope": "Stock status showed Hyper-Block defense and Determination. Hyper-Dodge and Hyper-Sprint toggle icons were observed in https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576."
+    },
+    "timed-hacker-stat-buffs": {
+      "representative": 314,
+      "result": "pass",
+      "head": "6b21603c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958",
+      "scope": "Stock Upgrade Attacks showed +108 Viral Accuracy and cleared at expiry. PR312 observed Resist Combat and Force Enhancer applying. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576"
+    },
+    "timed-operative-buffs": {
+      "representative": 135,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
+      "scope": "Martial Arts Prowess and Find Weakness applied in the native operative sweep."
+    },
+    "hacker-vital-debuffs": {
+      "representative": 354,
+      "result": "pass",
+      "head": "6b21603c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958",
+      "scope": "Stock status showed IS regen dropping from 30 to 15 and HP regen from 25 to 20, with both restored at expiry. Max-vital UI values were not measured."
+    },
+    "hyper-jump": {
+      "representative": 11,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576",
+      "scope": "Stock aim and ground click sent the expected request and clock echo, and native/server NAV cell reports agreed."
+    },
+    "hostile-awareness-query": {
+      "representative": 149,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
+      "scope": "Sixth Sense native chat gave 11 potential hostiles for the populated fixture location."
+    },
+    "area-taunt": {
+      "representative": 647,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
+      "scope": "Stock Taunt produced threat and pursuit for the nearby NPC cluster."
+    },
+    "caster-centered-viral-disruption": {
+      "representative": 38,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576",
+      "scope": "The out-of-combat Area Disruption cast contested the nearby NPCs and landed on the logged successful recipients."
+    },
+    "martial-style-selection": {
+      "representative": 101,
+      "result": "pass",
+      "head": "4cf910ef",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/319#issuecomment-7000288673",
+      "scope": "Aikido selected and played its mid-interlock exchange set. The PR312 native sweeps exercised Self Defense, Karate and Kung-Fu. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576 https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+    },
+    "gun-style-selection": {
+      "representative": 129,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "Handguns, Rifles and SMG styles worked in the native Gunman fixture with their weapons equipped. The separate choreography swap issue remains open."
+    },
+    "martial-interlock-specials": {
+      "representative": 407,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "Punch Reversal auto-switched to Aikido and used animation 827; Wooden Dummy Drill used 8080. Additional stock queued specials landed in PR312, with their individual animation and proc caveats. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576 https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186 https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+    },
+    "spy-throw-effects": {
+      "representative": 281,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
+      "scope": "Native Wounding and Blinding Throw landed their timed effects; Poison Knife and Sever Artery landed out of combat after the stock client refused their interlock casts."
+    },
+    "hyper-speed-movement": {
+      "representative": 12,
+      "result": "pass",
+      "head": "a4307878",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576",
+      "scope": "Hyper-Speed applied a 600 s stock HUD buff. The report did not measure the movement rate."
+    },
+    "handgun-interlock-special": {
+      "representative": 243,
+      "result": "pass",
+      "head": "21e9906c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488",
+      "scope": "Pistol Aerial queued in an ordinary handgun interlock, used animation 9518 and applied its four-second stun."
+    }
+  },
+  "abilities": {
+    "1": {
+      "family": "awakened-timed-self-buffs"
+    },
+    "5": {
+      "family": "awakened-timed-self-buffs"
+    },
+    "6": {
+      "family": "awakened-timed-self-buffs"
+    },
+    "10": {
+      "family": "toggle-self-buffs"
+    },
+    "11": {
+      "family": "hyper-jump"
+    },
+    "12": {
+      "family": "hyper-speed-movement"
+    },
+    "17": {
+      "family": "martial-style-selection"
+    },
+    "22": {
+      "family": "simulacrum-summons"
+    },
+    "27": {
+      "family": "simulacrum-summons"
+    },
+    "33": {
+      "family": "hostile-viral-direct"
+    },
+    "34": {
+      "family": "simulacrum-detonation"
+    },
+    "38": {
+      "family": "caster-centered-viral-disruption"
+    },
+    "40": {
+      "family": "hostile-timed-controls",
+      "checks": {
+        "script": {
+          "source": "GOB 40 and tempmods.py OnHealthReduceDeactivateAbility.",
+          "runtime": "TempMods.TryGet and TimedEffects.Holder.HealthChanged remove the damage-break root.",
+          "test": "AbilityControlDurationTests.AScaledRootRetainsItsDamageBreakRule checks healing does not break the root but damage does."
+        }
+      }
+    },
+    "42": {
+      "family": "hacker-pulse-auras"
+    },
+    "43": {
+      "family": "hostile-timed-controls"
+    },
+    "48": {
+      "family": "hostile-timed-controls",
+      "checks": {
+        "script": {
+          "source": "GOB 48 and tempmods.py AddControlImmunityTimer install 734 -> 681 and notify the recipients.",
+          "runtime": "TempMods.TryGet, TimedEffects.ImmunityFor and Apply, and AbilityMessages.AboutAbility for ImmunityCaster/ImmunityTarget.",
+          "test": "TimedEffectsTests.ControlImmunityUsesOnlyTheLiveTimerTuple and ability-controls-sweep bootstrap verify the active tuple and 12 s announcement; PR313 stock announcements and cross-control refusal. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "57": {
+      "family": "hostile-viral-direct"
+    },
+    "61": {
+      "family": "hacker-pulse-auras"
+    },
+    "72": {
+      "family": "timed-hacker-stat-buffs"
+    },
+    "89": {
+      "family": "hacker-pulse-auras"
+    },
+    "101": {
+      "family": "martial-style-selection"
+    },
+    "123": {
+      "family": "timed-operative-buffs"
+    },
+    "129": {
+      "family": "gun-style-selection"
+    },
+    "132": {
+      "family": "martial-style-selection"
+    },
+    "133": {
+      "family": "martial-style-selection"
+    },
+    "135": {
+      "family": "timed-operative-buffs"
+    },
+    "146": {
+      "family": "spy-throw-effects"
+    },
+    "147": {
+      "family": "gun-style-selection"
+    },
+    "149": {
+      "family": "hostile-awareness-query"
+    },
+    "158": {
+      "family": "gun-style-selection"
+    },
+    "169": {
+      "family": "targeted-heal-over-time",
+      "checks": {
+        "healing": {
+          "source": "GOB 169 stores typed HOT total 14 and the type-3 HealDamage path.",
+          "runtime": "AbilityHealing.Amount feeds AbilitySupport.Land and TimedEffects.Apply.",
+          "test": "AbilityParityTests.TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler verifies 16 under +15% influence. The stock report records total 16 and the five wounded-target ticks. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
+        },
+        "periodic": {
+          "source": "GOB 169 duration 15, interval 2.5 and tempmods.py HOT regular tick formula.",
+          "runtime": "AbilitySupport.Land and TimedEffects.Active.NextTick / PlayerEffects.Ticked.",
+          "test": "ability-health-parity checks five +2 ticks on unboosted seed; the stock report checks five +3 ticks about 2.5 s apart, separate from regen. Overflow remains a separate script check. https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131"
+        }
+      }
+    },
+    "184": {
+      "family": "toggle-self-buffs"
+    },
+    "198": {
+      "family": "martial-interlock-specials"
+    },
+    "243": {
+      "family": "handgun-interlock-special"
+    },
+    "260": {
+      "family": "martial-interlock-specials"
+    },
+    "267": {
+      "family": "martial-interlock-specials"
+    },
+    "281": {
+      "family": "spy-throw-effects"
+    },
+    "282": {
+      "family": "spy-throw-effects"
+    },
+    "314": {
+      "family": "timed-hacker-stat-buffs"
+    },
+    "330": {
+      "family": "hostile-viral-direct",
+      "checks": {
+        "damage": {
+          "source": "GOB 330 typed viral health damage, the 424 Logic Barrage hit in AbilityTargets.Retail, and the normalized script resistance curve described in ABILITY-TYPED-RESISTANCE.md.",
+          "runtime": "AbilityTargets.LandOne, AbilityStats.ScaleAbilityDamage and TypedAbilityResistance.Npc/Player.",
+          "test": "combat-foundations asserts 424/348 and exact NPC HP updates; ability-passive-damage checks the loadout influence for NPC and PvP; TypedAbilityResistanceTests.NormalizationFloorAndCapsAreExplicit. Native clear/resisted/expiry comparison https://github.com/kylebrussell/mxo-hd/pull/314#issuecomment-6999038685 and loaded-passive clear/resisted comparison https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488."
+        }
+      }
+    },
+    "333": {
+      "family": "hostile-timed-controls",
+      "checks": {
+        "area": {
+          "source": "GOB 333 CastDirectObjects 3 and RadiusOfEffect 4.",
+          "runtime": "AbilityTargets.LandAround, AbilityRadius.TargetMetres and AbilityHostile.MobsInArea.",
+          "test": "AbilityPassiveTests.DirectDebuffRadiusUsesCaster177WhileUnproven75LinkStaysExcluded checks actual template radius and inside/outside and floor boundaries; stock Trainman cast hit adjacent WinterFrost but left the other staged targets untreated. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        },
+        "script": {
+          "source": "GOB 333 and tempmods.py AddControlImmunityTimerVal install 734 -> 681 and notify the recipients.",
+          "runtime": "TempMods.TryGet, TimedEffects.ImmunityFor and Apply, and AbilityMessages.AboutAbility for ImmunityCaster/ImmunityTarget.",
+          "test": "TimedEffectsTests.ControlImmunityUsesOnlyTheLiveTimerTuple and ability-controls-sweep bootstrap verify the active tuple and 10 s announcement; PR313 stock announcements and cross-control refusal. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "341": {
+      "family": "spy-throw-effects"
+    },
+    "354": {
+      "family": "hacker-vital-debuffs"
+    },
+    "355": {
+      "family": "hostile-timed-controls",
+      "checks": {
+        "script": {
+          "source": "GOB 355 and tempmods.py AddControlImmunityTimer install 734 -> 681 and notify the recipients.",
+          "runtime": "TempMods.TryGet, TimedEffects.ImmunityFor and Apply, and AbilityMessages.AboutAbility for ImmunityCaster/ImmunityTarget.",
+          "test": "TimedEffectsTests.ControlImmunityUsesOnlyTheLiveTimerTuple and ability-controls-sweep bootstrap verify the active tuple and 8 s announcement; PR313 stock announcements and cross-control refusal. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "378": {
+      "family": "hacker-pulse-auras"
+    },
+    "380": {
+      "family": "hacker-pulse-auras"
+    },
+    "383": {
+      "family": "timed-hacker-stat-buffs"
+    },
+    "393": {
+      "family": "hostile-timed-controls",
+      "checks": {
+        "script": {
+          "source": "GOB 393 and tempmods.py AddControlImmunityTimer install 734 -> 681 and notify the recipients.",
+          "runtime": "TempMods.TryGet, TimedEffects.ImmunityFor and Apply, and AbilityMessages.AboutAbility for ImmunityCaster/ImmunityTarget.",
+          "test": "TimedEffectsTests.ControlImmunityUsesOnlyTheLiveTimerTuple and ability-controls-sweep bootstrap verify the active tuple and 12 s announcement; PR313 stock announcements and cross-control refusal. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "407": {
+      "family": "martial-interlock-specials"
+    },
+    "428": {
+      "family": "martial-interlock-specials"
+    },
+    "430": {
+      "family": "martial-interlock-specials"
+    },
+    "466": {
+      "family": "hostile-viral-area-dot"
+    },
+    "476": {
+      "family": "hacker-vital-debuffs"
+    },
+    "485": {
+      "family": "hacker-pulse-auras"
+    },
+    "589": {
+      "family": "proxy-technician-pulses"
+    },
+    "594": {
+      "family": "simulacrum-summons"
+    },
+    "616": {
+      "family": "simulacrum-summons"
+    },
+    "647": {
+      "family": "area-taunt"
+    },
+    "1081": {
+      "family": "hostile-timed-controls"
+    },
+    "1099": {
+      "family": "toggle-self-buffs"
+    },
+    "1102": {
+      "family": "toggle-self-buffs"
+    },
+    "1111": {
+      "family": "sneak-toggle-detection"
+    }
+  }
+}
