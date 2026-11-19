@@ -77,6 +77,140 @@ public class AbilityHostileTests
         Assert.Equal(ballistic, AbilityStats.Defense(victim, true));
     }
 
+    [Theory]
+    [InlineData(66, 33, new[] { -10, -10, -10, -10, 0, 0, 0 })]
+    [InlineData(392, 18, new[] { 0, 0, 0, 0, -39, 0, 0 })]
+    [InlineData(394, 28, new[] { 0, 0, 0, 0, 0, -52, -52 })]
+    [InlineData(396, 42, new[] { 0, -27, 0, 0, -27, 0, 0 })]
+    public void HackerDebuffsChangeTheirCombatConsumersUntilExpiry(ushort id, int seconds, int[] values)
+    {
+        var target = Client();
+        int[] Consumers() => new[]
+        {
+            AbilityStats.Attack(target, false), AbilityStats.Attack(target, true),
+            AbilityStats.Defense(target, false), AbilityStats.Defense(target, true),
+            AbilityStats.ViralAccuracy(target), AbilityStats.Toughness(target, false),
+            AbilityStats.Toughness(target, true)
+        };
+        var before = Consumers();
+        var applied = Land(target, id);
+        Assert.Equal(seconds, applied.Max(m => m.Seconds));
+        Assert.Equal(values, Consumers().Zip(before, (active, baseline) => active - baseline).ToArray());
+        if (id == 396)
+        {
+            foreach (ushort stat in new ushort[] { 115, 520, 877, 878 })
+            {
+                Assert.Equal(-50, AbilityStats.Player(target, stat));
+                Assert.Equal(28, Assert.Single(applied, m => m.Target == stat).Seconds);
+            }
+        }
+        TimedEffects.RunDue(applied.Max(m => m.Expires) + .01);
+        Assert.Equal(before, Consumers());
+    }
+
+    [Fact]
+    public void ProcessorLagDealsFiveViralTicksAndPublishesTickEffect()
+    {
+        var target = Client();
+        var tick = Assert.Single(Land(target, 69));
+        Assert.Equal(2, tick.DamageType);
+        Assert.Equal(30, tick.Seconds);
+        Assert.Equal(5, tick.Interval);
+        Assert.Equal(1000, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(tick.Start + 4.99);
+        Assert.Equal(1000, PvpCombat.HealthOf(target));
+        TimedEffects.RunDue(tick.Start + 5.01);
+        Assert.Equal(995, PvpCombat.HealthOf(target));
+        var update = Assert.IsType<SequencedMessage>(Assert.Single(target.messageQueue.ObjectMessagesQueue));
+        Assert.Contains(Convert.ToHexString(BitConverter.GetBytes(TempMods.VirusCrashFx)),
+            Convert.ToHexString(update.content));
+        TimedEffects.RunDue(tick.Expires + .01);
+        Assert.Equal(975, PvpCombat.HealthOf(target));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(69));
+    }
+
+    [Fact]
+    public void CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength()
+    {
+        var caster = Client();
+        var recipient = Client();
+        caster.playerData.setCharID(77610);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 0, 0));
+        recipient.playerData.setCharID(77611);
+        recipient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(299, 0, 0));
+        var groups = hds.world.Structures.SocialGroups.Instance;
+        var team = groups.CreateTeam(77610, "Aura");
+        groups.AddTeamMember(team.Id, 77611, "Teammate");
+        var previous = WorldServer.Clients;
+        WorldServer.Clients = new() { ["Aura"] = caster, ["Teammate"] = recipient };
+        try
+        {
+            AbilityAuras.Start(caster, 42);
+            Assert.True(AbilityAuras.IsOn(caster, 42));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(64, AbilityStats.Attack(recipient, false));
+            Assert.Equal(64, AbilityStats.Attack(recipient, true));
+            Assert.Equal(5, recipient.playerData.activeBuffs[695].Definition.Seconds);
+
+            recipient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(301, 0, 0));
+            AbilityAuras.Tick(caster, 42, 1);
+            Assert.Equal(188, AbilityHandler.CurrentInnerStrength(caster));
+            TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 5.01);
+            Assert.Equal(0, AbilityStats.Attack(recipient, false));
+            Assert.Equal(0, AbilityStats.Attack(recipient, true));
+
+            caster.playerInstance.InnerStrengthAvailable.setValue((ushort)11);
+            AbilityAuras.Tick(caster, 42, 1);
+            Assert.Equal(11, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.False(AbilityAuras.IsOn(caster, 42));
+            Assert.InRange(caster.playerData.cooldownEndsAt[42] - TimeUtils.GetSimTimeSeconds(), 14.9, 15d);
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            AbilityBuffs.RemoveAll(caster);
+            AbilityBuffs.RemoveAll(recipient);
+            WorldServer.Clients = previous;
+            groups.RemoveTeamMember(team.Id, 77611);
+            groups.RemoveTeamMember(team.Id, 77610);
+        }
+    }
+
+    [Fact]
+    public void CodeStopBreaksOnDamageButItsTwelveSecondImmunitySurvives()
+    {
+        var caster = Client();
+        var target = Client();
+        var state = Assert.Single(Land(target, 393, caster));
+        var effects = TimedEffects.ForPlayer(target);
+        Assert.Equal(6, state.Seconds);
+        var immunity = Assert.Single(effects.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
+        Assert.Equal(12, immunity.Seconds);
+        Assert.False(ControlActions.CanUseAbilities(effects.Effects));
+        TimedEffects.HealthChanged(effects, -1, true);
+        Assert.True(effects.Effects.HasParent(393));
+        TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
+        Assert.True(ControlActions.CanUseAbilities(effects.Effects));
+        Assert.Empty(Land(target, 393, caster));
+        TimedEffects.RunDue(immunity.Expires + .01);
+        Assert.False(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+    }
+
+    [Fact]
+    public void ResistCombatAppliesTwentyEvasionForSixHundredSeconds()
+    {
+        var target = Client();
+        var before = CombatInsightEngagement.Calculate(0, 0, 0, 0, AbilityStats.Player(target, 520));
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(AbilityBuffs.Apply(target, 72));
+        Assert.Equal(20, AbilityStats.Player(target, 520));
+        Assert.Equal(600, target.playerData.activeBuffs[72].Definition.Seconds);
+        var after = CombatInsightEngagement.Calculate(0, 0, 0, 0, AbilityStats.Player(target, 520));
+        Assert.Equal(before.Evade + 20, after.Evade);
+        TimedEffects.RunDue(start + 600.01);
+        Assert.Equal(0, AbilityStats.Player(target, 520));
+    }
+
     [Fact]
     public void CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt()
     {
