@@ -152,7 +152,11 @@ namespace hds
         public UInt32 freeFireWeaponGoid;
         internal bool? freeAttackBootstrapPending;
         internal bool freeAttackBootstrapWorldReady;
+        internal bool freeAttackBootstrapStyleReady;
+        internal ushort freeAttackBootstrapStagingSlot;
+        internal int freeAttackBootstrapStagingWorld;
         internal bool freeAttackChoiceEmpty;
+        internal bool freeAttackItemReported;
 	    public UInt32 lastSaveTime;
 
 	    public ClientData ()

@@ -147,10 +147,7 @@ public static partial class Scenarios
         {
             [hds.FreeAttackBootstrap.Mode] = hds.FreeAttackBootstrap.Login
         }).ToDictionary(p => p.Key, p => p.Value)),
-        new Scenario("free-attack-bootstrap-equip", FreeAttackEquipReplay, StillNpcs.Concat(new Dictionary<string,string>
-        {
-            [hds.FreeAttackBootstrap.Mode] = hds.FreeAttackBootstrap.Equip
-        }).ToDictionary(p => p.Key, p => p.Value)),
+        new Scenario("free-attack-bootstrap-equip", FreeAttackEquipReplay, StillNpcs),
         new Scenario("combat-foundations", CombatFoundations, StillNpcs.Concat(new Dictionary<string,string>
         {
             ["MXO_DEV_COMMANDS"] = "1", ["MXO_COMBAT_FOUNDATIONS_QA"] = "1",

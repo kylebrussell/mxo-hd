@@ -16,16 +16,21 @@ public static partial class Scenarios
         {
             Items = new[] { (1, 2399u, 1), (105, 2565u, 1) }
         });
-        string rows = $"SELECT invId,charId,slot,goid,count,purity FROM inventory WHERE charId IN ({shooter.CharId},{selected.CharId},{held.CharId}) ORDER BY invId";
+        var noSelection = await context.AddPlayerAsync(NearNpc("RefreshTimeout") with { Items = new[] { (105, 692u, 1) } });
+        string rows = $"SELECT invId,charId,slot,goid,count,purity FROM inventory WHERE charId IN ({shooter.CharId},{selected.CharId},{held.CharId},{noSelection.CharId}) ORDER BY invId";
         string before = await context.Database.ScalarAsync(rows);
         var slotData = WireFormat.FromHex("0b b4 02 00 00 00 00 00 0c");
         Check.That(BytePattern.IndexOf(shooter.CharacterData[5], slotData, 0) >= 0, "Margin includes the original owned rifle");
 
-        // Stock initialization can report fists before world entry. The UI refresh waits for 0c 01.
+        // Stock initialization can report fists before world entry. Inventory discovery waits for 0c 01 and the first 3e.
         shooter.SendRpc("3f 6b 00 00 00 00 00");
         await shooter.EnterWorldAsync(loadingComplete: false);
         Check.Equal(0, shooter.Received("5f 0b 00 01").Count, "No refresh before loading-complete");
         shooter.SendRpc("0c 01");
+        shooter.SendRpc("3d 01");
+        await shooter.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
+        Check.Equal(0, shooter.Received("5f 0b 00 01").Count, "Loading-complete alone does not refresh the inventory");
+        shooter.SendRpc("3e 6b 00 10 00 00 00 00");
         await shooter.WaitForRpcAsync("5f 0b 00 01");
         await shooter.WaitForRpcAsync("5e 0b 00 b4 02 00 00 00 00 00 10 01");
 
@@ -44,6 +49,7 @@ public static partial class Scenarios
         shooter.SendRpc("3d 00");
         shooter.SendRpc("3f 6b 00 00 00 00 00");
         shooter.SendRpc("0c 01");
+        shooter.SendRpc("3e 6b 00 10 00 00 00 00");
         shooter.SendRpc("3d 01");
         await shooter.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
         Check.Equal(1, shooter.Received("5e 0b 00 b4 02 00 00 00 00 00 10 01").Count, "Only one refresh per client session");
@@ -51,18 +57,25 @@ public static partial class Scenarios
         selected.SendRpc("3f 0b 00 10 00 00 00");
         selected.SendRpc("3f 6b 00 00 00 00 00");
         await selected.EnterWorldAsync();
+        selected.SendRpc("3e 6b 00 10 00 00 00 00");
         selected.SendRpc("3d 01");
         await selected.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
         Check.Equal(0, selected.Received("5e").Count + selected.Received("5f").Count, "An existing choice prevents the refresh");
 
-        await held.EnterWorldAsync();
+        await held.EnterWorldAsync(loadingComplete: false);
         var own = held.World.CreationSnapshot().Last(view => view.ViewId == 2);
         Check.Equal(2565u, BitConverter.ToUInt32(own.Attributes["EquippedItemID"]), "The revolver begins in the hand slot");
         held.SendRpc("3f 6b 00 00 00 00 00");
+        held.SendRpc("3e 6b 00 10 00 00 00 00");
+        held.SendRpc("3d 01");
+        await held.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
+        Check.Equal(0, held.Received("5f 69 00 01").Count, "The first style report alone does not refresh the inventory");
+        held.SendRpc("0c 01");
         await held.WaitForRpcAsync("5f 69 00 01");
         await held.WaitForRpcAsync("5e 02 00 05 0a 00 00 00 00 00 10 01");
-        await held.WaitForRpcAsync("65 02 00 69 00 00");
+        Check.Equal(0, held.Received("65 02 00 69 00 00").Count, "The staging slot stays visible until the client can select");
         held.SendRpc("3f 02 00 10 00 00 00");
+        await held.WaitForRpcAsync("65 02 00 69 00 00");
         held.SendRpc("3f 69 00 10 00 00 00");
         var heldTarget = await held.WaitForViewNamedAsync("WinterFrost");
         string heldHandle = HandleOf(heldTarget);
@@ -71,9 +84,17 @@ public static partial class Scenarios
         await held.WaitForRpcAsync("81 68");
         await held.WaitUntilAsync(() => context.Server.DebugLog().Contains("Free Fire weapon: slot 105, kind 16, goid 2565"),
             "The held weapon selection resolves the persisted revolver", HeadlessPlayer.DefaultTimeout);
+
+        await noSelection.EnterWorldAsync();
+        noSelection.SendRpc("3f 6b 00 00 00 00 00");
+        noSelection.SendRpc("3e 6b 00 10 00 00 00 00");
+        await noSelection.WaitForRpcAsync("5f 69 00 01");
+        await noSelection.WaitForRpcAsync("5e 01 00 b4 02 00 00 00 00 00 10 01");
+        await noSelection.WaitForRpcAsync("65 01 00 69 00 00");
+        Check.Equal(1, held.Received("65 02 00 69 00 00").Count, "An acknowledgement and timeout cannot restore the same item twice");
         Check.Equal(before, await context.Database.ScalarAsync(rows), "Inventory row identity, owner, slot, GOID and metadata persist");
-        Check.Equal(0, shooter.World.Problems.Count + selected.World.Problems.Count + held.World.Problems.Count,
-            "No protocol errors in the three client sessions");
+        Check.Equal(0, shooter.World.Problems.Count + selected.World.Problems.Count + held.World.Problems.Count + noSelection.World.Problems.Count,
+            "No protocol errors in the four client sessions");
     }
 
     private static async Task FreeAttackEquipReplay(ScenarioContext context)
@@ -88,7 +109,7 @@ public static partial class Scenarios
         await player.EnterWorldAsync();
         player.SendRpc("3d 01");
         await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
-        Check.Equal(0, player.Received("5e").Count + player.Received("5f").Count, "Equip experiment leaves the login inventory alone");
+        Check.Equal(0, player.Received("5e").Count + player.Received("5f").Count, "Ordinary login leaves the inventory alone");
         player.SendRpc("3d 00");
         await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 22");
         player.SendRpc("63 0b 69");
@@ -102,6 +123,7 @@ public static partial class Scenarios
         Check.Equal(2L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId}"),
             "Equip introduces no inventory rows");
 
+        player.SendRpc("3f 0b 00 10 00 00 00");
         player.SendRpc("3f 69 00 10 00 00 00");
         var target = await player.WaitForViewNamedAsync("WinterFrost");
         string handle = HandleOf(target);
@@ -110,5 +132,18 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("81 68");
         await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("Free Fire weapon: slot 105, kind 16, goid 692"),
             "The move-follow selection resolves the same rifle", HeadlessPlayer.DefaultTimeout);
+
+        var selected = await context.AddPlayerAsync(NearNpc("AlreadySelected") with
+        {
+            Items = new[] { (11, 692u, 1), (105, 2565u, 1) }
+        });
+        await selected.EnterWorldAsync();
+        selected.SendRpc("3f 69 00 10 00 00 00");
+        selected.SendRpc("3f 6b 00 00 00 00 00");
+        selected.SendRpc("63 0b 69");
+        await selected.WaitForRpcAsync("65 0b 00 69 00 00");
+        await selected.WaitForViewUpdateAsync(2, "02 80 80 80 80 08 b4 02 00 00");
+        Check.Equal(0, selected.Received("5e").Count + selected.Received("5f").Count,
+            "Clearing a previously selected weapon keeps the ordinary equip sequence");
     }
 }
