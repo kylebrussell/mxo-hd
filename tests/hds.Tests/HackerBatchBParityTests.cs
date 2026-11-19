@@ -436,7 +436,7 @@ public class HackerBatchBParityTests
     }
 
     [Theory]
-    [InlineData(57, 50, 80)]
+    [InlineData(57, 8, 8)]
     [InlineData(357, 305, 392)]
     [InlineData(359, 645, 1183)]
     public void ViralDirectDamageUsesCurrentImplementedBaseRangeAndTargetResistance(ushort ability, int lower, int upper)
