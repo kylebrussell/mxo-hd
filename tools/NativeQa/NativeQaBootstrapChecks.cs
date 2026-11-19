@@ -90,8 +90,21 @@ public static class NativeQaBootstrapChecks
                 }
                 if (plan.EnvironmentOverrides.GetValueOrDefault(hds.CombatFixtureWeapons.WeaponMode) == "1")
                     await CombatFixtureLoadout.VerifyWeaponsAsync(probe, database);
+                if (mode is Modes.GunStyleChoreographyMode gunStyle)
+                    await CombatFixtureLoadout.VerifyGunChoreographyAsync(probe, server, gunStyle);
                 if (seedMode == "style-choreography")
-                    await CombatFixtureLoadout.VerifyFireAfterSwapAsync(probe, server);
+                {
+                    await CombatFixtureLoadout.VerifyWeaponSwapAsync(probe, database, "rifle", hds.CombatFixtureWeapons.Rifle);
+                    await CombatFixtureLoadout.VerifyFireAfterSwapAsync(probe, server, hds.CombatFixtureWeapons.Rifle);
+                    probe.SendRpc("80 fe 00");
+                    await probe.WaitForRpcAsync("80 fd");
+                    probe.Dispose();
+                    // Allow the normal world/margin character reservation to expire after logout.
+                    await Task.Delay(TimeSpan.FromSeconds(33));
+                    probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
+                    await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(probe, hds.CombatFixtureWeapons.Rifle);
+                    await CombatFixtureLoadout.VerifyWeaponSwapAsync(probe, database, "handgun", hds.CombatFixtureWeapons.Handgun);
+                }
             }
             if (names.Length > 1 || !HasCustomHook(NativeQaModes.Find(names[0])))
             {

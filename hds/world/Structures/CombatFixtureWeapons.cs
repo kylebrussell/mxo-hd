@@ -37,8 +37,10 @@ namespace hds
                 _ => 0
             };
             if (goid == 0) return "Use ?combatdepth fixture-weapon handgun, rifle, smg, dual-smg or unarmed.";
+            if (SharpshooterFreeFire.EquippedWeapon(caller) == goid)
+                return $"Fixture already has {weapon} ({goid}) in hand slot {HandSlot}. No inventory move was needed.";
             return Equip(caller, goid)
-                ? $"Fixture equipped {weapon} ({goid}) in hand slot {InventoryHandler.WeaponSlot}. For Fire!, choose it in the Free Attack dropdown. For specials, holster and use Close Combat on Melee Dummy."
+                ? $"Fixture equipped {weapon} ({goid}) in hand slot {HandSlot}. Choose the gun in the Free Attack dropdown for ranged Fire!. Use Close Combat for interlock specials. Re-enter the world to verify it in the login spawn."
                 : $"Fixture weapon {goid} is unavailable.";
         }
 

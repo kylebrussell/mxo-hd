@@ -95,10 +95,28 @@ Use the `style-choreography` NativeQa mode with the isolated 30,000 HP Melee Dum
 1. Use `?combatdepth fixture-weapon unarmed`, then select Self Defense 17 and interlock the dummy. Head Butt 197 needs a Dazed target. Land a Speed round that Dazes the dummy or use `?combatdepth daze 30`. Check move 284.
 2. Select Aikido 101 and make the dummy Off Balance with a landed Grab round or `?combatdepth offbalance 30` before using Tomo Nage 412. Punch Reversal 407 has no target condition. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md). Check 751 and 827–829.
 3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
-4. Use `?combatdepth fixture-weapon handgun`, `rifle`, and `dual-smg` in turn. Re-enter interlock and select the matching style after each swap. Check Pistol Slide 241 (9527), Body Shot 105 (11364), Controlled Burst 250 (21082), and their opening stances. Wait through the four-second Controlled Burst cast and its round.
-5. Wait for each move to resolve before pressing another. Record each landed motion, its server move ID and the complete outgoing RPC.
+Start each gun choreography mode below with a fresh world entry. Each fixture seeds its weapon in stock hand slot 105 before the character loads.
+Select the listed style, target Melee Dummy, and use stock **Close Combat**. If the client offers only ranged Fire!, land the loaded Logic Barrage while at rest and wait for Melee Dummy to initiate interlock. Once rounds are running, cast the special. Record the opening request, full outgoing ability RPC, landed move and rendered motion.
 
-The headless scenario sends the stock-sized style, equip, close-combat and ability requests. It decodes the opening dual-weapon transition and checks the Tomo Nage and Controlled Burst IDs on delivered combat entries. The native fixture still awaits stock-client playback.
+| NativeQa mode | Style | Special | Opening stance |
+| --- | --- | --- | --- |
+| `style-choreography-handgun` | Handguns 129 | Pistol Slide 241 plays 9527 | 21052-21055 |
+| `style-choreography-rifle` | Rifles 147 | Body Shot 105 plays 11364 | 21068-21071 |
+| `style-choreography-dual-smg` | Submachine Guns 158 | Controlled Burst 250 plays 21082 | 21076-21079 |
+
+Wait through Controlled Burst's four-second cast and its round. For the separate swap check, start `style-choreography` with its pre-equipped handgun. Swap to rifle, verify it in the paper doll, and explicitly pick the rifle in the stock Free Attack dropdown. A successful picker update sends `3f 69 00 10 00 00 00`. Try radial Fire! and retain the client RPCs. Jack out and back in to compare the same persisted rifle in the own-view creation.
+
+### Retained native weapon traces
+
+The PR324 style run (`8a7931515f57`) and PR326 gunman run (`05837386fab5`) both opened with `3f 6b 00 00 00 00 00` (fists) and later sent `3d 01` (draw). The retained style run logged no equip move and sent no `41` or standalone `40`. Its requested handgun was already seeded in slot 105. In the gunman run, Disarming Shot 126 landed and the dummy's retaliation opened the first interlock. The trace later contains a standalone `40 05 00 03 00 00 6b` after the rifle swap.
+
+The gunman handgun-to-rifle swap sent `65 69 00 06 00 00`, `65 0b 00 69 00 00`, and own view `02 00 02 80 80 80 80 08 b4 02 00 00`. The rifle-to-SMG swap used bag slot `0c` and equipped GOID `ba 02 00 00`. At login, Margin character data type `05` carries inventory and world entry loads the slot-105 GOID into the original own-view creation. CombatantMode starts at `22` and draw responds with the own-view update `02 00 02 80 80 80 80 80 80 02 21`. Both runs sent Handguns style 129 and received own-view style update `02 00 02 80 80 80 80 80 10 81 00 00 00` before draw. The `65` and equipped attribute agree with the core equip records from the Luizo'e retail capture. Retail also sent Redpill Special-specific bonus records during that capture. The Free Attack selection is sent by the client, and the retained swap traces stayed on fists. The server already falls back to EquippedItemID when it receives a valid `41` with Free Attack cleared. The native trace contains no such activation request.
+
+The replay `3235367869b0` supplied `3f 69 00 10 00 00 00` for SharpShooter, then `3d 01` and `41 05 00 03 00` as separate requests. The later standalone `40 05 00 03 00 01 6b` came from SharpAlly. The replay `40f438148061` supplied `3f 69 00 10 00 00 00` and batched `3d 01`, `41 04 00 02 00`, and `40 04 00 02 00 00 69`. The server ignored that companion while firing. After `3d 00`, the replay sent a standalone `40 04 00 02 00 01 6b`, which got `4e 01` and its interlock echo. By comparison, the native target right-click and top Fire! entry sent `3d 01` without the explicit gun selection or ranged request.
+
+Retail ranged Fire! sends `41 <target>` with a companion `40 <target> 00 <weapon slot>`, leaving the fight in ranged mode. A standalone Close Combat request starts interlock. The retail tutorial selected a newly looted gun after a genuine `5e` inventory add. A prior native dev item grant reproduced the selection, while a weapon swap uses `65` moves for items already owned. Native verification is needed for the dropdown, the client action predicate and the rendered choreography. [Retail capture index](COMBAT-SYSTEM-ROADMAP.md)
+
+The combat-style headless scenario decodes the opening dual-weapon transition and checks Tomo Nage and Controlled Burst on delivered combat entries. The NativeQa bootstraps confirm each gun in its own-view login record and verify all three gun specials in a stock interlock replay.
 
 ## Validation
 
