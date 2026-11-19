@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
@@ -20,6 +21,7 @@ public class HackerBatchBParityTests
         client.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
         client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
         client.messageQueue = new MessageQueue();
+        client.viewMan = new ViewManager();
         typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, long.MaxValue);
         return client;
@@ -101,7 +103,6 @@ public class HackerBatchBParityTests
         var caster = Client();
         var friend = Client();
         var foe = Client();
-        caster.viewMan = new ViewManager();
         foreach (var (player, id, organization) in new[]
         {
             (caster, 7010u, (byte)1), (friend, 7011u, (byte)1), (foe, 7012u, (byte)2)
@@ -119,8 +120,10 @@ public class HackerBatchBParityTests
         var hostileView = caster.viewMan.addView(7012, 1);
         friendlyView.viewCreated = hostileView.viewCreated = true;
         var previous = WorldServer.Clients;
+        var previousWorld = Store.world;
         try
         {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
             WorldServer.Clients = new() { ["caster"] = caster, ["friend"] = friend, ["foe"] = foe };
             Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, foe));
             AbilitySupport.Land(caster, 46, hostileView.ViewID);
@@ -143,6 +146,7 @@ public class HackerBatchBParityTests
         {
             AbilityBuffs.RemoveAll(friend);
             WorldServer.Clients = previous;
+            Store.world = previousWorld;
         }
     }
 

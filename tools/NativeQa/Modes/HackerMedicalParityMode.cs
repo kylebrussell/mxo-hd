@@ -116,6 +116,7 @@ public sealed class HackerMedicalParityMode : NativeQaMode
             {
                 EvidenceRetestWire.Cast(caster, id, excluded);
                 await caster.WaitForRpcAsync("80 ba " + EvidenceRetestWire.Le(id));
+                await caster.WaitForTextAsync("Choose a living friendly target within range.");
                 await Task.Delay(TimeSpan.FromSeconds(0.6));
             }
             await WoundAsync(friend);

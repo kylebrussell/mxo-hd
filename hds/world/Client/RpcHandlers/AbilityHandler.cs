@@ -185,16 +185,19 @@ namespace hds
                 return;
             }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
-            if (support && AbilitySupport.RequiresBuffer(AbilityID) &&
-                AbilitySupport.Targets(Store.currentClient,AbilityID,currentTargetViewId).All(t => !AbilitySupport.BufferFits(t,AbilityID)))
+            if (support)
             {
-                Deny(AbilityID,"The upgrade buffer is full.");
-                return;
-            }
-            if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
-            {
-                Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
-                return;
+                var targets = AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId);
+                if (targets.Count == 0)
+                {
+                    Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
+                    return;
+                }
+                if (AbilitySupport.RequiresBuffer(AbilityID) && targets.All(target => !AbilitySupport.BufferFits(target, AbilityID)))
+                {
+                    Deny(AbilityID, "The upgrade buffer is full.");
+                    return;
+                }
             }
             if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
             {
