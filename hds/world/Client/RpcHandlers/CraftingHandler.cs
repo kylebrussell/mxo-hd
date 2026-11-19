@@ -182,7 +182,7 @@ namespace hds
 
         internal static int Skill(WorldClient client, ushort stat) => AbilityStats.Player(client, stat);
 
-        private static ushort Specialization(uint category)
+        internal static ushort Specialization(uint category)
         {
             string tag = System.Text.Encoding.ASCII.GetString(BitConverter.GetBytes(category));
             return tag.StartsWith("IW") ? (ushort)655 : tag.StartsWith("IA") ? (ushort)652 : tag.StartsWith("IT") ? (ushort)654 :

@@ -648,9 +648,16 @@ namespace hds
             }
             if (IsDaemonBoost(id))
             {
-                lock (boosts) boosts[caster.playerData.getCharID()] = id;
+                double now = TimeUtils.GetSimTimeSeconds();
+                lock (boosts)
+                {
+                    var charId = caster.playerData.getCharID();
+                    boosts[charId] = id;
+                    nextBoostPulse[charId] = now + 5;
+                }
                 EnsureTimer();
-                BoostTick(caster, TimeUtils.GetSimTimeSeconds());
+                // ApplyAuraEffect has an init callback. ISDrainWithAbilityDeactivation only has an update callback.
+                PulseDaemonBoost(caster, id, now);
                 return;
             }
             Pet pet = cast?.Target;
@@ -987,12 +994,11 @@ namespace hds
         private static void BoostTick(WorldClient owner, double now)
         {
             UInt16 on;
-            lock (boosts) if (!boosts.TryGetValue(owner.playerData.getCharID(), out on)) return;
-            Pet pet = Of(owner);
             lock (boosts)
             {
-                if (nextBoostPulse.TryGetValue(owner.playerData.getCharID(), out double next) && now < next) return;
-                nextBoostPulse[owner.playerData.getCharID()] = now + 5;
+                var charId = owner.playerData.getCharID();
+                if (!boosts.TryGetValue(charId, out on) || now < nextBoostPulse[charId]) return;
+                nextBoostPulse[charId] = now + 5;
             }
             UInt16 current = AbilityHandler.CurrentInnerStrength(owner);
             if (current < 5)
@@ -1005,8 +1011,14 @@ namespace hds
             UInt16 left = AbilityHandler.SpendInnerStrength(owner, 5);
             new ServerPackets().sendISCurrent(owner, left);
             owner.FlushQueue();
+            PulseDaemonBoost(owner, on, now);
+        }
+
+        private static void PulseDaemonBoost(WorldClient owner, UInt16 ability, double now)
+        {
+            Pet pet = Of(owner);
             if (pet == null || pet.Mob.getIsDead()) return;
-            UInt16 effect = on == DaemonBoost1 ? DaemonBoostEffect1 : DaemonBoostEffect2;
+            UInt16 effect = ability == DaemonBoost1 ? DaemonBoostEffect1 : DaemonBoostEffect2;
             var entry = AbilityCatalog.Find(effect);
             double radius = entry?.Number("Ability/RadiusOfEffect", 20) ?? 20;
             if (OwnerDistanceMetres(pet) > radius) { pet.BoostUntil = now + 5; pet.BoostViralDamage = pet.BoostHealing = pet.BoostAccuracy = 0; return; }

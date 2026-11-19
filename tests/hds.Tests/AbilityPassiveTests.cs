@@ -187,6 +187,77 @@ public class AbilityPassiveTests
     }
 
     [Fact]
+    public void CodeHardeningAffectsOnlyMeleeAndBallisticDamageWhileLoaded()
+    {
+        var caster = Client();
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (608, 50) });
+        Assert.Equal(5, AbilityStats.Influence(caster, 159));
+        Assert.Equal(5, AbilityStats.Influence(caster, 171));
+        Assert.Equal(104, AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100));
+        Assert.Equal(104, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(caster, 2, 100));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 100));
+    }
+
+    [Fact]
+    public void UtilityMasterParentGrantsTheActionAndAffectsOnlyMeleeAccuracy()
+    {
+        var caster = Client();
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (620, 50) });
+        Assert.True(AbilityPassives.IsLoaded(caster, 1108));
+        Assert.Equal(5, AbilityStats.Player(caster, 997));
+        Assert.Equal(2, AbilityStats.Attack(caster, false));
+        Assert.Equal(0, AbilityStats.Attack(caster, true));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(caster, 1108));
+        Assert.Equal(0, AbilityStats.Attack(caster, false));
+    }
+
+    [Fact]
+    public void UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats()
+    {
+        var caster = Client();
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 613, 100)));
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 1108, 100)));
+        AbilitySupport.Land(caster, 613, 100);
+        Assert.Equal(600, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(3, AbilityStats.Defense(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, true));
+        AbilitySupport.Land(caster, 1108, 100);
+        Assert.False(AbilityBuffs.IsActive(caster, 613));
+        Assert.True(AbilityBuffs.IsActive(caster, 1108));
+        Assert.Equal(650, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(100, Value(caster.playerInstance.Health));
+        Assert.Equal(6, AbilityStats.Defense(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, true));
+        Assert.True(AbilityBuffs.Remove(caster, 1108));
+        Assert.Equal(500, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(0, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Toughness(caster, false));
+        Assert.Equal(0, AbilityStats.Toughness(caster, true));
+    }
+
+    [Fact]
+    public void WeaponMakerFeedsTheWeaponCategoryCompileContest()
+    {
+        var caster = Client();
+        ushort weapon = CraftingHandler.Specialization(CraftingRules.Find(2565).Category);
+        ushort unrelated = CraftingHandler.Specialization(CraftingRules.Find(1271).Category);
+        Assert.Equal(655, weapon);
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (517, 50) });
+        Assert.Equal(50, CraftingHandler.Skill(caster, weapon));
+        Assert.Equal(0, CraftingHandler.Skill(caster, unrelated));
+        Assert.True(CraftingRules.Succeeds(1, 6, 51, CraftingHandler.Skill(caster, weapon)));
+        Assert.False(CraftingRules.Succeeds(1, 6, 51, CraftingHandler.Skill(caster, unrelated)));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0, CraftingHandler.Skill(caster, weapon));
+    }
+
+    [Fact]
     public void HackerDamageUsesPassiveAndActiveInfluenceAndUnloadingRestoresTheBase()
     {
         var caster = Client();
