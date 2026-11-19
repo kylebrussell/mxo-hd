@@ -24,7 +24,7 @@ namespace hds
     {
         public const ushort PoisonKnife = 146, WoundingThrow = 281, SeverArtery = 341, BerserkerAttack = 535, Taunt = 647,
             SideRollEscape = 121, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, WoodenStakePlus = 1022,
-            HolyWaterPlus = 1023, SilverBulletPlus = 1024;
+            HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
         // ability/general.py 9-17
@@ -33,7 +33,7 @@ namespace hds
 
         private static readonly HashSet<ushort> thrownDots = new HashSet<ushort> { PoisonKnife, WoundingThrow, SeverArtery };
         private const ushort AerialTakedown = 411;
-        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape, AerialTakedown, CartwheelEscape };
+        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape, AerialTakedown, CartwheelEscape, PistolEvasive };
         private static readonly Dictionary<ushort, ushort> exileWeakness = new Dictionary<ushort, ushort>
         {
             { WoodenStake, KilledOnlyByWood }, { WoodenStakePlus, KilledOnlyByWood },
@@ -63,8 +63,8 @@ namespace hds
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
             if (id == CartwheelEscape) return "on landing: caster Combat Evasion +25 for 30s from stored WhenEnabled 1 modifier";
-            if (id == BerserkerAttack || id == AerialTakedown) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
             if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
+            if (casterBuffs.Contains(id)) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
             if (id == Taunt) return "TauntAggro: NPCs in radius hate caster most and turn on them; humans unaffected";
             if (exileWeakness.ContainsKey(id)) return "general.py damage 10, x" +
                 (id >= WoodenStakePlus ? EnhancedExileDamageMultiplier : ExileDamageMultiplier) + " vs NPCKilledOnlyBy" +
@@ -153,8 +153,10 @@ namespace hds
         public static ushort? Damage(ushort id, Mob mob)
         {
             if (IsExileWeapon(id)) return ExileDamage(id, Weakness(mob));
-            // Aerial Takedown has both enemy damage and a separate landed self modifier.
-            return id != AerialTakedown && Handles(id) ? (ushort)0 : (ushort?)null;
+            // Both moves retain the ordinary hit before applying their landed caster modifiers.
+            ushort canonical = AbilityCatalog.Canonical(id);
+            if (canonical == AerialTakedown || canonical == PistolEvasive) return null;
+            return Handles(id) ? (ushort)0 : (ushort?)null;
         }
 
         /// <summary>After a move lands: the caster's buff, and Side Roll Escape's withdrawal.</summary>
