@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace hds
 {
-    /// <summary>Active buff/debuff totals used by the existing script-derived combat formulas.</summary>
+    /// <summary>Character attribute bases and capped modifiers used by the combat formulas.</summary>
     public static class AbilityStats
     {
         public static int Player(WorldClient client, UInt16 stat)
@@ -14,8 +14,18 @@ namespace hds
             int level = client.playerInstance.Level.getValue()[0];
             if (level > 0 && entry?.Has("Ability/BuffBonusCapScale") == true)
                 cap = Math.Min(cap, (int)(level * entry.Number("Ability/BuffBonusCapScale")));
-            return Math.Min(value, cap);
+            int bonus = Math.Min(value, cap);
+            return AttributeAllocation.Known(stat) ? CharacterBase(client, (byte)stat) + bonus : bonus;
         }
+
+        internal static ushort CharacterBase(WorldClient client, byte attribute)
+        {
+            var snapshot = System.Threading.Volatile.Read(ref client.playerData.attributeBases);
+            return snapshot != null && snapshot.TryGetValue(attribute, out ushort value)
+                ? value
+                : CharacterAttributes.LegacyValue(attribute);
+        }
+
         public static int Npc(Mob mob, UInt16 stat) => TimedEffects.ForMob(mob).Effects.Total(stat);
         public static int Influence(WorldClient client, UInt16 stat)
         {

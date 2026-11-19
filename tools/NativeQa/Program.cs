@@ -177,6 +177,8 @@ try
                     else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
                 }
+                else if (action == "status-debuff" && fixtureMode is NativeQa.Modes.AbilityStatusMode)
+                    result = await NativeQa.Modes.AbilityStatusMode.CastDebuffAsync(actor, q.GetProperty("ability").GetUInt16());
                 else if (action == "duel-accept")
                 {
                     duelActor = actor;

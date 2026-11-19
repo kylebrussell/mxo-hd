@@ -363,7 +363,7 @@ namespace hds
                 int baseline = UnbuffedMaximum(client, stat);
                 ushort bonus = stat == 106 ? (ushort)1057 : (ushort)1056;
                 UInt16 max = (UInt16)Math.Clamp(baseline + AbilityStats.PercentDelta(baseline, AbilityStats.Player(client, bonus)) +
-                    VitalTotal(client, stat) + AbilityPassives.Total(client, stat), 1, UInt16.MaxValue);
+                    AbilityStats.Player(client, stat), 1, UInt16.MaxValue);
                 if (stat == 106) client.playerData.buffHealthMaximumDelta = max - baseline;
                 else client.playerData.buffISMaximumDelta = max - baseline;
                 if (NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) != max) { maximum.setValue(max); changed.Add(maximum); }
