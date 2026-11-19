@@ -110,6 +110,14 @@ The first stock Operative run received its initial passive and Self Defense modi
 
 Before reviewing individual powers, open Status after jack-in and confirm Self Defense Combat values are populated. Capture the initial passive records and then repeat the Improved Sneak Attack (284) unload/reload at a Hardline or Load Area. Activate Cutthroat Upgrade (1119) with Operative Target selected and capture the self-only add records and their removal on replacement. The grouped headless check observes zero passive/style records before a processed feature request and malformed loading marker, one unique-record snapshot after the valid marker, and no replay on a duplicate marker.
 
+## Final Spy sweep
+
+Use `ability-parity-operative-spy` at level 50. Confirm Stock Status has its initial Self Defense values. Spy (155) grants Spy Upgrade (1113), which the stock client lists under Spy in Actions. The archive does not need to own the child.
+
+Stock switching to Spy Style (1112) published nine source-specific adds of +59 melee accuracy, +20 melee damage, +47 each melee, ballistic, viral and thrown defense, +66 thrown accuracy, +29 thrown damage and +72 contested withdraw. Switching to Self Defense removed the same nine records and restored the Status baseline. The extra Spy Upgrade (1113) activation sent +3 melee defense, +3 thrown accuracy, +2 thrown damage and +8 Stealth. The separate stealth reveal contest remains open. [Stock results](https://github.com/kylebrussell/mxo-hd/pull/361#issuecomment-7012859984)
+
+Spinning Backsweep uses its stored 28-point base when the legacy range is incomplete. The server still applies its separate stealth-opener rule and typed modifiers. Type-7 resistance, native motion, admission and full damage parity retain separate checks. Sneak (1111) tests cover its learned rank and damage break/retry. Bull Dog (1110) and Disable Evasion (1125) retain the `stealth-shields` fixture and their open cadence, shield contest and motion checks.
+
 ## Martial Artist second sweep
 
 Use the extended `ability-sweep-martial-artist` fixture and add these actions from stock Actions. The Melee Dummy is 3 m west. QAEnemy is 8 m east.
@@ -123,6 +131,7 @@ Use the extended `ability-sweep-martial-artist` fixture and add these actions fr
 | Interlock follow-ups | Reselect Kung-Fu once interlocked. Use Extreme Falling Kick (429) over successive eligible rounds to observe its 10% proc, four-second Stun and separate four-second immunity. Switch to Aikido for Iron Guard (139) and verify +10 melee/ballistic defense applied to the caster for 12 seconds on landing. |
 
 This sweep can close ten unique rows after native review (136, 137, 257, 258, 431, 861, 862, 868, 1062 and 1063). The interlock checks provide scoped evidence for their effects. Damage scaling and unresolved admission or animation checks remain open. The stock level-50 cap makes the level-99 Zen Master parent (871) inaccessible. Only the forced-level fixture ran its internal child (872), and direct activation is refused. The child remains partial while retail zero-amount restore chat at the IS cap is unverified. [Zen Master native evidence](https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433)
+
 ## Operative batch-two sweep
 
 Use `ability-parity-operative-sweep-2` on CSR110. Four rows have only stock-client checks outstanding. Compare Improved Invisibility (363) loaded and unloaded at a Hardline, observing all three ranked passive records and visible Status where available. With Operative Target selected, activate Knife Thrower Upgrade (1120) and Master Knife Thrower Upgrade (1121) and record the caster modifiers and replacement. Activate Shifty Technique (294) and capture its +80 Combat Evasion and 30-second expiry. Capture the outgoing stock requests and original add/off records. Master Assassin Upgrade (1123) is an additional sample with a separate stealth contest check.

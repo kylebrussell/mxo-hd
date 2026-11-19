@@ -88,6 +88,8 @@ public static class NativeQaBootstrapChecks
                         Check.That(loadout.Any(row => row.Slot == slot && row.Level > 0 && row.Descriptor == (0x80000000u | ((uint)id << 10))),
                             $"Stock Margin has loaded fixture ability or prerequisite {id} at slot {slot}");
                 }
+                if (mode is Modes.AbilityParityOperativeSpyMode spySweep)
+                    await spySweep.VerifyHeadlessAsync(probe);
                 if (plan.EnvironmentOverrides.GetValueOrDefault(hds.CombatFixtureWeapons.WeaponMode) == "1")
                     await CombatFixtureLoadout.VerifyWeaponsAsync(probe, database);
                 if (mode is Modes.GunStyleChoreographyMode gunStyle)

@@ -1,0 +1,72 @@
+{
+  "abilities": {
+    "155": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 155 grants the zero-level Spy Upgrade 1113 while loaded.",
+          "runtime": "An owned and loaded parent contributes the live grant. The world-ready registry sends the hidden-slot load and sourced grant add once. Unload removes that grant, and a new valid load restores it.",
+          "test": "OperativeFinalBatchTests.SpyGrantDoesNotPublishUntilReadyAndReloadsOnce and ability-parity-operative-spy."
+        }
+      },
+      "family": "spy-discipline-live-grant"
+    },
+    "1112": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1112 stores nine learned-rank style modifiers. At rank 50 the amounts are melee accuracy 59 and damage 20, melee/ballistic/viral/thrown defense 47 each, thrown accuracy 66 and damage 29, and contested withdraw 72.",
+          "runtime": "The loaded style contributes only while selected. Physical and typed contest, damage, and the existing ordinary withdrawal path read those inputs. Switching to Self Defense removes the nine style records.",
+          "test": "OperativeFinalBatchTests.SpyStyleSwitchPublishesAndWithdrawsAllNineInputs and ability-parity-operative-spy."
+        },
+        "behavior-tests": {
+          "source": "GOB 1112 stores nine learned-rank style modifiers. At rank 50 the amounts are melee accuracy 59 and damage 20, melee/ballistic/viral/thrown defense 47 each, thrown accuracy 66 and damage 29, and contested withdraw 72.",
+          "runtime": "The loaded style contributes only while selected. Physical and typed contest, damage, and the existing ordinary withdrawal path read those inputs. Switching to Self Defense removes the nine style records.",
+          "test": "OperativeFinalBatchTests.SpyStyleSwitchPublishesAndWithdrawsAllNineInputs and ability-parity-operative-spy."
+        }
+      },
+      "family": "spy-active-style-stats"
+    },
+    "1113": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1113 is self-only and gives +3 melee defense, +3 thrown accuracy, +2 thrown damage and +8 Stealth while enabled.",
+          "runtime": "The class buff ignores hostile selection and feeds the actual typed combat and stealth inputs. Removing the buff restores those inputs. The separate stock reveal contest stays open.",
+          "test": "OperativeFinalBatchTests.SpyUpgradeAffectsOnlyCasterAndFeedsStealthAndTypedCombatInputs and ability-parity-operative-spy."
+        },
+        "stats": {
+          "source": "GOB 1113 is self-only and gives +3 melee defense, +3 thrown accuracy, +2 thrown damage and +8 Stealth while enabled.",
+          "runtime": "The class buff ignores hostile selection and feeds the actual typed combat and stealth inputs. Removing the buff restores those inputs. The separate stock reveal contest stays open.",
+          "test": "OperativeFinalBatchTests.SpyUpgradeAffectsOnlyCasterAndFeedsStealthAndTypedCombatInputs and ability-parity-operative-spy."
+        },
+        "behavior-tests": {
+          "source": "GOB 1113 is self-only and gives +3 melee defense, +3 thrown accuracy, +2 thrown damage and +8 Stealth while enabled.",
+          "runtime": "The class buff ignores hostile selection and feeds the actual typed combat and stealth inputs. Removing the buff restores those inputs. The separate stock reveal contest stays open.",
+          "test": "OperativeFinalBatchTests.SpyUpgradeAffectsOnlyCasterAndFeedsStealthAndTypedCombatInputs and ability-parity-operative-spy."
+        }
+      },
+      "family": "spy-upgrade-self-buff"
+    },
+    "1111": {
+      "checks": {
+        "controls": {
+          "source": "GOB 1111 stores the while-enabled stealth control and calls OnHealthReduceDeactivateAbility on damage.",
+          "runtime": "An active Sneak persists through a non-damaging health callback and ends on qualifying damage. The native translucency toggle and visible reveal are documented independently from full movement and noise consumption.",
+          "test": "OperativeFinalBatchTests.SneakUsesGrantedRankAndDamageTurnsItOffBeforeRetry and prior stock translucency/reveal. https://github.com/kylebrussell/mxo-hd/pull/317#issuecomment-6999564082"
+        }
+      }
+    },
+    "1125": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1125's 710 modifier invokes DisableEvasion / EnableEvasion for eight seconds; the script retains a separate caster marker for restealth.",
+          "runtime": "The fixed-duration target tuple suppresses the live shield child, preserves parent age and record identities, and restores eligibility only if that parent still exists. Admission requires the current hidden caster, eligible shielded target and carried ITOt tool. The separate caster marker has ownership, timing and action guards.",
+          "test": "StealthShieldTests.SuppressionKeepsTheParentRecordIdsGenerationAndToggleWhileOnlyTheChildStateIsOff, EndCannotRecreateAParentThatWasTurnedOffUnloadedOrLostItsWorld, CastStartTargetIdentityAndLifePreventViewReuseAndResurrectionRetargeting and stealth-shields-suppression. Shield health, contest and retail motion remain source-parity items."
+        },
+        "script": {
+          "source": "GOB 1125's 710 modifier invokes DisableEvasion / EnableEvasion for eight seconds; the script retains a separate caster marker for restealth.",
+          "runtime": "The fixed-duration target tuple suppresses the live shield child, preserves parent age and record identities, and restores eligibility only if that parent still exists. Admission requires the current hidden caster, eligible shielded target and carried ITOt tool. The separate caster marker has ownership, timing and action guards.",
+          "test": "StealthShieldTests.SuppressionKeepsTheParentRecordIdsGenerationAndToggleWhileOnlyTheChildStateIsOff, EndCannotRecreateAParentThatWasTurnedOffUnloadedOrLostItsWorld, CastStartTargetIdentityAndLifePreventViewReuseAndResurrectionRetargeting and stealth-shields-suppression. Shield health, contest and retail motion remain source-parity items."
+        }
+      }
+    }
+  }
+}

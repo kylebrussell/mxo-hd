@@ -1,0 +1,25 @@
+{
+  "families": {
+    "spy-discipline-live-grant": {
+      "representative": 155,
+      "result": "pass",
+      "head": "8c0555262b26145c016d4eec5cb240dda6e09ca0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/361#issuecomment-7012859984",
+      "scope": "Stock Actions listed Spy Upgrade in the Spy section and activated it. The saved CSR capture at CSEQ 3/SSEQ 14 contains the source 155, target 1113, zero-valued individual grant add. The disposable replay verifies the grant lifecycle on membership changes."
+    },
+    "spy-active-style-stats": {
+      "representative": 1112,
+      "result": "pass",
+      "head": "8c0555262b26145c016d4eec5cb240dda6e09ca0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/361#issuecomment-7012859984",
+      "scope": "Stock CSR switched from Self Defense to Spy Style and back. CSEQ 45/SSEQ 106 has all nine source-1112 adds: 522/59, 159/20, 1009/47, 1010/47, 1032/66, 1034/29, 1011/47, 183/47 and 1005/72. CSEQ 48/SSEQ 116 has the nine paired removals with the same locator and value. Status and Combat returned to baseline."
+    },
+    "spy-upgrade-self-buff": {
+      "representative": 1113,
+      "result": "pass",
+      "head": "8c0555262b26145c016d4eec5cb240dda6e09ca0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/361#issuecomment-7012859984",
+      "scope": "Stock Spy Upgrade activated and displayed +3 melee defense, +3 thrown accuracy, +2 thrown damage and +8 Stealth. CSEQ 53/SSEQ 130 contains those exact four source-1113 records. This records the self-buff family; stealth detection still requires separate evidence."
+    }
+  }
+}

@@ -381,6 +381,15 @@ namespace hds
             {
                 return (UInt16)random.Next(from, to + 1);
             }
+            // Spinning Backsweep has an incomplete legacy range and one fixed thrown health modifier.
+            if (source?.Id == 152)
+            {
+                var shipped = source.Modifiers.SingleOrDefault(m => m.Target == 108 &&
+                    m.Number("DamageType", -1) == 7 && m.Number("WhenEnabled", -1) == 2 &&
+                    m.Number("DurationType", -1) == 1 && m.Number("MinValue") == m.Number("MaxValue"));
+                if (shipped != null && AbilityValues.TryValue(shipped, 0, 0, out int amount) && amount > 0)
+                    return (UInt16)amount;
+            }
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? random.Next(50, 81));
         }
