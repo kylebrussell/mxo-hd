@@ -147,15 +147,7 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected the disposable Hacker sweep server.");
         var grant = await caster.WaitForRpcAsync("80 b2 44 04 00 00 08 02");
         var members = new[] { context.Helpers["QAFriend"], context.Helpers["QAFar"] };
-        foreach (var member in members)
-        {
-            caster.SendRpc(new byte[] { 0x6e }.Concat(SocialRequests.BuildGroupInvite(3, member.Handle, "")).ToArray());
-            await member.WaitForRpcAsync("80 8f 0c 00");
-            byte[] inviter = Encoding.ASCII.GetBytes(caster.Handle + "\0");
-            member.SendRpc(new byte[] { 0x6f, 3, 8, 0, 0, 0, 0, 0 }
-                .Concat(BitConverter.GetBytes((ushort)inviter.Length)).Concat(inviter).ToArray());
-            await member.WaitForRpcAsync("80 8e");
-        }
+        await InviteTeamMembersAsync(caster, members);
 
         var nearby = members[0];
         var far = members[1];
@@ -245,7 +237,20 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
 
     private static string Le(ushort value) => WireFormat.ToHex(BitConverter.GetBytes(value));
 
-    private static byte[] SendCast(HeadlessPlayer caster, ushort ability, ViewCreation? target = null)
+    internal static async Task InviteTeamMembersAsync(HeadlessPlayer caster, IEnumerable<HeadlessPlayer> members)
+    {
+        foreach (var member in members)
+        {
+            caster.SendRpc(new byte[] { 0x6e }.Concat(SocialRequests.BuildGroupInvite(3, member.Handle, "")).ToArray());
+            await member.WaitForRpcAsync("80 8f 0c 00");
+            byte[] inviter = Encoding.ASCII.GetBytes(caster.Handle + "\0");
+            member.SendRpc(new byte[] { 0x6f, 3, 8, 0, 0, 0, 0, 0 }
+                .Concat(BitConverter.GetBytes((ushort)inviter.Length)).Concat(inviter).ToArray());
+            await member.WaitForRpcAsync("80 8e");
+        }
+    }
+
+    internal static byte[] SendCast(HeadlessPlayer caster, ushort ability, ViewCreation? target = null)
     {
         // Full stock 80 b9 selector shape from the native status fixture. Set only the ability and direct object.
         byte[] raw = Convert.FromHexString("80b93a010000000000000000000000000000000000000000000000000000000000000000086b0000000000");

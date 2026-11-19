@@ -76,6 +76,9 @@ namespace hds
 
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
+        internal const ushort UpgradeArtistUpgrade = 1095;
+
+        internal static bool HasClassSweep(ushort id) => id == ForceMultiplierUpgrade || id == UpgradeArtistUpgrade;
         private const ushort MovementAccelerator = 62;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
@@ -274,7 +277,7 @@ namespace hds
             {
                 if (entry.Number("Ability/CastDirectObjects", -1) != 1 && !entry.FriendlyTarget || entry.Healing) continue;
                 var mods = entry.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2 &&
-                    !(entry.Id == ForceMultiplierUpgrade && m.Text("StatModUpdateFunc") == "NegativeConditionSweepPulse")).ToList();
+                    !(HasClassSweep(entry.Id) && m.Text("StatModUpdateFunc") == "NegativeConditionSweepPulse")).ToList();
                 if (mods.Count == 0 || mods.Any(m => m.Target == 0 || m.Target == 108 || m.State != 0 ||
                     !m.Has("MinValue") || m.Number("MinValue") != m.Number("MaxValue") || m.Has("ValueScale") ||
                     m.Number("ValueFunction") != 0 || !string.IsNullOrEmpty(m.Text("StatModInitFunc")) ||
@@ -506,7 +509,7 @@ namespace hds
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
-            if (abilityId == ForceMultiplierUpgrade)
+            if (HasClassSweep(abilityId))
             {
                 AbilityHostile.ApplySweep(caster ?? client, client, abilityId);
                 if (!IsActive(client, abilityId))
@@ -648,7 +651,7 @@ namespace hds
                 if(active.Drain!=null)active.Drain.Cancelled=true;
                 data.activeBuffs.Remove(abilityId);
             }
-            if (abilityId == ForceMultiplierUpgrade)
+            if (HasClassSweep(abilityId))
                 TimedEffects.RemoveParent(TimedEffects.ForPlayer(client), abilityId);
             if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);

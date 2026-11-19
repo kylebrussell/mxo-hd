@@ -213,7 +213,10 @@ public class AbilityHealthCallbackTests
             TimedEffects.Apply(TimedEffects.ForPlayer(c),overflow,TimeUtils.GetSimTimeSeconds(),c,"Source");
             AbilityBuffs.Apply(c,693);Assert.Equal(19,AbilityBuffs.Total(c,183));Assert.Equal(9,AbilityBuffs.Total(c,1009));
             AbilityHostile.PulseRandom=new ZeroRandom();
+            Assert.True(TimedEffects.ForPlayer(c).Effects.HasParent(481));
             Assert.True(AbilityBuffs.Remove(c,693));Assert.Equal(0,AbilityBuffBuffer.Reserved(c));
+            Assert.False(TimedEffects.ForPlayer(c).Effects.HasParent(481));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(c));
             Assert.False(AbilityBuffs.Remove(c,693));
         }
         finally { AbilityHostile.PulseRandom=previous;AbilityBuffs.RemoveAll(c); }
