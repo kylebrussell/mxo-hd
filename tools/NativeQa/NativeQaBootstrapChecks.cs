@@ -74,7 +74,7 @@ public static class NativeQaBootstrapChecks
         HeadlessPlayer? probe = null;
         try
         {
-            if (characterUi != null || plan.LoadAbilityAncestors)
+            if (characterUi != null || plan.LoadAbilityAncestors || mode is Modes.AbilityParityOperativeSweep2Mode)
             {
                 probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
@@ -116,6 +116,8 @@ public static class NativeQaBootstrapChecks
                     await CombatFixtureLoadout.VerifyWeaponSwapAsync(probe, database, "handgun", hds.CombatFixtureWeapons.Handgun);
                 }
             }
+            if (probe != null && OperativePassiveLoadoutQa.Supports(mode.Name))
+                await OperativePassiveLoadoutQa.VerifyAsync(probe, mode.Name);
             if (names.Length > 1 || !HasCustomHook(NativeQaModes.Find(names[0])))
             {
                 canary = await HeadlessPlayer.LoginAsync(server.Address, "QAFriend", "QAFriend");

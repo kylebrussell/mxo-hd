@@ -1,0 +1,18 @@
+{
+  "families": {
+    "operative-knife-upgrades": {
+      "representative": 1120,
+      "result": "pass",
+      "head": "03590c7cd358a9c41ecab226b91a228c380852f5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/354#issuecomment-7012593344",
+      "scope": "Stock 1120 displayed +4 Thrown Damage, +15 Thrown Accuracy and +10% Combat Evasion. The pre-cast baseline came from the same fixture character in PR340. Stock 1121 replaced 1120 and displayed +6 Thrown Damage, +18 Thrown Accuracy and +10% Combat Evasion. The replacement removed the previous source."
+    },
+    "operative-shifty-evasion": {
+      "representative": 294,
+      "result": "pass",
+      "head": "03590c7cd358a9c41ecab226b91a228c380852f5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/354#issuecomment-7012593344",
+      "scope": "The stock hotbar action raised Combat Evasion from +10% to +90% while both thrown inputs remained unchanged. Combat Evasion returned to +10% at the 30-second expiry."
+    }
+  }
+}
