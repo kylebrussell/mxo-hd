@@ -78,7 +78,7 @@ public class CombatDepthTests
         Assert.Equal(60+bonus,SneakAttacks.Add(60,ability,true));
     }
     [Theory]
-    [InlineData(197,284)] [InlineData(198,285)] [InlineData(287,19597)] [InlineData(267,5937)] [InlineData(412,742)]
+    [InlineData(197,284)] [InlineData(198,285)] [InlineData(287,19597)] [InlineData(267,5937)] [InlineData(412,751)]
     public void SpecialsUseTheirOwnShippedMoveAndDuration(ushort ability,uint move)
     {
         var animation=CombatAnimations.Special(ability,true,CombatTactic.Speed)!;

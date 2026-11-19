@@ -164,6 +164,35 @@ public class CombatStyleTests
         Assert.Equal(748u, CombatAnimations.All.First(m => m.Id == 748).Id); // the captured Aikido special stays exported
     }
 
+    [Theory]
+    [InlineData(250, CombatTactic.Speed, 'S', 21082u)]
+    [InlineData(256, CombatTactic.Speed, 'S', 11367u)]
+    [InlineData(407, CombatTactic.Speed, 'S', 827u)]
+    [InlineData(407, CombatTactic.Power, 'W', 825u)]
+    [InlineData(412, CombatTactic.Speed, 'S', 751u)]
+    [InlineData(532, CombatTactic.Speed, 'S', 5934u)]
+    public void CanonicalIlDbAbilityBindingsSelectTheReviewedMove(int ability, CombatTactic tactic, char style, uint move)
+    {
+        Assert.True(CombatAnimations.HasAbilityRule((ushort)ability));
+        Assert.Equal(move, CombatAnimations.Special((ushort)ability, true, tactic, style)?.Id);
+        Assert.Null(CombatAnimations.Special((ushort)ability, false, tactic, style));
+    }
+
+    [Theory]
+    [InlineData(129, RangedWeapons.ClassPistol, 'P', 21052u, 10896u)]
+    [InlineData(147, RangedWeapons.ClassRifle, 'R', 21068u, 12541u)]
+    [InlineData(158, RangedWeapons.ClassSubmachinegun, 'G', 21060u, 5851u)]
+    [InlineData(158, RangedWeapons.ClassDualSubmachinegun, 'D', 21076u, 3787u)]
+    [InlineData(129, RangedWeapons.ClassDualPistol, 'D', 21076u, 3787u)]
+    public void EquippedGunUsesItsStockTransitionAndStaticExchange(int style, byte weapon, char letter, uint transition, uint exchange)
+    {
+        Assert.Equal(letter, CombatStyles.Letter((ushort)style, weapon));
+        Assert.Equal(transition, CombatAnimations.Transition(CombatTactic.Speed, letter));
+        Assert.Equal(exchange, CombatAnimations.Choose(CombatTactic.Speed, CombatTactic.Speed,
+            CombatRules.AttackerHits, 0, letter, 'S').Id);
+        Assert.Equal('S', CombatStyles.Letter((ushort)style, 0));
+    }
+
     [Fact]
     public void ThrownDotsUseTheirStoredValuesAndTheScriptTick()
     {

@@ -25,10 +25,10 @@ namespace hds
     public static class CombatStyles
     {
         public const ushort SelfDefense = 17, Aikido = 101, Karate = 132, KungFu = 133, HackerStyle = 1006,
-            CoderStyle = 1008, SpyStyle = 1112;
+            CoderStyle = 1008, SpyStyle = 1112, Handguns = 129, Rifles = 147, SubmachineGuns = 158;
 
         /// <summary>Handguns, Rifles and Submachine Guns use the same shipped learned-level modifier schema as martial styles.</summary>
-        public static readonly HashSet<ushort> WeaponStyles = new HashSet<ushort> { 129, 147, 158 };
+        public static readonly HashSet<ushort> WeaponStyles = new HashSet<ushort> { Handguns, Rifles, SubmachineGuns };
 
         public static bool IsStyle(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsCombatExclusive") == 1;
 
@@ -135,7 +135,20 @@ namespace hds
             Aikido => 'A', Karate => 'K', KungFu => 'W', _ => 'S'
         };
 
-        public static char Letter(WorldClient client) => client == null ? 'S' : Letter(Active(client));
+        /// <summary>The ILDB keys weapon exchanges by the gun in hand. The active close-combat discipline
+        /// must match that weapon family; the independent Free Fire selection is not used.</summary>
+        public static char Letter(ushort style, byte attackClass) => (style, attackClass) switch
+        {
+            (Handguns, RangedWeapons.ClassPistol) => 'P',
+            (Rifles, RangedWeapons.ClassRifle) => 'R',
+            (SubmachineGuns, RangedWeapons.ClassSubmachinegun) => 'G',
+            (Handguns, RangedWeapons.ClassDualPistol) => 'D',
+            (SubmachineGuns, RangedWeapons.ClassDualSubmachinegun) => 'D',
+            _ => Letter(style)
+        };
+
+        public static char Letter(WorldClient client) => client == null ? 'S' :
+            Letter(Active(client), RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(client)));
 
         /// <summary>Makes the selected style the active one: its stat records replace the previous style's.</summary>
         public static void Select(WorldClient client, ushort style)

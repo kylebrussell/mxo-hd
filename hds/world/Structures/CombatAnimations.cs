@@ -6,15 +6,14 @@ using System.Text.Json;
 
 namespace hds
 {
-    /// <summary>Sourced static tactic exchanges for the styles with their own ILDB sets: Self-Defense (S), Aikido (A),
-    /// Karate (K) and Kung-Fu (W); see <see cref="CombatStyles.Letter"/>. A pair the ILDB lacks falls back to
+    /// <summary>Sourced static tactic exchanges for martial-arts and weapon styles; see <see cref="CombatStyles.Letter"/>. A pair the ILDB lacks falls back to
     /// Self-Defense. Named special choreography uses the extracted ILDB; the full rule language remains separate.</summary>
     public static class CombatAnimations
     {
         public sealed class Move
         {
             public uint Id, Flags;
-            public ushort DurationMs;
+            public ushort DurationMs, AbilityRule;
             public string Group, Name;
             public ulong Reference => CombatRoundEntry.Reference(Id);
         }
@@ -25,10 +24,33 @@ namespace hds
             {
                 Id = row.GetProperty("id").GetUInt32(), Flags = row.GetProperty("flags").GetUInt32(),
                 DurationMs = row.GetProperty("duration_ms").GetUInt16(),
+                AbilityRule = row.TryGetProperty("ability_rule", out var ability) ? ability.GetUInt16() : (ushort)0,
                 Group = row.GetProperty("group").GetString(), Name = row.GetProperty("name").GetString()
             }).ToArray();
         });
         public static IReadOnlyList<Move> All => moves.Value;
+        private static readonly Lazy<ILookup<ushort, Move>> boundSpecials = new Lazy<ILookup<ushort, Move>>(() =>
+            All.Where(m => m.AbilityRule != 0).ToLookup(m => m.AbilityRule));
+        private static readonly Lazy<ILookup<(string, uint), Move>> exchanges = new Lazy<ILookup<(string, uint), Move>>(() =>
+            All.Where(m => m.Group.Length > 8 && m.Group[8] == ':' && m.Group.AsSpan(2, 4).SequenceEqual(" vs ") &&
+                m.Name.Contains("static", StringComparison.Ordinal)).ToLookup(m => (m.Group.Substring(0, 9), m.Flags)));
+
+        public static bool HasAbilityRule(ushort ability) => boundSpecials.Value.Contains(AbilityCatalog.Canonical(ability));
+
+        /// <summary>Reviewed multi-round RULS bindings with an explicit gun requirement.</summary>
+        public static bool CanQueueGunCast(WorldClient caster, ushort ability)
+        {
+            if (!HasAbilityRule(ability) || !CombatStyles.CanUse(caster, ability)) return false;
+            byte weapon = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(caster));
+            return (ability, weapon) == (250, RangedWeapons.ClassDualSubmachinegun) ||
+                (ability, weapon) == (256, RangedWeapons.ClassRifle);
+        }
+
+        internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>
+            ControlActions.CanUseAbilities(caster) && (ability == null ||
+                ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
+                (ability.getCastingTime() <= 0 || CanQueueGunCast(caster, ability.getAbilityID())));
+
         // Name matches/aliases between the GOB ability and ILDB choreography. Aliases are server policy;
         // IDs/durations are extracted, never inferred from ability IDs. Unmapped moves retain tactic fallback.
         private static readonly Dictionary<ushort, string> specialNames = new Dictionary<ushort, string>
@@ -40,22 +62,31 @@ namespace hds
             {241,"Pistol Slide"},{242,"Pistol Evasive MR"},{243,"Pistol Aerial"},{244,"Pistol Barrage MR"},
             {126,"Pistol Disarming Shot"},{501,"Pistol Whip"},{502,"Pistol Execution MR"},
             {105,"Rifle Body Shot MR"},{253,"Rifle WoundingShot"},{254,"Rifle ImmobilizingShot"},
-            {255,"Rifle DisablingShot"},{256,"Rifle 3RoundBurst"},{453,"Rifle RifleButt"},{454,"Rifle DeadlyShot"},
+            {255,"Rifle DisablingShot"},{453,"Rifle RifleButt"},{454,"Rifle DeadlyShot"},
             {176,"SubM CoveringFire"},{248,"SubM SupressionFire"},{249,"SubM SlidingVolley"},
             {494,"SubM FullAuto"},{496,"SubM FullAutoRedux"},
             {259,"Dim_Mak"},{260,"Misdirect_Finger_Rake"},{261,"Machinegun_First_Combo"},{262,"Piston_Kicks"},
             {265,"Ki-Charged Reverse Punch"},{266,"Jump Sidekick Spin Kick Combo"},{267,"Sky High Sidekick"},
             {268,"Swirling Ki-summon"},{273,"AikidoAbility CntrThrowVsSMPunch"},{274,"AikidoAbility MakiOfootsweep"},
-            {296,"AikidoAbility SpinClayPigeon"},{407,"AikidoAbility KickRevBlowout"},{411,"AikidoAbility AerialTakedown"},
-            {412,"AikidoAbility TomoNage"},{427,"Triple_Front_Kick"},{428,"Suicidal_Butterfly"},
-            {429,"Extrteme_Falling_Kick"},{430,"Wooden_Dummy_Drill"},{532,"Karate MachGunKick"},
+            {296,"AikidoAbility SpinClayPigeon"},{411,"AikidoAbility AerialTakedown"},
+            {427,"Triple_Front_Kick"},{428,"Suicidal_Butterfly"},
+            {429,"Extrteme_Falling_Kick"},{430,"Wooden_Dummy_Drill"},
             {534,"AikidoAbility ArmBarToKotoG"},{535,"Beserker Attack"},{536,"Foot Sweep Ki Punch"},
             {282,"Blinding Throw SR"},{1135,"Paralyzing Throw SR"}
         };
-        public static IEnumerable<ushort> MappedSpecials => specialNames.Keys;
+        public static IEnumerable<ushort> MappedSpecials => specialNames.Keys.Concat(boundSpecials.Value.Select(group => group.Key));
         public static Move Special(ushort ability, bool landed, CombatTactic targetTactic, char targetStyle = 'S')
         {
-            if (!specialNames.TryGetValue(AbilityCatalog.Canonical(ability), out string name)) return null;
+            ability = AbilityCatalog.Canonical(ability);
+            string target = " vs " + targetStyle + Suffix(targetTactic);
+            var bound = boundSpecials.Value[ability];
+            if (landed && boundSpecials.Value.Contains(ability))
+                return bound.FirstOrDefault(m => m.Name.EndsWith(target, StringComparison.Ordinal)) ??
+                    bound.FirstOrDefault(m => !m.Name.Contains(" vs ", StringComparison.Ordinal)) ??
+                    bound.FirstOrDefault(m => m.Name.EndsWith(" vs S" + Suffix(targetTactic), StringComparison.Ordinal)) ??
+                    bound.FirstOrDefault(m => m.Name.EndsWith(" vs SS", StringComparison.Ordinal));
+
+            if (!specialNames.TryGetValue(ability, out string name)) return null;
             if (!landed)
             {
                 if (SneakAttacks.Bonus(ability, true) > 0)
@@ -66,7 +97,7 @@ namespace hds
                 // Failed choreography is only selected where the ILDB actually names it.
                 return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name + "_Failed");
             }
-            string versus = name + " vs " + targetStyle + Suffix(targetTactic);
+            string versus = name + target;
             return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == versus) ??
                 All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name) ??
                 All.FirstOrDefault(m => m.Flags == 0x100 && m.Name.StartsWith(name + " vs S", StringComparison.Ordinal));
@@ -88,14 +119,14 @@ namespace hds
             uint result = flags & (CombatRules.AttackerHits | CombatRules.NoHits | CombatRules.BothHit | CombatRules.FinishingMove);
             if ((result & (CombatRules.AttackerHits | CombatRules.BothHit)) == 0) result = CombatRules.NoHits;
             string prefix = $"{firstStyle}{Suffix(first)} vs {secondStyle}{Suffix(second)}:";
-            Move[] candidates = All.Where(m => m.Group.StartsWith(prefix, StringComparison.Ordinal) && m.Flags == result).ToArray();
+            Move[] candidates = exchanges.Value[(prefix, result)].ToArray();
             if (candidates.Length == 0)
             {
                 prefix = $"S{Suffix(first)} vs S{Suffix(second)}:";
-                candidates = All.Where(m => m.Group.StartsWith(prefix, StringComparison.Ordinal) && m.Flags == result).ToArray();
+                candidates = exchanges.Value[(prefix, result)].ToArray();
             }
-            if (candidates.Length == 0) candidates = All.Where(m => m.Group.StartsWith("SS vs SS:", StringComparison.Ordinal) && m.Flags == result).ToArray();
-            if (candidates.Length == 0) candidates = All.Where(m => m.Group.StartsWith("SS vs SS:", StringComparison.Ordinal) && m.Flags == CombatRules.NoHits).ToArray();
+            if (candidates.Length == 0) candidates = exchanges.Value[("SS vs SS:", result)].ToArray();
+            if (candidates.Length == 0) candidates = exchanges.Value[("SS vs SS:", CombatRules.NoHits)].ToArray();
             return candidates[variant % candidates.Length];
         }
     }
