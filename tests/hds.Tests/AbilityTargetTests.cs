@@ -8,6 +8,19 @@ public class AbilityTargetTests
     private static string Hex(byte[] bytes) => StringUtils.bytesToString_NS(bytes).ToLowerInvariant();
 
     [Fact]
+    public void StaticBlastUsesFixedViralBaseDespiteTheIncompleteLegacyRange()
+    {
+        var blast = new AbilityItem();
+        blast.setAbilityID(33);
+        blast.setValueFrom(22);
+        blast.setValueTo(0);
+        Assert.Equal(22, blast.getValueFrom());
+        Assert.Equal(0, blast.getValueTo());
+        Assert.Equal((ushort)22, AbilityHandler.AbilityDamage(blast, new Random(3)));
+        Assert.Equal((ushort)22, AbilityHandler.AbilityDamage(blast, new Random(177)));
+    }
+
+    [Fact]
     public void RetailDamageRangesAndEffects()
     {
         // Logic Bomb 3 (actions_combat 10:27:51, NPC view 16): fb 03 -> db 02 = 288 with EffectID 0x28000a0d
