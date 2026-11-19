@@ -30,7 +30,7 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == 265 || ability == 532 || ability == 534) && modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
+            ((ability == 429 || ability == 265 || ability == 532 || ability == 534) && modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
         {

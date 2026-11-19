@@ -33,7 +33,8 @@ namespace hds
 
         private static readonly HashSet<ushort> thrownDots = new HashSet<ushort> { PoisonKnife, WoundingThrow, SeverArtery };
         private const ushort AerialTakedown = 411;
-        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape, AerialTakedown, CartwheelEscape, PistolEvasive };
+        private const ushort IronGuard = 139;
+        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape, AerialTakedown, CartwheelEscape, PistolEvasive, IronGuard };
         private static readonly Dictionary<ushort, ushort> exileWeakness = new Dictionary<ushort, ushort>
         {
             { WoodenStake, KilledOnlyByWood }, { WoodenStakePlus, KilledOnlyByWood },
@@ -153,9 +154,9 @@ namespace hds
         public static ushort? Damage(ushort id, Mob mob)
         {
             if (IsExileWeapon(id)) return ExileDamage(id, Weakness(mob));
-            // Both moves retain the ordinary hit before applying their landed caster modifiers.
+            // These moves retain the ordinary hit before applying their landed caster modifiers.
             ushort canonical = AbilityCatalog.Canonical(id);
-            if (canonical == AerialTakedown || canonical == PistolEvasive) return null;
+            if (canonical == AerialTakedown || canonical == PistolEvasive || canonical == IronGuard) return null;
             return Handles(id) ? (ushort)0 : (ushort?)null;
         }
 

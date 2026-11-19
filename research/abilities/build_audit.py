@@ -264,7 +264,9 @@ def server(i):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):
         parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
-    if any(m.get('StatModTermFunc') == 'ApplyStunWithTimer' for m in mods(i)) and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
+    if i == 429 and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
+        parts.append('10% landed proc expires after 0.1s; ApplyStunWithTimer gives 4s Stun and separate 4s immunity')
+    elif any(m.get('StatModTermFunc') == 'ApplyStunWithTimer' for m in mods(i)) and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
         parts.append('landed proc .01s marker calls ApplyStunWithTimer; 4s Stun and separate 4s immunity')
     if i in (268, 406):
         parts.append('caster-centred hostile area via shipped selector 4 at cast completion')
@@ -358,7 +360,7 @@ def server(i):
 
 
 def status(i):
-    if i == 7:
+    if i in (7, 871):
         return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
@@ -444,6 +446,8 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['script'] = 'Verify callback coverage for ' + ', '.join(hooks)
     if 'OURS' in runtime_summary or 'unresolved' in runtime_summary:
         open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
+    if i == 872:
+        open_items['source-parity'] = 'Verify whether stock retail suppresses the zero-amount restore chat when IS is already capped'
     if not open_items and current_status == 'cosmetic':
         open_items['consumer'] = 'Identify the gameplay effect or establish the discipline is metadata only'
     open_items['behavior-tests'] = 'Account for every listed shipped behavior with executable coverage and a test'
@@ -465,6 +469,8 @@ for i in sorted(player):
     access = 'memory' if fields(i).get('Ability/InventoryMemCost', 0) > 0 else 'discipline' if i in seeds else 'grant'
     if any(i in coverage[p]['grants'] for p in player if p != i):
         access += ', grant'
+    if i == 872:
+        access = 'internal, level-99 parent only'
     current_status, runtime_summary = status(i), server(i)
     remaining = remaining_items(i, current_status, runtime_summary)
     final_status, remaining = evidence.evaluate(i, current_status, remaining)
