@@ -102,9 +102,10 @@ namespace hds
         private static readonly (ushort Source, ushort Target)[] SpyClassPairs = { (155, 1113) };
         private static readonly (ushort Source, ushort Target)[] PhysicianPairs = { (418, 1098) };
         private static readonly (ushort Source, ushort Target)[] UpgradeArtistPairs = { (318, 1095) };
+        private static readonly (ushort Source, ushort Target)[] RavagerAndUpgradeMasterPairs = { (470, 1081), (425, 1096) };
         internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs =>
             ObservedPairs.Concat(NativeToolPairs).Concat(UtilityMasterPairs).Concat(SpyClassPairs)
-                .Concat(PhysicianPairs).Concat(UpgradeArtistPairs);
+                .Concat(PhysicianPairs).Concat(UpgradeArtistPairs).Concat(RavagerAndUpgradeMasterPairs);
         // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ReadyPresentationPairs { get; } =
             Array.AsReadOnly(new (ushort Source,ushort Target)[]{(290,1117)});
