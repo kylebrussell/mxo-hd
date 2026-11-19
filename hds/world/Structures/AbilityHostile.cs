@@ -86,11 +86,11 @@ namespace hds
                 Proc = TempMods.Proc.Stat, Chance = ability == 274 || ability == 412 || ability == 870 ? (float)m.Number("ProcTriggerChance", 1) : 1 };
         }
 
-        /// <summary>The numeric and DOT tempmods of a UDB0 template (states stay in <see cref="AbilityCatalog.Controls"/>).</summary>
+        /// <summary>Numeric and DOT tempmods of UDB0 templates and Body Shot's reviewed attack template.</summary>
         public static TempMods.Effect Catalog(ushort id)
         {
             var entry = AbilityCatalog.Find(id);
-            if (entry == null || entry.Number("Ability/StatusCategory") != DebuffCategory) return null;
+            if (entry == null || entry.Id != 105 && entry.Number("Ability/StatusCategory") != DebuffCategory) return null;
             var mods = new List<TempMods.Mod>();
             uint subject = 0, target = 0;
             foreach (var m in entry.Modifiers)

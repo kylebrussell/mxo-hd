@@ -13,6 +13,15 @@ namespace hds
     {
         public const double FractionPerSecond = 0.01;
 
+        internal static int RateBonus(WorldClient client, bool inCombat)
+        {
+            int bonus = AbilityStats.Influence(client, 112);
+            // HealthSitRegenRate (526) is a percent modifier, conditional on the sitting stance.
+            if (!inCombat && EmoteHandler.Stance(client) == AnimationPackets.StanceSitting)
+                bonus += AbilityStats.Influence(client, 526);
+            return bonus;
+        }
+
         /// <summary>Health after <paramref name="seconds"/> of regeneration, or null when nothing changes.</summary>
         public static UInt16? Next(UInt16 current, UInt16 max, bool inCombat, bool dead, double seconds, int rateBonus = 0)
         {
@@ -40,7 +49,7 @@ namespace hds
             bool inCombat = CombatManager.GetHandler(client).isCombatRunning;
             // A duel's loser lies at 0 health until they stand up
             UInt16? next = Next(current, max, inCombat, client.playerData.isDead || client.playerData.duelDeath, seconds,
-                AbilityStats.Influence(client, 112));
+                RateBonus(client, inCombat));
             if (!next.HasValue)
             {
                 return;

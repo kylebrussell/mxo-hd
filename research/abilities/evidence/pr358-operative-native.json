@@ -1,0 +1,25 @@
+{
+  "families": {
+    "operative-caster-evasion": {
+      "representative": 110,
+      "result": "pass",
+      "head": "88945712873b919fd37cdb9aab5d6c82883f09d6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/358#issuecomment-7012737430",
+      "scope": "The stock hotbar cast added caster-only Combat Evasion +20% to an initially populated Status panel. The server logged the 300-second lifetime."
+    },
+    "operative-force-combat": {
+      "representative": 150,
+      "result": "pass",
+      "head": "88945712873b919fd37cdb9aab5d6c82883f09d6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/358#issuecomment-7012737430",
+      "scope": "The stock hotbar cast added caster-only Force Combat +20%. The server logged the 300-second lifetime."
+    },
+    "operative-intensify-damage": {
+      "representative": 185,
+      "result": "pass",
+      "head": "88945712873b919fd37cdb9aab5d6c82883f09d6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/358#issuecomment-7012737430",
+      "scope": "The caster-only stock hotbar cast changed the Melee and Ballistic Damage bonuses from +24/+12 to +25/+13 and the Combat tab damage from 96/112/80 to 100/120/84. Both views returned to their earlier values at 15-second natural expiry."
+    }
+  }
+}

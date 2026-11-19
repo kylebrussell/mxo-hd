@@ -56,6 +56,32 @@ public class CombatInsightEngagementTests
         c.playerInstance.InnerStrengthAvailable.setValue((ushort)1000);c.playerInstance.InnerStrengthMax.setValue((ushort)1000);return c;
     }
 
+    [Fact]
+    public void CompelCloseCombatAndCombatEvasionFeedOppositeSidesOfTheLiveEntryGate()
+    {
+        using var f = new Fixture();
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var before));
+        Assert.Equal(100, before.Force);
+        Assert.Equal(110, before.Evade);
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(f.Source, 150));
+            Assert.True(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var compelled));
+            Assert.Equal(120, compelled.Force);
+            Assert.True(AbilityBuffs.Apply(f.Target, 110));
+            Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var evasion));
+            Assert.Equal(130, evasion.Evade);
+        }
+        finally
+        {
+            AbilityBuffs.Remove(f.Source, 150);
+            AbilityBuffs.Remove(f.Target, 110);
+        }
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var removed));
+        Assert.Equal(before.Force, removed.Force);
+        Assert.Equal(before.Evade, removed.Evade);
+    }
+
     [Fact]public void RealLoaded113AndStored49ProduceTheFourBeforeAfterScores()
     {
         using var f=new Fixture();
