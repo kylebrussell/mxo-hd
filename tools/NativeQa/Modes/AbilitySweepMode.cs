@@ -1,4 +1,5 @@
 using HeadlessClient;
+using MxoHd.PacketResearch;
 using System.Text.Json;
 
 namespace NativeQa.Modes;
@@ -21,7 +22,7 @@ public abstract class AbilitySweepMode : NativeQaMode
     // Slot order is the manual native hotbar checklist, independent of the margin archive slot numbers.
     protected AbilitySweepMode(Sample[] samples, ushort[] support, bool enemyHelper = false,
         bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false, bool petOrders = false,
-        bool martialConditions = false)
+        bool martialConditions = false, string[]? additionalInstructions = null)
     {
         if (samples.Length != 8 || samples.Select(sample => sample.Id).Distinct().Count() != samples.Length)
             throw new ArgumentException("A sweep requires eight distinct representative actions.", nameof(samples));
@@ -91,6 +92,7 @@ public abstract class AbilitySweepMode : NativeQaMode
         }
         if (martialConditions)
             instructions.Add("The target must be Staggered for Piston Kicks and Off Balance for Tomo Nage. Try landed Power and Grab rounds, respectively. For a controlled retry use ?combatdepth stagger 30 or ?combatdepth offbalance 30 during interlock with the dummy selected.");
+        if (additionalInstructions != null) instructions.AddRange(additionalInstructions);
         Plan = new NativeQaModePlan(samples.Select(sample => sample.Id).Concat(support).Distinct().ToArray(),
             CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders || firearms || martialConditions,
             environmentOverrides: environment,
@@ -291,7 +293,45 @@ public sealed class AbilitySweepMartialArtistMode : AbilitySweepMode
             "choreography 8080; Powerless", "6 s input", 30),
         new(412, "Tomo Nage", "Off Balance Melee Dummy in Aikido interlock", "113 stored physical base",
             "choreography 751; Enraged and ballistic/melee resistance -100", "6 s Enraged / 12 s debuff inputs", 45)
-    }, new ushort[] { 2, 17, 101, 105, 113, 116, 124, 130, 135, 136, 137, 138, 139, 143, 145, 154, 185, 257, 258, 259, 264, 265, 269, 270, 271, 272, 405, 407, 429, 431 }, isolatedMelee: true, martialConditions: true) { }
+    }, new ushort[] { 2, 17, 101, 105, 113, 116, 124, 130, 135, 136, 137, 138, 139, 143, 145, 154, 185, 257, 258, 259, 264, 265, 269, 270, 271, 272, 405, 407, 429, 431, 476, 861, 868, 1149 },
+        enemyHelper: true, isolatedMelee: true, martialConditions: true, additionalInstructions: new[]
+        {
+            "For the second Martial Artist pass, use the current audit checklist in docs/ABILITY-PARITY-QA.md. First compare loaded/unloaded 136, 258 and 431. Keep 137/257 loaded to use their granted 1062/1063 upgrades.",
+            "Test Balance 861 on yourself. Wait for its two-second cast, then use a nonfatal ?health 200 change during the 30-second window. The Balance child heals 50-99 once per health change. Wait for expiry and repeat to check cleanup.",
+            "For Purity 868, flag CSR and have QAEnemy land Destroy Health 476 on CSR. Cast Purity through Actions while the debuff is active. It has a 25% chance per eligible debuff and leaves no lasting buff. Repeat after reuse if needed."
+        }) { }
+
+    internal static async Task VerifyBatchTwoAsync(HeadlessPlayer player, ServerInstance server)
+    {
+        await player.EnterWorldAsync();
+        var dummy = await player.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
+        static string Le(ushort value) => WireFormat.ToHex(BitConverter.GetBytes(value));
+        void Cast(ushort id, ushort view) => player.SendRpc($"80 b9 {Le(id)} {Le(view)}");
+        async Task Modifier(ushort id, ushort stat, int value, bool remove = false)
+        {
+            await player.WaitUntilAsync(() => player.World.RpcSnapshot().Any(record =>
+                ManageBonusRecord.TryDecode(record.Bytes, out var mod) && mod!.SourceId == id &&
+                mod.TargetId == stat && mod.SignedValue == value && mod.AddRemoveType == (remove ? 1 : 0)),
+                $"live modifier {id}/{stat} {value} (remove={remove})", HeadlessPlayer.DefaultTimeout);
+        }
+        await Modifier(136, 997, 5);
+        await Modifier(258, 997, 7);
+        await Modifier(431, 1143, 10);
+        Cast(1062, dummy.ViewId);
+        await Modifier(1062, 106, 70);
+        Cast(1063, dummy.ViewId);
+        await Modifier(1063, 106, 90);
+        await Modifier(1062, 106, 70, remove: true);
+
+        Cast(861, 0);
+        await player.WaitForRpcAsync("80 bc ?? ?? ?? ?? ?? 5d 03 00 00 5d 03");
+        int cursor = server.DebugLog().Length;
+        player.SendChat("?health 200");
+        await player.WaitUntilAsync(() =>
+            server.DebugLog()[cursor..].Contains("[HEALTH-EFFECT] 862 heals CSR_Tester 200 -> ", StringComparison.Ordinal),
+            "Balance heals its owner in response to an actual fixture health event", HeadlessPlayer.DefaultTimeout);
+        Console.WriteLine("  three martial passives, 1062/1063 self-only replacement and 861/862 health callback verified");
+    }
 }
 
 public sealed class AbilitySweepGunmanMode : AbilitySweepMode

@@ -1,0 +1,340 @@
+{
+  "families": {
+    "martial-zen-internal": {
+      "representative": 872,
+      "result": "pass",
+      "head": "808e03c2ffa26dafc5a2c7cb6106df4435d7281a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433"
+    }
+  },
+  "abilities": {
+    "101": {
+      "checks": {
+        "stats": {
+          "source": "GOB 101 Aikido uses only active-style rank-scaled melee accuracy/damage, four defenses and direct Contested Withdraw.",
+          "runtime": "CombatStyles.Select and AbilityPassives feed ordinary attack, each typed contest defense, physical ability damage and the direct ordinary withdrawal input.",
+          "test": "MartialArtistSecondBatchTests.SelectedStyleFeedsTypedContestsOrdinaryWithdrawalAndDamage checks all named inputs at rank 50 and switching away. Retail ordinary melee damage and withdrawal fidelity remain open."
+        }
+      }
+    },
+    "132": {
+      "checks": {
+        "stats": {
+          "source": "GOB 132 Karate uses only active-style rank-scaled melee accuracy/damage, four defenses and direct Contested Withdraw.",
+          "runtime": "CombatStyles.Select and AbilityPassives feed ordinary attack, each typed contest defense, physical ability damage and the direct ordinary withdrawal input.",
+          "test": "MartialArtistSecondBatchTests.SelectedStyleFeedsTypedContestsOrdinaryWithdrawalAndDamage checks all named inputs at rank 50 and switching away. Retail ordinary melee damage and withdrawal fidelity remain open."
+        }
+      }
+    },
+    "133": {
+      "checks": {
+        "stats": {
+          "source": "GOB 133 Kung-Fu uses only active-style rank-scaled melee accuracy/damage, four defenses and direct Contested Withdraw.",
+          "runtime": "CombatStyles.Select and AbilityPassives feed ordinary attack, each typed contest defense, physical ability damage and the direct ordinary withdrawal input.",
+          "test": "MartialArtistSecondBatchTests.SelectedStyleFeedsTypedContestsOrdinaryWithdrawalAndDamage checks all named inputs at rank 50 and switching away. Retail ordinary melee damage and withdrawal fidelity remain open."
+        }
+      }
+    },
+    "136": {
+      "checks": {
+        "stats": {
+          "source": "GOB 136 produces rank-50 +5% melee accuracy and damage.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        },
+        "behavior-tests": {
+          "source": "GOB 136 produces rank-50 +5% melee accuracy and damage.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        }
+      },
+      "family": "martial-advanced-rank-passives"
+    },
+    "258": {
+      "checks": {
+        "stats": {
+          "source": "GOB 258 produces rank-50 +7% melee accuracy, +3% melee damage, +5% maximum HP.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        },
+        "behavior-tests": {
+          "source": "GOB 258 produces rank-50 +7% melee accuracy, +3% melee damage, +5% maximum HP.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        }
+      },
+      "family": "martial-advanced-rank-passives"
+    },
+    "431": {
+      "checks": {
+        "stats": {
+          "source": "GOB 431 produces rank-50 +10% melee defense, +6% viral defense, +10% stun duration and +1% melee damage.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        },
+        "behavior-tests": {
+          "source": "GOB 431 produces rank-50 +10% melee defense, +6% viral defense, +10% stun duration and +1% melee damage.",
+          "runtime": "AbilityPassives recomputes the loaded rank snapshot and the resulting player stat reaches the live attack, damage, defense, max-vital or stun duration calculation as applicable.",
+          "test": "MartialArtistSecondBatchTests.LoadedRankedPassivesReachCombatAndVitalConsumers measures those inputs before and after removing the load. The extended martial sweep checks ordinary login passive records."
+        }
+      },
+      "family": "martial-advanced-rank-passives"
+    },
+    "137": {
+      "checks": {
+        "stats": {
+          "source": "GOB 137 grants 1062, with Initiative Bonus 2 and melee damage bonus 0. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        },
+        "consumer": {
+          "source": "GOB 137 grants 1062, with Initiative Bonus 2 and melee damage bonus 0. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        },
+        "behavior-tests": {
+          "source": "GOB 137 grants 1062, with Initiative Bonus 2 and melee damage bonus 0. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        }
+      },
+      "family": "martial-initiate-master-grants"
+    },
+    "257": {
+      "checks": {
+        "stats": {
+          "source": "GOB 257 grants 1063, with Initiative Bonus 1 and melee damage bonus 1. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        },
+        "consumer": {
+          "source": "GOB 257 grants 1063, with Initiative Bonus 1 and melee damage bonus 1. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        },
+        "behavior-tests": {
+          "source": "GOB 257 grants 1063, with Initiative Bonus 1 and melee damage bonus 1. The exported Desperation script reads InitiativeBonusAbility.",
+          "runtime": "AbilityGrantRegistration registers and removes the child on loaded membership changes. The loaded bonus feeds Desperation or physical ability damage through the real stat aggregator.",
+          "test": "MartialArtistSecondBatchTests.DisciplineMembershipGrantsUpgradeAndFeedsDesperation tests the in-world grant packets, live health snapshot and unloading."
+        }
+      },
+      "family": "martial-initiate-master-grants"
+    },
+    "1062": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1062 selector 1 is self-only and applies max HP +70, melee accuracy +4, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        },
+        "stats": {
+          "source": "GOB 1062 selector 1 is self-only and applies max HP +70, melee accuracy +4, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        },
+        "behavior-tests": {
+          "source": "GOB 1062 selector 1 is self-only and applies max HP +70, melee accuracy +4, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        }
+      },
+      "family": "martial-initiate-master-upgrades"
+    },
+    "1063": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1063 selector 1 is self-only and applies max HP +90, melee accuracy +6, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        },
+        "stats": {
+          "source": "GOB 1063 selector 1 is self-only and applies max HP +90, melee accuracy +6, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        },
+        "behavior-tests": {
+          "source": "GOB 1063 selector 1 is self-only and applies max HP +90, melee accuracy +6, damage +2 and defense +4.",
+          "runtime": "AbilitySupport resolves to the caster with an enemy selected. AbilityBuffs applies the exclusive class snapshot and clears it on replacement.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs and the headless martial sweep verify the self-target, combat inputs, max HP and replacement packets."
+        }
+      },
+      "family": "martial-initiate-master-upgrades"
+    },
+    "1064": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1064 selector 1 is self-only.",
+          "runtime": "AbilitySupport targets the caster even with a selected opponent.",
+          "test": "MartialArtistSecondBatchTests.GrantedUpgradeRoutesToSelfAndChangesFourLiveInputs checks self-targeting and the existing capture values. Their relationship to the raw GOB values remains open."
+        }
+      }
+    },
+    "428": {
+      "checks": {
+        "proc": {
+          "source": "GOB 428 rolled state is Confuse 4 s on a 30% proc.",
+          "runtime": "AbilityCatalog.Controls and TimedEffects.Apply instantiate the state with its own duration when the landed roll succeeds.",
+          "test": "MartialArtistSecondBatchTests.LandedControlsUsePerMoveDurationAndProcBoundary exercises success, failure and lifecycle. Native presentation remains separately tracked."
+        }
+      }
+    },
+    "262": {
+      "checks": {
+        "proc": {
+          "source": "GOB 262 rolled state is Stun 4 s on a 40% proc.",
+          "runtime": "AbilityCatalog.Controls and TimedEffects.Apply instantiate the state with its own duration when the landed roll succeeds.",
+          "test": "MartialArtistSecondBatchTests.LandedControlsUsePerMoveDurationAndProcBoundary exercises success, failure and lifecycle. Native presentation remains separately tracked."
+        }
+      }
+    },
+    "869": {
+      "checks": {
+        "proc": {
+          "source": "GOB 869 rolled state is Disarm 20 s on a 25% proc.",
+          "runtime": "AbilityCatalog.Controls and TimedEffects.Apply instantiate the state with its own duration when the landed roll succeeds.",
+          "test": "MartialArtistSecondBatchTests.LandedControlsUsePerMoveDurationAndProcBoundary exercises success, failure and lifecycle. Native presentation remains separately tracked."
+        }
+      }
+    },
+    "429": {
+      "checks": {
+        "stats": {
+          "source": "GOB 429 target 681 is a 0.1 s callback marker with value 4, chance .10, ApplyStunWithTimer. The script uses the value for both the Stun and the independent immunity timer, with no resource drain.",
+          "runtime": "AbilityCatalog.Controls interprets this marker as a terminal callback. AbilityConditionalControls.Term installs the state and immunity or refuses the stack.",
+          "test": "MartialArtistSecondBatchTests.ExtremeFallingKickTermHonorsTenPercentProcAndSeparateImmunity checks both proc outcomes, delayed execution, immunity and expiry."
+        },
+        "script": {
+          "source": "GOB 429 target 681 is a 0.1 s callback marker with value 4, chance .10, ApplyStunWithTimer. The script uses the value for both the Stun and the independent immunity timer, with no resource drain.",
+          "runtime": "AbilityCatalog.Controls interprets this marker as a terminal callback. AbilityConditionalControls.Term installs the state and immunity or refuses the stack.",
+          "test": "MartialArtistSecondBatchTests.ExtremeFallingKickTermHonorsTenPercentProcAndSeparateImmunity checks both proc outcomes, delayed execution, immunity and expiry."
+        },
+        "proc": {
+          "source": "GOB 429 target 681 is a 0.1 s callback marker with value 4, chance .10, ApplyStunWithTimer. The script uses the value for both the Stun and the independent immunity timer, with no resource drain.",
+          "runtime": "AbilityCatalog.Controls interprets this marker as a terminal callback. AbilityConditionalControls.Term installs the state and immunity or refuses the stack.",
+          "test": "MartialArtistSecondBatchTests.ExtremeFallingKickTermHonorsTenPercentProcAndSeparateImmunity checks both proc outcomes, delayed execution, immunity and expiry."
+        }
+      }
+    },
+    "261": {
+      "checks": {
+        "script": {
+          "source": "GOB 261 uses a 20% RemoveRandomBuff initializer on landing. tempmods.py line 342 lists the eligible parent and native index selection.",
+          "runtime": "AbilityHostile.LandedOnPlayer and LandedOnMob gate the callback and remove a single removable UBF0 parent on a valid player target.",
+          "test": "MartialArtistSecondBatchTests.MachinegunFistDispelKeepsHostileDebuffAndExpiresOneBuff and AbilityHostileTests.MachinegunFistDispelUsesItsStoredTwentyPercentProc."
+        },
+        "proc": {
+          "source": "GOB 261 uses a 20% RemoveRandomBuff initializer on landing. tempmods.py line 342 lists the eligible parent and native index selection.",
+          "runtime": "AbilityHostile.LandedOnPlayer and LandedOnMob gate the callback and remove a single removable UBF0 parent on a valid player target.",
+          "test": "MartialArtistSecondBatchTests.MachinegunFistDispelKeepsHostileDebuffAndExpiresOneBuff and AbilityHostileTests.MachinegunFistDispelUsesItsStoredTwentyPercentProc."
+        }
+      }
+    },
+    "138": {
+      "checks": {
+        "stats": {
+          "source": "GOB Guard Breaker applies melee defense -10 for 15 s.",
+          "runtime": "AbilityHostile and TimedEffects route it to the NPC melee defense input until expiry.",
+          "test": "MartialArtistSecondBatchTests.TimedDebuffsReachNpcContestInputAndExpire"
+        }
+      }
+    },
+    "139": {
+      "checks": {
+        "stats": {
+          "source": "GOB Iron Guard applies both melee and ballistic defense +10 to the caster for 12 s after landing.",
+          "runtime": "CombatSpecials.Landed applies the caster snapshot after the hit. Physical hit damage still targets the opponent.",
+          "test": "MartialArtistSecondBatchTests.IronGuardUsesLandedCasterDefenseAndKeepsOpponentDamage"
+        }
+      }
+    },
+    "870": {
+      "checks": {
+        "stats": {
+          "source": "GOB Spinning Flower stores a 25% Combat Tactics -10 modifier for 15 s independently of Powerless.",
+          "runtime": "AbilityHostile and TempMods preserve the captured value and read the stored chance before the ordinary NPC attack consumer sees it.",
+          "test": "MartialArtistSecondBatchTests.TimedDebuffsReachNpcContestInputAndExpire"
+        },
+        "proc": {
+          "source": "GOB Spinning Flower stores a 25% Combat Tactics -10 modifier for 15 s independently of Powerless.",
+          "runtime": "AbilityHostile and TempMods preserve the captured value and read the stored chance before the ordinary NPC attack consumer sees it.",
+          "test": "MartialArtistSecondBatchTests.TimedDebuffsReachNpcContestInputAndExpire"
+        }
+      }
+    },
+    "861": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 861 opens the 30 s ApplyAuraEffectOnHealthChange listener and names the internal child 862. tempmods.py line 1327 uses every actual health change.",
+          "runtime": "AbilityHealthCallbacks applies one child per transaction to the owner, with expiry, removal and fatal-state guarding.",
+          "test": "MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires and the disposable martial sweep exercise both resource mutations and actual child execution."
+        },
+        "script": {
+          "source": "GOB 861 opens the 30 s ApplyAuraEffectOnHealthChange listener and names the internal child 862. tempmods.py line 1327 uses every actual health change.",
+          "runtime": "AbilityHealthCallbacks applies one child per transaction to the owner, with expiry, removal and fatal-state guarding.",
+          "test": "MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires and the disposable martial sweep exercise both resource mutations and actual child execution."
+        },
+        "behavior-tests": {
+          "source": "GOB 861 opens the 30 s ApplyAuraEffectOnHealthChange listener and names the internal child 862. tempmods.py line 1327 uses every actual health change.",
+          "runtime": "AbilityHealthCallbacks applies one child per transaction to the owner, with expiry, removal and fatal-state guarding.",
+          "test": "MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires and the disposable martial sweep exercise both resource mutations and actual child execution."
+        }
+      },
+      "family": "martial-balance-listener"
+    },
+    "862": {
+      "checks": {
+        "damage": {
+          "source": "GOB 862 is the Balance neutral self-heal child. Native function 0 maps the stored range to actual 50-99.",
+          "runtime": "Only the parent listener routes 862 through neutral HealSelf on its owner; direct activation is refused and unrelated targets are unchanged.",
+          "test": "AbilityHealthCallbackTests.NativeFunctionZeroUsesFifteenBitMultiplyAndExcludesUpperEndpoint, MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires, and the disposable martial sweep."
+        },
+        "targeting": {
+          "source": "GOB 862 is the Balance neutral self-heal child. Native function 0 maps the stored range to actual 50-99.",
+          "runtime": "Only the parent listener routes 862 through neutral HealSelf on its owner; direct activation is refused and unrelated targets are unchanged.",
+          "test": "AbilityHealthCallbackTests.NativeFunctionZeroUsesFifteenBitMultiplyAndExcludesUpperEndpoint, MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires, and the disposable martial sweep."
+        },
+        "behavior-tests": {
+          "source": "GOB 862 is the Balance neutral self-heal child. Native function 0 maps the stored range to actual 50-99.",
+          "runtime": "Only the parent listener routes 862 through neutral HealSelf on its owner; direct activation is refused and unrelated targets are unchanged.",
+          "test": "AbilityHealthCallbackTests.NativeFunctionZeroUsesFifteenBitMultiplyAndExcludesUpperEndpoint, MartialArtistSecondBatchTests.BalanceHealsItsOwnerOnDamageAndExternalHealingThenExpires, and the disposable martial sweep."
+        }
+      },
+      "family": "martial-balance-listener"
+    },
+    "868": {
+      "checks": {
+        "script": {
+          "source": "GOB 868 invokes the immediate 25% NegativeConditionSweepPulse; tempmods.py checks eligible debuff parents.",
+          "runtime": "AbilitySupport.Land routes Purity to the caster. AbilityHostile.ApplySweep performs one independent roll per eligible debuff parent and no persistent buff.",
+          "test": "MartialArtistSecondBatchTests.PurityUsesPerDebuffTwentyFivePercentWithoutKeepingABuff and AbilityScaledBuffTests.PurityRunsItsInstantTwentyFivePercentSweepWithoutInventingATimer."
+        },
+        "behavior-tests": {
+          "source": "GOB 868 invokes the immediate 25% NegativeConditionSweepPulse; tempmods.py checks eligible debuff parents.",
+          "runtime": "AbilitySupport.Land routes Purity to the caster. AbilityHostile.ApplySweep performs one independent roll per eligible debuff parent and no persistent buff.",
+          "test": "MartialArtistSecondBatchTests.PurityUsesPerDebuffTwentyFivePercentWithoutKeepingABuff and AbilityScaledBuffTests.PurityRunsItsInstantTwentyFivePercentSweepWithoutInventingATimer."
+        }
+      },
+      "family": "martial-purity"
+    },
+    "872": {
+      "checks": {
+        "stats": {
+          "source": "GOB 872 grants 5 Current Inner Strength to its parent owner on a 15% proc. The parent is a level-99 availability prerequisite.",
+          "runtime": "AbilityHealthCallbacks snapshots the loaded 871 listener and applies 872 at most once per transaction, capped by the live maximum. Direct child activation is refused.",
+          "test": "AbilityHealthCallbackTests.ZenMasterUsesLoadedParentHealthEventsChanceAndVitalCap, MartialArtistSecondBatchTests.ZenMasterListenerIsOwnerOnlyAndChildCannotBeInvokedDirectly and the native PR127 constrained level-99 run. https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433"
+        },
+        "proc": {
+          "source": "GOB 872 grants 5 Current Inner Strength to its parent owner on a 15% proc. The parent is a level-99 availability prerequisite.",
+          "runtime": "AbilityHealthCallbacks snapshots the loaded 871 listener and applies 872 at most once per transaction, capped by the live maximum. Direct child activation is refused.",
+          "test": "AbilityHealthCallbackTests.ZenMasterUsesLoadedParentHealthEventsChanceAndVitalCap, MartialArtistSecondBatchTests.ZenMasterListenerIsOwnerOnlyAndChildCannotBeInvokedDirectly and the native PR127 constrained level-99 run. https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433"
+        },
+        "behavior-tests": {
+          "source": "GOB 872 grants 5 Current Inner Strength to its parent owner on a 15% proc. The parent is a level-99 availability prerequisite.",
+          "runtime": "AbilityHealthCallbacks snapshots the loaded 871 listener and applies 872 at most once per transaction, capped by the live maximum. Direct child activation is refused.",
+          "test": "AbilityHealthCallbackTests.ZenMasterUsesLoadedParentHealthEventsChanceAndVitalCap, MartialArtistSecondBatchTests.ZenMasterListenerIsOwnerOnlyAndChildCannotBeInvokedDirectly and the native PR127 constrained level-99 run. https://github.com/kylebrussell/mxo-hd/pull/127#issuecomment-6827244433"
+        }
+      },
+      "family": "martial-zen-internal"
+    }
+  }
+}

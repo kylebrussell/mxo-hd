@@ -82,7 +82,7 @@ namespace hds
             if (target == 0 || target == 108 || target == TempMods.DOTPlaceHolderAbility ||
                 Scripted(m, allowInit: immunityInit) || !Fixed(m)) return null;
             return new TempMods.Mod { Kind = TempMods.KindStat, Target = target, MinValue = value, MaxValue = value, Seconds = seconds,
-                Proc = TempMods.Proc.Stat, Chance = ability == 274 || ability == 412 ? (float)m.Number("ProcTriggerChance", 1) : 1 };
+                Proc = TempMods.Proc.Stat, Chance = ability == 274 || ability == 412 || ability == 870 ? (float)m.Number("ProcTriggerChance", 1) : 1 };
         }
 
         /// <summary>The numeric and DOT tempmods of a UDB0 template (states stay in <see cref="AbilityCatalog.Controls"/>).</summary>
