@@ -1,4 +1,13 @@
 {
+  "families": {
+    "gunman-class-upgrade-replacement": {
+      "representative": 1070,
+      "result": "pass",
+      "head": "737b777aedf02d27bc21d2af1d2b14e2ca4e067a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/343#issuecomment-7010084175",
+      "scope": "Stock hotbar casts 1070, 1074, 1075, 1076 and 1060 targeted Melee Dummy with modifiers landing only on CSR. Status deltas were +4/+70/+2/+4, +9/+120/+4/+4, +4/+100/+2/+6, +3/+110/+4/+10 for ballistic accuracy, max HP, damage and defense. Operative 1060 applied +4 melee and ballistic accuracy and cleared the preceding class HP and defense. All four replacements were logged."
+    }
+  },
   "abilities": {
     "1070": {
       "checks": {
@@ -17,7 +26,8 @@
           "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
           "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1074": {
       "checks": {
@@ -36,7 +46,8 @@
           "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
           "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1075": {
       "checks": {
@@ -55,7 +66,8 @@
           "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
           "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1076": {
       "checks": {
@@ -74,7 +86,8 @@
           "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
           "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1060": {
       "checks": {
@@ -93,7 +106,8 @@
           "runtime": "AbilitySupport selects the caster; AbilityBuffs applies and replaces the class modifiers. AbilityStats and the max-health update consume the records.",
           "test": "AbilityScaledBuffTests.SelfUpgradesApplyTheirOwnCombatStatsAndRemoveWithTheNextUpgrade checks target, all live totals and removal. gunman-upgrades-and-evasive sends live selected-NPC casts and checks ordered old/new accuracy records."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "125": {
       "checks": {
