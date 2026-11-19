@@ -57,7 +57,8 @@ public static class NativeQaBootstrapChecks
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });
         var seeded = await NativeQaFixtureSeeder.PrepareAsync(root, database, plan);
-        using var server = await ServerInstance.StartAsync(root, database.Name, IsolatedEnvironment(seedMode),plan.MissionFixture);
+        using var server = await ServerInstance.StartAsync(root, database.Name, IsolatedEnvironment(seedMode), plan.MissionFixture,
+            testMobFixture: plan.TestMobFixture == null ? null : Path.Combine(root, "tools", "NativeQa", "Fixtures", plan.TestMobFixture));
         string sourceAssembly = server.SourceAssembly, sourceHash = server.SourceAssemblySha256;
         string directory = Path.Combine(output, "server-" + server.ProcessId);
         Directory.CreateDirectory(directory);

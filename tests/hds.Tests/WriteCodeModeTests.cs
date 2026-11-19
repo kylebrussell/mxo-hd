@@ -44,7 +44,8 @@ public class WriteCodeModeTests
             Assert.Equal(mode=="write-code",plan.ExtraQaMetadata.TryGetValue("WriteCodeQa",out var writer)&&writer.GetBoolean());
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
             Assert.Equal(mode is "health-callbacks" or "zen-master",plan.FixedCallbackRolls);
-            Assert.Equal(mode is "desperation" or "desperation-initiative"?"1":"",NativeQaFixturePlan.EnvironmentFor(mode)["MXO_DESPERATION_QA_HOLD_HEALTH"]);
+            Assert.Equal(mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" ? "1" : "",
+                NativeQaFixturePlan.EnvironmentFor(mode)["MXO_DESPERATION_QA_HOLD_HEALTH"]);
         }
         var writerPlan=NativeQaModes.Find("write-code").Plan;
         Assert.True(writerPlan.DevCommands);Assert.False(writerPlan.SeedDisguiseTool);Assert.False(writerPlan.CompileItemsQa);

@@ -114,7 +114,8 @@ try
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""),
-        fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture));
+        fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture),
+        testMobFixture: fixturePlan.TestMobFixture == null ? null : Path.Combine(root, "tools", "NativeQa", "Fixtures", fixturePlan.TestMobFixture));
     byte[] shieldAck = await NativeQaReadiness.BootstrapAsync(fixtureMode,
         new NativeQaBootstrapContext(qaRoot, helperNames, helpers, OwnedDatabase: database, ActualServer: server, RepositoryRoot: root));
     await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
