@@ -415,6 +415,9 @@ namespace hds
             }
 
             int place = Groups.AddTeamMember(team.Id, charId, HandleOf(invitee));
+            if (place >= 0)
+                Output.WriteDebugLog("[SOCIAL] " + HandleOf(invitee) + " accepted " + invite.InviterHandle +
+                    "'s invite and joined mission team " + team.Id);
             // Two-person capture 09:40:44-45: the newcomer gets 80 8e and MissionTeamID, the others 70 03.
             Send(invitee, SocialPackets.TeamInfo(charId, team.Id, team.LeaderCharId, team.Name, team.Members.ToList()));
             SetOwnGroupIds(invitee, null, null, team.Id);

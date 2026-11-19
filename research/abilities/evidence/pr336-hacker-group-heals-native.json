@@ -1,0 +1,26 @@
+{
+  "families": {
+    "restore-group-2-stock": {
+      "representative": 371,
+      "result": "pass",
+      "head": "baa1e3c10bc58500ce411d62c8eead2be3f22a18",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/336#issuecomment-7011828943",
+      "scope": "Stock CSR recruited QAFriend from its visible radial and activated 371. CSR and QAFriend each healed from 100 to 122. QAOther and QAFar were outside the team for this cast. The matching headless replay verifies that 371 also excludes a recruited teammate at 9.25 m."
+    },
+    "group-repairs-2-stock": {
+      "representative": 372,
+      "result": "pass",
+      "head": "baa1e3c10bc58500ce411d62c8eead2be3f22a18",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/336#issuecomment-7011828943",
+      "scope": "After stock CSR recruited QAFar, 372 healed CSR and QAFriend from 122 to 141 and QAFar from 100 to 119. The nearer nonmember QAOther received no heal."
+    }
+  },
+  "abilities": {
+    "371": {
+      "family": "restore-group-2-stock"
+    },
+    "372": {
+      "family": "group-repairs-2-stock"
+    }
+  }
+}

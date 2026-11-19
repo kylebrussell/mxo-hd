@@ -25,7 +25,7 @@ public sealed partial class HackerParitySweepMode : NativeQaMode
             {
                 "After CSR is in-world, submit {\"actor\":\"QAFriend\",\"action\":\"hacker-group-arrive\"} through requests. Wait for the arrival response before recruiting. The three helpers are already live off-site, so their nearby views are created after your client loads.",
                 "Keep Self Defense active and stay on the seeded origin. QAFriend is 4 m away, QAFar 9.25 m away and QAOther 3 m away after arrival.",
-                "From CSR's stock radial, recruit QAFriend and QAFar to the mission team. Send the ordinary helper accept request to each. Leave QAOther outside the team. The loaded Resist Damage passive expands the source radii to 8.68 m and 9.92 m.",
+                "From CSR's stock radial, recruit QAFriend and QAFar to the mission team. Submit {\"actor\":\"QAFriend\",\"action\":\"accept\",\"inviter\":\"CSR_Tester\"}, then repeat with QAFar. Leave QAOther outside the team. The loaded Resist Damage passive expands the source radii to 8.68 m and 9.92 m.",
                 "Restore Group 2.0 (371) should heal CSR and QAFriend by 22. Group Repairs 2.0 (372) should heal CSR, QAFriend and QAFar by 19. QAOther receives neither. Read the heal and health-delta records separately from regeneration.",
                 "From Actions, cast Combat Training (373) on self for +64 Melee Accuracy. Cast Weapons Boost (374) while it is active. Capture the original modifier removal before +64 Ballistic Accuracy. Let Weapons Boost expire.",
                 "Corpsman 369 is already loaded as an ancestor. Record its granted action 1092 on entry as a separate sample. The radius bonus is an open consumer check."
