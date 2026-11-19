@@ -21,6 +21,13 @@
       "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
       "scope": "Three stock unload and reload cycles withdraw and restore one percentage point of Max Health Bonus and the granted 1094 action. The granted action applies only to the caster with a nonmember selected."
     },
+    "stock-guardian-patcher-active-upgrade": {
+      "representative": 1094,
+      "result": "pass",
+      "head": "70fed40c0f63fdd25a89e347fa724bb036de72c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/369#issuecomment-7014217804",
+      "scope": "Stock activated the granted 1094 with a nonmember selected. The caster alone gained the buff and helper dismissal removed it. The exact modifiers and their consumers still need evidence."
+    },
     "stock-physician-grant": {
       "representative": 418,
       "result": "pass",
@@ -41,6 +48,7 @@
     "237": { "family": "stock-fast-healing-2" },
     "51": { "family": "stock-guardian-patcher" },
     "418": { "family": "stock-physician-grant" },
+    "1094": { "family": "stock-guardian-patcher-active-upgrade" },
     "1098": { "family": "stock-physician-team-heal" }
   }
 }

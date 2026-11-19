@@ -20,11 +20,19 @@
       "head": "98816ff526e564f07277edf83d908e2d8d2b6e2e",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373",
       "scope": "Stock 424 replaced the existing 320 sweep icon. In two additional attempts with a landed Slow 1.0, 424 removed Slow before natural expiry."
+    },
+    "upgrade-artist-active-upgrade-stock": {
+      "representative": 1095,
+      "result": "pass",
+      "head": "7fba209b2921824fb25eeaf0a68344a5fcd10ad8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7015474268",
+      "scope": "With 318 loaded, stock Actions listed the granted 1095 and allowed it to be put on the hotbar. Activation added the class icon and enabled the sweep. Activating 1094 replaced the icon and removed 1095 with its sweep."
     }
   },
   "abilities": {
     "320": { "family": "self-condition-sweep-1-stock" },
     "379": { "family": "party-condition-sweep-stock" },
-    "424": { "family": "self-condition-sweep-2-stock" }
+    "424": { "family": "self-condition-sweep-2-stock" },
+    "1095": { "family": "upgrade-artist-active-upgrade-stock" }
   }
 }

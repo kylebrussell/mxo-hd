@@ -1,0 +1,46 @@
+{
+  "families": {
+    "arbalest-loaded-stock": {
+      "representative": 310,
+      "result": "pass",
+      "head": "7e0e6ca8ac2ca73530360516ae0a9b023be17e7f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/372#issuecomment-7014905981",
+      "scope": "Stock Actions provided child 1083, which greyed on parent unload and returned on reload. Viral Damage Bonus moved +69% to +68% and back."
+    },
+    "ballista-loaded-stock": {
+      "representative": 334,
+      "result": "pass",
+      "head": "7e0e6ca8ac2ca73530360516ae0a9b023be17e7f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/372#issuecomment-7014905981",
+      "scope": "Stock Actions provided child 1084, which greyed on parent unload and returned on reload. Viral Damage Bonus moved +69% to +64% and back."
+    },
+    "artillerist-loaded-stock": {
+      "representative": 335,
+      "result": "pass",
+      "head": "7e0e6ca8ac2ca73530360516ae0a9b023be17e7f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/372#issuecomment-7014905981",
+      "scope": "Stock Actions provided child 1086, which greyed on parent unload and returned on reload. No Status bonus changed during the grant-only cycle."
+    },
+    "skript-kiddie-loaded-stock": {
+      "representative": 390,
+      "result": "pass",
+      "head": "7e0e6ca8ac2ca73530360516ae0a9b023be17e7f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/372#issuecomment-7014905981",
+      "scope": "Stock Actions provided child 1079, which greyed on parent unload and returned on reload. The ballistic and melee defense bonus totals both dropped by two percentage points and returned on reload."
+    },
+    "repel-combat-loaded-stock": {
+      "representative": 398,
+      "result": "pass",
+      "head": "7e0e6ca8ac2ca73530360516ae0a9b023be17e7f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/372#issuecomment-7014905981",
+      "scope": "Unloading removed five percentage points each from ballistic and melee defense and hid the Powerless Duration Bonus row. Reload restored all three, including a labeled Repel Combat +15% contribution to Powerless Duration Bonus."
+    }
+  },
+  "abilities": {
+    "310": { "family": "arbalest-loaded-stock" },
+    "334": { "family": "ballista-loaded-stock" },
+    "335": { "family": "artillerist-loaded-stock" },
+    "390": { "family": "skript-kiddie-loaded-stock" },
+    "398": { "family": "repel-combat-loaded-stock" }
+  }
+}
