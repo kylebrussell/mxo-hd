@@ -1,0 +1,18 @@
+{
+  "families": {
+    "martial-captured-defensive-buffs": {
+      "representative": 271,
+      "result": "pass",
+      "head": "490d8d9f73d044648e58a4cb70e4994ccec0c9a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/335#issuecomment-7008921521",
+      "scope": "Stock Iron Body raised Melee Resistance by 44 and Ballistic Resistance by 48. Both returned to baseline at the 20-second expiry. Stock Serene Calm raised Melee, Ballistic, Viral and Thrown Defense by 57, 51, 54 and 49. All four returned to baseline."
+    },
+    "martial-class-upgrades": {
+      "representative": 1065,
+      "result": "pass",
+      "head": "490d8d9f73d044648e58a4cb70e4994ccec0c9a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/335#issuecomment-7008921521",
+      "scope": "Stock 1065, 1066 and 1069 replaced each other. Their max-HP, Melee Damage, Melee Accuracy and Melee Defense deltas were +90/+4/+5/+5, +110/+6/+7/+6, and +150/+3/+5/+8."
+    }
+  }
+}

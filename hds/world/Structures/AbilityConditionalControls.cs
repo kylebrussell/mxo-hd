@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace hds
 {
-    /// <summary>tempmods.ApplyStunEffectIfDazed (2368) -> ApplyStunWithTimer (1659).
+    /// <summary>tempmods.ApplyStunEffectIfDazed (2368) and reviewed martial calls to ApplyStunWithTimer (1659).
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
@@ -28,12 +28,19 @@ namespace hds
         public static bool Handles(ushort ability) => AbilityCatalog.Find(ability)?.Modifiers.Any(m =>
             m.Text("StatModTermFunc") == "ApplyStunEffectIfDazed") == true;
 
+        internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
+            modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
+            ((ability == 265 || ability == 532 || ability == 534) && modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
+
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
         {
             if (marker.Proc != TempMods.Proc.Terminal || marker.Target != marker.Parent ||
-                !Handles(marker.Parent) || !subject.Alive || marker.Value <= 0) return;
-            uint dazed = CombatInterlock.ConditionBit(CombatTactic.Speed);
-            if (!subject.Effects.HasAt(TempMods.DazeAbility, now) && (subject.ConditionFlags & dazed) == 0) return;
+                !subject.Alive || marker.Value <= 0) return;
+            var callback = AbilityCatalog.Find(marker.Parent)?.Modifiers.FirstOrDefault(m => TerminalStun(marker.Parent, m));
+            if (callback == null) return;
+            if (callback.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" &&
+                !subject.Effects.HasAt(TempMods.DazeAbility, now) &&
+                (subject.ConditionFlags & CombatInterlock.ConditionBit(CombatTactic.Speed)) == 0) return;
             if (subject.Effects.HasControlImmunity(now)) return;
 
             var stun = new TimedEffects.Active { Kind = TempMods.KindState, Target = TempMods.StunAbility,

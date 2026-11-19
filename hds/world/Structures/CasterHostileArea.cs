@@ -2,12 +2,12 @@ using hds.shared;
 
 namespace hds
 {
-    /// <summary>Only reviewed UI Lag97 and Area Disruption38: shipped selector4 says enemies within the radius of self.
+    /// <summary>Reviewed selector 4 abilities affect enemies within the radius of self.
     /// Completion-time centre and existing floor/view/PvP predicates remain server policy.
     /// No emitter: each legal recipient receives the existing timed effect once.</summary>
     internal static class CasterHostileArea
     {
-        internal static bool Handles(ushort ability) => ability == 97 || ability == 38;
+        internal static bool Handles(ushort ability) => ability == 38 || ability == 97 || ability == 268 || ability == 406;
         internal static void Land(WorldClient caster, AbilityItem ability)
         {
             if (ability == null || !Handles(ability.getAbilityID()) || caster == null || !caster.Alive ||

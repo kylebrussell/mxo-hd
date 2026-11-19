@@ -257,6 +257,10 @@ def server(i):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):
         parts.append('Dazed checked at .01s marker term; script stun/immunity ' + ('4s' if i == 347 else '8s') + '; preserves sibling effects; [source](CONDITIONAL-STUN.md)')
+    if any(m.get('StatModTermFunc') == 'ApplyStunWithTimer' for m in mods(i)) and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
+        parts.append('landed proc .01s marker calls ApplyStunWithTimer; 4s Stun and separate 4s immunity')
+    if i in (268, 406):
+        parts.append('caster-centred hostile area via shipped selector 4 at cast completion')
     if r.get('sharpshooter'):
         parts.append(r['sharpshooter'])
     if r.get('health_callback'):
@@ -393,9 +397,11 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['periodic'] = f"Verify tick interval, count and total for {', '.join(periodic) or 'the stored DOT'}"
     if r.get('resurrection'):
         open_items['resurrection'] = 'Verify consent, restored vitals and this ability’s resurrection motion'
-    if states or r.get('conditional_stun') or r.get('conditional_powerless'):
+    terminal_stun = any(m.get('StatModTermFunc') == 'ApplyStunWithTimer' for m in modifiers) and any(
+        m['proc'] == 'Terminal' for m in r['timed'] or [])
+    if states or r.get('conditional_stun') or r.get('conditional_powerless') or terminal_stun:
         open_items['controls'] = ('Verify duration, breaks, immunity and presentation for ' +
-                                  (labels(states) if states else 'the conditional control'))
+                                  (labels(states) if states else 'Stun' if terminal_stun else 'the conditional control'))
     if f.get('Ability/RadiusOfEffect') or f.get('Ability/AngleOfEffect'):
         radius = f.get('Ability/RadiusOfEffect', 'native default')
         angle = f.get('Ability/AngleOfEffect', 'native default')

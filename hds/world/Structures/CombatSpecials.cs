@@ -12,7 +12,7 @@ namespace hds
     /// <item>Poison Knife 146, Wounding Throw 281, Sever Artery 341: their ThrownDOT (tempmods.py 935: the shared
     /// <see cref="TempMods.DotTick"/> formula) and Sever Artery's fixed 30 s debuffs, as timed effects on the target
     /// (executed by AbilityHostile's catalog debuffs; this class keeps their damage off the generic fallback).</item>
-    /// <item>Berserker Attack 535 and Side Roll Escape 121: WhenEnabled 1 modifiers, put on the caster when the move lands.
+    /// <item>Berserker Attack 535, Aerial Takedown 411 and Side Roll Escape 121: WhenEnabled 1 modifiers applied to the caster on landing.
     /// Side Roll Escape (TestFunction 6, the ILDB's "Withdraw Sideroll" moves) then leaves the fight.</item>
     /// <item>Taunt 647: TauntAggro (tempmods.py 1281) on the NPCs within RadiusOfEffect: AI.setMostHated(caster).</item>
     /// <item>Wooden Stake / Silver Bullet / Holy Water Attack (207, 208, 547) and their Enhanced versions (1022, 1024,
@@ -32,7 +32,8 @@ namespace hds
         public const int ExileDamageMultiplier = 10, EnhancedExileDamageMultiplier = 75;
 
         private static readonly HashSet<ushort> thrownDots = new HashSet<ushort> { PoisonKnife, WoundingThrow, SeverArtery };
-        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape };
+        private const ushort AerialTakedown = 411;
+        private static readonly HashSet<ushort> casterBuffs = new HashSet<ushort> { BerserkerAttack, SideRollEscape, AerialTakedown };
         private static readonly Dictionary<ushort, ushort> exileWeakness = new Dictionary<ushort, ushort>
         {
             { WoodenStake, KilledOnlyByWood }, { WoodenStakePlus, KilledOnlyByWood },
@@ -61,7 +62,7 @@ namespace hds
             if (thrownDots.Contains(id)) return id == SeverArtery
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
-            if (id == BerserkerAttack) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
+            if (id == BerserkerAttack || id == AerialTakedown) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
             if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
             if (id == Taunt) return "TauntAggro: NPCs in radius hate caster most and turn on them; humans unaffected";
             if (exileWeakness.ContainsKey(id)) return "general.py damage 10, x" +
@@ -151,7 +152,8 @@ namespace hds
         public static ushort? Damage(ushort id, Mob mob)
         {
             if (IsExileWeapon(id)) return ExileDamage(id, Weakness(mob));
-            return Handles(id) ? (ushort)0 : (ushort?)null;
+            // Aerial Takedown has both enemy damage and a separate landed self modifier.
+            return id != AerialTakedown && Handles(id) ? (ushort)0 : (ushort?)null;
         }
 
         /// <summary>After a move lands: the caster's buff, and Side Roll Escape's withdrawal.</summary>

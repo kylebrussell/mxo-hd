@@ -353,6 +353,9 @@ namespace hds
                     BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
                     Interval = typedDot ? rule.Interval : m.Interval, DamageType = typedDot ? rule.DamageType : -1 });
             }
+            // The Tomo Nage capture did not show the separate ballistic resistance proc.
+            if (id == 412 && source != null)
+                mods.AddRange(source.Mods.Where(m => m.Proc == Proc.Stat && m.Target == 181));
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;
         }
