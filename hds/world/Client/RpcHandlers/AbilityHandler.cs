@@ -312,8 +312,8 @@ namespace hds
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
                 UInt16 targetView = hostileView;
-                // An instant ability on the current close-combat target is the player's next move in the fight, as in
-                // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
+                // Instant abilities and reviewed gun specials on the current interlock opponent become the next
+                // move after their cast completes (RPC 47 kind 6, followed by the next round's RPC 45).
                 bool queueWithRound = ability.getCastingTime() <= 0 || CombatAnimations.CanQueueGunCast(client, AbilityID);
                 if (!queueWithRound || !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {

@@ -37,13 +37,21 @@ namespace hds
 
         public static bool HasAbilityRule(ushort ability) => boundSpecials.Value.Contains(AbilityCatalog.Canonical(ability));
 
-        /// <summary>Reviewed multi-round RULS bindings with an explicit gun requirement.</summary>
+        /// <summary>Reviewed timed specials with a stock choreography and an explicit GOB weapon category.</summary>
         public static bool CanQueueGunCast(WorldClient caster, ushort ability)
         {
-            if (!HasAbilityRule(ability) || !CombatStyles.CanUse(caster, ability)) return false;
-            byte weapon = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(caster));
-            return (ability, weapon) == (250, RangedWeapons.ClassDualSubmachinegun) ||
-                (ability, weapon) == (256, RangedWeapons.ClassRifle);
+            byte requiredWeapon = AbilityCatalog.Canonical(ability) switch
+            {
+                126 => RangedWeapons.ClassPistol,
+                176 => RangedWeapons.ClassSubmachinegun,
+                250 => RangedWeapons.ClassDualSubmachinegun,
+                254 => RangedWeapons.ClassRifle,
+                255 => RangedWeapons.ClassRifle,
+                256 => RangedWeapons.ClassRifle,
+                _ => 0
+            };
+            return requiredWeapon != 0 && CombatStyles.CanUse(caster, ability) &&
+                RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(caster)) == requiredWeapon;
         }
 
         internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>

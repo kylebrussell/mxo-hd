@@ -179,6 +179,36 @@ public class CombatStyleTests
     }
 
     [Theory]
+    [InlineData(126, 129, 2565u, 1732794185u, 4f, 9522u)]
+    [InlineData(176, 158, 698u, 1834178377u, 4f, 21083u)]
+    [InlineData(254, 147, 692u, 1716672329u, 2f, 11361u)]
+    [InlineData(255, 147, 692u, 1716672329u, 2f, 11360u)]
+    [InlineData(250, 158, 2503u, 1396987721u, 4f, 21082u)]
+    [InlineData(256, 147, 692u, 1716672329u, 4f, 11367u)]
+    public void TimedGunSpecialsRequireTheirStoredWeaponAndActiveStyle(
+        ushort ability, ushort style, uint weapon, uint category, float seconds, uint animation)
+    {
+        var definition = AbilityCatalog.Find(ability)!;
+        Assert.Equal(category, (uint)definition.Number("Ability/ReqCategory"));
+        Assert.Equal(seconds, definition.CastSeconds);
+        Assert.Equal(animation, CombatAnimations.Special(ability, true, CombatTactic.Speed)?.Id);
+
+        var client = Client();
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (2, 50), (style, 50) });
+        client.playerInstance.EquippedItemID.setValue(weapon);
+        Assert.False(CombatAnimations.CanQueueGunCast(client, ability));
+
+        CombatStyles.Select(client, style);
+        Assert.True(CombatAnimations.CanQueueGunCast(client, ability));
+        client.playerInstance.EquippedItemID.setValue(0u);
+        Assert.False(CombatAnimations.CanQueueGunCast(client, ability));
+
+        // A weapon in the same discipline can still have a different GOB category.
+        client.playerInstance.EquippedItemID.setValue(style switch { 129 => 2434u, 158 => weapon == 698 ? 2503u : 698u, _ => 2565u });
+        Assert.False(CombatAnimations.CanQueueGunCast(client, ability));
+    }
+
+    [Theory]
     [InlineData(129, RangedWeapons.ClassPistol, 'P', 21052u, 10896u)]
     [InlineData(147, RangedWeapons.ClassRifle, 'R', 21068u, 12541u)]
     [InlineData(158, RangedWeapons.ClassSubmachinegun, 'G', 21060u, 5851u)]
