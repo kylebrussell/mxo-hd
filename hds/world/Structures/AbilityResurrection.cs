@@ -12,6 +12,8 @@ namespace hds
     {
         public const UInt32 RestoreEffect = 0x280006af;
         public static bool Handles(UInt16 id) => id == 325 || id == 326 || id == 375 || id == 416 || id == 438;
+        // RenewRSI_DirectObject plays the Revive RSI motion and reports Renew RSI in the result.
+        public static ushort MotionAbility(ushort ability) => ability == 438 ? (ushort)375 : ability;
         private static int nextOffer;
 
         /// <summary>Native displays this offer, then rebuilds a fixed54-byte reply with ability/flags/locators only.</summary>
@@ -176,7 +178,7 @@ namespace hds
         {
             PvpCombat.OnPlayerGone(target, true);
             CombatManager.GetHandler(target).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
-            DeathPresentation.Resuscitate(target, ability);
+            DeathPresentation.Resuscitate(target, MotionAbility(ability));
             UInt16 health = PvpCombat.HealthOf(target);
             target.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf(
                 (PlayerViewAttributes.SelfIsDead, PlayerViewAttributes.U8(0)),

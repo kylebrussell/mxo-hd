@@ -1,6 +1,6 @@
 # Hacker resurrection callbacks and approval
 
-This implements Restore RSI325, Revitalize RSI326, Revive RSI375 and Rejuvenate RSI416. These remain **partial** in the parity audit until the native dialog, transition and feedback have been checked. The offer and reply protocol are decoded from the shipped `client.dll` and Claude's native7.6005 capture; no retail-server resurrection capture was found.
+Restore RSI325, Revitalize RSI326, Revive RSI375, Rejuvenate RSI416 and Renew RSI438 remain **partial** in the parity audit. Rejuvenate's stock dialog and standing animation passed native QA at 2f7495e8. Renew uses Revive375 as its motion context. The [AB4 evidence](ABILITY-HEALTH-PARITY.md) covers the current scope. The sections below retain the earlier PR104 investigation.
 
 ## Source behavior
 

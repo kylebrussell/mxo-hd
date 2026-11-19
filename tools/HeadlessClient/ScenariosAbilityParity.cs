@@ -43,7 +43,7 @@ public static partial class Scenarios
             "Self-only Mobius Code ignores a hostile selection", TimeSpan.FromSeconds(10));
 
         Cast(healer, 169, allyView.ViewId);
-        await ally.WaitForRpcAsync(ModPattern(169, 108));
+        await ally.WaitForRpcAsync(ModPattern(169, 1157));
         int beforeTicks = ViewUpdateValues(ally, 2, "02 80 80 80 40").Count;
         await ally.WaitUntilAsync(() => context.Server.DebugLog().Contains("169 heals Ally"), "Emergency Repairs HOT tick", TimeSpan.FromSeconds(10));
         Check.That(ViewUpdateValues(ally, 2, "02 80 80 80 40").Count > beforeTicks, "HOT sends the target a health update");

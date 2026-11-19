@@ -211,7 +211,7 @@ namespace hds
             if(target.playerData.isDead || target.playerData.duelDeath || PvpCombat.HealthOf(target)==0) return;
             int amount=Sample(effect,Roll15());
             // NeutralHeal6 has no influence; Heal3 uses the established HealDamage174 link.
-            if(effect==944) amount=(int)(amount*(double)(float)Math.Max(0,1+AbilityStats.Influence(source,174)/100.0));
+            if(effect==944) amount=AbilityHealing.ApplyInfluence(amount, AbilityStats.Influence(source,174));
             ushort before=PvpCombat.HealthOf(target);
             AbilityHandler.HealSelf(target,(ushort)Math.Clamp(amount,0,ushort.MaxValue));
             Output.WriteDebugLog("[HEALTH-EFFECT] "+effect+" heals "+TimedEffects.PlayerName(target)+" "+before+" -> "+PvpCombat.HealthOf(target));

@@ -188,12 +188,16 @@ try
                 else if (action == "approve")
                 {
                     var pending = await actor.WaitForRpcAsync("81 88");
-                    byte[] reply = new byte[54];
+                    byte[] reply = fixtureMode is NativeQa.Modes.AbilityHealthParityMode
+                        ? NativeQa.Modes.AbilityHealthParityMode.RejuvenateReply(pending.Bytes)
+                        : new byte[54];
                     reply[0] = 0x81; reply[1] = 0x88;
                     Array.Copy(pending.Bytes, 2, reply, 2, 4);
                     reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
                     reply[7] = q.GetProperty("accept").GetBoolean() ? (byte)0 : (byte)1;
                     actor.SendRpc(reply);
+                    if (fixtureMode is NativeQa.Modes.AbilityHealthParityMode && reply[6] == 0 && reply[7] == 0)
+                        result = await NativeQa.Modes.AbilityHealthParityMode.CheckRejuvenatedAsync(actor);
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));

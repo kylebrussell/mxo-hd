@@ -486,7 +486,7 @@ namespace hds
                 Active m = mods[i];
                 m.Caster = caster;
                 if (caster != null && m.Proc == TempMods.Proc.Dot)
-                    m.Value = AbilityStats.ScaleAbilityDamage(caster, effect.Ability, m.Value);
+                    m.Value = AbilityStats.ScaleTypedAbilityDamage(caster, m.DamageType, m.Value);
                 if (m.Proc == TempMods.Proc.State && m.Seconds > 0)
                 {
                     m.Seconds = AbilityControlDurations.Scale(caster, m.Target, m.Seconds);

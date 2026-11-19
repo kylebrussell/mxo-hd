@@ -76,7 +76,7 @@ namespace hds
                     {
                         var effect = new TempMods.Effect { Ability = id, Mods = new[] { new TempMods.Mod
                         {
-                            Kind = TempMods.KindLinked, Target = 108, Proc = TempMods.Proc.Hot,
+                            Kind = TempMods.KindLinked, Target = hot.Target == 0 ? (ushort)108 : hot.Target, Proc = TempMods.Proc.Hot,
                             MinValue = amount, MaxValue = amount, Seconds = (float)hot.Number("Duration"),
                             Interval = hot.Number("UpdateFuncInterval", TempMods.DotIntervalSeconds)
                         } } };
