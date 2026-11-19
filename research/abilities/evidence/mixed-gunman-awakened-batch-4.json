@@ -17,7 +17,8 @@
           "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
           "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1136": {
       "checks": {
@@ -36,7 +37,8 @@
           "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
           "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
         }
-      }
+      },
+      "family": "gunman-class-upgrade-replacement"
     },
     "1061": {
       "checks": {
