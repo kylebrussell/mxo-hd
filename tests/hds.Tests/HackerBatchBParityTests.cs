@@ -5,7 +5,7 @@ using hds.shared;
 
 namespace hds.Tests;
 
-[Collection("DelayedActions")]
+[Collection("AbilityParityWorld")]
 public class HackerBatchBParityTests
 {
     private static WorldClient Client(byte level = 50)
