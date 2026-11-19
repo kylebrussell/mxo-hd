@@ -36,3 +36,15 @@ In Actions, cast the advanced summons one at a time outside combat. Use the Simu
 | 599, 1107 Proxy Master | The grouped run verifies the +5 cost modifier bonus record. The linked cost consumer and the grant's selected-own-pet routing, modifiers and cleanse remain open. |
 | 603 Charge Simulacra, 619 Daemon Boost 2.0 | Existing real resources and typed attack tests exercise the pet effects. The Charge range script and exact base resource rates remain open. Daemon Boost's own-pet targeting differs from selector 19 friendly-area behavior. |
 | 604 Utility Coder | The live ability executor chooses self and applies +50 Max Health and +20 to both physical resistances, with numeric cleanup. Stock admission, class replacement and active presentation still need a run. |
+
+## Stock passive records
+
+Stock CSR110 showed the matching bonus rows as aggregate totals. The native login's PacketLog entry at 08:13:21 (CSEQ 2, SSEQ 10) independently identifies each contributing ability. These are individual `80 bc 45` add records with locator low byte 0 and duration 0.
+
+| Source | Target and signed value | Record locators |
+|---|---|---|
+| 585 | 1031 +10 | `00011300` |
+| 600 | 997 +5 and 996 +5 | `00011700`, `00011800` |
+| 614 | 1140 +5 and 1143 +5 | `00011b00`, `00011c00` |
+
+The two 600 records are Melee and Ballistic Accuracy Bonus. The aggregate Viral Accuracy Bonus row does not attribute a viral contribution to 600. The source-specific wire proof complements the existing headless typed consumer and unload checks. The stock session did not retest the summons. [Stock report](https://github.com/kylebrussell/mxo-hd/pull/349#issuecomment-7010210704)

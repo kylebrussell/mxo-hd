@@ -30,7 +30,8 @@
           "runtime": "AbilityPassives produces the bonus, and AbilityStats.Influence feeds it into typed viral damage.",
           "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
         }
-      }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
     },
     "586": {
       "checks": {
@@ -120,7 +121,8 @@
           "runtime": "AbilityPassives emits the two stats; AbilityStats.Attack consumes their respective scaled melee and ballistic contributions.",
           "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
         }
-      }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
     },
     "601": {
       "checks": {
@@ -144,12 +146,12 @@
     "603": {
       "checks": {
         "stats": {
-          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and −20% action cost.",
+          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and \u221220% action cost.",
           "runtime": "CoderPets updates the actual bounded pet pool and the cost of each available action, then ends the change naturally.",
           "test": "CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration checks the real resource arithmetic and expiry; coder-pet-stock-buffs and coder-pet-resources use the ordinary own-pet casts and status."
         },
         "pets": {
-          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and −20% action cost.",
+          "source": "GOB 603 gives an own-simulacrum 600 s effect of +50% IS regeneration and \u221220% action cost.",
           "runtime": "CoderPets updates the actual bounded pet pool and the cost of each available action, then ends the change naturally.",
           "test": "CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration checks the real resource arithmetic and expiry; coder-pet-stock-buffs and coder-pet-resources use the ordinary own-pet casts and status."
         }
@@ -181,7 +183,8 @@
           "runtime": "AbilityPassives emits the bonuses; AbilityStats.Toughness and Defense consume them in the matching combat channels.",
           "test": "AbilityPassiveTests.AdvancedCoderPassivesReachOnlyTheirTypedCombatConsumers tests learned ranks 25 and 50, typed gameplay inputs and their reset after unload. ability-parity-coder-advanced verifies the rank-50 records at login."
         }
-      }
+      },
+      "family": "advanced-coder-loaded-combat-passives"
     },
     "616": {
       "checks": {
@@ -221,6 +224,15 @@
           "test": "ProxyTechnicianTests.SnapshotUsesStoredBinary32CasterLevelAndFiveSecondDuration, ActualPetHitChanceConsumesOnlyTheMatchingProxyChannelAndExpiresTheSnapshot and RangeLossAndEnemyOwnerDoNotRefreshTheLastIndependentFiveSecondChild check the exact values, recipient checks and consuming hit roll. proxy-technician-friendly-attacks checks actual friendly and enemy pet attacks."
         }
       }
+    }
+  },
+  "families": {
+    "advanced-coder-loaded-combat-passives": {
+      "representative": 585,
+      "result": "pass",
+      "head": "fad3773e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/349#issuecomment-7010210704",
+      "scope": "Stock CSR110 Status shows the relevant aggregate bonuses. The matching stock PacketLog contains separate type-45 individual add records for 585:1031 +10, 600:996/997 +5 each and 614:1140/1143 +5 each. The companion runtime tests isolate both ranks and reset on unload."
     }
   }
 }
