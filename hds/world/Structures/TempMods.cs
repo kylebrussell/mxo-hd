@@ -304,7 +304,6 @@ namespace hds
             // Pistol Aerial, crashover2k proxy_003 8687; Deadly Shot, Vector 31513; Sniper Shot, proxy_003 login 20114: stun 4 s
             { 243, E(243, State(StunAbility, 4)) },
             { 454, E(454, State(StunAbility, 4)) },
-            { 505, E(505, State(StunAbility, 4)) },
             // Suppression Fire, ProxyM2_m2_packets_5 28162: rooted 21.12 s; Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s
             { 248, E(248, State(RootedAbility, 21.12f)) },
             { 492, E(492, State(RootedAbility, 14.08f)) },
