@@ -48,6 +48,33 @@ public class TypedSpecialAttackTests
         Assert.Equal(0,AbilityStats.Attack(c,false));
         Assert.True(AbilityCatalog.Find(33)!.CastSeconds>0); // admission deliberately remains non-queued
     }
+
+    [Theory]
+    [InlineData(1120, 15, 1039, 0)]
+    [InlineData(1121, 18, 1059, 0)]
+    [InlineData(1123, 7, 1100, 8)]
+    public void KnifeClassUpgradesChangeThrownAccuracyDamageAndStealth(ushort ability, int accuracy,
+        ushort thrownDamage, int stealth)
+    {
+        var caster = Client();
+        caster.playerInstance.MaxHealth.setValue((ushort)5000);
+        var thrown = Move(134);
+        int before = AbilityStats.SpecialAttack(caster, thrown);
+        int melee = AbilityStats.Attack(caster, false);
+        int concealment = Stealth.StealthLevelOf(caster);
+
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, ability, 999)));
+        AbilitySupport.Land(caster, ability, 999);
+        Assert.Equal(before + accuracy, AbilityStats.SpecialAttack(caster, thrown));
+        Assert.Equal(thrownDamage, AbilityStats.ScaleTypedAbilityDamage(caster, 7, 1000));
+        Assert.Equal(melee, AbilityStats.Attack(caster, false));
+        Assert.Equal(concealment + stealth, Stealth.StealthLevelOf(caster));
+
+        Assert.True(AbilityBuffs.Remove(caster, ability));
+        Assert.Equal(before, AbilityStats.SpecialAttack(caster, thrown));
+        Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(caster, 7, 1000));
+        Assert.Equal(concealment, Stealth.StealthLevelOf(caster));
+    }
     [Theory]
     [InlineData("1","mxotest_owned",110,true,false,"CSR110",true)]
     [InlineData("true","mxotest_owned",110,true,false,"CSR110",false)]
