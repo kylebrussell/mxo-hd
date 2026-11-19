@@ -25,9 +25,9 @@ public sealed class AbilityEvidencePetRepairsMode : NativeQaMode
         }, loadAbilityAncestors: true, environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[]
         {
-            "From Actions, summon Remote Proxy 5.0 (594) and select it through the Simulacra window. Cast Fortify (20) to create a 750 HP deficit by raising the live maximum without a heal.",
+            "From Actions, summon Remote Proxy 5.0 (594) and select the pet by clicking its model. Cast Fortify (20) to create a 750 HP deficit by raising the live maximum.",
             "With the own proxy selected, cast Repair Simulacra 1–4 and Fix Simulacra (30 +20, 31 +34, 587 +117, 596 +174, 615 +83). Capture each view update and stable maximum.",
-            "QAFriend is already in-world. Selecting QAFriend should suppress these own-pet abilities in the stock client; capture the lack of an activation. See docs/ABILITY-EVIDENCE-RETESTS.md."
+            "Wait for each two-second cast to finish. Then select QAFriend and attempt Repair Simulacra 1.0 or Fix Simulacra. The stock client can send an activation and the server replies 'That is not your simulacrum.' See docs/ABILITY-EVIDENCE-RETESTS.md."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

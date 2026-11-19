@@ -195,6 +195,12 @@ try
                 }
                 else if (action == "status-debuff" && fixtureMode is NativeQa.Modes.AbilityStatusMode)
                     result = await NativeQa.Modes.AbilityStatusMode.CastDebuffAsync(actor, q.GetProperty("ability").GetUInt16());
+                else if (action == "direct-heal-health" && fixtureMode is NativeQa.Modes.AbilityEvidenceDirectHealsMode && actor.Handle == "QAFriend")
+                {
+                    ushort health = await NativeQa.Modes.AbilityEvidenceDirectHealsMode.ReadHealthAsync(actor);
+                    Console.WriteLine($"{actor.Handle} before heal: {health} HP");
+                    result = new { actor.Handle, Health = health };
+                }
                 else if (action == "duel-accept")
                 {
                     duelActor = actor;

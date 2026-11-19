@@ -201,4 +201,21 @@ public class AbilityPassiveTests
         Assert.Equal((ushort)200, AbilityStats.ScaleAbilityDamage(caster, 359, 200));
         Assert.Equal((ushort)0, AbilityStats.ScaleAbilityDamage(caster, 359, 0));
     }
+
+    [Theory]
+    [InlineData(587, 117, 134)]
+    [InlineData(596, 174, 200)]
+    [InlineData(615, 83, 95)]
+    public void AdvancedSimulacraRepairsUseTheirOwnTemplateAndCasterInfluence(ushort ability, int baseline, int influenced)
+    {
+        var caster = Client();
+        var template = AbilityCatalog.Find(ability);
+        Assert.Equal(baseline, CoderPets.FixedHeal(caster, template));
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (71, 50), (233, 50), (370, 50) });
+        Assert.Equal(15, AbilityStats.Influence(caster, 174));
+        Assert.Equal(influenced, CoderPets.FixedHeal(caster, template));
+        Assert.Equal(0, AbilityHealing.Amount(caster, Client(), ability));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(baseline, CoderPets.FixedHeal(caster, template));
+    }
 }

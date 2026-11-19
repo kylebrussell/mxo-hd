@@ -137,6 +137,61 @@ public class AbilityBuffTests
     }
 
     [Fact]
+    public void TimedAccuracyReplacementRemovesTheOriginalRecordBeforeAddingTheNewOne()
+    {
+        WorldClient client = NewClient();
+        client.playerInstance.Level.setValue((byte)50);
+        int melee = AbilityStats.Attack(client, false);
+        int ballistic = AbilityStats.Attack(client, true);
+
+        AbilitySupport.Land(client, 373, 0);
+        var first = Assert.Single(Rpcs(client));
+        Assert.EndsWith("750100000a02400000000000009643", first);
+        Assert.Equal(melee + 64, AbilityStats.Attack(client, false));
+
+        AbilitySupport.Land(client, 374, 0);
+        var replacement = Rpcs(client);
+        Assert.Equal(2, replacement.Count);
+        Assert.Equal(first[..34] + "01" + first[36..], replacement[0]);
+        Assert.EndsWith("760100000c02400000000000009643", replacement[1]);
+        Assert.Equal(melee, AbilityStats.Attack(client, false));
+        Assert.Equal(ballistic + 64, AbilityStats.Attack(client, true));
+
+        TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 301);
+        Assert.Equal(replacement[1][..34] + "01" + replacement[1][36..], Assert.Single(Rpcs(client)));
+        Assert.Equal(ballistic, AbilityStats.Attack(client, true));
+        Assert.Empty(client.playerData.activeBuffs);
+    }
+
+    [Fact]
+    public void HealthFamilyReplacementsApplyOnlyTheActiveMaximumAndKeepCurrentHealth()
+    {
+        WorldClient client = NewClient();
+        client.playerInstance.Level.setValue((byte)50);
+        client.playerInstance.MaxHealth.setValue((ushort)6200);
+        client.playerInstance.Health.setValue((ushort)6200);
+
+        string? previous = null;
+        foreach (var (ability, maximum) in new (ushort, ushort)[] { (39, 6250), (322, 6400), (419, 6700), (417, 6700) })
+        {
+            Assert.True(AbilityBuffs.Apply(client, ability));
+            var records = Rpcs(client);
+            Assert.Equal(previous == null ? 1 : 2, records.Count);
+            if (previous != null)
+                Assert.Equal(previous[..34] + "01" + previous[36..], records[0]);
+            previous = records[^1];
+            Assert.Equal(maximum, BitConverter.ToUInt16(client.playerInstance.MaxHealth.getValue()));
+            Assert.Equal(6200, PvpCombat.HealthOf(client));
+            Assert.Equal(ability, Assert.Single(client.playerData.activeBuffs.Keys));
+        }
+
+        TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 601);
+        Assert.Equal(previous![..34] + "01" + previous[36..], Assert.Single(Rpcs(client)));
+        Assert.Equal(6200, BitConverter.ToUInt16(client.playerInstance.MaxHealth.getValue()));
+        Assert.Equal(6200, PvpCombat.HealthOf(client));
+    }
+
+    [Fact]
     public void ReusedBuffRefreshesAndOldExpiryDoesNothing()
     {
         WorldClient client = NewClient();
