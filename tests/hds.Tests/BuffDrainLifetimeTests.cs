@@ -109,13 +109,49 @@ public class BuffDrainLifetimeTests
         Assert.Equal(shortfall?0:afterClaim?99:100,NumericalUtils.ByteArrayToUint16(oldPlayer.InnerStrengthAvailable.getValue(),1));
         AbilityBuffs.TickActiveDrain(c,old);Assert.Equal(100,AbilityHandler.CurrentInnerStrength(c));
     }
-    [Fact]public void EveryCurrentlyProducedDrainHasTheCheckedPureTerminationContract()
+    [Fact]public void EveryCurrentlyProducedDrainHasTheCheckedTerminationContract()
     {
         var c=Client();using var owner=new BuffDrainTestOwner(c);var found=new List<ushort>();
         foreach(var id in AbilityCatalog.All.Keys)
             if(AbilityScaledBuffs.Resolve(c,id,out var buff) && buff.DrainAmount>0)
-            {found.Add(id);Assert.True(AbilityBuffs.PureDrainTermination(buff),"Unhandled draining definition "+id);}
-        Assert.Equal(new ushort[]{13,16,442,941,943},found.OrderBy(x=>x));
+            {found.Add(id);Assert.True(AbilityBuffs.SupportsDrainTermination(id,buff),"Unhandled draining definition "+id);}
+        Assert.Equal(new ushort[]{13,16,184,442,941,943},found.OrderBy(x=>x));
+    }
+
+    [Fact]
+    public void HyperSprintPaysExactDrainAndClearsOnlyItsModifiersAndMovementOnShortfall()
+    {
+        const ushort sprint = AbilityBuffs.HyperSprint;
+        var client = Client();
+        using var owner = new BuffDrainTestOwner(client);
+        Assert.True(AbilityBuffs.Apply(client, 12));
+        Assert.True(AbilityBuffs.Apply(client, sprint));
+        var active = client.playerData.activeBuffs[sprint];
+        Assert.True(AbilityBuffs.IsToggledOn(client, sprint));
+        Assert.Equal(5, active.Definition.DrainSeconds);
+        Assert.Equal(27, AbilityBuffs.Total(client, 877));
+        Assert.Equal(.15f, BitConverter.ToSingle(client.playerInstance.MovementScale.getValue()));
+        Assert.Equal(0x1400, BitConverter.ToUInt16(client.playerInstance.DissemblingType.getValue()));
+
+        client.playerInstance.InnerStrengthAvailable.setValue((ushort)25);
+        AbilityBuffs.TickActiveDrain(client, active);
+        Assert.True(AbilityBuffs.IsActive(client, sprint));
+        Assert.Equal(0, AbilityHandler.CurrentInnerStrength(client));
+
+        client.playerInstance.InnerStrengthAvailable.setValue((ushort)24);
+        AbilityBuffs.TickActiveDrain(client, active);
+        Assert.False(AbilityBuffs.IsActive(client, sprint));
+        Assert.Equal(24, AbilityHandler.CurrentInnerStrength(client));
+        Assert.True(active.Drain.Cancelled);
+        Assert.Equal(12, AbilityBuffs.Total(client, 877));
+        Assert.Equal(.45f, BitConverter.ToSingle(client.playerInstance.MovementScale.getValue()));
+        Assert.Equal(0x1000, BitConverter.ToUInt16(client.playerInstance.DissemblingType.getValue()));
+        bool Has(byte[] payload) => client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Any(message => message.content.AsSpan(1).SequenceEqual(payload));
+        Assert.True(Has(AbilityBuffs.BuildExclusive(sprint, false)));
+        Assert.True(Has(AbilityCooldowns.BuildTimer(sprint, AbilityCooldowns.OwnTimer, 5, true)));
+        foreach (var record in AbilityBuffs.BuildRecords(sprint, active.Definition, active.RecordIds, true))
+            Assert.True(Has(record));
     }
     [Fact]
     public void HyperStrengthEmitsItsOwnPeriodicEffectAndStopsAfterDrainShortfall()

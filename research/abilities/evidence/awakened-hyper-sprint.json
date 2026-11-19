@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "184": {
+      "checks": {
+        "script": {
+          "source": "Shipped GOB 184 is a toggle with a 25 IS activation cost, five-second reuse and ISDrainWithAbilityDeactivation of 25 every five seconds. SpeedingInit and SpeedingTerm in research/client-scripts/tempmods.py set and clear only 0x0400. The old sniffer Unknown capture at 17:33:01 includes the four modifier removals, exclusive OFF and localized c60020b4 on shortfall.",
+          "runtime": "The guarded activation charges the drain, leaves IS untouched on shortfall, removes its records and presentation and starts reuse. Manual toggle-off also clears the movement effect and cancels the old drain. The owner and watcher updates preserve the remaining movement state.",
+          "test": "BuffDrainLifetimeTests covers equality, shortfall, record removal and persistence of another speed buff. The ability-parity-awakened-hyper-sprint disposable uses the complete stock request from 11701b9dd84e and covers activation, a real timed debit, manual off, restart, natural shortfall and owner/watcher resets."
+        }
+      }
+    }
+  }
+}
