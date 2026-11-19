@@ -4,9 +4,9 @@
 
 GOB 9 and 15 have a while-enabled modifier with a one-second UpdateFuncInterval. The shipped callbacks select Energized or Precise tactics at initialization and reset the mode on termination. Their update scripts call PlayFX only in combat, with 0x2800070c for Energized Attacks and 0x280006ff for Precise Blow. The existing combat consumers apply complementary damage and attack-roll changes.
 
-The toggles reject concurrent use before charging the cast. The shipped STA IDs are 0xc6001a9f for attempting Energized Attacks with Precise Blow active and 0xc6001a9b for the inverse. The server retains its normal action refusal acknowledgement and sends the localized ability message. Recurring effects use the active toggle's exact identity and world, life and transport generations. They stop on removal or lifecycle changes.
+The toggles reject concurrent use before charging the cast. The server sends the normal action refusal with reason 0x066b. The stock client displays the refused ability's name in its tactic line. Recurring effects use the active toggle's exact identity and world, life and transport generations. They stop on removal or lifecycle changes.
 
-Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock rendering and the stock button gate at rest are pending.
+Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock confirmed both on/off sequences and that the active tactic continues after a refusal. The single-message retest and the stock button gate at rest remain open.
 
 ## Power Shot
 
@@ -16,7 +16,7 @@ In retail client 7.6005, modifier evaluator 62517ff0 dispatches function 4 to 62
 
 ## Stock retest of the tactical conflict
 
-Stock capture 58353c2f063b delivered both cross-toggle refusals to CSR110. At 15:43:25, packet lines 3490–3492 contain the reply for 15 and the shipped localized record c6001a9b. At 15:43:48, lines 4599–4601 show the reply for 9 and c6001a9f. The stock UI displayed neither line. The server now supplements the localized output with a plain caller-only notice on the same 2e c7 channel as other visible ability refusals. It names the active toggle to switch off.
+The shipped conflict callbacks name the active tactic using 0xc6001a9f for a refused Energized Attacks and 0xc6001a9b for a refused Precise Blow. Stock QA on 1580f0d7 observed two yellow lines per attempt. Capture b8a419336ce8 at lines 4280 and 7267 shows an 80 ba with reason 0x066b followed by the corresponding 81 67. The first visible line was “You cannot activate [ability] while using this tactic.” The second came from the directional STA. A single 80 ba keeps the action refusal and the first line. Stock still needs to confirm single display on the new head.
 
 | Toggle | On | First FX | Last FX | Off | Unique own-view pulses |
 |---|---|---|---|---|---|

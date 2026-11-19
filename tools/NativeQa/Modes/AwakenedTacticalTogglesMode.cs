@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Text.Json;
 using hds;
 using HeadlessClient;
@@ -6,6 +7,10 @@ namespace NativeQa.Modes;
 
 public sealed class AwakenedTacticalTogglesMode : NativeQaMode
 {
+    // PR387 stock PacketLog b8a419336ce8, lines 2656–2657 and 4034–4035.
+    private const string StockCloseCombat = "80b91100050003000000000000000000000000000000000000000000bd163400000000ff086b0000000000";
+    private const string StockToggle = "80b909000500030000000000000000000000000000000000000000000000000000000000086b0000000000";
+
     public override string Name => "ability-parity-awakened-tactical-toggles";
 
     public override NativeQaModePlan Plan { get; } = new(
@@ -20,8 +25,8 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         readyMessages: new[]
         {
             "Target the 30,000 HP Melee Dummy 3 m west. Start in Self Defense with no ranged weapon equipped. Enter Close Combat; use a non-Block tactic.",
-            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and verify the visible system notice instructs you to switch off Energized Attacks first. Turn 9 off and verify its FX stops.",
-            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and verify the visible system notice instructs you to switch off Precise Blow first. Turn 15 off and verify no continued FX.",
+            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and verify exactly one stock line appears: You cannot activate Precise Blow while using this tactic. Turn 9 off and verify its FX stops.",
+            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and verify exactly one stock line appears: You cannot activate Energized Attacks while using this tactic. Turn 15 off and verify no continued FX.",
             "Record stock gating at rest separately if tested. Keep exact activation, on/off, and FX records. The NPC's random rounds are not a statistical damage benchmark."
         });
 
@@ -36,14 +41,15 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         await actor.EnterWorldAsync();
         var watching = await observer.WaitForViewNamedAsync(actor.Handle);
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
-        string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
-        actor.SendRpc($"40 {handle} 01 6b");
+        uint target = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+        string handle = WireFormat.ToHex(BitConverter.GetBytes(target));
+        actor.World.SendRpcs(Targeted(StockCloseCombat, 17, target), WireFormat.FromHex($"40 {handle} 01 6b"));
         await actor.WaitForRpcAsync("47");
 
         var samples = new[]
         {
-            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu, Refusal: 0xc6001a9bu, Notice: "Switch off Energized Attacks before using Precise Blow."),
-            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu, Refusal: 0xc6001a9fu, Notice: "Switch off Precise Blow before using Energized Attacks.")
+            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu),
+            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu)
         };
         var proof = new List<object>();
         foreach (var sample in samples)
@@ -52,28 +58,36 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
             int observerAt = observer.World.ViewSnapshot().Count;
             var ownEffect = Effect(sample.Effect, 2, own: true);
             var otherEffect = Effect(sample.Effect, watching.ViewId, own: false);
-            EvidenceRetestWire.Cast(actor, sample.On, dummy);
+            actor.SendRpc(Targeted(StockToggle, sample.On, target));
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 01");
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(actorAt).Count(ownEffect.Occurs) >= 2 &&
                 observer.World.ViewSnapshot().Skip(observerAt).Count(otherEffect.Occurs) >= 2,
                 $"Repeated {sample.On} FX on self and observer", TimeSpan.FromSeconds(10));
 
-            EvidenceRetestWire.Cast(actor, sample.Blocked, dummy);
-            var denied = await actor.WaitForRpcAsync($"80 ba {EvidenceRetestWire.Le(sample.Blocked)}");
-            var localized = await actor.WaitForRpcAsync($"81 67 ?? ?? ?? ?? {WireFormat.ToHex(BitConverter.GetBytes(sample.Refusal))}");
-            var notice = await actor.WaitForTextAsync(sample.Notice);
-            Check.That(notice.Bytes.AsSpan().StartsWith(new byte[] { 0x2e, 0xc7 }), "Visible system chat is sent to the caster");
-            Check.That(!observer.World.RpcSnapshot().Any(packet => packet.Bytes.AsSpan().SequenceEqual(notice.Bytes)),
-                "The nearby observer does not receive the caller-only notice");
+            string refusal = $"80 ba {EvidenceRetestWire.Le(sample.Blocked)} 00 00 6b 06 00 00 00 00 00 00 00 00 00 00 00";
+            var denialPattern = BytePattern.Parse(refusal);
+            var localizedPattern = BytePattern.Parse("81 67");
+            var chatPattern = BytePattern.Parse("2e");
+            int rpcStart = actor.World.RpcSnapshot().Count;
+            byte[] request = Targeted(StockToggle, sample.Blocked, target);
+            actor.SendRpc(request);
+            var denied = await actor.WaitForRpcAsync(refusal);
             int afterConflict = actor.World.ViewSnapshot().Count;
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(afterConflict).Any(ownEffect.Occurs),
                 "The existing tactic continues pulsing after refusal", TimeSpan.FromSeconds(4));
-            EvidenceRetestWire.Cast(actor, sample.On, dummy);
+            actor.SendRpc(Targeted(StockToggle, sample.On, target));
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 00");
             int offAt = actor.World.ViewSnapshot().Count;
             await Task.Delay(TimeSpan.FromSeconds(1.4));
-            proof.Add(new { sample.On, sample.Blocked, sample.Effect, sample.Refusal,
-                Denial = denied.Hex, Localized = localized.Hex, Notice = notice.Hex });
+            var reply = actor.World.RpcSnapshot().Skip(rpcStart).ToArray();
+            int denialCount = reply.Count(packet => denialPattern.IsMatch(packet.Bytes));
+            int localizedCount = reply.Count(packet => localizedPattern.IsMatch(packet.Bytes));
+            int chatCount = reply.Count(packet => chatPattern.IsMatch(packet.Bytes));
+            Check.Equal(1, denialCount, "One action refusal");
+            Check.Equal(0, localizedCount, "The stock refusal already displays one tactic line");
+            Check.Equal(0, chatCount, "No duplicate tactical chat");
+            proof.Add(new { sample.On, sample.Blocked, sample.Effect, Request = Convert.ToHexString(request),
+                Denial = denied.Hex, denialCount, localizedCount, chatCount });
             Check.That(!actor.World.ViewSnapshot().Skip(offAt).Any(ownEffect.Occurs),
                 $"No {sample.On} update after toggle off");
         }
@@ -82,6 +96,14 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "awakened-tactical-toggles.json"),
             JsonSerializer.Serialize(proof, new JsonSerializerOptions { WriteIndented = true }));
         return Array.Empty<byte>();
+    }
+
+    private static byte[] Targeted(string stock, ushort ability, uint target)
+    {
+        byte[] request = Convert.FromHexString(stock);
+        BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), ability);
+        BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), target);
+        return request;
     }
 
     private static BytePattern Effect(uint effect, ushort view, bool own)

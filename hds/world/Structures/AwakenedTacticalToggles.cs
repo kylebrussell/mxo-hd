@@ -8,19 +8,11 @@ namespace hds
     {
         private const ushort Energized = 9, Precise = 15;
         private const uint EnergizedEffect = 671090444, PreciseEffect = 671090431;
-        private const uint EnergizedConflict = 0xc6001a9f, PreciseConflict = 0xc6001a9b;
 
         internal static void Refuse(WorldClient caster, ushort ability)
         {
-            string name = TimedEffects.PlayerName(caster);
-            // Keep the existing action refusal acknowledgement before the source-specific message.
+            // Stock renders reason 0x066b as the tactic refusal. A separate STA produces a second chat line.
             caster.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(ability, AbilityRefusals.LegacyAmbiguous, 0)));
-            caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(
-                ability == Energized ? EnergizedConflict : PreciseConflict, true, Energized, name, name));
-            // The stock capture received both refusal packets but displayed neither as a chat line.
-            string notice = ability == Energized ? "Switch off Precise Blow before using Energized Attacks."
-                : "Switch off Energized Attacks before using Precise Blow.";
-            caster.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(notice, "BROADCAST"));
             caster.FlushQueue();
         }
 
