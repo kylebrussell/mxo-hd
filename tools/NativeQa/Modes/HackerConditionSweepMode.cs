@@ -8,6 +8,7 @@ namespace NativeQa.Modes;
 public sealed class HackerConditionSweepMode : NativeQaMode
 {
     private const int X = 24800, Y = 495, Z = -1498, StagingZ = 13984;
+    private const ushort UpgradeArtist = 318, UpgradeArtistUpgrade = 1095;
     private static readonly (string Handle, int X, int Z)[] Stands =
     {
         ("QAFriend", 25183, -1177), ("QAFar", 25719, -2269),
@@ -17,7 +18,7 @@ public sealed class HackerConditionSweepMode : NativeQaMode
     public override string Name => "ability-parity-hacker-condition-sweeps";
 
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, 320, 424, 379, 378, 318, 86 }, X, Z,
+        new ushort[] { 2, 17, 320, 424, 379, 378, UpgradeArtist, 86 }, X, Z,
         Array.Empty<string>(), Array.Empty<string>(),
         new[]
         {
@@ -37,7 +38,7 @@ public sealed class HackerConditionSweepMode : NativeQaMode
             "Use Self Defense. Form a mission team with QAFriend and QAFar through the stock radial and ordinary helper accept. Leave QAOther and QAEnemy outside the team.",
             "From the normal Actions list cast 320 then 424 on self. Capture +18 for 40 s and +35 for 25 s, including replacement of 320. Cast 379 and capture caster and QAFriend +20 for 35 s. QAFar at 12 m and nearby QAOther should receive no sweep.",
             "Toggle Deflect Virus 1.0 (378) from Actions and observe the five-second 693 viral/melee defence records on CSR and QAFriend, followed by term or refresh records. Do not cast the internal 693 directly.",
-            "Select Upgrade Artist Upgrade from the granted Actions list and capture 1095 (+5 IS cost reduction, +7 Concentration, +20 Combat Evasion and +10 sweep while enabled). Replace it with Guardian Healer Upgrade (1094) and check the original sweep removal.",
+            "For the remaining stock retest, confirm Upgrade Artist (318) is loaded and its Upgrade Artist Upgrade (1095) appears in Actions via the live grant. Activate it and capture +5 IS cost reduction, +7 Concentration, +20 Combat Evasion and +10 sweep while enabled. Activate Guardian Patcher Upgrade (1094) and verify that it replaces 1095 and removes the original sweep.",
             "For successful cleanse presentation, have opposing flagged QAEnemy cast Slow 1.0 (86) on CSR or QAFriend through the helper cast request. Require the actual debuff ON record before starting the relevant sweep. Count a cleanse only if it has a matching removal message or server SWEEP event before natural expiry. Record misses as misses; never force a roll."
         });
 
@@ -55,7 +56,22 @@ public sealed class HackerConditionSweepMode : NativeQaMode
         if (context.Server == null) return Array.Empty<byte>();
 
         var caster = context.StockProbe ?? throw new InvalidOperationException("Expected the stock-profile CSR probe.");
-        await caster.EnterWorldAsync();
+        var archive = AbilityMemoryUiFixture.Decode(caster.CharacterData[6]);
+        Check.That(archive.All(row => row.Descriptor != (0x80000000u | ((uint)UpgradeArtistUpgrade << 10))),
+            "Upgrade Artist Upgrade is supplied by its live grant");
+        await caster.EnterWorldAsync(loadingComplete: false);
+        caster.SendRpc("81 48");
+        await caster.WaitForRpcAsync("81 49");
+        bool IsUpgradeGrantAdd(RpcRecord packet) => ManageBonusRecord.TryDecode(packet.Bytes, out var record) &&
+            record!.Type == 0x45 && record.Locator == ((uint)UpgradeArtistUpgrade << 8 | 3u) &&
+            record.SourceId == UpgradeArtist && record.TargetId == UpgradeArtistUpgrade && record.SignedValue == 0 &&
+            record.Duration == 0 && record.AddRemoveType == 0;
+        Check.That(!caster.World.RpcSnapshot().Any(IsUpgradeGrantAdd), "The stock Actions grant waits for avatar readiness");
+        caster.SendRpc("0c 01");
+        var liveGrant = await caster.WaitForRpcAsync(IsUpgradeGrantAdd, "318 to 1095 live Actions grant");
+        var hiddenLoad = caster.Received("80 b2 47 04 00 00 08 02");
+        Check.That(hiddenLoad.Count > 0, "The Upgrade Artist child is loaded when the stock Actions grant is published");
+        var proof = new List<string> { hiddenLoad.Last().Hex, liveGrant.Hex };
         await caster.WaitForViewNamedAsync("WinterFrost");
         foreach (var (handle, x, z) in Stands)
         {
@@ -68,8 +84,6 @@ public sealed class HackerConditionSweepMode : NativeQaMode
         var far = context.Helpers["QAFar"];
         await HackerParitySweepMode.InviteTeamMembersAsync(caster, new[] { near, far });
 
-        var grant = await caster.WaitForRpcAsync("80 b2 47 04 00 00 08 02");
-        var proof = new List<string> { grant.Hex };
         var enemy = context.Helpers["QAEnemy"];
         var recipient = await enemy.WaitForViewNamedAsync(caster.Handle);
         for (int attempt = 1; ; attempt++)

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 using hds.world.Structures;
 
 namespace hds.Tests;
@@ -821,15 +822,19 @@ public class AbilityHostileTests
         var players = new[] { caster, near, far, outsider, dead };
         double[] positions = { 0, radius * 100 - 1, radius * 100 + 1, 300, 500 };
         var previous = WorldServer.Clients;
+        var previousWorld = Store.world;
         var team = SocialGroups.Instance.CreateTeam(77680, "SweepCaster");
         try
         {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
             WorldServer.Clients = new();
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
                 uint charId = (uint)(77680 + i);
                 player.playerData.setCharID(charId);
+                player.playerData.setEntityId(charId);
+                player.viewMan = new ViewManager();
                 player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(positions[i], 0, 0));
                 WorldServer.Clients.Add(charId.ToString(), player);
                 if (player != outsider)
@@ -852,6 +857,7 @@ public class AbilityHostileTests
                 TimedEffects.Clear(TimedEffects.ForPlayer(player));
             }
             WorldServer.Clients = previous;
+            Store.world = previousWorld;
         }
     }
 

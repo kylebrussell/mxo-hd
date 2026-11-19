@@ -1,0 +1,30 @@
+{
+  "families": {
+    "self-condition-sweep-1-stock": {
+      "representative": 320,
+      "result": "pass",
+      "head": "98816ff526e564f07277edf83d908e2d8d2b6e2e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373",
+      "scope": "Stock Actions cast 320 on CSR and showed its sweep icon. Casting 424 replaced it with one 2.0 icon."
+    },
+    "party-condition-sweep-stock": {
+      "representative": 379,
+      "result": "pass",
+      "head": "98816ff526e564f07277edf83d908e2d8d2b6e2e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373",
+      "scope": "Stock Sweep Party landed on the caster and QAFriend. The out-of-range teammate at 12 m and the nonmember at 3 m received no sweep."
+    },
+    "self-condition-sweep-2-stock": {
+      "representative": 424,
+      "result": "pass",
+      "head": "98816ff526e564f07277edf83d908e2d8d2b6e2e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373",
+      "scope": "Stock 424 replaced the existing 320 sweep icon. In two additional attempts with a landed Slow 1.0, 424 removed Slow before natural expiry."
+    }
+  },
+  "abilities": {
+    "320": { "family": "self-condition-sweep-1-stock" },
+    "379": { "family": "party-condition-sweep-stock" },
+    "424": { "family": "self-condition-sweep-2-stock" }
+  }
+}
