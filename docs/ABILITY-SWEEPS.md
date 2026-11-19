@@ -25,7 +25,7 @@ NativeQa discovers six fixed level-50 profiles. Each prints eight numbered actio
 
 ### Martial Artist retest
 
-Use the Melee Dummy, activate Kung-Fu and choose a non-Block tactic. With at least 35 IS and no active reuse timer, press Suicidal Butterfly once just after a round and wait through two ordinary round intervals. Retain the outgoing 428 record, queued `47`, resolved `45` and combat result. A missed 428 may play a default blocked animation. A later special can replace a queued action. Check Piston Kicks and Tomo Nage one at a time after the result and applicable reuse window.
+Use the Melee Dummy, activate Kung-Fu and choose a non-Block tactic. With at least 35 IS and no active reuse timer, press Suicidal Butterfly once just after a round and wait through two ordinary round intervals. Retain the outgoing 428 record, queued `47`, resolved `45` and combat result. A missed 428 may play a default blocked animation. A later special can replace a queued action. Check Piston Kicks and Tomo Nage one at a time after the result and applicable reuse window. Piston Kicks requires a Staggered target in Kung-Fu. Land Power rounds until the selected dummy is Staggered, then activate 262. Tomo Nage requires an Off Balance target in Aikido. Land Grab rounds until the selected dummy is Off Balance, then activate 412. For controlled retries in an active interlock, select the dummy and use `?combatdepth stagger 30` or `?combatdepth offbalance 30`. Observe the slot before the state, during it, and after it expires with reuse clear. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md).
 
 ### Gunman retest
 

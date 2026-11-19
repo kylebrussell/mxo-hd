@@ -228,6 +228,12 @@ public static partial class Scenarios
             new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "0" }),
         new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
         new Scenario("combat-style-rule-choreography", RuleBoundStyleChoreography, StillNpcs),
+        new Scenario("martial-hotbar-conditions", MartialHotbarConditions, new Dictionary<string, string>(StillNpcs)
+        {
+            ["MXO_DEV_COMMANDS"] = "1",
+            ["MXO_CONDITIONAL_THROW_QA"] = "1",
+            ["MXO_CONDITIONAL_POWERLESS_QA"] = "1"
+        }),
         new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),

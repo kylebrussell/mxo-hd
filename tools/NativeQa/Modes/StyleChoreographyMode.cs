@@ -14,14 +14,18 @@ public sealed class StyleChoreographyMode : NativeQaMode
             $"UPDATE characters SET y={CombatFixtureLoadout.GroundY},healthC=5000,healthM=5000,innerStrC=1500,innerStrM=1500 WHERE charId IN (110,6111)",
             CombatFixtureLoadout.SeedWeapons
         },
-        DevCommands: true, environmentOverrides: new() { [CombatFixtureWeapons.WeaponMode] = "1" },
+        DevCommands: true, environmentOverrides: new()
+        {
+            [CombatFixtureWeapons.WeaponMode] = "1",
+            ["MXO_CONDITIONAL_THROW_QA"] = "1"
+        },
         extraQaMetadata: new() { ["ChoreographyNativeStatus"] = "Pending" },
         readyMessages: new[]
         {
             "Target the isolated 30,000 HP Melee Dummy 3 m west. Wait for each special to resolve before pressing the next one.",
             "Use ?combatdepth fixture-weapon unarmed before the martial arts checks.",
-            "Self Defense 17: Head Butt 197 -> HeadButt 284.",
-            "Aikido 101: Tomo Nage 412 -> 751. Punch Reversal 407 -> RevSlamChicken 827/828/829 for Self Defense Speed/Power/Grab.",
+            "Self Defense 17: Head Butt 197 requires a Dazed target. Use a landed Speed round or ?combatdepth daze 30 with the dummy selected. Check HeadButt 284.",
+            "Aikido 101: Tomo Nage 412 requires an Off Balance target. Use a landed Grab round or ?combatdepth offbalance 30 with the dummy selected. Check 751. Punch Reversal 407 needs no target condition. Check RevSlamChicken 827/828/829 for Self Defense Speed/Power/Grab.",
             "Karate 132: Sky High Sidekick 267 -> 5937. Kung-Fu 133: Suicidal Butterfly 428 -> 8084.",
             "Use ?combatdepth fixture-weapon handgun, re-enter interlock, and select Handguns 129: stand 21052-21055, Pistol Slide 241 -> 9527.",
             "Use ?combatdepth fixture-weapon rifle, re-enter interlock, and select Rifles 147: stand 21068-21071, Body Shot 105 -> 11364.",
