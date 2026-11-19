@@ -423,6 +423,50 @@ public class AbilityHostileTests
         Assert.Equal(1000, AbilityStats.ScaleTypedAbilityDamage(victim, 1, 1000));
     }
 
+    [Fact]
+    public void DisruptionFieldLowersTheViralContestDefenseUntilExpiry()
+    {
+        var victim = Client();
+        var viral = new AbilityItem();
+        viral.setAbilityID(329);
+        int before = AbilityStats.SpecialDefense(victim, viral);
+        int physical = AbilityStats.Defense(victim, false);
+
+        var applied = Assert.Single(Land(victim, 403));
+        Assert.Equal(23f, applied.Seconds);
+        Assert.Equal(before - 50, AbilityStats.SpecialDefense(victim, viral));
+        Assert.Equal(physical, AbilityStats.Defense(victim, false));
+
+        TimedEffects.RunDue(applied.Expires + 0.01);
+        Assert.Equal(before, AbilityStats.SpecialDefense(victim, viral));
+    }
+
+    [Fact]
+    public void UiLagRankTwoChangesBallisticAndThrownContestsUntilExpiry()
+    {
+        var victim = Client();
+        var throwing = new AbilityItem();
+        throwing.setAbilityID(134);
+        int ballisticAttack = AbilityStats.Attack(victim, true);
+        int ballisticDefense = AbilityStats.Defense(victim, true);
+        int thrownAttack = AbilityStats.ThrownAccuracy(victim);
+        int thrownDefense = AbilityStats.SpecialDefense(victim, throwing);
+
+        var applied = Land(victim, 465);
+        Assert.Equal(4, applied.Count);
+        Assert.All(applied, effect => Assert.Equal(17f, effect.Seconds));
+        Assert.Equal(ballisticAttack - 20, AbilityStats.Attack(victim, true));
+        Assert.Equal(ballisticDefense - 18, AbilityStats.Defense(victim, true));
+        Assert.Equal(thrownAttack - 20, AbilityStats.ThrownAccuracy(victim));
+        Assert.Equal(thrownDefense - 18, AbilityStats.SpecialDefense(victim, throwing));
+
+        TimedEffects.RunDue(applied[0].Expires + 0.01);
+        Assert.Equal(ballisticAttack, AbilityStats.Attack(victim, true));
+        Assert.Equal(ballisticDefense, AbilityStats.Defense(victim, true));
+        Assert.Equal(thrownAttack, AbilityStats.ThrownAccuracy(victim));
+        Assert.Equal(thrownDefense, AbilityStats.SpecialDefense(victim, throwing));
+    }
+
     [Theory]
     [InlineData(0, 180)]
     [InlineData(1, 181)]
