@@ -38,7 +38,7 @@ namespace hds
             };
             if (goid == 0) return "Use ?combatdepth fixture-weapon handgun, rifle, smg, dual-smg or unarmed.";
             return Equip(caller, goid)
-                ? $"Fixture equipped {weapon} ({goid}) in hand slot {InventoryHandler.WeaponSlot}."
+                ? $"Fixture equipped {weapon} ({goid}) in hand slot {InventoryHandler.WeaponSlot}. Select the gun in the Free Attack dropdown for Fire!, or double-click Melee Dummy for close combat."
                 : $"Fixture weapon {goid} is unavailable.";
         }
 

@@ -46,7 +46,7 @@ namespace hds
         /// <summary>Whether this NPC would attack a player of this level at this distance (in units).</summary>
         public static bool WouldAttack(Mob mob, double distanceUnits, int playerLevel)
         {
-            if (mob == null || mob.isFriendly || mob.getIsDead() || !mob.getIsSpawned() || mob.getCombatTarget() != null || MobMotion.Chasing(mob))
+            if (mob == null || mob.PassiveTarget || mob.isFriendly || mob.getIsDead() || !mob.getIsSpawned() || mob.getCombatTarget() != null || MobMotion.Chasing(mob))
             {
                 return false;
             }
@@ -196,7 +196,7 @@ namespace hds
 
         public static void Retaliate(WorldClient client, Mob mob)
         {
-            if (client == null || mob.getIsDead() || mob.isFriendly || client.playerData.isDead ||
+            if (client == null || mob.PassiveTarget || mob.getIsDead() || mob.isFriendly || client.playerData.isDead ||
                 CombatManager.GetHandler(client).isCombatRunning || ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
             ClientView view = client.viewMan.FindViewForEntity(mob.getEntityId());
             if (view == null || !view.viewCreated) return;

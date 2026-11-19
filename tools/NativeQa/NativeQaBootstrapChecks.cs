@@ -90,6 +90,8 @@ public static class NativeQaBootstrapChecks
                 }
                 if (plan.EnvironmentOverrides.GetValueOrDefault(hds.CombatFixtureWeapons.WeaponMode) == "1")
                     await CombatFixtureLoadout.VerifyWeaponsAsync(probe, database);
+                if (seedMode == "style-choreography")
+                    await CombatFixtureLoadout.VerifyFireAfterSwapAsync(probe, server);
             }
             if (names.Length > 1 || !HasCustomHook(NativeQaModes.Find(names[0])))
             {

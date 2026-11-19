@@ -46,6 +46,7 @@ namespace hds
 
         // Friendly NPCs are spawned as non-enemies (no combat offered); mission NPCs remember their mission id
         public bool isFriendly = false;
+        internal bool PassiveTarget { get; set; }
         public MobAggroKind aggroKind = MobAggroKind.Unfiltered;
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
@@ -297,7 +298,7 @@ namespace hds
         {
             lock (combatSync)
             {
-                if (is_dead || healthC == 0 || now < nextRetaliation) return false;
+                if (PassiveTarget || is_dead || healthC == 0 || now < nextRetaliation) return false;
                 nextRetaliation = now + interval;
                 Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
                 return true;

@@ -45,6 +45,29 @@ internal static class CombatFixtureLoadout
             "CSR starts with the fixture revolver in hand and the other test weapons in the bag");
     }
 
+    internal static async Task VerifyFireAfterSwapAsync(HeadlessPlayer player, ServerInstance server)
+    {
+        var dummy = await player.WaitForViewNamedAsync(DummyName);
+        string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
+        // The stock Free Attack dropdown sets the weapon separately from the paper doll.
+        // Retail Luizoé chose the new hand slot with 3f after equipping (Unknown log 11216).
+        player.SendRpc("3f 69 00 10 00 00 00");
+        await player.WaitUntilAsync(() => server.DebugLog().Contains("[COMBAT] Free Fire weapon: slot 105, kind 16, goid 2565"),
+            "Stock Free Attack choice references the newly equipped fixture revolver", HeadlessPlayer.DefaultTimeout);
+        // Retail Uriah first attack: draw, shot, companion 40 with the same target and weapon slot.
+        player.World.SendRpcs(WireFormat.FromHex("3d 01"), WireFormat.FromHex($"41 {handle}"),
+            WireFormat.FromHex($"40 {handle} 00 69"));
+        await player.WaitForRpcAsync("81 68");
+        await player.WaitUntilAsync(() => server.DebugLog().Contains("Close combat request ignored: firing at this target"),
+            "The Fire! pair starts ranged fire, preserving the distinct close-combat action", HeadlessPlayer.DefaultTimeout);
+        player.SendRpc("3d 00");
+        await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 22");
+        player.SendRpc($"40 {handle} 01 6b");
+        await player.WaitForRpcAsync("47");
+        player.SendRpc("44 00");
+        await player.WaitForRpcAsync("46 ?? ?? ?? ?? 00");
+    }
+
     internal static void AssertDummy(HeadlessPlayer observer, ViewCreation dummy)
     {
         Check.That(dummy.Goid == 599 && BitConverter.ToUInt16(dummy.Attributes["MaxHealth"]) == 30000 &&
