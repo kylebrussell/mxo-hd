@@ -20,7 +20,8 @@ public abstract class AbilitySweepMode : NativeQaMode
 
     // Slot order is the manual native hotbar checklist, independent of the margin archive slot numbers.
     protected AbilitySweepMode(Sample[] samples, ushort[] support, bool enemyHelper = false,
-        bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false, bool petOrders = false)
+        bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false, bool petOrders = false,
+        bool martialConditions = false)
     {
         if (samples.Length != 8 || samples.Select(sample => sample.Id).Distinct().Count() != samples.Length)
             throw new ArgumentException("A sweep requires eight distinct representative actions.", nameof(samples));
@@ -40,6 +41,11 @@ public abstract class AbilitySweepMode : NativeQaMode
         }
         if (hackerTargets)
             environment["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1";
+        if (martialConditions)
+        {
+            environment["MXO_CONDITIONAL_THROW_QA"] = "1";
+            environment["MXO_CONDITIONAL_POWERLESS_QA"] = "1";
+        }
         var setup = new List<string>
         {
             $"UPDATE characters SET y={GroundY},healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110",
@@ -80,8 +86,10 @@ public abstract class AbilitySweepMode : NativeQaMode
             instructions.Add("Before any interlock, summon a pet and set Passive and Follow. Select QAFriend and click pet Attack. Record the refusal or client suppression and verify that Melee Dummy stays untouched.");
             instructions.Add("With your pet near Melee Dummy, cast Detonate Proxy before interlock. After the explosion resolves, use ?combatdepth fixture-disengage and wait for the HUD to clear. Then cast Static Blast out of combat. Finish any interlock checks afterwards.");
         }
+        if (martialConditions)
+            instructions.Add("The target must be Staggered for Piston Kicks and Off Balance for Tomo Nage. Try landed Power and Grab rounds, respectively. For a controlled retry use ?combatdepth stagger 30 or ?combatdepth offbalance 30 during interlock with the dummy selected.");
         Plan = new NativeQaModePlan(samples.Select(sample => sample.Id).Concat(support).Distinct().ToArray(),
-            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders || firearms,
+            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders || firearms || martialConditions,
             environmentOverrides: environment,
             extraQaMetadata: new() { ["AbilitySweepNativeStatus"] = "Pending", ["AbilitySweepSlots"] = samples.Length },
             readyMessages: instructions.Concat(Evidence).ToArray(),
@@ -272,15 +280,15 @@ public sealed class AbilitySweepMartialArtistMode : AbilitySweepMode
         new(133, "Kung-Fu", "self", "0", "Kung-Fu style; melee accuracy +74 at level 50", "while active style", 0),
         new(260, "Misdirect Punch", "Melee Dummy in Kung-Fu interlock", "24 stored physical base",
             "choreography 8082, Blind", "4 s input", 30),
-        new(262, "Piston Kicks", "Melee Dummy in Kung-Fu interlock", "108 stored physical base",
+        new(262, "Piston Kicks", "Staggered Melee Dummy in Kung-Fu interlock", "108 stored physical base",
             "choreography 8085; Stun on proc (stored 40%)", "4 s input", 25),
         new(428, "Suicidal Butterfly", "Melee Dummy in Kung-Fu interlock", "25 stored physical base",
             "choreography 8084; Confuse on proc (stored 30%)", "4 s input", 35),
         new(430, "Wooden Dummy Drill", "Melee Dummy in Kung-Fu interlock", "107 stored physical base",
             "choreography 8080; Powerless", "6 s input", 30),
-        new(412, "Tomo Nage", "Melee Dummy in Aikido interlock", "113 stored physical base",
+        new(412, "Tomo Nage", "Off Balance Melee Dummy in Aikido interlock", "113 stored physical base",
             "choreography 751; Enraged and ballistic/melee resistance -100", "6 s Enraged / 12 s debuff inputs", 45)
-    }, new ushort[] { 2, 17, 101, 105, 113, 116, 124, 130, 135, 136, 137, 138, 139, 143, 145, 154, 185, 257, 258, 259, 264, 265, 269, 270, 271, 272, 405, 407, 429, 431 }, isolatedMelee: true) { }
+    }, new ushort[] { 2, 17, 101, 105, 113, 116, 124, 130, 135, 136, 137, 138, 139, 143, 145, 154, 185, 257, 258, 259, 264, 265, 269, 270, 271, 272, 405, 407, 429, 431 }, isolatedMelee: true, martialConditions: true) { }
 }
 
 public sealed class AbilitySweepGunmanMode : AbilitySweepMode

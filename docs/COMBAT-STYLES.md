@@ -92,8 +92,8 @@ Sever Artery 341 is the catalog’s existing `RandomCombatStateChance` caller and 
 
 Use the `style-choreography` NativeQa mode with the isolated 30,000 HP Melee Dummy 3 m west. The fixture loads all shipped ability ancestors and required styles. Its Ready output prints the expected moves.
 
-1. Use `?combatdepth fixture-weapon unarmed`, then select Self Defense 17 and land Head Butt 197. Check move 284.
-2. Select Aikido 101 and land Tomo Nage 412 and Punch Reversal 407. Check 751 and 827–829.
+1. Use `?combatdepth fixture-weapon unarmed`, then select Self Defense 17 and interlock the dummy. Head Butt 197 needs a Dazed target. Land a Speed round that Dazes the dummy or use `?combatdepth daze 30`. Check move 284.
+2. Select Aikido 101 and make the dummy Off Balance with a landed Grab round or `?combatdepth offbalance 30` before using Tomo Nage 412. Punch Reversal 407 has no target condition. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md). Check 751 and 827–829.
 3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
 4. Use `?combatdepth fixture-weapon handgun`, `rifle`, and `dual-smg` in turn. Re-enter interlock and select the matching style after each swap. Check Pistol Slide 241 (9527), Body Shot 105 (11364), Controlled Burst 250 (21082), and their opening stances. Wait through the four-second Controlled Burst cast and its round.
 5. Wait for each move to resolve before pressing another. Record each landed motion, its server move ID and the complete outgoing RPC.
