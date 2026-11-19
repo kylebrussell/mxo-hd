@@ -80,7 +80,10 @@ public abstract class AbilitySweepMode : NativeQaMode
             instructions.Add("For Stun 2.0, select WinterFrost. Check Trainman at 3 m and Blackwoods at 6 m from that anchor.");
         }
         if (firearms)
+        {
             instructions.Add("The revolver starts equipped. Use ?combatdepth fixture-weapon rifle, smg or handgun before the corresponding style. Use the single SMG for Covering Fire. A server-side swap ends the previous interlock.");
+            instructions.Add("Use Immobilizing Shot (254) and Disabling Shot (255) before entering combat with the rifle. Expect a 2 s cast and an opening hit. In active combat, confirm both slots grey out.");
+        }
         if (petOrders)
         {
             instructions.Add("Before any interlock, summon a pet and set Passive and Follow. Select QAFriend and click pet Attack. Record the refusal or client suppression and verify that Melee Dummy stays untouched.");
@@ -300,13 +303,13 @@ public sealed class AbilitySweepGunmanMode : AbilitySweepMode
         new(126, "Disarming Shot", "Melee Dummy in Handguns interlock", "11 stored ballistic base",
             "choreography 9522; ballistic accuracy -15", "10 s debuff input", 20),
         new(147, "Rifles", "self with rifle", "0", "Rifles style; ballistic accuracy +64 at level 50", "while active style", 0),
-        new(254, "Immobilizing Shot", "Melee Dummy in Rifles interlock", "18 stored ballistic base",
-            "choreography 11361, Rooted with break chance, Force Combat -15", "8 s input", 30),
+        new(254, "Immobilizing Shot", "Melee Dummy out of combat with Rifles", "18 stored ballistic base",
+            "2 s opening shot; Rooted with break chance, Force Combat -15", "8 s effect input", 30),
         new(158, "Submachine Guns", "self with SMG", "0", "Submachine Guns style; ballistic accuracy +64 at level 50", "while active style", 0),
         new(176, "Covering Fire", "Melee Dummy in SMG interlock", "17 stored ballistic base",
             "choreography 21083; Rooted with break chance", "8 s input", 25),
         new(243, "Pistol Aerial", "Melee Dummy in Handguns interlock", "16 stored ballistic base", "choreography 9518; Stun", "4 s input", 20),
-        new(255, "Disabling Shot", "Melee Dummy in Rifles interlock", "16 stored ballistic base",
-            "choreography 11360; Powerless on proc (stored 50%)", "4 s input", 20)
+        new(255, "Disabling Shot", "Melee Dummy out of combat with Rifles", "16 stored ballistic base",
+            "2 s opening shot; Powerless on proc (stored 50%)", "4 s effect input", 20)
     }, new ushort[] { 2, 17, 105, 113, 116, 124, 125, 128, 130, 135, 143, 145, 154, 185, 239, 252, 253 }, firearms: true, isolatedMelee: true) { }
 }

@@ -29,7 +29,9 @@ Use the Melee Dummy, activate Kung-Fu and choose a non-Block tactic. With at lea
 
 ### Gunman retest
 
-The revolver starts equipped. Use `?combatdepth fixture-weapon rifle`, `smg`, or `handgun` to change the gun, then enter a fresh interlock and select the corresponding style. Use the single SMG for Covering Fire. The fixture sends the ordinary inventory and equipped-item updates for stock hand slot 105. Slot 107 with Free Fire kind 0 is the empty selection.
+The revolver starts equipped. Use `?combatdepth fixture-weapon rifle`, `smg`, or `handgun` to change the gun and select the corresponding style. In a fresh interlock, test Disarming Shot and Pistol Aerial with the handgun and Covering Fire with the single SMG. The fixture sends the ordinary inventory and equipped-item updates for stock hand slot 105. Slot 107 with Free Fire kind 0 is the empty selection.
+
+With a rifle equipped, cast Immobilizing Shot (254) and Disabling Shot (255) before combat. Both use a two-second cast with their own casting scripts (89 and 95). Immobilizing Shot applies Rooted and Force Combat −15 for eight seconds, subject to its damage-break chance. Disabling Shot has a stored 50% chance to apply Powerless for four seconds. Check that both slots grey out in an active interlock. Their shipped `CastWhenUsed=1` and absent `HasSuccessInterlockMove` match the stock result. [Native PR326 result](https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269)
 
 ### Coder retest
 

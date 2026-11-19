@@ -229,8 +229,8 @@ public static partial class Scenarios
         new Scenario("combat-style-switching", CombatStyleSwitching, StillNpcs),
         new Scenario("combat-gun-special-queue-disarming", c => CombatGunSpecialQueue(c, 126), StillNpcs),
         new Scenario("combat-gun-special-queue-covering", c => CombatGunSpecialQueue(c, 176), StillNpcs),
-        new Scenario("combat-gun-special-queue-immobilizing", c => CombatGunSpecialQueue(c, 254), StillNpcs),
-        new Scenario("combat-gun-special-queue-disabling", c => CombatGunSpecialQueue(c, 255), StillNpcs),
+        new Scenario("combat-rifle-opener-immobilizing", c => CombatRifleOpener(c, 254), StillNpcs),
+        new Scenario("combat-rifle-opener-disabling", c => CombatRifleOpener(c, 255), StillNpcs),
         new Scenario("combat-gun-special-queue-aerial", c => CombatGunSpecialQueue(c, 243), StillNpcs),
         new Scenario("combat-style-rule-choreography", RuleBoundStyleChoreography, StillNpcs),
         new Scenario("martial-hotbar-conditions", MartialHotbarConditions, new Dictionary<string, string>(StillNpcs)

@@ -181,8 +181,6 @@ public class CombatStyleTests
     [Theory]
     [InlineData(126, 129, 2565u, 1732794185u, 4f, 9522u)]
     [InlineData(176, 158, 698u, 1834178377u, 4f, 21083u)]
-    [InlineData(254, 147, 692u, 1716672329u, 2f, 11361u)]
-    [InlineData(255, 147, 692u, 1716672329u, 2f, 11360u)]
     [InlineData(250, 158, 2503u, 1396987721u, 4f, 21082u)]
     [InlineData(256, 147, 692u, 1716672329u, 4f, 11367u)]
     public void TimedGunSpecialsRequireTheirStoredWeaponAndActiveStyle(
@@ -205,6 +203,26 @@ public class CombatStyleTests
 
         // A weapon in the same discipline can still have a different GOB category.
         client.playerInstance.EquippedItemID.setValue(style switch { 129 => 2434u, 158 => weapon == 698 ? 2503u : 698u, _ => 2565u });
+        Assert.False(CombatAnimations.CanQueueGunCast(client, ability));
+    }
+
+    [Theory]
+    [InlineData(254, 89)]
+    [InlineData(255, 95)]
+    public void RifleOpenersUseStockCastingScriptsOutsideInterlock(ushort ability, int castScript)
+    {
+        var definition = AbilityCatalog.Find(ability)!;
+        Assert.Equal(1, definition.Number("Ability/CastWhenUsed"));
+        Assert.Equal(castScript, definition.Number("Ability/CastingScript"));
+        Assert.Equal(2f, definition.CastSeconds);
+        Assert.False(definition.Has("Ability/HasSuccessInterlockMove"));
+        Assert.True(CombatSpecials.IsRifleOpener(ability));
+        Assert.Null(CombatAnimations.Special(ability, true, CombatTactic.Speed));
+
+        var client = Client();
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (147, 50), (ability, 50) });
+        client.playerInstance.EquippedItemID.setValue(692u);
+        CombatStyles.Select(client, 147);
         Assert.False(CombatAnimations.CanQueueGunCast(client, ability));
     }
 

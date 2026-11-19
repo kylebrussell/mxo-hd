@@ -1,0 +1,15 @@
+{
+  "families": {
+    "rifle-out-of-combat-openers": {
+      "representative": 254,
+      "result": "pass",
+      "head": "5520302135de2e7f637f75f41434be719bf2d86b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269",
+      "scope": "Stock Immobilizing Shot 254 landed outside combat and applied Rooted and Force Combat -15. Both 254 and 255 were disabled in an active interlock. Stock 255 fired after interlock in PR321. Damage inputs, the Powerless chance and comprehensive targeting remain separate checks. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+    }
+  },
+  "abilities": {
+    "254": { "family": "rifle-out-of-combat-openers" },
+    "255": { "family": "rifle-out-of-combat-openers" }
+  }
+}

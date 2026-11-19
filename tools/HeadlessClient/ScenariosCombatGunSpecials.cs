@@ -5,14 +5,12 @@ public static partial class Scenarios
     private static async Task CombatGunSpecialQueue(ScenarioContext context, ushort ability)
     {
         // Full CSR_Tester requests from the PR321 gunman PacketLog (c2d614206732).
-        // Lines 3177, 2694, 10217, 5196, and 7809, respectively.
+        // Lines 3177, 2694, and 10217, respectively.
         (ushort Ability, ushort Style, uint Weapon, uint Move, float CastSeconds, string Request)[] specials =
         {
             (243, 129, 2565, 9518, 0, "80 b9 f3 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f3 00 00 00 00 6b 00 00 08 6b 00 00 00 00 00"),
             (126, 129, 2565, 9522, 4, "80 b9 7e 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff 7f 7f 00 00 00 00 08 6b 00 00 00 00 00"),
             (176, 158, 698, 21083, 4, "80 b9 b0 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 b0 00 00 00 00 6b 00 00 08 6b 00 00 00 00 00"),
-            (254, 147, 692, 11361, 2, "80 b9 fe 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff 7f 7f 00 00 00 00 08 6b 00 00 00 00 00"),
-            (255, 147, 692, 11360, 2, "80 b9 ff 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff 7f 7f 00 00 00 00 08 6b 00 00 00 00 00"),
         };
         var special = specials.Single(move => move.Ability == ability);
         var player = await context.AddPlayerAsync(NearNpc($"Special{special.Ability}") with
@@ -59,17 +57,49 @@ public static partial class Scenarios
 
         player.SendRpc("44 00");
         await player.WaitForRpcAsync($"46 {HandleOf(target)} 00");
-        if (special.Ability == 255)
-        {
-            var freeTarget = await player.WaitForViewNamedAsync("Trainman");
-            int queued = player.Received(queuePattern).Count;
-            await Task.Delay(TimeSpan.FromSeconds(11)); // Natural reuse and post-interlock stance reset.
-            SendCapturedGunSpecial(player, special.Request, freeTarget);
-            await player.WaitUntilAsync(() => context.Server.DebugLog().Contains($"[ABILITY] 255 lands on view {freeTarget.ViewId} for "),
-                "Disabling Shot also lands as a free cast when there is no matching interlock", TimeSpan.FromSeconds(8));
-            Check.Equal(queued, player.Received(queuePattern).Count, "Free cast does not queue a round move");
-        }
         Check.Equal(0, player.World.Problems.Count, $"Special {special.Ability} protocol framing");
+    }
+
+    private static async Task CombatRifleOpener(ScenarioContext context, ushort ability)
+    {
+        // Stock 254 from PR326 05837386fab5:5004 and 255 from PR321 c2d614206732:7809.
+        string request = ability == 254
+            ? "80 b9 fe 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff 7f 7f 00 00 00 00 08 6b 00 00 00 00 00"
+            : "80 b9 ff 00 05 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff 7f 7f 00 00 00 00 08 6b 00 00 00 00 00";
+        var player = await context.AddPlayerAsync(NearNpc($"RifleOpener{ability}") with
+        {
+            OwnedLoadedAbilities = new[] { (ability, (ushort)50), ((ushort)147, (ushort)50) },
+            Items = new[] { (105, 692u, 1) },
+            InnerStrength = 1000, MaxInnerStrength = 1000
+        });
+        await player.EnterWorldAsync();
+        var target = await player.WaitForViewNamedAsync("WinterFrost");
+        SelectStyle(player, 147);
+        await player.WaitForViewUpdateAsync(2, $"02 80 80 80 80 80 10 {Le(147u)}");
+        player.SendRpc($"40 {HandleOf(target)} 01 6b");
+        await WaitForEntry(player, await WaitForCombatView(player));
+
+        SendCapturedGunSpecial(player, request, target);
+        await player.WaitForRpcAsync($"80 ba {Le((uint)ability)} 6b 15 00 00 00 00 00 00 00 00 00 00 00");
+        Check.Equal(0, player.Received($"80 ac {Le(ability)}").Count, "The in-combat request starts no cast");
+        Check.Equal(0, player.Received($"80 bd 01 {Le(ability)}").Count, "The refusal consumes no reuse timer");
+        Check.That(!context.Server.DebugLog().Contains($"[ABILITY] {ability} lands"), "The refused shot causes no damage");
+
+        player.SendRpc("44 00");
+        await player.WaitForRpcAsync($"46 {HandleOf(target)} 00");
+        var freeTarget = await player.WaitForViewNamedAsync("Trainman");
+        player.SendRpc("3d 01");
+        await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 21");
+        SendCapturedGunSpecial(player, request, freeTarget);
+        await player.WaitForRpcAsync($"80 ac {Le(ability)} 00 00 00 00 00 00 00 00 00 00 {Le(BitConverter.SingleToUInt32Bits(2f))}");
+        Check.That(!context.Server.DebugLog().Contains($"[ABILITY] {ability} lands"),
+            "The opening shot waits for its cast bar before landing");
+        await player.WaitUntilAsync(() => context.Server.DebugLog().Contains($"[ABILITY] {ability} lands on view {freeTarget.ViewId} for "),
+            "The rifle opener deals direct damage after leaving combat", TimeSpan.FromSeconds(8));
+        await player.WaitForRpcAsync($"80 bd 01 {Le(ability)} 04");
+        string queuePattern = $"47 00 ?? ?? 01 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 1a 00 06 00 00 00 01 00 00 01 ?? 01 ?? ?? ?? {Le(0x80000000u | ability)}";
+        Check.Equal(0, player.Received(queuePattern).Count, "The rifle opener never queues a round move");
+        Check.Equal(0, player.World.Problems.Count, $"Rifle opener {ability} protocol framing");
     }
 
     private static void SendCapturedGunSpecial(HeadlessPlayer player, string capturedRequest, ViewCreation target)

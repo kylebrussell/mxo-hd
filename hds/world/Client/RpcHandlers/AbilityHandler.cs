@@ -49,6 +49,12 @@ namespace hds
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
+            if (CombatSpecials.IsRifleOpener(AbilityID) && CombatManager.GetHandler(Store.currentClient).isCombatRunning)
+            {
+                Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat);
+                return;
+            }
+
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
