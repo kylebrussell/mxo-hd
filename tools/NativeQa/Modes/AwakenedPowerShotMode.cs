@@ -43,9 +43,13 @@ public sealed class AwakenedPowerShotMode : NativeQaMode
             byte[] prefix = WireFormat.FromHex("02 00 02 80 80 80 10");
             foreach (var frame in actor.World.ViewSnapshot().Skip(viewStart))
             {
-                int offset = frame.AsSpan().IndexOf(prefix);
-                if (offset >= 0 && offset + prefix.Length + 2 <= frame.Length)
-                    vitals.Add(BitConverter.ToUInt16(frame, offset + prefix.Length));
+                var section = frame.AsSpan();
+                while (section.IndexOf(prefix) is int offset && offset >= 0 && offset + prefix.Length + 2 <= section.Length)
+                {
+                    int valueAt = offset + prefix.Length;
+                    vitals.Add(BitConverter.ToUInt16(section[valueAt..]));
+                    section = section[(valueAt + 2)..];
+                }
             }
             return vitals.Zip(vitals.Skip(1), (before, after) => after - before).Contains(gain);
         }, "The published Inner Strength gain matches adjacent authoritative own-view IS values", TimeSpan.FromSeconds(10));
