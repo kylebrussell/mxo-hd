@@ -435,13 +435,25 @@ namespace hds
         }
 
         /// <summary>An instant ability on the opponent becomes the player's next move. False when the target isn't the opponent.</summary>
-        public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
+        internal bool MatchesQueuedOpponent(WorldClient client, uint handle)
+        {
+            lock (sync)
+            {
+                Side side = SideOf(client);
+                return IsActive && side?.Move != null && side.Present && side.Other?.Present == true &&
+                    side.OpponentHandle == handle && PvpCombat.HandleOf(client, side.Other.Client) == handle;
+            }
+        }
+
+        public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
+            uint? requiredOpponent = null)
         {
             if (!ControlActions.CanUseAbilities(client)) return false;
             lock (sync)
             {
                 Side side = SideOf(client);
-                if (!IsActive || side?.Move == null || (UInt16)side.OpponentHandle != targetViewId)
+                if (!IsActive || side?.Move == null || (UInt16)side.OpponentHandle != targetViewId ||
+                    (requiredOpponent.HasValue && !MatchesQueuedOpponent(client, requiredOpponent.Value)))
                 {
                     return false;
                 }

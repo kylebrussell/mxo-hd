@@ -238,15 +238,33 @@ namespace hds
             return mob != null && session != null && session.IsActive && session.DefenderMob == mob;
         }
 
-        public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false)
+        internal uint? PowerShotOpponent(ushort targetViewId, ushort? requestedSpawn)
+        {
+            if (targetViewId <= 2) return null;
+            var view = client.viewMan.getViewById(targetViewId);
+            if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted ||
+                (requestedSpawn.HasValue && requestedSpawn.Value != view.spawnId)) return null;
+
+            uint handle = DuelPackets.Handle(targetViewId, view.spawnId);
+            if (pvpFight is { } fight) return fight.MatchesQueuedOpponent(client, handle) ? (uint?)handle : null;
+            var session = currentSession;
+            var opponent = session?.CurrentNpcOpponent(client);
+            return session?.Type == CombatSession.CombatType.Melee && session.CurrentMove != null &&
+                session.TargetViewSpawnId == handle && opponent != null && opponent.getEntityId() == view.entityId &&
+                !opponent.isFriendly && !opponent.getIsDead() ? (uint?)handle : null;
+        }
+
+        public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
+            uint? requiredOpponent = null)
         {
             if (pvpFight != null)
             {
-                return pvpFight.QueueAbility(client, ability, targetViewId, sneakOpener);
+                return pvpFight.QueueAbility(client, ability, targetViewId, sneakOpener, requiredOpponent);
             }
             CombatSession session = currentSession;
             if (session == null || !session.IsActive || session.Type != CombatSession.CombatType.Melee ||
-                session.DefenderMob == null || session.CurrentMove == null || session.GetDefenderViewId() != targetViewId)
+                session.DefenderMob == null || session.CurrentMove == null || session.GetDefenderViewId() != targetViewId ||
+                (requiredOpponent.HasValue && session.TargetViewSpawnId != requiredOpponent.Value))
             {
                 return false;
             }
