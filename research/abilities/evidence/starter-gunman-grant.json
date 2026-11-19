@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "128": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped Gunman 128 gives Initiative Bonus 1046 +1 while loaded and a single zero-valued grant to Gunman Upgrade 1070.",
+          "runtime": "Gunman now publishes the source-qualified registration after live-avatar readiness. Ordinary unload removes it and reload restores it. The Initiative Bonus record still follows the loaded parent.",
+          "test": "LoadedGrantMembershipTests checks the exact readiness and loadout records. The level-19 ability-parity-starter-gunman-grant disposable checks no owned 1070, Initiative Bonus +1 add/remove, one registration per readiness or reload, and an actual 1070 activation using the stock request from PR343."
+        }
+      }
+    }
+  }
+}
