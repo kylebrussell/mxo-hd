@@ -22,6 +22,10 @@ public static partial class Scenarios
 
         // Luizoe old sniffer 115308 and native CSR 455f0446826c:27053. Only the current view/spawn pair is substituted.
         caster.SendRpc(HealthCast("80 b9 4d 00 06 00 3b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 32 00 00 00 00 00 00 00 08 6b 00 00 00 00 00", allyView));
+        var castBar = await caster.WaitForRpcAsync("80 ac 4d 00");
+        Check.Equal(2f, BitConverter.ToSingle(castBar.Bytes, castBar.Bytes.Length - 4), "Repair RSI cast duration");
+        await caster.WaitForRpcAsync("80 bd 01 4d 00 04 00 00 80 40 01");
+        await caster.WaitForRpcAsync("80 bd 01 ae 02 00 00 00 80 40 01");
         await ally.WaitUntilAsync(() => context.Server.DebugLog().Contains("Heal 77 -> HealthAlly for 9"),
             "Repair RSI lands on the wounded ally for 9", TimeSpan.FromSeconds(10));
         var healed = Regex.Match(context.Server.DebugLog(), @"\[ABILITY\] Healed (\d+) -> (\d+)");
