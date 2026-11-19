@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "46": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped GOB 46 selects a friendly direct object within 10 m, applying Health Regen Rate +40 for 600 seconds.",
+          "runtime": "AbilitySupport.Targets rejects hostile flags, dead players and out-of-range or absent views. AbilitySupport.Land applies the actual 46 effect only to the resolved living friendly recipient.",
+          "test": "HackerBatchBParityTests.FastHealing46AppliesOnlyToTheSelectedLivingFriendlyPlayerInRange verifies actual +40 at 10.00 m, refusal at 10.01 m, dead, hostile and missing view controls, and no caster modifier. ability-parity-hacker-medical verifies full RPC admission and the actual +100/+140/+100 natural regeneration step."
+        }
+      }
+    },
+    "51": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped GOB 51 is a loaded discipline with while-loaded Max Health and TargetAbilityGrant 1094. It has no active target selector. GOB 1094 selects self.",
+          "runtime": "AbilityPassives applies 51 to the loaded character, and AbilityGrantRegistration publishes 1094 to that character. AbilitySupport selects the owner when 1094 is cast, independently of the selected remote view.",
+          "test": "HackerBatchBParityTests.GuardianPatcherLoadsARecipientIndependentPassiveAndGrantsOnlyASelfUpgrade verifies the loaded maximum, grant, self effect under other selection and unload. ability-parity-hacker-medical uses a normal 1094 activation with a selected nonmember and verifies the owner receives the resulting modifier."
+        }
+      }
+    }
+  }
+}
