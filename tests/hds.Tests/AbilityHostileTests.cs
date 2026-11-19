@@ -177,6 +177,34 @@ public class AbilityHostileTests
     }
 
     [Fact]
+    public void DestroyDebuffsScaleNaturalRegenUntilExpiry()
+    {
+        var victim = Client(5000, 2000);
+        double carry = 0;
+
+        ushort? NextHealth() => HealthRegen.Next(1000,
+            NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1),
+            false, false, 2, AbilityStats.Influence(victim, 112));
+        int NextInnerStrength() => AbilityHandler.RegenAmount(false, ref carry, AbilityStats.Influence(victim, 114));
+
+        Assert.Equal((ushort)1100, NextHealth());
+        Assert.Equal(8, NextInnerStrength());
+
+        var resolve = Land(victim, 354);
+        var health = Land(victim, 476);
+        Assert.Equal(-50, AbilityStats.Influence(victim, 114));
+        Assert.Equal(-20, AbilityStats.Influence(victim, 112));
+        Assert.Equal((ushort)1072, NextHealth()); // round(4480 * .01 * 2 * .8)
+        Assert.Equal(4, NextInnerStrength());
+
+        TimedEffects.RunDue(resolve[0].Expires + 0.01);
+        Assert.Equal(8, NextInnerStrength());
+        Assert.Equal((ushort)1072, NextHealth());
+        TimedEffects.RunDue(health[0].Expires + 0.01);
+        Assert.Equal((ushort)1100, NextHealth());
+    }
+
+    [Fact]
     public void SweepPulseRemovesDebuffFamiliesOnlyAndKeepsImmunityAndBuffs()
     {
         var victim = Client();

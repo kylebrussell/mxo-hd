@@ -84,6 +84,31 @@ public class AbilityResurrectionTests
         }
     }
 
+    [Theory]
+    [InlineData(0, 605, 1080)]
+    [InlineData(104, 610, 1090)] // PR321: effective level 45
+    [InlineData(144, 615, 1090)] // PR316: effective level 46
+    public void RejuvenateRestoresLiveMaximaAfterDeathEffectRecovery(double elapsed, ushort health, ushort innerStrength)
+    {
+        var recipient = Client(6111, dead: true);
+        recipient.playerInstance.MaxHealth.setValue((ushort)500);
+        recipient.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        var loaded = new (ushort Ability, ushort Level)[] { (45, 50), (51, 50), (70, 50) };
+        AbilityPassives.SetLoaded(recipient, loaded, newWorld: true);
+        Assert.Equal(620, NumericalUtils.ByteArrayToUint16(recipient.playerInstance.MaxHealth.getValue(), 1));
+        Assert.Equal(1100, AbilityHandler.MaxInnerStrength(recipient));
+
+        recipient.playerData.deathPenalty = DeathPenalty.Recover(DeathPenalty.AfterDeath(1), elapsed);
+        recipient.playerData.deathPenaltyAt = DeathPenalty.Now;
+        AbilityPassives.Refresh(recipient, present: false);
+        Assert.Equal(health, NumericalUtils.ByteArrayToUint16(recipient.playerInstance.MaxHealth.getValue(), 1));
+        Assert.Equal(innerStrength, AbilityHandler.MaxInnerStrength(recipient));
+
+        AbilityResurrection.RestoreVitals(recipient, 416);
+        Assert.Equal(health, PvpCombat.HealthOf(recipient));
+        Assert.Equal(innerStrength, AbilityHandler.CurrentInnerStrength(recipient));
+    }
+
     [Fact]
     public void CorpseGateChecksDeadFriendlyRangeAndWorldState()
     {

@@ -23,7 +23,7 @@ public sealed class AbilityStatusMode : NativeQaMode
         {
             "Capture the Status Combat and Bonuses tabs before each cast, after it lands and after timed recovery.",
             "On CSR110: Hyper-Block 1099 adds 52 melee defense, Determination 1102 adds 150 Determination, Upgrade Attacks 314 adds 108 viral accuracy for 20s. Compare displayed deltas.",
-            "Request status-debuff as QAEnemy, ability 354 or 476. Destroy Resolve 354 adds -58 max IS and -50 IS regeneration for 30s. Destroy Health 476 adds -520 max HP and -20 Health Regeneration for 40s. Expected maxima 2000 to 1942 and 5000 to 4480.",
+            "Request status-debuff as QAEnemy, ability 354 or 476. Destroy Resolve 354 reduces IS Regen Rate by 50% for 30s (30 to 15, then back to 30). Destroy Health 476 reduces Health Regen Rate by 20% for 40s (25 to 20, then back to 25). Headless maxima: IS 2000 to 1942, HP 5000 to 4480, then baseline at expiry.",
             "See docs/ABILITY-STATUS.md for the helper request and exact headless checks."
         });
 
@@ -113,6 +113,8 @@ public sealed class AbilityStatusMode : NativeQaMode
         records.Add((await ModifierAsync(player, start, 314, 342, 108, 20, remove: true)).Hex);
         records.Add((await ModifierAsync(player, start, 354, 109, -58, 30, remove: true)).Hex);
         records.Add((await ModifierAsync(player, start, 476, 106, -520, 40, remove: true)).Hex);
+        records.Add((await ModifierAsync(player, start, 354, 114, -50, 30, remove: true)).Hex);
+        records.Add((await ModifierAsync(player, start, 476, 112, -20, 40, remove: true)).Hex);
         // Object12 own attributes 14/23. Health and IS may be clamped in the same update.
         var views = player.World.ViewSnapshot().Skip(viewStart).ToArray();
         Check.That(views.Any(BytePattern.Parse("02 00 02 80 80 ?? 80 11").Occurs),

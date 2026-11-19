@@ -23,7 +23,7 @@ public sealed class AbilityHealthParityMode : NativeQaMode
         {
             "On wounded QAFriend, Repair RSI 1.0 expects +10 HP with +15% healing influence. Emergency Repairs 1.0 expects five +3 HP ticks at 2.5 s intervals. Count the effect ticks separately from natural regeneration.",
             "Flag CSR and cast Plague Zone 2.0 on QAEnemy. After a hit, expect five ticks at 2.5 s; a deflection applies no DOT. Read the actual total and resistances in server logs.",
-            "QAFriend and flagged QAEnemy are already in-world. Cast Rejuvenate RSI on dead QAFriend and approve via the helper. The helper prints current recipient maxima before approval and verifies full HP, full IS and an in-place stand. See docs/ABILITY-HEALTH-PARITY.md."
+            "QAFriend and flagged QAEnemy are already in-world. Cast Rejuvenate RSI on dead QAFriend and approve via the helper. QAFriend starts at 620 max HP and 1100 max IS with loaded passives. Death Effect changes those totals during recovery. The helper prints current recipient maxima before approval and verifies full HP, full IS and an in-place stand. See docs/ABILITY-HEALTH-PARITY.md."
         }, loadAbilityAncestors: true);
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -44,6 +44,8 @@ public sealed class AbilityHealthParityMode : NativeQaMode
     {
         await caster.EnterWorldAsync();
         var target = await caster.WaitForViewNamedAsync(recipient.Handle);
+        var aliveMaxima = await ReadMaximaAsync(recipient);
+        Check.Equal(((ushort)620, (ushort)1100), aliveMaxima, "QAFriend loaded maxima before Death Effect");
         recipient.SendChat("?die");
         await recipient.WaitForViewUpdateAsync(2, "02 80 80 80 c1 01 00 00");
         // PR316 stock CSR_Tester capture, PacketLog 53a738c0add2:36645. Replace only the direct object handle.
@@ -56,7 +58,8 @@ public sealed class AbilityHealthParityMode : NativeQaMode
         var maxima = await ReadMaximaAsync(recipient);
         int cursor = recipient.World.ViewSnapshot().Count;
         recipient.SendRpc(reply);
-        return await CheckRejuvenatedAsync(recipient, maxima, cursor);
+        var restored = await CheckRejuvenatedAsync(recipient, maxima, cursor);
+        return new { BeforeDeath = new { aliveMaxima.Health, aliveMaxima.InnerStrength }, Restored = restored };
     }
 
     internal static async Task<(ushort Health, ushort InnerStrength)> ReadMaximaAsync(HeadlessPlayer actor)

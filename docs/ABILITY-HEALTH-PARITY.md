@@ -21,6 +21,21 @@ The catalog stores raw values and proc timing. Most final retail coefficients, t
 
 The exact 54-byte Rejuvenate Yes reply came from the stock recipient in PR290, PacketLog `54d32748b0ba:8303–8306`. The bootstrap now replays the full stock PR316 cast from `53a738c0add2:36645` with the current corpse handle. In the native session, QAFriend receives the stock offer and uses the captured Yes reply.
 
+## QAFriend's live maxima
+
+The disposable seed gives QAFriend **500 base HP and 1000 base IS**. The cloned rank-50 loadout includes Guardian Healer (51, fixed +1% max HP), Quick Recovery (70, +0.48 percentage points per effective level, truncated) and Execute Program (45, +0.2 percentage points per effective level, truncated). `AbilityBuffs.RefreshVitals` applies those totals to the seeded maxima. A fresh QAFriend has **620 max HP and 1100 max IS** at full effective rank 50.
+
+Ordinary death applies a 15% Death Effect, then its six-second refresh recalculates loaded passives as the effect recovers over five minutes. The table uses the effective ranks from the most recent refresh. The recovery times below reproduce the ranks in the focused test.
+
+| State | Effective rank for 70 and 45 | Max HP | Max IS |
+| --- | ---: | ---: | ---: |
+| Before death | 50 | 500 × 1.24 = 620 | 1000 × 1.10 = 1100 |
+| Fresh Death Effect | 42 | 500 × 1.21 = 605 | 1000 × 1.08 = 1080 |
+| Death Effect refreshed at rank 45 (e.g. 104 s into recovery) | 45 | 500 × 1.22 = 610 | 1000 × 1.09 = 1090 |
+| Death Effect refreshed at rank 46 (e.g. 144 s into recovery) | 46 | 500 × 1.23 = 615 | 1000 × 1.09 = 1090 |
+
+PR316's 615/1090 and PR321's 610/1090 are both consistent with the live maxima during recovery. The stock callback reads the recipient's `MaxHealth` and `InnerStrengthMax`, and the server retains Death Effect on resurrection. The approval helper samples the current maxima after receiving the offer and checks fresh self-view vitals and standing motion after the captured Yes reply. [PR316 native QA](https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131) · [PR321 native QA](https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488)
+
 ## Native verification
 
 Run NativeQa with mode `ability-health-parity` and a fresh output directory. QAFriend and flagged QAEnemy enter before Ready. The preset uses level 50, +15% healing influence from 71/233/409 and +15% viral influence from 95, with CSR inventory empty in the disposable DB.
@@ -28,4 +43,4 @@ Run NativeQa with mode `ability-health-parity` and a fresh output directory. QAF
 1. Ask QAFriend to use `?health 100`. Select QAFriend and cast Repair RSI 1.0 in stock Actions. Expect +10 HP from the cast. Use `[ABILITY] Healed` in DebugLog to separate the cast from natural regeneration.
 2. Prepare QAFriend at 100 HP again. Cast Emergency Repairs 1.0. Expect no instant heal and five +3 HP effect ticks 2.5 seconds apart. Use `[EFFECTS] 169 heals QAFriend` to count them.
 3. Flag CSR, ensure QAEnemy is flagged and select QAEnemy. Cast Plague Zone 2.0. After a hit expect five ticks 2.5 seconds apart. Add the resisted value to the applied amount to compare each tick with the raw 81–85 expectation.
-4. Send QAFriend `?die` via its helper and select the corpse. Cast Rejuvenate RSI from stock Actions. Send `{"actor":"QAFriend","action":"approve","accept":true}`. The helper queries and prints the recipient's live maxima with the death effect active. Check that the response confirms both restored values and the in-place stand.
+4. Send QAFriend `?die` via its helper and select the corpse. Cast Rejuvenate RSI from stock Actions. Send `{"actor":"QAFriend","action":"approve","accept":true}`. The server prints the living maxima at Ready, and the helper prints the current corpse maxima before approval. Check that the response confirms those restored values and the in-place stand. To reproduce 615/1090 from a fresh death, allow roughly 2½ minutes for Death Effect recovery before casting, then approve promptly. Use the helper’s current reading to account for the six-second refresh.
