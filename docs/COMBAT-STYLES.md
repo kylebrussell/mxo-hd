@@ -96,7 +96,12 @@ Use the `style-choreography` NativeQa mode with the isolated 30,000 HP Melee Dum
 2. Select Aikido 101 and make the dummy Off Balance with a landed Grab round or `?combatdepth offbalance 30` before using Tomo Nage 412. Punch Reversal 407 has no target condition. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md). Check 751 and 827–829.
 3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
 Start each gun choreography mode below with a fresh world entry. Each fixture seeds its weapon in stock hand slot 105 before the character loads.
-Select the listed style, target Melee Dummy, and use stock **Close Combat**. If the client offers only ranged Fire!, land the loaded Logic Barrage while at rest and wait for Melee Dummy to initiate interlock. Once rounds are running, cast the special. Record the opening request, full outgoing ability RPC, landed move and rendered motion.
+1. Select the listed style, target Melee Dummy, and use stock **Close Combat**. If the action is unavailable, land the loaded Logic Barrage while at rest and wait for Melee Dummy to initiate interlock.
+2. Reselect the gun style in Actions once rounds are running. The stock Close Combat slot switched to Self Defense 17 with `80 b9` immediately before sending `40` in the retained native run. Verify the active gun style before casting.
+3. For Pistol Slide, choose stock **Grab** and wait for a landed round that applies **Off Balance** (dummy state mask `04`, corresponding to `CastRequiredStates 4`). Use the special as soon as its slot enables. A fresh application lasts 10 seconds. If the slot greys out, wait for the next application.
+4. Record the opening request, style reselection, full outgoing ability RPC, landed move and rendered motion. The table's stance IDs apply when the gun style is already active at the opening. Record the opening stance separately from the landed special.
+
+The stock client passed all three specials in the dedicated modes. The headless bootstrap replays the captured Self Defense selection and `40` together, verifies the gun style update during interlock, and checks the NPC Off Balance bit in its interlock state after natural Grab before sending Pistol Slide. [PR330 native QA](https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509)
 
 | NativeQa mode | Style | Special | Opening stance |
 | --- | --- | --- | --- |

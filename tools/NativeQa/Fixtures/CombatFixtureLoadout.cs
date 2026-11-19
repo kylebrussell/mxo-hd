@@ -98,21 +98,54 @@ internal static class CombatFixtureLoadout
         string ability = WireFormat.ToHex(BitConverter.GetBytes(mode.Special));
         string view = WireFormat.ToHex(BitConverter.GetBytes(dummy.ViewId));
 
-        // Stock Actions style selection is 80 b9. The own view advertises the selected style separately.
-        player.SendRpc($"80 b9 {style} 00 00");
+        // Set the initial style through the toolbar RPC so the later Actions request is a distinct use.
+        player.SendRpc($"3e 6b {style} 00 00 00 00");
         await player.WaitForViewUpdateAsync(2, $"02 80 80 80 80 80 10 {style} 00 00");
 
-        // A standalone stock Close Combat request creates an interlock with the armed spawn.
+        // PR330's stock Close Combat slot sends this full Self Defense selection before 40 in the same packet.
         player.SkipReceived();
-        player.SendRpc($"40 {handle} 01 6b");
+        player.World.SendRpcs(
+            WireFormat.FromHex($"80 b9 11 00 {handle} 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 34 09 7f 00 00 00 00 ff 08 6b 00 00 00 00 00"),
+            WireFormat.FromHex($"40 {handle} 01 6b"));
+        await player.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 11 00 00 00");
         await player.WaitForRpcAsync("4e 01");
         await player.WaitForRpcAsync($"40 {handle} 00 6b");
         await player.WaitForRpcAsync("47");
 
-        player.SendRpc($"80 b9 {ability} {view}");
+        var reselected = BytePattern.Parse($"02 00 02 80 80 80 80 80 10 {style} 00 00");
+        int styleCursor = player.World.ViewSnapshot().Count;
+        player.SendRpc($"80 b9 {style} {view}");
+        await player.WaitUntilAsync(() => player.World.ViewSnapshot().Skip(styleCursor).Any(reselected.Occurs),
+            $"Gun style {mode.Style} is reselected during interlock", HeadlessPlayer.DefaultTimeout);
+
+        if (mode.RequiresOffBalance)
+        {
+            byte[] conditionHeader = WireFormat.FromHex($"{view} 04 80 80 80 80 80 80 02");
+            const uint offBalanceInCombat = CombatInterlock.InCombatFlag | 0x04;
+            int conditionCursor = player.World.ViewSnapshot().Count;
+            int grabLog = server.DebugLog().Length;
+            player.SendRpc("42 02 00 00 00 00 00");
+            await player.WaitUntilAsync(() => player.World.ViewSnapshot().Skip(conditionCursor).Any(update =>
+            {
+                int header = update.AsSpan().IndexOf(conditionHeader);
+                int flagsOffset = header + conditionHeader.Length;
+                return header >= 0 && flagsOffset + sizeof(uint) <= update.Length &&
+                    (BitConverter.ToUInt32(update, flagsOffset) & offBalanceInCombat) == offBalanceInCombat;
+            }), "Grab sets the Off Balance bit 04 on Melee Dummy's interlock view", TimeSpan.FromSeconds(100));
+            Check.That(server.DebugLog()[grabLog..].Contains("Melee Dummy suffers condition 04 from Grab", StringComparison.Ordinal),
+                "Off Balance comes from a natural Grab round");
+            Console.WriteLine($"  {mode.Name}: Self Defense opened interlock, {mode.Style} reselected, Melee Dummy mask 04 from Grab");
+        }
+
+        int castLog = server.DebugLog().Length;
+        string cast = mode.RequiresOffBalance
+            ? $"80 b9 f1 00 {handle} 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f1 00 00 00 00 6b 00 00 08 6b 00 00 00 00 00"
+            : $"80 b9 {ability} {view}";
+        player.SendRpc(cast);
         await player.WaitUntilAsync(
-            () => server.DebugLog().Contains($"animation {mode.Animation} (", StringComparison.Ordinal),
+            () => server.DebugLog()[castLog..].Contains($"animation {mode.Animation} (", StringComparison.Ordinal),
             $"{mode.Special} lands with interlock animation {mode.Animation}", TimeSpan.FromSeconds(35));
+        Console.WriteLine($"  {mode.Name}: {mode.Special} landed with interlock animation {mode.Animation}");
 
         player.SendRpc("44 00");
         await player.WaitForRpcAsync($"46 {handle} 00");

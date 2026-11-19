@@ -53,15 +53,17 @@ public abstract class GunStyleChoreographyMode : NativeQaMode
     internal ushort Style { get; }
     internal ushort Special { get; }
     internal uint Animation { get; }
+    internal bool RequiresOffBalance { get; }
 
     protected GunStyleChoreographyMode(string weaponName, uint weapon, string style, ushort styleId,
-        string special, ushort specialId, uint animation, string stance)
+        string special, ushort specialId, uint animation, string stance, bool requiresOffBalance = false)
     {
         Name = $"style-choreography-{weaponName}";
         Weapon = weapon;
         Style = styleId;
         Special = specialId;
         Animation = animation;
+        RequiresOffBalance = requiresOffBalance;
         Plan = new NativeQaModePlan(
             new ushort[] { 2, 17, styleId, specialId, 330 },
             CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ, Array.Empty<string>(), Array.Empty<string>(),
@@ -71,14 +73,19 @@ public abstract class GunStyleChoreographyMode : NativeQaMode
                 CombatFixtureLoadout.SeedWeaponsFor(weapon)
             },
             extraQaMetadata: new() { ["ChoreographyNativeStatus"] = "Pending", ["LoginWeaponGoid"] = weapon },
-            readyMessages: new[]
-            {
+            readyMessages:
+            [
                 $"CSR starts with {weaponName} ({weapon}) in hand slot 105. Leave the gun equipped.",
                 $"Select {style} ({styleId}) and target the isolated 30,000 HP Melee Dummy 3 m west. Use the stock Close Combat action to open an interlock.",
                 "If Close Combat is unavailable, land Logic Barrage while at rest and wait for the dummy to initiate interlock.",
-                $"Confirm interlock with {style} ({styleId}) active. Use {special} ({specialId}) and check for landed animation {animation} and opening stance {stance}.",
+                $"The stock Close Combat slot can switch to Self Defense (17) before opening. Once interlocked, reselect {style} ({styleId}) in Actions and confirm it is active.",
+                .. (requiresOffBalance ? new[]
+                {
+                    "Pistol Slide requires the dummy to be Off Balance. Select the stock Grab tactic and wait for a landed round that applies Off Balance (condition 04). Press Pistol Slide during the fresh 10-second window, while its slot is enabled."
+                } : Array.Empty<string>()),
+                $"Use {special} ({specialId}) and check for landed animation {animation}. Record the opening stance separately when the gun style is active at opening ({stance}).",
                 "Record the opening request and the complete outgoing ability RPC. If the gun or action is greyed, retain the tooltip and the preceding draw, selection and target records."
-            }, testMobFixture: CombatFixtureLoadout.MeleeCsv, loadAbilityAncestors: true);
+            ], testMobFixture: CombatFixtureLoadout.MeleeCsv, loadAbilityAncestors: true);
     }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -94,7 +101,7 @@ public abstract class GunStyleChoreographyMode : NativeQaMode
 }
 
 public sealed class HandgunStyleChoreographyMode() :
-    GunStyleChoreographyMode("handgun", CombatFixtureWeapons.Handgun, "Handguns", 129, "Pistol Slide", 241, 9527, "21052–21055");
+    GunStyleChoreographyMode("handgun", CombatFixtureWeapons.Handgun, "Handguns", 129, "Pistol Slide", 241, 9527, "21052–21055", requiresOffBalance: true);
 
 public sealed class RifleStyleChoreographyMode() :
     GunStyleChoreographyMode("rifle", CombatFixtureWeapons.Rifle, "Rifles", 147, "Body Shot", 105, 11364, "21068–21071");
