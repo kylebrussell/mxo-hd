@@ -433,6 +433,7 @@ namespace hds
                 36 => 2,   // Tinkering
                 130 => 1,  // Hindering Shot
                 152 => 7,  // Spinning Backsweep
+                514 => 2,  // Advanced Tinkering
                 _ => null
             };
             if (fixedType.HasValue)

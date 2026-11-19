@@ -9,4 +9,10 @@ Use `ability-parity-starter-fixed-damage` on level-11 CSR110 with 36 of 41 memor
 1. Select QAEnemy, select Coder Style and activate Tinkering. Capture the outgoing 43-byte ability request, 6-second cast bar, viral hit and 30-second reuse.
 2. Remain out of interlock, select Handguns and activate Hindering Shot against QAEnemy. Capture the outgoing request, 2-second cast bar, ballistic hit and 8-second own reuse. Keep the four source-specific 8-second modifier adds and removals: Movement Speed −50, Sneak Movement −50, Invisibility Movement −50 and Force Combat −10.
 
-The headless fixture uses the established inline 43-byte 80b9 combat request format, with the live view/spawn handle. Stock emission for these two specific buttons still needs capture. If the client greys out an action or never sends the request, record the available style, weapon, target and interlock state. The disposable viral contest draw isolates Tinkering's landed effect. Hindering Shot's timed record values leave the movement consumers and stock choreography open. Tinkering's other area recipients, geometry and native damage scaling remain separate checks.
+Stock QA on PR389 recorded both 43-byte hotbar requests, the four-point Tinkering hit and nine-point Hindering Shot hit, the cast and reuse timers, and all four Hindering Shot modifiers. See PacketLog d3b7112643d9. The disposable contest draw isolates the Tinkering hit. Hindering Shot's movement consumers and stock choreography remain open, as do Tinkering's other area recipients, geometry and native damage scaling.
+
+## Advanced Tinkering
+
+GOB 514 has one fixed instant viral health modifier worth 6 and an incomplete legacy range. The same fallback now supplies its base damage. Its existing typed damage, target-centred selection, 6-second cast and 30-second reuse still apply.
+
+In `ability-parity-advanced-tinkering`, select Coder Style and QAEnemy at 4 m, then use Advanced Tinkering. Capture the ability request, target damage, casting time and reuse. The level-11 profile uses 21 of 41 memory and loads the explicit prerequisites. The replay takes the complete stock Tinkering request from PR389 and substitutes ability 514 and the live view and spawn IDs. Stock emission for 514 and broader area and scaling remain open.
