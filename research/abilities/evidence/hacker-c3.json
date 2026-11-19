@@ -1,0 +1,78 @@
+{
+  "abilities": {
+    "58": {
+      "family": "hostile-viral-direct"
+    },
+    "95": {
+      "checks": {
+        "stats": {
+          "source": "GOB 95 applies learned-rank 0.3 bonuses to Viral Damage and Viral Resistance.",
+          "runtime": "AbilityPassives publishes both totals. AbilityStats.ScaleTypedAbilityDamage and TypedResistanceBonuses.Player consume them. The retail resistance coefficient remains unresolved.",
+          "test": "AbilityScaledBuffTests.TransmitVirusAndOverclockApplyTheirOwnTypedDamageAndResistance verifies +15/+15 level-50 totals, increased outgoing viral damage, unchanged ballistic damage and reduced incoming viral damage."
+        }
+      }
+    },
+    "97": {
+      "family": "caster-centered-viral-disruption",
+      "checks": {
+        "area": {
+          "source": "GOB 97 stores selector 4 and 3 m radius. Native 621e26d8 reads the caster-area description.",
+          "runtime": "UiLagArea.Land snapshots the caster centre, checks authority, and applies separate visible enemy contests.",
+          "test": "UiLagAreaTests.SelectedViewNeverMovesCentreAndNearPlayersLandOnce, OrdinaryRecipientAuthorityStaysInForce and the ui-lag-area hit/deflect wire scenarios exercise radius edges, caster centre, selected-far exclusion and legal recipients."
+        },
+        "stats": {
+          "source": "GOB 97 stores four 27-second combat penalties. The morpheuzzz_001 09:45:41 capture reports -10 thrown accuracy, -17 viral defense, -12 thrown defense and -14 viral accuracy.",
+          "runtime": "TempMods preserves the captured values, and AbilityStats.ViralAccuracy, ThrownAccuracy and SpecialDefense read the active modifiers.",
+          "test": "UiLagAreaTests.CapturedRecipientValuesStayDistinctAndTwentySevenSeconds and SelectedViewNeverMovesCentreAndNearPlayersLandOnce assert all four live consumers. The retail formula reconciling the captured values with the GOB fixed -10 remains unverified."
+        }
+      }
+    },
+    "327": {
+      "family": "timed-hacker-stat-buffs",
+      "checks": {
+        "stats": {
+          "source": "GOB 327 applies Viral Damage for 20 seconds. The retained activation capture has +43, distinct from the character-level function.",
+          "runtime": "AbilityBuffs applies and expires the captured modifier. AbilityStats.ScaleTypedAbilityDamage reads it for viral health damage.",
+          "test": "AbilityScaledBuffTests.TransmitVirusAndOverclockApplyTheirOwnTypedDamageAndResistance verifies +43, exact viral damage change, unaffected ballistic type, and expiry."
+        }
+      }
+    },
+    "354": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 354 applies -58 current and maximum IS and -50% regeneration. Max IS and regeneration expire after 30 seconds.",
+          "runtime": "AbilityHostile.LandedOnPlayer handles the instant modifier. TimedEffects and AbilityBuffs.RefreshVitals apply and restore max IS. AbilityHandler consumes the regeneration modifier.",
+          "test": "AbilityHostileTests.DestroyResolveTakesCurrentInnerStrengthAtOnce and DestroyDebuffsScaleNaturalRegenUntilExpiry test resource mutation and timed cleanup. ability-status and stock PR315/327 confirm presentation. https://github.com/kylebrussell/mxo-hd/pull/327#issuecomment-7006496068"
+        }
+      }
+    },
+    "355": {
+      "checks": {
+        "stats": {
+          "source": "GOB 355 stores a 30-second Viral Defense modifier. The retained crashover2k_008 capture entry 40322 supplies -60.",
+          "runtime": "TempMods preserves the captured modifier. AbilityStats.SpecialDefense and the free-cast viral contest consume stat 183.",
+          "test": "AbilityHostileTests.VectorPreservesTheCapturedPowerlessAndViralDefenseValues checks the active typed defender score, expiry of both effects, and baseline restoration. The difference from the GOB fixed -35 remains unresolved."
+        }
+      }
+    },
+    "1077": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 98 grants 1077. GOB 1077 is self-only and stores Viral Resistance +20, Concentration +5, Viral Accuracy +3 while active.",
+          "runtime": "AbilityPassives resolves the loaded discipline grant. AbilitySupport.Targets selects the caster. AbilityStats, TypedAbilityResistance, and AbilityCastInterrupts consume the active modifiers.",
+          "test": "AbilityScaledBuffTests.VirologistGrantsTheSelfUpgradeAndFeedsItsTypedConsumers exercises grant installation, non-self view ignored, all three values, typed damage resistance, Concentration cast-through, and removal/unload."
+        },
+        "stats": {
+          "source": "GOB 98 grants 1077. GOB 1077 is self-only and stores Viral Resistance +20, Concentration +5, Viral Accuracy +3 while active.",
+          "runtime": "AbilityPassives resolves the loaded discipline grant. AbilitySupport.Targets selects the caster. AbilityStats, TypedAbilityResistance, and AbilityCastInterrupts consume the active modifiers.",
+          "test": "AbilityScaledBuffTests.VirologistGrantsTheSelfUpgradeAndFeedsItsTypedConsumers exercises grant installation, non-self view ignored, all three values, typed damage resistance, Concentration cast-through, and removal/unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 98 grants 1077. GOB 1077 is self-only and stores Viral Resistance +20, Concentration +5, Viral Accuracy +3 while active.",
+          "runtime": "AbilityPassives resolves the loaded discipline grant. AbilitySupport.Targets selects the caster. AbilityStats, TypedAbilityResistance, and AbilityCastInterrupts consume the active modifiers.",
+          "test": "AbilityScaledBuffTests.VirologistGrantsTheSelfUpgradeAndFeedsItsTypedConsumers exercises grant installation, non-self view ignored, all three values, typed damage resistance, Concentration cast-through, and removal/unload."
+        }
+      }
+    }
+  }
+}

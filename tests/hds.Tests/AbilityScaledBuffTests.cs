@@ -135,6 +135,52 @@ public class AbilityScaledBuffTests
         Assert.Equal(1, Stealth.AwarenessOf(actor));
     }
 
+    [Fact]
+    public void VirologistGrantsTheSelfUpgradeAndFeedsItsTypedConsumers()
+    {
+        var target = Client(50);
+        AbilityPassives.SetLoaded(target, new[] { ((ushort)98, (ushort)50) }, true);
+        Assert.True(AbilityPassives.IsLoaded(target, 1077));
+        Assert.Equal(1, AbilityStats.Player(target, 1030));
+        Assert.Equal(1, AbilityStats.Player(target, 1045));
+        Assert.Same(target, Assert.Single(AbilitySupport.Targets(target, 1077, 123)));
+        AbilitySupport.Land(target, 1077, 123);
+        Assert.Equal(5, AbilityStats.Player(target, 564));
+        Assert.Equal(77, AbilityCastInterrupts.CastThroughPercent(1, 500, (short)AbilityStats.Influence(target, 564)));
+        Assert.Equal(3, AbilityStats.ViralAccuracy(target));
+        Assert.Equal(20, AbilityStats.Player(target, 157));
+        Assert.True(TypedAbilityResistance.Player(Client(50), target, 330, 100, 2) < 100);
+        Assert.True(AbilityBuffs.Remove(target, 1077));
+        Assert.Equal(0, AbilityStats.Player(target, 564));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(target));
+        Assert.Equal(100, TypedAbilityResistance.Player(Client(50), target, 330, 100, 2));
+        AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>(), true);
+        Assert.False(AbilityPassives.IsLoaded(target, 1077));
+    }
+
+    [Fact]
+    public void TransmitVirusAndOverclockApplyTheirOwnTypedDamageAndResistance()
+    {
+        var target = Client(50);
+        var attacker = Client(50);
+        AbilityPassives.SetLoaded(target, new[] { ((ushort)95, (ushort)50) }, true);
+        Assert.Equal(15, AbilityStats.Player(target, 1148));
+        Assert.Equal(15, AbilityStats.Player(target, 1031));
+        Assert.Equal(114, AbilityStats.ScaleTypedAbilityDamage(target, 2, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, 1, 100));
+        Assert.True(TypedAbilityResistance.Player(attacker, target, 330, 100, 2) < 100);
+        AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>(), true);
+
+        Assert.True(AbilityBuffs.Apply(target, 327));
+        var buff = target.playerData.activeBuffs[327];
+        Assert.Equal(20, buff.Definition.Seconds);
+        Assert.Equal(43, AbilityStats.Influence(target, 172));
+        Assert.Equal(142, AbilityStats.ScaleTypedAbilityDamage(target, 2, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, 1, 100));
+        TimedEffects.RunDue(buff.Started + 20.01);
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, 2, 100));
+    }
+
     [Theory]
     [InlineData(124,20,171,10)] [InlineData(170,50,174,25)] [InlineData(417,20,106,200)]
     [InlineData(173,20,522,25)] [InlineData(173,50,522,26)] [InlineData(421,50,1009,47)]

@@ -36,6 +36,61 @@ public class AbilityHostileTests
     }
 
     [Fact]
+    public void CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt()
+    {
+        var victim = Client();
+        var subject = TimedEffects.ForPlayer(victim);
+        var root = Assert.Single(Land(victim, 40));
+        Assert.Equal(TempMods.RootedAbility, root.Target);
+        Assert.Equal(25, root.Seconds);
+        Assert.False(ControlActions.CanMove(subject.Effects));
+        Assert.True(ControlActions.CanUseAbilities(subject.Effects));
+        TimedEffects.HealthChanged(subject, -1, true);
+        Assert.False(ControlActions.CanMove(subject.Effects));
+        TimedEffects.HealthChanged(subject, 1, true, damageEvent: true);
+        Assert.True(ControlActions.CanMove(subject.Effects));
+    }
+
+    [Fact]
+    public void SlowAppliesFourPenaltyRecordsAndLowersBallisticAttackUntilExpiry()
+    {
+        var victim = Client();
+        var applied = Land(victim, 86);
+        Assert.Equal(-19, AbilityStats.Attack(victim, true));
+        foreach (ushort stat in new ushort[] { 115, 877, 878, 519 })
+        {
+            Assert.Equal(stat == 519 ? -15 : -50, AbilityStats.Player(victim, stat));
+            Assert.Equal(28, Assert.Single(applied, m => m.Target == stat).Seconds);
+        }
+        TimedEffects.RunDue(applied.Max(m => m.Expires) + .01);
+        Assert.Equal(0, AbilityStats.Attack(victim, true));
+        foreach (ushort stat in new ushort[] { 115, 877, 878, 519 })
+            Assert.Equal(0, AbilityStats.Player(victim, stat));
+    }
+
+    [Fact]
+    public void VectorPreservesTheCapturedPowerlessAndViralDefenseValues()
+    {
+        var victim = Client();
+        var subject = TimedEffects.ForPlayer(victim);
+        var applied = Land(victim, 355);
+        var powerless = Assert.Single(applied, m => m.Target == TempMods.PowerlessAbility);
+        var defense = Assert.Single(applied, m => m.Target == 183);
+        Assert.Equal(8.94f, powerless.Seconds);
+        Assert.Equal(30, defense.Seconds);
+        Assert.Equal(-60, AbilityStats.Player(victim, 183));
+        var viralMove = new AbilityItem();
+        viralMove.setAbilityID(330);
+        Assert.Equal(-60, AbilityStats.SpecialDefense(victim, viralMove));
+        Assert.False(ControlActions.CanUseAbilities(subject.Effects));
+        TimedEffects.RunDue(powerless.Expires + .01);
+        Assert.True(ControlActions.CanUseAbilities(subject.Effects));
+        Assert.Equal(-60, AbilityStats.Player(victim, 183));
+        TimedEffects.RunDue(defense.Expires + .01);
+        Assert.Equal(0, AbilityStats.Player(victim, 183));
+    }
+
+    [Fact]
     public void DebuffFamilyFollowsTheClientStatusCategories()
     {
         Assert.True(AbilityHostile.IsDebuff(343));   // Miasma 2.0, UDB0
