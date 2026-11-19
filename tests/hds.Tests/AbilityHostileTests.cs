@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using hds;
+using hds.world.Structures;
 
 namespace hds.Tests;
 
@@ -768,6 +769,132 @@ public class AbilityHostileTests
         {
             AbilityAuras.Clear(caster, announce: false);
             WorldServer.Clients = previous;
+        }
+    }
+
+    [Theory]
+    [InlineData(320, 18, 40)]
+    [InlineData(379, 20, 35)]
+    [InlineData(424, 35, 25)]
+    public void TimedSweepsWaitForTheirFirstTickAndRollAtTheStoredThreshold(ushort id, int chance, float seconds)
+    {
+        var victim = Client();
+        var subject = TimedEffects.ForPlayer(victim);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new SweepRoll(chance);
+            Land(victim, 343);
+            Assert.True(AbilityHostile.ApplySweep(victim, victim, id));
+            var pulse = Assert.Single(subject.Effects.Snapshot(), active => active.Parent == id);
+            Assert.Equal(chance, pulse.Value);
+            Assert.Equal(seconds, pulse.Seconds);
+            Assert.Equal(5, pulse.Interval);
+            Assert.True(subject.Effects.HasParent(343));
+
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.True(subject.Effects.HasParent(343));
+            Land(victim, 343);
+            AbilityHostile.PulseRandom = new SweepRoll(chance - 1);
+            TimedEffects.RunDue(pulse.Start + 10.01);
+            Assert.False(subject.Effects.HasParent(343));
+            TimedEffects.RunDue(pulse.Start + seconds + .01);
+            Assert.False(subject.Effects.HasParent(id));
+        }
+        finally
+        {
+            AbilityHostile.PulseRandom = previous;
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    [Theory]
+    [InlineData(379, 9)]
+    [InlineData(693, 6)]
+    public void GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius(ushort id, int radius)
+    {
+        var caster = Client();
+        var near = Client();
+        var far = Client();
+        var outsider = Client();
+        var dead = Client();
+        var players = new[] { caster, near, far, outsider, dead };
+        double[] positions = { 0, radius * 100 - 1, radius * 100 + 1, 300, 500 };
+        var previous = WorldServer.Clients;
+        var team = SocialGroups.Instance.CreateTeam(77680, "SweepCaster");
+        try
+        {
+            WorldServer.Clients = new();
+            for (int i = 0; i < players.Length; i++)
+            {
+                var player = players[i];
+                uint charId = (uint)(77680 + i);
+                player.playerData.setCharID(charId);
+                player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(positions[i], 0, 0));
+                WorldServer.Clients.Add(charId.ToString(), player);
+                if (player != outsider)
+                    SocialGroups.Instance.AddTeamMember(team.Id, charId, charId.ToString());
+            }
+            dead.playerData.isDead = true;
+            AbilitySupport.Land(caster, id, 2);
+            foreach (var player in players)
+            {
+                bool applied = id == 379 ? TimedEffects.ForPlayer(player).Effects.HasParent(id) : AbilityBuffs.IsActive(player, id);
+                Assert.Equal(player == caster || player == near, applied);
+            }
+        }
+        finally
+        {
+            foreach (var player in players)
+            {
+                SocialGroups.Instance.RemoveTeamMember(team.Id, player.playerData.getCharID());
+                AbilityBuffs.RemoveAll(player);
+                TimedEffects.Clear(TimedEffects.ForPlayer(player));
+            }
+            WorldServer.Clients = previous;
+        }
+    }
+
+    [Fact]
+    public void UpgradeArtistKeepsItsSweepAndStatsUntilClassReplacement()
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            Land(player, 343);
+            AbilityHostile.PulseRandom = new SweepRoll(10);
+            Assert.Same(player, Assert.Single(AbilitySupport.Targets(player, 1095, 999)));
+            AbilitySupport.Land(player, 1095, 2);
+            var pulse = Assert.Single(subject.Effects.Snapshot(), active => active.Parent == 1095);
+            Assert.Equal(10, pulse.Value);
+            Assert.Equal(5, pulse.Interval);
+            Assert.Equal(float.PositiveInfinity, pulse.Seconds);
+            Assert.Equal(1095, pulse.Target);
+            Assert.Equal(5, AbilityStats.Player(player, 117));
+            Assert.Equal(7, AbilityStats.Player(player, 564));
+            Assert.Equal(20, AbilityStats.Player(player, 520));
+            Assert.Equal(130, CombatInsightEngagement.Calculate(0, 0, 0, 0, AbilityStats.Player(player, 520)).Evade);
+            Assert.Equal(34, AbilityCosts.Effective(player, 314));
+            Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(0, 1000, (short)AbilityStats.Player(player, 564)));
+
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.True(subject.Effects.HasParent(343));
+            Land(player, 343);
+            AbilityHostile.PulseRandom = new SweepRoll(9);
+            TimedEffects.RunDue(pulse.Start + 10.01);
+            Assert.False(subject.Effects.HasParent(343));
+            Assert.True(AbilityBuffs.Apply(player, 1091));
+            Assert.False(subject.Effects.HasParent(1095));
+            Assert.True(subject.Effects.HasParent(1091));
+            Assert.Equal(32, AbilityCosts.Effective(player, 314));
+        }
+        finally
+        {
+            AbilityHostile.PulseRandom = previous;
+            AbilityBuffs.RemoveAll(player);
+            TimedEffects.Clear(subject);
         }
     }
 

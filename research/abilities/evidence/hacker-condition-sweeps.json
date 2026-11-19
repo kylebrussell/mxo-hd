@@ -1,0 +1,61 @@
+{
+  "abilities": {
+    "379": {
+      "checks": {
+        "script": {
+          "source": "GOB 379 stores a 35-second sweep with a five-second update and 20% NegativeConditionSweepPulse. tempmods.py checks each dispellable debuff parent once.",
+          "runtime": "AbilityHostile.ApplySweep installs one periodic record; TimedEffects drives it at the stored interval. AbilityHostile.Pulse preserves exempt debuffs and unrelated buffs.",
+          "test": "AbilityHostileTests.TimedSweepsWaitForTheirFirstTickAndRollAtTheStoredThreshold and GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius."
+        },
+        "behavior-tests": {
+          "source": "GOB 379 stores a 35-second sweep with a five-second update and 20% NegativeConditionSweepPulse. tempmods.py checks each dispellable debuff parent once.",
+          "runtime": "AbilityHostile.ApplySweep installs one periodic record; TimedEffects drives it at the stored interval. AbilityHostile.Pulse preserves exempt debuffs and unrelated buffs.",
+          "test": "AbilityHostileTests.TimedSweepsWaitForTheirFirstTickAndRollAtTheStoredThreshold and GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius."
+        },
+        "area": {
+          "source": "GOB 379 has selector 9 and a nine-metre radius.",
+          "runtime": "AbilitySupport.Targets selects the living caster and mission teammates in radius; AbilitySupport.Land applies the sweep to those recipients.",
+          "test": "AbilityHostileTests.GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius verifies both sides of the stored radius and excludes a dead member and nearby outsider."
+        }
+      }
+    },
+    "693": {
+      "checks": {
+        "area": {
+          "source": "GOB 693 has selector 9 and six-metre radius, and 378 applies it via ApplyAuraEffect.",
+          "runtime": "AbilityAuras uses AbilitySupport.Land with the child radius; only the caster and living teammates inside it receive the buff.",
+          "test": "AbilityHostileTests.GroupSweepLandsOnlyOnLivingTeamMembersWithinStoredRadius verifies exact near/far/outsider/dead admission."
+        },
+        "behavior-tests": {
+          "source": "The GOB 693 child stores DoNothing with presentation FX and a 4% NegativeConditionSweepPulse term. virii.py DeflectVirus1Effect_DirectObject queues the 0.2-second parent FX.",
+          "runtime": "AbilityAuras invokes AbilitySupport.Land on the child and dispatches Virii.ApplyDeflectEffect on successful application. AbilityBuffs.Remove routes the four-percent termination callback to AbilityHostile.Pulse.",
+          "test": "HackerConditionSweepMode verifies parent 378 dispatches the child defenses and 0.2-second FX across the actual recipient set and removes the expiring record. AbilityHealthCallbackTests.DeflectVirusChildCarriesScaledDefencesAndRunsItsFourPercentTermCleanseOnce verifies real debuff removal and single termination."
+        }
+      }
+    },
+    "1095": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1095 stores self selector 1 and stacking type 37.",
+          "runtime": "AbilitySupport.Targets resolves self independently of the selected object; AbilityBuffs uses the same class family as the other replacements.",
+          "test": "AbilityHostileTests.UpgradeArtistKeepsItsSweepAndStatsUntilClassReplacement verifies self selection and class replacement."
+        },
+        "stats": {
+          "source": "GOB 1095 has while-enabled +5 IS cost reduction, +7 Concentration and +20 Combat Evasion.",
+          "runtime": "The catalog buff exposes the stats to AbilityCosts, AbilityCastInterrupts and the existing CombatInsightEngagement evasion score.",
+          "test": "AbilityHostileTests.UpgradeArtistKeepsItsSweepAndStatsUntilClassReplacement checks the values and their consumers."
+        },
+        "script": {
+          "source": "GOB 1095 stores NegativeConditionSweepPulse with 10%, five-second interval and duration type 2.",
+          "runtime": "AbilityBuffs schedules a pulse on activation in AbilityHostile.ApplySweep and cancels it on class replacement.",
+          "test": "AbilityHostileTests.UpgradeArtistKeepsItsSweepAndStatsUntilClassReplacement drives the first miss and next successful threshold roll plus removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 1095 is a self class upgrade with three fixed stats and a 10% cleanse pulse every five seconds until replaced.",
+          "runtime": "AbilitySupport, AbilityBuffs and TimedEffects apply and remove the class modifiers together.",
+          "test": "AbilityHostileTests.UpgradeArtistKeepsItsSweepAndStatsUntilClassReplacement verifies self selection, stats, periodic outcomes and cleanup."
+        }
+      }
+    }
+  }
+}
