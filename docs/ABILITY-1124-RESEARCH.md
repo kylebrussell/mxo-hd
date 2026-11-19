@@ -51,3 +51,9 @@ PR128's native tool matching analysis establishes that no shipped component10 to
 Recovering the actual effect requires primary evidence linking Old1124 to its executor: an earlier server rules build with its action and tempmod construction; an older resource build with matching tool and modifier values; or an identified retail 1124 execution capture and interpretable result state. Target selection, success/deflection behavior, applied state, duration/strength, expiry, and a legitimate activation/grant path remain unknown. A decision to expose an otherwise unreachable legacy action would be separate server policy, not recovered retail behavior.
 
 No runtime or audit changes, headless servers, native QA setup, client actions, shared fixture changes or database operations were performed for this research.
+
+## AB8 verification
+
+The read-only query above was rerun against master baseline `765fa3ef`. It returned 44,406 resources, one raw GOID occurrence in the index, zero resource references, 62 original modules, and the same two script identifiers. All 89 selected capture files were present. The 11,062 client protocol04 packets yielded 1,403 cast-header candidates and zero normalized 1124 or 1125 matches. The scope and direction exclusions above still apply.
+
+The missing link is an identified retail 1124 activation mapped to the Old resource and an executor, plus either its observable target/result/expiry records or the matching server rule and modifier data. Effect polarity, target class, application contest, duration, strength and a legitimate grant or tool remain unresolved. Ability 1124 stays missing in the executable audit.

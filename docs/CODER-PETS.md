@@ -33,7 +33,7 @@ The simulacrum is ticked every second.
 
 - **Follow:** it walks to within 2.5 m of its owner, moving at most 5 m a tick with the wander animation (`02 0e`).
 - **Attack:** it moves within 2.5 m (melee proxies) or 15 m (Nuker and gun proxies) and attacks every 3 s.
-- **Defensive** (the default) and **Aggressive** simulacra take on their owner's close-combat target. An Aggressive one also engages the nearest hostile NPC within 10 m. A **Passive** one only fights when ordered.
+- **Defensive** (the default) and **Aggressive** simulacra take on their owner's close-combat target. An Aggressive one also engages the nearest hostile NPC within 10 m. A **Passive** one only fights when ordered. Switching to Passive clears an ongoing automatic assist and retains a direct Attack order. An expired Attack target returns the window command to Follow.
 - An NPC it fights, if that NPC isn't fighting a player, hits back every 3 s.
 - Its kills go through the owner's fight, so death claims, experience, missions and loot follow the normal path.
 - Players can't open close combat on a simulacrum.
@@ -43,7 +43,7 @@ The simulacrum is ticked every second.
 The layouts are client.dll's own.
 
 - **`81 7a`** (ctor 620ef730, 4 bytes): `ID u8, Command u8`.
-- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, TargetObject u32`. The server reads the low u16 as the view.
+- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, TargetObject u32`. The server reads the low u16 as the view. The window resolves the selected object before submitting an Attack. If the explicit view fails to resolve to a live, visible hostile NPC within the owner leash, the wire order is refused. The `?pet attack` developer shortcut can still choose an NPC automatically.
 - **`81 7c`** (620ef952, 5 bytes): `ID u8, Command u8, Value u8`.
 
 The Simulacra window (`viewsimulacra.cpp`) maps its buttons to FourCC messages (dispatcher 620f0070). It sends ID `0xfe`, meaning the current simulacrum:
@@ -146,6 +146,8 @@ Read-only client.dll 7.6005, SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a5
 - `8178 ID status 10` is 13 bytes (62145180); updates health/order/mode/level. Buffer remains 0: its gameplay meaning is not established. Window IS display is not claimed; `?pet` exposes server pet IS.
 
 These are DLL-derived layouts, without a retail `81 76` capture. Native acceptance and window presentation remain pending Claude.
+
+The combined [Coder pets and PvP fixture](NATIVEQA-CODER-PETS-PVP.md) uses ordinary skill activation and checks both summon families alongside flagged player targeting.
 
 ## Exact native QA (Claude only, CSR_Tester 110)
 
