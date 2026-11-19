@@ -1,0 +1,311 @@
+{
+  "abilities": {
+    "42": {
+      "checks": {
+        "script": {
+          "source": "GOB 42 uses ApplyAuraEffect for child 695, drains 12 with ISDrainWithAbilityDeactivation and installs a 15 s recast via AddRecastTimer. DoNothing returns directly.",
+          "runtime": "AbilityAuras.Start, Tick, PayDrain and Stop handle the callbacks and AbilityCooldowns.TryGet uses the stored term value.",
+          "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength verifies the first pulse, one charged pulse, recipient expiry, shortfall switch-off and exact cooldown."
+        },
+        "stats": {
+          "source": "GOB 42 has script operands 12 and 695 under the IS drain and child pulse callback components.",
+          "runtime": "AbilityAuras.PayDrain deducts 12 and Pulse invokes AbilitySupport.Land for 695.",
+          "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength asserts the actual resource change and child accuracy on another player."
+        }
+      }
+    },
+    "50": {
+      "checks": {
+        "area": {
+          "source": "GOB 50 uses caster-centred group selector 9, 6 m radius and instant typed heal 11.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange tests caster and in-range teammate gain health, and out-of-range, unrelated and dead characters are excluded."
+        },
+        "healing": {
+          "source": "GOB 50 uses caster-centred group selector 9, 6 m radius and instant typed heal 11.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange measures exactly 11 HP on both the unmodified caster and a known wounded teammate."
+        },
+        "behavior-tests": {
+          "source": "GOB 50 uses caster-centred group selector 9, 6 m radius and instant typed heal 11.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange verifies the shipped effect and recipients after landing."
+        }
+      }
+    },
+    "59": {
+      "family": "hostile-viral-direct"
+    },
+    "63": {
+      "checks": {
+        "script": {
+          "source": "GOB 63 stores RefundIS with value 10 for term after the 300 s buff. tempmods.py RefundIS restores recipient IS.",
+          "runtime": "AbilityScaledBuffs.TryScriptedTimed snapshots the modifier. AbilityBuffs.Remove invokes the stored term once.",
+          "test": "AbilityScaledBuffTests.FirewallAndShieldRefundRecipientInnerStrengthOnTerm checks all defence values, applied duration, exact recipient refund and no duplicate refund."
+        }
+      }
+    },
+    "66": {
+      "checks": {
+        "stats": {
+          "source": "GOB 66 supplies melee and ballistic accuracy and defence -10 for 33 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        },
+        "behavior-tests": {
+          "source": "GOB 66 supplies melee and ballistic accuracy and defence -10 for 33 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        }
+      }
+    },
+    "69": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 69 stores total 30, 30 s, 5 s updates and ViralDOT. tempmods.py ViralDOT rounds each update and emits VIRUSCRASH_FX.",
+          "runtime": "TimedEffects.ApplyToPlayer, RunDue and PlayerEffects.Ticked apply typed viral damage and publish the resulting health/FX update.",
+          "test": "AbilityHostileTests.ProcessorLagDealsFiveViralTicksAndPublishesTickEffect verifies no immediate loss, first tick of five HP, virus FX and five total ticks for 25 HP before expiry."
+        },
+        "script": {
+          "source": "GOB 69 stores total 30, 30 s, 5 s updates and ViralDOT. tempmods.py ViralDOT rounds each update and emits VIRUSCRASH_FX.",
+          "runtime": "TimedEffects.ApplyToPlayer, RunDue and PlayerEffects.Ticked apply typed viral damage and publish the resulting health/FX update.",
+          "test": "AbilityHostileTests.ProcessorLagDealsFiveViralTicksAndPublishesTickEffect verifies no immediate loss, first tick of five HP, virus FX and five total ticks for 25 HP before expiry."
+        }
+      }
+    },
+    "72": {
+      "checks": {
+        "stats": {
+          "source": "GOB 72 grants Combat Evasion +20 for 600 s.",
+          "runtime": "AbilityBuffs applies and expires the value. CombatInsightEngagement uses direct 520 during a live Evade Combat entry contest.",
+          "test": "AbilityHostileTests.ResistCombatAppliesTwentyEvasionForSixHundredSeconds asserts the active consumer score contribution and expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 72 grants Combat Evasion +20 for 600 s.",
+          "runtime": "AbilityBuffs.Apply installs and tracks the timed buff, and AbilityStats.Player feeds the live contest.",
+          "test": "AbilityHostileTests.ResistCombatAppliesTwentyEvasionForSixHundredSeconds and PR312 stock activation observed 600 s (https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995363576)."
+        }
+      }
+    },
+    "92": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 92 is a loaded discipline with no cast selector. It grants the separately castable upgrade 1089.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant and AbilityGrantRegistration tracks the captured live membership.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval and AbilityGrantRegistrationTests cover membership and self upgrade landing."
+        },
+        "behavior-tests": {
+          "source": "GOB 92 contains only the grant to 1089.",
+          "runtime": "AbilityPassives.SetLoaded resolves and removes the grant when the discipline is loaded and unloaded.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval proves membership, use and removal."
+        }
+      }
+    },
+    "390": {
+      "checks": {
+        "stats": {
+          "source": "GOB 390 supplies melee and ballistic defence bonuses +2 and loaded upgrade grant 1079.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals, SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration and HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval"
+        },
+        "behavior-tests": {
+          "source": "GOB 390 supplies melee and ballistic defence bonuses +2 and loaded upgrade grant 1079.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals, SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration and HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval"
+        }
+      }
+    },
+    "391": {
+      "checks": {
+        "stats": {
+          "source": "GOB 391 supplies learned-rank melee and ballistic defence bonuses and pacify duration bonus.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals and SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration"
+        },
+        "behavior-tests": {
+          "source": "GOB 391 supplies learned-rank melee and ballistic defence bonuses and pacify duration bonus.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals and SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration"
+        }
+      }
+    },
+    "392": {
+      "checks": {
+        "stats": {
+          "source": "GOB 392 supplies viral accuracy -39 for 18 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        },
+        "behavior-tests": {
+          "source": "GOB 392 supplies viral accuracy -39 for 18 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        }
+      }
+    },
+    "394": {
+      "checks": {
+        "stats": {
+          "source": "GOB 394 supplies melee and ballistic resistance -52 for 28 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        },
+        "behavior-tests": {
+          "source": "GOB 394 supplies melee and ballistic resistance -52 for 28 s.",
+          "runtime": "TimedEffects and AbilityStats.Attack, Defense, ViralAccuracy and Toughness consume applicable live records.",
+          "test": "AbilityHostileTests.HackerDebuffsChangeTheirCombatConsumersUntilExpiry"
+        }
+      }
+    },
+    "395": {
+      "checks": {
+        "script": {
+          "source": "GOB 395 stores 80 units and 60 s. tempmods.py BufferOverflowInit/Update limit reservation to free buffer and Term removes it.",
+          "runtime": "TimedEffects tracks the hostile parent. AbilityBuffBuffer.Reserved re-evaluates capacity on each query and stops counting removed/expired parents.",
+          "test": "AbilityScaledBuffTests.AllBufferOverflowParentsReleaseTheirReservationOnExpiry and BufferMultipleReservationsStayBoundedAndDeathClearsThem cover 395, exact init and cleanup. OverflowReservesFreeCapacityAndKeepsExistingFamilyReplacements covers the common update/admission computation."
+        }
+      }
+    },
+    "433": {
+      "checks": {
+        "stats": {
+          "source": "GOB 433 supplies learned-rank Inner Strength regeneration and healing bonuses.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals and TotalDedicationIncreasesHealAndRegenerationThroughLinkedStats"
+        },
+        "behavior-tests": {
+          "source": "GOB 433 supplies learned-rank Inner Strength regeneration and healing bonuses.",
+          "runtime": "AbilityPassives.SetLoaded and Refresh apply and remove totals. AbilityStats and the relevant combat, healing or regeneration consumers read them.",
+          "test": "AbilityParityTests.LoadedHackerPassivesApplyAndRemoveShippedStatTotals and TotalDedicationIncreasesHealAndRegenerationThroughLinkedStats"
+        }
+      }
+    },
+    "434": {
+      "checks": {
+        "area": {
+          "source": "GOB 434 uses caster-centred group selector 9, 7 m radius and instant typed heal 32.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange tests caster and in-range teammate gain health, and out-of-range, unrelated and dead characters are excluded."
+        },
+        "healing": {
+          "source": "GOB 434 uses caster-centred group selector 9, 7 m radius and instant typed heal 32.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange measures exactly 32 HP on both the unmodified caster and a known wounded teammate."
+        },
+        "behavior-tests": {
+          "source": "GOB 434 uses caster-centred group selector 9, 7 m radius and instant typed heal 32.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange verifies the shipped effect and recipients after landing."
+        }
+      }
+    },
+    "435": {
+      "checks": {
+        "area": {
+          "source": "GOB 435 uses caster-centred group selector 9, 9 m radius and instant typed heal 30.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange tests caster and in-range teammate gain health, and out-of-range, unrelated and dead characters are excluded."
+        },
+        "healing": {
+          "source": "GOB 435 uses caster-centred group selector 9, 9 m radius and instant typed heal 30.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange measures exactly 30 HP on both the unmodified caster and a known wounded teammate."
+        },
+        "behavior-tests": {
+          "source": "GOB 435 uses caster-centred group selector 9, 9 m radius and instant typed heal 30.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange verifies the shipped effect and recipients after landing."
+        }
+      }
+    },
+    "436": {
+      "checks": {
+        "script": {
+          "source": "GOB 436 stores RefundIS with value 25 for term after the 300 s buff. tempmods.py RefundIS restores recipient IS.",
+          "runtime": "AbilityScaledBuffs.TryScriptedTimed snapshots the modifier. AbilityBuffs.Remove invokes the stored term once.",
+          "test": "AbilityScaledBuffTests.FirewallAndShieldRefundRecipientInnerStrengthOnTerm checks all defence values, applied duration, exact recipient refund and no duplicate refund."
+        }
+      }
+    },
+    "437": {
+      "checks": {
+        "area": {
+          "source": "GOB 437 uses caster-centred group selector 9, 9 m radius and instant typed heal 123.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange tests caster and in-range teammate gain health, and out-of-range, unrelated and dead characters are excluded."
+        },
+        "healing": {
+          "source": "GOB 437 uses caster-centred group selector 9, 9 m radius and instant typed heal 123.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange measures exactly 123 HP on both the unmodified caster and a known wounded teammate."
+        },
+        "behavior-tests": {
+          "source": "GOB 437 uses caster-centred group selector 9, 9 m radius and instant typed heal 123. The other modifier runs DoNothing.",
+          "runtime": "AbilitySupport.Targets and Land use AbilityRadius.Metres, then AbilityHealing.Amount and AbilityHandler.HealSelf.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange verifies the shipped effect and recipients after landing."
+        },
+        "script": {
+          "source": "GOB 437 applies a separate, instant DoNothing modifier. tempmods.py DoNothing returns without mutation.",
+          "runtime": "AbilitySupport.Land executes the health modifier. No second effect is emitted for the no-op initializer.",
+          "test": "AbilityParityTests.HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange measures the single 123 HP heal."
+        }
+      }
+    },
+    "695": {
+      "family": "hacker-pulse-auras",
+      "checks": {
+        "area": {
+          "source": "GOB 695 is a 3 m group child with 5 s melee and ballistic accuracy at caster-level scale 1.3.",
+          "runtime": "AbilityAuras.Pulse delegates to AbilitySupport.Land and AbilityBuffs. AbilityStats.Attack consumes both mods.",
+          "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength. The inside teammate receives the pulse. Moving outside 3 m excludes the next pulse so the original expires. Stock Status increased both accuracy bonuses from +50 to +114. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        },
+        "stats": {
+          "source": "GOB 695 is a 3 m group child with 5 s melee and ballistic accuracy at caster-level scale 1.3.",
+          "runtime": "AbilityAuras.Pulse delegates to AbilitySupport.Land and AbilityBuffs. AbilityStats.Attack consumes both mods.",
+          "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength. Both melee and ballistic AbilityStats.Attack read +64 from the pulse at caster level 50, then return to their original values. Stock Status increased both accuracy bonuses from +50 to +114. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        },
+        "behavior-tests": {
+          "source": "GOB 695 is a 3 m group child with 5 s melee and ballistic accuracy at caster-level scale 1.3.",
+          "runtime": "AbilityAuras.Pulse delegates to AbilitySupport.Land and AbilityBuffs. AbilityStats.Attack consumes both mods.",
+          "test": "AbilityHostileTests.CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength. The sourced level-50 two-stat pulse lands on a nearby teammate, expires after five seconds out of range and leaves attacks at baseline. Stock Status increased both accuracy bonuses from +50 to +114. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    },
+    "1079": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1079 specifies self-only selector 1.",
+          "runtime": "AbilitySupport.Targets selects caster irrespective of selected view, then AbilitySupport.Land applies the upgrade to that caster.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval asserts self selection with a non-self view and verifies resulting stats."
+        }
+      }
+    },
+    "1082": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1082 specifies self-only selector 1.",
+          "runtime": "AbilitySupport.Targets selects caster irrespective of selected view, then AbilitySupport.Land applies the upgrade to that caster.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval asserts self selection with a non-self view and verifies resulting stats."
+        }
+      }
+    },
+    "1089": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1089 specifies self-only selector 1.",
+          "runtime": "AbilitySupport.Targets selects caster irrespective of selected view, then AbilitySupport.Land applies the upgrade to that caster.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval asserts self selection with a non-self view and verifies resulting stats."
+        }
+      }
+    },
+    "1093": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1093 specifies self-only selector 1.",
+          "runtime": "AbilitySupport.Targets selects caster irrespective of selected view, then AbilitySupport.Land applies the upgrade to that caster.",
+          "test": "AbilityParityTests.HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval asserts self selection with a non-self view and verifies resulting stats."
+        }
+      }
+    }
+  }
+}

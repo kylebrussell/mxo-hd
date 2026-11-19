@@ -28,6 +28,121 @@ public class AbilityParityTests
     private static TimedEffects.Active State(ushort target, float seconds = 30) => new()
     { Kind = TempMods.KindState, Target = target, Proc = TempMods.Proc.State, Seconds = seconds };
 
+    [Theory]
+    [InlineData(50, 6, 11)]
+    [InlineData(434, 7, 32)]
+    [InlineData(435, 9, 30)]
+    [InlineData(437, 9, 123)]
+    public void HackerGroupHealsLandShippedAmountOnLivingTeammatesInRange(ushort id, int radius, int amount)
+    {
+        var caster = Client();
+        var near = Client();
+        var far = Client();
+        var outsider = Client();
+        var dead = Client();
+        var roster = new[] { caster, near, far, outsider, dead };
+        for (int i = 0; i < roster.Length; i++)
+        {
+            roster[i].playerData.setCharID((uint)(77600 + i));
+            roster[i].playerData.setOnWorld(true);
+        }
+        near.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(radius * 100 - 1, 495, 0));
+        far.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(radius * 100 + 1, 495, 0));
+        dead.playerData.isDead = true;
+        dead.playerInstance.Health.setValue((ushort)0);
+        var groups = hds.world.Structures.SocialGroups.Instance;
+        var team = groups.CreateTeam(77600, "Medic");
+        var original = WorldServer.Clients;
+        try
+        {
+            groups.AddTeamMember(team.Id, 77601, "Near");
+            groups.AddTeamMember(team.Id, 77602, "Far");
+            groups.AddTeamMember(team.Id, 77604, "Dead");
+            WorldServer.Clients = roster.ToDictionary(c => c.playerData.getCharID().ToString());
+            Assert.Equal(radius, AbilityRadius.Metres(caster, id));
+            AbilitySupport.Land(caster, id, 2);
+            Assert.Equal(100 + amount, PvpCombat.HealthOf(caster));
+            Assert.Equal(100 + amount, PvpCombat.HealthOf(near));
+            Assert.Equal(100, PvpCombat.HealthOf(far));
+            Assert.Equal(100, PvpCombat.HealthOf(outsider));
+            Assert.Equal(0, PvpCombat.HealthOf(dead));
+        }
+        finally
+        {
+            WorldServer.Clients = original;
+            foreach (var client in roster)
+                groups.RemoveTeamMember(team.Id, client.playerData.getCharID());
+        }
+    }
+
+    [Theory]
+    [InlineData(83, 1082, new[] { 183, 172, 342 }, new[] { 2, 2, 4 })]
+    [InlineData(390, 1079, new[] { 114, 564, 342 }, new[] { 10, 7, 6 })]
+    [InlineData(92, 1089, new[] { 174, 564, 520, 127 }, new[] { 3, 7, 10, 7 })] // Capture override: GOB radius is +5.
+    [InlineData(439, 1093, new[] { 127, 564, 174 }, new[] { 10, 7, 10 })]
+    public void HackerDisciplineGrantsExposeTheirShippedUpgradeStatsUntilRemoval(
+        ushort parent, ushort upgrade, int[] stats, int[] values)
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(caster, upgrade));
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, upgrade, 123)));
+        AbilitySupport.Land(caster, upgrade, 123);
+        for (int i = 0; i < stats.Length; i++)
+            Assert.Equal(values[i], AbilityStats.Player(caster, (ushort)stats[i]));
+        Assert.True(AbilityBuffs.Remove(caster, upgrade));
+        foreach (int stat in stats)
+            Assert.Equal(0, AbilityStats.Player(caster, (ushort)stat));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(caster, upgrade));
+    }
+
+    [Theory]
+    [InlineData(76, new[] { 1049, 1045, 1030 }, new[] { 7, 11, 11 })]
+    [InlineData(83, new[] { 1045, 1049, 1030 }, new[] { 1, 1, 1 })]
+    [InlineData(390, new[] { 1027, 1143 }, new[] { 2, 2 })]
+    [InlineData(391, new[] { 1027, 1039, 1143 }, new[] { 12, 15, 12 })]
+    [InlineData(74, new[] { 127, 1052 }, new[] { 24, 5 })]
+    [InlineData(433, new[] { 1059, 1141 }, new[] { 10, 5 })]
+    [InlineData(439, new[] { 1054 }, new[] { 5 })]
+    public void LoadedHackerPassivesApplyAndRemoveShippedStatTotals(ushort id, int[] stats, int[] values)
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)50) });
+        for (int i = 0; i < stats.Length; i++)
+            Assert.Equal(values[i], AbilityStats.Player(caster, (ushort)stats[i]));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        foreach (int stat in stats)
+            Assert.Equal(0, AbilityStats.Player(caster, (ushort)stat));
+    }
+
+    [Theory]
+    [InlineData(390, 1, 6)]
+    [InlineData(391, 6, 6.9f)]
+    public void SkriptKiddiePassivesReachWeaponDefenseAndPacifyDuration(ushort id, int defense, float pacify)
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)50) });
+        Assert.Equal(defense, AbilityStats.Defense(caster, false));
+        Assert.Equal(defense, AbilityStats.Defense(caster, true));
+        Assert.Equal(pacify, AbilityControlDurations.Scale(caster, TempMods.MezAbility, 6), 3);
+    }
+
+    [Fact]
+    public void TotalDedicationIncreasesHealAndRegenerationThroughLinkedStats()
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+        AbilityPassives.SetLoaded(caster, new[] { ((ushort)433, (ushort)50) });
+        Assert.Equal(33, AbilityHealing.Amount(caster, caster, 434));
+        Assert.Equal((ushort?)108, AbilityHandler.RegenerateInnerStrength(caster));
+        Assert.Equal(.8, caster.playerData.innerStrengthRegenCarry, 5);
+    }
+
     [Fact]
     public void ShippedTemplatesResolveAliasesAndPreserveCapturedOverrides()
     {

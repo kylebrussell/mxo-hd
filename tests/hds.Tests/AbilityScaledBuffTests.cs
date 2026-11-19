@@ -1005,10 +1005,14 @@ public class AbilityScaledBuffTests
         var applied=c.playerData.activeBuffs[id].Definition;
         Assert.Equal(300,applied.Seconds);
         Assert.Equal(id==63?35:47,AbilityBuffs.Total(c,183));
+        foreach (ushort defense in new ushort[] { 1009, 1010, 1011 })
+            Assert.Equal(id == 63 ? 5 : 11, AbilityStats.Player(c, defense));
         source.playerInstance.Level.setValue((byte)1);
         Assert.True(AbilityBuffs.Remove(c,id));
         Assert.Equal(100+refund,AbilityHandler.CurrentInnerStrength(c));
         Assert.Equal(0,AbilityBuffs.Total(c,183));
+        foreach (ushort defense in new ushort[] { 1009, 1010, 1011 })
+            Assert.Equal(0, AbilityStats.Player(c, defense));
         Assert.False(AbilityBuffs.Remove(c,id));
         Assert.Equal(100+refund,AbilityHandler.CurrentInnerStrength(c));
     }

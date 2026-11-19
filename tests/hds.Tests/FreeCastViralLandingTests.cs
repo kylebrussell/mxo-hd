@@ -200,6 +200,14 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(337)]
     [InlineData(343)]
     [InlineData(468)]
+    [InlineData(59)]
+    [InlineData(66)]
+    [InlineData(69)]
+    [InlineData(392)]
+    [InlineData(393)]
+    [InlineData(394)]
+    [InlineData(395)]
+    [InlineData(396)]
     public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld(ushort abilityId)
     {
         var caster=Client(110);Store.currentClient=caster;AbilityPassives.SetLoaded(caster,new[]{(abilityId,(ushort)50)});
