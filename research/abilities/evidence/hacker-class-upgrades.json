@@ -1,0 +1,59 @@
+{
+  "abilities": {
+    "1078": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1078 selects the caster with CastDirectObjects 1. The loaded discipline 64 provides the action. Its sourced caster modifiers are +4 viral accuracy, +7 concentration and +10 Inner Strength regeneration.",
+          "runtime": "The live, granted 80b9 request with a nearby hostile NPC view selected resolves to the caster. The server publishes the sourced modifier records and a 30-second own reuse timer.",
+          "test": "The disposable ability-parity-hacker-class-upgrades probe uses a real hostile selection and an ordinary prerequisite-qualified stage change."
+        }
+      }
+    },
+    "1080": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1080 selects the caster with CastDirectObjects 1. The loaded discipline 483 provides the action. Its sourced caster modifiers are +9 viral accuracy, +7 concentration and +12 Inner Strength regeneration.",
+          "runtime": "The live, granted 80b9 request with a nearby hostile NPC view selected resolves to the caster. The server publishes the sourced modifier records and a 30-second own reuse timer.",
+          "test": "The disposable ability-parity-hacker-class-upgrades probe uses a real hostile selection and an ordinary prerequisite-qualified stage change."
+        }
+      }
+    },
+    "1085": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1085 selects the caster with CastDirectObjects 1. The loaded discipline 67 provides the action. Its sourced caster modifiers are +4 viral accuracy, +7 concentration and +10 virus area radius.",
+          "runtime": "The live, granted 80b9 request with a nearby hostile NPC view selected resolves to the caster. The server publishes the sourced modifier records and a 30-second own reuse timer.",
+          "test": "The disposable ability-parity-hacker-class-upgrades probe uses a real hostile selection and an ordinary prerequisite-qualified stage change."
+        }
+      }
+    },
+    "1087": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1087 selects the caster with CastDirectObjects 1. The loaded discipline 356 provides the action. Its sourced caster modifiers are +13 viral accuracy, +8 viral damage, +7 concentration and +17 virus area radius.",
+          "runtime": "The live, granted 80b9 request with a nearby hostile NPC view selected resolves to the caster. The server publishes the sourced modifier records and a 30-second own reuse timer.",
+          "test": "The disposable ability-parity-hacker-class-upgrades probe uses a real hostile selection and an ordinary prerequisite-qualified stage change."
+        },
+        "stats": {
+          "source": "GOB 1087 selects the caster with CastDirectObjects 1. The loaded discipline 356 provides the action. Its sourced caster modifiers are +13 viral accuracy, +8 viral damage, +7 concentration and +17 virus area radius.",
+          "runtime": "The class upgrade feeds typed viral damage and accuracy, explicit cast-through and the selected-target UDB0 radius consumer. An ordinary class upgrade replaces the complete snapshot.",
+          "test": "HackerBatchB2ParityTests.HowitzerUpgradeUsesTheCasterAndClearsAllFourConsumersOnClassReplacement and ability-parity-hacker-class-upgrades."
+        },
+        "behavior-tests": {
+          "source": "GOB 1087 selects the caster with CastDirectObjects 1. The loaded discipline 356 provides the action. Its sourced caster modifiers are +13 viral accuracy, +8 viral damage, +7 concentration and +17 virus area radius.",
+          "runtime": "The class upgrade feeds typed viral damage and accuracy, explicit cast-through and the selected-target UDB0 radius consumer. An ordinary class upgrade replaces the complete snapshot.",
+          "test": "HackerBatchB2ParityTests.HowitzerUpgradeUsesTheCasterAndClearsAllFourConsumersOnClassReplacement and ability-parity-hacker-class-upgrades."
+        }
+      }
+    },
+    "1091": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1091 selects the caster with CastDirectObjects 1. The loaded discipline 490 provides the action. Its sourced caster modifiers are +10 Inner Strength cost reduction and +7 concentration.",
+          "runtime": "The live, granted 80b9 request with a nearby hostile NPC view selected resolves to the caster. The server publishes the sourced modifier records and a 30-second own reuse timer.",
+          "test": "The disposable ability-parity-hacker-class-upgrades probe uses a real hostile selection and an ordinary prerequisite-qualified stage change."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+# Hacker class upgrade stock sweep
+
+Run `ability-parity-hacker-class-upgrades` on level-50 CSR110. Both loadouts are already owned. The startup profile uses 94 memory and the second profile uses 89. All five upgrade children are grants and remain absent from the owned Archive.
+
+| Stage | Loaded discipline | Granted Actions entry | Caster modifier records |
+| --- | --- | --- | --- |
+| 1 | Network Hacker (64) | Network Hacker Upgrade (1078) | +4 viral accuracy, +7 concentration, +10 Inner Strength regeneration |
+| 1 | Network Attacker (483) | Network Attacker Upgrade (1080) | +9 viral accuracy, +7 concentration, +12 Inner Strength regeneration |
+| 1 | Pathogenist (67) | Pathogenist Upgrade (1085) | +4 viral accuracy, +7 concentration, +10 virus area radius |
+| 1 | Howitzer (356) | Howitzer Upgrade (1087) | +13 viral accuracy, +8 viral damage, +7 concentration, +17 virus area radius |
+| 2 | Force Multiplier (490) | Force Multiplier Upgrade (1091) | +10 Inner Strength cost reduction, +7 concentration |
+
+With **Class Upgrade Target** selected, add each available upgrade from Actions to the hotbar and activate it in table order. Save the outgoing request showing the selected NPC view, the caster modifier records, the preceding class snapshot removals and the 30-second own reuse. For Network Attacker, also preserve the source-483 grant add and the hidden load that precede its action display.
+
+For the 1091 retest, start with the loadout switch in world. The printed plan lists the exact Archive IDs in dependency order under `UnloadForForceMultiplier` and `LoadForForceMultiplier`. Run one `?qaunload <id>` for each unload and one `?qaload <id>` for each load in the printed order. The commands use ordinary Archive admission inside the disposable fixture. Keep the shared records, including Pathogenist. At 89/100 memory, add Force Multiplier Upgrade from stock Actions, select Class Upgrade Target again and activate it.
+
+A passing source-specific activation can close each corresponding row. Force Multiplier's existing source-backed sweep is a separate 5% check every five seconds. If the session also observes an early removal of an eligible debuff, capture the effect removal and normal pulse notification and distinguish them from natural expiry. A run without a successful roll proves activation and modifiers only.
+
+### Stage 2 Archive changes
+
+| Action | Archive entries |
+| --- | --- |
+| Unload | Code Freeze 2.0 (41), Network Hacker (64), Overheat 1.0 (65), Resist Contagion (73), Artillerist (335), Logic Bomb 1.0 (336), Code Nuke 2.0 (337), Dedicated Code (346), Howitzer (356), Logic Bomb 2.0 (357), Code Shield (358), Code Nuke 3.0 (359), Skript Kiddie (390), Effective Code (391), Code Rot 1.0 (392), Overheat 2.0 (394), Efficient Code (477), Code Flux (478), Combat Shutdown (480), Network Attacker (483) |
+| Load | Group Repairs 1.0 (50), Patcher (55), Restore Group 1.0 (56), Movement Accelerator 1.0 (62), Repair and Upgrade (71), Resist Combat (72), Resist Damage (74), Restore Health 1.0 (80), Team Patcher (92), Passive Code (170), Advanced Damage Resistance (376), Deflect Virus 1.0 (378), Sweep Party 1.0 (379), Force Enhancer (383), Supreme Damage Resistance (484), Combat Aura 2.0 (485), Sweep Party 2.0 (487), Force Multiplier (490) |
