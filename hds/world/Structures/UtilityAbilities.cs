@@ -475,17 +475,26 @@ namespace hds
         private static readonly ConditionalWeakTable<WorldClient, StrongBox<int>> mapFlags =
             new ConditionalWeakTable<WorldClient, StrongBox<int>>();
 
-        public static int MissionMapAccess(WorldClient client) =>
-            mapFlags.TryGetValue(client, out StrongBox<int> flags) ? flags.Value : 0;
+        public static int MissionMapAccess(WorldClient client)
+        {
+            lock (client.playerData.passives)
+                return mapFlags.TryGetValue(client, out StrongBox<int> flags) ? flags.Value : 0;
+        }
+
+        // Called with the loadout lock after the complete grant closure has been rebuilt.
+        internal static void DisableMissionMap(WorldClient client) => mapFlags.Remove(client);
 
         /// <summary>Disposable-fixture presentation control; normal mission rolls are never changed.</summary>
         public static void DevMissionMap(WorldClient client, string[] args)
         {
             if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1" ||
                 !Store.config.dbParams.DatabaseName.StartsWith("mxotest_",StringComparison.Ordinal)) return;
-            if (client.playerData.missionProgress == null || Level(client,DownloadMissionMap)<=0) return;
-            if (args.Length==2 && int.TryParse(args[1],out int flags) && new[]{0,1,3,7,15,31,63}.Contains(flags))
-                mapFlags.GetOrCreateValue(client).Value=flags;
+            lock (client.playerData.passives)
+            {
+                if (client.playerData.missionProgress == null || Level(client,DownloadMissionMap)<=0) return;
+                if (args.Length==2 && int.TryParse(args[1],out int flags) && new[]{0,1,3,7,15,31,63}.Contains(flags))
+                    mapFlags.GetOrCreateValue(client).Value=flags;
+            }
             new ServerPackets().sendSystemChatMessage(client,"Utility map fixture flags="+MissionMapAccess(client),"SYSTEM");
             client.FlushQueue();
         }
@@ -497,10 +506,18 @@ namespace hds
         /// </summary>
         public static void OnMissionAccepted(WorldClient client)
         {
-            int dmm = Level(client, DownloadMissionMap);
-            int flags = MissionMapFlags(dmm, Level(client, MapDownloading), MissionStaging.PlayerLevel(client), Roll());
-            mapFlags.GetOrCreateValue(client).Value = flags;
-            if (dmm <= 0) return;
+            int flags;
+            lock (client.playerData.passives)
+            {
+                int dmm = Level(client, DownloadMissionMap);
+                if (dmm <= 0)
+                {
+                    DisableMissionMap(client);
+                    return;
+                }
+                flags = MissionMapFlags(dmm, Level(client, MapDownloading), MissionStaging.PlayerLevel(client), Roll());
+                mapFlags.GetOrCreateValue(client).Value = flags;
+            }
             Output.WriteDebugLog("[UTILITY] Download Mission Map: access flags " + flags);
             if (flags != 0) ServerPackets.SendPlayerAbilityEffect(client, FxGenericAbilityUpgrade);
         }

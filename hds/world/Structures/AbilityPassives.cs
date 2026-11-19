@@ -110,6 +110,7 @@ namespace hds
                 state.Generation++;
                 state.ShadowOwned=explicitShadow??state.ShadowOwned.Retain(rows);
                 state.ShadowEmitted=emitted;
+                bool hadMissionMap = state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap);
                 state.Loaded.Clear();
                 foreach (var row in rows)
                 {
@@ -132,6 +133,8 @@ namespace hds
                             pending.Enqueue(grant);
                         }
                 }
+                if (hadMissionMap && !state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap))
+                    UtilityAbilities.DisableMissionMap(client);
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
             if (newWorld) CraftingSession.End(client, false);
