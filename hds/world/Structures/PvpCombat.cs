@@ -167,7 +167,7 @@ namespace hds
             {
                 attacker.messageQueue.addRpcMessage(BuildCombatRefused(14, false, targetHandle, true, false));
                 attacker.FlushQueue();
-                Output.WriteDebugLog("[MOBIUS] Forced interlock request resisted");
+                Output.WriteDebugLog($"[MOBIUS] Forced interlock request resisted: {PvpFlag.Name(attacker)} -> {PvpFlag.Name(target)}");
                 return true;
             }
             PvpFight theirs = CombatManager.GetHandler(target).pvpFight;

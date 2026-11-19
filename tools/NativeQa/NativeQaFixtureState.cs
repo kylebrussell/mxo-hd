@@ -20,6 +20,7 @@ public sealed record NativeQaFixtureState
     public int? CasterOrganization { get; init; }
     public bool CasterPvpFlag { get; init; }
     public IReadOnlyList<ushort> OwnedUnloadedDisciplineAncestors { get; init; } = Array.Empty<ushort>();
+    public IReadOnlyList<ushort> LoadedAbilityAncestors { get; init; } = Array.Empty<ushort>();
     public bool HealthCallbackQa { get; init; }
     public bool CompileItemsQa { get; init; }
     public int? CallbackRoll15 { get; init; }

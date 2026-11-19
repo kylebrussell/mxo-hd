@@ -129,7 +129,8 @@ try
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
         StealthShieldQa=fixturePlan.StealthShieldQa,ShieldReady=shieldAck.Length>0,CasterOrganization=fixturePlan.StealthShieldQa?1:(int?)null,CasterPvpFlag=fixturePlan.StealthShieldQa,
-        OwnedUnloadedDisciplineAncestors=disciplineAncestors, HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors, LoadedAbilityAncestors=seeded.LoadedAncestors,
+        HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
         CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }), new JsonSerializerOptions { WriteIndented=true }));
     foreach(string message in fixturePlan.ReadyMessages) Console.WriteLine(message);
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
@@ -183,6 +184,12 @@ try
                 {
                     var target = await actor.WaitForViewNamedAsync(q.GetProperty("target").GetString()!);
                     if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
+                    else if (action == "melee" && fixtureMode is NativeQa.Modes.MobiusCodeFixtureMode)
+                    {
+                        if (actor.Handle != "QAOther")
+                            throw new InvalidOperationException("Use QAOther for Mobius melee and QAEnemy for rifle fire.");
+                        result = await NativeQa.Modes.MobiusCodeFixtureMode.SendForcedEntryAsync(actor, target);
+                    }
                     else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
                 }
@@ -204,9 +211,15 @@ try
                     Array.Copy(pending.Bytes, 2, reply, 2, 4);
                     reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
                     reply[7] = q.GetProperty("accept").GetBoolean() ? (byte)0 : (byte)1;
-                    actor.SendRpc(reply);
                     if (fixtureMode is NativeQa.Modes.AbilityHealthParityMode && reply[6] == 0 && reply[7] == 0)
-                        result = await NativeQa.Modes.AbilityHealthParityMode.CheckRejuvenatedAsync(actor);
+                    {
+                        var maxima = await NativeQa.Modes.AbilityHealthParityMode.ReadMaximaAsync(actor);
+                        Console.WriteLine($"Rejuvenate approval expects {actor.Handle} HP {maxima.Health} and IS {maxima.InnerStrength}.");
+                        int viewCursor = actor.World.ViewSnapshot().Count;
+                        actor.SendRpc(reply);
+                        result = await NativeQa.Modes.AbilityHealthParityMode.CheckRejuvenatedAsync(actor, maxima, viewCursor);
+                    }
+                    else actor.SendRpc(reply);
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));
@@ -240,7 +253,7 @@ try
             }
         }
         string[] lines = server.DebugLog().Split('\n');
-        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[STEALTH-FREE]","[HOSTILE]","[SWEEP]","[RESURRECTION]","[HEALTH-CALLBACK]","[HEALTH-EFFECT]"}.Any(l.Contains)))
+        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]","[AURA]","[STEALTH]","[STEALTH-FREE]","[HOSTILE]","[SWEEP]","[RESURRECTION]","[HEALTH-CALLBACK]","[HEALTH-EFFECT]","[MOBIUS"}.Any(l.Contains)))
             await File.AppendAllTextAsync(Path.Combine(qaRoot,"events.jsonl"), JsonSerializer.Serialize(new { At=DateTime.UtcNow, Line=line.Trim() })+"\n");
         seen = Math.Max(0,lines.Length-1);
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());

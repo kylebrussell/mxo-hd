@@ -21,9 +21,9 @@ The casts use the fixed client.dll inline producer at `621e5100` and serializer 
 
 ## Native checks for Claude
 
-Use mode `combat-foundations` with disposable CSR110. Keep System chat and target health visible. The mode seeds a rifle in bag slot 1, dual SMGs in slot 2, level-50 style/ability loadout, and deterministic draws for the existing viral contest.
+Use mode `combat-foundations` with disposable CSR110. Keep System chat and target health visible. Setup commands equip the seeded rifle and dual SMGs through the ordinary inventory move and equipped-item update. The stock paper-doll hand slot is 105 (`0x69`). The Free Fire record with slot 107 (`0x6b`) and kind 0 is the empty weapon choice. The fixture uses normal-size Blackwoods humanoids and fixed viral contest draws.
 
-1. Enter `?combatdepth foundations-sight`. Equip the rifle. Select AB1 Blocked, use Free Fire, then Logic Barrage 4.0. Neither should lower the target's HP. The blocked cast uses ordinary cost and reuse. After the four-second reuse, cast Logic Barrage on AB1 Clear. Expect 424 damage.
-2. Enter `?combatdepth foundations-cone`. Equip the dual SMGs and use Direct Fire on AB1 Aim. Expect damage on AB1 Aim and AB1 Inside. AB1 Outside is within 8 m but stays at full health. Capture the actual stock Direct Fire request and note any weapon, style or target prerequisite reported by the client.
-3. Use Logic Barrage 4.0 on AB1 Resisted. Expect 348 damage, 76 less than the clear target. Capture the combat log and target health.
+1. Enter `?combatdepth foundations-sight`. Confirm the rifle in hand at `22700,1095,16100` facing west, yaw 192. Select AB1 Blocked 10 m ahead across the outdoor gap. Try Free Fire and Logic Barrage 4.0 and check the blocked result and full target HP. Turn east to AB1 Clear 2 m away. After the four-second reuse, cast Logic Barrage and expect 424 damage.
+2. Enter `?combatdepth foundations-cone`. Confirm dual SMGs in hand. Use Direct Fire on AB1 Aim. Expect damage on AB1 Aim and AB1 Inside. AB1 Outside stays at full HP. Capture the stock Direct Fire request and any UI prerequisites.
+3. Use Logic Barrage 4.0 on AB1 Resisted, west of the cone stand. The fixture applies +75 resistance for 30 minutes. Expect 348 damage, 76 less than on the clear target.
 4. Shut down through the existing fixture stop procedure and report the outcome against the exact head.

@@ -19,6 +19,7 @@ public sealed class NativeQaModePlan
     public IReadOnlyList<string> ReadyMessages { get; }
     public string? MissionFixture { get; }
     public string? TestMobFixture { get; }
+    public bool LoadAbilityAncestors { get; }
     public bool SeedDisguiseTool { get; }
     public bool DevCommands { get; }
     public bool GmCharacter110 { get; }
@@ -29,7 +30,8 @@ public sealed class NativeQaModePlan
     public bool CompileItemsQa { get; }
     public NativeQaModePlan(ushort[] abilities, int x, int z, string[] beforeLoadout, string[] afterLoadout,
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
-        bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null, string? testMobFixture=null)
+        bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null, string? testMobFixture=null,
+        bool loadAbilityAncestors=false)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
@@ -50,6 +52,7 @@ public sealed class NativeQaModePlan
             !testMobFixture.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("A test mob fixture must name one CSV file.", nameof(testMobFixture));
         TestMobFixture = testMobFixture;
+        LoadAbilityAncestors = loadAbilityAncestors;
         this.SeedDisguiseTool=SeedDisguiseTool;
         this.DevCommands=DevCommands; this.GmCharacter110=GmCharacter110; this.FixedCallbackRolls=FixedCallbackRolls;
         this.Bootstrap=Bootstrap; this.StealthShieldQa=StealthShieldQa; this.HealthCallbackQa=HealthCallbackQa; this.CompileItemsQa=CompileItemsQa;

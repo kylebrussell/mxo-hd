@@ -1,4 +1,5 @@
 using System;
+using hds.shared;
 namespace hds
 {
     /// <summary>Disposable combat fixtures. Every entry checks the dev flag, including direct callers.</summary>
@@ -10,6 +11,18 @@ namespace hds
             string command = args.Length > 0 ? args[0] : "";
             if (command == "foundations-sight") return CombatFoundationsQa.Setup(caller, "sight");
             if (command == "foundations-cone") return CombatFoundationsQa.Setup(caller, "cone");
+            if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
+            if (command == "fixture-disengage") return CombatFixtureWeapons.Disengage(caller);
+            if (command == "rejuvenate-maxima")
+            {
+                var database = Store.config?.dbParams?.DatabaseName;
+                if (Environment.GetEnvironmentVariable("MXO_HEALTH_PARITY_QA") != "1" ||
+                    database == null || !database.StartsWith("mxotest_", StringComparison.Ordinal) ||
+                    caller.playerData.getCharID() != 6111 || !caller.playerData.getOnWorld())
+                    return "Rejuvenate maxima are available for the disposable QAFriend fixture.";
+                ushort hp = NumericalUtils.ByteArrayToUint16(caller.playerInstance.MaxHealth.getValue(), 1);
+                return $"Rejuvenate maxima HP={hp} IS={AbilityHandler.MaxInnerStrength(caller)}";
+            }
             if (command == "offbalance") return CombatDepthOffBalance.Run(caller,args);
             if (command == "stagger") return CombatDepthStagger.Run(caller,args);
             if (command == "mobius") return MobiusCodeQa.Run(caller,args);

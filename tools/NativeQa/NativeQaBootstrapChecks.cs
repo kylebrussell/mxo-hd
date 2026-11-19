@@ -21,13 +21,14 @@ public static class NativeQaBootstrapChecks
             throw new ArgumentException("Bootstrap checks require distinct discovered mode names.");
         root = Path.GetFullPath(root); output = Path.GetFullPath(output);
         Directory.CreateDirectory(output);
-        // The inherited hook is the identical no-op for these modes. Invoke EVERY instance on one
-        // live, authenticated baseline server. Custom hooks get their own actual seed/environment.
-        var inherited = names.Where(n => !HasCustomHook(NativeQaModes.Find(n))).ToArray();
-        var custom = names.Where(n => HasCustomHook(NativeQaModes.Find(n))).ToArray();
+        // Share the baseline for no-op hooks whose actual seed does not need its own check.
+        var modes = names.Select(NativeQaModes.Find).ToArray();
+        var inherited = modes.Where(mode => !HasCustomHook(mode) && !mode.Plan.LoadAbilityAncestors)
+            .Select(mode => mode.Name).ToArray();
+        var separate = names.Except(inherited, StringComparer.Ordinal);
         var groups = new List<string[]>();
         if (inherited.Length != 0) groups.Add(inherited);
-        groups.AddRange(custom.Select(n => new[] { n }));
+        groups.AddRange(separate.Select(n => new[] { n }));
         var results = new List<object>();
         try
         {
@@ -36,7 +37,7 @@ public static class NativeQaBootstrapChecks
             await WriteAsync(Path.Combine(output, "summary.json"), new
             {
                 Passed = true, Modes = names, ModeCount = names.Count, ServerCount = groups.Count,
-                CustomHookCount = custom.Length, SharedNoOpHookCount = inherited.Length,
+                CustomHookCount = modes.Count(HasCustomHook), SharedNoOpHookCount = inherited.Length,
                 Results = results, At = DateTime.UtcNow
             });
         }
@@ -70,14 +71,25 @@ public static class NativeQaBootstrapChecks
         Console.WriteLine($"BOOTSTRAP SERVER {server.ProcessId} {database.Name} modes={names.Length}");
         // Authenticate and enter through the actual server even when every inherited hook is empty.
         HeadlessPlayer? canary = null;
+        HeadlessPlayer? probe = null;
         try
         {
-            if (characterUi != null)
+            if (characterUi != null || plan.LoadAbilityAncestors)
             {
-                using var probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
+                probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
-                Check.That(probe.CharacterData.TryGetValue(hds.QaCharacterUi.DataType, out var received) &&
-                    received.AsSpan().SequenceEqual(characterUi), "Stock Margin UI chunks reconstruct the seeded profile byte-for-byte");
+                if (characterUi != null)
+                    Check.That(probe.CharacterData.TryGetValue(hds.QaCharacterUi.DataType, out var received) &&
+                        received.AsSpan().SequenceEqual(characterUi), "Stock Margin UI chunks reconstruct the seeded profile byte-for-byte");
+                if (plan.LoadAbilityAncestors)
+                {
+                    var loadout = AbilityMemoryUiFixture.Decode(probe.CharacterData[6]);
+                    foreach (var (id, slot) in seeded.Abilities.Distinct().Concat(seeded.LoadedAncestors).Select((id, slot) => (id, slot)))
+                        Check.That(loadout.Any(row => row.Slot == slot && row.Level > 0 && row.Descriptor == (0x80000000u | ((uint)id << 10))),
+                            $"Stock Margin has loaded fixture ability or prerequisite {id} at slot {slot}");
+                }
+                if (plan.EnvironmentOverrides.GetValueOrDefault(hds.CombatFixtureWeapons.WeaponMode) == "1")
+                    await CombatFixtureLoadout.VerifyWeaponsAsync(probe, database);
             }
             if (names.Length > 1 || !HasCustomHook(NativeQaModes.Find(names[0])))
             {
@@ -106,6 +118,7 @@ public static class NativeQaBootstrapChecks
                         Status = "BootstrapChecked", Abilities = seeded.Abilities,
                         SourceAssembly = sourceAssembly, SourceAssemblySha256 = sourceHash,
                         OwnedUnloadedDisciplineAncestors = seeded.DisciplineAncestors,
+                        LoadedAbilityAncestors = seeded.LoadedAncestors,
                         StealthShieldQa = plan.StealthShieldQa, ShieldReady = ack.Length > 0,
                         CasterOrganization = plan.StealthShieldQa ? 1 : null,
                         CasterPvpFlag = plan.StealthShieldQa, HealthCallbackQa = plan.HealthCallbackQa,
@@ -119,20 +132,29 @@ public static class NativeQaBootstrapChecks
                     // This separate state describes the ACTUAL seeded server, including a shared baseline.
                     await WriteAsync(Path.Combine(modeDirectory, "state.json"), plan.StateWithMetadata(standard));
                     string? equipped = null;
+                    object? actionProof = null;
                     if (name.StartsWith("mobius-free-attack-", StringComparison.Ordinal))
                     {
                         equipped = await database.ScalarAsync("SELECT CONCAT("
                             + "(SELECT COUNT(*) FROM inventory WHERE charId=6114 AND slot=105 AND goid=692 AND count=1),':',"
                             + "(SELECT COUNT(*) FROM inventory WHERE charId=6114 AND slot=1))");
                         if (equipped != "1:0") throw new InvalidOperationException("QAEnemy rifle did not equip: " + equipped);
+                        actionProof = await Modes.MobiusCodeFixtureMode.VerifyInterlockAsync(server, probe!, helpers["QAEnemy"],
+                            helpers["QAOther"], name.EndsWith("-positive", StringComparison.Ordinal));
                     }
+                    if (name == "ability-health-parity")
+                        actionProof = await Modes.AbilityHealthParityMode.VerifyRejuvenateAsync(probe!, helpers["QAFriend"]);
+                    if (name == "ability-sweep-coder")
+                        actionProof = await CoderSweepRetest.VerifyAsync(server, probe!);
                     var problems = helpers.Values.SelectMany(p => p.World.Problems).Concat(canary?.World.Problems ?? Array.Empty<string>()).ToArray();
                     if (problems.Length != 0) throw new InvalidOperationException(string.Join("; ", problems));
                     var result = new { Mode = name, BootstrapPassed = true, Database = database.Name, ServerPid = server.ProcessId,
                         Address = server.Address, CustomHook = HasCustomHook(checkedMode), SharedNoOpFixture = names.Length > 1,
                         HotbarBytesVerified = characterUi?.Length,
+                        LoadedAbilityAncestors = seeded.LoadedAncestors,
                         DeclaredModeAbilities = modePlan.Abilities, SeededAbilities = seeded.Abilities,
-                        HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, StateSerialized = true, At = DateTime.UtcNow };
+                        HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, FixtureAction = actionProof,
+                        StateSerialized = true, At = DateTime.UtcNow };
                     results.Add(result);
                     await WriteAsync(Path.Combine(modeDirectory, "result.json"), result);
                     Console.WriteLine("BOOTSTRAP PASS " + (name.Length == 0 ? "(default)" : name));
@@ -163,6 +185,7 @@ public static class NativeQaBootstrapChecks
         }
         finally
         {
+            probe?.Dispose();
             canary?.Dispose();
             await File.WriteAllTextAsync(Path.Combine(directory, "server-output.txt"), server.FullOutput());
             foreach (string file in new[] { "DebugLog.txt", "PacketLog.txt" })
