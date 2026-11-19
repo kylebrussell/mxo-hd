@@ -18,7 +18,7 @@ public sealed class HackerPassiveAndUpgradeMode : NativeQaMode
         { (159, 25), (171, 25), (172, 25), (1034, 25), (162, 200) };
 
     public override string Name => "ability-parity-hacker-passive-upgrade";
-    public override NativeQaModePlan Plan => MakePlan();
+    public override NativeQaModePlan Plan { get; } = MakePlan();
 
     private static HashSet<ushort> Profile(params ushort[] roots)
     {
