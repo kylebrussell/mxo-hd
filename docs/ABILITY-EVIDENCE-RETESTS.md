@@ -34,7 +34,9 @@ dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --bootstrap-checks "<repos
 
 The headless replays verify exact wire records and serialize measured results to the proof directory. Native run instructions are available with `--fixture-plan <mode>`.
 
-In the [first stock direct-heal run](https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008005445), the six requested amounts matched. QAFriend had reached full HP during setup. The retained stock capture `mxo-headless/fe292a523b89` sends all five family timers to the caster. PacketLog lines 4104 and 4326 show type `00` for family 685, and lines 4478, 4815 and 5048 show type `00` for family 686. All five timers send four-second start and end records. The format and group IDs match the shipped catalog and the retail captures for Restore Group and Repair RSI. The stock sibling slots were still lit during normal server reuse refusal, so sibling-slot presentation remains open.
+In the [first stock direct-heal run](https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008005445), the six requested amounts matched after QAFriend reached full HP. The retained capture `mxo-headless/fe292a523b89` delivers both four-second family timers to the caster, using type `00` and the shipped family IDs 685 and 686.
+
+The [stock rerun](https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616) measured all six unclipped HP changes with the headless QAFriend held at 100 before the first cast. Early sibling clicks sent no ability requests. The caster sent exactly six `80 b9` activations for six heals, with no shared-reuse refusal from the server.
 
 The [stock pet-repair run](https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031) used the pet's model for selection and matched all five repair amounts. The stock client also sent Repair Simulacra 1.0 and Fix Simulacra with QAFriend selected. The server refused both. The disposable bootstrap verifies the five exact HP increases, resulting Simulacra window values, FX, reuse, and player selection refusal for each variant.
 
