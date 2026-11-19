@@ -20,8 +20,8 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         readyMessages: new[]
         {
             "Target the 30,000 HP Melee Dummy 3 m west. Start in Self Defense with no ranged weapon equipped. Enter Close Combat; use a non-Block tactic.",
-            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and verify the visible system notice instructs you to switch off Energized Attacks first. Turn 9 off and verify its FX stops.",
-            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and verify the visible system notice instructs you to switch off Precise Blow first. Turn 15 off and verify no continued FX.",
+            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and verify exactly one stock line appears: You may not use this ability when Energized Attacks is running. Turn 9 off and verify its FX stops.",
+            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and verify exactly one stock line appears: You may not use this ability when Precise Blow is running. Turn 15 off and verify no continued FX.",
             "Record stock gating at rest separately if tested. Keep exact activation, on/off, and FX records. The NPC's random rounds are not a statistical damage benchmark."
         });
 
@@ -42,8 +42,8 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
 
         var samples = new[]
         {
-            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu, Refusal: 0xc6001a9bu, Notice: "Switch off Energized Attacks before using Precise Blow."),
-            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu, Refusal: 0xc6001a9fu, Notice: "Switch off Precise Blow before using Energized Attacks.")
+            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu, Refusal: 0xc6001a9bu),
+            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu, Refusal: 0xc6001a9fu)
         };
         var proof = new List<object>();
         foreach (var sample in samples)
@@ -58,13 +58,13 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
                 observer.World.ViewSnapshot().Skip(observerAt).Count(otherEffect.Occurs) >= 2,
                 $"Repeated {sample.On} FX on self and observer", TimeSpan.FromSeconds(10));
 
+            var denialPattern = BytePattern.Parse($"80 ba {EvidenceRetestWire.Le(sample.Blocked)}");
+            var localizedPattern = BytePattern.Parse($"81 67 ?? ?? ?? ?? {WireFormat.ToHex(BitConverter.GetBytes(sample.Refusal))}");
+            var chatPattern = BytePattern.Parse("2e");
+            int rpcStart = actor.World.RpcSnapshot().Count;
             EvidenceRetestWire.Cast(actor, sample.Blocked, dummy);
             var denied = await actor.WaitForRpcAsync($"80 ba {EvidenceRetestWire.Le(sample.Blocked)}");
             var localized = await actor.WaitForRpcAsync($"81 67 ?? ?? ?? ?? {WireFormat.ToHex(BitConverter.GetBytes(sample.Refusal))}");
-            var notice = await actor.WaitForTextAsync(sample.Notice);
-            Check.That(notice.Bytes.AsSpan().StartsWith(new byte[] { 0x2e, 0xc7 }), "Visible system chat is sent to the caster");
-            Check.That(!observer.World.RpcSnapshot().Any(packet => packet.Bytes.AsSpan().SequenceEqual(notice.Bytes)),
-                "The nearby observer does not receive the caller-only notice");
             int afterConflict = actor.World.ViewSnapshot().Count;
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(afterConflict).Any(ownEffect.Occurs),
                 "The existing tactic continues pulsing after refusal", TimeSpan.FromSeconds(4));
@@ -72,8 +72,15 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 00");
             int offAt = actor.World.ViewSnapshot().Count;
             await Task.Delay(TimeSpan.FromSeconds(1.4));
+            var reply = actor.World.RpcSnapshot().Skip(rpcStart).ToArray();
+            int denialCount = reply.Count(packet => denialPattern.IsMatch(packet.Bytes));
+            int localizedCount = reply.Count(packet => localizedPattern.IsMatch(packet.Bytes));
+            int chatCount = reply.Count(packet => chatPattern.IsMatch(packet.Bytes));
+            Check.Equal(1, denialCount, "One action refusal");
+            Check.Equal(1, localizedCount, "One localized tactical refusal");
+            Check.Equal(0, chatCount, "No duplicate tactical chat");
             proof.Add(new { sample.On, sample.Blocked, sample.Effect, sample.Refusal,
-                Denial = denied.Hex, Localized = localized.Hex, Notice = notice.Hex });
+                Denial = denied.Hex, Localized = localized.Hex, denialCount, localizedCount, chatCount });
             Check.That(!actor.World.ViewSnapshot().Skip(offAt).Any(ownEffect.Occurs),
                 $"No {sample.On} update after toggle off");
         }

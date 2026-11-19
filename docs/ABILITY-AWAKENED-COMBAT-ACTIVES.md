@@ -6,7 +6,7 @@ GOB 9 and 15 have a while-enabled modifier with a one-second UpdateFuncInterval.
 
 The toggles reject concurrent use before charging the cast. The shipped STA IDs are 0xc6001a9f for attempting Energized Attacks with Precise Blow active and 0xc6001a9b for the inverse. The server retains its normal action refusal acknowledgement and sends the localized ability message. Recurring effects use the active toggle's exact identity and world, life and transport generations. They stop on removal or lifecycle changes.
 
-Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock rendering and the stock button gate at rest are pending.
+Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock confirmed both on/off sequences and that the active tactic continues after a refusal. The single-message retest and the stock button gate at rest remain open.
 
 ## Power Shot
 
@@ -16,7 +16,7 @@ In retail client 7.6005, modifier evaluator 62517ff0 dispatches function 4 to 62
 
 ## Stock retest of the tactical conflict
 
-Stock capture 58353c2f063b delivered both cross-toggle refusals to CSR110. At 15:43:25, packet lines 3490–3492 contain the reply for 15 and the shipped localized record c6001a9b. At 15:43:48, lines 4599–4601 show the reply for 9 and c6001a9f. The stock UI displayed neither line. The server now supplements the localized output with a plain caller-only notice on the same 2e c7 channel as other visible ability refusals. It names the active toggle to switch off.
+Stock capture 58353c2f063b delivered both cross-toggle refusals to CSR110. At 15:43:25, packet lines 3490–3492 contain the reply for 15 and the shipped localized record c6001a9b. At 15:43:48, lines 4599–4601 show the reply for 9 and c6001a9f. The first stock pass reported neither line. [The stock retest on 22efd304](https://github.com/kylebrussell/mxo-hd/pull/383#issuecomment-7022547427) showed the shipped localized line first in each direction, followed by the supplemental plain chat. The shipped conflict callbacks each call the localized output function once. The server now sends the usual action refusal acknowledgement and that localized output only. The next stock pass should confirm one visible localized line in each direction.
 
 | Toggle | On | First FX | Last FX | Off | Unique own-view pulses |
 |---|---|---|---|---|---|
