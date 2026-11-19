@@ -1,0 +1,92 @@
+{
+  "families": {
+    "hacker-granted-class-upgrade-replacement": {
+      "representative": 1083,
+      "result": "pass",
+      "head": "1631a3a4b57eb65c756ff289e54af09f8de7f56e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/365#issuecomment-7013009411",
+      "scope": "Stock Actions showed all four granted children. Owner bonus records show distinct +7 Concentration sources on all four and Viral Accuracy +6/+9/+6/+6. Viral Damage +4/+10/+2 disappears under 1079. 1086 adds +10 Virus Area Radius and 1079 adds +10 Inner Strength Regen Rate. Stock replacement removes the previous records before applying the new source. Parent Hardline load/unload was outside this run."
+    }
+  },
+  "abilities": {
+    "390": {
+      "checks": {
+        "stats": {
+          "source": "GOB 390 provides raw +2 to ballistic (1027) and melee (1143) defense and grants 1079 at rank zero. The source-qualified tuple is pinned in research/protocol/loaded-grant-membership.json.",
+          "runtime": "The loaded passive supplies +1 per typed combat defense at level 50 through AbilityStats.Defense. The ordinary live load path adds the granted action, removes it with the parent, and restores it once on reload.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution and ability-parity-hacker-disciplines."
+        },
+        "behavior-tests": {
+          "source": "GOB 390 provides raw +2 to ballistic (1027) and melee (1143) defense and grants 1079 at rank zero. The source-qualified tuple is pinned in research/protocol/loaded-grant-membership.json.",
+          "runtime": "The loaded passive supplies +1 per typed combat defense at level 50 through AbilityStats.Defense. The ordinary live load path adds the granted action, removes it with the parent, and restores it once on reload.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution and ability-parity-hacker-disciplines."
+        }
+      }
+    },
+    "1083": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1083 is a caster-only class upgrade with +4 viral damage, +6 viral accuracy and +7 concentration.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 1083 is a caster-only class upgrade with +4 viral damage, +6 viral accuracy and +7 concentration.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        }
+      },
+      "family": "hacker-granted-class-upgrade-replacement"
+    },
+    "1084": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1084 is a caster-only class upgrade with +10 viral damage, +9 viral accuracy and +7 concentration.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 1084 is a caster-only class upgrade with +10 viral damage, +9 viral accuracy and +7 concentration.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        }
+      },
+      "family": "hacker-granted-class-upgrade-replacement"
+    },
+    "1086": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1086 is a caster-only class upgrade with +2 viral damage, +6 viral accuracy, +7 concentration and +10 virus area radius.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 1086 is a caster-only class upgrade with +2 viral damage, +6 viral accuracy, +7 concentration and +10 virus area radius.",
+          "runtime": "The normal granted action with a hostile NPC selected applies its exact modifier snapshot to the caster. A following class upgrade removes the prior sourced snapshot, and the granted action starts its 30-second reuse.",
+          "test": "The ability-parity-hacker-disciplines disposable probe activates the grant through the ordinary request. AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects covers the gameplay inputs and cleanup."
+        }
+      },
+      "family": "hacker-granted-class-upgrade-replacement"
+    },
+    "1079": {
+      "family": "hacker-granted-class-upgrade-replacement",
+      "checks": {
+        "targeting": {
+          "source": "GOB 390 grants 1079. GOB 1079 uses self selector 1 with while-enabled +10 Inner Strength Regen Rate, +6 Viral Accuracy and +7 Concentration.",
+          "runtime": "AbilitySupport selects self, AbilityBuffs installs the class replacement, and AbilityHandler.RegenAmount, AbilityStats.ViralAccuracy and AbilityCastInterrupts consume the values.",
+          "test": "AbilityScaledBuffTests.SkriptKiddieUpgradeChangesRegenViralAccuracyAndConcentrationUntilReplacement checks same-caster admission, 88 instead of 80 IS over ten ticks, exact accuracy/cast-through and removal. The stock run captured 1079 replacing 1086 with its own three sourced records."
+        },
+        "stats": {
+          "source": "GOB 390 grants 1079. GOB 1079 uses self selector 1 with while-enabled +10 Inner Strength Regen Rate, +6 Viral Accuracy and +7 Concentration.",
+          "runtime": "AbilitySupport selects self, AbilityBuffs installs the class replacement, and AbilityHandler.RegenAmount, AbilityStats.ViralAccuracy and AbilityCastInterrupts consume the values.",
+          "test": "AbilityScaledBuffTests.SkriptKiddieUpgradeChangesRegenViralAccuracyAndConcentrationUntilReplacement checks same-caster admission, 88 instead of 80 IS over ten ticks, exact accuracy/cast-through and removal. The stock run captured 1079 replacing 1086 with its own three sourced records."
+        },
+        "behavior-tests": {
+          "source": "GOB 390 grants 1079. GOB 1079 uses self selector 1 with while-enabled +10 Inner Strength Regen Rate, +6 Viral Accuracy and +7 Concentration.",
+          "runtime": "AbilitySupport selects self, AbilityBuffs installs the class replacement, and AbilityHandler.RegenAmount, AbilityStats.ViralAccuracy and AbilityCastInterrupts consume the values.",
+          "test": "AbilityScaledBuffTests.SkriptKiddieUpgradeChangesRegenViralAccuracyAndConcentrationUntilReplacement checks same-caster admission, 88 instead of 80 IS over ten ticks, exact accuracy/cast-through and removal. The stock run captured 1079 replacing 1086 with its own three sourced records."
+        }
+      }
+    }
+  }
+}
