@@ -23,6 +23,8 @@ public class FreeCastViralContestTests
     [Theory]
     [InlineData(33,true)] [InlineData(359,true)] [InlineData(97,true)] [InlineData(261,false)]
     [InlineData(134,false)] [InlineData(35,false)] [InlineData(697,false)]
+    [InlineData(65,true)] [InlineData(324,true)] [InlineData(377,true)]
+    [InlineData(420,true)] [InlineData(480,true)]
     public void OnlySupportedPrimaryFreeCastOriginsEnter(ushort id,bool expected)
     {
         Assert.Equal(expected,FreeCastViralContest.Applies(id,AbilityCastOrigin.NormalFreeCast));

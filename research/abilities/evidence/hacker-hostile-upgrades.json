@@ -1,0 +1,64 @@
+{
+  "abilities": {
+    "65": {
+      "family": "overheat-one-hostile",
+      "checks": {
+        "targeting": {
+          "source": "GOB 65 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 20 m selection range. It applies both -24 resistance debuffs for 33 seconds.",
+          "runtime": "The ordinary 80b9 path resolves the selected player through the range, sight and PvP rules before the shared viral contest, then scopes the landed change to that player.",
+          "test": "The disposable ability-parity-hacker-hostile-upgrades fixture exercises the real selected hostile and tests separate allied and out-of-range refusals through the same admission path. FreeCastViralContestTests verifies each template enters the normal contest and the supported hit/deflect encoding."
+        }
+      }
+    },
+    "324": {
+      "family": "delete-upgrade-one-hostile",
+      "checks": {
+        "targeting": {
+          "source": "GOB 324 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 16 m selection range. It applies one eligible buff parent through RemoveRandomBuff.",
+          "runtime": "The ordinary 80b9 path resolves the selected player through the range, sight and PvP rules before the shared viral contest, then scopes the landed change to that player.",
+          "test": "The disposable ability-parity-hacker-hostile-upgrades fixture exercises the real selected hostile and tests separate allied and out-of-range refusals through the same admission path. FreeCastViralContestTests verifies each template enters the normal contest and the supported hit/deflect encoding."
+        }
+      }
+    },
+    "377": {
+      "family": "cancel-upgrade-one-hostile",
+      "checks": {
+        "targeting": {
+          "source": "GOB 377 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 16 m selection range. It applies one eligible buff parent through RemoveRandomBuff.",
+          "runtime": "The ordinary 80b9 path resolves the selected player through the range, sight and PvP rules before the shared viral contest, then scopes the landed change to that player.",
+          "test": "The disposable ability-parity-hacker-hostile-upgrades fixture exercises the real selected hostile and tests separate allied and out-of-range refusals through the same admission path. FreeCastViralContestTests verifies each template enters the normal contest and the supported hit/deflect encoding."
+        },
+        "behavior-tests": {
+          "source": "GOB 377 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 16 m selection range. It applies one eligible buff parent through RemoveRandomBuff.",
+          "runtime": "Normal enemy-targeted activation removes an eligible Gaussian Blur and attributes the target removal to the exact cast. Existing script tests check the candidate restrictions and independent callbacks.",
+          "test": "AbilityHostileTests.DeleteUpgradeRemovesBuffsNotDebuffsAndNeverPicksTheLastOfSeveral plus ability-parity-hacker-hostile-upgrades."
+        }
+      }
+    },
+    "420": {
+      "family": "delete-upgrade-two-hostile",
+      "checks": {
+        "targeting": {
+          "source": "GOB 420 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 16 m selection range. It applies RemoveRandomBuff plus a separate 20% UpgradeSweepPulse per eligible parent.",
+          "runtime": "The ordinary 80b9 path resolves the selected player through the range, sight and PvP rules before the shared viral contest, then scopes the landed change to that player.",
+          "test": "The disposable ability-parity-hacker-hostile-upgrades fixture exercises the real selected hostile and tests separate allied and out-of-range refusals through the same admission path. FreeCastViralContestTests verifies each template enters the normal contest and the supported hit/deflect encoding."
+        },
+        "behavior-tests": {
+          "source": "GOB 420 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 16 m selection range. It applies RemoveRandomBuff plus a separate 20% UpgradeSweepPulse per eligible parent.",
+          "runtime": "Normal enemy-targeted activation removes an eligible Gaussian Blur and attributes the target removal to the exact cast. Existing script tests check the candidate restrictions and independent callbacks.",
+          "test": "AbilityHostileTests.DeleteUpgradeTwoRunsBothDispelCallbacksWithoutSpendingTargetInnerStrength plus ability-parity-hacker-hostile-upgrades."
+        }
+      }
+    },
+    "480": {
+      "family": "combat-shutdown-hostile",
+      "checks": {
+        "targeting": {
+          "source": "GOB 480 stores one selected enemy (CastDirectObjects 0, CastValidTarget 3), Hacker Style, TestFunction 2 and 14 m selection range. It applies -61 to both combat accuracies and -31 to both combat defenses for 25 seconds.",
+          "runtime": "The ordinary 80b9 path resolves the selected player through the range, sight and PvP rules before the shared viral contest, then scopes the landed change to that player.",
+          "test": "The disposable ability-parity-hacker-hostile-upgrades fixture exercises the real selected hostile and tests separate allied and out-of-range refusals through the same admission path. FreeCastViralContestTests verifies each template enters the normal contest and the supported hit/deflect encoding."
+        }
+      }
+    }
+  }
+}
