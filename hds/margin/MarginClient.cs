@@ -283,7 +283,10 @@ namespace hds{
 	            pak.AddByteArray(new byte[]{0x00, 0x00});
             }
 
-            Output.WriteDebugLog("[MARGIN SERVER RESPONSE] for OPCODE " + opcode + " : " + StringUtils.bytesToString(pak.ReturnFinalPacket())); 
+            if (opcode == QaCharacterUi.DataType)
+                Output.WriteDebugLog($"[MARGIN SERVER RESPONSE] character UI chunk {numCharacterReplies}, {data.Length} bytes");
+            else
+                Output.WriteDebugLog("[MARGIN SERVER RESPONSE] for OPCODE " + opcode + " : " + StringUtils.bytesToString(pak.ReturnFinalPacket()));
             byte[] encryptedResponse = marginEncr.encrypt(pak.ReturnFinalPacket());
             sendTCPVariableLenPacket(encryptedResponse, client);
         }
@@ -590,6 +593,19 @@ namespace hds{
 
             // Pre-Load Abilities so that we just need to filter the result later
             loadAbilities((int)newCharID);
+
+            // Stock 7.6005 dispatches DataType 0x0c to 0x43ffc6. It places each
+            // chunk at (reply ordinal - 1) * 1000, so UI chunks lead the sequence.
+            byte[] qaUi = QaCharacterUi.Read(userID, newCharID);
+            if (qaUi.Length != 0)
+            {
+                numCharacterReplies = 0;
+                for (int offset = 0; offset < qaUi.Length; offset += QaCharacterUi.ChunkSize)
+                {
+                    int count = Math.Min(QaCharacterUi.ChunkSize, qaUi.Length - offset);
+                    SendMarginCharData(qaUi.AsSpan(offset, count).ToArray(), QaCharacterUi.DataType, client, 0, false);
+                }
+            }
             
             SendMarginCharData(empty, 0x01, client, 0, false);
             SendMarginCharData(loadBackgroundInfo((int)newCharID), 0x02, client,0,false);

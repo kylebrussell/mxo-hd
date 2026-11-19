@@ -20,7 +20,7 @@ public abstract class AbilitySweepMode : NativeQaMode
 
     // Slot order is the manual native hotbar checklist, independent of the margin archive slot numbers.
     protected AbilitySweepMode(Sample[] samples, ushort[] support, bool enemyHelper = false,
-        bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false)
+        bool firearms = false, bool hackerTargets = false, bool isolatedMelee = false, bool petOrders = false)
     {
         if (samples.Length != 8 || samples.Select(sample => sample.Id).Distinct().Count() != samples.Length)
             throw new ArgumentException("A sweep requires eight distinct representative actions.", nameof(samples));
@@ -30,6 +30,7 @@ public abstract class AbilitySweepMode : NativeQaMode
         Firearms = firearms;
         IsolatedMelee = isolatedMelee;
         HoldHelperWound = hackerTargets;
+        PetOrders = petOrders;
         EnemyX = CasterX + (hackerTargets ? 200 : 800);
         var environment = new Dictionary<string, string>();
         if (enemyHelper)
@@ -45,6 +46,8 @@ public abstract class AbilitySweepMode : NativeQaMode
             $"UPDATE characters SET x={CasterX},y={GroundY},z={FriendZ},healthC=500,healthM=5000 WHERE charId=6111",
             $"UPDATE characters SET x={EnemyX},y={GroundY},z={CasterZ},healthC=5000,healthM=5000 WHERE charId=6114"
         };
+        if (petOrders)
+            setup.Add("UPDATE characters SET pvpflag=1 WHERE charId=6111");
         if (firearms)
         {
             setup.Add("DELETE FROM inventory WHERE charId=110 AND slot IN (10,11,12,105)");
@@ -53,7 +56,7 @@ public abstract class AbilitySweepMode : NativeQaMode
 
         var instructions = new List<string>
         {
-            "Drag the eight visible Actions to an empty hotbar page in the order below. Use normal activation and record one result per slot.",
+            "Open stock hotbar page 2. Slots 1 through 8 are seeded in the printed order. Use normal activation and record one result per slot.",
             "Save the complete outgoing stock activation RPC and actual HP/IS, target, state and expiry per slot. See docs/ABILITY-SWEEPS.md."
         };
         instructions.Add(isolatedMelee
@@ -67,8 +70,10 @@ public abstract class AbilitySweepMode : NativeQaMode
         }
         if (firearms)
             instructions.Add("Equip the matching weapon before each style or special. Revolver bag 10, Automatic Rifle bag 11, SMG bag 12.");
+        if (petOrders)
+            instructions.Add("On Remote Proxy 5.0 and Logic Daemon 4.0 test Defensive assist, Passive clearing assist and direct Attack on Melee Dummy. A player-target Attack must never redirect to the dummy.");
         Plan = new NativeQaModePlan(samples.Select(sample => sample.Id).Concat(support).Distinct().ToArray(),
-            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets,
+            CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), setup.ToArray(), DevCommands: hackerTargets || petOrders,
             environmentOverrides: environment,
             extraQaMetadata: new() { ["AbilitySweepNativeStatus"] = "Pending", ["AbilitySweepSlots"] = samples.Length },
             readyMessages: instructions.Concat(Evidence).ToArray(),
@@ -81,6 +86,7 @@ public abstract class AbilitySweepMode : NativeQaMode
     private bool Firearms { get; }
     private bool IsolatedMelee { get; }
     private bool HoldHelperWound { get; }
+    private bool PetOrders { get; }
     private int EnemyX { get; }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -88,6 +94,9 @@ public abstract class AbilitySweepMode : NativeQaMode
         var database = context.OwnedDatabase ?? throw new InvalidOperationException("An owned fixture database is required.");
         var server = context.ActualServer ?? throw new InvalidOperationException("An owned fixture server is required.");
         var friend = await EnterHelperAsync(context, "QAFriend");
+        Check.That(!friend.CharacterData.ContainsKey(hds.QaCharacterUi.DataType), "The CSR hotbar profile is not sent to helpers");
+        if (PetOrders)
+            await friend.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 01 00 00 00 01");
         var friendView = AssertPosition(friend, CasterX, FriendZ);
         var friendHp = BitConverter.ToUInt16(friendView.Attributes["Health"]);
         var friendMaxHp = BitConverter.ToUInt16(friendView.Attributes["MaxHealth"]);
@@ -216,20 +225,21 @@ public sealed class AbilitySweepCoderMode : AbilitySweepMode
     public override string Name => "ability-sweep-coder";
     public AbilitySweepCoderMode() : base(new Sample[]
     {
-        new(27, "Remote Proxy 1.0", "self", "0 immediate; attack model damage unresolved",
-            "own level 4 Proxy appears in Simulacra window; test follow and assist", "until dismissal, replacement or expiry", 50),
+        new(594, "Remote Proxy 5.0", "self", "0 immediate; attack model damage unresolved",
+            "Proxy appears in Simulacra window; test follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 50),
         new(20, "Fortify Simulacra 1.0", "own Proxy", "+750 maximum HP at level 50",
             "four resistance scores +100 each", "600 s", 30),
         new(25, "Power Boost 1.0", "own Proxy out of combat within 10 m", "0 immediate",
             "Proxy melee and ballistic damage influence +25 at level 50", "300 s", 50),
         new(603, "Charge Simulacra", "own Proxy", "0", "IS cost -20%, regeneration +50%", "600 s", 35),
         new(589, "Proxy Technician", "self with live Proxy", "0", "aura 698 on pet; 5 IS per 5 s", "5 s per pulse", 15),
-        new(22, "Logic Daemon 1.0", "self", "0 immediate; attack model damage unresolved",
-            "own level 7 Logic Daemon replaces Proxy; test follow and assist", "until dismissal, replacement or expiry", 50),
-        new(33, "Static Blast 1.0", "WinterFrost", "22 stored viral base; final range unresolved", "viral hit or deflect", "instant", 15),
-        new(34, "Detonate Proxy", "own simulacrum near WinterFrost", "NPC blast clamps pet HP to max HP / 10 through max HP / 4",
+        new(616, "Logic Daemon 4.0", "self", "0 immediate; attack model damage unresolved",
+            "Logic Daemon replaces Proxy; repeat follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 50),
+        new(33, "Static Blast 1.0", "Melee Dummy", "22 stored viral base; final range unresolved", "viral hit or deflect", "instant", 15),
+        new(34, "Detonate Proxy", "own simulacrum near Melee Dummy", "NPC blast clamps pet HP to max HP / 10 through max HP / 4",
             "NPC blast within 8 m; simulacrum receives 13000 damage", "instant blast / 0.5 s pet damage", 30)
-    }, new ushort[] { 2, 17, 18, 23, 26, 28, 29, 31, 32, 35, 36, 37, 585, 586, 588, 600, 602, 1008 }) { }
+    }, new ushort[] { 2, 17, 18, 22, 23, 26, 27, 28, 29, 31, 32, 35, 36, 37, 585, 586, 588, 600, 602, 1008 },
+    enemyHelper: true, isolatedMelee: true, petOrders: true) { }
 }
 
 public sealed class AbilitySweepOperativeMode : AbilitySweepMode

@@ -102,7 +102,17 @@ public sealed class MarginSession : IDisposable
             if (reply[14] == 0x10)
             {
                 int size = BitConverter.ToUInt16(reply, 16);
-                CharacterData[opcode] = reply[18..(18 + size)];
+                byte[] data = reply[18..(18 + size)];
+                if (opcode == hds.QaCharacterUi.DataType)
+                {
+                    byte[] previous = CharacterData.GetValueOrDefault(opcode) ?? Array.Empty<byte>();
+                    if (previous.Length != (reply[11] - 1) * hds.QaCharacterUi.ChunkSize ||
+                        size is <= 0 or > hds.QaCharacterUi.ChunkSize ||
+                        previous.Length + size > hds.QaCharacterUi.MaxLength)
+                        throw new InvalidDataException("Invalid stock character UI reply chunk.");
+                    data = previous.Concat(data).ToArray();
+                }
+                CharacterData[opcode] = data;
             }
             if (reply[12] == 1)
             {
