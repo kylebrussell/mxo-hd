@@ -174,6 +174,14 @@ namespace hds
         // ---- Runtime --------------------------------------------------------------------------------------------------
 
         public static bool IsDataNodeSearch(UInt16 ability) => ability == LocateDataNode || ability == FindDataNode;
+        internal static UInt16? LocatorBagSlot(byte[] body)
+        {
+            // The stock locator hotbar request is 43 bytes with its opcode. It carries the bag slot
+            // in the same field as item use, but leaves the item-use flag zero.
+            if (body?.Length == 41 && body[36] == 0 && body[35] != 0x6b) return body[35];
+            return ConsumableItems.ItemSlotOfAbilityRequest(body);
+        }
+
         /// <summary>Actual tool AbilityPrerequisite/ReqAbilityID from the GOB, not a mastery alias.</summary>
         public static ushort LocatorRequirement(uint tool) => tool == 38208 ? (ushort)622 : Locators.ContainsKey(tool) ? LocateDataNode : (ushort)0;
         public static bool Handles(UInt16 ability) =>

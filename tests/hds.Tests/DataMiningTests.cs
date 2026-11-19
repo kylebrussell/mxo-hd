@@ -5,6 +5,26 @@ namespace hds.Tests;
 public class DataMiningTests
 {
     [Fact]
+    public void LocatorHotbarUsesItsBagSlotWithoutTheConsumableFlag()
+    {
+        var body = new byte[41];
+        body[35] = 8;
+        Assert.Equal((ushort)8, UtilityAbilities.LocatorBagSlot(body));
+        Assert.Null(ConsumableItems.ItemSlotOfAbilityRequest(body));
+
+        body[35] = 1;
+        Assert.Equal((ushort)1, UtilityAbilities.LocatorBagSlot(body));
+        body[36] = 1;
+        Assert.Equal((ushort)1, UtilityAbilities.LocatorBagSlot(body));
+        Assert.Equal((ushort)1, ConsumableItems.ItemSlotOfAbilityRequest(body));
+
+        body[35] = 0x6b;
+        body[36] = 0;
+        Assert.Null(UtilityAbilities.LocatorBagSlot(body));
+        Assert.Null(UtilityAbilities.LocatorBagSlot(new byte[4]));
+    }
+
+    [Fact]
     public void RepeatedExternalStopsNeverReactivateOrDuplicateLocatorOffRecords()
     {
         var c = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));

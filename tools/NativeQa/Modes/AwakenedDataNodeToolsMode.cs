@@ -7,9 +7,11 @@ namespace NativeQa.Modes;
 public sealed class AwakenedDataNodeToolsMode : NativeQaMode
 {
     private const int CharacterLevel = 10;
-    // PR113's complete stock Tools activation. Only the selected personal-bag slot changes.
-    private const string Locate = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-        "00 00 00 00 0c f5 1a 00 c8 73 91 3d 08";
+    // Complete stock hotbar requests from PR385, PacketLog 226d05636f73 lines 1195–1196 and 1380–1381.
+    private const string Goggles = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+        "00 00 00 00 64 f1 1a 00 e8 26 28 3b 08 08 00 00 00 00 00";
+    private const string Handheld = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+        "00 00 00 00 64 f1 1a 00 e8 18 28 3b 08 01 00 00 00 00 00";
     private const string Enabled = "80 bd 05 d7 00 00 00 00 00 00 01";
     private const string Disabled = "80 bd 05 d7 00 00 00 00 00 00 00";
 
@@ -29,9 +31,9 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
         readyMessages: new[]
         {
             "Use ?utilityobject 606 on the Mara NW stand to place one node at your feet. Keep all three seeded tools in the bag.",
-            "Open Actions > Tools and double-click Data Node Locator Goggles in slot 8. Capture Locate Data Node 215 with bag slot 8 and the server's 423 goggles search. The node FX stays active beyond 10 seconds.",
-            "Use the goggles again to stop, then use Data Node Locator Handheld in slot 1. Capture 215 with slot 1, the 422 handheld search, its attenuation record and automatic 10-second expiry.",
-            "After expiry, start the goggles again. Beside the visible node FX, use Basic Data Tap in slot 9 from Actions > Tools. Save the complete outgoing request, any target or tool refusal, and whether the locator FX persists. Tapping yield and completion are still open."
+            "In Actions > Tools, right-click Data Node Goggles and Data Node Locator and add both items to the hotbar. Activate Goggles from the hotbar. Capture 215 with bag slot 8 and the server's 423 goggles search. The node FX stays active beyond 10 seconds.",
+            "Use the goggles hotbar item again to stop, then activate the handheld hotbar item. Capture 215 with slot 1, the 422 handheld search, its attenuation record and automatic 10-second expiry.",
+            "The earlier stock run captured the Data Tap request from slot 9. This retest covers the two locator items."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -50,7 +52,7 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
         actor.SendChat("?utilityobject 606");
         await actor.WaitForTextAsync("Utility fixture 606 placed.");
         var proof = new List<string>();
-        SendLocate(8);
+        SendLocate(Goggles);
         proof.Add((await actor.WaitForRpcAsync(Enabled)).Hex);
         proof.Add((await actor.WaitForRpcAsync("80 cd 00 00 62 04 00 28")).Hex);
         await actor.WaitUntilAsync(() => server.DebugLog().Contains("ability=215 tool=423 outcome=on", StringComparison.Ordinal),
@@ -58,18 +60,20 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
         await Task.Delay(TimeSpan.FromSeconds(11));
         Check.That(actor.Received(Disabled).Count == 0, "The goggles remain on after the handheld's ten-second lifetime");
 
-        SendLocate(8);
+        SendLocate(Goggles);
         proof.Add((await actor.WaitForRpcAsync(Disabled)).Hex);
-        SendLocate(9);
+        byte[] wrongTool = WireFormat.FromHex(Goggles);
+        wrongTool[37] = 9;
+        SendLocate(WireFormat.ToHex(wrongTool));
         proof.Add((await actor.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 2e 00 00 60")).Hex);
 
-        SendLocate(8);
+        SendLocate(Goggles);
         await actor.WaitForRpcAsync("80 ac d7 00");
         await db.ExecuteAsync("UPDATE inventory SET goid=422 WHERE charId=110 AND slot=8");
         await actor.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 2e 00 00 60");
         await db.ExecuteAsync("UPDATE inventory SET goid=423 WHERE charId=110 AND slot=8");
 
-        SendLocate(1);
+        SendLocate(Handheld);
         proof.Add((await actor.WaitForRpcAsync(Enabled)).Hex);
         proof.Add((await actor.WaitForRpcAsync("80 cb")).Hex);
         await actor.WaitUntilAsync(() => server.DebugLog().Contains("ability=215 tool=422 outcome=on", StringComparison.Ordinal),
@@ -79,10 +83,10 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "data-node-tools.json"), JsonSerializer.Serialize(proof));
         return Array.Empty<byte>();
 
-        void SendLocate(byte slot)
+        void SendLocate(string request)
         {
             actor.SkipReceived();
-            actor.SendRpc($"{Locate} {slot:x2} 01 00 00 00 00");
+            actor.SendRpc(request);
         }
     }
 }

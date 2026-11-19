@@ -79,7 +79,8 @@ namespace hds
                 Deny(AbilityID, "You cannot act while stunned or pacified.");
                 return;
             }
-            if (UtilityAbilities.IsDataNodeSearch(AbilityID) && UtilityAbilities.Level(Store.currentClient,AbilityID)<=0)
+            bool nodeSearch = UtilityAbilities.IsDataNodeSearch(AbilityID);
+            if (nodeSearch && UtilityAbilities.Level(Store.currentClient, AbilityID) <= 0)
             {
                 Deny(AbilityID,"Load this data-node search ability before activating it.");
                 return;
@@ -114,8 +115,9 @@ namespace hds
             {
                 return;
             }
-            UInt32? selectedLocator = itemSlot.HasValue && UtilityAbilities.IsDataNodeSearch(AbilityID)
-                ? UtilityAbilities.ToolFor(Store.currentClient, AbilityID, itemSlot) : (UInt32?)null;
+            UInt16? locatorSlot = nodeSearch ? UtilityAbilities.LocatorBagSlot(packet) : null;
+            UInt32? selectedLocator = locatorSlot.HasValue
+                ? UtilityAbilities.ToolFor(Store.currentClient, AbilityID, locatorSlot) : (UInt32?)null;
 
             // Internal pill abilities require their owned bag item, even if an ability was loaded.
             if (HealthBoostPills.Handles(AbilityID))
@@ -275,7 +277,7 @@ namespace hds
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
-                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, itemSlot, selectedLocator);
+                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
