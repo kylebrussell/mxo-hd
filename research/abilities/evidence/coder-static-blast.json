@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "33": {
+      "checks": {
+        "damage": {
+          "source": "GOB 33 stores a WhenEnabled 2 instant viral health modifier with ValueFunction 0 and equal bounds 22. The older abilityIDs row only supplies 22/0 and cannot define the damage roll.",
+          "runtime": "AbilityHandler reads the fixed catalog amount before the legacy range. AbilityTargets and PvpCombat retain the typed viral influence and resistance path after successful contest admission.",
+          "test": "AbilityTargetTests.StaticBlastUsesFixedViralBaseDespiteTheIncompleteLegacyRange differentiates the fallback with two RNG seeds. The disposable ability-parity-coder-static-blast replay checks the ordinary 43-byte activation, 27 damage after Coder Style influence and 22 against +75 viral resistance. The final retail resistance curve remains open."
+        }
+      }
+    }
+  }
+}

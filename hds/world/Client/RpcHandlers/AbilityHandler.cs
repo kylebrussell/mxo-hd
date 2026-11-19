@@ -416,6 +416,13 @@ namespace hds
             if (source != null && !source.DirectDamage) return 0;
             int from = ability.getValueFrom();
             int to = ability.getValueTo();
+            // Static Blast 1.0 has a fixed viral GOB component and an incomplete legacy CSV range (22/0).
+            if (source?.Id == 33)
+            {
+                var hit = source.Modifiers.Single(m => m.Target == 108 && m.Number("DamageType", -1) == 2 &&
+                    m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 1);
+                if (AbilityValues.TryValue(hit, 0, 0, out int damage) && damage > 0) return (ushort)damage;
+            }
             if (from > 0 && to >= from)
             {
                 return (UInt16)random.Next(from, to + 1);
