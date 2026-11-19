@@ -143,6 +143,14 @@ public static partial class Scenarios
         new Scenario("area-disruption-hit", c=>AreaDisruptionWire(c,true), UiLagEnvironment(true)),
         new Scenario("area-disruption-deflect", c=>AreaDisruptionWire(c,false), UiLagEnvironment(false)),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
+        new Scenario("free-attack-bootstrap", FreeAttackBootstrapReplay, StillNpcs.Concat(new Dictionary<string,string>
+        {
+            [hds.FreeAttackBootstrap.Mode] = hds.FreeAttackBootstrap.Login
+        }).ToDictionary(p => p.Key, p => p.Value)),
+        new Scenario("free-attack-bootstrap-equip", FreeAttackEquipReplay, StillNpcs.Concat(new Dictionary<string,string>
+        {
+            [hds.FreeAttackBootstrap.Mode] = hds.FreeAttackBootstrap.Equip
+        }).ToDictionary(p => p.Key, p => p.Value)),
         new Scenario("combat-foundations", CombatFoundations, StillNpcs.Concat(new Dictionary<string,string>
         {
             ["MXO_DEV_COMMANDS"] = "1", ["MXO_COMBAT_FOUNDATIONS_QA"] = "1",

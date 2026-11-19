@@ -187,7 +187,9 @@ namespace hds
             ClaimItems(items, goid =>
             {
                 // Existing inventory policy stacks Code Bits/pills and refuses a full bag.
-                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
+                // The retail tutorial Redpill Special loot had the weapon descriptor 0x10.
+                UInt16 type = RangedWeapons.GetStats(goid) != null ? (UInt16)0x10 : (UInt16)0;
+                UInt16 slot = InventoryHandler.AddItem(client, goid, type);
                 Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
                 return slot != 0;
             });

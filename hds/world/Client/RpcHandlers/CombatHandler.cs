@@ -1378,6 +1378,7 @@ namespace hds
             UInt32 goid = kind == FreeFireKindItem ? Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) : 0;
             client.playerData.freeFireWeaponGoid = goid;
             Output.WriteDebugLog($"[COMBAT] Free Fire weapon: slot {slot}, kind {kind}, goid {goid}");
+            FreeAttackBootstrap.OnChoice(client, slot, kind);
         }
 
         /// <summary>Kind value of a Free Fire choice that names an inventory item.</summary>
