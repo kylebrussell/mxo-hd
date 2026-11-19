@@ -83,6 +83,20 @@ public class CombatInsightEngagementTests
         Assert.True(CombatInsightEngagement.Allows(f.Source,f.Target,f.Handle,out _));
     }
 
+    [Fact]
+    public void CutthroatUpgradeContributesTenCombatEvasionPointsToTheLiveEntryGate()
+    {
+        using var f = new Fixture();
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var baseline));
+        Assert.Equal(110, baseline.Evade);
+        Assert.True(AbilityBuffs.Apply(f.Target, 1119));
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var upgraded));
+        Assert.Equal(120, upgraded.Evade);
+        Assert.True(AbilityBuffs.Remove(f.Target, 1119));
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var removed));
+        Assert.Equal(baseline.Evade, removed.Evade);
+    }
+
     [Theory][InlineData(0)][InlineData(1)][InlineData(2)][InlineData(3)][InlineData(4)][InlineData(5)][InlineData(6)]
     public void CapturedCurrentScopeRejectsOwnerWorldLifeResetAndViewReplacement(int change)
     {

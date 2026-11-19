@@ -1,0 +1,209 @@
+{
+  "abilities": {
+    "284": {
+      "checks": {
+        "stats": {
+          "source": "GOB 284 function-2 modifiers at learned rank 50 yield Confuse +25, Powerless +25 and Pacify +12.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 284 function-2 modifiers at learned rank 50 yield Confuse +25, Powerless +25 and Pacify +12.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        }
+      },
+      "family": "operative-ranked-control-durations"
+    },
+    "164": {
+      "checks": {
+        "stats": {
+          "source": "GOB 164 function-2 modifiers at learned rank 50 yield Thrown Damage, Thrown Accuracy and Ballistic Defense bonuses of +10 each.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 164 function-2 modifiers at learned rank 50 yield Thrown Damage, Thrown Accuracy and Ballistic Defense bonuses of +10 each.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        }
+      },
+      "family": "operative-ranked-throw-passives"
+    },
+    "278": {
+      "checks": {
+        "stats": {
+          "source": "GOB 278 function-2 modifiers at learned rank 50 yield Thrown Damage +15, Thrown Accuracy +15, Root Duration +10 and Pacify Duration +11.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 278 function-2 modifiers at learned rank 50 yield Thrown Damage +15, Thrown Accuracy +15, Root Duration +10 and Pacify Duration +11.",
+          "runtime": "AbilityPassives.SetLoaded updates the typed damage, accuracy, defense and control-duration consumers where applicable, and unload removes the modifiers. Native coefficient for linked thrown accuracy stays open where applicable.",
+          "test": "OperativeParityTests.RankedPassivesFeedDamageContestAndDurationInputs; ability-parity-operative-sweep observes the loaded wire records."
+        }
+      },
+      "family": "operative-ranked-throw-passives"
+    },
+    "107": {
+      "checks": {
+        "proc": {
+          "source": "GOB 107 stores separate 15% proc chances for Dazed, Off-Balance and Staggered.",
+          "runtime": "TempMods.TryGet and TimedEffects.Instantiate roll each landed modifier and the normal holder enforces its lifetime. Area/target admission and native presentation are separate checks.",
+          "test": "OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder"
+        }
+      }
+    },
+    "1131": {
+      "checks": {
+        "proc": {
+          "source": "GOB 1131 stores separate 50% proc chances for Off-Balance.",
+          "runtime": "TempMods.TryGet and TimedEffects.Instantiate roll each landed modifier and the normal holder enforces its lifetime. Area/target admission and native presentation are separate checks.",
+          "test": "OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder"
+        }
+      }
+    },
+    "1127": {
+      "checks": {
+        "proc": {
+          "source": "GOB 1127 stores separate 30% proc chances for Dazed, Off-Balance and Staggered.",
+          "runtime": "TempMods.TryGet and TimedEffects.Instantiate roll each landed modifier and the normal holder enforces its lifetime. Area/target admission and native presentation are separate checks.",
+          "test": "OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder"
+        }
+      }
+    },
+    "279": {
+      "checks": {
+        "proc": {
+          "source": "GOB 279 stores separate 20% proc chances for Dazed and Staggered.",
+          "runtime": "TempMods.TryGet and TimedEffects.Instantiate roll each landed modifier and the normal holder enforces its lifetime. Area/target admission and native presentation are separate checks.",
+          "test": "OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder"
+        },
+        "script": {
+          "source": "tempmods.py DealDamageIfOffBalance applies the thrown initializer only when the current target is Off Balance; GOB 279's function-3 payload is 45 at character level 50.",
+          "runtime": "ConditionalThrownDamage fences the current target and applies its typed initializer separately from normal damage. Base-hit and initializer ordering remains a source-parity item.",
+          "test": "ConditionalThrownDamageTests.ActualStoredInitializerUsesRecoveredValueFunctions, ScriptTestsOffBalanceRatherThanTheMisleadingDamageOnDazeComponentName and SeparateComponentRetainsExistingInfluenceAndExplicitThrownResistancePolicy."
+        }
+      }
+    },
+    "1133": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1133 stores -45 melee and ballistic damage resistance for 8 seconds.",
+          "runtime": "The timed executor applies the penalties to the normal NPC contest or physical-resistance consumer, and expiry restores the input.",
+          "test": "OperativeParityTests.LandedDebuffChangesTheTargetCombatInputs"
+        }
+      }
+    },
+    "134": {
+      "checks": {
+        "stats": {
+          "source": "GOB 134 stores -15 melee defense for 10 seconds.",
+          "runtime": "The timed executor applies the penalties to the normal NPC contest or physical-resistance consumer, and expiry restores the input.",
+          "test": "OperativeParityTests.LandedDebuffChangesTheTargetCombatInputs"
+        }
+      }
+    },
+    "1122": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1122 stores self-only selector 1 and Thrown Damage +6, Thrown Accuracy +5, Stealth +5.",
+          "runtime": "AbilitySupport.Targets resolves the caster even when a hostile NPC is selected. Buff application leaves the selected NPC outside the effect.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; ability-parity-operative-sweep casts the actual ability at an NPC selection, checks all caster records and replacement."
+        },
+        "stats": {
+          "source": "GOB 1122 stores Thrown Damage +6, Thrown Accuracy +5, Stealth +5 while enabled.",
+          "runtime": "AbilityBuffs and AbilityStats feed the direct thrown inputs; Stealth.StealthLevelOf consumes the Assassin bonus and the existing live217 entry gate consumes the Cutthroat bonus.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; CombatInsightEngagementTests.CutthroatUpgradeContributesTenCombatEvasionPointsToTheLiveEntryGate and ability-parity-operative-sweep."
+        },
+        "behavior-tests": {
+          "source": "GOB 1122 stores Thrown Damage +6, Thrown Accuracy +5, Stealth +5 while enabled.",
+          "runtime": "AbilityBuffs and AbilityStats feed the direct thrown inputs; Stealth.StealthLevelOf consumes the Assassin bonus and the existing live217 entry gate consumes the Cutthroat bonus.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; CombatInsightEngagementTests.CutthroatUpgradeContributesTenCombatEvasionPointsToTheLiveEntryGate and ability-parity-operative-sweep."
+        }
+      },
+      "family": "operative-class-upgrades"
+    },
+    "1119": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1119 stores self-only selector 1 and Thrown Damage +3, Thrown Accuracy +5, Combat Evasion +10.",
+          "runtime": "AbilitySupport.Targets resolves the caster even when a hostile NPC is selected. Buff application leaves the selected NPC outside the effect.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; ability-parity-operative-sweep casts the actual ability at an NPC selection, checks all caster records and replacement."
+        },
+        "stats": {
+          "source": "GOB 1119 stores Thrown Damage +3, Thrown Accuracy +5, Combat Evasion +10 while enabled.",
+          "runtime": "AbilityBuffs and AbilityStats feed the direct thrown inputs; Stealth.StealthLevelOf consumes the Assassin bonus and the existing live217 entry gate consumes the Cutthroat bonus.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; CombatInsightEngagementTests.CutthroatUpgradeContributesTenCombatEvasionPointsToTheLiveEntryGate and ability-parity-operative-sweep."
+        },
+        "behavior-tests": {
+          "source": "GOB 1119 stores Thrown Damage +3, Thrown Accuracy +5, Combat Evasion +10 while enabled.",
+          "runtime": "AbilityBuffs and AbilityStats feed the direct thrown inputs; Stealth.StealthLevelOf consumes the Assassin bonus and the existing live217 entry gate consumes the Cutthroat bonus.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; CombatInsightEngagementTests.CutthroatUpgradeContributesTenCombatEvasionPointsToTheLiveEntryGate and ability-parity-operative-sweep."
+        }
+      },
+      "family": "operative-class-upgrades"
+    },
+    "1115": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1115 stores self-only selector 1 and Melee Defense +3, Thrown Accuracy +3, Disguise Duration +3, Sneak Movement +10.",
+          "runtime": "AbilitySupport.Targets resolves the caster even when a hostile NPC is selected. Buff application leaves the selected NPC outside the effect.",
+          "test": "OperativeParityTests.UpgradeIsSelfOnlyAndFeedsItsShippedModifiers; ability-parity-operative-sweep casts the actual ability at an NPC selection, checks all caster records and replacement."
+        }
+      },
+      "family": "operative-class-upgrades"
+    },
+    "293": {
+      "checks": {
+        "stats": {
+          "source": "GOB 293 adds +80 Stealth Detection for 30 seconds.",
+          "runtime": "AbilityBuffs sets and removes the direct awareness total. Stealth.AwarenessOf and the strict SneakTest consume it. Native discovery and reveal remain open.",
+          "test": "OperativeParityTests.StealthCountermeasuresChangesAwarenessContestAndThenClears; ability-parity-operative-sweep observes the 30-second add/off records."
+        },
+        "behavior-tests": {
+          "source": "GOB 293 adds +80 Stealth Detection for 30 seconds.",
+          "runtime": "AbilityBuffs sets and removes the direct awareness total. Stealth.AwarenessOf and the strict SneakTest consume it. Native discovery and reveal remain open.",
+          "test": "OperativeParityTests.StealthCountermeasuresChangesAwarenessContestAndThenClears; ability-parity-operative-sweep observes the 30-second add/off records."
+        }
+      },
+      "family": "operative-countermeasures"
+    },
+    "149": {
+      "checks": {
+        "stats": {
+          "source": "GOB 149 contributes the function-2 \u00d74 detection modifier.",
+          "runtime": "AbilityPassives feeds stat 646 into SixthSense.Detects, and clearing the load removes its contribution.",
+          "test": "OperativeParityTests.LoadedSixthSenseFeedsItsContestAndUnloadingClearsIt"
+        }
+      }
+    },
+    "282": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 282 ThrownDOT duration 15 seconds, 2.5-second interval and raw payload 24; tempmods.py ThrownDOT rounds each tick.",
+          "runtime": "The timed holder schedules five four-point ticks from the unmodified payload and excludes the terminal boundary. Scaling and resistance have their own audit item.",
+          "test": "OperativeParityTests.ThrownDotSchedulesFiveRoundedTicksAtTheStoredInterval"
+        }
+      }
+    },
+    "280": {
+      "checks": {
+        "script": {
+          "source": "GOB 280 stores a signed -100 OnHealthReduceDeactivateChance payload and the 15s Rooted state.",
+          "runtime": "AbilityCatalog.Controls attaches the protected first health change and the subsequent 100% damage break. TimedEffects.Holder.HealthChanged removes the whole parent.",
+          "test": "OperativeParityTests.CripplingThrowFirstHealthChangeArmsItsRootBreak"
+        }
+      }
+    },
+    "292": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 292 independently stores a 4-second target Confuse and caster Combat Evasion +25 for 30 seconds.",
+          "runtime": "The hostile landing has separate TimedEffects target and CombatSpecials.Landed caster executors. The native eligibility and control presentation checks remain open.",
+          "test": "OperativeParityTests.CartwheelAppliesItsCombatEvasionOnlyToTheCasterWhenLanded and OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder"
+        }
+      }
+    }
+  }
+}

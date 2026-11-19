@@ -243,7 +243,8 @@ def server(i):
     elif r['direct_damage'] and not r.get('health_callback'):
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
-        parts.append(('captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
+        parts.append(('captured payload 264 / stored interval 2.5s' if i == 141 else
+                      'captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
                      if r['timed'] and any(m['proc'] == 'Dot' for m in r['timed']) else 'DOT missing')
     if r.get('resurrection'):
         motion = 'Revive RSI 375' if i == 438 else str(i)
@@ -253,6 +254,10 @@ def server(i):
         parts.append('captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
     if r.get('conditional_thrown_damage'):
         parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
+    if i == 120:
+        parts.append('stored function-2 grant level feeds Disguise duration; native Actions registration pending')
+    if i == 280:
+        parts.append('stored sibling -100 callback protects first health change; later damage breaks the root and clears its parent')
     if r.get('conditional_powerless'):
         parts.append('landed initialization checks current Staggered once; stored6s Powerless through existing state policy, no new immunity timer; [evidence](ABILITY-CONDITIONAL-POWERLESS.md)')
     if r.get('conditional_stun'):

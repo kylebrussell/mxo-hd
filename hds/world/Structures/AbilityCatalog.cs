@@ -92,10 +92,15 @@ namespace hds
                 string health = m.Text("StatModHealthChangedFunc");
                 mod.Break = state == TempMods.MezAbility || health == "OnHealthReduceDeactivateAbility" ? TempMods.BreakRule.Damage :
                     health == "OnHealthChangeDeactivateAbility" ? TempMods.BreakRule.HealthChange : TempMods.BreakRule.None;
-                if (rootChance || health == "OnHealthReduceDeactivateChance")
+                // Crippling Throw puts the signed callback payload on a sibling modifier; it turns off the same parent.
+                Modifier siblingBreak = entry.Id == 280 && state == TempMods.RootedAbility
+                    ? entry.Modifiers.FirstOrDefault(p => p.State == 0 && p.Number("WhenEnabled", -1) == 2 &&
+                        p.Number("Duration") == seconds && p.Text("StatModHealthChangedFunc") == "OnHealthReduceDeactivateChance")
+                    : null;
+                if (rootChance || health == "OnHealthReduceDeactivateChance" || siblingBreak != null)
                 {
-                    Modifier chance = rootChance ? m : entry.Modifiers.FirstOrDefault(p => p.Text("StatModHealthChangedFunc") ==
-                        "OnHealthReduceDeactivateChance" && p.Number("MinValue") != 0) ?? m;
+                    Modifier chance = siblingBreak ?? (rootChance ? m : entry.Modifiers.FirstOrDefault(p => p.Text("StatModHealthChangedFunc") ==
+                        "OnHealthReduceDeactivateChance" && p.Number("MinValue") != 0) ?? m);
                     int value = (int)chance.Number("MinValue");
                     mod.Break = TempMods.BreakRule.Chance;
                     mod.BreakChance = Math.Abs(value);
