@@ -39,6 +39,10 @@ Use `ability-parity-gunman-proc-sweep` for the three outstanding stock samples f
 
 The stock capture recorded `65 69 00 08 00` moving the rifle out of hand to bag slot 8 and `65 0c 00 69 00` equipping the SMG from bag slot 12 (PacketLog line 6502). The client then explicitly selected bag slot 8 for ranged Free Attack with `3f 08 00 10 00 00 00` (line 6599). The server read that slot from the current character's inventory as rifle 692, while the hand remained SMG 698. The bootstrap repeats both bag and hand choices after the swap. Select the desired item separately in the stock Free Attack dropdown before a ranged shot. [PR357 native session](https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646)
 
+The first stock session confirmed style selection for Rifles (147) and Submachine Guns (158), Wounding Shot (253) and its neutral DOT, plus successful Bullet Spray (247) and Controlled Burst (250) Enraged procs. It did not show a Wounding Shot stun or the Controlled Burst animation. [First stock report](https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646)
+
+The follow-up stock session cast Suppression Fire (248) at rest and applied Rooted. It cast Full Auto Redux (496) against the Dazed dummy and recorded both -15 accuracy penalties for eight seconds. Three Round Burst (256) cast on the Staggered dummy and naturally applied a four-second stun. The follow-up also confirmed that each swap refreshed the stock equipped gun when the client chose it. Three Round Burst immunity presentation and named ILDB playback are still open, as are cone boundaries for Bullet Spray and Suppression Fire. [Stock retest](https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7017687253)
+
 ### Coder retest
 
 1. Out of combat, summon a pet and set Passive and Follow. Select flagged same-organization QAFriend and click Attack in the Simulacra window. Record either stock suppression or the received player-target request and server refusal. Confirm Melee Dummy receives no redirected pet attack.
