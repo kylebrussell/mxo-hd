@@ -574,11 +574,13 @@ public class AbilityScaledBuffTests
     }
 
     [Theory]
-    [InlineData(310, 1083, 1)]
-    [InlineData(334, 1084, 5)]
-    [InlineData(335, 1086, 0)]
-    [InlineData(369, 1092, 0)]
-    public void HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution(ushort parent, ushort child, int viralBonus)
+    [InlineData(310, 1083, 1, 0)]
+    [InlineData(334, 1084, 5, 0)]
+    [InlineData(335, 1086, 0, 0)]
+    [InlineData(369, 1092, 0, 0)]
+    [InlineData(390, 1079, 0, 1)]
+    public void HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution(
+        ushort parent, ushort child, int viralBonus, int defense)
     {
         var caster = Client(50);
         caster.playerData.setDistrictId(1);
@@ -594,6 +596,8 @@ public class AbilityScaledBuffTests
         byte[] add = AbilityGrantRegistration.Record(new(parent, child, 0), false);
         Assert.Single(Packets(), rpc => rpc.SequenceEqual(add));
         Assert.Equal(baseline + viralBonus * 10 - (viralBonus == 0 ? 0 : 1), AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        Assert.Equal(defense, AbilityStats.Defense(caster, false));
+        Assert.Equal(defense, AbilityStats.Defense(caster, true));
         AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
         Assert.Single(Packets(), rpc => rpc.SequenceEqual(add));
 
@@ -602,6 +606,12 @@ public class AbilityScaledBuffTests
         byte[] remove = AbilityGrantRegistration.Record(new(parent, child, 0), true);
         Assert.Single(Packets(), rpc => rpc.SequenceEqual(remove));
         Assert.Equal(baseline, AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        Assert.Equal(0, AbilityStats.Defense(caster, false));
+        Assert.Equal(0, AbilityStats.Defense(caster, true));
+
+        AbilityPassives.SetLoaded(caster, new[] { (parent, (ushort)50) });
+        Assert.Equal(2, Packets().Count(rpc => rpc.SequenceEqual(add)));
+        Assert.True(AbilityPassives.IsLoaded(caster, child));
     }
 
     [Theory]
@@ -622,6 +632,34 @@ public class AbilityScaledBuffTests
         Assert.Equal(0, AbilityStats.Influence(caster, 172));
         Assert.Equal(0, AbilityStats.ViralAccuracy(caster));
         Assert.Equal(4, AbilityRadius.TargetMetres(caster, 333));
+    }
+
+    [Fact]
+    public void SkriptKiddieUpgradeChangesRegenViralAccuracyAndConcentrationUntilReplacement()
+    {
+        var caster = Client(50);
+        int RegenOverTenTicks()
+        {
+            double carry = 0;
+            int total = 0;
+            for (int tick = 0; tick < 10; tick++)
+                total += AbilityHandler.RegenAmount(false, ref carry, AbilityStats.Influence(caster, 114));
+            return total;
+        }
+
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 1079, 999)));
+        AbilitySupport.Land(caster, 1079, 999);
+        Assert.Equal(88, RegenOverTenTicks());
+        Assert.Equal(6, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(10, 500,
+            (short)AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration)));
+
+        AbilitySupport.Land(caster, 1083, 999);
+        Assert.False(caster.playerData.activeBuffs.ContainsKey(1079));
+        Assert.Equal(80, RegenOverTenTicks());
+        Assert.True(AbilityBuffs.Remove(caster, 1083));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(0, AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration));
     }
 
     [Theory]

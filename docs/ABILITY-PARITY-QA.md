@@ -74,6 +74,19 @@ This review uses the stock-client results below and the executable audit at base
 | Gun styles (129, 147, 158), Pistol Aerial (243), Disarming Shot (126), Covering Fire (176) | All three styles worked in the Gunman sweep. An active interlock played 9518, 9522 and 21083 for the three specials, respectively. The special-move evidence covers this queue and playback. Damage math, ancillary callbacks and proc branches remain open. Gun-style modifier scaling and an item-swapped radial opening also remain open at this baseline. That opening blocked Pistol Slide (241), Body Shot (105) and Controlled Burst (250). [Gun style stock evidence](https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488) · [Gun move stock evidence](https://github.com/kylebrussell/mxo-hd/pull/326#issuecomment-7002053269) · [Swap retest](https://github.com/kylebrussell/mxo-hd/pull/324#issuecomment-7002216774) |
 | Logic Barrage (330), rifle sight, Direct Fire (493) | Logic Barrage was refused across the mapped sight gap. It dealt 525 on the clear NPC and 431 with the staged +75 Viral Resistance. The earlier unboosted loadout measured 424/348. The shipped 330 success and deflection interlock presentation remains unverified. Rifle Fire! was grey at AB1 Blocked, so the blocked rifle request remains headless evidence. Direct Fire hit Aim and Inside and left Outside untouched. Its scaling, enrage proc and wider target admission remain open. [Unboosted damage](https://github.com/kylebrussell/mxo-hd/pull/314#issuecomment-6999038685) · [Stock sight](https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488) · [Loaded damage and resistance](https://github.com/kylebrussell/mxo-hd/pull/322#issuecomment-7001788160) · [Stock cone](https://github.com/kylebrussell/mxo-hd/pull/324#issuecomment-7002216774) |
 
+## Hacker loaded disciplines
+
+Use `ability-parity-hacker-disciplines` on level-50 CSR110. The prerequisite-complete loadout uses 97 of 100 memory. Confirm Status is populated and the four grant children appear in Actions. The child IDs are absent from the owned Archive.
+
+| Owned discipline | Stock grant | Source-specific observation |
+| --- | --- | --- |
+| Arbalest (310) | Arbalest Upgrade (1083) | Parent +1 raw viral damage. Child +4 viral damage, +6 viral accuracy, +7 concentration. |
+| Ballista (334) | Ballista Upgrade (1084) | Parent +5 raw viral damage. Child +10 viral damage, +9 viral accuracy, +7 concentration. |
+| Artillerist (335) | Artillerist Upgrade (1086) | Parent provides the action. Child +2 viral damage, +6 viral accuracy, +7 concentration, +10 virus area radius. |
+| Skript Kiddie (390) | Skript Kiddie Upgrade (1079) | Parent +2 raw melee defense and +2 raw ballistic defense. Child is an additional sample. |
+
+At the Hardline or a Load Area, unload and reload each parent individually and capture its child action disappearance and return, hidden load and the source-qualified add and removal records. Select Discipline Target, then cast all four upgrades in table order. Keep the outgoing requests, caster bonus adds, prior-source removals and 30-second own reuse timers. Use the modifier records for any raw inputs the Status UI aggregates or omits. Passing source-specific stock checks can close 310, 334, 335, 390, 1083, 1084 and 1086.
+
 ## Operative batch-one sweep
 
 Use fixture `ability-parity-operative-sweep` as level-50 CSR110. **Two rows are eligible for closure after a passing stock check**. For Improved Sneak Attack (284), unload and reload at a Hardline or Load Area and capture the three duration records and their removal. For Cutthroat Upgrade (1119), select Operative Target, activate the stock action and observe caster Thrown Damage +3, Thrown Accuracy +5 and Combat Evasion +10. Replace the buff with Assassin Upgrade or toggle it off and confirm all three records clear. Keep the visible Status deltas, outgoing request and full modifier records for both abilities.
