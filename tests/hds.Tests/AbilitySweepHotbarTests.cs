@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Security.Cryptography;
+using HeadlessClient;
 using NativeQa;
 
 namespace hds.Tests;
@@ -6,6 +8,15 @@ namespace hds.Tests;
 public class AbilitySweepHotbarTests
 {
     private static readonly ushort[] Abilities = { 132, 267, 133, 260, 262, 428, 430, 412 };
+
+    [Fact]
+    public void SweepLoadRequestMatchesNativeCaptureInFull()
+    {
+        var request = MarginSession.StockCharacterLoadRequest(110);
+        Assert.Equal(190, request.Length);
+        Assert.Equal("C68FC42E76B2300574151AE4DCF23AB4D71F1A14394ED0752EC986677494500A",
+            Convert.ToHexString(SHA256.HashData(request)));
+    }
 
     [Fact]
     public void ReplacesOnlyPageTwoSlotsOneThroughEightAndKeepsAllFollowingBytes()

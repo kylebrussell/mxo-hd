@@ -1,0 +1,15 @@
+{
+  "families": {
+    "own-simulacrum-modifiers": {
+      "representative": 20,
+      "result": "pass",
+      "head": "62fc0c95fe9aee5167cd81d8c39eff80e0b2f282",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/318#issuecomment-6995929100"
+    }
+  },
+  "abilities": {
+    "20": { "family": "own-simulacrum-modifiers" },
+    "25": { "family": "own-simulacrum-modifiers" },
+    "603": { "family": "own-simulacrum-modifiers" }
+  }
+}

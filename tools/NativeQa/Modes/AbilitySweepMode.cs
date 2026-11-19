@@ -178,7 +178,7 @@ public abstract class AbilitySweepMode : NativeQaMode
 
     private static async Task<HeadlessPlayer> EnterHelperAsync(NativeQaBootstrapContext context, string name)
     {
-        var helper = await HeadlessPlayer.LoginAsync(context.Address, name, name);
+        var helper = await HeadlessPlayer.LoginAsync(context.Address, name, name, stockCharacterLoad: true);
         context.Helpers.Add(name, helper);
         // Both records are documented stock world entry requests in docs/CLIENT-ACTIONS.md.
         await helper.EnterWorldAsync();
@@ -226,7 +226,7 @@ public sealed class AbilitySweepCoderMode : AbilitySweepMode
     public AbilitySweepCoderMode() : base(new Sample[]
     {
         new(594, "Remote Proxy 5.0", "self", "0 immediate; attack model damage unresolved",
-            "Proxy appears in Simulacra window; test follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 50),
+            "Proxy appears in Simulacra window; test follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 120),
         new(20, "Fortify Simulacra 1.0", "own Proxy", "+750 maximum HP at level 50",
             "four resistance scores +100 each", "600 s", 30),
         new(25, "Power Boost 1.0", "own Proxy out of combat within 10 m", "0 immediate",
@@ -234,7 +234,7 @@ public sealed class AbilitySweepCoderMode : AbilitySweepMode
         new(603, "Charge Simulacra", "own Proxy", "0", "IS cost -20%, regeneration +50%", "600 s", 35),
         new(589, "Proxy Technician", "self with live Proxy", "0", "aura 698 on pet; 5 IS per 5 s", "5 s per pulse", 15),
         new(616, "Logic Daemon 4.0", "self", "0 immediate; attack model damage unresolved",
-            "Logic Daemon replaces Proxy; repeat follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 50),
+            "Logic Daemon replaces Proxy; repeat follow, assist, passive and direct attack", "until dismissal, replacement or expiry", 150),
         new(33, "Static Blast 1.0", "Melee Dummy", "22 stored viral base; final range unresolved", "viral hit or deflect", "instant", 15),
         new(34, "Detonate Proxy", "own simulacrum near Melee Dummy", "NPC blast clamps pet HP to max HP / 10 through max HP / 4",
             "NPC blast within 8 m; simulacrum receives 13000 damage", "instant blast / 0.5 s pet damage", 30)

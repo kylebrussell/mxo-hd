@@ -19,7 +19,7 @@ namespace hds
                 return Array.Empty<byte>();
 
             using var file = File.OpenRead(WorkingFile);
-            if (file.Length is <= 0 or > MaxLength)
+            if (file.Length <= 0 || file.Length > MaxLength)
                 throw new InvalidDataException("Fixture character UI exceeds the stock buffer.");
             byte[] data = new byte[(int)file.Length];
             file.ReadExactly(data);

@@ -74,7 +74,7 @@ public static class NativeQaBootstrapChecks
         {
             if (characterUi != null)
             {
-                using var probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester");
+                using var probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
                 Check.That(probe.CharacterData.TryGetValue(hds.QaCharacterUi.DataType, out var received) &&
                     received.AsSpan().SequenceEqual(characterUi), "Stock Margin UI chunks reconstruct the seeded profile byte-for-byte");
