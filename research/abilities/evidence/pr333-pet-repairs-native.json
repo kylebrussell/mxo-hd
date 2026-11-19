@@ -1,0 +1,78 @@
+{
+  "families": {
+    "owned-simulacra-repair": {
+      "representative": 30,
+      "result": "pass",
+      "head": "55f1b05b5b8e86cad4613b81e347e90e77920c0d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031",
+      "scope": "Stock activated all five repairs on an owned Fortified proxy with room for every heal. The casts requested +20, +34, +117, +174 and +83 respectively. Stock sent a request with QAFriend selected for 30 and 615, and the server refused both. The companion disposable bootstrap checks each actual delta, retained maximum, FX, reuse and player-target denial."
+    }
+  },
+  "abilities": {
+    "30": {
+      "family": "owned-simulacra-repair",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped ability 30 has a fixed type-3 health value of 20, the own-pet target check and a 13s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031"
+        }
+      }
+    },
+    "31": {
+      "family": "owned-simulacra-repair",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped ability 31 has a fixed type-3 health value of 34, the own-pet target check and a 28s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031"
+        }
+      }
+    },
+    "587": {
+      "family": "owned-simulacra-repair",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped ability 587 has a fixed type-3 health value of 117, the own-pet target check and a 28s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031"
+        },
+        "healing": {
+          "source": "Shipped ability 587 has a fixed type-3 health value of 117, the own-pet target check and a 28s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031 AbilityPassiveTests.AdvancedSimulacraRepairsUseTheirOwnTemplateAndCasterInfluence verifies the fixed value, positive caster influence and removal."
+        }
+      }
+    },
+    "596": {
+      "family": "owned-simulacra-repair",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped ability 596 has a fixed type-3 health value of 174, the own-pet target check and a 28s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031"
+        },
+        "healing": {
+          "source": "Shipped ability 596 has a fixed type-3 health value of 174, the own-pet target check and a 28s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031 AbilityPassiveTests.AdvancedSimulacraRepairsUseTheirOwnTemplateAndCasterInfluence verifies the fixed value, positive caster influence and removal."
+        }
+      }
+    },
+    "615": {
+      "family": "owned-simulacra-repair",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped ability 615 has a fixed type-3 health value of 83, the own-pet target check and a 30s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031"
+        },
+        "healing": {
+          "source": "Shipped ability 615 has a fixed type-3 health value of 83, the own-pet target check and a 30s reuse.",
+          "runtime": "CoderPets resolves ownership, computes FixedHeal from the caster, applies HealPet and publishes its effect and window health. AbilityCooldowns provides the individual reuse.",
+          "test": "AbilityEvidencePetRepairsMode checks the exact pet HP delta, maximum, FX, own reuse record and player-target refusal for every variant. Stock run: https://github.com/kylebrussell/mxo-hd/pull/333#issuecomment-7008336031 AbilityPassiveTests.AdvancedSimulacraRepairsUseTheirOwnTemplateAndCasterInfluence verifies the fixed value, positive caster influence and removal."
+        }
+      }
+    }
+  }
+}
