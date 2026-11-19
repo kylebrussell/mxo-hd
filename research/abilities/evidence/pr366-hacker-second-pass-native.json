@@ -1,0 +1,66 @@
+{
+  "families": {
+    "group-repairs-1-stock": {
+      "representative": 56,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock Restore Group 1.0 healed the caster and its recruited teammate by 9. The other recruited teammate and nearer nonmember were excluded. Stock selected self because an NPC obscured the nonmember; the full-RPC disposable replay independently covers selection of that nonmember."
+    },
+    "movement-accelerator-stock": {
+      "representative": 62,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock 62 applied the 10-point, 600-second modifier to selected QAFriend, then the helper dismissed it. Saved PacketLog fa273b663f5e lines 11491 and 11609 show the recipient own-view MovementScale changing to binary32 +0.10 and then zero. Stock self-cast was not sampled."
+    },
+    "pathogenist-loaded-grant-stock": {
+      "representative": 67,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock Actions showed granted Pathogenist Upgrade 1085 under Pathogenist. The disposable replay separately proves the ordinary unload and reload records; the stock run did not exercise grant removal."
+    },
+    "passive-code-healing-stock": {
+      "representative": 170,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock 170 applied for 20 seconds. Consecutive Restore Health 3.0 casts on the wounded teammate healed 84 before, 101 while active, and 84 after expiry."
+    },
+    "virologist-active-upgrade-stock": {
+      "representative": 1077,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock activated the granted upgrade. The Combat tab showed Viral Resistance 0 to 20 and Bonuses gained Viral Accuracy +3 and Concentration +5. The disposable replay separately verifies caster-only admission and removal."
+    },
+    "clear-mind-loaded-stock": {
+      "representative": 409,
+      "result": "pass",
+      "head": "ddd0465a3db3e51231665e16b30f76c59926b8e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/366#issuecomment-7013266037",
+      "scope": "Stock unload and reload removed and restored the visible Ballistic Defense Bonus row. Saved CSR110 PacketLog fa273b663f5e lines 1378, 12338, and 12762 independently verify exact add/remove/add for source 409: target 1143 Melee Defense Bonus +10, 1027 Ballistic Defense Bonus +10, and 1141 Healing Bonus +5. Other Healing sources 71, 233 and 418 remain. This representative covers the exact modifier lifecycle; the displayed Status totals and row selection remain separate."
+    }
+  },
+  "abilities": {
+    "56": {
+      "family": "group-repairs-1-stock"
+    },
+    "62": {
+      "family": "movement-accelerator-stock"
+    },
+    "67": {
+      "family": "pathogenist-loaded-grant-stock"
+    },
+    "170": {
+      "family": "passive-code-healing-stock"
+    },
+    "409": {
+      "family": "clear-mind-loaded-stock"
+    },
+    "1077": {
+      "family": "virologist-active-upgrade-stock"
+    }
+  }
+}
