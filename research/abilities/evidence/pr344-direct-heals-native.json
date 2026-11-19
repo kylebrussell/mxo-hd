@@ -1,0 +1,105 @@
+{
+  "families": {
+    "direct-restore-health": {
+      "representative": 80,
+      "result": "pass",
+      "head": "b9bc7952e522229b602d80a6bd7125f442493719",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616",
+      "scope": "Stock Restore Health 1.0 and 3.0 healed the selected wounded friendly player by 15 and 84. The client suppressed early sibling clicks during family 685 reuse."
+    },
+    "direct-repair-rsi": {
+      "representative": 234,
+      "result": "pass",
+      "head": "b9bc7952e522229b602d80a6bd7125f442493719",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616",
+      "scope": "Stock Repair RSI 2.0, 3.0 and 4.0 healed the selected wounded friendly player by 24, 57 and 91. The client suppressed early sibling clicks during family 686 reuse."
+    },
+    "quick-coding-direct-heal": {
+      "representative": 513,
+      "result": "pass",
+      "head": "b9bc7952e522229b602d80a6bd7125f442493719",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616",
+      "scope": "Stock Quick Coding healed the selected wounded friendly player from 371 to 386 with the staged +20% Healing influence."
+    }
+  },
+  "abilities": {
+    "80": {
+      "family": "direct-restore-health",
+      "checks": {
+        "healing": {
+          "source": "Shipped GOB 80 specifies fixed type-3 heal 13, two-second cast, and four-second own reuse and family 685.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 100 to 115, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB 80 specifies fixed type-3 heal 13, two-second cast, and four-second own reuse and family 685.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 100 to 115, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        }
+      }
+    },
+    "413": {
+      "family": "direct-restore-health",
+      "checks": {
+        "healing": {
+          "source": "Shipped GOB 413 specifies fixed type-3 heal 70, two-second cast, and four-second own reuse and family 685.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 115 to 199, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB 413 specifies fixed type-3 heal 70, two-second cast, and four-second own reuse and family 685.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 115 to 199, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        }
+      }
+    },
+    "234": {
+      "family": "direct-repair-rsi",
+      "checks": {
+        "healing": {
+          "source": "Shipped GOB 234 specifies fixed type-3 heal 20, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 199 to 223, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB 234 specifies fixed type-3 heal 20, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 199 to 223, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        }
+      }
+    },
+    "235": {
+      "family": "direct-repair-rsi",
+      "checks": {
+        "healing": {
+          "source": "Shipped GOB 235 specifies fixed type-3 heal 48, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 223 to 280, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB 235 specifies fixed type-3 heal 48, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 223 to 280, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        }
+      }
+    },
+    "414": {
+      "family": "direct-repair-rsi",
+      "checks": {
+        "healing": {
+          "source": "Shipped GOB 414 specifies fixed type-3 heal 76, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 280 to 371, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB 414 specifies fixed type-3 heal 76, two-second cast, and four-second own reuse and family 686.",
+          "runtime": "AbilitySupport admits the selected friendly target, AbilityHealing applies the caster's healing influence, and HealSelf publishes HP on the recipient view. AbilityCooldowns sends both reuse timers and gates sibling casts.",
+          "test": "AbilityEvidenceDirectHealsMode verifies actual HP 280 to 371, the recipient view and exact own timer starts and shared timer starts and ends. The two sibling-refusal samples verify the shared runtime gate. Stock activated each heal with one request and the early siblings produced no request. https://github.com/kylebrussell/mxo-hd/pull/344#issuecomment-7008739616"
+        }
+      }
+    },
+    "513": {
+      "family": "quick-coding-direct-heal"
+    }
+  }
+}
