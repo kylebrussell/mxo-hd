@@ -97,8 +97,7 @@
           "runtime": "AbilitySupport.Targets resolves to the caster even with another view selected.",
           "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs tests both the routing and the existing capture values. GOB versus capture scaling remains open."
         }
-      },
-      "family": "martial-class-upgrades"
+      }
     },
     "271": {
       "checks": {
