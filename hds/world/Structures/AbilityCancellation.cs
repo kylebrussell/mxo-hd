@@ -20,7 +20,8 @@ namespace hds
         public static bool Dismiss(WorldClient client, ushort id)
         {
             if (!CanDismiss(id)) return false;
-            bool removed = AbilityBuffs.Remove(client, id);
+            bool removed = AbilityAuras.Stop(client, id);
+            removed |= AbilityBuffs.Remove(client, id);
             removed |= TimedEffects.RemoveParent(TimedEffects.ForPlayer(client), id);
             if (removed) client.FlushQueue();
             return removed;

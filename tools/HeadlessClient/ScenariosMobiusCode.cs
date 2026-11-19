@@ -31,6 +31,11 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
         var shooter=await context.AddPlayerAsync(new CharacterSeed("MobiusShooter") {X=17300,Y=495,Z=2300,Level=50,
             Experience=(int)PlayerProgression.ExperienceForLevel(50),Organization=2,Health=5000,MaxHealth=5000,
             Items=new[]{(105,692u,1)},OwnedLoadedAbilities=new[]{((ushort)2,(ushort)1)}});
+        var challenger = positive ? await context.AddPlayerAsync(new CharacterSeed("MobiusChallenger")
+        {
+            X=16900,Y=495,Z=2300,Level=50,Experience=(int)PlayerProgression.ExperienceForLevel(50),
+            Organization=2,Health=5000,MaxHealth=5000,OwnedLoadedAbilities=new[]{((ushort)2,(ushort)1)}
+        }) : null;
         bool passed=false;string step="entry";Exception? failure=null;
         try
         {
@@ -38,6 +43,18 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             victim.SendChat("?pvpflag on");shooter.SendChat("?pvpflag on");
             await victim.WaitForViewUpdateAsync(2,OwnPvpFlagOn);await shooter.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
             var target=await shooter.WaitForViewNamedAsync(victim.Handle);var attacker=await victim.WaitForViewNamedAsync(shooter.Handle);
+            string? forcedEntry = null;
+            string? refusedEntry = null;
+            if (challenger != null)
+            {
+                await challenger.EnterWorldAsync();
+                challenger.SendChat("?pvpflag on");
+                await challenger.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
+                string handle = HandleOf(await challenger.WaitForViewNamedAsync(victim.Handle));
+                // Retail 40 <view,spawn> 01 6b, with the live handle in the decoded field.
+                forcedEntry = "40 " + handle + " 01 6b";
+                refusedEntry = "4d 0e 00 01 00 " + handle;
+            }
             string branch=positive?"positive":"negative";
             victim.SendChat("?combatdepth mobius "+branch+" next");await victim.WaitForTextAsync("Mobius callback chance armed once: "+branch);
             Check.That(!context.Server.DebugLog().Contains("[MOBIUS-QA] callback-only one-shot consumed"),"Arming itself cannot install protection");
@@ -46,10 +63,20 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             int viewCursor=victim.World.ViewSnapshot().Count, rpcCursor=victim.World.RpcSnapshot().Count;
             ushort healthBefore=RefusalOwnValue(victim,"Health","02 80 80 80 40");
             ushort inner=RefusalOwnValue(victim,"InnerStrengthAvailable","02 80 80 80 10");
-            step="normal967-callback";Cast(victim,967,2);
+            step="normal967-callback";
+            // abilities_mobiuscode stock capture, lines 10–11: original target/ground words and slot bytes.
+            victim.SendRpc("80 b9 c7 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 e0 c7 05 64 41 08 6b 00 00 00 00 00");
             //967 is instant. Its sourced callback and actual600/10 timers are the barriers, not a cast-bar packet.
             await victim.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[MOBIUS] PARTIAL967 callback roll="+(positive?0:99)+" proc="+positive),"Actual967 landed producer",TimeSpan.FromSeconds(10));
             var interval=System.Diagnostics.Stopwatch.StartNew();
+            if (challenger != null)
+            {
+                challenger.SendRpc(forcedEntry!);
+                await challenger.WaitForRpcAsync(refusedEntry!);
+            }
+            string fxBytes=positive ? "10 31 46 12" : "12 31 46 12";
+            await victim.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 "+fxBytes+" ??");
+            await shooter.WaitForViewUpdateAsync(target.ViewId, "02 80 80 80 0c "+fxBytes+" ??");
             await victim.WaitForRpcAsync("80 bd 01 c7 03 04 00 00 16 44 01");
             await victim.WaitForRpcAsync("80 bd 01 c7 02 00 00 00 20 41 01");
             Check.That(context.Server.DebugLog().Contains("Heal 967 -> MobiusCSR for 500"),"Unchanged maxHP/10 healing");
@@ -83,6 +110,13 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             Check.Equal(1,context.Server.DebugLog().Split("[MOBIUS-QA] callback-only one-shot consumed").Length-1,"Exactly one producer callback override");
             Check.Equal(0,victim.Received("47").Count+shooter.Received("47").Count,"Freefire does not become interlock");
             shooter.SendRpc("44 00");
+            if (challenger != null)
+            {
+                challenger.SendRpc(forcedEntry!);
+                await challenger.WaitForRpcAsync("47");
+                Check.Equal(1,challenger.Received(refusedEntry!).Count,"One forced refusal during proc followed by entry after expiry");
+                Check.Equal(0,challenger.World.Problems.Count,"Challenger session parser clean");
+            }
             Check.Equal(0,victim.World.Problems.Count+shooter.World.Problems.Count,"All session parsers clean");
             step="complete";passed=true;
         }
@@ -92,7 +126,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             string proof=Path.Combine(Path.GetTempPath(),"mxo-mobius-"+context.Database.Name+".json");
             try {await File.WriteAllTextAsync(proof,JsonSerializer.Serialize(new {Passed=passed,Step=step,Positive=positive,Failure=failure?.ToString(),
                 Source=context.Server.SourceAssembly,SourceSha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(context.Server.SourceAssembly))),
-                Sessions=new[]{victim,shooter}.Select(p=>new{p.Handle,p.CharId,Rpcs=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems}),
+                Sessions=new[]{victim,shooter,challenger}.OfType<HeadlessPlayer>().Select(p=>new{p.Handle,p.CharId,Rpcs=p.World.RpcSnapshot().Select(r=>r.Hex),Views=p.World.ViewSnapshot().Select(Convert.ToHexString),Problems=p.World.Problems}),
                 Debug=context.Server.DebugLog(),Output=context.Server.FullOutput(),NativeUiProven=false,Partial=true},new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("Mobius proof: "+proof);}
             catch(Exception proofError){if(failure==null)throw;Console.Error.WriteLine(proofError);}
         }

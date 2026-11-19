@@ -11,6 +11,12 @@ public class AbilityHostileTests
         var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
         client.playerData = new ClientData();
         client.playerData.setDistrictId(1);
+        client.playerData.setOnWorld(true);
+        client.LivenessClock = () => 0;
+        typeof(WorldClient).GetField("alive", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, true);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, new WorldSendFence());
         client.playerInstance = new PlayerCharacter();
         client.playerInstance.Level.setValue((byte)50);
         client.playerInstance.MaxHealth.setValue(health);
@@ -374,6 +380,47 @@ public class AbilityHostileTests
         {
             AbilityAuras.Stop(target,42);
             WorldServer.Clients=previousClients;
+        }
+    }
+
+    [Theory]
+    [InlineData("life")]
+    [InlineData("world")]
+    [InlineData("transport")]
+    public void StaleAuraCannotDrainAfterTheSourceChanges(string transition)
+    {
+        var caster = Client();
+        var other = Client();
+        var clients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        try
+        {
+            AbilityAuras.Start(caster, 42);
+            AbilityAuras.Start(other, 42);
+            Assert.True(AbilityAuras.IsOn(caster, 42));
+            switch (transition)
+            {
+                case "life": caster.playerData.lifeGeneration++; break;
+                case "world": caster.playerData.worldGeneration++; break;
+                case "transport":
+                    caster.TransportFence.PublishIncoming(true, () => { });
+                    caster.TransportFence.Resume(caster.TransportFence.Capture());
+                    break;
+            }
+            Assert.False(AbilityAuras.IsOn(caster, 42));
+            Assert.True(AbilityAuras.IsOn(other, 42));
+            AbilityAuras.Tick(caster, 42, 1);
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityAuras.Start(caster, 42);
+            AbilityAuras.Tick(caster, 42, 1);
+            Assert.True(AbilityAuras.IsOn(caster, 42));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(caster));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            AbilityAuras.Clear(other, announce: false);
+            WorldServer.Clients = clients;
         }
     }
 

@@ -300,9 +300,19 @@ def server(i):
             parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
     if r.get('proxy_technician'):
         parts.append(r['proxy_technician'])
+    if mobius := r.get('mobius'):
+        parts.append(f"script {mobius['chance']}% / {mobius['seconds']:g}s: incoming weapon free fire and new forced interlock gates; branch healing FX; susceptibility and positive native proof unresolved; [evidence](ABILITY-MOBIUS-FREE-ATTACK.md)")
     if r.get('aura') and not r.get('proxy_technician'):
         a = r['aura']
         parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
+        if i in (42, 61, 89, 378, 380, 485):
+            parts.append('source world/life/transport gates cancel old pulse work; active recipients retain their own expiry; [evidence](ABILITY-HACKER-CALLBACKS.md)')
+        if i in (378, 380):
+            parts.append('admitted recipient receives 0.2s Deflect FX callback and linked on/off record')
+        if i in (378, 485):
+            parts.append('captured parent modifier tuples and native 80 bb cancellation')
+        if i == 378:
+            parts.append('captured own 10s reuse starts on activation')
     if r.get('sweep'):
         parts.append('instant25% cleanse of debuff parents (UDB0, not exempt)' if i == 868 else 'pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
     if r.get('buff_buffer'):
@@ -403,6 +413,8 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['stealth-detection'] = 'Verify the stored visibility or detection contest and reveal rules'
     if r.get('aura'):
         open_items['aura'] = 'Verify aura membership, pulse, drain and cancellation'
+        if i in (42, 61, 89, 378, 380, 485):
+            open_items['aura'] = 'Verify native toggle and pulse records, same-child overlap between different casters, and recipient expiry'
     if i == 967 or any(m.get('ProcTriggerChance') not in (None, 0, 1) for m in modifiers):
         open_items['proc'] = ('Verify the 1% chance of 10s immunity' if i == 967 else
                              'Verify stored proc probability, eligibility and resulting effect')
@@ -505,6 +517,8 @@ for i, ability in abilities.items():
         scope = 'NPC' if ability['name'].startswith('NPC') else classes.get(fields(i).get('Ability/AbilityClass'), 'item / event / internal / unproven loadability')
         if coverage[i].get('consumable_sweep'):
             scope = 'item-triggered ability; cast/stack/shared timer/level checks; ' + ('initial + periodic' if i != 659 else 'periodic') + ' negative-condition sweep; [source and native checklist](ABILITY-CONSUMABLE-SWEEPS.md)'
+        if coverage[i].get('mobius'):
+            scope += '; ' + server(i)
         appendix += f"| {i} | {ability['name']} | {scope} |\n"
 footer = '''
 ## Reproduction and checks

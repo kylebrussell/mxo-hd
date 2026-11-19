@@ -400,6 +400,8 @@ namespace hds
         /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
+            // Stock Deflect Virus378 starts its own10s timer with the on record (proxy_024).
+            if (abilityId == Virii.DeflectVirus1Ability) return true;
             return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
 

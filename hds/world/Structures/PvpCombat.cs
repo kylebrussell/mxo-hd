@@ -163,6 +163,13 @@ namespace hds
                 attacker.FlushQueue();
                 return true;
             }
+            if (MobiusCode.PreventsForcedInterlock(target, request))
+            {
+                attacker.messageQueue.addRpcMessage(BuildCombatRefused(14, false, targetHandle, true, false));
+                attacker.FlushQueue();
+                Output.WriteDebugLog("[MOBIUS] Forced interlock request resisted");
+                return true;
+            }
             PvpFight theirs = CombatManager.GetHandler(target).pvpFight;
             if (theirs != null)
             {

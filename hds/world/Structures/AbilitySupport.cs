@@ -62,7 +62,7 @@ namespace hds
                 ? new List<WorldClient> { target } : new List<WorldClient>();
         }
 
-        public static void Land(WorldClient caster, UInt16 id, UInt16 view)
+        public static void Land(WorldClient caster, UInt16 id, UInt16 view, Action<WorldClient> buffApplied = null)
         {
             var entry = AbilityCatalog.Find(id);
             foreach (WorldClient target in Targets(caster, id, view))
@@ -91,7 +91,7 @@ namespace hds
                 }
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
                 ServerPackets.SendPlayerAbilityEffect(target, fx);
-                AbilityBuffs.Apply(target, id, caster);
+                if (AbilityBuffs.Apply(target, id, caster)) buffApplied?.Invoke(target);
                 AbilityHostile.ApplySweep(caster, target, id);
                 target.FlushQueue();
             }

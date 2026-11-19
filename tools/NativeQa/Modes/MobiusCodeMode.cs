@@ -11,7 +11,7 @@ public abstract class MobiusCodeFixtureMode:NativeQaMode
             DevCommands:true,GmCharacter110:false,FixedCallbackRolls:false,Bootstrap:"mobius-ordinary-gun-helper",
             environmentOverrides:new(){["MXO_MOBIUS_QA"]="1"},
             extraQaMetadata:new(){["MobiusPartial"]=true,["MobiusCallbackBranch"]=branch,["MobiusCallbackArm"]="?combatdepth mobius "+branch+" next",["MobiusProcSeconds"]=10,["MobiusCombatRngFixed"]=false},
-            readyMessages:new[]{"PARTIAL Mobius967: ?pvpflag on before incoming fire, then use Actions Mobius Code normally after ?combatdepth mobius "+branch+" next. Control affects only the next967 chance callback. QAEnemy holds ordinary rifle692; use helper ranged request against CSR_Tester BEFORE casting; keep it firing through ten-second expiry. Ordinary contest/damage RNG remain natural. No forced-entry/susceptibility/FX/general immunity claim. See docs/ABILITY-MOBIUS-FREE-ATTACK.md."});
+            readyMessages:new[]{"PARTIAL Mobius967: ?pvpflag on before incoming fire, then use Actions Mobius Code normally after ?combatdepth mobius "+branch+" next. Control affects only the next967 chance callback. QAEnemy holds ordinary rifle692; use helper ranged request against CSR_Tester BEFORE casting; keep it firing through ten-second expiry. Ordinary contest/damage RNG remain natural. Check branch healing FX and the resisted new incoming forced interlock request while the proc is active. See docs/ABILITY-MOBIUS-FREE-ATTACK.md."});
     }
     public override NativeQaModePlan Plan {get;}
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

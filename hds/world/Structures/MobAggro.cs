@@ -218,7 +218,7 @@ namespace hds
                 return;
             }
 
-            if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects)) return;
+            if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects) || MobiusCode.PreventsNpcInterlock(client)) return;
 
             if (mob.missionInstance == 0 && (!ReachedMeleeDistance(dx * dx + dz * dz) ||
                 !NavMesh.HasSightPath(mob.getDistrict(), mob.getXPos(), mob.getYPos(), mob.getZPos(), px, py, pz)))

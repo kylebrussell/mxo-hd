@@ -29,6 +29,31 @@ public class MobiusCodeTests
         Assert.False(MobiusCode.PreventsFreeAttack(a,110));
         Assert.False(MobiusCode.PreventsFreeAttack(a,111));
     }
+    [Fact]
+    public void OnlyForcedEntryIsResistedDuringTheCapability()
+    {
+        var recipient = Client();
+        var forced = Convert.FromHexString("2F002200016B");
+        var ordinary = Convert.FromHexString("2F002200006B");
+        Assert.False(MobiusCode.PreventsForcedInterlock(recipient, forced, 100));
+        Assert.True(MobiusCode.Apply(recipient, 100));
+        Assert.True(MobiusCode.PreventsForcedInterlock(recipient, forced, 109.999));
+        Assert.False(MobiusCode.PreventsForcedInterlock(recipient, ordinary, 109.999));
+        Assert.False(MobiusCode.PreventsForcedInterlock(recipient, forced.AsSpan(0, 4), 109.999));
+        Assert.False(MobiusCode.PreventsForcedInterlock(Client(), forced, 109.999));
+        Assert.False(MobiusCode.PreventsForcedInterlock(recipient, forced, 110));
+    }
+
+    [Theory]
+    [InlineData(true, 0x12463110u)]
+    [InlineData(false, 0x12463112u)]
+    public void ProcSelectsTheScriptBranchEffect(bool success, uint fx)
+    {
+        Assert.Equal(fx, MobiusCode.HealingEffect(success));
+        Assert.Contains(Convert.ToHexString(BitConverter.GetBytes(fx)),
+            Convert.ToHexString(ServerPackets.BuildPlayerAbilityEffect(fx, 1, true)));
+    }
+
     [Theory]
     [InlineData("world")] [InlineData("life")] [InlineData("death")] [InlineData("duel")] [InlineData("owner")] [InlineData("clear")] [InlineData("parent")]
     public void InvalidatedCapabilityCannotRevive(string why)

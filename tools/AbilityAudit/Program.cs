@@ -106,6 +106,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
         grants = AbilityProgression.GrantsOf(e.Id),
+        mobius = e.Id == MobiusCode.Ability ? new { chance = TempMods.MobiusImmunityChance, seconds = MobiusCode.Seconds } : null,
         aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
         consumable_sweep = ConsumableItems.Items.Any(p => p.Value.AbilityId == e.Id && ConsumableItems.IsUsable(p.Value) &&
@@ -130,6 +131,7 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
 // Optional inventory evidence is emitted only for its actual producers.
 File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
     JsonSerializer.SerializeToElement(row).EnumerateObject()
+        .Where(p => p.Name != "mobius" || p.Value.ValueKind != JsonValueKind.Null)
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
         .Where(p => p.Name != "sharpshooter" || p.Value.GetString() != "")
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())

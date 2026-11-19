@@ -17,7 +17,7 @@ namespace hds
     /// </list>
     /// Because the effect lasts one pulse, a target that leaves the radius keeps it for at most one interval.
     /// The <c>80 bd 05</c> on/off switch is the one retail sent for other "while enabled" toggles (Evade Combat, the
-    /// Hyper- defences); no aura capture exists.
+    /// Hyper- defences). The proxy_024 capture confirms this switch for 378 and 485.
     /// </summary>
     public static class AbilityAuras
     {
@@ -25,14 +25,49 @@ namespace hds
 
         private sealed class State
         {
-            public readonly Dictionary<ushort, int> On = new Dictionary<ushort, int>();
+            public readonly Dictionary<ushort, Activation> On = new Dictionary<ushort, Activation>();
             public int Generation;
+        }
+
+        private sealed class Activation
+        {
+            internal readonly int Generation;
+            internal readonly AbilityBuffs.DrainLifetime Lifetime;
+            internal readonly (ushort Id, ushort Target, int Value)[] ParentRecords;
+
+            internal Activation(ushort ability, int generation, AbilityBuffs.DrainLifetime lifetime)
+            {
+                Generation = generation;
+                Lifetime = lifetime;
+                ParentRecords = CapturedParentModifiers(ability)
+                    .Select(modifier => (AbilityBuffs.NextRecordId(lifetime.Data), modifier.Target, (int)modifier.Number("MinValue")))
+                    .ToArray();
+            }
+
+            internal bool Current => Lifetime.Current && !Lifetime.Data.isDead && !Lifetime.Data.duelDeath;
         }
 
         private static readonly ConditionalWeakTable<WorldClient, State> states = new ConditionalWeakTable<WorldClient, State>();
 
         private static AbilityCatalog.Modifier Callback(ushort id, string func) => AbilityCatalog.Find(id)?.Modifiers
             .FirstOrDefault(m => m.Number("WhenEnabled", -1) == 2 && m.Text("StatModUpdateFunc") == func);
+
+        // proxy_024 records parent, aura/drain target, and value before the child pulse. Use the captured callback order.
+        private static IEnumerable<AbilityCatalog.Modifier> CapturedParentModifiers(ushort id)
+        {
+            if (id != 378 && id != 485) yield break;
+            yield return Callback(id, "ApplyAuraEffect");
+            if (id == 485) yield return AbilityCatalog.Find(id).Modifiers.Single(m => m.Text("StatModTermFunc") == "AddRecastTimer");
+            yield return Callback(id, "ISDrainWithAbilityDeactivation");
+        }
+
+        private static void SendParentRecords(WorldClient client, ushort id, Activation activation, bool off)
+        {
+            foreach (var record in activation.ParentRecords)
+                client.messageQueue.AddWorldBoundRpc(
+                    AbilityBuffs.BuildModifier(TempMods.KindLinked, record.Id, id, record.Target, record.Value, off, 0),
+                    activation.Lifetime.World, activation.Lifetime.Transport);
+        }
 
         /// <summary>Supported hostile pulses and the explicitly implemented Combat Aura / Deflect parents.
         /// Pet auras and health-triggered parents have separate executors.</summary>
@@ -52,33 +87,48 @@ namespace hds
         public static bool IsOn(WorldClient client, ushort id)
         {
             var state = states.GetOrCreateValue(client);
-            lock (state) return state.On.ContainsKey(AbilityCatalog.Canonical(id));
+            lock (state) return state.On.TryGetValue(AbilityCatalog.Canonical(id), out var activation) && activation.Current;
         }
 
         public static List<ushort> Active(WorldClient client)
         {
             var state = states.GetOrCreateValue(client);
-            lock (state) return state.On.Keys.ToList();
+            lock (state) return state.On.Where(entry => entry.Value.Current).Select(entry => entry.Key).ToList();
         }
 
         public static void Start(WorldClient client, ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            if (!Handles(id) || !AbilityBuffBuffer.CanApply(client,id)) return;
+            if (!Handles(id) || !AbilityBuffBuffer.CanApply(client, id)) return;
+            var lifetime = new AbilityBuffs.DrainLifetime(client);
             var state = states.GetOrCreateValue(client);
             int generation;
+            Activation activation;
             lock (state)
             {
-                generation = state.Generation+1;
+                if (!lifetime.Current || lifetime.Data.isDead || lifetime.Data.duelDeath ||
+                    state.On.TryGetValue(id, out var existing) && existing.Current) return;
+                generation = state.Generation + 1;
                 if (id == ProxyTechnician.Ability && !ProxyTechnician.Begin(client,generation)) return;
-                state.Generation=generation;state.On[id] = generation;
+                state.Generation = generation;
+                activation = new Activation(id, generation, lifetime);
+                state.On[id] = activation;
             }
-            client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(id, true));
+            client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(id, true), lifetime.World, lifetime.Transport);
+            SendParentRecords(client, id, activation, false);
             var aura = Callback(id, "ApplyAuraEffect");
-            uint onSelf = (uint)(aura?.Number("ActivationStringOnSelf") ?? 0);
+            uint onSelf = (uint)AbilityCatalog.Find(id).Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2)
+                .Select(m => m.Number("ActivationStringOnSelf")).FirstOrDefault(line => line != 0);
             // "Your %1z ability will reduce the combat tactics of nearby enemies while active." (0xc600222f, Miasma 1.0)
             string name = TimedEffects.PlayerName(client);
-            if (onSelf != 0) client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(onSelf, true, id, name, name));
+            if (onSelf != 0)
+            {
+                // The retained Deflect Virus and Combat Aura 2.0 announcements carry these two values.
+                int[] values = id == 378 ? new[] { (int)EffectOf(id), 0 } :
+                    id == 485 ? new[] { DrainOf(id), 0 } : Array.Empty<int>();
+                client.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(onSelf, true, id, name, name, values),
+                    lifetime.World, lifetime.Transport);
+            }
             client.FlushQueue();
             Output.WriteDebugLog("[AURA] " + id + " on for " + name);
             if (aura?.Text("StatModInitFunc") == "ApplyAuraEffect") Pulse(client, id,generation);
@@ -91,46 +141,57 @@ namespace hds
         private static bool Current(WorldClient client, ushort id, int generation)
         {
             var state = states.GetOrCreateValue(client);
-            lock (state) return state.On.TryGetValue(id, out int g) && g == generation;
+            lock (state) return state.On.TryGetValue(id, out var active) && active.Generation == generation && active.Current;
         }
 
         internal static void Tick(WorldClient client, ushort id, int generation)
         {
-            if (!Current(client, id, generation)) return;
-            if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client,generation)) { Stop(client,id,generation); return; }
-            if (client.playerData.isDead || client.playerData.duelDeath || !SocialHandler.OnlineWhere(c => c == client).Any())
+            if (!Current(client, id, generation))
             {
-                Stop(client, id);
+                Stop(client, id, generation, announce: false);
                 return;
             }
-            if (!PayDrain(client,id)) return;
-            Pulse(client, id,generation);
-            Schedule(client, id, generation);
+            if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client,generation)) { Stop(client,id,generation); return; }
+            if (!PayDrain(client, id, generation)) return;
+            Pulse(client, id, generation);
+            if (Current(client, id, generation)) Schedule(client, id, generation);
         }
 
-        internal static bool PayDrain(WorldClient client,ushort id)
+        internal static bool PayDrain(WorldClient client, ushort id, int? generation = null)
         {
             int drain = DrainOf(id);
             if (drain > 0)
             {
-                int available = AbilityHandler.CurrentInnerStrength(client);
+                int available;
+                ushort remaining = 0;
+                var state = states.GetOrCreateValue(client);
+                lock (state)
+                {
+                    if (generation.HasValue && !Current(client, id, generation.Value)) return false;
+                    available = AbilityHandler.CurrentInnerStrength(client);
+                    if (available >= drain) remaining = AbilityHandler.SpendInnerStrength(client, (ushort)drain);
+                }
                 if (available < drain)
                 {
-                    string name = TimedEffects.PlayerName(client);
-                    client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(DrainDeactivated, true, id, name, name, drain - available));
-                    Stop(client, id);
+                    if (!generation.HasValue || Current(client, id, generation.Value))
+                    {
+                        string name = TimedEffects.PlayerName(client);
+                        client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(DrainDeactivated, true, id, name, name, drain - available));
+                        Stop(client, id, generation);
+                    }
                     return false;
                 }
-                new ServerPackets().sendISCurrent(client, AbilityHandler.SpendInnerStrength(client, (ushort)drain));
+                if (!generation.HasValue || Current(client, id, generation.Value))
+                    new ServerPackets().sendISCurrent(client, remaining);
                 if (id == ProxyTechnician.Ability) Output.WriteDebugLog("[PROXYTECH] drain source="+TimedEffects.PlayerName(client)+" amount="+drain);
             }
             return true;
         }
 
         /// <summary>One ApplyAuraEffect: the effect ability on hostile NPCs and PvP-legal players around the caster.</summary>
-        public static void Pulse(WorldClient client, ushort id,int? generation=null)
+        private static void Pulse(WorldClient client, ushort id, int generation)
         {
-            if (PvpCombat.HealthOf(client) == 0) return;
+            if (!Current(client, id, generation) || PvpCombat.HealthOf(client) == 0) return;
             if (id == ProxyTechnician.Ability) { ProxyTechnician.Pulse(client,generation); return; }
             ushort effectId = EffectOf(id);
             var effect = AbilityCatalog.Find(effectId);
@@ -138,19 +199,7 @@ namespace hds
             if (Friendly(id))
             {
                 // Use the effect's radius, exactly as ApplyAuraEffect invokes the effect ability.
-                AbilitySupport.Land(client, effectId, 2);
-                if(id==378 || id==380)
-                {
-                    foreach(var target in AbilitySupport.Targets(client,effectId,2))
-                    {
-                        int world=target.playerData.worldGeneration, life=target.playerData.lifeGeneration;
-                        DelayedActions.AfterFor(target,0.2,()=>
-                        {
-                            if(target.playerData.worldGeneration==world && target.playerData.lifeGeneration==life && !target.playerData.isDead)
-                                ServerPackets.SendPlayerAbilityEffect(target,id==378?0x28000820u:0x28000824u);
-                        });
-                    }
-                }
+                AbilitySupport.Land(client, effectId, 2, target => Virii.ApplyDeflectEffect(id, client, target));
                 Output.WriteDebugLog("[AURA] " + id + " friendly pulse " + effectId);
                 return;
             }
@@ -163,12 +212,14 @@ namespace hds
             int hits = 0;
             foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius))
             {
+                if (!Current(client, id, generation)) break;
                 TimedEffects.ApplyToMob(client, mob, view, effectId);
                 if (damage > 0) CombatManager.GetHandler(client).ApplyAbilityToNpc(mob, view, PunishingBlows.Npc(client, mob, damage), fx);
                 hits++;
             }
             foreach (WorldClient target in AbilityHostile.PlayersInArea(client, x, y, z, radius))
             {
+                if (!Current(client, id, generation)) break;
                 PvpFlag.OnFightStarts(client, true);
                 TimedEffects.ApplyToPlayer(target, effectId, name, client);
                 if (damage > 0)
@@ -184,21 +235,32 @@ namespace hds
         }
 
         /// <summary>Switches the aura off (toggled again, IS shortfall, death, a Delete Upgrade). Returns whether it was on.</summary>
-        public static bool Stop(WorldClient client, ushort id,int? generation=null)
+        public static bool Stop(WorldClient client, ushort id, int? generation = null, bool announce = true)
         {
             id = AbilityCatalog.Canonical(id);
             var state = states.GetOrCreateValue(client);
+            Activation active;
             lock (state)
             {
-                if (!state.On.TryGetValue(id,out int current) || generation.HasValue && current!=generation.Value) return false;
+                if (!state.On.TryGetValue(id, out active) || generation.HasValue && active.Generation != generation.Value) return false;
                 state.On.Remove(id);
                 if (id == ProxyTechnician.Ability) ProxyTechnician.End(client);
+                if (!active.Lifetime.ScopeCurrent || !announce) return false;
             }
-            client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(id, false));
-            if (Friendly(id)) AbilityCooldowns.Start(client,id,TimeUtils.GetSimTimeSeconds());
+            SendParentRecords(client, id, active, true);
+            client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(id, false), active.Lifetime.World, active.Lifetime.Transport);
+            if (Friendly(id) && id != Virii.DeflectVirus1Ability) AbilityCooldowns.Start(client, id, TimeUtils.GetSimTimeSeconds());
             client.FlushQueue();
             Output.WriteDebugLog("[AURA] " + id + " off for " + TimedEffects.PlayerName(client));
             return true;
+        }
+
+        internal static void Clear(WorldClient client, bool announce)
+        {
+            if (!states.TryGetValue(client, out var state)) return;
+            KeyValuePair<ushort, Activation>[] pending;
+            lock (state) pending = state.On.ToArray();
+            foreach (var entry in pending) Stop(client, entry.Key, entry.Value.Generation, announce);
         }
     }
 }
