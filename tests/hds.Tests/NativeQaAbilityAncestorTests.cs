@@ -26,12 +26,18 @@ public sealed class NativeQaAbilityAncestorTests
         var names = catalog.RootElement.GetProperty("abilities").EnumerateArray()
             .ToDictionary(row => row.GetProperty("id").GetUInt16(), row => row.GetProperty("name").GetString());
         var loaded = new HashSet<string?>();
-        foreach (string mode in new[] { "ability-sweep-martial-artist", "ability-sweep-gunman", "style-choreography" })
+        foreach (string mode in new[] { "ability-sweep-martial-artist", "ability-sweep-gunman", "ability-parity-gunman-proc-sweep", "style-choreography" })
         {
             var plan = NativeQaModes.Find(mode).Plan;
             Assert.True(plan.LoadAbilityAncestors);
             var ancestors = NativeQaFixtureSeeder.RequiredAncestors(catalog.RootElement, plan.Abilities);
             Assert.Empty(ancestors.Intersect(plan.Abilities));
+            if (mode == "ability-parity-gunman-proc-sweep")
+            {
+                int requiredMemory = plan.Abilities.Concat(ancestors).Sum(id =>
+                    (int)hds.AbilityCatalog.Find(id).Number("Ability/InventoryMemCost"));
+                Assert.InRange(requiredMemory, 1, 100);
+            }
             loaded.UnionWith(plan.Abilities.Concat(ancestors).Select(id => names[id]));
         }
 
