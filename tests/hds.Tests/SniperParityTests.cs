@@ -79,7 +79,7 @@ public class SniperParityTests
     [Theory]
     [InlineData(495, 1072, new[] { 106, 524, 171, 1010 }, new[] { 110, 6, 6, 7 })]
     [InlineData(508, 1136, new[] { 106, 524, 171, 1010 }, new[] { 60, 10, 4, 1 })]
-    [InlineData(143, 1061, new[] { 106, 180, 181 }, new[] { 50, 20, 20 })]
+    [InlineData(154, 1061, new[] { 106, 180, 181 }, new[] { 50, 20, 20 })]
     public void GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement(
         ushort parent, ushort upgrade, int[] stats, int[] values)
     {

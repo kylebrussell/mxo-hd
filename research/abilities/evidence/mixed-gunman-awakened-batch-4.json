@@ -41,17 +41,17 @@
     "1061": {
       "checks": {
         "targeting": {
-          "source": "GOB 143 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
           "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
           "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
         },
         "stats": {
-          "source": "GOB 143 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
           "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
           "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
         },
         "behavior-tests": {
-          "source": "GOB 143 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
           "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
           "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
         }
