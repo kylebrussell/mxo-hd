@@ -1,0 +1,72 @@
+{
+  "families": {
+    "stock-bullet-spray": {
+      "representative": 247,
+      "result": "pass",
+      "head": "50d8572600b0f5371b91e2865c13f2588c406b14",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646",
+      "scope": "Stock Bullet Spray in SMG style hit the selected Melee Dummy for 91 and naturally applied Enraged 93 for eight seconds. The single target supplies no cone boundary evidence."
+    },
+    "stock-suppression-fire": {
+      "representative": 248,
+      "result": "pass",
+      "head": "3e298717c9dc1bca1622bd82ac7b4fbc9f987eb1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7017687253",
+      "scope": "Stock Suppression Fire activated from rest in SMG style, hit the selected Melee Dummy for 104 and applied Rooted 99 for the server-reported 21.12 seconds. Break behavior and cone geometry were not sampled."
+    },
+    "stock-wounding-shot": {
+      "representative": 253,
+      "result": "pass",
+      "head": "50d8572600b0f5371b91e2865c13f2588c406b14",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646",
+      "scope": "Stock Wounding Shot hit the selected Melee Dummy for 70, followed by the observed neutral DOT total 14 and four-point ticks. The stun did not proc in this sample."
+    },
+    "stock-three-round-burst": {
+      "representative": 256,
+      "result": "pass",
+      "head": "3e298717c9dc1bca1622bd82ac7b4fbc9f987eb1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7017687253",
+      "scope": "Stock Three Round Burst activated in Rifles interlock with the selected dummy Staggered and shared reuse clear. It hit for 76; its terminal callback naturally applied Stun 102 for four seconds on the next resolved round. Immunity presentation and ILDB playback were not observed."
+    },
+    "stock-full-auto-redux": {
+      "representative": 496,
+      "result": "pass",
+      "head": "3e298717c9dc1bca1622bd82ac7b4fbc9f987eb1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7017687253",
+      "scope": "Stock Full Auto Redux activated in SMG interlock with the selected dummy Dazed, hit for 94 and applied both -15 accuracy modifiers (522 and 524) for eight seconds to that recipient."
+    }
+  },
+  "abilities": {
+    "247": {
+      "family": "stock-bullet-spray",
+      "checks": {
+        "proc": {
+          "source": "GOB 247 stores a 15% landing proc for eight seconds of Enraged.",
+          "runtime": "AbilityTargets applies TempMods on the landed target; TimedEffects checks the stored probability before applying state 93.",
+          "test": "ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding verifies the boundary roll, duration and expiry. Stock captured a natural eight-second Enraged proc on the selected dummy. https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646"
+        }
+      }
+    },
+    "248": {
+      "family": "stock-suppression-fire"
+    },
+    "253": {
+      "family": "stock-wounding-shot"
+    },
+    "256": {
+      "family": "stock-three-round-burst"
+    },
+    "496": {
+      "family": "stock-full-auto-redux"
+    },
+    "250": {
+      "checks": {
+        "proc": {
+          "source": "GOB 250 stores a 40% landing proc for eight seconds of Enraged.",
+          "runtime": "AbilityTargets applies TempMods on the landed target; TimedEffects checks the stored probability before applying state 93.",
+          "test": "ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding verifies the boundary roll, duration and expiry. Stock captured a natural eight-second Enraged proc on the selected dummy. https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646"
+        }
+      }
+    }
+  }
+}

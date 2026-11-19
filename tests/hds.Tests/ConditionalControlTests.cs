@@ -10,11 +10,16 @@ public class ConditionalControlTests
         public bool Living = true;
         public uint Flags;
         public int Applications;
+        public List<int> DamageTicks { get; } = new();
         internal override WorldClient Context => null!;
         internal override bool Alive => Living;
         internal override uint ConditionFlags => Flags;
         internal override void Applied(TempMods.Effect e,List<TimedEffects.Active> a,TimedEffects.Active i,List<TimedEffects.Active> r) => Applications++;
-        internal override bool Ticked(TimedEffects.Active m,int damage) => true;
+        internal override bool Ticked(TimedEffects.Active m,int damage)
+        {
+            DamageTicks.Add(damage);
+            return true;
+        }
         internal override void Ended(List<TimedEffects.Active> ended) { }
     }
     private static void Daze(Subject s,double now,float seconds=12) => TimedEffects.Apply(s,new TempMods.Effect {
@@ -44,6 +49,115 @@ public class ConditionalControlTests
         TimedEffects.RunDue(now+seconds+1);
         Assert.False(s.Effects.Has(TempMods.ISDrainTargetAbility));
         TimedEffects.Clear(s);
+    }
+
+    private sealed class FixedProcRoll(double roll) : Random
+    {
+        public override double NextDouble() => roll;
+    }
+
+    [Theory]
+    [InlineData(253, .30f, true)]
+    [InlineData(256, .40f, false)]
+    public void RifleTermStunsRollOnceAndHonorIndependentImmunity(ushort id, float chance, bool dot)
+    {
+        Assert.True(TempMods.TryGet(id, out var effect));
+        var marker = Assert.Single(effect.Mods, mod => mod.Proc == TempMods.Proc.Terminal);
+        Assert.Equal(chance, marker.Chance);
+        Assert.Equal(.01f, marker.Seconds);
+        Assert.Equal(4, marker.MinValue);
+
+        double now = TimeUtils.GetSimTimeSeconds();
+        var miss = new Subject();
+        var hit = new Subject();
+        var immune = new Subject();
+        immune.Effects.Apply(734, new[] { new TimedEffects.Active { Target = 681, Proc = TempMods.Proc.State, Seconds = 10 } }, now);
+        TimedEffects.Apply(miss, effect, now, rng: new FixedProcRoll(chance));
+        TimedEffects.Apply(hit, effect, now, rng: new FixedProcRoll(chance - .001));
+        TimedEffects.Apply(immune, effect, now, rng: new FixedProcRoll(0));
+        Assert.False(hit.Effects.Has(TempMods.StunAbility));
+        TimedEffects.RunDue(now + .02);
+        Assert.False(miss.Effects.Has(TempMods.StunAbility));
+        Assert.False(immune.Effects.Has(TempMods.StunAbility));
+        Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility).Seconds);
+        Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), mod => mod.Parent == 734).Seconds);
+        Assert.Equal(dot, hit.Effects.Snapshot().Any(mod => mod.Proc == TempMods.Proc.Dot));
+        TimedEffects.RunDue(now + 4.03);
+        Assert.False(hit.Effects.Has(TempMods.StunAbility));
+        Assert.False(hit.Effects.Has(TempMods.ISDrainTargetAbility));
+        foreach (var subject in new[] { miss, hit, immune })
+            TimedEffects.Clear(subject);
+    }
+
+    [Fact]
+    public void WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates()
+    {
+        double now = TimeUtils.GetSimTimeSeconds();
+        var subject = new Subject();
+        Assert.True(TempMods.TryGet(253, out var effect));
+        var dot = Assert.Single(TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(1)));
+        Assert.Equal(TempMods.Proc.Dot, dot.Proc);
+        Assert.Equal(14, dot.Value); // Capture override; the raw GOB amount is 7.
+        Assert.Equal(2.5, dot.Interval);
+        TimedEffects.RunDue(now + 2.49);
+        Assert.Empty(subject.DamageTicks);
+        TimedEffects.RunDue(now + 10.01);
+        Assert.Equal(new[] { 4, 4, 4 }, subject.DamageTicks);
+        Assert.False(subject.Effects.HasParent(253));
+    }
+
+    [Fact]
+    public void ImmobilizingShotProtectsTheLandingHitThenUsesItsFiftyPercentBreak()
+    {
+        var subject = new Subject();
+        double now = TimeUtils.GetSimTimeSeconds();
+        Assert.True(TempMods.TryGet(254, out var effect));
+        var root = Assert.Single(TimedEffects.Apply(subject, effect, now), mod => mod.Target == TempMods.RootedAbility);
+        Assert.Equal(8, root.Seconds);
+        Assert.Equal(50, root.BreakChance);
+        Assert.True(root.ProtectFirstHealthChange);
+        Assert.Empty(subject.Effects.HealthChanged(1, true, new Random(1))); // Protected landing hit.
+        Assert.Empty(subject.Effects.HealthChanged(1, true, new Random(0))); // Next(100) = 72.
+        Assert.False(ControlActions.CanMove(subject.Effects));
+        Assert.NotEmpty(subject.Effects.HealthChanged(1, true, new Random(1))); // Next(100) = 24.
+        Assert.True(ControlActions.CanMove(subject.Effects));
+        TimedEffects.Clear(subject);
+    }
+
+    [Theory]
+    [InlineData(248, 21.12f)]
+    [InlineData(492, 14.08f)]
+    public void ConeRootsUseTheirCapturedDurationsAndThenReleaseMovement(ushort id, float seconds)
+    {
+        var subject = new Subject();
+        double now = TimeUtils.GetSimTimeSeconds();
+        Assert.True(TempMods.TryGet(id, out var effect));
+        var root = Assert.Single(TimedEffects.Apply(subject, effect, now));
+        Assert.Equal(TempMods.RootedAbility, root.Target);
+        Assert.Equal(seconds, root.Seconds);
+        Assert.False(ControlActions.CanMove(subject.Effects));
+        TimedEffects.RunDue(root.Expires + .01);
+        Assert.True(ControlActions.CanMove(subject.Effects));
+    }
+
+    [Theory]
+    [InlineData(247, 93, 8, .15f)]
+    [InlineData(249, 93, 10, .20f)]
+    [InlineData(250, 93, 8, .40f)]
+    [InlineData(255, 96, 4, .50f)]
+    [InlineData(493, 93, 10, .30f)]
+    [InlineData(494, 93, 8, .40f)]
+    public void GunControlsRespectTheirStoredProbabilityAtLanding(ushort id, ushort state, int seconds, float chance)
+    {
+        Assert.True(TempMods.TryGet(id, out var effect));
+        var subject = new Subject();
+        double now = TimeUtils.GetSimTimeSeconds();
+        Assert.DoesNotContain(TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(chance)), mod => mod.Target == state);
+        Assert.Equal(seconds, Assert.Single(TimedEffects.Apply(subject, effect, now,
+            rng: new FixedProcRoll(chance - .001)), mod => mod.Target == state).Seconds);
+        TimedEffects.RunDue(now + seconds + .01);
+        Assert.False(subject.Effects.Has(state));
+        TimedEffects.Clear(subject);
     }
 
     [Theory]

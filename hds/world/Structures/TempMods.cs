@@ -361,6 +361,9 @@ namespace hds
             if (id == 279 && source != null)
                 mods.AddRange(source.Mods.Where(m => m.Proc == Proc.State &&
                     !captured.Mods.Any(c => c.Proc == m.Proc && c.Target == m.Target)));
+            // The Wounding Shot capture preserves the observed DOT. Its separate GOB term proc still applies.
+            if (id == 253 && source != null)
+                mods.AddRange(source.Mods.Where(m => m.Proc == Proc.Terminal));
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
             return true;
         }

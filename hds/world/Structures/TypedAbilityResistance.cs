@@ -9,6 +9,8 @@ namespace hds
         public static ushort Stat(int type)=>type switch {0=>180,1=>181,2=>157,7=>1033,_=>0};
         public static int StoredType(ushort ability,bool dot=false)
         {
+            int scriptedType = CombatSpecials.ExileDamageType(ability);
+            if (!dot && scriptedType >= 0) return scriptedType;
             var entry=AbilityCatalog.Find(ability);
             if(entry==null)return -1;
             var types=entry.Modifiers.Where(m=>m.Number("WhenEnabled",-1)==2 &&

@@ -174,6 +174,29 @@ public static partial class Scenarios
         Check.Equal(0, knifer.World.Problems.Count + brawler.World.Problems.Count, "Specials protocol");
     }
 
+    private static async Task CombatExileWeapons(ScenarioContext context)
+    {
+        var samples = new[] { (Ability: (ushort)208, Health: (ushort)490),
+            (Ability: (ushort)207, Health: (ushort)390), (Ability: (ushort)1022, Health: (ushort)0) };
+        // A separate owner per cast keeps each item attack on its ordinary direct-object path.
+        var attackers = await context.AddPlayersInWorldAsync(samples.Select(sample =>
+            NearNpc($"Exile{sample.Ability}") with
+            {
+                InnerStrength = 500, MaxInnerStrength = 500,
+                OwnedLoadedAbilities = new[] { (sample.Ability, (ushort)50) }
+            }).ToArray());
+        attackers[0].SendChat("?exileweakness wood Trainman");
+        await attackers[0].WaitForTextAsync("Trainman now has Exile weakness 464");
+        foreach (var (attacker, sample) in attackers.Zip(samples))
+        {
+            var target = await attacker.WaitForViewNamedAsync("Trainman");
+            Cast(attacker, sample.Ability, target.ViewId);
+            await attacker.WaitUntilAsync(() => ViewUpdateValues(attacker, target.ViewId, NpcHealthUpdate).Contains(sample.Health),
+                $"Exile attack {sample.Ability} changes Trainman's health to {sample.Health}", TimeSpan.FromSeconds(15));
+            Check.Equal(0, attacker.World.Problems.Count, "Exile item attack protocol");
+        }
+    }
+
     /// <summary>The same specials between two flagged players, with the caster buffs.</summary>
     private static async Task CombatSpecialsPvp(ScenarioContext context)
     {

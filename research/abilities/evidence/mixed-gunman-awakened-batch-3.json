@@ -1,0 +1,235 @@
+{
+  "abilities": {
+    "207": {
+      "checks": {
+        "script": {
+          "source": "general.py WoodenStakeAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-100 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 100-melee hit through an ordinary ability request."
+        },
+        "behavior-tests": {
+          "source": "general.py WoodenStakeAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-100 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 100-melee hit through an ordinary ability request."
+        }
+      }
+    },
+    "208": {
+      "checks": {
+        "script": {
+          "source": "general.py SilverBulletAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-100 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 10-ranged unmatched hit through an ordinary ability request."
+        },
+        "behavior-tests": {
+          "source": "general.py SilverBulletAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-100 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the 10-ranged unmatched hit through an ordinary ability request."
+        }
+      }
+    },
+    "246": {
+      "checks": {
+        "stats": {
+          "source": "GOB 246 supplies level-scaled ballistic damage and melee resistance.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        },
+        "behavior-tests": {
+          "source": "GOB 246 supplies level-scaled ballistic damage and melee resistance.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        }
+      }
+    },
+    "251": {
+      "checks": {
+        "stats": {
+          "source": "GOB 251 supplies +1 ballistic resistance and grant 1073.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        },
+        "behavior-tests": {
+          "source": "GOB 251 supplies +1 ballistic resistance and grant 1073.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        }
+      }
+    },
+    "252": {
+      "checks": {
+        "stats": {
+          "source": "GOB 252 supplies level-scaled ballistic accuracy and ballistic damage.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        },
+        "behavior-tests": {
+          "source": "GOB 252 supplies level-scaled ballistic accuracy and ballistic damage.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        }
+      }
+    },
+    "253": {
+      "checks": {
+        "proc": {
+          "source": "GOB 253 schedules a 0.01 s term marker with 30% chance and value 4. tempmods.py ApplyStunWithTimer attaches a four-second stun and an independent four-second immunity on an unprotected target.",
+          "runtime": "AbilityCatalog.Controls and TempMods preserve the marker, then TimedEffects.RunDue and AbilityConditionalControls.Term process the chance, immunity and state. Wounding Shot keeps its existing DOT.",
+          "test": "ConditionalControlTests.RifleTermStunsRollOnceAndHonorIndependentImmunity asserts the threshold hit and miss, no stun before term, existing immunity refusal, correct expiry and preservation of Wounding Shot DOT. WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates checks its separate neutral DOT."
+        },
+        "script": {
+          "source": "GOB 253 schedules a 0.01 s term marker with 30% chance and value 4. tempmods.py ApplyStunWithTimer attaches a four-second stun and an independent four-second immunity on an unprotected target.",
+          "runtime": "AbilityCatalog.Controls and TempMods preserve the marker, then TimedEffects.RunDue and AbilityConditionalControls.Term process the chance, immunity and state. Wounding Shot keeps its existing DOT.",
+          "test": "ConditionalControlTests.RifleTermStunsRollOnceAndHonorIndependentImmunity asserts the threshold hit and miss, no stun before term, existing immunity refusal, correct expiry and preservation of Wounding Shot DOT. WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates checks its separate neutral DOT."
+        },
+        "periodic": {
+          "source": "GOB 253 stores a 10 s NeutralDOT at 2.5 s cadence. The retained runtime capture provides total 14 versus the GOB total 7.",
+          "runtime": "TempMods.TryGet retains the capture amount and TimedEffects.RunDue executes three rounded updates, with no tick at expiry.",
+          "test": "ConditionalControlTests.WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates verifies initial delay, interval, three four-point ticks and expiry. The retail base-to-capture value difference stays open."
+        }
+      }
+    },
+    "254": {
+      "checks": {
+        "script": {
+          "source": "GOB 254 attaches EnableRootWithChance at 50% break chance with an eight-second root.",
+          "runtime": "AbilityCatalog.Controls describes the root callback and TimedEffects.Holder.HealthChanged protects the initial damage event, then applies the break threshold.",
+          "test": "ConditionalControlTests.ImmobilizingShotProtectsTheLandingHitThenUsesItsFiftyPercentBreak exercises protected damage, a retained root and a breaking roll. combat-rifle-opener-immobilizing covers the ordinary cast request and out-of-combat restriction."
+        }
+      }
+    },
+    "255": {
+      "checks": {
+        "proc": {
+          "source": "GOB 255 admits a 50% Powerless proc lasting four seconds on landing.",
+          "runtime": "TempMods and TimedEffects.Apply gate the control by the stored probability. CombatSpecials.IsRifleOpener confines the cast to out of combat.",
+          "test": "ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding and combat-rifle-opener-disabling verify hit/miss and expiry as well as acceptance/refusal in the ordinary rifle path."
+        }
+      }
+    },
+    "256": {
+      "checks": {
+        "proc": {
+          "source": "GOB 256 schedules a 0.01 s term marker with 40% chance and value 4. tempmods.py ApplyStunWithTimer attaches a four-second stun and an independent four-second immunity on an unprotected target.",
+          "runtime": "AbilityCatalog.Controls and TempMods preserve the marker, then TimedEffects.RunDue and AbilityConditionalControls.Term process the chance, immunity and state. Wounding Shot keeps its existing DOT.",
+          "test": "ConditionalControlTests.RifleTermStunsRollOnceAndHonorIndependentImmunity asserts the threshold hit and miss, no stun before term, existing immunity refusal, correct expiry and preservation of Wounding Shot DOT. WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates checks its separate neutral DOT."
+        },
+        "script": {
+          "source": "GOB 256 schedules a 0.01 s term marker with 40% chance and value 4. tempmods.py ApplyStunWithTimer attaches a four-second stun and an independent four-second immunity on an unprotected target.",
+          "runtime": "AbilityCatalog.Controls and TempMods preserve the marker, then TimedEffects.RunDue and AbilityConditionalControls.Term process the chance, immunity and state. Wounding Shot keeps its existing DOT.",
+          "test": "ConditionalControlTests.RifleTermStunsRollOnceAndHonorIndependentImmunity asserts the threshold hit and miss, no stun before term, existing immunity refusal, correct expiry and preservation of Wounding Shot DOT. WoundingShotKeepsItsCapturedDotAndRunsThreeRoundedUpdates checks its separate neutral DOT."
+        }
+      }
+    },
+    "408": {
+      "checks": {
+        "stats": {
+          "source": "GOB 408 supplies level-scaled Combat Tactics and Viral Defense.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        },
+        "behavior-tests": {
+          "source": "GOB 408 supplies level-scaled Combat Tactics and Viral Defense.",
+          "runtime": "AbilityPassives.SetLoaded installs and clears the totals. AbilityStats reads the matching attack, defense, resistance or damage consumer.",
+          "test": "MixedGunmanParityTests.LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals verifies loaded and unloaded totals, applicable grant membership, and the resulting combat consumers."
+        }
+      }
+    },
+    "492": {
+      "family": "gun-cone"
+    },
+    "493": {
+      "checks": {
+        "proc": {
+          "source": "GOB 493 uses a 30% Enrage proc for 10 seconds. PR324 stock Direct Fire admitted the selected and interior cone targets.",
+          "runtime": "AbilityTargets.LandAround uses the cone and calls the timed effect landing path per recipient. TimedEffects applies the stored proc threshold.",
+          "test": "ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding checks miss, hit and expiry. combat-foundations and stock PR324 verify actual cone recipients. https://github.com/kylebrussell/mxo-hd/pull/324#issuecomment-7002216774"
+        }
+      }
+    },
+    "496": {
+      "checks": {
+        "stats": {
+          "source": "GOB 496 applies melee and ballistic accuracy -15 for eight seconds alongside its separate damage.",
+          "runtime": "AbilityHostile.Catalog creates both timed records. AbilityStats.Attack uses them for melee and ballistic attacks.",
+          "test": "MixedGunmanParityTests.FullAutoReduxReducesBothAccuracyTypesForEightSeconds measures both active penalties and restoration."
+        }
+      }
+    },
+    "1022": {
+      "checks": {
+        "script": {
+          "source": "general.py WoodenStakePlusAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-750 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the enhanced weak-target lethal hit through an ordinary ability request."
+        },
+        "behavior-tests": {
+          "source": "general.py WoodenStakePlusAttack_DirectObject uses Melee damage and exact matching weakness grant for the 10-to-750 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open. The combat-exile-weapons wire scenario exercises the enhanced weak-target lethal hit through an ordinary ability request."
+        }
+      }
+    },
+    "1024": {
+      "checks": {
+        "script": {
+          "source": "general.py SilverBulletPlusAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-750 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+        },
+        "behavior-tests": {
+          "source": "general.py SilverBulletPlusAttack_DirectObject uses Ranged damage and exact matching weakness grant for the 10-to-750 branch.",
+          "runtime": "CombatSpecials.Damage reads the target grant and CombatSpecials.ExileDamageType routes the hit to the matching influence and resistance consumers.",
+          "test": "MixedGunmanParityTests.ExileScriptDamageOnlyMultipliesForTheMatchingTargetGrant and ExileDirectObjectDamageUsesTheScriptedMeleeOrRangedType check matching, wrong and absent weakness and typed damage behavior. Existing name-policy assignment and independent target admission remain open."
+        }
+      }
+    },
+    "1025": {
+      "checks": {
+        "script": {
+          "source": "general.py EMPBlast_DirectObject applies neutral 0 or 5000 according to target grant 1026.",
+          "runtime": "AbilityEmpBlast.Damage reads only the designated target grant, and the cast routes damage through ordinary NPC HP/death handling.",
+          "test": "AbilityEmpBlastTests.OnlyExplicitTargetGrantEnablesScriptDamage and ability-emp-blast verify exact marked and unmarked HP effects and death handling. Production grant owners and item activation remain open."
+        }
+      }
+    },
+    "1071": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 245 grants 1071. GOB 1071 selects self and applies max HP +90, ballistic accuracy +6, damage +4, defense +4.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        },
+        "stats": {
+          "source": "GOB 245 grants 1071. GOB 1071 selects self and applies max HP +90, ballistic accuracy +6, damage +4, defense +4.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 245 grants 1071. GOB 1071 selects self and applies max HP +90, ballistic accuracy +6, damage +4, defense +4.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        }
+      }
+    },
+    "1073": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 251 grants 1073. GOB 1073 selects self and applies max HP +90, ballistic accuracy +7, damage +2, defense +3.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        },
+        "stats": {
+          "source": "GOB 251 grants 1073. GOB 1073 selects self and applies max HP +90, ballistic accuracy +7, damage +2, defense +3.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 251 grants 1073. GOB 1073 selects self and applies max HP +90, ballistic accuracy +7, damage +2, defense +3.",
+          "runtime": "AbilityPassives registers the grant, AbilitySupport.Targets/Land chooses the caster, and AbilityBuffs and AbilityStats feed the active vitals and weapon consumers.",
+          "test": "MixedGunmanParityTests.ClassGunmanGrantsApplyOnlyToTheCasterUntilRemoved verifies the non-self selection, runtime HP and combat effects, and cleanup."
+        }
+      }
+    }
+  }
+}
