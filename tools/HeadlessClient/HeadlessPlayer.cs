@@ -43,7 +43,8 @@ public sealed class HeadlessPlayer : IDisposable
     }
 
     /// <summary>Auth, margin, then the world session up to the point the real client would finish loading the map.</summary>
-    public static async Task<HeadlessPlayer> LoginAsync(ServerAddress server, string username, string handle, string password = "x")
+    public static async Task<HeadlessPlayer> LoginAsync(ServerAddress server, string username, string handle,
+        string password = "x", bool stockCharacterLoad = false)
     {
         using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(30));
         CancellationToken cancel = timeout.Token;
@@ -58,7 +59,7 @@ public sealed class HeadlessPlayer : IDisposable
         try
         {
             await margin.ConnectAsync(server.Host, server.MarginPort, ticket, cancel);
-            await margin.LoadCharacterAsync(character.CharId, cancel);
+            await margin.LoadCharacterAsync(character.CharId, cancel, stockCharacterLoad);
 
             world = new WorldSession(server.Host, server.WorldPort);
             world.SendSessionRequest(character.CharId);

@@ -65,14 +65,32 @@ public sealed class MarginSession : IDisposable
         await ExchangeAsync(new byte[17].Select((_, i) => i == 0 ? ConnectChallengeResponse : (byte)0).ToArray(), ConnectResponse, cancel);
     }
 
-    public async Task LoadCharacterAsync(uint charId, CancellationToken cancel)
+    public async Task LoadCharacterAsync(uint charId, CancellationToken cancel, bool stock = false)
     {
-        byte[] request = new byte[7];
-        request[0] = LoadCharacter;
-        BitConverter.GetBytes(charId).CopyTo(request, 1);
+        byte[] request = stock ? StockCharacterLoadRequest(charId) : new byte[7];
+        if (!stock)
+        {
+            request[0] = LoadCharacter;
+            BitConverter.GetBytes(charId).CopyTo(request, 1);
+        }
         await SendAsync(request, cancel);
 
         await ReadCharacterDataAsync(charId, cancel);
+    }
+
+    public static byte[] StockCharacterLoadRequest(uint charId)
+    {
+        // Native PR266 margin-rows line 516, without encrypted framing or padding.
+        // Preserve the captured empty-cache record and substitute only GlobalCharacterId.
+        byte[] request = new byte[190];
+        request[0] = LoadCharacter;
+        BitConverter.GetBytes(charId).CopyTo(request, 1);
+        byte[] emptyDigest = Convert.FromHexString("d41d8cd98f00b204e9800998ecf8427e");
+        for (int offset = 41; offset < 185; offset += emptyDigest.Length)
+            emptyDigest.CopyTo(request, offset);
+        request[185] = 0xbb;
+        request[187] = 1;
+        return request;
     }
 
     private async Task ReadCharacterDataAsync(uint charId, CancellationToken cancel)
@@ -102,7 +120,17 @@ public sealed class MarginSession : IDisposable
             if (reply[14] == 0x10)
             {
                 int size = BitConverter.ToUInt16(reply, 16);
-                CharacterData[opcode] = reply[18..(18 + size)];
+                byte[] data = reply[18..(18 + size)];
+                if (opcode == hds.QaCharacterUi.DataType)
+                {
+                    byte[] previous = CharacterData.GetValueOrDefault(opcode) ?? Array.Empty<byte>();
+                    if (previous.Length != (reply[11] - 1) * hds.QaCharacterUi.ChunkSize ||
+                        size is <= 0 or > hds.QaCharacterUi.ChunkSize ||
+                        previous.Length + size > hds.QaCharacterUi.MaxLength)
+                        throw new InvalidDataException("Invalid stock character UI reply chunk.");
+                    data = previous.Concat(data).ToArray();
+                }
+                CharacterData[opcode] = data;
             }
             if (reply[12] == 1)
             {

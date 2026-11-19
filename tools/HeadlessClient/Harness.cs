@@ -215,7 +215,8 @@ public sealed class ServerInstance : IDisposable
     }
 
     public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
-        IReadOnlyDictionary<string, string>? extraEnvironment = null, string? missionFixture = null)
+        IReadOnlyDictionary<string, string>? extraEnvironment = null, string? missionFixture = null,
+        string? testMobFixture = null, byte[]? testCharacterUi = null)
     {
         string serverDll = Path.GetFullPath(Environment.GetEnvironmentVariable("MXO_HEADLESS_SERVER_DLL") ?? FindServerDll(repositoryRoot));
         if(!File.Exists(serverDll)||!File.Exists(Path.ChangeExtension(serverDll,"runtimeconfig.json")))
@@ -223,6 +224,23 @@ public sealed class ServerInstance : IDisposable
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
         EngageFoesFixture.PrepareInitialNpcs(Path.GetDirectoryName(serverDll)!,workingDirectory,databaseName,extraEnvironment);
+        if (testMobFixture != null)
+        {
+            if (!databaseName.StartsWith(ThrowawayDatabase.Prefix, StringComparison.Ordinal) ||
+                extraEnvironment == null || !extraEnvironment.TryGetValue("MXO_MOBS", out string? mobMode) || mobMode != "test")
+                throw new InvalidOperationException("A test mob fixture requires a disposable test-mode server.");
+            string data = Path.Combine(workingDirectory, "data");
+            Directory.CreateDirectory(data);
+            File.Copy(testMobFixture, Path.Combine(data, "mob_just_some_and_winter.csv"));
+        }
+        if (testCharacterUi != null)
+        {
+            if (!databaseName.StartsWith(ThrowawayDatabase.Prefix, StringComparison.Ordinal) ||
+                testCharacterUi.Length is <= 0 or > hds.QaCharacterUi.MaxLength)
+                throw new InvalidOperationException("Character UI seeding requires an owned disposable server and a stock-sized profile.");
+            using var ui = new FileStream(Path.Combine(workingDirectory, hds.QaCharacterUi.WorkingFile), FileMode.CreateNew);
+            ui.Write(testCharacterUi);
+        }
         if (missionFixture != null)
         {
             // A fixture replaces only this disposable server's mission catalog. Production data stays untouched.

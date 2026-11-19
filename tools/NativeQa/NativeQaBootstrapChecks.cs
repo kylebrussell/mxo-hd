@@ -53,11 +53,17 @@ public static class NativeQaBootstrapChecks
     private static async Task RunGroupAsync(string root, string output, string[] names, List<object> results)
     {
         string seedMode = names.Length == 1 ? names[0] : "";
-        var plan = NativeQaModes.Find(seedMode).Plan;
+        var mode = NativeQaModes.Find(seedMode);
+        var plan = mode.Plan;
+        byte[]? characterUi = mode is Modes.AbilitySweepMode
+            ? AbilitySweepHotbar.FromEnvironment(plan.Abilities, required: false)
+            : null;
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });
         var seeded = await NativeQaFixtureSeeder.PrepareAsync(root, database, plan);
-        using var server = await ServerInstance.StartAsync(root, database.Name, IsolatedEnvironment(seedMode),plan.MissionFixture);
+        using var server = await ServerInstance.StartAsync(root, database.Name, IsolatedEnvironment(seedMode), plan.MissionFixture,
+            testMobFixture: plan.TestMobFixture == null ? null : Path.Combine(root, "tools", "NativeQa", "Fixtures", plan.TestMobFixture),
+            testCharacterUi: characterUi);
         string sourceAssembly = server.SourceAssembly, sourceHash = server.SourceAssemblySha256;
         string directory = Path.Combine(output, "server-" + server.ProcessId);
         Directory.CreateDirectory(directory);
@@ -66,6 +72,13 @@ public static class NativeQaBootstrapChecks
         HeadlessPlayer? canary = null;
         try
         {
+            if (characterUi != null)
+            {
+                using var probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
+                Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
+                Check.That(probe.CharacterData.TryGetValue(hds.QaCharacterUi.DataType, out var received) &&
+                    received.AsSpan().SequenceEqual(characterUi), "Stock Margin UI chunks reconstruct the seeded profile byte-for-byte");
+            }
             if (names.Length > 1 || !HasCustomHook(NativeQaModes.Find(names[0])))
             {
                 canary = await HeadlessPlayer.LoginAsync(server.Address, "QAFriend", "QAFriend");
@@ -73,16 +86,16 @@ public static class NativeQaBootstrapChecks
             }
             foreach (string name in names)
             {
-                var mode = NativeQaModes.Find(name);
+                var checkedMode = NativeQaModes.Find(name);
                 string modeDirectory = Path.Combine(directory, name.Length == 0 ? "default" : name);
                 Directory.CreateDirectory(modeDirectory);
                 var helpers = new Dictionary<string,HeadlessPlayer>(StringComparer.OrdinalIgnoreCase);
                 try
                 {
                     Console.WriteLine("BOOTSTRAP START " + (name.Length == 0 ? "(default)" : name));
-                    byte[] ack = await NativeQaReadiness.BootstrapAsync(mode, new NativeQaBootstrapContext(modeDirectory,
+                    byte[] ack = await NativeQaReadiness.BootstrapAsync(checkedMode, new NativeQaBootstrapContext(modeDirectory,
                         NativeQaFixtureSeeder.HelperNames, helpers, server.Address, database, server, root));
-                    var modePlan = mode.Plan;
+                    var modePlan = checkedMode.Plan;
                     if (name == "mission-catalog-sample" && modePlan.ExtraQaMetadata.ContainsKey("CheckpointArea"))
                         await CheckPhaseLoginAsync(database, server, modePlan);
                     var standard = new NativeQaFixtureState
@@ -116,7 +129,8 @@ public static class NativeQaBootstrapChecks
                     var problems = helpers.Values.SelectMany(p => p.World.Problems).Concat(canary?.World.Problems ?? Array.Empty<string>()).ToArray();
                     if (problems.Length != 0) throw new InvalidOperationException(string.Join("; ", problems));
                     var result = new { Mode = name, BootstrapPassed = true, Database = database.Name, ServerPid = server.ProcessId,
-                        Address = server.Address, CustomHook = HasCustomHook(mode), SharedNoOpFixture = names.Length > 1,
+                        Address = server.Address, CustomHook = HasCustomHook(checkedMode), SharedNoOpFixture = names.Length > 1,
+                        HotbarBytesVerified = characterUi?.Length,
                         DeclaredModeAbilities = modePlan.Abilities, SeededAbilities = seeded.Abilities,
                         HelperCount = helpers.Count, EquippedRifleSlotCounts = equipped, StateSerialized = true, At = DateTime.UtcNow };
                     results.Add(result);
