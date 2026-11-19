@@ -6,11 +6,21 @@
       "head": "e261367d",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/352#issuecomment-7011137184",
       "scope": "Stock CSR110 activated Utility Technician from the Actions hotbar. The own Status showed Max Health +100, Melee Defense +3 and both physical resistances +20. Stock PacketLog stock segment CSEQ83/SSEQ264 confirms source 613 individual adds (181 +20, 106 +100, 1009 +3, 180 +20). The stock cast selected view 0 and a stock own recast started at 30 seconds. The separate Utility Master action was absent and was not cast."
+    },
+    "utility-master-granted-self-upgrade": {
+      "representative": 1108,
+      "result": "pass",
+      "head": "eeb4dced",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/360#issuecomment-7011602121",
+      "scope": "Stock 620-only grant exposed Utility Master in Actions; stock hotbar activated 1108 on self, replacing Technician. Status confirmed +150 max HP, +6 melee defense, and both +20 physical resistances, with Technician removal logged before the Master add. Disposable wire checks confirm the hidden load/add, both separate reuse timers and complete modifier ordering."
     }
   },
   "abilities": {
     "613": {
       "family": "utility-technician-self-upgrade"
+    },
+    "1108": {
+      "family": "utility-master-granted-self-upgrade"
     }
   }
 }
