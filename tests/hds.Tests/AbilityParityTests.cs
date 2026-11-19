@@ -227,6 +227,27 @@ public class AbilityParityTests
     }
 
     [Fact]
+    public void EmergencyRepairsTwoUsesTheSelectedTargetStoredTotalAndExpiresBeforeTwentiethTick()
+    {
+        var caster = Client();
+        AbilitySupport.Land(caster, 332, 2);
+        var target = TimedEffects.ForPlayer(caster);
+        var effect = Assert.Single(target.Effects.Snapshot());
+        Assert.Equal(76, effect.Value);
+        Assert.Equal(50, effect.Seconds);
+        Assert.Equal(2.5, effect.Interval);
+        Assert.Equal(4, effect.TickDamage);
+        Assert.Equal((ushort)100, Value(caster.playerInstance.Health));
+        TimedEffects.RunDue(effect.Expires - 47.5);
+        Assert.Equal((ushort)104, Value(caster.playerInstance.Health));
+        TimedEffects.RunDue(effect.Expires);
+        Assert.Equal((ushort)176, Value(caster.playerInstance.Health));
+        Assert.Empty(target.Effects.Snapshot());
+        TimedEffects.RunDue(effect.Expires + 2.5);
+        Assert.Equal((ushort)176, Value(caster.playerInstance.Health));
+    }
+
+    [Fact]
     public void ClassBuffReplacementAppliesVitalDeltaAtomicallyAndRemovalClamps()
     {
         var client = Client();

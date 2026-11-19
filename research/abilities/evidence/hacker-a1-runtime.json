@@ -1,0 +1,182 @@
+{
+  "families": {},
+  "abilities": {
+    "310": {
+      "checks": {
+        "stats": {
+          "source": "GOB 310 loaded grant 1083; the capture-qualified zero grant is pinned in research/protocol/loaded-grant-membership.json. The sole stat component is 1% Viral Damage Bonus (1031).",
+          "runtime": "AbilityPassives.SetLoaded expands grant membership; AbilityGrantRegistration reconciles the native readiness, reload and unload records. AbilityStats.ScaleTypedAbilityDamage consumes the linked bonus on a damaging cast.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution exercises new membership, idempotent reload and matching removal. The same test asserts bonus-influenced damage before unload and the prior value afterward."
+        },
+        "behavior-tests": {
+          "source": "GOB 310 loaded grant 1083; the capture-qualified zero grant is pinned in research/protocol/loaded-grant-membership.json. The sole stat component is 1% Viral Damage Bonus (1031).",
+          "runtime": "AbilityPassives.SetLoaded expands grant membership; AbilityGrantRegistration reconciles the native readiness, reload and unload records. AbilityStats.ScaleTypedAbilityDamage consumes the linked bonus on a damaging cast.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution exercises new membership, idempotent reload and matching removal. The same test asserts bonus-influenced damage before unload and the prior value afterward."
+        }
+      }
+    },
+    "315": {
+      "checks": {
+        "controls": {
+          "source": "GOB 315 stores state 102 for 7 s; AddControlImmunityTimerVal installs the independent 14 s immunity.",
+          "runtime": "TimedEffects.Apply initializes and refuses controls through its immunity holder; TimedEffects.Holder exposes expiry and the damage-break rules.",
+          "test": "AbilityHostileTests.HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds checks lifetime, damage retention and reapplication. Stock recipient/application or immunity evidence: https://github.com/kylebrussell/mxo-hd/pull/103#issuecomment-6812841733"
+        },
+        "script": {
+          "source": "GOB 315 stores state 102 for 7 s; AddControlImmunityTimerVal installs the independent 14 s immunity.",
+          "runtime": "TimedEffects.Apply initializes and refuses controls through its immunity holder; TimedEffects.Holder exposes expiry and the damage-break rules.",
+          "test": "AbilityHostileTests.HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds checks lifetime, damage retention and reapplication. Stock recipient/application or immunity evidence: https://github.com/kylebrussell/mxo-hd/pull/103#issuecomment-6812841733"
+        }
+      },
+      "family": "hostile-timed-controls"
+    },
+    "332": {
+      "checks": {
+        "healing": {
+          "source": "GOB 332 typed healing total 76 and tempmods.py HOT.",
+          "runtime": "AbilityHealing.Amount supplies the stored total to AbilitySupport.Land.",
+          "test": "AbilityParityTests.EmergencyRepairsTwoUsesTheSelectedTargetStoredTotalAndExpiresBeforeTwentiethTick checks stored total and no immediate health change."
+        },
+        "periodic": {
+          "source": "GOB 332 stores a 2.5 s interval and 50 s duration. tempmods.py HOT rounds the scheduled amount.",
+          "runtime": "AbilitySupport.Land installs an active HOT and TimedEffects.RunDue dispatches pre-expiry ticks through PlayerEffects.Ticked and the normal health updater.",
+          "test": "AbilityParityTests.EmergencyRepairsTwoUsesTheSelectedTargetStoredTotalAndExpiresBeforeTwentiethTick asserts nineteen +4 ticks and removal. The stock overflow callback remains a distinct script check."
+        }
+      }
+    },
+    "333": {
+      "checks": {
+        "controls": {
+          "source": "GOB 333 stores state 102 for 5 s; AddControlImmunityTimerVal installs the independent 10 s immunity.",
+          "runtime": "TimedEffects.Apply initializes and refuses controls through its immunity holder; TimedEffects.Holder exposes expiry and the damage-break rules.",
+          "test": "AbilityHostileTests.HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds checks lifetime, damage retention and reapplication. Stock recipient/application or immunity evidence: https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "334": {
+      "checks": {
+        "stats": {
+          "source": "GOB 334 loaded grant 1084; the capture-qualified zero grant is pinned in research/protocol/loaded-grant-membership.json. The sole stat component is 5% Viral Damage Bonus (1031).",
+          "runtime": "AbilityPassives.SetLoaded expands grant membership; AbilityGrantRegistration reconciles the native readiness, reload and unload records. AbilityStats.ScaleTypedAbilityDamage consumes the linked bonus on a damaging cast.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution exercises new membership, idempotent reload and matching removal. The same test asserts bonus-influenced damage before unload and the prior value afterward."
+        },
+        "behavior-tests": {
+          "source": "GOB 334 loaded grant 1084; the capture-qualified zero grant is pinned in research/protocol/loaded-grant-membership.json. The sole stat component is 5% Viral Damage Bonus (1031).",
+          "runtime": "AbilityPassives.SetLoaded expands grant membership; AbilityGrantRegistration reconciles the native readiness, reload and unload records. AbilityStats.ScaleTypedAbilityDamage consumes the linked bonus on a damaging cast.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution exercises new membership, idempotent reload and matching removal. The same test asserts bonus-influenced damage before unload and the prior value afterward."
+        }
+      }
+    },
+    "335": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 335 loaded grant 1086; the capture-qualified zero grant is pinned in research/protocol/loaded-grant-membership.json.",
+          "runtime": "AbilityPassives.SetLoaded expands grant membership; AbilityGrantRegistration reconciles the native readiness, reload and unload records.",
+          "test": "AbilityScaledBuffTests.HackerParentsRegisterGrantsAndRemoveOnlyTheirContribution exercises new membership, idempotent reload and matching removal."
+        }
+      }
+    },
+    "343": {
+      "checks": {
+        "stats": {
+          "source": "GOB 343 stores signed Melee and Ballistic Defense -21 for 45 seconds.",
+          "runtime": "TimedEffects.Apply publishes both penalties and AbilityStats.Defense consumes them.",
+          "test": "AbilityHostileTests.MiasmaTwoChangesBothDefenseConsumersAndNaturallyClears checks both real defense totals and the natural removal."
+        }
+      }
+    },
+    "371": {
+      "checks": {
+        "healing": {
+          "source": "GOB 371 uses team selector 9, radius 7 m, cast time 4 s, four-second own and family 685 reuse, and fixed typed healing 20.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        },
+        "area": {
+          "source": "GOB 371 uses team selector 9, radius 7 m, cast time 4 s, four-second own and family 685 reuse, and fixed typed healing 20.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        },
+        "behavior-tests": {
+          "source": "GOB 371 uses team selector 9, radius 7 m, cast time 4 s, four-second own and family 685 reuse, and fixed typed healing 20.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        }
+      }
+    },
+    "372": {
+      "checks": {
+        "healing": {
+          "source": "GOB 372 uses team selector 9, radius 8 m, cast time 4 s, four-second own and family 686 reuse, and fixed typed healing 18.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        },
+        "area": {
+          "source": "GOB 372 uses team selector 9, radius 8 m, cast time 4 s, four-second own and family 686 reuse, and fixed typed healing 18.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        },
+        "behavior-tests": {
+          "source": "GOB 372 uses team selector 9, radius 8 m, cast time 4 s, four-second own and family 686 reuse, and fixed typed healing 18.",
+          "runtime": "AbilitySupport.Targets uses same-district live team membership and AbilityRadius.Metres. AbilityHealing.Amount reads the fixed total and healer influence; AbilitySupport.Land heals each admitted recipient.",
+          "test": "The ability-parity-hacker-sweep bootstrap replays full activation frames, verifies cast and both reuse records, and checks exact fresh self/recipient HP deltas under the +10% source build. It checks a teammate at 4 m, another at 9.25 m and an unrelated player at 3 m, with the loaded Resist Damage passive expanding the radii to 8.68 m and 9.92 m."
+        }
+      }
+    },
+    "373": {
+      "checks": {
+        "stats": {
+          "source": "GOB 373 has one self-only, 300-second stat 522 modifier, with character-level function 3 and scale 1.3.",
+          "runtime": "AbilitySupport.Targets confines the apply to the caster. AbilityScaledBuffs resolves the applied value and AbilityStats.Attack consumes it; AbilityBuffs.Remove removes the paired record and contribution.",
+          "test": "AbilityScaledBuffTests.HackerAccuracyBuffUsesCasterLevelAndConsumedAttackStats asserts +25 at 20, +64 at 50, exact melee consumption and baseline restoration. ability-parity-hacker-sweep asserts the paired on/off wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 373 has one self-only, 300-second stat 522 modifier, with character-level function 3 and scale 1.3.",
+          "runtime": "AbilitySupport.Targets confines the apply to the caster. AbilityScaledBuffs resolves the applied value and AbilityStats.Attack consumes it; AbilityBuffs.Remove removes the paired record and contribution.",
+          "test": "AbilityScaledBuffTests.HackerAccuracyBuffUsesCasterLevelAndConsumedAttackStats asserts +25 at 20, +64 at 50, exact melee consumption and baseline restoration. ability-parity-hacker-sweep asserts the paired on/off wire records."
+        }
+      }
+    },
+    "374": {
+      "checks": {
+        "stats": {
+          "source": "GOB 374 has one self-only, 300-second stat 524 modifier, with character-level function 3 and scale 1.3.",
+          "runtime": "AbilitySupport.Targets confines the apply to the caster. AbilityScaledBuffs resolves the applied value and AbilityStats.Attack consumes it; AbilityBuffs.Remove removes the paired record and contribution.",
+          "test": "AbilityScaledBuffTests.HackerAccuracyBuffUsesCasterLevelAndConsumedAttackStats asserts +25 at 20, +64 at 50, exact ballistic consumption and baseline restoration. ability-parity-hacker-sweep asserts the paired on/off wire records."
+        },
+        "behavior-tests": {
+          "source": "GOB 374 has one self-only, 300-second stat 524 modifier, with character-level function 3 and scale 1.3.",
+          "runtime": "AbilitySupport.Targets confines the apply to the caster. AbilityScaledBuffs resolves the applied value and AbilityStats.Attack consumes it; AbilityBuffs.Remove removes the paired record and contribution.",
+          "test": "AbilityScaledBuffTests.HackerAccuracyBuffUsesCasterLevelAndConsumedAttackStats asserts +25 at 20, +64 at 50, exact ballistic consumption and baseline restoration. ability-parity-hacker-sweep asserts the paired on/off wire records."
+        }
+      }
+    },
+    "1083": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1083 stores Viral Damage 4, Concentration 7 and Viral Accuracy 6.",
+          "runtime": "AbilitySupport.Land and AbilityBuffs apply the indefinite class snapshot. AbilityStats and AbilityCastInterrupts consume the derived totals.",
+          "test": "AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects checks the damage and contest inputs, cast-through chance, applicable area expansion and cleanup."
+        }
+      }
+    },
+    "1084": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1084 stores Viral Damage 10, Concentration 7 and Viral Accuracy 9.",
+          "runtime": "AbilitySupport.Land and AbilityBuffs apply the indefinite class snapshot. AbilityStats and AbilityCastInterrupts consume the derived totals.",
+          "test": "AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects checks the damage and contest inputs, cast-through chance, applicable area expansion and cleanup."
+        }
+      }
+    },
+    "1086": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1086 stores Viral Damage 2, Concentration 7 and Viral Accuracy 6. The Artillerist upgrade also stores +10 Virus Area Radius.",
+          "runtime": "AbilitySupport.Land and AbilityBuffs apply the indefinite class snapshot. AbilityStats and AbilityCastInterrupts consume the derived totals. AbilityRadius.TargetMetres consumes it for selected-target UDB0.",
+          "test": "AbilityScaledBuffTests.HackerClassUpgradesChangeTheActualConsumersAndRemoveTheirEffects checks the damage and contest inputs, cast-through chance, applicable area expansion and cleanup."
+        }
+      }
+    }
+  }
+}

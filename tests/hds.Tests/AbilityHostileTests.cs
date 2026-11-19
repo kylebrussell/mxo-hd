@@ -35,6 +35,45 @@ public class AbilityHostileTests
         return TimedEffects.Apply(TimedEffects.ForPlayer(victim), effect, TimeUtils.GetSimTimeSeconds(), caster, "Caster");
     }
 
+    [Theory]
+    [InlineData(315, 7, 14)]
+    [InlineData(333, 5, 10)]
+    public void HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds(ushort ability, float duration, float immunity)
+    {
+        var victim = Client();
+        double start = TimeUtils.GetSimTimeSeconds();
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        var target = TimedEffects.ForPlayer(victim);
+        TimedEffects.Apply(target, effect, start);
+        Assert.True(target.Effects.HasAt(TempMods.StunAbility, start + duration - 0.01));
+        Assert.Empty(target.Effects.HealthChanged(1, true, new Random(1)));
+        Assert.True(target.Effects.HasAt(TempMods.StunAbility, start + duration - 0.01));
+        Assert.False(target.Effects.HasAt(TempMods.StunAbility, start + duration + 0.01));
+        Assert.True(target.Effects.HasControlImmunity(start + duration + 0.01));
+        Assert.Empty(TimedEffects.Apply(target, effect, start + duration + 0.01));
+        Assert.False(target.Effects.HasAt(TempMods.StunAbility, start + immunity - 0.01));
+        Assert.False(target.Effects.HasControlImmunity(start + immunity + 0.01));
+        Assert.Contains(TimedEffects.Apply(target, effect, start + immunity + 0.01),
+            state => state.Target == TempMods.StunAbility);
+        TimedEffects.Clear(target);
+    }
+
+    [Fact]
+    public void MiasmaTwoChangesBothDefenseConsumersAndNaturallyClears()
+    {
+        var victim = Client();
+        double start = TimeUtils.GetSimTimeSeconds();
+        int melee = AbilityStats.Defense(victim, false);
+        int ballistic = AbilityStats.Defense(victim, true);
+        Assert.True(TempMods.TryGet(343, out var effect));
+        TimedEffects.Apply(TimedEffects.ForPlayer(victim), effect, start);
+        Assert.Equal(melee - 21, AbilityStats.Defense(victim, false));
+        Assert.Equal(ballistic - 21, AbilityStats.Defense(victim, true));
+        TimedEffects.RunDue(start + 45.01);
+        Assert.Equal(melee, AbilityStats.Defense(victim, false));
+        Assert.Equal(ballistic, AbilityStats.Defense(victim, true));
+    }
+
     [Fact]
     public void CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt()
     {
