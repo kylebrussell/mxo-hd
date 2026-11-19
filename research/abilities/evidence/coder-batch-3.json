@@ -1,0 +1,125 @@
+{
+  "abilities": {
+    "517": {
+      "checks": {
+        "stats": {
+          "source": "GOB 517 adds learned-rank Weapon Crafting 655. crafting_server.py GetAbilityBonusByCategory covers the IW group.",
+          "runtime": "AbilityPassives calculates and clears the skill. CraftingHandler.Specialization selects the corresponding stat for the physical weapon category.",
+          "test": "AbilityPassiveTests.WeaponMakerFeedsTheWeaponCategoryCompileContest checks the shipped revolver against an IT tool, an actual contest, and unload. ability-parity-coder-utility checks +50 at login."
+        }
+      }
+    },
+    "608": {
+      "checks": {
+        "stats": {
+          "source": "GOB 608 provides two function-2 bonuses at scale 0.1, linked to melee and ballistic damage.",
+          "runtime": "AbilityPassives supplies typed stats 1142/1139. AbilityStats.Influence reads them from melee/ballistic callers and clears them on unload.",
+          "test": "AbilityPassiveTests.CodeHardeningAffectsOnlyMeleeAndBallisticDamageWhileLoaded checks exact typed damage, viral exclusion and unload. ability-parity-coder-utility observes both +5 startup records."
+        },
+        "behavior-tests": {
+          "source": "GOB 608 provides two function-2 bonuses at scale 0.1, linked to melee and ballistic damage.",
+          "runtime": "AbilityPassives supplies typed stats 1142/1139. AbilityStats.Influence reads them from melee/ballistic callers and clears them on unload.",
+          "test": "AbilityPassiveTests.CodeHardeningAffectsOnlyMeleeAndBallisticDamageWhileLoaded checks exact typed damage, viral exclusion and unload. ability-parity-coder-utility observes both +5 startup records."
+        }
+      }
+    },
+    "609": {
+      "checks": {
+        "stats": {
+          "source": "GOB 609 stores one ISDrainWithAbilityDeactivation update every five seconds and an independent initial ApplyAuraEffect callback.",
+          "runtime": "CoderPets starts the aura and next upkeep deadline together. The activation uses ordinary ability cost, and the timer uses exact 5 IS upkeep.",
+          "test": "ability-parity-coder-utility checks the 699 pet FX from a complete self-ability request, reads 10 then 5 IS debits, checks the initial wait and verifies that toggle-off stops upkeep."
+        }
+      }
+    },
+    "611": {
+      "checks": {
+        "pets": {
+          "source": "GOB 611 and simulacra.py supply Nuker level 34 for a level-50 caster, an eight-second cast, and the ordinary owned summon window.",
+          "runtime": "CoderPets.Land and SpawnFor create the actual pet and the 81 76 registration. Deactivate removes the current owned pet.",
+          "test": "ability-parity-coder-utility checks role, level, owner, real cast bar, 10 s timer, registration and 81 77 window removal."
+        }
+      },
+      "family": "simulacrum-summons"
+    },
+    "612": {
+      "checks": {
+        "pets": {
+          "source": "GOB 612 and simulacra.py supply Healer level 43 for a level-50 caster, an eight-second cast, and the ordinary owned summon window.",
+          "runtime": "CoderPets.Land and SpawnFor create the actual pet and the 81 76 registration. Deactivate removes the current owned pet.",
+          "test": "ability-parity-coder-utility checks role, level, owner, real cast bar, 10 s timer, registration and 81 77 window removal."
+        }
+      }
+    },
+    "613": {
+      "checks": {
+        "stats": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        },
+        "targeting": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        },
+        "behavior-tests": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        }
+      }
+    },
+    "620": {
+      "checks": {
+        "stats": {
+          "source": "GOB 620 grants child 1108 and gives +5 Melee Accuracy Bonus stat 997 while enabled.",
+          "runtime": "AbilityPassives feeds stat 997 to melee accuracy and adds/removes the active child with its parent. The child cast checks loaded authority.",
+          "test": "AbilityPassiveTests.UtilityMasterParentGrantsTheActionAndAffectsOnlyMeleeAccuracy checks grant/accuracy and cleanup. ability-parity-coder-utility successfully casts 1108 with 620 as its only loaded authority."
+        },
+        "behavior-tests": {
+          "source": "GOB 620 grants child 1108 and gives +5 Melee Accuracy Bonus stat 997 while enabled.",
+          "runtime": "AbilityPassives feeds stat 997 to melee accuracy and adds/removes the active child with its parent. The child cast checks loaded authority.",
+          "test": "AbilityPassiveTests.UtilityMasterParentGrantsTheActionAndAffectsOnlyMeleeAccuracy checks grant/accuracy and cleanup. ability-parity-coder-utility successfully casts 1108 with 620 as its only loaded authority."
+        }
+      }
+    },
+    "699": {
+      "checks": {
+        "stats": {
+          "source": "GOB 699 uses caster-level function 3 at scale 0.5 in Viral Damage 172 and Healing 174 for five seconds.",
+          "runtime": "CoderPets applies both typed influences to the Nuker and Healer paths while the snapshot is active.",
+          "test": "CoderPetTests.Daemon699AndPower25UseIndependentTimersAndCorrectDamageTypes checks actual typed damage, healing, expiry and independence from Power Boost."
+        }
+      }
+    },
+    "700": {
+      "checks": {
+        "stats": {
+          "source": "GOB 700 uses caster-level function 3 at scale 1.3 for all three accuracy scores for five seconds.",
+          "runtime": "CoderPets raises the real pet hit chance by the exact shared value while active; the base curve and friendly area admission are separate checks.",
+          "test": "CoderPetTests.Daemon699AndPower25UseIndependentTimersAndCorrectDamageTypes and coder-pet-resources verify the rank-50 +64 input, lifetime, actual attack and toggle removal."
+        }
+      }
+    },
+    "1108": {
+      "checks": {
+        "stats": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        },
+        "targeting": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        },
+        "behavior-tests": {
+          "source": "GOB 613 and 1108 both use self selector 0 and class buff family 37. Their respective Max Health and Melee Defense values are +100/+3 and +150/+6, with +20 melee and ballistic resistance on each.",
+          "runtime": "AbilitySupport casts on self. AbilityBuffs applies the same-family replacement, and AbilityStats and the vital recalculation path consume the current values.",
+          "test": "AbilityPassiveTests.UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats checks exact active values, self selection, preserved current HP, replacement and cleanup. ability-parity-coder-utility verifies the complete real requests, wire adds and removal and both own reuse timers."
+        }
+      }
+    }
+  }
+}
