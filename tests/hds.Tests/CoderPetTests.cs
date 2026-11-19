@@ -69,6 +69,74 @@ public class CoderPetTests
     }
 
     [Fact]
+    public void AttackOrdersRequireTheExplicitVisibleHostileNpc()
+    {
+        var owner = Owner(43);
+        owner.viewMan = new ViewManager();
+        var pet = new CoderPets.Pet { Owner = owner, Mob = new Mob() };
+        pet.Mob.setDistrict(1);
+        var dummy = new Mob();
+        dummy.setEntityId(0xABCDEF);
+        dummy.setDistrict(1);
+        var npcView = owner.viewMan.addView(dummy.getEntityId(), 599);
+        npcView.viewCreated = true;
+        var playerView = owner.viewMan.addView(0xABCDE0, 0);
+        playerView.viewCreated = true;
+        lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Add(dummy);
+        try
+        {
+            Assert.Same(dummy, CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, playerView.ViewID, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, 0, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, 2, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, 999, fromClient: true));
+            npcView.viewCreated = false;
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
+            npcView.viewCreated = true;
+            dummy.setZPos((CoderPets.LeashMetres + 1) * 100);
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
+        }
+        finally
+        {
+            lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Remove(dummy);
+        }
+    }
+
+    [Theory]
+    [InlineData(CoderPets.Command.Follow, false)]
+    [InlineData(CoderPets.Command.Attack, true)]
+    public void PassiveDropsAssistAndKeepsExplicitAttack(CoderPets.Command order, bool keepsTarget)
+    {
+        var pet = new CoderPets.Pet { Order = order, Target = new Mob() };
+        CoderPets.SetStance(pet, CoderPets.Stance.Passive);
+        Assert.Equal(CoderPets.Stance.Passive, pet.Stance);
+        Assert.Equal(keepsTarget, pet.Target != null);
+        Assert.Equal(order, pet.Order);
+    }
+
+    [Fact]
+    public void OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn()
+    {
+        var owner = Owner(43);
+        owner.viewMan = new ViewManager();
+        var pet = new CoderPets.Pet { Owner = owner, Mob = new Mob() };
+        pet.Mob.setEntityId(0xABCDEF);
+        var selected = owner.viewMan.addView(pet.Mob.getEntityId(), 40376);
+        selected.spawnId = 13;
+        selected.viewCreated = true;
+        var foreign = owner.viewMan.addView(0x123456, 40376);
+        foreign.spawnId = 13;
+        foreign.viewCreated = true;
+
+        Assert.True(CoderPets.MatchesSelection(owner, pet, 0, null));
+        Assert.True(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
+        Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 12));
+        Assert.False(CoderPets.MatchesSelection(owner, pet, foreign.ViewID, 13));
+        owner.viewMan.removeViewByViewId(selected.ViewID);
+        Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
+    }
+
+    [Fact]
     public void CreationMatchesRetailFreshSummon()
     {
         // MaraC capture line 78483: 0c b8 9d <spawn> cd ab, then 18 attributes of a level 7 Nuker Simulacrum
@@ -228,7 +296,7 @@ public class CoderPetTests
     public void PowerCastSnapshotsLevelAndRejectsOwnerLifeWorldAndPetReplacement()
     {
         var caster=Owner(110,50); var pet=ResourcePet(); pet.Owner=caster;
-        var cast=new CoderPets.PowerBoostCast(caster,pet);
+        var cast=new CoderPets.OwnPetCast(caster,pet);
         caster.playerInstance.Level.setValue((byte)20);
         CoderPets.ApplyPowerBoost(pet,cast.CasterLevel,10);
         Assert.Equal(25,pet.PowerMeleeDamage);

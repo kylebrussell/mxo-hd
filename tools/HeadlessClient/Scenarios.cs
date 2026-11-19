@@ -185,6 +185,7 @@ public static partial class Scenarios
         new Scenario("ability-refusal-feedback", AbilityRefusalFeedback, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("typed-ability-resistance", TypedAbilityResistanceScenario, FreeCastViralLandingEnvironment(new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_TYPED_RESISTANCE_QA"]="1",["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]="65"})),
         new Scenario("transmit-code-resistance",TransmitCodeWire,TransmitCodeFixture.Environment,Timeout:TimeSpan.FromMinutes(4)),
+        new Scenario("coder-pet-stock-buffs", CoderPetStockBuffs, StillNpcs),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
         new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),

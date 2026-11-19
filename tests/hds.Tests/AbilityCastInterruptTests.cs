@@ -89,6 +89,23 @@ public class AbilityCastInterruptTests : IDisposable
         Assert.True(AbilityCastInterrupts.Complete(next,()=>consumed++));Assert.Equal(1,consumed);
     }
     [Fact]
+    public void ExpiredNormalCastLandsBeforeNextReservationEvenWhenTimerHasNotRun()
+    {
+        var client = Client();
+        var power = Begin(client, 25);
+        int landings = 0;
+        AbilityCastInterrupts.After(power, () => landings++);
+        AbilityCastInterrupts.FinishDue(client, power.End - 0.001);
+        Assert.Equal(0, landings);
+        AbilityCastInterrupts.FinishDue(client, power.End);
+        var charge = Begin(client, 603);
+        Assert.Equal(1, landings);
+        Assert.False(AbilityCastInterrupts.Complete(power, () => landings++));
+        Assert.True(AbilityCastInterrupts.Complete(charge, () => landings++));
+        Assert.Equal(2, landings);
+    }
+
+    [Fact]
     public void OneAtomicCompletionCannotBeCommittedTwice()
     {
         var c=Client();var cast=Begin(c);int effects=0;

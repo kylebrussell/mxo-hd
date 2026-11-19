@@ -33,7 +33,7 @@ The simulacrum is ticked every second.
 
 - **Follow:** it walks to within 2.5 m of its owner, moving at most 5 m a tick with the wander animation (`02 0e`).
 - **Attack:** it moves within 2.5 m (melee proxies) or 15 m (Nuker and gun proxies) and attacks every 3 s.
-- **Defensive** (the default) and **Aggressive** simulacra take on their owner's close-combat target. An Aggressive one also engages the nearest hostile NPC within 10 m. A **Passive** one only fights when ordered.
+- **Defensive** (the default) and **Aggressive** simulacra take on their owner's close-combat target. An Aggressive one also engages the nearest hostile NPC within 10 m. A **Passive** one only fights when ordered. Switching to Passive clears an ongoing automatic assist and retains a direct Attack order. An expired Attack target returns the window command to Follow.
 - An NPC it fights, if that NPC isn't fighting a player, hits back every 3 s.
 - Its kills go through the owner's fight, so death claims, experience, missions and loot follow the normal path.
 - Players can't open close combat on a simulacrum.
@@ -43,7 +43,7 @@ The simulacrum is ticked every second.
 The layouts are client.dll's own.
 
 - **`81 7a`** (ctor 620ef730, 4 bytes): `ID u8, Command u8`.
-- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, TargetObject u32`. The server reads the low u16 as the view.
+- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, TargetObject u32`. The server reads the low u16 as the view. The window resolves the selected object before submitting an Attack. If the explicit view fails to resolve to a live, visible hostile NPC within the owner leash, the wire order is refused. The `?pet attack` developer shortcut can still choose an NPC automatically.
 - **`81 7c`** (620ef952, 5 bytes): `ID u8, Command u8, Value u8`.
 
 The Simulacra window (`viewsimulacra.cpp`) maps its buttons to FourCC messages (dispatcher 620f0070). It sends ID `0xfe`, meaning the current simulacrum:
@@ -147,6 +147,8 @@ Read-only client.dll 7.6005, SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a5
 
 These are DLL-derived layouts, without a retail `81 76` capture. Native acceptance and window presentation remain pending Claude.
 
+The combined [Coder pets and PvP fixture](NATIVEQA-CODER-PETS-PVP.md) uses ordinary skill activation and checks both summon families alongside flagged player targeting.
+
 ## Exact native QA (Claude only, CSR_Tester 110)
 
 Build and run the disposable fixture from this PR's checkout (never invoke it from a Codex agent):
@@ -198,3 +200,13 @@ The mode exposes copied CSR_Tester 110 only under CSR_AbilityQA. This continuati
 2. Return within 10 m and cast 25 on a fresh Proxy. After 4 s, `?pet` reports `power melee/ballistic 25/25`. Cast 609: `aura viral/heal 25/25` may coexist. Spawn a dummy, select it, and click the Simulacra window's Attack button. Server lines `[PET] typed influence Proxy base X final Y` must show `Y=truncate(X*1.25)`; 699 adds no Proxy damage. Toggle 609 off: 25 remains. A pet fighting alone does not put its owner in combat.
 3. Turn 609 on, summon a Nuker with `?pet summon 616`, and cast 25 before the owner enters combat. 25 may be present but supplies no viral influence. After the next 609 pulse, a selected dummy takes 25% increased viral damage, visible in `[PET] typed influence Nuker ...`. Summon a Patch Daemon with `?pet summon 617`, use `?health 100`, and observe a 609 pulse followed by `[PET] typed healing base X final Y`, again `Y=truncate(X*1.25)`, plus actual owner HP recovery. 25 adds no healing. For 619, `?pet` reports accuracy 64 at level 50 and its independent resource drain still works.
 4. Finally start an ordinary owner fight against a dummy, then attempt 25: noncombat-only refusal. A new pet after dismiss, death or reconnect has no inherited 25. Unit tests cover 300 s expiry and percentage boundaries, so native QA need not wait five minutes. Close the real client. In another terminal: `New-Item -ItemType File -Path "$qa/stop"`. Let the fixture exit normally; inspect stopped.json for CSR_Tester 110 at Mara (23828,495,13984), full HP/IS, flag 0, mission 986 only, and normal lock release. Record only observed native results against the exact follow-up SHA.
+
+## AB9 stock pet-buff follow-up
+
+The Coder sweep at `a4307878` used stock client 7.6005. In `%TEMP%/mxo-headless/b0d0eb7ff285/PacketLog.txt`, the Client-to-Server protocol04 records are 43-byte `80 b9` activations. The first summon is line 2731. Fortify, Power Boost and Charge with zero target are at 3109, 3262 and 3369. Explicit Fortify at 5530 carries view `0e 00` and spawn `0d 00`. The headless replay reuses these bytes and substitutes the current observer view and spawn only for the explicit cast.
+
+- Fortify landed in the original sweep. Window record `81 78 01 00 e0 00 ce 03 03 00 04 00 00` at 3221 gives current HP 224 and MaxHP 974, a level-50 increase of 750. At 5632 the same MaxHP and Fortify recast confirm the explicit recast.
+- Power Boost starts at 3274. Charge starts another four-second cast at 3381, and Power Boost never emits its own recast. The server's normal-cast busy deadline could expire before its delayed landing callback was due. A new request accepted in that interval replaced the earlier cast generation. An expired normal cast now settles once before the next normal request takes ownership. The deterministic cast test exercises that boundary.
+- Charge started its 30-second recast at 3481. The capture does not expose pet IS or independently measure Charge's effects. Catalog row 603 is named `AcousticDecoy1Ability` and stores target class 11, modifier 117 (cost reduction 20) and 114 (regen increase 50) for 600 seconds. The game displays Charge Simulacra, which the server diagnostic now uses. The pet's IS pool and base cost and regen remain the server approximations listed above.
+
+The selected view must be the current owned pet. Full stock requests also validate its spawn. Zero-target casts use the caster's own pet. The cast stays bound to that original pet through completion. The server logs the applied Fortify, Power Boost and Charge values. Native modifier presentation still requires retesting. Power Boost Force Combat remains unresolved.

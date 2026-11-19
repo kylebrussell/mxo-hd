@@ -19,6 +19,8 @@ namespace hds
 
         public void ProcessAbility(ref byte[] packet)
         {
+            double now = TimeUtils.GetSimTimeSeconds();
+            AbilityCastInterrupts.FinishDue(Store.currentClient, now);
             PacketReader reader = new PacketReader(packet);
             UInt16 AbilityID = reader.ReadUInt16(1);
             AbilityID = AbilityCatalog.Canonical(AbilityID);
@@ -44,12 +46,11 @@ namespace hds
                 return;
             }
 
-            Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
-                                 currentTargetViewId);
+            string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
+            Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
-            double now = TimeUtils.GetSimTimeSeconds();
             if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
             {
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
@@ -158,7 +159,10 @@ namespace hds
                 CoderPets.ToggleOff(Store.currentClient);
                 return;
             }
-            string petRefusal = pet ? CoderPets.Refusal(Store.currentClient, AbilityID, currentTargetViewId) : null;
+            // The 43-byte stock request carries the view and spawn as one network handle.
+            UInt16? targetSpawn = packet.Length == 41 && currentTargetViewId > 2 ? (UInt16?)BitConverter.ToUInt16(packet, 4) : null;
+            CoderPets.OwnPetCast ownPet = null;
+            string petRefusal = pet ? CoderPets.Prepare(Store.currentClient, AbilityID, currentTargetViewId, targetSpawn, out ownPet) : null;
             if (petRefusal != null)
             {
                 Deny(AbilityID, petRefusal);
@@ -238,7 +242,6 @@ namespace hds
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
-            CoderPets.PowerBoostCast powerBoost = AbilityID == CoderPets.PowerBoost ? CoderPets.CapturePowerBoost(client) : null;
             AbilityItem ability = currentAbility;
             WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
             int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
@@ -249,11 +252,7 @@ namespace hds
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
-                if (pet)
-                {
-                    if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
-                    else CoderPets.Land(client, AbilityID, currentTargetViewId);
-                }
+                if (pet) CoderPets.Land(client, AbilityID, ownPet);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
