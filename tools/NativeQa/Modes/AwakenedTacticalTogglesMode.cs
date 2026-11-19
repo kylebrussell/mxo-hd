@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Text.Json;
 using hds;
 using HeadlessClient;
@@ -6,6 +7,10 @@ namespace NativeQa.Modes;
 
 public sealed class AwakenedTacticalTogglesMode : NativeQaMode
 {
+    // PR387 stock PacketLog b8a419336ce8, lines 2656–2657 and 4034–4035.
+    private const string StockCloseCombat = "80b91100050003000000000000000000000000000000000000000000bd163400000000ff086b0000000000";
+    private const string StockToggle = "80b909000500030000000000000000000000000000000000000000000000000000000000086b0000000000";
+
     public override string Name => "ability-parity-awakened-tactical-toggles";
 
     public override NativeQaModePlan Plan { get; } = new(
@@ -36,8 +41,9 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         await actor.EnterWorldAsync();
         var watching = await observer.WaitForViewNamedAsync(actor.Handle);
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
-        string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
-        actor.SendRpc($"40 {handle} 01 6b");
+        uint target = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+        string handle = WireFormat.ToHex(BitConverter.GetBytes(target));
+        actor.World.SendRpcs(Targeted(StockCloseCombat, 17, target), WireFormat.FromHex($"40 {handle} 01 6b"));
         await actor.WaitForRpcAsync("47");
 
         var samples = new[]
@@ -52,7 +58,7 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
             int observerAt = observer.World.ViewSnapshot().Count;
             var ownEffect = Effect(sample.Effect, 2, own: true);
             var otherEffect = Effect(sample.Effect, watching.ViewId, own: false);
-            EvidenceRetestWire.Cast(actor, sample.On, dummy);
+            actor.SendRpc(Targeted(StockToggle, sample.On, target));
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 01");
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(actorAt).Count(ownEffect.Occurs) >= 2 &&
                 observer.World.ViewSnapshot().Skip(observerAt).Count(otherEffect.Occurs) >= 2,
@@ -63,12 +69,13 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
             var localizedPattern = BytePattern.Parse("81 67");
             var chatPattern = BytePattern.Parse("2e");
             int rpcStart = actor.World.RpcSnapshot().Count;
-            EvidenceRetestWire.Cast(actor, sample.Blocked, dummy);
+            byte[] request = Targeted(StockToggle, sample.Blocked, target);
+            actor.SendRpc(request);
             var denied = await actor.WaitForRpcAsync(refusal);
             int afterConflict = actor.World.ViewSnapshot().Count;
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(afterConflict).Any(ownEffect.Occurs),
                 "The existing tactic continues pulsing after refusal", TimeSpan.FromSeconds(4));
-            EvidenceRetestWire.Cast(actor, sample.On, dummy);
+            actor.SendRpc(Targeted(StockToggle, sample.On, target));
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 00");
             int offAt = actor.World.ViewSnapshot().Count;
             await Task.Delay(TimeSpan.FromSeconds(1.4));
@@ -79,7 +86,7 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
             Check.Equal(1, denialCount, "One action refusal");
             Check.Equal(0, localizedCount, "The stock refusal already displays one tactic line");
             Check.Equal(0, chatCount, "No duplicate tactical chat");
-            proof.Add(new { sample.On, sample.Blocked, sample.Effect,
+            proof.Add(new { sample.On, sample.Blocked, sample.Effect, Request = Convert.ToHexString(request),
                 Denial = denied.Hex, denialCount, localizedCount, chatCount });
             Check.That(!actor.World.ViewSnapshot().Skip(offAt).Any(ownEffect.Occurs),
                 $"No {sample.On} update after toggle off");
@@ -89,6 +96,14 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "awakened-tactical-toggles.json"),
             JsonSerializer.Serialize(proof, new JsonSerializerOptions { WriteIndented = true }));
         return Array.Empty<byte>();
+    }
+
+    private static byte[] Targeted(string stock, ushort ability, uint target)
+    {
+        byte[] request = Convert.FromHexString(stock);
+        BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), ability);
+        BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), target);
+        return request;
     }
 
     private static BytePattern Effect(uint effect, ushort view, bool own)
