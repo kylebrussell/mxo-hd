@@ -47,7 +47,7 @@ namespace hds
                 m.Text("StatModUpdateFunc") != "ISDrainWithAbilityDeactivation");
             var drain = entry.Modifiers.FirstOrDefault(m => m.Text("StatModUpdateFunc") == "ISDrainWithAbilityDeactivation");
             if (!AbilityValues.TryValue(mod, Math.Min(50, Math.Max(0, learnedLevel)), 0, out int value)) return false;
-            buff = new AbilityBuffs.Buff { Exclusive = true, Toggle = entry.Number("Ability/IsAToggleAbility") == 1, Family = id == 1101 ? 1040 : 0,
+            buff = new AbilityBuffs.Buff { Exclusive = true, Toggle = entry.Number("Ability/IsAToggleAbility") == 1, Family = id == 1101 ? AbilityBuffs.FamilyHyperDefence : 0,
                 DrainAmount = (int)(drain?.Number("MinValue") ?? 0), DrainSeconds = drain?.Number("UpdateFuncInterval") ?? 0,
                 Modifiers = new[] { new AbilityBuffs.Modifier(AbilityBuffs.KindStat, mod.Target, value) } };
             return true;
