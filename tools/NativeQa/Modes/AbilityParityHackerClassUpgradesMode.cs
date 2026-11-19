@@ -18,7 +18,7 @@ public sealed class AbilityParityHackerClassUpgradesMode : NativeQaMode
     };
 
     public override string Name => "ability-parity-hacker-class-upgrades";
-    public override NativeQaModePlan Plan => MakePlan();
+    public override NativeQaModePlan Plan { get; } = MakePlan();
 
     private static HashSet<ushort> Profile(IEnumerable<ushort> roots)
     {
@@ -37,30 +37,37 @@ public sealed class AbilityParityHackerClassUpgradesMode : NativeQaMode
         return ids;
     }
 
+    private static ushort[] LoadOrder(IEnumerable<ushort> ids) =>
+        ids.OrderBy(id => AbilityPrerequisites.Current.Closure(id).Count).ThenBy(id => id).ToArray();
+
     private static NativeQaModePlan MakePlan()
     {
         var first = Profile(FirstRoots);
         var second = Profile(SecondRoots);
-        string staged = string.Join(",", second.Except(first).Order().Select(Descriptor));
+        var unload = LoadOrder(first.Except(second)).Reverse().ToArray();
+        var load = LoadOrder(second.Except(first));
+        string staged = string.Join(",", load.Select(Descriptor));
         return new(first.Concat(second).Distinct().Order().ToArray(),
             CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ,
             Array.Empty<string>(),
             new[] { $"UPDATE char_abilities SET is_loaded=0 WHERE char_id=110 AND ability_id IN ({staged})" },
             new[] { $"UPDATE characters SET y={CombatFixtureLoadout.GroundY},innerStrC=2000,innerStrM=2000 WHERE charId=110" },
+            DevCommands: true,
             environmentOverrides: new() { ["MXO_AGGRO"] = "0" },
             readyMessages: new[]
             {
                 "Stage 1 uses 94/100 memory. With Class Upgrade Target selected, cast the granted Network Hacker, Network Attacker, Pathogenist and Howitzer upgrades in that order. Capture caster-only bonus adds, replacement removals and 30-second reuse.",
-                "At the Hardline or Load Area, unload the first-stage-only entries listed in the manual, retain the shared entries and load the Force Multiplier chain. Stage 2 uses 89/100 memory. Select Class Upgrade Target again and cast the granted Force Multiplier action. Capture its own cost and concentration modifiers, replacement, and reuse."
+                $"For the 1091 retest, skip the stage 1 casts. In world, run ?qaunload once per ID in this order: {string.Join(",", unload)}.",
+                $"Then run ?qaload once per ID in this order: {string.Join(",", load)}. Stage 2 uses 89/100 memory. Add Force Multiplier Upgrade from Actions, select Class Upgrade Target again and cast it. Capture +10 IS cost reduction, +7 concentration and the 30-second reuse."
             },
             extraQaMetadata: new()
             {
                 ["InitialMemory"] = first.Sum(AbilityMemory.Cost),
                 ["SecondStageMemory"] = second.Sum(AbilityMemory.Cost),
-                ["UnloadForForceMultiplier"] = string.Join(",", first.Except(second).Order()),
-                ["LoadForForceMultiplier"] = string.Join(",", second.Except(first).Order()),
-                ["NativeCloseableRows"] = 5,
-                ["NativeCloseableIds"] = "1078,1080,1085,1087,1091"
+                ["UnloadForForceMultiplier"] = string.Join(",", unload),
+                ["LoadForForceMultiplier"] = string.Join(",", load),
+                ["NativeCloseableRows"] = 1,
+                ["NativeCloseableIds"] = "1091"
             },
             testMobFixture: "ability-parity-hacker-class-upgrades.csv");
     }
@@ -111,18 +118,15 @@ public sealed class AbilityParityHackerClassUpgradesMode : NativeQaMode
 
         async Task Stage(bool load, IEnumerable<ushort> ids)
         {
-            var entries = ids.Order().ToArray();
-            string operation = load ? "00 00 0a 00" : "0a 00 00 00";
-            string entriesHex = string.Join(" ", entries.Select(id => $"00 {Le(rows[id].Slot)} " +
-                $"{WireFormat.ToHex(BitConverter.GetBytes((uint)id))} {Le(rows[id].Level)}"));
-            int cursor = actor.World.RpcSnapshot().Count;
-            actor.SendRpc($"80 ae 00 00 00 00 {operation} {Le((ushort)entries.Length)} {entriesHex}");
-            var acks = entries.Select(id => BytePattern.Parse($"80 {(load ? "b2" : "b3")} {Le(id)}")).ToArray();
-            await actor.WaitUntilAsync(() =>
+            string command = load ? "qaload" : "qaunload";
+            foreach (ushort id in ids)
             {
-                var records = actor.World.RpcSnapshot().Skip(cursor).ToArray();
-                return acks.All(ack => records.Any(rpc => ack.IsMatch(rpc.Bytes)));
-            }, $"Legal staged batch: load={load}, {entries.Length} entries", HeadlessPlayer.DefaultTimeout);
+                int cursor = actor.World.RpcSnapshot().Count;
+                var ack = BytePattern.Parse($"80 {(load ? "b2" : "b3")} {Le(id)}");
+                actor.SendChat($"?{command} {id}");
+                await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(cursor)
+                    .Any(rpc => ack.IsMatch(rpc.Bytes)), $"{command} {id} accepted through 80ae", HeadlessPlayer.DefaultTimeout);
+            }
         }
 
         for (int index = 0; index < Upgrades.Length; index++)
@@ -131,9 +135,9 @@ public sealed class AbilityParityHackerClassUpgradesMode : NativeQaMode
             int grantCursor = 0;
             if (index == Upgrades.Length - 1)
             {
-                await Stage(load: false, first.Except(second));
+                await Stage(load: false, LoadOrder(first.Except(second)).Reverse());
                 grantCursor = actor.World.RpcSnapshot().Count;
-                await Stage(load: true, second.Except(first));
+                await Stage(load: true, LoadOrder(second.Except(first)));
             }
             await Grant(index, grantCursor);
             var (_, child, mods) = Upgrades[index];

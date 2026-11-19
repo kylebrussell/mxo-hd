@@ -1,0 +1,38 @@
+{
+  "families": {
+    "network-hacker-active-upgrade-stock": {
+      "representative": 1078,
+      "result": "pass",
+      "head": "1cb86b40e01624cba7880892a7d6841484b1f56c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7017480517",
+      "scope": "Stock Actions supplied 1078. Activation applied to CSR and 1080 replaced it. An immediate recast was refused by the client; after 30 seconds a selected-target recast replaced 1087 on CSR only."
+    },
+    "network-attacker-active-upgrade-stock": {
+      "representative": 1080,
+      "result": "pass",
+      "head": "1cb86b40e01624cba7880892a7d6841484b1f56c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7017480517",
+      "scope": "Stock Actions listed the 1080 grant under Network Attacker. Activation replaced 1078 on the caster, followed by replacement with 1085."
+    },
+    "pathogenist-active-upgrade-stock": {
+      "representative": 1085,
+      "result": "pass",
+      "head": "1cb86b40e01624cba7880892a7d6841484b1f56c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7017480517",
+      "scope": "Stock activated 1085 from Actions. The caster's 1080 turned off, then 1087 replaced 1085."
+    },
+    "howitzer-active-upgrade-stock": {
+      "representative": 1087,
+      "result": "pass",
+      "head": "1cb86b40e01624cba7880892a7d6841484b1f56c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7017480517",
+      "scope": "Stock activated 1087 from Actions and replaced 1085. Caster Status showed Howitzer-attributed Viral Accuracy +13, Viral Damage +8, Concentration +7 and Virus Area Radius. The later 1078 recast removed 1087."
+    }
+  },
+  "abilities": {
+    "1078": { "family": "network-hacker-active-upgrade-stock" },
+    "1080": { "family": "network-attacker-active-upgrade-stock" },
+    "1085": { "family": "pathogenist-active-upgrade-stock" },
+    "1087": { "family": "howitzer-active-upgrade-stock" }
+  }
+}
