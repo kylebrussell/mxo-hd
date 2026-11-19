@@ -92,7 +92,7 @@ namespace hds
                 UInt32 fx = (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
                 ServerPackets.SendPlayerAbilityEffect(target, fx);
                 if (AbilityBuffs.Apply(target, id, caster)) buffApplied?.Invoke(target);
-                AbilityHostile.ApplySweep(caster, target, id);
+                if (id != AbilityBuffs.ForceMultiplierUpgrade) AbilityHostile.ApplySweep(caster, target, id);
                 target.FlushQueue();
             }
         }

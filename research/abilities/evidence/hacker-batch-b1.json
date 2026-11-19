@@ -1,0 +1,149 @@
+{
+  "families": {},
+  "abilities": {
+    "46": {
+      "checks": {
+        "stats": {
+          "source": "GOB 46 applies Health Regen Rate 112 by +40 for 600 seconds.",
+          "runtime": "AbilitySupport.Land applies the sourced buff; HealthRegen.Tick reads the resulting rate; PlayerEffects.Due removes the buff.",
+          "test": "HackerBatchBParityTests.FastHealing46IncreasesTheActualHealthRegenTickForTenMinutes advances HP by 14 before expiry and by 10 after expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 46 applies Health Regen Rate 112 by +40 for 600 seconds.",
+          "runtime": "AbilitySupport.Land applies the sourced buff; HealthRegen.Tick reads the resulting rate; PlayerEffects.Due removes the buff.",
+          "test": "HackerBatchBParityTests.FastHealing46IncreasesTheActualHealthRegenTickForTenMinutes advances HP by 14 before expiry and by 10 after expiry."
+        }
+      }
+    },
+    "49": {
+      "checks": {
+        "script": {
+          "source": "GOB 49 enables Combat Evasion and invokes tempmods.py ImpartBlurInit and ImpartBlurTerm on its timed modifier.",
+          "runtime": "AbilityBuffs.Scripted applies 0x40 in DissemblingBits and clears it with the same timed parent on expiry.",
+          "test": "HackerBatchBParityTests.GaussianBlur49ClearsItsVisibleBitAndEvasionModifierAtExpiry verifies the bit and stat appear and clear at 600 seconds. Combat evasion contests and stock presentation remain separate."
+        }
+      }
+    },
+    "51": {
+      "checks": {
+        "stats": {
+          "source": "GOB 51 loads Max Health Bonus 1057 at +1 and grants 1094.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant closure. AbilityBuffs.RefreshVitals consumes the percent bonus and recomputes on unload.",
+          "test": "HackerBatchBParityTests.LoadedGuardianPassivesChangeMaximumHealthAndUnloadCleanly checks 1,000 -> 1,010 -> 1,000 and membership of 1094."
+        },
+        "behavior-tests": {
+          "source": "GOB 51 loads Max Health Bonus 1057 at +1 and grants 1094.",
+          "runtime": "AbilityPassives.SetLoaded resolves the grant closure. AbilityBuffs.RefreshVitals consumes the percent bonus and recomputes on unload.",
+          "test": "HackerBatchBParityTests.LoadedGuardianPassivesChangeMaximumHealthAndUnloadCleanly checks 1,000 -> 1,010 -> 1,000 and membership of 1094."
+        }
+      }
+    },
+    "68": {
+      "checks": {
+        "script": {
+          "source": "GOB 68 calls tempmods.py PersonalFirewallInit, PersonalFirewallTerm and GenericConstHealthRegenEvent. The last callback receives the stored value 75.",
+          "runtime": "AbilityScaledBuffs.TryScriptedTimed maps the armor bit and term heal. AbilityBuffs.Remove clears dissembling and restores HP only on living cleanup.",
+          "test": "HackerBatchBParityTests.Firewall68SetsArmorAndResistsFourDamageTypesThenClearsAndTermHealsOnlyLivingPlayers checks 0x100, the four values, the 75-point heal and death cleanup."
+        }
+      }
+    },
+    "173": {
+      "checks": {
+        "stats": {
+          "source": "GOB 173 links function 3 at scale 1.3 to all three accuracy types, capped at 26.",
+          "runtime": "AbilityBuffs.Apply snapshots caster-derived values; AbilityStats.Attack and ThrownAccuracy consume the inputs. Retail queued-thrown selector parity is separate.",
+          "test": "HackerBatchBParityTests.AccuracyBuff173UsesCasterLevelAndCappedValuesAcrossCombatTypes checks all three at levels 20/50 and removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 173 links function 3 at scale 1.3 to all three accuracy types, capped at 26.",
+          "runtime": "AbilityBuffs.Apply snapshots caster-derived values; AbilityStats.Attack and ThrownAccuracy consume the inputs. Retail queued-thrown selector parity is separate.",
+          "test": "HackerBatchBParityTests.AccuracyBuff173UsesCasterLevelAndCappedValuesAcrossCombatTypes checks all three at levels 20/50 and removal."
+        }
+      }
+    },
+    "360": {
+      "checks": {
+        "stats": {
+          "source": "GOB 360 applies -14 melee damage and -100 melee and viral resistance for 24 seconds.",
+          "runtime": "TimedEffects applies the modifiers and expires each; AbilityStats supplies melee damage influence, Toughness and viral resistance to the combat consumers.",
+          "test": "HackerBatchBParityTests.InsidiousCode360ChangesMeleeDamageAndMeleeAndViralResistanceUntilExpiry checks the values, non-affected ballistic damage, and restoration."
+        },
+        "behavior-tests": {
+          "source": "GOB 360 applies -14 melee damage and -100 melee and viral resistance for 24 seconds.",
+          "runtime": "TimedEffects applies the modifiers and expires each; AbilityStats supplies melee damage influence, Toughness and viral resistance to the combat consumers.",
+          "test": "HackerBatchBParityTests.InsidiousCode360ChangesMeleeDamageAndMeleeAndViralResistanceUntilExpiry checks the values, non-affected ballistic damage, and restoration."
+        }
+      }
+    },
+    "361": {
+      "checks": {
+        "stats": {
+          "source": "GOB 361 applies -27 Ballistic and Thrown Accuracy for 35 seconds.",
+          "runtime": "TimedEffects applies and expires the modifiers. AbilityStats.Attack and ThrownAccuracy read the corresponding stats.",
+          "test": "HackerBatchBParityTests.HostileAccuracyDebuffsModifyOnlyTheirTypesUntilExpiry verifies both accuracy changes, unrelated combat stats and removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 361 applies -27 Ballistic and Thrown Accuracy for 35 seconds.",
+          "runtime": "TimedEffects applies and expires the modifiers. AbilityStats.Attack and ThrownAccuracy read the corresponding stats.",
+          "test": "HackerBatchBParityTests.HostileAccuracyDebuffsModifyOnlyTheirTypesUntilExpiry verifies both accuracy changes, unrelated combat stats and removal."
+        }
+      }
+    },
+    "480": {
+      "checks": {
+        "stats": {
+          "source": "GOB 480 applies -61 Melee/Ballistic Accuracy and -31 Melee/Ballistic Defense for 25 seconds.",
+          "runtime": "TimedEffects applies and expires all four modifiers; AbilityStats.Attack and Defense supply them to combat.",
+          "test": "HackerBatchBParityTests.HostileAccuracyDebuffsModifyOnlyTheirTypesUntilExpiry verifies all four changes, unchanged thrown accuracy and removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 480 applies -61 Melee/Ballistic Accuracy and -31 Melee/Ballistic Defense for 25 seconds.",
+          "runtime": "TimedEffects applies and expires all four modifiers; AbilityStats.Attack and Defense supply them to combat.",
+          "test": "HackerBatchBParityTests.HostileAccuracyDebuffsModifyOnlyTheirTypesUntilExpiry verifies all four changes, unchanged thrown accuracy and removal."
+        }
+      }
+    },
+    "481": {
+      "checks": {
+        "script": {
+          "source": "GOB 481 invokes BufferOverflowInit, BufferOverflowUpdate and BufferOverflowTerm; tempmods.py reserves min(value, free buffer).",
+          "runtime": "PlayerEffects retains the duration-bound reservation; AbilityBuffBuffer computes it against current usage and AbilitySupport gates admission. The absolute maximum formula remains an open source-parity item.",
+          "test": "HackerBatchBParityTests.BufferOverflow481ReservesAvailableSpaceAndReleasesItOnExpiry verifies an actual denied upgrade at zero free buffer and successful same upgrade after expiry."
+        }
+      }
+    },
+    "696": {
+      "checks": {
+        "stats": {
+          "source": "GOB 696 applies Melee and Ballistic Damage, function 3 with scale 0.5 for 5 seconds.",
+          "runtime": "AbilityBuffs snapshots both values from the caster; AbilityStats.ScaleTypedAbilityDamage consumes both modifiers until the server expiry. Group admission is separate.",
+          "test": "HackerBatchBParityTests.CombatAura696SnapshotsBothDamageTypesFromTheCasterUntilExpiry verifies both types at +10, a rejected viral contribution, snapshot stability and removal."
+        },
+        "behavior-tests": {
+          "source": "GOB 696 applies Melee and Ballistic Damage, function 3 with scale 0.5 for 5 seconds.",
+          "runtime": "AbilityBuffs snapshots both values from the caster; AbilityStats.ScaleTypedAbilityDamage consumes both modifiers until the server expiry. Group admission is separate.",
+          "test": "HackerBatchBParityTests.CombatAura696SnapshotsBothDamageTypesFromTheCasterUntilExpiry verifies both types at +10, a rejected viral contribution, snapshot stability and removal."
+        }
+      }
+    },
+    "1091": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1091 sets the while-enabled 117 and 564 to +10 and +7 and runs NegativeConditionSweepPulse at 5% every 5 seconds.",
+          "runtime": "AbilityBuffs activates both class stats and its linked indefinite sweep; AbilityCosts and AbilityCastInterrupts consume those stats. AbilityHostile schedules the cleanse, and class replacement removes its timed parent.",
+          "test": "HackerBatchBParityTests.ForceMultiplier1091SweepsOnlyCleansableEffectsAndStopsOnClassReplacement verifies cost, concentration, cadence, excluded/included draws around the threshold, removal of Fumble Field and teardown on replacing the class."
+        },
+        "script": {
+          "source": "GOB 1091 sets the while-enabled 117 and 564 to +10 and +7 and runs NegativeConditionSweepPulse at 5% every 5 seconds.",
+          "runtime": "AbilityBuffs activates both class stats and its linked indefinite sweep; AbilityCosts and AbilityCastInterrupts consume those stats. AbilityHostile schedules the cleanse, and class replacement removes its timed parent.",
+          "test": "HackerBatchBParityTests.ForceMultiplier1091SweepsOnlyCleansableEffectsAndStopsOnClassReplacement verifies cost, concentration, cadence, excluded/included draws around the threshold, removal of Fumble Field and teardown on replacing the class."
+        },
+        "behavior-tests": {
+          "source": "GOB 1091 sets the while-enabled 117 and 564 to +10 and +7 and runs NegativeConditionSweepPulse at 5% every 5 seconds.",
+          "runtime": "AbilityBuffs activates both class stats and its linked indefinite sweep; AbilityCosts and AbilityCastInterrupts consume those stats. AbilityHostile schedules the cleanse, and class replacement removes its timed parent.",
+          "test": "HackerBatchBParityTests.ForceMultiplier1091SweepsOnlyCleansableEffectsAndStopsOnClassReplacement verifies cost, concentration, cadence, excluded/included draws around the threshold, removal of Fumble Field and teardown on replacing the class."
+        }
+      }
+    }
+  }
+}

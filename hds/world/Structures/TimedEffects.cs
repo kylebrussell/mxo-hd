@@ -734,7 +734,7 @@ namespace hds
 
         public static byte[] Record(TimedEffects.Active m, bool off)
         {
-            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, m.Parent, m.Target, m.Value, off, m.Seconds);
+            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, m.Parent, m.Target, m.Value, off, float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds);
         }
 
         /// <summary>A state's own record: the state ability as parent, its linked stat and value, no time.</summary>
@@ -846,7 +846,13 @@ namespace hds
             {
                 return false;
             }
-            if (mod.Proc == TempMods.Proc.Pulse) return AbilityHostile.Pulse(this, mod);
+            if (mod.Proc == TempMods.Proc.Pulse)
+            {
+                if (mod.Parent == AbilityBuffs.ForceMultiplierUpgrade &&
+                    (!Alive || !AbilityBuffs.IsActive(client, mod.Parent) || !Effects.Snapshot().Contains(mod)))
+                    return false;
+                return AbilityHostile.Pulse(this, mod);
+            }
             if (mod.Proc == TempMods.Proc.Hot)
             {
                 AbilityHandler.HealSelf(client, (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue));
