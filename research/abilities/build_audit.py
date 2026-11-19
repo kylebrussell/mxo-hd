@@ -241,6 +241,8 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     if r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
+    elif i == 152:
+        parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
@@ -253,7 +255,8 @@ def server(i):
                      + f'; Action_Resurrect 63 with {motion} motion context')
     if r.get('registered_grants'):
         parts.append('stored zero-valued 620→1108 live grant registration/load after avatar readiness; stock Actions visibility pending'
-                     if i == 620 else 'captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
+                     if i == 620 else 'stored zero-valued 155→1113 live grant after avatar readiness; stock Actions visibility pending'
+                     if i == 155 else 'captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
     if r.get('conditional_thrown_damage'):
         parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
     if i == 120:
