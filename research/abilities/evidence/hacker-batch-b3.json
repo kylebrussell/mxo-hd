@@ -1,0 +1,160 @@
+{
+  "families": {},
+  "abilities": {
+    "43": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 43 applies blinded for 16 seconds.",
+          "runtime": "TimedEffects applies and expires the state; AbilityStats.Attack applies the blind accuracy penalty.",
+          "test": "HackerBatchB3ParityTests.DisruptInputs43ReducesAttackUntilTheSixteenSecondBlindEnds verifies the actual change to both attack types and expiry. Presentation and target admission remain separate."
+        }
+      }
+    },
+    "418": {
+      "checks": {
+        "stats": {
+          "source": "GOB 418 provides Healing Bonus +5 while loaded and grants 1098.",
+          "runtime": "AbilityPassives tracks the grant and AbilityHealing consumes the linked bonus during AbilitySupport.Land.",
+          "test": "HackerBatchB3ParityTests.Physician418GrantAndHeal1098ChangeOnlyEligibleRecipients verifies grant membership and unload, actual +188 HP with a base-180 heal under the bonus and unboosted +70 HP through a different heal after unload."
+        },
+        "behavior-tests": {
+          "source": "GOB 418 provides Healing Bonus +5 while loaded and grants 1098.",
+          "runtime": "AbilityPassives tracks the grant and AbilityHealing consumes the linked bonus during AbilitySupport.Land.",
+          "test": "HackerBatchB3ParityTests.Physician418GrantAndHeal1098ChangeOnlyEligibleRecipients verifies grant membership and unload, actual +188 HP with a base-180 heal under the bonus and unboosted +70 HP through a different heal after unload."
+        }
+      }
+    },
+    "470": {
+      "checks": {
+        "stats": {
+          "source": "GOB 470 provides both Max Inner Strength Bonus and Inner Strength Regen Rate Bonus +5 when loaded, and grants 1081.",
+          "runtime": "AbilityPassives resolves grant membership and feeds AbilityBuffs.RefreshVitals and AbilityHandler.RegenerateInnerStrength.",
+          "test": "HackerBatchB3ParityTests.Ravager470GrantsTheDowngradeAndChangesStrengthMaximumAndRegeneration exercises 200 -> 210 -> 200 maximum, fractional regeneration carry, and grant lifetime."
+        },
+        "behavior-tests": {
+          "source": "GOB 470 provides both Max Inner Strength Bonus and Inner Strength Regen Rate Bonus +5 when loaded, and grants 1081.",
+          "runtime": "AbilityPassives resolves grant membership and feeds AbilityBuffs.RefreshVitals and AbilityHandler.RegenerateInnerStrength.",
+          "test": "HackerBatchB3ParityTests.Ravager470GrantsTheDowngradeAndChangesStrengthMaximumAndRegeneration exercises 200 -> 210 -> 200 maximum, fractional regeneration carry, and grant lifetime."
+        }
+      }
+    },
+    "472": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 472 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 716 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        },
+        "script": {
+          "source": "GOB 472 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 716 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        }
+      }
+    },
+    "474": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 474 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 866\u2013880 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        },
+        "script": {
+          "source": "GOB 474 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 866\u2013880 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        }
+      }
+    },
+    "475": {
+      "checks": {
+        "periodic": {
+          "source": "GOB 475 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 624 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        },
+        "script": {
+          "source": "GOB 475 sets ViralDOT cadence 2.5 s and duration 30 s. tempmods.py ViralDOT rounds the per-tick amount and applies VIRUSCRASH_FX. TempMods documents the 624 captured totals that take precedence for this server.",
+          "runtime": "TimedEffects.RunDue and PlayerEffects.Ticked dispatch health damage, resistance and tick FX until the template expires.",
+          "test": "HackerBatchB3ParityTests.CapturedViralDotsTickElevenTimesAndResistanceIsReadAtTheTick checks all eleven HP mutations, a changed live resistance input on tick two, tick FX, and no expiry-boundary damage. Retail raw-to-captured damage scaling remains open."
+        },
+        "area": {
+          "source": "GOB 475 selector 3 and radius 5 m.",
+          "runtime": "PvpCombat.LandAbility resolves the primary opponent. AbilityTargets.LandAround uses its coordinates and excludes recipients beyond radius or on another floor.",
+          "test": "HackerBatchB3ParityTests.HostileAreaExpandsFromTheSelectedOpponentAndChecksItsOwnRadius drives an actual selected-player area landing. A second opponent exactly on the boundary receives the effect. A player one unit beyond and the other-floor control receive none."
+        }
+      }
+    },
+    "473": {
+      "checks": {
+        "area": {
+          "source": "GOB 473 selector 3 and radius 4 m.",
+          "runtime": "PvpCombat.LandAbility resolves the primary opponent. AbilityTargets.LandAround uses its coordinates and excludes recipients beyond radius or on another floor.",
+          "test": "HackerBatchB3ParityTests.HostileAreaExpandsFromTheSelectedOpponentAndChecksItsOwnRadius drives an actual selected-player area landing. A second opponent exactly on the boundary receives the effect. A player one unit beyond and the other-floor control receive none."
+        },
+        "stats": {
+          "source": "GOB 473 applies 4 s Pacify and -80 Viral Resistance for 8 s. tempmods.py AddControlImmunityTimer installs timed immunity and announces it to the caster and target.",
+          "runtime": "AbilityHostile.ModOf preserves the numeric modifier alongside the callback. TimedEffects applies both effects, sends each immunity notice and retains the separate immunity tuple when damage breaks Pacify.",
+          "test": "HackerBatchB3ParityTests.FreezeSystem473PacifiesAndAppliesItsViralVulnerability verifies the two notice IDs, -80 resistance, Pacify action gate, health-event break and 8 s immunity boundary. Full stock presentation and target rules remain open."
+        },
+        "script": {
+          "source": "GOB 473 applies 4 s Pacify and -80 Viral Resistance for 8 s. tempmods.py AddControlImmunityTimer installs timed immunity and announces it to the caster and target.",
+          "runtime": "AbilityHostile.ModOf preserves the numeric modifier alongside the callback. TimedEffects applies both effects, sends each immunity notice and retains the separate immunity tuple when damage breaks Pacify.",
+          "test": "HackerBatchB3ParityTests.FreezeSystem473PacifiesAndAppliesItsViralVulnerability verifies the two notice IDs, -80 resistance, Pacify action gate, health-event break and 8 s immunity boundary. Full stock presentation and target rules remain open."
+        },
+        "behavior-tests": {
+          "source": "GOB 473 applies 4 s Pacify and -80 Viral Resistance for 8 s. tempmods.py AddControlImmunityTimer installs timed immunity and announces it to the caster and target.",
+          "runtime": "AbilityHostile.ModOf preserves the numeric modifier alongside the callback. TimedEffects applies both effects, sends each immunity notice and retains the separate immunity tuple when damage breaks Pacify.",
+          "test": "HackerBatchB3ParityTests.FreezeSystem473PacifiesAndAppliesItsViralVulnerability verifies the two notice IDs, -80 resistance, Pacify action gate, health-event break and 8 s immunity boundary. Full stock presentation and target rules remain open."
+        }
+      }
+    },
+    "476": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 476 reduces current effective Max Health by 520 and applies -20% Health Regen Rate for 40 seconds.",
+          "runtime": "TimedEffects drives both stats. AbilityBuffs.RefreshVitals updates the maximum and clamps health; HealthRegen ticks from both the current maximum and modified rate.",
+          "test": "HackerBatchB3ParityTests.DestroyHealth476ClampsTheLiveMaximumAndChangesActualRegenUntilExpiry exercises full HP/max mutation, observed +4 HP during debuff and +10 HP after the scripted duration. Stock Status observed regen change in PR315. https://github.com/kylebrussell/mxo-hd/pull/315#issuecomment-6999207958"
+        }
+      }
+    },
+    "1081": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1081 applies Confuse for 8 s, Viral Defense -12 for 30 s and invokes tempmods.py RemoveRandomBuff.",
+          "runtime": "PvpCombat.LandAbilityOn applies the state and defense and calls AbilityHostile.LandedOnPlayer for removable upgrade selection and its failure message.",
+          "test": "HackerBatchB3ParityTests.RavagerDowngrade1081DispelsAnUpgradeAndSeparatelyAppliesConfuseAndDefense verifies a real upgrade is removed, the no-upgrade notice is sent, the tactic gate ends at 8 s, and defense returns at 30 s. PR313 observed the native no-upgrade branch. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        },
+        "script": {
+          "source": "GOB 1081 applies Confuse for 8 s, Viral Defense -12 for 30 s and invokes tempmods.py RemoveRandomBuff.",
+          "runtime": "PvpCombat.LandAbilityOn applies the state and defense and calls AbilityHostile.LandedOnPlayer for removable upgrade selection and its failure message.",
+          "test": "HackerBatchB3ParityTests.RavagerDowngrade1081DispelsAnUpgradeAndSeparatelyAppliesConfuseAndDefense verifies a real upgrade is removed, the no-upgrade notice is sent, the tactic gate ends at 8 s, and defense returns at 30 s. PR313 observed the native no-upgrade branch. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        },
+        "behavior-tests": {
+          "source": "GOB 1081 applies Confuse for 8 s, Viral Defense -12 for 30 s and invokes tempmods.py RemoveRandomBuff.",
+          "runtime": "PvpCombat.LandAbilityOn applies the state and defense and calls AbilityHostile.LandedOnPlayer for removable upgrade selection and its failure message.",
+          "test": "HackerBatchB3ParityTests.RavagerDowngrade1081DispelsAnUpgradeAndSeparatelyAppliesConfuseAndDefense verifies a real upgrade is removed, the no-upgrade notice is sent, the tactic gate ends at 8 s, and defense returns at 30 s. PR313 observed the native no-upgrade branch. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737"
+        }
+      }
+    },
+    "1098": {
+      "checks": {
+        "healing": {
+          "source": "GOB 1098 uses one immediate type 3 heal with fixed base 180, selector 9 and radius 4 m.",
+          "runtime": "AbilitySupport.Targets admits the caster and nearby live team members; AbilityHealing computes the final influenced amount before HealSelf mutates health.",
+          "test": "HackerBatchB3ParityTests.Physician418GrantAndHeal1098ChangeOnlyEligibleRecipients verifies +188 HP for a caster using Physician and a teammate exactly 4 m away, and unchanged HP for a more distant member and a closer non-member."
+        },
+        "area": {
+          "source": "GOB 1098 uses one immediate type 3 heal with fixed base 180, selector 9 and radius 4 m.",
+          "runtime": "AbilitySupport.Targets admits the caster and nearby live team members; AbilityHealing computes the final influenced amount before HealSelf mutates health.",
+          "test": "HackerBatchB3ParityTests.Physician418GrantAndHeal1098ChangeOnlyEligibleRecipients verifies +188 HP for a caster using Physician and a teammate exactly 4 m away, and unchanged HP for a more distant member and a closer non-member."
+        },
+        "behavior-tests": {
+          "source": "GOB 1098 uses one immediate type 3 heal with fixed base 180, selector 9 and radius 4 m.",
+          "runtime": "AbilitySupport.Targets admits the caster and nearby live team members; AbilityHealing computes the final influenced amount before HealSelf mutates health.",
+          "test": "HackerBatchB3ParityTests.Physician418GrantAndHeal1098ChangeOnlyEligibleRecipients verifies +188 HP for a caster using Physician and a teammate exactly 4 m away, and unchanged HP for a more distant member and a closer non-member."
+        }
+      }
+    }
+  }
+}
