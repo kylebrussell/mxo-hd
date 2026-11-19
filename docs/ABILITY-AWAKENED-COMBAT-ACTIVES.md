@@ -6,7 +6,7 @@ GOB 9 and 15 have a while-enabled modifier with a one-second UpdateFuncInterval.
 
 The toggles reject concurrent use before charging the cast. The server sends the normal action refusal with reason 0x066b. The stock client displays the refused ability's name in its tactic line. Recurring effects use the active toggle's exact identity and world, life and transport generations. They stop on removal or lifecycle changes.
 
-Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock confirmed both on/off sequences and that the active tactic continues after a refusal. The single-message retest and the stock button gate at rest remain open.
+Run NativeQa mode `ability-parity-awakened-tactical-toggles`. Enter Self Defense interlock against Melee Dummy, enable one tactic from Actions, and retain the on record and recurring effect. Try the other tactic, capture client refusal or outgoing request and reply, then disable the first and verify the pulse stops. Repeat in reverse order. The self and observer effect records are verified in the disposable replay. Stock confirmed both on/off sequences, continued FX after a refusal and one tactic line per cross-toggle attempt. Stock button availability at rest remains unmeasured.
 
 ## Power Shot
 
@@ -16,7 +16,11 @@ In retail client 7.6005, modifier evaluator 62517ff0 dispatches function 4 to 62
 
 ## Stock retest of the tactical conflict
 
-The shipped conflict callbacks name the active tactic using 0xc6001a9f for a refused Energized Attacks and 0xc6001a9b for a refused Precise Blow. Stock QA on 1580f0d7 observed two yellow lines per attempt. Capture b8a419336ce8 at lines 4280 and 7267 shows an 80 ba with reason 0x066b followed by the corresponding 81 67. The first visible line was “You cannot activate [ability] while using this tactic.” The second came from the directional STA. A single 80 ba keeps the action refusal and the first line. Stock still needs to confirm single display on the new head.
+The shipped conflict callbacks name the active tactic using 0xc6001a9f for a refused Energized Attacks and 0xc6001a9b for a refused Precise Blow. Stock QA on 1580f0d7 observed two yellow lines per attempt. Capture b8a419336ce8 at lines 4280 and 7267 shows an 80 ba with reason 0x066b followed by the corresponding 81 67. The first visible line was “You cannot activate [ability] while using this tactic.” The second came from the directional STA. A single 80 ba keeps the action refusal and the first line.
+
+The November 19, 2026 18:10 ET stock QA handoff records a PASS on [PR387 at 3d2fe3fd](https://github.com/kylebrussell/mxo-hd/pull/387). The operator saw one yellow line per attempt, naming the tactic they tried to activate. The packet capture b92deabd9797 independently records two denials per direction at lines 2755, 3522, 4960 and 5683. Each caster reply contains one 80 ba with reason 066b. The capture has zero directional 81 67 refusals and the denial packets carry zero supplemental 2e c7 chat records. The active tactic's FX continues after each denial and ceases after each off record at lines 3129, 3883, 5286 and 5824.
+
+The earlier PR383 capture 58353c2f063b measured the recurring own-view FX during each enabled window.
 
 | Toggle | On | First FX | Last FX | Off | Unique own-view pulses |
 |---|---|---|---|---|---|
