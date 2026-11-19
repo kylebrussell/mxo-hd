@@ -4,13 +4,13 @@
       "checks": {
         "script": {
           "source": "Shipped GOB 9 and tempmods.py specify EnergizedAttacksInit, EnergizedAttacksTerm, and PlayEnergizedFX at one second when in combat. general.py rejects the concurrent opposite toggle and shipped STA 0xc6001a9f provides the message.",
-          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal.",
-          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration."
+          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal. The refusal also emits a plain system notice after the shipped localized record.",
+          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration. The disposable checks the raw refusal, localized record, system notice and a subsequent pulse from the retained tactic."
         },
         "behavior-tests": {
           "source": "Shipped GOB 9 and tempmods.py specify EnergizedAttacksInit, EnergizedAttacksTerm, and PlayEnergizedFX at one second when in combat. general.py rejects the concurrent opposite toggle and shipped STA 0xc6001a9f provides the message.",
-          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal.",
-          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration."
+          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal. The refusal also emits a plain system notice after the shipped localized record.",
+          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration. The disposable checks the raw refusal, localized record, system notice and a subsequent pulse from the retained tactic."
         }
       }
     },
@@ -18,13 +18,13 @@
       "checks": {
         "script": {
           "source": "Shipped GOB 15 and tempmods.py specify PerciseBlowInit, PerciseBlowTerm, and PlayPreciseFX at one second when in combat. general.py rejects the concurrent opposite toggle and shipped STA 0xc6001a9b provides the message.",
-          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal.",
-          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration."
+          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal. The refusal also emits a plain system notice after the shipped localized record.",
+          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration. The disposable checks the raw refusal, localized record, system notice and a subsequent pulse from the retained tactic."
         },
         "behavior-tests": {
           "source": "Shipped GOB 15 and tempmods.py specify PerciseBlowInit, PerciseBlowTerm, and PlayPreciseFX at one second when in combat. general.py rejects the concurrent opposite toggle and shipped STA 0xc6001a9b provides the message.",
-          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal.",
-          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration."
+          "runtime": "AbilityBuffs tracks the live toggle, CombatTactics.Type selects it for the actual round and ranged consumers, and AwakenedTacticalToggles drives the guarded recurring self and watcher FX and localized refusal. The refusal also emits a plain system notice after the shipped localized record.",
+          "test": "ability-parity-awakened-tactical-toggles disposable full 80 b9 activation sends the switch, repeated self/watcher FX, opposite attempt refusal, switch off and no post-removal FX. AbilityBuffTests.AwakenedToggleChangesRealDamageAndContestUntilRemoval exercises exact live-toggle selection through close-combat damage, roll and Free Attack damage, refusal and restoration. The disposable checks the raw refusal, localized record, system notice and a subsequent pulse from the retained tactic."
         }
       }
     }

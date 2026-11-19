@@ -20,8 +20,8 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
         readyMessages: new[]
         {
             "Target the 30,000 HP Melee Dummy 3 m west. Start in Self Defense with no ranged weapon equipped. Enter Close Combat; use a non-Block tactic.",
-            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and retain the refusal if stock sends the request. Turn 9 off and verify its FX stops.",
-            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and note whether stock sends it. Turn 15 off and verify no continued FX.",
+            "Enable Energized Attacks (9) from Actions. Check the on record and repeated in-combat FX 0x2800070c. Attempt Precise Blow (15) and verify the visible system notice instructs you to switch off Energized Attacks first. Turn 9 off and verify its FX stops.",
+            "Enable Precise Blow (15) and check the on record and repeated in-combat FX 0x280006ff. Try Energized Attacks before turning it off and verify the visible system notice instructs you to switch off Precise Blow first. Turn 15 off and verify no continued FX.",
             "Record stock gating at rest separately if tested. Keep exact activation, on/off, and FX records. The NPC's random rounds are not a statistical damage benchmark."
         });
 
@@ -42,9 +42,10 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
 
         var samples = new[]
         {
-            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu, Refusal: 0xc6001a9bu),
-            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu, Refusal: 0xc6001a9fu)
+            (On: (ushort)9, Blocked: (ushort)15, Effect: 0x2800070cu, Refusal: 0xc6001a9bu, Notice: "Switch off Energized Attacks before using Precise Blow."),
+            (On: (ushort)15, Blocked: (ushort)9, Effect: 0x280006ffu, Refusal: 0xc6001a9fu, Notice: "Switch off Precise Blow before using Energized Attacks.")
         };
+        var proof = new List<object>();
         foreach (var sample in samples)
         {
             int actorAt = actor.World.ViewSnapshot().Count;
@@ -58,19 +59,28 @@ public sealed class AwakenedTacticalTogglesMode : NativeQaMode
                 $"Repeated {sample.On} FX on self and observer", TimeSpan.FromSeconds(10));
 
             EvidenceRetestWire.Cast(actor, sample.Blocked, dummy);
-            await actor.WaitForRpcAsync($"80 ba {EvidenceRetestWire.Le(sample.Blocked)}");
-            await actor.WaitForRpcAsync($"81 67 ?? ?? ?? ?? {WireFormat.ToHex(BitConverter.GetBytes(sample.Refusal))}");
+            var denied = await actor.WaitForRpcAsync($"80 ba {EvidenceRetestWire.Le(sample.Blocked)}");
+            var localized = await actor.WaitForRpcAsync($"81 67 ?? ?? ?? ?? {WireFormat.ToHex(BitConverter.GetBytes(sample.Refusal))}");
+            var notice = await actor.WaitForTextAsync(sample.Notice);
+            Check.That(notice.Bytes.AsSpan().StartsWith(new byte[] { 0x2e, 0xc7 }), "Visible system chat is sent to the caster");
+            Check.That(!observer.World.RpcSnapshot().Any(packet => packet.Bytes.AsSpan().SequenceEqual(notice.Bytes)),
+                "The nearby observer does not receive the caller-only notice");
+            int afterConflict = actor.World.ViewSnapshot().Count;
+            await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(afterConflict).Any(ownEffect.Occurs),
+                "The existing tactic continues pulsing after refusal", TimeSpan.FromSeconds(4));
             EvidenceRetestWire.Cast(actor, sample.On, dummy);
             await actor.WaitForRpcAsync($"80 bd 05 {EvidenceRetestWire.Le(sample.On)} 00 00 00 00 00 00");
             int offAt = actor.World.ViewSnapshot().Count;
             await Task.Delay(TimeSpan.FromSeconds(1.4));
+            proof.Add(new { sample.On, sample.Blocked, sample.Effect, sample.Refusal,
+                Denial = denied.Hex, Localized = localized.Hex, Notice = notice.Hex });
             Check.That(!actor.World.ViewSnapshot().Skip(offAt).Any(ownEffect.Occurs),
                 $"No {sample.On} update after toggle off");
         }
 
         Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Tactical toggle framing");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "awakened-tactical-toggles.json"),
-            JsonSerializer.Serialize(samples.Select(sample => new { sample.On, sample.Blocked, sample.Effect, sample.Refusal })));
+            JsonSerializer.Serialize(proof, new JsonSerializerOptions { WriteIndented = true }));
         return Array.Empty<byte>();
     }
 

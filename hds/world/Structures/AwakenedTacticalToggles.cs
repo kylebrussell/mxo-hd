@@ -17,6 +17,10 @@ namespace hds
             caster.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(ability, AbilityRefusals.LegacyAmbiguous, 0)));
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(
                 ability == Energized ? EnergizedConflict : PreciseConflict, true, Energized, name, name));
+            // The stock capture received both refusal packets but displayed neither as a chat line.
+            string notice = ability == Energized ? "Switch off Precise Blow before using Energized Attacks."
+                : "Switch off Energized Attacks before using Precise Blow.";
+            caster.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(notice, "BROADCAST"));
             caster.FlushQueue();
         }
 
