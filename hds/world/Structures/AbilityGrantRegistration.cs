@@ -97,7 +97,10 @@ namespace hds
         // Primary contract: research/abilities/invisibility-tool-registration.md. No new level formula.
         internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
             Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
-        internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs => ObservedPairs.Concat(NativeToolPairs);
+        // 620 grants 1108 in the GOB. Publish its ordinary loaded-grant tuple; stock Actions remains to be verified.
+        private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
+        internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs =>
+            ObservedPairs.Concat(NativeToolPairs).Concat(UtilityMasterPairs);
         // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ReadyPresentationPairs { get; } =
             Array.AsReadOnly(new (ushort Source,ushort Target)[]{(290,1117)});

@@ -41,6 +41,50 @@ public class LoadedGrantMembershipTests
         Assert.Equal(Convert.FromHexString("80bc45032404008f0000002404000000000100000000"),packets[^1]);
         AbilityGrantRegistration.LoadedChanged(c);Assert.Equal(10,c.messageQueue.RPCMessagesQueue.Count);
     }
+
+    [Fact]
+    public void UtilityMasterPublishesOnlyAfterReadinessAndReconcilesWithoutTouchingOtherGrants()
+    {
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(client, new WorldSendFence());
+        client.playerData.setDistrictId(1);
+        client.playerData.setOnWorld(true);
+        client.playerData.passives.Loaded[620] = 50;
+        client.playerData.passives.Loaded[143] = 50;
+        Assert.True(AbilityGrantRegistration.Handles(620, 1108));
+        Assert.DoesNotContain(((ushort)620, (ushort)1108), AbilityGrantRegistration.ObservedPairs);
+        Assert.False(AbilityGrantRegistration.Handles(619, 1108));
+        byte[] add = Convert.FromHexString("80bc45035404006c0200005404000000000000000000");
+        byte[] load = ServerPackets.BuildAbilityLoad(1108, 0, AbilityProgression.HiddenSlot);
+        byte[] off = add.ToArray();
+        off[17] = 1;
+        byte[][] Packets() => client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Select(m => m.content.Skip(1).ToArray()).ToArray();
+
+        AbilityGrantRegistration.LoadedChanged(client);
+        AbilityGrantRegistration.LoadingComplete(client, new byte[] { 0 });
+        Assert.Empty(Packets());
+        AbilityGrantRegistration.LoadingComplete(client, new byte[] { 1 });
+        Assert.Equal(4, Packets().Length);
+        Assert.Equal(load, Packets()[2]);
+        Assert.Equal(add, Packets()[3]);
+        AbilityGrantRegistration.LoadingComplete(client, new byte[] { 1 });
+        Assert.Equal(4, Packets().Length);
+
+        client.playerData.passives.Loaded.Remove(620);
+        AbilityGrantRegistration.LoadedChanged(client);
+        Assert.Equal(6, Packets().Length);
+        Assert.Equal(ServerPackets.BuildAbilityUnload(1108), Packets()[4]);
+        Assert.Equal(off, Packets()[5]);
+        client.playerData.passives.Loaded[620] = 50;
+        AbilityGrantRegistration.LoadedChanged(client);
+        Assert.Equal(8, Packets().Length);
+        Assert.Equal(load, Packets()[6]);
+        Assert.Equal(add, Packets()[7]);
+    }
     [Fact] public void HistoricalZeroPairsScaledAndNativeToolQualificationsStaySeparate()
     {
         var writable=Assert.IsAssignableFrom<IList<(ushort Source,ushort Target)>>(AbilityGrantRegistration.ObservedPairs);
