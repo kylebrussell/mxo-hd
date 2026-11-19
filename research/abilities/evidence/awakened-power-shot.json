@@ -1,0 +1,23 @@
+{
+  "families": {
+    "stock-awakened-power-shot": {
+      "representative": 14,
+      "result": "pass",
+      "head": "f7629a67b8be44a4cf05ccf1478bdea86101168f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/386#issuecomment-7022030941",
+      "scope": "Stock did not send at rest. In Self Defense interlock the 43-byte request queued and hit for 107. The saved cast debit took own IS from 504 to 484. The landed own-view record raised it to 584 and the separate 0xc40001af message carries 100. Target FX 0x28000726, caster FX 0x28000728 and 60-second reuse were captured. A miss and retail damage scaling remain open."
+    }
+  },
+  "abilities": {
+    "14": {
+      "family": "stock-awakened-power-shot",
+      "checks": {
+        "stats": {
+          "source": "GOB 14 packs a self WhenEnabled 1, instant ValueFunction 4 Current Inner Strength modifier; STA 0xc40001af identifies a caster IS boost.",
+          "runtime": "CombatSpecials.Landed reaches AwakenedPowerShot.Landed only after target admission and successful landing. Its separate source sample restores caster Inner Strength up to MaxInnerStrength and publishes the actual amount and caster FX.",
+          "test": "AwakenedPowerShotTests checks the cap, no change at cap or for a dead caster, and the source bounds and level-shaped center. The disposable ability-parity-awakened-power-shot mode exercises a full target request, actual health and IS updates, separate effect IDs and the 60 s reuse."
+        }
+      }
+    }
+  }
+}

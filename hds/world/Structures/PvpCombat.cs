@@ -416,7 +416,8 @@ namespace hds
                 {
                     damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus
                         ? (UInt16)0
-                        : AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
+                        : abilityId == AwakenedPowerShot.Id ? AwakenedPowerShot.RollDamage(caster, random) :
+                            AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
                     fx = ability.getActivationFX();
                 }
             }
