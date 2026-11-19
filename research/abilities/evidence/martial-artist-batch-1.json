@@ -1,0 +1,313 @@
+{
+  "abilities": {
+    "269": {
+      "checks": {
+        "stats": {
+          "source": "GOB 269 learned-rank 50 bonuses to melee damage 3, melee accuracy 5, max HP 15%.",
+          "runtime": "AbilityPassives.SetLoaded feeds the ordinary melee attack bonus, physical damage influence and the maximum-health snapshot. Removing the load restores all three.",
+          "test": "MartialArtistParityTests.RankedPassiveFeedsAccuracyDamageAndMaximumHealth; ability-parity-martial-sweep checks the live passive record."
+        },
+        "behavior-tests": {
+          "source": "GOB 269 learned-rank 50 bonuses to melee damage 3, melee accuracy 5, max HP 15%.",
+          "runtime": "AbilityPassives.SetLoaded feeds the ordinary melee attack bonus, physical damage influence and the maximum-health snapshot. Removing the load restores all three.",
+          "test": "MartialArtistParityTests.RankedPassiveFeedsAccuracyDamageAndMaximumHealth; ability-parity-martial-sweep checks the live passive record."
+        }
+      },
+      "family": "martial-ranked-offense-passives"
+    },
+    "264": {
+      "checks": {
+        "stats": {
+          "source": "GOB 264 learned-rank 50 bonuses to melee damage 3, melee accuracy 7, max HP 5%.",
+          "runtime": "AbilityPassives.SetLoaded feeds the ordinary melee attack bonus, physical damage influence and the maximum-health snapshot. Removing the load restores all three.",
+          "test": "MartialArtistParityTests.RankedPassiveFeedsAccuracyDamageAndMaximumHealth; ability-parity-martial-sweep checks the live passive record."
+        },
+        "behavior-tests": {
+          "source": "GOB 264 learned-rank 50 bonuses to melee damage 3, melee accuracy 7, max HP 5%.",
+          "runtime": "AbilityPassives.SetLoaded feeds the ordinary melee attack bonus, physical damage influence and the maximum-health snapshot. Removing the load restores all three.",
+          "test": "MartialArtistParityTests.RankedPassiveFeedsAccuracyDamageAndMaximumHealth; ability-parity-martial-sweep checks the live passive record."
+        }
+      },
+      "family": "martial-ranked-offense-passives"
+    },
+    "1065": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1065 Karate Master Upgrade is self-only, with max HP +90, melee accuracy +5, damage +4 and defense +5.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "stats": {
+          "source": "GOB 1065 Karate Master Upgrade is self-only, with max HP +90, melee accuracy +5, damage +4 and defense +5.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "behavior-tests": {
+          "source": "GOB 1065 Karate Master Upgrade is self-only, with max HP +90, melee accuracy +5, damage +4 and defense +5.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        }
+      },
+      "family": "martial-class-upgrades"
+    },
+    "1066": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1066 Karate Grandmaster Upgrade is self-only, with max HP +110, melee accuracy +7, damage +6 and defense +6.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "stats": {
+          "source": "GOB 1066 Karate Grandmaster Upgrade is self-only, with max HP +110, melee accuracy +7, damage +6 and defense +6.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "behavior-tests": {
+          "source": "GOB 1066 Karate Grandmaster Upgrade is self-only, with max HP +110, melee accuracy +7, damage +6 and defense +6.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        }
+      },
+      "family": "martial-class-upgrades"
+    },
+    "1069": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1069 Aikido Grandmaster Upgrade is self-only, with max HP +150, melee accuracy +5, damage +3 and defense +8.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "stats": {
+          "source": "GOB 1069 Aikido Grandmaster Upgrade is self-only, with max HP +150, melee accuracy +5, damage +3 and defense +8.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        },
+        "behavior-tests": {
+          "source": "GOB 1069 Aikido Grandmaster Upgrade is self-only, with max HP +150, melee accuracy +5, damage +3 and defense +8.",
+          "runtime": "AbilitySupport.Targets ignores a selected hostile for selector 1. AbilityBuffs snapshots the exclusive upgrade and AbilityStats feeds its contest, damage and vital consumers.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs; ability-parity-martial-sweep casts with Martial Outside selected and observes the live modifier and replacement."
+        }
+      },
+      "family": "martial-class-upgrades"
+    },
+    "1067": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1067 uses self-only selector 1.",
+          "runtime": "AbilitySupport.Targets resolves to the caster even with another view selected.",
+          "test": "MartialArtistParityTests.GrantedUpgradeSelfTargetsAndChangesFourCombatInputs tests both the routing and the existing capture values. GOB versus capture scaling remains open."
+        }
+      },
+      "family": "martial-class-upgrades"
+    },
+    "271": {
+      "checks": {
+        "stats": {
+          "source": "GOB 271 targets the caster and stores 20 s melee/ballistic resistance. Retained medanon niobe3dualduality sample at packet 79170 sends +44/+48.",
+          "runtime": "AbilityBuffs sends both captured values and AbilityStats.Toughness consumes each corresponding damage type.",
+          "test": "MartialArtistParityTests.IronBodyAndSereneCalmReachDistinctConsumersAndClear; ability-parity-martial-sweep verifies the stock activation and natural wire expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 271 targets the caster and stores 20 s melee/ballistic resistance. Retained medanon niobe3dualduality sample at packet 79170 sends +44/+48.",
+          "runtime": "AbilityBuffs sends both captured values and AbilityStats.Toughness consumes each corresponding damage type.",
+          "test": "MartialArtistParityTests.IronBodyAndSereneCalmReachDistinctConsumersAndClear; ability-parity-martial-sweep verifies the stock activation and natural wire expiry."
+        }
+      },
+      "family": "martial-captured-defensive-buffs"
+    },
+    "272": {
+      "checks": {
+        "stats": {
+          "source": "GOB 272 targets the caster and stores 40 s defenses. Retained medanon niobe3dualduality sample sends melee 57, ballistic 51, viral 54 and thrown 49.",
+          "runtime": "AbilityBuffs feeds all four typed AbilityStats.SpecialDefense consumers.",
+          "test": "MartialArtistParityTests.IronBodyAndSereneCalmReachDistinctConsumersAndClear; ability-parity-martial-sweep verifies the stock activation and natural wire expiry."
+        },
+        "behavior-tests": {
+          "source": "GOB 272 targets the caster and stores 40 s defenses. Retained medanon niobe3dualduality sample sends melee 57, ballistic 51, viral 54 and thrown 49.",
+          "runtime": "AbilityBuffs feeds all four typed AbilityStats.SpecialDefense consumers.",
+          "test": "MartialArtistParityTests.IronBodyAndSereneCalmReachDistinctConsumersAndClear; ability-parity-martial-sweep verifies the stock activation and natural wire expiry."
+        }
+      },
+      "family": "martial-captured-defensive-buffs"
+    },
+    "265": {
+      "checks": {
+        "script": {
+          "source": "GOB 265 terminal marker lasts .01 s and invokes tempmods.py ApplyStunWithTimer (line 1659) with value 4; proc 30%.",
+          "runtime": "AbilityCatalog.Controls installs the proc-conditioned terminal marker. TimedEffects expires it before AbilityConditionalControls.Term appends Stun and independent control immunity, and refuses stacking.",
+          "test": "MartialArtistParityTests.TerminalStunAddsIndependentImmunityAndRefusesStacking"
+        },
+        "proc": {
+          "source": "GOB 265 terminal marker lasts .01 s and invokes tempmods.py ApplyStunWithTimer (line 1659) with value 4; proc 30%.",
+          "runtime": "AbilityCatalog.Controls installs the proc-conditioned terminal marker. TimedEffects expires it before AbilityConditionalControls.Term appends Stun and independent control immunity, and refuses stacking.",
+          "test": "MartialArtistParityTests.TerminalStunAddsIndependentImmunityAndRefusesStacking"
+        }
+      }
+    },
+    "532": {
+      "checks": {
+        "script": {
+          "source": "GOB 532 terminal marker lasts .01 s and invokes tempmods.py ApplyStunWithTimer (line 1659) with value 4; proc 100%.",
+          "runtime": "AbilityCatalog.Controls installs the proc-conditioned terminal marker. TimedEffects expires it before AbilityConditionalControls.Term appends Stun and independent control immunity, and refuses stacking.",
+          "test": "MartialArtistParityTests.TerminalStunAddsIndependentImmunityAndRefusesStacking"
+        }
+      }
+    },
+    "534": {
+      "checks": {
+        "script": {
+          "source": "GOB 534 terminal marker lasts .01 s and invokes tempmods.py ApplyStunWithTimer (line 1659) with value 4; proc 40%.",
+          "runtime": "AbilityCatalog.Controls installs the proc-conditioned terminal marker. TimedEffects expires it before AbilityConditionalControls.Term appends Stun and independent control immunity, and refuses stacking.",
+          "test": "MartialArtistParityTests.TerminalStunAddsIndependentImmunityAndRefusesStacking"
+        },
+        "proc": {
+          "source": "GOB 534 terminal marker lasts .01 s and invokes tempmods.py ApplyStunWithTimer (line 1659) with value 4; proc 40%.",
+          "runtime": "AbilityCatalog.Controls installs the proc-conditioned terminal marker. TimedEffects expires it before AbilityConditionalControls.Term appends Stun and independent control immunity, and refuses stacking.",
+          "test": "MartialArtistParityTests.TerminalStunAddsIndependentImmunityAndRefusesStacking"
+        }
+      }
+    },
+    "406": {
+      "checks": {
+        "proc": {
+          "source": "GOB 406 applies Enraged for 15 seconds on a 20% proc after landing.",
+          "runtime": "AbilityCatalog.Controls, TimedEffects.Instantiate and TimedEffects.Apply roll the proc and install the expiring state.",
+          "test": "MartialArtistParityTests.LandedStateUsesItsOwnDurationAndProcBoundary"
+        },
+        "area": {
+          "source": "GOB 406 uses selector 4 with radius 4 m. Stock selector 4 is enemies within range of self (UI621e2424).",
+          "runtime": "AbilityHandler dispatches CasterHostileArea at cast completion. Its center ignores the selected view and its recipients use the shared legal hostile and floor predicates.",
+          "test": "ability-parity-martial-sweep casts with the 4.5 m NPC selected and checks exact landed recipients among three live NPCs at 2.5, 3.5 and 4.5 m."
+        }
+      }
+    },
+    "411": {
+      "checks": {
+        "proc": {
+          "source": "GOB 411 applies Enraged for 15 seconds on a 40% proc after landing.",
+          "runtime": "AbilityCatalog.Controls, TimedEffects.Instantiate and TimedEffects.Apply roll the proc and install the expiring state.",
+          "test": "MartialArtistParityTests.LandedStateUsesItsOwnDurationAndProcBoundary"
+        },
+        "stats": {
+          "source": "GOB 411 WhenEnabled 1 melee resistance +40 for 15 seconds.",
+          "runtime": "CombatSpecials.Landed applies the buff to the caster. AbilityStats feed the named resistance and damage inputs while it is active.",
+          "test": "MartialArtistParityTests.CasterModifiersApplyOnlyThroughLandedHostileMove"
+        }
+      }
+    },
+    "266": {
+      "checks": {
+        "proc": {
+          "source": "GOB 266 applies Enraged for 8 seconds on a 20% proc after landing.",
+          "runtime": "AbilityCatalog.Controls, TimedEffects.Instantiate and TimedEffects.Apply roll the proc and install the expiring state.",
+          "test": "MartialArtistParityTests.LandedStateUsesItsOwnDurationAndProcBoundary"
+        }
+      }
+    },
+    "536": {
+      "checks": {
+        "proc": {
+          "source": "GOB 536 applies Powerless for 6 seconds on a 50% proc after landing.",
+          "runtime": "AbilityCatalog.Controls, TimedEffects.Instantiate and TimedEffects.Apply roll the proc and install the expiring state.",
+          "test": "MartialArtistParityTests.LandedStateUsesItsOwnDurationAndProcBoundary"
+        }
+      }
+    },
+    "268": {
+      "checks": {
+        "area": {
+          "source": "GOB 268 uses selector 4 with radius 3 m. Stock selector 4 is enemies within range of self (UI621e2424).",
+          "runtime": "AbilityHandler dispatches CasterHostileArea at cast completion. Its center ignores the selected view and its recipients use the shared legal hostile and floor predicates.",
+          "test": "ability-parity-martial-sweep casts with the 4.5 m NPC selected and checks exact landed recipients among three live NPCs at 2.5, 3.5 and 4.5 m."
+        },
+        "stats": {
+          "source": "GOB 268 applies -60 melee and ballistic accuracy for 12 seconds.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        }
+      }
+    },
+    "274": {
+      "checks": {
+        "stats": {
+          "source": "GOB 274 has a 30% Melee Accuracy -60 modifier for 16 seconds.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        },
+        "proc": {
+          "source": "GOB 274 has a 30% Melee Accuracy -60 modifier for 16 seconds.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        }
+      }
+    },
+    "412": {
+      "checks": {
+        "stats": {
+          "source": "GOB 412 has two 40% resistance modifiers for 12 seconds. The retained crashover2k_008 sample at 38417 gives melee -140. Ballistic uses the stored -100.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        },
+        "proc": {
+          "source": "GOB 412 has two 40% resistance modifiers for 12 seconds. The retained crashover2k_008 sample at 38417 gives melee -140. Ballistic uses the stored -100.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        }
+      }
+    },
+    "267": {
+      "checks": {
+        "stats": {
+          "source": "GOB 267 has two 12 s resistance debuffs. The retained ProxyM2_m2 sample at 77358 sends melee -64 and ballistic -62.",
+          "runtime": "TempMods and TimedEffects install the source-specific modifiers on the recipient and the ordinary NPC attack or toughness input reads them until expiry.",
+          "test": "MartialArtistParityTests.LandedStatFeedsOrdinaryRoundInputAndClears"
+        }
+      }
+    },
+    "535": {
+      "checks": {
+        "stats": {
+          "source": "GOB 535 WhenEnabled 1 grants +50 to both resistance types and +11 melee damage for 21 seconds.",
+          "runtime": "CombatSpecials.Landed applies the buff to the caster. AbilityStats feed the named resistance and damage inputs while it is active.",
+          "test": "MartialArtistParityTests.CasterModifiersApplyOnlyThroughLandedHostileMove"
+        }
+      }
+    },
+    "270": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 270 targets Initiative Bonus 1046 and grants 1067. tempmods.py Desperation (line 2404) reads InitiativeBonusAbility.",
+          "runtime": "AbilityScaledBuffs.Resolve snapshots the caster Initiative Bonus into the sourced Desperation amount; grant membership uses the captured 80 bc 45 and hidden ownership record.",
+          "test": "MartialArtistParityTests.LoadedDisciplineRegistersAndRemovesGrantAndFeedsDesperation"
+        }
+      }
+    },
+    "533": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 533 targets Initiative Bonus 1046 and grants 1066. tempmods.py Desperation (line 2404) reads InitiativeBonusAbility.",
+          "runtime": "AbilityScaledBuffs.Resolve snapshots the caster Initiative Bonus into the sourced Desperation amount; grant membership uses the captured 80 bc 45 and hidden ownership record.",
+          "test": "MartialArtistParityTests.LoadedDisciplineRegistersAndRemovesGrantAndFeedsDesperation"
+        }
+      }
+    },
+    "263": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 263 targets Initiative Bonus 1046 and grants 1065. tempmods.py Desperation (line 2404) reads InitiativeBonusAbility.",
+          "runtime": "AbilityScaledBuffs.Resolve snapshots the caster Initiative Bonus into the sourced Desperation amount; grant membership uses the captured 80 bc 45 and hidden ownership record.",
+          "test": "MartialArtistParityTests.LoadedDisciplineRegistersAndRemovesGrantAndFeedsDesperation"
+        }
+      }
+    },
+    "426": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 426 targets Initiative Bonus 1046 and grants 1064. tempmods.py Desperation (line 2404) reads InitiativeBonusAbility.",
+          "runtime": "AbilityScaledBuffs.Resolve snapshots the caster Initiative Bonus into the sourced Desperation amount; grant membership uses the captured 80 bc 45 and hidden ownership record.",
+          "test": "MartialArtistParityTests.LoadedDisciplineRegistersAndRemovesGrantAndFeedsDesperation"
+        }
+      }
+    }
+  }
+}

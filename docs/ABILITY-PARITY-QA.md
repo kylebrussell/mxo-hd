@@ -22,6 +22,21 @@ Use a disposable level-50 CSR_Tester copy with sufficient IS and the required ab
 
 Record visible results, build hash and any protocol logs in the shared handoff. On releasing the lock, restore CSR_Tester to Mara `(23828,495,13984)`, full health, PvP flag 0 and mission 986 only through the harness. Do not use TheNeo or change Defender/firewall settings.
 
+## Grouped Martial Artist sweep
+
+Use `ability-parity-martial-sweep` for the passives, upgrades, defenses, caster-centred attacks and selected interlock checks below. The fixture starts at `24800,495,-1498` with Martial Near, Middle and Outside at 2.5, 3.5 and 4.5 m west. Leave the character at that position for the area check. Add the actions from the stock Actions window.
+
+| Stock check | Record |
+|---|---|
+| Aikido Prowess (269) and Karate Expertise (264) | Load and unload each ability through the ordinary loadout UI. Record rank-50 bonuses and the active/inactive Status and max-HP changes. Prowess stores +5% melee accuracy, +3% melee damage and +15% maximum health. Expertise stores +7%, +3% and +5%. |
+| Karate Master (1065), Karate Grandmaster (1066), Aikido Grandmaster (1069) class upgrades | Leave each parent loaded. With Martial Outside selected, apply each granted action in order and record the self-only health cap increases relative to the unbuffed maximum (+90, +110, +150) and melee accuracy/damage/defense deltas (+5/+4/+5, +7/+6/+6, +5/+3/+8). Check that the prior class upgrade clears on replacement. |
+| Iron Body (271) and Serene Calm (272) | Verify timed on/off records and copy the Status values before, during and after the buff. The retained capture gives melee/ballistic resistance +44/+48 for 20 s and melee/ballistic/viral/thrown defense +57/+51/+54/+49 for 40 s. |
+| Swirling Ki Summon (268) and Ki Burst (406) | Select Martial Outside. Use Swirling Ki Summon from Karate and Ki Burst from Aikido. Swirling Ki Summon should hit Near (3 m radius) and apply melee and ballistic accuracy −60 for 12 s. Ki Burst should hit Near and Middle (4 m radius) and can Enrage them for 15 s. Note every landed recipient. |
+| Aerial Takedown (411) and Tomo Nage (412) | Use Close Combat on Martial Near, reselect Aikido and apply Off Balance through Grab. For Aerial Takedown, record caster melee resistance +40 for 15 s and any target Enrage. For Tomo Nage, capture the target Enrage and each target resistance proc you observe. |
+| Machinegun Kick (532), Ki-Charged Punch (265), Wrist Throw (534), and Berserker Attack (535) | Reselect Karate after opening. Use Speed to Daze the target for Machinegun Kick and Power to Stagger it for Ki-Charged Punch. Wrist Throw can follow a fresh immunity window. Record the 4 s Stun, separate 4 s control immunity and any rejected overlap. Berserker Attack should grant the caster +50 melee/ballistic resistance and +11 melee damage for 21 s on a landed move. |
+
+A passing sweep could complete **seven unique rows** after evidence review. They are 264, 269, 271, 272, 1065, 1066 and 1069. Headless checks exercise modifier consumers, proc boundaries, timed expiry and the live caster-centred target pattern. The hostile rows still require the applicable damage, client targeting and playback checks. Aikido Master Upgrade (1067) retains the captured +148 HP and +7 melee defense. Their relationship to the stored +110 and +6 is open.
+
 ## Native follow-up, 2026-11-11
 
 Build: `19be1e9` plus the native effect-routing and ranged-holster fixes committed with this record. Sessions `mxo-native-ability-20261111b`, `c`, and `d` under the local temporary directory used disposable level-50 copies of CSR_Tester and headless helper players. Only CSR_Tester was selected in the real client.
