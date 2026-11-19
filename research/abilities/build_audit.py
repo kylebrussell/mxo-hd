@@ -256,7 +256,8 @@ def server(i):
     if r.get('registered_grants'):
         parts.append('stored zero-valued 620→1108 live grant registration/load after avatar readiness; stock Actions visibility pending'
                      if i == 620 else 'stored zero-valued 155→1113 live grant after avatar readiness; stock Actions visibility pending'
-                     if i == 155 else 'captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
+                     if i == 155 else 'stored zero-valued 483→1080 live grant registration/load after avatar readiness; stock Actions visibility pending'
+                     if i == 483 else 'captured zero-valued loaded grant membership after live-avatar readiness; idempotent removal/reload; [evidence](LOADED-GRANT-MEMBERSHIP.md)')
     if r.get('conditional_thrown_damage'):
         parts.append('Off Balance only: one stored on-use thrown initializer, value45/24 at50 before existing influence/resistance; base/whole native ordering unresolved; [evidence](ABILITY-CONDITIONAL-THROW.md)')
     if i == 120:

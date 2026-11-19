@@ -33,6 +33,54 @@ public class HackerBatchB2ParityTests
         return player;
     }
 
+    [Fact]
+    public void LoadedNetworkAttackerPublishesTheStoredGrantOnceAndCanReload()
+    {
+        var caster = Client();
+        var loaded = new[] { ((ushort)483, (ushort)50) };
+        byte[] add = Convert.FromHexString("80bc4503380400e30100003804000000000000000000");
+        var remove = add.ToArray();
+        remove[17] = 1;
+        int Count(byte[] expected) => caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Count(packet => packet.content.AsSpan(1).SequenceEqual(expected));
+
+        AbilityPassives.SetLoaded(caster, loaded, newWorld: true);
+        Assert.True(AbilityPassives.IsLoaded(caster, 1080));
+        Assert.Equal(0, Count(add));
+        AbilityGrantRegistration.LoadingComplete(caster, new byte[] { 1 });
+        AbilityGrantRegistration.LoadingComplete(caster, new byte[] { 1 });
+        Assert.Equal(1, Count(add));
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(caster, 1080));
+        Assert.Equal(1, Count(remove));
+        AbilityPassives.SetLoaded(caster, loaded);
+        Assert.Equal(2, Count(add));
+    }
+
+    [Fact]
+    public void HowitzerUpgradeUsesTheCasterAndClearsAllFourConsumersOnClassReplacement()
+    {
+        var caster = Client();
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 1087, 999)));
+        AbilitySupport.Land(caster, 1087, 999);
+        Assert.Equal(13, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(8, AbilityStats.Influence(caster, 172));
+        Assert.Equal((int)(1000 * (double)(float)1.08), AbilityStats.ScaleTypedAbilityDamage(caster, 2, 1000));
+        Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(10, 500,
+            (short)AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration)));
+        Assert.Equal(4 * (1 + (double)0.17f), AbilityRadius.TargetMetres(caster, 333));
+
+        AbilitySupport.Land(caster, 1078, 999);
+        Assert.False(caster.playerData.activeBuffs.ContainsKey(1087));
+        Assert.Equal(4, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(0, AbilityStats.Influence(caster, 172));
+        Assert.Equal(4, AbilityRadius.TargetMetres(caster, 333));
+        Assert.True(AbilityBuffs.Remove(caster, 1078));
+        Assert.Equal(75, AbilityCastInterrupts.CastThroughPercent(10, 500,
+            (short)AbilityStats.Influence(caster, AbilityCastInterrupts.Concentration)));
+    }
+
     [Theory]
     [InlineData(55, 21)]
     [InlineData(80, 13)]
