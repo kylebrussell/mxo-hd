@@ -91,6 +91,73 @@ public class AbilityHostileTests
     }
 
     [Fact]
+    public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
+    {
+        var caster = Client();
+        var target = Client();
+        var distant = Client();
+        var ally = Client();
+        var unseen = Client();
+        var previousClients = WorldServer.Clients;
+        var previousMobs = WorldServer.mobs;
+        WorldServer.Clients = new();
+        WorldServer.mobs = new();
+        caster.viewMan = new();
+        var players = new[] { caster, target, distant, ally, unseen };
+        for (int i = 0; i < players.Length; i++)
+        {
+            var player = players[i];
+            uint id = (uint)(77650 + i);
+            player.playerData.setCharID(id);
+            player.playerData.setEntityId(id);
+            player.playerData.pvpFlag = true;
+            player.playerInstance.OrganizationID.setValue((byte)(player == caster || player == ally ? 1 : 2));
+            double x = player == caster ? 0 : player == distant ? 301 : 299;
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 0, 0));
+            WorldServer.Clients.Add(id.ToString(), player);
+            if (player != caster && player != unseen)
+                caster.viewMan.addView(id, 1).viewCreated = true;
+        }
+
+        try
+        {
+            Assert.True(AbilityAuras.Handles(945));
+            Assert.Equal(4, AbilityAuras.IntervalOf(945));
+            Assert.Equal(946, AbilityAuras.EffectOf(945));
+            Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, target));
+            AbilityAuras.Start(caster, 945);
+            Assert.True(AbilityAuras.IsOn(caster, 945));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target)); // no ApplyAuraEffect initializer
+
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(target));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            foreach (var excluded in new[] { distant, ally, unseen })
+                Assert.Equal(200, AbilityHandler.CurrentInnerStrength(excluded));
+
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)8);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(160, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(0, AbilityHandler.CurrentInnerStrength(target));
+
+            caster.playerInstance.InnerStrengthAvailable.setValue((ushort)19);
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.False(AbilityAuras.IsOn(caster, 945));
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(19, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(100, AbilityHandler.CurrentInnerStrength(target));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            WorldServer.Clients = previousClients;
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
+    [Fact]
     public void DebuffFamilyFollowsTheClientStatusCategories()
     {
         Assert.True(AbilityHostile.IsDebuff(343));   // Miasma 2.0, UDB0
