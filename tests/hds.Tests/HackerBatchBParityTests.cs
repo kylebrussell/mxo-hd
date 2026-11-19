@@ -1,0 +1,441 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using hds;
+
+namespace hds.Tests;
+
+[Collection("DelayedActions")]
+public class HackerBatchBParityTests
+{
+    private static WorldClient Client(byte level = 50)
+    {
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerData.setDistrictId(1);
+        client.playerInstance = new PlayerCharacter();
+        client.playerInstance.Level.setValue(level);
+        client.playerInstance.MaxHealth.setValue((ushort)1000);
+        client.playerInstance.Health.setValue((ushort)400);
+        client.playerInstance.InnerStrengthMax.setValue((ushort)200);
+        client.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+        client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(client, long.MaxValue);
+        return client;
+    }
+
+    [Fact]
+    public void RepairRsi234HealsForTwentyAndCapsAtTargetMaximum()
+    {
+        var caster = Client();
+        AbilitySupport.Land(caster, 234, 2);
+        Assert.Equal(420, PvpCombat.HealthOf(caster));
+
+        caster.playerInstance.Health.setValue((ushort)991);
+        AbilitySupport.Land(caster, 234, 2);
+        Assert.Equal(1000, PvpCombat.HealthOf(caster));
+
+        caster.playerData.isDead = true;
+        caster.playerInstance.Health.setValue((ushort)0);
+        AbilitySupport.Land(caster, 234, 2);
+        Assert.Equal(0, PvpCombat.HealthOf(caster));
+    }
+
+    [Fact]
+    public void CombatAura696SnapshotsBothDamageTypesFromTheCasterUntilExpiry()
+    {
+        var caster = Client(20);
+        var member = Client();
+        Assert.True(AbilityBuffs.Apply(member, 696, caster));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(member, 0, 100));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(member, 1, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(member, 2, 100));
+        caster.playerInstance.Level.setValue((byte)50);
+
+        var active = member.playerData.activeBuffs[696];
+        TimedEffects.RunDue(active.Started + 4.99);
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(member, 0, 100));
+        TimedEffects.RunDue(active.Started + 5.01);
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(member, 0, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(member, 1, 100));
+    }
+
+    [Fact]
+    public void ForceMultiplier1091SweepsOnlyCleansableEffectsAndStopsOnClassReplacement()
+    {
+        var player = Client();
+        var effects = TimedEffects.ForPlayer(player);
+        Random previous = AbilityHostile.PulseRandom;
+        try
+        {
+            Assert.True(TimedEffects.ApplyToPlayer(player, 361, "Enemy"));
+            AbilityHostile.PulseRandom = new FixedRoll(5);
+            AbilitySupport.Land(player, 1091, 2);
+            var pulse = Assert.Single(effects.Effects.Snapshot(), m => m.Parent == 1091);
+            Assert.Equal(5, pulse.Value);
+            Assert.Equal(5, pulse.NextTick - pulse.Start, 4);
+            Assert.Equal(32, AbilityCosts.Effective(player, 314));
+            Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(0, 1000, (short)AbilityStats.Player(player, 564)));
+            Assert.True(effects.Effects.HasParent(361));
+
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.True(effects.Effects.HasParent(361));
+            AbilityHostile.PulseRandom = new FixedRoll(4);
+            TimedEffects.RunDue(pulse.Start + 10.01);
+            Assert.False(effects.Effects.HasParent(361));
+            Assert.True(AbilityBuffs.Apply(player, 1094));
+            Assert.False(effects.Effects.HasParent(1091));
+            Assert.Equal(35, AbilityCosts.Effective(player, 314));
+        }
+        finally
+        {
+            AbilityHostile.PulseRandom = previous;
+            AbilityBuffs.RemoveAll(player);
+        }
+    }
+
+    [Fact]
+    public void FastHealing46IncreasesTheActualHealthRegenTickForTenMinutes()
+    {
+        var player = Client();
+        player.playerData.setOnWorld(true);
+        AbilitySupport.Land(player, 46, 2);
+        var active = player.playerData.activeBuffs[46];
+        HealthRegen.Tick(player, 1);
+        Assert.Equal(414, PvpCombat.HealthOf(player));
+
+        TimedEffects.RunDue(active.Started + 599.99);
+        Assert.True(AbilityBuffs.IsActive(player, 46));
+        TimedEffects.RunDue(active.Started + 600.01);
+        HealthRegen.Tick(player, 1);
+        Assert.Equal(424, PvpCombat.HealthOf(player));
+        Assert.False(AbilityBuffs.IsActive(player, 46));
+    }
+
+    [Theory]
+    [InlineData(51, 1010, 1094)]
+    [InlineData(70, 1230, 0)]
+    public void LoadedGuardianPassivesChangeMaximumHealthAndUnloadCleanly(ushort id, int maximum, ushort grant)
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { (id, (ushort)50) });
+        Assert.Equal(maximum, NumericalUtils.ByteArrayToUint16(player.playerInstance.MaxHealth.getValue(), 1));
+        if (grant != 0) Assert.True(AbilityPassives.IsLoaded(player, grant));
+        if (id == 70) Assert.Equal(10, AbilityStats.Player(player, 1052));
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        if (grant != 0) Assert.False(AbilityPassives.IsLoaded(player, grant));
+        Assert.Equal(1000, NumericalUtils.ByteArrayToUint16(player.playerInstance.MaxHealth.getValue(), 1));
+    }
+
+    [Theory]
+    [InlineData(false, 475)]
+    [InlineData(true, 0)]
+    public void Firewall68SetsArmorAndResistsFourDamageTypesThenClearsAndTermHealsOnlyLivingPlayers(bool dead, int finalHealth)
+    {
+        var player = Client();
+        AbilitySupport.Land(player, 68, 2);
+        Assert.Equal(0x100, AbilityBuffs.DissemblingBits(player));
+        Assert.Equal(40, AbilityStats.Player(player, 157));
+        Assert.Equal(10, AbilityStats.Toughness(player, false));
+        Assert.Equal(10, AbilityStats.Toughness(player, true));
+        Assert.Equal(10, AbilityStats.Player(player, 1033));
+        if (dead)
+        {
+            player.playerData.isDead = true;
+            player.playerInstance.Health.setValue((ushort)0);
+        }
+        Assert.True(AbilityBuffs.Remove(player, 68));
+        Assert.Equal(0, AbilityBuffs.DissemblingBits(player));
+        Assert.Equal(0, AbilityStats.Player(player, 157));
+        Assert.Equal(0, AbilityStats.Toughness(player, false));
+        Assert.Equal(0, AbilityStats.Toughness(player, true));
+        Assert.Equal(0, AbilityStats.Player(player, 1033));
+        Assert.Equal(finalHealth, PvpCombat.HealthOf(player));
+    }
+
+    [Fact]
+    public void AccuracyBuff173UsesCasterLevelAndCappedValuesAcrossCombatTypes()
+    {
+        var player = Client();
+        var caster = Client(20);
+        Assert.True(AbilityBuffs.Apply(player, 173, caster));
+        Assert.Equal(25, AbilityStats.Attack(player, false));
+        Assert.Equal(25, AbilityStats.Attack(player, true));
+        Assert.Equal(25, AbilityStats.ThrownAccuracy(player));
+
+        caster.playerInstance.Level.setValue((byte)50);
+        Assert.True(AbilityBuffs.Apply(player, 173, caster));
+        Assert.Equal(26, AbilityStats.Attack(player, false));
+        Assert.Equal(26, AbilityStats.Attack(player, true));
+        Assert.Equal(26, AbilityStats.ThrownAccuracy(player));
+        AbilityBuffs.Remove(player, 173);
+        Assert.Equal(0, AbilityStats.ThrownAccuracy(player));
+    }
+
+    [Theory]
+    [InlineData(361, 0, -27, -27, 0, 0, 35)]
+    [InlineData(480, -61, -61, 0, -31, -31, 25)]
+    public void HostileAccuracyDebuffsModifyOnlyTheirTypesUntilExpiry(ushort id, int melee, int ballistic, int thrown, int meleeDefense, int ballisticDefense, int seconds)
+    {
+        var target = Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, id, "Enemy"));
+        Assert.Equal(melee, AbilityStats.Attack(target, false));
+        Assert.Equal(ballistic, AbilityStats.Attack(target, true));
+        Assert.Equal(thrown, AbilityStats.ThrownAccuracy(target));
+        Assert.Equal(meleeDefense, AbilityStats.Defense(target, false));
+        Assert.Equal(ballisticDefense, AbilityStats.Defense(target, true));
+
+        var first = TimedEffects.ForPlayer(target).Effects.Snapshot().First();
+        TimedEffects.RunDue(first.Start + seconds + .01);
+        Assert.Equal(0, AbilityStats.Attack(target, false));
+        Assert.Equal(0, AbilityStats.Attack(target, true));
+        Assert.Equal(0, AbilityStats.ThrownAccuracy(target));
+        Assert.Equal(0, AbilityStats.Defense(target, false));
+        Assert.Equal(0, AbilityStats.Defense(target, true));
+    }
+
+    [Fact]
+    public void InsidiousCode360ChangesMeleeDamageAndMeleeAndViralResistanceUntilExpiry()
+    {
+        var target = Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, 360, "Enemy"));
+        Assert.Equal(86, AbilityStats.ScaleTypedAbilityDamage(target, 0, 100));
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, 1, 100));
+        Assert.Equal(-100, AbilityStats.Toughness(target, false));
+        Assert.Equal(-100, AbilityStats.Player(target, 157));
+
+        var first = TimedEffects.ForPlayer(target).Effects.Snapshot().First();
+        TimedEffects.RunDue(first.Start + 24.01);
+        Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(target, 0, 100));
+        Assert.Equal(0, AbilityStats.Toughness(target, false));
+        Assert.Equal(0, AbilityStats.Player(target, 157));
+    }
+
+    [Fact]
+    public void GaussianBlur49ClearsItsVisibleBitAndEvasionModifierAtExpiry()
+    {
+        var player = Client();
+        AbilitySupport.Land(player, 49, 2);
+        Assert.Equal(0x40, AbilityBuffs.DissemblingBits(player) & 0x40);
+        Assert.Equal(25, AbilityStats.Player(player, 520));
+        var buff = player.playerData.activeBuffs[49];
+        TimedEffects.RunDue(buff.Started + 600.01);
+        Assert.Equal(0, AbilityBuffs.DissemblingBits(player) & 0x40);
+        Assert.Equal(0, AbilityStats.Player(player, 520));
+    }
+
+    [Fact]
+    public void ExecuteProgram45ChangesTheActualInnerStrengthMaximumAndRegen()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)45, (ushort)50) });
+        Assert.Equal(220, AbilityHandler.MaxInnerStrength(player));
+        Assert.Equal((ushort)108, AbilityHandler.RegenerateInnerStrength(player));
+        Assert.Equal(5, AbilityStats.Player(player, 1049));
+        Assert.Equal(5, AbilityStats.Player(player, 1090));
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(200, AbilityHandler.MaxInnerStrength(player));
+        Assert.Equal(0, AbilityStats.Player(player, 1049));
+    }
+
+    [Fact]
+    public void HackerStyle1006ContributesOnlyWhileSelected()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)17, (ushort)50), ((ushort)1006, (ushort)50) });
+        int baselineViral = AbilityStats.ViralAccuracy(player);
+        int baselineMelee = AbilityStats.Defense(player, false);
+        CombatStyles.Select(player, 1006);
+        Assert.Equal(baselineViral + 70, AbilityStats.ViralAccuracy(player));
+        Assert.Equal(baselineMelee + 47, AbilityStats.Defense(player, false));
+        Assert.Equal(47, AbilityStats.Defense(player, true));
+        Assert.Equal(47, AbilityStats.Player(player, 1011));
+        Assert.Equal(47, AbilityStats.Player(player, 183));
+        Assert.Equal(64, AbilityStats.Player(player, 1005));
+        Assert.Equal(126, AbilityStats.ScaleTypedAbilityDamage(player, 2, 100));
+        Assert.Equal(25, AbilityHealing.Amount(player, player, 234));
+        CombatStyles.Select(player, 17);
+        Assert.Equal(baselineViral, AbilityStats.ViralAccuracy(player));
+        Assert.Equal(20, AbilityHealing.Amount(player, player, 234));
+    }
+
+    [Fact]
+    public void NetworkAttacker483GrantsOnlyWhileLoadedAndFeedsViralAccuracy()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)483, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(player, 1080));
+        Assert.Equal(2, AbilityStats.ViralAccuracy(player));
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        Assert.False(AbilityPassives.IsLoaded(player, 1080));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(player));
+    }
+
+    [Fact]
+    public void CodeShield358FeedsViralAccuracyAndPowerlessDuration()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)358, (ushort)50) });
+        Assert.Equal(2, AbilityStats.ViralAccuracy(player));
+        Assert.Equal(11, AbilityStats.Player(player, 1030));
+        Assert.Equal(11f, AbilityControlDurations.Scale(player, TempMods.PowerlessAbility, 10), 3);
+        AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(10f, AbilityControlDurations.Scale(player, TempMods.PowerlessAbility, 10));
+    }
+
+    [Fact]
+    public void EfficientCode477ChangesAttacksDamageAndStunDuration()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)477, (ushort)50) });
+        Assert.Equal(5, AbilityStats.Attack(player, false));
+        Assert.Equal(5, AbilityStats.Attack(player, true));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(player, 0, 100));
+        Assert.Equal(110, AbilityStats.ScaleTypedAbilityDamage(player, 1, 100));
+        Assert.Equal(10.5f, AbilityControlDurations.Scale(player, TempMods.StunAbility, 10), 3);
+    }
+
+    [Fact]
+    public void HowitzerGrantAndUpgrade1087SeparateLoadedEffectsFromTheActiveClassBuff()
+    {
+        var player = Client();
+        AbilityPassives.SetLoaded(player, new[] { ((ushort)356, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(player, 1087));
+        Assert.Equal(5, AbilityStats.Player(player, 1055));
+        Assert.True(AbilityBuffs.Apply(player, 1087));
+        Assert.Equal(13, AbilityStats.ViralAccuracy(player));
+        Assert.Equal(108, AbilityStats.ScaleTypedAbilityDamage(player, 2, 100));
+        Assert.Equal(78, AbilityCastInterrupts.CastThroughPercent(0, 1000, (short)AbilityStats.Player(player, 564)));
+        Assert.Equal(8.19, AbilityRadius.TargetMetres(player, 362), 3);
+        AbilitySupport.Land(player, 1094, 2);
+        Assert.False(AbilityBuffs.IsActive(player, 1087));
+        Assert.Equal(0, AbilityStats.ViralAccuracy(player));
+        Assert.Equal(3, AbilityStats.Influence(player, 174));
+        Assert.Equal(20, AbilityStats.Player(player, 520));
+        Assert.Equal(7, AbilityStats.Influence(player, 564));
+    }
+
+    [Fact]
+    public void WhiteNoise362BlindsForTwelveSecondsAndAttackRecovers()
+    {
+        var target = Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, 362, "Enemy"));
+        var blind = Assert.Single(TimedEffects.ForPlayer(target).Effects.Snapshot(), m => m.Target == TempMods.BlindAbility);
+        Assert.Equal(12, blind.Seconds);
+        Assert.Equal(-30, AbilityStats.Attack(target, true));
+        TimedEffects.RunDue(blind.Start + 12.01);
+        Assert.Equal(0, AbilityStats.Attack(target, true));
+    }
+
+    [Fact]
+    public void FreezeArea479DamageBreakLeavesImmunityAndCapturedViralVulnerability()
+    {
+        var target = Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, 479, "Enemy"));
+        var effects = TimedEffects.ForPlayer(target);
+        var pacify = Assert.Single(effects.Effects.Snapshot(), m => m.Target == TempMods.MezAbility);
+        Assert.Equal(10.02f, pacify.Seconds);
+        Assert.False(ControlActions.CanUseAbilities(target));
+        Assert.Equal(123, TypedAbilityResistance.Player(Client(), target, 357, 100));
+        TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
+        Assert.True(ControlActions.CanUseAbilities(target));
+        Assert.True(effects.Effects.HasControlImmunity(pacify.Start + 11.99));
+        Assert.False(effects.Effects.HasControlImmunity(pacify.Start + 12.01));
+    }
+
+    [Fact]
+    public void CodeShock482AppliesAllFiveStatesAndTwelveSecondsOfImmunity()
+    {
+        var target = Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, 482, "Enemy"));
+        var effects = TimedEffects.ForPlayer(target);
+        var stun = Assert.Single(effects.Effects.Snapshot(), m => m.Target == TempMods.StunAbility);
+        Assert.Equal(6, stun.Seconds);
+        Assert.Equal(6, Assert.Single(effects.Effects.Snapshot(), m => m.Target == TempMods.BlindAbility).Seconds);
+        foreach (ushort state in new[] { TempMods.DazeAbility, TempMods.OffBalanceAbility, TempMods.StaggeredAbility })
+            Assert.Equal(5, Assert.Single(effects.Effects.Snapshot(), m => m.Target == state).Seconds);
+        Assert.False(ControlActions.CanMove(target));
+        Assert.False(ControlActions.CanUseAbilities(target));
+        TimedEffects.RunDue(stun.Start + 6.01);
+        Assert.True(ControlActions.CanUseAbilities(target));
+        Assert.True(effects.Effects.HasControlImmunity(stun.Start + 11.99));
+        Assert.False(effects.Effects.HasControlImmunity(stun.Start + 12.01));
+    }
+
+    [Theory]
+    [InlineData(57, 50, 80)]
+    [InlineData(357, 305, 392)]
+    [InlineData(359, 645, 1183)]
+    public void ViralDirectDamageUsesCurrentImplementedBaseRangeAndTargetResistance(ushort ability, int lower, int upper)
+    {
+        var caster = Client();
+        var target = Client();
+        var item = new AbilityItem();
+        item.setAbilityID(ability);
+        ushort Roll(Random random) => AbilityTargets.Retail.TryGetValue(ability, out var effect)
+            ? AbilityTargets.RollDamage(effect, random) : AbilityHandler.AbilityDamage(item, random);
+        Assert.Equal(lower, Roll(new FixedRoll(0)));
+        Assert.Equal(upper, Roll(new LastRoll()));
+        Assert.True(AbilityBuffs.Apply(target, 68));
+        Assert.Equal(90, TypedAbilityResistance.Player(caster, target, ability, 100));
+        Assert.True(AbilityBuffs.Remove(target, 68));
+        Assert.Equal(100, TypedAbilityResistance.Player(caster, target, ability, 100));
+    }
+
+    [Theory]
+    [InlineData(0.099, true)]
+    [InlineData(0.101, false)]
+    public void CodeFlux478AlwaysReducesAwarenessAndEvasionWithIndependentBlindRoll(double draw, bool expectedBlind)
+    {
+        var target = Client();
+        target.playerInstance.StealthAwareness.setValue((byte)120);
+        var effects = TimedEffects.ForPlayer(target);
+        Assert.True(TempMods.TryGet(478, out var effect));
+        var mods = TimedEffects.Apply(effects, effect, TimeUtils.GetSimTimeSeconds(), rng: new FractionRoll(draw));
+        Assert.Equal(20, Stealth.AwarenessOf(target));
+        Assert.Equal(-100, AbilityStats.Player(target, 520));
+        Assert.Equal(expectedBlind, effects.Effects.Has(TempMods.BlindAbility));
+        var awareness = Assert.Single(mods, m => m.Target == 204);
+        TimedEffects.RunDue(awareness.Start + 8.01);
+        Assert.False(effects.Effects.Has(TempMods.BlindAbility));
+        Assert.Equal(20, Stealth.AwarenessOf(target));
+        TimedEffects.RunDue(awareness.Start + 60.01);
+        Assert.Equal(120, Stealth.AwarenessOf(target));
+        Assert.Equal(0, AbilityStats.Player(target, 520));
+    }
+
+    [Fact]
+    public void BufferOverflow481ReservesAvailableSpaceAndReleasesItOnExpiry()
+    {
+        var player = Client(1);
+        Assert.True(AbilitySupport.BufferFits(player, 46));
+        Assert.True(TimedEffects.ApplyToPlayer(player, 481, "Enemy"));
+        var overflow = Assert.Single(TimedEffects.ForPlayer(player).Effects.Snapshot());
+        Assert.Equal(60, overflow.Seconds);
+        Assert.Equal(104, AbilityBuffBuffer.Reserved(player));
+        AbilitySupport.Land(player, 46, 2);
+        Assert.False(AbilityBuffs.IsActive(player, 46));
+        TimedEffects.RunDue(overflow.Start + 60.01);
+        Assert.Equal(0, AbilityBuffBuffer.Reserved(player));
+        AbilitySupport.Land(player, 46, 2);
+        Assert.True(AbilityBuffs.IsActive(player, 46));
+        AbilityBuffs.RemoveAll(player);
+    }
+
+    private sealed class FractionRoll(double draw) : Random
+    {
+        public override double NextDouble() => draw;
+    }
+
+    private sealed class LastRoll : Random
+    {
+        public override int Next(int minValue, int maxValue) => maxValue - 1;
+    }
+
+    private sealed class FixedRoll(int roll) : Random
+    {
+        public override int Next(int maxValue) => roll;
+        public override int Next(int minValue, int maxValue) => minValue + roll;
+    }
+}

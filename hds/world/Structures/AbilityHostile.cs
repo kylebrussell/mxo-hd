@@ -285,7 +285,8 @@ namespace hds
                 return true;
             }
             var m = SweepMod(id);
-            if (m == null || !Timed(m)) return false;
+            bool indefinite = id == AbilityBuffs.ForceMultiplierUpgrade && m?.Number("DurationType", -1) == 2;
+            if (m == null || !indefinite && !Timed(m)) return false;
             var subject = TimedEffects.ForPlayer(target);
             double stacking = AbilityCatalog.Find(id).Number("Ability/StackingType");
             foreach (ushort other in subject.Effects.Snapshot().Select(a => a.Parent).Distinct().ToList())
@@ -294,7 +295,8 @@ namespace hds
             int value = (int)m.Number("MinValue");
             var effect = new TempMods.Effect { Ability = AbilityCatalog.Canonical(id), Mods = new[] { new TempMods.Mod
             {
-                Kind = TempMods.KindFx, Target = AbilityCatalog.Canonical(id), MinValue = value, MaxValue = value, Seconds = (float)m.Number("Duration"),
+                Kind = TempMods.KindFx, Target = indefinite ? m.Target : AbilityCatalog.Canonical(id),
+                MinValue = value, MaxValue = value, Seconds = indefinite ? float.PositiveInfinity : (float)m.Number("Duration"),
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
             TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
