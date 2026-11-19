@@ -267,7 +267,9 @@ def server(i):
     if i == 429 and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
         parts.append('10% landed proc expires after 0.1s; ApplyStunWithTimer gives 4s Stun and separate 4s immunity')
     elif any(m.get('StatModTermFunc') == 'ApplyStunWithTimer' for m in mods(i)) and any(m['proc'] == 'Terminal' for m in r['timed'] or []):
-        parts.append('landed proc .01s marker calls ApplyStunWithTimer; 4s Stun and separate 4s immunity')
+        marker = next(m for m in r['timed'] if m['proc'] == 'Terminal')
+        seconds = f"{marker['seconds']:g}".lstrip('0')
+        parts.append(f'landed proc {seconds}s marker calls ApplyStunWithTimer; 4s Stun and separate 4s immunity')
     if i in (268, 406):
         parts.append('caster-centred hostile area via shipped selector 4 at cast completion')
     if r.get('sharpshooter'):

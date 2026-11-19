@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace hds
 {
-    /// <summary>tempmods.ApplyStunEffectIfDazed (2368) and reviewed martial calls to ApplyStunWithTimer (1659).
+    /// <summary>tempmods.ApplyStunEffectIfDazed (2368) and reviewed combat-special calls to ApplyStunWithTimer (1659).
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
@@ -30,7 +30,8 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == 429 || ability == 265 || ability == 532 || ability == 534) && modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
+            ((ability == 265 || ability == 429 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
+                modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
         {

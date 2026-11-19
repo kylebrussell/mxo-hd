@@ -1,0 +1,114 @@
+{
+  "abilities": {
+    "1072": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 495 grants 1072, which has self selector 1 and +110 max HP, +6 ballistic accuracy, +6 damage and +7 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "stats": {
+          "source": "GOB 495 grants 1072, which has self selector 1 and +110 max HP, +6 ballistic accuracy, +6 damage and +7 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "behavior-tests": {
+          "source": "GOB 495 grants 1072, which has self selector 1 and +110 max HP, +6 ballistic accuracy, +6 damage and +7 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        }
+      },
+      "family": "gunman-class-upgrade-replacement"
+    },
+    "1136": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 508 grants 1136, which has self selector 1 and +60 max HP, +10 ballistic accuracy, +4 damage and +1 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "stats": {
+          "source": "GOB 508 grants 1136, which has self selector 1 and +60 max HP, +10 ballistic accuracy, +4 damage and +1 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "behavior-tests": {
+          "source": "GOB 508 grants 1136, which has self selector 1 and +60 max HP, +10 ballistic accuracy, +4 damage and +1 defense.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        }
+      },
+      "family": "gunman-class-upgrade-replacement"
+    },
+    "1061": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "stats": {
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        },
+        "behavior-tests": {
+          "source": "GOB 154 grants 1061, which has self selector 1 and +50 max HP and +20 melee and ballistic resistance.",
+          "runtime": "AbilityPassives registers the upgrade, AbilitySupport selects the caster, and AbilityBuffs/AbilityStats apply and remove its stat and vital records.",
+          "test": "SniperParityTests.GunmanClassUpgradesApplyTheirOwnStatsAndRemoveThemOnReplacement verifies non-self selection ignored, exact stat records and consumers, replacement and max-health restoration."
+        }
+      }
+    },
+    "508": {
+      "checks": {
+        "stats": {
+          "source": "GOB 508 gives fixed +2 ballistic accuracy and damage bonuses and grants 1136.",
+          "runtime": "AbilityPassives publishes the linked totals and releases the upgrade on unload. AbilityStats.Attack and ScaleTypedAbilityDamage consume the appropriate bonuses.",
+          "test": "SniperParityTests.SniperDisciplineGrantsTheUpgradeAndFeedsBallisticAttackAndDamage checks both inputs, actual typed attack and damage changes and restoration."
+        },
+        "behavior-tests": {
+          "source": "GOB 508 gives fixed +2 ballistic accuracy and damage bonuses and grants 1136.",
+          "runtime": "AbilityPassives publishes the linked totals and releases the upgrade on unload. AbilityStats.Attack and ScaleTypedAbilityDamage consume the appropriate bonuses.",
+          "test": "SniperParityTests.SniperDisciplineGrantsTheUpgradeAndFeedsBallisticAttackAndDamage checks both inputs, actual typed attack and damage changes and restoration."
+        }
+      }
+    },
+    "504": {
+      "checks": {
+        "proc": {
+          "source": "GOB 504 stores a 0.1-second term marker at 30% with value 4. ApplyStunWithTimer adds four seconds of stun and an independent immunity. The additional 504 DoNothing callback has no effect.",
+          "runtime": "AbilityCatalog.Controls preserves the marker, TimedEffects applies the roll, and AbilityConditionalControls.Term checks immunity before adding both timed records.",
+          "test": "SniperParityTests.ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities checks the threshold and delay, pre-existing immunity, and both four-second records and expiry."
+        },
+        "script": {
+          "source": "GOB 504 stores a 0.1-second term marker at 30% with value 4. ApplyStunWithTimer adds four seconds of stun and an independent immunity. The additional 504 DoNothing callback has no effect.",
+          "runtime": "AbilityCatalog.Controls preserves the marker, TimedEffects applies the roll, and AbilityConditionalControls.Term checks immunity before adding both timed records.",
+          "test": "SniperParityTests.ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities checks the threshold and delay, pre-existing immunity, and both four-second records and expiry."
+        }
+      }
+    },
+    "505": {
+      "checks": {
+        "proc": {
+          "source": "GOB 505 stores a 0.01-second term marker at 50% with value 4. ApplyStunWithTimer adds four seconds of stun and an independent immunity. The additional 504 DoNothing callback has no effect.",
+          "runtime": "AbilityCatalog.Controls preserves the marker, TimedEffects applies the roll, and AbilityConditionalControls.Term checks immunity before adding both timed records.",
+          "test": "SniperParityTests.ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities checks the threshold and delay, pre-existing immunity, and both four-second records and expiry."
+        },
+        "script": {
+          "source": "GOB 505 stores a 0.01-second term marker at 50% with value 4. ApplyStunWithTimer adds four seconds of stun and an independent immunity. The additional 504 DoNothing callback has no effect.",
+          "runtime": "AbilityCatalog.Controls preserves the marker, TimedEffects applies the roll, and AbilityConditionalControls.Term checks immunity before adding both timed records.",
+          "test": "SniperParityTests.ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities checks the threshold and delay, pre-existing immunity, and both four-second records and expiry."
+        }
+      }
+    },
+    "506": {
+      "checks": {
+        "script": {
+          "source": "misc.py LineUpTheShot_Test checks existing concealment, then Subject conditionally reapplies it; GOB also reapplies 1137 on initialization and binds a damage-only deactivation to the shorter damage modifier.",
+          "runtime": "AbilityHealthCallbacks.LineUp preserves the pre-cast concealment snapshot, applies timed modifiers and initializes concealment. TimedEffects handles the damage-only callback.",
+          "test": "AbilityHealthCallbackTests.LineUpUsesTwoDurationsPreservesConcealmentAndOnlyDamageBreaksTheParent checks both paths, no break from healing, and the shorter callback expiry."
+        }
+      }
+    }
+  }
+}
