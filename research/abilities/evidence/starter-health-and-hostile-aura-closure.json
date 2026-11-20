@@ -1,0 +1,62 @@
+{
+  "families": {
+    "stock-static-field-recipient": {
+      "representative": 694,
+      "result": "pass",
+      "head": "463a7fa24ad9f587dbbfc701a85c9bddb8d1b493",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/564",
+      "scope": "Stock Static Field 89 produced child 694 damage 1 on QAEnemy from CSR and QAFriend. QAFriend continued hitting after CSR toggled off. This comparison uses the fixture's neutral viral target."
+    },
+    "stock-miasma-recipient": {
+      "representative": 701,
+      "result": "pass",
+      "head": "463a7fa24ad9f587dbbfc701a85c9bddb8d1b493",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/564",
+      "scope": "Stock Miasma 61 produced child 701 on QAEnemy: stats 1009 and 1010 at -14 for 5 s. Overlap refreshed the pair and the last pair 274/275 expired at PacketLog 3306."
+    }
+  },
+  "abilities": {
+    "61": {
+      "checks": {
+        "aura": {
+          "source": "GOB 61 has ApplyAuraEffect for child 701 and drains 3 IS per 5 s. Child 701 grants -14 melee and ballistic defense for 5 s.",
+          "runtime": "AbilityAuras pulses child 701 on each caster's schedule and TimedEffects replaces the active child pair for the recipient. The child expires independently when both casters turn off.",
+          "test": "StarterHackerHostileAurasMode verifies adds, replaced record IDs, surviving caster pulses and final removals. PR564 PacketLog verifies the Miasma request at 2248, overlap refreshes at 2655/2799/2837 and final removals at 3306. https://github.com/kylebrussell/mxo-hd/pull/564"
+        }
+      }
+    },
+    "89": {
+      "checks": {
+        "aura": {
+          "source": "GOB 89 has ApplyAuraEffect for instant viral child 694 and drains 12 IS per 5 s.",
+          "runtime": "AbilityAuras maintains each toggled source with an independent charge and schedules hostile instant pulses. There is no lasting recipient modifier.",
+          "test": "StarterHackerHostileAurasMode checks caster independence and exclusion. PR564 PacketLog records the stock request at 3568, pulses from both casters at 3579/3816 and helper-only pulses at 4528/4778 after CSR stops. https://github.com/kylebrussell/mxo-hd/pull/564"
+        }
+      }
+    },
+    "694": {
+      "family": "stock-static-field-recipient"
+    },
+    "701": {
+      "family": "stock-miasma-recipient"
+    },
+    "941": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 941 runs ApplyAuraEffectOnHealthChange for child 942 and ISDrainWithAbilityDeactivation for 7 IS each second.",
+          "runtime": "AbilityHealthCallbacks applies child 942 once for each external damage or healing transaction while the parent is active. AbilityBuffs collects charges, deactivates on shortfall and emits the 15 s off timer.",
+          "test": "StarterHackerReactiveCodeMode and PR545 verify one 50 HP child hit for external damage and another for external healing, friendly exclusion, toggle-off, no inactive proc and 15 s reuse. HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords covers exact upkeep and depletion. https://github.com/kylebrussell/mxo-hd/pull/545"
+        }
+      }
+    },
+    "943": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 943 runs ApplyNextAuraEffectHealthChance with value 30 for child 944 and drains 6 IS each second through ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityHealthCallbacks gates child 944 on a 0–99 value and runs the active parent once per external health transaction. AbilityBuffs ends the listener on toggle-off or insufficient IS and starts the 15 s reuse.",
+          "test": "CodeConversionUsesTheThirtyPercentBoundaryOncePerHealthChange checks roll 29, roll 30, once-per-event recursion and off state. PR545 and StarterHackerReactiveCodeMode verify the friendly +60 pulse and the 15 s toggle-off timer. HealthChangeListenerDrainsStillChargeAndTerminateWithAllExistingOffRecords covers exact upkeep and depletion. https://github.com/kylebrussell/mxo-hd/pull/545"
+        }
+      }
+    }
+  }
+}
