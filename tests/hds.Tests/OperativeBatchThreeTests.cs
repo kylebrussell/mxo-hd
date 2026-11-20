@@ -130,6 +130,22 @@ public class OperativeBatchThreeTests
     }
 
     [Theory]
+    [InlineData(124, 135, 145, 1399)]
+    [InlineData(135, 124, 130, 1250)]
+    public void SoldierDamageSpecializationsReplaceEachOther(ushort first, ushort second, ushort attack, int damage)
+    {
+        var actor = Actor();
+        Assert.True(AbilityBuffs.Apply(actor, 185));
+        Assert.True(AbilityBuffs.Apply(actor, first));
+        Assert.False(AbilityBuffs.IsActive(actor, 185));
+        Assert.True(AbilityBuffs.Apply(actor, second));
+        Assert.False(AbilityBuffs.IsActive(actor, first));
+        Assert.True(AbilityBuffs.IsActive(actor, second));
+        Assert.Equal(damage, AbilityStats.ScaleAbilityDamage(actor, attack, 1000));
+        Assert.Equal(1000, AbilityStats.ScaleAbilityDamage(actor, second == 135 ? (ushort)130 : (ushort)145, 1000));
+    }
+
+    [Theory]
     [InlineData(23, 6)]
     [InlineData(50, 15)]
     public void StealthAwarenessUsesCasterLevelAndFeedsTheDetectionThreshold(byte level, int bonus)
