@@ -1,0 +1,73 @@
+{
+  "families": {
+    "operative-ranked-control-durations": {
+      "representative": 284,
+      "result": "pass",
+      "head": "e0fd3ea1ae382b7ed4e3decd4d822d654ea7731a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/462",
+      "scope": "Stock PacketLog pr462 line 141 shows Pacify +12, Powerless +25 and Confuse +25. The records clear at 1628 and return at 2193. The stock Pacify total drops 12 while the other two rows disappear at zero contribution."
+    },
+    "operative-class-upgrades": {
+      "representative": 1119,
+      "result": "pass",
+      "head": "e0fd3ea1ae382b7ed4e3decd4d822d654ea7731a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/462",
+      "scope": "Stock PacketLog pr462 captures 1119, 1122 and 1115 activations at 911, 1031 and 1147 with the stored modifiers and 30-second reuse. Replacement removes 1119 at 985. 1122 switches off during its original reuse at 1092."
+    },
+    "operative-discipline-grants-stock": {
+      "representative": 118,
+      "result": "pass",
+      "head": "e0fd3ea1ae382b7ed4e3decd4d822d654ea7731a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/462",
+      "scope": "Stock PacketLog pr462 shows grant membership for 118→1119, 131→1115, 283→1120 and 285→1122 at 141. Each sends its individual removal and restoration after the parent cycle. The four pre-seeded grants activate natively in the same run."
+    }
+  },
+  "abilities": {
+    "284": {
+      "family": "operative-ranked-control-durations"
+    },
+    "1119": {
+      "family": "operative-class-upgrades"
+    },
+    "118": {
+      "family": "operative-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 118 supplies only the selected-load grant 1119.",
+          "runtime": "AbilityGrantRegistration publishes the grant after avatar readiness, removes it when the selected-load parent leaves and restores it once on reload.",
+          "test": "SpyPassivesAndUpgradesTests.SpyDisciplineZeroGrantsRegisterAtReadinessAndReconcileOnUnloadAndReload tests the registration, duplicate readiness, removal and restoration. Stock PacketLog pr462 confirms exact membership removal at 1746 and restoration at 2055. https://github.com/kylebrussell/mxo-hd/pull/462"
+        }
+      }
+    },
+    "131": {
+      "family": "operative-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 131 supplies only the selected-load grant 1115.",
+          "runtime": "AbilityGrantRegistration publishes the grant after avatar readiness, removes it when the selected-load parent leaves and restores it once on reload.",
+          "test": "SpyPassivesAndUpgradesTests.SpyDisciplineZeroGrantsRegisterAtReadinessAndReconcileOnUnloadAndReload tests the registration, duplicate readiness, removal and restoration. Stock PacketLog pr462 confirms exact membership removal at 1822 and restoration at 2005. https://github.com/kylebrussell/mxo-hd/pull/462"
+        }
+      }
+    },
+    "283": {
+      "family": "operative-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 283 supplies only the selected-load grant 1120.",
+          "runtime": "AbilityGrantRegistration publishes the grant after avatar readiness, removes it when the selected-load parent leaves and restores it once on reload.",
+          "test": "SpyPassivesAndUpgradesTests.SpyDisciplineZeroGrantsRegisterAtReadinessAndReconcileOnUnloadAndReload tests the registration, duplicate readiness, removal and restoration. Stock PacketLog pr462 confirms exact membership removal at 1686 and restoration at 2133. https://github.com/kylebrussell/mxo-hd/pull/462"
+        }
+      }
+    },
+    "285": {
+      "family": "operative-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 285 supplies only the selected-load grant 1122.",
+          "runtime": "AbilityGrantRegistration publishes the grant after avatar readiness, removes it when the selected-load parent leaves and restores it once on reload.",
+          "test": "SpyPassivesAndUpgradesTests.SpyDisciplineZeroGrantsRegisterAtReadinessAndReconcileOnUnloadAndReload tests the registration, duplicate readiness, removal and restoration. Stock PacketLog pr462 confirms exact membership removal at 1568 and restoration at 2244. https://github.com/kylebrussell/mxo-hd/pull/462"
+        }
+      }
+    }
+  }
+}

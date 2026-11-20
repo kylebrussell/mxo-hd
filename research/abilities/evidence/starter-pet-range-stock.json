@@ -1,0 +1,23 @@
+{
+  "families": {},
+  "abilities": {
+    "19": {
+      "checks": {
+        "pets": {
+          "source": "The GOB records own-simulacrum targeting, 8000 pet damage and +50 caster IS. Decoy1_Test checks selected ownership.",
+          "runtime": "CoderPets binds the cast to the selected owned live pet and checks that same actor, view and range again at landing before the sacrifice and IS gain.",
+          "test": "StarterCoderPetCastRangeMode tests far admission and mid-cast expiry for both samples, and CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn covers ownership and spawn. The ordinary Coder sweep exercises the successful sacrifice, pet-window removal and +50 IS. Stock PR440 sends the range rejection before any reuse. https://github.com/kylebrussell/mxo-hd/pull/440"
+        }
+      }
+    },
+    "20": {
+      "checks": {
+        "pets": {
+          "source": "The GOB supplies an own-simulacrum Fortify cast, four typed resistance modifiers and a level-scaled Max Health modifier for 600 seconds.",
+          "runtime": "CoderPets admits the owned live in-range pet, holds its identity and checks range again at landing. Fortify installs and expires the active pet buffs.",
+          "test": "StarterCoderPetCastRangeMode tests initial and completion range, then actual 224→449 max HP at level 15. CoderPetTests.FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime checks expiry. Stock PR440 range refusal has no reuse; the near cast confirmed Max HP 449, resistance 30 and 600-second duration. https://github.com/kylebrussell/mxo-hd/pull/440"
+        }
+      }
+    }
+  }
+}

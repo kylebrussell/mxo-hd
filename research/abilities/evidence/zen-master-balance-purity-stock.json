@@ -1,0 +1,26 @@
+{
+  "families": {
+    "martial-balance-listener": {
+      "representative": 861,
+      "result": "pass",
+      "head": "0a4be1419a250c7f5cb6c6f52bf1014e883571da",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/463",
+      "scope": "The stock 861 request gives a 30-second listener and 60-second reuse in PacketLog pr463 line 755. The stock test changed HP both ways and observed child 862 returning 50–99 HP. The listener removes at 1025 and the next health change produces no 862 heal."
+    },
+    "martial-purity": {
+      "representative": 868,
+      "result": "pass",
+      "head": "0a4be1419a250c7f5cb6c6f52bf1014e883571da",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/463",
+      "scope": "The stock 868 request at PacketLog pr463 line 1327 clears landed Destroy Health 476 in the fixture. The result includes 15-second reuse at 1344 and no lingering Purity buff."
+    }
+  },
+  "abilities": {
+    "861": {
+      "family": "martial-balance-listener"
+    },
+    "868": {
+      "family": "martial-purity"
+    }
+  }
+}
