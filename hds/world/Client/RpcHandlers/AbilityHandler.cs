@@ -504,16 +504,17 @@ namespace hds
             return (UInt16)(fixture ?? StarterHackerViralBase(source) ?? random.Next(50, 81));
         }
 
-        // The early Hacker CSV rows have no damage endpoints. Read only the reviewed fixed viral modifiers.
+        // These early Hacker CSV rows have incomplete ranges. Read only the reviewed fixed viral modifiers.
         private static int? StarterHackerViralBase(AbilityCatalog.Entry source)
         {
-            if (source == null || source.Id < 57 || source.Id > 60) return null;
+            if (source == null || (source.Id != 53 && (source.Id < 57 || source.Id > 60))) return null;
             var health = source.Modifiers.Where(m => m.Target == 108 && m.Number("WhenEnabled", -1) == 2).ToArray();
             if (health.Length != 1) return null;
 
             var modifier = health[0];
             if (modifier.Number("DamageType", -1) != 2 || modifier.Number("DurationType", -1) != 1 ||
-                modifier.Number("ValueFunction", -1) != 0 || !modifier.Has("MinValue") || !modifier.Has("MaxValue") ||
+                modifier.Number("ValueFunction") != 0 || !modifier.Has("MinValue") || !modifier.Has("MaxValue") ||
+                modifier.Number("MinValue") != modifier.Number("MaxValue") ||
                 !AbilityValues.TryValue(modifier, 0, 0, out int amount) || amount <= 0 || amount > UInt16.MaxValue)
                 return null;
             return amount;
