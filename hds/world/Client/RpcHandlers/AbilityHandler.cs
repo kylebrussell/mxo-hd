@@ -122,6 +122,16 @@ namespace hds
             // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
             if (AbilityID == 130)
             {
+                var shooter = Store.currentClient;
+                var combat = CombatManager.GetHandler(shooter);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.MustBeOutsideCombat)));
+                    shooter.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied 130: requires outside combat");
+                    return;
+                }
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
                 {
