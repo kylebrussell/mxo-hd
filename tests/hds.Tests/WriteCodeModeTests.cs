@@ -45,7 +45,8 @@ public class WriteCodeModeTests
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
             Assert.Equal(mode is "health-callbacks" or "zen-master" or "ability-parity-awakened-resistance-and-health",plan.FixedCallbackRolls);
             const string holdHealthKey = "MXO_DESPERATION_QA_HOLD_HEALTH";
-            bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker";
+            bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" or
+                "ability-parity-awakened-resistance-threshold";
             bool groupedHold = mode is "ability-parity-coder-sweep" or "ability-parity-hacker-sweep" or
                 "ability-parity-hacker-a2-group-heal" or "ability-parity-hacker-second-pass" or
                 "ability-parity-hacker-team-patcher" or "ability-evidence-direct-heals" or
