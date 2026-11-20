@@ -470,6 +470,7 @@ namespace hds
                 130 => 1,  // Hindering Shot
                 152 => 7,  // Spinning Backsweep
                 514 => 2,  // Advanced Tinkering
+                605 => 0,  // Low Blow
                 _ => null
             };
             if (fixedType.HasValue)

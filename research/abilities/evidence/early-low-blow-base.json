@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "605": {
+      "checks": {
+        "damage": {
+          "source": "GOB 605 supplies one WhenEnabled 2 instant physical health modifier with fixed 17 and no scaling function. The real abilityIDs.csv entry supplies endpoints 17/0. Client description 0xc400018f identifies opponent damage only.",
+          "runtime": "AbilityDamage uses the fixed physical amount only when the legacy range is incomplete. The ordinary queued interlock path still applies Coder Style's melee influence and typed resistance.",
+          "test": "StarterFixedAbilityDamageTests reads the actual legacy row and checks the fixed 17 over multiple draws and the precedence of any usable CSV range. The level-19 ability-parity-starter-low-blow disposable replay compares the baseline hit of 80 with fixed hit 19 (+12% Coder Style), keeps ILDB LowBlow animation 288, and observes ordinary resource and reuse records. Retail resistance and hit-contest equivalence remain open."
+        }
+      }
+    }
+  }
+}
