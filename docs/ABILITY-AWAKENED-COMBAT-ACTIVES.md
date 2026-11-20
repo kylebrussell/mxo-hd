@@ -28,3 +28,9 @@ The earlier PR383 capture 58353c2f063b measured the recurring own-view FX during
 | Precise Blow | 15:43:38 | 15:43:39 | 15:43:52 | 15:43:52 | 13 |
 
 These are packet-header times with one-second precision. Energized gaps are all one logged second. Precise has one two-second logged gap from 15:43:49 to 15:43:51 and all other gaps are one. The last Precise pulse precedes the off packet in file order. The repeated effect bytes also appear on observer views and do not represent extra pulses.
+
+## Hyper-Strength access
+
+The shipped definition for Hyper-Strength 13 requires character level 99 for a selected load, above the level-50 cap. The prerequisite graph has no ability that lists 13 as a parent, and the catalog has no ability grant to its GOID. This differs from Energized Attacks 9, which Power Shot can include as an owned prerequisite. The server's ordinary load qualification applies the selected-root character level check. [Shipped catalog](../data/ability_catalog.json), [prerequisite graph](../research/abilities/ability-load-prerequisites.json), [load qualification](../hds/world/Structures/AbilityLoadQualification.cs).
+
+The PR384 disposable explicitly seeded 13 for its callback proof. It verified the three-second effect, five-second drain and switch-off. The ordinary level-50 path cannot use that fixture seed. The audit records this as an access limit and retains the implemented behavior evidence. [PR384](https://github.com/kylebrussell/mxo-hd/pull/384).
