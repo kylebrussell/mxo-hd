@@ -32,7 +32,8 @@ public sealed class EarlyGunmanGrantMode : NativeQaMode
         {
             "Level 19, 36/49 memory with Gunman 128 and every explicit upgrade prerequisite loaded. Immediately after login, find one Gunman Upgrade in Actions. Gunman Upgrade is granted; it is not owned in the Archive.",
             "Unload and reload Gunman 128 using the loadout UI or ?qaunload 128 / ?qaload 128. Check that the upgrade disappears and returns exactly once. Capture the matching Initiative +1 remove and add records.",
-            "After reload, add Gunman Upgrade from Actions to the hotbar. Select Melee Dummy 3 m west and use Gunman Upgrade. Expect only CSR to get +4 ballistic accuracy, +70 maximum HP, +2 ballistic damage and +4 ballistic defense. Record the request and 30 s reuse."
+            "After reload, add Gunman Upgrade from Actions to the hotbar. Select Melee Dummy 3 m west and use Gunman Upgrade. Expect only CSR to get +4 ballistic accuracy, +70 maximum HP, +2 ballistic damage and +4 ballistic defense.",
+            "Reuse retest: click the same hotbar slot again at +4 s. This active toggle sends a normal request and should switch off immediately with no additional IS debit. At +6 s, click while inactive and capture whether the client blocks it. Use again after the original 30 s to verify reactivation."
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "128", ["NativeCloseableRows"] = 0 });
 
@@ -70,16 +71,56 @@ public sealed class EarlyGunmanGrantMode : NativeQaMode
         BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), DuelPackets.Handle(dummy.ViewId, dummy.SpawnId));
         int castCursor = actor.World.RpcSnapshot().Count;
         actor.SendRpc(request);
-        foreach (var (stat, value) in new (ushort Stat, int Value)[] { (524, 4), (106, 70), (171, 2), (1010, 4) })
+        byte[] timer = AbilityCooldowns.BuildTimer(Upgrade, AbilityCooldowns.OwnTimer, 30, true);
+        byte[] on = AbilityBuffs.BuildExclusive(Upgrade, true);
+        var reuse = await StockAbilityProfile.ObserveAsync(actor, castCursor,
+            packet => packet.Bytes.AsSpan().SequenceEqual(timer), "Gunman Upgrade 30-second reuse");
+        var enabled = await StockAbilityProfile.ObserveAsync(actor, castCursor,
+            packet => packet.Bytes.AsSpan().SequenceEqual(on), "Gunman Upgrade exclusive switch on");
+        var activation = actor.World.RpcSnapshot().Skip(castCursor).ToList();
+        Check.That(activation.IndexOf(reuse) < activation.IndexOf(enabled), "Reuse precedes the active switch");
+        var bonuses = new (ushort Stat, int Value)[] { (524, 4), (106, 70), (171, 2), (1010, 4) };
+        foreach (var (stat, value) in bonuses)
         {
             var bonus = await StockAbilityProfile.ObserveAsync(actor, castCursor,
                 packet => StockAbilityProfile.Bonus(packet, Upgrade, stat, value, 0, remove: false), $"Gunman Upgrade {stat} +{value}");
             proof.Add(new { Stat = stat, Value = value, Record = bonus.Hex });
         }
-        byte[] timer = AbilityCooldowns.BuildTimer(Upgrade, AbilityCooldowns.OwnTimer, 30, true);
-        var reuse = await StockAbilityProfile.ObserveAsync(actor, castCursor,
-            packet => packet.Bytes.AsSpan().SequenceEqual(timer), "Gunman Upgrade 30-second reuse");
-        proof.Add(new { Request = Convert.ToHexString(request), Reuse = reuse.Hex });
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        int offCursor = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(request);
+        byte[] off = AbilityBuffs.BuildExclusive(Upgrade, false);
+        var disabled = await StockAbilityProfile.ObserveAsync(actor, offCursor,
+            packet => packet.Bytes.AsSpan().SequenceEqual(off), "The active upgrade switches off during reuse");
+        foreach (var (stat, value) in bonuses)
+            await StockAbilityProfile.ObserveAsync(actor, offCursor,
+                packet => StockAbilityProfile.Bonus(packet, Upgrade, stat, value, 0, remove: true), $"Removal of Gunman Upgrade stat {stat}");
+        await Barrier(actor);
+        Check.That(!actor.World.RpcSnapshot().Skip(offCursor).Any(packet =>
+            packet.Bytes.AsSpan().StartsWith(new byte[] { 0x80, 0xba, 0x2e, 0x04 })),
+            "Switching off sends no refusal");
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        int retryCursor = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(request);
+        byte[] refusal = Convert.FromHexString("80ba2e0400006b050000000000000000000000");
+        var denial = await StockAbilityProfile.ObserveAsync(actor, retryCursor,
+            packet => packet.Bytes.AsSpan().SequenceEqual(refusal), "Inactive reactivation remains denied during reuse");
+        await Barrier(actor);
+        Check.Equal(1, actor.World.RpcSnapshot().Skip(castCursor).Count(packet => packet.Bytes.AsSpan().SequenceEqual(on)),
+            "A premature retry does not apply another buff");
+        Check.Equal(1, actor.World.RpcSnapshot().Skip(castCursor).Count(packet => packet.Bytes.AsSpan().SequenceEqual(timer)),
+            "Switching off does not start a second timer");
+
+        byte[] cleared = AbilityCooldowns.BuildTimer(Upgrade, AbilityCooldowns.OwnTimer, 30, false);
+        var expiry = await actor.WaitForRpcAsync(packet => packet.Bytes.AsSpan().SequenceEqual(cleared),
+            "The original 30-second activation timer expires", TimeSpan.FromSeconds(33));
+        int readyAgain = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(request);
+        var reactivated = await StockAbilityProfile.ObserveAsync(actor, readyAgain,
+            packet => packet.Bytes.AsSpan().SequenceEqual(on), "Gunman Upgrade can reactivate after its original expiry");
+        proof.Add(new { Request = Convert.ToHexString(request), Reuse = reuse.Hex, Enabled = enabled.Hex,
+            Disabled = disabled.Hex, PrematureRefusal = denial.Hex, Expiry = expiry.Hex, Reactivated = reactivated.Hex });
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "early-gunman-grant.json"), JsonSerializer.Serialize(proof));
         return Array.Empty<byte>();

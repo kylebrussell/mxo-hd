@@ -97,6 +97,23 @@ public class AbilityScaledBuffTests
         Assert.Equal(0, AbilityStats.Defense(actor, ranged: true));
     }
 
+    [Fact]
+    public void GunmanUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown()
+    {
+        const ushort upgrade = 1070;
+        var actor = Client(19);
+        Assert.True(AbilityBuffs.Apply(actor, upgrade));
+        Assert.True(AbilityBuffs.IsToggledOn(actor, upgrade));
+        Assert.True(AbilityBuffs.CooldownStartsOnUse(upgrade));
+        actor.playerData.cooldownEndsAt[upgrade] = 40;
+
+        Assert.True(AbilityBuffs.Remove(actor, upgrade));
+        Assert.False(AbilityBuffs.IsToggledOn(actor, upgrade));
+        Assert.Equal(40, actor.playerData.cooldownEndsAt[upgrade]);
+        Assert.True(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 39));
+        Assert.False(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 40));
+    }
+
     [Theory]
     [InlineData(128, 1, 1070)]
     [InlineData(240, 2, 1075)]

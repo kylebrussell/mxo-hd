@@ -36,3 +36,11 @@ Operative also gives +4 melee accuracy. Review each gun style with a matching eq
 | 499, 500, 501, 502 | Existing effects cover portions of the dual-pistol attacks. Point Blank's Powerless path, Dash targeting, Whip's duration, and Execution's two conditional debuffs require further confirmation. Old scripts have separate damage constants. |
 | 1060, 1070, 1074, 1075, 1076 | Self-only recipient, exact numeric totals and replacement tested. Grouped stock proof pending. |
 | 1180 | The GOB has a five-metre radial definition and a five-second stun with immunity callback. Area eligibility, immunity timing and native accessibility remain open. |
+
+## Gunman Upgrade activation and reuse
+
+Stock capture `8d95b840f9f5` shows the 30-second `80 bd 01` timer in a separate packet before `80 bd 05` and the modifiers. Pressing the active hotbar slot again still sent an ordinary `80 b9`. The server treated that request as a new activation and denied it.
+
+The installed 7.6005 client (client.dll SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a`) explains the second request. Dispatcher `625e9ae0` sends subtype 01 to the timer map at `625e9970`. Subtype 05 reads the final on/off byte and updates the separate active map at `625e94a0`. It leaves the float unread. The eligibility code at `625c6c78` reads the authored `IsAToggleAbility` field and checks that active map. At `625c6c95` an active toggle bypasses the later cooldown branch at `625c6cf8`, allowing the client to request switch-off.
+
+Ability 1070 is a shipped toggle. The server now removes its active modifiers on the second use and keeps the timer that started on activation. A new activation waits for the remainder of that timer. In `ability-parity-starter-gunman-grant`, activate and click at +4 seconds to turn the buff off. Click again while inactive and once more after the original 30 seconds. Capture the off records, the inactive hotbar gate and reactivation.
