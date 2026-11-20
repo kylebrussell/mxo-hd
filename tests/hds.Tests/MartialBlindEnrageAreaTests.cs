@@ -108,9 +108,13 @@ public class MartialBlindEnrageAreaTests
                 $"{name} stand ({x},495,{z}) must be outdoor walkable floor");
         }
         static double DistMetres(int x1, int z1, int x2, int z2) => Math.Sqrt((x1 - x2) * (x1 - x2) + (z1 - z2) * (z1 - z2)) / 100.0;
-        Assert.True(DistMetres(24751, -1498, 24499, -1498) < 3.0); // QAEnemy 2.52 m <= 3 m
-        Assert.True(DistMetres(24751, -1498, 24625, -1298) < 3.0); // QAFriend 2.36 m <= 3 m
-        Assert.True(DistMetres(24751, -1498, 25151, -1498) > 3.0); // QAFar 4.00 m > 3 m
+        // Every point along the CSR <-> QAEnemy fight corridor [24499..24751] keeps QAEnemy & QAFriend <= 3 m and QAFar > 3 m.
+        foreach (int cx in new[] { 24751, 24650, 24575, 24499 })
+        {
+            Assert.True(DistMetres(cx, -1498, 24499, -1498) < 3.0);
+            Assert.True(DistMetres(cx, -1498, 24625, -1298) < 3.0);
+            Assert.True(DistMetres(cx, -1498, 25151, -1498) > 3.0);
+        }
     }
 
     [Fact]

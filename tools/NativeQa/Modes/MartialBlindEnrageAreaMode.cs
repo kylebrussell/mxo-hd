@@ -100,11 +100,11 @@ public sealed class MartialBlindEnrageAreaMode : NativeQaMode
             },
             readyMessages: new[]
             {
-                $"Level 50 rank 50 unarmed ({mem}/100 memory; Kung-Fu +39% melee, Karate +41% melee). CSR spawns at ({CasterX},{StandY},{StandZ}) outside the hardline booth facing QAEnemy (6114, hostile) 2.52 m west. QAFriend (6111, friendly) is 2.36 m NW (inside 3 m); QAFar (6112, hostile) is 4.00 m east (outside 3 m). Fixed disposable modifier chance: 266 (20% -> 100%).",
+                $"Level 50 rank 50 unarmed ({mem}/100 memory; Kung-Fu +39% melee, Karate +41% melee). CSR spawns at ({CasterX},{StandY},{StandZ}) outside the hardline booth facing QAEnemy (6114, hostile) 2.52 m west. QAFriend (6111, friendly) is 2.36 m NW (inside 3 m across the whole fight corridor); QAFar (6112, hostile) is 4.00 m east (outside 3 m). Fixed disposable modifier chance: 266 (20% -> 100%).",
                 "Helper watches QAEnemy continuously in any order without session-fatal row timeouts. If any special misses, wait for its own reuse and retry the same slot. Wait for MARTIAL-BEA PASS before moving on.",
-                "Row 1 — Swirling Ki Summon (268, area FX + radius/friendly split): Stay at spawn outside Close Combat (empty selection). Press slot 3 (132 Karate), then slot 5 (268 Swirling Ki Summon). Expect 60 IS (2000 -> 1940), 2.0 s cast bar (80 ac 0c 01), caster ExecutionFX 0x28000a43 (43 0a 00 28) on CSR & watchers, 12.0 s own / 5.0 s group 687 reuse, AREA-QA QAEnemy included / QAFar reason=radius / QAFriend reason=pvp-NotOpponent, QAEnemy alone hit for 2 + Stat 522/524 -60 for 12.0 s (and matching 12 s removals). Wait for MARTIAL-BEA PASS 268.",
-                "Row 2 — Misdirect Punch (260, Blind 4.0 s): Select QAEnemy (2.52 m west) and enter ordinary Close Combat. Press slot 1 (133 Kung-Fu), then slot 2 (260 Misdirect Punch). Expect 30 IS, 10.0 s own / 5.0 s group 688 reuse, 33 dmg (base 24 + 39%), QAEnemy Blind state 90 (4.0 s) + linked CombatTactics 163 -30, QAEnemy Cheap Shot (198) ADMITTED while blinded (not refused), then both Blind records removed at ~4.0 s + 'You are no longer blind.' Wait for MARTIAL-BEA PASS 260.",
-                "Row 3 — Sidekick Combo (266, Enraged 8.0 s, fixed 100% proc): Stay in Close Combat with QAEnemy. Press slot 3 (132 Karate), then slot 4 (266 Sidekick Combo). Expect 25 IS, 10.0 s own / 5.0 s group 688 reuse, 39 dmg (base 28 + 41%), QAEnemy Enraged state 93 (8.0 s) + linked record, QAEnemy Withdraw (44 01) SUPPRESSED while enraged, both Enraged records removed at ~8.0 s + 'You are no longer enraged.', then Withdraw (44 01) ACCEPTED after expiry. Wait for MARTIAL-BEA PASS 266.",
+                "Row 1 — Misdirect Punch (260, Blind 4.0 s): From spawn, select QAEnemy (2.52 m west) and enter ordinary Close Combat. Press slot 1 (133 Kung-Fu), then slot 2 (260 Misdirect Punch). Expect 30 IS, 10.0 s own / 5.0 s group 688 reuse, 33 dmg (base 24 + 39%), QAEnemy Blind state 90 (4.0 s) + linked CombatTactics 163 -30, QAEnemy Cheap Shot (198) ADMITTED while blinded (not refused), then both Blind records removed at ~4.0 s + 'You are no longer blind.' Wait for MARTIAL-BEA PASS 260.",
+                "Row 2 — Sidekick Combo (266, Enraged 8.0 s, fixed 100% proc): Stay in Close Combat with QAEnemy. Press slot 3 (132 Karate), then slot 4 (266 Sidekick Combo). Expect 25 IS, 10.0 s own / 5.0 s group 688 reuse, 39 dmg (base 28 + 41%), QAEnemy Enraged state 93 (8.0 s) + linked record, QAEnemy Withdraw (44 01) SUPPRESSED while enraged, both Enraged records removed at ~8.0 s + 'You are no longer enraged.', then Withdraw (44 01) ACCEPTED after expiry (QAEnemy exits Close Combat). Wait for MARTIAL-BEA PASS 266.",
+                "Row 3 — Swirling Ki Summon (268, area FX + radius/friendly split): Once out of Close Combat (Karate 132 is already active, or press slot 3), clear selection (stay beside QAEnemy so QAEnemy <= 3 m, QAFriend <= 3 m, QAFar > 3 m) and press slot 5 (268 Swirling Ki Summon). Expect 60 IS, 2.0 s cast bar (80 ac 0c 01), caster ExecutionFX 0x28000a43 (43 0a 00 28) on CSR & watchers, 12.0 s own / 5.0 s group 687 reuse, AREA-QA QAEnemy included / QAFar reason=radius / QAFriend reason=pvp-NotOpponent, QAEnemy alone hit for 2 + Stat 522/524 -60 for 12.0 s (and matching 12 s removals). Wait for MARTIAL-BEA PASS 268.",
                 "Keep CSR PacketLog, DebugLog, and martial-blind-enrage-area.jsonl for the three rows."
             });
     }
@@ -157,8 +157,28 @@ public sealed class MartialBlindEnrageAreaMode : NativeQaMode
         uint csrHandle = Handle(csrAtEnemy);
         string enemyHex = WireFormat.ToHex(BitConverter.GetBytes(enemyHandle));
 
-        // 1. Swirling Ki Summon (268): direct cast outside Close Combat, caster FX 0x28000a43, area split (QAEnemy in, QAFriend/QAFar out).
+        // 1. Open Close Combat with QAEnemy for 260 (Blind) and 266 (Enraged).
+        int openRpc = caster.World.RpcSnapshot().Count;
+        caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(StockSelfDefense, enemyHandle),
+            WireFormat.FromHex($"40 {enemyHex} 01 6b"));
+        await StockAbilityProfile.ObserveAsync(caster, openRpc, rpc => rpc.Bytes is [0x46, ..] &&
+            rpc.Bytes.Length >= 6 && rpc.Bytes[5] == 1, "Real PvP interlock opens with QAEnemy");
+
+        // 1a. Misdirect Punch (260): Blind 4s + linked -30, Cheap Shot 198 admitted while blind, expiry at ~4s.
+        await SelectStyleAsync(caster, KungFu, StockKungFu, enemyHandle);
+        caster.SendRpc($"81 51 {enemyHex}");
+        await LandUntilObservedAsync(caster, enemy, StockMisdirectPunch, enemyHandle,
+            frame => StateRecord(frame, MisdirectPunch, TempMods.BlindAbility, 4f, remove: false),
+            async (rpcCursor, added) => await Observe260Async(context, enemy, csrHandle, rpcCursor, added));
+
+        // 1b. Sidekick Combo (266): Enraged 8s (fixed 100% proc), Withdraw 44 01 suppressed, expiry at ~8s, Withdraw 44 01 accepted after expiry.
         await SelectStyleAsync(caster, Karate, StockKarate, enemyHandle);
+        caster.SendRpc($"81 51 {enemyHex}");
+        await LandUntilObservedAsync(caster, enemy, StockSidekickCombo, enemyHandle,
+            frame => StateRecord(frame, SidekickCombo, TempMods.EnrageAbility, 8f, remove: false),
+            async (rpcCursor, added) => await Observe266Async(context, server, enemy, rpcCursor, added));
+
+        // 2. Swirling Ki Summon (268): direct cast after 266 (Karate already active), caster FX 0x28000a43, area split (QAEnemy in, QAFriend/QAFar out).
         int areaLogFrom = server.DebugLog().Length;
         int enemyRpc268 = enemy.World.RpcSnapshot().Count;
         int enemyView268 = enemy.World.ViewSnapshot().Count;
@@ -171,27 +191,6 @@ public sealed class MartialBlindEnrageAreaMode : NativeQaMode
             "CSR receives 268 ExecutionFX 0x28000a43 on own view", Hold);
         await Observe268Async(context, server, enemy, friend, far, areaLogFrom, enemyRpc268, enemyView268, friendRpc268, farRpc268,
             awaitExpiry: true);
-
-        // 2. Open Close Combat with QAEnemy for 260 (Blind) and 266 (Enraged).
-        int openRpc = caster.World.RpcSnapshot().Count;
-        caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(StockSelfDefense, enemyHandle),
-            WireFormat.FromHex($"40 {enemyHex} 01 6b"));
-        await StockAbilityProfile.ObserveAsync(caster, openRpc, rpc => rpc.Bytes is [0x46, ..] &&
-            rpc.Bytes.Length >= 6 && rpc.Bytes[5] == 1, "Real PvP interlock opens with QAEnemy");
-
-        // 2a. Misdirect Punch (260): Blind 4s + linked -30, Cheap Shot 198 admitted while blind, expiry at ~4s.
-        await SelectStyleAsync(caster, KungFu, StockKungFu, enemyHandle);
-        caster.SendRpc($"81 51 {enemyHex}");
-        await LandUntilObservedAsync(caster, enemy, StockMisdirectPunch, enemyHandle,
-            frame => StateRecord(frame, MisdirectPunch, TempMods.BlindAbility, 4f, remove: false),
-            async (rpcCursor, added) => await Observe260Async(context, enemy, csrHandle, rpcCursor, added));
-
-        // 2b. Sidekick Combo (266): Enraged 8s (fixed 100% proc), Withdraw 44 01 suppressed, expiry at ~8s, Withdraw 44 01 accepted after expiry.
-        await SelectStyleAsync(caster, Karate, StockKarate, enemyHandle);
-        caster.SendRpc($"81 51 {enemyHex}");
-        await LandUntilObservedAsync(caster, enemy, StockSidekickCombo, enemyHandle,
-            frame => StateRecord(frame, SidekickCombo, TempMods.EnrageAbility, 8f, remove: false),
-            async (rpcCursor, added) => await Observe266Async(context, server, enemy, rpcCursor, added));
 
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count + friend.World.Problems.Count + far.World.Problems.Count,
             "Martial Blind/Enrage/Area replay packet framing");
@@ -306,7 +305,7 @@ public sealed class MartialBlindEnrageAreaMode : NativeQaMode
         long hitAt = Stopwatch.GetTimestamp();
         var s524Add = await StockAbilityProfile.ObserveAsync(enemy, enemyRpcFrom,
             f => StatRecord(f, SwirlingKiSummon, 524, -60, 12f, remove: false), "QAEnemy 268 Stat 524 -60 12s add");
-        var fxUpdate = enemy.World.ViewSnapshot().Skip(Math.Max(0, enemyViewFrom - 20)).FirstOrDefault(HasSwirlingKiFx);
+        var fxUpdate = enemy.World.ViewSnapshot().Skip(enemyViewFrom).FirstOrDefault(HasSwirlingKiFx);
         Check.That(fxUpdate != null, "QAEnemy observed CSR 268 ExecutionFX 0x28000a43");
 
         // Sync bystanders so any stray packet would already be delivered before asserting exclusion.

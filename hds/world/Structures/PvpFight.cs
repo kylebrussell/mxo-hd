@@ -172,7 +172,7 @@ namespace hds
                 client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(joined.OpponentHandle, 1));
                 client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindStart, joined.Move, null));
                 SendCombatEffect(joined, false);
-                client.FlushQueue();
+                client.FlushQueue(force: true);
                 if (client.IsBot) FaceOpponent(client, target);
             }
             ResolvePair(joined, opponent, true, false);
@@ -259,7 +259,7 @@ namespace hds
             Attacker.Move.First = true;
             attacker.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindStart, Attacker.Move, null));
             SendCombatEffect(Attacker, false);
-            attacker.FlushQueue();
+            attacker.FlushQueue(force: true);
 
             // The attacked player (retail, died_in_pvp 19:41:11): own flags, the combat view, 47 kind 4 with their own
             // move and the has-ability byte 0, the CombatEffect records, 40 <attacker> 00 6b, 46 <attacker> 01, then the
@@ -274,7 +274,7 @@ namespace hds
             defender.messageQueue.addRpcMessage(BuildAttackedBy(Defender.OpponentHandle));
             defender.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(Defender.OpponentHandle, 0x01));
             defender.messageQueue.addObjectMessage(CombatInit(Defender.HandlerViewId, Defender.OpponentHandle, defenderSelf), false);
-            defender.FlushQueue();
+            defender.FlushQueue(force: true);
 
             foreach (Side side in new[] { Attacker, Defender })
             {
