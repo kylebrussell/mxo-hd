@@ -46,11 +46,12 @@ public class SpyAbilityRegistryTests
     [Fact]
     public void UnregisteredAbilityReturnsDefaultsWithoutSideEffects()
     {
-        Assert.False(SpyAbilityRegistry.TryGet(1127, out _));
-        Assert.False(SpyAbilityRegistry.RetainsStealthDuringCast(1127));
-        Assert.False(SpyAbilityRegistry.TryRefuse(null!, 1127, 0, null, out uint reason));
+        const ushort unregistered = ushort.MaxValue;
+        Assert.False(SpyAbilityRegistry.TryGet(unregistered, out _));
+        Assert.False(SpyAbilityRegistry.RetainsStealthDuringCast(unregistered));
+        Assert.False(SpyAbilityRegistry.TryRefuse(null!, unregistered, 0, null, out uint reason));
         Assert.Equal(0u, reason);
-        Assert.False(SpyAbilityRegistry.TryResolveDamage(AbilityCatalog.Find(1127)!, 11, new Random(1), out ushort damage));
+        Assert.False(SpyAbilityRegistry.TryResolveDamage(AbilityCatalog.Find(1)!, 11, new Random(1), out ushort damage));
         Assert.Equal((ushort)0, damage);
     }
 }
