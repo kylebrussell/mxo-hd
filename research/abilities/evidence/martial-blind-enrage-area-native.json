@@ -1,0 +1,51 @@
+{
+  "abilities": {
+    "260": {
+      "checks": {
+        "controls": {
+          "source": "GOB 260 stores a 4.0 s Blind state (90) on landing with 100% chance and no control immunity; Blind applies CombatTactics -30 via its linked record and does not lock combat actions.",
+          "runtime": "TimedEffects.ApplyToPlayer sends the Blind state record (kind 0x11, 260 -> 90, 4.0 s) and its linked record (kind 0x1d, 90 -> 163, -30), keeps ControlActions.CanUseAbilities/CanPerformSpecialMove open while AbilityStats applies -30 accuracy, and emits matched removals plus StateEnd (0x7a000034) on expiry.",
+          "test": "PR580 native pr580b PacketLog 3594/3875/3968/4139-4140 captures stock 260 landing on player QAEnemy, Blind 4.0 s + linked -30 add, Cheap Shot (198) admitted while blinded (20 s own timer start), and matched removals plus StateEnd at 3.95 s. MartialBlindEnrageAreaMode and MartialBlindEnrageAreaTests cover the full live flow. https://github.com/kylebrussell/mxo-hd/pull/580"
+        },
+        "behavior-tests": {
+          "source": "GOB 260 stores Kung-Fu interlock physical base 24, 30 IS, 10 s own / 5 s family 688 reuse, and 4.0 s Blind (90).",
+          "runtime": "Kung-Fu interlock admission, typed melee damage/resistance, Blind state and linked -30 CombatTactics record, non-refusal of ordinary combat actions during Blind, and timed expiry run through the shared combat and TimedEffects paths.",
+          "test": "PR555 verifies neutral/resisted melee hits (32 -> 26), move 8082, IS, and reuse; PR576 covers headless interlock admission; PR580 verifies live player-recipient Blind, admitted Cheap Shot (198), and 3.95 s expiry alongside KungFuMasterResistanceTests and MartialBlindEnrageAreaTests. https://github.com/kylebrussell/mxo-hd/pull/555 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/580"
+        }
+      }
+    },
+    "266": {
+      "checks": {
+        "controls": {
+          "source": "GOB 266 stores an 8.0 s Enraged state (93) at 20% ProcTriggerChance with no control immunity; EnrageInit locks interlock withdrawal until expiry.",
+          "runtime": "TimedEffects.ApplyToPlayer evaluates the 20% roll (fixed to 100% only in the gated disposable CSR -> QAEnemy fixture via MartialBlindEnrageAreaQa), emits Enraged (kind 0x11, 266 -> 93, 8.0 s) plus its linked record (93 -> 0), suppresses Withdraw (44 01) via ControlActions.CanWithdraw, and restores withdrawal after matched removals and StateEnd (0x7a000038).",
+          "test": "PR580 native pr580b PacketLog 5115/5231/5784 captures stock 266 landing on QAEnemy, Enraged 8.0 s add, Withdraw (44 01) suppressed while enraged, matched removals plus StateEnd at 7.99 s, and Withdraw accepted after release; paired with the existing 20% proc boundary tests and MartialBlindEnrageAreaTests. https://github.com/kylebrussell/mxo-hd/pull/580"
+        },
+        "behavior-tests": {
+          "source": "GOB 266 stores Karate interlock physical base 28, 25 IS, 10 s own / 5 s family 688 reuse, and 20% 8.0 s Enraged (93).",
+          "runtime": "Karate interlock admission, typed melee damage/resistance, 20% Enraged roll, Withdraw suppression during Enraged, and expiry run through the shared combat, ControlActions, and TimedEffects paths.",
+          "test": "PR557 verifies neutral/resisted melee hits (38 -> 31), move 5936, IS, and reuse; PR576 covers headless interlock admission; PR580 verifies live player-recipient Enraged, Withdraw suppression/release, and 7.99 s expiry alongside KarateMasterResistanceTests and MartialBlindEnrageAreaTests. https://github.com/kylebrussell/mxo-hd/pull/557 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/580"
+        }
+      }
+    },
+    "268": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 268 stores CastWhenUsed 2, CastValidTarget 0, selector 4, and a 3.0 m caster-centred hostile area with Karate 132 required.",
+          "runtime": "CasterHostileArea resolves hostile NPCs and PvP-eligible players within 3.0 m of the caster at cast completion, excluding friendly and out-of-radius targets.",
+          "test": "PR580 native pr580 PacketLog 2530/2678-2679/3160 casts 268 directly on view 0 with Karate active; AREA-QA logs QAEnemy (2.52 m hostile) included, QAFar (4.00 m hostile) excluded for radius, and QAFriend (2.36 m friendly) excluded for pvp-NotOpponent; QAEnemy alone receives damage 2 and Stat 522/524 -60 for 12.0 s (removed at 12.01 s). MartialBlindEnrageAreaMode and MartialInterlockAdmissionMode reproduce the boundary headlessly. https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/580"
+        },
+        "choreography": {
+          "source": "GOB 268 stores CastingTime 2.0 s and ExecutionFX 0x28000a43 (671091267) for its direct caster-centred area cast.",
+          "runtime": "AbilityHandler emits the 2.0 s cast bar (80 ac 0c 01) and ServerPackets.SendPlayerAbilityEffect broadcasts ExecutionFX 0x28000a43 on the caster's own view and to watchers.",
+          "test": "PR580 native pr580 PacketLog 2530/2547/2552/2557 captures direct-cast 268 outside Close Combat with 2.0 s cast bar and ExecutionFX 0x28000a43 (43 0a 00 28) on CSR and all three watchers (QAEnemy, QAFriend, QAFar), confirmed in MartialBlindEnrageAreaMode and MartialBlindEnrageAreaTests. https://github.com/kylebrussell/mxo-hd/pull/580"
+        },
+        "behavior-tests": {
+          "source": "GOB 268 stores physical base 2, 60 IS, 2.0 s cast, 12 s own / 5 s family 687 reuse, 3.0 m hostile PBAE, ExecutionFX 0x28000a43, and 12.0 s Stat 522/524 -60.",
+          "runtime": "Karate direct PBAE casting, ExecutionFX broadcast, 3.0 m hostile radius/friendly filtering, typed melee resistance, and 12.0 s Stat 522/524 add/expiry run through AbilityHandler, CasterHostileArea, and TimedEffects.",
+          "test": "PR557 verifies neutral/resisted hits (2 -> 1), 60 IS, 2.0 s cast, and reuse; PR576 covers direct-cast area admission; PR580 verifies direct-cast FX 0x28000a43, QAEnemy/QAFriend/QAFar area split, and 12.01 s Stat 522/524 expiry alongside KarateMasterResistanceTests and MartialBlindEnrageAreaTests. https://github.com/kylebrussell/mxo-hd/pull/557 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/580"
+        }
+      }
+    }
+  }
+}
