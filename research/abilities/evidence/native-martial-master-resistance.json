@@ -1,0 +1,187 @@
+{
+  "abilities": {
+    "265": {
+      "checks": {
+        "damage": {
+          "source": "GOB 265 Ki-Charged Punch stores an instant physical health hit with base 68.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR557 disposable compares matching neutral and resisted targets and the stock run observed 93 neutral and 76 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "266": {
+      "checks": {
+        "damage": {
+          "source": "GOB 266 Sidekick Combo stores an instant physical health hit with base 28.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR557 disposable compares matching neutral and resisted targets and the stock run observed 38 neutral and 31 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "267": {
+      "checks": {
+        "damage": {
+          "source": "GOB 267 Sky-High Sidekick stores an instant physical health hit with base 21.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR557 disposable compares matching neutral and resisted targets and the stock run observed 28 neutral and 23 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "268": {
+      "checks": {
+        "damage": {
+          "source": "GOB 268 Swirling Ki Summon stores an instant physical health hit with base 2.",
+          "runtime": "Caster-centred opening hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR557 disposable compares matching neutral and resisted targets and the stock run observed 2 neutral and 1 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "273": {
+      "checks": {
+        "damage": {
+          "source": "GOB 273 Counter Throw stores an instant physical health hit with base 56.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR558 disposable compares matching neutral and resisted targets and the stock run observed 75 neutral and 61 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "274": {
+      "checks": {
+        "damage": {
+          "source": "GOB 274 Maki-Otoshi stores an instant physical health hit with base 30.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR558 disposable compares matching neutral and resisted targets and the stock run observed 40 neutral and 32 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "296": {
+      "checks": {
+        "damage": {
+          "source": "GOB 296 Aikido Spinning Clay Pigeon stores an instant physical health hit with base 375.",
+          "runtime": "Style-specific interlock hit reads the receiver's Melee Damage Resistance and retains the underlying physical base.",
+          "test": "The PR558 disposable compares matching neutral and resisted targets and the stock run observed 502 neutral and 413 at +75 Melee Damage Resistance. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "279": {
+      "checks": {
+        "damage": {
+          "source": "GOB 279 Deadly Throw stores an instant thrown modifier with a stored lower endpoint of 21.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's thrown damage resistance.",
+          "test": "PR560 compares 67 neutral to 55 at +75 thrown damage resistance. The captured combat trace retains raw 67 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/560"
+        }
+      }
+    },
+    "280": {
+      "checks": {
+        "damage": {
+          "source": "GOB 280 Crippling Throw stores fixed thrown base 1.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's thrown damage resistance.",
+          "test": "PR560 compares 1 neutral to 0 at +75 thrown damage resistance. The captured combat trace retains raw 1 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/560"
+        }
+      }
+    },
+    "291": {
+      "family": "stock-desperate-speed-movement"
+    },
+    "427": {
+      "checks": {
+        "damage": {
+          "source": "GOB 427 Triple Front Kick stores fixed physical base 91.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR559 compares 124 neutral to 102 at +75 melee damage resistance. The captured combat trace retains raw 124 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "428": {
+      "checks": {
+        "damage": {
+          "source": "GOB 428 Suicidal Butterfly stores fixed physical base 25.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR559 compares 34 neutral to 27 at +75 melee damage resistance. The captured combat trace retains raw 34 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "429": {
+      "checks": {
+        "damage": {
+          "source": "GOB 429 Extreme Falling Kick stores fixed physical base 46.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR559 compares 63 neutral to 51 at +75 melee damage resistance. The captured combat trace retains raw 63 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "430": {
+      "checks": {
+        "damage": {
+          "source": "GOB 430 Wooden Dummy Drill stores fixed physical base 107.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR559 compares 146 neutral to 120 at +75 melee damage resistance. The captured combat trace retains raw 146 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "532": {
+      "checks": {
+        "damage": {
+          "source": "GOB 532 Machinegun Kick stores fixed physical base 73.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR561 compares 104 neutral to 85 at +75 melee damage resistance. The captured combat trace retains raw 104 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    },
+    "534": {
+      "checks": {
+        "damage": {
+          "source": "GOB 534 Wrist Throw stores fixed physical base 31.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR561 compares 44 neutral to 36 at +75 melee damage resistance. The captured combat trace retains raw 44 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    },
+    "536": {
+      "checks": {
+        "damage": {
+          "source": "GOB 536 Ki-Charged Foot Sweep stores fixed physical base 134.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's melee damage resistance.",
+          "test": "PR561 compares 191 neutral to 157 at +75 melee damage resistance. The captured combat trace retains raw 191 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    },
+    "1127": {
+      "checks": {
+        "damage": {
+          "source": "GOB 1127 Harrying Attack stores an instant thrown modifier with a stored range of 16–76.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's thrown damage resistance.",
+          "test": "PR560 compares 117 neutral to 96 at +75 thrown damage resistance. The captured combat trace retains raw 117 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/560"
+        }
+      }
+    },
+    "1128": {
+      "checks": {
+        "damage": {
+          "source": "GOB 1128 Distracting Blow stores an instant thrown modifier with a stored range of 17–114.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's thrown damage resistance.",
+          "test": "PR560 compares 175 neutral to 143 at +75 thrown damage resistance. The captured combat trace retains raw 175 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/560"
+        }
+      }
+    },
+    "1132": {
+      "checks": {
+        "damage": {
+          "source": "GOB 1132 Dazzling Throw stores fixed thrown base 43.",
+          "runtime": "The landed ability uses the existing typed damage path. The same ability and loadout consume the target's thrown damage resistance.",
+          "test": "PR560 compares 66 neutral to 54 at +75 thrown damage resistance. The captured combat trace retains raw 66 for the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/560"
+        }
+      }
+    }
+  },
+  "families": {
+    "stock-desperate-speed-movement": {
+      "representative": 291,
+      "result": "pass",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/433",
+      "scope": "Stock PR433 PacketLog 829–852 records Desperate Speed activation, +0.40 own movement, the 15 s modifiers and 298 s reuse. The native run measured 661 versus 898 world units per second and observed expiry. The independent PR538 stock run records the same +0.40 movement projection.",
+      "head": "7364203798e999b998ab4a7ad7aefd3680a02174"
+    }
+  }
+}
