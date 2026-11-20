@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "105": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 105 Body Shot uses CastWhenUsed 3 and the Rifles stance.",
+          "runtime": "AbilityHandler requires a live current interlock opponent and validates its spawn before paying or queueing. The round keeps that opponent bound.",
+          "test": "StarterGunSpecialAdmissionMode exercises the complete stock requests for at-rest, stale and live handles. PR497 a84ed9cd stock sent nothing at rest, then hit the current refreshed opponent for 9 with 11364. The same run landed Disarming Shot (126) for 12 with 9522 and Covering Fire (176) for 20 with 21083. https://github.com/kylebrussell/mxo-hd/pull/497"
+        }
+      }
+    }
+  }
+}
