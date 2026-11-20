@@ -396,6 +396,7 @@ public class AbilityPassiveTests
     [Theory]
     [InlineData(518, 1271u, 2399u, 654)]
     [InlineData(521, 2399u, 1271u, 656)]
+    [InlineData(528, 671u, 2399u, 652)]
     public void CraftSpecializationUsesTheLoadedSkillForTheShippedCategory(ushort ability, uint item, uint other, ushort stat)
     {
         var caster = Client();

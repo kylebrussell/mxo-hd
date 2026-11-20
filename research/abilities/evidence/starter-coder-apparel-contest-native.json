@@ -1,0 +1,28 @@
+{
+  "families": {
+    "stock-apparel-maker-contest": {
+      "representative": 528,
+      "result": "pass",
+      "head": "bb64b4092dfd3e74595dfa2ceb53f068f6986fee",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/563",
+      "scope": "The stock Compiler sees Apparel Crafting +50 when loaded, removes the same value when unloaded and consumes that stat for eyewear 671. PacketLog 170/649/1800/2176 attributes the adds and removals to 528. The eyewear timer remains at its 3 s floor with or without the specialization."
+    }
+  },
+  "abilities": {
+    "528": {
+      "family": "stock-apparel-maker-contest",
+      "checks": {
+        "stats": {
+          "source": "GOB 528 grants Apparel Crafting 652 at one point per learned rank.",
+          "runtime": "CraftingHandler.Specialization maps the apparel item category to stat 652. OrdinaryItemCompile snapshots it separately from the two compile time reductions and passes it to the success contest.",
+          "test": "CraftSpecializationUsesTheLoadedSkillForTheShippedCategory verifies +50, excludes a consumable, and shows a success at the same roll only with Apparel Maker loaded. PR563 verifies the correct category and native modifier records. https://github.com/kylebrussell/mxo-hd/pull/563"
+        },
+        "behavior-tests": {
+          "source": "The shipped while-enabled Apparel Crafting modifier is scoped to apparel rather than the general or consumable timing reductions.",
+          "runtime": "The loaded passive applies to the item's category, and unload removes it. It feeds the ordinary compile success check without altering the 3 s minimum.",
+          "test": "CraftSpecializationUsesTheLoadedSkillForTheShippedCategory compares loaded and unloaded state and a non-apparel item. The PR563 exact-stock fixture compiles eyewear at specialization 0 and 50, with the same minimum delay and one charge consumed in each case. https://github.com/kylebrussell/mxo-hd/pull/563"
+        }
+      }
+    }
+  }
+}
