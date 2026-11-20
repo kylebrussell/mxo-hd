@@ -34,14 +34,14 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
-            [CombatFixtureWeapons.ResetMode] = "1", [CombatFixtureWeapons.WeaponMode] = "1"
+            [CombatFixtureWeapons.ResetMode] = "1", [CombatFixtureWeapons.LiveResetMode] = "1", [CombatFixtureWeapons.WeaponMode] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "105,130,145", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Page 2 slots 1–6 are Karate, Overhand Smash, Rifles, Body Shot, Handguns and Hindering Shot. Use one neutral and one resisted dummy for each move. Start each attempt with ?combatdepth fixture-reset or the resistance-specific reset. Press Enter, strafe or turn for the new view, then reselect Melee Dummy. Do not press Escape.",
+            "Page 2 slots 1–6 are Karate, Overhand Smash, Rifles, Body Shot, Handguns and Hindering Shot. Compare one neutral and one resisted pass on the same passive dummy. Start each attempt with ?combatdepth fixture-reset or the resistance-specific reset. When the ready line names the existing view and the combat HUD clears, click the same dummy. Press Enter to submit commands. Do not press Escape.",
             "For Overhand Smash, enter ?combatdepth fixture-weapon unarmed first. Open Close Combat, reselect Karate, and use slot 2. Check move 277 and both -10 melee records for 10 s. Repeat after the 12 s own reuse with ?combatdepth fixture-reset-resisted for +75 Melee Damage Resistance.",
-            "Equip the rifle with ?combatdepth fixture-weapon rifle. Open Close Combat, reselect Rifles, and use slot 4 on a fresh neutral dummy. Check move 11364 and -5 Melee and Ballistic Damage Resistance for 10 s. Repeat after the 8 s own reuse with ?combatdepth fixture-reset-ballistic-resisted for +75 Ballistic Damage Resistance.",
-            "Equip the handgun. Select Handguns and use slot 6 from rest, without opening Close Combat. Repeat after 8 s on a fresh ballistic-resistant dummy. Check two-second cast and the eight-second movement and force-combat penalties. Expect Overhand Smash 7 to 5, Body Shot 8 to 6 and Hindering Shot 9 to 7. Retry a missed interlock round after reuse."
+            "Equip the rifle with ?combatdepth fixture-weapon rifle. Open Close Combat, reselect Rifles, and use slot 4 on the neutral dummy. Check move 11364 and -5 Melee and Ballistic Damage Resistance for 10 s. Repeat after the 8 s own reuse with ?combatdepth fixture-reset-ballistic-resisted for +75 Ballistic Damage Resistance.",
+            "Equip the handgun. Select Handguns and use slot 6 from rest, without opening Close Combat. Repeat after 8 s on the ballistic-resistant dummy. Check two-second cast and the eight-second movement and force-combat penalties. Expect Overhand Smash 7 to 5, Body Shot 8 to 6 and Hindering Shot 9 to 7. Retry a missed interlock round after reuse."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -51,7 +51,8 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
         var server = context.ActualServer!;
         await caster.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
-        CombatFixtureLoadout.AssertDummy(caster, await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName));
+        var dummy = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
+        CombatFixtureLoadout.AssertDummy(caster, dummy);
 
         var timerStart = new Dictionary<ushort, int>();
         foreach (var sample in Samples)
@@ -79,12 +80,18 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
                         $"Ability {sample.Id} own reuse expired", TimeSpan.FromSeconds(sample.Reuse + 3));
                 }
                 int creations = caster.World.CreationSnapshot().Count;
+                int resetViews = caster.World.ViewSnapshot().Count;
+                caster.SkipReceived();
                 caster.SendChat($"?combatdepth {reset}");
-                await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(creations)
-                    .Any(view => view.Name == CombatFixtureLoadout.DummyName), "A fresh dummy view is available", HeadlessPlayer.DefaultTimeout);
-                var dummy = caster.World.CreationSnapshot().Skip(creations).Single(view => view.Name == CombatFixtureLoadout.DummyName);
+                await caster.WaitForTextAsync($"Fixture ready: Melee Dummy view {dummy.ViewId}, spawn {dummy.SpawnId}");
+                Check.That(!caster.World.CreationSnapshot().Skip(creations)
+                    .Any(view => view.Name == CombatFixtureLoadout.DummyName), "Preparing the same dummy never allocates a new view");
+                byte[] deleted = { 1, 1, 0, (byte)dummy.ViewId, (byte)(dummy.ViewId >> 8) };
+                Check.That(!caster.World.ViewSnapshot().Skip(resetViews).Any(view => BytePattern.IndexOf(view, deleted, 0) >= 0),
+                    "Preparing the same dummy never deletes the displayed view");
                 uint handle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
                 string hex = WireFormat.ToHex(BitConverter.GetBytes(handle));
+                caster.SendRpc($"81 51 {hex}");
                 if (sample.Move != 0)
                 {
                     caster.SkipReceived();
