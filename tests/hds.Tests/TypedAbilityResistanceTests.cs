@@ -43,6 +43,29 @@ public class TypedAbilityResistanceTests
         Assert.Equal(100,TypedAbilityResistance.Player(source,target,371,100));AbilityBuffs.RemoveAll(target);
     }
     [Theory]
+    [InlineData(134, 13)]
+    [InlineData(152, 28)]
+    public void SpySpecialsKeepTheSameTypedInfluenceAndResistance(ushort ability, int raw)
+    {
+        var source = Client();
+        var target = Client();
+        Assert.Equal(7, TypedAbilityResistance.StoredType(ability));
+        Assert.Equal(1033, TypedAbilityResistance.Stat(7));
+        Assert.Equal(1146, TypedResistanceBonuses.Stat(7));
+        AbilityPassives.SetLoaded(source, new (ushort, ushort)[] { (2, 50), (1112, 50) });
+        CombatStyles.Select(source, 1112);
+        Assert.Equal(29, AbilityStats.Influence(source, 1034));
+        ushort scaled = AbilityStats.ScaleAbilityDamage(source, ability, raw);
+        Assert.True(scaled > raw);
+        Assert.Equal(scaled, TypedAbilityResistance.Player(source, target, ability, scaled));
+        Assert.True(AbilityBuffs.Apply(target, 5));
+        ushort expected = TypedAbilityResistance.Amount(scaled, 50, 50, 75);
+        Assert.True(expected < scaled);
+        Assert.Equal(expected, TypedAbilityResistance.Player(source, target, ability, scaled));
+        Assert.True(AbilityBuffs.Remove(target, 5));
+    }
+
+    [Theory]
     [InlineData(5, 1033)]
     [InlineData(8, 157)]
     public void AwakenedResistanceLeavesControlAndRegenerationOnTheirExistingPaths(ushort ability, ushort stat)
