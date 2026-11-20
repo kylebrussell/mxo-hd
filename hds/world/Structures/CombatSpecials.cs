@@ -179,11 +179,11 @@ namespace hds
             id = AbilityCatalog.Canonical(id);
             if (id == AwakenedPowerShot.Id) AwakenedPowerShot.Landed(caster);
             if (casterBuffs.Contains(id) && AbilityBuffs.Apply(caster, id)) caster.FlushQueue();
-            if (id == SideRollEscape)
+            if (id == SideRollEscape || id == CartwheelEscape)
             {
                 byte[] leave = null;
                 DelayedActions.AfterFor(caster, 0, () => CombatManager.GetHandler(caster).ProcessLeaveCloseCombat(ref leave));
-                Output.WriteDebugLog("[SPECIAL] Side Roll Escape: " + caster.playerData.getCharID() + " rolls out of the fight");
+                Output.WriteDebugLog("[SPECIAL] " + (id == CartwheelEscape ? "Cartwheel Escape" : "Side Roll Escape") + ": " + caster.playerData.getCharID() + " rolls out of the fight");
             }
         }
 

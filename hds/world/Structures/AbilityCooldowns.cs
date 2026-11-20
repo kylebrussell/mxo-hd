@@ -214,15 +214,21 @@ namespace hds
             ClientData data = client.playerData;
             lock (data.cooldownEndsAt)
             {
-                data.cooldownEndsAt[abilityId] = now + cd.Seconds;
-                if (cd.Group != 0)
+                if (cd.Seconds > 0)
+                {
+                    data.cooldownEndsAt[abilityId] = now + cd.Seconds;
+                }
+                if (cd.Group != 0 && cd.GroupSeconds > 0)
                 {
                     data.cooldownEndsAt[cd.Group] = now + cd.GroupSeconds;
                 }
             }
 
-            client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, true));
-            if (cd.Group != 0)
+            if (cd.Seconds > 0)
+            {
+                client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, true));
+            }
+            if (cd.Group != 0 && cd.GroupSeconds > 0)
             {
                 client.messageQueue.addRpcMessage(BuildTimer(cd.Group, GroupTimer, cd.GroupSeconds, true));
                 DelayedActions.After(cd.GroupSeconds, () =>
@@ -233,11 +239,14 @@ namespace hds
             }
             client.FlushQueue();
 
-            DelayedActions.After(cd.Seconds, () =>
+            if (cd.Seconds > 0)
             {
-                client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, false));
-                client.FlushQueue();
-            });
+                DelayedActions.After(cd.Seconds, () =>
+                {
+                    client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, false));
+                    client.FlushQueue();
+                });
+            }
         }
 
         // Same metadata/timer records as Start, but explicit owner and world scope for asynchronous drain termination.
@@ -266,8 +275,8 @@ namespace hds
                     if(published)client.FlushQueue();
                 });
             }
-            Timer(ability,OwnTimer,cd.Seconds);
-            if(cd.Group!=0)Timer(cd.Group,GroupTimer,cd.GroupSeconds);
+            if (cd.Seconds > 0) Timer(ability, OwnTimer, cd.Seconds);
+            if (cd.Group != 0 && cd.GroupSeconds > 0) Timer(cd.Group, GroupTimer, cd.GroupSeconds);
         }
 
         public static bool TryGet(UInt16 id, out Cooldown cooldown)
@@ -287,11 +296,12 @@ namespace hds
             }
             if (Retail.TryGetValue(id, out cooldown)) return true;
             var entry = AbilityCatalog.Find(id);
-            if (entry == null || entry.Number("Ability/RecastTime") <= 0) return false;
-            UInt16 family = AbilityCatalog.IdOf((UInt32)entry.Number("Ability/FamilyRecastTimer"));
+            if (entry == null) return false;
             float seconds = (float)entry.Number("Ability/RecastTime");
-            float shared = (float)(AbilityCatalog.Find(family)?.Number("Ability/RecastTime", seconds) ?? seconds);
-            cooldown = new Cooldown(seconds, family, shared);
+            UInt16 family = AbilityCatalog.IdOf((UInt32)entry.Number("Ability/FamilyRecastTimer"));
+            float shared = family != 0 ? (float)(AbilityCatalog.Find(family)?.Number("Ability/RecastTime", seconds) ?? seconds) : 0;
+            if (seconds <= 0 && (family == 0 || shared <= 0)) return false;
+            cooldown = new Cooldown(Math.Max(0, seconds), family, shared);
             return true;
         }
     }
