@@ -21,8 +21,8 @@ namespace hds
         }
         // Native625f12c0 scans inventory slots0..106, checks component10, and compares the helper625f0be0's
         // compact ReqAbilityID. The generated map contains only actual component10 templates.
-        public static bool HasTool(IEnumerable<Crafting.InventoryItem> inventory) => inventory.Any(i =>
-            i.Slot < 107 && Tools.TryGetValue(i.Goid, out ushort prerequisite) && prerequisite == Ability);
+        public static bool HasTool(IEnumerable<Crafting.InventoryItem> inventory, ushort ability = Ability) => inventory.Any(i =>
+            i.Slot < 107 && Tools.TryGetValue(i.Goid, out ushort prerequisite) && prerequisite == ability);
         public static bool Refused(ushort ability, IEnumerable<Crafting.InventoryItem> inventory) =>
             AbilityCatalog.Canonical(ability) == Ability && !HasTool(inventory);
     }

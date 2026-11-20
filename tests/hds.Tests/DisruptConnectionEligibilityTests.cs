@@ -23,4 +23,15 @@ public class DisruptConnectionEligibilityTests
         Assert.Equal(3,AbilityPassives.Modifiers(384).Count());
         Assert.True(DisruptConnectionEligibility.Refused(1124,Array.Empty<Crafting.InventoryItem>()));
     }
+    [Theory]
+    [InlineData(2, 2388u, true)]
+    [InlineData(106, 2388u, true)]
+    [InlineData(107, 2388u, false)]
+    [InlineData(2, 422u, false)]
+    [InlineData(2, 470u, false)]
+    public void DetectionUsesTheNativeInventoryScanAndExactPrerequisite(ushort slot, uint goid, bool expected)
+    {
+        Assert.Equal(expected, DisruptConnectionEligibility.HasTool(new[] { new Crafting.InventoryItem(slot, goid) },
+            ConcealmentDetection.Ability));
+    }
 }

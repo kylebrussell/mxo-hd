@@ -52,6 +52,15 @@ namespace hds
             var definition = AbilityCatalog.Find(AbilityID);
             if (definition?.Has("Ability/CastingTime") == true) currentAbility.setCastingTime(definition.CastSeconds);
 
+            if (AbilityID == ConcealmentDetection.Ability && AbilityPassives.Level(Store.currentClient, AbilityID) > 0 &&
+                !DisruptConnectionEligibility.HasTool(
+                    Store.dbManager.WorldDbHandler.GetInventoryItems(Store.currentClient.playerData.getCharID()), AbilityID))
+            {
+                Store.currentClient.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(UtilityAbilities.ToolFail));
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
             // Old1124 still requires an exact matching inventory tool. Tool470 names1125, not1124.
             // Refuse before duplicate/cast/cost/cooldown state; never route this template to passive384.
             if (AbilityID == DisruptConnectionEligibility.Ability && DisruptConnectionEligibility.Refused(AbilityID,

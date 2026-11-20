@@ -11,11 +11,11 @@ public static partial class Scenarios
         });
         var low = await context.AddPlayerAsync(SixthSenseFixture.At("LowDetect", 17500) with
         {
-            Organization = 2, OwnedLoadedAbilities = new (ushort, ushort)[] { (detection, 1) }
+            Organization = 2, Items = new[] { (2, 2388u, 1) }, OwnedLoadedAbilities = new (ushort, ushort)[] { (detection, 1) }
         });
         var high = await context.AddPlayerAsync(SixthSenseFixture.At("HighDetect", 17800) with
         {
-            Organization = 2, OwnedLoadedAbilities = new (ushort, ushort)[] { (detection, 50) }
+            Organization = 2, Items = new[] { (2, 2388u, 1) }, OwnedLoadedAbilities = new (ushort, ushort)[] { (detection, 50) }
         });
         foreach (var player in new[] { spy, low, high }) await DebuffRadiusFixture.EnterFlaggedAsync(player);
 
