@@ -49,6 +49,20 @@ namespace hds
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
+            // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
+            if (AbilityID == 130)
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
+                {
+                    const string notice = "Select a living enemy before using this ability.";
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
+                    return;
+                }
+            }
+
             bool powerShot = AbilityID == AwakenedPowerShot.Id;
             uint? powerShotOpponent = null;
             if (powerShot)
