@@ -37,7 +37,7 @@ public sealed class SpyShadowAssassinBatchMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0",
             ["MXO_MOB_WANDER"] = "0",
-            ["MXO_COMBAT_FIXTURE_DISENGAGE"] = "1"
+            [CombatFixtureWeapons.ResetMode] = "1"
         },
         extraQaMetadata: new()
         {
@@ -49,8 +49,12 @@ public sealed class SpyShadowAssassinBatchMode : NativeQaMode
         },
         readyMessages: new[]
         {
+            SpyFixtureReset.Reselect,
+            "Run ?combatdepth fixture-reset between damaging casts. Let Sever Artery tick before resetting for Reverse Bull Dog, then activate Sneak once and select the fresh dummy.",
             "Level 50 rank 50 unarmed, spawned 2.5 m directly behind Melee Dummy (97/100 memory; Spy Style 1112 full closure = +54% thrown dmg).",
             "Step A (Passives 161 Uncanny Senses, 384 Disrupt Connection). Inspect Status on login, run '?qaunload 388, 384, 161' (97 -> 89 memory: Sneak Attack Detection 577 -40, Blind Dur 1045 -10, Enrage Dur 1068 -5, Stun Dur 995 -15), then '?qaload 161, 384, 388' restoring exact login Status.",
             "Step B (Outside-combat Spy actives — press slot 1 Spy Style 1112 and select Melee Dummy). Slot 3 (Ghost Strike 365): 60 IS, 1.5s cast, 10s reuse, 44 thrown dmg (base 29 + 54%). Slot 4 (Sever Artery 341): 35 IS, 4.0s cast, 15s/grp1216 3s, 0 direct dmg + ThrownDOT 68/tick (30s) & random combat states ('[SEVER-STATE] 341'). Then press slot 2 (Sneak 1111) behind Melee Dummy and press slot 5 (Reverse Bull Dog 388): 60 IS, 60s/grp691 15s, choreo 19595, 1934 thrown dmg ((56+1200)+54%), Stun 8 s (State 102) + Control Immunity 16 s."
         });
+
+    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => SpyFixtureReset.VerifyAsync(context);
 }
