@@ -117,7 +117,7 @@ namespace hds
             // PvP (docs/PVP.md): the PvP flag and a duel in progress are part of what a client needs to know about a
             // player to decide whether they can be attacked. Retail's creation records carried ConditionStateFlags too.
             // (Setting a value enables the attribute: one that is 0 is taken out of the record again.)
-            UInt32 flags = PvpFlag.FlagsOf(client.playerData);
+            UInt32 flags = PvpFlag.FlagsOf(client);
             client.playerInstance.ConditionStateFlags.setValue(flags);
             if (flags == 0)
             {

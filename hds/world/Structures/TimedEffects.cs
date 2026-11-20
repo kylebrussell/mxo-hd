@@ -260,6 +260,20 @@ namespace hds
                 lock (active) return active.Exists(a => a.Target == target && a.Proc == TempMods.Proc.State && now < a.Expires);
             }
 
+            internal uint TacticStateFlags(double now)
+            {
+                lock (active)
+                {
+                    uint flags = 0;
+                    foreach (Active mod in active)
+                    {
+                        if (mod.Proc == TempMods.Proc.State && now < mod.Expires)
+                            flags |= CombatInterlock.TacticStateFlag(mod.Target);
+                    }
+                    return flags;
+                }
+            }
+
             /// <summary>Script health procs deactivate the whole parent ability, not just its state record.</summary>
             public List<Active> HealthChanged(int damageTaken, bool belowMaximum, Random rng)
             {
@@ -610,6 +624,10 @@ namespace hds
             return players.GetValue(client, c => new PlayerEffects(c));
         }
 
+        internal static uint PlayerTacticStateFlags(WorldClient client) =>
+            players.TryGetValue(client, out PlayerEffects subject) && subject.Alive
+                ? subject.Effects.TacticStateFlags(TimeUtils.GetSimTimeSeconds()) : 0u;
+
         public static MobEffects ForMob(Mob mob)
         {
             return mobs.GetValue(mob, m => new MobEffects(m));
@@ -758,6 +776,14 @@ namespace hds
             }
         }
 
+        private void FlushStateUpdates(IEnumerable<TimedEffects.Active> changed)
+        {
+            if (changed.Any(mod => mod.Proc == TempMods.Proc.State && CombatInterlock.TacticStateFlag(mod.Target) != 0))
+                PvpFlag.SendFlags(client);
+            else
+                client.FlushQueue();
+        }
+
         internal override void Applied(TempMods.Effect effect, List<TimedEffects.Active> added, TimedEffects.Active immunity,
             List<TimedEffects.Active> replaced)
         {
@@ -829,7 +855,7 @@ namespace hds
             }
             AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
             if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);
-            client.FlushQueue();
+            FlushStateUpdates(added.Concat(replaced));
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + Name + ": " + added.Count + " tempmods");
         }
 
@@ -909,7 +935,7 @@ namespace hds
                     client.messageQueue.addRpcMessage(AbilityMessages.StateEnd(m.Target, Name));
                 }
             }
-            client.FlushQueue();
+            FlushStateUpdates(ended);
         }
     }
 
@@ -958,18 +984,8 @@ namespace hds
                 {
                     continue;
                 }
-                switch (m.Target)
-                {
-                    case TempMods.DazeAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Speed), m.Seconds);
-                        break;
-                    case TempMods.OffBalanceAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Grab), m.Seconds);
-                        break;
-                    case TempMods.StaggeredAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Power), m.Seconds);
-                        break;
-                }
+                uint flag = CombatInterlock.TacticStateFlag(m.Target);
+                if (flag != 0) mob.ApplyCondition(flag, m.Seconds);
                 UInt32 line = AbilityMessages.CasterStateLine(m.Target, out Int32[] values);
                 if (line != 0 && !effect.Virus)
                 {

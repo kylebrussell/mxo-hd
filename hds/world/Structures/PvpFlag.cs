@@ -27,7 +27,8 @@ namespace hds
 
         public static UInt32 FlagsOf(WorldClient client)
         {
-            return client.playerData.conditionStateFlags | (client.playerData.pvpFlag ? PvpBit : 0u);
+            // Timed effects and natural tactic procs can overlap. Each keeps its own expiry.
+            return FlagsOf(client.playerData) | TimedEffects.PlayerTacticStateFlags(client);
         }
 
         public static UInt32 FlagsOf(ClientData data)

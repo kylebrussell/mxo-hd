@@ -94,6 +94,32 @@ public class PvpTests
     }
 
     [Fact]
+    public void TimedAndNaturalTacticFlagsKeepIndependentLifetimes()
+    {
+        var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData { pvpFlag = true, conditionStateFlags = PvpFlag.InCombatBit };
+        var holder = TimedEffects.ForPlayer(client).Effects;
+        double now = TimeUtils.GetSimTimeSeconds();
+        holder.Apply(885, new[] { State(TempMods.OffBalanceAbility, 60) }, now);
+        holder.Apply(341, new[] { State(TempMods.OffBalanceAbility, 60), State(TempMods.DazeAbility, 1) }, now - 2);
+        holder.Apply(883, new[] { State(TempMods.StaggeredAbility, 60) }, now);
+        Assert.Equal(0x0110000cu, PvpFlag.FlagsOf(client));
+        Assert.Equal(PvpFlag.InCombatBit, client.playerData.conditionStateFlags);
+
+        holder.RemoveParent(885);
+        Assert.Equal(0x0110000cu, PvpFlag.FlagsOf(client));
+        client.playerData.conditionStateFlags |= CombatInterlock.ConditionBit(CombatTactic.Grab);
+        holder.RemoveParent(341);
+        holder.RemoveParent(883);
+        Assert.Equal(0x01100004u, PvpFlag.FlagsOf(client));
+
+        static TimedEffects.Active State(ushort id, float seconds) => new()
+        {
+            Proc = TempMods.Proc.State, Target = id, Seconds = seconds
+        };
+    }
+
+    [Fact]
     public void PvpSettingsAreRetails()
     {
         // died_in_pvp, at world entry

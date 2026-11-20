@@ -111,8 +111,10 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         VerifyStand(csr, CasterX, CasterYaw);
         VerifyStand(enemy, RecipientX, RecipientYaw);
         var target = Handle(enemy);
-        int start = caster.World.RpcSnapshot().Count;
         string targetHex = WireFormat.ToHex(BitConverter.GetBytes(target));
+        caster.SendRpc($"81 51 {targetHex}");
+        await CheckTacticStateVisibilityAsync();
+        int start = caster.World.RpcSnapshot().Count;
         caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(StockSelfDefense, target),
             WireFormat.FromHex($"40 {targetHex} 01 6b"));
         await StockAbilityProfile.ObserveAsync(caster, start, rpc => rpc.Bytes is [0x46, ..] &&
@@ -131,6 +133,51 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         }
         Check.Equal(0, caster.World.Problems.Count + recipient.World.Problems.Count, "Player control replay framing");
         return Array.Empty<byte>();
+
+        async Task CheckTacticStateVisibilityAsync()
+        {
+            // Outside combat, no natural proc can supply the flag expected from the timed command.
+            var records = new List<object>();
+            foreach (var (prep, tactic) in new[] { ("Daze", CombatTactic.Speed), ("OffBalance", CombatTactic.Grab),
+                ("Stagger", CombatTactic.Power) })
+            {
+                int casterStart = caster.World.ViewSnapshot().Count;
+                int recipientStart = recipient.World.ViewSnapshot().Count;
+                const uint baseline = PvpFlag.PvpBit;
+                uint active = baseline | CombatInterlock.ConditionBit(tactic);
+                caster.SkipReceived();
+                caster.SendChat($"?combatdepth {prep.ToLowerInvariant()} 2");
+                await caster.WaitForTextAsync($"{prep} fixture applied");
+                byte[] observerOn = WorldServer.BuildViewUpdate(enemy.ViewId, PvpFlag.BuildOtherFlags(active));
+                byte[] observerOff = WorldServer.BuildViewUpdate(enemy.ViewId, PvpFlag.BuildOtherFlags(baseline));
+                byte[] ownOn = PvpFlag.BuildSelfFlags(active);
+                byte[] ownOff = PvpFlag.BuildSelfFlags(baseline);
+                var on = await Expect(caster, casterStart, observerOn, $"{prep} visible to the attacker");
+                var own = await Expect(recipient, recipientStart, ownOn, $"{prep} visible to the recipient");
+                var off = await Expect(caster, on + 1, observerOff, $"{prep} expiry visible to the attacker");
+                var ownEnd = await Expect(recipient, own + 1, ownOff, $"{prep} expiry visible to the recipient");
+                records.Add(new
+                {
+                    State = prep, TargetView = enemy.ViewId,
+                    ObserverAdd = Convert.ToHexString(caster.World.ViewSnapshot()[on]),
+                    ObserverRemove = Convert.ToHexString(caster.World.ViewSnapshot()[off]),
+                    RecipientAdd = Convert.ToHexString(recipient.World.ViewSnapshot()[own]),
+                    RecipientRemove = Convert.ToHexString(recipient.World.ViewSnapshot()[ownEnd])
+                });
+                Console.WriteLine($"MARTIAL TACTIC VIEW PASS {prep} applied and expired on both clients");
+            }
+            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "martial-player-tactic-views.json"),
+                JsonSerializer.Serialize(records));
+
+            async Task<int> Expect(HeadlessPlayer actor, int cursor, byte[] update, string message)
+            {
+                var pattern = BytePattern.Parse(WireFormat.ToHex(update));
+                int index = -1;
+                await actor.WaitUntilAsync(() => (index = actor.World.ViewSnapshot().FindIndex(cursor, pattern.Occurs)) >= 0,
+                    message, Hold);
+                return index;
+            }
+        }
 
         async Task RunStage(Sample[] samples, ushort style)
         {
