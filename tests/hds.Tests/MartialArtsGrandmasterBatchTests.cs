@@ -96,6 +96,7 @@ public class MartialArtsGrandmasterBatchTests
     public void GrandmasterBatchFitsMemoryAndReloadsInPrerequisiteOrder()
     {
         var plan = NativeQa.NativeQaModes.Find("ability-parity-ma-grandmaster-karate-aikido").Plan;
+        Assert.Equal("ability-sweep-melee.csv", plan.TestMobFixture);
         int mem = plan.Abilities.Sum(AbilityMemory.Cost);
         Assert.True(mem <= AbilityMemory.ForLevel(50),
             $"MA grandmaster batch memory {mem} must fit level-50 capacity {AbilityMemory.ForLevel(50)}");
