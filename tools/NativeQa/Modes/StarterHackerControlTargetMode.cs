@@ -89,7 +89,7 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
         return request;
     }
 
-    internal static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request)
+    internal static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request, uint reason = AbilityRefusals.InvalidTarget)
     {
         int start = caster.World.RpcSnapshot().Count;
         var views = caster.World.ViewSnapshot();
@@ -106,7 +106,7 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
                 cast.IsMatch(rpc.Bytes) || reuse.IsMatch(rpc.Bytes),
             $"{id} invalid selected target");
         Check.That(AbilityRefusals.TryDecode(refusal.Bytes, out var decoded) &&
-            decoded.ErrorID == AbilityRefusals.InvalidTarget, $"Ability {id} must refuse the invalid target before cast or reuse, got {refusal.Hex}");
+            decoded.ErrorID == reason, $"Ability {id} must refuse with reason {reason} before cast or reuse, got {refusal.Hex}");
         int barrierStart = caster.World.RpcSnapshot().Count;
         caster.SendRpc("81 48");
         var barrier = BytePattern.Parse("81 49");

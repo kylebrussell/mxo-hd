@@ -11,6 +11,7 @@ namespace hds
             string command = args.Length > 0 ? args[0] : "";
             if (command == "foundations-sight") return CombatFoundationsQa.Setup(caller, "sight");
             if (command == "foundations-sight-pick") return CombatFoundationsQa.Setup(caller, "sight-pick");
+            if (command == "foundations-sight-far") return CombatFoundationsQa.Setup(caller, "sight-far");
             if (command == "foundations-sight-blocked") return CombatFoundationsQa.Setup(caller, "sight-blocked");
             if (command == "foundations-cone") return CombatFoundationsQa.Setup(caller, "cone");
             if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");

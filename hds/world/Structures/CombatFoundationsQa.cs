@@ -33,6 +33,17 @@ namespace hds
                 Spawn("AB1 Clear", ClearX, SightY, SightZ);
                 return $"Stand at {SightX},{SightY},{SightZ} facing west (yaw 192). AB1 Blocked is 10 m ahead across a mapped gap. AB1 Clear is 2 m east. Rifle equipped.";
             }
+            if (mode == "sight-far")
+            {
+                // Keep the target within view while exceeding the longest starter viral range (20 m).
+                int x = TestTargetX + 2150;
+                while (x <= TestTargetX + 3150 && !OutdoorStand(x)) x += 50;
+                if (!OutdoorStand(TestTargetX) || x > TestTargetX + 3150)
+                    return "No outdoor far stand for QA Sight Target.";
+                Spawn("QA Sight Target", TestTargetX, SightY, TestZ);
+                Move(caller, x, SightY, TestZ, yaw: 192);
+                return $"Far stand {x},{SightY},{TestZ}. QA Sight Target is beyond 20 m.";
+            }
             if (mode == "sight-pick" || mode == "sight-blocked")
             {
                 if (!OutdoorStand(PickX) || !OutdoorStand(TestTargetX) || !OutdoorStand(TestCastX) ||

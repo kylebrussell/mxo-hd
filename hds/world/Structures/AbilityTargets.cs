@@ -112,6 +112,17 @@ namespace hds
                 PvpCombat.HealthOf(player) > 0 && (!requireOpponent || PvpCombat.Check(caster, player) == PvpRules.Verdict.Allowed);
         }
 
+        internal static bool WithinSelectionRange(WorldClient caster, ushort ability, ushort targetView)
+        {
+            double range = AbilityCatalog.Find(ability)?.Number("Ability/SelectionRange") ?? 0;
+            if (range <= 0) return true;
+            var mob = FindMob(caster, targetView, out _);
+            var player = mob == null ? PvpCombat.PlayerInView(caster, targetView) : null;
+            if (mob == null && player == null) return false;
+            var (x, y, z) = mob != null ? (mob.getXPos(), mob.getYPos(), mob.getZPos()) : CombatSight.Position(player);
+            return CombatCalculator.CalculateDistanceMetres(caster.playerInstance.Position.getValue(), x, y, z) <= range;
+        }
+
         /// <summary>Expand a landed primary into the template's hostile area.</summary>
         internal static void LandAround(WorldClient client, AbilityItem ability, (double X, double Y, double Z) primary,
             AbilityCastOrigin origin, AbilityEngageFoes.Cast engageFoes, WorldClient skipPlayer = null, Mob skipMob = null)
