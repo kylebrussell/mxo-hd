@@ -31,7 +31,7 @@ public sealed class AwakenedInterlockAdmissionMode : NativeQaMode
         {
             "Use Self Defense with Melee Dummy selected. At rest try page 2 slots 1–3 (Power Shot, Cheap Shot, Head Butt). Grey is expected. Any request rejected by the server should leave IS and reuse unchanged.",
             "Open Close Combat and wait for the interlock HUD. Press slot 1 on its current opponent. Expect a queued move and 60-second reuse. On a hit, record the actual Inner Strength gain.",
-            "Use ?combatdepth fixture-reset between moves. Strafe slightly to uncover the fresh dummy, reselect, and open ordinary Close Combat again. Press slot 2 for Cheap Shot (20-second reuse). For Head Butt, open again after reset, select the active dummy, run ?combatdepth daze 60 and press slot 3 (30-second reuse). On a landed Head Butt, expect Self Defense move 284."
+            "Use ?combatdepth fixture-reset between moves. Strafe slightly to uncover the fresh dummy, reselect, and open ordinary Close Combat again. Press slot 2 for Cheap Shot (20-second reuse). For Head Butt, open again after reset, select the active dummy and verify slot 3 is unavailable before Daze. Run ?combatdepth daze 60 with the active target selected and press slot 3 (30-second reuse). Enter submits the command. Keep the target selected without Escape. On a landed Head Butt, expect Self Defense move 284."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -57,6 +57,10 @@ public sealed class AwakenedInterlockAdmissionMode : NativeQaMode
             actor.SendRpc($"81 51 {hex}");
             if (ability == 197)
             {
+                var noDaze = await StarterHackerControlTargetMode.RefusedAsync(actor, ability,
+                    StarterHackerControlTargetMode.WithHandle(capture, handle), AbilityRefusals.TargetStateRequired);
+                Check.That(AbilityRefusals.TryDecode(noDaze.Bytes, out var state) && state.StatesNotMet == 2,
+                    "Head Butt asks for the shipped target state 2 without charging");
                 actor.SendChat("?combatdepth daze 60");
                 await actor.WaitForTextAsync("Daze fixture applied 884/199 to Melee Dummy for 60 seconds");
             }

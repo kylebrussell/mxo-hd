@@ -144,6 +144,13 @@ namespace hds
                     DenyMissingInterlock(AbilityID);
                     return;
                 }
+                if (AbilityID == 197 && !CombatManager.GetHandler(Store.currentClient).CurrentOpponentDazed(currentTargetViewId))
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired, states: 2)));
+                    Store.currentClient.FlushQueue();
+                    return;
+                }
             }
 
             if (CombatSpecials.IsRifleOpener(AbilityID) && CombatManager.GetHandler(Store.currentClient).isCombatRunning)
