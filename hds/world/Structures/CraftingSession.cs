@@ -8,7 +8,7 @@ namespace hds
     public static class CraftingSession
     {
         public const ushort Ability = 969, Tool = 1271, Attribute = 968;
-        public const ushort WriterAbility = 970, WriterTool = 531;
+        public const ushort WriteCode = 37, WriterAbility = 970, WriterTool = 531;
         // Shipped movement table629ce160: StandType is index3; Action_Idle is index0.
         public const byte TypingStance = 3;
         public static bool Handles(ushort ability) => ability == Ability || ability == WriterAbility;
@@ -51,6 +51,23 @@ namespace hds
                     Ready(c) && c.playerData.stance == TypingStance, Loaded(c, state.Ability), HasTool(c, state.Slot, state.Ability));
                 if (!valid) End(c);
                 return valid && state.Slot == slot && state.Ability == ability;
+            }
+        }
+
+        internal static void WriteCodeLoaded(WorldClient client)
+        {
+            if (!client.playerData.getOnWorld() || client.playerData.worldChangePending) return;
+            var active = Stealth.Current(client);
+            // The shipped Write Code initializer calls TurnOffStealthAbils on these five abilities.
+            switch (active?.Def.Ability)
+            {
+                case Stealth.SneakGrantAbility:
+                case Stealth.ConcealmentGrantAbility:
+                case Stealth.EscapeAndEvasionAbility:
+                case Stealth.InvisibilityGrantAbility:
+                case AbilityDisguise.Ability:
+                    Stealth.End(client, "loaded Write Code", generation: active.Generation);
+                    break;
             }
         }
 
