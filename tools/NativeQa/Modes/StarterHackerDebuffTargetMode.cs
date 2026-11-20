@@ -7,20 +7,22 @@ namespace NativeQa.Modes;
 public sealed class StarterHackerDebuffTargetMode : NativeQaMode
 {
     private const int Level = 14, Rank = 12;
-    private const ushort HackerStyle = 1006, ProcessorLag = 69, Slow = 86;
+    private const ushort HackerStyle = 1006, Overload = 66, ProcessorLag = 69, Slow = 86;
+    private const ushort ResistViruses = 76;
 
-    // Targeted stock 80 b9 layout from 6971d24474bd:4113, adapted to each ability ID.
-    private const string ProcessorLagRequest = "80b94500040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string SlowRequest = "80b95600040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    // PR439 stock 537fece48163:1596 and 1717. Overload adapts the same targeted layout.
+    private const string OverloadRequest = "80b94200040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
+    private const string ProcessorLagRequest = "80b94500040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
+    private const string SlowRequest = "80b95600040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
 
     public override string Name => "ability-parity-starter-hacker-debuff-targets";
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, HackerStyle, ProcessorLag, Slow }
+        new ushort[] { 2, 17, HackerStyle, Overload, ProcessorLag, Slow }
             .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray(),
         CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ, Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y=495,innerStrC=200,innerStrM=200 WHERE charId=110",
-            $"UPDATE char_abilities SET level=LEAST(level,{Rank}) WHERE char_id=110"
+            $"UPDATE char_abilities SET level=LEAST(level,CASE WHEN ability_id={AbilityMessages.AbilityGameObject(ResistViruses)} THEN {Level} ELSE {Rank} END) WHERE char_id=110"
         }, DevCommands: true, testMobFixture: CombatFixtureLoadout.MeleeCsv, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
@@ -28,16 +30,16 @@ public sealed class StarterHackerDebuffTargetMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, readyMessages: new[]
         {
-            "Select Hacker Style outside interlock. Try Slow (86) first and Processor Lag 1.0 (69) second. For each, clear selection and press once. Expect one Target is not valid line and no cast bar, reuse or IS debit.",
-            "Select Melee Dummy and retry each immediately. Expect two-second casts, 8s reuse and five 28s debuffs for Slow, and 43s reuse and six damage every five seconds for Processor Lag."
-        });
+            "Select Hacker Style outside interlock and use Overload 1.0 (66) with no selection. Expect one Target is not valid line with no cast bar, reuse or IS debit.",
+            "Select Melee Dummy and retry immediately. Expect a two-second cast, 43s reuse and four -10 accuracy/defense debuffs for 33s. Capture the two stock 66 requests. Slow and Processor Lag already passed this check in PR439."
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "66", ["NativeCloseableRows"] = 0 });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         if (context.Server == null) return Array.Empty<byte>();
         using var caster = await HeadlessPlayer.LoginAsync(context.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
         var loaded = AbilityMemoryUiFixture.Decode(caster.CharacterData[6]).Select(row => AbilityCatalog.IdOf(row.Descriptor));
-        Check.That(Plan.Abilities.All(loaded.Contains), "Starter debuff fixture loads both abilities and their prerequisites");
+        Check.That(Plan.Abilities.All(loaded.Contains), "Starter debuff fixture loads all three abilities and their prerequisites");
         await caster.EnterWorldAsync();
         var self = caster.World.CreationSnapshot().Last(view => view.ViewId == 2);
         var dummy = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
@@ -47,7 +49,7 @@ public sealed class StarterHackerDebuffTargetMode : NativeQaMode
         var server = context.ActualServer!;
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
         var proof = new List<object>();
-        foreach (var (ability, capture, reuseSeconds) in new[] { (Slow, SlowRequest, 8), (ProcessorLag, ProcessorLagRequest, 43) })
+        foreach (var (ability, capture, reuseSeconds) in new[] { (Overload, OverloadRequest, 43), (Slow, SlowRequest, 8), (ProcessorLag, ProcessorLagRequest, 43) })
         {
             var missing = await StarterHackerControlTargetMode.RefusedAsync(caster, ability,
                 StarterHackerControlTargetMode.WithHandle(capture, 0));
@@ -73,9 +75,11 @@ public sealed class StarterHackerDebuffTargetMode : NativeQaMode
             else
             {
                 var values = effect!.Split(effectPrefix)[1].Trim().Split(", ");
-                var expected = new[] { "Stat 519 -15 28 s", "Stat 115 -50 28 s", "Stat 877 -50 28 s", "Stat 878 -50 28 s", "Stat 524 -19 28 s" };
+                var expected = ability == Overload
+                    ? new[] { "Stat 522 -10 33 s", "Stat 524 -10 33 s", "Stat 1009 -10 33 s", "Stat 1010 -10 33 s" }
+                    : new[] { "Stat 519 -15 28 s", "Stat 115 -50 28 s", "Stat 877 -50 28 s", "Stat 878 -50 28 s", "Stat 524 -19 28 s" };
                 Check.That(values.Order().SequenceEqual(expected.Order()),
-                    $"Slow applies five shipped 28-second stat debuffs, got {effect}");
+                    $"Ability {ability} applies the shipped stat debuffs, got {effect}");
             }
             proof.Add(new { ability, Request = Convert.ToHexString(request), Missing = missing.Hex, Stale = stale.Hex, reuseSeconds, effect });
         }
