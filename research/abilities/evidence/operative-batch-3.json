@@ -179,8 +179,13 @@
       "checks": {
         "behavior-tests": {
           "source": "GOB 647 calls TauntAggro in a 4 m radius of the caster.",
-          "runtime": "The initializer uses the existing current-district, hostile NPC selection and updates the admitted NPC owner. Retail area admission remains a separate audit item.",
-          "test": "EngageFoesTests.TauntUsesTheCasterFourMetreBoundaryAndRejectsAnUnseenTarget and prior stock Taunt observed multiple NPCs switching to the caster. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+          "runtime": "The initializer uses the existing current-district, hostile NPC selection and updates the admitted NPC owner. It ignores NPC views that have not been published or are pending removal.",
+          "test": "EngageFoesTests.TauntUsesTheCasterFourMetreBoundaryAndRejectsUnpublishedViews and prior stock Taunt observed multiple NPCs switching to the caster. https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186"
+        },
+        "area": {
+          "source": "GOB 647 stores selector 4, a 4 m radius around the caster, with TauntAggro.",
+          "runtime": "CombatSpecials.CastTaunt selects the visible, living, hostile NPCs inside the caster-centered radius. A selected target does not move that center.",
+          "test": "EngageFoesTests exercises 400 and 401 world units and unpublished views. The exact PR441 stock replay and native run show no pull from 5 m and the NPC switching to the caster at 3 m. https://github.com/kylebrussell/mxo-hd/pull/441"
         }
       }
     }
