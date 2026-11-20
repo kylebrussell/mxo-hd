@@ -186,6 +186,9 @@ try
                     if (action == "cast" && fixtureMode is NativeQa.Modes.StarterControlDeflectMode)
                         result = await NativeQa.Modes.StarterControlDeflectMode.SendControlAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
+                    else if (action == "cast" && fixtureMode is NativeQa.Modes.AwakenedMovementLifecycleMode)
+                        result = await NativeQa.Modes.AwakenedMovementLifecycleMode.SendLockdownAsync(
+                            actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
                     else if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
                     else if (action == "melee" && fixtureMode is NativeQa.Modes.MobiusCodeFixtureMode)
                     {
