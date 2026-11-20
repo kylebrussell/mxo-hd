@@ -25,7 +25,7 @@ public sealed class KungFuMasterSpecialsMode : NativeQaMode
             $"UPDATE char_abilities SET level={FixtureRank} WHERE char_id=110",
             $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"
         },
-        DevCommands: true, loadAbilityAncestors: false,
+        DevCommands: true, loadAbilityAncestors: false, testMobFixture: CombatFixtureLoadout.MeleeCsv,
         hotbarAbilities: new ushort[] { KungFu, MisdirectPunch, MachinegunFistCombo, DimMakStrike, PistonKicks },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_CONDITIONAL_POWERLESS_QA"] = "1" },
         extraQaMetadata: new()

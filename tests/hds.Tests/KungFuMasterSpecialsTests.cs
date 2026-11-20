@@ -60,6 +60,7 @@ public class KungFuMasterSpecialsTests
         int mem = plan.Abilities.Sum(AbilityMemory.Cost);
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-30 Kung Fu batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
+        Assert.Equal("ability-sweep-melee.csv", plan.TestMobFixture);
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_POWERLESS_QA"]);
         Assert.Equal(2, AbilityCatalog.Find(DimMakStrike)!.Number("Ability/CastRequiredStates"));
         Assert.Equal(8, AbilityCatalog.Find(PistonKicks)!.Number("Ability/CastRequiredStates"));
