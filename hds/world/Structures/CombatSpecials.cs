@@ -228,7 +228,8 @@ namespace hds
                 {
                     if (mob.isFriendly || mob.getIsDead() || mob.getDistrict() != district) continue;
                     if (!AbilityTargets.WithinArea(x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) continue;
-                    if (caster.viewMan.FindViewForEntity(mob.getEntityId()) == null) continue;
+                    var view = caster.viewMan.FindViewForEntity(mob.getEntityId());
+                    if (view?.viewCreated != true || view.viewNeedsToBeDeleted) continue;
                     taunted.Add(mob);
                 }
             foreach (Mob mob in taunted)

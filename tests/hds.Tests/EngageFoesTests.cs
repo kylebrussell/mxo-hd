@@ -52,7 +52,7 @@ public class EngageFoesTests
     }
 
     [Fact]
-    public void TauntUsesTheCasterFourMetreBoundaryAndRejectsAnUnseenTarget()
+    public void TauntUsesTheCasterFourMetreBoundaryAndRejectsUnpublishedViews()
     {
         using var f = new Fixture();
         f.Source.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
@@ -76,6 +76,12 @@ public class EngageFoesTests
             outside.setXPos(399);
             f.Source.viewMan.removeViewByViewId(outsideView.ViewID);
             Assert.Empty(CombatSpecials.CastTaunt(f.Source));
+            var pending = f.Source.viewMan.addView(outside.getEntityId(), 599);
+            Assert.Empty(CombatSpecials.CastTaunt(f.Source));
+            pending.viewCreated = true;
+            pending.viewNeedsToBeDeleted = true;
+            Assert.Empty(CombatSpecials.CastTaunt(f.Source));
+            Assert.Null(CombatSpecials.MostHated(outside));
         }
         finally { lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Remove(outside); }
     }
