@@ -27,7 +27,7 @@ public sealed class KungFuMasterSpecialsMode : NativeQaMode
         },
         DevCommands: true, loadAbilityAncestors: false,
         hotbarAbilities: new ushort[] { KungFu, MisdirectPunch, MachinegunFistCombo, DimMakStrike, PistonKicks },
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
+        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_CONDITIONAL_POWERLESS_QA"] = "1" },
         extraQaMetadata: new()
         {
             ["ScopedStockRows"] = "259,260,261,262",
@@ -40,6 +40,6 @@ public sealed class KungFuMasterSpecialsMode : NativeQaMode
         {
             "Level 30 rank 30 unarmed with Melee Dummy 3 m west (full closure with Kung-Fu 133 active = +23% melee damage). Enter ordinary unarmed Close Combat on Melee Dummy and press page 2 slot 1 (Kung-Fu 133).",
             "Step A (No target state needed). Press slot 2 (Misdirect Punch 260): expect 30 IS, 10s own / 5s group 688 reuse, choreography 8082, landed physical damage 29 (base 24 + 23%), and Blinded 4 s (State 90). Press slot 3 (Machinegun Fist Combo 261): expect 30 IS, 10s own / 5s group 687 reuse, choreography 8081, landed physical damage 28 (base 23 + 23%).",
-            "Step B (Conditional states). Select Melee Dummy, run '?combatdepth stagger 30', press slot 4 (Dim Mak Strike 259): expect 20 IS, 10s own / 5s group 688 reuse, choreography 8089, landed physical damage 87 (base 71 + 23%), and Powerless 6 s (State 96). Then run '?combatdepth offbalance 30', press slot 5 (Piston Kicks 262): expect 25 IS, 10s own / 5s group 687 reuse, choreography 8085, landed physical damage 132 (base 108 + 23%), and 40% Stun 4 s (State 102)."
+            "Step B (Conditional states). Select Melee Dummy, run '?combatdepth daze 30', press slot 4 (Dim Mak Strike 259, CastRequiredStates=2 Daze): expect 20 IS, 10s own / 5s group 688 reuse, choreography 8089, landed physical damage 87 (base 71 + 23%), and Powerless 6 s (State 96). Then run '?combatdepth stagger 30', press slot 5 (Piston Kicks 262, CastRequiredStates=8 Stagger): expect 25 IS, 10s own / 5s group 687 reuse, choreography 8085, landed physical damage 132 (base 108 + 23%), and 40% Stun 4 s (State 102)."
         });
 }

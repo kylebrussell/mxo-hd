@@ -60,6 +60,16 @@ public class KungFuMasterSpecialsTests
         int mem = plan.Abilities.Sum(AbilityMemory.Cost);
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-30 Kung Fu batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
+        Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_POWERLESS_QA"]);
+        Assert.Equal(2, AbilityCatalog.Find(DimMakStrike)!.Number("Ability/CastRequiredStates"));
+        Assert.Equal(8, AbilityCatalog.Find(PistonKicks)!.Number("Ability/CastRequiredStates"));
+
+        Assert.True(TempMods.TryGet(DimMakStrike, out var e259));
+        Assert.Contains(e259.Mods, m => m.Target == TempMods.PowerlessAbility && m.Seconds == 6f);
+        Assert.True(TempMods.TryGet(MisdirectPunch, out var e260));
+        Assert.Contains(e260.Mods, m => m.Target == TempMods.BlindAbility && m.Seconds == 4f);
+        Assert.True(TempMods.TryGet(PistonKicks, out var e262));
+        Assert.Contains(e262.Mods, m => m.Target == TempMods.StunAbility && m.Seconds == 4f);
 
         var client = Client(FixtureLevel);
         AbilityPassives.SetLoaded(client, plan.Abilities.Select(id => (id, (ushort)FixtureRank)).ToArray());
