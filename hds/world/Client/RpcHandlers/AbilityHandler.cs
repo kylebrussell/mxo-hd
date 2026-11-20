@@ -146,10 +146,22 @@ namespace hds
                 }
             }
 
-            if (CombatSpecials.IsRifleOpener(AbilityID) && CombatManager.GetHandler(Store.currentClient).isCombatRunning)
+            if (CombatSpecials.IsRifleOpener(AbilityID))
             {
-                Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat);
-                return;
+                var shooter = Store.currentClient;
+                var fight = CombatManager.GetHandler(shooter);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat);
+                    return;
+                }
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
+                {
+                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
+                    shooter.FlushQueue();
+                    return;
+                }
             }
 
             // These starter Coder casts require a live selected target, including the Tinkering area centre.
