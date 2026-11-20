@@ -109,6 +109,17 @@ namespace hds
                 }
             }
 
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (BullDogDamage.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, spawn, out uint refusalReason))
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
+                    return;
+                }
+            }
+
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
@@ -550,6 +561,8 @@ namespace hds
                 return spyDamage;
             if (DeadlyThrowDamage.TryResolve(source, characterLevel, out ushort deadlyDamage))
                 return deadlyDamage;
+            if (BullDogDamage.TryResolve(source, out ushort bullDogDamage))
+                return bullDogDamage;
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? StarterHackerViralBase(source) ?? random.Next(50, 81));
         }
