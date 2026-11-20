@@ -410,7 +410,8 @@ namespace hds
             foreach (WorldClient target in targets)
             {
                 // RecallTeamMember_DirectObject
-                if (target.playerData.getDistrictId() != caster.playerData.getDistrictId())
+                if (target.playerData.getDistrictId() != caster.playerData.getDistrictId() ||
+                    !target.Alive || !RecallRecipientInWorld(target.playerData))
                 {
                     ToCaster(caster, RecallAcrossConstructs, ability, TimedEffects.PlayerName(target));
                     caster.FlushQueue();
@@ -428,10 +429,15 @@ namespace hds
                     ability == RecallTeamMember ? FxRecallTeamMemberPhaseOut : FxRecallMissionTeamPhaseOut);
                 MissionStaging.Teleport(target, x, y, z);
                 target.FlushQueue();
+                PvpFlag.ToWatchers(target, PvpFight.BuildFacing(target.playerInstance.YawInterval.getValue()[0],
+                    (float)x, (float)y, (float)z));
                 Output.WriteDebugLog("[UTILITY] Recalled " + TimedEffects.PlayerName(target) + " to " + casterName + " at " +
                                      x + "," + y + "," + z);
             }
         }
+
+        internal static bool RecallRecipientInWorld(ClientData data) =>
+            data.getOnWorld() && !data.DistrictIsLA() && !data.worldChangePending && !data.waitForRPCShutDown;
 
         // Find Data Node is a toggle (IsAToggleAbility)
         public static bool IsSearchingForDataNodes(WorldClient client) => DataMining.Searching(client);
