@@ -252,6 +252,8 @@ def server(i):
         parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; wider damage and admission unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
+    elif i == 504:
+        parts.append('stored fixed ballistic base 22 with incomplete legacy endpoints; armor piercing and complete damage parity unresolved')
     elif i in (36, 514):
         base = 4 if i == 36 else 6
         parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
