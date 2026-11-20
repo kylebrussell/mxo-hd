@@ -257,13 +257,20 @@ namespace hds
                 !opponent.isFriendly && !opponent.getIsDead() ? (uint?)handle : null;
         }
 
+        internal static bool HasOpponentState(TimedEffects.Subject holder, ushort state, double now)
+        {
+            if (holder == null) return false;
+            if (holder.Effects.HasAt(state, now)) return true;
+            return (holder.ConditionFlags & CombatInterlock.TacticStateFlag(state)) != 0;
+        }
+
         // The caller has already validated that this view is the current opponent.
         internal bool CurrentOpponentHasState(ushort targetViewId, ushort state)
         {
             var player = pvpFight != null ? AbilitySupport.PlayerInView(client, targetViewId) : null;
             var npc = pvpFight == null ? CurrentNpcOpponentFor(client) : null;
             var holder = player != null ? (TimedEffects.Subject)TimedEffects.ForPlayer(player) : npc != null ? TimedEffects.ForMob(npc) : null;
-            return holder != null && holder.Effects.HasAt(state, TimeUtils.GetSimTimeSeconds());
+            return HasOpponentState(holder, state, TimeUtils.GetSimTimeSeconds());
         }
 
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
