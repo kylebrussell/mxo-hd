@@ -46,6 +46,16 @@ namespace hds
                 return;
             }
 
+            // Compel Close Combat stores CastWhenUsed=1 and has no interlock move.
+            if (AbilityID == 150 && CombatManager.GetHandler(Store.currentClient).HasActiveInterlock)
+            {
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                    new AbilityRefusals.Record(AbilityID, AbilityRefusals.MustBeOutsideCombat)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied 150: active interlock");
+                return;
+            }
+
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
