@@ -68,8 +68,8 @@ namespace hds
                 return;
             }
 
-            // Both Tinkering casts need a live hostile selection to supply their area centre.
-            if (AbilityID == 36 || AbilityID == 514)
+            // These starter Coder casts require a live selected target, including the Tinkering area centre.
+            if (AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))

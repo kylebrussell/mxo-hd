@@ -71,7 +71,7 @@ public sealed class TinkeringTargetAdmissionMode : NativeQaMode
         return bytes;
     }
 
-    private static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request)
+    internal static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request)
     {
         int rpcs = caster.World.RpcSnapshot().Count;
         var priorViews = caster.World.ViewSnapshot();

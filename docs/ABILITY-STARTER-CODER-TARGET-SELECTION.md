@@ -1,0 +1,5 @@
+# Starter Coder hostile selection
+
+Use `ability-parity-early-coder-target-selection` with Coder Style and stay out of interlock. The fixture instructions place live QAEnemy and dead QAOther at separate stands. Try Lockdown 1.0 and Static Blast 1.0 with no target and with QAOther selected. A request for either invalid target should leave IS, cast and reuse unchanged. The full stock-shaped replay also verifies an invalid spawn on a currently live view. The unpatched disposable server charged 10 and 15 IS and started the respective 13.5 s and 6 s timers against a zero handle.
+
+Select QAEnemy and cast Lockdown. Check its 12 s root and 2 s cast, then hit the same target with Static Blast before the root expires. The level-18 fixture expects 24 viral damage and the root to expire on its own. GOB 21/33 require an enemy selection, and the shipped descriptions at `0xc6000035` and `0xc6000031` specify the targeted root and damage. The fixture fixes only the viral contest draw. Range, line of sight and full retail targeting parity remain open in the audit.
