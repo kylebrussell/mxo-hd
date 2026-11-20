@@ -257,6 +257,14 @@ def server(i):
     elif i in (36, 514):
         base = 4 if i == 36 else 6
         parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
+    elif i in (197, 198) and not r['damage']:
+        base = {197: 16, 198: 7}[i]
+        parts.append(f'stored fixed physical base {base} before ordinary influence and resistance')
+        if i == 197:
+            parts.append('requires Dazed on the live interlock opponent before charging')
+    elif i in (254, 255):
+        base = {254: 18, 255: 16}[i]
+        parts.append(f'stored fixed ballistic base {base} before influence and resistance; requires a live hostile selection at rest; retail scaling unresolved')
     elif i == 130:
         parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; requires a live selected enemy before charging the cast; wider damage and targeting unresolved')
     elif i == 134:

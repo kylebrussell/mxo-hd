@@ -1,0 +1,30 @@
+{
+  "families": {
+    "starter-deflect-code-stock": {
+      "representative": 23,
+      "result": "pass",
+      "head": "79db5639512ce0eb1d5dee57e7b8e8375c28852f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/518",
+      "scope": "Stock CSR receives source23 stat1047 +10, shortened Blind/Pacify/Stun states and unchanged 12/14 s immunity. Removing 23 restores the 7.35 s Stun baseline."
+    }
+  },
+  "abilities": {
+    "23": {
+      "family": "starter-deflect-code-stock"
+    },
+    "315": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB Stun 315 applies state 102 for 7 s before duration modifiers. The shipped independent control-immunity callback uses 14 s.",
+          "runtime": "AbilityHandler and FreeCastViralContest enforce the selected hostile and eligibility rules. TimedEffects applies the state and independently schedules 734→681 immunity. The current Deflect Code consumer shortens only the state.",
+          "test": "AbilityHostileTests.HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds tests damage retention, immunity, reapplication and natural expiry. PR516 confirms the matching stock add/remove at 7.35 s and independent 14 s immunity. PR518 confirms 6.615 s with Deflect Code, then 7.35 s after unloading, each with independent 14 s immunity. https://github.com/kylebrussell/mxo-hd/pull/516 https://github.com/kylebrussell/mxo-hd/pull/518"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR514": "Stock Fortify and Drain refuse out of range and work on the same proxy after returning. This supplements the existing PR510 family entry for Drain. https://github.com/kylebrussell/mxo-hd/pull/514",
+    "PR515": "Stock 254/255 land for 22/19 after their fixed ballistic bases 18/16 and fixture influence. Hindering remains 11. Broader damage resistance and targeting checks are open. https://github.com/kylebrussell/mxo-hd/pull/515",
+    "PR517": "Stock Cheap Shot 8 and dazed Head Butt 19 using attached physical bases 7 and 16. Power Shot control lands 76. Resistance and complete behavior remain open. https://github.com/kylebrussell/mxo-hd/pull/517"
+  }
+}
