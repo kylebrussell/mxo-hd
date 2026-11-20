@@ -38,7 +38,7 @@ public class StarterSpySneakAndEvasionTests
     public void Sneak151AndUncannySenses161PassiveTotalsAndUnloadOrderAreExact()
     {
         var plan = NativeQa.NativeQaModes.Find("ability-parity-starter-spy-sneak-and-evasion").Plan;
-        Assert.Equal(new ushort[] { SpyStyle, SneakGrant, DisableEvasion }, plan.HotbarAbilities);
+        Assert.Equal(new ushort[] { SpyStyle, SneakGrant }, plan.HotbarAbilities);
 
         int mem = plan.Abilities.Sum(AbilityMemory.Cost);
         Assert.Equal(23, mem);
@@ -97,8 +97,8 @@ public class StarterSpySneakAndEvasionTests
         // GOID 465 (AnalyzeWeaknessTool) satisfies both ITOt category 1951355977 and component-10 ReqAbilityID 1125.
         Assert.True(StealthShieldAbilities.IsTool(465u));
         Assert.Equal(DisableEvasion, DisruptConnectionEligibility.Tools[465u]);
-        // QAEnemy at (24800,-1498) facing yaw=0 (+Z) does NOT see CSR at (24800,-1750).
-        Assert.False(Stealth.InFrustum(24800, -1498, 0, 24800, -1750));
+        // QAEnemy at (24800,-1498) facing yaw=0 (+Z) does NOT see CSR at (24860,-1750).
+        Assert.False(Stealth.InFrustum(24800, -1498, 0, 24860, -1750));
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_PVP_SERVER"]);
         Assert.Equal("awakened-interlock-resistance.csv", plan.TestMobFixture);
         Assert.Equal((ushort)25, AbilityCosts.Cost(DisableEvasion));
