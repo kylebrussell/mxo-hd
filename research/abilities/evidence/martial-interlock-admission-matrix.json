@@ -1,0 +1,157 @@
+{
+  "abilities": {
+    "259": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 259 CastWhenUsed 3 requires an interlock opponent with Dazed (state mask 2). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Dazed predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR555 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Dazed refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR555. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "260": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 260 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR555 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR555. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "261": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 261 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR555 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR555. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "262": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 262 CastWhenUsed 3 requires an interlock opponent with Staggered (state mask 8). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Staggered predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR555 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Staggered refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR555. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "265": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 265 CastWhenUsed 3 requires an interlock opponent with Staggered (state mask 8). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Staggered predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR557 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Staggered refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR557. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "266": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 266 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR557 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR557. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "267": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 267 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR557 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR557. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "273": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 273 CastWhenUsed 3 requires an interlock opponent with Off Balance (state mask 4). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Off Balance predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialAikidoAdmissionMode sends the stock PR558 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Off Balance refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR558. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "274": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 274 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialAikidoAdmissionMode sends the stock PR558 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR558. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "296": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 296 CastWhenUsed 3 requires an interlock opponent with Off Balance (state mask 4). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Off Balance predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialAikidoAdmissionMode sends the stock PR558 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Off Balance refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR558. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "427": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 427 CastWhenUsed 3 requires an interlock opponent with Off Balance (state mask 4). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Off Balance predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR559 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Off Balance refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR559. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "428": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 428 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR559 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR559. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "429": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 429 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR559 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR559. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "430": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 430 CastWhenUsed 3 requires an interlock opponent with Dazed (state mask 2). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Dazed predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKungFuAdmissionMode sends the stock PR559 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Dazed refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR559. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "532": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 532 CastWhenUsed 3 requires an interlock opponent with Dazed (state mask 2). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Dazed predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR561 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Dazed refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR561. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    },
+    "534": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 534 CastWhenUsed 3 requires an interlock opponent. This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR561 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. The valid request resolves in a normal round, and the stock client received the landed move in PR561. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    },
+    "536": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 536 CastWhenUsed 3 requires an interlock opponent with Staggered (state mask 8). This move uses that fight's ordinary hit contest.",
+          "runtime": "AbilityHandler admits the queued special through the active NPC or player fight and its matching view/spawn handle. The Staggered predicate is checked before cost and reuse. The round retains the bound opponent.",
+          "test": "MartialKarateAdmissionMode sends the stock PR561 request outside combat and against an empty, stale or other live handle. All refuse before IS loss or a timer. It checks the missing Staggered refusal and queues the same move on the actual opponent once the state is active. The valid request resolves in a normal round, and the stock client received the landed move in PR561. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    }
+  }
+}
