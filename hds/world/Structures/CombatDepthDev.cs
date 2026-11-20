@@ -82,6 +82,13 @@ namespace hds
                     TimeUtils.GetSimTimeSeconds(), bot, "DuelBot");
                 return "Combat depth level 5 stun applied; immunity 14 seconds.";
             }
+            if (command == "debuff")
+            {
+                var bot = DuelBot.Summon(caller, DuelBot.Mode.Wait); bot.playerInstance.Level.setValue((byte)50);
+                if (TempMods.TryGet(476, out var effect)) TimedEffects.Apply(TimedEffects.ForPlayer(caller), effect,
+                    TimeUtils.GetSimTimeSeconds(), bot, "DuelBot");
+                return "Combat depth cleansable debuff 476 applied (40 s).";
+            }
             if (command == "cast" && args.Length == 2 && ushort.TryParse(args[1], out ushort ability) && AbilityCatalog.Find(ability) != null)
             {
                 var packet = new PacketContent(); packet.AddUint16(ability, 1); packet.AddUint16(caller.playerData.currentSelectedTargetViewId, 1);
