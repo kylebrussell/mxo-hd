@@ -73,7 +73,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     bool cooldown = AbilityCooldowns.TryGet(e.Id, out var cd);
     bool buff = AbilityBuffs.TryGet(e.Id, out var b);
     bool timed = TempMods.TryGet(e.Id, out var t);
-    bool hit = AbilityTargets.Retail.TryGetValue(e.Id, out var damage);
+    bool hit = AbilityTargets.Retail.TryGetValue(e.Id, out var damage) && !damage.UseAttachedDamage;
     return new
     {
         id = e.Id, cost = HealthBoostPills.Handles(e.Id) ? 0 : AbilityCosts.Cost(e.Id), cost_source = HealthBoostPills.Handles(e.Id) ? "owned item path" : CraftingSession.Handles(e.Id) ? "stored tool/UI session" : AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
