@@ -183,7 +183,10 @@ try
                 else if (action == "cast" || action == "ranged" || action == "melee")
                 {
                     var target = await actor.WaitForViewNamedAsync(q.GetProperty("target").GetString()!);
-                    if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
+                    if (action == "cast" && fixtureMode is NativeQa.Modes.StarterControlDeflectMode)
+                        result = await NativeQa.Modes.StarterControlDeflectMode.SendControlAsync(
+                            actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
+                    else if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
                     else if (action == "melee" && fixtureMode is NativeQa.Modes.MobiusCodeFixtureMode)
                     {
                         if (actor.Handle != "QAOther")
