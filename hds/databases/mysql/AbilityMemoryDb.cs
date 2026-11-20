@@ -28,7 +28,9 @@ namespace hds.databases
             var rows=new List<AbilityMemory.Row>();
             using(var reader=command.ExecuteReader()) while(reader.Read())
                 rows.Add(new AbilityMemory.Row(reader.GetUInt32(0),reader.GetUInt16(1),unchecked((uint)reader.GetInt64(2)),unchecked((ushort)reader.GetUInt32(3)),reader.GetBoolean(4)));
-            var result=AbilityMemory.Plan(rows,entries,unload,Convert.ToInt64(experience),characterLevel);
+            int? diagnosticLevel = QaLoadout.TechniqueQualificationLevel(Environment.GetEnvironmentVariable(QaLoadout.ZenTechniqueMode),
+                Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), connection.Database, charId, characterLevel, entries);
+            var result = AbilityMemory.Plan(rows, entries, unload, Convert.ToInt64(experience), characterLevel, diagnosticLevel);
             if(result.Refusal!=null) return result; // disposal rolls back, nothing was changed
             command.Parameters.AddWithValue("@loaded",!unload);
             command.Parameters.AddWithValue("@id",0u);
