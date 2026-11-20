@@ -207,7 +207,7 @@ public sealed class AbilityParityCoderSweepMode : NativeQaMode
         return request;
     }
 
-    private static IEnumerable<ushort> InnerStrengthUpdates(byte[] packet)
+    internal static IEnumerable<ushort> InnerStrengthUpdates(byte[] packet)
     {
         byte[] header = { 2, 0, 2, 0x80, 0x80, 0x80, 0x10 };
         for (int offset = BytePattern.IndexOf(packet, header, 0);
