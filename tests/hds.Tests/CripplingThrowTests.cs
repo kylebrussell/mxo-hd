@@ -78,10 +78,16 @@ public class CripplingThrowTests
     public void CripplingThrowRetainsRootedAndForceCombatDebuffs()
     {
         Assert.True(TempMods.TryGet(280, out var effect));
+        Assert.Equal((ushort)99, TempMods.RootedAbility);
         var root = Assert.Single(effect.Mods, m => m.Target == TempMods.RootedAbility);
         Assert.Equal(15f, root.Seconds);
         Assert.Equal(TempMods.BreakRule.Chance, root.Break);
         Assert.True(root.ProtectFirstHealthChange);
+
+        // Rank-25 Wicked Aim (278) adds +5% Root Duration Bonus -> 15 * 1.05 = 15.75 s.
+        var caster = Client(25);
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (278, 25) });
+        Assert.Equal(15.75f, AbilityControlDurations.Scale(caster, TempMods.RootedAbility, root.Seconds), 4);
 
         var forceCombat = Assert.Single(effect.Mods, m => m.Target == 519);
         Assert.Equal(-40, forceCombat.MinValue);

@@ -27,7 +27,7 @@ public sealed class CripplingThrowMode : NativeQaMode
         readyMessages: new[]
         {
             "Level 25, rank 25, Spy Style (1112) active, unarmed, outside interlock. First clear selection and try Crippling Throw (280): expect one orange 'Select a living enemy before using this ability.' notice, no IS spent, no cast bar and no reuse.",
-            "Select Melee Dummy (3 m west) and cast Crippling Throw (280) outside interlock. Expect 20 IS spent (1000 -> 980), 2.0 s cast bar (80 ac), landed thrown damage 1, '[EFFECTS] 280 on Melee Dummy: State 88 0 15 s, Stat 519 -40 15 s' (Rooted 15 s break Chance, Force Combat -40 for 15 s), 10.0 s own reuse and 3.0 s shared family 1215 reuse."
+            "Select Melee Dummy (3 m west) and cast Crippling Throw (280) outside interlock. Expect 20 IS spent (1000 -> 980), 2.0 s cast bar (80 ac), landed thrown damage 1, '[EFFECTS] 280 on Melee Dummy: State 99 0 15.75 s (15.749999 s), Stat 519 -40 15 s' (Rooted state 99, 15 s base scaled +5% by rank-25 Wicked Aim 278 Root Duration Bonus = 15.75 s, break Chance; Force Combat stat 519 -40 for 15 s), 10.0 s own reuse and 3.0 s shared family 1215 reuse."
         },
         extraQaMetadata: new()
         {
@@ -65,9 +65,9 @@ public sealed class CripplingThrowMode : NativeQaMode
         string log = server.DebugLog()[castStart..];
         Check.Equal(1, int.Parse(landed.Match(log).Groups[1].Value), "Crippling Throw lands for shipped fixed thrown base 1");
         Check.That(log.Contains("[EFFECTS] 280 on Melee Dummy:", StringComparison.Ordinal) &&
-            log.Contains("State 88 0 15 s", StringComparison.Ordinal) &&
+            log.Contains("State 99 0 15.7", StringComparison.Ordinal) &&
             log.Contains("Stat 519 -40 15 s", StringComparison.Ordinal),
-            "Crippling Throw applies Rooted 15 s and Force Combat -40 for 15 s");
+            "Crippling Throw applies Rooted state 99 (15.75 s with rank-25 Wicked Aim) and Force Combat -40 for 15 s");
         byte[] ownTimer = AbilityCooldowns.BuildTimer(CripplingThrow, AbilityCooldowns.OwnTimer, 10, true);
         Check.That(caster.World.RpcSnapshot().Skip(rpcCursor).Any(r => r.Bytes.AsSpan().SequenceEqual(ownTimer)),
             "Crippling Throw starts 10 s own reuse");
