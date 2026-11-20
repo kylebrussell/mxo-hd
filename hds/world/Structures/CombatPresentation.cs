@@ -164,7 +164,10 @@ namespace hds
                 byte[] update = ServerPackets.BuildCombatViewRound(centre, sequence, entry);
                 foreach (WorldClient fighter in fighters.Values) SendToFighter(fighter, update);
                 foreach (var observer in observers) Send(observer.Key, observer.Value, update);
-                Output.WriteDebugLog($"[COMBAT-VIEW] Round {sequence}: animation {animation.Id} ({animation.Name}), {observers.Count} observers");
+                string transitions = opening
+                    ? $", opening slot {entry.FirstSlot} transition {(uint)entry.FirstTransition}, slot {entry.SecondSlot} transition {(uint)entry.SecondTransition}"
+                    : "";
+                Output.WriteDebugLog($"[COMBAT-VIEW] Round {sequence}: animation {animation.Id} ({animation.Name}){transitions}, {observers.Count} observers");
             }
         }
         private void SendToFighter(WorldClient client, byte[] update)
