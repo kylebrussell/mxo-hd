@@ -133,7 +133,7 @@ namespace hds
                 }
             }
 
-            bool strictInterlock = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198;
+            bool strictInterlock = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105;
             uint? requiredOpponent = null;
             if (strictInterlock)
             {
