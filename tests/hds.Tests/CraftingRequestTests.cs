@@ -6,6 +6,16 @@ namespace hds.Tests;
 
 public class CraftingRequestTests
 {
+    [Theory]
+    [InlineData(0, 0, 9, 9)]
+    [InlineData(0, 25, 6, 7)]
+    [InlineData(10, 25, 6, 6)]
+    [InlineData(0, 100, 0, 0)]
+    public void WriterChecksAffordabilityBeforeTruncatingTheDebit(int general, int writer, long debit, long required)
+    {
+        Assert.Equal((debit, required), CraftingRules.WriterCost(CraftingRules.Find(2399), general, writer));
+    }
+
     [Fact]
     public void CompileUsesItsDeclaredArrayAndPackedSource()
     {

@@ -35,6 +35,12 @@ namespace hds
         // constants.Crafting.CompileCompileCostMultiplier = .12, client.dll 6269fd01..fd70.
         public static long InfoCost(Item item, int discount = 0) => (long)((item.Price ?? 1000) * .12 *
             (1 - Math.Clamp(discount, 0, 100) / 100.0));
+        // WriteCodeTest checks the fractional price before debiting the whole-Info amount.
+        public static (long Debit, long Required) WriterCost(Item item, int compileDiscount, int writerDiscount)
+        {
+            double price = .01 * (100 - Math.Clamp(writerDiscount, 0, 100)) * InfoCost(item, compileDiscount);
+            return ((long)price, (long)Math.Ceiling(price));
+        }
         public static bool Succeeds(int skill, int complexity, int roll, int specialization = 0)
         {
             // CompileTest adds the positive category bonus before checking the effective skill.

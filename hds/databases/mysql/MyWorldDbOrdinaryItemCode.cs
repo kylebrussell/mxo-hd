@@ -7,11 +7,11 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
-        public CraftingRequests.WrittenCode WriteOrdinaryItemCode(uint character, CraftingRequests.Compile request, int charges, long cost)
+        public CraftingRequests.WrittenCode WriteOrdinaryItemCode(uint character, CraftingRequests.Compile request, int charges, long cost, long requiredInfo)
         {
             var refused = new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterRefused };
             if (request.SelectedIngredients.Count == 0 || !OrdinaryItemCode.Supported(request.Item) ||
-                charges < 1 || charges > 127 || cost < 0)
+                charges < 1 || charges > 127 || cost < 0 || requiredInfo < cost)
                 return refused;
 
             using var connection = new MySqlConnection(connectionString);
@@ -26,7 +26,7 @@ namespace hds.databases
             object balance = command.ExecuteScalar();
             if (balance == null) return refused;
             long cash = Convert.ToInt64(balance);
-            if (cash < cost) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoInfo };
+            if (cash < requiredInfo) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoInfo };
 
             var usedCodeSlots = new HashSet<int>();
             var ambiguousCodeSlots = new HashSet<int>();
