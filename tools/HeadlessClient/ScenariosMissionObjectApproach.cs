@@ -7,9 +7,12 @@ public static partial class Scenarios
 {
     /// <summary>QA movement only: preserve an adopted Safe and follow its published route.
     /// Untouched legacy/custom fixtures retain their original object-relocation behavior.</summary>
-    private static async Task ApproachMissionObjectFixture(ScenarioContext context, HeadlessPlayer player, ushort objectId)
+    private static Task ApproachMissionObjectFixture(ScenarioContext context, HeadlessPlayer player, ushort objectId) =>
+        ApproachMissionObjectFixture(context.Database, player, objectId);
+
+    public static async Task ApproachMissionObjectFixture(ThrowawayDatabase database, HeadlessPlayer player, ushort objectId)
     {
-        string payload=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={player.CharId}");
+        string payload=await database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={player.CharId}");
         using var json=JsonDocument.Parse(payload);
         var root=json.RootElement;
         var obj=root.GetProperty("Objects").EnumerateArray().Single(x=>x.GetProperty("Id").GetUInt16()==objectId);
@@ -29,7 +32,7 @@ public static partial class Scenarios
         // This uses the existing QA teleport helper; it is not a native walking/navigation claim.
         for(int i=0;i<witness.Route.Count;i+=3)
             await MoveForMissionTest(player,witness.Route[i],witness.Route[i+1],witness.Route[i+2]);
-        string after=await context.Database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={player.CharId}");
+        string after=await database.ScalarAsync($"SELECT payload FROM char_active_missions WHERE charId={player.CharId}");
         using var current=JsonDocument.Parse(after);
         var currentObject=current.RootElement.GetProperty("Objects").EnumerateArray().Single(x=>x.GetProperty("Id").GetUInt16()==objectId);
         Check.Equal(savedSource,currentObject.GetProperty("Spot").GetRawText(),"QA approach leaves checkpoint source unchanged");

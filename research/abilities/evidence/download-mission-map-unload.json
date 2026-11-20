@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "44": {
+      "checks": {
+        "script": {
+          "source": "Shipped ability/hacker/misc.py DownloadMissionMap_Deactivate disables the mission map. rshooks.py ComputeDownloadMissionMapOutcome rolls on mission acceptance.",
+          "runtime": "AbilityPassives clears the active reveal when 44 leaves the rebuilt loaded membership after grant closure. UtilityAbilities records a new roll on normal mission acceptance with 44 loaded.",
+          "test": "UtilityAbilityTests.DownloadedMapSurvivesRebuildUntilAbilityLeavesMembership and ability-parity-download-mission-map check retention during membership rebuild, normal Archive unload/reload, and a new successful mission reveal."
+        }
+      }
+    }
+  }
+}

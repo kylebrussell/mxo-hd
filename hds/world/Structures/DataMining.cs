@@ -41,7 +41,13 @@ namespace hds
         private static readonly object sync = new object();
         private static List<Ground> ground;
         private static readonly ConditionalWeakTable<WorldClient, Search> searches = new ConditionalWeakTable<WorldClient, Search>();
-        private static readonly ConditionalWeakTable<WorldClient, StrongBox<double>> mapNext = new ConditionalWeakTable<WorldClient, StrongBox<double>>();
+        private sealed class MissionReveal
+        {
+            public double Next;
+            public readonly HashSet<string> Objectives = new HashSet<string>(StringComparer.Ordinal);
+        }
+        private static readonly ConditionalWeakTable<WorldClient, MissionReveal> missionReveals =
+            new ConditionalWeakTable<WorldClient, MissionReveal>();
         private static readonly Lazy<Dictionary<ushort, Definition>> definitions = new Lazy<Dictionary<ushort, Definition>>(() =>
         {
             using var json = JsonDocument.Parse(File.ReadAllText(DataLoader.DataPath("utility_objects.json")));
@@ -281,26 +287,75 @@ namespace hds
                 c.FlushQueue();
             }
         }
+        private const byte MissionPingSeconds = 3;
+
+        // Called with the loadout lock held, so unloading cannot leave a queued refresh behind the clear.
+        internal static void EndMissionReveal(WorldClient client)
+        {
+            if (!missionReveals.TryGetValue(client, out MissionReveal reveal)) return;
+            missionReveals.Remove(client);
+            foreach (string objective in reveal.Objectives.OrderBy(name => name, StringComparer.Ordinal))
+                LogMissionPingCleared(objective);
+        }
+
+        private static void LogMissionPingCleared(string objective) =>
+            Output.WriteDebugLog($"[UTILITY] Download Mission Map: ping cleared {objective} (no refresh, expires within {MissionPingSeconds}s)");
+
         /// <summary>Called under MissionRuntime's mission lock. Ping categories/refresh are choices; roll is retail.</summary>
         public static void RevealMission(WorldClient c, MissionProgress progress)
         {
-            int flags = UtilityAbilities.MissionMapAccess(c);
-            if (flags == 0 || UtilityAbilities.Level(c,44) <= 0 || c.playerData.isDead) return;
-            double now = TimeUtils.GetSimTimeSeconds(); var next = mapNext.GetOrCreateValue(c);
-            if (now < next.Value) return; next.Value = now + 2;
-            Position(c,out double x,out double y,out double z); var pings = new List<DataMiningPackets.Ping>();
-            void Add(double px,double py,double pz,byte relationship)
-            { if (Math.Abs(py-y)<=250 && DataMiningPackets.Relative(x,z,px,pz,relationship) is DataMiningPackets.Ping p) pings.Add(p); }
-            if ((flags & 1)!=0) foreach (var o in progress.objects.Values) if (o.spot!=null) { var pose=MissionObjectPoses.For(o);Add(pose.X,pose.Y,pose.Z,0); }
-            if ((flags & 2)!=0) foreach (Mob m in progress.hostiles) if (!m.getIsDead()) Add(m.getXPos(),m.getYPos(),m.getZPos(),2);
-            if ((flags & 4)!=0 && progress.site!=null)
-                foreach (ClientView view in c.viewMan.Snapshot().Where(v=>v.staticObject!=null))
+            lock (c.playerData.passives)
+            {
+                int flags = UtilityAbilities.MissionMapAccess(c);
+                if (flags == 0 || UtilityAbilities.Level(c, UtilityAbilities.DownloadMissionMap) <= 0 || c.playerData.isDead) return;
+                double now = TimeUtils.GetSimTimeSeconds();
+                var reveal = missionReveals.GetOrCreateValue(c);
+                if (now < reveal.Next) return;
+                reveal.Next = now + 2;
+
+                Position(c, out double x, out double y, out double z);
+                var pings = new List<DataMiningPackets.Ping>();
+                var objectives = new Dictionary<string, DataMiningPackets.Ping>(StringComparer.Ordinal);
+                if ((flags & 1) != 0)
+                    foreach (var obj in progress.objects.Values.Where(obj => obj.spot != null))
+                    {
+                        var pose = MissionObjectPoses.For(obj);
+                        if (Add(pose.X, pose.Y, pose.Z, 0) is DataMiningPackets.Ping ping)
+                            objectives[$"{obj.def.kind} {obj.def.id}"] = ping;
+                    }
+                if ((flags & 2) != 0)
+                    foreach (Mob mob in progress.hostiles.Where(mob => !mob.getIsDead()))
+                        Add(mob.getXPos(), mob.getYPos(), mob.getZPos(), 2);
+                if ((flags & 4) != 0 && progress.site != null)
+                    foreach (ClientView view in c.viewMan.Snapshot().Where(view => view.staticObject != null))
+                    {
+                        var obj = view.staticObject;
+                        if (obj.pos_x < progress.site.minX || obj.pos_x > progress.site.maxX ||
+                            obj.pos_z < progress.site.minZ || obj.pos_z > progress.site.maxZ) continue;
+                        if (ObjectStates.TrackedState(c, view.entityId) == UtilityAbilities.LockedState)
+                            Add(obj.pos_x, obj.pos_y, obj.pos_z, 0);
+                    }
+
+                var sent = pings.Distinct().Take(128).ToArray();
+                c.messageQueue.addRpcMessage(DataMiningPackets.Map(sent, MissionPingSeconds));
+                foreach (string objective in reveal.Objectives.Where(name => !objectives.ContainsKey(name)).ToArray())
                 {
-                    var o=view.staticObject;
-                    if (o.pos_x<progress.site.minX || o.pos_x>progress.site.maxX || o.pos_z<progress.site.minZ || o.pos_z>progress.site.maxZ) continue;
-                    if (ObjectStates.TrackedState(c,view.entityId)==UtilityAbilities.LockedState) Add(o.pos_x,o.pos_y,o.pos_z,0);
+                    reveal.Objectives.Remove(objective);
+                    LogMissionPingCleared(objective);
                 }
-            c.messageQueue.addRpcMessage(DataMiningPackets.Map(pings.Distinct(),3)); c.FlushQueue();
+                foreach (var objective in objectives.Where(entry => sent.Contains(entry.Value)))
+                    if (reveal.Objectives.Add(objective.Key))
+                        Output.WriteDebugLog($"[UTILITY] Download Mission Map: ping sent {objective.Key}");
+
+                DataMiningPackets.Ping? Add(double px, double py, double pz, byte relationship)
+                {
+                    if (!(Math.Abs(py - y) <= 250)) return null;
+                    var ping = DataMiningPackets.Relative(x, z, px, pz, relationship);
+                    if (ping.HasValue) pings.Add(ping.Value);
+                    return ping;
+                }
+            }
+            c.FlushQueue();
         }
     }
 }

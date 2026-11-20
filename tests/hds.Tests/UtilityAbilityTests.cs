@@ -7,6 +7,7 @@ namespace hds.Tests;
 /// The utility abilities' rules, from the client's server-side scripts (serverrules.py DoorPickLock, SecurityPBXDisable;
 /// ability/spy/misc.py DisarmTraps_Test; rshooks.py ComputeDownloadMissionMapOutcome) and the gob's object data.
 /// </summary>
+[Collection("AbilityParityWorld")]
 public class UtilityAbilityTests
 {
     private static void Load()
@@ -89,6 +90,41 @@ public class UtilityAbilityTests
         Assert.Equal(0x7600024eu, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Disarmed));
         Assert.Equal(0x7600024fu, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Failed));
         Assert.Equal(0x76000250u, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Critical));
+    }
+
+    [Fact]
+    public void DownloadedMapSurvivesRebuildUntilAbilityLeavesMembership()
+    {
+        var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerInstance = new PlayerCharacter();
+        client.playerInstance.Level.setValue((byte)10);
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, long.MaxValue);
+        var loaded = new (ushort, ushort)[] { (UtilityAbilities.DownloadMissionMap, 10) };
+        var previousRoll = UtilityAbilities.Roll;
+        try
+        {
+            UtilityAbilities.Roll = () => 99;
+            AbilityPassives.SetLoaded(client, loaded);
+            UtilityAbilities.OnMissionAccepted(client);
+            Assert.Equal(63, UtilityAbilities.MissionMapAccess(client));
+            AbilityPassives.SetLoaded(client, loaded.Concat(new (ushort, ushort)[] { (2, 10) }));
+            Assert.Equal(63, UtilityAbilities.MissionMapAccess(client));
+
+            AbilityPassives.SetLoaded(client, Array.Empty<(ushort, ushort)>());
+            Assert.Equal(0, UtilityAbilities.MissionMapAccess(client));
+            AbilityPassives.SetLoaded(client, loaded);
+            Assert.Equal(0, UtilityAbilities.MissionMapAccess(client));
+
+            UtilityAbilities.OnMissionAccepted(client);
+            Assert.Equal(63, UtilityAbilities.MissionMapAccess(client));
+        }
+        finally
+        {
+            UtilityAbilities.Roll = previousRoll;
+        }
     }
 
     [Fact]
