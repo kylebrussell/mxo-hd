@@ -252,7 +252,11 @@ def server(i):
     elif i == 145:
         parts.append('stored fixed physical base 7 before typed influence and resistance; retail scaling unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
-        parts.append('generic hit 50..80 / CSV value; scaling unresolved')
+        starter_base = {126: 'ballistic 11', 138: 'physical 36', 139: 'physical 12'}.get(i)
+        if starter_base is not None:
+            parts.append(f'stored fixed {starter_base} base on a landed interlock move with incomplete legacy endpoints; complete damage parity unresolved')
+        else:
+            parts.append('generic hit 50..80 / CSV value; scaling unresolved')
     if r['dot']:
         parts.append(('captured payload 264 / stored interval 2.5s' if i == 141 else
                       'captured' if not r.get('catalog_debuff') else 'stored total/interval') + ' DOT executor'
