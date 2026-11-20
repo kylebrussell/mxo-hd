@@ -13,18 +13,31 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
     private const string Jump = "80c20000008004baadc000000000005ea040000000008c94e2c0f2001900010000f0204601321c0a00";
     private const string Cancel = "80c400000000f8b9adc000000000005ea040000000006c94e2c0f20019000100";
 
+    private const ushort Lockdown = 21;
+    // Complete PR409 stock request. The selected view/spawn is replaced in each session.
+    private const string LockdownCast = "80b915000d000b000000000000000000000000000000000000000000585cc70001000000086b0000000000";
+    private const string CoderStyle = "80b9f003000000000000000000000000000000000000000000000000585cc70001000000086b0000000000";
+
     public override string Name => "ability-parity-awakened-movement-lifecycle";
     public override NativeQaModePlan Plan { get; } = new(
         new ushort[] { 2, 17, 11, 12, 184 }, 24800, -1498, Array.Empty<string>(), Array.Empty<string>(), new[]
         {
-            "UPDATE characters SET y=495,innerStrC=1000,innerStrM=1000 WHERE charId=110",
-            "UPDATE characters SET x=25200,y=495,z=-1498 WHERE charId=6111"
+            $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},y=495,pvpflag=0,alignment=CASE WHEN charId=6114 THEN 2 ELSE 1 END,innerStrC=1000,innerStrM=1000 WHERE charId IN (110,6111,6114)",
+            "UPDATE characters SET x=25200,z=-1498 WHERE charId=6111",
+            "UPDATE characters SET x=25100,z=-1320 WHERE charId=6114",
+            "DELETE FROM char_abilities WHERE char_id=6114",
+            "INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
+                string.Join(",", Profile(2, 17, 1008, Lockdown).Order().Select((id, i) =>
+                    $"(6114,{400 + i},{0x80000000L | ((long)id << 10)},50,1)"))
         }, DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new ushort[] { 11, 12, 184 },
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "11,12,184", ["NativeCloseableRows"] = 0 },
+        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1",
+            ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", ["MXO_FREECAST_VIRAL_QA"] = "1",
+            ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0" },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "11,12,21,184", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Test Hyper-Jump before starting either speed buff. At 24800,495,-1498, clear the target. Use page 2 slot 1 (or drag Hyper-Jump from Actions to a free hotbar slot as in the prior native pass). A single left click on visible outdoor ground commits the aim. Use the open street toward 24885,495,-3247, which passed at this stand in PR384. If aiming gives no start, use the stock default Ctrl+Space while facing down the open street. Confirm 80 c2 and one matching 80 c3. Escape cancels aim locally.",
+            """At the starting stand, ask QAEnemy to root CSR using {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":21}. During the 12 s root, try walking and commit a Hyper-Jump while facing down the open street. Capture client suppression or a server correction to the stand. Wait for the root removal before repeating. Enter submits any chat. Avoid Escape while a combat target is selected.""",
+            "After the root clears, test Hyper-Jump before starting either speed buff. At 24800,495,-1498, clear the target. Use page 2 slot 1 (or drag Hyper-Jump from Actions to a free hotbar slot as in the prior native pass). A single left click on visible outdoor ground commits the aim. Use the open street toward 24885,495,-3247, which passed at this stand in PR384. If aiming gives no start, use the stock default Ctrl+Space while facing down the open street. Confirm 80 c2 and one matching 80 c3. Escape cancels aim locally.",
             "Return to the original stand with ?tp 24800 495 -1498 0 0 0. Clear the target. Run slot 3 first and slot 2 next. Capture owner and QAFriend seeing +0.45 movement while both remain active. The owner should receive both active flags, 0x1400.",
             "Use slot 3 again to stop Sprint. Hyper-Speed remains active at +0.45. Capture the 5 s reuse and confirm Sprint's resource drain stops. Use the dev-only ?dismissbuff 12 if a zero-speed reset is needed. Run any optional in-flight cancel separately from Escape in aim."
         });
@@ -34,6 +47,12 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
         var observer = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend", stockCharacterLoad: true);
         context.Helpers.Add(observer.Handle, observer);
         await observer.EnterWorldAsync();
+        var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
+        context.Helpers.Add(enemy.Handle, enemy);
+        await enemy.EnterWorldAsync();
+        NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, enemy);
+        enemy.SendRpc(CoderStyle);
+        await enemy.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
         await actor.EnterWorldAsync();
@@ -41,6 +60,25 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
         // Reuse retail records with the destination and navigation tuple of the Mara fixture.
         byte[] start = AtFixture(Jump, 24885, -3247, 1044, 16, 3);
         byte[] cancel = AtFixture(Cancel, 24800, -1498, 847, 20, 5);
+        int rootedAt = actor.World.RpcSnapshot().Count;
+        await SendLockdownAsync(enemy, actor.Handle, Lockdown);
+        var root = await ObserveAsync(actor, rootedAt, frame =>
+            ManageBonusRecord.TryDecode(frame.Bytes, out var effect) && effect!.SourceId == Lockdown &&
+            effect.TargetId == TempMods.RootedAbility && effect.AddRemoveType == 0 && effect.Duration == 12,
+            "QAEnemy's real Lockdown roots the jumper");
+        int blockedAt = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(start);
+        string stand = Convert.ToHexString(new[] { 24800f, 495f, -1498f }.SelectMany(BitConverter.GetBytes).ToArray());
+        await actor.WaitForViewUpdateAsync(2, $"01 0c ?? {stand}");
+        actor.SendRpc("81 48");
+        await ObserveAsync(actor, blockedAt, frame => BytePattern.Parse("81 49").IsMatch(frame.Bytes), "Rooted jump barrier");
+        Check.That(!actor.World.RpcSnapshot().Skip(blockedAt).Any(frame => BytePattern.Parse("80 c3").IsMatch(frame.Bytes)),
+            "Root rejects the start before the jump clock echo");
+        var removed = root.Bytes.ToArray();
+        removed[17] = 1;
+        await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(rootedAt).Any(frame => frame.Bytes.AsSpan().SequenceEqual(removed)),
+            "Root naturally removes before the same jump is sent", TimeSpan.FromSeconds(16));
+
         int rpcCursor = actor.World.RpcSnapshot().Count;
         int ownCursor = actor.World.ViewSnapshot().Count;
         actor.SendRpc(start);
@@ -93,6 +131,16 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
 
         Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Awakened movement framing");
         return Array.Empty<byte>();
+    }
+
+    public static async Task<object> SendLockdownAsync(HeadlessPlayer caster, string target, ushort ability)
+    {
+        if (caster.Handle != "QAEnemy" || target != "CSR_Tester" || ability != Lockdown)
+            throw new InvalidOperationException("Use QAEnemy to cast Lockdown on CSR_Tester in this fixture.");
+        var view = await caster.WaitForViewNamedAsync(target);
+        byte[] request = StarterHackerControlTargetMode.WithHandle(LockdownCast, DuelPackets.Handle(view.ViewId, view.SpawnId));
+        caster.SendRpc(request);
+        return new { Ability = ability, Target = target, Request = Convert.ToHexString(request) };
     }
 
     private static byte[] AtFixture(string capture, double x, double z, ushort sector, ushort prefab, ushort poly)
