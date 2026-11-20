@@ -417,7 +417,7 @@ namespace hds
                     damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus
                         ? (UInt16)0
                         : abilityId == AwakenedPowerShot.Id ? AwakenedPowerShot.RollDamage(caster, random) :
-                            AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
+                            AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true, characterLevel:caster.playerInstance.Level.getValue()[0]);
                     fx = ability.getActivationFX();
                 }
             }

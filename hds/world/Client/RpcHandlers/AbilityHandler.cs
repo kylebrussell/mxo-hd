@@ -96,7 +96,7 @@ namespace hds
                 }
             }
 
-            if (SpyAbilityDamage.RequiresLiveEnemy(AbilityID))
+            if (SpyAbilityDamage.RequiresLiveEnemy(AbilityID) || DeadlyThrowDamage.RequiresLiveEnemy(AbilityID))
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
@@ -547,6 +547,8 @@ namespace hds
             }
             if (SpyAbilityDamage.TryResolve(source, characterLevel, random, out ushort spyDamage))
                 return spyDamage;
+            if (DeadlyThrowDamage.TryResolve(source, characterLevel, out ushort deadlyDamage))
+                return deadlyDamage;
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? StarterHackerViralBase(source) ?? random.Next(50, 81));
         }
