@@ -1,0 +1,52 @@
+{
+  "notes": {
+    "946": "PR574 confirms the live three-metre boundary and hostile filter. GOB 946 also carries TestFunction 2. The current reapplied instant drain bypasses a distinct viral contest. The shipped ApplyAuraEffect uses the native reapplyAbility call, whose deflection semantics for this child remain unverified. Keep targeting open. https://github.com/kylebrussell/mxo-hd/pull/574"
+  },
+  "abilities": {
+    "38": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 38 selector 4 and its shipped nearby-enemies text specify a caster-centred hostile area. TestFunction 2 governs the viral hit.",
+          "runtime": "CasterHostileArea obtains the caster-centred area at cast completion. AbilityHostile.PlayerAreaReason checks floor, visibility, sight and hostility before the per-recipient viral contest.",
+          "test": "StarterHackerAreaRecipientsMode checks friendly/radius exclusion, deflection and immunity. PR568 repeats the sight case with a real selected obstructed target and a clear eligible hostile. https://github.com/kylebrussell/mxo-hd/pull/556 https://github.com/kylebrussell/mxo-hd/pull/568"
+        }
+      }
+    },
+    "47": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 47 stores selector 4 and a 3 m caster radius. TestFunction 2 governs the per-target deflection contest.",
+          "runtime": "CasterHostileArea admits PvP-eligible players through the shared radial and sight predicate, then invokes FreeCastViralContest separately for each admitted target.",
+          "test": "PR556 covers a hit and deflection inside range, with the friendly and distant targets excluded. PR568 PacketLog 5692 receives Pacify/defense debuff and immunity only on the visible hostile, while the chosen in-range hostile is blocked for mapped sight. StarterHackerAreaSightMode asserts the exclusion precedes the contest. https://github.com/kylebrussell/mxo-hd/pull/556 https://github.com/kylebrussell/mxo-hd/pull/568"
+        }
+      }
+    },
+    "61": {
+      "checks": {
+        "area": {
+          "source": "GOB 61 reapplies 701. Child 701 is selector 4 with stored radius 6 m and no directional cone.",
+          "runtime": "AbilityAuras.Pulse centres each 701 sample at the active caster and uses the child's radius and shared hostile recipient selectors.",
+          "test": "PR574 puts QAOther exactly at 6 m and QAFar at 6.01 m. QAOther and the nearer QAEnemy receive the 701 pair, while QAFar and the nearby friendly receive neither record. StarterHackerAuraRadiusMode checks their personal frames. https://github.com/kylebrussell/mxo-hd/pull/574"
+        }
+      }
+    },
+    "694": {
+      "checks": {
+        "area": {
+          "source": "GOB 694 stores selector 4 and radius 6 m for the instant child of Static Field 89.",
+          "runtime": "AbilityAuras.Pulse applies the caster-centred child at the GOB radius using the shared radius and hostile-player selector.",
+          "test": "PR574 PacketLog 3052 and 3114 show the only first-pulse damage recipients at 3 and 6 m. It excludes the hostile at 6.01 m and the nearby friendly. The exact-stock bootstrap reproduces it. https://github.com/kylebrussell/mxo-hd/pull/574"
+        }
+      }
+    },
+    "701": {
+      "checks": {
+        "area": {
+          "source": "GOB 701 stores selector 4 and radius 6 m for the timed Miasma defense debuffs.",
+          "runtime": "AbilityAuras uses the caster-centred child and the shared radius and hostile-player selector for both modifiers.",
+          "test": "PR574 PacketLog 2739 and 2750 show both modifier records at 3 and 6 m. At 6.01 m and on the friendly target they are absent. The exact-stock bootstrap reproduces it. https://github.com/kylebrussell/mxo-hd/pull/574"
+        }
+      }
+    }
+  }
+}
