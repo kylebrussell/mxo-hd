@@ -378,10 +378,54 @@ namespace hds
         /// <summary>
         /// NPC_BASE_SIMULACRA creation, as retail sent a fresh summon to its owner (MaraC capture line 78483; Syntax capture line
         /// 4213): name, TitleAbility 00 10 00 00, CombatantMode 0x22, EffectCounter 1, MasterCharacterID and OwnerCharacterID =
-        /// owner, Description, EffectID 0x2800060c, SimulacraID, Position, OrganizationID 3, NPCRank 2, Level, Health,
-        /// MaxHealth, CurrentState 0x080d, EquippedItemID and StealthAwareness. No IsEnemy/IsFriendly/RSIDescription.
+        /// owner, Description, EffectID 0x2800060c, SimulacraID, Position, owner OrganizationID, NPCRank 2, Level, Health,
+        /// MaxHealth, CurrentState 0x080d, EquippedItemID and StealthAwareness. Flagged views can carry ConditionStateFlags.
+        /// No IsEnemy/IsFriendly/RSIDescription.
         /// </summary>
-        public static GameObject BuildCreation(Mob mob)
+        public static GameObject BuildCreation(Mob mob) => BuildCreation(mob, Presentation(mob.pet, mob.pet.Owner));
+
+        internal static (byte Organization, uint Flags) Presentation(Pet pet, WorldClient recipient)
+        {
+            byte[] ownerOrganization = pet.Owner.playerInstance.OrganizationID.getValue();
+            byte organization = ownerOrganization?.Length > 0 ? ownerOrganization[0] : (byte)0;
+            uint flags = pet.Mob.ConditionFlags;
+            int mode = PvpFlag.ModeFor(recipient);
+            // The stock client compares the pet's own org and flag in flag-based PvP modes.
+            if ((mode == 2 || mode == 4 || mode == 6) && pet.Owner.playerData.pvpFlag &&
+                (recipient == pet.Owner || PvpCombat.Check(recipient, pet.Owner) == PvpRules.Verdict.Allowed))
+                flags |= PvpFlag.PvpBit;
+            return (organization, flags);
+        }
+
+        internal static void RefreshPresentation(Pet pet, WorldClient recipient, ClientView view)
+        {
+            if (view == null) return;
+            lock (view)
+            {
+                if (!view.viewCreated || view.viewNeedsToBeDeleted || pet.Gone || pet.Mob.getIsDead()) return;
+                var presentation = Presentation(pet, recipient);
+                if (view.SimulacrumPresentation == presentation) return;
+                view.SimulacrumPresentation = presentation;
+                new ServerPackets().SendNpcUpdateData(view.ViewID, recipient,
+                    BuildPresentationUpdate(presentation.Organization, presentation.Flags));
+            }
+        }
+
+        internal static void RefreshPresentationForWatchers(Pet pet)
+        {
+            foreach (var recipient in SocialHandler.OnlineWhere(client => client.playerData.getDistrictId() == pet.Mob.getDistrict()))
+                RefreshPresentation(pet, recipient, recipient.viewMan.FindViewForEntity(pet.Mob.getEntityId()));
+        }
+
+        internal static byte[] BuildPresentationUpdate(byte organization, uint flags)
+        {
+            // GO40376 update attributes 12 (OrganizationID) and 43 (ConditionStateFlags).
+            byte[] update = PlayerViewAttributes.Build((12, new[] { organization }), (43, PlayerViewAttributes.U32(flags)));
+            update[0] = 0x04;
+            return update;
+        }
+
+        internal static GameObject BuildCreation(Mob mob, (byte Organization, uint Flags) presentation)
         {
             Pet pet = mob.pet;
             var go = new GameObjectDefinitions().Object40376;
@@ -395,7 +439,11 @@ namespace hds
             go.EffectID.enable(); go.EffectID.setValue(SummonFx);
             go.SimulacraID.enable(); go.SimulacraID.setValue(pet.SimulacraId);
             go.Position.enable(); go.Position.setValue(NumericalUtils.doublesToLtVector3d(mob.getXPos(), mob.getYPos(), mob.getZPos()));
-            go.OrganizationID.enable(); go.OrganizationID.setValue((byte)3);
+            go.OrganizationID.enable(); go.OrganizationID.setValue(presentation.Organization);
+            if (presentation.Flags != 0)
+            {
+                go.ConditionStateFlags.enable(); go.ConditionStateFlags.setValue(presentation.Flags);
+            }
             go.NPCRank.enable(); go.NPCRank.setValue((byte)2);
             go.Level.enable(); go.Level.setValue((byte)mob.getLevel());
             go.Health.enable(); go.Health.setValue(mob.getHealthC());

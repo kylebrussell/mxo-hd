@@ -108,6 +108,11 @@ namespace hds
             {
                 return;
             }
+            if (pet != null)
+            {
+                CoderPets.RefreshPresentationForWatchers(pet);
+                return;
+            }
             var pak = new PacketContent();
             pak.AddByteArray(BuildConditionUpdate(conditionFlags));
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this);
