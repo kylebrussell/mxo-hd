@@ -93,7 +93,7 @@ public class StarterSpySneakAndEvasionTests
     public void DisableEvasion1125CostsCastTimeReuseAndAdmissionMatchShippedTemplate()
     {
         Assert.True(StealthShieldAbilities.Handles(DisableEvasion));
-        Assert.True(StealthShieldAbilities.IsTool(StealthShieldFixture.Tool));
+        Assert.True(StealthShieldAbilities.IsTool(531u));
         Assert.Equal((ushort)25, AbilityCosts.Cost(DisableEvasion));
         Assert.Equal(4f, AbilityCatalog.Find(DisableEvasion)!.CastSeconds);
         Assert.True(AbilityCooldowns.TryGet(DisableEvasion, out var cd));
