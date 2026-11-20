@@ -1,0 +1,141 @@
+{
+  "abilities": {
+    "138": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 138 stores fixed physical base 36, an Off Balance requirement and a 15 s melee defense penalty of −10.",
+          "runtime": "The bound opponent must satisfy Off Balance before queueing. A landed move uses typed resistance and applies the temporary target defense penalty.",
+          "test": "MartialArtsStarterAdmissionMode checks stale and missing-state refusals and a landed special. TimedDebuffsReachNpcContestInputAndExpire verifies the −10 live defense change and removal. PR520 and PR551 verify native admission, damage, costs and timers. https://github.com/kylebrussell/mxo-hd/pull/520 https://github.com/kylebrussell/mxo-hd/pull/551"
+        },
+        "targeting": {
+          "source": "GOB 138 CastWhenUsed 3 requires an interlock opponent. This special uses the ordinary interlock hit contest.",
+          "runtime": "MartialArtsStarterAdmission resolves the selection via the active fight's view and spawn handle. The fight bounds recipient and hit before applying the landed effect.",
+          "test": "PR520's live Off Balance comparison and PR551's stock 5951 round demonstrate valid admission. The rank-12 disposable test rejects absent/outside-interlock and the retired opponent view before queueing. MartialArtsStarterAdmissionTests and MartialArtsStarterAdmissionMode cover the actual authority checks. https://github.com/kylebrussell/mxo-hd/pull/520 https://github.com/kylebrussell/mxo-hd/pull/551"
+        }
+      }
+    },
+    "139": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 139 stores fixed physical base 12 and a 12 s caster buff of +10 melee and +10 ballistic defense.",
+          "runtime": "The interlock special deals damage to the opponent and buffs the caster only when it lands.",
+          "test": "MartialArtsStarterAdmissionMode checks stale handle refusal, damage and caster records. IronGuardUsesLandedCasterDefenseAndKeepsOpponentDamage checks both defense consumers and expiry. PR551 compares a native missed roll and two lands with 25 IS, family and own reuse, and the 12 s adds and removes. https://github.com/kylebrussell/mxo-hd/pull/551"
+        },
+        "targeting": {
+          "source": "GOB 139 CastWhenUsed 3 requires an interlock opponent. This special uses the ordinary interlock hit contest.",
+          "runtime": "MartialArtsStarterAdmission resolves the selection via the active fight's view and spawn handle. The fight bounds recipient and hit before applying the landed effect.",
+          "test": "PR551 shows valid live 738 rounds and a lost attack contest. The rank-12 disposable test rejects absent/outside-interlock and a stale spawn on the current view before queueing. MartialArtsStarterAdmissionTests and MartialArtsStarterAdmissionMode cover the actual authority checks. https://github.com/kylebrussell/mxo-hd/pull/520 https://github.com/kylebrussell/mxo-hd/pull/551"
+        }
+      }
+    },
+    "259": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 8089 names Dim_Mak.",
+          "runtime": "With Kung-Fu 133 active, CombatPresentation emits the selector's combat view animation reference for a landed 259. The animation and round outcome are separate records.",
+          "test": "PR555 stock client receives 8089 in neutral and resisted combat-view entries at PacketLog 1527/3433. Matching 0x45 results at 1535/3441 identify ability 259 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "261": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 8081 names Machinegun_First_Combo.",
+          "runtime": "With Kung-Fu 133 active, CombatPresentation emits the selector's combat view animation reference for a landed 261. The animation and round outcome are separate records.",
+          "test": "PR555 stock client receives 8081 in neutral and resisted combat-view entries at PacketLog 1255/3178. Matching 0x45 results at 1263/3186 identify ability 261 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/555"
+        },
+        "behavior-tests": {
+          "source": "GOB 261 stores physical base 23 and a 20% RemoveRandomBuff trigger for one removable buff on landing.",
+          "runtime": "The landed interlock move applies its physical hit and calls the shared removable-buff policy for 261.",
+          "test": "KungFuMasterResistanceTests covers the isolated damage/IS/reuse matrix and PR555 verifies both stock hits. MachinegunFistDispelKeepsHostileDebuffAndExpiresOneBuff exercises both sides of the 20% threshold and preserves a hostile debuff. AbilityHostileTests covers selection amongst removable buffs. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "265": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 5940 names Ki-Charged Reverse Punch.",
+          "runtime": "With Karate 132 active, CombatPresentation emits the selector's combat view animation reference for a landed 265. The animation and round outcome are separate records.",
+          "test": "PR557 stock client receives 5940 in neutral and resisted combat-view entries at PacketLog 1648/3485. Matching 0x45 results at 1656/3493 identify ability 265 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "266": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 5936 names Jump Sidekick Spin Kick Combo.",
+          "runtime": "With Karate 132 active, CombatPresentation emits the selector's combat view animation reference for a landed 266. The animation and round outcome are separate records.",
+          "test": "PR557 stock client receives 5936 in neutral and resisted combat-view entries at PacketLog 1282/3139. Matching 0x45 results at 1290/3147 identify ability 266 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "267": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 267 stores physical base 21 and paired 12 s melee and ballistic resistance reductions.",
+          "runtime": "A landed interlock move applies its typed hit and both modifiers through the normal damage and combat stat readers.",
+          "test": "KarateMasterResistanceTests checks stored damage and timers, and LandedStatFeedsOrdinaryRoundInputAndClears covers both penalties and expiry. PR557 stock verifies move 5937, the two penalties, a lost roll and the neutral/resisted hits. https://github.com/kylebrussell/mxo-hd/pull/557"
+        }
+      }
+    },
+    "273": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 779 names AikidoAbility CntrThrowVsSMPunch.",
+          "runtime": "With Aikido 101 active, CombatPresentation emits the selector's combat view animation reference for a landed 273. The animation and round outcome are separate records.",
+          "test": "PR558 stock client receives 779 in neutral and resisted combat-view entries at PacketLog 1410/2988. Matching 0x45 results at 1418/2996 identify ability 273 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "274": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 804 names AikidoAbility MakiOfootsweep vs SP.",
+          "runtime": "With Aikido 101 active, CombatPresentation emits the selector's combat view animation reference for a landed 274. The animation and round outcome are separate records.",
+          "test": "PR558 stock client receives 804 in neutral and resisted combat-view entries at PacketLog 1057/2661. Matching 0x45 results at 1065/2669 identify ability 274 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/558"
+        },
+        "behavior-tests": {
+          "source": "GOB 274 stores physical base 30 and a 30% landed chance for −60 Melee Accuracy for 16 s.",
+          "runtime": "The landed Aikido exchange adds a scoped target accuracy modifier only on a successful chance draw.",
+          "test": "AikidoMasterResistanceTests checks damage, IS and reuse. LandedStatFeedsOrdinaryRoundInputAndClears checks both chance branches, actual contest input and expiry. PR558 demonstrates both proc outcomes and stock move variant 804. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "296": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 741 names AikidoAbility SpinClayPigeon.",
+          "runtime": "With Aikido 101 active, CombatPresentation emits the selector's combat view animation reference for a landed 296. The animation and round outcome are separate records.",
+          "test": "PR558 stock client receives 741 in neutral and resisted combat-view entries at PacketLog 1534/3193. Matching 0x45 results at 1542/3201 identify ability 296 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/558"
+        }
+      }
+    },
+    "427": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 8086 names Triple_Front_Kick.",
+          "runtime": "With Kung-Fu 133 active, CombatPresentation emits the selector's combat view animation reference for a landed 427. The animation and round outcome are separate records.",
+          "test": "PR559 stock client receives 8086 in neutral and resisted combat-view entries at PacketLog 1525/3562. Matching 0x45 results at 1533/3570 identify ability 427 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "429": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 8083 names Extrteme_Falling_Kick.",
+          "runtime": "With Kung-Fu 133 active, CombatPresentation emits the selector's combat view animation reference for a landed 429. The animation and round outcome are separate records.",
+          "test": "PR559 stock client receives 8083 in neutral and resisted combat-view entries at PacketLog 1309/3330. Matching 0x45 results at 1317/3338 identify ability 429 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/559"
+        }
+      }
+    },
+    "536": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB combat_animations.json move 5935 names Foot Sweep Ki Punch.",
+          "runtime": "With Karate 132 active, CombatPresentation emits the selector's combat view animation reference for a landed 536. The animation and round outcome are separate records.",
+          "test": "PR561 stock client receives 5935 in neutral and resisted combat-view entries at PacketLog 1667/3440. Matching 0x45 results at 1675/3448 identify ability 536 and flag 0x100. https://github.com/kylebrussell/mxo-hd/pull/561"
+        }
+      }
+    }
+  }
+}
