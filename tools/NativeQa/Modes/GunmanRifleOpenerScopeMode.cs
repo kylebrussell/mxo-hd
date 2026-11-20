@@ -31,7 +31,7 @@ public sealed class GunmanRifleOpenerScopeMode : NativeQaMode
         readyMessages: new[]
         {
             "Perform all openers at rest. Use ?combatdepth fixture-weapon rifle, then page 2 slot 1 Rifles. Try slots 2 and 3 with empty selection, then with friendly QAOther. If a request is sent, each should refuse before IS, cast bar or reuse. Enter submits chat. Keep the selected target without Escape.",
-            "Select hostile QAEnemy. Slots 2 and 3 are Immobilizing Shot and Disabling Shot. Both cast in 2 s and have 10 s own reuse. Wait for the cast to end before using the next slot. Record the landed damage and any conditional state. Conditional rolls are ordinary.",
+            "Select hostile QAEnemy. Slots 2 and 3 are Immobilizing Shot and Disabling Shot. Both cast in 2 s and have 10 s own reuse. Wait for the cast to end before using the next slot. The stored ballistic bases are 18 and 16 respectively. Compare the landed damage records after normal style influence and record any conditional state. Conditional rolls are ordinary.",
             "After shared reuse clears, use ?combatdepth fixture-weapon handgun then slot 4 Handguns. Keep or reselect QAEnemy. Slot 5 Hindering Shot is the outside-combat control, with 2 s cast and 8 s own reuse."
         });
 
@@ -60,26 +60,21 @@ public sealed class GunmanRifleOpenerScopeMode : NativeQaMode
             await RefusedAsync(actor, id, WithHandle(request, Handle(ally)));
             await RefusedAsync(actor, id, WithHandle(request, target ^ 0x10000));
         }
-        await LandAsync(actor, server, 254, Immobilizing, target, 10);
-        await LandAsync(actor, server, 255, Disabling, target, 10);
+        await LandAsync(actor, context.Helpers["QAEnemy"], hostile, 254, Immobilizing, 22, 10);
+        await LandAsync(actor, context.Helpers["QAEnemy"], hostile, 255, Disabling, 19, 10);
         await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, db, "handgun", CombatFixtureWeapons.Handgun);
         actor.SendRpc(StockHandguns);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 81 00 00 00");
-        await LandAsync(actor, server, 130, Hindering, target, 8);
+        await LandAsync(actor, context.Helpers["QAEnemy"], hostile, 130, Hindering, 11, 8);
         Check.Equal(0, actor.World.Problems.Count, "Rifle opener framing");
         return Array.Empty<byte>();
     }
 
-    private static async Task LandAsync(HeadlessPlayer actor, ServerInstance server, ushort id, string request, uint target, int reuse)
+    private static async Task LandAsync(HeadlessPlayer actor, HeadlessPlayer enemy, ViewCreation target,
+        ushort id, string request, int damage, int reuse)
     {
         int cursor = actor.World.RpcSnapshot().Count;
-        int log = server.DebugLog().Length;
-        actor.SendRpc(WithHandle(request, target));
-        await EvidenceRetestWire.CastBarAsync(actor, id, 2);
-        await EvidenceRetestWire.TimerAsync(actor, cursor, id, AbilityCooldowns.OwnTimer, reuse);
-        string name = AbilityCatalog.Find(id)!.Name;
-        await actor.WaitUntilAsync(() => server.DebugLog()[log..].Contains($"{name} lands on QAEnemy"),
-            $"{id} lands on the live selected target at rest", HeadlessPlayer.DefaultTimeout);
+        await StarterFixedDamageMode.Land(actor, enemy, target, id, damage, 2, reuse, request);
         if (AbilityCooldowns.TryGet(id, out var cooldown) && cooldown.Group != 0)
             await EvidenceRetestWire.TimerAsync(actor, cursor, cooldown.Group, AbilityCooldowns.GroupTimer, cooldown.GroupSeconds, ended: true);
     }
