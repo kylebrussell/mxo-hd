@@ -1,0 +1,105 @@
+{
+  "families": {
+    "starter-hidden-self-defense-native": {
+      "representative": 2,
+      "result": "pass",
+      "head": "f333319995bb31f131bab179d4bcd5b76de0604d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/550",
+      "scope": "Rank-50 Awakened grants the hidden rank-50 Self Defense at login (69) and supplies +12 Awareness (150 onwards). Archive unload restores Self Defense from both active starter styles."
+    },
+    "hacker-style-active-native": {
+      "representative": 1006,
+      "result": "pass",
+      "head": "f333319995bb31f131bab179d4bcd5b76de0604d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/550",
+      "scope": "Native 1006 activation installs the eight sourced style records (722). Unload removes all eight and reselects Self Defense (793), while loading at 934 restores memory only. The explicit selection at 1048 restores the modifiers."
+    },
+    "native-object-pick-lock": {
+      "representative": 142,
+      "result": "pass",
+      "head": "b3e499fee294cb1ea1577842f31719508604fa1c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/548",
+      "scope": "Native Filing Cabinet 326 sent object use 8. PickLockSuccess and the 0x836→0x841 update are present at 848–859."
+    },
+    "native-object-disable-security": {
+      "representative": 218,
+      "result": "pass",
+      "head": "b3e499fee294cb1ea1577842f31719508604fa1c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/548",
+      "scope": "Native Security Interface 377 sent object use 1. ACCESS GRANTED and the 0x839→0x83a update are present at 1014–1020."
+    }
+  },
+  "abilities": {
+    "2": {
+      "family": "starter-hidden-self-defense-native"
+    },
+    "1006": {
+      "family": "hacker-style-active-native"
+    },
+    "142": {
+      "family": "native-object-pick-lock"
+    },
+    "218": {
+      "family": "native-object-disable-security"
+    },
+    "138": {
+      "checks": {
+        "damage": {
+          "source": "GOB Guard Breaker has physical base 36 and uses the active Kung-Fu interlock against an Off-Balance opponent.",
+          "runtime": "The queued physical result consumes current attacker influence and the selected dummy resistance.",
+          "test": "PR551 native compares 47 neutral to 38 at +75 melee resistance, with the same level, stance and Off-Balance gate. The resisted record identifies raw 47. https://github.com/kylebrussell/mxo-hd/pull/551"
+        }
+      }
+    },
+    "139": {
+      "checks": {
+        "damage": {
+          "source": "GOB Iron Guard is a base-12 physical interlock special and grants two independent 12 s defense modifiers.",
+          "runtime": "The Aikido move calculates physical damage against the bound opponent and separately publishes the caster buff.",
+          "test": "PR551 stock compares 15 neutral to 12 at +75 melee resistance. Its two defense adds and expiry records are visible at 1021–1022 and 1277–1278. https://github.com/kylebrussell/mxo-hd/pull/551"
+        }
+      }
+    },
+    "134": {
+      "checks": {
+        "damage": {
+          "source": "GOB Leg Sweep defines a thrown hit and a ten-second defense penalty.",
+          "runtime": "The live Spy interlock applies thrown scaling and reads the receiver’s 1033 resistance.",
+          "test": "PR552 exact mode and stock compare 16 neutral to 13 resisted while retaining -15 Melee Defense for 10 seconds. https://github.com/kylebrussell/mxo-hd/pull/552"
+        }
+      }
+    },
+    "146": {
+      "checks": {
+        "damage": {
+          "source": "GOB Poison Knife defines a thrown periodic health modifier.",
+          "runtime": "TimedEffects applies the current victim’s thrown resistance on each tick.",
+          "test": "PR552 stock ticks 2 without resistance and 1 at +75 thrown resistance, every 2.5 seconds. PacketLog 2240–2799 and 5131–5849. https://github.com/kylebrussell/mxo-hd/pull/552"
+        }
+      }
+    },
+    "152": {
+      "checks": {
+        "damage": {
+          "source": "GOB Spinning Backsweep defines a thrown sneak-interlock hit.",
+          "runtime": "The qualifying Sneak and Spy-style move uses the selected opponent’s thrown resistance.",
+          "test": "PR552 native uses Sneak in both passes and compares 132 neutral to 108 at +75 thrown resistance. https://github.com/kylebrussell/mxo-hd/pull/552"
+        }
+      }
+    },
+    "281": {
+      "checks": {
+        "damage": {
+          "source": "GOB Wounding Throw defines a thrown periodic health modifier.",
+          "runtime": "TimedEffects applies the current victim’s thrown resistance on each tick.",
+          "test": "PR552 stock ticks 8 without resistance and 6 at +75 thrown resistance, every 5 seconds. PacketLog 2552–2890 and 5472–5812. https://github.com/kylebrussell/mxo-hd/pull/552"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR550": "Hidden Self Defense and startup Awareness were observed. Both archive fallbacks worked. The final pre-seeded Self Defense hotbar press produced no native request. https://github.com/kylebrussell/mxo-hd/pull/550",
+    "PR548": "Disarm Traps used a disclosed dev target helper. The proof gives the 10 IS debit, two-second cast and successful object transition. A stock trapped-object target request remains open. https://github.com/kylebrussell/mxo-hd/pull/548",
+    "PR551/552": "The listed damage checks cover matched physical or thrown cases using the current resistance calculation. The audit retains separate unresolved retail-source, targeting and choreography gaps. https://github.com/kylebrussell/mxo-hd/pull/551 https://github.com/kylebrussell/mxo-hd/pull/552"
+  }
+}
