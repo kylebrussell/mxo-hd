@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "43": {
+      "checks": {
+        "controls": {
+          "source": "The shipped 43 modifier applies Blinded for 16 seconds. It stores no separate break callback or control immunity timer.",
+          "runtime": "TimedEffects applies and expires state 90. AbilityStats.Attack consumes the blind penalty for melee and ballistic attacks.",
+          "test": "HackerBatchB3ParityTests.DisruptInputs43ReducesAttackUntilTheSixteenSecondBlindEnds verifies both attack penalties and expiry. PR482 stock 8caa7e2c selected a fresh dummy and landed state 90 for 16 seconds, with the full cast kept in pr482-PacketLog.txt. https://github.com/kylebrussell/mxo-hd/pull/482"
+        }
+      }
+    },
+    "48": {
+      "checks": {
+        "controls": {
+          "source": "The shipped 48 Pacify lasts 6 seconds and breaks on damage. AddControlImmunityTimer reads the separate 12-second Viral Resistance modifier.",
+          "runtime": "AbilityHostile and TimedEffects apply Pacify and the distinct immunity. ControlActions prevents ability use while pacified. Damage ends Pacify while the immunity still runs.",
+          "test": "HackerBatchB2ParityTests.FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity verifies the heal negative control, damage break and immunity duration. PR482 stock 8caa7e2c landed state 85 for 6 seconds and -20 stat 157 for 12 seconds, then Logic Barrage broke the Pacify and the dummy retaliated. The PR482 disposable replay asserts the 12-second immunity announcement. https://github.com/kylebrussell/mxo-hd/pull/482"
+        }
+      }
+    }
+  }
+}
