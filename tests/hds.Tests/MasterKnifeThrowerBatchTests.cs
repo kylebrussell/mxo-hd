@@ -76,6 +76,7 @@ public class MasterKnifeThrowerBatchTests
 
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_POWERLESS_QA"]);
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_THROW_QA"]);
+        Assert.Equal("1", plan.EnvironmentOverrides[CombatFixtureWeapons.ResetMode]);
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-50 Master Knife Thrower batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
         Assert.Equal(64, mem);
@@ -104,7 +105,12 @@ public class MasterKnifeThrowerBatchTests
         Assert.Equal(54, AbilityStats.Influence(client, 1034));
         Assert.Equal((ushort)123, AbilityStats.ScaleAbilityDamage(client, ThroatCuttingThrow, 80));
         Assert.Equal((ushort)87, AbilityStats.ScaleAbilityDamage(client, SubduingThrow, 57));
-        Assert.Equal((ushort)36, AbilityStats.ScaleAbilityDamage(client, BlindingThrow, 24));
+        ushort blindingTotal = AbilityStats.ScaleAbilityDamage(client, BlindingThrow, 24);
+        Assert.Equal((ushort)36, blindingTotal);
+        Assert.Equal(6, TempMods.DotTick(blindingTotal, 15, 2.5f));
+        Assert.Equal((ushort)1041, AbilityControlDurations.BonusStat(TempMods.BlindAbility));
+        Assert.Equal(12.5f, AbilityControlDurations.Scale(client, TempMods.BlindAbility, 10f), 3);
+        Assert.Equal(7.5f, AbilityControlDurations.Scale(client, TempMods.PowerlessAbility, 6f), 3);
 
         Assert.True(AbilityCooldowns.TryGet(NeuroDart, out var cd141));
         Assert.Equal((ushort)1215, cd141.Group);
