@@ -1,0 +1,26 @@
+{
+  "families": {
+    "starter-native-coder-utility": {
+      "representative": 604,
+      "result": "pass",
+      "head": "3a2ba75d0a2b2328c4e8b9ad3428b3a318070958",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/536",
+      "scope": "Native 604 request at PacketLog 638–639, 20 IS and a 30 s own timer. Sources 604, 613 and 1108 replace each other with max HP 500→550→600→650→500. Each source adds and removes +20 on both physical resistance stats. Technician and Master add and remove +3 and +6 Melee Defense respectively."
+    }
+  },
+  "abilities": {
+    "604": {
+      "family": "starter-native-coder-utility",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 604 defines 20 IS, a 30 s reuse, +50 Max Health and +20 to each physical damage resistance in the mutually exclusive Utility family.",
+          "runtime": "AbilityBuffs activates the three stat records, refreshes live max health, replaces the previous family member and withdraws its exact records when disabled.",
+          "test": "AbilityPassiveTests.UtilityCoderFeedsMaximumHealthAndBothPhysicalResistances and UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats cover values and replacement. StarterCoderUtilityFamilyMode and native PR536 verify the actual timeline and restoration. https://github.com/kylebrussell/mxo-hd/pull/536"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR536": "The complete first stock 604 request is 80b95c02000000000000000000000000000000000000000000000000d557377c20000000086b0000000000. The 20 IS debit is visible on line 644 and the timer on 661–662. HP changes occur at 654, 729, 881 and 977. The source-specific outgoing and incoming modifiers are present at the two replacements and the final toggle. The tested patch was unchanged on rebase."
+  }
+}
