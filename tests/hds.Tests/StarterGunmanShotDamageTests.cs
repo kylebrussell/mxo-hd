@@ -1,0 +1,65 @@
+using hds;
+
+namespace hds.Tests;
+
+public class StarterGunmanShotDamageTests
+{
+    [Theory]
+    [InlineData(105, -5, 0, 8)]
+    [InlineData(176, 50, 0, 17)]
+    public void IncompleteLegacyEndpointsUseFixedBallisticBase(ushort id, short oldMin, ushort oldMax, ushort expected)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "hds.sln")))
+            root = Path.GetDirectoryName(root)!;
+        string[] row = File.ReadLines(Path.Combine(root, "data", "abilityIDs.csv"))
+            .Single(line => line.StartsWith($"{id};", StringComparison.Ordinal)).Split(';');
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setValueFrom(short.Parse(row[9]));
+        item.setValueTo(ushort.Parse(row[10]));
+
+        Assert.Equal(oldMin, item.getValueFrom());
+        Assert.Equal(oldMax, item.getValueTo());
+        Assert.Equal(1, TypedAbilityResistance.StoredType(id));
+        Assert.False(AbilityTargets.Retail.ContainsKey(id));
+        Assert.Null(CombatSpecials.Damage(id, null));
+        foreach (int seed in new[] { 1, 2, 987 })
+            Assert.Equal(expected, AbilityHandler.AbilityDamage(item, new Random(seed)));
+
+        item.setValueFrom(29);
+        item.setValueTo(29);
+        Assert.Equal(29, AbilityHandler.AbilityDamage(item, new Random(1)));
+    }
+
+    [Fact]
+    public void BodyShotRetainsBothTenSecondResistanceDebuffs()
+    {
+        Assert.True(TempMods.TryGet(105, out var effect));
+        var applied = TimedEffects.Instantiate(effect, new Random(1)).OrderBy(modifier => modifier.Target).ToArray();
+        Assert.Equal(new ushort[] { 180, 181 }, applied.Select(modifier => modifier.Target));
+        Assert.All(applied, modifier =>
+        {
+            Assert.Equal(-5, modifier.Value);
+            Assert.Equal(10, modifier.Seconds);
+        });
+    }
+
+    [Fact]
+    public void CoveringFireRetainsItsExistingRootRollAndBreakPolicy()
+    {
+        Assert.True(TempMods.TryGet(176, out var effect));
+        Assert.Empty(TimedEffects.Instantiate(effect, new FractionRoll(.151)));
+        var root = Assert.Single(TimedEffects.Instantiate(effect, new FractionRoll(.149)));
+        Assert.Equal(TempMods.RootedAbility, root.Target);
+        Assert.Equal(8, root.Seconds);
+        Assert.Equal(TempMods.BreakRule.Chance, root.Break);
+        Assert.Equal(50, root.BreakChance);
+        Assert.True(root.ProtectFirstHealthChange);
+    }
+
+    private sealed class FractionRoll(double roll) : Random
+    {
+        public override double NextDouble() => roll;
+    }
+}

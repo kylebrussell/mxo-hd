@@ -467,8 +467,10 @@ namespace hds
             int? fixedType = source?.Id switch
             {
                 36 => 2,   // Tinkering
+                105 => 1,  // Body Shot
                 130 => 1,  // Hindering Shot
                 152 => 7,  // Spinning Backsweep
+                176 => 1,  // Covering Fire
                 514 => 2,  // Advanced Tinkering
                 _ => null
             };
