@@ -100,7 +100,7 @@ namespace hds
         // Publish source-qualified zero grants from the GOB through the loaded registry.
         private static readonly (ushort Source, ushort Target)[] GunmanPassivePairs = { (128, 1070), (440, 1074), (508, 1136) };
         private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
-        private static readonly (ushort Source, ushort Target)[] SpyClassPairs = { (155, 1113) };
+        private static readonly (ushort Source, ushort Target)[] SpyClassPairs = { (155, 1113), (131, 1115), (283, 1120) };
         private static readonly (ushort Source, ushort Target)[] PhysicianPairs = { (418, 1098) };
         private static readonly (ushort Source, ushort Target)[] UpgradeArtistPairs = { (318, 1095) };
         private static readonly (ushort Source, ushort Target)[] RavagerAndUpgradeMasterPairs = { (470, 1081), (425, 1096) };

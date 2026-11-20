@@ -82,7 +82,8 @@ namespace hds
         internal const ushort UpgradeArtistUpgrade = 1095;
 
         internal static bool HasClassSweep(ushort id) => id == ForceMultiplierUpgrade || id == UpgradeArtistUpgrade;
-        internal static bool IsStartingClassUpgrade(ushort id) => id == 1060 || id == 1061 || id == 1062 || id == 1070 || id == 1078;
+        internal static bool IsStartingClassUpgrade(ushort id) => id == 1060 || id == 1061 || id == 1062 || id == 1070 || id == 1078 ||
+            id == 1113 || id == 1115 || id == 1117 || id == 1120;
         private const ushort MovementAccelerator = 62;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
