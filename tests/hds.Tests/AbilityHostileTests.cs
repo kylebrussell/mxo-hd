@@ -11,6 +11,49 @@ public class AbilityHostileWorldCollection { }
 [Collection("AbilityHostileWorld")]
 public class AbilityHostileTests
 {
+    [Fact]
+    public void CodeConversionUsesTheThirtyPercentBoundaryOncePerHealthChange()
+    {
+        var caster = Client();
+        var originalClients = WorldServer.Clients;
+        var originalPercent = AbilityHealthCallbacks.Random100;
+        var originalSample = AbilityHealthCallbacks.Random15;
+        try
+        {
+            WorldServer.Clients = new() { ["caster"] = caster };
+            caster.playerInstance.Health.setValue((ushort)400);
+            AbilityHealthCallbacks.Random15 = () => 0;
+            int roll = 30, rolls = 0;
+            AbilityHealthCallbacks.Random100 = () =>
+            {
+                rolls++;
+                return roll;
+            };
+            Assert.True(AbilityBuffs.Apply(caster, 943));
+
+            AbilityHandler.HealSelf(caster, 10);
+            Assert.Equal(410, PvpCombat.HealthOf(caster));
+            Assert.Equal(1, rolls);
+
+            roll = 29;
+            AbilityHandler.HealSelf(caster, 10);
+            Assert.Equal(480, PvpCombat.HealthOf(caster));
+            Assert.Equal(2, rolls);
+
+            AbilityBuffs.Remove(caster, 943);
+            AbilityHandler.HealSelf(caster, 10);
+            Assert.Equal(490, PvpCombat.HealthOf(caster));
+            Assert.Equal(2, rolls);
+        }
+        finally
+        {
+            AbilityBuffs.RemoveAll(caster);
+            WorldServer.Clients = originalClients;
+            AbilityHealthCallbacks.Random100 = originalPercent;
+            AbilityHealthCallbacks.Random15 = originalSample;
+        }
+    }
+
     private static WorldClient Client(ushort health = 1000, ushort innerStrength = 200)
     {
         var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
