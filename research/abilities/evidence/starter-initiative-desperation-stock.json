@@ -22,11 +22,6 @@
           "source": "GOB Gunman adds +1 Initiative Bonus 1046 while loaded. DesperationFunction in tempmods.py reads stat 1046 as a percentage at application.",
           "runtime": "AbilityPassives supplies the Gunman bonus to AbilityStats.Player. AbilityScaledBuffs reads that total when it creates the Desperation health snapshot.",
           "test": "LoadedGunmanAndGunslingerRetainTheShippedInitiativeBonusAndGrant and StarterInitiativeBatchMode independently check the +1 record and unload/reload. PR453 native PacketLog 820770acccfd line 146 contains Gunman +1, Soldier +2 and prerequisite +2. The stock cast then snapshots +84 rather than the unmodified +80. https://github.com/kylebrussell/mxo-hd/pull/453"
-        },
-        "consumer": {
-          "source": "The shipped DesperationFunction reads Initiative Bonus 1046 as a percentage when setting Initiative 1044.",
-          "runtime": "The current Gunman passive value contributes to the loaded 1046 total read by AbilityDesperation.Snapshot.",
-          "test": "StarterInitiativeBatchMode checks the exact +5 total from the three named providers through its +84 application. AbilityDesperationTests checks the percentage input independently and verifies that removing the source does not resample an applied effect. https://github.com/kylebrussell/mxo-hd/pull/453"
         }
       }
     },
@@ -37,11 +32,6 @@
           "source": "GOB Soldier adds +2 Initiative Bonus 1046 and grants Soldier Upgrade 1061. DesperationFunction in tempmods.py uses 1046 at application.",
           "runtime": "AbilityPassives supplies the Soldier modifier and AbilityProgression manages child membership. AbilityScaledBuffs reads the initiative bonus when taking the snapshot.",
           "test": "StarterInitiativeBatchMode verifies the exact +2, grant add/remove, and a +84 snapshot from the three providers. PR453 stock lines 146, 817, 820, 1097 and 1100 confirm Soldier modifier and child granted, removed and granted again. https://github.com/kylebrussell/mxo-hd/pull/453"
-        },
-        "consumer": {
-          "source": "The shipped DesperationFunction reads Initiative Bonus 1046 as a percentage when setting Initiative 1044.",
-          "runtime": "The Soldier passive contributes +2 to the current 1046 total at snapshot. Unloading Soldier clears that contribution for future casts while preserving the established snapshot.",
-          "test": "StarterInitiativeBatchMode applies the stock frame with the Soldier bonus loaded, then unloads Soldier and observes the unchanged +84 until expiry. PR453 confirms the same outcome natively. https://github.com/kylebrussell/mxo-hd/pull/453"
         },
         "behavior-tests": {
           "source": "GOB 154 lists Initiative Bonus +2 while enabled and the Soldier Upgrade 1061 grant.",
