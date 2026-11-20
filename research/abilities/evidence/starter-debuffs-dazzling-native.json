@@ -1,0 +1,30 @@
+{
+  "families": {
+    "processor-lag-starter": {
+      "representative": 69,
+      "result": "pass",
+      "head": "b3b8448ae934ab215fb0c49b6894aa2d21260deb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/439",
+      "scope": "Stock 537fece48163 confirms empty-target refusal without reuse, a 2-second cast on the selected dummy, style-scaled ViralDOT 33 over 30 seconds with six-point ticks and 43-second reuse."
+    },
+    "slow-starter": {
+      "representative": 86,
+      "result": "pass",
+      "head": "b3b8448ae934ab215fb0c49b6894aa2d21260deb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/439",
+      "scope": "Stock 537fece48163 confirms empty-target refusal without reuse, then a 2-second selected cast applying all five 28-second debuffs and 8-second reuse. The downstream movement consumers remain open."
+    },
+    "dazzling-throw-stock": {
+      "representative": 1132,
+      "result": "pass",
+      "head": "d661a9e9e9d0ffdc81f1abfa1c79ef9fe43430ba",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/425",
+      "scope": "Stock cast in Spy Style with Sneak active lasted 2 seconds and retained Sneak until landing for 53. Dazed proc lasted 12 seconds. Own and family reuse were 45 and 15 seconds."
+    }
+  },
+  "abilities": {
+    "69": { "family": "processor-lag-starter" },
+    "86": { "family": "slow-starter" },
+    "1132": { "family": "dazzling-throw-stock" }
+  }
+}
