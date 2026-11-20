@@ -49,12 +49,12 @@ public static partial class Scenarios
     private static async Task NativeCraftingRequests(ScenarioContext context)
     {
         var player = await context.AddPlayerAsync(new CharacterSeed("CraftActions") { Level = 50,
-            Items = new[] { (3, 1271u, 1), (4, 7336u, 2), (5, 2399u, 1) } });
+            Items = new[] { (2, 613u, 1), (3, 1271u, 1), (4, 7336u, 2), (5, 2399u, 1) } });
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
             $"({player.CharId},30,{unchecked((int)(0x80000000u | 277u << 10))},50,1)," +
             $"({player.CharId},31,{unchecked((int)(0x80000000u | 276u << 10))},50,1);");
         await player.EnterWorldAsync();
-        player.SendRpc("81 31 14 01 00 00 05 6b 00");
+        player.SendRpc("81 31 14 01 00 00 05 02 01");
         await player.WaitForRpcAsync("81 30 5f 09 00 00 01");
         Check.That(player.Received("5f 05 00 01").Count > 0, "Decompiled source left the bag");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_recipes WHERE charId={player.CharId} AND goid=2399"), "Learned recipe persists");

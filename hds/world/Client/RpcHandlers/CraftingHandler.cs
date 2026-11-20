@@ -12,6 +12,7 @@ namespace hds
     public class CraftingHandler
     {
         private const ushort DecompileItemsAbility = 276;
+        private const uint DecompilerTool = 613;
 
         /// <summary>Returns the message shown to the player.</summary>
         public string Compile(UInt32 resultGoid) => Compile(resultGoid, out _);
@@ -201,7 +202,10 @@ namespace hds
                         Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())))
                 { Finish(client, 0, 0, 0, "That inventory ability is not available."); return; }
                 var db = Store.dbManager.WorldDbHandler;
-                var source = db.GetInventoryItems(client.playerData.getCharID()).FirstOrDefault(i => i.Slot == request.Slot);
+                var inventory = db.GetInventoryItems(client.playerData.getCharID());
+                var source = inventory.FirstOrDefault(i => i.Slot == request.Slot);
+                if (request.ToolSlot < 1 || request.ToolSlot > 96 || !inventory.Any(i => i.Slot == request.ToolSlot && i.Goid == DecompilerTool))
+                { Finish(client, 0, request.Slot, source.Goid, "Decompile Items requires an Item Decompiler."); return; }
                 var item = CraftingRules.Find(source.Goid);
                 if (item == null || item.CantDecompile || !item.Complexity.HasValue || !item.Learnable ||
                     !Crafting.Recipes.ContainsKey(source.Goid))
