@@ -1,0 +1,72 @@
+{
+  "families": {
+    "starter-native-crafting-specializations": {
+      "representative": 517,
+      "result": "pass",
+      "head": "a1de33b5544b72b9f704e97595f730094bc59a93",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/534",
+      "scope": "Stock login PacketLog 161–163 contains +50 adds for 517→655, 518→654 and 521→656. Each demonstrated Compiler category used 0 unloaded and 50 with only the matching passive loaded, and compiled one item from each charge."
+    },
+    "operative-live-awareness": {
+      "representative": 156,
+      "result": "pass",
+      "head": "e9ffbbd5a252fedf37e351cbf7a1441dc207c61e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/535",
+      "scope": "Full native 156 request starts at 4844. PacketLog 4875–4876 adds stat 204 +15 for 300 s with 15 s own reuse. The same ordinary Sneak approach then reveals at SA 28 versus baseline 13."
+    }
+  },
+  "abilities": {
+    "156": {
+      "family": "operative-live-awareness",
+      "checks": {
+        "stealth-detection": {
+          "source": "The shipped 156 active modifier is stat 204 at caster-level scale 0.3 for 300 seconds.",
+          "runtime": "The observer's current stat 204 feeds the periodic sight- and facing-gated SneakTest on the live subject.",
+          "test": "PR535 native holds the route, observer and Sneak rank constant, with Detection unloaded. 156 adds +15 and changes Awareness 13 to 28 in the observed reveal. The full stock use and modifier are in PacketLog 4844 and 4875. https://github.com/kylebrussell/mxo-hd/pull/535"
+        }
+      }
+    },
+    "293": {
+      "checks": {
+        "stealth-detection": {
+          "source": "GOB 293 gives +80 Stealth Detection for 30 s. Shipped Sneak detects using the current observer awareness.",
+          "runtime": "Stealth.AwarenessOf reads the temporary stat, and ordinary expiration withdraws it and restores the baseline contest.",
+          "test": "OperativeParityTests.StealthCountermeasuresChangesAwarenessContestAndThenClears plus StarterStealthObserverMode and native PR535 verify SA 13→93→13 and the revealed view. PacketLog 3549 and 4281 show the bounded add and matching removal. https://github.com/kylebrussell/mxo-hd/pull/535"
+        }
+      }
+    },
+    "517": {
+      "family": "starter-native-crafting-specializations",
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped learned-rank passive 517 targets stat 655. The weapon sample GO 700 uses the associated specialization.",
+          "runtime": "Loaded rows add stat 655 and ordinary Compile60 reads it only through its item-category mapping. Matching specialization contributes to the actual compile contest and never changes the number of charges spent.",
+          "test": "AbilityPassiveTests covers the category input, a threshold change at fixed roll and unrelated categories. StarterCompileSpecializationsMode and native PR534 compare specialization 0 versus 50 with GO 700, one charge spent and a matching item materialized each time. https://github.com/kylebrussell/mxo-hd/pull/534"
+        }
+      }
+    },
+    "518": {
+      "family": "starter-native-crafting-specializations",
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped learned-rank passive 518 targets stat 654. The tool sample GO 2485 uses the associated specialization.",
+          "runtime": "Loaded rows add stat 654 and ordinary Compile60 reads it only through its item-category mapping. Matching specialization contributes to the actual compile contest and never changes the number of charges spent.",
+          "test": "AbilityPassiveTests covers the category input, a threshold change at fixed roll and unrelated categories. StarterCompileSpecializationsMode and native PR534 compare specialization 0 versus 50 with GO 2485, one charge spent and a matching item materialized each time. https://github.com/kylebrussell/mxo-hd/pull/534"
+        }
+      }
+    },
+    "521": {
+      "family": "starter-native-crafting-specializations",
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped learned-rank passive 521 targets stat 656. The consumable sample GO 39413 uses the associated specialization.",
+          "runtime": "Loaded rows add stat 656 and ordinary Compile60 reads it only through its item-category mapping. Matching specialization contributes to the actual compile contest and never changes the number of charges spent.",
+          "test": "AbilityPassiveTests covers the category input, a threshold change at fixed roll and unrelated categories. StarterCompileSpecializationsMode and native PR534 compare specialization 0 versus 50 with GO 39413, one charge spent and a matching item materialized each time. https://github.com/kylebrussell/mxo-hd/pull/534"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR535": "The reproducing 156 request is 80b99c00000000000000000000000000000000000000000000000000585cc30001000000086b0000000000. The passive Detection load/unload independently changes the same observer Awareness 13→28→13. This does not qualify the active Detection target geometry. https://github.com/kylebrussell/mxo-hd/pull/535"
+  }
+}
