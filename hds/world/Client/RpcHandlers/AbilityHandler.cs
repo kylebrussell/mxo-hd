@@ -59,6 +59,17 @@ namespace hds
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, spawn, out uint refusalReason))
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
+                    return;
+                }
+            }
+
             // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
             if (AbilityID == 130)
             {
@@ -362,7 +373,7 @@ namespace hds
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
             if (AbilityID==StealthShieldAbilities.DisableEvasion) StealthShieldAbilities.ActionTaken(Store.currentClient);
-            else if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+            else if (!stealth && !lineUpConcealed && !SpyAbilityRegistry.RetainsStealthDuringCast(AbilityID)) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             if(freeStealth!=null)StealthShieldAbilities.Arm(Store.currentClient,freeStealth);
             GhostStrikeCallbacks.Arm(ghostStrike);
@@ -554,6 +565,8 @@ namespace hds
                         return (UInt16)amount;
                 }
             }
+            if (SpyAbilityRegistry.TryResolveDamage(source, characterLevel, random, out ushort registeredDamage))
+                return registeredDamage;
             // Overhand Smash has one fixed physical health component and no usable legacy range.
             if (source?.Id == 145)
             {
