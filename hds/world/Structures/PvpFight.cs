@@ -678,11 +678,11 @@ namespace hds
                     int toN = Math.Max(0, outcome.DamageToNpc), toP = Math.Max(0, outcome.DamageToPlayer);
                     bool nDied = toN > 0 && PvpCombat.Damage(n.Client, toN);
                     bool pDied = toP > 0 && PvpCombat.Damage(p.Client, toP);
-                    if (toN > 0 && !nDied && pCondition)
+                    if (toN > 0 && !nDied && (pCondition || MartialConfuseQa.GuaranteeGrabCondition(p.Client, n.Client, pTactic)))
                     {
                         PvpCombat.ApplyCondition(n.Client, CombatInterlock.ConditionBit(pTactic));
                     }
-                    if (toP > 0 && !pDied && nCondition)
+                    if (toP > 0 && !pDied && (nCondition || MartialConfuseQa.GuaranteeGrabCondition(n.Client, p.Client, nTactic)))
                     {
                         PvpCombat.ApplyCondition(p.Client, CombatInterlock.ConditionBit(nTactic));
                     }

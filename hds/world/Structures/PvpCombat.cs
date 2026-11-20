@@ -435,7 +435,8 @@ namespace hds
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);
             PvpFlag.ApplyAbility(target, abilityId);
-            Random qaProc = MartialBlindEnrageAreaQa.ProcRandom(caster, target, abilityId);
+            Random qaProc = MartialBlindEnrageAreaQa.ProcRandom(caster, target, abilityId)
+                ?? MartialConfuseQa.ProcRandom(caster, target, abilityId);
             if (qaProc != null && TempMods.TryGet(abilityId, out TempMods.Effect qaEffect))
             {
                 var subject = TimedEffects.ForPlayer(target);

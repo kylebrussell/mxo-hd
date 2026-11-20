@@ -146,12 +146,17 @@ namespace hds
         /// </summary>
         public void ProcessChangeTactic(ref byte[] packet)
         {
-            if (!ControlActions.CanChangeTactic(TimedEffects.ForPlayer(client).Effects)) return;
+            string player = PvpFlag.Name(client);
+            if (!ControlActions.CanChangeTactic(TimedEffects.ForPlayer(client).Effects))
+            {
+                Output.WriteDebugLog($"[COMBAT] Tactic request refused for {player}: Confused");
+                return;
+            }
 
             CombatTactic? requested = packet.Length > 0 ? CombatTactics.FromRpc(packet[0]) : null;
             if (requested == null)
             {
-                Output.WriteDebugLog("[COMBAT] Unknown tactic request");
+                Output.WriteDebugLog($"[COMBAT] Unknown tactic request from {player}");
                 return;
             }
 
@@ -163,7 +168,7 @@ namespace hds
             {
                 // Only the Energized/Precise choice may have changed: no records for that (the records don't name it)
                 client.playerData.combatTacticType = type;
-                Output.WriteDebugLog($"[COMBAT] Tactic {tactic} ({type}) is already on");
+                Output.WriteDebugLog($"[COMBAT] Tactic {tactic} ({type}) is already on for {player}");
                 return;
             }
 
@@ -174,7 +179,7 @@ namespace hds
                 UInt16? remaining = CombatTactics.PayForChange(currentIS, CombatCalculator.TACTIC_CHANGE_IS_COST);
                 if (remaining == null)
                 {
-                    Output.WriteDebugLog($"[COMBAT] Tactic {tactic} refused: Inner Strength {currentIS}");
+                    Output.WriteDebugLog($"[COMBAT] Tactic {tactic} refused for {player}: Inner Strength {currentIS}");
                     packets.sendSystemChatMessage(client, "Not enough Inner Strength to change tactics!", "SYSTEM");
                     return;
                 }
@@ -187,7 +192,7 @@ namespace hds
 
             CombatTactics.Select(client, tactic);
             client.playerData.combatTacticType = type;
-            Output.WriteDebugLog($"[COMBAT] Tactic changed to {tactic} ({type})");
+            Output.WriteDebugLog($"[COMBAT] Tactic changed to {tactic} ({type}) for {player}");
             if (fighting && session.Type == CombatSession.CombatType.Melee && session.CurrentMove != null)
             {
                 SendNextMove(session, CombatInterlock.KindNextMoveChanged);
@@ -257,13 +262,20 @@ namespace hds
                 !opponent.isFriendly && !opponent.getIsDead() ? (uint?)handle : null;
         }
 
+        internal static bool HasOpponentState(TimedEffects.Subject holder, ushort state, double now)
+        {
+            if (holder == null) return false;
+            if (holder.Effects.HasAt(state, now)) return true;
+            return (holder.ConditionFlags & CombatInterlock.TacticStateFlag(state)) != 0;
+        }
+
         // The caller has already validated that this view is the current opponent.
         internal bool CurrentOpponentHasState(ushort targetViewId, ushort state)
         {
             var player = pvpFight != null ? AbilitySupport.PlayerInView(client, targetViewId) : null;
             var npc = pvpFight == null ? CurrentNpcOpponentFor(client) : null;
             var holder = player != null ? (TimedEffects.Subject)TimedEffects.ForPlayer(player) : npc != null ? TimedEffects.ForMob(npc) : null;
-            return holder != null && holder.Effects.HasAt(state, TimeUtils.GetSimTimeSeconds());
+            return HasOpponentState(holder, state, TimeUtils.GetSimTimeSeconds());
         }
 
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,

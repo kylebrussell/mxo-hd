@@ -241,6 +241,8 @@ namespace hds
             }
             
             // Retail's login carried the Speed tactic's records (this used to send only one of them, as a test)
+            if (MartialConfuseQa.StartsOnGrab(client))
+                client.playerData.combatTactic = CombatTactic.Grab;
             CombatTactics.SendCurrent(client);
             
             // Retail sent one 80 86 at login: the crew for a crew member (AfterWhoruNeo) or the empty form for
