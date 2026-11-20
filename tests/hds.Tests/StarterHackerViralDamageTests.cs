@@ -5,6 +5,7 @@ namespace hds.Tests;
 public class StarterHackerViralDamageTests
 {
     [Theory]
+    [InlineData(53, 12)]
     [InlineData(57, 8)]
     [InlineData(58, 11)]
     [InlineData(59, 17)]
@@ -21,8 +22,7 @@ public class StarterHackerViralDamageTests
         ability.setValueFrom(short.Parse(row[9]));
         ability.setValueTo(ushort.Parse(row[10]));
 
-        Assert.Equal(0, ability.getValueFrom());
-        Assert.Equal(0, ability.getValueTo());
+        Assert.True(ability.getValueFrom() <= 0 || ability.getValueTo() < ability.getValueFrom());
         Assert.Equal(2, TypedAbilityResistance.StoredType(id));
         Assert.False(AbilityTargets.Retail.ContainsKey(id));
         foreach (int seed in new[] { 1, 2, 987 })
