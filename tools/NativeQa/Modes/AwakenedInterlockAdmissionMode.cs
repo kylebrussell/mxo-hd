@@ -6,8 +6,8 @@ namespace NativeQa.Modes;
 public sealed class AwakenedInterlockAdmissionMode : NativeQaMode
 {
     // Native PR386 Power Shot, ev-sweep/p323-hb.txt Head Butt and ev-sweep/aw-s8.txt Cheap Shot and opening.
-    private const string StockOpen = "80b9110005000300000000000000000000000000000000000000000060070d1e03000000086b0000000000";
-    private static readonly (ushort Ability, string Capture, int Reuse, string AbilityName)[] Samples =
+    internal const string StockOpen = "80b9110005000300000000000000000000000000000000000000000060070d1e03000000086b0000000000";
+    internal static readonly (ushort Ability, string Capture, int Reuse, string AbilityName)[] Samples =
     {
         (14, "80b90e000400020000000000000000000000000000000000000000000e000000006b0000086b0000000000", 60, "PowerShotAbility"),
         (198, "80b9c600050003000000000000000000000000000000000000000000c6000000006b0000086b0000000000", 20, "CheapShotAbility"),
