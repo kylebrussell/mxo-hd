@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using hds.shared;
 
@@ -9,6 +10,8 @@ namespace hds
     {
         public const string Mode = "MXO_MARTIAL_PLAYER_CONTROL_QA";
         public const int KungFuSlot = 200, KarateSlot = 300, EndSlot = 400;
+        public static IReadOnlyList<ushort> FixedAbilityIds { get; } =
+            Array.AsReadOnly(new ushort[] { 259, 427, 430, 262, 429, 536, 265, 532, 534 });
 
         internal static bool Allowed(string enabled, string dev, string database, uint caster, bool inWorld, bool dead) =>
             enabled == "1" && caster == 110 && QaLoadout.Allowed(dev, database, caster, inWorld, dead);
@@ -20,8 +23,7 @@ namespace hds
 
         // Select the successful chance branch only. The combat contest, damage, values and expiry are unchanged.
         internal static bool ModifierProc(WorldClient caster, WorldClient recipient, ushort ability) =>
-            recipient.playerData.getCharID() == 6114 &&
-            (ability == 262 || ability == 265 || ability == 429 || ability == 534 || ability == 536) && Allowed(caster);
+            recipient.playerData.getCharID() == 6114 && FixedAbilityIds.Contains(ability) && Allowed(caster);
 
         internal static string LoadKarate(WorldClient caster)
         {

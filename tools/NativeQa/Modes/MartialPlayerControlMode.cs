@@ -10,6 +10,10 @@ namespace NativeQa.Modes;
 public sealed class MartialPlayerControlMode : NativeQaMode
 {
     private const ushort Probe = 198;
+    private const int CasterX = CombatFixtureLoadout.CasterX, StandY = CombatFixtureLoadout.GroundY,
+        StandZ = CombatFixtureLoadout.CasterZ, RecipientX = 24499;
+    private static readonly byte CasterYaw = MobAggro.YawTowards(CasterX, StandZ, RecipientX, StandZ);
+    private static readonly byte RecipientYaw = MobAggro.YawTowards(RecipientX, StandZ, CasterX, StandZ);
     // Style and close-combat inputs from the native PR555/561 sessions.
     private const string StockSelfDefense = "80b911000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     private const string StockKungFu = "80b985000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
@@ -50,13 +54,15 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         string[] helpers = new[]
         {
             PvpOpponentsFixture.NativeSql,
+            $"UPDATE characters SET x={CasterX},y={StandY},z={StandZ},rotation={CasterYaw} WHERE charId=110",
+            $"UPDATE characters SET x={RecipientX},y={StandY},z={StandZ},rotation={RecipientYaw} WHERE charId=6114",
             "UPDATE characters SET healthC=30000,healthM=30000 WHERE charId IN (110,6114)",
             $"DELETE FROM inventory WHERE charId IN (110,6114) AND slot={CombatFixtureWeapons.HandSlot}",
             "DELETE FROM char_abilities WHERE char_id=6114"
         }.Concat(RecipientProfile.Select((id, i) => Insert(6114, i, id, true))).ToArray();
-        return new(KungFuProfile, PvpOpponentsFixture.X, PvpOpponentsFixture.Z, Array.Empty<string>(), archive, helpers,
+        return new(KungFuProfile, CasterX, StandZ, Array.Empty<string>(), archive, helpers,
             DevCommands: true, hotbarAbilities: Hotbar(CombatStyles.KungFu, KungFu),
-            hotbarPageThree: Hotbar(CombatStyles.Karate, Karate), testMobFixture: "awakened-interlock-resistance.csv",
+            hotbarPageThree: Hotbar(CombatStyles.Karate, Karate), testMobFixture: "martial-player-controls.csv",
             environmentOverrides: new()
             {
                 ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
@@ -66,13 +72,13 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             {
                 ["PlayerRecipient"] = "QAEnemy (6114)", ["NativeControlChecks"] = Samples.Length,
                 ["KungFuMemory"] = Memory(KungFuProfile), ["KarateMemory"] = Memory(KarateProfile),
-                ["FixedModifierChance"] = "262,265,429,534,536 only; normal PvP rolls"
+                ["FixedModifierChance"] = string.Join(",", MartialPlayerControlQa.FixedAbilityIds)
             }, readyMessages: new[]
             {
-                "QAEnemy is the headless hostile player beside CSR at 17000,495,2300. Select QAEnemy, open ordinary Close Combat, then select the style on the first slot of page 2. Keep QAEnemy selected and remain in this interlock.",
+                $"CSR spawns at {CasterX},{StandY},{StandZ} facing QAEnemy, 3 m directly ahead at {RecipientX},{StandY},{StandZ}. Select QAEnemy, open ordinary Close Combat, then select the style on page 2 slot 1. Keep QAEnemy selected and remain in this interlock.",
                 "For each row, submit the listed prep with Enter and no Escape, then press the listed stock hotbar slot. The helper attempts stock Cheap Shot during control and again after both removals.",
                 "Wait for the NativeQa console PASS and NEXT lines after each row. NEXT follows Cheap Shot's 20 s reuse. If your special misses, wait for its own reuse to end, reapply the prep and retry the same slot.",
-                "This disposable fixture selects the positive modifier roll for 262, 265, 429, 534 and 536. Hit contests, state durations, immunity, refusal and expiry use the ordinary server paths."
+                "The helper waits for each expected state while the fixture server is running. This disposable fixture selects the positive modifier roll for all nine moves. Hit contests, durations, immunity, refusal and expiry use the ordinary server paths."
             }.Concat(Instructions(2, KungFu)).Append(
                 "After the fifth NEXT line, enter ?combatdepth control-karate. Wait for Martial control Karate stage ready. Switch to page 3, press slot 1 (Karate), then run these slots in the same interlock.")
                 .Concat(Instructions(3, Karate)).Append(
@@ -89,6 +95,7 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             .Select(row => AbilityCatalog.IdOf(row.Descriptor)).ToHashSet();
         Check.That(RecipientProfile.All(profile.Contains), "Helper owns Cheap Shot and all of its prerequisites");
         await PvpOpponentsFixture.EnterAsync(recipient);
+        VerifyStand(recipient.World.CreationSnapshot().Last(view => view.ViewId == 2), RecipientX, RecipientYaw);
         NativeQaReadiness.RequireNoAmbientAggro(server, recipient);
         if (context.StockProbe is not { } caster)
         {
@@ -100,6 +107,9 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         var enemy = await caster.WaitForViewNamedAsync(recipient.Handle);
         PvpOpponentsFixture.Observe(enemy, 2, recipient.CharId);
         var csr = await recipient.WaitForViewNamedAsync(caster.Handle);
+        VerifyStand(caster.World.CreationSnapshot().Last(view => view.ViewId == 2), CasterX, CasterYaw);
+        VerifyStand(csr, CasterX, CasterYaw);
+        VerifyStand(enemy, RecipientX, RecipientYaw);
         var target = Handle(enemy);
         int start = caster.World.RpcSnapshot().Count;
         string targetHex = WireFormat.ToHex(BitConverter.GetBytes(target));
@@ -134,7 +144,7 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             foreach (Sample sample in samples)
             {
                 int cursor = recipient.World.RpcSnapshot().Count;
-                var proof = ObserveRecipientAsync(context, recipient, Handle(csr), sample, cursor);
+                var proof = ReplayRecipientAsync();
                 for (int attempt = 0; attempt < 5 && !proof.IsCompleted; attempt++)
                 {
                     if (sample.Setup != null)
@@ -149,32 +159,68 @@ public sealed class MartialPlayerControlMode : NativeQaMode
                         break;
                 }
                 await proof;
+
+                async Task ReplayRecipientAsync()
+                {
+                    var added = await recipient.WaitForRpcAsync(frame => State(frame, sample, false),
+                        $"recipient state add {sample.Id}/{sample.State}", TimeSpan.FromMinutes(2));
+                    await ObserveRecipientAsync(context, recipient, Handle(csr), sample, cursor, added);
+                }
             }
         }
     }
 
     private static async Task WatchNativeAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient, ServerInstance server)
     {
+        string stop = Path.Combine(context.OutputDirectory, "stop");
         try
         {
-            uint csr = Handle(await recipient.WaitForViewNamedAsync("CSR_Tester", TimeSpan.FromMinutes(15)));
+            var csr = await WaitForNativeEventAsync(() => recipient.World.CreationSnapshot().LastOrDefault(view => view.Name == "CSR_Tester"));
+            if (csr == null) return;
             int cursor = 0;
             foreach (Sample sample in Samples)
-                cursor = await ObserveRecipientAsync(context, recipient, csr, sample, cursor);
+            {
+                Console.WriteLine($"MARTIAL RECIPIENT WAITING {sample.Id}");
+                var added = await WaitForNativeEventAsync(() => recipient.World.RpcSnapshot().Skip(cursor)
+                    .FirstOrDefault(frame => State(frame, sample, false)));
+                if (added == null) return;
+                cursor = await ObserveRecipientAsync(context, recipient, Handle(csr), sample, cursor, added);
+            }
         }
-        catch (Exception error) when (!server.HasExited)
+        catch (Exception error)
         {
+            if (!Running()) return;
             Console.WriteLine($"MARTIAL RECIPIENT FAILED {error.Message}");
             await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "martial-player-control-failure.log"), error.ToString());
         }
-        catch (Exception) when (server.HasExited) { }
+
+        bool Running()
+        {
+            if (File.Exists(stop)) return false;
+            try { return !server.HasExited; }
+            catch (InvalidOperationException) { return false; }
+        }
+
+        async Task<T?> WaitForNativeEventAsync<T>(Func<T?> read) where T : class
+        {
+            long seen = -1;
+            while (Running())
+            {
+                long version = recipient.World.Version;
+                if (seen != version)
+                {
+                    seen = version;
+                    if (read() is { } result) return result;
+                }
+                await Task.Delay(25);
+            }
+            return null;
+        }
     }
 
     private static async Task<int> ObserveRecipientAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient,
-        uint caster, Sample sample, int cursor)
+        uint caster, Sample sample, int cursor, RpcRecord added)
     {
-        var added = await recipient.WaitForRpcAsync(frame => State(frame, sample, false),
-            $"recipient state add {sample.Id}/{sample.State}", TimeSpan.FromMinutes(3));
         long stateAt = Stopwatch.GetTimestamp();
         var immune = await StockAbilityProfile.ObserveAsync(recipient, cursor, frame => Immunity(frame, sample, false),
             $"separate immunity add for {sample.Id}");
@@ -250,6 +296,16 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         BytePattern.Parse($"80 bd 01 c6 00 {AbilityCooldowns.OwnTimer:x2} 00 00 a0 41 {(end ? "00" : "01")}").IsMatch(frame.Bytes);
     private static ushort? ReadInnerStrength(byte[] view) =>
         BuffDrainLifetimeFixture.TryInnerStrength(view, out ushort value) ? value : null;
+    private static void VerifyStand(ViewCreation view, int x, byte yaw)
+    {
+        byte[] position = view.Attributes["Position"];
+        Check.Equal((double)x, BitConverter.ToDouble(position), $"{view.Name} exact spawn x");
+        Check.Equal((double)StandY, BitConverter.ToDouble(position, 8), $"{view.Name} exact spawn y");
+        Check.Equal((double)StandZ, BitConverter.ToDouble(position, 16), $"{view.Name} exact spawn z");
+        Check.Equal(yaw, view.Attributes["Yaw Interval"][0], $"{view.Name} faces the other participant");
+        Check.That(NavMesh.Locate(1, x, StandY, StandZ, out var spot) && !spot.indoors && Math.Abs(spot.floorY + 95 - StandY) < 10,
+            $"{view.Name} spawn is on the outdoor walkable floor");
+    }
     private static uint Handle(ViewCreation view) => DuelPackets.Handle(view.ViewId, view.SpawnId);
     private static long Descriptor(ushort id) => 0x80000000L | ((long)id << 10);
     private static ushort[] Profile(ushort style, Sample[] samples) => StockAbilityProfile.Profile(Hotbar(style, samples)

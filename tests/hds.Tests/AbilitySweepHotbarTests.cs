@@ -92,6 +92,7 @@ public class AbilitySweepHotbarTests
         byte[] seeded = AbilitySweepHotbar.Seed(original, plan.HotbarAbilities, pageThree: plan.HotbarPageThree);
         Assert.Equal(new ushort[] { 133, 259, 427, 430, 262, 429 }, plan.HotbarAbilities);
         Assert.Equal(new ushort[] { 132, 536, 265, 532, 534 }, plan.HotbarPageThree);
+        Assert.Equal(plan.HotbarAbilities.Skip(1).Concat(plan.HotbarPageThree.Skip(1)), MartialPlayerControlQa.FixedAbilityIds);
         Assert.Equal(11u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
         Assert.Equal(new byte[] { 2, 0, 0, 0, 0, 0, 132, 0, 0, 0 }, seeded[76..86]);
         Assert.Equal(new byte[] { 2, 4, 0, 0, 0, 0, 22, 2, 0, 0 }, seeded[116..126]);
