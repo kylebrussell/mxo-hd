@@ -34,7 +34,7 @@ public sealed class MartialConfuseMode : NativeQaMode
     private const string StockSpinningClayPigeon = "80b9280104000200000000000000000000000000000000000000000028010000006b0000086b0000000000";
     private const string StockCheapShot = "80b9c600050003000000000000000000000000000000000000000000c6000000006b0000086b0000000000";
     private const string StockTacticPower = "42 01 00 00 00 00 00";
-    private const string StockTacticGrab = "42 02 00 00 00 00 00";
+    private const string StockTacticSpeed = "42 00 00 00 00 00 00";
 
     private static readonly byte[] SelfFlagsHeader = { 0x02, 0x00, 0x02, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01 };
     private static readonly byte[] OtherFlagsHeader = { 0x02, 0x80, 0x80, 0x80, 0x80, 0x04 };
@@ -89,10 +89,10 @@ public sealed class MartialConfuseMode : NativeQaMode
             },
             readyMessages: new[]
             {
-                $"Level 50 rank 50 unarmed ({mem}/100 memory; Kung-Fu +41% melee, Aikido +40% melee). CSR spawns at ({CasterX},{StandY},{StandZ}) outside the hardline booth facing QAEnemy (6114, hostile) 2.52 m west. QAEnemy uses Power tactic so CSR's Grab tactic beats it cleanly. Fixed disposable fixture chances: 428 Confuse (30% -> 100%) and CSR Grab Off-Balance condition (25% -> 100%, broadcast via real PvpCombat.ApplyCondition -> PvpFlag.SendFlags 0x04).",
+                $"Level 50 rank 50 unarmed ({mem}/100 memory; Kung-Fu +41% melee, Aikido +40% melee). CSR spawns at ({CasterX},{StandY},{StandZ}) outside the hardline booth facing QAEnemy (6114, hostile) 2.52 m west. This fixture seeds CSR on Grab and QAEnemy on Power. Leave the tactic alone. Fixed chances: 428 Confuse and Off Balance on damaging CSR Grab rounds.",
                 "Helper watches QAEnemy continuously in any order without session-fatal row timeouts. If any special misses, wait for its own reuse and retry the same slot. Wait for MARTIAL-CONFUSE NEXT (after QAEnemy's Cheap Shot 198 20 s recovery cooldown finishes) before casting the next row.",
                 "Row 1 — Suicidal Butterfly (428, Confuse 4.0 s, fixed 100% proc, no target state): From spawn, select QAEnemy (2.52 m west) and enter ordinary Close Combat. Press slot 1 (133 Kung-Fu), then slot 2 (428 Suicidal Butterfly). Expect 35 IS, 10.0 s own / 5.0 s group 688 reuse, 35 dmg (base 25 + 41%), QAEnemy Confuse state 91 (4.0 s) + linked record, QAEnemy Cheap Shot (198) REFUSED while confused ('You cannot perform special moves while confused.'), both Confuse records removed at ~4.0 s + 'You are no longer confused.', then Cheap Shot (198) ACCEPTED after expiry. Wait for MARTIAL-CONFUSE PASS 428 and MARTIAL-CONFUSE NEXT.",
-                "Row 2 — Counter Throw (273, Confuse 4.0 s, requires Off-Balance 0x04): Stay in Close Combat with QAEnemy. Press slot 3 (101 Aikido) and switch your combat tactic button to GRAB. On the first damaging Grab round, real retail PvpCombat.ApplyCondition sets Off-Balance (0x04, 10 s) on QAEnemy and lights up slots 4 & 5 on your stock hotbar (helper logs MARTIAL-CONFUSE OFF-BALANCE ON). Press slot 4 (273 Counter Throw). Expect 15 IS, 10.0 s own / 5.0 s group 687 reuse, 78 dmg (base 56 + 40%), QAEnemy Confuse state 91 (4.0 s) + linked record, Cheap Shot (198) REFUSED while confused, removed at ~4.0 s + 'You are no longer confused.', then Cheap Shot (198) ACCEPTED after expiry. Wait for MARTIAL-CONFUSE PASS 273 and MARTIAL-CONFUSE NEXT.",
+                "Row 2 — Counter Throw (273, Confuse 4.0 s, requires Off-Balance 0x04): Stay in Close Combat with QAEnemy. Press slot 3 (101 Aikido) and wait for slot 4 to light. Each damaging Grab round gives QAEnemy Off Balance for 10 s. Press slot 4 (273 Counter Throw). Expect 15 IS, 10.0 s own / 5.0 s group 687 reuse, 78 dmg (base 56 + 40%), Confuse and linked record, Cheap Shot (198) refused until expiry and accepted after it. Wait for MARTIAL-CONFUSE PASS 273 and MARTIAL-CONFUSE NEXT.",
                 "Row 3 — Aikido Spinning Clay Pigeon (296, Confuse 8.0 s, requires Off-Balance 0x04): Stay in Aikido (101) with GRAB tactic active so Off-Balance (0x04) refreshes on QAEnemy (slot 5 lit). Press slot 5 (296 Aikido Spinning Clay Pigeon). Expect 40 IS, 40.0 s own reuse, 524 dmg (base 375 + 40%), QAEnemy Confuse state 91 (8.0 s) + linked record, Cheap Shot (198) REFUSED while confused, removed at ~8.0 s + 'You are no longer confused.', then Cheap Shot (198) ACCEPTED after expiry. Wait for MARTIAL-CONFUSE ALL PASS.",
                 "Keep CSR PacketLog, DebugLog, and martial-confuse.jsonl for the three rows."
             });
@@ -137,6 +137,11 @@ public sealed class MartialConfuseMode : NativeQaMode
         uint csrHandle = Handle(csrAtEnemy);
         string enemyHex = WireFormat.ToHex(BitConverter.GetBytes(enemyHandle));
 
+        await ObserveTacticAsync(0, 1016, "CSR has the fixture's Grab tactic on login");
+        int speedRpc = caster.World.RpcSnapshot().Count;
+        caster.SendRpc(StockTacticSpeed);
+        await ObserveTacticAsync(speedRpc, 1015, "CSR can select Speed for the negative gate check");
+
         // Open Close Combat with QAEnemy.
         int openRpc = caster.World.RpcSnapshot().Count;
         caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(StockSelfDefense, enemyHandle),
@@ -162,12 +167,17 @@ public sealed class MartialConfuseMode : NativeQaMode
                  r.ErrorID == AbilityRefusals.TargetStateRequired && r.StatesNotMet == 4u,
             "273 refused with TargetStateRequired(4) before Off-Balance");
 
-        // Switch CSR to Grab tactic (real RPC 0x42) so winning Grab round applies real Off-Balance (0x04) via PvpFlag.SendFlags.
+        // Check both inputs against settled PvP rounds, in addition to checking the tactic records.
+        int beforePower = server.DebugLog().Length;
+        int powerRpc = caster.World.RpcSnapshot().Count;
+        caster.SendRpc(StockTacticPower);
+        await ObserveTacticAsync(powerRpc, 1017, "CSR switches to Power with stock RPC 42 in interlock");
+        await ObserveRoundAsync(beforePower, CombatTactic.Power);
+        int beforeGrab = server.DebugLog().Length;
         int grabRpc = caster.World.RpcSnapshot().Count;
-        caster.SendRpc(StockTacticGrab);
-        await StockAbilityProfile.ObserveAsync(caster, grabRpc,
-            f => ManageBonusRecord.TryDecode(f.Bytes, out var r) && r!.SourceId == 1016 && r.AddRemoveType == 0,
-            "CSR switches tactic to Grab (1016)");
+        caster.SendChat("?tactic grab");
+        await ObserveTacticAsync(grabRpc, 1016, "CSR switches to Grab with the dev chat command in interlock");
+        await ObserveRoundAsync(beforeGrab, CombatTactic.Grab);
 
         // Row 2: Counter Throw (273) — Aikido + real Grab Off-Balance (0x04 visible on CSR's view of QAEnemy), Confuse 4.0 s.
         await LandUntilObservedAsync(caster, enemy, StockCounterThrow, enemyHandle, TimeSpan.FromSeconds(10.5),
@@ -184,6 +194,19 @@ public sealed class MartialConfuseMode : NativeQaMode
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count,
             "Martial Confuse replay packet framing");
         return Array.Empty<byte>();
+
+        Task<RpcRecord> ObserveTacticAsync(int cursor, ushort tactic, string description) =>
+            StockAbilityProfile.ObserveAsync(caster, cursor,
+                f => ManageBonusRecord.TryDecode(f.Bytes, out var r) && r!.SourceId == tactic && r.AddRemoveType == 0,
+                description);
+
+        Task ObserveRoundAsync(int cursor, CombatTactic tactic) => caster.WaitUntilAsync(() =>
+        {
+            string log = server.DebugLog();
+            return log.Length > cursor && log[cursor..].Split('\n').Any(line =>
+                line.StartsWith("[PVP] Round ", StringComparison.Ordinal) &&
+                line.Contains($"CSR_Tester {tactic} (", StringComparison.Ordinal));
+        }, $"A resolved PvP round uses CSR's {tactic} tactic", Hold);
     }
 
     private static async Task WatchNativeAsync(NativeQaBootstrapContext context, ServerInstance server, HeadlessPlayer enemy)

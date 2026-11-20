@@ -25,10 +25,14 @@ namespace hds
         internal static bool Allowed(string enabled, string dev, string database, uint caster, bool inWorld, bool dead) =>
             enabled == "1" && caster == 110 && QaLoadout.Allowed(dev, database, caster, inWorld, dead);
 
-        private static bool Allowed(WorldClient caster) =>
+        private static bool Allowed(WorldClient caster, bool setup = false) =>
             caster != null && Allowed(Environment.GetEnvironmentVariable(Mode),
                 Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), Store.config?.dbParams?.DatabaseName,
-                caster.playerData.getCharID(), caster.playerData.getOnWorld(), caster.playerData.isDead);
+                caster.playerData.getCharID(), setup || caster.playerData.getOnWorld(), caster.playerData.isDead);
+
+        // Setup sends tactic records before the player acknowledges the world spawn.
+        internal static bool StartsOnGrab(WorldClient caster) => Allowed(caster, setup: true) &&
+            caster.playerData.tacticRecordIds == null && !caster.playerData.DistrictIsLA();
 
         /// <summary>
         /// In the disposable CSR -> QAEnemy (6114) fixture, fixes Suicidal Butterfly (428)'s 30% Confuse modifier chance
