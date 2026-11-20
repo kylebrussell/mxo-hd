@@ -320,7 +320,8 @@ namespace hds
             string name = client != null ? TimedEffects.PlayerName(client) : "";
             foreach (ushort parent in parents)
             {
-                if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
+                Random effectiveRng = rng ?? (ReferenceEquals(PulseRandom, random) ? DispelCallbackRandom() : PulseRandom);
+                if (Roll(effectiveRng, 100) >= pulse.Value) continue;
                 bool live = subject.Effects.Snapshot().Any(m => m.Parent == parent && m.Expires > TimeUtils.GetSimTimeSeconds());
                 if (!TimedEffects.RemoveParent(subject, parent)) continue;
                 string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
