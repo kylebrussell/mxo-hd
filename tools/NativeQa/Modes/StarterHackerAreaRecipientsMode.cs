@@ -7,17 +7,19 @@ namespace NativeQa.Modes;
 
 public sealed class StarterHackerAreaRecipientsMode : NativeQaMode
 {
-    private const ushort HackerStyle = 1006, Disruption = 38, FreezeArea = 47, UiLag = 97;
+    private const ushort HackerStyle = 1006, Disruption = 38, FreezeArea = 47, LogicBlast = 57, UiLag = 97;
     private const string HackerCast = "80b9ee0300000000000000000000000000000000000000000000000000000084d75741086b0000000000";
-    // PR512 stock UI Lag and preserved Area Disruption capture 5cab2d1841ad:8946.
+    // PR512 stock UI Lag. PR556 stock Area Disruption, Freeze Area and Logic Blast.
     private const string LagCast = "80b96100060004000000000000000000000000000000000000000000585cb70001000000086b0000000000";
-    private const string DisruptCast = "80b92600000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    private const string DisruptCast = "80b92600060004000000000000000000000000000000000000000000585cb70001000000086b0000000000";
+    private const string FreezeCast = "80b92f000700050000000000000000000000000000000000000000000000000090767241086b0000000000";
+    private const string BlastCast = "80b93900060004000000000000000000000000000000000000000000585cb70001000000086b0000000000";
     private static readonly (string Name, uint Id, int X, int Z, int Org)[] Stands =
     {
         ("QAEnemy", 6114, 25000, -1498, 2), ("QAFriend", 6111, 24880, -1680, 2),
         ("QAFar", 6112, 25400, -1498, 2), ("QAOther", 6113, 24900, -1398, 1)
     };
-    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HackerStyle, Disruption, FreezeArea, UiLag)
+    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HackerStyle, Disruption, FreezeArea, LogicBlast, UiLag)
         .Order().ToArray();
 
     public override string Name => "ability-parity-starter-hacker-area-recipients";
@@ -28,17 +30,16 @@ public sealed class StarterHackerAreaRecipientsMode : NativeQaMode
         "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES (6111,400,2147485696,50,1),(6111,401,2147501056,50,1)"
     }.Concat(Stands.Select(stand =>
         $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},x={stand.X},y=495,z={stand.Z},healthC=3000,healthM=3000,alignment={stand.Org},pvpflag=0 WHERE charId={stand.Id}")).ToArray(),
-        DevCommands: true, hotbarAbilities: new[] { HackerStyle, UiLag, Disruption, FreezeArea }, environmentOverrides: new()
+        DevCommands: true, hotbarAbilities: new[] { HackerStyle, UiLag, Disruption, FreezeArea, LogicBlast }, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "16383", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "32766"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "38,47,97", ["NativeCloseableRows"] = 1 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "38,47,57,97", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             "Stay at the stand and select Hacker Style (page 2 slot 1). The helpers are already visible. QAEnemy is 2 m east, QAFriend is a hostile with Self Defense and higher Viral Defense inside 3 m, QAFar is 6 m east, and QAOther is friendly inside 3 m.",
-            "Select QAFar and keep it selected. Use slot 2 UI Lag. QAEnemy receives four debuffs for 27 s. QAFriend deflects with no debuffs, QAFar is outside the 3 m radius, and QAOther is friendly. Keep the helper deflect line and the target removals.",
-            "Use slot 3 Area Disruption. The 8 m effect reaches QAEnemy and QAFar, and QAFriend deflects again. This loadout gives about 3.15 s Stun and 8 s immunity. Wait for both to clear.",
-            "Use slot 4 Freeze Area and capture its first stock request. Compare the same 3 m recipient set as UI Lag. QAEnemy should get Pacify and -30 Viral Resistance. The fixture fixes only eligible viral contest draws and keeps the recipient defense differences."
+            "The first UI Lag capture already passed. Preselect QAEnemy before pressing slot 4 Freeze Area. Keep QAEnemy selected for the entire retest. QAEnemy receives 6 s Pacify and -30 Viral Resistance for 12 s plus 12 s immunity. QAFriend deflects. QAFar and QAOther stay unaffected.",
+            "Press slot 5 Logic Blast immediately when Pacify lands. There are six seconds from Pacify landing until it expires, and Logic Blast itself takes two seconds. Use the damage line as the cue to press slot 3. Check that landed damage ends the Freeze Area parent and its two records and preserves the independent 12 s immunity. Area Disruption also takes two seconds and must land within the twelve-second immunity measured from Freeze Area landing. QAEnemy should refuse the new Stun. QAFar should get the 3.15 s Stun and 8 s immunity. Keep all observed remove records."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -72,9 +73,39 @@ public sealed class StarterHackerAreaRecipientsMode : NativeQaMode
             { (1032, -10, 27), (183, -17, 27), (1011, -12, 27), (342, -14, 27) };
         await CastAsync(UiLag, StarterHackerControlTargetMode.WithHandle(LagCast, farHandle), 58,
             new[] { "QAEnemy" }, lagModifiers);
-        await CastAsync(Disruption, Convert.FromHexString(DisruptCast), 43,
-            new[] { "QAEnemy", "QAFar" }, new (ushort, int, float)[] { (102, 0, 3 * 1.05f) });
         var near = context.Helpers["QAEnemy"];
+        var nearView = await actor.WaitForViewNamedAsync(near.Handle);
+        uint nearHandle = DuelPackets.Handle(nearView.ViewId, nearView.SpawnId);
+        actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(nearHandle))}");
+        int freezeAt = near.World.RpcSnapshot().Count;
+        await CastAsync(FreezeArea, StarterHackerControlTargetMode.WithHandle(FreezeCast, nearHandle), 58,
+            new[] { "QAEnemy" }, new (ushort, int, float)[] { (85, 0, 6), (157, -30, 12) });
+
+        int strikeAt = near.World.RpcSnapshot().Count;
+        actor.SendRpc(StarterHackerControlTargetMode.WithHandle(BlastCast, nearHandle));
+        var damage = await StockAbilityProfile.ObserveAsync(near, strikeAt, frame => frame.Bytes.Length >= 19 &&
+            frame.Bytes[0] == 0x81 && frame.Bytes[1] == 0x67 &&
+            BitConverter.ToUInt32(frame.Bytes, 6) == AbilityMessages.DamageTarget &&
+            BitConverter.ToUInt32(frame.Bytes, 15) == AbilityMessages.AbilityGameObject(LogicBlast),
+            "Ordinary Logic Blast actually damages the pacified opponent");
+        var pacifyOff = await StockAbilityProfile.ObserveAsync(near, strikeAt,
+            frame => StockAbilityProfile.Bonus(frame, FreezeArea, 85, 0, 6, true), "The hit removes Pacify");
+        var resistanceOff = await StockAbilityProfile.ObserveAsync(near, strikeAt,
+            frame => StockAbilityProfile.Bonus(frame, FreezeArea, 157, -30, 12, true), "The hit removes the Freeze Area parent vulnerability");
+        Check.Equal(damage.ListCounter, pacifyOff.ListCounter, "Pacify clears in the damage response, before natural expiry");
+        Check.Equal(damage.ListCounter, resistanceOff.ListCounter, "The same response clears the second parent modifier");
+        Check.That(!near.World.RpcSnapshot().Skip(freezeAt).Any(frame =>
+            StockAbilityProfile.Bonus(frame, TempMods.ControlImmunityTimerAbility, 681, 0, 12, true)),
+            "Premature parent removal preserves control immunity");
+
+        int disruptAt = server.DebugLog().Length;
+        await CastAsync(Disruption, StarterHackerControlTargetMode.WithHandle(DisruptCast, nearHandle), 43,
+            new[] { "QAFar" }, new (ushort, int, float)[] { (102, 0, 3 * 1.05f) });
+        Check.That(server.DebugLog()[disruptAt..].Contains("[EFFECTS] 38: control immunity, state refused", StringComparison.Ordinal),
+            "QAEnemy's immunity blocks the second control cast");
+        await near.WaitUntilAsync(() => near.World.RpcSnapshot().Skip(freezeAt).Any(frame =>
+                StockAbilityProfile.Bonus(frame, TempMods.ControlImmunityTimerAbility, 681, 0, 12, true)),
+            "The independent immunity timer naturally ends", TimeSpan.FromSeconds(13));
         await near.WaitUntilAsync(() => lagModifiers.All(modifier => near.World.RpcSnapshot().Any(frame =>
             StockAbilityProfile.Bonus(frame, UiLag, modifier.Stat, modifier.Value, modifier.Duration, true))),
             "All four UI Lag modifiers expire on the admitted recipient", TimeSpan.FromSeconds(30));
@@ -102,6 +133,10 @@ public sealed class StarterHackerAreaRecipientsMode : NativeQaMode
                     await StockAbilityProfile.ObserveAsync(context.Helpers[name], cursors[name],
                         frame => StockAbilityProfile.Bonus(frame, TempMods.ControlImmunityTimerAbility, 681, 0, 8, false),
                         $"Area Disruption starts eight-second immunity on {name}");
+                if (id == FreezeArea)
+                    await StockAbilityProfile.ObserveAsync(context.Helpers[name], cursors[name],
+                        frame => StockAbilityProfile.Bonus(frame, TempMods.ControlImmunityTimerAbility, 681, 0, 12, false),
+                        $"Freeze Area starts twelve-second immunity on {name}");
             }
 
             var deflect = new Regex($@"\[FREECAST-VIRAL\] ability={id} source=CSR_Tester target=QAFriend [^\r\n]+hit=False\b");
