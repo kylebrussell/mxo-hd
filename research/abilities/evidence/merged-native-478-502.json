@@ -1,0 +1,190 @@
+{
+  "families": {
+    "neuro-dart": {
+      "representative": 141,
+      "result": "pass",
+      "head": "04b4708d88f4a6185b00439152c66d98b37502c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/478",
+      "scope": "The fresh dummy received the captured-policy 406 DOT total, 68 damage ticks and all eight debuff records. The base 264 is archival policy and differs from the later GOB."
+    },
+    "deadly-aim": {
+      "representative": 339,
+      "result": "pass",
+      "head": "04b4708d88f4a6185b00439152c66d98b37502c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/478",
+      "scope": "Rank-50 passive source records 1041 +25 and 1068 +5 left and returned. Stock hid the Blind and Enrage Duration rows while the separate Thrown Damage Bonus stayed +71."
+    },
+    "throat-cutting-throw": {
+      "representative": 340,
+      "result": "pass",
+      "head": "04b4708d88f4a6185b00439152c66d98b37502c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/478",
+      "scope": "Stagger allowed the landed 123 damage throw and a 7.5 s Powerless. The 6 s base received a 25% loaded duration bonus."
+    },
+    "subduing-throw": {
+      "representative": 347,
+      "result": "pass",
+      "head": "04b4708d88f4a6185b00439152c66d98b37502c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/478",
+      "scope": "Dazed fresh dummy received 87 damage and the 4 s conditional Stun."
+    },
+    "uncanny-senses": {
+      "representative": 161,
+      "result": "pass",
+      "head": "bacdb707c68a8c57ea6b6bd768cd38bc95a516e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/480",
+      "scope": "Stock removes and restores source 161's Sneak Attack Detection +40."
+    },
+    "ghost-strike": {
+      "representative": 365,
+      "result": "pass",
+      "head": "bacdb707c68a8c57ea6b6bd768cd38bc95a516e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/480",
+      "scope": "Fresh valid enemy received the stock Ghost Strike for 44."
+    },
+    "disrupt-connection": {
+      "representative": 384,
+      "result": "pass",
+      "head": "bacdb707c68a8c57ea6b6bd768cd38bc95a516e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/480",
+      "scope": "Stock removes and restores Contested Withdraw +10, Enrage Duration +5 and Stun Duration +15. The unloaded Contested Withdraw total is 67 versus 77 loaded, and Blind Duration stays 65."
+    },
+    "reverse-bull-dog": {
+      "representative": 388,
+      "result": "pass",
+      "head": "bacdb707c68a8c57ea6b6bd768cd38bc95a516e1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/480",
+      "scope": "With Sneak active the fresh valid opponent took 1934, then Stun ran 9.2 s from the 8 s base and the loaded 15% increase."
+    },
+    "combat-insight-bonus": {
+      "representative": 113,
+      "result": "pass",
+      "head": "dcac06a1f5de0db2aff0c214a4b96853e826c9f5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/498",
+      "scope": "Prior native head b4634f8e published +10 Force Combat at rank 50 and removed/restored it when toggling membership. The exact retail engagement contest is open."
+    },
+    "operative-sitting-regen": {
+      "representative": 143,
+      "result": "pass",
+      "head": "dcac06a1f5de0db2aff0c214a4b96853e826c9f5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/498",
+      "scope": "Prior native head b4634f8e published +50% Sitting Health Regen and removed/restored it on unload/reload. Actual stock sitting rates and the exact retail consumer remain open."
+    },
+    "sharpshooter-close-rifle": {
+      "representative": 148,
+      "result": "pass",
+      "head": "dcac06a1f5de0db2aff0c214a4b96853e826c9f5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/498",
+      "scope": "In stock, equipping rifle 692 in-world selected it for Free Attack. Fire at the unarmed enemy 1.2 m away showed 0, -15 and 0 across loaded, unloaded and reloaded states."
+    }
+  },
+  "abilities": {
+    "57": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 57 Logic Barrage 1.0 selects a hostile target within 20 m and uses TestFunction 2.",
+          "runtime": "AbilityHandler checks live selection/range and AbilityTargets checks sight and deflection before damage.",
+          "test": "PR454 recorded the positive hit and friendly refusal. PR493 recorded held-target sight and range refusal. PR502 b33a6ef2 deflected the exact request on the clear stand (12 vs 69), with no effects or splash. FreeCastViralLandingTests includes actual NPC landing for 57. https://github.com/kylebrussell/mxo-hd/pull/454 https://github.com/kylebrussell/mxo-hd/pull/493 https://github.com/kylebrussell/mxo-hd/pull/502"
+        }
+      }
+    },
+    "60": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 60 Code Nuke 1.0 selects a hostile target within 15 m and uses TestFunction 2.",
+          "runtime": "AbilityHandler checks live selection/range and AbilityTargets checks sight and deflection before the selected-centre damage and any splash.",
+          "test": "PR454 recorded the positive hit and friendly refusal. PR493 recorded held-target sight and range refusal. PR502 b33a6ef2 deflected the exact request on the clear stand (12 vs 69), with no effects or splash. FreeCastViralLandingTests includes actual NPC landing for 60. https://github.com/kylebrussell/mxo-hd/pull/454 https://github.com/kylebrussell/mxo-hd/pull/493 https://github.com/kylebrussell/mxo-hd/pull/502"
+        }
+      }
+    },
+    "113": {
+      "family": "combat-insight-bonus"
+    },
+    "135": {
+      "checks": {
+        "stats": {
+          "source": "7.6005 GOB 135 uses ValueFunction 3, ValueScale 0.5, and targets melee damage 159.",
+          "runtime": "AbilityScaledBuffs evaluates caster level and the ordinary typed damage consumer reads only melee.",
+          "test": "OperativeBatchThreeTests checks levels 4, 19 and 50, melee and ballistic separation, and removal. PR501 stock melee bonus rose by 9 at level 19 while ballistic returned to baseline, then the melee bonus returned to baseline. https://github.com/kylebrussell/mxo-hd/pull/501"
+        },
+        "behavior-tests": {
+          "source": "Ability 135 stores 20 IS, 20 seconds and 90 s reuse in soldier family 38.",
+          "runtime": "The normal timed buff and typed damage path handle 135 and replace the prior specialization.",
+          "test": "StarterSoldierDamageBuffsMode checks the stock replacement, corrected modifier, 20 s expiry and own reuse. OperativeBatchThreeTests tests the stored IS cost and typed consumer at three levels. PR501 reproduced stacking and expiry in stock. https://github.com/kylebrussell/mxo-hd/pull/501"
+        }
+      }
+    },
+    "141": {
+      "family": "neuro-dart"
+    },
+    "143": {
+      "family": "operative-sitting-regen"
+    },
+    "148": {
+      "family": "sharpshooter-close-rifle"
+    },
+    "161": {
+      "family": "uncanny-senses"
+    },
+    "282": {
+      "checks": {
+        "controls": {
+          "source": "GOB 282 stores a 10 s Blind component.",
+          "runtime": "TimedEffects applies the owner\u2019s linked Blind Duration through the normal state path.",
+          "test": "MasterKnifeThrowerBatchTests confirms the +25% linked value in this profile. PR478 stock landed 12.5 s Blind and a separate 6-damage DOT tick. https://github.com/kylebrussell/mxo-hd/pull/478"
+        }
+      }
+    },
+    "339": {
+      "family": "deadly-aim",
+      "checks": {
+        "stats": {
+          "source": "GOB 339 packs targets 1041 Blind Duration and 1068 Enrage Duration.",
+          "runtime": "AbilityPassives scales them with learned level and sends their own add/remove records.",
+          "test": "MasterKnifeThrowerBatchTests checks +25/+5 at rank 50. PR478 stock hid/restored the respective rows and preserved the distinct Thrown Damage total. https://github.com/kylebrussell/mxo-hd/pull/478"
+        }
+      }
+    },
+    "340": {
+      "family": "throat-cutting-throw",
+      "checks": {
+        "controls": {
+          "source": "GOB ApplyPowerlessIfStaggered consumes 6 s; the stored Off Balance modifier lasts 8 s.",
+          "runtime": "The conditional callback uses the live Staggered state and applies the duration link before the state record.",
+          "test": "ConditionalPowerlessTests exercises Staggered and non-Staggered through the real callback. PR478 stock recorded the 7.5 s linked Powerless and ordinary throw. https://github.com/kylebrussell/mxo-hd/pull/478"
+        }
+      }
+    },
+    "341": {
+      "checks": {
+        "script": {
+          "source": "GOB 341 uses ThrownDOT and RandomCombatStateChance with the shipped 2.5 s interval.",
+          "runtime": "TimedEffects and AbilitySeverArteryStates dispatch the DOT and periodic independent control test.",
+          "test": "SeverArteryStateTests exercises the 10% boundary and both initial and periodic callbacks. SpyShadowAssassinBatchTests and PR480 agree on 104 total, 30 s and 9 per tick. The native sample did not roll a state. https://github.com/kylebrussell/mxo-hd/pull/480"
+        }
+      }
+    },
+    "347": {
+      "family": "subduing-throw",
+      "checks": {
+        "controls": {
+          "source": "GOB ApplyStunEffectIfDazed consumes 4 s of Stun and uses control immunity.",
+          "runtime": "The landed terminal callback checks Dazed and invokes the existing Stun and immunity gate.",
+          "test": "ConditionalControlTests checks live state and immunity. PR478 stock landed the 4 s Stun on the prepared dummy. https://github.com/kylebrussell/mxo-hd/pull/478"
+        }
+      }
+    },
+    "365": {
+      "family": "ghost-strike"
+    },
+    "384": {
+      "family": "disrupt-connection"
+    },
+    "388": {
+      "family": "reverse-bull-dog"
+    }
+  },
+  "notes": {
+    "PR499": "Native retest d40425da: real left-click in clear standalone aim sent one 80 c2 and one matching 80 c3. Owner and observer both retained +0.45 after Sprint stopped. Existing native families already cover 11/12/184; jump rank, fee, in-flight cancel and movement-stat consumption remain open. https://github.com/kylebrussell/mxo-hd/pull/499"
+  }
+}
