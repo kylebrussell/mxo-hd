@@ -244,9 +244,11 @@ def server(i):
         parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; full native damage and admission parity unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
-    elif i in (36, 130):
-        base = 'viral 4' if i == 36 else 'ballistic 9'
-        parts.append(f'stored fixed {base} base when legacy endpoints are incomplete; complete damage and admission parity unresolved')
+    elif i in (36, 514):
+        base = 4 if i == 36 else 6
+        parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
+    elif i == 130:
+        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; complete damage and admission parity unresolved')
     elif i == 152:
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif i == 145:

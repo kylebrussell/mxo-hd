@@ -62,6 +62,80 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.DoesNotContain(Rpcs(c),r=>r.Length>=2&&r[0]==0x80&&(r[1]==0xac||r[1]==0xbd));
         Assert.Equal((ushort)4,AbilityHandler.CurrentInnerStrength(c));Assert.Equal((ushort)1000,PvpCombat.HealthOf(c));Assert.Equal(beforeCast,c.playerData.castEndsAt);Assert.Empty(c.playerData.cooldownEndsAt);
     }
+    [Theory]
+    [InlineData(36, 0)]
+    [InlineData(36, 2)]
+    [InlineData(514, 0)]
+    [InlineData(514, 65535)]
+    public void TinkeringWithoutALiveSelectionLeavesResourcesAndCastStateUntouched(ushort id, ushort view)
+    {
+        var client = Client();
+        double castEndsAt = client.playerData.castEndsAt;
+        ushort previousAbility = client.playerData.lastAbilityId;
+        Store.currentClient = client;
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setAbilityName("Tinkering");
+        DataLoader.getInstance().AbilityDB.Add(item);
+        byte[] request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(view).CopyTo(request, 2);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        Assert.Equal(ServerPackets.BuildSystemChatMessage("Select a living enemy before using this ability.", "BROADCAST"),
+            Assert.Single(Rpcs(client)));
+        Assert.Equal((ushort)500, AbilityHandler.CurrentInnerStrength(client));
+        Assert.Equal(castEndsAt, client.playerData.castEndsAt);
+        Assert.Empty(client.playerData.cooldownEndsAt);
+        Assert.Equal(previousAbility, client.playerData.lastAbilityId);
+    }
+
+    [Fact]
+    public void TinkeringSelectionRejectsStaleAndDeadPlayerViews()
+    {
+        var caster = Client();
+        var target = Client();
+        target.playerData.setEntityId(42);
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+
+        Assert.True(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9));
+        Assert.False(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 10));
+        target.playerData.duelDeath = true;
+        Assert.False(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9));
+    }
+
+    [Fact]
+    public void TinkeringSelectionNeedsALiveHostileNpcWhenUsingAnNpcView()
+    {
+        var caster = Client();
+        var mob = new Mob();
+        mob.setEntityId(42);
+        mob.setHealthC(100);
+        var view = caster.viewMan.addView(42, 599);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var original = WorldServer.mobs;
+        try
+        {
+            WorldServer.mobs = new();
+            WorldServer.mobs.Add(mob);
+            Assert.True(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9));
+            mob.isFriendly = true;
+            Assert.False(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9));
+            mob.isFriendly = false;
+            mob.setIsDead(true);
+            Assert.False(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9));
+        }
+        finally
+        {
+            WorldServer.mobs = original;
+        }
+    }
+
     [Fact] public void ActualTimerPredicateReportsReuseAndPreservesCostAndTimer()
     {
         var c=Client(500);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;double end=TimeUtils.GetSimTimeSeconds()+100;c.playerData.cooldownEndsAt[77]=end;
