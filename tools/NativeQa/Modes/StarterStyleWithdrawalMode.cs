@@ -25,7 +25,7 @@ public sealed class StarterStyleWithdrawalMode : NativeQaMode
         {
             $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},y={CombatFixtureLoadout.GroundY},healthC=4000,healthM=4000 WHERE charId=110",
             "DELETE FROM inventory WHERE charId=110 AND slot=107"
-        }, DevCommands: true, hotbarAbilities: new[] { SelfDefense, Hacker, Coder },
+        }, DevCommands: true, hotbarAbilities: new[] { SelfDefense, Hacker, Coder }, hotbarWithdraw: true,
         testMobFixture: "awakened-interlock-resistance.csv", environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
@@ -35,7 +35,7 @@ public sealed class StarterStyleWithdrawalMode : NativeQaMode
         {
             "Page 2 slots 1–3 are Self Defense rank 50, Hacker Style rank 15 and Coder Style rank 15. Each trial uses the same passive Melee Dummy.",
             "Before each trial use ?combatdepth fixture-reset. Wait for the ready line and for the combat HUD to clear. Strafe and reselect the same dummy, then open ordinary Close Combat.",
-            "Close Combat selects Self Defense. Leave it active for the first trial. For the next two trials choose Hacker or Coder after entering interlock. Use the normal Withdraw button once. The server log should print [WITHDRAW INPUT OURS] with direct/input 65, 19 or 21. The roll can still fail. Reset and move to the next style once the input is logged."
+            "Close Combat selects Self Defense. Leave it active for the first trial. For the next two trials choose Hacker or Coder after entering interlock. Press page 2 slot 4 (Withdraw) once. The server log should print [WITHDRAW INPUT OURS] with direct/input 65, 19 or 21. The roll can still fail. Reset and move to the next style once the input is logged."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

@@ -23,7 +23,7 @@ public static class NativeQaBootstrapChecks
         Directory.CreateDirectory(output);
         // Share the baseline for no-op hooks whose actual seed does not need its own check.
         var modes = names.Select(NativeQaModes.Find).ToArray();
-        var inherited = modes.Where(mode => !HasCustomHook(mode) && !mode.Plan.LoadAbilityAncestors && mode.Plan.HotbarAbilities.Count == 0)
+        var inherited = modes.Where(mode => !HasCustomHook(mode) && !mode.Plan.LoadAbilityAncestors && !mode.Plan.HasHotbar)
             .Select(mode => mode.Name).ToArray();
         var separate = names.Except(inherited, StringComparer.Ordinal);
         var groups = new List<string[]>();
@@ -56,8 +56,8 @@ public static class NativeQaBootstrapChecks
         string seedMode = names.Length == 1 ? names[0] : "";
         var mode = NativeQaModes.Find(seedMode);
         var plan = mode.Plan;
-        byte[]? characterUi = plan.HotbarAbilities.Count != 0
-            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: false)
+        byte[]? characterUi = plan.HasHotbar
+            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: false, includeWithdraw: plan.HotbarWithdraw)
             : null;
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });

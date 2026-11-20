@@ -12,7 +12,7 @@ public static class AbilitySweepHotbar
     private const int SlotRecordsStart = 16;
     private const int SelectionLength = 32;
 
-    public static byte[]? FromEnvironment(IReadOnlyList<ushort> loadout, bool required)
+    public static byte[]? FromEnvironment(IReadOnlyList<ushort> loadout, bool required, bool includeWithdraw = false)
     {
         string? path = Environment.GetEnvironmentVariable(TemplateVariable);
         if (string.IsNullOrWhiteSpace(path))
@@ -31,19 +31,20 @@ public static class AbilitySweepHotbar
             throw new InvalidDataException("The stock UI template does not fit the client's character UI buffer.");
         byte[] template = new byte[(int)file.Length];
         file.ReadExactly(template);
-        return Seed(template, loadout);
+        return Seed(template, loadout, includeWithdraw);
     }
 
-    internal static void Validate(IReadOnlyList<ushort> abilities)
+    internal static void Validate(IReadOnlyList<ushort> abilities, bool includeWithdraw = false)
     {
-        if (abilities.Count is < 1 or > Slots || abilities.Distinct().Count() != abilities.Count ||
+        int slotCount = abilities.Count + (includeWithdraw ? 1 : 0);
+        if (slotCount is < 1 or > Slots || abilities.Distinct().Count() != abilities.Count ||
             abilities.Any(id => id is 0 or >= 4096))
-            throw new ArgumentException("The hotbar requires one to ten distinct canonical ability IDs.", nameof(abilities));
+            throw new ArgumentException("The hotbar requires one to ten slots and distinct canonical ability IDs.", nameof(abilities));
     }
 
-    public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities)
+    public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities, bool includeWithdraw = false)
     {
-        Validate(abilities);
+        Validate(abilities, includeWithdraw);
         if (template.Length is < SlotRecordsStart + SelectionLength or > QaCharacterUi.MaxLength ||
             Read(template, 0) != 2 || Read(template, 8) != 1)
             throw new InvalidDataException("Expected stock cui.cfg version 2 with shortcuts version 1.");
@@ -76,6 +77,13 @@ public static class AbilitySweepHotbar
             record[1] = slot;
             BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(6), abilities[slot]);
             records[(Page, slot)] = record;
+        }
+        if (includeWithdraw)
+        {
+            byte slot = (byte)abilities.Count;
+            // Stock tactic type 7 stores mode, setting and tactic. The Withdraw button selects 2/0/4.
+            // client.dll 62262380 reads the tuple, and 62262310 -> 6219ece0 sends 44 01 while engaged.
+            records[(Page, slot)] = new byte[] { Page, slot, 7, 0, 0, 0, 2, 0, 4 };
         }
 
         int recordBytes = records.Values.Sum(record => record.Length);

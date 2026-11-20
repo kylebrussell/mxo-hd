@@ -68,6 +68,22 @@ public class AbilitySweepHotbarTests
     }
 
     [Fact]
+    public void WithdrawalPlanSeedsTheStockTacticAfterTheThreeStyles()
+    {
+        var plan = new NativeQa.Modes.StarterStyleWithdrawalMode().Plan;
+        byte[] oldSlot = { 1, 3, 0, 0, 0, 0, 99, 0, 0, 0 };
+        byte[] followingSlot = { 1, 4, 0, 0, 0, 0, 27, 0, 0, 0 };
+        byte[] template = Template(new byte[48], oldSlot, followingSlot);
+        byte[] seeded = AbilitySweepHotbar.Seed(template, plan.HotbarAbilities, plan.HotbarWithdraw);
+
+        Assert.Contains("slot 4 = Withdraw", plan.ReadyMessages);
+        Assert.Equal(5u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
+        Assert.Equal(new byte[] { 1, 3, 7, 0, 0, 0, 2, 0, 4 }, seeded[46..55]);
+        Assert.Equal(followingSlot, seeded[55..65]);
+        Assert.Equal(seeded, AbilitySweepHotbar.Seed(seeded, plan.HotbarAbilities, plan.HotbarWithdraw));
+    }
+
+    [Fact]
     public void RefusesMalformedMacroAndUnrecognizedShortcutTypes()
     {
         byte[] tail = new byte[48];
