@@ -32,8 +32,9 @@ namespace hds
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
-            // The starter control casts require a live selected enemy.
-            if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48)
+            // These starter Hacker casts require a live selected enemy.
+            if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48 ||
+                AbilityID == 69 || AbilityID == 86)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
@@ -41,7 +42,7 @@ namespace hds
                     // Stock reason 24 is ID_TARGET_NOT_VALID. The client supplies the only refusal line.
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
                     Store.currentClient.FlushQueue();
-                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: invalid control target {currentTargetViewId}");
+                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: invalid selected enemy {currentTargetViewId}");
                     return;
                 }
             }

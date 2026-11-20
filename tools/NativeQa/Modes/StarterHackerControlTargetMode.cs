@@ -82,14 +82,14 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static byte[] WithHandle(string capture, uint handle)
+    internal static byte[] WithHandle(string capture, uint handle)
     {
         byte[] request = Convert.FromHexString(capture);
         BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), handle);
         return request;
     }
 
-    private static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request)
+    internal static async Task<RpcRecord> RefusedAsync(HeadlessPlayer caster, ushort id, byte[] request)
     {
         int start = caster.World.RpcSnapshot().Count;
         var views = caster.World.ViewSnapshot();
@@ -97,17 +97,20 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
         ushort before = BitConverter.ToUInt16(self.Attributes["InnerStrengthAvailable"]);
         foreach (var view in views)
             if (BuffDrainLifetimeFixture.TryInnerStrength(view, out ushort available)) before = available;
+        string idHex = StockAbilityProfile.LittleEndianHex(id);
+        var cast = BytePattern.Parse($"80 ac {idHex}");
+        var reuse = BytePattern.Parse($"80 bd 01 {idHex}");
         caster.SendRpc(request);
         var refusal = await StockAbilityProfile.ObserveAsync(caster, start,
-            rpc => AbilityRefusals.TryDecode(rpc.Bytes, out var record) && record.AbilityID == id && record.ErrorID == 24,
+            rpc => (AbilityRefusals.TryDecode(rpc.Bytes, out var record) && record.AbilityID == id) ||
+                cast.IsMatch(rpc.Bytes) || reuse.IsMatch(rpc.Bytes),
             $"{id} invalid selected target");
+        Check.That(AbilityRefusals.TryDecode(refusal.Bytes, out var decoded) &&
+            decoded.ErrorID == AbilityRefusals.InvalidTarget, $"Ability {id} must refuse the invalid target before cast or reuse, got {refusal.Hex}");
         int barrierStart = caster.World.RpcSnapshot().Count;
         caster.SendRpc("81 48");
         var barrier = BytePattern.Parse("81 49");
         await StockAbilityProfile.ObserveAsync(caster, barrierStart, rpc => barrier.IsMatch(rpc.Bytes), "post-refusal barrier");
-        string idHex = StockAbilityProfile.LittleEndianHex(id);
-        var cast = BytePattern.Parse($"80 ac {idHex}");
-        var reuse = BytePattern.Parse($"80 bd 01 {idHex}");
         var shared = BytePattern.Parse("80 bd 01 c9 02");
         Check.That(!caster.World.RpcSnapshot().Skip(start).Any(rpc => cast.IsMatch(rpc.Bytes) || reuse.IsMatch(rpc.Bytes) ||
             ((id == 40 || id == 41) && shared.IsMatch(rpc.Bytes))),
