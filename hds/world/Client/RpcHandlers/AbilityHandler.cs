@@ -123,15 +123,15 @@ namespace hds
                 }
             }
 
-            bool powerShot = AbilityID == AwakenedPowerShot.Id;
-            uint? powerShotOpponent = null;
-            if (powerShot)
+            bool strictInterlock = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198;
+            uint? requiredOpponent = null;
+            if (strictInterlock)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                powerShotOpponent = CombatManager.GetHandler(Store.currentClient).PowerShotOpponent(currentTargetViewId, spawn);
-                if (!powerShotOpponent.HasValue)
+                requiredOpponent = CombatManager.GetHandler(Store.currentClient).PowerShotOpponent(currentTargetViewId, spawn);
+                if (!requiredOpponent.HasValue)
                 {
-                    Deny(AbilityID, "Power Shot requires your current interlock opponent.");
+                    DenyMissingInterlock(AbilityID);
                     return;
                 }
             }
@@ -187,7 +187,7 @@ namespace hds
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
             }
-            if (!powerShot)
+            if (!strictInterlock)
             {
                 data.lastAbilityId = AbilityID;
                 data.lastAbilityTime = now;
@@ -377,14 +377,14 @@ namespace hds
                 Store.currentClient.FlushQueue();
                 return;
             }
-            if (powerShot)
+            if (strictInterlock)
             {
                 var caster = Store.currentClient;
                 var handler = CombatManager.GetHandler(caster);
-                if (handler.PowerShotOpponent(currentTargetViewId, (ushort)(powerShotOpponent.Value >> 16)) != powerShotOpponent ||
-                    !handler.QueueRoundAbility(currentAbility, currentTargetViewId, requiredOpponent: powerShotOpponent))
+                if (handler.PowerShotOpponent(currentTargetViewId, (ushort)(requiredOpponent.Value >> 16)) != requiredOpponent ||
+                    !handler.QueueRoundAbility(currentAbility, currentTargetViewId, requiredOpponent: requiredOpponent))
                 {
-                    Deny(AbilityID, "Power Shot requires your current interlock opponent.");
+                    DenyMissingInterlock(AbilityID);
                     return;
                 }
                 data.lastAbilityId = AbilityID;
@@ -498,6 +498,19 @@ namespace hds
                 }
             }
             });
+        }
+
+        private static void DenyMissingInterlock(ushort ability)
+        {
+            if (ability == AwakenedPowerShot.Id)
+            {
+                Deny(ability, "Power Shot requires your current interlock opponent.");
+                return;
+            }
+            Store.currentClient.messageQueue.addRpcMessage(
+                AbilityRefusals.Encode(new AbilityRefusals.Record(ability, AbilityRefusals.InvalidTarget)));
+            Store.currentClient.FlushQueue();
+            Output.WriteDebugLog($"[ABILITY] Denied {ability}: requires the current interlock opponent");
         }
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
