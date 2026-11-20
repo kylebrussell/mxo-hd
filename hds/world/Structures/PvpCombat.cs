@@ -435,7 +435,17 @@ namespace hds
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
             PvpFlag.OnFightStarts(caster, true);
             PvpFlag.ApplyAbility(target, abilityId);
-            TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster,reverseBulldog:reverseBulldog);
+            Random qaProc = MartialBlindEnrageAreaQa.ProcRandom(caster, target, abilityId);
+            if (qaProc != null && TempMods.TryGet(abilityId, out TempMods.Effect qaEffect))
+            {
+                var subject = TimedEffects.ForPlayer(target);
+                TimedEffects.Apply(subject, qaEffect, TimeUtils.GetSimTimeSeconds(), caster, casterName, rng: qaProc,
+                    configure: AbilityReverseBulldog.Bind(reverseBulldog, subject, abilityId));
+            }
+            else
+            {
+                TimedEffects.ApplyToPlayer(target, abilityId, casterName, caster, reverseBulldog: reverseBulldog);
+            }
             AbilityHostile.LandedOnPlayer(caster, target, abilityId);
             if (damage > 0)
             {
