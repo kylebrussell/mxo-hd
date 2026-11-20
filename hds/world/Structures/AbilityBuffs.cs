@@ -117,8 +117,8 @@ namespace hds
             { 55, new Buff { Seconds = 10, Modifiers = new[] { Stat(522, -25), Stat(524, -18), Stat(1032, -18), Stat(342, -25) } } },
             // Resist Combat, crashover2k proxy_024: 600 s countdown
             { 72, new Buff { Seconds = 600, Modifiers = new[] { Stat(520, 20) } } },
-            // Martial Arts
-            { 135, new Buff { Seconds = 20, Modifiers = new[] { Stat(159, 40) } } },
+            // Martial Arts Prowess: retain the captured amount and the shipped stacking type (38).
+            { 135, new Buff { Seconds = 20, Family = 1038, Modifiers = new[] { Stat(159, 40) } } },
             // Hyper-Sprint, luizoe old sniffer Unknown: MovementScale 0.15, EffectID 0x12463119, DissemblingType 04 00
             { HyperSprint, new Buff { Exclusive = true, Toggle = true, DrainAmount = 25, DrainSeconds = 5,
                 MovementScale = 0.15f, DissemblingType = 0x0400, EffectId = 0x12463119,
