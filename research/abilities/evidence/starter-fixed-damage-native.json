@@ -14,6 +14,13 @@
       "native": "https://github.com/kylebrussell/mxo-hd/pull/396",
       "scope": "PacketLog 40515a0af6ef:5581 records the normal Logic Bomb hotbar request. DebugLog lines 1060\u20131062 record 8 on QAEnemy and 8 on the nearby QAFriend, with no QAFar landing logged. The disposable fixture bounded the hit draw. The merged head 053f867e changed only the test expectation relative to the stock-tested runtime and fixture."
     },
+    "harmful-code-starter-cast": {
+      "representative": 53,
+      "result": "pass",
+      "head": "d4fed9606f509f3c61d2afb638e1bd49a5686918",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/406",
+      "scope": "Stock PacketLog fc98739c17a5:3155 records the Harmful Code request with a selected enemy outside interlock. DebugLog 842–843 shows the hit draw and landed viral 14 on QAEnemy. Four-second cast, eight-second own and four-second shared reuse. Wider damage and admission cases remain open."
+    },
     "hindering-shot-free-cast": {
       "representative": 130,
       "result": "pass",
@@ -27,6 +34,13 @@
       "head": "9e8efb91fcdabfa435fefdedd05ad11fd2d6f344",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/402",
       "scope": "Stock PacketLog 19faec2a5d8f:1231 shows Leg Sweep in Spy interlock on Melee Dummy. DebugLog lines 949 and 975–977 show the queued move, round 3 animation 283, landed hit and -15 melee defense for ten seconds. The operator recorded damage 14. Wider damage, targeting and outcome variants remain open."
+    },
+    "low-blow-coder-interlock": {
+      "representative": 605,
+      "result": "pass",
+      "head": "501c0de26b8145f9347e03a1ebfe9d0fce65f3ad",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/405",
+      "scope": "Stock PacketLog 8745737faaee:1190 and 1621 records Low Blow in unarmed Coder Style on Melee Dummy. The second press lands in round 8 for 19, with animation 288 (DebugLog 1114–1115). Own reuse is six seconds and stock held the +5s click. The 30 IS debit was checked headlessly."
     },
     "guard-breaker-off-balance-interlock": {
       "representative": 138,
@@ -68,6 +82,9 @@
     "36": {
       "family": "tinkering-targeted-cast"
     },
+    "53": {
+      "family": "harmful-code-starter-cast"
+    },
     "60": {
       "family": "logic-bomb-starter-splash"
     },
@@ -79,6 +96,9 @@
     },
     "134": {
       "family": "leg-sweep-spy-interlock"
+    },
+    "605": {
+      "family": "low-blow-coder-interlock"
     },
     "138": {
       "family": "guard-breaker-off-balance-interlock"

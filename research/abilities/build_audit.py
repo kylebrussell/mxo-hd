@@ -244,9 +244,11 @@ def server(i):
     starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
     if i in starter_viral_bases and not r['damage']:
         parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; full native damage and admission parity unresolved')
+    elif i == 53 and not r['damage']:
+        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; stock Hacker Style landed 14; wider damage and admission unresolved')
     elif i in (105, 176) and not r['damage']:
-        base = 8 if i == 105 else 17
-        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; complete damage and admission parity unresolved')
+        base, hit = (8, 8) if i == 105 else (17, 18)
+        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; wider damage and admission unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i in (36, 514):
@@ -260,6 +262,8 @@ def server(i):
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif i == 145:
         parts.append('stored fixed physical base 7 before typed influence and resistance; retail scaling unresolved')
+    elif i == 605:
+        parts.append('stored fixed physical base 17 before typed influence and resistance; stock Coder interlock landed 19; wider targeting and outcome variants unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         starter_base = {126: 'ballistic 11', 138: 'physical 36', 139: 'physical 12'}.get(i)
         if starter_base is not None:
