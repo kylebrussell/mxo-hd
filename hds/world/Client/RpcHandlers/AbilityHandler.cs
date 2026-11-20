@@ -637,6 +637,8 @@ namespace hds
                 134 => 7,  // Leg Sweep
                 152 => 7,  // Spinning Backsweep
                 176 => 1,  // Covering Fire
+                254 => 1,  // Immobilizing Shot
+                255 => 1,  // Disabling Shot
                 514 => 2,  // Advanced Tinkering
                 605 => 0,  // Low Blow
                 _ => null
