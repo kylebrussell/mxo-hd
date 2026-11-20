@@ -339,6 +339,8 @@ namespace hds
             return PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale)), (27, PlayerViewAttributes.U16(bits)));
         }
 
+        private static bool IsCatalogSpeedBuff(ushort id) => id == MovementAccelerator || id == 291;
+
         private static float RemainingMovementScale(ClientData data)
         {
             lock (data.activeBuffs)
@@ -496,7 +498,7 @@ namespace hds
                 {
                     if (other == abilityId ||
                         (buff.Family != 0 && TryGet(other, out Buff o) && o.Family == buff.Family) ||
-                        (abilityId == MovementAccelerator || other == MovementAccelerator) &&
+                        (IsCatalogSpeedBuff(abilityId) || IsCatalogSpeedBuff(other)) &&
                         AbilityCatalog.Find(other)?.Number("Ability/StackingType") == AbilityCatalog.Find(abilityId)?.Number("Ability/StackingType"))
                     {
                         replaced.Add(other);
@@ -547,7 +549,7 @@ namespace hds
             }
             else if (buff.DissemblingType != 0) PresentDissembling(client);
             if (abilityId == HyperSpeed) PresentHyperSpeed(client, buff.MovementScale);
-            if (abilityId == MovementAccelerator)
+            if (IsCatalogSpeedBuff(abilityId))
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
