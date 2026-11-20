@@ -24,9 +24,9 @@ public sealed class StarterCoderPetCastRangeMode : NativeQaMode
         }, DevCommands: true, environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[]
         {
-            "Activate Coder Style, summon Remote Proxy 1.0 and click Stay in its Simulacra window. Select your Proxy (224 Max HP).",
-            $"Cast Fortify Simulacra (20). During its two-second cast, send ?tp {FarX} {Y} {Z} 0 0 0. Expect the pet to stay at 224 Max HP. Return with ?tp {NearX} {Y} {Z} 0 0 0 and wait out the eight-second reuse. Stay nearby for the next Fortify and see Max HP rise by 225.",
-            "Repeat the mid-cast move for Drain Code (19). The Proxy remains alive and you receive no 50 IS refund. Save the outgoing stock requests and the landing log."
+            "Activate Coder Style, summon Remote Proxy 1.0 and use ?pet stay. Wait for 'Staying.' This fixture uses the dev order to avoid the misleading stock button tooltip.",
+            $"Before casting, move to ?tp {FarX} {Y} {Z} 0 0 0. Select the parked Proxy and try Fortify Simulacra (20) and Drain Code (19). If an ability sends a request, expect an out-of-range refusal with no cast or reuse. The Proxy stays at 224 Max HP and alive.",
+            $"Use ?tp {NearX} {Y} {Z} 0 0 0 to return. Fortify should work immediately and raise Max HP to 449. The disposable replay also verifies both mid-cast range failures."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -55,7 +55,25 @@ public sealed class StarterCoderPetCastRangeMode : NativeQaMode
         caster.SendChat("?pet");
         await caster.WaitForTextAsync("Stay");
 
-        foreach (ushort id in new[] { CoderPets.FortifySimulacra, CoderPets.DrainCode })
+        ushort[] samples = { CoderPets.FortifySimulacra, CoderPets.DrainCode };
+        await Move(caster, FarX);
+        foreach (ushort id in samples)
+        {
+            caster.SkipReceived();
+            int cursor = caster.World.RpcSnapshot().Count;
+            Cast(caster, pet, id);
+            await caster.WaitForTextAsync("Your simulacrum is out of range");
+            var cast = BytePattern.Parse($"80 ac {StockAbilityProfile.LittleEndianHex(id)}");
+            var reuse = BytePattern.Parse($"80 bd 01 {StockAbilityProfile.LittleEndianHex(id)}");
+            await StockAbilityProfile.ObserveAsync(caster, cursor,
+                packet => AbilityRefusals.TryDecode(packet.Bytes, out var refusal) && refusal.AbilityID == id,
+                $"Out-of-range refusal for {id}");
+            Check.That(!caster.World.RpcSnapshot().Skip(cursor).Any(packet =>
+                cast.IsMatch(packet.Bytes) || reuse.IsMatch(packet.Bytes)), $"Out-of-range cast {id} starts no cast or reuse");
+        }
+        await Move(caster, NearX);
+
+        foreach (ushort id in samples)
         {
             int cursor = caster.World.RpcSnapshot().Count;
             Cast(caster, pet, id);
