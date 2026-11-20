@@ -11,12 +11,13 @@ namespace hds
         {
             refusalReason = 0;
             if (AbilityCatalog.Canonical(abilityId) != SpinningBacksweep) return false;
-            if (CombatManager.GetHandler(client).isCombatRunning)
+            var combat = CombatManager.GetHandler(client);
+            if (combat.isCombatRunning || combat.HasActiveInterlock)
             {
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId))
+            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId, requireOpponent: true))
             {
                 refusalReason = AbilityRefusals.InvalidTarget;
                 return true;
