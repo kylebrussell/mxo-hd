@@ -105,12 +105,14 @@ namespace hds
         {
             var rows=loaded.ToArray();
             State state = client.playerData.passives;
+            bool writeCodeAdded;
             lock (state)
             {
                 state.Generation++;
                 state.ShadowOwned=explicitShadow??state.ShadowOwned.Retain(rows);
                 state.ShadowEmitted=emitted;
                 bool hadMissionMap = state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap);
+                bool hadWriteCode = state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 state.Loaded.Clear();
                 foreach (var row in rows)
                 {
@@ -135,10 +137,15 @@ namespace hds
                 }
                 if (hadMissionMap && !state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap))
                     UtilityAbilities.DisableMissionMap(client);
+                writeCodeAdded = !hadWriteCode && state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
             if (newWorld) CraftingSession.End(client, false);
-            else CraftingSession.Check(client);
+            else
+            {
+                if (writeCodeAdded) CraftingSession.WriteCodeLoaded(client);
+                CraftingSession.Check(client);
+            }
             Refresh(client, !newWorld);
             EvasionShield.LoadoutChanged(client);
             AbilityDesperation.LoadoutChanged(client);
