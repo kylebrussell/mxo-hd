@@ -6,6 +6,7 @@ public class StarterInterlockFixedDamageTests
 {
     [Theory]
     [InlineData(126, 1, 11)]
+    [InlineData(134, 7, 13)]
     [InlineData(138, 0, 36)]
     [InlineData(139, 0, 12)]
     public void StarterInterlockUsesTheShippedFixedBaseWhenLegacyRangeIsMissing(ushort id, int type, ushort expected)
