@@ -473,6 +473,7 @@ namespace hds
                 152 => 7,  // Spinning Backsweep
                 176 => 1,  // Covering Fire
                 514 => 2,  // Advanced Tinkering
+                605 => 0,  // Low Blow
                 _ => null
             };
             if (fixedType.HasValue)
