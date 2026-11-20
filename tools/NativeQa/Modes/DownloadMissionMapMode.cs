@@ -76,7 +76,7 @@ public sealed class DownloadMissionMapMode : NativeQaMode
             "The old mission is abandoned");
     }
 
-    private static async Task<(RpcRecord Reveal, int Flags)> AcceptAndRevealAsync(
+    internal static async Task<(RpcRecord Reveal, int Flags)> AcceptAndRevealAsync(
         HeadlessPlayer actor, ThrowawayDatabase database, ServerInstance server, Func<ushort> nextTransaction)
     {
         int start = actor.World.RpcSnapshot().Count;

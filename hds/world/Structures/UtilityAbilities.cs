@@ -410,7 +410,8 @@ namespace hds
             foreach (WorldClient target in targets)
             {
                 // RecallTeamMember_DirectObject
-                if (target.playerData.getDistrictId() != caster.playerData.getDistrictId())
+                if (target.playerData.getDistrictId() != caster.playerData.getDistrictId() ||
+                    !target.Alive || !RecallRecipientInWorld(target.playerData))
                 {
                     ToCaster(caster, RecallAcrossConstructs, ability, TimedEffects.PlayerName(target));
                     caster.FlushQueue();
@@ -432,6 +433,9 @@ namespace hds
                                      x + "," + y + "," + z);
             }
         }
+
+        internal static bool RecallRecipientInWorld(ClientData data) =>
+            data.getOnWorld() && !data.DistrictIsLA() && !data.worldChangePending && !data.waitForRPCShutDown;
 
         // Find Data Node is a toggle (IsAToggleAbility)
         public static bool IsSearchingForDataNodes(WorldClient client) => DataMining.Searching(client);

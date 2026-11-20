@@ -128,6 +128,26 @@ public class UtilityAbilityTests
     }
 
     [Fact]
+    public void RecallCannotInterruptARecipientWorldTransition()
+    {
+        var recipient = new ClientData();
+        recipient.setDistrictId(1);
+        Assert.False(UtilityAbilities.RecallRecipientInWorld(recipient));
+
+        recipient.setOnWorld(true);
+        Assert.True(UtilityAbilities.RecallRecipientInWorld(recipient));
+        recipient.worldChangePending = true;
+        Assert.False(UtilityAbilities.RecallRecipientInWorld(recipient));
+
+        recipient.worldChangePending = false;
+        recipient.waitForRPCShutDown = true;
+        Assert.False(UtilityAbilities.RecallRecipientInWorld(recipient));
+        recipient.waitForRPCShutDown = false;
+        recipient.setDistrictId((uint)MxOLocations.LA);
+        Assert.False(UtilityAbilities.RecallRecipientInWorld(recipient));
+    }
+
+    [Fact]
     public void MissionMapFlagsFollowTheHook()
     {
         Assert.Equal(0, UtilityAbilities.MissionMapFlags(0, 0, 10, 99));
