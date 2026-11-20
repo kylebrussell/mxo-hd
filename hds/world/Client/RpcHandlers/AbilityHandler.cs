@@ -466,6 +466,7 @@ namespace hds
             // These reviewed legacy rows omit a usable range and have one fixed, instant health modifier.
             int? fixedType = source?.Id switch
             {
+                504 => 1,  // Concealed Shot
                 36 => 2,   // Tinkering
                 130 => 1,  // Hindering Shot
                 152 => 7,  // Spinning Backsweep

@@ -29,6 +29,32 @@ public class SniperParityTests
         return client;
     }
 
+    [Fact]
+    public void ConcealedShotUsesItsFixedBallisticBaseForIncompleteLegacyEndpoints()
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "hds.sln")))
+            root = Path.GetDirectoryName(root)!;
+        string[] row = File.ReadLines(Path.Combine(root, "data", "abilityIDs.csv"))
+            .Single(line => line.StartsWith("504;", StringComparison.Ordinal)).Split(';');
+        var item = new AbilityItem();
+        item.setAbilityID(504);
+        item.setValueFrom(short.Parse(row[9]));
+        item.setValueTo(ushort.Parse(row[10]));
+
+        Assert.Equal(4, item.getValueFrom());
+        Assert.Equal(0, item.getValueTo());
+        Assert.Equal(1, TypedAbilityResistance.StoredType(504));
+        Assert.Null(CombatSpecials.Damage(504, null));
+        Assert.False(AbilityTargets.Retail.ContainsKey(504));
+        foreach (int seed in new[] { 1, 2, 987 })
+            Assert.Equal(22, AbilityHandler.AbilityDamage(item, new Random(seed)));
+
+        item.setValueFrom(29);
+        item.setValueTo(29);
+        Assert.Equal(29, AbilityHandler.AbilityDamage(item, new Random(1)));
+    }
+
     [Theory]
     [InlineData(504, .30f, .10f)]
     [InlineData(505, .50f, .01f)]
