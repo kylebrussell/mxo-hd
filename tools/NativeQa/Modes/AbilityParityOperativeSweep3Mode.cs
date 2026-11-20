@@ -22,7 +22,7 @@ public sealed class AbilityParityOperativeSweep3Mode : NativeQaMode
         {
             "Confirm Status has the initial Self Defense values. At a Hardline or Load Area unload and reload Combat Toughness 116. Record both +7 raw resistance-bonus records and their removal.",
             "With Operative Target selected, cast Combat Evasion 110 (+20), Compel Close Combat 150 (+20 Force Combat), and Intensify Damage 185 (+1 to melee and ballistic). Record caster add/off and watch 185 expire naturally after 15 seconds. Long buffs can be dismissed from Status.",
-            "Extra samples: activate Find Weakness 123 (+25 thrown at level 50), Martial Arts Prowess 135 (existing captured +40 melee), Stealth Awareness 156 (+15 detection at level 50), and Desperate Speed 291. Record their add/off records and visible Status.",
+            "Extra samples: activate Find Weakness 123 (+25 thrown at level 50), Martial Arts Prowess 135 (+25 melee at level 50), Stealth Awareness 156 (+15 detection at level 50), and Desperate Speed 291. Record their add/off records and visible Status.",
             "Record initial and changed Status, raw cast requests, and on/off records. Four rows can close after review: 110, 116, 150 and 185."
         },
         extraQaMetadata: new() { ["NativeCloseableRows"] = 4, ["NativeCloseableIds"] = "110,116,150,185" },

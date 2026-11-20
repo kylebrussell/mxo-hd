@@ -115,7 +115,7 @@ public class OperativeBatchThreeTests
     [InlineData(123, 146, 1250, 20)]
     [InlineData(123, 1128, 1250, 20)]
     [InlineData(124, 130, 1250, 20)]
-    [InlineData(135, 145, 1399, 20)]
+    [InlineData(135, 145, 1250, 20)]
     public void SelfDamageBuffsReachTheirTypedConsumersAndExpire(ushort id, ushort attack, int applied, float seconds)
     {
         var actor = Actor();
@@ -130,7 +130,24 @@ public class OperativeBatchThreeTests
     }
 
     [Theory]
-    [InlineData(124, 135, 145, 1399)]
+    [InlineData(4, 2, 1019)] // binary32 1.02 truncates at the existing damage boundary
+    [InlineData(19, 9, 1090)]
+    [InlineData(50, 25, 1250)]
+    public void MartialArtsProwessUsesCasterLevelAndOnlyBoostsMelee(byte level, int melee, ushort expectedDamage)
+    {
+        var actor = Actor(level);
+        Assert.True(AbilityBuffs.Apply(actor, 135));
+        Assert.Equal(melee, AbilityStats.Player(actor, 159));
+        Assert.Equal(0, AbilityStats.Player(actor, 171));
+        Assert.Equal((ushort)20, AbilityCosts.Cost(135));
+        Assert.Equal(expectedDamage, AbilityStats.ScaleAbilityDamage(actor, 145, 1000));
+        Assert.Equal((ushort)1000, AbilityStats.ScaleAbilityDamage(actor, 130, 1000));
+        Assert.True(AbilityBuffs.Remove(actor, 135));
+        Assert.Equal(0, AbilityStats.Player(actor, 159));
+    }
+
+    [Theory]
+    [InlineData(124, 135, 145, 1250)]
     [InlineData(135, 124, 130, 1250)]
     public void SoldierDamageSpecializationsReplaceEachOther(ushort first, ushort second, ushort attack, int damage)
     {
