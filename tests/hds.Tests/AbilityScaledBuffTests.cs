@@ -97,11 +97,16 @@ public class AbilityScaledBuffTests
         Assert.Equal(0, AbilityStats.Defense(actor, ranged: true));
     }
 
-    [Fact]
-    public void GunmanUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown()
+    [Theory]
+    [InlineData(1060)]
+    [InlineData(1061)]
+    [InlineData(1062)]
+    [InlineData(1070)]
+    [InlineData(1078)]
+    public void StartingClassUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown(ushort upgrade)
     {
-        const ushort upgrade = 1070;
         var actor = Client(19);
+        Assert.Equal(1, AbilityCatalog.Find(upgrade).Number("Ability/IsAToggleAbility"));
         Assert.True(AbilityBuffs.Apply(actor, upgrade));
         Assert.True(AbilityBuffs.IsToggledOn(actor, upgrade));
         Assert.True(AbilityBuffs.CooldownStartsOnUse(upgrade));

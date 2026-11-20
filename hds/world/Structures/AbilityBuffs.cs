@@ -77,12 +77,12 @@ namespace hds
 
         internal const ushort HyperSpeed = 12;
         internal const ushort HyperSprint = 184;
-        internal const ushort GunmanUpgrade = 1070;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;
 
         internal static bool HasClassSweep(ushort id) => id == ForceMultiplierUpgrade || id == UpgradeArtistUpgrade;
+        internal static bool IsStartingClassUpgrade(ushort id) => id == 1060 || id == 1061 || id == 1062 || id == 1070 || id == 1078;
         private const ushort MovementAccelerator = 62;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
@@ -293,7 +293,7 @@ namespace hds
                 if (durations.Count != 1) continue;
                 int stacking = (int)entry.Number("Ability/StackingType");
                 buffs[entry.Id] = new Buff { Seconds = (float)durations[0], Exclusive = durations[0] == 0,
-                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && (stacking != 37 || entry.Id == GunmanUpgrade),
+                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && (stacking != 37 || IsStartingClassUpgrade(entry.Id)),
                     Family = stacking == 37 ? FamilyClassBuff : stacking == 0 ? 0 : 1000 + stacking,
                     Modifiers = mods.Select(m => Stat(m.Target, (int)m.Number("MinValue"))).ToArray(),
                     MovementScale = (float)(mods.FirstOrDefault(m => m.Target == 115)?.Number("MinValue") ?? 0) / 100 };
@@ -440,7 +440,7 @@ namespace hds
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
             // Stock Deflect Virus378 starts its own10s timer with the on record (proxy_024).
-            if (abilityId == Virii.DeflectVirus1Ability || abilityId == GunmanUpgrade) return true;
+            if (abilityId == Virii.DeflectVirus1Ability || IsStartingClassUpgrade(abilityId)) return true;
             if (AbilityCatalog.Canonical(abilityId) == Stealth.MasterShadowAbility) return false;
             return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
@@ -783,8 +783,8 @@ namespace hds
             {
                 EvasionShield.Removed(client);
             }
-            // Gunman Upgrade already started its own reuse on activation. Switching off does not restart it.
-            if (buff.Toggle && abilityId != GunmanUpgrade)
+            // Starting class upgrades already began their own reuse on activation.
+            if (buff.Toggle && !IsStartingClassUpgrade(abilityId))
             {
                 AbilityCooldowns.Start(client, abilityId, TimeUtils.GetSimTimeSeconds());
             }
