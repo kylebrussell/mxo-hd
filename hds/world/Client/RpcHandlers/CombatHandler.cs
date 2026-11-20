@@ -257,14 +257,13 @@ namespace hds
                 !opponent.isFriendly && !opponent.getIsDead() ? (uint?)handle : null;
         }
 
-        // Head Butt's shipped required state bit 2 corresponds to Dazed.
         // The caller has already validated that this view is the current opponent.
-        internal bool CurrentOpponentDazed(ushort targetViewId)
+        internal bool CurrentOpponentHasState(ushort targetViewId, ushort state)
         {
             var player = pvpFight != null ? AbilitySupport.PlayerInView(client, targetViewId) : null;
             var npc = pvpFight == null ? CurrentNpcOpponentFor(client) : null;
             var holder = player != null ? (TimedEffects.Subject)TimedEffects.ForPlayer(player) : npc != null ? TimedEffects.ForMob(npc) : null;
-            return holder != null && holder.Effects.HasAt(TempMods.DazeAbility, TimeUtils.GetSimTimeSeconds());
+            return holder != null && holder.Effects.HasAt(state, TimeUtils.GetSimTimeSeconds());
         }
 
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
