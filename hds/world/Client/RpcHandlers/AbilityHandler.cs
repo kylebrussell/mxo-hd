@@ -47,7 +47,7 @@ namespace hds
 
             // These starter Hacker casts require a live selected enemy.
             if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48 ||
-                AbilityID == 69 || AbilityID == 86)
+                AbilityID == 66 || AbilityID == 69 || AbilityID == 86)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
