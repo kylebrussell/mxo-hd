@@ -13,6 +13,15 @@ namespace hds
         public const ushort Parent = 120;
         public const ushort Ability = 1114;
 
+        internal static bool MatchesGrant(ushort parent, ushort child) =>
+            parent == Parent && child == Ability && TryGrantLevel(parent, 0, out _);
+
+        internal static bool TryGrantLevel(ushort parent, ushort child, ushort learned, out ushort level)
+        {
+            level = 0;
+            return child == Ability && TryGrantLevel(parent, learned, out level);
+        }
+
         internal static bool TryGrantLevel(ushort parent, ushort learned, out ushort level)
         {
             level = 0;
