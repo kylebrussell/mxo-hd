@@ -1,0 +1,27 @@
+{
+  "families": {
+    "operative-multifighting-stock": {
+      "representative": 140,
+      "result": "pass",
+      "head": "7ae00fdbc15f0a1187e86cff51b4fa816ad12905",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/507",
+      "scope": "Two real hostile helpers open simultaneous PvP interlocks. The stock-tested build records loaded140 penalty 0 versus unloaded -10 on both attack and defence inputs. This verifies the current direct-link consumer only."
+    }
+  },
+  "abilities": {
+    "140": {
+      "family": "operative-multifighting-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped disableMultiOnOnePenaltyInit and Term change owner membership of the combat penalty switch.",
+          "runtime": "MultifightingInterlock consumes active loadout membership on ordinary attack and defence inputs. Source threshold and the exact original caller remain open.",
+          "test": "OperativePassiveConsumersMode runs real two-opponent interlocks and changes the owned passive using stock loadout RPCs. Multifighting tests cover three opponents and normal restoration. PR507 native confirmed 52→52 versus 52→42 and 47→47 versus 47→37. https://github.com/kylebrussell/mxo-hd/pull/507"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR503": "The PR503 generated audit and native evidence form the baseline for this delta.",
+    "PR507": "Operative 143 already had a native-family record. PR507 verifies actual sitting HP rates in the current consumer (400/600/400 per two-second tick at 20000 maximum HP), the archived grant and status, while the original retail regen coefficient remains open. https://github.com/kylebrussell/mxo-hd/pull/507"
+  }
+}
