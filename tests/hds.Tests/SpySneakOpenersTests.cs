@@ -68,7 +68,7 @@ public class SpySneakOpenersTests
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-40 Spy sneak batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
 
-        Assert.Equal("1", plan.EnvironmentOverrides["MXO_COMBAT_FIXTURE_DISENGAGE"]);
+        Assert.Equal("1", plan.EnvironmentOverrides["MXO_COMBAT_FIXTURE_RESET"]);
         Assert.Equal(55, mem);
 
         var client = Client(FixtureLevel);

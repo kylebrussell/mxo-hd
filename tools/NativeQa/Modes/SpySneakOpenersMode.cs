@@ -37,7 +37,7 @@ public sealed class SpySneakOpenersMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0",
             ["MXO_MOB_WANDER"] = "0",
-            ["MXO_COMBAT_FIXTURE_DISENGAGE"] = "1"
+            [CombatFixtureWeapons.ResetMode] = "1"
         },
         extraQaMetadata: new()
         {
@@ -49,8 +49,12 @@ public sealed class SpySneakOpenersMode : NativeQaMode
         },
         readyMessages: new[]
         {
+            SpyFixtureReset.Reselect,
             "Level 40 rank 40 unarmed, spawned 2.5 m directly behind Melee Dummy (55/80 memory; Spy Style 1112 full closure = +32% thrown dmg). Press slot 1 (Spy Style 1112).",
-            "Step A (2 s cast sneak free throws — stay outside combat). Press slot 2 (Sneak 1111), select Melee Dummy, cast slot 3 (Leg Throw 1131): expect 25 IS, 2.0 s cast retaining Sneak until landing, 45s/grp 691 15s reuse, 201 thrown dmg (VF3 base 153 + 32%), 50% Off-Balance 12 s (State 200). Wait 15 s family reuse, re-Sneak (slot 2), cast slot 4 (Weakening Blow 1133): expect 35 IS, 2.0 s cast retaining Sneak until landing, 45s/grp 691 15s reuse, 149 thrown dmg (VF3 base 113 + 32%), Melee/Ballistic Dmg Res (180/181) -45 for 8 s.",
-            "Step B (Instant interlock sneak openers). Before each opener: '?combatdepth fixture-disengage', wait 15 s family 691 reuse, stay behind Melee Dummy (?tp 24499 495 -1750 0 0 0 if needed), press slot 2 (Sneak 1111). Slot 5 (Drop Kick 153): 20 IS, 30s/grp691 15s, choreo 19598, 266 dmg ((52+150)+32%). Slot 6 (Spin Throw 286): 50 IS, 38s/grp691 15s, choreo 19593, 501 dmg ((80+300)+32%). Slot 7 (Topsy Turvy 288): 60 IS, 38s/grp691 15s, choreo 19594, 1071 dmg ((37+775)+32%), Confuse 10 s (State 91). Slot 8 (Punt 289): 40 IS, 38s/grp691 15s, choreo 19590, 976 dmg ((140+600)+32%)."
+            "Between EVERY opener (1131/1133/153/286/288/289): run '?combatdepth fixture-reset' (disengages combat, restores Melee Dummy to spawn facing +Z, teleports CSR 2.5 m behind facing it), wait 15 s family 691 reuse, press slot 2 (Sneak 1111 — do not double-press while already sneaking), select Melee Dummy, and fire the next slot.",
+            "Step A (2 s cast sneak free throws, cast outside combat; enemy retaliation after landing is normal): slot 3 (Leg Throw 1131) -> 25 IS, 2s cast retaining Sneak, 45s/grp691 15s, 201 dmg (VF3 153 + 32%), 50% Off-Balance 12s (State 200); slot 4 (Weakening Blow 1133) -> 35 IS, 2s cast retaining Sneak, 45s/grp691 15s, 149 dmg (VF3 113 + 32%), stat 180/181 -45 for 8s.",
+            "Step B (Instant interlock sneak openers): slot 5 (Drop Kick 153) -> 20 IS, 30s/grp691 15s, choreo 19598, 266 dmg ((52+150)+32%); slot 6 (Spin Throw 286) -> 50 IS, 38s/grp691 15s, choreo 19593, 501 dmg ((80+300)+32%); slot 7 (Topsy Turvy 288) -> 60 IS, 38s/grp691 15s, choreo 19594, 1071 dmg ((37+775)+32%), Confuse 10s (State 91); slot 8 (Punt 289) -> 40 IS, 38s/grp691 15s, choreo 19590, 976 dmg ((140+600)+32%)."
         });
+
+    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => SpyFixtureReset.VerifyAsync(context);
 }
