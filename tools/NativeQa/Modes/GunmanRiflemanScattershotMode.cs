@@ -38,7 +38,7 @@ public sealed class GunmanRiflemanScattershotMode : NativeQaMode
         readyMessages: new[]
         {
             "Step A. With both upgrades off, inspect the source rows in Status. Dual Submachine Guns (246) gives +6 melee resistance and +6 ballistic damage. Advanced Riflery (252) gives +5 ballistic accuracy and +6 ballistic damage. Rifleman (251) gives +1 ballistic resistance and grants Rifleman Upgrade.",
-            "Step B. Unload 252, 251, and 246 in that order at the Hardline (or use ?qaunload one at a time). Capture their removed rows and Rifleman Upgrade leaving Actions. Reload 246, 251, 252 and confirm the rows and action return once.",
+            "Step B. Unload 252, 251, and 246 in that order at the Hardline (or use ?qaunload one at a time). Capture their removed rows and Rifleman Upgrade leaving Actions. Reload 246, 252, then 251. Rifleman requires Advanced Riflery at rank 30. Confirm the rows and action return once.",
             "Step C. Clear selection. Verify Scattershot Upgrade and Rifleman Upgrade each appear once in Actions. Use page 2 slot 1 then slot 2. Both add +90 max HP. Scattershot adds +6 accuracy, +4 damage and +4 defense. Rifleman replaces it with +7 accuracy, +2 damage and +3 defense. Capture both stock presses and 30s reuse."
         });
 
