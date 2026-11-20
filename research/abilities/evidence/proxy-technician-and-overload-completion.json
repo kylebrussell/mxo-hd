@@ -1,0 +1,23 @@
+{
+  "families": {
+    "overload-starter": {
+      "representative": 66,
+      "result": "pass",
+      "head": "a5c8ade42304127663d67860254d221fbf2bc2b0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/443",
+      "scope": "Claude's 22:49 ET stock pass records one empty-target refusal (0x186b) with no cast or reuse, then a two-second selected cast, all four -10 modifiers for 33 seconds and a 43-second reuse. Sight and deflection remain unverified."
+    }
+  },
+  "abilities": {
+    "66": { "family": "overload-starter" },
+    "698": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 698 uses friendly simulacra selector 19, 20 metres, five-second child modifiers 522/524, and the caster-level scale 1.3. Parent 589 owns the periodic upkeep and pulses.",
+          "runtime": "ProxyTechnician refreshes eligible pets and reads an independent snapshot for melee or ballistic pet hits. CoderPets consumes the correct attack channel. Range loss and unload stop refresh while the independent child expires.",
+          "test": "The disposable proxy-technician-friendly-attacks, proxy-technician-lifecycle and proxy-technician-control scenarios passed. They cover own/friendly/enemy eligibility, the +64/+64 child changing a real fixed-roll attack, periodic upkeep, leaving and returning to the radius, unload, expiry and stun refusal. Prior stock aura evidence is recorded under proxy-technician-pulses."
+        }
+      }
+    }
+  }
+}
