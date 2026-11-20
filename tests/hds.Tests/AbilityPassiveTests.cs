@@ -290,6 +290,29 @@ public class AbilityPassiveTests
     }
 
     [Fact]
+    public void ToolAndUpgradeMakerFeedOnlyTheirMatchingCompileCategories()
+    {
+        var caster = Client();
+        ushort tool = CraftingHandler.Specialization(CraftingRules.Find(2485).Category);
+        ushort consumable = CraftingHandler.Specialization(CraftingRules.Find(39413).Category);
+        ushort handgun = CraftingHandler.Specialization(CraftingRules.Find(700).Category);
+        Assert.Equal(654, tool);
+        Assert.Equal(656, consumable);
+        foreach (var (ability, matching, unrelated) in new[] { ((ushort)518, tool, consumable), ((ushort)521, consumable, tool) })
+        {
+            AbilityPassives.SetLoaded(caster, new[] { (ability, (ushort)50) });
+            Assert.Equal(50, CraftingHandler.Skill(caster, matching));
+            Assert.Equal(0, CraftingHandler.Skill(caster, unrelated));
+            Assert.Equal(0, CraftingHandler.Skill(caster, handgun));
+            Assert.True(OrdinaryItemCode.Succeeds(10, 10, 50, CraftingHandler.Skill(caster, matching)));
+            Assert.False(OrdinaryItemCode.Succeeds(10, 10, 50, CraftingHandler.Skill(caster, unrelated)));
+        }
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0, CraftingHandler.Skill(caster, tool));
+        Assert.Equal(0, CraftingHandler.Skill(caster, consumable));
+    }
+
+    [Fact]
     public void HackerDamageUsesPassiveAndActiveInfluenceAndUnloadingRestoresTheBase()
     {
         var caster = Client();
