@@ -5,7 +5,7 @@
       "result": "pass",
       "head": "ad7a12e58438a24f1dcc9069102242b5ba172afe",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/401",
-      "scope": "Stock PacketLog a6b72512afb3:3759/3765 and 4618/4624 shows one reason 24 for empty selection and one reason 36 for the friendly pet. The operator saw one matching native line each. The valid request at 6365 derezzes QAEnemy's selected Nuker Simulacrum for stored 13000 (DebugLog 1274). The out-of-range pet refusal has disposable coverage. Enemy pet disposition text remains open."
+      "scope": "Stock PacketLog a6b72512afb3:3759/3765 and 4618/4624 shows one reason 24 for empty selection and one reason 36 for the friendly pet. The operator saw one matching native line each. The valid request at 6365 derezzes QAEnemy's selected Nuker Simulacrum for stored 13000 (DebugLog 1274). PR420 (https://github.com/kylebrussell/mxo-hd/pull/420, stock 5cfeeb4be878) shows the selected disposition changing from hostile to friendly and back as the owner toggles PvP. The overhead name color remains open. The out-of-range pet refusal has disposable coverage."
     }
   },
   "abilities": {
