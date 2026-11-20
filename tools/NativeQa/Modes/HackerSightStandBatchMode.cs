@@ -26,11 +26,11 @@ public sealed class HackerSightStandBatchMode : NativeQaMode
         });
 
     internal static NativeQaModePlan SightPlan(ushort[] loadout, (ushort Ability, float Reuse, string Capture)[] samples,
-        int closeableRows, string[] messages) =>
+        int closeableRows, string[] messages, ushort style = HackerStyle) =>
         new(loadout, 21550, 16150, Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             "UPDATE characters SET y=1095,healthC=5000,healthM=5000,innerStrC=500,innerStrM=500 WHERE charId=110"
-        }, DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: samples.Select(sample => sample.Ability).Prepend(HackerStyle).ToArray(),
+        }, DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: samples.Select(sample => sample.Ability).Prepend(style).ToArray(),
             environmentOverrides: new()
             {
                 ["MXO_MOBS"] = "test", ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_COMBAT_FOUNDATIONS_QA"] = "1",

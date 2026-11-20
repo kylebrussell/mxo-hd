@@ -42,6 +42,15 @@ namespace hds
                 }
             }
 
+            if (starterViralDamage && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+            {
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                    new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetOutOfRange)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: out-of-range starter viral target {currentTargetViewId}");
+                return;
+            }
+
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
