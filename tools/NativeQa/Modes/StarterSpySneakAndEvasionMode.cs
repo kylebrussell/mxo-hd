@@ -13,15 +13,17 @@ public sealed class StarterSpySneakAndEvasionMode : NativeQaMode
     private const ushort UncannySenses = 161;
     private const ushort DisableEvasion = StealthShieldAbilities.DisableEvasion; // 1125
     private const ushort EvadeCombat = EvasionShield.Parent;                // 217
-    private const uint ItotToolGoid = StealthShieldFixture.Tool;            // 531
+    // AnalyzeWeaknessTool (GOID 465) satisfies BOTH 1125's ReqCategory 1951355977 (ITOt) and client component-10 ReqAbilityID 1125.
+    private const uint ItotToolGoid = 465u;
     private const uint EvadeCombatDescriptor = 0x80000000u | ((uint)EvadeCombat << 10);
 
     private const byte Level = 50, Rank = 50;
     private const int GroundY = 495;
-    // QAEnemy stands 2.52 m north of CSR facing +Z (away from CSR), satisfying Sneak InitialSneakTest,
+    // Open street stand clear of ambient NPCs (3 m east of Melee Dummy); both charId 110 and 6114 have rotation=0 (+Z),
+    // so CSR faces QAEnemy's back and QAEnemy faces directly away (+Z, 180 deg off CSR), satisfying Sneak InitialSneakTest,
     // 1125 CastOutsideTargetFOVAngle (50 deg), and 8 m SelectionRange.
-    private const int CasterX = 24499, CasterZ = -1750;
-    private const int EnemyX = 24499, EnemyZ = -1498;
+    private const int CasterX = 24800, CasterZ = -1750;
+    private const int EnemyX = 24800, EnemyZ = -1498;
 
     private static readonly ushort[] Roots = { 2, 17, SpyStyle, SneakPassive, UncannySenses, DisableEvasion };
     private static readonly ushort[] Loadout = Roots
@@ -35,29 +37,31 @@ public sealed class StarterSpySneakAndEvasionMode : NativeQaMode
     public override NativeQaModePlan Plan { get; } = new(
         Loadout, CasterX, CasterZ, Array.Empty<string>(), Array.Empty<string>(), new[]
         {
-            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={GroundY}," +
+            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={GroundY},rotation=0," +
                 "alignment=1,pvpflag=1,healthC=3000,healthM=3000,innerStrC=2000,innerStrM=2000 WHERE charId=110",
             $"UPDATE char_abilities SET level={Rank} WHERE char_id=110",
             $"DELETE FROM inventory WHERE charId=110 AND slot IN (1,{CombatFixtureWeapons.HandSlot})",
             $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,{ItotToolGoid},1,1,0)",
-            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={EnemyX},y={GroundY},z={EnemyZ}," +
+            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={EnemyX},y={GroundY},z={EnemyZ},rotation=0," +
                 "alignment=2,pvpflag=1,healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=6114",
             "DELETE FROM char_abilities WHERE char_id=6114",
             $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(6114,50,{EvadeCombatDescriptor},50,1,'EvadeCombatAbility')"
         },
         DevCommands: true,
         loadAbilityAncestors: false,
+        testMobFixture: "awakened-interlock-resistance.csv",
         hotbarAbilities: new[] { SpyStyle, SneakGrant, DisableEvasion },
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0",
-            ["MXO_MOB_WANDER"] = "0"
+            ["MXO_MOB_WANDER"] = "0",
+            ["MXO_PVP_SERVER"] = "1"
         },
         readyMessages: new[]
         {
-            "Level 50, rank 50, unarmed (23/100 memory, max IS 2000), PvP flagged (Org 1), ITOt tool (GOID 531) in bag slot 1. Hostile PvP QAEnemy (Org 2, Evade Combat 217 / EvasionState 624 active) stands 2.52 m north facing away. Page 2 hotbar slots: 1=1112 Spy Style, 2=1111 Sneak, 3=1125 Disable Evasion.",
+            "Level 50, rank 50, unarmed (23/100 memory, max IS 2000), hostile PvP server (MXO_PVP_SERVER=1 auto-flags Org 1 CSR and Org 2 QAEnemy on login), AnalyzeWeaknessTool (GOID 465, component-10 ReqAbilityID 1125 + ITOt) in bag slot 1. Open stand (24800, 495, -1750) clear of ambient NPCs; hostile QAEnemy (Evade Combat 217 / EvasionState 624 active) stands 2.52 m north at (24800, 495, -1498) facing +Z (rotation=0, 180 deg away from CSR). Page 2 slots: 1=1112 Spy Style, 2=1111 Sneak, 3=1125 Disable Evasion.",
             "Step A (151 Sneak & 161 Uncanny Senses passive/grant unload & reload): Clear target selection. Send four separate unloads leaf-to-root: '?qaunload 1125' (23->21 mem), '?qaunload 161' (21->20 mem; Sneak Attack Detection stat 577 drops -40), '?qaunload 121' (20->18 mem), '?qaunload 151' (18->9 mem; stats 1027 -5, 1143 -5, 998 -10, 1047 -5 removed and grant 1111 Sneak removed via 80 b3 57 04). Then send four separate reloads root-to-leaf: '?qaload 151' (9->18 mem; stats & grant 1111 restored), '?qaload 121' (18->20), '?qaload 161' (20->21; stat 577 +40 restored), '?qaload 1125' (21->23).",
-            "Step B (1125 Disable Evasion): Press slot 1 (1112 Spy Style), then press slot 2 (1111 Sneak) from behind QAEnemy ('[STEALTH] CSR_Tester 1111 on (bits 2, SL 15)'). Select QAEnemy (2.52 m north, EvasionState 624 active) and press slot 3 (1125 Disable Evasion): expect 25 IS spent (2000 -> 1975), 4.0 s cast bar retaining Sneak during cast, 45.0 s own reuse, on landing '[STEALTH] CSR_Tester 1111 off (landed ability1125)' + '[STEALTH-FREE]1125 landed; target suppression8s; caster restealth1.5s', and 1.5 s later automatic restealth '[STEALTH-FREE]1125 restored 1111' + '[STEALTH] CSR_Tester 1111 on (bits 2, SL 15)'."
+            "Step B (1125 Disable Evasion): Press slot 1 (1112 Spy Style), then press slot 2 (1111 Sneak) from behind QAEnemy ('[STEALTH] CSR_Tester 1111 on (bits 2, SL 50); QAEnemy hidden'). Select QAEnemy (2.52 m north, EvasionState 624 active) and press slot 3 (1125 Disable Evasion): expect 25 IS spent (2000 -> 1975), 4.0 s cast bar retaining Sneak during cast, 45.0 s own reuse, on landing '[STEALTH] CSR_Tester 1111 off (landed ability1125)' + '[STEALTH-FREE]1125 landed; target suppression8s; caster restealth1.5s', and 1.5 s later automatic restealth '[STEALTH-FREE]1125 restored 1111' + '[STEALTH] CSR_Tester 1111 on (bits 2, SL 50); QAEnemy hidden'."
         },
         extraQaMetadata: new()
         {
