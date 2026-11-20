@@ -108,13 +108,14 @@ namespace hds
         private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
         private static readonly (ushort Source, ushort Target)[] SpyClassPairs =
             { (155, 1113), (131, 1115), (118, 1119), (283, 1120), (338, 1121), (285, 1122), (389, 1123) };
+        private static readonly (ushort Source, ushort Target)[] MasterShadowPairs = { (367, 1118) };
         private static readonly (ushort Source, ushort Target)[] PhysicianPairs = { (418, 1098) };
         private static readonly (ushort Source, ushort Target)[] UpgradeArtistPairs = { (318, 1095) };
         private static readonly (ushort Source, ushort Target)[] RavagerAndUpgradeMasterPairs = { (470, 1081), (425, 1096) };
         private static readonly (ushort Source, ushort Target)[] NetworkAttackerPairs = { (483, 1080) };
         internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs =>
             ObservedPairs.Concat(NativeToolPairs).Concat(GunmanPassivePairs).Concat(UtilityMasterPairs).Concat(SpyClassPairs)
-                .Concat(PhysicianPairs).Concat(UpgradeArtistPairs).Concat(RavagerAndUpgradeMasterPairs)
+                .Concat(MasterShadowPairs).Concat(PhysicianPairs).Concat(UpgradeArtistPairs).Concat(RavagerAndUpgradeMasterPairs)
                 .Concat(NetworkAttackerPairs);
         // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.
         internal static IReadOnlyList<(ushort Source,ushort Target)> ReadyPresentationPairs { get; } =
