@@ -1,0 +1,44 @@
+{
+  "abilities": {
+    "14": {
+      "checks": {
+        "damage": {
+          "source": "GOB 14 has separate value-function 4 components for physical damage and current Inner Strength.",
+          "runtime": "AwakenedPowerShot samples the components independently. The physical result consumes the selected opponent's typed resistance and the IS gain is capped on the caster.",
+          "test": "AwakenedPowerShotTests exercise separate stored bounds and capped restoration. PR539 native lands raw 122 to final 100 at +75 resistance, and PacketLog 5176 and 5182–5183 show the independent +20 IS restoration. Retail scaling remains a separate check. https://github.com/kylebrussell/mxo-hd/pull/539"
+        }
+      }
+    },
+    "197": {
+      "checks": {
+        "damage": {
+          "source": "GOB 197 stores instant physical damage 16 on the live Dazed interlock opponent.",
+          "runtime": "The interlock move uses the fixed source base and applies the current physical modifiers and the opponent's melee resistance once.",
+          "test": "PR517 verifies the fixed base, and AwakenedInterlockResistanceMode plus PR539 stock compare neutral 19 to resisted 15 with the same level and +75 target resistance. https://github.com/kylebrussell/mxo-hd/pull/517 https://github.com/kylebrussell/mxo-hd/pull/539"
+        },
+        "behavior-tests": {
+          "source": "GOB 197 requires Dazed and applies 16 physical base and -10 Melee Accuracy for 20 seconds. ILDB maps the move to choreography 284.",
+          "runtime": "The bound interlock only admits the live Dazed opponent. Its round resolves the fixed damage and accuracy modifier, then withdraws the modifier on expiry.",
+          "test": "AwakenedInterlockAdmissionMode checks invalid and live-opponent admission. AbilityScaledBuffTests.HeadButtLowersMeleeAccuracyUntilItsStoredExpiry, native PR494 and PR539 cover the debuff, choreography, neutral and resisted hit. https://github.com/kylebrussell/mxo-hd/pull/494 https://github.com/kylebrussell/mxo-hd/pull/539"
+        }
+      }
+    },
+    "198": {
+      "checks": {
+        "damage": {
+          "source": "GOB 198 stores instant physical damage 7 on the live interlock opponent.",
+          "runtime": "The interlock move uses the fixed source base and applies current physical modifiers and the opponent's melee resistance once.",
+          "test": "PR517 verifies the fixed base, and AwakenedInterlockResistanceMode plus PR539 stock compare neutral 8 to resisted 6 with the same level and +75 target resistance. https://github.com/kylebrussell/mxo-hd/pull/517 https://github.com/kylebrussell/mxo-hd/pull/539"
+        },
+        "behavior-tests": {
+          "source": "GOB 198 queues in the current interlock and stores base 7. The ILDB maps Cheap Shot to choreography 285.",
+          "runtime": "The bound opponent is checked before queuing and again at resolution. The move uses the ordinary close-combat physical result.",
+          "test": "CombatDepthTests verify the move mapping. AwakenedInterlockAdmissionMode and native PR494 exercise the live-opponent and at-rest rules. PR539 adds the neutral and resisted outcome in the stock client. https://github.com/kylebrussell/mxo-hd/pull/494 https://github.com/kylebrussell/mxo-hd/pull/539"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR539": "Native tested 687cbe5437b1274ad4e4c7aba9c1189b0abe7e2d. The full stock Power Shot request is on lines 5110–5111, with a 20 IS debit and 60 s reuse on 5127 and 5132. The patch was unchanged when merged after rebase."
+  }
+}

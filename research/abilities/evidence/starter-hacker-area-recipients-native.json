@@ -1,0 +1,47 @@
+{
+  "families": {
+    "starter-freeze-area-native": {
+      "representative": 47,
+      "result": "pass",
+      "head": "26e65d45893e5bad59b4bf8d27f6fb727536801e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/540",
+      "scope": "Stock selection held QAFar beyond 3 m. QAEnemy received 6 s Pacify, −30 Viral Resistance for 12 s and 12 s control immunity. QAEnemy's Pacify cleared at 6767. QAFriend deflected, QAOther and QAFar were excluded."
+    }
+  },
+  "abilities": {
+    "38": {
+      "checks": {
+        "controls": {
+          "source": "GOB 38 stores Stun 3 s and uses AddControlImmunityTimer. The loadout raises the actual stun to 3.15 s.",
+          "runtime": "AreaDisruption records the sourced Stun and applies the independent 734 control-immunity record. Each ages out separately.",
+          "test": "StarterHackerAreaRecipientsMode verifies the 3.15 and 8 s durations on both witnesses. PR540 PacketLog 5487/5594/5871/5884/5959/5970 confirms adds and removals. https://github.com/kylebrussell/mxo-hd/pull/540"
+        },
+        "script": {
+          "source": "GOB 38 calls AddControlImmunityTimer from its stun component.",
+          "runtime": "The selected effect calls TempMods' independent 734 immunity path.",
+          "test": "PR540 observes 734→681 for 8 s after the 3.15 s Stun on both recipients and its later removal. https://github.com/kylebrussell/mxo-hd/pull/540"
+        }
+      }
+    },
+    "47": {
+      "family": "starter-freeze-area-native"
+    },
+    "97": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 97 selects local targets within 3 m of the caster. The stock request can carry an unrelated selected handle.",
+          "runtime": "UiLagArea checks the visible candidate, range, floor, sight and hostile eligibility before a recipient-specific viral contest.",
+          "test": "UiLagAreaTests exercise selected-far, floor, sight, allegiance and separate hit/deflect. PR540 holds QAFar selected while QAEnemy receives all four deltas, QAFriend deflects and both QAFar and QAOther receive none. https://github.com/kylebrussell/mxo-hd/pull/540"
+        },
+        "behavior-tests": {
+          "source": "GOB 97 applies four 27 s penalties and the original player capture identifies the runtime deltas individually.",
+          "runtime": "UiLagArea applies the four records only on a successful recipient contest. Normal timed-effect expiry withdraws the same records.",
+          "test": "UiLagAreaTests exercise the four captured values and their combat consumers. StarterHackerAreaRecipientsMode and PR540 native compare hit, deflect and exclusions and observe all four stock add and remove records after 27 s at 4864 and 6031. https://github.com/kylebrussell/mxo-hd/pull/540"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR540": "First full 47 stock cast (6229–6230) is 80b92f00070005000000000000000000000000000000000000000000585cb80001000000086b0000000000. Area Disruption also reaches attackable test mob rows within 8 m. Their 3.01 m stand is outside the two 3 m casts. The runtime patch was unchanged on rebase. https://github.com/kylebrussell/mxo-hd/pull/540"
+  }
+}
