@@ -15,6 +15,7 @@ namespace hds
             if (command == "foundations-cone") return CombatFoundationsQa.Setup(caller, "cone");
             if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage") return CombatFixtureWeapons.Disengage(caller);
+            if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
             if (command == "rejuvenate-maxima")
             {
                 var database = Store.config?.dbParams?.DatabaseName;

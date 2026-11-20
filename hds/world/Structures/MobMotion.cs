@@ -39,6 +39,7 @@ namespace hds
                 Life=mob.DeathGeneration,Random=random};
         }
         public static bool Chasing(Mob mob) { lock(sync)return moving.TryGetValue(mob,out var state)&&state.Target!=null; }
+        internal static void ResetFixtureMotion(Mob mob) { lock (sync) moving.Remove(mob); }
         private static double[] Position(Mob mob)=>new[]{mob.getXPos(),mob.getYPos(),mob.getZPos()};
         private static double[] Position(WorldClient client)
         {

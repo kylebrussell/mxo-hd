@@ -10,6 +10,7 @@ namespace hds
         public const byte HandSlot = InventoryHandler.WeaponSlot;
         public const string WeaponMode = "MXO_COMBAT_FIXTURE_WEAPONS";
         public const string DisengageMode = "MXO_COMBAT_FIXTURE_DISENGAGE";
+        public const string ResetMode = "MXO_COMBAT_FIXTURE_RESET";
 
         private static bool Allowed(WorldClient caller, string mode) =>
             Environment.GetEnvironmentVariable(mode) == "1" &&
@@ -60,6 +61,53 @@ namespace hds
             if (!Allowed(caller, DisengageMode)) return "Fixture disengage requires the disposable combat loadout.";
             CombatManager.GetHandler(caller).LeaveOtherFights();
             return "Fixture combat ended. Wait for the stock combat HUD to clear.";
+        }
+
+        internal static string ResetDummy(WorldClient caller)
+        {
+            if (!Allowed(caller, ResetMode)) return "Fixture reset requires the disposable combat loadout.";
+
+            Mob dummy = null;
+            lock (WorldServer.mobs.SyncRoot)
+            {
+                foreach (Mob mob in WorldServer.mobs)
+                {
+                    if (mob.getDistrict() != caller.playerData.getDistrictId() || !MobMotion.Ordinary(mob) ||
+                        mob.isFriendly || mob.getHealthM() != 30000 || mob.getName() != "Melee Dummy")
+                        continue;
+                    if (dummy != null) return "Fixture reset requires exactly one living Melee Dummy.";
+                    dummy = mob;
+                }
+            }
+            if (dummy == null) return "Fixture reset could not find the living 30,000 HP Melee Dummy.";
+
+            CombatManager.GetHandler(caller).LeaveOtherFights();
+            dummy.setIsSpawned(false);
+            try
+            {
+                dummy.ResetForRespawn();
+                dummy.SetInCombat(false);
+                dummy.setRotation(0);
+                MobMotion.ResetFixtureMotion(dummy);
+                TimedEffects.Clear(TimedEffects.ForMob(dummy));
+                // Give every viewer a standard new hostile creation with a fresh spawn ID after reset.
+                Store.world.DeleteMobViews(dummy);
+
+                float x = (float)dummy.xBase, y = (float)dummy.yBase, z = (float)dummy.zBase - 252;
+                byte yaw = MobAggro.YawTowards(x, z, dummy.xBase, dummy.zBase);
+                byte teleport = (caller.playerData.teleportCounter = (byte)(caller.playerData.teleportCounter % 255 + 1));
+                caller.playerData.currentSelectedTargetViewId = 2;
+                caller.playerData.currentSelectedTargetSpawnId = 0;
+                caller.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
+                caller.playerInstance.YawInterval.setValue(yaw);
+                caller.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(x, y, z, 0, 0, 0, teleport, yaw), false);
+                caller.FlushQueue();
+            }
+            finally
+            {
+                dummy.setIsSpawned(true);
+            }
+            return "Fixture reset: Melee Dummy restored. Select its new view before casting.";
         }
     }
 }
