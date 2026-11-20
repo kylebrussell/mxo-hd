@@ -30,6 +30,8 @@ public class MasterShadowBatchTests
         client.messageQueue = new MessageQueue();
         typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, long.MaxValue);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(client, new WorldSendFence());
         return client;
     }
 
