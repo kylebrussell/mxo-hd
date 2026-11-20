@@ -65,7 +65,7 @@ public class SpyMasterSneakOpenersTests
         Assert.Equal("ability-sweep-melee.csv", plan.TestMobFixture);
         int mem = plan.Abilities.Sum(AbilityMemory.Cost);
 
-        Assert.Equal("1", plan.EnvironmentOverrides["MXO_COMBAT_FIXTURE_DISENGAGE"]);
+        Assert.Equal("1", plan.EnvironmentOverrides["MXO_COMBAT_FIXTURE_RESET"]);
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-50 Master Spy sneak batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
         Assert.Equal(99, mem);

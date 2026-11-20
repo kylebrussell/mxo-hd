@@ -38,7 +38,7 @@ public sealed class SpyMasterSneakOpenersMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0",
             ["MXO_MOB_WANDER"] = "0",
-            ["MXO_COMBAT_FIXTURE_DISENGAGE"] = "1"
+            [CombatFixtureWeapons.ResetMode] = "1"
         },
         extraQaMetadata: new()
         {
@@ -50,8 +50,12 @@ public sealed class SpyMasterSneakOpenersMode : NativeQaMode
         },
         readyMessages: new[]
         {
+            SpyFixtureReset.Reselect,
+            "Between openers, run ?combatdepth fixture-reset, wait for the 15-second family timer, activate Sneak once, and select the fresh dummy.",
             "Level 50 rank 50 unarmed, spawned 2.5 m directly behind Melee Dummy (99/100 memory; Spy Style 1112 full closure = +54% thrown dmg). Press slot 1 (Spy Style 1112).",
-            "Step A (2 s cast sneak free throws — stay outside combat; wait 15 s family 691 reuse and re-Sneak slot 2 between each). Slot 3 (Staggering Throw 348): 45 IS, 2s cast retaining Sneak, 45s/grp691 15s, 292 dmg (VF3 190 + 54%), Staggered 12 s (State 201). Slot 4 (Infuriating Assault 1130): 40 IS, 2s cast retaining Sneak, 45s/grp691 15s, 201 dmg (VF3 131 + 54%), Enraged 4 s (State 93). Slot 5 (Warding Blow 1134): 45 IS, 2s cast retaining Sneak, 45s/grp691 15s, 217 dmg (VF3 141 + 54%), Melee/Ballistic Acc (522/524) -30 for 8 s.",
-            "Step B (Instant interlock sneak openers — before each: '?combatdepth fixture-disengage', wait 15 s grp691, stay behind Melee Dummy '?tp 24499 495 -1750 0 0 0' if needed, re-Sneak slot 2). Slot 6 (Diving Frankensteiner 385): 80 IS, 60s/grp691 15s, choreo 19592, 1369 dmg ((164+725)+54%). Slot 7 (Freedom to Joints 386): 60 IS, 60s/grp691 15s, choreo 19600, 1527 dmg ((92+900)+54%), Powerless 8 s (State 96)."
+            "Step A (2 s cast sneak free throws — start outside combat). Slot 3 (Staggering Throw 348): 45 IS, 2s cast retaining Sneak, 45s/grp691 15s, 292 dmg (VF3 190 + 54%), Staggered 12 s (State 201). Slot 4 (Infuriating Assault 1130): 40 IS, 2s cast retaining Sneak, 45s/grp691 15s, 201 dmg (VF3 131 + 54%), Enraged 4 s (State 93). Slot 5 (Warding Blow 1134): 45 IS, 2s cast retaining Sneak, 45s/grp691 15s, 217 dmg (VF3 141 + 54%), Melee/Ballistic Acc (522/524) -30 for 8 s.",
+            "Step B (Instant interlock sneak openers). Slot 6 (Diving Frankensteiner 385): 80 IS, 60s/grp691 15s, choreo 19592, 1369 dmg ((164+725)+54%). Slot 7 (Freedom to Joints 386): 60 IS, 60s/grp691 15s, choreo 19600, 1527 dmg ((92+900)+54%), Powerless 8 s (State 96)."
         });
+
+    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => SpyFixtureReset.VerifyAsync(context);
 }
