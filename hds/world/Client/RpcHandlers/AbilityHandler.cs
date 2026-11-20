@@ -188,6 +188,13 @@ namespace hds
                     Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
                     return;
                 }
+                if (SpyGroundBombs.TryRefuse(Store.currentClient, AbilityID, packet, out uint bombRefusal))
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, bombRefusal)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + bombRefusal);
+                    return;
+                }
             }
 
 
@@ -552,6 +559,7 @@ namespace hds
             // tick then fails the generation check. The Belt still ends its auras when its cast lands.
             if (AbilityID == Stealth.SneakGrantAbility)
                 Stealth.StopStealthAuras(Store.currentClient);
+            var groundBomb = SpyGroundBombs.Capture(Store.currentClient, AbilityID, packet);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -608,6 +616,11 @@ namespace hds
             if (CasterHostileArea.Handles(AbilityID))
             {
                 CasterHostileArea.Land(client, ability);
+                return;
+            }
+            if (SpyGroundBombs.Handles(AbilityID))
+            {
+                SpyGroundBombs.Land(client, ability, groundBomb);
                 return;
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
@@ -760,6 +773,8 @@ namespace hds
                         return (UInt16)amount;
                 }
             }
+            int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
+            if (fixture.HasValue) return (UInt16)fixture.Value;
             if (SpyAbilityRegistry.TryResolveDamage(source, characterLevel, random, out ushort registeredDamage))
                 return registeredDamage;
             // Overhand Smash has one fixed physical health component and no usable legacy range.
@@ -781,8 +796,7 @@ namespace hds
                 return deadlyDamage;
             if (BullDogDamage.TryResolve(source, out ushort bullDogDamage))
                 return bullDogDamage;
-            int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
-            return (UInt16)(fixture ?? StarterHackerViralBase(source) ?? random.Next(50, 81));
+            return (UInt16)(StarterHackerViralBase(source) ?? random.Next(50, 81));
         }
 
         // These early Hacker CSV rows have incomplete ranges. Read only the reviewed fixed viral modifiers.
