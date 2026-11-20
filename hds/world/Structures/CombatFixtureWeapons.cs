@@ -11,6 +11,7 @@ namespace hds
         public const string WeaponMode = "MXO_COMBAT_FIXTURE_WEAPONS";
         public const string DisengageMode = "MXO_COMBAT_FIXTURE_DISENGAGE";
         public const string ResetMode = "MXO_COMBAT_FIXTURE_RESET";
+        public const string LiveResetMode = "MXO_COMBAT_FIXTURE_LIVE_RESET";
         public const int DummyPhysicalResistance = 75;
 
         private static bool Allowed(WorldClient caller, string mode) =>
@@ -83,6 +84,9 @@ namespace hds
             }
             if (dummy == null) return "Fixture reset could not find the living 30,000 HP Melee Dummy.";
 
+            if (Environment.GetEnvironmentVariable(LiveResetMode) == "1")
+                return ResetLiveDummy(caller, dummy, resistanceStat);
+
             CombatManager.GetHandler(caller).LeaveOtherFights();
             dummy.setIsSpawned(false);
             try
@@ -91,17 +95,7 @@ namespace hds
                 dummy.SetInCombat(false);
                 dummy.setRotation(0);
                 MobMotion.ResetFixtureMotion(dummy);
-                var effects = TimedEffects.ForMob(dummy);
-                TimedEffects.Clear(effects);
-                if (resistanceStat != 0)
-                    TimedEffects.Apply(effects, new TempMods.Effect
-                    {
-                        Mods = new[] { new TempMods.Mod
-                        {
-                            Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = resistanceStat,
-                            MinValue = DummyPhysicalResistance, MaxValue = DummyPhysicalResistance, Seconds = 300
-                        } }
-                    }, TimeUtils.GetSimTimeSeconds());
+                ResetDummyEffects(dummy, resistanceStat);
                 // Give every viewer a standard new hostile creation with a fresh spawn ID after reset.
                 Store.world.DeleteMobViews(dummy);
 
@@ -125,5 +119,37 @@ namespace hds
                 ? $"Fixture reset: Melee Dummy restored with +{DummyPhysicalResistance} Thrown Damage Resistance. Select its new view."
                 : "Fixture reset: Melee Dummy restored. Select its new view before casting.";
         }
+        private static string ResetLiveDummy(WorldClient caller, Mob dummy, ushort resistanceStat)
+        {
+            var view = caller.viewMan.FindViewForEntity(dummy.getEntityId());
+            if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted || view.spawnId == 0 ||
+                !dummy.getIsSpawned() || dummy.getIsDead() || dummy.getHealthC() == 0)
+                return "Fixture reset needs the living Melee Dummy in view.";
+
+            // The stock client can retain the old target when an interlock ends and the same NPC is
+            // immediately deleted and recreated. This soak fixture only needs a fresh combat state.
+            dummy.PassiveTarget = true;
+            CombatManager.GetHandler(caller).LeaveOtherFights();
+            dummy.SetInCombat(false);
+            MobMotion.ResetFixtureMotion(dummy);
+            ResetDummyEffects(dummy, resistanceStat);
+            return $"Fixture ready: Melee Dummy view {view.ViewID}, spawn {view.spawnId}. Select the same dummy.";
+        }
+
+        private static void ResetDummyEffects(Mob dummy, ushort resistanceStat)
+        {
+            var effects = TimedEffects.ForMob(dummy);
+            TimedEffects.Clear(effects);
+            if (resistanceStat != 0)
+                TimedEffects.Apply(effects, new TempMods.Effect
+                {
+                    Mods = new[] { new TempMods.Mod
+                    {
+                        Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = resistanceStat,
+                        MinValue = DummyPhysicalResistance, MaxValue = DummyPhysicalResistance, Seconds = 300
+                    } }
+                }, TimeUtils.GetSimTimeSeconds());
+        }
+
     }
 }

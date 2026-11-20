@@ -18,6 +18,7 @@ namespace hds
             if (command == "foundations-viral") return CombatFoundationsQa.Setup(caller, "viral");
             if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage") return CombatFixtureWeapons.Disengage(caller);
+            if (command == "fixture-reset-ballistic-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 181);
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
             if (command == "fixture-reset-resisted") return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
             if (command == "fixture-reset-thrown-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 1033);
