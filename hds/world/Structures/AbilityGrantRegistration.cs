@@ -91,8 +91,12 @@ namespace hds
             (490,1091),
             (533,1066)
         });
-        internal static IReadOnlyList<(ushort Source,ushort Target)> ObservedScaledPairs { get; } = Array.AsReadOnly(
-            new (ushort Source,ushort Target)[]{(AbilitySneakGrant.Parent,AbilitySneakGrant.Child)});
+        internal static IReadOnlyList<(ushort Source,ushort Target)> StoredScaledPairs { get; } = Array.AsReadOnly(
+            new (ushort Source,ushort Target)[]
+            {
+                (AbilitySneakGrant.Parent,AbilitySneakGrant.Child),
+                (AbilitySneakGrant.ConcealmentParent,AbilitySneakGrant.ConcealmentChild)
+            });
         // Stored175 grants1116; native tool admission reads the live actor's grant registry, not Margin alone.
         // Primary contract: research/abilities/invisibility-tool-registration.md. No new level formula.
         internal static IReadOnlyList<(ushort Source,ushort Target)> NativeToolPairs { get; } =
@@ -158,7 +162,7 @@ namespace hds
                     {
                         var desired=RegisteredPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
                             .Select(p=>new Relation(p.Source,p.Target,0));
-                        foreach(var pair in ObservedScaledPairs)
+                        foreach(var pair in StoredScaledPairs)
                             if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned)&&AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level))
                                 desired=desired.Append(new Relation(pair.Source,pair.Target,level));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
