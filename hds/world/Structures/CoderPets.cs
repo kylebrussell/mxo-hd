@@ -757,8 +757,8 @@ namespace hds
             if (pet == null) return;
             lock (pet)
             {
-                if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) ||
-                    (id == PowerBoost && (!InAbilityRange(pet, id) || CombatManager.GetHandler(caster).isCombatRunning)))
+                if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
+                    (id == PowerBoost && CombatManager.GetHandler(caster).isCombatRunning))
                 {
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
                     return;
