@@ -39,21 +39,34 @@ public sealed class StarterGunSpecialAdmissionMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "105,126,176,130", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Equip the rifle with ?combatdepth fixture-weapon rifle. Select Melee Dummy, choose Rifles (page 2 slot 4), and try Body Shot (slot 1) at rest. It should be unavailable, with no IS charge or reuse. Open Close Combat and choose Rifles again before using Body Shot. Capture move 11364.",
+            "Start here before any Close Combat, weapon swap, or reset. The handgun is already equipped. Select Melee Dummy, choose Handguns (slot 5) and use Hindering Shot (slot 7) at rest. Capture a 2 s cast, 8 s reuse and the slow/Force Combat records. This is the only native retest required for PR505.",
+            "For the complete sweep after Hindering lands, reset, strafe and select the fresh dummy. Equip the rifle with ?combatdepth fixture-weapon rifle. Select Melee Dummy, choose Rifles (page 2 slot 4), and try Body Shot (slot 1) at rest. It should be unavailable, with no IS charge or reuse. Open Close Combat and choose Rifles again before using Body Shot. Capture move 11364.",
             "Run ?combatdepth fixture-reset, strafe slightly and select the fresh Melee Dummy. Use ?combatdepth fixture-weapon handgun. Open Close Combat, choose Handguns (slot 5), and use Disarming Shot (slot 2). Before Disarming Shot, try Hindering Shot (slot 7) in the same interlock. Stock should show outside-combat gating without a cast or IS charge. Then use slot 2 and capture move 9522.",
             "Repeat reset and selection with ?combatdepth fixture-weapon smg. Open Close Combat, select Submachine Guns (slot 6), and use Covering Fire (slot 3). Wait for the cast and move 21083. Each move must queue on the current dummy.",
-            "Reset again, strafe slightly, reselect the fresh dummy and equip the handgun. Select Handguns (slot 5) but stay at rest. Use Hindering Shot (slot 7). Capture the 2 s cast, 8 s reuse and four slowing/Force Combat records. Enter submits commands. Keep the target selected without pressing Escape."
+            "Enter submits commands. Keep the target selected without pressing Escape. After the at-rest shot, wait for the 8 s reuse to clear before checking Hindering in interlock."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var server = context.ActualServer!;
-        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "rifle", CombatFixtureWeapons.Rifle);
+        await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(actor, CombatFixtureWeapons.Handgun);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         var target = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         CombatFixtureLoadout.AssertDummy(actor, target);
         uint handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
+        await SelectStyleAsync(actor, Samples[1], handle);
+        int cursor = actor.World.RpcSnapshot().Count;
+        int shotLog = server.DebugLog().Length;
+        actor.SendRpc(WithHandle(Hindering, handle));
+        await EvidenceRetestWire.CastBarAsync(actor, 130, 2);
+        await EvidenceRetestWire.TimerAsync(actor, cursor, 130, AbilityCooldowns.OwnTimer, 8);
+        await actor.WaitUntilAsync(() => server.DebugLog()[shotLog..].Contains($"[ABILITY] 130 lands on view {target.ViewId}"),
+            "Hindering Shot still lands on the current enemy outside combat", HeadlessPlayer.DefaultTimeout);
+        target = await FreshDummyAsync(actor, target);
+        await EvidenceRetestWire.TimerAsync(actor, cursor, 130, AbilityCooldowns.OwnTimer, 8, ended: true);
+        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "rifle", CombatFixtureWeapons.Rifle);
+        handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
         await SelectStyleAsync(actor, Samples[0], handle);
         await RefusedAsync(actor, 105, WithHandle(Samples[0].AbilityCapture, handle));
 
@@ -88,17 +101,6 @@ public sealed class StarterGunSpecialAdmissionMode : NativeQaMode
                 return start >= 0 && log[start..].Contains(styleMove, StringComparison.Ordinal);
             }, $"Stock {sample.Id} queues and uses move {sample.Animation}", TimeSpan.FromSeconds(18));
         }
-        target = await FreshDummyAsync(actor, target);
-        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "handgun", CombatFixtureWeapons.Handgun);
-        handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
-        await SelectStyleAsync(actor, Samples[1], handle);
-        int cursor = actor.World.RpcSnapshot().Count;
-        int shotLog = server.DebugLog().Length;
-        actor.SendRpc(WithHandle(Hindering, handle));
-        await EvidenceRetestWire.CastBarAsync(actor, 130, 2);
-        await EvidenceRetestWire.TimerAsync(actor, cursor, 130, AbilityCooldowns.OwnTimer, 8);
-        await actor.WaitUntilAsync(() => server.DebugLog()[shotLog..].Contains($"[ABILITY] 130 lands on view {target.ViewId}"),
-            "Hindering Shot still lands on the current enemy outside combat", HeadlessPlayer.DefaultTimeout);
         Check.Equal(0, actor.World.Problems.Count, "Gun special framing");
         return Array.Empty<byte>();
     }
