@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "43": {
+      "checks": {
+        "targeting": {
+          "source": "Ability 43 uses a selected enemy (CastDirectObjects 0, CastValidTarget 3) at 16 m with viral contest function 2.",
+          "runtime": "AbilityHandler requires a current hostile handle before the cast. AbilityTargets checks sight and range and FreeCastViralContest handles deflection before TimedEffects.",
+          "test": "PR487 stock retained its selected NPC across the mapped obstruction and logged sight blocked without a contest. PR489 stock refused friendly QAOther before casting and applied state 90 for 16 s to QAEnemy (recipient frame 16070). EarlyHackerControlSightMode rejects the empty and stale handles, and FreeCastViralLandingTests exercises actual NPC deflection. https://github.com/kylebrussell/mxo-hd/pull/487 https://github.com/kylebrussell/mxo-hd/pull/489"
+        }
+      }
+    },
+    "48": {
+      "checks": {
+        "targeting": {
+          "source": "Ability 48 uses a selected enemy (CastDirectObjects 0, CastValidTarget 3) at 20 m with viral contest function 2.",
+          "runtime": "AbilityHandler rejects missing, stale and ineligible PvP targets. The selected-target landing gate checks range, sight and deflection before Pacify.",
+          "test": "PR487 stock showed a held selection and a blocked cast before a contest. PR489 stock refused friendly QAOther and applied Pacify for 6 s, -20 viral resistance for 12 s and 12 s immunity on the eligible target (recipient frame 16496). EarlyHackerControlSightMode and FreeCastViralLandingTests exercise stale handles and actual deflection. https://github.com/kylebrussell/mxo-hd/pull/487 https://github.com/kylebrussell/mxo-hd/pull/489"
+        }
+      }
+    },
+    "315": {
+      "checks": {
+        "targeting": {
+          "source": "Ability 315 uses a selected enemy (CastDirectObjects 0, CastValidTarget 3) at 16 m with viral contest function 2.",
+          "runtime": "The live-target gate runs before IS and recast. AbilityTargets and FreeCastViralContest handle sight, range and deflection at landing.",
+          "test": "PR487 stock rejected view zero and reported sight blocked when the held target was obstructed. PR489 stock refused friendly QAOther and stunned the eligible QAFar for 7.35 s with 14 s immunity (frame 16950). The sight replay covers stale spawn IDs, and FreeCastViralLandingTests exercises the actual 315 deflection path. https://github.com/kylebrussell/mxo-hd/pull/487 https://github.com/kylebrussell/mxo-hd/pull/489"
+        }
+      }
+    }
+  }
+}
