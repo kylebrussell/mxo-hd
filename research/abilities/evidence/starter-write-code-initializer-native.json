@@ -1,0 +1,21 @@
+{
+  "abilities": {
+    "37": {
+      "checks": {
+        "script": {
+          "source": "GOB 37 runs TurnOffStealthAbils when the learned modifier loads. tempmods.py calls turnOffAbility on five named states. WriteCode_IsFragmentKnowable in clhooks.py returns zero on every path.",
+          "runtime": "AbilityPassives detects new Write Code membership after grant closure. CraftingSession.WriteCodeLoaded ends the active state if it is one of the five scripted abilities. An unrelated archive rebuild preserves the state. Writer and Compiler activation remain separate paths.",
+          "test": "StarterCoderWriterInitializerMode exercises the standard Archive request, owner toggle and hostile observer view. Native PR544 reproduces Sneak ending on load without opening a tool and staying active through an unrelated unload. PacketLog 1740–1743 adds parent 37 and child 970 and turns off 1111. https://github.com/kylebrussell/mxo-hd/pull/544"
+        },
+        "behavior-tests": {
+          "source": "Write Code 37 provides learned-rank Code Writing 649 capped at 15, grants 970 and runs its load initializer.",
+          "runtime": "Normal archive membership supplies and removes the modifier and grant. Supported Writer requests consume the capped skill and enforce the ordinary tool session. The load initializer and tool activation each handle their own stealth transition.",
+          "test": "AbilityPassiveTests covers the cap and loaded totals, and ability-parity-coder-sweep replays stock writing with the skill, ingredient use, Info debit and written archive code. The normal archive and tool paths are independently demonstrated by StarterCoderWriterInitializerMode and native PR544. https://github.com/kylebrussell/mxo-hd/pull/544"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR544": "Native head af5528671374112a6a82dfec1a00bcdbd637614a. PacketLog 1382 removes 37 and the hidden grant. 1740–1743 restores 37/970 and ends Sneak; unloading 24 at 2291 preserves Sneak. Tool 970 opens at 2700, and tool 969 at 3397. Broader Compiler and Writer tool economy remains on those rows. https://github.com/kylebrussell/mxo-hd/pull/544"
+  }
+}
