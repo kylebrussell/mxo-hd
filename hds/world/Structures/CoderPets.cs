@@ -593,29 +593,37 @@ namespace hds
 
         internal const ushort DerezAbility = 26;
 
-        internal static Pet EnemySimulacrum(WorldClient caster, ushort targetView, ushort? spawn)
+        internal static uint PrepareDerez(WorldClient caster, ushort targetView, ushort? spawn, out Pet target)
         {
-            if (targetView <= 2 || !spawn.HasValue || !AbilityPassives.IsLoaded(caster, DerezAbility) ||
-                CombatManager.GetHandler(caster).isCombatRunning) return null;
+            target = null;
+            if (targetView <= 2 || !spawn.HasValue) return AbilityRefusals.InvalidTarget;
+            if (!AbilityPassives.IsLoaded(caster, DerezAbility)) return AbilityRefusals.NotLoaded;
+            if (CombatManager.GetHandler(caster).isCombatRunning) return AbilityRefusals.MustBeOutsideCombat;
             var mob = AbilityTargets.FindMob(caster, targetView, out ClientView view);
+            if (view?.viewCreated != true || view.viewNeedsToBeDeleted || view.spawnId != spawn.Value)
+                return AbilityRefusals.InvalidTarget;
             Pet pet = mob?.pet;
-            if (view?.viewCreated != true || view.viewNeedsToBeDeleted || view.spawnId != spawn.Value ||
-                pet == null || pet.Gone || mob.getIsDead() || !mob.getIsSpawned() ||
-                !OwnerPresent(pet) || Of(pet.Owner) != pet ||
-                PvpCombat.Check(caster, pet.Owner) != PvpRules.Verdict.Allowed) return null;
+            if (pet == null) return AbilityRefusals.NotEnemySimulacrum;
+            if (pet.Gone || mob.getIsDead() || !mob.getIsSpawned() || !OwnerPresent(pet) || Of(pet.Owner) != pet)
+                return AbilityRefusals.InvalidTarget;
+            var permission = PvpCombat.Check(caster, pet.Owner);
+            if (permission == PvpRules.Verdict.NotOpponent) return AbilityRefusals.NotEnemySimulacrum;
+            if (permission != PvpRules.Verdict.Allowed) return AbilityRefusals.InvalidTarget;
 
             var definition = AbilityCatalog.Find(DerezAbility);
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(caster.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            return Distance(mob, x, y, z) <=
-                definition.Number("Ability/SelectionRange") * CombatCalculator.WorldUnitsPerMetre ? pet : null;
+            if (!(Distance(mob, x, y, z) <= definition.Number("Ability/SelectionRange") * CombatCalculator.WorldUnitsPerMetre))
+                return AbilityRefusals.TargetOutOfRange;
+            target = pet;
+            return 0;
         }
 
         internal static void Derez(WorldClient caster, Pet target, ushort targetView, ushort? spawn)
         {
             lock (target)
             {
-                if (EnemySimulacrum(caster, targetView, spawn) != target) return;
+                if (PrepareDerez(caster, targetView, spawn, out Pet selected) != 0 || selected != target) return;
                 var hit = AbilityCatalog.Find(DerezAbility).Modifiers.Single(m => m.Target == 108 &&
                     m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 1 && m.Number("DamageType", -1) == 5);
                 if (!AbilityValues.TryValue(hit, 0, 0, out int damage) || damage <= 0) return;

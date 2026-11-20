@@ -219,11 +219,17 @@ namespace hds
                 return;
             }
             bool derez = AbilityID == CoderPets.DerezAbility;
-            CoderPets.Pet enemyPet = derez ? CoderPets.EnemySimulacrum(Store.currentClient, currentTargetViewId, targetSpawn) : null;
-            if (derez && enemyPet == null)
+            CoderPets.Pet enemyPet = null;
+            if (derez)
             {
-                Deny(AbilityID, "Load Proxy Coder and choose an enemy simulacrum within range while outside combat.");
-                return;
+                uint reason = CoderPets.PrepareDerez(Store.currentClient, currentTargetViewId, targetSpawn, out enemyPet);
+                if (reason != 0)
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, reason)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: native refusal {reason}");
+                    return;
+                }
             }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
             if (support)

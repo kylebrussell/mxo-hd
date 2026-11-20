@@ -24,14 +24,14 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             "UPDATE characters SET alignment=2 WHERE charId IN (6112,6114)",
             "UPDATE characters SET x=31000+100*(charId-6111),z=-1498 WHERE charId IN (6111,6112,6114)",
             "DELETE FROM char_abilities WHERE char_id IN (6111,6114)"
-        }, DevCommands: true, loadAbilityAncestors: true, environmentOverrides: new()
+        }, DevCommands: true, loadAbilityAncestors: true, testMobFixture: CombatFixtureLoadout.MeleeCsv, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "10"
         }, readyMessages: new[]
         {
-            "After CSR is fully in world, use helper chat requests to move QAFriend to ?tp 25300 495 -1850 0 0 0 and QAEnemy to ?tp 24300 495 -1850 0 0 0. Also move hostile QAFar to ?tp 26420 495 -1498 0 0 0. Have all three helpers use ?pet summon 22. Their Nuker Simulacra spawn 1.5 m east of the distinct stands, putting QAFar’s 17.7 m away.",
-            "Use Coder Style and stay outside interlock. With no selection, then with WinterFrost, then with QAFriend's or QAFar's pet selected, try Proxy Coder from Actions. The client may suppress an invalid request. If sent, it should receive refusal without cast or reuse.",
+            "After CSR is fully in world, use helper chat requests to move QAFriend to ?tp 25300 495 -1850 0 0 0 and QAEnemy to ?tp 24300 495 -1850 0 0 0. Also move hostile QAFar to ?tp 26420 495 -1498 0 0 0. Have all three helpers use ?pet summon 22. Their Nuker Simulacra spawn 1.5 m east of the distinct stands, putting QAFar's 17.7 m away.",
+            "Use Coder Style outside interlock. Try Proxy Coder with no selection, Melee Dummy, QAFriend's pet and QAFar's pet. For each sent request expect one native line for invalid target, wrong target type or range, with no cast or reuse.",
             "Select QAEnemy's Nuker Simulacrum and use Proxy Coder. Capture the full request, 40 IS, 2s cast, 13.5s own reuse, the derezzes line, and pet death/removal. QAEnemy and the friendly simulacrum stay alive."
         });
 
@@ -62,18 +62,27 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         var enemyPet = await SeePetAsync(caster, enemy.CharId);
         var far = context.Helpers["QAFar"];
         var farPet = await SeePetAsync(caster, far.CharId);
-        var npc = await caster.WaitForViewNamedAsync("WinterFrost");
+        var npc = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
+        var nonPetPlayer = await caster.WaitForViewNamedAsync(far.Handle);
         var refusals = new List<string>();
-        foreach (uint handle in new[] { 0u, Handle(npc), Handle(friendPet), Handle(farPet), Handle(enemyPet) ^ 0x10000 })
+        foreach ((uint handle, uint reason) in new[]
+        {
+            (0u, 24u), (Handle(npc), 36u), (Handle(friendPet), 36u), (Handle(nonPetPlayer), 36u),
+            (Handle(farPet), 34u), (Handle(enemyPet) ^ 0x10000, 24u)
+        })
         {
             int start = caster.World.RpcSnapshot().Count;
             caster.SendRpc(Use(handle));
             var denial = await StockAbilityProfile.ObserveAsync(caster, start,
-                packet => BytePattern.Parse("80 ba 1a 00").IsMatch(packet.Bytes), "invalid Proxy Coder selection refusal");
-            Check.That(!caster.World.RpcSnapshot().Skip(start).Any(rpc => BytePattern.Parse("80 ac 1a 00").IsMatch(rpc.Bytes) ||
-                BytePattern.Parse("80 bd 01 1a 00").IsMatch(rpc.Bytes)), "Refusal never starts a cast or reuse");
+                packet => AbilityRefusals.TryDecode(packet.Bytes, out var refused) && refused.AbilityID == Derez && refused.ErrorID == reason,
+                $"Proxy Coder native selection refusal {reason}");
             refusals.Add(denial.Hex);
             await Task.Delay(TimeSpan.FromMilliseconds(600));
+            var replies = caster.World.RpcSnapshot().Skip(start).ToArray();
+            Check.Equal(1, replies.Count(rpc => BytePattern.Parse("80 ba 1a 00").IsMatch(rpc.Bytes)), "One refusal record per request");
+            Check.That(!replies.Any(rpc => BytePattern.Parse("80 ac 1a 00").IsMatch(rpc.Bytes) ||
+                BytePattern.Parse("80 bd 01 1a 00").IsMatch(rpc.Bytes) || BytePattern.Parse("2e c7").IsMatch(rpc.Bytes) ||
+                BytePattern.Parse("81 67").IsMatch(rpc.Bytes)), "Refusal sends no cast, reuse or supplemental chat");
         }
 
         int enemyAt = enemy.World.RpcSnapshot().Count;
@@ -105,8 +114,10 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
 
     private static byte[] Use(uint selectedHandle)
     {
-        // A captured full targeted Coder request (PR312 Static Blast); replace ability and live target handle.
-        byte[] request = Convert.FromHexString("80b91a00050003000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000");
+        // Stock Proxy Coder requests in PR401 capture 29da6f3e7d68, lines 6409 and 10443.
+        byte[] request = Convert.FromHexString(selectedHandle == 0
+            ? "80b91a00000000000000000000000000000000000000000000000000d557377c20000000086b0000000000"
+            : "80b91a0011000f000000000000000000000000000000000000000000585cb30001000000086b0000000000");
         BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), selectedHandle);
         return request;
     }

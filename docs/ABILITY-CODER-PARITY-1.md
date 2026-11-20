@@ -31,3 +31,7 @@ Coder Style (1008) passed the stock add and full restoration check. Its four +47
 | 276, 516, 528 crafting skills | The grouped replay checks loaded +50 Decompile Skill, Ability Crafting and Apparel Crafting records. The Decompile learning/consumption and actual category-specific crafting outcomes still need tests. |
 | 37, 969, 970 crafting activations | Replay and prior stock run cover ordinary consumable writing and compilation. Separate tests address tool session authority and cleanup. The Writer fragment callback, Veteran fields, and the remaining synthesis/economy paths stay open. |
 | 513 Quick Coding | Replay of the exact stock request verifies uninflated +13 on wounded QAOther and own six-second reuse. With +20% healing influence the stock run measured 371→386 HP on QAFriend. |
+
+## Proxy Coder refusal retest
+
+The PR401 stock trace `29da6f3e7d68` shows the derez and pet-window removal. Lines 6415, 7607 and 8809 show the earlier refusal sending reason 6 followed by an orange broadcast. The stock client rendered reason 6 as a tactic error. The positive caster derez is the `81 67` at line 10652. The retest sends one native refusal per invalid request. An empty or stale selection uses reason 24, an ordinary or non-opponent target uses reason 36, and an eligible enemy pet beyond 16 m uses reason 34. The client supplies its matching text. [Refusal table](../research/abilities/ability-refusal-consumer-evidence.md), [PR401](https://github.com/kylebrussell/mxo-hd/pull/401).
