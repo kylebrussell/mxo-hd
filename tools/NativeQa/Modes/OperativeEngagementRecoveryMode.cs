@@ -26,14 +26,15 @@ public sealed class OperativeEngagementRecoveryMode : NativeQaMode
             "DELETE FROM inventory WHERE charId=6114 AND slot BETWEEN 105 AND 107"
         }, DevCommands: true, hotbarAbilities: Passives, environmentOverrides: new()
         {
-            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "6"
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "6",
+            [CombatFixtureWeapons.WeaponMode] = "1"
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "113,143,148", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Page 2 slots 1–3 show the passive IDs 113, 143 and 148. Use Status and the named dev commands to test them. The Handgun is already equipped and the unarmed QAEnemy is 1.2 m away.",
+            "Page 2 slots 1–3 show the passive IDs 113, 143 and 148. Use Status and the named dev commands to test them. The handgun starts in hand and the unarmed QAEnemy is 1.2 m away. After entering, use ?combatdepth fixture-weapon rifle to trigger the stock Free Attack item selection. Wait for kind 16 and rifle 692 in slot 105 before using Fire!.",
             "Inspect +10 Force Combat Bonus from 113, +50 Sitting Health Regen from 143 and Operative Upgrade in Actions. Set health with ?health 700 and sit. Record the sitting regeneration compared with standing.",
-            "With 148 loaded, use radial Fire! on QAEnemy, wait for a shot and holster. At this distance the logged Sharpshooter modifier is 0. Unload 148 and fire again at the same spot: the modifier is -5. Holster before the next step.",
+            "With 148 loaded, use radial Fire! on QAEnemy, wait for a shot and holster. At this distance the logged Sharpshooter rifle modifier is 0. Unload 148 and fire again from the same spot: the modifier is -15. Holster before the next step.",
             "Use ?qaunload 143 and ?qaunload 113. Check that the Status records disappear and Operative Upgrade leaves Actions. Repeat the sitting sample. Restore 113, 143 and 148 with ?qaload in that order; expect the records, action and 0 close-range modifier to return."
         });
 
@@ -52,15 +53,27 @@ public sealed class OperativeEngagementRecoveryMode : NativeQaMode
         string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(view.ViewId, view.SpawnId)));
         var proof = new List<object>();
         await CheckPassivesAsync(actor, proof, Records, 0, remove: false);
-        // The stock Free Attack selection emitted after equipping the logged-in handgun.
+        int equipRpc = actor.World.RpcSnapshot().Count;
+        int equipLog = server.DebugLog().Length;
+        actor.SendRpc("3f 6b 00 00 00 00 00"); // The empty stock Free Attack choice at login.
+        await actor.WaitUntilAsync(() => server.DebugLog()[equipLog..].Contains("slot 107, kind 0, goid 0"),
+            "The fixture starts with the native empty Free Attack choice", HeadlessPlayer.DefaultTimeout);
+        var database = context.OwnedDatabase!;
+        int rifleBagSlot = (int)await database.LongAsync(
+            $"SELECT slot FROM inventory WHERE charId=110 AND goid={CombatFixtureWeapons.Rifle} AND slot BETWEEN 1 AND 96");
+        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, database, "rifle", CombatFixtureWeapons.Rifle);
+        var rifleRefresh = BytePattern.Parse($"5e {rifleBagSlot:x2} 00 b4 02 00 00 00 00 00 10 01");
+        await ObserveAsync(actor, equipRpc, packet => rifleRefresh.IsMatch(packet.Bytes),
+            "Ordinary equip refreshes the rifle's bag entry before moving it");
+        actor.SendRpc($"3f {rifleBagSlot:x2} 00 10 00 00 00");
         actor.SendRpc("3f 69 00 10 00 00 00");
-        await actor.WaitUntilAsync(() => server.DebugLog().Contains("[COMBAT] Free Fire weapon: slot 105, kind 16, goid 2565"),
-            "Stock handgun selection", HeadlessPlayer.DefaultTimeout);
+        await actor.WaitUntilAsync(() => server.DebugLog()[equipLog..].Contains("slot 105, kind 16, goid 692"),
+            "Stock Free Attack selection tracks the newly equipped rifle", HeadlessPlayer.DefaultTimeout);
         proof.Add(await FireAsync(actor, server, handle, loaded: true, expected: 0));
 
         int cursor = await ChangeLoadoutAsync(actor, rows, Passives.Reverse().ToArray(), load: false);
         await CheckPassivesAsync(actor, proof, Records, cursor, remove: true);
-        proof.Add(await FireAsync(actor, server, handle, loaded: false, expected: -5));
+        proof.Add(await FireAsync(actor, server, handle, loaded: false, expected: -15));
 
         cursor = await ChangeLoadoutAsync(actor, rows, Passives, load: true);
         await CheckPassivesAsync(actor, proof, Records, cursor, remove: false);
@@ -76,8 +89,8 @@ public sealed class OperativeEngagementRecoveryMode : NativeQaMode
     {
         int rpcCursor = actor.World.RpcSnapshot().Count;
         int logCursor = server.DebugLog().Length;
-        actor.SendRpc("3d 01");
-        actor.SendRpc($"41 {handle}");
+        actor.World.SendRpcs(WireFormat.FromHex("3d 01"), WireFormat.FromHex($"41 {handle}"),
+            WireFormat.FromHex($"40 {handle} 00 69"));
         await ObserveAsync(actor, rpcCursor, packet => packet.Bytes.AsSpan().SequenceEqual(new byte[] { 0x4e, 0 }),
             "An ordinary Free Fire shot");
         int stopCursor = server.DebugLog().Length;
