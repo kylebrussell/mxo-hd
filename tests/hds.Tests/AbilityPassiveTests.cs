@@ -251,9 +251,15 @@ public class AbilityPassiveTests
     public void UtilityMasterReplacesTechnicianAndFeedsAllFourSelfBuffStats()
     {
         var caster = Client();
+        Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 604, 100)));
         Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 613, 100)));
         Assert.Same(caster, Assert.Single(AbilitySupport.Targets(caster, 1108, 100)));
+        AbilitySupport.Land(caster, 604, 100);
+        Assert.Equal(550, Value(caster.playerInstance.MaxHealth));
+        Assert.Equal(20, AbilityStats.Toughness(caster, false));
+        Assert.Equal(20, AbilityStats.Toughness(caster, true));
         AbilitySupport.Land(caster, 613, 100);
+        Assert.False(AbilityBuffs.IsActive(caster, 604));
         Assert.Equal(600, Value(caster.playerInstance.MaxHealth));
         Assert.Equal(3, AbilityStats.Defense(caster, false));
         Assert.Equal(20, AbilityStats.Toughness(caster, false));
