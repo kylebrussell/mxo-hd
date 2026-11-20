@@ -21,18 +21,21 @@ public sealed class StarterOperativeHinderingEntryMode : NativeQaMode
             PvpOpponentsFixture.NativeSql,
             $"UPDATE characters SET x=17160,level=20,exp={PlayerProgression.ExperienceForLevel(20)} WHERE charId=6114",
             "UPDATE characters SET x=17280 WHERE charId=6111",
-            "DELETE FROM inventory WHERE charId IN (110,6111,6114) AND slot=107",
-            $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES (110,{CombatFixtureWeapons.Handgun},107,1,0)",
+            $"DELETE FROM inventory WHERE charId IN (6111,6114) AND slot={CombatFixtureWeapons.HandSlot}",
+            $"DELETE FROM inventory WHERE charId=110 AND goid={CombatFixtureWeapons.Handgun}",
+            CombatFixtureLoadout.SeedWeapons,
             "DELETE FROM char_abilities WHERE char_id IN (6111,6114)",
             Seed(6114, 20, 2, 17, Compel),
             Seed(6111, 50, 2, 17, Evade, ExecuteProgram)
         }, DevCommands: true, hotbarAbilities: new[] { Handguns, Hindering }, environmentOverrides: new()
         {
-            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15"
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            [CombatFixtureWeapons.WeaponMode] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "45,113,130,150,217", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             "Stay on the starting street and stay out of interlock. QAEnemy stands 1.6 m east in Power with Compel (+20 Force Combat) and level-20 Combat Insight (+4%). QAFriend stands 2.8 m east in Speed with Evade and Execute Program (+5% Evade).",
+            "The fixture handgun is equipped at login. If Handguns is unavailable, use ?combatdepth fixture-weapon unarmed followed by ?combatdepth fixture-weapon handgun for a fresh equip. Wait for each confirmation before continuing.",
             "Select QAEnemy. On page 2 press slot 1 Handguns, then slot 2 Hindering Shot once. Capture the cast and wait for the automatic helper comparison. No extra input is needed until both helpers finish.",
             "QAEnemy cannot interlock QAFriend at force 114 versus evade 115 while Hindering is active. After the eight-second debuff expires, the same helper attempt admits at force 124 versus evade 115. The helpers then withdraw. These scores use the implemented server entry rule."
         });
@@ -40,6 +43,10 @@ public sealed class StarterOperativeHinderingEntryMode : NativeQaMode
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var server = context.ActualServer!;
+        var database = context.OwnedDatabase!;
+        Check.Equal((long)CombatFixtureWeapons.Handgun, await database.LongAsync(
+            $"SELECT COALESCE(MAX(goid),0) FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"),
+            "The disposable CSR starts with the handgun in the stock hand slot");
         var attacker = await EnterAsync("QAEnemy");
         var defender = await EnterAsync("QAFriend");
         var defenderView = await attacker.WaitForViewNamedAsync(defender.Handle);
@@ -70,7 +77,6 @@ public sealed class StarterOperativeHinderingEntryMode : NativeQaMode
             return Array.Empty<byte>();
         }
 
-        await PvpOpponentsFixture.EnterAsync(shooter);
         NativeQaReadiness.RequireNoAmbientAggro(server, shooter);
         var target = await shooter.WaitForViewNamedAsync(attacker.Handle);
         await shooter.WaitForViewNamedAsync(defender.Handle);
