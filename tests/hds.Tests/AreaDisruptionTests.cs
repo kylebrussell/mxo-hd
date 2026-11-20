@@ -98,6 +98,41 @@ public class AreaDisruptionTests : IDisposable
 
     [Fact]public void DeflectNeverAppliesControlOrDamage()
     {var c=Actor();var t=Target(c,111,100);CasterHostileArea.Land(c,Ability());Assert.False(Affected(t));Assert.Equal(1000,PvpCombat.HealthOf(t));Assert.Single(t.messageQueue.RPCMessagesQueue);}
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public void HostileAreasExcludeUnpublishedPlayerAndNpcViews(bool created, bool deleting)
+    {
+        var caster = Actor();
+        var player = Target(caster, 111, 100);
+        var mob = new Mob();
+        mob.setEntityId(999);
+        mob.setDistrict(1);
+        mob.setXPos(100);
+        mob.setYPos(495);
+        mob.setHealthC(1000);
+        mob.setHealthM(1000);
+        WorldServer.mobs.Add(mob);
+
+        var playerView = caster.viewMan.FindViewForEntity(player.playerData.getEntityId());
+        var npcView = caster.viewMan.addView(mob.getEntityId(), 599);
+        foreach (var view in new[] { playerView, npcView })
+        {
+            view.viewCreated = created;
+            view.viewNeedsToBeDeleted = deleting;
+        }
+        Assert.Empty(AbilityHostile.PlayersInArea(caster, 0, 495, 0, 2));
+        Assert.Empty(AbilityHostile.MobsInArea(caster, 0, 495, 0, 2));
+
+        foreach (var view in new[] { playerView, npcView })
+        {
+            view.viewCreated = true;
+            view.viewNeedsToBeDeleted = false;
+        }
+        Assert.Same(player, Assert.Single(AbilityHostile.PlayersInArea(caster, 0, 495, 0, 2)));
+        Assert.Same(mob, Assert.Single(AbilityHostile.MobsInArea(caster, 0, 495, 0, 2)).Mob);
+    }
+
     [Theory][InlineData(false)][InlineData(true)]
     public void OrdinaryNpcLandingUsesOneContestAndSourceControl(bool hit)
     {
