@@ -47,13 +47,34 @@
       }
     },
     "325": {
-      "family": "friendly-resurrection"
+      "family": "friendly-resurrection",
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 325 restores one HP and one IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Restore RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
     },
     "326": {
-      "family": "friendly-resurrection"
+      "family": "friendly-resurrection",
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 326 restores full HP and IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Revitalize RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
     },
     "375": {
-      "family": "friendly-resurrection"
+      "family": "friendly-resurrection",
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 375 restores full HP and IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Revive RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
     },
     "416": {
       "family": "friendly-resurrection",
@@ -62,11 +83,23 @@
           "source": "health.py RejuvenateRSI_DirectObject and native 621d51d0/621d0330 approval serializer",
           "runtime": "AbilityResurrection.Reply, RestoreVitals and DeathPresentation.Resuscitate",
           "test": "PR290 stock dialog Yes/No and visible stand; ability-resurrection-resources full HP/IS wire updates; PR321 stock cast and approval restored the measured 610 HP / 1090 IS maxima with motion 63. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        },
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 416 restores full HP and IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Rejuvenate RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
         }
       }
     },
     "438": {
-      "family": "friendly-resurrection"
+      "family": "friendly-resurrection",
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 438 restores full HP and IS and uses motion 375 after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Renew RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
     },
     "466": {
       "checks": {
