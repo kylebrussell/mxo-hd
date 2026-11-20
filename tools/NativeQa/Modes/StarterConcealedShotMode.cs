@@ -1,7 +1,6 @@
 using System.Text.Json;
 using hds;
 using HeadlessClient;
-using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
@@ -33,7 +32,7 @@ public sealed class StarterConcealedShotMode : NativeQaMode
         {
             "Level 19 with the ordinary 42/49 memory chain. The rifle starts in hand. Select Rifles (147) and activate Concealment, granted by loaded ability 503. QAEnemy stands 4 m east facing away.",
             "While concealed and outside interlock, target QAEnemy and use Concealed Shot (504) from Actions. Save the full outgoing request, six-second bar, landed damage and 45-second reuse. Expected landed 23 from ballistic base 22 and the existing style/passive influence. A single cast may or may not produce the separate stun.",
-            "If the granted Concealment action is unavailable in the stock UI, record that and use ?stealth conceal as a fixture aid for the shot only."
+            "Capture the level-19 Concealment grant and use it from Actions before taking the shot."
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "504", ["NativeCloseableRows"] = 0 });
 
@@ -58,7 +57,7 @@ public sealed class StarterConcealedShotMode : NativeQaMode
             StockAbilityProfile.GrantRecord(Stealth.ConcealmentGrantAbility, remove: true), "503 removes its live 1137 grant");
         int parentAdded = await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { Concealment }, load: true);
         var grantAdded = await StockAbilityProfile.ObserveAsync(caster, parentAdded,
-            StockAbilityProfile.GrantRecord(Stealth.ConcealmentGrantAbility, remove: false), "503 restores its live 1137 grant");
+            StockAbilityProfile.GrantRecord(Stealth.ConcealmentGrantAbility, remove: false, rank: Level), "503 restores its live rank-19 grant");
         int added = await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { ConcealedShot }, load: true);
         var unload = await StockAbilityProfile.ObserveAsync(caster, removed,
             packet => BytePattern.Parse("80 b3 f8 01").IsMatch(packet.Bytes), "Ordinary archive unload");
@@ -69,8 +68,7 @@ public sealed class StarterConcealedShotMode : NativeQaMode
         var target = await caster.WaitForViewNamedAsync(enemy.Handle);
         await enemy.WaitForViewNamedAsync(caster.Handle);
         await StarterFixedDamageMode.SelectStyle(caster, self, Rifles, 171);
-        var conceal = new AbilityUseRecord(Stealth.ConcealmentGrantAbility, DuelPackets.Handle(self.ViewId, self.SpawnId),
-            0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode();
+        var conceal = StarterConcealmentRankMode.ConcealmentRequest(self);
         caster.SendRpc(conceal);
         var on = await caster.WaitForRpcAsync("80 bd 05 71 04 00 00 00 00 00 01");
         string log = server.DebugLog();

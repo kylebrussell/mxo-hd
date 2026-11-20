@@ -62,10 +62,10 @@ internal static class StockAbilityProfile
         }
     }
 
-    internal static Func<RpcRecord, bool> GrantRecord(ushort child, bool remove)
+    internal static Func<RpcRecord, bool> GrantRecord(ushort child, bool remove, ushort rank = 0)
     {
         byte[] record = remove ? ServerPackets.BuildAbilityUnload(child)
-            : ServerPackets.BuildAbilityLoad(child, 0, AbilityProgression.HiddenSlot);
+            : ServerPackets.BuildAbilityLoad(child, rank, AbilityProgression.HiddenSlot);
         return packet => packet.Bytes.AsSpan().SequenceEqual(record);
     }
 

@@ -7,7 +7,7 @@ namespace hds
     internal static class AbilitySneakGrant
     {
         internal const ushort Parent=151,Child=1111;
-        private const ushort ConcealmentParent=503;
+        internal const ushort ConcealmentParent=503,ConcealmentChild=Stealth.ConcealmentGrantAbility;
         private static AbilityCatalog.Modifier Modifier(AbilityCatalog.Entry entry, ushort parent, ushort child)
         {
             if(entry?.Id!=parent||entry.Number("Ability/AbilityLevelCap",-1)!=50)return null;
@@ -19,7 +19,11 @@ namespace hds
                 grant.Number("WhenEnabled",-1)==0&&grant.Number("DurationType",-1)==2&&grant.Number("ValueFunction",-1)==2&&
                 !grant.Has("MinValue")&&!grant.Has("MaxValue")&&!grant.Has("ValueScale")?grant:null;
         }
-        internal static bool Matches(ushort parent,ushort child)=>parent==Parent&&child==Child&&Modifier(AbilityCatalog.Find(parent),Parent,Child)!=null;
+        private static bool Supported(ushort parent,ushort child) =>
+            (parent==Parent && child==Child) || (parent==ConcealmentParent && child==ConcealmentChild);
+
+        internal static bool Matches(ushort parent,ushort child) =>
+            Supported(parent,child) && Modifier(AbilityCatalog.Find(parent),parent,child)!=null;
         internal static bool TryLevel(AbilityCatalog.Entry entry,ushort learned,out ushort level) =>
             TryLevel(entry,Parent,Child,learned,out level);
 
@@ -34,12 +38,12 @@ namespace hds
         {
             level=0;
             return parent==ConcealmentParent &&
-                TryLevel(AbilityCatalog.Find(parent),ConcealmentParent,Stealth.ConcealmentGrantAbility,learned,out level);
+                TryLevel(parent,ConcealmentChild,learned,out level);
         }
 
         internal static bool TryLevel(ushort parent,ushort child,ushort learned,out ushort level)
         {
-            level=0;return parent==Parent&&child==Child&&TryLevel(AbilityCatalog.Find(parent),learned,out level);
+            level=0;return Supported(parent,child)&&TryLevel(AbilityCatalog.Find(parent),parent,child,learned,out level);
         }
     }
 }

@@ -21,7 +21,7 @@ public class LoadedGrantMembershipTests
             Assert.Equal(literal,AbilityGrantRegistration.Record(new(parent,child,0),sample.GetProperty("Operation").GetInt32()==1));
         }
         foreach(var pair in AbilityGrantRegistration.ObservedPairs)Assert.Contains(rows,r=>r.GetProperty("parent").GetUInt16()==pair.Source&&r.GetProperty("child").GetUInt16()==pair.Target);
-        foreach(var pair in new (ushort,ushort)[]{(2,17),(37,970),(277,969),(120,1114),(503,1137),(42769,980),(1236,1238),(143,1061)})
+        foreach(var pair in new (ushort,ushort)[]{(2,17),(37,970),(277,969),(120,1114),(42769,980),(1236,1238),(143,1061)})
             Assert.False(AbilityGrantRegistration.Handles(pair.Item1,pair.Item2));
         Assert.True(AbilityGrantRegistration.Handles(4452,5183)); // actual ability aliases, not additional ownership
     }
@@ -135,7 +135,7 @@ public class LoadedGrantMembershipTests
         Assert.True(writable.IsReadOnly);Assert.Throws<NotSupportedException>(()=>writable[0]=(2,17));
         Assert.Throws<NotSupportedException>(()=>writable.Add((151,1111)));
         var admitted=AbilityCatalog.All.Values.SelectMany(parent=>AbilityProgression.GrantsOf(parent.Id).Where(child=>AbilityGrantRegistration.Handles(parent.Id,child)).Select(child=>(parent.Id,child))).OrderBy(p=>p.Id).ToArray();
-        Assert.Equal(AbilityGrantRegistration.RegisteredPairs.Concat(AbilityGrantRegistration.ObservedScaledPairs).Concat(AbilityGrantRegistration.ReadyPresentationPairs).OrderBy(p=>p.Source).Select(p=>(p.Source,p.Target)),admitted);
+        Assert.Equal(AbilityGrantRegistration.RegisteredPairs.Concat(AbilityGrantRegistration.StoredScaledPairs).Concat(AbilityGrantRegistration.ReadyPresentationPairs).OrderBy(p=>p.Source).Select(p=>(p.Source,p.Target)),admitted);
         Assert.True(AbilityGrantRegistration.Handles(151,1111));Assert.Equal((ushort)50,AbilityProgression.GrantLevel(151,50)); // separately proved stored function2; historical zero list unchanged
     }
     [Fact] public void EveryAdmittedPairHasHashPinnedPositiveFramedCaptureEvidence()
