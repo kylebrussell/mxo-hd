@@ -188,6 +188,7 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(58)]
     [InlineData(86)]
     [InlineData(354)]
+    [InlineData(476)]
     [InlineData(355)]
     [InlineData(311)]
     [InlineData(312)]
@@ -218,6 +219,7 @@ public class FreeCastViralLandingTests : IDisposable
         int state=mob.currentState;var ability=new AbilityItem();ability.setAbilityID(abilityId);
         Assert.True(AbilityTargets.Land(caster,ability,caster.viewMan.FindViewForEntity(1000).ViewID,origin:AbilityCastOrigin.NormalFreeCast));
         Assert.Equal((ushort)1000,mob.getHealthC());Assert.Equal(state,mob.currentState);
+        Assert.Empty(TimedEffects.ForMob(mob).Effects.Snapshot());
         Assert.Equal(0,AbilityStats.Npc(mob,342));Assert.Equal(0,AbilityStats.Npc(mob,183));
         Assert.Single(caster.messageQueue.RPCMessagesQueue);Assert.Single(visible.messageQueue.RPCMessagesQueue);
         Assert.Single(caster.messageQueue.ObjectMessagesQueue);Assert.Single(visible.messageQueue.ObjectMessagesQueue);

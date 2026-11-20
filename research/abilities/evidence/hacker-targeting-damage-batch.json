@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "327": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Stock Overclock capture supplies the +43 viral modifier at the captured level, 20-second term, and a 90-second reuse. The GOB lists viral influence as the affected stat.",
+          "runtime": "AbilityBuffs adds and expires the Overclock record. AbilityStats scales viral health damage from active influence.",
+          "test": "HackerTargetingBehaviorBatchMode checks the distinct +43 record, reuse, expiration, and Logic Barrage damage against the same clear target before, during and after the modifier."
+        }
+      }
+    },
+    "330": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The stock 7a4fc7efcf1c Logic Barrage 4.0 activation and captured base hit 424. GOB 330 marks viral health damage.",
+          "runtime": "AbilityTargets uses the retained base and AbilityStats scales it by current influence. AbilityCooldowns applies four seconds to the move and group 683.",
+          "test": "HackerTargetingBehaviorBatchMode replays the stock selected-target activation on a clear dummy, proves 640/822/640 with the fixture's observed influence records, and asserts both cooldown records. FreeCastViralLandingTests checks that deflection gates all effects."
+        }
+      }
+    }
+  }
+}
