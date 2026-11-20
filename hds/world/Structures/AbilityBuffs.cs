@@ -68,7 +68,7 @@ namespace hds
             public UInt16 DissemblingType;
             public UInt32 EffectId;
             /// <summary>
-            /// Using it again while it is on switches it off. Its cooldown starts when it ends.
+            /// Using it again while it is on switches it off.
             /// </summary>
             public bool Toggle;
             /// <summary>Own-view EvadeShieldHealth ff while on, 00 when it ends (Evade Combat).</summary>
@@ -77,6 +77,7 @@ namespace hds
 
         internal const ushort HyperSpeed = 12;
         internal const ushort HyperSprint = 184;
+        internal const ushort GunmanUpgrade = 1070;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;
@@ -292,7 +293,7 @@ namespace hds
                 if (durations.Count != 1) continue;
                 int stacking = (int)entry.Number("Ability/StackingType");
                 buffs[entry.Id] = new Buff { Seconds = (float)durations[0], Exclusive = durations[0] == 0,
-                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && stacking != 37,
+                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && (stacking != 37 || entry.Id == GunmanUpgrade),
                     Family = stacking == 37 ? FamilyClassBuff : stacking == 0 ? 0 : 1000 + stacking,
                     Modifiers = mods.Select(m => Stat(m.Target, (int)m.Number("MinValue"))).ToArray(),
                     MovementScale = (float)(mods.FirstOrDefault(m => m.Target == 115)?.Number("MinValue") ?? 0) / 100 };
@@ -429,7 +430,7 @@ namespace hds
             }
         }
 
-        /// <summary>A toggle buff (Evade Combat) that is on: using it again switches it off.</summary>
+        /// <summary>A toggle buff that is on: using it again switches it off.</summary>
         public static bool IsToggledOn(WorldClient client, UInt16 abilityId)
         {
             return TryGet(abilityId, out Buff buff) && buff.Toggle && IsActive(client, abilityId);
@@ -439,7 +440,7 @@ namespace hds
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
             // Stock Deflect Virus378 starts its own10s timer with the on record (proxy_024).
-            if (abilityId == Virii.DeflectVirus1Ability) return true;
+            if (abilityId == Virii.DeflectVirus1Ability || abilityId == GunmanUpgrade) return true;
             if (AbilityCatalog.Canonical(abilityId) == Stealth.MasterShadowAbility) return false;
             return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
@@ -782,7 +783,8 @@ namespace hds
             {
                 EvasionShield.Removed(client);
             }
-            if (buff.Toggle)
+            // Gunman Upgrade already started its own reuse on activation. Switching off does not restart it.
+            if (buff.Toggle && abilityId != GunmanUpgrade)
             {
                 AbilityCooldowns.Start(client, abilityId, TimeUtils.GetSimTimeSeconds());
             }

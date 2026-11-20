@@ -219,7 +219,8 @@ namespace hds
                     return;
                 }
             }
-            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
+            bool switchOff = AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID);
+            if (!switchOff)
             {
                 // Snapshot the same existing admission inputs once; the response reports their exact positive deficit.
                 UInt16 available=CurrentInnerStrength(Store.currentClient);
@@ -231,7 +232,8 @@ namespace hds
                 }
             }
 
-            if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
+            // The stock client allows an active Gunman Upgrade to be switched off during its activation timer.
+            if (!(switchOff && AbilityID == AbilityBuffs.GunmanUpgrade) && AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
                 Output.WriteDebugLog("[ABILITY] Still cooling down; denied");
                 Store.currentClient.messageQueue.addRpcMessage(
@@ -271,7 +273,7 @@ namespace hds
             }
 
             // Evade Combat used while it is on switches it off (its cooldown starts then); no cost, no cast.
-            if (AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
+            if (switchOff)
             {
                 AbilityBuffs.Remove(Store.currentClient, AbilityID);
                 Store.currentClient.FlushQueue();
@@ -303,6 +305,10 @@ namespace hds
             AbilityCastInterrupts.After(normalCast, () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
+                // The archived class upgrades publish their activation timer before the exclusive-on record.
+                bool reuseBeforeBuff = AbilityID == AbilityBuffs.GunmanUpgrade;
+                if (reuseBeforeBuff)
+                    AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
@@ -311,7 +317,7 @@ namespace hds
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
-                if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
+                if (!reuseBeforeBuff && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
