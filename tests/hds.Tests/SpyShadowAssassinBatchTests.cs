@@ -85,6 +85,8 @@ public class SpyShadowAssassinBatchTests
         var c384 = Client(FixtureLevel);
         AbilityPassives.SetLoaded(c384, new (ushort, ushort)[] { (DisruptConnection, FixtureRank) });
         Assert.Equal(10, AbilityPassives.Total(c384, 1045));
+        Assert.Equal("WithdrawBonusAbility", AbilityCatalog.Find(1045)!.Name);
+        Assert.Equal(0, AbilityPassives.Total(c384, AbilityControlDurations.BonusStat(TempMods.BlindAbility)));
         Assert.Equal(5, AbilityPassives.Total(c384, 1068));
         Assert.Equal(15, AbilityPassives.Total(c384, 995));
 
@@ -119,7 +121,14 @@ public class SpyShadowAssassinBatchTests
         Assert.Equal(15f, cd388.GroupSeconds);
 
         Assert.True(TempMods.TryGet(SeverArtery, out var e341));
-        Assert.Contains(e341.Mods, m => m.Proc == TempMods.Proc.Dot && m.MinValue == 68 && m.Seconds == 30f);
+        var dot = Assert.Single(e341.Mods, m => m.Proc == TempMods.Proc.Dot);
+        Assert.Equal(68, dot.MinValue);
+        Assert.Equal(30f, dot.Seconds);
+        Assert.Equal(2.5f, dot.Interval);
+        ushort total = AbilityStats.ScaleAbilityDamage(client, SeverArtery, (ushort)dot.MinValue);
+        Assert.Equal((ushort)104, total);
+        Assert.Equal(9, TempMods.DotTick(total, dot.Seconds, dot.Interval));
+        Assert.Equal(9.2f, AbilityControlDurations.Scale(client, TempMods.StunAbility, 8f), 3);
         Assert.True(TempMods.TryGet(ReverseBullDog, out var e388));
         Assert.Contains(e388.Mods, m => m.Target == ReverseBullDog && m.MinValue == 8 && m.Proc == TempMods.Proc.Terminal);
     }
