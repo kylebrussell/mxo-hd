@@ -33,7 +33,7 @@ namespace hds
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
             // The starter control casts require a live selected enemy.
-            if (AbilityID == 40 || AbilityID == 43 || AbilityID == 48)
+            if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))

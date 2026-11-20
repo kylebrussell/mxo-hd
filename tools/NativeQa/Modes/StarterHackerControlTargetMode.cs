@@ -16,7 +16,9 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
     {
         new(40, "Code Freeze 1.0", 58, 99, 25, "80b92800040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000"),
         new(43, "Disrupt Inputs 1.0", 43, 90, 16, "80b92b00060004000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000"),
-        new(48, "Freeze System 1.0", 43, 85, 6, "80b93000070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000")
+        new(48, "Freeze System 1.0", 43, 85, 6, "80b93000070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000"),
+        // PR414 stock view-zero request 007565b2a483:1537.
+        new(41, "Code Freeze 2.0", 43, 99, 19, "80b92900000000000000000000000000000000000000000000000000d557377c20000000086b0000000000")
     };
 
     public override string Name => "ability-parity-starter-hacker-control-targets";
@@ -34,8 +36,8 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, readyMessages: new[]
         {
-            "Use Hacker Style outside interlock. Clear selection and try Code Freeze, Disrupt Inputs and Freeze System. Expect one native Target is not valid line for each request sent, with no IS debit, cast bar or reuse.",
-            "After each refusal, select Melee Dummy and retry immediately. Expect a two-second cast and the matching Rooted 25s, Blinded 16s or Pacified 6s effect. Note the 58s, 43s and 43s own reuse respectively."
+            "Code Freeze 2.0 (41) is the Code Freeze tier visible in this stock Actions loadout. Use Hacker Style outside interlock. Clear selection, try 41, and check for one Target is not valid line with no IS, cast bar, or reuse.",
+            "Select Melee Dummy and retry immediately. Expect a two-second cast, Rooted for 19s, 43s own reuse and 20s shared reuse. Disrupt Inputs and Freeze System already passed natively."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -53,6 +55,12 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
         var proof = new List<object>();
         foreach (var sample in Samples)
         {
+            if (sample.Id == 41)
+            {
+                byte[] sharedExpired = AbilityCooldowns.BuildTimer(713, AbilityCooldowns.GroupTimer, 20, false);
+                await caster.WaitForRpcAsync(packet => packet.Bytes.AsSpan().SequenceEqual(sharedExpired),
+                    "Code Freeze 1.0 shares a 20-second timer with Code Freeze 2.0", TimeSpan.FromSeconds(23));
+            }
             var missing = await RefusedAsync(caster, sample.Id, WithHandle(sample.Request, 0));
             var stale = await RefusedAsync(caster, sample.Id, WithHandle(sample.Request, handle ^ 0x10000));
             int start = caster.World.RpcSnapshot().Count;
@@ -60,6 +68,8 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
             caster.SendRpc(request);
             await EvidenceRetestWire.CastBarAsync(caster, sample.Id, 2);
             await EvidenceRetestWire.TimerAsync(caster, start, sample.Id, AbilityCooldowns.OwnTimer, sample.Reuse);
+            if (sample.Id == 41)
+                await EvidenceRetestWire.TimerAsync(caster, start, 713, AbilityCooldowns.GroupTimer, 20);
             string prefix = $"[EFFECTS] {sample.Id} on {dummy.Name}:";
             string state = $"State {sample.State} 0 {sample.Seconds} s";
             await caster.WaitUntilAsync(() => server.DebugLog().Split('\n').Any(line => line.Contains(prefix) && line.Contains(state)),
@@ -98,7 +108,9 @@ public sealed class StarterHackerControlTargetMode : NativeQaMode
         string idHex = StockAbilityProfile.LittleEndianHex(id);
         var cast = BytePattern.Parse($"80 ac {idHex}");
         var reuse = BytePattern.Parse($"80 bd 01 {idHex}");
-        Check.That(!caster.World.RpcSnapshot().Skip(start).Any(rpc => cast.IsMatch(rpc.Bytes) || reuse.IsMatch(rpc.Bytes)),
+        var shared = BytePattern.Parse("80 bd 01 c9 02");
+        Check.That(!caster.World.RpcSnapshot().Skip(start).Any(rpc => cast.IsMatch(rpc.Bytes) || reuse.IsMatch(rpc.Bytes) ||
+            ((id == 40 || id == 41) && shared.IsMatch(rpc.Bytes))),
             $"Invalid target does not start a cast or reuse for {id}");
         Check.That(!caster.World.ViewSnapshot().Skip(views.Count).Any(view =>
             BuffDrainLifetimeFixture.TryInnerStrength(view, out ushort available) && available < before),
