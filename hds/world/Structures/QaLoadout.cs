@@ -9,10 +9,19 @@ namespace hds
     /// <summary>Disposable native-QA bridge to the ordinary 80 ae handler; never grants an ability.</summary>
     public static class QaLoadout
     {
+        private static bool DisposableDatabase(string database) =>
+            database != null && database.StartsWith("mxotest_", StringComparison.Ordinal) &&
+            database.Length > 8 && database.All(c => char.IsAsciiLetterOrDigit(c) || c == '_');
+
         public static bool Allowed(string dev, string database, uint character, bool inWorld, bool dead) =>
-            dev == "1" && database != null && database.StartsWith("mxotest_", StringComparison.Ordinal) &&
-            database.Length > 8 && database.All(c => char.IsAsciiLetterOrDigit(c) || c == '_') &&
-            character != 0 && character != 2 && inWorld && !dead;
+            dev == "1" && DisposableDatabase(database) && character != 0 && character != 2 && inWorld && !dead;
+
+        public const string ZenTechniqueMode = "MXO_ZEN_TECHNIQUE_QA_LOAD";
+
+        internal static int? TechniqueQualificationLevel(string enabled, string dev, string database, uint character,
+            int storedLevel, IReadOnlyList<AbilityProgression.LoadoutEntry> entries) =>
+            enabled == "1" && dev == "1" && DisposableDatabase(database) && character == 110 && storedLevel == 99 &&
+            entries.Count == 1 && entries[0].Ability == 860 ? storedLevel : (int?)null;
 
         public static bool Parse(string[] words, out bool unload, out ushort ability)
         {

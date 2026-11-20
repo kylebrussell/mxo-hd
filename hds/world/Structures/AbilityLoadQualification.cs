@@ -8,7 +8,7 @@ namespace hds
     internal static class AbilityLoadQualification
     {
         internal static string Refusal(IReadOnlyList<AbilityMemory.Row> rows,IReadOnlyList<AbilityMemory.Row> accepted,
-            long experience,out bool levelRefused,AbilityPrerequisites.Graph graph=null)
+            long experience,out bool levelRefused,AbilityPrerequisites.Graph graph=null,int? diagnosticLevel=null)
         {
             levelRefused=false;graph=graph??AbilityPrerequisites.Current;
             bool Real(AbilityMemory.Row r)=>r.Slot<520 && AbilityMemory.IsAbility(r.Descriptor) && graph.Find(r.Ability)!=null;
@@ -21,7 +21,7 @@ namespace hds
             if(added.Any(id=>closures[id].ContainsKey(id)))return "Cannot load a cyclic ability prerequisite batch.";
             var roots=added.Where(id=>!added.Any(other=>other!=id&&closures[other].ContainsKey(id))).ToArray();
             if(roots.Length==0)return "Cannot identify a valid ability prerequisite root.";
-            int characterLevel=PlayerProgression.LevelForExperience(1,experience);
+            int characterLevel=diagnosticLevel??PlayerProgression.LevelForExperience(1,experience);
             foreach(ushort root in roots)
                 if(graph.Find(root).CharacterLevel>characterLevel)
                 {levelRefused=true;return "Your character level is too low to load that ability.";}

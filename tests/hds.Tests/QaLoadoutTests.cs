@@ -46,4 +46,22 @@ public class QaLoadoutTests
         Assert.Null(QaLoadout.Request(new[]{Row(1,7,1),Row(2,7,1)},7,false));
         Assert.Null(QaLoadout.Request(new[]{Row(520,7,1)},7,false));
     }
+
+    [Theory]
+    [InlineData("1", "1", "mxotest_zen", 110u, 99, 860, true)]
+    [InlineData("0", "1", "mxotest_zen", 110u, 99, 860, false)]
+    [InlineData("1", "0", "mxotest_zen", 110u, 99, 860, false)]
+    [InlineData("1", "1", "reality_hd", 110u, 99, 860, false)]
+    [InlineData("1", "1", "mxotest_zen", 111u, 99, 860, false)]
+    [InlineData("1", "1", "mxotest_zen", 110u, 50, 860, false)]
+    [InlineData("1", "1", "mxotest_zen", 110u, 99, 861, false)]
+    public void TechniqueDiagnosticRequiresAnExplicitDisposableLevelAndAnExactAbility(
+        string enabled, string dev, string database, uint character, int level, ushort ability, bool allowed)
+    {
+        var request = new[] { new AbilityProgression.LoadoutEntry { Ability = ability } };
+        Assert.Equal(allowed ? 99 : (int?)null,
+            QaLoadout.TechniqueQualificationLevel(enabled, dev, database, character, level, request));
+        Assert.Null(QaLoadout.TechniqueQualificationLevel(enabled, dev, database, character, level,
+            new[] { request[0], request[0] }));
+    }
 }

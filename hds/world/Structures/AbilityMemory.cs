@@ -46,7 +46,7 @@ namespace hds
             return ids;
         }
         public static Result Plan(IReadOnlyList<Row> rows, IReadOnlyList<AbilityProgression.LoadoutEntry> requested,
-            bool unload, long experience, int characterLevel)
+            bool unload, long experience, int characterLevel, int? diagnosticLevel = null)
         {
             var accepted=new List<Row>();
             bool levelRefused=false;
@@ -66,7 +66,7 @@ namespace hds
             int used=current.Sum(Cost),maximum=ForExperience(experience);
             if(!unload)
             {
-                string qualification=AbilityLoadQualification.Refusal(rows,accepted,experience,out bool rootLevelRefused);
+                string qualification=AbilityLoadQualification.Refusal(rows,accepted,experience,out bool rootLevelRefused,diagnosticLevel:diagnosticLevel);
                 levelRefused|=rootLevelRefused;
                 if(qualification!=null)return new Result(Array.Empty<Row>(),loaded,qualification,used,maximum,levelRefused);
             }
