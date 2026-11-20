@@ -144,7 +144,8 @@ namespace hds
                 }
             }
 
-            bool strictInterlock = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105;
+            bool strictInterlock = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
+                AbilityID == MartialArtsStarterAdmission.GuardBreaker;
             uint? requiredOpponent = null;
             if (strictInterlock)
             {
@@ -155,10 +156,12 @@ namespace hds
                     DenyMissingInterlock(AbilityID);
                     return;
                 }
-                if (AbilityID == 197 && !CombatManager.GetHandler(Store.currentClient).CurrentOpponentDazed(currentTargetViewId))
+                ushort requiredState = AbilityID == 197 ? TempMods.DazeAbility :
+                    AbilityID == MartialArtsStarterAdmission.GuardBreaker ? TempMods.OffBalanceAbility : (ushort)0;
+                if (requiredState != 0 && !CombatManager.GetHandler(Store.currentClient).CurrentOpponentHasState(currentTargetViewId, requiredState))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired, states: 2)));
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired, states: AbilityID == 197 ? 2u : 4u)));
                     Store.currentClient.FlushQueue();
                     return;
                 }
