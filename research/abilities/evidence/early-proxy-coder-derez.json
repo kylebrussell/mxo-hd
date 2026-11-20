@@ -1,11 +1,21 @@
 {
+  "families": {
+    "proxy-coder-enemy-derez": {
+      "representative": 26,
+      "result": "pass",
+      "head": "ad7a12e58438a24f1dcc9069102242b5ba172afe",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/401",
+      "scope": "Stock PacketLog a6b72512afb3:3759/3765 and 4618/4624 shows one reason 24 for empty selection and one reason 36 for the friendly pet. The operator saw one matching native line each. The valid request at 6365 derezzes QAEnemy's selected Nuker Simulacrum for stored 13000 (DebugLog 1274). The out-of-range pet refusal has disposable coverage. Enemy pet disposition text remains open."
+    }
+  },
   "abilities": {
     "26": {
+      "family": "proxy-coder-enemy-derez",
       "checks": {
         "damage": {
           "source": "GOB 26 stores fixed 13000 damage to health with DamageType 5. Client text ID_ABILITY_PROXY_CODER_MORE_INFO (0x7c0000c7) specifies an enemy simulacrum, and activation text 0xc6000038 names the derezzed target.",
           "runtime": "Caster admission resolves the exact live view and spawn of a legal opponent's current pet, rechecks it at cast completion, and applies the stored health damage through the existing pet lifecycle. Generic NPC/player damage no longer handles this template.",
-          "test": "ability-parity-proxy-coder-derez replays the full targeted Coder request layout. It observes the 13000 damage consumer, sourced caster text, target-only pet death and the corresponding window removal. The same replay exercises missing, NPC, friendly-pet, out-of-range enemy-pet and stale selectors. Exact stock action bytes and enemy-pet target selection remain open."
+          "test": "ability-parity-proxy-coder-derez replays the captured 43-byte native empty and selected forms. It observes target-only pet death, window removal and the 13000 damage consumer. The same replay checks NPC, player, friendly-pet, out-of-range enemy-pet and stale selectors. The stock run confirmed valid enemy-pet selection and the derez."
         }
       }
     }

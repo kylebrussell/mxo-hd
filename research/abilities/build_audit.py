@@ -256,7 +256,7 @@ def server(i):
         base = 4 if i == 36 else 6
         parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
     elif i == 130:
-        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; complete damage and admission parity unresolved')
+        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; requires a live selected enemy before charging the cast; wider damage and targeting unresolved')
     elif i == 134:
         parts.append('stored fixed thrown base 13 before typed influence and resistance; stock Spy interlock landed 14; wider damage and targeting unresolved')
     elif i == 152:

@@ -26,7 +26,7 @@
       "result": "pass",
       "head": "3e1294bd2db0e1f7215fccf28b7fe8e938c4dee9",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/389",
-      "scope": "PacketLog d3b7112643d9:3204 records the stock Handguns cast on QAEnemy outside interlock. DebugLog line 1144 records 9 ballistic damage. The capture shows a 2-second cast, 8-second own timer, 5-second group timer, and four effects added and removed."
+      "scope": "PacketLog d3b7112643d9:3204 records the stock Handguns cast on QAEnemy outside interlock. DebugLog line 1144 records 9 ballistic damage, with a 2-second cast, 8-second own timer, 5-second group timer and four effects added and removed. Merged PR407 confirms one refusal without reuse for view zero and immediate selected hit 9 with four effects (b5813865a7aa:2008/2146)."
     },
     "leg-sweep-spy-interlock": {
       "representative": 134,
