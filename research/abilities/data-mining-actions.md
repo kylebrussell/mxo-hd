@@ -63,16 +63,19 @@ the item's ability with `0x621d0970`, then calls common activation
 `ReqAbilityID` (string `0x62871018`), and decodes `(value >> 10) & 0xfff`.
 The shipped locator export `data/utility_objects.json` contains:
 
-| Item | Stored ReqAbilityID | Decoded ability |
-|---|---:|---:|
-|422 handheld|2147703808|215|
-|423 goggles|2147703808|215|
-|38209 basic goggles|2147703808|215|
-|38208 advanced goggles|2148120576|622|
+| Item | Stored ReqAbilityID | Stored ActivatedAbility | Requested ability |
+|---|---:|---:|---:|
+|422 handheld|2147703808 (215)|—|215|
+|423 goggles|2147703808 (215)|—|215|
+|38209 basic goggles|2147703808 (215)|—|215|
+|38208 advanced goggles|2148120576 (622)|2147703808 (215)|215|
 
-The shipped basic locators do not select621. Distinct server handling of621,
-its activation/off records and215/621 cleanup are covered by existing unit and
-fresh-server tests. A native621 input route is not established by this trace.
+Advanced goggles require Siphon Data Node (622) and request Locate Data Node
+(215). The seven Data Extractors also require 622 and set ActivatedAbility to
+2147652608 (165, Data Tap). Across the shipped GOB, no item's primary
+ReqAbilityID or ActivatedAbility routes to Find Data Node (621). The known
+routes leave 621 native activation unverified. Existing unit and fresh-server
+tests cover the server's explicit 621 handling and 215/621 cleanup.
 
 ## Preserved native evidence and limits
 

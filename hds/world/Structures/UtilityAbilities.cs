@@ -58,7 +58,7 @@ namespace hds
         /// Tools by the ability their AbilityPrerequisite/ReqAbilityID names (gameobjects.gob): Lock_Pick 4 and
         /// Digital_Camera 379 (Open Locks), DisableDeviceTool 616, TrapDetectToolBasic 2500 (Disarm Traps),
         /// DataNodeLocator_HandHeld 422, DataNodeLocatorGoggles 423 and BasicDataNodeLocatorGoggles 38209 (Locate Data
-        /// Node, whose mastery Find Data Node is), AdvancedDataNodeLocatorGoggles 38208 (Siphon Data Node 622).
+        /// Node, whose mastery is Find Data Node), AdvancedDataNodeLocatorGoggles 38208 (activates 215 and requires 622).
         /// </summary>
         public static readonly IReadOnlyDictionary<UInt16, UInt32[]> Tools = new Dictionary<UInt16, UInt32[]>
         {
