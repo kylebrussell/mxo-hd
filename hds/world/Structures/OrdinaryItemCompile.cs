@@ -43,10 +43,12 @@ namespace hds
                 var source = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);
                 var item = CraftingRules.Find(request.Item);
                 if (source == null || source.Goid != request.Item) { Finish(client, 1); return true; }
-                int skill = CraftingHandler.Skill(client, 706), specialization = CraftingHandler.Skill(client, 656);
+                int skill = CraftingHandler.Skill(client, 706);
+                int specialization = CraftingHandler.Skill(client, CraftingHandler.Specialization(item.Category));
                 long cost = OrdinaryItemCode.Cost(item, CraftingHandler.Skill(client, 530));
                 if (data.getInfo() < cost) { Finish(client, 4); return true; }
-                int general = CraftingHandler.Skill(client, 954), consumable = CraftingHandler.Skill(client, 955);
+                int general = CraftingHandler.Skill(client, 954);
+                int consumable = OrdinaryItemCode.IsConsumable(item.Category) ? CraftingHandler.Skill(client, 955) : 0;
                 float seconds = OrdinaryItemCode.Seconds(item.Complexity.Value, skill, general, consumable);
                 var token = new Pending(); pending.Add(client, token);
                 var session = data.craftingSession;
