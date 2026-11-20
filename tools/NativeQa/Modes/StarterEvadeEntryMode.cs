@@ -6,15 +6,16 @@ namespace NativeQa.Modes;
 
 public sealed class StarterEvadeEntryMode : NativeQaMode
 {
-    private const ushort SelfDefense = 17, Insight = 113, Evade = 217;
+    private const ushort SelfDefense = 17, ExecuteProgram = 45, Insight = 113, Evade = 217;
     private const string StockEvade = "80b9d9000000000000000000000000000000000000000000000000002000000078f21200086b0000000000";
     private const string StockSelfDefense = "80b9110005000300000000000000000000000000000000000000000060070d1e03000000086b0000000000";
 
     public override string Name => "ability-parity-starter-evade-entry";
-    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, SelfDefense, Evade },
+    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, SelfDefense, ExecuteProgram, Evade },
         PvpOpponentsFixture.X, PvpOpponentsFixture.Z, Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             PvpOpponentsFixture.NativeSql,
+            "UPDATE char_abilities SET level=50 WHERE char_id=110 AND ability_id=2147529728",
             "DELETE FROM inventory WHERE charId IN (110,6114) AND slot=107",
             "DELETE FROM char_abilities WHERE char_id=6114",
             "INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
@@ -24,12 +25,13 @@ public sealed class StarterEvadeEntryMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "17,113,217", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "45,113,217", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             "Keep Speed on CSR. QAEnemy starts in Power. Use page 2 slot 1 Self Defense if needed. Clear selection and press slot 2 Evade Combat at rest. Capture its shield on CSR and the helper view.",
-            """Request {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. With Insight unloaded, entry refuses at force 100 versus evade 110. Use helper chat ?qaload 113 and repeat the same attempt. Force 110 admits at equality. Withdraw normally and send helper stop as well. Enter submits chat without Escape.""",
-            "Once both players are out, unload 113 via helper chat and press CSR slot 2 to end Evade Combat. Capture shield removal and 30 s reuse. The same helper entry now admits without Insight. These scores describe the current server entry rule."
+            """Request {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Execute Program 45 starts loaded and raises evade to 115. Force 100 refuses. Load Insight with helper chat ?qaload 113 and repeat. Force 110 still refuses.""",
+            "Use ?qaunload 45 on CSR while the shield is still active, then repeat the same attack. Force 110 now admits against evade 110. Withdraw normally and send helper stop as well. Enter submits chat without Escape.",
+            "Reload 45 on CSR, then press slot 2 to end Evade Combat. Capture shield removal and 30 s reuse. Unload 113 via helper chat. The same attack now admits while 45 is loaded and the shield is off. These scores describe the current server entry rule."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -47,6 +49,8 @@ public sealed class StarterEvadeEntryMode : NativeQaMode
         if (context.StockProbe is not { } defender) return Array.Empty<byte>();
 
         var server = context.ActualServer!;
+        var defenderAbilities = AbilityMemoryUiFixture.Decode(defender.CharacterData[6])
+            .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
         await PvpOpponentsFixture.EnterAsync(defender);
         var target = await actor.WaitForViewNamedAsync(defender.Handle);
         var enemy = await defender.WaitForViewNamedAsync(actor.Handle);
@@ -55,22 +59,29 @@ public sealed class StarterEvadeEntryMode : NativeQaMode
         int on = defender.World.RpcSnapshot().Count;
         defender.SendRpc(StockEvade);
         await StockAbilityProfile.ObserveAsync(defender, on, frame => Shield(frame, false), "Live Evade shield");
-        await EnterAsync(100, false);
+        await EnterAsync(100, 115, false);
 
         int load = await StockAbilityProfile.ChangeLoadoutAsync(actor, owned, new[] { Insight }, load: true);
         await StockAbilityProfile.ObserveAsync(actor, load, frame => StockAbilityProfile.Bonus(frame, Insight, 1048, 10, 0, false),
             "Insight adds ten percent Force Combat");
-        await EnterAsync(110, true);
+        await EnterAsync(110, 115, false);
+        int unload = await StockAbilityProfile.ChangeLoadoutAsync(defender, defenderAbilities, new[] { ExecuteProgram }, load: false);
+        await StockAbilityProfile.ObserveAsync(defender, unload,
+            frame => StockAbilityProfile.Bonus(frame, ExecuteProgram, 1049, 5, 0, true), "Execute Program Evade modifier removed");
+        await EnterAsync(110, 110, true);
+        int reload = await StockAbilityProfile.ChangeLoadoutAsync(defender, defenderAbilities, new[] { ExecuteProgram }, load: true);
+        await StockAbilityProfile.ObserveAsync(defender, reload,
+            frame => StockAbilityProfile.Bonus(frame, ExecuteProgram, 1049, 5, 0, false), "Execute Program Evade modifier restored");
         await StockAbilityProfile.ChangeLoadoutAsync(actor, owned, new[] { Insight }, load: false);
         int off = defender.World.RpcSnapshot().Count;
         defender.SendRpc(StockEvade);
         await StockAbilityProfile.ObserveAsync(defender, off, frame => Shield(frame, true), "Shield is removed on toggle-off");
         await EvidenceRetestWire.TimerAsync(defender, off, Evade, AbilityCooldowns.OwnTimer, 30);
-        await EnterAsync(null, true);
+        await EnterAsync(null, null, true);
         Check.Equal(0, actor.World.Problems.Count + defender.World.Problems.Count, "Evade Combat entry replay framing");
         return Array.Empty<byte>();
 
-        async Task EnterAsync(int? force, bool allowed)
+        async Task EnterAsync(int? force, int? evade, bool allowed)
         {
             int start = server.DebugLog().Length;
             actor.SkipReceived();
@@ -85,7 +96,7 @@ public sealed class StarterEvadeEntryMode : NativeQaMode
             }
             string log = server.DebugLog()[start..];
             if (force.HasValue)
-                Check.That(log.Contains($"QAEnemy -> CSR_Tester force{force} evade110 allowed{allowed}", StringComparison.Ordinal),
+                Check.That(log.Contains($"QAEnemy -> CSR_Tester force{force} evade{evade} allowed{allowed}", StringComparison.Ordinal),
                     "The current shield and modifier drive entry");
             else
                 Check.That(!log.Contains("[COMBAT-INSIGHT OURS]", StringComparison.Ordinal), "Entry after shield removal bypasses that rule");

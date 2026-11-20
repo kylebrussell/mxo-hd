@@ -99,6 +99,27 @@ public class CombatInsightEngagementTests
     }
 
     [Fact]
+    public void ExecuteProgramOnlyChangesEntryWhileItsBonusAndTheShieldAreActive()
+    {
+        using var fixture = new Fixture();
+        AbilityPassives.SetLoaded(fixture.Source, new (ushort, ushort)[] { (2, 50), (113, 50) });
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var baseline));
+        Assert.Equal(110, baseline.Evade);
+        AbilityPassives.SetLoaded(fixture.Target, new (ushort, ushort)[] { (2, 50), (45, 50), (217, 50) });
+        Assert.Equal(5, AbilityStats.Player(fixture.Target, 1049));
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var loaded));
+        Assert.Equal(115, loaded.Evade);
+
+        AbilityPassives.SetLoaded(fixture.Target, new (ushort, ushort)[] { (2, 50), (217, 50) });
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var unloaded));
+        Assert.Equal(baseline.Evade, unloaded.Evade);
+        AbilityPassives.SetLoaded(fixture.Target, new (ushort, ushort)[] { (2, 50), (45, 50), (217, 50) });
+        AbilityBuffs.Remove(fixture.Target, 217);
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var noShield));
+        Assert.False(noShield.Computed);
+    }
+
+    [Fact]
     public void BottleneckFieldReducesTheLiveForceScoreUntilExpiry()
     {
         using var fixture = new Fixture();
