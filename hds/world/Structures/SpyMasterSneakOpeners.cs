@@ -43,6 +43,21 @@ namespace hds
                 refusalReason = AbilityRefusals.InvalidTarget;
                 return true;
             }
+            // Answer before spending IS or starting either timer, using the same range as landing.
+            double range = AbilityCatalog.Find(abilityId).Number("Ability/SelectionRange");
+            var mob = AbilityTargets.FindMob(client, targetViewId, out _);
+            var player = mob == null ? PvpCombat.PlayerInView(client, targetViewId) : null;
+            if (mob == null && player == null)
+            {
+                refusalReason = AbilityRefusals.InvalidTarget;
+                return true;
+            }
+            var (x, y, z) = mob != null ? (mob.getXPos(), mob.getYPos(), mob.getZPos()) : CombatSight.Position(player);
+            if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(), x, y, z) > range)
+            {
+                refusalReason = AbilityRefusals.TargetOutOfRange;
+                return true;
+            }
             return false;
         }
 
