@@ -246,6 +246,8 @@ try
                         fixtureMode is NativeQa.Modes.HackerSecondPassMode ? NativeQa.Modes.HackerSecondPassMode.Stands : null);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")
+                    await NativeQa.Modes.StarterStealthObserverMode.RunPassAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
                 else if (action == "stop") actor.SendRpc("44 00");
