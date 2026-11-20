@@ -1,0 +1,16 @@
+{
+  "families": {
+    "empty-mind-native-stock": {
+      "representative": 8,
+      "result": "pass",
+      "head": "78de9bdcbc23716901e45236fad578d0290a1716",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/382#issuecomment-7021922664",
+      "scope": "The native hotbar cast added Empty Mind for 20 seconds. Logic Barrage landed for 348 during the buff and 424 following expiry. One 474 infection ticked for 59 while the buff was up and for 72 afterward. This verifies the client-visible stock path on the implemented typed resistance model; the original retail damage caller and coefficient remain open."
+    }
+  },
+  "abilities": {
+    "8": {
+      "family": "empty-mind-native-stock"
+    }
+  }
+}

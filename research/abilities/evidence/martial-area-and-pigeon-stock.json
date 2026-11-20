@@ -1,0 +1,22 @@
+{
+  "families": {
+    "martial-area-and-pigeon-stock": {
+      "representative": 268,
+      "result": "pass",
+      "head": "ce2c5892266b737012fe3d034c6dd906e3b00a75",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/476",
+      "scope": "Stock PacketLog pr476 casts 268 and 406 without a selected target at 757/949. The area hits land for 2/31. 268 applies -60 ballistic and melee accuracy for 12 seconds. The targeted 296 at 1872 lands for 517 with eight seconds of Confuse. This check covers stock admission and the recorded outcomes; wider targeting and 406's chance proc remain open."
+    }
+  },
+  "abilities": {
+    "268": {
+      "family": "martial-area-and-pigeon-stock"
+    },
+    "296": {
+      "family": "martial-area-and-pigeon-stock"
+    },
+    "406": {
+      "family": "martial-area-and-pigeon-stock"
+    }
+  }
+}
