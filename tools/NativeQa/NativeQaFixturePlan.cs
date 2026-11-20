@@ -7,7 +7,7 @@ public static class NativeQaFixturePlan
     public const uint CompileArchiveValue=2399u << 7;
     public static bool SeedDisguiseTool(string mode) => NativeQaModes.Find(mode).Plan.SeedDisguiseTool;
 
-    public static Dictionary<string, string> EnvironmentFor(string mode)
+    public static Dictionary<string, string> EnvironmentFor(string mode, NativeQaEndpoint? endpoint = null)
     {
         var plan=NativeQaModes.Find(mode).Plan;
         var environment=new Dictionary<string,string>()
@@ -22,6 +22,7 @@ public static class NativeQaFixturePlan
     };
         foreach(string key in NativeQaModes.EnvironmentKeys) environment.TryAdd(key,"");
         foreach(var pair in plan.EnvironmentOverrides) environment[pair.Key]=pair.Value;
+        if (endpoint != null) environment["MXO_BIND_ADDRESS"] = endpoint.Address.ToString();
         return environment;
     }
 }

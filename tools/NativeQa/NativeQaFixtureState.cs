@@ -5,6 +5,8 @@ public sealed record NativeQaFixtureState
 {
     public string Database { get; init; } = "";
     public string Directory { get; init; } = "";
+    public HeadlessClient.ServerAddress? Server { get; init; }
+    public int ServerPid { get; init; }
     public string Account { get; init; } = "";
     public string Character { get; init; } = "";
     public uint CharId { get; init; }
