@@ -8,6 +8,7 @@ public class StarterFixedAbilityDamageTests
     [InlineData(36, 2, 4)]
     [InlineData(130, 1, 9)]
     [InlineData(152, 7, 28)]
+    [InlineData(514, 2, 6)]
     public void ShippedFixedBasesReplaceOnlyIncompleteLegacyRanges(ushort id, int type, ushort damage)
     {
         string root = AppContext.BaseDirectory;

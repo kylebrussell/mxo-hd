@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using hds;
 using HeadlessClient;
 using MxoHd.PacketResearch;
@@ -73,10 +74,25 @@ public sealed class StarterFixedDamageMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static void Use(HeadlessPlayer actor, ushort id, ViewCreation target) =>
-        actor.SendRpc(new AbilityUseRecord(id, DuelPackets.Handle(target.ViewId, target.SpawnId), 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+    private static byte[] Use(HeadlessPlayer actor, ushort id, ViewCreation target, string? capturedUse = null)
+    {
+        uint handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
+        byte[] request;
+        if (capturedUse == null)
+        {
+            request = new AbilityUseRecord(id, handle, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode();
+        }
+        else
+        {
+            request = Convert.FromHexString(capturedUse);
+            BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), id);
+            BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), handle);
+        }
+        actor.SendRpc(request);
+        return request;
+    }
 
-    private static async Task SelectStyle(HeadlessPlayer actor, ViewCreation self, ushort id, ushort stat)
+    internal static async Task SelectStyle(HeadlessPlayer actor, ViewCreation self, ushort id, ushort stat)
     {
         int cursor = actor.World.RpcSnapshot().Count;
         Use(actor, id, self);
@@ -85,12 +101,12 @@ public sealed class StarterFixedDamageMode : NativeQaMode
             modifier.TargetId == stat && modifier.AddRemoveType == 0), $"selected combat style {id}", HeadlessPlayer.DefaultTimeout);
     }
 
-    private static async Task Land(HeadlessPlayer caster, HeadlessPlayer enemy, ViewCreation view,
-        ushort id, int expected, float castSeconds, int reuse)
+    internal static async Task<byte[]> Land(HeadlessPlayer caster, HeadlessPlayer enemy, ViewCreation view,
+        ushort id, int expected, float castSeconds, int reuse, string? capturedUse = null)
     {
         int cursor = caster.World.RpcSnapshot().Count;
         int targetCursor = enemy.World.RpcSnapshot().Count;
-        Use(caster, id, view);
+        byte[] request = Use(caster, id, view, capturedUse);
         byte[] damage = AbilityMessages.Damage(false, id, caster.Handle, enemy.Handle, expected, 0);
         await enemy.WaitUntilAsync(() => enemy.World.RpcSnapshot().Skip(targetCursor).Any(rpc => rpc.Bytes.AsSpan().SequenceEqual(damage)),
             $"ordinary selected-player hit {id} for {expected}", TimeSpan.FromSeconds(12));
@@ -101,5 +117,6 @@ public sealed class StarterFixedDamageMode : NativeQaMode
         Check.That(records.Any(rpc => rpc.Bytes.AsSpan().SequenceEqual(timer)), $"own reuse {id}: {reuse}s");
         Check.That(records.Any(rpc => bar.IsMatch(rpc.Bytes) && BitConverter.ToSingle(rpc.Bytes, rpc.Bytes.Length - 4) == castSeconds),
             $"cast bar {id}: {castSeconds}s");
+        return request;
     }
 }
