@@ -286,8 +286,9 @@ namespace hds
                 }
             }
 
-            // The stock client allows an active Gunman Upgrade to be switched off during its activation timer.
-            if (!(switchOff && AbilityID == AbilityBuffs.GunmanUpgrade) && AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
+            // The stock client allows these active upgrades to be switched off during their activation timer.
+            bool startingClassUpgrade = AbilityBuffs.IsStartingClassUpgrade(AbilityID);
+            if (!(switchOff && startingClassUpgrade) && AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
                 Output.WriteDebugLog("[ABILITY] Still cooling down; denied");
                 Store.currentClient.messageQueue.addRpcMessage(
@@ -360,8 +361,7 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 // The archived class upgrades publish their activation timer before the exclusive-on record.
-                bool reuseBeforeBuff = AbilityID == AbilityBuffs.GunmanUpgrade;
-                if (reuseBeforeBuff)
+                if (startingClassUpgrade)
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
@@ -372,7 +372,7 @@ namespace hds
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
-                if (!reuseBeforeBuff && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
+                if (!startingClassUpgrade && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
