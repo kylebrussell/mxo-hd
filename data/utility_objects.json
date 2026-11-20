@@ -770,7 +770,8 @@
       "fields": {
         "AbilityPrerequisite/ReqAbilityID": 2148120576,
         "DataNodeLocator/Range": 15.0,
-        "DataNodeLocator/Type": 1
+        "DataNodeLocator/Type": 1,
+        "Tool/ActivatedAbility": 2147703808
       }
     },
     {

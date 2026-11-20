@@ -29,6 +29,6 @@ for row in catalog['abilities']:
                              'FX/FXID', 'DataNode/', 'Normal/HalfExtents'))}))
 opts.output.write_text(json.dumps(dict(source=catalog['source'], gob_sha256=catalog['gob_sha256'],
                                      objects=rows, locators=[dict(goid=r['id'],name=r['name'],fields={k:v for k,v in r['fields'].items()
-                                         if k.startswith(('AbilityPrerequisite/','DataNodeLocator/'))})
+                                         if k == 'Tool/ActivatedAbility' or k.startswith(('AbilityPrerequisite/','DataNodeLocator/'))})
                                          for r in catalog['abilities'] if r['id'] in (422,423,38208,38209)]), indent=2) + '\n', encoding='utf-8')
 print(f'{len(rows)} utility objects')
