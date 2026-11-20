@@ -11,7 +11,17 @@ namespace hds
         public void SpawnMobView(WorldClient client, Mob thismob, ClientView mobView)
         {
             Output.WriteDebugLog("Spawn MobView Data ( Entity ID : " + thismob.getEntityId() + " Name:" + thismob.getName() + " ID: " + thismob.getMobId() + " RSI HEX: " + thismob.getRsiHex());
-            GameObject viewData = thismob.getCreationData();
+            GameObject viewData;
+            if (thismob.pet != null)
+            {
+                var presentation = CoderPets.Presentation(thismob.pet, client);
+                mobView.SimulacrumPresentation = presentation;
+                viewData = CoderPets.BuildCreation(thismob, presentation);
+            }
+            else
+            {
+                viewData = thismob.getCreationData();
+            }
             PacketContent pak = new PacketContent();
             
             pak.AddUint16(1, 1);

@@ -590,6 +590,11 @@ namespace hds
                             thismob.isUpdateable = true;
                             thismob.DoMobUpdate(thismob);
                         }
+                        else if (mobView.viewCreated && !mobView.viewNeedsToBeDeleted && thismob.pet != null &&
+                            thismob.getDistrict() == districtId && thisclient.playerData.getOnWorld())
+                        {
+                            CoderPets.RefreshPresentation(thismob.pet, thisclient, mobView);
+                        }
                     }
                 }
 

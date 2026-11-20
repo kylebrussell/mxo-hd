@@ -153,10 +153,18 @@ public class CoderPetTests
         mob.setXPos(17057.809936523438);
         mob.setYPos(495.0);
         mob.setZPos(3475.392822265625);
-        mob.pet = new CoderPets.Pet { Owner = Owner(0xef02), Mob = mob, SimulacraId = 2, Kind = CoderPets.Kind.Nuker };
+        var owner = Owner(0xef02);
+        owner.playerInstance.OrganizationID.setValue((byte)3);
+        mob.pet = new CoderPets.Pet { Owner = owner, Mob = mob, SimulacraId = 2, Kind = CoderPets.Kind.Nuker };
         byte[] creation = mob.getCreationData().GetCreationAttributes();
         Assert.Equal(retail, Hex(creation));
         Assert.Equal(new byte[] { 0xb8, 0x9d }, mob.getCreationData().GetGoid());
+    }
+
+    [Fact]
+    public void PresentationUpdateUsesSimulacrumOrganizationAndConditionIndices()
+    {
+        Assert.Equal("0480a002808080800200000001", Hex(CoderPets.BuildPresentationUpdate(2, PvpFlag.PvpBit)));
     }
 
     [Fact]

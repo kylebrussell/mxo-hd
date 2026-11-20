@@ -81,7 +81,7 @@ A freshly summoned simulacrum, as its owner saw it, carries exactly these 18 att
 - EffectID `0c 06 00 28` (`FX_HACKER_SIMULACRA_SUMMON_BASE`)
 - SimulacraID: a per-owner counter, 1 then 2 for the same owner
 - Position
-- OrganizationID 3
+- OrganizationID 3 in these MaraC and Syntax samples. Luizoe has 1. See [PvP presentation](CODER-PET-PVP-PRESENTATION.md).
 - NPCRank 2
 - Level
 - Health, MaxHealth
