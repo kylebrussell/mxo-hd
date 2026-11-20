@@ -1,0 +1,42 @@
+{
+  "families": {
+    "master-spy-free-throws": {
+      "representative": 1134,
+      "result": "pass",
+      "head": "10535d740cbba784f2ab3c1cacf2879af8edb4ea",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/475",
+      "scope": "Warding Blow landed for 217 after the native range correction, applied both -30 accuracy penalties for 8 seconds and ended Sneak at landing. The preceding stock run on 1e5a7343 verified Staggering Throw 348 (292) and Infuriating Assault 1130 (201, Enraged 4 s)."
+    },
+    "master-spy-instant-openers": {
+      "representative": 385,
+      "result": "pass",
+      "head": "1e5a7343b43b04f33089be0bd277d53d0c5e0123",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/475",
+      "scope": "Fresh stock targets accepted Diving Frankensteiner 385 and Freedom to Joints 386 for 1369 and 1527 respectively. Freedom to Joints showed Powerless for 10 seconds in this profile. This evidence is scoped to the observed openers and does not resolve all control and choreography cases."
+    },
+    "zen-technique-reload": {
+      "representative": 860,
+      "result": "pass",
+      "head": "1195ed4958a5e40ef012c99c617f650df81eb693",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/477",
+      "scope": "Native level-99 diagnostic unloaded 860 from 46/100 to 44/100. Viral Defense dropped from +245 to +47 and the Aikido Damage +99 row disappeared. Reload restored both rows and 46/100 memory. The disposable qualification does not establish retail access."
+    },
+    "zen-self-defense-specials": {
+      "representative": 869,
+      "result": "pass",
+      "head": "ebaa7f044890e2d4d7d216dd86fca058db260610",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/477",
+      "scope": "Native Self Defense interlock: Off Balance let Sweep The Floor 869 hit for 402 and Disarm for 20 s. Spinning Flower 870 hit for 419 and applied Powerless for 24.6 s. The native run did not exercise all control outcomes."
+    }
+  },
+  "abilities": {
+    "348": { "family": "master-spy-free-throws" },
+    "385": { "family": "master-spy-instant-openers" },
+    "386": { "family": "master-spy-instant-openers" },
+    "860": { "family": "zen-technique-reload" },
+    "869": { "family": "zen-self-defense-specials" },
+    "870": { "family": "zen-self-defense-specials" },
+    "1130": { "family": "master-spy-free-throws" },
+    "1134": { "family": "master-spy-free-throws" }
+  }
+}

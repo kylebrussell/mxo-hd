@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "21": {
+      "checks": {
+        "controls": {
+          "source": "The shipped Lockdown 1.0 modifier sets Rooted 99 for 12 seconds and has no damage-break callback or separate immunity timer.",
+          "runtime": "TimedEffects installs and expires Rooted, and ControlActions blocks movement while the state is live.",
+          "test": "PR490 ad5075b9 stock recipient frames 6218 and 7184 encode the 12-second state 99 addition and removal. EarlyCoderTargetSelectionMode verifies Static Blast damage does not break Lockdown and waits for its natural expiry. https://github.com/kylebrussell/mxo-hd/pull/490 https://github.com/kylebrussell/mxo-hd/pull/409"
+        }
+      }
+    }
+  }
+}
