@@ -54,7 +54,7 @@ public class DebuffRadiusModeTests
         try
         {
             Store.worldConfig=(WorldConfig)RuntimeHelpers.GetUninitializedObject(typeof(WorldConfig));Store.worldConfig.IsPvpServer=false;Store.worldConfig.PvpMaxSafeLevel=15;
-            var a=Client(1001,2,true,17000);var b=Client(1002,1,true);a.viewMan.addView(1002,12);
+            var a=Client(1001,2,true,17000);var b=Client(1002,1,true);a.viewMan.addView(1002,12).viewCreated=true;
             string Reason(double radius=4)=>AbilityHostile.PlayerAreaReason(a,b,17500,495,2300,radius,null,out _);
             PvpFlag.OnEnterWorld(b);Assert.False(b.playerData.pvpFlag);Assert.Equal("pvp-NotOpponent",Reason());
             Store.worldConfig.IsPvpServer=true;PvpFlag.OnEnterWorld(b);Assert.True(b.playerData.pvpFlag);Assert.Equal("included",Reason());
@@ -64,7 +64,7 @@ public class DebuffRadiusModeTests
             a.playerInstance.MissionTeamID.setValue((uint)42);b.playerInstance.MissionTeamID.setValue((uint)42);Assert.Equal("pvp-NotOpponent",Reason());a.playerInstance.MissionTeamID.setValue((uint)0);b.playerInstance.MissionTeamID.setValue((uint)0);
             b.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17940,495,2300));Assert.Equal("radius",Reason());Assert.Equal("included",Reason(4.84));
             b.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17880,645,2300));Assert.Equal("floor",Reason());b.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17880,495,2300));
-            a.viewMan.Clear();Assert.Equal("invisible",Reason());a.viewMan.addView(1002,12);b.playerData.isDead=true;Assert.Equal("dead",Reason());b.playerData.isDead=false;b.playerData.duelDeath=true;Assert.Equal("duel-death",Reason());b.playerData.duelDeath=false;b.playerData.setDistrictId(2);Assert.Equal("district",Reason());b.playerData.setDistrictId(1);
+            a.viewMan.Clear();Assert.Equal("invisible",Reason());a.viewMan.addView(1002,12).viewCreated=true;b.playerData.isDead=true;Assert.Equal("dead",Reason());b.playerData.isDead=false;b.playerData.duelDeath=true;Assert.Equal("duel-death",Reason());b.playerData.duelDeath=false;b.playerData.setDistrictId(2);Assert.Equal("district",Reason());b.playerData.setDistrictId(1);
             Assert.Equal("primary",AbilityHostile.PlayerAreaReason(a,b,17500,495,2300,4,b,out _));Assert.Equal("caster",AbilityHostile.PlayerAreaReason(a,a,17500,495,2300,4,null,out _));
         }
         finally{Store.worldConfig=old;}
