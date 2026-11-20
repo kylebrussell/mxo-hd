@@ -8,8 +8,8 @@ public sealed class HarmfulCodeMode : NativeQaMode
 {
     private const int Level = 19;
     private const ushort HarmfulCode = 53;
-    // PR396 PacketLog 40515a0af6ef, complete ordinary selected target request at lines 4354–4355.
-    private const string StockViralUse = "80b93900040002000000000000000000000000000000000000000000585cba0001000000086b0000000000";
+    // Native PR406 PacketLog fc98739c17a5:3155.
+    private const string StockViralUse = "80b93500040002000000000000000000000000000000000000000000585cc70001000000086b0000000000";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HarmfulCode, 95).Order().ToArray();
 
     public override string Name => "ability-parity-harmful-code";
@@ -31,7 +31,8 @@ public sealed class HarmfulCodeMode : NativeQaMode
         },
         readyMessages: new[]
         {
-            "Level 19, 49/49 memory. Use Hacker Style, select QAEnemy at 4 m and cast Harmful Code 1.0 (53) out of interlock. Capture the stock request, 14 damage with existing bonuses, 4 s cast, 8 s own reuse and 4 s shared reuse."
+            "Level 19, 49/49 memory. Use Hacker Style outside interlock. Try 53 with no selection and check for one Target is not valid line, no IS, cast bar or reuse.",
+            "Select QAEnemy at 4 m and retry 53 immediately. Expect 14 damage, 4s cast, 8s own reuse and 4s shared reuse."
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "53", ["NativeCloseableRows"] = 0 });
 
@@ -50,6 +51,7 @@ public sealed class HarmfulCodeMode : NativeQaMode
         await StarterFixedDamageMode.SelectStyle(actor, self, CombatStyles.HackerStyle, 172);
         await StockAbilityProfile.ObserveAsync(actor, 0, packet => StockAbilityProfile.Bonus(packet, 95, 1031, 5, 0, false),
             "Transmit Virus grants +5 linked viral damage at the fixture rank");
+        var invalid = await StarterHackerViralDamageMode.VerifyInvalidTargets(actor, HarmfulCode, StockViralUse, target);
         int cursor = actor.World.RpcSnapshot().Count;
         byte[] request = await StarterFixedDamageMode.Land(actor, enemy, target, HarmfulCode, 14, 4, 8, StockViralUse);
         byte[] shared = AbilityCooldowns.BuildTimer(682, AbilityCooldowns.GroupTimer, 4, true);
@@ -57,7 +59,7 @@ public sealed class HarmfulCodeMode : NativeQaMode
             "Harmful Code starts the four-second shared timer");
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "harmful-code.json"),
-            JsonSerializer.Serialize(new { Request = Convert.ToHexString(request), Base = 12, Landed = 14, OwnReuse = 8, GroupReuse = group.Hex }));
+            JsonSerializer.Serialize(new { Request = Convert.ToHexString(request), InvalidTargets = invalid, Base = 12, Landed = 14, OwnReuse = 8, GroupReuse = group.Hex }));
         return Array.Empty<byte>();
     }
 }

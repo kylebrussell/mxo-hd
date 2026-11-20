@@ -13,9 +13,13 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
     private const ushort SharedReuse = 682;
     private static readonly ushort[] Roots = { 2, 17, 57, 58, 59, 60 };
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(Roots).Order().ToArray();
-    private static readonly (ushort Id, int Base, int Landed, int Cast, int Reuse)[] Cases =
+    // PR396 stock PacketLog 40515a0af6ef:4354, 4746, 5189 and 5581.
+    private static readonly (ushort Id, int Base, int Landed, int Cast, int Reuse, string Capture)[] Cases =
     {
-        (57, 8, 9, 2, 4), (58, 11, 12, 2, 4), (59, 17, 19, 2, 4), (60, 7, 8, 4, 2)
+        (57, 8, 9, 2, 4, "80b93900040002000000000000000000000000000000000000000000585cba0001000000086b0000000000"),
+        (58, 11, 12, 2, 4, "80b93a000400020000000000000000000000000000000000000000000000000090767241086b0000000000"),
+        (59, 17, 19, 2, 4, "80b93b00040002000000000000000000000000000000000000000000585cba0001000000086b0000000000"),
+        (60, 7, 8, 4, 2, "80b93c000400020000000000000000000000000000000000000000000000000090767241086b0000000000")
     };
 
     public override string Name => "ability-parity-starter-hacker-viral-damage";
@@ -36,9 +40,9 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, readyMessages: new[]
         {
-            "At level 18, select Hacker Style and target QAEnemy. Stay out of interlock and use each stocked ability through Actions, waiting for the shared timer between casts.",
-            "Use Logic Barrage 1.0 (57), Logic Blast 1.0 (58), Logic Barrage 2.0 (59) and Code Nuke 1.0 (60). Record the outgoing use requests and damage on QAEnemy. Hacker Style and the required Transmit Virus passive scale fixed bases 8/11/17/7 to expected damage 9/12/19/8.",
-            "QAFriend is 2 m beyond QAEnemy and QAFar is 5 m beyond QAEnemy. Verify only Code Nuke also hits QAFriend and QAFar remains untouched. The disposable fixture fixes only the eligible viral contest draw."
+            "At level 18, select Hacker Style outside interlock. Try each stocked viral action with no selection and expect one Target is not valid line for each sent request, with no IS debit, cast bar or reuse.",
+            "Select QAEnemy and retry immediately. Abilities 57–60 should hit for 9/12/19/8. Wait for shared reuse before testing the next action.",
+            "QAFriend is 2 m beyond QAEnemy and QAFar is 5 m beyond QAEnemy. Only ability 60 should also hit QAFriend. The fixture fixes the eligible viral contest draw."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -74,11 +78,12 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
         var proof = new List<object>();
         foreach (var sample in Cases)
         {
+            var invalid = await VerifyInvalidTargets(caster, sample.Id, sample.Capture, target);
             int sourceAt = caster.World.RpcSnapshot().Count;
             int targetAt = enemy.World.RpcSnapshot().Count;
             int nearAt = near.World.RpcSnapshot().Count;
             int farAt = far.World.RpcSnapshot().Count;
-            byte[] use = VirusUse(sample.Id, target);
+            byte[] use = WithTarget(sample.Capture, DuelPackets.Handle(target.ViewId, target.SpawnId));
             caster.SendRpc(use);
             RpcRecord hit = await HitAsync(enemy, targetAt, caster.Handle, sample.Id, sample.Landed);
             string? splash = sample.Id == 60 ? (await HitAsync(near, nearAt, caster.Handle, sample.Id, sample.Landed)).Hex : null;
@@ -96,7 +101,7 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
             if (sample.Id != 60) Check.Equal(0, CountDamage(near, nearAt, caster.Handle, sample.Id), "Single target omits nearby enemy");
             Check.Equal(0, CountDamage(far, farAt, caster.Handle, sample.Id), "Out-of-radius enemy takes no ability hit");
             proof.Add(new { sample.Id, sample.Base, sample.Landed, Use = Convert.ToHexString(use), Cast = cast.Hex,
-                Timer = timer.Hex, PrimaryDamage = hit.Hex, SecondaryDamage = splash });
+                Timer = timer.Hex, InvalidTargets = invalid, PrimaryDamage = hit.Hex, SecondaryDamage = splash });
         }
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count + near.World.Problems.Count + far.World.Problems.Count,
             "Starter viral packets remain framed");
@@ -105,12 +110,44 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static byte[] VirusUse(ushort id, ViewCreation target)
+    internal static async Task<string[]> VerifyInvalidTargets(HeadlessPlayer caster, ushort id, string capture, ViewCreation target)
     {
-        // Captured normal Logic Barrage request (PR321, PacketLog 7a4fc7efcf1c:1742).
-        byte[] request = Convert.FromHexString("80b94a010e000c000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000");
-        BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), id);
-        BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), DuelPackets.Handle(target.ViewId, target.SpawnId));
+        string idHex = StockAbilityProfile.LittleEndianHex(id);
+        var cast = BytePattern.Parse($"80 ac {idHex}");
+        var reuse = BytePattern.Parse($"80 bd 01 {idHex}");
+        var barrier = BytePattern.Parse("81 49");
+        var refusals = new List<string>();
+        var self = caster.World.CreationSnapshot().Last(view => view.ViewId == 2);
+        foreach (uint handle in new[] { 0u, DuelPackets.Handle(target.ViewId, target.SpawnId) ^ 0x10000 })
+        {
+            int cursor = caster.World.RpcSnapshot().Count;
+            var views = caster.World.ViewSnapshot();
+            ushort innerStrength = BitConverter.ToUInt16(self.Attributes["InnerStrengthAvailable"]);
+            foreach (byte[] view in views)
+                if (BuffDrainLifetimeFixture.TryInnerStrength(view, out ushort value)) innerStrength = value;
+            caster.SendRpc(WithTarget(capture, handle));
+            var result = await StockAbilityProfile.ObserveAsync(caster, cursor, packet => cast.IsMatch(packet.Bytes) ||
+                AbilityRefusals.TryDecode(packet.Bytes, out var refusal) && refusal.AbilityID == id, $"admission response for {id}");
+            Check.That(AbilityRefusals.TryDecode(result.Bytes, out var invalid) && invalid.ErrorID == AbilityRefusals.InvalidTarget,
+                $"Invalid selection for {id} must be refused before the cast bar. Received {result.Hex}");
+            caster.SendRpc("81 48");
+            await StockAbilityProfile.ObserveAsync(caster, cursor, packet => barrier.IsMatch(packet.Bytes), "post-refusal barrier");
+            Check.That(!caster.World.RpcSnapshot().Skip(cursor).Any(packet => cast.IsMatch(packet.Bytes) || reuse.IsMatch(packet.Bytes) ||
+                (packet.Bytes.Length == 11 && packet.Bytes.AsSpan().StartsWith(new byte[] { 0x80, 0xbd, 0x01 }) &&
+                    packet.Bytes[5] == AbilityCooldowns.GroupTimer && packet.Bytes[10] == 1)),
+                $"Invalid selection for {id} must leave cast and both timers ready");
+            Check.That(!caster.World.ViewSnapshot().Skip(views.Count).Any(view =>
+                BuffDrainLifetimeFixture.TryInnerStrength(view, out ushort value) && value < innerStrength),
+                $"Invalid selection for {id} must leave Inner Strength unchanged");
+            refusals.Add(result.Hex);
+        }
+        return refusals.ToArray();
+    }
+
+    private static byte[] WithTarget(string capture, uint handle)
+    {
+        byte[] request = Convert.FromHexString(capture);
+        BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), handle);
         return request;
     }
 

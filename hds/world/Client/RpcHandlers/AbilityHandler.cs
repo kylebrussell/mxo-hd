@@ -27,6 +27,19 @@ namespace hds
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
+            // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
+            if (AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60))
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: invalid starter viral target {currentTargetViewId}");
+                    return;
+                }
+            }
 
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
