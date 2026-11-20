@@ -67,7 +67,7 @@ public abstract class AbilitySweepMode : NativeQaMode
 
         var instructions = new List<string>
         {
-            "Open stock hotbar page 2. Slots 1 through 8 are seeded in the printed order. Use normal activation and record one result per slot.",
+            "Use normal activation and record one result per seeded slot.",
             "Save the complete outgoing stock activation RPC and actual HP/IS, target, state and expiry per slot. See docs/ABILITY-SWEEPS.md."
         };
         instructions.Add(isolatedMelee
@@ -100,7 +100,8 @@ public abstract class AbilitySweepMode : NativeQaMode
             environmentOverrides: environment,
             extraQaMetadata: new() { ["AbilitySweepNativeStatus"] = "Pending", ["AbilitySweepSlots"] = samples.Length },
             readyMessages: instructions.Concat(Evidence).ToArray(),
-            testMobFixture: isolatedMelee ? CombatFixtureLoadout.MeleeCsv : "ability-sweep-mobs.csv", loadAbilityAncestors: true);
+            testMobFixture: isolatedMelee ? CombatFixtureLoadout.MeleeCsv : "ability-sweep-mobs.csv", loadAbilityAncestors: true,
+            hotbarAbilities: samples.Select(sample => sample.Id).ToArray());
     }
 
     public override NativeQaModePlan Plan { get; }

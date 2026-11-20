@@ -6,8 +6,9 @@ namespace NativeQa;
 public static class AbilitySweepHotbar
 {
     public const string TemplateVariable = "MXO_NATIVE_QA_CUI_TEMPLATE";
+    private const string DisposableTemplate = "cui-template-CSR_AbilityQA-CSR_Tester_6E.cfg";
     private const byte Page = 1; // The stock UI displays zero-based page 1 as page 2.
-    private const int Slots = 8;
+    private const int Slots = 10;
     private const int SlotRecordsStart = 16;
     private const int SelectionLength = 32;
 
@@ -16,9 +17,13 @@ public static class AbilitySweepHotbar
         string? path = Environment.GetEnvironmentVariable(TemplateVariable);
         if (string.IsNullOrWhiteSpace(path))
         {
-            if (required)
-                throw new InvalidOperationException($"Set {TemplateVariable} to a copy of the disposable stock client's cui.cfg.");
-            return null;
+            path = Path.Combine(Path.GetTempPath(), "mxo-qa", DisposableTemplate);
+            if (!File.Exists(path))
+            {
+                if (required)
+                    throw new InvalidOperationException($"Set {TemplateVariable} to a copy of the disposable stock client's cui.cfg.");
+                return null;
+            }
         }
 
         using var file = File.OpenRead(path);
@@ -26,13 +31,19 @@ public static class AbilitySweepHotbar
             throw new InvalidDataException("The stock UI template does not fit the client's character UI buffer.");
         byte[] template = new byte[(int)file.Length];
         file.ReadExactly(template);
-        return Seed(template, loadout.Take(Slots).ToArray());
+        return Seed(template, loadout);
+    }
+
+    internal static void Validate(IReadOnlyList<ushort> abilities)
+    {
+        if (abilities.Count is < 1 or > Slots || abilities.Distinct().Count() != abilities.Count ||
+            abilities.Any(id => id is 0 or >= 4096))
+            throw new ArgumentException("The hotbar requires one to ten distinct canonical ability IDs.", nameof(abilities));
     }
 
     public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities)
     {
-        if (abilities.Count != Slots || abilities.Distinct().Count() != Slots || abilities.Any(id => id is 0 or >= 4096))
-            throw new ArgumentException("The hotbar requires eight distinct canonical ability IDs.", nameof(abilities));
+        Validate(abilities);
         if (template.Length is < SlotRecordsStart + SelectionLength or > QaCharacterUi.MaxLength ||
             Read(template, 0) != 2 || Read(template, 8) != 1)
             throw new InvalidDataException("Expected stock cui.cfg version 2 with shortcuts version 1.");
@@ -58,7 +69,7 @@ public static class AbilitySweepHotbar
         if (cursor != endOfRecords)
             throw new InvalidDataException("Unexpected bytes between stock shortcuts and selection state.");
 
-        for (byte slot = 0; slot < Slots; slot++)
+        for (byte slot = 0; slot < abilities.Count; slot++)
         {
             byte[] record = new byte[10];
             record[0] = Page;

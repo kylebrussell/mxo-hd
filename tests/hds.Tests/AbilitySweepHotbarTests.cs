@@ -48,6 +48,26 @@ public class AbilitySweepHotbarTests
     }
 
     [Fact]
+    public void ShortPlanUsesItsOwnOrderAndKeepsTheFollowingSlots()
+    {
+        ushort[] actions = { 1071, 1073, 158 };
+        byte[] untouched = { 1, 3, 0, 0, 0, 0, 99, 0, 0, 0 };
+        byte[] original = Template(new byte[48], untouched);
+        var plan = new NativeQaModePlan(new ushort[] { 245, 251, 158 }, 0, 0,
+            Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), hotbarAbilities: actions);
+        actions[0] = 1;
+
+        byte[] seeded = AbilitySweepHotbar.Seed(original, plan.HotbarAbilities);
+        Assert.Equal(new ushort[] { 1071, 1073, 158 }, plan.HotbarAbilities);
+        Assert.Equal(new[] { "Open stock hotbar page 2.", "slot 1 = ability 1071", "slot 2 = ability 1073", "slot 3 = ability 158" }, plan.ReadyMessages);
+        Assert.Equal(4u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
+        Assert.Equal(1071u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(22)));
+        Assert.Equal(1073u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(32)));
+        Assert.Equal(158u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(42)));
+        Assert.Equal(untouched, seeded[46..56]);
+    }
+
+    [Fact]
     public void RefusesMalformedMacroAndUnrecognizedShortcutTypes()
     {
         byte[] tail = new byte[48];
