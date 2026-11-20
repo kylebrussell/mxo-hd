@@ -15,6 +15,7 @@ public sealed class StarterSpyUtilitiesMode : NativeQaMode
     private const uint TrapDetectToolGoid = 2500;
     private const ushort FilingCabinetGoid = 326;
     private const ushort SecurityDeskGoid = 377;
+    private const ushort WallSafeGoid = 1416;
 
     private const byte Level = 50, Rank = 50;
     private const int GroundY = 495, CasterX = 24800, CasterZ = -1498;
@@ -50,7 +51,7 @@ public sealed class StarterSpyUtilitiesMode : NativeQaMode
             "Level 50, rank 50, unarmed (42/100 memory, max IS 1000). Bag tools: slot 1 = Lock_Pick (GOID 4), slot 2 = DisableDeviceTool (GOID 616), slot 3 = TrapDetectToolBasic (GOID 2500). Page 2 hotbar: slot 1 = 119 Disarm Traps.",
             "Step A (142 Open Locks): Send '?objstate 326 0x836' to spawn a locked Filing Cabinet at your feet. Click it and choose Pick Lock (use 8): expect 'Lock Picked Successfully!' (0x7a000145), '[UTILITY] Pick Lock on 326: Success', and state transition 0x836 -> 0x841 (UnlockedState, offering Open).",
             "Step B (218 Disable Security Devices): Send '?objstate 377 0x839' to spawn an armed Security_Desk at your feet. Click it and choose Use / Disable Security Devices (use 1): expect '[UTILITY] Disable Security Devices on 377: result 1 (ACCESS GRANTED)' (state 0x83a) or 'result 2 (ALARM TRIGGERED)' (state 0x83b) plus the matching system chat line.",
-            "Step C (119 Disarm Traps): Send '?trapobj 326' to spawn a trapped, detected Filing Cabinet (TrappedState 0x839) at your feet. Select the new Filing Cabinet and press page 2 slot 1 (119 Disarm Traps): expect 10 IS spent (1000 -> 990), 2.0 s cast bar, and '[UTILITY] Disarm Traps on 326:' Disarmed (0x7600024e -> 0x83a), Failed (0x7600024f, retryable), or Critical (0x76000250 -> 0x83b)."
+            "Step C (119 Disarm Traps): Send '?trapobj 1416' to spawn a trapped, detected Wall Safe (TrappedState 0x839) at your feet. Because 7.6005 TrappedState props expose no clickable Target HUD action, run '?trapobj disarm' to target its view through normal AbilityHandler.ProcessAbility for 119 Disarm Traps: expect 10 IS spent (1000 -> 990), 2.0 s cast bar, '[UTILITY] Disarm Traps on 1416 in 0x839:' Disarmed (0x7600024e -> 0x83a), Failed (0x7600024f, retryable), or Critical (0x76000250 -> 0x83b)."
         },
         extraQaMetadata: new()
         {
@@ -91,16 +92,15 @@ public sealed class StarterSpyUtilitiesMode : NativeQaMode
             server.DebugLog()[logB..].Contains($"[UTILITY] Disable Security Devices on {SecurityDeskGoid}: result ", StringComparison.Ordinal),
             "Disable Security Devices 218 resolves on Security_Desk", TimeSpan.FromSeconds(5));
 
-        // Step C: ?trapobj 326 -> cast 119 Disarm Traps (2 s cast, 10 IS).
+        // Step C: ?trapobj 1416 -> ?trapobj disarm (casts 119 Disarm Traps on the trapped Wall Safe view: 2 s cast, 10 IS).
         int c3 = actor.World.CreationSnapshot().Count;
         int logC = server.DebugLog().Length;
-        actor.SendChat($"?trapobj {FilingCabinetGoid}");
-        var trapped = await WaitNewCreationAsync(c3, "Trapped Filing Cabinet spawns");
-        actor.SendRpc(new AbilityUseRecord(DisarmTraps, DuelPackets.Handle(trapped.ViewId, trapped.SpawnId),
-            0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+        actor.SendChat($"?trapobj {WallSafeGoid}");
+        await WaitNewCreationAsync(c3, "Trapped Wall Safe spawns");
+        actor.SendChat("?trapobj disarm");
         await actor.WaitUntilAsync(() =>
-            server.DebugLog()[logC..].Contains($"[UTILITY] Disarm Traps on {FilingCabinetGoid}:", StringComparison.Ordinal),
-            "Disarm Traps 119 resolves on trapped Filing Cabinet", TimeSpan.FromSeconds(8));
+            server.DebugLog()[logC..].Contains($"[UTILITY] Disarm Traps on {WallSafeGoid} in 0x839:", StringComparison.Ordinal),
+            "Disarm Traps 119 resolves on trapped Wall Safe", TimeSpan.FromSeconds(8));
 
         Console.WriteLine("  Starter Spy Utilities (142 Open Locks, 218 Disable Security Devices, 119 Disarm Traps) verified");
         return Array.Empty<byte>();

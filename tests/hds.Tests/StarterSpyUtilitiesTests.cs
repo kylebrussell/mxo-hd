@@ -49,6 +49,11 @@ public class StarterSpyUtilitiesTests
         Assert.Equal(0x83au, ObjectStates.StateAfterUse(377, 0x839, 1, 1));
         Assert.Equal(0x83bu, ObjectStates.StateAfterUse(377, 0x839, 1, 2));
 
+        // Wall Safe (1416) supports TrappedState 0x839, DisarmedState 0x83a, TriggeredState 0x83b.
+        Assert.NotNull(ObjectStates.Find(1416, 0x839));
+        Assert.NotNull(ObjectStates.Find(1416, 0x83a));
+        Assert.NotNull(ObjectStates.Find(1416, 0x83b));
+
         // Disarm Traps (119): 10 IS, 2.0 s cast.
         Assert.Equal((ushort)10, AbilityCosts.Cost(DisarmTraps));
         Assert.Equal(2f, AbilityCatalog.Find(DisarmTraps)!.CastSeconds);

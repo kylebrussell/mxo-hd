@@ -565,12 +565,29 @@ namespace hds
         /// <summary>
         /// Dev (MXO_DEV_COMMANDS=1): <c>?trapobj &lt;goid&gt; [hidden]</c> spawns an object in its TrappedState at the player's
         /// feet (as ?objstate does), its trap detected unless "hidden", for trying Disarm Traps.
+        /// <c>?trapobj disarm</c> casts 119 Disarm Traps through normal <see cref="AbilityHandler.ProcessAbility"/> on the
+        /// last spawned dev object's view (since 7.6005 TrappedState props expose no clickable target HUD action).
         /// </summary>
         public static void DevTrapObject(WorldClient client, string[] args)
         {
+            if (args.Length >= 2 && args[1].Equals("disarm", StringComparison.OrdinalIgnoreCase))
+            {
+                UInt64 last = ObjectStates.LastDevObject(client);
+                ClientView view = last == 0 ? null : client.viewMan.FindViewForEntity(last);
+                if (view == null)
+                {
+                    new ServerPackets().sendSystemChatMessage(client, "No trapped dev object to target. Run ?trapobj <goid> first.", "BROADCAST");
+                    return;
+                }
+                byte[] packet = new byte[4];
+                BitConverter.GetBytes(DisarmTraps).CopyTo(packet, 0);
+                BitConverter.GetBytes(view.ViewID).CopyTo(packet, 2);
+                new AbilityHandler().ProcessAbility(ref packet);
+                return;
+            }
             if (args.Length < 2 || !UInt16.TryParse(args[1], out UInt16 goid))
             {
-                new ServerPackets().sendSystemChatMessage(client, "?trapobj <goid> [hidden]", "BROADCAST");
+                new ServerPackets().sendSystemChatMessage(client, "?trapobj <goid> [hidden] | ?trapobj disarm", "BROADCAST");
                 return;
             }
 
