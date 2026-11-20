@@ -82,8 +82,13 @@ namespace hds
         internal const ushort UpgradeArtistUpgrade = 1095;
 
         internal static bool HasClassSweep(ushort id) => id == ForceMultiplierUpgrade || id == UpgradeArtistUpgrade;
-        internal static bool IsStartingClassUpgrade(ushort id) => id == 1060 || id == 1061 || id == 1062 || id == 1070 || id == 1078 ||
-            id == 1113 || id == 1115 || id == 1117 || id == 1120;
+        private const int ClassUpgradeStackingType = 37;
+        internal static bool IsStartingClassUpgrade(ushort id)
+        {
+            var entry = AbilityCatalog.Find(id);
+            return entry?.Number("Ability/StackingType") == ClassUpgradeStackingType &&
+                entry.Number("Ability/IsAToggleAbility") == 1;
+        }
         private const ushort MovementAccelerator = 62;
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
@@ -140,15 +145,15 @@ namespace hds
             // Combat Hacking, abilities_usecombathacking: 32 s
             { 344, new Buff { Seconds = 32, Modifiers = new[] { Stat(1010, 22), Stat(117, 24), Stat(1009, 22) } } },
             // Kung Fu Grand Master, RajkoPacketsNearTheEnd
-            { 1064, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 8), Stat(106, 137), Stat(522, 13), Stat(159, 6) } } },
+            { 1064, new Buff { Exclusive = true, Toggle = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 8), Stat(106, 137), Stat(522, 13), Stat(159, 6) } } },
             // Aikido Master, medanon niobe3dualduality
-            { 1067, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 7), Stat(106, 148), Stat(522, 4), Stat(159, 2) } } },
+            { 1067, new Buff { Exclusive = true, Toggle = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 7), Stat(106, 148), Stat(522, 4), Stat(159, 2) } } },
             // Howitzer
-            { 1087, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(342, 13), Stat(172, 8), Stat(564, 7), Stat(177, 17) } } },
+            { 1087, new Buff { Exclusive = true, Toggle = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(342, 13), Stat(172, 8), Stat(564, 7), Stat(177, 17) } } },
             // Team Healer, crashover2k proxy_024 (replaced Corpsman in the same packet)
-            { 1089, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(174, 3), Stat(127, 7), Stat(564, 7), Stat(520, 10) } } },
+            { 1089, new Buff { Exclusive = true, Toggle = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(174, 3), Stat(127, 7), Stat(564, 7), Stat(520, 10) } } },
             // Corpsman, crashover2k proxy_024
-            { 1092, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(564, 7), Stat(127, 10), Stat(174, 6) } } },
+            { 1092, new Buff { Exclusive = true, Toggle = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(564, 7), Stat(127, 10), Stat(174, 6) } } },
             // Hyper-Block
             { 1099, new Buff { Exclusive = true, Family = FamilyHyperDefence, Modifiers = new[] { Stat(1009, 52) } } },
             // Hyper-Deflect, entilsar lastday2 (replaced by Hyper-Block)
@@ -294,8 +299,8 @@ namespace hds
                 if (durations.Count != 1) continue;
                 int stacking = (int)entry.Number("Ability/StackingType");
                 buffs[entry.Id] = new Buff { Seconds = (float)durations[0], Exclusive = durations[0] == 0,
-                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && (stacking != 37 || IsStartingClassUpgrade(entry.Id)),
-                    Family = stacking == 37 ? FamilyClassBuff : stacking == 0 ? 0 : 1000 + stacking,
+                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && (stacking != ClassUpgradeStackingType || IsStartingClassUpgrade(entry.Id)),
+                    Family = stacking == ClassUpgradeStackingType ? FamilyClassBuff : stacking == 0 ? 0 : 1000 + stacking,
                     Modifiers = mods.Select(m => Stat(m.Target, (int)m.Number("MinValue"))).ToArray(),
                     MovementScale = (float)(mods.FirstOrDefault(m => m.Target == 115)?.Number("MinValue") ?? 0) / 100 };
             }
@@ -786,7 +791,7 @@ namespace hds
             {
                 EvasionShield.Removed(client);
             }
-            // Starting class upgrades already began their own reuse on activation.
+            // Class upgrade toggles already began their own reuse on activation.
             if (buff.Toggle && !IsStartingClassUpgrade(abilityId))
             {
                 AbilityCooldowns.Start(client, abilityId, TimeUtils.GetSimTimeSeconds());
