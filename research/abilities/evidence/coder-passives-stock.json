@@ -1,0 +1,30 @@
+{
+  "families": {
+    "programmer-crafting-cost-stock": {
+      "representative": 275,
+      "result": "pass",
+      "head": "ecea22812a57e001e103d1b7f8c45b2e8091c62f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/447",
+      "scope": "The stock Status crafting-cost row disappeared on unload and showed Programmer +10% after reload. Native handoff stage A, November 19 at 23:44 ET."
+    },
+    "code-hardening-typed-damage-stock": {
+      "representative": 608,
+      "result": "pass",
+      "head": "ecea22812a57e001e103d1b7f8c45b2e8091c62f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/447",
+      "scope": "Both stock Status damage-bonus rows disappeared on unload. Reload showed Code Hardening +5% for Ballistic Damage and Melee Damage. Native handoff stage A, November 19 at 23:44 ET."
+    },
+    "utility-master-passive-and-grant-stock": {
+      "representative": 620,
+      "result": "pass",
+      "head": "23bc21488057ab4d99cc696d4865b3ae8224dc20",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/447",
+      "scope": "At stage A head ecea2281, the stock Melee Accuracy Bonus went 50 to 45 on unload and back to 50 on reload. At stage B the granted child 1108 activated from the pre-placed slot, switched off at +4 seconds, held a press at +6 seconds, and activated again at +31 seconds. Native handoff November 19 at 23:44 ET and November 20 at 00:01 ET."
+    }
+  },
+  "abilities": {
+    "275": { "family": "programmer-crafting-cost-stock" },
+    "608": { "family": "code-hardening-typed-damage-stock" },
+    "620": { "family": "utility-master-passive-and-grant-stock" }
+  }
+}
