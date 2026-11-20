@@ -182,6 +182,9 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(21)]
+    [InlineData(36)]
+    [InlineData(514)]
     [InlineData(33)]
     [InlineData(330)]
     [InlineData(40)]
