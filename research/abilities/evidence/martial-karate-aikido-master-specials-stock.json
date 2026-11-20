@@ -1,7 +1,7 @@
 {
   "families": {
     "martial-karate-aikido-master-specials-stock": {
-      "representative": 267,
+      "representative": 265,
       "result": "pass",
       "head": "eca4fcdc5db62b8ba8c79bc86fc86009f20ba1cc",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/468",
@@ -13,9 +13,6 @@
       "family": "martial-karate-aikido-master-specials-stock"
     },
     "266": {
-      "family": "martial-karate-aikido-master-specials-stock"
-    },
-    "267": {
       "family": "martial-karate-aikido-master-specials-stock"
     },
     "273": {
