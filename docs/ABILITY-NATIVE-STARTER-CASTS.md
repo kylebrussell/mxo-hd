@@ -1,0 +1,10 @@
+# Native starter cast evidence
+
+| Merged PR | Stock sample | Result |
+| --- | --- | --- |
+| [408](https://github.com/kylebrussell/mxo-hd/pull/408) | `9414f791`, handoff 21:03 ET | Operative, Soldier and Martial Arts Initiate upgrades switched off and replaced each other in the same family. The timed 1062 and 1078 samples switched off at +4 seconds, held the inactive +6-second click and reactivated at +31 seconds. |
+| [409](https://github.com/kylebrussell/mxo-hd/pull/409) | `3c8d3b1f`, `ed24ca74fe78` | Lockdown (21) and Static Blast (33) each refused empty and dead selections once. Selected Lockdown applied the root and used 13.5-second reuse. Static Blast landed for 24 while the root was active. Natural root expiry has disposable coverage. |
+| [410](https://github.com/kylebrussell/mxo-hd/pull/410) | `06b64e21`, `3ef3dc4c8f4c` | Concealed Shot (504) cast for six seconds, broke Concealment on use, landed for 23 and started 45-second reuse. The operator used the fixture aid for Concealment because Actions omitted grant 1137. The shot remained an ordinary stock action. |
+| [412](https://github.com/kylebrussell/mxo-hd/pull/412) | `fd34e22a`, `711607e20f37` | Compel Close Combat (150) cast for two seconds at rest and applied its 300-second buff. The client held the press in interlock and showed the outside-combat line. The server refusal is covered by the disposable. |
+| [415](https://github.com/kylebrussell/mxo-hd/pull/415) | `7e3b46a5`, `dbfb3ff09a57` | Crippling Throw (280) refused empty selection, landed for 1, applied Rooted state 99 for 15.75 seconds with the loaded Wicked Aim bonus, and applied Force Combat −40 for 15 seconds. The fixture expectation was corrected before merge. |
+| [417](https://github.com/kylebrussell/mxo-hd/pull/417) | `11d7ef31`, `1ad6ff8564e4` | Deadly Throw (279) refused empty selection, landed for 37, and applied all four 15-second modifiers. The fixture expectation was corrected to include Weak Points. The optional Off-Balance sample remains open. |

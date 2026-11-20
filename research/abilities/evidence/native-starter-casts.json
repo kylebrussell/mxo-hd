@@ -1,0 +1,46 @@
+{
+  "families": {
+    "starter-lockdown-control": {
+      "representative": 21,
+      "result": "pass",
+      "head": "3c8d3b1f42f5f1cb44161959ff00a0431fb97cd5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/409",
+      "scope": "ed24ca74fe78 records the stock empty/dead refusals and selected root with 13.5-second reuse. Natural expiry was exercised in the disposable."
+    },
+    "deadly-throw-starter-hit": {
+      "representative": 279,
+      "result": "pass",
+      "head": "11d7ef315e71276048f952f8e4c469681d6aaf62",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/417",
+      "scope": "Stock 1ad6ff8564e4 shows the empty refusal, selected hit 37, two-second cast, 10/3-second timers and four debuffs. Merged fixture expectation accounts for Weak Points. Off-Balance remains open."
+    },
+    "crippling-throw-starter-hit": {
+      "representative": 280,
+      "result": "pass",
+      "head": "7e3b46a583b7272e0b9580f135d5588963050678",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/415",
+      "scope": "Stock dbfb3ff09a57 shows the empty refusal, selected hit 1, 10/3-second timers, state 99 at 15.75 seconds with Wicked Aim and Force Combat −40 for 15 seconds. The merge corrected the fixture expectation."
+    },
+    "concealed-shot-rifle-opener": {
+      "representative": 504,
+      "result": "pass",
+      "head": "06b64e215ba557e989cd5688cd037a0a64557440",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/410",
+      "scope": "Stock 3ef3dc4c8f4c records the 504 press, six-second cast, hit 23, 45-second reuse and concealment removal. Concealment was activated by the fixture aid. Actions 1137 and armor piercing remain open."
+    }
+  },
+  "abilities": {
+    "21": {
+      "family": "starter-lockdown-control"
+    },
+    "279": {
+      "family": "deadly-throw-starter-hit"
+    },
+    "280": {
+      "family": "crippling-throw-starter-hit"
+    },
+    "504": {
+      "family": "concealed-shot-rifle-opener"
+    }
+  }
+}
