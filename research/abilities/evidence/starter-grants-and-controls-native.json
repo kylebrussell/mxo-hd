@@ -1,0 +1,47 @@
+{
+  "families": {
+    "code-freeze-tier-two": {
+      "representative": 41,
+      "result": "pass",
+      "head": "99f73c85235c1808bc546d1fe95f6282153a2cfa",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/414",
+      "scope": "Stock view zero returned one invalid-target refusal and no cast bar or reuse. The selected dummy received Rooted 99 and Force Combat 519 at -20, both for 19 seconds, after the 2-second cast. Own and family reuse were 43 and 20 seconds. Damage-break chance remains open."
+    },
+    "detection-countermeasure-tool": {
+      "representative": 298,
+      "result": "pass",
+      "head": "75da09d9b38da56514f28022ee80af54f6c06e29",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/413",
+      "scope": "Stock 7c4a7a3b89b7 shows the Countermeasure listed in Tools and sending view-zero 298 from the hotbar. The cast revealed the 10m invisible opponent and left the 14m opponent invisible, with 10 seconds of reuse and the tool retained. Stock exposed no press without the Countermeasure. IS cost and NPC detection were not observed."
+    },
+    "concealment-actions-grant": {
+      "representative": 1137,
+      "result": "pass",
+      "head": "d34a6d98113066770f12c9a8a1c7b3f180bf75f0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/429",
+      "scope": "Stock 7483f644ff39 lists the grant once under Sniper after login. Unload and reload of 503 removed it and restored it once. With Rifles active, a hotbar press sent 1137 and turned on rank-18 concealment. A second press turned it off."
+    },
+    "harrying-attack-throw": {
+      "representative": 1127,
+      "result": "pass",
+      "head": "a285e2ab",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/419",
+      "scope": "Stock 7921b9ccfd29 shows the 2-second cast with Sneak held until landing, 53 damage, a 12-second Dazed proc and 45/15-second own/family reuse. Other outcomes of the proc remain open."
+    },
+    "distracting-blow-throw": {
+      "representative": 1128,
+      "result": "pass",
+      "head": "de71b506e6fce3a4390f3774eed503af8ac1ccce",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/422",
+      "scope": "Stock retained Sneak until the 2-second cast landed for 77. The 1129 aura applied +50 stat 1005 to the caster for 12 seconds and expired. Own/family reuse were 45/15 seconds."
+    }
+  },
+  "abilities": {
+    "41": { "family": "code-freeze-tier-two" },
+    "298": { "family": "detection-countermeasure-tool" },
+    "503": { "family": "concealment-actions-grant" },
+    "1137": { "family": "concealment-actions-grant" },
+    "1127": { "family": "harrying-attack-throw" },
+    "1128": { "family": "distracting-blow-throw" }
+  }
+}
