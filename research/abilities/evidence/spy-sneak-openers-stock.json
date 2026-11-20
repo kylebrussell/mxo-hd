@@ -1,0 +1,26 @@
+{
+  "families": {
+    "spy-sneak-free-throw": {
+      "representative": 1133,
+      "result": "pass",
+      "head": "3a217d73e977b452f168f70efd86f9682c3ba9e0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/471",
+      "scope": "Native Weakening Blow 1133 landed for 149 with both -45 resistance records for 8 seconds and Sneak ending at landing. Leg Throw 1131 landed for 201 in the prior native run on this PR."
+    },
+    "spy-sneak-instant-opener": {
+      "representative": 153,
+      "result": "pass",
+      "head": "3a217d73e977b452f168f70efd86f9682c3ba9e0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/471",
+      "scope": "After fresh-dummy resets and reselection, native 153/286/288/289 landed for 266/501/1071/976. 288 applied Confused (state 91) for 12 seconds in the loaded profile. This records the observed stock opener path and leaves broader targeting, duration and choreography checks open."
+    }
+  },
+  "abilities": {
+    "153": { "family": "spy-sneak-instant-opener" },
+    "286": { "family": "spy-sneak-instant-opener" },
+    "288": { "family": "spy-sneak-instant-opener" },
+    "289": { "family": "spy-sneak-instant-opener" },
+    "1131": { "family": "spy-sneak-free-throw" },
+    "1133": { "family": "spy-sneak-free-throw" }
+  }
+}

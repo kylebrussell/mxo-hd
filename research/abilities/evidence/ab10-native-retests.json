@@ -89,7 +89,7 @@
       "result": "pass",
       "head": "a4307878",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
-      "scope": "Martial Arts Prowess and Find Weakness applied in the native operative sweep."
+      "scope": "Martial Arts Prowess and Find Weakness applied in the native operative sweep. PR485 e9c10a89 independently recorded Intensify adding +1 melee and ballistic, Firearms replacing it with +9 ballistic, then Prowess replacing Firearms with +40 melee for 20 seconds before natural expiry. pr485-PacketLog frames 915/993/1082/1311 prove the replacement order. The Prowess scaling function remains open."
     },
     "hacker-vital-debuffs": {
       "representative": 354,

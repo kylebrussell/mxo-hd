@@ -1,0 +1,15 @@
+{
+  "families": {
+    "mission-team-recall": {
+      "representative": 486,
+      "result": "pass",
+      "head": "c91a8dd03662ca3e1f70ba08466710ca9a9e44cb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/486",
+      "scope": "The 04:37 ET stock run formed a mission team through the radial and helper acceptance. Selected-member Recall 382 moved QAFriend beside CSR, and unselected team Recall 486 moved QAFriend and QAFar beside CSR while QAOther remained at its stand. The stock caster rendered both relocations immediately. PR483 merged this tested tree into master. Cross-construct, fighting and dead-recipient client messages were outside this run."
+    }
+  },
+  "abilities": {
+    "382": { "family": "mission-team-recall" },
+    "486": { "family": "mission-team-recall" }
+  }
+}
