@@ -365,7 +365,8 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(candidate.playerInstance.Position.getValue(),ref tx,ref ty,ref tz);
             if(!AbilityTargets.WithinArea(x,y,z,tx,ty,tz,radiusMetres))
                 return Math.Abs(ty-y)>=150?"floor":"radius";
-            if(caster.viewMan.FindViewForEntity(candidate.playerData.getEntityId())==null)return "invisible";
+            var view = caster.viewMan.FindViewForEntity(candidate.playerData.getEntityId());
+            if (view?.viewCreated != true || view.viewNeedsToBeDeleted) return "invisible";
             if(!CombatSight.Clear(caster,x,y,z,tx,ty,tz))return "sight";
             verdict=PvpCombat.Check(caster,candidate);
             return verdict==PvpRules.Verdict.Allowed?"included":"pvp-"+verdict.Value;
@@ -381,7 +382,8 @@ namespace hds
                 {
                     if (mob == skip || mob.isFriendly || mob.getIsDead() || mob.getDistrict() != district) continue;
                     var view = caster.viewMan.FindViewForEntity(mob.getEntityId());
-                    if (view != null && AbilityTargets.WithinArea(x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos(), radiusMetres) &&
+                    if (view?.viewCreated == true && !view.viewNeedsToBeDeleted &&
+                        AbilityTargets.WithinArea(x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos(), radiusMetres) &&
                         CombatSight.Clear(caster, x, y, z, mob.getXPos(), mob.getYPos(), mob.getZPos()))
                         found.Add((mob, view.ViewID));
                 }
