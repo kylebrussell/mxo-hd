@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "66": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 66 targets a selected enemy, has a 16 m selection range and uses viral contest TestFunction 2.",
+          "runtime": "AbilityHandler validates the live selection. AbilityTargets and FreeCastViralContest evaluate sight and deflection before applying the debuff.",
+          "test": "PR443 stock passed empty and clear selection. PR456 stock retained the selection across a mapped gap and logged blocked sight without target effects (PacketLog 8cb156ff9409). FreeCastViralLandingTests.ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld runs 66 against the actual deflection gate. https://github.com/kylebrussell/mxo-hd/pull/443 https://github.com/kylebrussell/mxo-hd/pull/456"
+        }
+      }
+    },
+    "354": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 354 targets a selected enemy, has a 16 m selection range and uses viral contest TestFunction 2.",
+          "runtime": "AbilityHandler validates the view and spawn before casting. AbilityTargets and FreeCastViralContest check sight and deflection before applying status effects.",
+          "test": "PR449 stock refused empty selection. PR456 stock retained the selected NPC and logged blocked sight without landed effects (PacketLog 8cb156ff9409). Stock direct effects are corroborated by PR315/327. FreeCastViralLandingTests verifies actual 354 deflection. https://github.com/kylebrussell/mxo-hd/pull/449 https://github.com/kylebrussell/mxo-hd/pull/456"
+        }
+      }
+    },
+    "476": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 476 targets a selected enemy, has a 10 m selection range and uses viral contest TestFunction 2.",
+          "runtime": "AbilityHandler validates the view and spawn before casting. AbilityTargets and FreeCastViralContest check sight and deflection before applying status effects.",
+          "test": "PR449 stock refused empty selection and applied both -520 and -20% records to the clear NPC. PR456 stock retained the selected NPC and logged blocked sight without effects (PacketLog 8cb156ff9409). FreeCastViralLandingTests verifies actual 476 deflection. https://github.com/kylebrussell/mxo-hd/pull/449 https://github.com/kylebrussell/mxo-hd/pull/456"
+        }
+      }
+    }
+  }
+}
