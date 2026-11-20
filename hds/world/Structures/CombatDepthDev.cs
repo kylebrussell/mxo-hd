@@ -19,6 +19,7 @@ namespace hds
             if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage") return CombatFixtureWeapons.Disengage(caller);
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
+            if (command == "fixture-reset-resisted") return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
             if (command == "rejuvenate-maxima")
             {
                 var database = Store.config?.dbParams?.DatabaseName;

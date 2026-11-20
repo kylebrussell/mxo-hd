@@ -11,6 +11,7 @@ namespace hds
         public const string WeaponMode = "MXO_COMBAT_FIXTURE_WEAPONS";
         public const string DisengageMode = "MXO_COMBAT_FIXTURE_DISENGAGE";
         public const string ResetMode = "MXO_COMBAT_FIXTURE_RESET";
+        public const int DummyPhysicalResistance = 75;
 
         private static bool Allowed(WorldClient caller, string mode) =>
             Environment.GetEnvironmentVariable(mode) == "1" &&
@@ -63,7 +64,7 @@ namespace hds
             return "Fixture combat ended. Wait for the stock combat HUD to clear.";
         }
 
-        internal static string ResetDummy(WorldClient caller)
+        internal static string ResetDummy(WorldClient caller, bool addPhysicalResistance = false)
         {
             if (!Allowed(caller, ResetMode)) return "Fixture reset requires the disposable combat loadout.";
 
@@ -89,7 +90,17 @@ namespace hds
                 dummy.SetInCombat(false);
                 dummy.setRotation(0);
                 MobMotion.ResetFixtureMotion(dummy);
-                TimedEffects.Clear(TimedEffects.ForMob(dummy));
+                var effects = TimedEffects.ForMob(dummy);
+                TimedEffects.Clear(effects);
+                if (addPhysicalResistance)
+                    TimedEffects.Apply(effects, new TempMods.Effect
+                    {
+                        Mods = new[] { new TempMods.Mod
+                        {
+                            Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 180,
+                            MinValue = DummyPhysicalResistance, MaxValue = DummyPhysicalResistance, Seconds = 300
+                        } }
+                    }, TimeUtils.GetSimTimeSeconds());
                 // Give every viewer a standard new hostile creation with a fresh spawn ID after reset.
                 Store.world.DeleteMobViews(dummy);
 
@@ -107,7 +118,9 @@ namespace hds
             {
                 dummy.setIsSpawned(true);
             }
-            return "Fixture reset: Melee Dummy restored. Select its new view before casting.";
+            return addPhysicalResistance
+                ? $"Fixture reset: Melee Dummy restored with +{DummyPhysicalResistance} Melee Damage Resistance. Select its new view."
+                : "Fixture reset: Melee Dummy restored. Select its new view before casting.";
         }
     }
 }
