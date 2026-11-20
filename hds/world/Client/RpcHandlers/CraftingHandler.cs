@@ -11,6 +11,8 @@ namespace hds
     /// </summary>
     public class CraftingHandler
     {
+        private const ushort DecompileItemsAbility = 276;
+
         /// <summary>Returns the message shown to the player.</summary>
         public string Compile(UInt32 resultGoid) => Compile(resultGoid, out _);
 
@@ -194,16 +196,21 @@ namespace hds
             lock (client.playerData.craftingSync)
             {
                 var request = CraftingRequests.ParseInventoryAbility(body);
-                if (request == null || !CraftingRequests.IsInventoryTargetAbility(request.Ability) ||
-                    request.Ability != 276 || request.Slot == 0 || request.Slot >= 97 || !Ready(client) ||
-                    !CombatSelection.IsLoaded(276, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())))
+                if (request == null || request.Ability != DecompileItemsAbility || request.Slot == 0 || request.Slot >= 97 ||
+                    !Ready(client) || !CombatSelection.IsLoaded(DecompileItemsAbility,
+                        Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())))
                 { Finish(client, 0, 0, 0, "That inventory ability is not available."); return; }
                 var db = Store.dbManager.WorldDbHandler;
                 var source = db.GetInventoryItems(client.playerData.getCharID()).FirstOrDefault(i => i.Slot == request.Slot);
                 var item = CraftingRules.Find(source.Goid);
                 if (item == null || item.CantDecompile || !item.Complexity.HasValue || !item.Learnable ||
-                    !Crafting.Recipes.TryGetValue(source.Goid, out var recipe))
+                    !Crafting.Recipes.ContainsKey(source.Goid))
                 { Finish(client, 0, request.Slot, source.Goid, "This item cannot teach a recipe by decompiling."); return; }
+                double now = TimeUtils.GetSimTimeSeconds();
+                if (AbilityCooldowns.IsCasting(client.playerData, now) ||
+                    AbilityCooldowns.IsCoolingDown(client.playerData, DecompileItemsAbility, now))
+                { Finish(client, 0, request.Slot, source.Goid, "Decompile Items is not ready."); return; }
+                AbilityCooldowns.Start(client, DecompileItemsAbility, now);
                 int skill = Skill(client, 707);
                 if (!CraftingRules.Succeeds(skill, item.Complexity.Value, Roll()))
                 { Finish(client, 0, request.Slot, source.Goid, "Failed to decompile the item."); return; }
