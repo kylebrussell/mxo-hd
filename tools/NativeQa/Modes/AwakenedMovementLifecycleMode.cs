@@ -24,9 +24,9 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "11,12,184", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Mara outdoors. Hotbar page 2 slots 1–3 are Hyper-Jump, Hyper-Speed, Hyper-Sprint. Clear the target. Run slot 3 first and slot 2 next. Capture owner and QAFriend seeing +0.45 movement while both remain active. The owner should receive both active flags, 0x1400.",
-            "With both movement effects active, use stock Hyper-Jump aim on the open street. Try one escape from aim and one completed jump. The committed jump should emit one start and a matching clock echo. Compare own IS on the jump packet with the latest resource update, allowing Sprint's normal timed debit.",
-            "Use slot 3 again to stop Sprint. Hyper-Speed should remain active at +0.45. Capture the 5 s reuse; Sprint's resource drain should stop. If the client exposes a Hyper-Speed dismissal, capture +0.00. Stock aim cancel and an in-flight jump cancel are separate gestures."
+            "Test Hyper-Jump before starting either speed buff. At 24800,495,-1498, clear the target. Use page 2 slot 1 (or drag Hyper-Jump from Actions to a free hotbar slot as in the prior native pass). A single left click on visible outdoor ground commits the aim. Use the open street toward 24885,495,-3247, which passed at this stand in PR384. If aiming gives no start, use the stock default Ctrl+Space while facing down the open street. Confirm 80 c2 and one matching 80 c3. Escape cancels aim locally.",
+            "Return to the original stand with ?tp 24800 495 -1498 0 0 0. Clear the target. Run slot 3 first and slot 2 next. Capture owner and QAFriend seeing +0.45 movement while both remain active. The owner should receive both active flags, 0x1400.",
+            "Use slot 3 again to stop Sprint. Hyper-Speed remains active at +0.45. Capture the 5 s reuse and confirm Sprint's resource drain stops. Use the dev-only ?dismissbuff 12 if a zero-speed reset is needed. Run any optional in-flight cancel separately from Escape in aim."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -38,31 +38,11 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
 
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
-        ushort view = (await observer.WaitForViewNamedAsync(actor.Handle)).ViewId;
-        int visible = observer.World.ViewSnapshot().Count;
-        actor.SendRpc(Convert.FromHexString(Sprint));
-        await actor.WaitForRpcAsync("80 bd 05 b8 00 00 00 00 00 00 01");
-        await MovementAsync(observer, visible, view, .15f, 0x0400);
-
-        int ownCursor = actor.World.ViewSnapshot().Count;
-        int rpcCursor = actor.World.RpcSnapshot().Count;
-        visible = observer.World.ViewSnapshot().Count;
-        actor.SendRpc(Convert.FromHexString(Speed));
-        // Read the full activation record, including the final authoritative flags.
-        var owner = BytePattern.Parse("02 00 02 88 05 8c 1e 66 66 e6 3e 80 90 ?? ?? b0 56 06 00 28 ?? 02 00 14");
-        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(ownCursor).Any(owner.Occurs),
-            "Hyper-Speed's own activation preserves active Hyper-Sprint", HeadlessPlayer.DefaultTimeout);
-        await ObserveAsync(actor, rpcCursor, packet => Bonus(packet, 12, 115, 45, 600, remove: false), "Hyper-Speed linked movement +45");
-        var scale = PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(.45f)));
-        var remote = BytePattern.Parse(Convert.ToHexString(BitConverter.GetBytes(view).Concat(scale).ToArray()));
-        await observer.WaitUntilAsync(() => observer.World.ViewSnapshot().Skip(visible).Any(remote.Occurs),
-            "Observer sees +0.45 movement", HeadlessPlayer.DefaultTimeout);
-
         // Reuse retail records with the destination and navigation tuple of the Mara fixture.
         byte[] start = AtFixture(Jump, 24885, -3247, 1044, 16, 3);
         byte[] cancel = AtFixture(Cancel, 24800, -1498, 847, 20, 5);
-        rpcCursor = actor.World.RpcSnapshot().Count;
-        ownCursor = actor.World.ViewSnapshot().Count;
+        int rpcCursor = actor.World.RpcSnapshot().Count;
+        int ownCursor = actor.World.ViewSnapshot().Count;
         actor.SendRpc(start);
         await actor.WaitForRpcAsync("80 c3 32 1c 0a 00");
         var jump = BytePattern.Parse("02 00 03 01 08 00 80 80 bc");
@@ -74,6 +54,26 @@ public sealed class AwakenedMovementLifecycleMode : NativeQaMode
         await ObserveAsync(actor, barrier, packet => BytePattern.Parse("81 49").IsMatch(packet.Bytes), "Post-cancel barrier");
         Check.Equal(1, actor.World.RpcSnapshot().Skip(rpcCursor)
             .Count(packet => BytePattern.Parse("80 c3").IsMatch(packet.Bytes)), "Jump cancellation creates no extra clock echo");
+
+        ushort view = (await observer.WaitForViewNamedAsync(actor.Handle)).ViewId;
+        int visible = observer.World.ViewSnapshot().Count;
+        actor.SendRpc(Convert.FromHexString(Sprint));
+        await actor.WaitForRpcAsync("80 bd 05 b8 00 00 00 00 00 00 01");
+        await MovementAsync(observer, visible, view, .15f, 0x0400);
+
+        ownCursor = actor.World.ViewSnapshot().Count;
+        rpcCursor = actor.World.RpcSnapshot().Count;
+        visible = observer.World.ViewSnapshot().Count;
+        actor.SendRpc(Convert.FromHexString(Speed));
+        // Read the full activation record, including the final authoritative flags.
+        var owner = BytePattern.Parse("02 00 02 88 05 8c 1e 66 66 e6 3e 80 90 ?? ?? b0 56 06 00 28 ?? 02 00 14");
+        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(ownCursor).Any(owner.Occurs),
+            "Hyper-Speed's own activation preserves active Hyper-Sprint", HeadlessPlayer.DefaultTimeout);
+        await ObserveAsync(actor, rpcCursor, packet => Bonus(packet, 12, 115, 45, 600, remove: false), "Hyper-Speed linked movement +45");
+        var scale = PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(.45f)));
+        var remote = BytePattern.Parse(Convert.ToHexString(BitConverter.GetBytes(view).Concat(scale).ToArray()));
+        await observer.WaitUntilAsync(() => observer.World.ViewSnapshot().Skip(visible).Any(remote.Occurs),
+            "Observer sees +0.45 movement", HeadlessPlayer.DefaultTimeout);
 
         visible = observer.World.ViewSnapshot().Count;
         rpcCursor = actor.World.RpcSnapshot().Count;
