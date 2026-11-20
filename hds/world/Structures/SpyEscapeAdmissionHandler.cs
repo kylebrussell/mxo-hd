@@ -2,7 +2,7 @@ namespace hds
 {
     internal sealed class SpyEscapeAdmissionHandler : ISpyAbilityHandler
     {
-        public ushort[] AbilityIds => new[] { CombatSpecials.SideRollEscape, CombatSpecials.CartwheelEscape };
+        public ushort[] AbilityIds => new[] { CombatSpecials.SideRollEscape, CombatSpecials.BackRollEscape, CombatSpecials.CartwheelEscape };
 
         public bool TryRefuse(WorldClient client, ushort abilityId, ushort viewId, ushort? spawnId, out uint refusalReason)
         {
