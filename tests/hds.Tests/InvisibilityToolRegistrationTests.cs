@@ -30,9 +30,10 @@ public class InvisibilityToolRegistrationTests
         Assert.True(AbilityGrantRegistration.Handles(175,1116));
         Assert.Equal(new ushort[]{1116},AbilityProgression.GrantsOf(175));
         Assert.Equal((ushort)0,AbilityProgression.GrantLevel(175,50));
-        Assert.False(AbilityGrantRegistration.Handles(120,1114));
+        Assert.True(AbilityGrantRegistration.Handles(120,1114));
         Assert.False(AbilityGrantRegistration.Handles(175,1117));
         Assert.DoesNotContain(((ushort)175,(ushort)1116),AbilityGrantRegistration.ObservedPairs);
+        Assert.DoesNotContain(((ushort)120,(ushort)1114),AbilityGrantRegistration.NativeToolPairs);
         var mutable=Assert.IsAssignableFrom<IList<(ushort Source,ushort Target)>>(AbilityGrantRegistration.NativeToolPairs);
         Assert.True(mutable.IsReadOnly);
         Assert.Throws<NotSupportedException>(()=>mutable.Add((120,1114)));

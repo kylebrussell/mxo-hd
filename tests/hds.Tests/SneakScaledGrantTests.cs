@@ -51,8 +51,8 @@ public class SneakScaledGrantTests
         Assert.Equal((ushort)17,AbilityProgression.GrantLevel(2,17));Assert.Equal((ushort)0,AbilityProgression.GrantLevel(37,50));
         Assert.Equal((ushort)0,AbilityProgression.GrantLevel(277,50));Assert.Equal((ushort)0,AbilityProgression.GrantLevel(175,50));
         Assert.Equal(25,AbilityGrantRegistration.ObservedPairs.Count);
-        Assert.Equal(new[]{(151,1111),(503,1137)},AbilityGrantRegistration.StoredScaledPairs.Select(intPair));
-        Assert.False(AbilityGrantRegistration.Handles(151,1116));Assert.False(AbilityGrantRegistration.Handles(120,1114));
+        Assert.Equal(new[]{(151,1111),(503,1137),(120,1114)},AbilityGrantRegistration.StoredScaledPairs.Select(intPair));
+        Assert.False(AbilityGrantRegistration.Handles(151,1116));Assert.True(AbilityGrantRegistration.Handles(120,1114));
         static (int,int) intPair((ushort Source,ushort Target) p)=>(p.Source,p.Target);
     }
     [Fact] public void NormalOwnedPrerequisiteBatchFitsAndNeverOwnsTheHiddenChild()

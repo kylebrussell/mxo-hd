@@ -21,7 +21,7 @@ public class LoadedGrantMembershipTests
             Assert.Equal(literal,AbilityGrantRegistration.Record(new(parent,child,0),sample.GetProperty("Operation").GetInt32()==1));
         }
         foreach(var pair in AbilityGrantRegistration.ObservedPairs)Assert.Contains(rows,r=>r.GetProperty("parent").GetUInt16()==pair.Source&&r.GetProperty("child").GetUInt16()==pair.Target);
-        foreach(var pair in new (ushort,ushort)[]{(2,17),(37,970),(277,969),(120,1114),(42769,980),(1236,1238),(143,1061)})
+        foreach(var pair in new (ushort,ushort)[]{(2,17),(37,970),(277,969),(42769,980),(1236,1238),(143,1061)})
             Assert.False(AbilityGrantRegistration.Handles(pair.Item1,pair.Item2));
         Assert.True(AbilityGrantRegistration.Handles(4452,5183)); // actual ability aliases, not additional ownership
     }

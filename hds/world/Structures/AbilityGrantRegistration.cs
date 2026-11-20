@@ -95,7 +95,8 @@ namespace hds
             new (ushort Source,ushort Target)[]
             {
                 (AbilitySneakGrant.Parent,AbilitySneakGrant.Child),
-                (AbilitySneakGrant.ConcealmentParent,AbilitySneakGrant.ConcealmentChild)
+                (AbilitySneakGrant.ConcealmentParent,AbilitySneakGrant.ConcealmentChild),
+                (AbilityDisguise.Parent,AbilityDisguise.Ability)
             });
         // Stored175 grants1116; native tool admission reads the live actor's grant registry, not Margin alone.
         // Primary contract: research/abilities/invisibility-tool-registration.md. No new level formula.
@@ -121,7 +122,7 @@ namespace hds
         public static bool Handles(ushort parent,ushort child)
         {
             parent=AbilityCatalog.Canonical(parent);child=AbilityCatalog.Canonical(child);
-            if(AbilitySneakGrant.Matches(parent,child))return true;
+            if(AbilitySneakGrant.Matches(parent,child) || AbilityDisguise.MatchesGrant(parent,child))return true;
             if(!RegisteredPairs.Concat(ReadyPresentationPairs).Any(p=>p.Source==parent && p.Target==child))return false;
             return ZeroGrant(AbilityCatalog.Find(parent),child);
         }
@@ -165,7 +166,9 @@ namespace hds
                         var desired=RegisteredPairs.Where(p=>data.passives.Loaded.ContainsKey(p.Source) && Handles(p.Source,p.Target))
                             .Select(p=>new Relation(p.Source,p.Target,0));
                         foreach(var pair in StoredScaledPairs)
-                            if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned)&&AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level))
+                            if(data.passives.Loaded.TryGetValue(pair.Source,out ushort learned) &&
+                               (AbilitySneakGrant.TryLevel(pair.Source,pair.Target,learned,out ushort level) ||
+                                AbilityDisguise.TryGrantLevel(pair.Source,pair.Target,learned,out level)))
                                 desired=desired.Append(new Relation(pair.Source,pair.Target,level));
                         foreach(var packet in holder.State.Reconcile(stamp,complete,desired))client.messageQueue.AddWorldBoundRpc(packet,stamp.World,stamp.Transport);
                         if(Handles(AbilityShadowPresentation.Parent,AbilityShadowPresentation.Child))
