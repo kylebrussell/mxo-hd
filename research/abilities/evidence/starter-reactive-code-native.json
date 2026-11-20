@@ -1,0 +1,46 @@
+{
+  "families": {
+    "starter-stock-reactive-code-parent": {
+      "representative": 941,
+      "result": "pass",
+      "head": "e6e15cf54ce690f3523d423bf1881c96ab6756a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/545",
+      "scope": "The stock retest activated 941, paid 7 IS per second and handled external damage and healing once each. A health change after toggle-off produced no callback, and the off response started the 15 s own reuse."
+    },
+    "starter-stock-reactive-code-damage-pulse": {
+      "representative": 942,
+      "result": "pass",
+      "head": "e6e15cf54ce690f3523d423bf1881c96ab6756a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/545",
+      "scope": "Stock PR545 retest recorded two 50-damage, zero-resisted hits on QAEnemy at PacketLog 2485 and 2810. Its HP updates show 1500→1450→1400. The nearby friendly received no hit or HP update during this stage. Wider radius and non-neutral scaling were outside this run."
+    },
+    "starter-stock-code-conversion-parent": {
+      "representative": 943,
+      "result": "pass",
+      "head": "e6e15cf54ce690f3523d423bf1881c96ab6756a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/545",
+      "scope": "The stock retest paid 6 IS per second. One external health change healed CSR 350→410 and QAFriend 250→310 without recursively firing 943. After toggle-off the next health change produced no heal. PacketLog 2024 shows the 15 s own reuse."
+    },
+    "starter-stock-trojan-horse-pulse": {
+      "representative": 946,
+      "result": "pass",
+      "head": "e6e15cf54ce690f3523d423bf1881c96ab6756a8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/545",
+      "scope": "The first stock Trojan Horse pulse debited only the surviving hostile 500→480 and separately debited CSR 550→530 at PacketLog 3494–3499. The friendly received neither debit nor hit. The 15 s own reuse began at activation, before the pulse."
+    }
+  },
+  "abilities": {
+    "941": {
+      "family": "starter-stock-reactive-code-parent"
+    },
+    "942": {
+      "family": "starter-stock-reactive-code-damage-pulse"
+    },
+    "943": {
+      "family": "starter-stock-code-conversion-parent"
+    },
+    "946": {
+      "family": "starter-stock-trojan-horse-pulse"
+    }
+  }
+}
