@@ -31,6 +31,21 @@ namespace hds
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
+
+            // The starter control casts require a live selected enemy.
+            if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48)
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
+                {
+                    // Stock reason 24 is ID_TARGET_NOT_VALID. The client supplies the only refusal line.
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: invalid control target {currentTargetViewId}");
+                    return;
+                }
+            }
+
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
