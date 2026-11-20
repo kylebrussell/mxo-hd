@@ -48,7 +48,7 @@ namespace hds
 
             // These Hacker controls and debuffs require a live selected enemy.
             if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48 ||
-                AbilityID == 66 || AbilityID == 69 || AbilityID == 86 || AbilityID == 354 || AbilityID == 476)
+                AbilityID == 66 || AbilityID == 69 || AbilityID == 86 || AbilityID == 315 || AbilityID == 354 || AbilityID == 476)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
