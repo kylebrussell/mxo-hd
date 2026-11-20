@@ -97,8 +97,8 @@ namespace hds
             return true;
         }
 
-        // Structural admission only. Range, sight, PvP permission and the contest still run when the cast lands.
-        internal static bool HasLiveAttackSelection(WorldClient caster, ushort viewId, ushort? spawn)
+        // Range, sight, PvP permission and the contest still run when the cast lands.
+        internal static bool HasLiveAttackSelection(WorldClient caster, ushort viewId, ushort? spawn, bool requireOpponent = false)
         {
             if (viewId <= 2) return false;
             var mob = FindMob(caster, viewId, out var view);
@@ -109,7 +109,7 @@ namespace hds
             if (mob != null) return !mob.isFriendly && !mob.getIsDead() && mob.getHealthC() > 0;
             var player = PvpCombat.PlayerInView(caster, viewId);
             return player != null && !player.playerData.isDead && !player.playerData.duelDeath &&
-                PvpCombat.HealthOf(player) > 0;
+                PvpCombat.HealthOf(player) > 0 && (!requireOpponent || PvpCombat.Check(caster, player) == PvpRules.Verdict.Allowed);
         }
 
         /// <summary>Expand a landed primary into the template's hostile area.</summary>

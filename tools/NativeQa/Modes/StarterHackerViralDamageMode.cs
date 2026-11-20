@@ -26,13 +26,15 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
     public override NativeQaModePlan Plan { get; } = new(Loadout, 24800, -1498,
         Array.Empty<string>(), Array.Empty<string>(), new[]
         {
-            $"UPDATE characters SET level={PlayerLevel},exp={PlayerProgression.ExperienceForLevel(PlayerLevel)},y=495,healthC=1000,healthM=1000,innerStrC=200,innerStrM=200 WHERE charId IN (110,6111,6112,6114)",
+            $"UPDATE characters SET level={PlayerLevel},exp={PlayerProgression.ExperienceForLevel(PlayerLevel)},y=495,healthC=1000,healthM=1000,innerStrC=200,innerStrM=200 WHERE charId IN (110,6111,6112,6113,6114)",
             $"UPDATE char_abilities SET level={PlayerLevel} WHERE char_id=110",
-            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6114)",
-            "UPDATE characters SET alignment=1 WHERE charId=110",
+            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
+            "UPDATE characters SET alignment=1,pvpflag=0 WHERE charId IN (110,6113)",
+            "UPDATE characters SET x=24800,z=-1898 WHERE charId=6113",
             "UPDATE characters SET alignment=2,z=-1498,x=CASE charId WHEN 6114 THEN 25200 WHEN 6111 THEN 25400 ELSE 25700 END WHERE charId IN (6111,6112,6114)",
             $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"
-        }, DevCommands: true, loadAbilityAncestors: true, environmentOverrides: new()
+        }, DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new ushort[] { HackerStyle, 57, 58, 59, 60 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "57,58,59,60", ["NativeCloseableRows"] = 0 }, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "10",
@@ -40,14 +42,14 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, readyMessages: new[]
         {
-            "At level 18, select Hacker Style outside interlock. Try each stocked viral action with no selection and expect one Target is not valid line for each sent request, with no IS debit, cast bar or reuse.",
+            "At level 18, choose Hacker Style on page 2 slot 1. Select same-organization QAOther 4 m south and try slots 2–5. Expect no IS debit, cast bar or reuse. If the stock client sends a request, expect one invalid-target line.",
             "Select QAEnemy and retry immediately. Abilities 57–60 should hit for 9/12/19/8. Wait for shared reuse before testing the next action.",
             "QAFriend is 2 m beyond QAEnemy and QAFar is 5 m beyond QAEnemy. Only ability 60 should also hit QAFriend. The fixture fixes the eligible viral contest draw."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        foreach (string name in new[] { "QAEnemy", "QAFriend", "QAFar" })
+        foreach (string name in new[] { "QAEnemy", "QAFriend", "QAFar", "QAOther" })
         {
             var helper = await HeadlessPlayer.LoginAsync(context.Address, name, name, stockCharacterLoad: true);
             context.Helpers.Add(name, helper);
@@ -63,6 +65,7 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
         var target = await caster.WaitForViewNamedAsync("QAEnemy");
         await caster.WaitForViewNamedAsync("QAFriend");
         await caster.WaitForViewNamedAsync("QAFar");
+        var friend = await caster.WaitForViewNamedAsync("QAOther");
         var enemy = context.Helpers["QAEnemy"];
         var near = context.Helpers["QAFriend"];
         var far = context.Helpers["QAFar"];
@@ -78,7 +81,7 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
         var proof = new List<object>();
         foreach (var sample in Cases)
         {
-            var invalid = await VerifyInvalidTargets(caster, sample.Id, sample.Capture, target);
+            var invalid = await VerifyInvalidTargets(caster, sample.Id, sample.Capture, target, friend);
             int sourceAt = caster.World.RpcSnapshot().Count;
             int targetAt = enemy.World.RpcSnapshot().Count;
             int nearAt = near.World.RpcSnapshot().Count;
@@ -103,14 +106,14 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
             proof.Add(new { sample.Id, sample.Base, sample.Landed, Use = Convert.ToHexString(use), Cast = cast.Hex,
                 Timer = timer.Hex, InvalidTargets = invalid, PrimaryDamage = hit.Hex, SecondaryDamage = splash });
         }
-        Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count + near.World.Problems.Count + far.World.Problems.Count,
+        Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
             "Starter viral packets remain framed");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "starter-hacker-viral-damage.json"),
             JsonSerializer.Serialize(new { HackerStyle = influence.Hex, TransmitVirus = passive.Hex, Samples = proof }, new JsonSerializerOptions { WriteIndented = true }));
         return Array.Empty<byte>();
     }
 
-    internal static async Task<string[]> VerifyInvalidTargets(HeadlessPlayer caster, ushort id, string capture, ViewCreation target)
+    internal static async Task<string[]> VerifyInvalidTargets(HeadlessPlayer caster, ushort id, string capture, ViewCreation target, ViewCreation? friendly = null)
     {
         string idHex = StockAbilityProfile.LittleEndianHex(id);
         var cast = BytePattern.Parse($"80 ac {idHex}");
@@ -118,7 +121,9 @@ public sealed class StarterHackerViralDamageMode : NativeQaMode
         var barrier = BytePattern.Parse("81 49");
         var refusals = new List<string>();
         var self = caster.World.CreationSnapshot().Last(view => view.ViewId == 2);
-        foreach (uint handle in new[] { 0u, DuelPackets.Handle(target.ViewId, target.SpawnId) ^ 0x10000 })
+        var handles = new List<uint> { 0u, DuelPackets.Handle(target.ViewId, target.SpawnId) ^ 0x10000 };
+        if (friendly != null) handles.Add(DuelPackets.Handle(friendly.ViewId, friendly.SpawnId));
+        foreach (uint handle in handles)
         {
             int cursor = caster.World.RpcSnapshot().Count;
             var views = caster.World.ViewSnapshot();
