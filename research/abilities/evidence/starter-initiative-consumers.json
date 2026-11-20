@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "128": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 128 grants Initiative Bonus 1046 +1; tempmods.py DesperationFunction reads InitiativeBonusAbility as a percentage.",
+          "runtime": "AbilityScaledBuffs passes live stat 1046 into AbilityDesperation. The known interlock application uses the resulting fixed 1044 snapshot.",
+          "test": "StarterInitiativeBatchMode verifies the separate 1046 source add/off, Gunman Upgrade registration, and the actual stock Desperation cast with the measured loaded total."
+        }
+      }
+    },
+    "154": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 154 grants Initiative Bonus 1046 +2; tempmods.py DesperationFunction reads InitiativeBonusAbility as a percentage.",
+          "runtime": "AbilityScaledBuffs passes live stat 1046 into AbilityDesperation. The sampled result remains active until its own expiry even when the contributing passive is unloaded.",
+          "test": "StarterInitiativeBatchMode verifies the separate 1046 source add/off, Soldier Upgrade registration, and the unchanged +84 Desperation snapshot after unload and through natural expiry."
+        }
+      }
+    }
+  }
+}
