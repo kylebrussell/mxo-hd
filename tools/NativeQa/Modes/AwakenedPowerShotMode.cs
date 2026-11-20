@@ -107,7 +107,7 @@ public sealed class AwakenedPowerShotMode : NativeQaMode
         }
     }
 
-    private static List<ushort> InnerStrengthUpdates(IEnumerable<byte[]> frames)
+    internal static List<ushort> InnerStrengthUpdates(IEnumerable<byte[]> frames)
     {
         var values = new List<ushort>();
         byte[] prefix = WireFormat.FromHex("02 00 02 80 80 80 10");
