@@ -146,7 +146,7 @@ namespace hds
             if (AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
                 {
                     const string notice = "Select a living enemy before using this ability.";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
