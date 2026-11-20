@@ -60,6 +60,8 @@ The Simulacra window (`viewsimulacra.cpp`) maps its buttons to FourCC messages (
 
 The `/ordersimulacra` chat handler (62257c40) uses the same command numbers 0-5, with a SimulacraID instead of `0xfe`. Command 4 is never sent.
 
+PR440 stock capture `d148595f0aa3` lines 1652 and 1940 records command 1 from the control displaying the Stay tooltip. The DLL dispatches `SDea` through 620f00c1 with command 1 and `SSty` through 620f0204 with command 0. Both paths use 620efa60 to write the command byte. The native range fixture uses `?pet stay` to park the pet before testing from its far stand.
+
 ## Spawn (`NPC_BASE_SIMULACRA`, GO 40376)
 
 Four retail spawns decode cleanly with `AttributeClass3828`:
