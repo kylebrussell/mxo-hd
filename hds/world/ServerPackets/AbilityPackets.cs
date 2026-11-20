@@ -49,8 +49,10 @@ namespace hds
 
         public void SendHyperSpeed(UInt16 innerStrength)
         {
-            byte counter = (byte)Store.currentClient.playerData.assignSpawnIdCounter();
-            Store.currentClient.messageQueue.addObjectMessage(BuildHyperSpeedUpdate(innerStrength, counter), false);
+            var client = Store.currentClient;
+            byte counter = (byte)client.playerData.assignSpawnIdCounter();
+            ushort flags = (ushort)(0x1000 | AbilityBuffs.DissemblingBits(client) | Stealth.BitsOf(client));
+            client.messageQueue.addObjectMessage(BuildHyperSpeedUpdate(innerStrength, counter, flags), false);
             Store.currentClient.FlushQueue();
         }
 
@@ -61,7 +63,7 @@ namespace hds
         /// This used to send MovementScale 1.925 (<c>66 66 f6 3f</c>) and Inner Strength 50 every time, and
         /// ended with an extra <c>00 00</c> that closed the object section early.
         /// </summary>
-        public static byte[] BuildHyperSpeedUpdate(UInt16 innerStrength, byte counter)
+        public static byte[] BuildHyperSpeedUpdate(UInt16 innerStrength, byte counter, ushort flags = 0x1000)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
@@ -69,7 +71,8 @@ namespace hds
             pak.AddUint16(innerStrength, 1);
             pak.AddHexBytes("b056060028");
             pak.AddByte(counter);
-            pak.AddHexBytes("020010");
+            pak.AddByte(0x02);
+            pak.AddUint16(flags, 1);
             return pak.ReturnFinalPacket();
         }
 
