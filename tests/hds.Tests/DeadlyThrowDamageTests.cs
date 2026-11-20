@@ -53,15 +53,16 @@ public class DeadlyThrowDamageTests
     {
         var caster = Client(20);
         var target = Client(20);
-        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (2, 20), (278, 20), (1112, 20) });
+        // Full level-20 prerequisite closure loads Weak Points (164) alongside Wicked Aim (278) and Spy Style (1112):
+        // Spy Style (+14) + Wicked Aim (+6) + Weak Points (+4) = +24% thrown influence -> trunc(30 * 1.24) = 37, Off-Balance trunc(31 * 1.24) = 38.
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (2, 20), (164, 20), (278, 20), (1112, 20) });
         CombatStyles.Select(caster, 1112);
 
-        // Rank-20 Spy Style (+14) + Wicked Aim (+6) = +20% thrown influence -> 30 * 1.20 = 36, Off-Balance 31 * 1.20 = 37.
-        Assert.Equal(20, AbilityStats.Influence(caster, 1034));
-        Assert.Equal((ushort)36, AbilityStats.ScaleAbilityDamage(caster, 279, 30));
+        Assert.Equal(24, AbilityStats.Influence(caster, 1034));
+        Assert.Equal((ushort)37, AbilityStats.ScaleAbilityDamage(caster, 279, 30));
         Assert.Equal(31, ConditionalThrownDamage.Value(279, 20));
-        Assert.Equal((ushort)37, AbilityStats.ScaleAbilityDamage(caster, 279, 31));
-        Assert.Equal((ushort)36, TypedAbilityResistance.Player(caster, target, 279, 36));
+        Assert.Equal((ushort)38, AbilityStats.ScaleAbilityDamage(caster, 279, 31));
+        Assert.Equal((ushort)37, TypedAbilityResistance.Player(caster, target, 279, 37));
 
         Assert.Equal((ushort)18, AbilityCosts.Cost(279));
         Assert.Equal(2f, AbilityCatalog.Find(279).CastSeconds);

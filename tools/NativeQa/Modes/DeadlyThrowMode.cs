@@ -27,8 +27,8 @@ public sealed class DeadlyThrowMode : NativeQaMode
         readyMessages: new[]
         {
             "Level 20, rank 20, Spy Style (1112) active, unarmed, outside interlock. Clear target selection and try Deadly Throw (279): expect one orange 'Select a living enemy before using this ability.' notice, no IS spent, no cast bar and no reuse.",
-            "Select Melee Dummy (3 m west) and cast Deadly Throw (279). Expect 18 IS spent (1000 -> 982), 2.0 s cast bar (80 ac), landed thrown damage 36 (ValueFunction 3 base 30 at level 20 + 20% Spy Style/Wicked Aim), '[EFFECTS] 279 on Melee Dummy' with Stat 877 -85 / Stat 519 -15 / Stat 878 -72 / Stat 115 -57 for 15 s (plus optional 20% Dazed/Staggered 8 s procs), 10.0 s own reuse and 3.0 s shared family 1216 reuse.",
-            "Optional conditional check after 10 s reuse: with Melee Dummy selected, run '?combatdepth offbalance 30' and cast 279 again to also capture the separate Off-Balance bonus hit of 37 (raw 31 + 20%)."
+            "Select Melee Dummy (3 m west) and cast Deadly Throw (279). Expect 18 IS spent (1000 -> 982), 2.0 s cast bar (80 ac), landed thrown damage 37 (ValueFunction 3 base 30 at level 20 + 24% from rank-20 Spy Style 1112 +14%, Wicked Aim 278 +6% and prerequisite Weak Points 164 +4%), '[EFFECTS] 279 on Melee Dummy' with Stat 877 -85 / Stat 519 -15 / Stat 878 -72 / Stat 115 -57 for 15 s (plus optional 20% Dazed/Staggered 8 s procs), 10.0 s own reuse and 3.0 s shared family 1216 reuse.",
+            "Optional conditional check after 10 s reuse: with Melee Dummy selected, run '?combatdepth offbalance 30' and cast 279 again to also capture the separate Off-Balance bonus hit of 38 (raw 31 + 24%)."
         },
         extraQaMetadata: new()
         {
@@ -63,7 +63,7 @@ public sealed class DeadlyThrowMode : NativeQaMode
             "Deadly Throw lands on Melee Dummy", TimeSpan.FromSeconds(10));
 
         string log = server.DebugLog()[castStart..];
-        Check.Equal(36, int.Parse(landed.Match(log).Groups[1].Value), "Deadly Throw lands for 36 at level 20 (base 30 + 20% influence)");
+        Check.Equal(37, int.Parse(landed.Match(log).Groups[1].Value), "Deadly Throw lands for 37 at level 20 (base 30 + 24% Spy Style/Wicked Aim/Weak Points)");
         Check.That(log.Contains("[EFFECTS] 279 on Melee Dummy:", StringComparison.Ordinal) &&
             log.Contains("Stat 877 -85 15 s", StringComparison.Ordinal) &&
             log.Contains("Stat 519 -15 15 s", StringComparison.Ordinal) &&
