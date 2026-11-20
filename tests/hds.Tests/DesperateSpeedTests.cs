@@ -7,6 +7,10 @@ using Xunit;
 
 namespace hds.Tests;
 
+[CollectionDefinition("DesperateSpeedExpiry", DisableParallelization = true)]
+public class DesperateSpeedExpiryCollection { }
+
+[Collection("DesperateSpeedExpiry")]
 public class DesperateSpeedTests
 {
     private const ushort DesperateSpeed = 291, HyperSpeed = 12;
@@ -49,11 +53,14 @@ public class DesperateSpeedTests
             Assert.Contains(caster.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
                 m => m.content.AsSpan().IndexOf(speedOn) >= 0);
 
+            // Registration happens during Apply, after Active.Started is sampled.
+            double registeredBy = TimeUtils.GetSimTimeSeconds();
+            var subject = TimedEffects.ForPlayer(caster);
             var active = caster.playerData.activeBuffs[DesperateSpeed];
-            TimedEffects.RunDue(active.Started + 14.99);
+            subject.Due(active.Started + def.Seconds - 0.01);
             Assert.True(AbilityBuffs.IsActive(caster, DesperateSpeed));
 
-            TimedEffects.RunDue(active.Started + 15.01);
+            subject.Due(registeredBy + def.Seconds + 0.01);
             Assert.False(AbilityBuffs.IsActive(caster, DesperateSpeed));
             Assert.Equal(0, AbilityStats.Player(caster, 115));
             Assert.Equal(0, AbilityStats.Player(caster, 877));
