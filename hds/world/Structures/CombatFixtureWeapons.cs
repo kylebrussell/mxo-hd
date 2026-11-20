@@ -64,9 +64,10 @@ namespace hds
             return "Fixture combat ended. Wait for the stock combat HUD to clear.";
         }
 
-        internal static string ResetDummy(WorldClient caller, bool addPhysicalResistance = false)
+        internal static string ResetDummy(WorldClient caller, bool addPhysicalResistance = false, ushort resistanceStat = 0)
         {
             if (!Allowed(caller, ResetMode)) return "Fixture reset requires the disposable combat loadout.";
+            if (resistanceStat == 0 && addPhysicalResistance) resistanceStat = 180;
 
             Mob dummy = null;
             lock (WorldServer.mobs.SyncRoot)
@@ -92,12 +93,12 @@ namespace hds
                 MobMotion.ResetFixtureMotion(dummy);
                 var effects = TimedEffects.ForMob(dummy);
                 TimedEffects.Clear(effects);
-                if (addPhysicalResistance)
+                if (resistanceStat != 0)
                     TimedEffects.Apply(effects, new TempMods.Effect
                     {
                         Mods = new[] { new TempMods.Mod
                         {
-                            Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 180,
+                            Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = resistanceStat,
                             MinValue = DummyPhysicalResistance, MaxValue = DummyPhysicalResistance, Seconds = 300
                         } }
                     }, TimeUtils.GetSimTimeSeconds());
@@ -118,8 +119,10 @@ namespace hds
             {
                 dummy.setIsSpawned(true);
             }
-            return addPhysicalResistance
+            return resistanceStat == 180
                 ? $"Fixture reset: Melee Dummy restored with +{DummyPhysicalResistance} Melee Damage Resistance. Select its new view."
+                : resistanceStat == 1033
+                ? $"Fixture reset: Melee Dummy restored with +{DummyPhysicalResistance} Thrown Damage Resistance. Select its new view."
                 : "Fixture reset: Melee Dummy restored. Select its new view before casting.";
         }
     }
