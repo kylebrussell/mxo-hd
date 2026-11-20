@@ -116,9 +116,8 @@ namespace hds
             var item = CraftingRules.Find(goid);
             if (!OrdinaryItemCode.Supported(goid) || !item.DefaultCodeCharges.HasValue)
                 return Finish(client, CraftingRequests.WriterRefused, 0, goid, "That Write Code result is not supported.");
-            long cost = CraftingRules.InfoCost(item, Skill(client, 530));
-            cost = (long)(cost * (100 - Math.Clamp(Skill(client, 956), 0, 100)) / 100.0);
-            if (client.playerData.getInfo() < cost)
+            var (cost, requiredInfo) = CraftingRules.WriterCost(item, Skill(client, 530), Skill(client, 956));
+            if (client.playerData.getInfo() < requiredInfo)
                 return Finish(client, CraftingRequests.WriterNoInfo, 0, goid, "Not enough information to write this code.");
             int skill = Math.Max(Skill(client, 649), Skill(client, Specialization(item.Category)));
             if (!CraftingRules.Succeeds(skill, item.Complexity.Value, Roll()))
@@ -128,7 +127,7 @@ namespace hds
             try
             {
                 result = Store.dbManager.WorldDbHandler.WriteOrdinaryItemCode(
-                    client.playerData.getCharID(), request, item.DefaultCodeCharges.Value, cost);
+                    client.playerData.getCharID(), request, item.DefaultCodeCharges.Value, cost, requiredInfo);
             }
             catch (Exception error)
             {
