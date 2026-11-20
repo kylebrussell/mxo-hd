@@ -331,7 +331,7 @@ namespace hds
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((27, PlayerViewAttributes.U16(bits))));
         }
 
-        private static void PresentHyperSpeed(WorldClient client, float scale)
+        private static void PresentMovementScale(WorldClient client, float scale)
         {
             client.playerInstance.MovementScale.setValue(scale);
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale))));
@@ -553,7 +553,8 @@ namespace hds
                 PvpFlag.ToWatchers(client, ProjectSprintMovement(client.playerInstance, buff.MovementScale, bits));
             }
             else if (buff.DissemblingType != 0) PresentDissembling(client);
-            if (abilityId == HyperSpeed) PresentHyperSpeed(client, buff.MovementScale);
+            if (abilityId == HyperSpeed || IsCatalogSpeedBuff(abilityId))
+                PresentMovementScale(client, buff.MovementScale);
             if (IsCatalogSpeedBuff(abilityId))
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
@@ -783,7 +784,8 @@ namespace hds
                 else
                 {
                     float scale = IsActive(client, HyperSprint) ? RemainingMovementScale(data) : 0f;
-                    if (abilityId == HyperSpeed) PresentHyperSpeed(client, scale);
+                    if (abilityId == HyperSpeed || IsCatalogSpeedBuff(abilityId))
+                        PresentMovementScale(client, scale);
                     client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
                 }
             }
