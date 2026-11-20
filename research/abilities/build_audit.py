@@ -267,6 +267,14 @@ def server(i):
         parts.append('stored fixed physical base 7 before typed influence and resistance; retail scaling unresolved')
     elif i == 605:
         parts.append('stored fixed physical base 17 before typed influence and resistance; stock Coder interlock landed 19; wider targeting and outcome variants unresolved')
+    elif i == 33:
+        parts.append('stored fixed viral base 22 with incomplete legacy endpoints; live enemy selection required before charging the cast; full retail scaling unresolved')
+    elif i == 279:
+        parts.append('stored function-3 thrown base with live enemy selection required; stock level-20 shot landed 37; wider damage and conditional ordering unresolved')
+    elif i == 280:
+        parts.append('stored fixed thrown base 1 with live enemy selection required; stock landed 1 and rooted for 15.75s with Wicked Aim; wider targeting and breaks unresolved')
+    elif i == 504:
+        parts.append('stored fixed ballistic base 22 with incomplete legacy endpoints; stock landed 23 after fixture-assisted Concealment; armor piercing unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         starter_base = {126: 'ballistic 11', 138: 'physical 36', 139: 'physical 12'}.get(i)
         if starter_base is not None:
@@ -394,6 +402,8 @@ def server(i):
         parts.append('stealth detection/AI incomplete')
     if i in PETS:
         parts.append(PETS[i])
+    if i == 21:
+        parts.append('requires a live enemy selection before charging the cast')
     return '; '.join(parts) or 'presentation only; no effect executor'
 
 
