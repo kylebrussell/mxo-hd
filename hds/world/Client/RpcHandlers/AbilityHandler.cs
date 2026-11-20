@@ -82,6 +82,19 @@ namespace hds
                 }
             }
 
+            if (SpyAbilityDamage.RequiresLiveEnemy(AbilityID))
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
+                {
+                    const string notice = "Select a living enemy before using this ability.";
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
+                    return;
+                }
+            }
+
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
@@ -444,7 +457,7 @@ namespace hds
         /// Damage of an attack ability. The data's ValueFrom/ValueTo are used when set; most combat abilities
         /// (Cheap Shot, Head Butt, ...) have none, so they hit for about twice a normal round (~30).
         /// </summary>
-        public static UInt16 AbilityDamage(AbilityItem ability, Random random, bool allowTypedResistanceQa = false)
+        public static UInt16 AbilityDamage(AbilityItem ability, Random random, bool allowTypedResistanceQa = false, int characterLevel = 0)
         {
             var source = AbilityCatalog.Find(ability.getAbilityID());
             if (source != null && !source.DirectDamage) return 0;
@@ -518,6 +531,8 @@ namespace hds
                         return (UInt16)amount;
                 }
             }
+            if (SpyAbilityDamage.TryResolve(source, characterLevel, random, out ushort spyDamage))
+                return spyDamage;
             int? fixture = allowTypedResistanceQa ? TypedResistanceQa.Draw(ability.getAbilityID(),50,81) : null;
             return (UInt16)(fixture ?? StarterHackerViralBase(source) ?? random.Next(50, 81));
         }
