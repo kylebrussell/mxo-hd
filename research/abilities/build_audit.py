@@ -239,7 +239,10 @@ def server(i):
     if r['cooldown']:
         cd = r['cooldown']
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
-    if r['damage']:
+    starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
+    if i in starter_viral_bases and not r['damage']:
+        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; full native damage and admission parity unresolved')
+    elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i in (36, 130):
         base = 'viral 4' if i == 36 else 'ballistic 9'
