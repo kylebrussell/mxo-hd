@@ -5,17 +5,17 @@ namespace NativeQa.Modes;
 
 public sealed class StarterHackerViralSightMode : NativeQaMode
 {
-    private const ushort HackerStyle = CombatStyles.HackerStyle;
+    internal const ushort HackerStyle = CombatStyles.HackerStyle;
     // Stock PR487 (566) style and PR396 (4354, 4746, 5189, 5581) ability activations.
-    private const string StockStyle = "80b9ee030000000000000000000000000000000000000000000000000000000090c97941086b0000000000";
-    private static readonly (ushort Ability, float Reuse, string Capture)[] Samples =
+    internal const string StockStyle = "80b9ee030000000000000000000000000000000000000000000000000000000090c97941086b0000000000";
+    internal static readonly (ushort Ability, float Reuse, string Capture)[] Samples =
     {
         (57, 4, "80b93900040002000000000000000000000000000000000000000000585cba0001000000086b0000000000"),
         (58, 4, "80b93a000400020000000000000000000000000000000000000000000000000090767241086b0000000000"),
         (59, 4, "80b93b00040002000000000000000000000000000000000000000000585cba0001000000086b0000000000"),
         (60, 2, "80b93c000400020000000000000000000000000000000000000000000000000090767241086b0000000000")
     };
-    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HackerStyle, 57, 58, 59, 60).Order().ToArray();
+    internal static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HackerStyle, 57, 58, 59, 60).Order().ToArray();
 
     public override string Name => "ability-parity-starter-hacker-viral-sight";
     public override NativeQaModePlan Plan { get; } = HackerSightStandBatchMode.SightPlan(Loadout, Samples,
