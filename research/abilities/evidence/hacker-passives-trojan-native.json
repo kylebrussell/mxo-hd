@@ -1,0 +1,30 @@
+{
+  "families": {
+    "team-patcher-grant-stock": {
+      "representative": 92,
+      "result": "pass",
+      "head": "ae74560c9b3a603195fad4b28444e26dbe67e63f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/446",
+      "scope": "The stock Actions list shows one Team Patcher Upgrade 1089, removes it with 92 unloaded, and restores a single copy on reload. The restored entry activates on self."
+    },
+    "effective-code-status-stock": {
+      "representative": 391,
+      "result": "pass",
+      "head": "ae74560c9b3a603195fad4b28444e26dbe67e63f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/446",
+      "scope": "On unload the stock Ballistic Defense Bonus drops 58 to 46, Melee Defense Bonus drops 52 to 40 and the Pacify Duration Bonus row disappears. Reload restores both totals and the Effective Code +15% duration record."
+    },
+    "trojan-horse-stock": {
+      "representative": 945,
+      "result": "pass",
+      "head": "ae74560c9b3a603195fad4b28444e26dbe67e63f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/446",
+      "scope": "Stock hotbar activates and stops Trojan Horse. 946 takes QAEnemy from 500 to 480 and 496 to 476 Inner Strength. In PacketLog 9e937c5aa11c the caster pays 547 to 527 at 4457, 550 to 530 at 4606 and 547 to 527 at 4696, with periodic regeneration between the four-second pulse charges."
+    }
+  },
+  "abilities": {
+    "92": { "family": "team-patcher-grant-stock" },
+    "391": { "family": "effective-code-status-stock" },
+    "945": { "family": "trojan-horse-stock" }
+  }
+}
