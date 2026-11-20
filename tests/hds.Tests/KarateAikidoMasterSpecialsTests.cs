@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using HeadlessClient;
 using hds;
 using hds.shared;
 
@@ -65,6 +66,7 @@ public class KarateAikidoMasterSpecialsTests
         Assert.True(mem <= AbilityMemory.ForLevel(FixtureLevel),
             $"Level-40 Karate+Aikido batch memory {mem} must fit capacity {AbilityMemory.ForLevel(FixtureLevel)}");
 
+        Assert.Equal("ability-sweep-melee.csv", plan.TestMobFixture);
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_POWERLESS_QA"]);
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_CONDITIONAL_THROW_QA"]);
         Assert.Equal(57, mem);

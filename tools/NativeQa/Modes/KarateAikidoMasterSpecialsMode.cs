@@ -26,7 +26,7 @@ public sealed class KarateAikidoMasterSpecialsMode : NativeQaMode
             $"UPDATE char_abilities SET level={FixtureRank} WHERE char_id=110",
             $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"
         },
-        DevCommands: true, loadAbilityAncestors: false,
+        DevCommands: true, loadAbilityAncestors: false, testMobFixture: CombatFixtureLoadout.MeleeCsv,
         hotbarAbilities: new ushort[] { Karate, SkyHighSidekick, SidekickCombo, KiChargedPunch, Aikido, MakiOtoshi, CounterThrow },
         environmentOverrides: new()
         {
