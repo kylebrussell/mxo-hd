@@ -8,6 +8,8 @@ namespace NativeQa.Modes;
 public sealed class StarterMovementObserverMode : NativeQaMode
 {
     private const ushort Sprint = 184, Speed = 12, Accelerator = 62, HackerStyle = CombatStyles.HackerStyle;
+    private const int GroundY = 495, StandZ = -1498, StagingZ = 13984;
+    private const int FriendX = 25200, FarX = 24300;
     private static readonly ushort[] Loadout = Profile(2, 17, Sprint, Speed, Accelerator, HackerStyle).Order().ToArray();
 
     // Stock 11701b9dd84e (Hyper-Sprint from the shared fixture, Hyper-Speed lines 3289–3290).
@@ -21,31 +23,37 @@ public sealed class StarterMovementObserverMode : NativeQaMode
 
     public override string Name => "ability-parity-starter-movement-observers";
 
-    public override NativeQaModePlan Plan { get; } = new(Loadout, 24800, -1498,
+    public override NativeQaModePlan Plan { get; } = new(Loadout, 24800, StandZ,
         Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},y=495,innerStrC=1500,innerStrM=1500 WHERE charId=110",
-            "UPDATE characters SET x=25200,y=495,z=-1498 WHERE charId=6111",
-            "UPDATE characters SET x=24300,y=495,z=13984 WHERE charId=6112"
+            $"UPDATE characters SET x={FriendX},y={GroundY},z={StagingZ} WHERE charId=6111",
+            $"UPDATE characters SET x={FarX},y={GroundY},z={StagingZ} WHERE charId=6112"
         }, DevCommands: true, loadAbilityAncestors: true,
         hotbarAbilities: new ushort[] { Sprint, Speed, HackerStyle, Accelerator },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         extraQaMetadata: new() { ["ScopedStockRows"] = "12,62,184", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
+            "After CSR is fully in world, submit {\"actor\":\"QAFriend\",\"action\":\"movement-observer-arrive\"}. Wait for the confirmed CSR view in the response. QAFriend arrives 4 m east at 25200,495,-1498.",
             "With no target, page 2 slot 1 turns Hyper-Sprint on (+0.15 speed). Wait for the first 5 s drain, then press again to turn it off. QAFriend receives both observer updates.",
             "Still with no target, slot 2 applies Hyper-Speed (+0.45 speed). Type ?dismissbuff 12 and confirm the observer resets to zero again.",
             "Select Hacker Style with slot 3. Select QAFriend 4 m east and press slot 4. Capture +0.10 movement on QAFriend's own view and on QAFriend's view in CSR's PacketLog.",
-            "While +0.10 is active, bring QAFar in with helper chat ?tp 24300 495 -1498 0 0 0. Its first view of QAFriend includes +0.10. Send ?dismissbuff 62 as QAFriend and confirm both observers reset to zero. Capture helpers through their broker PacketLogs."
+            "While +0.10 is active, submit {\"actor\":\"QAFar\",\"action\":\"movement-observer-arrive\"}. Its confirmed first view of QAFriend reports +0.10. Send ?dismissbuff 62 as QAFriend and confirm both observers reset to zero in PacketLog."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         foreach (string handle in new[] { "QAFriend", "QAFar" })
         {
-            var helper = await HeadlessPlayer.LoginAsync(context.Address, handle, handle);
+            var helper = await HeadlessPlayer.LoginAsync(context.Address, handle, handle, stockCharacterLoad: true);
             context.Helpers.Add(handle, helper);
             await helper.EnterWorldAsync();
+            var own = helper.World.CreationSnapshot().Last(view => view.ViewId == 2);
+            Check.Equal(((double)(handle == "QAFriend" ? FriendX : FarX), (double)GroundY, (double)StagingZ),
+                HackerParitySweepMode.Position(own), $"{handle} starts off-site");
+            helper.SendRpc("81 48");
+            await helper.WaitForRpcAsync("81 49");
             NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, helper);
         }
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
@@ -55,8 +63,13 @@ public sealed class StarterMovementObserverMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
         var friend = context.Helpers["QAFriend"];
         var late = context.Helpers["QAFar"];
+        Check.That(actor.World.CreationSnapshot().All(view => view.Name != friend.Handle && view.Name != late.Handle),
+            "CSR has no initial helper creations");
+        var friendArrival = await ArriveAsync(friend);
         var target = await actor.WaitForViewNamedAsync(friend.Handle);
-        ushort observedActor = (await friend.WaitForViewNamedAsync(actor.Handle)).ViewId;
+        Check.Equal(((double)FriendX, (double)GroundY, (double)StandZ), HackerParitySweepMode.Position(target),
+            "CSR receives QAFriend's first view on the four-metre stand");
+        ushort observedActor = friendArrival.ViewId;
 
         int cursor = friend.World.ViewSnapshot().Count;
         actor.SendRpc(SprintRequest);
@@ -84,17 +97,39 @@ public sealed class StarterMovementObserverMode : NativeQaMode
         await EvidenceRetestWire.ViewSinceAsync(friend, ownerAt, 2, "02 80 88 cd cc cc 3d 80 80 80 02 00 00");
         await ObserverScale(actor, cursor, target.ViewId, .10f);
 
-        late.SendChat("?tp 24300 495 -1498 0 0 0");
-        await late.WaitForTextAsync("Teleported to 0/0");
-        var lateView = await late.WaitForViewNamedAsync(friend.Handle);
-        Check.Equal(.10f, BitConverter.ToSingle(lateView.Attributes["MovementScale"]), "A late observer gets the active scale in the creation");
+        var lateArrival = await ArriveAsync(late);
         int lateAt = late.World.ViewSnapshot().Count;
         cursor = actor.World.ViewSnapshot().Count;
         friend.SendChat("?dismissbuff 62");
         await ObserverScale(actor, cursor, target.ViewId, 0f);
-        await ObserverScale(late, lateAt, lateView.ViewId, 0f);
+        await ObserverScale(late, lateAt, lateArrival.ViewId, 0f);
         Console.WriteLine("  Stock observer requests: 184 +0.15/off, 12 +0.45/off, 62 +0.10 in owner, observer and late creation, both observers clear");
         return Array.Empty<byte>();
+    }
+
+    internal sealed record Arrival(string Handle, string Observed, ushort ViewId, float MovementScale);
+
+    internal static async Task<Arrival> ArriveAsync(HeadlessPlayer helper)
+    {
+        var (x, observed) = helper.Handle switch
+        {
+            "QAFriend" => (FriendX, "CSR_Tester"),
+            "QAFar" => (FarX, "QAFriend"),
+            _ => throw new InvalidOperationException("Use QAFriend or QAFar for the movement observer fixture.")
+        };
+        int start = helper.World.CreationSnapshot().Count;
+        helper.SkipReceived();
+        helper.SendChat(FormattableString.Invariant($"?tp {x} {GroundY} {StandZ} 0 0 0"));
+        await helper.WaitForTextAsync("Teleported to 0/0");
+        ViewCreation? creation = null;
+        await helper.WaitUntilAsync(() =>
+            (creation = helper.World.CreationSnapshot().Skip(start).FirstOrDefault(view => view.Name == observed)) != null,
+            $"the first post-arrival view of {observed}", HeadlessPlayer.DefaultTimeout);
+        var view = creation!;
+        float scale = view.Attributes.TryGetValue("MovementScale", out var bytes) ? BitConverter.ToSingle(bytes) : 0f;
+        if (helper.Handle == "QAFar")
+            Check.Equal(.10f, scale, "QAFar's first view of QAFriend contains the active Movement Accelerator scale");
+        return new Arrival(helper.Handle, observed, view.ViewId, scale);
     }
 
     private static Task ObserverScale(HeadlessPlayer observer, int start, ushort view, float scale, ushort? bits = null)
