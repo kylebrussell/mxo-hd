@@ -86,6 +86,24 @@ public class SniperParityTests
     }
 
     [Fact]
+    public void ConcealmentUsesItsLearnedGrantRankInsteadOfCharacterLevel()
+    {
+        var client = Client();
+        client.playerInstance.Level.setValue((byte)19);
+        AbilityPassives.SetLoaded(client, new[] { ((ushort)503, (ushort)18) }, true);
+
+        Assert.Equal(18, AbilityProgression.GrantLevel(503, 18));
+        Assert.Equal(50, AbilityProgression.GrantLevel(503, 51));
+        Assert.Equal(18, AbilityPassives.Level(client, Stealth.ConcealmentGrantAbility));
+        Assert.Equal(18, Stealth.AbilityLevel(client, Stealth.ConcealmentGrantAbility));
+        var modifiers = Stealth.ModifiersFor(Stealth.Defs[Stealth.ConcealmentGrantAbility], 18, 19);
+        Assert.Contains(modifiers, modifier => modifier.Stat == 209 && modifier.Value == 18);
+
+        AbilityPassives.SetLoaded(client, Array.Empty<(ushort, ushort)>(), true);
+        Assert.False(AbilityPassives.IsLoaded(client, Stealth.ConcealmentGrantAbility));
+    }
+
+    [Fact]
     public void SniperDisciplineGrantsTheUpgradeAndFeedsBallisticAttackAndDamage()
     {
         var client = Client();
