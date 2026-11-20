@@ -242,6 +242,9 @@ def server(i):
     starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
     if i in starter_viral_bases and not r['damage']:
         parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; full native damage and admission parity unresolved')
+    elif i in (105, 176) and not r['damage']:
+        base = 8 if i == 105 else 17
+        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; complete damage and admission parity unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i in (36, 514):
