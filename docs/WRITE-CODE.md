@@ -1,5 +1,11 @@
 # Write Code activation (970)
 
+## Ordinary equipment pilot
+
+The ordinary Writer and Compiler support three reviewed cookbook entries alongside the consumables: eyewear 671, revolver 700 and Program Launcher 2485. Each has an explicit price, complexity, recipe and default of two code charges in the shipped data. The Writer uses the existing known-recipe check and consumes the selected fragments only after its transaction succeeds. The Compiler spends one direct archive charge after materializing the exact item. Its existing completion and cancellation policy also applies to these three entries.
+
+The compiler uses the matching apparel, weapon or tool specialization and the general time reduction 954. The shipped timer reads 955 only for the consumable category. The `ability-parity-coder-equipment-crafting` fixture compares the three equipment recipes against an ordinary consumable with both reductions loaded. With Programmer and Code Crafter loaded, the equipment Writer debits are 0, 81 and 81 Info. The corresponding compiler debits are 1, 108 and 108 Info.
+
 ## Primary evidence
 
 The shipped tooltip `0x010000dc` requires activating a Code Analyser Tool. Resource 37

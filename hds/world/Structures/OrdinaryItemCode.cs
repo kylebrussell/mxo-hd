@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text;
 
 namespace hds
 {
@@ -13,9 +12,10 @@ namespace hds
         public static bool Supported(uint goid)
         {
             var item = CraftingRules.Find(goid);
-            return item != null && item.Price.HasValue && item.Price >= 0 && item.Complexity.HasValue && item.Complexity >= 0 && item.Complexity <= 255 &&
-                Encoding.ASCII.GetString(BitConverter.GetBytes(item.Category)).StartsWith("IC") && Crafting.Recipes.ContainsKey(goid);
+            return item != null && item.DefaultCodeCharges >= 1 && item.DefaultCodeCharges <= 127 && !item.CantCraft &&
+                item.Price >= 0 && item.Complexity >= 0 && item.Complexity <= 255 && Crafting.Recipes.ContainsKey(goid);
         }
+        public static bool IsConsumable(uint category) => (category & 0xffff) == 0x4349; // Little-endian FourCC starts with IC.
         // Native6207f650: signed16 totals, explicit float32 stores, final clamp after both reductions.
         public static float Seconds(int complexity, int skill, int reduction, int consumableReduction)
         {

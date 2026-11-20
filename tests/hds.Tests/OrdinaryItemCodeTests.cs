@@ -68,6 +68,20 @@ public class OrdinaryItemCodeTests
         Assert.Equal(28,rows.Length);
         Assert.All(rows,r=> { Assert.True(CraftingRules.Find(r.ResultGoid).Price.HasValue); Assert.True(OrdinaryItemCode.Supported(r.ResultGoid)); });
     }
+    [Theory]
+    [InlineData(671u, 652, 10)]
+    [InlineData(700u, 655, 1000)]
+    [InlineData(2485u, 654, 1000)]
+    public void ReviewedEquipmentHasItsStoredCategoryPriceAndCharges(uint goid, ushort specialization, int price)
+    {
+        var item = CraftingRules.Find(goid);
+        Assert.True(OrdinaryItemCode.Supported(goid));
+        Assert.Equal(2, item.DefaultCodeCharges);
+        Assert.Equal(price, item.Price);
+        Assert.Equal(specialization, CraftingHandler.Specialization(item.Category));
+        Assert.False(OrdinaryItemCode.IsConsumable(item.Category));
+        Assert.False(OrdinaryItemCode.Supported(2565)); // Another shipped revolver, outside this reviewed batch.
+    }
     [Fact]
     public void DelayedExceptionsReachRefusalHandlerOnceAndPreserveException()
     {
