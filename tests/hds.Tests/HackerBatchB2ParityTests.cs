@@ -155,6 +155,8 @@ public class HackerBatchB2ParityTests
             var buff = target.playerData.activeBuffs[62];
             Assert.Equal(10, AbilityStats.Player(target, 115));
             Assert.Equal(0, AbilityStats.Player(caster, 115));
+            Assert.Equal(.10f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue()));
+            Assert.Equal(0f, BitConverter.ToSingle(caster.playerInstance.MovementScale.getValue()));
             Assert.Contains(target.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
                 message => message.content.AsSpan().IndexOf(speedOn) >= 0);
             Assert.DoesNotContain(caster.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
@@ -163,6 +165,7 @@ public class HackerBatchB2ParityTests
             Assert.True(AbilityBuffs.IsActive(target, 62));
             TimedEffects.RunDue(buff.Started + 600.01);
             Assert.Equal(0, AbilityStats.Player(target, 115));
+            Assert.Equal(0f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue()));
             Assert.Contains(target.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
                 message => message.content.AsSpan().IndexOf(speedOff) >= 0);
         }
