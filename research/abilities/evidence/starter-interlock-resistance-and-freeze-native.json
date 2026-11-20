@@ -1,0 +1,102 @@
+{
+  "families": {
+    "stock-weakness-analyzer-sneak-restore": {
+      "representative": 1125,
+      "result": "pass",
+      "head": "4d022c93427e1f04434d5b4e581de1fd85ac8d22",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/547",
+      "scope": "The native Weakness Analyzer shortcut sent stock 1125. PacketLog 1617–1699 verifies 25 IS, a four-second cast and own reuse of 45 seconds. The 8-second target record and 1.5-second caster record end independently, and Sneak resumes after the caster record ends."
+    }
+  },
+  "abilities": {
+    "38": {
+      "checks": {
+        "area": {
+          "source": "GOB 38 defines an eight-metre hostile area centred on the caster.",
+          "runtime": "CasterHostileArea enumerates eligible hostile recipients at completion and gives each candidate its own viral contest.",
+          "test": "AreaDisruptionTests.CasterEightMetreBoundaryIgnoresSelectionAndKeepsZeroDamage checks inside, edge, outside and different-floor cases. PR556 compares QAFar at six metres, the defended QAFriend and the immune QAEnemy during the same cast. https://github.com/kylebrussell/mxo-hd/pull/556"
+        }
+      }
+    },
+    "47": {
+      "checks": {
+        "controls": {
+          "source": "GOB 47 grants 6 s Pacify, breaks on damage and applies a separate 12 s immunity timer.",
+          "runtime": "Freeze Area supplies Pacify and the vulnerability through the same parent. Damage clears both together. Dropping the parent preserves the independent immunity.",
+          "test": "FreezePacifyEndsOnDamageWhileKeepingTwelveSecondImmunity and the PR556 stock retry confirm initial Pacify, early parent removals on damage, refusal of the later Stun and immunity expiry. PacketLog 4757–4760, 5117–5121 and 6066. https://github.com/kylebrussell/mxo-hd/pull/556"
+        },
+        "script": {
+          "source": "GOB 47 calls AddControlImmunityTimer when its Pacify lands.",
+          "runtime": "TimedEffects registers 734→681 independently of the Freeze Area parent and admits the next control only after expiry.",
+          "test": "PR556 stock records the 12 s immunity with both selected targets. The elapsed run permits Stun after its expiry and the early retry refuses Stun while it is active. https://github.com/kylebrussell/mxo-hd/pull/556"
+        }
+      }
+    },
+    "105": {
+      "checks": {
+        "damage": {
+          "source": "GOB 105 Body Shot stores an instant ballistic health hit with base 8.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's ballistic resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 8 and final 6, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/554"
+        }
+      }
+    },
+    "130": {
+      "checks": {
+        "damage": {
+          "source": "GOB 130 Hindering Shot stores an instant ballistic health hit with base 9.",
+          "runtime": "The selected two-second opening shot preserves the base through the typed damage path and reads the receiver's ballistic resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 9 and final 7, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/554"
+        }
+      }
+    },
+    "145": {
+      "checks": {
+        "damage": {
+          "source": "GOB 145 Overhand Smash stores an instant melee health hit with base 7.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's melee resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 7 and final 5, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/554"
+        }
+      }
+    },
+    "259": {
+      "checks": {
+        "damage": {
+          "source": "GOB 259 Dim Mak Strike stores an instant melee health hit with base 71.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's melee resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 95 and final 78, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "260": {
+      "checks": {
+        "damage": {
+          "source": "GOB 260 Misdirect Punch stores an instant melee health hit with base 24.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's melee resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 32 and final 26, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "261": {
+      "checks": {
+        "damage": {
+          "source": "GOB 261 Machinegun Fist Combo stores an instant melee health hit with base 23.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's melee resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 31 and final 25, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "262": {
+      "checks": {
+        "damage": {
+          "source": "GOB 262 Piston Kicks stores an instant melee health hit with base 108.",
+          "runtime": "The queued interlock move preserves the base through the typed damage path and reads the receiver's melee resistance.",
+          "test": "The native neutral and +75 resistance trials report raw 145 and final 119, with the same caster loadout. The disposable replay repeats the comparison. https://github.com/kylebrussell/mxo-hd/pull/555"
+        }
+      }
+    },
+    "1125": {
+      "family": "stock-weakness-analyzer-sneak-restore"
+    }
+  }
+}
