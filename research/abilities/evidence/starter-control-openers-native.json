@@ -1,5 +1,13 @@
 {
-  "families": {},
+  "families": {
+    "coder-drain-lifetime-stock": {
+      "representative": 19,
+      "result": "pass",
+      "head": "0824f504f9d19b748991e7e79d403e855fb4f5a9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/510",
+      "scope": "Stock PR510 registers two successive level-4 proxies at 224 base HP, raises max to 449 with Fortify, then Drain removes fresh pet 2, raises IS from 772 to 822, and starts 58 seconds of reuse. Mid-cast dismissal and stale-target refusal are exact headless evidence."
+    }
+  },
   "abilities": {
     "21": {
       "checks": {
@@ -9,6 +17,9 @@
           "test": "StarterCoderSplashBatchMode checks friendly refusal and a 10 IS debit, 2 s cast, 13.5 s reuse, target root, root survival through landed Static Blast, position correction and later remote movement. PR504 native capture confirms X 25200 during the root and X 25220 after it. https://github.com/kylebrussell/mxo-hd/pull/504"
         }
       }
+    },
+    "19": {
+      "family": "coder-drain-lifetime-stock"
     }
   },
   "notes": {
@@ -18,6 +29,7 @@
     "PR508": "The regenerated PR508 audit is the baseline, including the earlier PR503/507 evidence.",
     "PR509": "Head Butt stays grey before Daze and queues after Daze. In ordinary interlock the native capture has animation 284, 40 damage and Melee Accuracy -10 for 20 s. The exact replay verifies the Dazed refusal with required-state bit 2. Damage remains open. https://github.com/kylebrussell/mxo-hd/pull/509",
     "PR511": "The stock run confirms 254 and 255 refuse an empty selection and cast on QAEnemy at rest. A handgun swap gives the existing 130 control. Headless verifies live hostile scope, including friendly and stale refusals. Both rifle damage bases and the untested range, LOS and contest aspects stay open. https://github.com/kylebrussell/mxo-hd/pull/511",
-    "PR512": "With QAFar held, UI Lag reaches QAEnemy only. Slow and Code Freeze reach QAFar only. QAOther receives none. This covers area centre and allegiance while wider targeting and the stat/control consumers stay open. https://github.com/kylebrussell/mxo-hd/pull/512"
+    "PR512": "With QAFar held, UI Lag reaches QAEnemy only. Slow and Code Freeze reach QAFar only. QAOther receives none. This covers area centre and allegiance while wider targeting and the stat/control consumers stay open. https://github.com/kylebrussell/mxo-hd/pull/512",
+    "PR510": "Both stock proxy registrations report 224 current/max HP (PacketLog lines 969 and 1683). Fortify publishes max449, Drain unregisters pet2, and IS rises 772 to 822 (2074/2111). The 58-second timer is at 2118. Damage, the DecoyDuration callback and complete behavior evidence remain open. https://github.com/kylebrussell/mxo-hd/pull/510"
   }
 }
