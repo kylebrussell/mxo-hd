@@ -3,6 +3,8 @@ param(
     [Parameter(Mandatory)][string]$FixtureDirectory,
     [Parameter(ParameterSetName = 'Start')]
     [string]$InstalledClientDir = (Join-Path $env:USERPROFILE 'Developer/mxo-client/MxO'),
+    [Parameter(ParameterSetName = 'Start')]
+    [string]$SecondaryClientDir = (Join-Path $env:USERPROFILE 'Developer/mxo-client2/MxO'),
     [Parameter(ParameterSetName = 'Start')][switch]$PrepareOnly,
     [Parameter(ParameterSetName = 'Stop', Mandatory)][switch]$Stop
 )
@@ -13,6 +15,7 @@ $manifestPath = Join-Path $root 'native-client.json'
 $handoff = Join-Path $env:TEMP 'mxo-claude-codex-handoff.txt'
 $lease = [IO.FileStream]::new((Join-Path $root '.native-client-launch.lock'), [IO.FileMode]::CreateNew,
     [IO.FileAccess]::ReadWrite, [IO.FileShare]::None, 4096, [IO.FileOptions]::DeleteOnClose)
+$clientDirLease = $null
 
 try {
     function Get-DefenderSnapshot {
@@ -76,44 +79,45 @@ try {
         }
     }
 
-    $source = (Resolve-Path -LiteralPath $InstalledClientDir).Path.TrimEnd('\')
-    $privateClient = Join-Path $root 'client'
-    if ($privateClient.StartsWith($source + '\', [StringComparison]::OrdinalIgnoreCase) -or $privateClient -eq $source) {
-        throw 'Place the fixture directory outside the installed client.'
+    $source = (Get-Item -LiteralPath $InstalledClientDir).FullName.TrimEnd('\')
+    $privateClient = (Get-Item -LiteralPath $SecondaryClientDir).FullName.TrimEnd('\')
+    $primary = (Join-Path $env:USERPROFILE 'Developer/mxo-client/MxO').Replace('/', '\')
+    if ($privateClient -in @($source, $primary)) { throw 'Choose a dedicated secondary client directory.' }
+    for ($folder = Get-Item -LiteralPath $privateClient; $folder; $folder = $folder.Parent) {
+        if ($folder.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) {
+            throw 'The secondary client directory must be a plain copy.'
+        }
     }
     if (Test-Path -LiteralPath $manifestPath) { throw 'This fixture already owns a client launch. Use a fresh fixture for another launch.' }
-    $profilePath = Join-Path $root 'native-client-profile.json'
-    if (Test-Path -LiteralPath $profilePath) {
-        $profile = Get-Content -LiteralPath $profilePath -Raw | ConvertFrom-Json
-        if ($profile.ServerPid -ne $state.ServerPid -or $profile.Host -ne $endpoint.Host -or
-            (Get-Item -LiteralPath $privateClient).Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) {
-            throw 'The prepared client belongs to another fixture.'
+    $clientDirLease = [IO.FileStream]::new((Join-Path $privateClient '.native-qa-client.lock'), [IO.FileMode]::CreateNew,
+        [IO.FileAccess]::ReadWrite, [IO.FileShare]::None, 4096, [IO.FileOptions]::DeleteOnClose)
+    $ownerPath = Join-Path $privateClient '.native-qa-client-owner.json'
+    if (Test-Path -LiteralPath $ownerPath) {
+        $owner = Get-Content -LiteralPath $ownerPath -Raw | ConvertFrom-Json
+        $running = Get-Process -Id $owner.Pid -ErrorAction SilentlyContinue
+        if ($running -and $running.ProcessName -eq 'matrix' -and
+            $running.StartTime.ToUniversalTime().Ticks -eq [long]$owner.StartTicks) {
+            throw "The secondary copy is in use by client PID $($owner.Pid)."
         }
-    } else {
-        New-Item -ItemType Directory -Path $privateClient | Out-Null
-        & robocopy $source $privateClient /E /XJ /R:1 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
-        if ($LASTEXITCODE -ge 8) { throw 'Copying the installed client into the fixture failed.' }
-        $cfg = Join-Path $privateClient 'autoexec.cfg'
-        $encoding = [Text.Encoding]::GetEncoding(28591)
-        $text = [IO.File]::ReadAllText($cfg, $encoding)
-        $options = [ordered]@{ UseLaunchPad = '0'; AuthServerDNSName = "`"$dns`"";
-            MarginServerDNSSuffix = "`".$dns`""; Windowed = '1'; ScreenWidth = '800'; ScreenHeight = '600' }
-        foreach ($key in $options.Keys) {
-            $text = [regex]::Replace($text, "(?m)^[ \t]*$key[ \t]*=[^\r\n]*(?:\r?\n|$)", '')
-            $text += "`r`n$key = $($options[$key])`r`n"
-        }
-        [IO.File]::WriteAllText($cfg, $text, $encoding)
-        @{ ServerPid = $state.ServerPid; Host = $endpoint.Host } | ConvertTo-Json | Set-Content -LiteralPath $profilePath
     }
     $exe = Join-Path $privateClient 'launcher.exe'
-    $cfg = Get-Content -LiteralPath (Join-Path $privateClient 'autoexec.cfg') -Raw
-    foreach ($option in @("AuthServerDNSName = `"$dns`"", "MarginServerDNSSuffix = `".$dns`"", 'Windowed = 1')) {
-        if (($cfg -split "\r?\n") -cnotcontains $option) { throw "The private client option is missing: $option." }
-    }
     $hash = (Get-FileHash -LiteralPath $exe).Hash
     if ($hash -ne (Get-FileHash -LiteralPath (Join-Path $source 'launcher.exe')).Hash) {
         throw 'The private client launcher differs from the installed launcher.'
     }
+    $cfg = Get-Item -LiteralPath (Join-Path $privateClient 'autoexec.cfg')
+    if ($cfg.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint) -or $cfg.LinkType) {
+        throw 'The secondary autoexec.cfg must be a private file.'
+    }
+    $encoding = [Text.Encoding]::GetEncoding(28591)
+    $options = [ordered]@{ UseLaunchPad = '0'; AuthServerDNSName = "`"$dns`"";
+        MarginServerDNSSuffix = "`".$dns`""; Windowed = '1'; ScreenWidth = '800'; ScreenHeight = '600' }
+    $text = [IO.File]::ReadAllText($cfg.FullName, $encoding)
+    foreach ($key in $options.Keys) {
+        $text = [regex]::Replace($text, "(?im)^[ \t]*$key[ \t]*=[^\r\n]*(?:\r?\n|$)", '')
+    }
+    $lines = foreach ($key in $options.Keys) { "$key = $($options[$key])" }
+    [IO.File]::WriteAllText($cfg.FullName, $text.TrimEnd("`r", "`n") + "`r`n" + ($lines -join "`r`n") + "`r`n", $encoding)
     if ($PrepareOnly) {
         return [pscustomobject]@{ ClientDir = $privateClient; Server = $endpoint; Account = $state.Account }
     }
@@ -138,6 +142,7 @@ try {
     try {
         $launch = [pscustomobject]@{ Pid = $client.Id; StartTicks = $client.StartTime.ToUniversalTime().Ticks;
             ClientDir = $privateClient; Server = $endpoint; Account = $state.Account; DefenderBaseline = $baseline }
+        $launch | Select-Object Pid, StartTicks | ConvertTo-Json | Set-Content -LiteralPath $ownerPath
         $launch | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath
         Write-Lifecycle up $client.Id
         $announced = $true
@@ -154,5 +159,6 @@ try {
         throw
     }
 } finally {
+    if ($clientDirLease) { $clientDirLease.Dispose() }
     $lease.Dispose()
 }

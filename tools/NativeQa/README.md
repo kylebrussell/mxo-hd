@@ -32,7 +32,7 @@ $run = Join-Path $env:TEMP "mxo-native-secondary-$((Get-Date).ToString('yyyyMMdd
 dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll "$repo" "$run" <build-label> <mode> --bind-address 127.0.0.2
 ```
 
-After `state.json` reports Ready, run the client launcher in another shell. It verifies the fixture PID's listeners at the published address and ports, copies the installed client into this run's directory and configures the copy's auth and world hostnames. `-PrepareOnly` performs those checks and prepares the private client without launching it. The launcher uses DNS answers for `127-0-0-2.nip.io` and `Recursion.127-0-0-2.nip.io` and requires both to resolve solely to the fixture's loopback address.
+After `state.json` reports Ready, run the client launcher in another shell. It verifies the fixture PID's listeners at the published address and ports. It reuses the dedicated client at `$env:USERPROFILE/Developer/mxo-client2/MxO` and updates that copy's `autoexec.cfg` for the run. Set `-SecondaryClientDir` to use another existing plain copy. The launcher reserves the copy while its client is running. `-PrepareOnly` updates the configuration without starting a client. The launcher requires both `127-0-0-2.nip.io` and `Recursion.127-0-0-2.nip.io` to resolve solely to the fixture's loopback address.
 
 ```powershell
 ./tools/RealClient/Start-NativeQaClient.ps1 -FixtureDirectory "$run"
