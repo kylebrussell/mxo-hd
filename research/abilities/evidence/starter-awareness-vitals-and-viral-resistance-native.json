@@ -1,0 +1,61 @@
+{
+  "abilities": {
+    "2": {
+      "checks": {
+        "stealth-detection": {
+          "source": "The Awakened discipline contributes its shipped rank-scaled detection modifier to stat 204.",
+          "runtime": "Stealth.AwarenessOf adds live 204 to the observer creation value. Unloading Awakened removes the contribution without removing the observer.",
+          "test": "StarterSpyVisibilityBatchMode compares the same observer and location before and after unloading Awakened. Native PR530 measured Awareness 5, then 1, then 5 again without Detection loaded. https://github.com/kylebrussell/mxo-hd/pull/530"
+        }
+      }
+    },
+    "36": {
+      "checks": {
+        "damage": {
+          "source": "GOB 36 stores fixed viral damage 4 and a 2 m target-centred area.",
+          "runtime": "The landed viral hit is scaled by the active caster and each primary or secondary recipient supplies its own resistance stat.",
+          "test": "StarterViralResistanceBatchMode and native PR532 checked one cast against same-level targets. It hit the neutral primary for 4 and the +75 Viral Resistance secondary for 2. https://github.com/kylebrussell/mxo-hd/pull/532"
+        }
+      }
+    },
+    "45": {
+      "checks": {
+        "stats": {
+          "source": "GOB 45 supplies learned-rank modifiers for Max IS, IS regeneration, Evade Interlock Bonus and Concentration Bonus.",
+          "runtime": "AbilityBuffs.RefreshVitals consumes the max bonus; regeneration consumes the linked rate; CombatInsightEngagement consumes 1049 in its modeled shield rule; concentration is linked to 564.",
+          "test": "HackerBatchBParityTests.ExecuteProgram45ChangesTheActualInnerStrengthMaximumAndRegen, CombatInsightEngagementTests.ExecuteProgramOnlyChangesEntryWhileItsBonusAndTheShieldAreActive, and native PR521/528/529 confirm rank-50 +10/+10/+5/+5 use. https://github.com/kylebrussell/mxo-hd/pull/528 https://github.com/kylebrussell/mxo-hd/pull/529"
+        },
+        "consumer": {
+          "source": "The two previously untracked combat consumers are Evade Interlock Bonus 1049 and the shipped Concentration Bonus link 564→1090.",
+          "runtime": "The existing modeled entry rule applies 1049 once with an active shield. Cast interruption uses AbilityStats.Influence on 564 with the linked bonus.",
+          "test": "Native PR529 observes evade 115 while loaded, 110 unloaded, then ordinary entry with the shield off. Native PR521 verifies that Execute Program supplies the 5-point baseline with Concentration 628 unloaded. https://github.com/kylebrussell/mxo-hd/pull/529 https://github.com/kylebrussell/mxo-hd/pull/521"
+        }
+      }
+    },
+    "57": {
+      "checks": {
+        "damage": {
+          "source": "GOB 57 stores an instant typed viral modifier with fixed base 8.",
+          "runtime": "StarterHackerViralBase supplies the fixed value for incomplete legacy endpoints. TypedAbilityResistance applies the matched recipient modifier once on landing.",
+          "test": "StarterViralResistanceBatchMode and native PR532 record 8 on a neutral same-level NPC and 4 on +75 Viral Resistance. https://github.com/kylebrussell/mxo-hd/pull/532"
+        }
+      }
+    },
+    "1111": {
+      "checks": {
+        "stealth-detection": {
+          "source": "Shipped Sneak detection uses the observer awareness, caster Stealth, range and a periodic random contest.",
+          "runtime": "The live player contest reads both loaded observer modifiers and active caster Stealth, and a reveal restores the hidden view.",
+          "test": "StarterSpyVisibilityBatchMode verifies deletion and restoration with four loaded-state combinations. Native PR530 observed the same Sneak route at SA/SL 5/15, 10/15, 1/15 and 5/23. https://github.com/kylebrussell/mxo-hd/pull/530"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR527": "Stock 149 worked from rest and was blocked in interlock. 152 opened from Sneak and sent 30/15 s reuse. 146 cast for 2 s, applied the thrown DOT, and sent 20/3 s reuse. PR531 already closes the Backsweep native family. https://github.com/kylebrussell/mxo-hd/pull/527",
+    "PR528": "The cap changes 220→200→220 with Execute Program; +8 baseline versus +8/+9 loaded regeneration is distinct from 217 costing 40 and 184 costing 25 on activation and first drain. PR531 already closes the Execute Program native family. https://github.com/kylebrussell/mxo-hd/pull/528",
+    "PR529": "45 adds five points to the modeled live 217 entry score. At the same force 110, entry refuses at 115 and admits at 110 after unloading. Normal entry after shield-off is admitted and the own timer is 30 s. The retail shield rules remain open. https://github.com/kylebrussell/mxo-hd/pull/529",
+    "PR530": "The ordinary Sneak contest reads loaded 2 and 298; removing both restores base Awareness 1. The 298 activation geometry and NPC callback are independent checks. https://github.com/kylebrussell/mxo-hd/pull/530",
+    "PR532": "The same-level two-target comparison supplied 33: 24/13, 36: 4/2 in one splash, and 57: 8/4 under the existing typed-resistance model. https://github.com/kylebrussell/mxo-hd/pull/532"
+  }
+}
