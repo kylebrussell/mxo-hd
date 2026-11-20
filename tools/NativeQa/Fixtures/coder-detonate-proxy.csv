@@ -1,0 +1,3 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;Detonate Outside;50;5000;5000;B3010058;25900;495;-1498;0;false;false
+1;slums;Detonate Credit;50;1;1;B3010058;25100;495;-2050;0;false;false

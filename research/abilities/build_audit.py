@@ -187,7 +187,7 @@ PETS = {
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
     20: 'own simulacrum only; Max Health +level x15 for 600s; four resistances +level x2 consumed by retaliation (OURS rating curve)',
     603: 'own simulacrum only; 600s IS cost -20%/regen +50% consumed by bounded pet IS; base pool/cost/regen OURS',
-    34: 'own simulacrum only; DetonateProxyProc blast clamp(health, max/10, max/4) to NPCs within 8m, then 13000 to the simulacrum',
+    34: 'own simulacrum only; pet-centred 8m NPC blast from DetonateProxyProc and internal viral child 1109 uses pet-level typed resistance; owner receives normal credit; pet takes 13000 after 0.5s; player recipients remain open',
     19: 'own simulacrum only; 8000 to the simulacrum, +50 caster IS; DecoyDuration 60s unresolved',
     609: 'toggle; 5 IS/5s drain with deactivation; 699 typed Viral Damage172/Healing174 influence +level x0.5 within20m; Nuker hit/Healer heal percentage scaling; no Proxy damage',
     619: 'toggle; 5 IS/5s drain with deactivation; 700 accuracy +level x1.3 consumed by pet attack roll (OURS hit curve)',

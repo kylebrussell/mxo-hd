@@ -13,11 +13,13 @@ Code: `hds/world/Structures/CoderPets.cs`. Tests: `tests/hds.Tests/CoderPetTests
 | Fortify Simulacra 1.0 (20) | Own simulacrum only. Adds character level × 15 to its MaxHealth for 600 s (native value function 3, scale 15). Adds level ×2 to melee, ballistic, viral and thrown resistance scores. The actual hostile-NPC retaliation consumer uses the resistance curve below. Scripted Drain Code/Detonate self-damage bypasses resistance. |
 | Power Boost (25) | Own pet, out of combat;50 IS, 4 s cast,10 m range, 8 s recast. Snapshots caster level × 0.5 melee159/ballistic171 damage influence for 300 s; only Proxy melee/firearm attacks use these stats. ForceCombat 40 remains unimplemented: no pet forced-interlock/shield consumer. |
 | Charge Simulacra (603) | Own simulacrum only. For 600 s lowers action IS cost 20% and increases regeneration 50%. Attack and healer actions spend the actual bounded pet IS pool; insufficient IS skips the action. |
-| Detonate Proxy (34) | Own simulacrum only. Deals `min(health, max/4)`, at least `max/10`, to every hostile NPC within 8 m of the simulacrum (StopProxy1Effect 1109 RadiusOfEffect 8). After 0.5 s the simulacrum takes 13000 and dies. |
+| Detonate Proxy (34) | Own simulacrum only. StopProxy1Effect (1109) uses raw `min(health, max/4)`, at least `max/10`, against hostile NPCs within 8 m of the simulacrum. The ordinary viral resistance path uses the pet's level. The owner receives ordinary kill credit. After 0.5 s the same simulacrum takes the existing scripted 13000 damage and dies. |
 | Drain Code (19) | Own simulacrum only. The simulacrum takes 8000 (and dies) and the caster gains 50 Inner Strength. |
 | Daemon Boost 1.0 / 2.0 (609 / 619) | A toggle. While on it drains 5 Inner Strength every 5 s, and switches off when there isn't enough. Every 5 s it pulses 699 or 700 at the simulacrum, if the simulacrum is within 20 m (699) or 10 m (700). 699 snapshots character level ×0.5 Viral Damage 172 / Healing 174 influence for 5 s: percentage scaling on Nuker viral hits and Patch Daemon heals only; Proxy melee/firearms receive neither stat. 700 adds level × 1.3 accuracy for 5 s to the real attack roll. Using the ability again switches it off. |
 
 ### Lifetime
+
+Detonate Proxy's GOB modifier attaches its callbacks to placeholder 710 with a zero-valued payload. `DetonateProxyProc` reads the pet's HP, subtracts the existing Viral Damage and the child's stored one from the temporary adjustment, then reapplies 1109 on the pet. The stored selector centers the radius on that pet. Stock casts 34, and the server refuses an ordinary request for 1109. The disposable mode `ability-parity-coder-detonate-proxy` checks the ordinary cast and bounded NPC area with neutral, viral-resistant, outside and lethal recipients. Player eligibility and exact retail resistance scaling remain open.
 
 - One simulacrum per owner. A new summon replaces the old one.
 - The simulacrum leaves on:
