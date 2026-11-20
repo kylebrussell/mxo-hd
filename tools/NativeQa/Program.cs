@@ -5,11 +5,30 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using NativeQa;
 
+NativeQaEndpoint endpoint = NativeQaEndpoint.Parse("127.0.0.1");
+int bindArgument = Array.IndexOf(args, NativeQaEndpoint.BindOption);
+if (bindArgument >= 0)
+{
+    try
+    {
+        if (bindArgument + 1 >= args.Length || Array.LastIndexOf(args, NativeQaEndpoint.BindOption) != bindArgument)
+            throw new ArgumentException("Supply --bind-address once with an IPv4 loopback address.");
+        endpoint = NativeQaEndpoint.Parse(args[bindArgument + 1]);
+        args = args.Take(bindArgument).Concat(args.Skip(bindArgument + 2)).ToArray();
+    }
+    catch (ArgumentException error)
+    {
+        Console.Error.WriteLine(error.Message);
+        Environment.ExitCode = 2;
+        return;
+    }
+}
+
 // Reject mistyped inspection flags before even resolving a fixture mode or creating a path.
 if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
 {
-    Console.WriteLine("NativeQa --fixture-plan [mode] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
-    Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids]");
+    Console.WriteLine("NativeQa --fixture-plan [mode] [--bind-address IPv4] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
+    Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids] [--bind-address IPv4]");
     return;
 }
 if (args.Length > 0 && args[0].StartsWith('-') &&
@@ -28,6 +47,7 @@ const string configuration = "Release";
 // Integration-only pre-client checks use dynamic ports and owned disposable schemas, never the client lock.
 if (args.Length > 0 && args[0] == "--bootstrap-checks")
 {
+    if (bindArgument >= 0) throw new ArgumentException("--bootstrap-checks uses dynamic loopback ports.");
     if (args.Length < 3) throw new ArgumentException("--bootstrap-checks <repository> <proof-directory> [mode ...]");
     string[] checks = args.Length > 3 ? args.Skip(3).ToArray() : NativeQaModes.Names.ToArray();
     await NativeQaBootstrapChecks.RunAsync(args[1], args[2], checks);
@@ -38,7 +58,7 @@ if (args.Length > 0 && args[0] == "--fixture-plan")
 {
     string mode = args.Length > 1 ? args[1] : "";
     NativeQaModes.RequireKnown(mode);
-    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode), Plan=NativeQaModes.Find(mode).Plan, SeedDisguiseTool=NativeQaFixturePlan.SeedDisguiseTool(mode), CompileArchiveValue=NativeQaFixturePlan.CompileArchiveValue },
+    Console.WriteLine(JsonSerializer.Serialize(new { Mode=mode, Environment=NativeQaFixturePlan.EnvironmentFor(mode, endpoint), Plan=NativeQaModes.Find(mode).Plan, SeedDisguiseTool=NativeQaFixturePlan.SeedDisguiseTool(mode), CompileArchiveValue=NativeQaFixturePlan.CompileArchiveValue },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
@@ -65,7 +85,8 @@ if (!File.Exists(Path.Combine(root,"SQL","reality_hd.sql")))
     Environment.ExitCode = 2;
     return;
 }
-string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
+string defaultDirectory = endpoint.IsPrimary ? "mxo-native-ability-qa" : $"mxo-native-ability-qa-{endpoint.Address}-{Guid.NewGuid():N}";
+string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), defaultDirectory));
 string commit = args.Length > 2 ? args[2] : "local";
 // Optional fifth argument keeps a focused native checklist small enough to avoid legacy UI scrolling.
 ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -81,20 +102,28 @@ byte[]? characterUi = fixturePlan.HasHotbar
         pageThree: fixturePlan.HotbarPageThree)
     : null;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
-const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
-const string account = "CSR_AbilityQA";
+string lockPath = endpoint.ClientLock("C:/Users/russe/Developer/mxo-client.lock");
+string account = endpoint.Account;
 const uint nativeId = 110;
+using FileStream clientLock = new(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+endpoint.RequireAvailable();
 Directory.CreateDirectory(qaRoot);
+string rootLockPath = Path.Combine(qaRoot, ".nativeqa.lock");
+using FileStream rootLock = new(rootLockPath, FileMode.CreateNew, FileAccess.ReadWrite,
+    FileShare.None, 4096, FileOptions.DeleteOnClose);
+if (!endpoint.IsPrimary && Directory.EnumerateFileSystemEntries(qaRoot).Any(path => path != rootLockPath))
+    throw new IOException("Use a fresh output directory for a secondary native QA fixture.");
 Directory.CreateDirectory(Path.Combine(qaRoot, "requests"));
 Directory.CreateDirectory(Path.Combine(qaRoot, "responses"));
 // Other agents use an existence-based text reservation. CreateNew respects both that convention and
 // exclusive open handles; OpenOrCreate could overwrite their text lock and delete it on shutdown.
-using FileStream clientLock = new(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 await clientLock.WriteAsync(Encoding.UTF8.GetBytes($"Codex native ability QA {Environment.ProcessId}, CSR_Tester 110, {commit}"));
 await clientLock.FlushAsync();
 string statePath = Path.Combine(qaRoot, "state.json");
 await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new { Status = "Preparing", BuildCommit = commit }));
-await File.AppendAllTextAsync(handoff, $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Took mxo-client.lock for native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database; helper players are headless QA fixtures. Main110 will be reset to Mara, full health, flag0 and mission986 only before release.\n");
+await AppendHandoffAsync(handoff, endpoint.IsPrimary
+    ? $"Took mxo-client.lock for native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database. Main110 will be reset before release."
+    : $"Reserved native QA listeners on {endpoint.Address}, build {commit}. The {account} account uses a private copy of CSR_Tester110.");
 using ThrowawayDatabase database = await ThrowawayDatabase.CreateAsync(root, "native_ability");
 ServerInstance? server = null;
 var helpers = new Dictionary<string, HeadlessPlayer>(StringComparer.OrdinalIgnoreCase);
@@ -102,6 +131,8 @@ var helperNames = NativeQaFixtureSeeder.HelperNames;
 try
 {
     var seeded = await NativeQaFixtureSeeder.PrepareAsync(root, database, fixturePlan, requestedAbilities);
+    if (!endpoint.IsPrimary)
+        await database.ExecuteAsync($"UPDATE users SET username='{account}' WHERE userId=990110 AND username='CSR_AbilityQA'");
     ushort[] abilities = seeded.Abilities;
     ushort[] disciplineAncestors = seeded.DisciplineAncestors;
     string snapshot = Path.Combine(qaRoot, "snapshot");
@@ -119,14 +150,16 @@ try
     if (sourceAssemblySha256 != snapshotAssemblySha256)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
     server = await ServerInstance.StartAsync(snapshot, database.Name,
-        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : ""),
+        NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : "", endpoint),
         fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture),
         testMobFixture: fixturePlan.TestMobFixture == null ? null : Path.Combine(root, "tools", "NativeQa", "Fixtures", fixturePlan.TestMobFixture),
         testCharacterUi: characterUi);
+    endpoint.RequireReady(server);
     byte[] shieldAck = await NativeQaReadiness.BootstrapAsync(fixtureMode,
         new NativeQaBootstrapContext(qaRoot, helperNames, helpers, OwnedDatabase: database, ActualServer: server, RepositoryRoot: root));
     await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(fixturePlan.StateWithMetadata(new NativeQaFixtureState
-    { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
+    { Database=database.Name, Directory=server.WorkingDirectory, Server=server.ConfiguredAddress, ServerPid=server.ProcessId,
+        Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
         SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
         StealthShieldQa=fixturePlan.StealthShieldQa,ShieldReady=shieldAck.Length>0,CasterOrganization=fixturePlan.StealthShieldQa?1:(int?)null,CasterPvpFlag=fixturePlan.StealthShieldQa,
@@ -134,7 +167,9 @@ try
         HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
         CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }), new JsonSerializerOptions { WriteIndented=true }));
     foreach(string message in fixturePlan.ReadyMessages) Console.WriteLine(message);
-    Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
+    Console.WriteLine(endpoint.IsPrimary
+        ? "Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110."
+        : $"Native ability QA ready on {endpoint.Address}: {account} / placeholder password / CSR_Tester110.");
     int seen = 0;
     (string Identity, int Phase)? announcedEntrance = null;
     var handled = new HashSet<string>();
@@ -164,7 +199,7 @@ try
         if (File.Exists(Path.Combine(qaRoot,"helpers")) && helpers.Count == 0)
             foreach (string name in helperNames)
             {
-                var player = await HeadlessPlayer.LoginAsync(new ServerAddress("127.0.0.1",11000,10000,10000), name, name);
+                var player = await HeadlessPlayer.LoginAsync(server.ConfiguredAddress, name, name);
                 helpers.Add(name, player);
                 await player.EnterWorldAsync();
             }
@@ -290,15 +325,34 @@ finally
 {
     foreach(var player in helpers.Values) player.Dispose();
     server?.Dispose();
-    await database.ExecuteAsync(@"
+    if (endpoint.IsPrimary)
+    {
+        await database.ExecuteAsync(@"
 DELETE FROM reality_hd.char_missions WHERE charId=110;
 INSERT INTO reality_hd.char_missions(charId,missionId) VALUES(110,986);
 UPDATE reality_hd.characters SET x=23828,y=495,z=13984,district='slums',districtId=1,is_online=0,healthC=healthM,innerStrC=innerStrM,pvpflag=0 WHERE charId=110;
 ");
-    string reset=await database.ScalarAsync("SELECT CONCAT(x,',',y,',',z,',health=',healthC,'/',healthM,',flag=',pvpflag) FROM reality_hd.characters WHERE charId=110");
-    string missions=await database.ScalarAsync("SELECT GROUP_CONCAT(missionId ORDER BY missionId) FROM reality_hd.char_missions WHERE charId=110");
-    await File.WriteAllTextAsync(Path.Combine(qaRoot,"stopped.json"),JsonSerializer.Serialize(new { Reset=reset,Missions=missions,At=DateTime.UtcNow }));
-    await File.AppendAllTextAsync(handoff,$"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Native ability server stopped; main CSR110 reset/verified {reset}, missions {missions}. Releasing mxo-client.lock. No other character was selected natively.\n");
+        string reset=await database.ScalarAsync("SELECT CONCAT(x,',',y,',',z,',health=',healthC,'/',healthM,',flag=',pvpflag) FROM reality_hd.characters WHERE charId=110");
+        string missions=await database.ScalarAsync("SELECT GROUP_CONCAT(missionId ORDER BY missionId) FROM reality_hd.char_missions WHERE charId=110");
+        await File.WriteAllTextAsync(Path.Combine(qaRoot,"stopped.json"),JsonSerializer.Serialize(new { Reset=reset,Missions=missions,At=DateTime.UtcNow }));
+        await AppendHandoffAsync(handoff, $"Native ability server stopped. Main CSR110 reset and verified at {reset}, missions {missions}. Releasing mxo-client.lock.");
+    }
+    else
+    {
+        await File.WriteAllTextAsync(Path.Combine(qaRoot, "stopped.json"),
+            JsonSerializer.Serialize(new { BindAddress = endpoint.Address.ToString(), Database = database.Name, At = DateTime.UtcNow }));
+        await AppendHandoffAsync(handoff, $"Native ability server stopped on {endpoint.Address}. Releasing its fixture reservation.");
+    }
+}
+
+static async Task AppendHandoffAsync(string path, string message)
+{
+    string line = $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): {message}\n";
+    for (int attempt = 0; ; attempt++)
+    {
+        try { await File.AppendAllTextAsync(path, line); return; }
+        catch (IOException) when (attempt < 4) { await Task.Delay(50); }
+    }
 }
 
 static string Le(ushort value)=>WireFormat.ToHex(BitConverter.GetBytes(value));

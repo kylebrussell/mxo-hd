@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using System.Text.Json;
 using NativeQa;
 namespace hds.Tests;
 public class NativeQaCommandLineTests
@@ -25,6 +27,47 @@ public class NativeQaCommandLineTests
         Assert.Equal(2,result.Exit);Assert.Empty(result.Output);
         Assert.Contains("repository must contain SQL/reality_hd.sql",result.Error);
     }
+
+    [Fact]
+    public async Task SecondaryPlanUsesTheStockPortsOnItsOwnLoopbackAddress()
+    {
+        var result = await Run("--fixture-plan", "actions", "--bind-address", "127.0.0.2");
+        Assert.Equal(0, result.Exit);
+        Assert.Empty(result.Error);
+        using var json = JsonDocument.Parse(result.Output);
+        var environment = json.RootElement.GetProperty("Environment");
+        Assert.Equal("127.0.0.2", environment.GetProperty("MXO_BIND_ADDRESS").GetString());
+        Assert.Equal("11000", environment.GetProperty("MXO_AUTH_PORT").GetString());
+        Assert.Equal("10000", environment.GetProperty("MXO_MARGIN_PORT").GetString());
+        Assert.Equal("10000", environment.GetProperty("MXO_WORLD_PORT").GetString());
+    }
+
+    [Theory]
+    [InlineData("0.0.0.0")]
+    [InlineData("::1")]
+    [InlineData("127.0.2")]
+    [InlineData("192.168.0.2")]
+    public async Task RejectsAddressesOutsideTheCanonicalIpv4LoopbackRange(string address)
+    {
+        var result = await Run("--fixture-plan", "--bind-address", address);
+        Assert.Equal(2, result.Exit);
+        Assert.Contains("IPv4 loopback", result.Error);
+    }
+
+    [Fact]
+    public void AListenerOnThePrimaryAddressDoesNotReserveTheSecondaryAddress()
+    {
+        var primary = NativeQaEndpoint.Parse("127.0.0.1");
+        var secondary = NativeQaEndpoint.Parse("127.0.0.2");
+        var listeners = new[] { new IPEndPoint(primary.Address, 11000), new IPEndPoint(secondary.Address, 10000) };
+        Assert.False(NativeQaEndpoint.Conflicts(secondary.Address, 11000, listeners));
+        Assert.True(NativeQaEndpoint.Conflicts(primary.Address, 11000, listeners));
+        Assert.True(NativeQaEndpoint.Conflicts(secondary.Address, 10000, listeners));
+        Assert.True(NativeQaEndpoint.Conflicts(secondary.Address, 11000, [new(IPAddress.Any, 11000)]));
+        Assert.Equal("mxo-client.lock", primary.ClientLock("mxo-client.lock"));
+        Assert.Equal("mxo-client.127.0.0.2.lock", secondary.ClientLock("mxo-client.lock"));
+    }
+
     static async Task<(int Exit,string Output,string Error)> Run(params string[] args)
     {
         string empty=Path.Combine(Path.GetTempPath(),"mxo-nativeqa-cli-"+Guid.NewGuid().ToString("N"));
