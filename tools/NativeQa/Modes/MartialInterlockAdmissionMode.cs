@@ -144,6 +144,8 @@ public abstract class MartialInterlockAdmissionMode : NativeQaMode
     private static uint Handle(ViewCreation view) => DuelPackets.Handle(view.ViewId, view.SpawnId);
 
     private static byte[] Use(Sample sample, uint handle) => StarterHackerControlTargetMode.WithHandle(sample.Request, handle);
+
+    internal static byte[] ControlRequest(ushort id, uint handle) => Use(Captures.Single(sample => sample.Id == id), handle);
 }
 
 public sealed class MartialKungFuAdmissionMode() : MartialInterlockAdmissionMode("kung-fu", CombatStyles.KungFu,

@@ -33,3 +33,9 @@ The six native batches covered 20 abilities. The resistance comparisons already 
 4. **Source work before further damage or animation sampling.** GOB values, extracted ILDB rules and original-server captures with known stats take priority. Start with **138 and 139**, which now have only source parity open. The 532 variant labels and the 534 style mismatch need source resolution. The existing neutral/resistant comparisons can serve as regression tests after the authoritative mapping is recovered.
 
 Native sources [PR551](https://github.com/kylebrussell/mxo-hd/pull/551), [PR555](https://github.com/kylebrussell/mxo-hd/pull/555), [PR557](https://github.com/kylebrussell/mxo-hd/pull/557), [PR558](https://github.com/kylebrussell/mxo-hd/pull/558), [PR559](https://github.com/kylebrussell/mxo-hd/pull/559), and [PR561](https://github.com/kylebrussell/mxo-hd/pull/561).
+
+## Powerless and Stun recipient fixture
+
+Use NativeQa mode `ability-parity-ma-player-controls`. Its READY output lists the stock hotbar pages, prep commands and expected state and immunity durations. Enter ordinary Close Combat against the visible QAEnemy player and press page 2 slot 1 to select Kung Fu. Run page 2 slots 2–6 in order. After the fifth `NEXT` line, submit `?combatdepth control-karate` and press page 3 slot 1 to select Karate. Run page 3 slots 2–5 in the same fight. The two prerequisite-complete loadouts use 85 and 83 memory, respectively.
+
+QAEnemy attempts ordinary Cheap Shot while affected, then repeats the same request after control and immunity expire. Wait for `NEXT` before pressing the next slot. A missed special can be retried after its own reuse ends. Keep the stock caster PacketLog and `martial-player-controls.jsonl`. The JSONL contains both recipient adds and removals, observed expiry times, the refused ability and its recovered reuse and round. The disposable fixture fixes the modifier chance for 262, 265, 429, 534 and 536 while retaining ordinary hit contests.

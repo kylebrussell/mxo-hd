@@ -439,7 +439,7 @@ namespace hds
         // ---- applying ----
 
         /// <summary>The tempmods of one use of the effect, with values rolled in their ranges.</summary>
-        public static List<Active> Instantiate(TempMods.Effect effect, Random random)
+        public static List<Active> Instantiate(TempMods.Effect effect, Random random, bool fixtureProc = false)
         {
             List<Active> mods = new List<Active>();
             foreach (TempMods.Mod m in effect.Mods)
@@ -447,7 +447,7 @@ namespace hds
                 Int32 value;
                 lock (random)
                 {
-                    if (m.Chance < 1 && random.NextDouble() >= m.Chance) continue;
+                    if (m.Chance < 1 && (fixtureProc ? m.Chance <= 0 : random.NextDouble() >= m.Chance)) continue;
                     value = m.MaxValue > m.MinValue ? random.Next(m.MinValue, m.MaxValue + 1) : m.MinValue;
                 }
                 mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc,
@@ -477,9 +477,9 @@ namespace hds
         /// tempmods that went on (none when only control states were refused).
         /// </summary>
         public static List<Active> Apply(Subject subject, TempMods.Effect effect, double now, WorldClient caster = null,
-            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
+            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null, bool fixtureProc = false)
         {
-            List<Active> mods = Instantiate(effect, rng ?? random);
+            List<Active> mods = Instantiate(effect, rng ?? random, fixtureProc);
             AbilityConditionalControls.Init(subject,effect,mods,now);
             for (int i = mods.Count - 1; i >= 0; i--)
             {
@@ -636,7 +636,9 @@ namespace hds
             }
             // The casting player, when there is one, is who a death by the damage over time is owed to (PvpCombat)
             var subject=ForPlayer(client);
-            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId));
+            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,
+                configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId),
+                fixtureProc:MartialPlayerControlQa.ModifierProc(caster, client, abilityId));
             return true;
         }
 

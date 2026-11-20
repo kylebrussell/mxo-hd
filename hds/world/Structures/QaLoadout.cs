@@ -39,12 +39,23 @@ namespace hds
                 AbilityProgression.IsAbilityCode(unchecked((uint)r.getAbilityID())) &&
                 AbilityCatalog.IdOf(unchecked((uint)r.getAbilityID())) == ability).Take(2).ToArray();
             if (rows.Length != 1) return null; // refuse ambiguous archive rows rather than guessing a slot
-            var row = rows[0];
-            byte[] body = new byte[19];
-            body[unload ? 4 : 6] = 10; body[8] = 1;
-            body[11] = (byte)row.getSlot(); body[12] = (byte)(row.getSlot() >> 8);
-            body[13] = (byte)ability; body[14] = (byte)(ability >> 8);
-            body[17] = (byte)row.getLevel(); body[18] = (byte)(row.getLevel() >> 8);
+            return Request(rows, unload);
+        }
+
+        internal static byte[] Request(IReadOnlyList<MarginAbilityItem> rows, bool unload)
+        {
+            byte[] body = new byte[10 + 9 * rows.Count];
+            body[unload ? 4 : 6] = 10;
+            body[8] = (byte)rows.Count; body[9] = (byte)(rows.Count >> 8);
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                int offset = 10 + 9 * i;
+                ushort id = AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID()));
+                body[offset + 1] = (byte)row.getSlot(); body[offset + 2] = (byte)(row.getSlot() >> 8);
+                body[offset + 3] = (byte)id; body[offset + 4] = (byte)(id >> 8);
+                body[offset + 7] = (byte)row.getLevel(); body[offset + 8] = (byte)(row.getLevel() >> 8);
+            }
             return body;
         }
 

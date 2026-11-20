@@ -12,7 +12,8 @@ public static class AbilitySweepHotbar
     private const int SlotRecordsStart = 16;
     private const int SelectionLength = 32;
 
-    public static byte[]? FromEnvironment(IReadOnlyList<ushort> loadout, bool required, bool includeWithdraw = false)
+    public static byte[]? FromEnvironment(IReadOnlyList<ushort> loadout, bool required, bool includeWithdraw = false,
+        IReadOnlyList<ushort>? pageThree = null)
     {
         string? path = Environment.GetEnvironmentVariable(TemplateVariable);
         if (string.IsNullOrWhiteSpace(path))
@@ -31,7 +32,7 @@ public static class AbilitySweepHotbar
             throw new InvalidDataException("The stock UI template does not fit the client's character UI buffer.");
         byte[] template = new byte[(int)file.Length];
         file.ReadExactly(template);
-        return Seed(template, loadout, includeWithdraw);
+        return Seed(template, loadout, includeWithdraw, pageThree);
     }
 
     internal static void Validate(IReadOnlyList<ushort> abilities, bool includeWithdraw = false)
@@ -42,9 +43,11 @@ public static class AbilitySweepHotbar
             throw new ArgumentException("The hotbar requires one to ten slots and distinct canonical ability IDs.", nameof(abilities));
     }
 
-    public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities, bool includeWithdraw = false)
+    public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities, bool includeWithdraw = false,
+        IReadOnlyList<ushort>? pageThree = null)
     {
         Validate(abilities, includeWithdraw);
+        if (pageThree is { Count: > 0 }) Validate(pageThree);
         if (template.Length is < SlotRecordsStart + SelectionLength or > QaCharacterUi.MaxLength ||
             Read(template, 0) != 2 || Read(template, 8) != 1)
             throw new InvalidDataException("Expected stock cui.cfg version 2 with shortcuts version 1.");
@@ -70,14 +73,8 @@ public static class AbilitySweepHotbar
         if (cursor != endOfRecords)
             throw new InvalidDataException("Unexpected bytes between stock shortcuts and selection state.");
 
-        for (byte slot = 0; slot < abilities.Count; slot++)
-        {
-            byte[] record = new byte[10];
-            record[0] = Page;
-            record[1] = slot;
-            BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(6), abilities[slot]);
-            records[(Page, slot)] = record;
-        }
+        WritePage(Page, abilities);
+        if (pageThree is { Count: > 0 }) WritePage(Page + 1, pageThree);
         if (includeWithdraw)
         {
             byte slot = (byte)abilities.Count;
@@ -102,6 +99,18 @@ public static class AbilitySweepHotbar
         }
         template.AsSpan(endOfRecords).CopyTo(output.AsSpan(outputOffset));
         return output;
+
+        void WritePage(byte page, IReadOnlyList<ushort> shortcuts)
+        {
+            for (byte slot = 0; slot < shortcuts.Count; slot++)
+            {
+                byte[] record = new byte[10];
+                record[0] = page;
+                record[1] = slot;
+                BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(6), shortcuts[slot]);
+                records[(page, slot)] = record;
+            }
+        }
     }
 
     private static int RecordLength(byte[] template, int start, int end)
