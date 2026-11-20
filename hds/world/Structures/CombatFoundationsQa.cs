@@ -9,6 +9,7 @@ namespace hds
         private const uint Rifle = 692, DualSmgs = 7899;
         private const int ResistSeconds = 1800;
         private const int SightX = 22700, SightY = 1095, SightZ = 16100, BlockedX = 21700, ClearX = 22900;
+        private const int PickX = 21550, TestTargetX = 21750, TestCastX = 22350, TestZ = 16150;
 
         internal static string Setup(WorldClient caller, string mode)
         {
@@ -32,6 +33,21 @@ namespace hds
                 Spawn("AB1 Clear", ClearX, SightY, SightZ);
                 return $"Stand at {SightX},{SightY},{SightZ} facing west (yaw 192). AB1 Blocked is 10 m ahead across a mapped gap. AB1 Clear is 2 m east. Rifle equipped.";
             }
+            if (mode == "sight-pick" || mode == "sight-blocked")
+            {
+                if (!OutdoorStand(PickX) || !OutdoorStand(TestTargetX) || !OutdoorStand(TestCastX) ||
+                    !NavMesh.HasSightPath(1, PickX, SightY, TestZ, TestTargetX, SightY, TestZ) ||
+                    NavMesh.HasSightPath(1, TestCastX, SightY, TestZ, TestTargetX, SightY, TestZ))
+                    return "Hacker sight fixture refused: the clear picking stand or blocked cast stand could not be verified.";
+                Spawn("QA Sight Target", TestTargetX, SightY, TestZ);
+                if (mode == "sight-pick")
+                {
+                    Move(caller, PickX, SightY, TestZ, yaw: 64);
+                    return $"Hacker sight picking stand {PickX},{SightY},{TestZ}. Select QA Sight Target 2 m ahead, then move to the blocked cast stand.";
+                }
+                Move(caller, TestCastX, SightY, TestZ, yaw: 192);
+                return $"Hacker sight blocked cast stand {TestCastX},{SightY},{TestZ}. QA Sight Target is 6 m west across the mapped gap.";
+            }
             if (mode == "cone")
             {
                 if (!CombatFixtureWeapons.Equip(caller, DualSmgs)) return "Combat foundation cone requires the fixture dual SMGs.";
@@ -50,6 +66,9 @@ namespace hds
             }
             return "Use ?combatdepth foundations-sight or foundations-cone.";
         }
+
+        private static bool OutdoorStand(int x) => NavMesh.Locate(1, x, SightY, TestZ, out var location) &&
+            !location.indoors && Math.Abs(location.floorY - (SightY - 95)) <= 100;
 
         private static void Move(WorldClient caller, double x, double y, double z, byte yaw)
         {
