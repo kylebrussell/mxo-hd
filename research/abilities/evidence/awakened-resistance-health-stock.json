@@ -1,0 +1,22 @@
+{
+  "families": {
+    "ignore-pain-health-change-stock": {
+      "representative": 196,
+      "result": "pass",
+      "head": "420a7df141283bce1218874f7257f1d1114bd6ea",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/450",
+      "scope": "Stock activation from the level-99 diagnostic sends 30 s reuse. The fixed 10 HP sample fires when health is set down or up and stops on expiry. Native PacketLog e082af3518af lines 2360 and 2523 show the +5 direct melee and ballistic resistance add and removal. The server also dispatches natural HP regeneration through the same health-change path. The original retail regen dispatch remains unverified."
+    },
+    "awakened-legacy-passive-stats-stock": {
+      "representative": 408,
+      "result": "pass",
+      "head": "420a7df141283bce1218874f7257f1d1114bd6ea",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/450",
+      "scope": "Stock Bonuses loses Combat Tactics +200 and Viral Defense goes 247 to 47 on unload. Reload restores both. Native PacketLog e082af3518af lines 176, 556 and 734 show +200 records for stats 163 and 183 at entry, unload and reload."
+    }
+  },
+  "abilities": {
+    "196": { "family": "ignore-pain-health-change-stock" },
+    "408": { "family": "awakened-legacy-passive-stats-stock" }
+  }
+}
