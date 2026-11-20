@@ -152,7 +152,7 @@
       "result": "pass",
       "head": "a4307878",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-6995670186",
-      "scope": "Native Wounding and Blinding Throw landed their timed effects; Poison Knife and Sever Artery landed out of combat after the stock client refused their interlock casts."
+      "scope": "Native Wounding and Blinding Throw landed their timed effects; Poison Knife and Sever Artery landed out of combat after the stock client refused their interlock casts. PR424 confirms the selected Poison Knife applies 25-second ThrownDOT with 2-point ticks, and an empty selection receives a single invalid-target refusal. https://github.com/kylebrussell/mxo-hd/pull/424"
     },
     "hyper-speed-movement": {
       "representative": 12,

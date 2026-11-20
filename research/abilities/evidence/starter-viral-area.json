@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "60": {
+      "checks": {
+        "area": {
+          "source": "GOB 60 selects an enemy with CastDirectObjects 3 and a 4 m target-centered radius.",
+          "runtime": "AbilityTargets.LandAround applies the traced target-area selector, starting from the selected enemy. Each secondary is assessed separately.",
+          "test": "The ability-parity-starter-hacker-viral-damage replay uses the captured native request. QAEnemy and the secondary 2 m past it take 8, while the player 5 m past it is excluded. The secondary is outside 4 m from the caster. PR396 and PR432 verify the selected and secondary hits in the stock client. https://github.com/kylebrussell/mxo-hd/pull/396 https://github.com/kylebrussell/mxo-hd/pull/432"
+        }
+      }
+    }
+  }
+}
