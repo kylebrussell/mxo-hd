@@ -429,6 +429,8 @@ namespace hds
                     ability == RecallTeamMember ? FxRecallTeamMemberPhaseOut : FxRecallMissionTeamPhaseOut);
                 MissionStaging.Teleport(target, x, y, z);
                 target.FlushQueue();
+                PvpFlag.ToWatchers(target, PvpFight.BuildFacing(target.playerInstance.YawInterval.getValue()[0],
+                    (float)x, (float)y, (float)z));
                 Output.WriteDebugLog("[UTILITY] Recalled " + TimedEffects.PlayerName(target) + " to " + casterName + " at " +
                                      x + "," + y + "," + z);
             }
