@@ -157,11 +157,13 @@ namespace hds
             }
 
             // Retail loaded Awakened's hidden Self Defense at its level with the attributes (80 b2 11 00 05 00 08 02).
-            UInt16 awakened = Store.dbManager.WorldDbHandler.GetCurrentAbilityLevel(
-                DataLoader.getInstance().getAbilityByID(AbilityProgression.AwakenedAbility).getGOID(), charId);
+            var abilities = Store.dbManager.MarginDbHandler.LoadAbilities((int)charId);
+            UInt16 awakened = abilities.Where(row => AbilityMemory.IsAbility(unchecked((UInt32)row.getAbilityID())) &&
+                    AbilityCatalog.IdOf(unchecked((UInt32)row.getAbilityID())) == AbilityProgression.AwakenedAbility)
+                .Select(row => row.getLevel()).DefaultIfEmpty().Max();
             client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
                 AbilityProgression.SelfDefenseAbility, awakened, AbilityProgression.HiddenSlot));
-            foreach (var loaded in Store.dbManager.MarginDbHandler.LoadAbilities((int)charId))
+            foreach (var loaded in abilities)
                 if (loaded.getLoaded())
                 {
                     UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
@@ -407,6 +409,7 @@ namespace hds
                     }
                 }
                 if(result.Accepted.Length==0) return;
+                CombatStyles.ReconcileArchiveSelection(client, remainingMembership);
                 AbilityPassives.SetLoadedFromRows(client,result.Loaded,emittedShadowBase);
                 client.FlushQueue();
                 Output.WriteDebugLog("[ABILITY] "+(unload?"Unloaded ":"Loaded ")+result.Accepted.Length+" abilities; memory "+result.Used+"/"+result.Maximum);

@@ -63,6 +63,28 @@ public class CombatStyleTests
     }
 
     [Theory]
+    [InlineData(CombatStyles.HackerStyle, CombatStyles.SelfDefense)]
+    [InlineData(0x80000006u, 0x80000006u)]
+    public void UnloadingSelectedStyleDoesNotReactivateItOnReloadOrChangeABagSelection(uint selection, uint expected)
+    {
+        var client = Client();
+        var both = new (ushort, ushort)[] { (2, 50), (CombatStyles.HackerStyle, 50) };
+        AbilityPassives.SetLoaded(client, both);
+        CombatStyles.Select(client, CombatStyles.HackerStyle);
+        client.playerData.combatSelection = selection;
+        client.playerInstance.CurCombatExclusiveAbility.setValue(selection);
+
+        CombatStyles.ReconcileArchiveSelection(client, new HashSet<ushort> { 2, CombatStyles.SelfDefense });
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (2, 50) });
+        AbilityPassives.SetLoaded(client, both);
+
+        Assert.Equal(CombatStyles.SelfDefense, CombatStyles.Active(client));
+        Assert.Equal(expected, client.playerData.combatSelection);
+        Assert.Equal(expected, BitConverter.ToUInt32(client.playerInstance.CurCombatExclusiveAbility.getValue()));
+        Assert.Equal(0, AbilityPassives.Total(client, Healing));
+    }
+
+    [Theory]
     [InlineData(CombatStyles.Aikido)]
     [InlineData(CombatStyles.Karate)]
     [InlineData(CombatStyles.KungFu)]

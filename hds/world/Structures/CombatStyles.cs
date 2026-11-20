@@ -150,6 +150,17 @@ namespace hds
         public static char Letter(WorldClient client) => client == null ? 'S' :
             Letter(Active(client), RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(client)));
 
+        internal static void ReconcileArchiveSelection(WorldClient client, ISet<ushort> remaining)
+        {
+            ushort selected = client.playerData.combatStyle;
+            if (selected == SelfDefense || remaining.Contains(selected)) return;
+
+            // Retire the style before rebuilding passive records. Loading it again requires a new selection.
+            // Attribute 39 can instead name an independently selected inventory slot.
+            if (client.playerData.combatSelection == selected) Switch(client, SelfDefense);
+            else Select(client, SelfDefense);
+        }
+
         /// <summary>Makes the selected style the active one: its stat records replace the previous style's.</summary>
         public static void Select(WorldClient client, ushort style)
         {
