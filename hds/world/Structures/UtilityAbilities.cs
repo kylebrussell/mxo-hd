@@ -482,7 +482,16 @@ namespace hds
         }
 
         // Called with the loadout lock after the complete grant closure has been rebuilt.
-        internal static void DisableMissionMap(WorldClient client) => mapFlags.Remove(client);
+        internal static void DisableMissionMap(WorldClient client)
+        {
+            mapFlags.Remove(client);
+            DataMining.EndMissionReveal(client);
+        }
+
+        private static bool ForceMissionMapReveal() =>
+            Environment.GetEnvironmentVariable("MXO_UTILITY_MAP_QA_REVEAL") == "1" &&
+            Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+            Store.config.dbParams.DatabaseName.StartsWith("mxotest_", StringComparison.Ordinal);
 
         /// <summary>Disposable-fixture presentation control; normal mission rolls are never changed.</summary>
         public static void DevMissionMap(WorldClient client, string[] args)
@@ -515,7 +524,9 @@ namespace hds
                     DisableMissionMap(client);
                     return;
                 }
-                flags = MissionMapFlags(dmm, Level(client, MapDownloading), MissionStaging.PlayerLevel(client), Roll());
+                DataMining.EndMissionReveal(client);
+                int roll = ForceMissionMapReveal() ? 99 : Roll();
+                flags = MissionMapFlags(dmm, Level(client, MapDownloading), MissionStaging.PlayerLevel(client), roll);
                 mapFlags.GetOrCreateValue(client).Value = flags;
             }
             Output.WriteDebugLog("[UTILITY] Download Mission Map: access flags " + flags);
