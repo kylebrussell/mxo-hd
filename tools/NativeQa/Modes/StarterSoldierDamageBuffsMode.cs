@@ -26,7 +26,7 @@ public sealed class StarterSoldierDamageBuffsMode : NativeQaMode
         readyMessages: new[]
         {
             "Level 19, no target or combat needed. Open Status and page 2. Use slot 1 Intensify Damage for +1 melee and +1 ballistic. Immediately use slot 2 Firearms Skill. Check both Intensify modifiers disappear and Firearms adds +9 ballistic damage.",
-            "While Firearms Skill is active, cast slot 3 Martial Arts Prowess. Check Firearms is removed before the captured +40 melee bonus appears. After 20 seconds Prowess goes away and both damage values return to baseline.",
+            "While Firearms Skill is active, cast slot 3 Martial Arts Prowess. Check Firearms is removed before the GOB-scaled +9 melee bonus (half of character level 19, rounded down) appears. After 20 seconds Prowess goes away and both damage values return to baseline.",
             "Capture the buff records, removal order and native reuse icons. All three share the shipped stacking type 38."
         });
 
@@ -56,12 +56,12 @@ public sealed class StarterSoldierDamageBuffsMode : NativeQaMode
         cursor = actor.World.RpcSnapshot().Count;
         actor.SendRpc(Convert.FromHexString(ProwessRequest));
         var firearmsOff = await RecordAsync(cursor, Firearms, 171, 9, 20, remove: true);
-        var prowessOn = await RecordAsync(cursor, Prowess, 159, 40, 20);
+        var prowessOn = await RecordAsync(cursor, Prowess, 159, 9, 20);
         sequence = actor.World.RpcSnapshot().ToList();
         Check.That(sequence.IndexOf(firearmsOff) < sequence.IndexOf(prowessOn), "Firearms clears before Prowess applies");
         byte[] timer = AbilityCooldowns.BuildTimer(Prowess, AbilityCooldowns.OwnTimer, 90, true);
         await StockAbilityProfile.ObserveAsync(actor, cursor, rpc => rpc.Bytes.AsSpan().SequenceEqual(timer), "Prowess owns a 90-second reuse");
-        await RecordAsync(cursor, Prowess, 159, 40, 20, remove: true, timeout: TimeSpan.FromSeconds(23));
+        await RecordAsync(cursor, Prowess, 159, 9, 20, remove: true, timeout: TimeSpan.FromSeconds(23));
         Check.Equal(0, actor.World.Problems.Count, "Soldier buff replacement and expiry framing");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "soldier-damage-buffs.json"), JsonSerializer.Serialize(proof));
         return Array.Empty<byte>();
