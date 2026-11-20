@@ -1,0 +1,19 @@
+{
+  "families": {
+    "kungfu-grandmaster-specials-stock": {
+      "representative": 427,
+      "result": "pass",
+      "head": "3e3539475afb398366f14dc6dd1b951c5741b155",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/472",
+      "scope": "PacketLog pr472 receives 8086/8084/8083/8080 for 427/428/429/430 at 2660/1055/1179/2021. Native damages were 124/34/63/146. The cast logs verify Confuse and Powerless. Extreme Falling Kick's 10% stun did not proc."
+    }
+  },
+  "abilities": {
+    "427": {
+      "family": "kungfu-grandmaster-specials-stock"
+    },
+    "429": {
+      "family": "kungfu-grandmaster-specials-stock"
+    }
+  }
+}
