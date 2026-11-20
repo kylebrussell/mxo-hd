@@ -8,9 +8,9 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
 {
     private const int CharacterLevel = 10;
     // Complete stock hotbar requests from PR385, PacketLog 226d05636f73 lines 1195–1196 and 1380–1381.
-    private const string Goggles = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+    internal const string Goggles = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
         "00 00 00 00 64 f1 1a 00 e8 26 28 3b 08 08 00 00 00 00 00";
-    private const string Handheld = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+    internal const string Handheld = "80 b9 d7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
         "00 00 00 00 64 f1 1a 00 e8 18 28 3b 08 01 00 00 00 00 00";
     private const string Enabled = "80 bd 05 d7 00 00 00 00 00 00 01";
     private const string Disabled = "80 bd 05 d7 00 00 00 00 00 00 00";
