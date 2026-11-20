@@ -97,6 +97,21 @@ namespace hds
             return true;
         }
 
+        // Structural admission only. Range, sight, PvP permission and the contest still run when the cast lands.
+        internal static bool HasLiveAttackSelection(WorldClient caster, ushort viewId, ushort? spawn)
+        {
+            if (viewId <= 2) return false;
+            var mob = FindMob(caster, viewId, out var view);
+            if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted ||
+                spawn.HasValue && view.spawnId != spawn.Value)
+                return false;
+
+            if (mob != null) return !mob.isFriendly && !mob.getIsDead() && mob.getHealthC() > 0;
+            var player = PvpCombat.PlayerInView(caster, viewId);
+            return player != null && !player.playerData.isDead && !player.playerData.duelDeath &&
+                PvpCombat.HealthOf(player) > 0;
+        }
+
         /// <summary>Expand a landed primary into the template's hostile area.</summary>
         internal static void LandAround(WorldClient client, AbilityItem ability, (double X, double Y, double Z) primary,
             AbilityCastOrigin origin, AbilityEngageFoes.Cast engageFoes, WorldClient skipPlayer = null, Mob skipMob = null)
