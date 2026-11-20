@@ -23,7 +23,7 @@ namespace hds
     public static class CombatSpecials
     {
         public const ushort PoisonKnife = 146, WoundingThrow = 281, SeverArtery = 341, BerserkerAttack = 535, Taunt = 647,
-            SideRollEscape = 121, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, WoodenStakePlus = 1022,
+            SideRollEscape = 121, BackRollEscape = 122, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, WoodenStakePlus = 1022,
             HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
@@ -52,7 +52,8 @@ namespace hds
         public static bool Handles(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            return thrownDots.Contains(id) || casterBuffs.Contains(id) || exileWeakness.ContainsKey(id) || id == Taunt;
+            return thrownDots.Contains(id) || casterBuffs.Contains(id) || exileWeakness.ContainsKey(id) ||
+                id == Taunt || id == BackRollEscape;
         }
 
         /// <summary>What the server does for the special (the ability audit's text).</summary>
@@ -64,6 +65,7 @@ namespace hds
             if (thrownDots.Contains(id)) return id == SeverArtery
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
                 : "stored ThrownDOT on the target (script tick)";
+            if (id == BackRollEscape) return "on landing: leaves the fight (TestFunction 6 inferred); target Enraged 10 s";
             if (id == CartwheelEscape) return "on landing: caster Combat Evasion +25 for 30s from stored WhenEnabled 1 modifier";
             if (id == SideRollEscape) return "on landing: caster Combat Evasion buff, then leaves the fight (TestFunction 6 inferred)";
             if (casterBuffs.Contains(id)) return "on landing: caster buff from stored WhenEnabled 1 modifiers";
@@ -179,11 +181,13 @@ namespace hds
             id = AbilityCatalog.Canonical(id);
             if (id == AwakenedPowerShot.Id) AwakenedPowerShot.Landed(caster);
             if (casterBuffs.Contains(id) && AbilityBuffs.Apply(caster, id)) caster.FlushQueue();
-            if (id == SideRollEscape || id == CartwheelEscape)
+            if (id == SideRollEscape || id == BackRollEscape || id == CartwheelEscape)
             {
                 byte[] leave = null;
                 DelayedActions.AfterFor(caster, 0, () => CombatManager.GetHandler(caster).ProcessLeaveCloseCombat(ref leave));
-                Output.WriteDebugLog("[SPECIAL] " + (id == CartwheelEscape ? "Cartwheel Escape" : "Side Roll Escape") + ": " + caster.playerData.getCharID() + " rolls out of the fight");
+                string label = id == CartwheelEscape ? "Cartwheel Escape"
+                    : id == BackRollEscape ? "Back Roll Escape" : "Side Roll Escape";
+                Output.WriteDebugLog("[SPECIAL] " + label + ": " + caster.playerData.getCharID() + " rolls out of the fight");
             }
         }
 
