@@ -1,0 +1,47 @@
+{
+  "families": {
+    "starter-spy-escape-stock": {
+      "representative": 292,
+      "result": "pass",
+      "head": "9679dcb498db20dfcdd960c4cf3846ce8dbe160b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/519",
+      "scope": "Stock client held both escapes at rest. In interlock it sent both while Spy Style was active. Both spent 15 IS, applied +20/+25 to Combat Evasion for 30 s, started the 12 s family timer and ended the fight. Cartwheel also applied four-second Confuse and started its own 30 s reuse."
+    },
+    "starter-evade-entry-stock": {
+      "representative": 217,
+      "result": "pass",
+      "head": "0c97bd998fe6ea8b3396285fc46404319446116a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/524",
+      "scope": "Stock Evade Combat turned on at rest. With and without loaded Combat Insight the helper's ordinary entry followed the current server threshold at 110. Stock toggle-off removed the shield and started its 30 s timer, then entry without Insight succeeded. Retail interlock shield damage is unverified."
+    }
+  },
+  "abilities": {
+    "121": {
+      "family": "starter-spy-escape-stock"
+    },
+    "138": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped Kung-Fu Guard Breaker interlock move and Off Balance requirement.",
+          "runtime": "Combat uses 5951 after Off Balance with Kung-Fu 133 active.",
+          "test": "PR520 stock refused the same action without Off Balance and then played animation 5951, hit for 39 and debuffed Melee Defense. https://github.com/kylebrussell/mxo-hd/pull/520"
+        }
+      }
+    },
+    "139": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped Aikido Iron Guard interlock move.",
+          "runtime": "Combat uses Iron Guard animation 738 in Aikido 101.",
+          "test": "PR520 stock played 738 in Aikido, hit for 13 and showed the buff. PacketLog recorded the 25 IS debit, 10 s own timer and the two +10 defenses for 12 s. https://github.com/kylebrussell/mxo-hd/pull/520"
+        }
+      }
+    },
+    "217": {
+      "family": "starter-evade-entry-stock"
+    },
+    "292": {
+      "family": "starter-spy-escape-stock"
+    }
+  }
+}
