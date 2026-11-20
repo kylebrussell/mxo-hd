@@ -186,7 +186,7 @@ namespace hds
                         source != null && !source.DirectDamage && (source.DamageOverTime || TempMods.Has(abilityId))
                         ? (UInt16)0
                         : abilityId == AwakenedPowerShot.Id ? AwakenedPowerShot.RollDamage(client, random) :
-                            AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true);
+                            AbilityHandler.AbilityDamage(ability, random, allowTypedResistanceQa:true, characterLevel:client.playerInstance.Level.getValue()[0]);
                     fx = ability.getActivationFX();
                 }
             }
