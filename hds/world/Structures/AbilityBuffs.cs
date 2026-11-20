@@ -305,7 +305,7 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return PrisonDevices.TryGet(id,out buff) || AbilityDesperation.TryGet(id,1,1,0,out buff) || AbilityHealthCallbacks.TryGet(id,50,0,out buff) || AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
+            return PrisonDevices.TryGet(id,out buff) || DistractingBlow.TryGetEffectBuff(id, out buff) || AbilityDesperation.TryGet(id,1,1,0,out buff) || AbilityHealthCallbacks.TryGet(id,50,0,out buff) || AbilityScaledBuffs.TryScriptedTimed(id,50,out buff) || AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff) || CombatSpecials.TryCasterBuff(id, out buff);
         }
 
         public static ushort DissemblingBits(WorldClient client)
