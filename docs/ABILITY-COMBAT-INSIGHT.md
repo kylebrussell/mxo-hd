@@ -5,11 +5,14 @@ This is a labelled **OURS approximation**, not retail parity. A new player inter
 ```
 baseForce = max(0,100 + current tactic ForceCombat + direct519)
 force = floor(baseForce * (100 + max(0,active1048)) /100)
-evade = max(0,100 + current tactic EvadeInterlock + direct520) +10
+baseEvade = max(0,100 + current tactic EvadeInterlock + direct520)
+evade = floor(baseEvade * max(0,100 + active1049) /100) +10
 admit when force >= evade
 ```
 
 The100 baseline and10 active-evasion margin are explicit OURS normalization. This is not a recovered1048→519 attribute link. At level50, ordinary113 contributes10: Power versus Speed+217 changes100<110 refusal to110==110 admission. Normal49 then raises the target to135, so110 refuses; ordinary Grab with113 gives220 and admits. Current tactics retain their authored direct519/520 values.
+
+The starter Evade fixture exercises Execute Program’s +5 Evade Interlock Bonus (1049) inside this same rule. Against a live shield it raises the baseline 110 to 115 and blocks Force 110. Unloading Execute Program restores equality. With the shield off, a loaded bonus has no effect on entry.
 
 The check runs after existing PvP legality, range, ranged-request suppression, same-fight targeting and join-capacity checks, before a new fight mutates combat state. It applies to either client ForcedInterlock flag value. Non-evasion targets, existing interlocks/joins and ranged fire retain their behavior. Positive520 alone cannot recreate the gate when217 is off or1125 suppresses it. The existing target-owned217 generation/world/life state is reused; no new meter, sticky flag, timer, cost or RNG draw is introduced. Existing admitted-round RNG is unchanged. Player-to-NPC and NPC-initiated entry are outside this first consumer because those actors lack the same217 ownership capability.
 

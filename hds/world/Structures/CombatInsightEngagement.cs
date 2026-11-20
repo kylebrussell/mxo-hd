@@ -14,12 +14,14 @@ namespace hds
             internal bool Allows=>Force>=Evade;
         }
 
-        internal static Scores Calculate(int tacticForce,int directForce,int insight,int tacticEvade,int directEvade)
+        internal static Scores Calculate(int tacticForce,int directForce,int insight,int tacticEvade,int directEvade,int evadeBonus=0)
         {
             long baseline=Math.Max(0L,100L+tacticForce+directForce);
             // Decimal keeps the integer quotient exact even for hostile integer-limit inputs.
             long force=(long)(baseline*(100m+Math.Max(0,insight))/100m);
-            return new Scores(force,Math.Max(0L,100L+tacticEvade+directEvade)+10);
+            long evadeBase=Math.Max(0L,100L+tacticEvade+directEvade);
+            long evade=(long)(evadeBase*Math.Max(0m,100m+evadeBonus)/100m)+10;
+            return new Scores(force,evade);
         }
 
         internal sealed class Scope
@@ -57,7 +59,8 @@ namespace hds
             var scope=new Scope(source,target,handle);
             if(!scope.Current)return false;
             scores=Calculate(CombatTactics.Get(source.playerData.combatTactic).ForceCombat,AbilityStats.Player(source,519),
-                AbilityStats.Player(source,1048),CombatTactics.Get(target.playerData.combatTactic).EvadeInterlock,AbilityStats.Player(target,520));
+                AbilityStats.Player(source,1048),CombatTactics.Get(target.playerData.combatTactic).EvadeInterlock,
+                AbilityStats.Player(target,520),AbilityStats.Player(target,1049));
             if(!scope.Current)return false;
             // A removed/suppressed217 no longer resists entry; no sticky gate or shield-health pool.
             if(!EvasionShield.HasState(target))return true;
