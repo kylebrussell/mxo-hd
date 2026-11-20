@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "36": {
+      "checks": {
+        "area": {
+          "source": "GOB 36 uses hostile selector 3 with a 2 m radius centred on its chosen enemy.",
+          "runtime": "AbilityTargets.LandAround resolves the selected centre, and AbilityHostile limits secondary effects to published, eligible targets within the same-floor radius.",
+          "test": "StarterCoderSplashBatchMode and PR452 stock captured one hit on the selected QAEnemy and one on QAFriend at 1.79 m, while QAFar at 2.65 m took none. The paired Static Blast control only hit its selected enemy. AreaDisruptionTests checks pending and published secondary views. https://github.com/kylebrussell/mxo-hd/pull/452"
+        }
+      }
+    },
+    "514": {
+      "checks": {
+        "area": {
+          "source": "GOB 514 uses hostile selector 3 with a 2 m radius centred on its chosen enemy.",
+          "runtime": "AbilityTargets.LandAround resolves the selected centre, and AbilityHostile limits secondary effects to published, eligible targets within the same-floor radius.",
+          "test": "StarterCoderSplashBatchMode replays the exact PR399 cast. PR452 stock hit the selected QAEnemy and QAFriend at 1.79 m, both for 6, while QAFar at 2.65 m took none. AreaDisruptionTests checks pending and published secondary views. https://github.com/kylebrussell/mxo-hd/pull/452"
+        }
+      }
+    }
+  }
+}
