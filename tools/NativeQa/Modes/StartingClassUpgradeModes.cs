@@ -10,27 +10,32 @@ public abstract class StartingClassUpgradeMode : NativeQaMode
 {
     protected sealed record Upgrade(ushort Parent, ushort Ability, string Label, string Request);
     private const int Level = 19;
-    protected abstract IReadOnlyList<Upgrade> Samples { get; }
+    private readonly IReadOnlyList<Upgrade> samples;
+    public override NativeQaModePlan Plan { get; }
 
-    public override NativeQaModePlan Plan => new(
-        Samples.SelectMany(sample => AbilityPrerequisites.Current.Closure(sample.Ability).Keys.Append(sample.Parent))
-            .Concat(new ushort[] { 2, 17 }).Distinct().Order().ToArray(),
-        CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ, Array.Empty<string>(), Array.Empty<string>(),
-        new[]
-        {
-            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={CombatFixtureLoadout.GroundY} WHERE charId=110",
-            $"UPDATE char_abilities SET level=LEAST(level,{Level}) WHERE char_id=110"
-        },
-        DevCommands: true, testMobFixture: CombatFixtureLoadout.MeleeCsv,
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
-        readyMessages: new[]
-        {
-            $"Verify these granted actions at level 19: {string.Join(", ", Samples.Select(sample => sample.Label))}. Stay out of interlock.",
-            Samples.Any(sample => sample.Ability == 1060)
-                ? "Select Melee Dummy for Operative Upgrade and clear the target for the other upgrades. Add the granted actions to the hotbar."
-                : "Clear selection and add the granted upgrade to the hotbar.",
-            "For each, activate, click its active slot at +4 s to switch it off, click inactive at +6 s and check that reuse holds. Click again after the original 30 s. Keep the activation timer, on/off and modifier records."
-        });
+    protected StartingClassUpgradeMode(params Upgrade[] samples)
+    {
+        this.samples = samples;
+        Plan = new(
+            samples.SelectMany(sample => AbilityPrerequisites.Current.Closure(sample.Ability).Keys.Append(sample.Parent))
+                .Concat(new ushort[] { 2, 17 }).Distinct().Order().ToArray(),
+            CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ, Array.Empty<string>(), Array.Empty<string>(),
+            new[]
+            {
+                $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={CombatFixtureLoadout.GroundY} WHERE charId=110",
+                $"UPDATE char_abilities SET level=LEAST(level,{Level}) WHERE char_id=110"
+            },
+            DevCommands: true, testMobFixture: CombatFixtureLoadout.MeleeCsv,
+            environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
+            readyMessages: new[]
+            {
+                $"Verify these granted actions at level 19: {string.Join(", ", samples.Select(sample => sample.Label))}. Stay out of interlock.",
+                samples.Any(sample => sample.Ability == 1060)
+                    ? "Select Melee Dummy for Operative Upgrade and clear the target for the other upgrades. Add the granted actions to the hotbar."
+                    : "Clear selection and add the granted upgrade to the hotbar.",
+                "For each, activate, click its active slot at +4 s to switch it off, click inactive at +6 s and check that reuse holds. Click again after the original 30 s. Keep the activation timer, on/off and modifier records."
+            });
+    }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -40,14 +45,14 @@ public abstract class StartingClassUpgradeMode : NativeQaMode
         var loadout = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]);
         Check.That(loadout.Sum(row => AbilityMemory.Cost(AbilityCatalog.IdOf(row.Descriptor))) <= AbilityMemory.ForLevel(Level),
             "The level-19 class upgrade profile fits memory");
-        Check.That(Samples.All(sample => !archive.Any(row => AbilityCatalog.IdOf(row.Descriptor) == sample.Ability)),
+        Check.That(samples.All(sample => !archive.Any(row => AbilityCatalog.IdOf(row.Descriptor) == sample.Ability)),
             "All tested upgrades are granted, with no owned child rows");
 
         await actor.EnterWorldAsync();
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         var proof = new List<object>();
         var activations = new Dictionary<ushort, byte[]>();
-        foreach (var sample in Samples)
+        foreach (var sample in samples)
         {
             ushort id = sample.Ability;
             await StockAbilityProfile.ObserveAsync(actor, 0, StockAbilityProfile.GrantRecord(id, false), $"{sample.Label} granted at readiness");
@@ -95,7 +100,7 @@ public abstract class StartingClassUpgradeMode : NativeQaMode
             proof.Add(new { id, Request = Convert.ToHexString(use), Reuse = reuse.Hex, On = enabled.Hex, Off = disabled.Hex, Denied = rejection.Hex });
         }
 
-        foreach (var sample in Samples)
+        foreach (var sample in samples)
         {
             ushort id = sample.Ability;
             byte[] expiry = AbilityCooldowns.BuildTimer(id, AbilityCooldowns.OwnTimer, 30, false);
@@ -125,21 +130,21 @@ public abstract class StartingClassUpgradeMode : NativeQaMode
 public sealed class StartingOperativeAndMartialUpgradeMode : StartingClassUpgradeMode
 {
     public override string Name => "ability-parity-starting-operative-martial-toggles";
-    protected override IReadOnlyList<Upgrade> Samples { get; } = new Upgrade[]
-    {
-        // CSR stock PacketLogs 606366a42641:1470, 0291e4b5eae0:1880 and 074ab3d3d6fe:5015.
-        new(143, 1060, "Operative Upgrade", "80b92404040002000000000000000000000000000000000000000000d557377c20000000086b0000000000"),
-        new(154, 1061, "Soldier Upgrade", "80b92504000000000000000000000000000000000000000000000000d557377c20000000086b0000000000"),
-        new(137, 1062, "Martial Arts Initiate Upgrade", "80b92604000000000000000000000000000000000000000000000000785cc20001000000086b0000000000")
-    };
+
+    // CSR stock PacketLogs 606366a42641:1470, 0291e4b5eae0:1880 and 074ab3d3d6fe:5015.
+    public StartingOperativeAndMartialUpgradeMode() : base(
+        new Upgrade(143, 1060, "Operative Upgrade", "80b92404040002000000000000000000000000000000000000000000d557377c20000000086b0000000000"),
+        new Upgrade(154, 1061, "Soldier Upgrade", "80b92504000000000000000000000000000000000000000000000000d557377c20000000086b0000000000"),
+        new Upgrade(137, 1062, "Martial Arts Initiate Upgrade", "80b92604000000000000000000000000000000000000000000000000785cc20001000000086b0000000000"))
+    { }
 }
 
 public sealed class StartingNetworkHackerUpgradeMode : StartingClassUpgradeMode
 {
     public override string Name => "ability-parity-starting-network-hacker-toggle";
-    protected override IReadOnlyList<Upgrade> Samples { get; } = new Upgrade[]
-    {
-        // CSR stock PacketLog c59bfd3cc0aa:1594.
-        new(64, 1078, "Network Hacker Upgrade", "80b93604000000000000000000000000000000000000000000000000d557377c20000000086b0000000000")
-    };
+
+    // CSR stock PacketLog c59bfd3cc0aa:1594.
+    public StartingNetworkHackerUpgradeMode() : base(
+        new Upgrade(64, 1078, "Network Hacker Upgrade", "80b93604000000000000000000000000000000000000000000000000d557377c20000000086b0000000000"))
+    { }
 }
