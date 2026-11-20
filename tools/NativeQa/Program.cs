@@ -77,7 +77,8 @@ var fixturePlan=fixtureMode.Plan;
 if (fixturePlan.HasHotbar && requestedAbilities.Length != 0)
     throw new ArgumentException("Seeded hotbars use the mode's fixed loadout.");
 byte[]? characterUi = fixturePlan.HasHotbar
-    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.HotbarAbilities, required: true, includeWithdraw: fixturePlan.HotbarWithdraw)
+    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.HotbarAbilities, required: true, includeWithdraw: fixturePlan.HotbarWithdraw,
+        pageThree: fixturePlan.HotbarPageThree)
     : null;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";

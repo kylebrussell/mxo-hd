@@ -47,6 +47,30 @@ public class QaLoadoutTests
         Assert.Null(QaLoadout.Request(new[]{Row(520,7,1)},7,false));
     }
 
+    [Fact]
+    public void StagedSwapWritesEveryArchiveSlotIntoTheOrdinaryBatch()
+    {
+        byte[] packet = QaLoadout.Request(new[] { Row(300, 265, 50), Row(301, 532, 41) }, unload: false);
+        Assert.Equal("0000000000000A000200002C01090100003200002D01140200002900", Convert.ToHexString(packet));
+        Assert.True(AbilityProgression.TryParseLoadout(packet, out bool unload, out var entries));
+        Assert.False(unload);
+        Assert.Equal(new ushort[] { 265, 532 }, entries.Select(entry => entry.Ability));
+    }
+
+    [Theory]
+    [InlineData("1", "1", "mxotest_martial", 110u, true, false, true)]
+    [InlineData("0", "1", "mxotest_martial", 110u, true, false, false)]
+    [InlineData("1", "0", "mxotest_martial", 110u, true, false, false)]
+    [InlineData("1", "1", "reality_hd", 110u, true, false, false)]
+    [InlineData("1", "1", "mxotest_martial", 6114u, true, false, false)]
+    [InlineData("1", "1", "mxotest_martial", 110u, false, false, false)]
+    [InlineData("1", "1", "mxotest_martial", 110u, true, true, false)]
+    public void MartialControlStageRequiresTheLiveDisposableCaster(
+        string enabled, string dev, string database, uint character, bool inWorld, bool dead, bool expected)
+    {
+        Assert.Equal(expected, MartialPlayerControlQa.Allowed(enabled, dev, database, character, inWorld, dead));
+    }
+
     [Theory]
     [InlineData("1", "1", "mxotest_zen", 110u, 99, 860, true)]
     [InlineData("0", "1", "mxotest_zen", 110u, 99, 860, false)]

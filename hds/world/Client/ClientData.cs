@@ -110,7 +110,8 @@ namespace hds
         public readonly object lifeSync = new object();
 
 		// PvP (docs/PVP.md): the flag is ConditionStateFlags bit 0x01000000; conditionStateFlags holds the other bits
-		// last sent (in combat, tactic conditions). duelId pairs two duelists (even and odd); duelDeath is the loser
+		// set by combat and natural tactic procs. PvpFlag also includes active timed tactic states in view packets.
+		// duelId pairs two duelists (even and odd); duelDeath is the loser
 		// lying down until they stand up (81 4c).
 		public bool pvpFlag = false;
 		public UInt32 conditionStateFlags = 0;

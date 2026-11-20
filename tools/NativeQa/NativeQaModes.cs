@@ -18,6 +18,7 @@ public sealed class NativeQaModePlan
     public IReadOnlyDictionary<string,JsonElement> ExtraQaMetadata { get; }
     public IReadOnlyList<string> ReadyMessages { get; }
     public IReadOnlyList<ushort> HotbarAbilities { get; }
+    public IReadOnlyList<ushort> HotbarPageThree { get; }
     public bool HotbarWithdraw { get; }
     public bool HasHotbar => HotbarAbilities.Count != 0 || HotbarWithdraw;
     public string? MissionFixture { get; }
@@ -34,7 +35,7 @@ public sealed class NativeQaModePlan
     public NativeQaModePlan(ushort[] abilities, int x, int z, string[] beforeLoadout, string[] afterLoadout,
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
         bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null, string? testMobFixture=null,
-        bool loadAbilityAncestors=false, ushort[]? hotbarAbilities=null, bool hotbarWithdraw = false)
+        bool loadAbilityAncestors=false, ushort[]? hotbarAbilities=null, bool hotbarWithdraw = false, ushort[]? hotbarPageThree = null)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
@@ -48,11 +49,19 @@ public sealed class NativeQaModePlan
             return JsonSerializer.SerializeToElement(p.Value);
         },StringComparer.Ordinal));
         HotbarAbilities=Array.AsReadOnly((ushort[])(hotbarAbilities ?? Array.Empty<ushort>()).Clone());
+        HotbarPageThree=Array.AsReadOnly((ushort[])(hotbarPageThree ?? Array.Empty<ushort>()).Clone());
         HotbarWithdraw = hotbarWithdraw;
         if (HasHotbar) AbilitySweepHotbar.Validate(HotbarAbilities, HotbarWithdraw);
         var hotbarInstructions = !HasHotbar ? Array.Empty<string>() :
             new[] { "Open stock hotbar page 2." }.Concat(HotbarAbilities.Select((id, index) => $"slot {index + 1} = ability {id}"));
         if (HotbarWithdraw) hotbarInstructions = hotbarInstructions.Append($"slot {HotbarAbilities.Count + 1} = Withdraw");
+        if (HotbarPageThree.Count != 0)
+        {
+            if (!HasHotbar) throw new ArgumentException("Page 3 seeding also requires a page 2 plan.", nameof(hotbarPageThree));
+            AbilitySweepHotbar.Validate(HotbarPageThree);
+            hotbarInstructions = hotbarInstructions.Append("Stock hotbar page 3 is also seeded.")
+                .Concat(HotbarPageThree.Select((id, index) => $"page 3 slot {index + 1} = ability {id}"));
+        }
         ReadyMessages=Array.AsReadOnly(hotbarInstructions.Concat(readyMessages ?? Array.Empty<string>()).ToArray());
         if(missionFixture!=null&&(Path.GetFileName(missionFixture)!=missionFixture||!missionFixture.EndsWith(".xml",StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("A mission fixture must name one XML file.",nameof(missionFixture));

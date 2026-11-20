@@ -260,6 +260,20 @@ namespace hds
                 lock (active) return active.Exists(a => a.Target == target && a.Proc == TempMods.Proc.State && now < a.Expires);
             }
 
+            internal uint TacticStateFlags(double now)
+            {
+                lock (active)
+                {
+                    uint flags = 0;
+                    foreach (Active mod in active)
+                    {
+                        if (mod.Proc == TempMods.Proc.State && now < mod.Expires)
+                            flags |= CombatInterlock.TacticStateFlag(mod.Target);
+                    }
+                    return flags;
+                }
+            }
+
             /// <summary>Script health procs deactivate the whole parent ability, not just its state record.</summary>
             public List<Active> HealthChanged(int damageTaken, bool belowMaximum, Random rng)
             {
@@ -439,7 +453,7 @@ namespace hds
         // ---- applying ----
 
         /// <summary>The tempmods of one use of the effect, with values rolled in their ranges.</summary>
-        public static List<Active> Instantiate(TempMods.Effect effect, Random random)
+        public static List<Active> Instantiate(TempMods.Effect effect, Random random, bool fixtureProc = false)
         {
             List<Active> mods = new List<Active>();
             foreach (TempMods.Mod m in effect.Mods)
@@ -447,7 +461,7 @@ namespace hds
                 Int32 value;
                 lock (random)
                 {
-                    if (m.Chance < 1 && random.NextDouble() >= m.Chance) continue;
+                    if (m.Chance < 1 && (fixtureProc ? m.Chance <= 0 : random.NextDouble() >= m.Chance)) continue;
                     value = m.MaxValue > m.MinValue ? random.Next(m.MinValue, m.MaxValue + 1) : m.MinValue;
                 }
                 mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc,
@@ -477,9 +491,9 @@ namespace hds
         /// tempmods that went on (none when only control states were refused).
         /// </summary>
         public static List<Active> Apply(Subject subject, TempMods.Effect effect, double now, WorldClient caster = null,
-            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null)
+            string casterName = null, UInt16 targetView = 0, Random rng = null, Action<Active> configure = null, bool fixtureProc = false)
         {
-            List<Active> mods = Instantiate(effect, rng ?? random);
+            List<Active> mods = Instantiate(effect, rng ?? random, fixtureProc);
             AbilityConditionalControls.Init(subject,effect,mods,now);
             for (int i = mods.Count - 1; i >= 0; i--)
             {
@@ -610,6 +624,10 @@ namespace hds
             return players.GetValue(client, c => new PlayerEffects(c));
         }
 
+        internal static uint PlayerTacticStateFlags(WorldClient client) =>
+            players.TryGetValue(client, out PlayerEffects subject) && subject.Alive
+                ? subject.Effects.TacticStateFlags(TimeUtils.GetSimTimeSeconds()) : 0u;
+
         public static MobEffects ForMob(Mob mob)
         {
             return mobs.GetValue(mob, m => new MobEffects(m));
@@ -636,7 +654,9 @@ namespace hds
             }
             // The casting player, when there is one, is who a death by the damage over time is owed to (PvpCombat)
             var subject=ForPlayer(client);
-            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId));
+            Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,
+                configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId),
+                fixtureProc:MartialPlayerControlQa.ModifierProc(caster, client, abilityId));
             return true;
         }
 
@@ -756,6 +776,14 @@ namespace hds
             }
         }
 
+        private void FlushStateUpdates(IEnumerable<TimedEffects.Active> changed)
+        {
+            if (changed.Any(mod => mod.Proc == TempMods.Proc.State && CombatInterlock.TacticStateFlag(mod.Target) != 0))
+                PvpFlag.SendFlags(client);
+            else
+                client.FlushQueue();
+        }
+
         internal override void Applied(TempMods.Effect effect, List<TimedEffects.Active> added, TimedEffects.Active immunity,
             List<TimedEffects.Active> replaced)
         {
@@ -827,7 +855,7 @@ namespace hds
             }
             AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
             if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);
-            client.FlushQueue();
+            FlushStateUpdates(added.Concat(replaced));
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + Name + ": " + added.Count + " tempmods");
         }
 
@@ -907,7 +935,7 @@ namespace hds
                     client.messageQueue.addRpcMessage(AbilityMessages.StateEnd(m.Target, Name));
                 }
             }
-            client.FlushQueue();
+            FlushStateUpdates(ended);
         }
     }
 
@@ -956,18 +984,8 @@ namespace hds
                 {
                     continue;
                 }
-                switch (m.Target)
-                {
-                    case TempMods.DazeAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Speed), m.Seconds);
-                        break;
-                    case TempMods.OffBalanceAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Grab), m.Seconds);
-                        break;
-                    case TempMods.StaggeredAbility:
-                        mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Power), m.Seconds);
-                        break;
-                }
+                uint flag = CombatInterlock.TacticStateFlag(m.Target);
+                if (flag != 0) mob.ApplyCondition(flag, m.Seconds);
                 UInt32 line = AbilityMessages.CasterStateLine(m.Target, out Int32[] values);
                 if (line != 0 && !effect.Virus)
                 {

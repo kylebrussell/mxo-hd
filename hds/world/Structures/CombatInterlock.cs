@@ -202,6 +202,17 @@ namespace hds
             }
         }
 
+        internal static UInt32 TacticStateFlag(ushort state)
+        {
+            switch (state)
+            {
+                case TempMods.DazeAbility: return ConditionBit(CombatTactic.Speed);
+                case TempMods.OffBalanceAbility: return ConditionBit(CombatTactic.Grab);
+                case TempMods.StaggeredAbility: return ConditionBit(CombatTactic.Power);
+                default: return 0;
+            }
+        }
+
         public const double ConditionSeconds = 10;
 
         /// <summary>How often a landed hit also causes the condition: a guess; captures show the conditions but not their odds.</summary>

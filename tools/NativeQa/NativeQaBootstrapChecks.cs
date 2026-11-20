@@ -57,7 +57,8 @@ public static class NativeQaBootstrapChecks
         var mode = NativeQaModes.Find(seedMode);
         var plan = mode.Plan;
         byte[]? characterUi = plan.HasHotbar
-            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: false, includeWithdraw: plan.HotbarWithdraw)
+            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: false, includeWithdraw: plan.HotbarWithdraw,
+                pageThree: plan.HotbarPageThree)
             : null;
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });
@@ -74,7 +75,7 @@ public static class NativeQaBootstrapChecks
         HeadlessPlayer? probe = null;
         try
         {
-            if (characterUi != null || plan.LoadAbilityAncestors || mode is Modes.AbilityParityOperativeSweep2Mode)
+            if (characterUi != null || plan.LoadAbilityAncestors || mode is Modes.AbilityParityOperativeSweep2Mode or Modes.MartialPlayerControlMode)
             {
                 probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
