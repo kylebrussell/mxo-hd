@@ -1,0 +1,25 @@
+{
+  "families": {
+    "karate-aikido-grandmaster-specials-stock": {
+      "representative": 411,
+      "result": "pass",
+      "head": "abb2054f0a60739661874988fe458215a6a4fc73",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/473",
+      "scope": "PacketLog pr473 receives 827/735/751/5934/755/5935 for 407/411/412/532/534/536 at 2180/2596/3060/1502/1131/1909. Native damage was 30/138/162/107/45/196. Line 2629 publishes 411's +40 Melee Resistance for 15 s and 3022 removes it. 407's 4.4 s reflects 405's +10% Powerless duration. Unobserved conditional outcomes stay open."
+    }
+  },
+  "abilities": {
+    "411": {
+      "family": "karate-aikido-grandmaster-specials-stock"
+    },
+    "532": {
+      "family": "karate-aikido-grandmaster-specials-stock"
+    },
+    "534": {
+      "family": "karate-aikido-grandmaster-specials-stock"
+    },
+    "536": {
+      "family": "karate-aikido-grandmaster-specials-stock"
+    }
+  }
+}

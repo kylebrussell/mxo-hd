@@ -1,0 +1,46 @@
+{
+  "abilities": {
+    "129": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB opening 21052 and ordinary exchange 20047 belong to the equipped revolver class and observed tactics.",
+          "runtime": "CombatStyles.Letter resolves the active style and equipped weapon. CombatPresentation.RoundPair serializes the opening transition and the ordinary exchange reference.",
+          "test": "Stock PR474 pr474-PacketLog lines 1974/2095 contain both resource references. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange checks the matching and unarmed paths. https://github.com/kylebrussell/mxo-hd/pull/474"
+        },
+        "behavior-tests": {
+          "source": "The GOB style stores Ballistic Accuracy, Ballistic Damage, four typed Defenses and Contested Withdraw while selected; the ILDB supplies the matching opening and exchange set.",
+          "runtime": "CombatStyles.Select feeds AbilityStats and WithdrawalInput, and CombatPresentation selects and serializes the equipped class's opening and round records.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven modifiers and switching off. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange, the disposable ability-parity-gun-style-openings replay and PR474 stock wire cover the equipped opening and exchange. https://github.com/kylebrussell/mxo-hd/pull/474"
+        }
+      }
+    },
+    "147": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB opening 21068 and ordinary exchange 12525 belong to the equipped rifle class and observed tactics.",
+          "runtime": "CombatStyles.Letter resolves the active style and equipped weapon. CombatPresentation.RoundPair serializes the opening transition and the ordinary exchange reference.",
+          "test": "Stock PR474 pr474-PacketLog lines 3932/3990 contain both resource references. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange checks the matching and unarmed paths. https://github.com/kylebrussell/mxo-hd/pull/474"
+        },
+        "behavior-tests": {
+          "source": "The GOB style stores Ballistic Accuracy, Ballistic Damage, four typed Defenses and Contested Withdraw while selected; the ILDB supplies the matching opening and exchange set.",
+          "runtime": "CombatStyles.Select feeds AbilityStats and WithdrawalInput, and CombatPresentation selects and serializes the equipped class's opening and round records.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven modifiers and switching off. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange, the disposable ability-parity-gun-style-openings replay and PR474 stock wire cover the equipped opening and exchange. https://github.com/kylebrussell/mxo-hd/pull/474"
+        }
+      }
+    },
+    "158": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped ILDB opening 21076 and ordinary exchange 3771 belong to the equipped dual SMGs class and observed tactics.",
+          "runtime": "CombatStyles.Letter resolves the active style and equipped weapon. CombatPresentation.RoundPair serializes the opening transition and the ordinary exchange reference.",
+          "test": "Stock PR474 pr474-PacketLog lines 3202/3304 contain both resource references. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange checks the matching and unarmed paths. https://github.com/kylebrussell/mxo-hd/pull/474"
+        },
+        "behavior-tests": {
+          "source": "The GOB style stores Ballistic Accuracy, Ballistic Damage, four typed Defenses and Contested Withdraw while selected; the ILDB supplies the matching opening and exchange set.",
+          "runtime": "CombatStyles.Select feeds AbilityStats and WithdrawalInput, and CombatPresentation selects and serializes the equipped class's opening and round records.",
+          "test": "AbilityScaledBuffTests.WeaponStyleFeedsTypedDefenseAndWithdrawalOnlyWhileSelected checks all seven modifiers and switching off. CombatStyleTests.EquippedGunUsesItsStockTransitionAndStaticExchange, the disposable ability-parity-gun-style-openings replay and PR474 stock wire cover the equipped opening and exchange. https://github.com/kylebrussell/mxo-hd/pull/474"
+        }
+      }
+    }
+  }
+}
