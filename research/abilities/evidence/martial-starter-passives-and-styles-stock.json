@@ -1,0 +1,63 @@
+{
+  "families": {
+    "martial-advanced-rank-passives": {
+      "representative": 136,
+      "result": "pass",
+      "head": "91d5849671b11dcbab8ef87589efe2d1f331487f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/461",
+      "scope": "Stock PacketLog pr461 shows 136, 258 and 431 rank-50 modifiers at login line 129, removals at 1651/1343/1139 and restoration at 1845/2186/2369. A Bonuses row disappeared when its last source was unloaded and returned on reload."
+    },
+    "martial-initiate-master-grants": {
+      "representative": 137,
+      "result": "pass",
+      "head": "91d5849671b11dcbab8ef87589efe2d1f331487f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/461",
+      "scope": "Stock PacketLog pr461 has both parent passive sets and grant records at line 129. Parent 137 and grant 1062 clear at 1579 and return at 1890. Parent 257 and grant 1063 clear at 1242 and return at 2272. The stock 1062 and 1063 activations and replacement follow at 2718 and 2783."
+    },
+    "martial-ranked-offense-passives": {
+      "representative": 264,
+      "result": "pass",
+      "head": "91d5849671b11dcbab8ef87589efe2d1f331487f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/461",
+      "scope": "Stock PacketLog pr461 line 129 shows the Melee Accuracy, Max Health and Melee Damage Bonus records for 264 and 269. They remove at 1518 and 1451 and return at 1956 and 2063."
+    }
+  },
+  "abilities": {
+    "136": {
+      "family": "martial-advanced-rank-passives"
+    },
+    "137": {
+      "family": "martial-initiate-master-grants"
+    },
+    "264": {
+      "family": "martial-ranked-offense-passives"
+    },
+    "101": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped martial style supplies the seven typed attack, defense and withdraw modifiers and replaces the previously active style.",
+          "runtime": "CombatStyles installs one active style, uses the learned modifier values in its physical contests and removes the previous style records on switching. ",
+          "test": "MartialArtsStyleBehaviorTests.StarterMartialStylesSupplyAllSevenModifiersAndCleanUpOnSwitch and SwitchingBetweenAllThreeMartialStylesReplacesPreviousStyleExclusively cover rank, values, off records and exclusivity. Stock PacketLog pr461 line 2580 verifies the native seven-record set. https://github.com/kylebrussell/mxo-hd/pull/461"
+        }
+      }
+    },
+    "132": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped martial style supplies the seven typed attack, defense and withdraw modifiers and replaces the previously active style.",
+          "runtime": "CombatStyles installs one active style, uses the learned modifier values in its physical contests and removes the previous style records on switching. ",
+          "test": "MartialArtsStyleBehaviorTests.StarterMartialStylesSupplyAllSevenModifiersAndCleanUpOnSwitch and SwitchingBetweenAllThreeMartialStylesReplacesPreviousStyleExclusively cover rank, values, off records and exclusivity. Stock PacketLog pr461 line 2620 verifies the native seven-record set. https://github.com/kylebrussell/mxo-hd/pull/461"
+        }
+      }
+    },
+    "133": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped martial style supplies the seven typed attack, defense and withdraw modifiers and replaces the previously active style.",
+          "runtime": "CombatStyles installs one active style, uses the learned modifier values in its physical contests and removes the previous style records on switching. ",
+          "test": "MartialArtsStyleBehaviorTests.StarterMartialStylesSupplyAllSevenModifiersAndCleanUpOnSwitch and SwitchingBetweenAllThreeMartialStylesReplacesPreviousStyleExclusively cover rank, values, off records and exclusivity. Stock PacketLog pr461 line 2658 verifies the native seven-record set. https://github.com/kylebrussell/mxo-hd/pull/461"
+        }
+      }
+    }
+  }
+}

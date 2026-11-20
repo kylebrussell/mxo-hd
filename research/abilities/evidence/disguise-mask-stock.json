@@ -1,0 +1,19 @@
+{
+  "families": {
+    "disguise-ranked-mask-stock": {
+      "representative": 120,
+      "result": "pass",
+      "head": "e1e7ae35574337680d154b192f70aedb72c6cf8e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/435",
+      "scope": "The stock rank-22 grant and two +11 passive records appear at PacketLog pr435c line 164, clear at 910 and return at 1009. The stock mask activates 1114 for 42 seconds and refuses locally while 120 is unloaded."
+    }
+  },
+  "abilities": {
+    "120": {
+      "family": "disguise-ranked-mask-stock"
+    },
+    "1114": {
+      "family": "disguise-ranked-mask-stock"
+    }
+  }
+}

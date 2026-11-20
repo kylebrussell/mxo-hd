@@ -1,0 +1,16 @@
+{
+  "families": {
+    "data-miner-locate-node-stock": {
+      "representative": 215,
+      "result": "pass",
+      "head": "a056b5ba8ba86c58caec97e77ca6b10750fadf8d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/470",
+      "scope": "Stock PacketLog pr470 line 1223 sends 215 from advanced goggles in slot 8. Node FX 0x28000462 appears 12 metres away at 1306 and clears along with 215 at 1407 after unloading the required 622. Reload restores the marker at 1746. Stock handheld slot 1 then receives FX and attenuation at 1949 and clears it at 1976, ten seconds later. No outgoing direct 621 or 622 request was observed."
+    }
+  },
+  "abilities": {
+    "215": {
+      "family": "data-miner-locate-node-stock"
+    }
+  }
+}

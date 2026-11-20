@@ -1,0 +1,19 @@
+{
+  "families": {
+    "martial-kungfu-master-specials-stock": {
+      "representative": 259,
+      "result": "pass",
+      "head": "53904abc4b80fdfcaf84fdb1f7499d309a4ca5b9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/467",
+      "scope": "Stock Melee Dummy interlock on Kung-Fu 133. PR467 PacketLog lines 1414, 1548, 1974 and 2403 carry the landed moves 8082, 8081, 8089 and 8085 for 260, 261, 259 and 262 respectively. Native damages were 29, 28, 87 and 132. Blind and Powerless landed for 4 and 6 seconds. Piston Kicks' probabilistic stun and the random-buff removal path were not demonstrated by this run."
+    }
+  },
+  "abilities": {
+    "259": {
+      "family": "martial-kungfu-master-specials-stock"
+    },
+    "261": {
+      "family": "martial-kungfu-master-specials-stock"
+    }
+  }
+}

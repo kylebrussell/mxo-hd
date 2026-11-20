@@ -1,0 +1,109 @@
+{
+  "families": {
+    "martial-master-discipline-grants-stock": {
+      "representative": 263,
+      "result": "pass",
+      "head": "bd0f22027498249a2847241db68617f717973166",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/464",
+      "scope": "Stock PacketLog pr464 lines 151/193 show the modifier and grant sets for 263, 270 and 426. Each clears and restores individually across unload/reload at 1615/1788, 1517/1852 and 1409/1913. The stock test also activates 1067 and 1064."
+    },
+    "martial-master-active-upgrades-stock": {
+      "representative": 1067,
+      "result": "pass",
+      "head": "bd0f22027498249a2847241db68617f717973166",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/464",
+      "scope": "Stock PacketLog pr464 at 884/948/1021 confirms 1067 and 1064 both get the four expected modifiers and 30-second reuse. 1064 replaces 1067 and switches off during reuse."
+    }
+  },
+  "abilities": {
+    "263": {
+      "family": "martial-master-discipline-grants-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 263 grants 1065 and supplies Initiative +1 and Melee Accuracy +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "GOB 263 grants 1065 and supplies Initiative +1 and Melee Accuracy +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    },
+    "1067": {
+      "family": "martial-master-active-upgrades-stock",
+      "checks": {
+        "stats": {
+          "source": "The shipped upgrade supplies 148 Max HP, 4 Melee Accuracy, 2 Melee Damage and 7 Melee Defense with 20 IS and 30-second reuse.",
+          "runtime": "AbilityBuffs applies exclusive class-family replacement, dispatches the activation timer and feeds the four combat and vital inputs until removal.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterUpgradesApplyAllFourStatsAndCleanUpOnToggleOff checks all stats and cooldown. The fixture and stock PacketLog pr464 verify replacement and early switch-off. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "The shipped upgrade supplies 148 Max HP, 4 Melee Accuracy, 2 Melee Damage and 7 Melee Defense with 20 IS and 30-second reuse.",
+          "runtime": "AbilityBuffs applies exclusive class-family replacement, dispatches the activation timer and feeds the four combat and vital inputs until removal.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterUpgradesApplyAllFourStatsAndCleanUpOnToggleOff checks all stats and cooldown. The fixture and stock PacketLog pr464 verify replacement and early switch-off. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    },
+    "270": {
+      "family": "martial-master-discipline-grants-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 270 grants 1067 and supplies Initiative +2 and Viral Defense +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "GOB 270 grants 1067 and supplies Initiative +2 and Viral Defense +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    },
+    "426": {
+      "family": "martial-master-discipline-grants-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 426 grants 1064 and supplies Initiative +1, Powerless Duration +2, Melee Accuracy +5 and Melee Damage +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "GOB 426 grants 1064 and supplies Initiative +1, Powerless Duration +2, Melee Accuracy +5 and Melee Damage +1.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    },
+    "533": {
+      "checks": {
+        "stats": {
+          "source": "GOB 533 grants 1066 and supplies Initiative +1, Stun Duration +2 and Melee Damage +4.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "GOB 533 grants 1066 and supplies Initiative +1, Stun Duration +2 and Melee Damage +4.",
+          "runtime": "AbilityPassives installs the sourced totals from loaded membership. AbilityStats and AbilityControlDurations use the relevant combat inputs. AbilityGrantRegistration reconciles child membership.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterDisciplinePassivesFeedAllExpectedStatsAndConsumers and MartialMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle check the exact modifiers, rank and grant lifecycle. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    },
+    "1064": {
+      "family": "martial-master-active-upgrades-stock",
+      "checks": {
+        "stats": {
+          "source": "The shipped upgrade supplies 137 Max HP, 13 Melee Accuracy, 6 Melee Damage and 8 Melee Defense with 20 IS and 30-second reuse.",
+          "runtime": "AbilityBuffs applies exclusive class-family replacement, dispatches the activation timer and feeds the four combat and vital inputs until removal.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterUpgradesApplyAllFourStatsAndCleanUpOnToggleOff checks all stats and cooldown. The fixture and stock PacketLog pr464 verify replacement and early switch-off. https://github.com/kylebrussell/mxo-hd/pull/464"
+        },
+        "behavior-tests": {
+          "source": "The shipped upgrade supplies 137 Max HP, 13 Melee Accuracy, 6 Melee Damage and 8 Melee Defense with 20 IS and 30-second reuse.",
+          "runtime": "AbilityBuffs applies exclusive class-family replacement, dispatches the activation timer and feeds the four combat and vital inputs until removal.",
+          "test": "MartialArtsMasterDisciplinesTests.MartialMasterUpgradesApplyAllFourStatsAndCleanUpOnToggleOff checks all stats and cooldown. The fixture and stock PacketLog pr464 verify replacement and early switch-off. https://github.com/kylebrussell/mxo-hd/pull/464"
+        }
+      }
+    }
+  }
+}

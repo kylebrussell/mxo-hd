@@ -1,0 +1,35 @@
+{
+  "families": {
+    "martial-grandmaster-karate-aikido-passives-stock": {
+      "representative": 533,
+      "result": "pass",
+      "head": "55fce1e21b34fb3ca1d60079cb0e2df7c9a255da",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/466",
+      "scope": "Stock PacketLog pr466 shows loaded 405, 410, 531 and 533 passive additions at 151. They remove at 1222, 1147, 1363 and 1285 respectively, and return at 1638, 1692, 1511 and 1586. The same cycle removes and restores archive/load and zero-valued grant records for 1066 and 1069. Stock Status restores its initial values."
+    },
+    "martial-grandmaster-berserker-attack-stock": {
+      "representative": 535,
+      "result": "pass",
+      "head": "8c3b672259cab611288947bf4bf600166c7ab49e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/466",
+      "scope": "Stock 535 targets Melee Dummy at pr466b PacketLog 1069 and queues in a Karate interlock. PacketLog 1120 carries choreography 5939; line 1149 carries +11 melee damage and +50 each melee/ballistic resistance for 21 seconds. The landed template applies caster modifiers and has no direct damage term."
+    }
+  },
+  "abilities": {
+    "405": {
+      "family": "martial-grandmaster-karate-aikido-passives-stock"
+    },
+    "410": {
+      "family": "martial-grandmaster-karate-aikido-passives-stock"
+    },
+    "531": {
+      "family": "martial-grandmaster-karate-aikido-passives-stock"
+    },
+    "533": {
+      "family": "martial-grandmaster-karate-aikido-passives-stock"
+    },
+    "535": {
+      "family": "martial-grandmaster-berserker-attack-stock"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "families": {
+    "operative-ranked-throw-passives": {
+      "representative": 164,
+      "result": "pass",
+      "head": "c7a401028b11cd752d1b8f8f928cd5e8f5863afe",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/465",
+      "scope": "Stock PacketLog pr465 shows the exact 164 and 278 scoped thrown, defense and duration records at 161. They remove at 1671/1624 and return at 1840/1917. The shared source-coefficient questions remain open."
+    },
+    "operative-countermeasures": {
+      "representative": 293,
+      "result": "pass",
+      "head": "c7a401028b11cd752d1b8f8f928cd5e8f5863afe",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/465",
+      "scope": "Stock 293 activated for 30 seconds with 15-second reuse and Stealth Detection rose from 12 to 92, then returned to 12. PacketLog pr465 lines 900/1146 show the +80 and its removal."
+    },
+    "operative-master-discipline-grants-stock": {
+      "representative": 389,
+      "result": "pass",
+      "head": "c7a401028b11cd752d1b8f8f928cd5e8f5863afe",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/465",
+      "scope": "Stock PacketLog pr465 includes Master Assassin 389 and Master Knife Thrower 338 passive and grant sets at 161. They clear at 1511/1573 and return at 2052/1991. Both granted upgrades activate in the same run."
+    }
+  },
+  "abilities": {
+    "164": {
+      "family": "operative-ranked-throw-passives"
+    },
+    "293": {
+      "family": "operative-countermeasures"
+    },
+    "389": {
+      "family": "operative-master-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 389 grants 1123 and supplies Thrown Damage Bonus +5 while loaded.",
+          "runtime": "AbilityPassives feeds the current typed input and clears it when unloaded. AbilityGrantRegistration publishes and reconciles the associated action.",
+          "test": "SpyMasterDisciplinesTests.ShadowReadyPresentationReconcilesAndMasterPassivesFeedStats and SpyMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle cover totals and grant lifecycle. Stock PacketLog pr465 verifies modifier removal and restoration. https://github.com/kylebrussell/mxo-hd/pull/465"
+        }
+      }
+    },
+    "338": {
+      "family": "operative-master-discipline-grants-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 338 grants 1121 and supplies Thrown Accuracy Bonus +5 while loaded.",
+          "runtime": "AbilityPassives feeds the current typed input and clears it when unloaded. AbilityGrantRegistration publishes and reconciles the associated action.",
+          "test": "SpyMasterDisciplinesTests.ShadowReadyPresentationReconcilesAndMasterPassivesFeedStats and SpyMasterDisciplinesRegisterZeroGrantsAtReadinessAndReconcileOnCycle cover totals and grant lifecycle. Stock PacketLog pr465 verifies modifier removal and restoration. https://github.com/kylebrussell/mxo-hd/pull/465"
+        }
+      }
+    }
+  }
+}

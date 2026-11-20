@@ -1,0 +1,16 @@
+{
+  "families": {
+    "download-mission-map-unload-stock": {
+      "representative": 44,
+      "result": "pass",
+      "head": "1296d405d4fde07ddd0a1263a68687cc53f2b04b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/393",
+      "scope": "Stock mission acceptance produced a 3 s objective ping. PacketLog pr393 lines 1602–2048 show the refresh before native unload. Reload does not refresh the old outcome. After abort and a new acceptance the new location marker appears from line 2853. This covers the packet sequence on the locked-safe mission."
+    }
+  },
+  "abilities": {
+    "44": {
+      "family": "download-mission-map-unload-stock"
+    }
+  }
+}

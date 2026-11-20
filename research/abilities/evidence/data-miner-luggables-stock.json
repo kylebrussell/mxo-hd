@@ -1,0 +1,26 @@
+{
+  "families": {
+    "data-miner-see-luggables-stock": {
+      "representative": 540,
+      "result": "pass",
+      "head": "1b6d60536488ce51bbf4dd67f93a1299b6dd2c85",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/448",
+      "scope": "Stock goggles use selected the loaded See Luggables path. PacketLog pr448 line 1250 adds the luggable-specific FX 0x280004f9 on locator 128, and line 1368 removes it at toggle off. This check covers the emitted luggable FX and its cleanup."
+    },
+    "data-miner-detect-luggables-stock": {
+      "representative": 541,
+      "result": "pass",
+      "head": "1b6d60536488ce51bbf4dd67f93a1299b6dd2c85",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/448",
+      "scope": "Stock handheld use produces the 80 c5 minimap record at PacketLog pr448 line 1468: DisplaySeconds 10, one relationship-0 yellow ping at offsets (-2, 0). The stock connection receives search-off ten seconds later at line 1495. Minimap rendering was clipped."
+    }
+  },
+  "abilities": {
+    "540": {
+      "family": "data-miner-see-luggables-stock"
+    },
+    "541": {
+      "family": "data-miner-detect-luggables-stock"
+    }
+  }
+}
