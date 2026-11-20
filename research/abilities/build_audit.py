@@ -220,6 +220,8 @@ def server(i):
         return "COSMETIC:20s health/InitiativeBonus snapshot1044; IS10/reuse90/buffer10; expiry/death/unload cleanup; no recovered combat consumer; [source boundary](DESPERATION.md)"
     if i == 7:
         return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
+    if i == 13:
+        return 'stored level 99 selected-load prerequisite with no parent or grant path in the shipped ability catalog; seeded damage, periodic FX and IS drain verified; [evidence](ABILITY-AWAKENED-COMBAT-ACTIVES.md#hyper-strength-access)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
     r, f = coverage[i], fields(i)
@@ -249,6 +251,8 @@ def server(i):
         parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
     elif i == 130:
         parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; complete damage and admission parity unresolved')
+    elif i == 134:
+        parts.append('stored fixed thrown base 13 before typed influence and resistance; stock Spy interlock landed 14; wider damage and targeting unresolved')
     elif i == 152:
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif i == 145:
@@ -384,7 +388,7 @@ def server(i):
 
 
 def status(i):
-    if i in (7, 871):
+    if i in (7, 13, 871):
         return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
@@ -405,6 +409,8 @@ def status(i):
 
 def remaining_items(i, current_status, runtime_summary):
     if current_status == 'inaccessible':
+        if i == 13:
+            return {'access': 'Recover any ordinary retail unlock independent of the level 99 selected-load gate'}
         return {'access': 'Resolve the stored character level 99 prerequisite against the retail level cap'}
 
     r, f = coverage[i], fields(i)

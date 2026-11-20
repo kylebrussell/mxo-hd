@@ -21,6 +21,13 @@
       "native": "https://github.com/kylebrussell/mxo-hd/pull/389",
       "scope": "PacketLog d3b7112643d9:3204 records the stock Handguns cast on QAEnemy outside interlock. DebugLog line 1144 records 9 ballistic damage. The capture shows a 2-second cast, 8-second own timer, 5-second group timer, and four effects added and removed."
     },
+    "leg-sweep-spy-interlock": {
+      "representative": 134,
+      "result": "pass",
+      "head": "9e8efb91fcdabfa435fefdedd05ad11fd2d6f344",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/402",
+      "scope": "Stock PacketLog 19faec2a5d8f:1231 shows Leg Sweep in Spy interlock on Melee Dummy. DebugLog lines 949 and 975–977 show the queued move, round 3 animation 283, landed hit and -15 melee defense for ten seconds. The operator recorded damage 14. Wider damage, targeting and outcome variants remain open."
+    },
     "guard-breaker-off-balance-interlock": {
       "representative": 138,
       "result": "pass",
@@ -69,6 +76,9 @@
     },
     "130": {
       "family": "hindering-shot-free-cast"
+    },
+    "134": {
+      "family": "leg-sweep-spy-interlock"
     },
     "138": {
       "family": "guard-breaker-off-balance-interlock"
