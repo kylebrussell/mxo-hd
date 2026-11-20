@@ -103,6 +103,9 @@ public class AbilityScaledBuffTests
     [InlineData(1062)]
     [InlineData(1070)]
     [InlineData(1078)]
+    [InlineData(1089)]
+    [InlineData(1091)]
+    [InlineData(1108)]
     public void StartingClassUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown(ushort upgrade)
     {
         var actor = Client(19);
@@ -117,6 +120,22 @@ public class AbilityScaledBuffTests
         Assert.Equal(40, actor.playerData.cooldownEndsAt[upgrade]);
         Assert.True(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 39));
         Assert.False(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 40));
+    }
+
+    [Fact]
+    public void AuthoredClassUpgradeTogglesUseActivationReuse()
+    {
+        var upgrades = AbilityCatalog.All.Values.Where(entry => entry.Number("Ability/StackingType") == 37 &&
+            entry.Number("Ability/IsAToggleAbility") == 1).ToArray();
+        Assert.Contains(upgrades, entry => entry.Id == 1108);
+        Assert.All(upgrades, entry =>
+        {
+            Assert.True(AbilityBuffs.TryGet(entry.Id, out var buff));
+            Assert.True(buff.Exclusive && buff.Toggle);
+            Assert.True(AbilityBuffs.CooldownStartsOnUse(entry.Id));
+        });
+        foreach (ushort id in new ushort[] { 604, 613, 1126 })
+            Assert.False(AbilityBuffs.IsStartingClassUpgrade(id));
     }
 
     [Theory]

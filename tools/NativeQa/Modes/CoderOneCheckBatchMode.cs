@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using System.Text.Json;
 using hds;
 using HeadlessClient;
@@ -16,8 +15,12 @@ public sealed class CoderOneCheckBatchMode : NativeQaMode
         (CodeHardening, 0, new (ushort, int)[] { (1139, 5), (1142, 5) }),
         (UtilityMaster, MasterUpgrade, new (ushort, int)[] { (997, 5) })
     };
-    // PR312 stock 88a1d93e477a:4666–4667. The Utility Master action uses the same self-cast shape.
+    // PR312 stock 88a1d93e477a:4666–4667.
     private const string TechnicianRequest = "80b94d02000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+
+    // PR447 stock 321078e1ed92:4132–4133 and 4261–4262.
+    private const string MasterOn = "80b95404000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    private const string MasterOff = "80b95404000000000000000000000000000000000000000000000000585cc60001000000086b0000000000";
 
     public override string Name => "ability-parity-coder-passives-and-utility";
     public override NativeQaModePlan Plan { get; } = new(Loadout, CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ,
@@ -31,8 +34,8 @@ public sealed class CoderOneCheckBatchMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "275,608,620", ["NativeCloseableRows"] = 3, ["BehaviorTestRows"] = "698" },
         readyMessages: new[]
         {
-            "Step A. Record Programmer (275) +10 crafting discount, Code Hardening (608) +5 melee and ballistic damage bonuses, and Utility Master (620) +5 melee accuracy. At a Hardline unload/reload each and capture its source rows disappearing and returning.",
-            "Step B. Verify one Utility Master action in Actions after reload. Use page 2 slot 1 to get +150 maximum HP, +20 melee and ballistic resistance and +6 melee defense. Capture the 30s reuse.",
+            "Step A. Record Programmer (275) +10 crafting discount, Code Hardening (608) +5 melee and ballistic damage bonuses, and Utility Master (620) +5 melee accuracy. Cycle each with ?qaunload/?qaload. This first stage already passed natively on PR447.",
+            "Step B. Verify one Utility Master action in Actions after reload. Use page 2 slot 1 to get +150 maximum HP, +20 melee and ballistic resistance and +6 melee defense. Capture standalone 30s reuse before the on/modifier records. Press the same slot again within 3–5s, expect switch-off and removal, then verify the remaining reuse holds a third press.",
             "Optional in the same session. QAFriend has a passive Proxy within 4 m. Slot 2 starts Proxy Technician (589), whose 698 pulse grants that pet +64 melee and ballistic attack. A second press turns it off. Use the helper request for '?pet' to see the bonuses."
         });
 
@@ -62,14 +65,35 @@ public sealed class CoderOneCheckBatchMode : NativeQaMode
         cursor = await ChangeLoadoutAsync(caster, archive, cycle.Reverse().ToArray(), load: true);
         await CheckPassivesAsync(caster, proof, Passives, cursor, remove: false);
 
-        byte[] master = Convert.FromHexString(TechnicianRequest);
-        BinaryPrimitives.WriteUInt16LittleEndian(master.AsSpan(2), MasterUpgrade);
         cursor = caster.World.RpcSnapshot().Count;
-        caster.SendRpc(master);
-        foreach (var (stat, value) in new (ushort, int)[] { (106, 150), (180, 20), (181, 20), (1009, 6) })
+        caster.SendRpc(MasterOn);
+        var masterStats = new (ushort Stat, int Value)[] { (106, 150), (180, 20), (181, 20), (1009, 6) };
+        foreach (var (stat, value) in masterStats)
             await ObserveAsync(caster, cursor, packet => Bonus(packet, MasterUpgrade, stat, value, 0, remove: false),
                 $"Utility Master adds shipped stat {stat}");
         await EvidenceRetestWire.TimerAsync(caster, cursor, MasterUpgrade, AbilityCooldowns.OwnTimer, 30);
+        byte[] reuse = AbilityCooldowns.BuildTimer(MasterUpgrade, AbilityCooldowns.OwnTimer, 30, true);
+        byte[] on = AbilityBuffs.BuildExclusive(MasterUpgrade, true);
+        byte[] off = AbilityBuffs.BuildExclusive(MasterUpgrade, false);
+        byte[][] activation = caster.World.RpcSnapshot().Skip(cursor).Select(record => record.Bytes).ToArray();
+        int timerAt = Array.FindIndex(activation, bytes => bytes.AsSpan().SequenceEqual(reuse));
+        int onAt = Array.FindIndex(activation, bytes => bytes.AsSpan().SequenceEqual(on));
+        Check.That(timerAt >= 0 && onAt > timerAt, "Utility Master emits standalone reuse before the exclusive on record");
+        await Task.Delay(650);
+        cursor = caster.World.RpcSnapshot().Count;
+        caster.SendRpc(MasterOff);
+        await ObserveAsync(caster, cursor, packet => packet.Bytes.AsSpan().SequenceEqual(off), "Utility Master switches off during reuse");
+        foreach (var (stat, value) in masterStats)
+            await ObserveAsync(caster, cursor, packet => Bonus(packet, MasterUpgrade, stat, value, 0, remove: true),
+                $"Utility Master removes shipped stat {stat}");
+        Check.That(!caster.World.RpcSnapshot().Skip(cursor).Any(packet => packet.Bytes.AsSpan().SequenceEqual(reuse)),
+            "Switching Utility Master off does not restart reuse");
+        await Task.Delay(650);
+        cursor = caster.World.RpcSnapshot().Count;
+        caster.SendRpc(MasterOn);
+        await ObserveAsync(caster, cursor, packet => AbilityRefusals.TryDecode(packet.Bytes, out var failure) &&
+            failure.AbilityID == MasterUpgrade && failure.ErrorID == AbilityCooldowns.DeniedTimerRunning,
+            "The original timer still holds reactivation after switch-off");
 
         caster.SendRpc(TechnicianRequest);
         await caster.WaitForRpcAsync(packet => packet.Bytes.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(TechnicianAura, true)),
