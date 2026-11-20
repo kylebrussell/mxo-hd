@@ -1,0 +1,85 @@
+{
+  "abilities": {
+    "14": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 14 (Power Shot) uses CastWhenUsed 3 and a live hostile interlock selection.",
+          "runtime": "AbilityHandler pins the current interlock opponent and validates its spawn before both admission and queue publication. CombatHandler rechecks the bound opponent at the round.",
+          "test": "PR494 89753165 stock sent nothing at rest and the move landed on its current interlock opponent. The landed 0xc40001af message in server sequence 266 carries +92 IS, separate from the 105 damage. PacketLog contains the 60 s own reuse. AwakenedInterlockAdmissionMode replays the complete request against the correct and stale handles. https://github.com/kylebrussell/mxo-hd/pull/494"
+        }
+      }
+    },
+    "21": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 21 (Lockdown) uses a live selected enemy, SelectionRange 16 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the live target's deflection before applying effects.",
+          "test": "PR490 stock refused friendly QAOther and landed the 12 s root. PR492 d6340e3f stock held the target across the obstruction and produced no contest, effect or splash. FreeCastViralLandingTests exercises the actual 21 deflection path at the positive stand. https://github.com/kylebrussell/mxo-hd/pull/490 https://github.com/kylebrussell/mxo-hd/pull/492"
+        }
+      }
+    },
+    "33": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 33 (Static Blast) uses a live selected enemy, SelectionRange 16 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the live target's deflection before applying effects.",
+          "test": "PR490 stock refused friendly QAOther and landed on QAEnemy alone. PR492 d6340e3f stock held the target across the obstruction and produced no contest, effect or splash. FreeCastViralLandingTests exercises the actual 33 deflection path at the positive stand. https://github.com/kylebrussell/mxo-hd/pull/490 https://github.com/kylebrussell/mxo-hd/pull/492"
+        }
+      }
+    },
+    "36": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 36 (Tinkering) uses a live selected enemy, SelectionRange 16 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the selected centre's deflection before any secondary effects.",
+          "test": "PR490 stock refused friendly QAOther and landed on QAEnemy and its eligible nearby opponent only. PR492 d6340e3f stock held the target across the obstruction and produced no contest, effect or splash. FreeCastViralLandingTests exercises the actual 36 deflection path at the positive stand. https://github.com/kylebrussell/mxo-hd/pull/490 https://github.com/kylebrussell/mxo-hd/pull/492"
+        }
+      }
+    },
+    "58": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 58 (Logic Blast) uses a live selected enemy, SelectionRange 20 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the live target's deflection before applying effects.",
+          "test": "PR454 stock refused a friendly target and landed on the selected enemy. PR493 9c985ba5 stock refused beyond 20 m and held selection across the obstruction without damage or contest. The disposable replay checks empty/stale selection and FreeCastViralLandingTests checks 58 against the actual deflection path. https://github.com/kylebrussell/mxo-hd/pull/454 https://github.com/kylebrussell/mxo-hd/pull/493"
+        }
+      }
+    },
+    "59": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 59 (Logic Barrage) uses a live selected enemy, SelectionRange 20 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the live target's deflection before applying effects.",
+          "test": "PR454 stock refused a friendly target and landed on the selected enemy. PR493 9c985ba5 stock refused beyond 20 m and held selection across the obstruction without damage or contest. The disposable replay checks empty/stale selection and FreeCastViralLandingTests checks 59 against the actual deflection path. https://github.com/kylebrussell/mxo-hd/pull/454 https://github.com/kylebrussell/mxo-hd/pull/493"
+        }
+      }
+    },
+    "197": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 197 (Head Butt) uses CastWhenUsed 3 and a live hostile interlock selection.",
+          "runtime": "AbilityHandler pins the current interlock opponent and validates its spawn before both admission and queue publication. CombatHandler rechecks the bound opponent at the round.",
+          "test": "PR494 89753165 stock sent nothing at rest and the move landed on its current interlock opponent. The Dazed target took 42 with move 284 and -10 melee accuracy for 20 s. PacketLog contains the 30 s own reuse. AwakenedInterlockAdmissionMode replays the complete request against the correct and stale handles. https://github.com/kylebrussell/mxo-hd/pull/494"
+        }
+      }
+    },
+    "198": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 198 (Cheap Shot) uses CastWhenUsed 3 and a live hostile interlock selection.",
+          "runtime": "AbilityHandler pins the current interlock opponent and validates its spawn before both admission and queue publication. CombatHandler rechecks the bound opponent at the round.",
+          "test": "PR494 89753165 stock sent nothing at rest and the move landed on its current interlock opponent. The fresh opponent took 73. PacketLog contains the 20 s own reuse. AwakenedInterlockAdmissionMode replays the complete request against the correct and stale handles. https://github.com/kylebrussell/mxo-hd/pull/494"
+        }
+      }
+    },
+    "514": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 514 (Advanced Tinkering) uses a live selected enemy, SelectionRange 16 m and viral contest TestFunction 2.",
+          "runtime": "AbilityHandler rejects ineligible selected handles. AbilityTargets checks sight and the selected centre's deflection before any secondary effects.",
+          "test": "PR490 stock refused friendly QAOther and landed on QAEnemy and its eligible nearby opponent only. PR492 d6340e3f stock held the target across the obstruction and produced no contest, effect or splash. FreeCastViralLandingTests exercises the actual 514 deflection path at the positive stand. https://github.com/kylebrussell/mxo-hd/pull/490 https://github.com/kylebrussell/mxo-hd/pull/492"
+        }
+      }
+    }
+  }
+}
