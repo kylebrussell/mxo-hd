@@ -57,7 +57,7 @@ namespace hds
                 double stamp = data.castEndsAt;
                 token.Stamp = stamp;
                 // Native already starts its Compile window timer after sending60. No invented cast-bar packet.
-                Output.WriteDebugLog("[COMPILE60] Started " + request.Item + " seconds " + seconds + " skill " + skill + " 954 " + general + " 955 " + consumable + " cost " + cost);
+                Output.WriteDebugLog("[COMPILE60] Started " + request.Item + " seconds " + seconds + " skill " + skill + " 954 " + general + " 955 " + consumable + " cost " + cost + " specialization " + specialization);
                 DelayedActions.AfterFor(client, seconds, () =>
                 {
                     lock (data.craftingSync)
