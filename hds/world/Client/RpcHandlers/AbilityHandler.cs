@@ -45,9 +45,9 @@ namespace hds
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
-            // These starter Hacker casts require a live selected enemy.
+            // These Hacker controls and debuffs require a live selected enemy.
             if (AbilityID == 40 || AbilityID == 41 || AbilityID == 43 || AbilityID == 48 ||
-                AbilityID == 66 || AbilityID == 69 || AbilityID == 86)
+                AbilityID == 66 || AbilityID == 69 || AbilityID == 86 || AbilityID == 354 || AbilityID == 476)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))

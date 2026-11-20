@@ -74,10 +74,10 @@ ushort[] requestedAbilities = args.Length > 4 ? args[4].Split(',', StringSplitOp
 if (args.Length > 4 && (requestedAbilities.Length == 0 || requestedAbilities.Any(id => id == 0 || id >= 4096)))
     throw new ArgumentException("The optional loadout must contain canonical player ability IDs1..4095.");
 var fixturePlan=fixtureMode.Plan;
-if (fixtureMode is NativeQa.Modes.AbilitySweepMode && requestedAbilities.Length != 0)
-    throw new ArgumentException("Ability sweep hotbars use the mode's fixed loadout.");
-byte[]? characterUi = fixtureMode is NativeQa.Modes.AbilitySweepMode
-    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.Abilities, required: true)
+if (fixturePlan.HotbarAbilities.Count != 0 && requestedAbilities.Length != 0)
+    throw new ArgumentException("Seeded hotbars use the mode's fixed loadout.");
+byte[]? characterUi = fixturePlan.HotbarAbilities.Count != 0
+    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.HotbarAbilities, required: true)
     : null;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
