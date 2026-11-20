@@ -1,0 +1,30 @@
+{
+  "families": {
+    "starter-backsweep-stock": {
+      "representative": 152,
+      "result": "pass",
+      "head": "1ce1575a776dc34df6fdf61ce401769e717adafe",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/527",
+      "scope": "The client suppressed the attack during interlock. A subsequent normal Sneak opener ended Sneak and dealt 114 thrown damage. PacketLog 1793 shows own 30 s and family 691 at 15 s. This covers the selected opener and reuse."
+    },
+    "execute-program-resource-stock": {
+      "representative": 45,
+      "result": "pass",
+      "head": "c4aeca014bc1e08240ff7f5f008fecbbdbf16860",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/528",
+      "scope": "Stock session reproduced the cap and actual regeneration with Execute Program loaded, unloaded and reloaded. PacketLog 1208 clamps 220 to 200, 1527 restores 220, and stable recharging uses +8 unloaded versus +8/+9 loaded. This checks the resource modifiers."
+    }
+  },
+  "abilities": {
+    "45": {
+      "family": "execute-program-resource-stock"
+    },
+    "152": {
+      "family": "starter-backsweep-stock"
+    }
+  },
+  "notes": {
+    "PR527": "Sixth Sense detected one hostile at rest and was gated in interlock. Poison Knife used a 2 s bar, then ThrownDOT 18 over 25 s and own/group reuse 20/3 s. PacketLog 2629 and 2689 confirm durations. https://github.com/kylebrussell/mxo-hd/pull/527",
+    "PR528": "Evade Combat spent 40 IS and began its own 30 s reuse at termination. Hyper-Sprint spent 25 IS on activation and another 25 on its first drain while Execute Program remained loaded. The standing regeneration comparison reached the two expected caps. https://github.com/kylebrussell/mxo-hd/pull/528"
+  }
+}

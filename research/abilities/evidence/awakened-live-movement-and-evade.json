@@ -1,0 +1,16 @@
+{
+  "abilities": {
+    "217": {
+      "checks": {
+        "script": {
+          "source": "GOB 217 uses SetEvadeCombatTimer as StatModTermFunc. The shipped callback calls addRecastTimer on the parent with 30.0 seconds.",
+          "runtime": "AbilityHandler toggles off the existing buff. AbilityBuffs removes the shield and starts the parent ability's own reuse at termination rather than activation.",
+          "test": "The ordinary sequence in StarterEvadeEntryMode and PR524 verifies shield on, shield removal and an 80 bd 01 own 30 s timer immediately after the off event (PacketLog 2695–2696). https://github.com/kylebrussell/mxo-hd/pull/524"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR526": "Stock Lockdown blocks walking and 80 c3 while rooted; the same native Hyper-Jump gesture after expiry produces one echo and a jump. Owner and observer receive +0.45 and bits 0x1400, then +0.45 with 0x1000 after Sprint ends, plus 5 s Sprint reuse. This samples standing movement and root gating; rank-dependent jump geometry and movement in Sneak or invisibility remain open. https://github.com/kylebrussell/mxo-hd/pull/526"
+  }
+}
