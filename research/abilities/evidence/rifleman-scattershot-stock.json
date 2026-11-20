@@ -1,0 +1,46 @@
+{
+  "families": {
+    "dual-smg-passive-stock": {
+      "representative": 246,
+      "result": "pass",
+      "head": "2e3bdd0e0eabd317c16078f4eb5fb78b71cf66d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/445",
+      "scope": "Stock PacketLog 01e324100149 lines 159, 1730 and 2432 contain +6 Ballistic Damage Bonus and +6 Melee Resistance Bonus at entry, unload and reload."
+    },
+    "rifleman-passive-and-grant-stock": {
+      "representative": 251,
+      "result": "pass",
+      "head": "2e3bdd0e0eabd317c16078f4eb5fb78b71cf66d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/445",
+      "scope": "Stock PacketLog 01e324100149 lines 159, 1673–1676 and 3048–3051 show +1 Ballistic Resistance Bonus and the 1073 grant. Both removed on unload and returned on reload."
+    },
+    "advanced-riflery-passive-stock": {
+      "representative": 252,
+      "result": "pass",
+      "head": "2e3bdd0e0eabd317c16078f4eb5fb78b71cf66d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/445",
+      "scope": "Stock PacketLog 01e324100149 lines 159, 1597 and 2555 contain +5 Ballistic Accuracy Bonus and +6 Ballistic Damage Bonus at entry, unload and reload."
+    },
+    "scattershot-upgrade-toggle-stock": {
+      "representative": 1071,
+      "result": "pass",
+      "head": "2e3bdd0e0eabd317c16078f4eb5fb78b71cf66d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/445",
+      "scope": "Stock activation in PacketLog 01e324100149 lines 861–867 sends standalone 30-second reuse and +90 Max Health, +6 Ballistic Accuracy, +4 Ballistic Damage and +4 Ballistic Defense. Rifleman removed those four modifiers."
+    },
+    "rifleman-upgrade-toggle-stock": {
+      "representative": 1073,
+      "result": "pass",
+      "head": "2e3bdd0e0eabd317c16078f4eb5fb78b71cf66d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/445",
+      "scope": "Stock activation in PacketLog 01e324100149 lines 1444–1453 sends standalone 30-second reuse, removes Scattershot and adds +90 Max Health, +7 Ballistic Accuracy, +2 Ballistic Damage and +3 Ballistic Defense."
+    }
+  },
+  "abilities": {
+    "246": { "family": "dual-smg-passive-stock" },
+    "251": { "family": "rifleman-passive-and-grant-stock" },
+    "252": { "family": "advanced-riflery-passive-stock" },
+    "1071": { "family": "scattershot-upgrade-toggle-stock" },
+    "1073": { "family": "rifleman-upgrade-toggle-stock" }
+  }
+}
