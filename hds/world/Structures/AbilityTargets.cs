@@ -18,6 +18,7 @@ namespace hds
         {
             /// <summary>Damage range of the hit (0 = no direct damage).</summary>
             public UInt16 MinDamage, MaxDamage;
+            public bool UseAttachedDamage;
             /// <summary>Effect id on the NPC view when the ability lands.</summary>
             public UInt32 HitFx;
         }
@@ -46,10 +47,9 @@ namespace hds
             // Stun 1 / Stun 2.0: the effect id is the ability's ActivationFX (abilityIDs.csv); no retail NPC capture
             // shows a landed stun. The stun itself is a tempmod (TempMods.Retail: 4 s, as retail's StunAbility on players).
             { 315, new Effect { HitFx = 0x28000904 } },
-            // Cheap Shot (luizoe old sniffer 19:45-19:53): the NPC lost 21-25 and once 67 within the next rounds, with
-            // effect 0x280008cd when one was shown; Head Butt (17:11:35): 21, no effect id seen.
-            { 198, new Effect { MinDamage = 21, MaxDamage = 67, HitFx = 0x280008cd } },
-            { 197, new Effect { MinDamage = 21, MaxDamage = 45 } },
+            // Captured landed damage includes influence and must not replace the shipped base.
+            { 198, new Effect { UseAttachedDamage = true, HitFx = 0x280008cd } },
+            { 197, new Effect { UseAttachedDamage = true } },
             { 333, new Effect { HitFx = 0x28000908 } },
         };
 
@@ -62,6 +62,9 @@ namespace hds
         {
             return effect.MaxDamage == 0 ? (UInt16)0 : (UInt16)random.Next(effect.MinDamage, effect.MaxDamage + 1);
         }
+
+        internal static UInt16 RollDamage(Effect effect, AbilityItem ability, Random random) =>
+            effect.UseAttachedDamage ? AbilityHandler.AbilityDamage(ability, random) : RollDamage(effect, random);
 
         private static readonly Random random = new Random();
 
@@ -185,7 +188,7 @@ namespace hds
             {
                 if (Retail.TryGetValue(abilityId, out effect))
                 {
-                    damage = RollDamage(effect, random);
+                    damage = RollDamage(effect, ability, random);
                     fx = effect.HitFx;
                 }
                 else

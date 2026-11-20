@@ -9,6 +9,8 @@ public class StarterInterlockFixedDamageTests
     [InlineData(134, 7, 13)]
     [InlineData(138, 0, 36)]
     [InlineData(139, 0, 12)]
+    [InlineData(197, 0, 16)]
+    [InlineData(198, 0, 7)]
     public void StarterInterlockUsesTheShippedFixedBaseWhenLegacyRangeIsMissing(ushort id, int type, ushort expected)
     {
         string root = AppContext.BaseDirectory;

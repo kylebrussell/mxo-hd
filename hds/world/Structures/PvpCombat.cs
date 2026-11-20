@@ -409,7 +409,7 @@ namespace hds
             {
                 if (AbilityTargets.Retail.TryGetValue(abilityId, out AbilityTargets.Effect effect))
                 {
-                    damage = AbilityTargets.RollDamage(effect, random);
+                    damage = AbilityTargets.RollDamage(effect, ability, random);
                     fx = effect.HitFx;
                 }
                 else

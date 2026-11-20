@@ -31,7 +31,7 @@ public sealed class AwakenedInterlockAdmissionMode : NativeQaMode
         {
             "Use Self Defense with Melee Dummy selected. At rest try page 2 slots 1–3 (Power Shot, Cheap Shot, Head Butt). Grey is expected. Any request rejected by the server should leave IS and reuse unchanged.",
             "Open Close Combat and wait for the interlock HUD. Press slot 1 on its current opponent. Expect a queued move and 60-second reuse. On a hit, record the actual Inner Strength gain.",
-            "Use ?combatdepth fixture-reset between moves. Strafe slightly to uncover the fresh dummy, reselect, and open ordinary Close Combat again. Press slot 2 for Cheap Shot (20-second reuse). For Head Butt, open again after reset, select the active dummy and verify slot 3 is unavailable before Daze. Run ?combatdepth daze 60 with the active target selected and press slot 3 (30-second reuse). Enter submits the command. Keep the target selected without Escape. On a landed Head Butt, expect Self Defense move 284."
+            "Use ?combatdepth fixture-reset between moves. Strafe slightly to uncover the fresh dummy, reselect, and open ordinary Close Combat again. Press slot 2 for Cheap Shot (physical base 7 before style influence and 20-second reuse). For Head Butt, open again after reset, select the active dummy and verify slot 3 is unavailable before Daze. Run ?combatdepth daze 60 with the active target selected and press slot 3 (30-second reuse). Enter submits the command. Keep the target selected without Escape. On a landed Head Butt, expect Self Defense move 284, physical base 16 before style influence, and the 20-second Melee Accuracy debuff."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -80,6 +80,13 @@ public sealed class AwakenedInterlockAdmissionMode : NativeQaMode
                 int queued = log.IndexOf(queueLine, StringComparison.Ordinal);
                 return queued >= 0 && log[queued..].Contains("[COMBAT] Round ", StringComparison.Ordinal);
             }, $"An ordinary round resolves the queued {ability} before reset", HeadlessPlayer.DefaultTimeout);
+            if (ability != 14)
+            {
+                int amount = ability == 197 ? 19 : 8;
+                await actor.WaitUntilAsync(() => server.DebugLog()[logStart..]
+                    .Split('\n').Any(line => line.TrimEnd('\r') == $"[ABILITY] {ability} lands on view {target.ViewId} for {amount}"),
+                    $"The landed {ability} uses its fixed physical base with normal influence", HeadlessPlayer.DefaultTimeout);
+            }
             int previousViewCount = actor.World.CreationSnapshot().Count;
             actor.SendChat("?combatdepth fixture-reset");
             await actor.WaitForTextAsync("Fixture reset: Melee Dummy restored.");
