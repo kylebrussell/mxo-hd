@@ -1,0 +1,86 @@
+{
+  "families": {
+    "tinkering-targeted-cast": {
+      "representative": 36,
+      "result": "pass",
+      "head": "3e1294bd2db0e1f7215fccf28b7fe8e938c4dee9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/389",
+      "scope": "PacketLog d3b7112643d9:2786 records the selected QAEnemy request from Coder Style. DebugLog line 1034 records 4 viral damage. The stock capture shows a 6-second cast and 30-second reuse."
+    },
+    "logic-bomb-starter-splash": {
+      "representative": 60,
+      "result": "pass",
+      "head": "10ab732089fd992ad21b81571a219805204a8b67",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/396",
+      "scope": "PacketLog 40515a0af6ef:5581 records the normal Logic Bomb hotbar request. DebugLog lines 1060\u20131062 record 8 on QAEnemy and 8 on the nearby QAFriend, with no QAFar landing logged. The disposable fixture bounded the hit draw. The merged head 053f867e changed only the test expectation relative to the stock-tested runtime and fixture."
+    },
+    "hindering-shot-free-cast": {
+      "representative": 130,
+      "result": "pass",
+      "head": "3e1294bd2db0e1f7215fccf28b7fe8e938c4dee9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/389",
+      "scope": "PacketLog d3b7112643d9:3204 records the stock Handguns cast on QAEnemy outside interlock. DebugLog line 1144 records 9 ballistic damage. The capture shows a 2-second cast, 8-second own timer, 5-second group timer, and four effects added and removed."
+    },
+    "guard-breaker-off-balance-interlock": {
+      "representative": 138,
+      "result": "pass",
+      "head": "5533aa1519fd350f6db7b667990f8924dae284e4",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/394",
+      "scope": "PacketLog 93373adf7c38:1253 records the normal guarded hotbar request in unarmed Kung Fu interlock against Melee Dummy. DebugLog line 812 identifies QA-prepared Off Balance 885/200 for 60 seconds. Round 4 plays animation 5953, lands for 40, and applies -10 melee defense for 15 seconds (lines 825\u2013827). Natural Off Balance acquisition remains outside this stock sample."
+    },
+    "iron-guard-aikido-interlock": {
+      "representative": 139,
+      "result": "pass",
+      "head": "a79ee365f34aada83b5bfbb4b945000658829e50",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/394",
+      "scope": "PacketLog fb16102b1c0c:8794 records the stock Iron Guard hotbar request. DebugLog lines 1689 and 1705\u20131708 confirm Aikido, animation 738 and landed 13. PacketLog lines 9043\u20139044 show both +10 caster defense adds for 12 seconds. The sample was PvP on QAEnemy with the pistol still equipped. The planned unarmed NPC case remains open."
+    },
+    "overhand-smash-karate-interlock": {
+      "representative": 145,
+      "result": "pass",
+      "head": "fde73ee299658c9c96aaf0ab2b6e7314d50e4cac",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/397",
+      "scope": "PacketLog e978987904da:1187 records the stock hotbar cast while in Karate interlock against Melee Dummy. DebugLog lines 866\u2013870 show animation 277 (DoubleOverheadSmash), 7 damage, and the ten-second target reductions of -10 melee accuracy and -10 melee defense. Enraged did not proc on this landing."
+    },
+    "advanced-tinkering-targeted-cast": {
+      "representative": 514,
+      "result": "pass",
+      "head": "c568b29241b5d1f4f2a0e9979168e56f2eda5deb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/399",
+      "scope": "PacketLog 3c501e2874a7:3513 records the targeted stock cast on QAEnemy, with a 6-second cast and 30-second reuse. DebugLog line 927 records 6 viral damage. Line 3075 separately records a targetless request that consumed cast/reuse; this pass covers the targeted cast only."
+    },
+    "gunman-starter-upgrade-registration": {
+      "representative": 128,
+      "result": "pass",
+      "head": "5b54adedcde5091d10638a50ba13b27552fa2713",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/392",
+      "scope": "Stock Actions showed one Gunman Upgrade from Gunman 128 at login. PacketLog 09b04c001374 shows initial 1070 registration at 149\u2013150, removal and Initiative Bonus +1 removal at 1149\u20131150, and one registration and matching +1 return at 1252\u20131253 via QA unload/load. Merged retest 9e253b02 PacketLog aa9833a9a0d7 confirms normal 1070 action on, off inside reuse, client suppression during inactive reuse, and activation after expiry. The Initiative Bonus consumer and formula remain open."
+    }
+  },
+  "abilities": {
+    "36": {
+      "family": "tinkering-targeted-cast"
+    },
+    "60": {
+      "family": "logic-bomb-starter-splash"
+    },
+    "128": {
+      "family": "gunman-starter-upgrade-registration"
+    },
+    "130": {
+      "family": "hindering-shot-free-cast"
+    },
+    "138": {
+      "family": "guard-breaker-off-balance-interlock"
+    },
+    "139": {
+      "family": "iron-guard-aikido-interlock"
+    },
+    "145": {
+      "family": "overhand-smash-karate-interlock"
+    },
+    "514": {
+      "family": "advanced-tinkering-targeted-cast"
+    }
+  }
+}
