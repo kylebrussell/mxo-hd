@@ -31,10 +31,12 @@ public class SpyBombsAndParalyzingThrowTests
         client.messageQueue = new MessageQueue();
         typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, long.MaxValue);
+        typeof(WorldClient).GetProperty("IsBot")!.SetValue(client, true);
         typeof(WorldClient).GetField("alive", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, true);
         typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
             .SetValue(client, new WorldSendFence());
+        client.playerData.isBot = true;
         return client;
     }
 
