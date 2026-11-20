@@ -1,0 +1,46 @@
+{
+  "families": {
+    "starter-concentration-stock": {
+      "representative": 628,
+      "result": "pass",
+      "head": "69d0d70d44aba488123258ede6bcbfab2d77ef3a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/521",
+      "scope": "The stock cast bar cancels for 360 on the same 100 HP damage and roll 85 at concentration 5, then completes at 35. The cancelled cast starts no completion cooldown. Tinkering remains outside the explicitly interruptible set."
+    },
+    "insidious-code-cast-stock": {
+      "representative": 360,
+      "result": "pass",
+      "head": "69d0d70d44aba488123258ede6bcbfab2d77ef3a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/521",
+      "scope": "Normal selected stock 360 completed and applied all three effects after the actual damage without starting interlock. The other attempt was cancelled by the damage rule."
+    }
+  },
+  "abilities": {
+    "360": {
+      "family": "insidious-code-cast-stock"
+    },
+    "628": {
+      "family": "starter-concentration-stock",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped GOB 628 passive modifier contributes +30 to Concentration 564. DamageInterruptsCasting reads the modifier with bounded integer rules.",
+          "runtime": "The existing loaded modifier contributes to AbilityCastInterrupts during qualifying real damage to a currently interruptible cast. Cancelled casts cannot publish completion effects or reuse.",
+          "test": "AbilityCastInterruptTests covers the shipped calculation, context fences and omitted flag. StarterConcentrationBatchMode tests the normal loadout changes and armed 100 HP, paired with the stock bar, cancellation, target effects and completion reuse in PR521. https://github.com/kylebrussell/mxo-hd/pull/521"
+        }
+      }
+    },
+    "1113": {
+      "checks": {
+        "stealth-detection": {
+          "source": "Spy Upgrade adds +8 to the shipped active Stealth stat 209. SneakTest reads total Stealth, which includes the active upgrade.",
+          "runtime": "Stealth.StealthLevelOf sums the state's modifier and AbilityStats.Player(209). The periodic observer contest uses that combined total for its ordinary roll.",
+          "test": "StarterSpyVisibilityBatchMode and stock PR522 exercise the same observer with SA 5 and effective Stealth 15 and 23 on the two runs. Stock reveals in each case and restores the view. https://github.com/kylebrussell/mxo-hd/pull/522"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR391": "Stock Detonate observes 2 s cast, 60 s reuse, 84 on neutral, 53 against +75 viral resistance, outside exclusion, ordinary owner kill reward, and pet term +0.58 s. The original scale and player-recipient behavior remain unverified. https://github.com/kylebrussell/mxo-hd/pull/391",
+    "PR522": "Sneak activation prints the state-only SL15. The actual periodic contest uses SL23 with Spy Upgrade active. https://github.com/kylebrussell/mxo-hd/pull/522"
+  }
+}
