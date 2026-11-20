@@ -244,9 +244,9 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
     if i in starter_viral_bases and not r['damage']:
-        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; full native damage and admission parity unresolved')
+        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; live selected enemy required before cast or reuse; stock selected hits verified; wider damage and targeting unresolved')
     elif i == 53 and not r['damage']:
-        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; stock Hacker Style landed 14; wider damage and admission unresolved')
+        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; live selected enemy required before cast or reuse; stock Hacker Style landed 14; wider damage and targeting unresolved')
     elif i in (105, 176) and not r['damage']:
         base, hit = (8, 8) if i == 105 else (17, 18)
         parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; wider damage and admission unresolved')

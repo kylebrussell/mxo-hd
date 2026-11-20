@@ -12,14 +12,14 @@
       "result": "pass",
       "head": "10ab732089fd992ad21b81571a219805204a8b67",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/396",
-      "scope": "PacketLog 40515a0af6ef:5581 records the normal Logic Bomb hotbar request. DebugLog lines 1060\u20131062 record 8 on QAEnemy and 8 on the nearby QAFriend, with no QAFar landing logged. The disposable fixture bounded the hit draw. The merged head 053f867e changed only the test expectation relative to the stock-tested runtime and fixture."
+      "scope": "PacketLog 40515a0af6ef:5581 records the normal Logic Bomb hotbar request. DebugLog lines 1060\u20131062 record 8 on QAEnemy and 8 on the nearby QAFriend, with no QAFar landing logged. The disposable fixture bounded the hit draw. PR432 verified an invalid-target refusal with view zero and the same two 8-point hits with the selected enemy. https://github.com/kylebrussell/mxo-hd/pull/432"
     },
     "harmful-code-starter-cast": {
       "representative": 53,
       "result": "pass",
       "head": "d4fed9606f509f3c61d2afb638e1bd49a5686918",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/406",
-      "scope": "Stock PacketLog fc98739c17a5:3155 records the Harmful Code request with a selected enemy outside interlock. DebugLog 842–843 shows the hit draw and landed viral 14 on QAEnemy. Four-second cast, eight-second own and four-second shared reuse. Wider damage and admission cases remain open."
+      "scope": "Stock PacketLog fc98739c17a5:3155 records the Harmful Code request with a selected enemy outside interlock. DebugLog 842–843 shows the hit draw and landed viral 14 on QAEnemy. Four-second cast, eight-second own and four-second shared reuse. PR432 verifies a single invalid-target refusal without cast or reuse on view zero, followed by the same selected hit. https://github.com/kylebrussell/mxo-hd/pull/432"
     },
     "hindering-shot-free-cast": {
       "representative": 130,
