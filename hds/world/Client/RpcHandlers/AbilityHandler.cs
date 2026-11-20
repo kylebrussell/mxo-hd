@@ -218,6 +218,19 @@ namespace hds
                 Deny(AbilityID, petRefusal);
                 return;
             }
+            bool derez = AbilityID == CoderPets.DerezAbility;
+            CoderPets.Pet enemyPet = null;
+            if (derez)
+            {
+                uint reason = CoderPets.PrepareDerez(Store.currentClient, currentTargetViewId, targetSpawn, out enemyPet);
+                if (reason != 0)
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, reason)));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: native refusal {reason}");
+                    return;
+                }
+            }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
             if (support)
             {
@@ -327,6 +340,7 @@ namespace hds
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
+                if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
@@ -368,7 +382,7 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
-            if (hostileView > 2 && !support && !pet && definition?.FriendlyTarget != true &&
+            if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))

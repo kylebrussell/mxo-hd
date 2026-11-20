@@ -180,6 +180,7 @@ DATA_MINING = {
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; native8176/77/78 window registration/removal/status; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
 PETS = {
     25: 'own live pet within10m, noncombat,50IS/4s;300s caster-level snapshot x0.5 melee159/ballistic171 percentage influence on Proxy hits only; ForceCombat519=40 has no consumer (partial)',
+    26: 'loaded, outside combat; live opposing player pet within16m through its owner; fixed13000 type5 and ordinary pet death; exact retail opponent rules and lethal activation FX unresolved',
     **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
     28: _summon.format(4, 7) + '; random proxy sheet; shipped create-then-destroy ordering unresolved',
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
