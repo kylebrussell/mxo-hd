@@ -24,7 +24,7 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         new[]
         {
             PvpOpponentsFixture.NativeSql,
-            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},rotation=64 WHERE charId=110",
+            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},rotation=64,innerStrC=118,innerStrM=118 WHERE charId=110",
             "DELETE FROM inventory WHERE charId IN (110,6114) AND slot IN (105,107)",
             "DELETE FROM char_abilities WHERE char_id=6114",
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
@@ -36,10 +36,10 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         readyMessages: new[]
         {
             $"CSR level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Outdoor NAV CSR (17000,495,2300) faces QAEnemy (17120,495,2300), 1.2 m east. QAEnemy is level 50, in Power with fully qualified Combat Insight. Stay in Speed on CSR. Press page 2 slot 2 while standing at rest: the stock client should show that Gaussian Blur requires Evading, with no 49 activation sent and no IS change.",
-            """Press page 2 slot 1 Evade Combat. Expect [EVASION] state on and 40 IS spent. Startup [MODIFIER] 83/1030,1045,1049 are +1 each; Resist Viruses 76/1049 is +2 and Execute Program 45/1049 is 0. Send {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Expect [COMBAT-INSIGHT OURS] force110 evade113 allowedFalse and no interlock.""",
-            "Type ?qaunload 83, then repeat the helper melee. Expect all three +1 records and the 1082 grant removed, with Evade still on, and force110 evade112 allowedFalse. Type ?qaload 83 and repeat; expect returned records/grant and force110 evade113 allowedFalse. This is the implemented entry formula.",
-            "With Evade still on, press slot 2 Gaussian Blur. Expect 2 s, 20 IS, 8 s reuse and [MODIFIER] char=110 source=49 stat=520 add +25 duration=600s. Repeat helper melee: [COMBAT-INSIGHT OURS] force110 evade138 allowedFalse, no [PVP] start. Type ?dismissbuff 49, expect the +25 remove and the same melee back at force110 evade113 allowedFalse.",
-            "Toggle Evade Combat off in slot 1 and wait 3 s. Repeat the same melee. With the shield down it starts an interlock, with no shield entry score. Withdraw and send helper stop if needed. Save [EVASION], [MODIFIER] and [PVP] output."
+            """Press page 2 slot 1 Evade Combat. Expect [EVASION] state on and IS 118 to 78. Startup [MODIFIER] 83/1030,1045,1049 are +1 each; Resist Viruses 76/1049 is +2 and Execute Program 45/1049 is 0. Send {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Expect [COMBAT-INSIGHT OURS] force110 evade113 allowedFalse, [EVASION] resistance IS 78->68 cost=10 and no interlock.""",
+            "Type ?qaunload 83, then repeat the helper melee. Expect all three +1 records and the 1082 grant removed, with Evade still on, and force110 evade112 allowedFalse, IS 68->58. Type ?qaload 83 and repeat. Expect returned records/grant and force110 evade113 allowedFalse, IS 58->48.",
+            "With Evade still on, press slot 2 Gaussian Blur. Expect 2 s, 20 IS, 8 s reuse and [MODIFIER] char=110 source=49 stat=520 add +25 duration=600s. Repeat helper melee: [COMBAT-INSIGHT OURS] force110 evade138 allowedFalse, IS 28->18, no [PVP] start. Type ?dismissbuff 49, expect the +25 remove and the same melee back at force110 evade113 allowedFalse, IS 18->8.",
+            "Repeat helper melee once at 8 IS. Expect [EVASION] resistance shortfall required=10 available=8, shield released. The request is resisted, IS stays 8, Evade switches off, and its 30 s own reuse starts. Try slot 2 again while still out of combat to confirm the local Evading gate. Repeat helper melee. With the shield down it starts an interlock, with no shield entry score. Withdraw via page 2 slot 3 and send helper stop if needed. Save [EVASION], [MODIFIER] and [PVP] output."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -72,18 +72,19 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, ResistViruses, 1049, 2, 0, false), "Resist Viruses baseline");
         await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, ExecuteProgram, 1049, 0, 0, false), "Execute Program baseline");
         await RefuseBlurAsync();
+        Check.Equal((ushort)118, ReadIs(), "Seeded IS before entering Evasion");
         int shield = actor.World.RpcSnapshot().Count;
         actor.SendRpc(EvadeUse);
         await ShieldAsync(shield, false);
-        await EnterAsync(113);
+        await EnterAsync(113, 68);
 
         int unloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Phage }, load: false);
         await ExpectPhageAsync(unloaded, true);
-        await EnterAsync(112);
+        await EnterAsync(112, 58);
 
         int reloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Phage }, load: true);
         await ExpectPhageAsync(reloaded, false);
-        await EnterAsync(113);
+        await EnterAsync(113, 48);
 
         ushort beforeBlur = ReadIs();
         int blur = actor.World.RpcSnapshot().Count;
@@ -93,15 +94,15 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         await EvidenceRetestWire.TimerAsync(actor, blur, Blur, AbilityCooldowns.OwnTimer, 8);
         await BlurAsync(blur, false);
         await actor.WaitUntilAsync(() => ReadIs() == beforeBlur - 20, "Blur debits exactly 20 IS", HeadlessPlayer.DefaultTimeout);
-        await EnterAsync(138);
+        await EnterAsync(138, 18);
 
         int dismiss = actor.World.RpcSnapshot().Count;
         actor.SendChat("?dismissbuff 49");
         await BlurAsync(dismiss, true);
-        await EnterAsync(113);
+        await EnterAsync(113, 8);
 
         int removed = actor.World.RpcSnapshot().Count;
-        actor.SendRpc(EvadeUse);
+        await EnterAsync(113, 8, shieldEnds: true);
         await ShieldAsync(removed, true);
         await EvidenceRetestWire.TimerAsync(actor, removed, Evade, AbilityCooldowns.OwnTimer, 30);
         await RefuseBlurAsync();
@@ -140,15 +141,21 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
             StockAbilityProfile.ObserveAsync(actor, cursor, frame => StockAbilityProfile.Bonus(frame, Blur, 520, 25, 600, off),
                 $"Gaussian Blur 520 +25, remove={off}");
 
-        async Task EnterAsync(int evade)
+        async Task EnterAsync(int evade, ushort expectedIs, bool shieldEnds = false)
         {
             int initialLog = server.DebugLog().Length;
+            ushort initialIs = ReadIs();
             enemy.SkipReceived();
             enemy.SendRpc($"40 {handle} 01 6b");
             await enemy.WaitForRpcAsync($"4d 0e 00 01 00 {handle}");
             await enemy.WaitUntilAsync(() => server.DebugLog()[initialLog..].Contains(
                 $"QAEnemy -> CSR_Tester force110 evade{evade} allowedFalse", StringComparison.Ordinal),
                 $"Current entry has Evade {evade}", HeadlessPlayer.DefaultTimeout);
+            string costLog = shieldEnds
+                ? $"resistance shortfall required=10 available={initialIs}, shield released"
+                : $"resistance IS {initialIs}->{expectedIs} cost=10";
+            await actor.WaitUntilAsync(() => ReadIs() == expectedIs && server.DebugLog()[initialLog..]
+                .Contains(costLog, StringComparison.Ordinal), costLog, HeadlessPlayer.DefaultTimeout);
         }
 
         async Task ExpectPhageAsync(int from, bool off)

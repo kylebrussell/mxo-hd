@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace hds
 {
-    /// <summary>Evade Combat217's child EvasionState624. This is state/presentation only: the retail shield
+    /// <summary>Evade Combat217's child EvasionState624 and resistance cost. The retail shield
     /// health baseline and ForceCombat/EvadeInterlock contest are not reconstructed.</summary>
     public static class EvasionShield
     {
@@ -18,14 +18,61 @@ namespace hds
         private static bool Suppressed(WorldClient target) => TimedEffects.ForPlayer(target).Effects.Snapshot().Exists(m =>
             m.Parent == StealthShieldAbilities.DisableEvasion && m.Target == StealthShieldAbilities.NullTarget &&
             m.Expires > TimeUtils.GetSimTimeSeconds());
-        public static bool HasState(WorldClient target)
+        public static bool HasState(WorldClient target) => ActiveGeneration(target).HasValue;
+
+        internal static int? ActiveGeneration(WorldClient target)
         {
-            if (!states.TryGetValue(target, out var state)) return false;
-            lock (target.playerData.activeBuffs)
-                return target.playerData.activeBuffs.TryGetValue(Parent, out var active) && active.Generation == state.Generation &&
-                    target.playerData.worldGeneration == state.World && target.playerData.lifeGeneration == state.Life &&
-                    !target.playerData.isDead && !target.playerData.duelDeath && !Suppressed(target);
+            var data = target.playerData;
+            lock (data.activeBuffs)
+            {
+                if (!states.TryGetValue(target, out var state) ||
+                    !data.activeBuffs.TryGetValue(Parent, out var active) || active.Generation != state.Generation ||
+                    data.worldGeneration != state.World || data.lifeGeneration != state.Life ||
+                    data.isDead || data.duelDeath || Suppressed(target))
+                    return null;
+                return state.Generation;
+            }
         }
+
+        // Shipped combat_calculations.py GetShieldResistanceISDrainValue.
+        internal static ushort ResistanceCost(byte attackerLevel, byte defenderLevel) =>
+            (ushort)Math.Clamp(10 - Math.Max(0, defenderLevel - attackerLevel - 5), 2, 10);
+
+        internal static bool ResistEntry(WorldClient source, WorldClient target, int generation,
+            CombatInsightEngagement.Scope scope)
+        {
+            var data = target.playerData;
+            ushort cost = ResistanceCost(source.playerInstance.Level.getValue()[0], target.playerInstance.Level.getValue()[0]);
+            ushort before;
+            ushort after;
+            lock (data.activeBuffs)
+            {
+                if (!scope.Current) return false;
+                if (ActiveGeneration(target) != generation) return !HasState(target);
+                before = AbilityHandler.CurrentInnerStrength(target);
+                // EvadeCombatEvent ends the toggle on shortfall without taking a partial payment.
+                after = before;
+                if (before >= cost)
+                {
+                    after = AbilityHandler.SpendInnerStrength(target, cost);
+                    target.messageQueue.addObjectMessage(
+                        PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfInnerStrength, PlayerViewAttributes.U16(after))), false);
+                }
+            }
+
+            if (before < cost)
+            {
+                if (scope.Current && AbilityBuffs.Remove(target, Parent, generation: generation))
+                    Output.WriteDebugLog($"[EVASION] {TimedEffects.PlayerName(target)} resistance shortfall required={cost} available={before}, shield released");
+            }
+            else
+            {
+                Output.WriteDebugLog($"[EVASION] {TimedEffects.PlayerName(target)} resistance IS {before}->{after} cost={cost}");
+                target.FlushQueue();
+            }
+            return false;
+        }
+
         internal static void Applied(WorldClient target, int generation)
         {
             states.Remove(target);

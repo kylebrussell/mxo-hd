@@ -179,9 +179,9 @@ namespace hds
                 return true;
             }
 
-            if(!CombatInsightEngagement.Allows(attacker,target,targetHandle,out var entry))
+            if(!CombatInsightEngagement.Allows(attacker,target,targetHandle,out var entry, applyResistanceCost: true))
             {
-                // Captured forced-entry refusal shape; no new recast timer or IS charge.
+                // Captured forced-entry refusal shape. A shortfall can release the shield for the next request.
                 attacker.messageQueue.addRpcMessage(BuildCombatRefused(14,false,targetHandle,true,false));
                 new ServerPackets().sendSystemChatMessage(attacker,entry.Computed?
                     $"OURS: Evade Combat resisted entry (force {entry.Force}, evade {entry.Evade}).":"Combat entry target changed.","SYSTEM");

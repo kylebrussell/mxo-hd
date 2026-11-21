@@ -51,11 +51,13 @@ namespace hds
                 ReferenceEquals(source.viewMan.getViewById(view.ViewID),view);
         }
 
-        internal static bool Allows(WorldClient source,WorldClient target,uint handle,out Scores scores)
+        internal static bool Allows(WorldClient source,WorldClient target,uint handle,out Scores scores,
+            bool applyResistanceCost = false)
         {
             scores=default;
             // Positive520 alone never recreates an evasion gate after1125 suppression or217 removal.
-            if(!EvasionShield.HasState(target))return true;
+            int? generation = EvasionShield.ActiveGeneration(target);
+            if (!generation.HasValue) return true;
             var scope=new Scope(source,target,handle);
             if(!scope.Current)return false;
             scores=Calculate(CombatTactics.Get(source.playerData.combatTactic).ForceCombat,AbilityStats.Player(source,519),
@@ -65,7 +67,8 @@ namespace hds
             // A removed/suppressed217 no longer resists entry; no sticky gate or shield-health pool.
             if(!EvasionShield.HasState(target))return true;
             Output.WriteDebugLog($"[COMBAT-INSIGHT OURS] {PvpFlag.Name(source)} -> {PvpFlag.Name(target)} force{scores.Force} evade{scores.Evade} allowed{scores.Allows}");
-            return scores.Allows;
+            if (scores.Allows || !applyResistanceCost) return scores.Allows;
+            return EvasionShield.ResistEntry(source, target, generation.Value, scope);
         }
     }
 }
