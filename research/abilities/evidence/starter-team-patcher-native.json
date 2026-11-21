@@ -1,0 +1,61 @@
+{
+  "families": {
+    "stock-starter-team-patcher": {
+      "representative": 63,
+      "result": "pass",
+      "head": "626180b0312336ff9b7812fa4d918c3523ab4763",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/586",
+      "scope": "Stock team join followed by self-casts at one stand. The clear 2.5 m and 4.5 m teammates receive the four Firewall records. A 13.5 m teammate and a nearby nonmember receive none."
+    }
+  },
+  "abilities": {
+    "42": {
+      "checks": {
+        "area": {
+          "source": "GOB 42 reapplies 695, a friendly team effect with a stored 3 m radius. The parent has a separate 8 m radius field.",
+          "runtime": "AbilityAuras.Pulse passes the child to AbilitySupport.Land so the range and admission come from 695.",
+          "test": "StarterTeamPatcherBuffsMode and PR586 show that only the 2.5 m teammate gets both +64 child records. The 4.5 m and 13.5 m teammates and the 2 m nonmember get neither. https://github.com/kylebrussell/mxo-hd/pull/586"
+        }
+      }
+    },
+    "63": {
+      "family": "stock-starter-team-patcher",
+      "checks": {
+        "area": {
+          "source": "GOB 63 stores friendly team target selection with radius 10 m.",
+          "runtime": "AbilitySupport.Land uses the caster-centred team collection with the ability's radius.",
+          "test": "PR586 and StarterTeamPatcherBuffsMode include the 2.5 and 4.5 m teammates and exclude the 13.5 m teammate. https://github.com/kylebrussell/mxo-hd/pull/586"
+        },
+        "targeting": {
+          "source": "GOB 63 is a beneficial team cast with no hostile hit contest.",
+          "runtime": "AbilitySupport uses the buff's recipient mode to include self and eligible members of the mission team, excluding other nearby players.",
+          "test": "The unselected stock cast in PR586 affects self and two in-range teammates. The nearby friendly nonmember has no 63 records. StarterTeamPatcherBuffsMode independently verifies those recipients' streams. https://github.com/kylebrussell/mxo-hd/pull/586"
+        },
+        "stats": {
+          "source": "GOB 63 has one scaled viral defense, three +5 defenses, and RefundIS for 10 at termination after 300 s.",
+          "runtime": "AbilityBuffs stores defense modifiers at the source's cast rank, consumes them through AbilityStats and refunds IS to the recipient on term.",
+          "test": "FirewallAndShieldRefundRecipientInnerStrengthOnTerm verifies all four defense totals at rank 50, their removal and a single +10 refund on term. PR586 confirms the stock +35/+5/+5/+5 records and 300 s durations. https://github.com/kylebrussell/mxo-hd/pull/586"
+        },
+        "behavior-tests": {
+          "source": "GOB 63 specifies 50 IS, a 10 m team cast, four defense modifiers and a 10 IS termination refund.",
+          "runtime": "AbilityHandler debits the cast from the caster. AbilitySupport applies the 300 s snapshot to each eligible recipient; AbilityBuffs clears it and refunds the recipient.",
+          "test": "StarterTeamPatcherBuffsMode checks all four recipient records, the distant teammate and the nonmember. FirewallAndShieldRefundRecipientInnerStrengthOnTerm verifies the single refund and clears all four defense contributions. https://github.com/kylebrussell/mxo-hd/pull/586"
+        }
+      }
+    },
+    "72": {
+      "checks": {
+        "area": {
+          "source": "GOB 72 is a caster-centred friendly team buff with radius 14 m and +20 Combat Evasion for 600 s.",
+          "runtime": "AbilitySupport uses the 14 m recipient radius on the team buff.",
+          "test": "StarterTeamPatcherBuffsMode and the stock PR586 cast deliver the +20 record to CSR and all three teammates, including the 13.5 m member that 63 excluded. https://github.com/kylebrussell/mxo-hd/pull/586"
+        },
+        "targeting": {
+          "source": "GOB 72 selects the caster and nearby friendly mission-team members, without a hostile contest.",
+          "runtime": "AbilitySupport's team selector excludes nonmembers even within the radius.",
+          "test": "The stock PR586 CSEQ 87 is cast with no world target. QAOther at 2 m receives no 72 record, which the exact replay verifies in the outsider's stream. https://github.com/kylebrussell/mxo-hd/pull/586"
+        }
+      }
+    }
+  }
+}
