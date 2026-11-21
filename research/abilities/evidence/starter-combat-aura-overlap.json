@@ -5,12 +5,12 @@
         "aura": {
           "source": "GOB 42 calls ApplyAuraEffect with child 695. Child 695 has a three-metre radius and two five-second +64 accuracy modifiers.",
           "runtime": "AbilityAuras schedules each caster independently. AbilitySupport applies the same linked child to eligible friendly team players; AbilityBuffs replaces an existing copy before publishing the new pair.",
-          "test": "StarterTeamPatcherBuffsMode checks initial application, cross-caster replacement, a helper-only pulse and final expiry. Stock .2 PacketLog 8f7023603b50 shows CSR CSEQ 70/75 toggles, QAFriend applying the overlapping effect at 19:53:05, refreshing after CSR stops at 19:53:10 and final removals at 19:53:15. No stat stacks. The initial Team Patcher recipient proof is in PR586. https://github.com/kylebrussell/mxo-hd/pull/586"
+          "test": "StarterTeamPatcherBuffsMode checks two-caster replacement, a helper-only pulse and final expiry. The primary stock run verifies that overlapping casters kept one +64 pair, a second teammate received the helper pulse, and the final records were removed. https://github.com/kylebrussell/mxo-hd/pull/590#issuecomment-7054792184"
         },
         "behavior-tests": {
           "source": "GOB 42 is an 8 IS activation, runs ApplyAuraEffect and ISDrainWithAbilityDeactivation on its five-second update and adds a 15-second reuse timer at termination.",
           "runtime": "AbilityHandler handles activation cost; AbilityAuras runs the aura until toggled off, depleted or the source leaves the world; AbilityCooldowns emits the off-time reuse. The last recipient effect has its own lifetime.",
-          "test": "CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength checks both accuracy totals, the 12 IS recurring debit, insufficient IS shutdown and the 15 s cooldown. StarterTeamPatcherBuffsMode checks exact stock casts, team boundaries and two-caster overlap. The stock .2 session 8f7023603b50 confirms the 15 s 80 bd 01 timer and expiry. https://github.com/kylebrussell/mxo-hd/pull/586"
+          "test": "CombatAuraPulsesShippedAccuracyAndChargesTwelveInnerStrength checks both accuracy totals, the 12 IS recurring debit, insufficient IS shutdown and 15 s cooldown. StarterTeamPatcherBuffsMode checks exact stock casts, team boundaries and two-caster overlap. The primary stock comment confirms the overlap and final expiry. https://github.com/kylebrussell/mxo-hd/pull/590#issuecomment-7054792184"
         }
       }
     }
