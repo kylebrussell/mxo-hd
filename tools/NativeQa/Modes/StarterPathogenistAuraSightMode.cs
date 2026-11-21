@@ -9,11 +9,16 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
     // The mapped sight blocker and both stands were verified with stock area casts in PR568.
     private const int X = 21925, Y = 1095, Z = 16100;
     private const ushort Miasma = 61, DefensePulse = 701, StaticField = 89, DamagePulse = 694;
-    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Miasma, StaticField).Order().ToArray();
+    private const ushort HackerStyle = 1006, CodeNuke = 60, ResistInfection = 75, TrojanHorse = 945;
+    // Keep the complete loadout that the stock client used successfully for Static Field in PR574.
+    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(
+        2, 17, HackerStyle, CodeNuke, ResistInfection, Miasma, StaticField, TrojanHorse).Order().ToArray();
+    private const string HackerUse = "80b9ee0300000000000000000000000000000000000000000000000000000084d75741086b0000000000";
 
-    // Full stock self-toggle requests from PR564 and the stock selection shape from PR568.
-    private const string MiasmaUse = "80b93d00000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string StaticUse = "80b95900000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    // PR588 stock selected Miasma CSEQ 87/97 and PR574 stock unselected Static Field CSEQ 58/66.
+    private const string MiasmaOn = "80b93d00050003000000000000000000000000000000000000000000785cbf0001000000086b0000000000";
+    private const string MiasmaOff = "80b93d00050003000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    private const string StaticUse = "80b959000000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
 
     public override string Name => "ability-parity-starter-pathogenist-aura-sight";
 
@@ -24,16 +29,17 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
         $"UPDATE characters SET x={X + 200},y={Y},z={Z},alignment=2 WHERE charId=6114",
         $"UPDATE characters SET x={X - 250},y={Y},z={Z},alignment=2 WHERE charId=6112",
         "DELETE FROM char_abilities WHERE char_id IN (6112,6114)"
-    }, DevCommands: true, hotbarAbilities: new[] { Miasma, StaticField }, environmentOverrides: new()
+    }, DevCommands: true, hotbarAbilities: new[] { Miasma, StaticField, HackerStyle }, environmentOverrides: new()
     {
         ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
         [AreaTargetDiagnostics.Variable] = "1"
-    }, extraQaMetadata: new() { ["ScopedStockRows"] = "61,89,694,701", ["NativeCloseableRows"] = 2 },
+    }, extraQaMetadata: new() { ["ScopedStockRows"] = "61,89,694,701", ["NativeCloseableRows"] = 2, ["MemoryUsed"] = Loadout.Sum(AbilityMemory.Cost) },
         readyMessages: new[]
         {
             "Stay outside at the marked stand facing QAEnemy, 2 m east. QAEnemy is clear. QAFar is 2.5 m west on the same floor, across a mapped line-of-sight blocker. Both helpers are hostile and remain in world.",
-            "Turn to select QAFar without moving off the stand and keep it selected. Page 2 slot 1 toggles Miasma. Watch for 701: only QAEnemy gets melee and ballistic defense -14/-14 for 5 s. Keep it on through the next pulse (~5 s), then toggle off. Wait for the final two modifiers to expire.",
-            "Keep QAFar selected. Slot 2 toggles Static Field. Only QAEnemy takes 1 viral damage from 694 on each pulse. Wait through the second pulse, then toggle off. Capture QAFar's AREA-QA reason=sight, both stock requests and CSR IS changes. Expected recurring IS debit is 3 for Miasma and 12 for Static Field."
+            "Retest Static Field only. Leave world selection clear and remain outside interlock. Select Hacker Style in page 2 slot 3, then cast Static Field in slot 2 before Miasma. This matches the clear-selection cast from PR574. Code Nuke and the rank-50 Resist Infection chain are loaded.",
+            "Only QAEnemy takes 1 viral damage from 694 on each pulse. Wait through the second pulse (~5 s), then toggle off. QAFar is inside 6 m but gets no hit. Capture the first 89 request, QAFar's AREA-QA reason=sight and CSR's 12 IS per pulse.",
+            "If the stock use fails from the shortcut, try Actions > Abilities > Pathogenist > Static Field with selection still clear. Report any red prerequisite text. Miasma in slot 1 already passed natively with QAFar selected."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -52,38 +58,51 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
         await blocked.WaitForViewNamedAsync(clear.Handle);
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
+        var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6])
+            .Where(row => AbilityMemory.IsAbility(row.Descriptor))
+            .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
+        int memory = Loadout.Sum(AbilityMemory.Cost);
+        Check.That(memory <= AbilityMemory.ForLevel(50), "Static Field's complete stock profile fits in memory");
+        Check.That(Loadout.All(id => archive.ContainsKey(id)) &&
+            AbilityPrerequisites.Current.Closure(StaticField).All(requirement =>
+                archive.TryGetValue(requirement.Key, out var rank) && rank >= requirement.Value) &&
+            archive[CodeNuke] == 50 && archive[ResistInfection] == 50,
+            "Stock Margin loads Code Nuke, Resist Infection and the complete Static Field prerequisite chain");
+        Console.WriteLine($"PATHOGENIST STOCK LOADOUT: {memory}/{AbilityMemory.ForLevel(50)} memory; Code Nuke 60 and Resist Infection 75 at rank 50.");
+
         await PvpOpponentsFixture.EnterAsync(actor);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         await actor.WaitForViewNamedAsync(clear.Handle);
         var view = await actor.WaitForViewNamedAsync(blocked.Handle);
         uint handle = DuelPackets.Handle(view.ViewId, view.SpawnId);
-        actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
+        actor.SendRpc(HackerUse);
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
 
         int blockedCursor = blocked.World.RpcSnapshot().Count;
         int clearCursor = clear.World.RpcSnapshot().Count;
         int debugCursor = server.DebugLog().Length;
-        await ToggleAsync(Miasma, MiasmaUse, on: true);
-        ManageBonusRecord first = await DefenseRecordAsync(clearCursor, 1009);
+        await ToggleAsync(StaticField, Convert.FromHexString(StaticUse), on: true);
+        await clear.WaitUntilAsync(() => clear.World.RpcSnapshot().Skip(clearCursor).Count(
+            packet => IsStaticHit(packet, clear.Handle)) >= 2, "Static Field's initial and scheduled hits each deal 1",
+            HeadlessPlayer.DefaultTimeout);
+        await ToggleAsync(StaticField, Convert.FromHexString(StaticUse), on: false);
+        VerifySight(debugCursor, DamagePulse);
+
+        actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
+        clearCursor = clear.World.RpcSnapshot().Count;
+        debugCursor = server.DebugLog().Length;
+        await ToggleAsync(Miasma, StarterHackerControlTargetMode.WithHandle(MiasmaOn, handle), on: true);
+        var firstMelee = await DefenseRecordAsync(clearCursor, 1009);
         var firstBallistic = await DefenseRecordAsync(clearCursor, 1010);
-        var refreshed = await DefenseRecordAsync(clearCursor, 1009, first.RecordId);
-        var refreshedBallistic = await DefenseRecordAsync(clearCursor, 1010,
-            firstBallistic.RecordId);
-        await ToggleAsync(Miasma, MiasmaUse, on: false);
-        foreach (var mod in new[] { refreshed, refreshedBallistic })
+        var refreshedMelee = await DefenseRecordAsync(clearCursor, 1009, firstMelee.RecordId);
+        var refreshedBallistic = await DefenseRecordAsync(clearCursor, 1010, firstBallistic.RecordId);
+        await ToggleAsync(Miasma, StarterHackerControlTargetMode.WithHandle(MiasmaOff, handle), on: false);
+        foreach (var mod in new[] { refreshedMelee, refreshedBallistic })
             await StockAbilityProfile.ObserveAsync(clear, clearCursor,
                 packet => ManageBonusRecord.TryDecode(packet.Bytes, out var record) &&
                     record!.SourceId == DefensePulse && record.RecordId == mod.RecordId && record.AddRemoveType == 1,
                 $"The final Miasma modifier {mod.RecordId} expires after toggle-off");
         VerifySight(debugCursor, DefensePulse);
-
-        clearCursor = clear.World.RpcSnapshot().Count;
-        debugCursor = server.DebugLog().Length;
-        await ToggleAsync(StaticField, StaticUse, on: true);
-        await clear.WaitUntilAsync(() => clear.World.RpcSnapshot().Skip(clearCursor).Count(
-            packet => IsStaticHit(packet, clear.Handle)) >= 2, "Static Field's initial and scheduled hits each deal 1",
-            HeadlessPlayer.DefaultTimeout);
-        await ToggleAsync(StaticField, StaticUse, on: false);
-        VerifySight(debugCursor, DamagePulse);
 
         int acknowledgement = blocked.World.RpcSnapshot().Count;
         blocked.SendRpc("81 48");
@@ -92,12 +111,12 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
         Check.That(!blocked.World.RpcSnapshot().Skip(blockedCursor).Any(packet =>
             IsStaticHit(packet, blocked.Handle) || ManageBonusRecord.TryDecode(packet.Bytes, out var mod) &&
                 mod!.SourceId == DefensePulse && mod.AddRemoveType == 0),
-            "The selected hostile behind the blocker receives neither child");
+            "The hostile behind the blocker receives neither child with or without selection");
         Check.Equal(0, actor.World.Problems.Count + clear.World.Problems.Count + blocked.World.Problems.Count,
             "Pathogenist aura sight fixture framing");
         return Array.Empty<byte>();
 
-        async Task ToggleAsync(ushort ability, string request, bool on)
+        async Task ToggleAsync(ushort ability, byte[] request, bool on)
         {
             int cursor = actor.World.RpcSnapshot().Count;
             actor.SendRpc(request);
