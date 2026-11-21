@@ -1,0 +1,50 @@
+{
+  "families": {
+    "stock-potency-physical-and-concentration": {
+      "representative": 317,
+      "result": "pass",
+      "head": "82101aae8613e55c0249d9a067132214b8f08399",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/652#issuecomment-7062431859",
+      "scope": "Native add/remove/re-add of source 317 stats 1140 +11, 1144 +11 and 1090 +10. At the same real 100 HP loss and roll 79, concentration 5 and threshold 77 interrupt the cast with no reuse. With Potency loaded, concentration 15 and threshold 82 allow the cast and its 58-second reuse. Execute Program remains constant."
+    },
+    "stock-selective-phage-upgrade-consumers": {
+      "representative": 1082,
+      "result": "pass",
+      "head": "500ad797e9fc64c6f6a7bcca478fa7cb34f88b5d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/653#issuecomment-7062480333",
+      "scope": "A complete stock view-zero 80 b9 3a 04 activation spends 20 IS, starts 30 s own reuse and adds 172 +2, 183 +2 and 342 +4. Outgoing contest inputs 80/42 become 85/42 and raw damage 640 becomes 648. Incoming inputs 80/42 become 80/44. All three return to their baselines after dismissal."
+    }
+  },
+  "abilities": {
+    "317": {
+      "family": "stock-potency-physical-and-concentration",
+      "checks": {
+        "stats": {
+          "source": "Shipped 317 scales loaded melee and ballistic resistance bonuses by 0.24 and concentration bonus by 0.2. Stored float precision produces +11/+11/+10 at rank 50.",
+          "runtime": "AbilityPassives publishes the linked modifiers. AbilityStats.Toughness supplies the normal physical round and shot inputs, and AbilityCastInterrupts consumes the linked concentration total.",
+          "test": "PotencyReachesBothPhysicalDamageConsumersAndCastThrough verifies +24 rating to both physical consumers and 7.2 percentage points more reduction for an equal-level attack. PR652 verifies all three live modifier values and the concentration change. https://github.com/kylebrussell/mxo-hd/pull/652#issuecomment-7062431859"
+        },
+        "behavior-tests": {
+          "source": "All three shipped modifiers apply while 317 is loaded.",
+          "runtime": "The current loaded records determine both directional toughness inputs and the concentration used at damage time. Unload and reload update those inputs without changing Execute Program.",
+          "test": "The focused test verifies the physical and concentration results before load and after unload. PR652 verifies the three wire records throughout the complete stock unload/reload sequence and compares actual cast interruption, landing and reuse at the same roll. https://github.com/kylebrussell/mxo-hd/pull/652#issuecomment-7062431859"
+        }
+      }
+    },
+    "1082": {
+      "family": "stock-selective-phage-upgrade-consumers",
+      "checks": {
+        "stats": {
+          "source": "Shipped 1082 gives Viral Damage +2, Viral Defense +2 and Viral Accuracy +4 while enabled.",
+          "runtime": "AbilityBuffs applies the three stats to its caster. FreeCastViralContest reads its attack and defense inputs, and AbilityStats applies the typed viral damage influence.",
+          "test": "SelectivePhageUpgradeAddsThreeViralInputsAndRestoresThemOnRemoval verifies each input and the actual viral damage accessor. PR653 confirms all three records and the outgoing and incoming stock combat differences before activation, while enabled and after dismissal. https://github.com/kylebrussell/mxo-hd/pull/653#issuecomment-7062480333"
+        },
+        "behavior-tests": {
+          "source": "Loaded Selective Phage 83 grants 1082. The shipped upgrade costs 20 IS and stores 30 seconds of own reuse.",
+          "runtime": "The loaded grant exposes the action. Applying it starts normal reuse and installs the self buff until it is removed.",
+          "test": "StarterSelectivePhageMode verifies granted membership and the captured 330 controls. PR653 retains the full first stock activation, the 20 IS debit, 30-second timer, all three combat changes and their dismissal. https://github.com/kylebrussell/mxo-hd/pull/653#issuecomment-7062480333"
+        }
+      }
+    }
+  }
+}
