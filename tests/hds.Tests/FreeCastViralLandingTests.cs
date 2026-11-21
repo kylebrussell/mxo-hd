@@ -87,6 +87,10 @@ public class FreeCastViralLandingTests : IDisposable
 
         Assert.Same(friendly, Assert.Single(AbilitySupport.Targets(caster, 237, friendView.ViewID)));
         Assert.Empty(AbilitySupport.Targets(caster, 237, enemyView.ViewID));
+        Assert.Empty(AbilitySupport.Targets(caster, 237, friendView.ViewID, (ushort)(friendView.spawnId + 1)));
+        friendView.viewNeedsToBeDeleted = true;
+        Assert.Empty(AbilitySupport.Targets(caster, 237, friendView.ViewID, (ushort)friendView.spawnId));
+        friendView.viewNeedsToBeDeleted = false;
         AbilitySupport.Land(caster, 237, friendView.ViewID);
         Assert.Equal(60, AbilityStats.Influence(friendly, 112));
         Assert.Equal(0, AbilityStats.Influence(caster, 112));

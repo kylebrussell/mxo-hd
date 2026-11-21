@@ -17,11 +17,13 @@ namespace hds
         public static bool BufferFits(WorldClient target, ushort id) => !RequiresBuffer(id) ||
             AbilityBuffBuffer.CanApply(target,id,AbilityBuffs.TryGet(id,out var buff) ? buff : null);
 
-        public static WorldClient PlayerInView(WorldClient caster, UInt16 view)
+        public static WorldClient PlayerInView(WorldClient caster, UInt16 view, UInt16? spawn = null)
         {
             if (view <= 2) return caster;
             var target = caster.viewMan.getViewById(view);
-            return target == null || !target.viewCreated ? null : SocialHandler.OnlineWhere(c => c.playerData.getEntityId() == target.entityId).FirstOrDefault();
+            return target == null || !target.viewCreated || target.viewNeedsToBeDeleted ||
+                spawn.HasValue && target.spawnId != spawn.Value
+                ? null : SocialHandler.OnlineWhere(c => c.playerData.getEntityId() == target.entityId).FirstOrDefault();
         }
 
         public static bool FriendlyRecipient(WorldClient caster, WorldClient target) =>
@@ -35,12 +37,12 @@ namespace hds
             return CombatCalculator.CalculateDistanceMetres(a.playerInstance.Position.getValue(), x, y, z) <= metres;
         }
 
-        public static List<WorldClient> Targets(WorldClient caster, UInt16 id, UInt16 view)
+        public static List<WorldClient> Targets(WorldClient caster, UInt16 id, UInt16 view, UInt16? spawn = null)
         {
             var entry = AbilityCatalog.Find(id);
             if (AbilityResurrection.Handles(id))
             {
-                var corpse = PlayerInView(caster, view);
+                var corpse = PlayerInView(caster, view, spawn);
                 return AbilityResurrection.CanTarget(caster, corpse, id) ? new List<WorldClient> { corpse } : new List<WorldClient>();
             }
             // Simulacra repairs require an owned pet, not a player selected through the generic heal fallback.
@@ -56,16 +58,16 @@ namespace hds
             // Self-only buffs ignore a selected hostile, as class and Hyper buffs did before.
             bool selfOnly = entry?.Number("Ability/CastDirectObjects") == 1;
             WorldClient target = !selfOnly && (entry?.FriendlyTarget == true || entry?.Healing == true)
-                ? PlayerInView(caster, view) : caster;
+                ? PlayerInView(caster, view, spawn) : caster;
             return target != null && FriendlyRecipient(caster,target) &&
                 InRange(caster, target, entry?.Number("Ability/SelectionRange", 20) ?? 20)
                 ? new List<WorldClient> { target } : new List<WorldClient>();
         }
 
-        public static void Land(WorldClient caster, UInt16 id, UInt16 view, Action<WorldClient> buffApplied = null)
+        public static void Land(WorldClient caster, UInt16 id, UInt16 view, Action<WorldClient> buffApplied = null, UInt16? spawn = null)
         {
             var entry = AbilityCatalog.Find(id);
-            foreach (WorldClient target in Targets(caster, id, view))
+            foreach (WorldClient target in Targets(caster, id, view, spawn))
             {
                 if (!BufferFits(target,id)) continue;
                 if (entry?.Healing == true)
