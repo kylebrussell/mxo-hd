@@ -1315,6 +1315,40 @@ public class AbilityHostileTests
         }
     }
 
+    [Theory]
+    [InlineData(61, 3)]
+    [InlineData(89, 12)]
+    public void PathogenistAuraDeactivatesBeforeAnUnaffordablePulse(ushort ability, ushort upkeep)
+    {
+        var caster = Client(innerStrength: (ushort)(2 * upkeep - 1));
+        var previous = WorldServer.Clients;
+        WorldServer.Clients = new() { ["caster"] = caster };
+        try
+        {
+            AbilityAuras.Start(caster, ability);
+            Assert.True(AbilityAuras.IsOn(caster, ability));
+            Assert.Equal(2 * upkeep - 1, AbilityHandler.CurrentInnerStrength(caster));
+
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.Equal(upkeep - 1, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.True(AbilityAuras.IsOn(caster, ability));
+
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.False(AbilityAuras.IsOn(caster, ability));
+            Assert.Equal(upkeep - 1, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), packet =>
+                packet.content.AsSpan(1).SequenceEqual(AbilityBuffs.BuildExclusive(ability, false)));
+
+            AbilityAuras.Tick(caster, ability, 1);
+            Assert.Equal(upkeep - 1, AbilityHandler.CurrentInnerStrength(caster));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            WorldServer.Clients = previous;
+        }
+    }
+
     [Fact]
     public void AurasReadTheirDrainAndEffectFromTheTemplate()
     {
