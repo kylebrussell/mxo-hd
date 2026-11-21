@@ -27,9 +27,9 @@ public sealed class StarterHackerPassiveRoundtripsMode : NativeQaMode
         readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) is outdoors on NAV floor 400. No helper, bag or targeting. For each row, use ?qaunload ID, then ?qaload ID. Capture the [MODIFIER] lines for char=110 and the listed source. All records have duration 0s.",
-            "98 Virologist removes/restores 1030 +1 and 1045 +1. Confirm [ABILITY-GRANT] 1077 off/on and whether Virologist Upgrade disappears/returns in Actions.",
+            "98 Virologist removes/restores 1030 +1 and 1045 +1. Confirm PacketLog 80 b3/80 b2 for 1077 (35 04) and whether Virologist Upgrade disappears/returns in Actions.",
             "73 Resist Contagion removes/restores 995 +1 and 1147 +5. Leave the other passives alone to separate their source records.",
-            "64 Network Hacker is the control for the same 1147 stat. Expect +1 off/on and [ABILITY-GRANT] 1078 off/on. No max [VITALS] change or [PVP] rounds."
+            "64 Network Hacker is the control for the same 1147 stat. Expect +1 off/on and PacketLog 80 b3/80 b2 for 1078 (36 04). No max [VITALS] change or [PVP] rounds."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
