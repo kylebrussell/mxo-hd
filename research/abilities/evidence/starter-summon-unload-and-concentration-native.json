@@ -1,0 +1,36 @@
+{
+  "families": {
+    "starter-remote-proxy-two-archive-deactivation": {
+      "representative": 28,
+      "result": "pass",
+      "head": "d7faa28ab84aa640bf93d55cc2ddeaf172a01e05",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/624#issuecomment-7059041632",
+      "scope": "The stock client summoned the L7 Proxy and paid its share of the 800-to-650 IS sequence. The committed QA loadout command removed it on unload without recreating it on reload. The stock-form bootstrap exercises the ordinary Archive wire and both owner and observer deletion."
+    }
+  },
+  "abilities": {
+    "28": {
+      "family": "starter-remote-proxy-two-archive-deactivation",
+      "checks": {
+        "pets": {
+          "source": "The shipped RemoteProxy2 callbacks specify a Proxy at owner level clamped to 4–7 and a teardown on deactivation.",
+          "runtime": "CoderPets spawns a level-clamped owned Proxy, and the committed loadout path dismisses that exact pet when its summoning ability leaves membership. Unrelated summons can unload without dismissing it.",
+          "test": "StarterSimulacraArchiveDeactivationMode verifies the registration, 337 maximum HP, debit, unrelated unload, matching owner and observer view deletions, and quiet reload. PR624 confirms the live L7 summon and matching removal. The extra destroy call inside RemoteProxy2_Subject remains unresolved. https://github.com/kylebrussell/mxo-hd/pull/624#issuecomment-7059041632"
+        }
+      }
+    },
+    "45": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 45 stores learned-rank modifiers for Concentration, IS regeneration, maximum IS and Evade Interlock.",
+          "runtime": "Loaded passives publish those four values. Their consumers are AbilityCastInterrupts, normal regeneration, maximum-vital recalculation and the shielded entry check.",
+          "test": "PR528 verified 220→200→220 maximum IS and +8 vs +8/+9 regeneration. StarterEvadeEntryMode exercises the +5 Evade Interlock entry boundary. StarterExecuteProgramConcentrationMode and native PR625 verify the linked +5 Concentration through the same 100 HP loss and roll 76, changing 75 (interrupt) to 77 (complete). Tinkering does not consume the interrupted-cast damage arm. https://github.com/kylebrussell/mxo-hd/pull/528 https://github.com/kylebrussell/mxo-hd/pull/625#issuecomment-7059089190"
+        }
+      }
+    }
+  },
+  "notes": {
+    "22": "PR624 confirms that unloading the summoning ability removes the live Nuker and reloading does not recreate it. https://github.com/kylebrussell/mxo-hd/pull/624#issuecomment-7059041632",
+    "27": "PR624 confirms that unloading 22 leaves the live Proxy alone, while unloading 27 removes it once and reloading stays quiet. https://github.com/kylebrussell/mxo-hd/pull/624#issuecomment-7059041632"
+  }
+}
