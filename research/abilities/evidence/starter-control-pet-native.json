@@ -1,0 +1,52 @@
+{
+  "abilities": {
+    "20": {
+      "checks": {
+        "stats": {
+          "source": "GOB 20 scales Max Health by caster level ×15 and each of four typed resistance scores by level ×2 for 600 s.",
+          "runtime": "CoderPets snapshots both values on the owned pet. The max-health update preserves current HP and the hostile NPC retaliation path consumes the Fortify resistance score for its active duration.",
+          "test": "FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime checks active and expired resistance. StarterCoderPetBuffsAndDetonateMode and native PR619 show a level-18 caster's maximum rising from 224 to 494 and resistance 36 for 600 s. https://github.com/kylebrussell/mxo-hd/pull/619#issuecomment-7058548895"
+        }
+      }
+    },
+    "25": {
+      "checks": {
+        "pets": {
+          "source": "GOB 25 targets an owned simulacrum and grants typed melee and ballistic damage influence for 300 s.",
+          "runtime": "CoderPets guards owner, live spawn, range and combat state both at admission and completion. A live own pet receives the timed caster-level snapshot.",
+          "test": "PowerBoostUsesCasterLevelTypedInfluenceAndReplacesRatherThanStacks checks the Proxy damage consumer and expiry. StarterCoderPetBuffsAndDetonateMode and native PR619 verify foreign refusal and +9/+9 for 300 s on the own pet. The separate Force Combat stat still lacks a consumer. https://github.com/kylebrussell/mxo-hd/pull/619#issuecomment-7058548895"
+        }
+      }
+    },
+    "34": {
+      "checks": {
+        "script": {
+          "source": "StopProxy1_Test requires matching ownership. DetonateProxyProc bounds current HP between max/10 and max/4 before the internal 1109 reapply; DetonateProxyEnd deals 13000 to the pet after half a second.",
+          "runtime": "CoderPets checks the selected live own pet, computes the net HP-clamped 1109 payload at pet level, and schedules 13000 damage to the original pet. The exercised area branch is NPC damage.",
+          "test": "DetonateValueFollowsTempmods and DetonateReadsViralResistanceAtThePetsLevel check the clamp and typed resistance. StarterCoderPetBuffsAndDetonateMode and PR619 verify foreign refusal, NPC hits of 123 and 27, ordinary owner XP, and removal of only the caster's pet after approximately 0.57 s. Player recipients remain open. https://github.com/kylebrussell/mxo-hd/pull/619#issuecomment-7058548895"
+        }
+      }
+    },
+    "145": {
+      "checks": {
+        "controls": {
+          "source": "GOB 145 stores a ten-second Enraged state with an independent ten-percent proc.",
+          "runtime": "The landed interlock move installs state 93 through TimedEffects. ControlActions gates both Withdraw entry and withdrawal execution while the state is active; expiry clears the record.",
+          "test": "StarterInterlockControlMode sends stock Withdraw while the state is active and again after removal. The original native PR618 run confirms the ten-second record, removal and successful post-expiry withdrawal. https://github.com/kylebrussell/mxo-hd/pull/618#issuecomment-7058602300"
+        }
+      }
+    },
+    "176": {
+      "checks": {
+        "proc": {
+          "source": "GOB 176 has a 15% landed root proc. EnableRootWithChance adds state 99 for eight seconds.",
+          "runtime": "AbilityCatalog creates the timed state from the stored callback and chance. The attack must land before the modifier is sampled, and root blocks movement while active.",
+          "test": "CoveringFireRetainsItsExistingRootRollAndBreakPolicy checks either side of the 15% threshold. PR618 retest fixes the proc draw only, records the eight-second root and shows a denied 20-unit movement followed by the same accepted step after expiry. https://github.com/kylebrussell/mxo-hd/pull/618#issuecomment-7058602300"
+        }
+      }
+    }
+  },
+  "notes": {
+    "105": "PR618 confirms both −5 resistance records on an actual player, with matching ten-second removals and no accompanying root or enrage. This supplements the existing behavior-test credit. https://github.com/kylebrussell/mxo-hd/pull/618#issuecomment-7058602300"
+  }
+}
