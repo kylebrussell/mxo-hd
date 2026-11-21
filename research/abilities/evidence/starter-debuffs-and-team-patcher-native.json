@@ -50,8 +50,8 @@
     "86": {
       "checks": {
         "stats": {
-          "source": "GOB 86 defines −50 Ballistic, Melee and Thrown Attack, −15 Force Combat and −19 Ranged Combat Tactics for 28 s.",
-          "runtime": "AbilityHostile publishes the five timed records. AbilityStats includes the timed attack modifiers in its totals.",
+          "source": "GOB 86 defines −50 each to Movement Speed, Sneak Movement Speed and Invisibility Movement Speed, −15 Force Combat and −19 Ballistic Accuracy (RangeCombatTacticsAbility) for 28 s.",
+          "runtime": "AbilityHostile publishes the five timed records. AbilityStats includes the Ballistic Accuracy record in attack totals.",
           "test": "SlowAppliesFourPenaltyRecordsAndLowersBallisticAttackUntilExpiry checks the attack consumer. Native adds and timed removals cover all five stat IDs 115, 877, 878, 519 and 524. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         },
         "behavior-tests": {
