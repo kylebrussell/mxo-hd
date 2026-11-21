@@ -1,0 +1,6 @@
+{
+  "notes": {
+    "PR690": "Stock Writer lifetime: loading 37 exposes the Writer analyser pair 970/968 once. Unloading 37 removes 968 and closes the active window with stance 00. Reload restores the grant and bag activation opens it again. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687",
+    "PR690 compiler": "Stock Compiler lifetime: unloading 277 during item code 39413 removed grants 969/968 and the +18 stat 706 modifier, closed the UI, and emitted 61 01. After the original 37.5 s deadline the code still had its charge and Info stayed 30000. Reload restored +18 and a fresh 2399 compile consumed only that charge and 8 Info with 61 00. This verifies the scoped lifetime and cancellation behavior. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687"
+  }
+}
