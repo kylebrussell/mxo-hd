@@ -28,11 +28,11 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
             // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
-            bool starterViralDamage = AbilityID >= 57 && AbilityID <= 60;
-            if (AbilityID == 53 || starterViralDamage)
+            bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
+            if (starterViralDamage)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: starterViralDamage))
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
                         new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));

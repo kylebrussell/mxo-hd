@@ -16,6 +16,7 @@ namespace hds
             if (command == "foundations-cone") return CombatFoundationsQa.Setup(caller, "cone");
             if (command == "foundations-detonate") return CombatFoundationsQa.Setup(caller, "detonate");
             if (command == "foundations-viral") return CombatFoundationsQa.Setup(caller, "viral");
+            if (command == "foundations-viral-peer") return CombatFoundationsQa.Setup(caller, "viral-peer");
             if (command == "fixture-weapon") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage") return CombatFixtureWeapons.Disengage(caller);
             if (command == "fixture-reset-ballistic-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 181);

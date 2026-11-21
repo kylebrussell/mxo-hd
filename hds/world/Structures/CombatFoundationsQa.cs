@@ -77,12 +77,13 @@ namespace hds
                 SeedViralResistance(Spawn("Detonate Resisted", 24950, 495, -1898, level: 7));
                 return "Detonate fixture ready. Neighbouring level-seven targets are neutral and +75 viral resistance.";
             }
-            if (mode == "viral")
+            if (mode == "viral" || mode == "viral-peer")
             {
                 Move(caller, 24800, 495, -1498, yaw: 64);
-                Spawn("Viral Neutral", 25200, 495, -1498, level: 18);
-                SeedViralResistance(Spawn("Viral Resisted", 25120, 495, -1618, level: 18));
-                return "Viral fixture ready. Level-18 targets are within Tinkering's two-metre splash.";
+                ushort level = mode == "viral-peer" ? caller.playerInstance.Level.getValue()[0] : (ushort)18;
+                Spawn("Viral Neutral", 25200, 495, -1498, level);
+                SeedViralResistance(Spawn("Viral Resisted", 25120, 495, -1618, level));
+                return $"Viral fixture ready. Level-{level} targets are within Tinkering's two-metre splash.";
             }
             return "Use ?combatdepth foundations-sight, foundations-cone or foundations-detonate.";
         }

@@ -9,7 +9,7 @@ public sealed class HarmfulCodeMode : NativeQaMode
     private const int Level = 19;
     private const ushort HarmfulCode = 53;
     // Native PR406 PacketLog fc98739c17a5:3155.
-    private const string StockViralUse = "80b93500040002000000000000000000000000000000000000000000585cc70001000000086b0000000000";
+    internal const string StockViralUse = "80b93500040002000000000000000000000000000000000000000000585cc70001000000086b0000000000";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, HarmfulCode, 95).Order().ToArray();
 
     public override string Name => "ability-parity-harmful-code";
