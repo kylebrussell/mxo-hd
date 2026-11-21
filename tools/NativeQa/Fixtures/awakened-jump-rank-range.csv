@@ -1,0 +1,3 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;QA Jump Near;3;30000;30000;B3010058;18800;495;6400;192;false;false
+1;slums;QA Jump Far;3;30000;30000;B3010058;21100;495;6400;192;false;false
