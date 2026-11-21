@@ -17,7 +17,10 @@ public sealed class StarterHackerViralDeflectionMode : NativeQaMode
             "Use slots 2–5 in order, waiting for each cast to finish and the shared timer to clear. Each successful cast attempt shows the target deflecting it. Record the deflection message/FX, ordinary IS and own reuse, and no landed damage or splash."
         }, forceDeflection: true);
 
-    public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => VerifyAsync(context, Samples);
+
+    internal static async Task<byte[]> VerifyAsync(NativeQaBootstrapContext context,
+        (ushort Ability, float OwnReuse, string Capture)[] samples)
     {
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var target = await SightStandCastProof.PickAsync(actor, HackerStyle, StockStyle);
@@ -25,7 +28,7 @@ public sealed class StarterHackerViralDeflectionMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         uint handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
         var proof = new List<string>();
-        foreach (var (ability, reuse, capture) in Samples)
+        foreach (var (ability, reuse, capture) in samples)
         {
             int rpcCursor = actor.World.RpcSnapshot().Count;
             int viewCursor = actor.World.ViewSnapshot().Count;
@@ -46,9 +49,10 @@ public sealed class StarterHackerViralDeflectionMode : NativeQaMode
             Check.That(!log.Contains($"[ABILITY] {ability} lands") && !log.Contains($"[EFFECTS] {ability} on"),
                 $"Deflected {ability} cannot land damage, apply effects or emit secondary splash");
             proof.Add(report.Hex);
-            byte[] groupReady = AbilityCooldowns.BuildTimer(682, AbilityCooldowns.GroupTimer, reuse, false);
-            await StockAbilityProfile.ObserveAsync(actor, rpcCursor, rpc => rpc.Bytes.AsSpan().SequenceEqual(groupReady),
-                $"Shared viral reuse clears before the next sample ({ability})");
+            Check.That(AbilityCooldowns.TryGet(ability, out var cooldown) && cooldown.Group != 0,
+                $"Ability {ability} uses a shared viral timer");
+            await EvidenceRetestWire.TimerAsync(actor, rpcCursor, cooldown.Group, AbilityCooldowns.GroupTimer, cooldown.GroupSeconds);
+            await EvidenceRetestWire.TimerAsync(actor, rpcCursor, cooldown.Group, AbilityCooldowns.GroupTimer, cooldown.GroupSeconds, ended: true);
         }
         Check.Equal(0, actor.World.Problems.Count, "Starter viral deflection framing");
         await File.WriteAllLinesAsync(Path.Combine(context.OutputDirectory, "starter-viral-deflect.hex"), proof);
