@@ -7,9 +7,9 @@ namespace NativeQa.Modes;
 public sealed class StarterTeamPatcherBuffsMode : NativeQaMode
 {
     private const ushort CombatAura = 42, Firewall = 63, ResistCombat = 72, AccuracyPulse = 695;
-    // Full requests from the stock .2 Team Patcher session, CSEQ 63/72/76/87.
-    private const string StockAuraStart = "80b92a00000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
-    private const string StockAuraStop = "80b92a000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
+    // Full requests from stock .2 sessions 0aae41370c7f and 8f7023603b50.
+    private const string StockAuraUse = "80b92a00000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    private const string StockAuraUseAfterSelectionUpdate = "80b92a000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
     private const string StockFirewall = "80b93f000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
     private const string StockResistCombat = "80b94800000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private const int X = 24800, Y = 495, Z = -1498;
@@ -79,17 +79,19 @@ public sealed class StarterTeamPatcherBuffsMode : NativeQaMode
         var participants = context.Helpers.Values.Append(actor).ToArray();
 
         var auraCursors = Snapshot();
-        actor.SendRpc(StockAuraStart);
+        actor.SendRpc(StockAuraUse);
         await VerifyAddsAsync(auraCursors, AccuracyPulse, 5, new[] { actor, leader },
             new (ushort, int)[] { (522, 64), (524, 64) });
         var overlapCursors = Snapshot();
-        await ToggleAsync(leader, StockAuraStart, on: true);
+        await ToggleAsync(leader, StockAuraUse, on: true);
         await VerifyAddsAsync(overlapCursors, AccuracyPulse, 5, new[] { actor, leader, otherNear },
             new (ushort, int)[] { (522, 64), (524, 64) });
-        await ToggleAsync(actor, StockAuraStop, on: false);
+        // The stock client used the same payload a second later. Keep it outside the repeat guard.
+        await Task.Delay(800);
+        await ToggleAsync(actor, StockAuraUse, on: false);
         await otherNear.WaitUntilAsync(() => AccuracyAdds(otherNear, overlapCursors[otherNear]) >= 2,
             "QAFriend keeps pulsing after CSR toggles off", HeadlessPlayer.DefaultTimeout);
-        await ToggleAsync(leader, StockAuraStop, on: false);
+        await ToggleAsync(leader, StockAuraUseAfterSelectionUpdate, on: false);
         await actor.WaitUntilAsync(() => AccuracyAdds(actor, auraCursors[actor]) >= 3 &&
             ActiveAccuracyRecords(actor, auraCursors[actor]).Count == 0,
             "The final overlapping aura records expire on CSR", HeadlessPlayer.DefaultTimeout);
@@ -192,14 +194,14 @@ public sealed class StarterTeamPatcherBuffsMode : NativeQaMode
             if (!overlap.IsRunning && AccuracyAdds(leader, leaderStart) > 0) overlap.Start();
             if (overlap.IsRunning && overlap.ElapsedMilliseconds >= 1000 && !helperActive && !helperStopped)
             {
-                leader.SendRpc(StockAuraStart);
+                leader.SendRpc(StockAuraUse);
                 leader.SendChat("QAFriend started Combat Aura. CSR can toggle off now.");
                 Console.WriteLine("TEAM-PATCHER BUFF: QAFriend started the overlapping Combat Aura.");
                 helperActive = true;
             }
             if (helperActive && overlap.ElapsedMilliseconds >= 7100)
             {
-                leader.SendRpc(StockAuraStop);
+                leader.SendRpc(StockAuraUseAfterSelectionUpdate);
                 Console.WriteLine("TEAM-PATCHER BUFF: QAFriend stopped Combat Aura. Waiting for child expiry.");
                 helperActive = false;
                 helperStopped = true;
