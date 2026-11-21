@@ -11,12 +11,13 @@ public class StarterConcentrationBatchMode : NativeQaMode
     private const string TinkeringCast = "80b924000400020000000000000000000000000000000000000000007802c50001000000086b0000000000";
     // Shipped Vector stock PacketLog line 30301. Only the live selected handle changes.
     private const string InsidiousCast = "80b96801130027000000000000000000000000000000000000000000000000204762ad41076b0000000000";
-    private const string ArmDamage = "?combatdepth hurtme 100 next";
+    private const string ArmDamage = "?cd hurtme 100 next";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Concentration, Insidious, Tinkering, Hacker, Coder)
         .Order().ToArray();
     protected virtual (ushort Ability, ushort Stat, int Value) Passive => (Concentration, 564, 30);
     protected virtual string BaselineRoll => "concentration=5 through=77 roll=85";
     protected virtual string LoadedRoll => "concentration=35 through=90 roll=85";
+    protected virtual bool CheckTinkering => true;
 
     public override string Name => "ability-parity-starter-awakened-concentration";
     public override NativeQaModePlan Plan { get; } = new(Loadout, PvpOpponentsFixture.X, PvpOpponentsFixture.Z,
@@ -93,16 +94,19 @@ public class StarterConcentrationBatchMode : NativeQaMode
             "The interrupted cast never starts completion reuse");
         Check.That(server.DebugLog().Contains("loss=100 " + LoadedRoll), "The loaded cast survives the same roll");
 
-        caster.SendRpc(CoderCast);
-        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
-        int controlAt = server.DebugLog().Length;
-        await ArmAsync(caster);
-        int controlCursor = caster.World.RpcSnapshot().Count;
-        caster.SendRpc(StarterHackerControlTargetMode.WithHandle(TinkeringCast, handle));
-        await EvidenceRetestWire.CastBarAsync(caster, Tinkering, 6);
-        await EvidenceRetestWire.TimerAsync(caster, controlCursor, Tinkering, AbilityCooldowns.OwnTimer, 30);
-        Check.That(!server.DebugLog()[controlAt..].Contains("[CAST-INTERRUPT-QA] real self damage", StringComparison.Ordinal),
-            "A template without the explicit interruptible flag does not consume the damage arm");
+        if (CheckTinkering)
+        {
+            caster.SendRpc(CoderCast);
+            await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
+            int controlAt = server.DebugLog().Length;
+            await ArmAsync(caster);
+            int controlCursor = caster.World.RpcSnapshot().Count;
+            caster.SendRpc(StarterHackerControlTargetMode.WithHandle(TinkeringCast, handle));
+            await EvidenceRetestWire.CastBarAsync(caster, Tinkering, 6);
+            await EvidenceRetestWire.TimerAsync(caster, controlCursor, Tinkering, AbilityCooldowns.OwnTimer, 30);
+            Check.That(!server.DebugLog()[controlAt..].Contains("[CAST-INTERRUPT-QA] real self damage", StringComparison.Ordinal),
+                "A template without the explicit interruptible flag does not consume the damage arm");
+        }
         Check.Equal(0, caster.World.Problems.Count + target.World.Problems.Count, "Concentration replay framing");
         return Array.Empty<byte>();
     }
