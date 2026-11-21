@@ -1,0 +1,75 @@
+{
+  "families": {
+    "network-hacker-starter-passive": {
+      "representative": 64,
+      "result": "pass",
+      "head": "e76b8be3892a0009a38036d6618737e094deff93",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061",
+      "scope": "Unload/reload removes and restores +1 Viral Accuracy Bonus. The retained-sight Logic Blast comparison consumes the change, input 35 → 34."
+    },
+    "resist-contagion-starter-passive": {
+      "representative": 73,
+      "result": "pass",
+      "head": "e76b8be3892a0009a38036d6618737e094deff93",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061",
+      "scope": "Native unload/reload removes and restores +1 Stun Duration Bonus and +5 Viral Accuracy Bonus."
+    },
+    "resist-viruses-starter-passive": {
+      "representative": 76,
+      "result": "pass",
+      "head": "e76b8be3892a0009a38036d6618737e094deff93",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061",
+      "scope": "Native unload/reload removes and restores +4 Contested Withdraw, +4 Viral Defense Bonus and +2 Evade Interlock. Contested Withdraw consumption stays open."
+    }
+  },
+  "abilities": {
+    "64": {
+      "family": "network-hacker-starter-passive",
+      "checks": {
+        "stats": {
+          "source": "GOB 64 supplies +1 Viral Accuracy Bonus (1147) while loaded and grants Network Hacker Upgrade (1078).",
+          "runtime": "AbilityPassives publishes and totals the sourced passive, and AbilityStats.ViralAccuracy reads it for FreeCastViralContest. The retail linked coefficient is a separate source check.",
+          "test": "StarterHackerViralPassiveTransitionsMode verifies the +1 record, its removal and restoration, and the 35 → 34 live contest comparison. Native PR605 reproduces the same change with a held target and tactic. https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061"
+        },
+        "behavior-tests": {
+          "source": "GOB 64 has no cast cost. Its while-loaded passive and action grant follow Archive membership.",
+          "runtime": "AbilityPassives and AbilityGrantRegistration withdraw and re-publish the passive and the associated 1078 action. The live contest consumes the active total.",
+          "test": "StarterHackerViralPassiveTransitionsMode covers full loadout, +1 add/remove, grant withdrawal and restoration, and three live inputs with the upgrade off and on. PR605 verifies the stock load/unload and inputs. https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061"
+        }
+      }
+    },
+    "73": {
+      "family": "resist-contagion-starter-passive"
+    },
+    "76": {
+      "family": "resist-viruses-starter-passive"
+    },
+    "40": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 40 Code Freeze 1.0 selects a valid target within 20 m and requires sight. Its ordinary hostile free cast uses the existing viral contest.",
+          "runtime": "AbilityHandler checks live selection and stored range before cast, debit or timer. AbilityTargets checks sight at landing before the contest and effect.",
+          "test": "StarterHackerControlTargetMode covers the invalid/stale and clear selected outcomes. StarterHackerMovementDebuffRangeMode and native PR606 confirm a held far target is refused before cast or reuse and an in-range obstructed target reaches no contest or modifier. https://github.com/kylebrussell/mxo-hd/pull/606#issuecomment-7056958796"
+        }
+      }
+    },
+    "41": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 41 Code Freeze 2.0 selects a valid target within 20 m and requires sight. Its ordinary hostile free cast uses the existing viral contest.",
+          "runtime": "AbilityHandler checks live selection and stored range before cast, debit or timer. AbilityTargets checks sight at landing before the contest and effect.",
+          "test": "StarterHackerControlTargetMode covers the invalid/stale and clear selected outcomes. StarterHackerMovementDebuffRangeMode and native PR606 confirm a held far target is refused before cast or reuse and an in-range obstructed target reaches no contest or modifier. https://github.com/kylebrussell/mxo-hd/pull/606#issuecomment-7056958796"
+        }
+      }
+    },
+    "86": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 86 Slow selects a valid target within 20 m and requires sight. Its ordinary hostile free cast uses the existing viral contest.",
+          "runtime": "AbilityHandler checks live selection and stored range before cast, debit or timer. AbilityTargets checks sight at landing before the contest and effect.",
+          "test": "StarterHackerDebuffTargetMode covers the invalid/stale and clear selected outcomes. StarterHackerMovementDebuffRangeMode and native PR606 confirm a held far target is refused before cast or reuse and an in-range obstructed target reaches no contest or modifier. https://github.com/kylebrussell/mxo-hd/pull/606#issuecomment-7056958796"
+        }
+      }
+    }
+  }
+}
