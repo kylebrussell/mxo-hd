@@ -65,3 +65,16 @@ Use one stock client, one fixture at a time, and keep the client build, window s
 4. After the client exits, save any newly written stock `cui.cfg` as the B artifact and put the A file back if one was moved. Use unique names for both artifacts. Compare the hit behavior and requests even if neither arm activates the item.
 
 This compares the character UI provided at login. A persistent miss in B leaves window coordinate mapping and any layout state outside `cui.cfg` open.
+
+### Inventory pointer mapping follow-up
+
+The title and pill clicks differ by 299 vertical pixels and activate the same slot. A fixed coordinate scale would preserve the vertical separation, so check for a shared clamped/stale cursor or a different hit region receiving both clicks. The click helper takes physical pixels relative to the outer game window. A desktop screenshot uses desktop pixel coordinates. Subtract the outer window's left/top when measuring from the entire desktop, and record the actual client size separately.
+
+With the existing client PID and Inventory open, run:
+
+```powershell
+./tools/RealClient/Invoke-RealClient.ps1 -ClientPid <pid> -InspectPointer 882,245
+./tools/RealClient/Invoke-RealClient.ps1 -ClientPid <pid> -InspectPointer 869,544
+```
+
+Use fresh measured points from that window if it moved. Samples include DPI, outer origin, effective Win32 client size, the child-relative message coordinates, the round-trip screen point, the actual cursor and its clip rect. Inspect once with the pointer physically over each intended point. The diagnostic never moves the pointer or sends input. If both round-trips reach their intended distinct points on the same game window with the cursor correctly placed, capture a real hover on each bag corner and a working Upgrade button at similar coordinates. The remaining discrepancy is after the Win32 mapping, inside the client's focus, capture, or hit-testing path.
