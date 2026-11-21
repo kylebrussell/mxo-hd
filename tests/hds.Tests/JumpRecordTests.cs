@@ -64,23 +64,24 @@ public class JumpRecordTests
     }
 
     [Theory]
-    [InlineData(0,0xfffffff0u)] [InlineData(1,0x80000000u)] [InlineData(284,0u)] [InlineData(65535,0xffffffffu)]
-    public void ActualMovementPreservesResourcesAndCancelDoesNotResampleClock(int inner,uint sample)
+    [InlineData(0, 0, false, 0xfffffff0u)]
+    [InlineData(1, 1, false, 0x80000000u)]
+    [InlineData(20, 0, true, 0u)]
+    [InlineData(304, 284, true, 0xffffffffu)]
+    [InlineData(65535, 65515, true, 0xffffffffu)]
+    public void HyperJumpAloneDebitsIsAndCancelPreservesIt(int inner, int remaining, bool hyper, uint sample)
     {
         var oldClient=Store.currentClient;var oldWorld=Store.world;
         try
         {
-            var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
-            typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
-            c.playerData=new();c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
-            c.playerInstance=new();c.messageQueue=new();c.viewMan=new();c.playerInstance.InnerStrengthAvailable.setValue((ushort)inner);
-            c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17100, 495, 6400));
-            c.playerInstance.RealLastName.setValue("Tester");
+            var c = JumpClient(inner);
             Store.currentClient=c;Store.world=(WorldServer)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
             byte[] start=Convert.FromHexString(RetailStart)[2..],cancel=Convert.FromHexString(RetailCancel)[2..];
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(start.AsSpan(35),sample);
+            start[34] = hyper ? (byte)1 : (byte)0;
+            if (hyper) c.playerData.passives.Loaded.Add(11, 10);
             var handler=new AbilityHandler();handler.ProcessJump(ref start);
-            Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
+            Assert.Equal((ushort)remaining,AbilityHandler.CurrentInnerStrength(c));
             var rpc=Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
             Assert.Empty(c.messageQueue.ObjectMessagesQueue);
             var packet=new WorldPacket(c.playerData);
@@ -90,25 +91,75 @@ public class JumpRecordTests
             Assert.Same(rpc,Assert.Single(packet.RPCMessages));
             int mask=movement.AsSpan().IndexOf(Convert.FromHexString("0200030108008080bc"));Assert.True(mask>=0);
             int resource=mask+9+4+2+4+24;Assert.Equal(0x10,movement[resource]);
-            Assert.Equal((ushort)inner,BitConverter.ToUInt16(movement,resource+1));
+            Assert.Equal((ushort)remaining,BitConverter.ToUInt16(movement,resource+1));
             int snapshot = mask + 46;
-            Assert.Equal(Convert.FromHexString("020003090800"), movement.AsSpan(snapshot, 6).ToArray());
-            Assert.Equal(17100f, BitConverter.ToSingle(movement, snapshot + 6));
-            Assert.Equal(495f, BitConverter.ToSingle(movement, snapshot + 10));
-            Assert.Equal(6400f, BitConverter.ToSingle(movement, snapshot + 14));
-            Assert.Equal(0xff, movement[snapshot + 22]);
-            Assert.Equal(Convert.FromHexString("0654657374657200"), movement.AsSpan(snapshot + 37, 8).ToArray());
-            Assert.False(c.playerInstance.RealFirstName.isActive());
+            if (hyper)
+            {
+                Assert.Equal(Convert.FromHexString("020003090800"), movement.AsSpan(snapshot, 6).ToArray());
+                Assert.Equal(17100f, BitConverter.ToSingle(movement, snapshot + 6));
+                Assert.Equal(495f, BitConverter.ToSingle(movement, snapshot + 10));
+                Assert.Equal(6400f, BitConverter.ToSingle(movement, snapshot + 14));
+                Assert.Equal(0xff, movement[snapshot + 22]);
+                Assert.Equal(Convert.FromHexString("0654657374657200"), movement.AsSpan(snapshot + 37, 8).ToArray());
+                Assert.False(c.playerInstance.RealFirstName.isActive());
+            }
             handler.processHyperJumpCancel(ref cancel);
-            Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
+            Assert.Equal((ushort)remaining,AbilityHandler.CurrentInnerStrength(c));
             Assert.Same(rpc,Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()));
             Assert.Equal(new byte[]{0x80,0xc3}.Concat(BitConverter.GetBytes(sample)).ToArray(),rpc.content.Skip(1).ToArray());
             double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
             JumpRecords.TryCancel(Convert.FromHexString(RetailCancel),out var expected);
             Assert.Equal(expected.Destination.X,x);Assert.Equal(expected.Destination.Y,y);Assert.Equal(expected.Destination.Z,z);
             c.messageQueue=new();handler.processHyperJumpCancel(ref cancel);Assert.Empty(c.messageQueue.RPCMessagesQueue);
-            Assert.NotEmpty(c.messageQueue.ObjectMessagesQueue);
+            var cancelView = Assert.Single(c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            Assert.Equal(0x10, cancelView[^6]);
+            Assert.Equal((ushort)remaining, BitConverter.ToUInt16(cancelView, cancelView.Length - 5));
         }
         finally{Store.currentClient=oldClient;Store.world=oldWorld;}
+    }
+
+    [Theory]
+    [InlineData(19, true, false, AbilityRefusals.InsufficientInnerStrength, 1u)]
+    [InlineData(35, true, true, AbilityRefusals.MustBeOutsideCombat, 0u)]
+    [InlineData(35, false, false, AbilityRefusals.NotLoaded, 0u)]
+    public void RefusedHyperJumpKeepsIsAndPosition(int inner, bool loaded, bool combat, uint reason, uint deficit)
+    {
+        var previous = Store.currentClient;
+        var c = JumpClient(inner);
+        try
+        {
+            Store.currentClient = c;
+            if (loaded) c.playerData.passives.Loaded.Add(11, 10);
+            CombatManager.GetHandler(c).isCombatRunning = combat;
+            byte[] start = Convert.FromHexString(RetailStart)[2..];
+            byte[] position = c.playerInstance.Position.getValue().ToArray();
+            new AbilityHandler().ProcessJump(ref start);
+            var rpc = Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+            Assert.True(AbilityRefusals.TryDecode(rpc.content.AsSpan(1), out var refusal));
+            Assert.Equal(11u, refusal.AbilityID);
+            Assert.Equal(reason, refusal.ErrorID);
+            Assert.Equal(deficit, refusal.InnerstrengthDeficit);
+            Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+            Assert.Equal(position, c.playerInstance.Position.getValue());
+            Assert.Equal((ushort)inner, AbilityHandler.CurrentInnerStrength(c));
+        }
+        finally
+        {
+            CombatManager.GetHandler(c).isCombatRunning = false;
+            Store.currentClient = previous;
+        }
+    }
+
+    private static WorldClient JumpClient(int inner)
+    {
+        var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
+        c.playerData=new();c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
+        c.playerInstance=new();c.messageQueue=new();c.viewMan=new();c.playerInstance.InnerStrengthAvailable.setValue((ushort)inner);
+        c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17100, 495, 6400));
+        c.playerInstance.RealLastName.setValue("Tester");
+        typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic)!.SetValue(c, long.MaxValue);
+        return c;
     }
 }

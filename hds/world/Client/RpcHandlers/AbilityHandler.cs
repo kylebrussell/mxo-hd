@@ -870,6 +870,7 @@ namespace hds
         {
             if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
             if (!JumpRecords.TryStartBody(rpcData, out var request)) return;
+            if (request.IsHyperJump == 1 && !PayHyperJump(request)) return;
             double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
             ushort clientSector = request.Destination.Sector, clientRegion = request.Destination.Prefab,
                 clientPolygon = request.Destination.NavPoly;
@@ -913,6 +914,40 @@ namespace hds
             packets.SendHyperJumpWithOneStep((float)xDest, (float)yDest, (float)zDest, peakHeight, endTime,
                 clientTickSample, fullPeakOrigin);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
+        }
+
+        private static bool PayHyperJump(JumpRecords.Start request)
+        {
+            var client = Store.currentClient;
+            if (!double.IsFinite(request.Destination.X) || !double.IsFinite(request.Destination.Y) ||
+                !double.IsFinite(request.Destination.Z) || !float.IsFinite(BitConverter.UInt32BitsToSingle(request.PeakBits)))
+                return false;
+
+            // The stock start builder chooses the beta variant when present. Both GOBs store 20 IS.
+            ushort ability = AbilityPassives.IsLoaded(client, 566) ? (ushort)566 : (ushort)11;
+            if (!AbilityPassives.IsLoaded(client, ability))
+            {
+                Deny(ability, "Load Hyper-Jump before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return false;
+            }
+            if (CombatManager.GetHandler(client).isCombatRunning)
+            {
+                Deny(ability, "You cannot Hyper-Jump in combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                return false;
+            }
+            ushort cost = AbilityCosts.Cost(ability);
+            ushort available = CurrentInnerStrength(client);
+            if (available < cost)
+            {
+                Deny(ability, "You do not have enough Inner Strength.", AbilityRefusals.InsufficientInnerStrength,
+                    (uint)(cost - available), sendServerText: false);
+                return false;
+            }
+
+            // The retail start echo carries the post-debit value, also retained in later position reports.
+            ushort remaining = SpendInnerStrength(client, cost);
+            Output.WriteDebugLog($"[VITALS] char={client.playerData.getCharID()} Hyper-Jump {ability} IS {available}->{remaining}");
+            return true;
         }
 
         private const float CapturedFullPeak = 10300;

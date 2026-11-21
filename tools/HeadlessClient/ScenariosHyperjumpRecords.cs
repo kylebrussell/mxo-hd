@@ -40,7 +40,7 @@ public static partial class Scenarios
             var received=p.World.RpcSnapshot().Skip(rpc).ToArray();
             Check.Equal(1,received.Count(r=>r.Bytes.SequenceEqual(expected)),"One exact start clock echo");
             Check.Equal(1,received.Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&r.Bytes[1]==0xc3),"Cancel has no fabricated clock echo");
-            var resources=JumpResources(p,view);Check.That(resources.Count>0&&resources.All(v=>v==100),"Jump serializes current IS100; no literal284 or new fee");
+            var resources=JumpResources(p,view);Check.That(resources.Count>0&&resources.All(v=>v==80),"Charged start serializes 80 IS rather than a fixed capture value");
             Check.That(p.World.ViewSnapshot().Skip(view).Any(v=>Convert.ToHexString(v).Contains(Convert.ToHexString(BitConverter.GetBytes(17000d)))),"Existing cancel destination response retained");
             int cancelRpc=p.World.RpcSnapshot().Count;p.SendRpc(cancel);await Barrier(p);
             Check.Equal(0,p.World.RpcSnapshot().Skip(cancelRpc).Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&r.Bytes[1]==0xc3),"Cancel alone does not sample a clock");

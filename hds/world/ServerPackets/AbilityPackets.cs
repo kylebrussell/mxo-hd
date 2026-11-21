@@ -136,7 +136,7 @@ namespace hds
             Store.currentClient.playerInstance.JumpPeakHeight.setValue(peakHeight);
             Store.currentClient.playerInstance.JumpFlags.setValue(4);
             Store.currentClient.playerInstance.JumpEndTime.setValue(endTime);
-            // Serialize the current authoritative value; jumping must not overwrite resources with a capture literal.
+            // The start delta carries the current authoritative IS after any takeoff debit.
             Store.currentClient.playerInstance.JumpDestination.setValue(NumericalUtils.doublesToLtVector3d(xDestPos, yDestPos, zDestPos));
             
             updateAttributes.Add(Store.currentClient.playerInstance.JumpPeakHeight);
@@ -189,7 +189,8 @@ namespace hds
             pak.AddByte(0x00); // if 0xb8
             pak.AddUint32(endTime, 1);
             pak.AddDoubleLtVector3d((double) xDestPos, (double) yDestPos, (double) zDestPos);
-            pak.AddByteArray(new byte[] {0x10, 0xff, 0xff});
+            pak.AddByte(0x10);
+            pak.AddUint16(AbilityHandler.CurrentInnerStrength(Store.currentClient), 1);
             pak.AddByte(0x00);
             pak.AddByte(0x00);
             pak.AddByte(0x00);
