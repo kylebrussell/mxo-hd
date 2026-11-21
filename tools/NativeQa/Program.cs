@@ -286,6 +286,9 @@ try
                     await NativeQa.Modes.StarterStealthObserverMode.RunPassAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
+                else if (fixtureMode is NativeQa.Modes.StarterDetonatePlayerDefeatMode && action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
+                        NativeQa.Modes.StarterDetonatePlayerDefeatMode.Resistance);
                 else if (fixtureMode is NativeQa.Modes.StarterPathogenistAuraResistanceMode or NativeQa.Modes.StarterViralSplashResistanceMode &&
                     action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
