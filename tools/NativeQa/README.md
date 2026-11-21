@@ -54,3 +54,27 @@ Claude-only mode `emp-blast` owns2,17,1025 and starts at the NPC fixture with ex
 Mode configuration and safe pending-branch ports are documented in [Modes/README.md](Modes/README.md). Read-only `--fixture-plan` now also reports the exact immutable loadout, spawn and ordered SQL stages without executing them.
 
 For a pre-placed hotbar, supply the active ability and style IDs in order via `NativeQaModePlan(hotbarAbilities: ...)`. `--fixture-plan` and the READY output print the slot map on stock page 2. The launcher uses the retained disposable `cui.cfg` copy in Temp's `mxo-qa` folder or the file named by `MXO_NATIVE_QA_CUI_TEMPLATE`. It sends the patched copy to the disposable CSR account in the login response.
+
+## Inventory hit-test A/B (PR640)
+
+Use one stock client, one fixture at a time, and keep the client build, window size, and click method fixed. Use separate fixture output directories. Close the stock client completely between arms. The server seeds the same bag, skills, and stands in both modes.
+
+1. **A, seeded control:** run `ability-parity-starter-decompile-skill`. Open Inventory with **I**. Record the game window dimensions, the title-bar and slot-5 coordinates, whether the pill tooltip appears, and where one drag or click lands. The page 2 slot 1 Decompile ability identifies the known misrouted clicks.
+2. **B, stock defaults:** with the client closed, find the active client's disposable `Profiles/CSR_AbilityQA/CSR_Tester_6E/cui.cfg`. If present, move that one file to a unique backup name ending in `.pr640-A.bak` in the same directory. If absent, start with it absent. Run `ability-parity-starter-decompile-clean-ui`. It omits Margin character UI data (type `0c`), so the client can start its default UI state. Keep the other settings and profile files from A. Do not supply a blank or hand-edited file.
+3. Repeat the title-bar drag and pill hover before mapping any shortcuts. Open the Item Decompiler's context menu in bag slot 3, use **Activate Item**, and click the Health Pill in bag slot 5. Record whether `81 31` and `[DECOMPILE] ... item=2399` appear. If bag hits register, run the slot 6, unload/reload, and Compiler/Analyser steps printed at READY.
+4. After the client exits, save any newly written stock `cui.cfg` as the B artifact and put the A file back if one was moved. Use unique names for both artifacts. Compare the hit behavior and requests even if neither arm activates the item.
+
+This compares the character UI provided at login. A persistent miss in B leaves window coordinate mapping and any layout state outside `cui.cfg` open.
+
+### Inventory pointer mapping follow-up
+
+The title and pill clicks differ by 299 vertical pixels and activate the same slot. A fixed coordinate scale would preserve the vertical separation, so check for a shared clamped/stale cursor or a different hit region receiving both clicks. The click helper takes physical pixels relative to the outer game window. A desktop screenshot uses desktop pixel coordinates. Subtract the outer window's left/top when measuring from the entire desktop, and record the actual client size separately.
+
+With the existing client PID and Inventory open, run:
+
+```powershell
+./tools/RealClient/Invoke-RealClient.ps1 -ClientPid <pid> -InspectPointer 882,245
+./tools/RealClient/Invoke-RealClient.ps1 -ClientPid <pid> -InspectPointer 869,544
+```
+
+Use fresh measured points from that window if it moved. Samples include DPI, outer origin, effective Win32 client size, the child-relative message coordinates, the round-trip screen point, the actual cursor and its clip rect. Inspect once with the pointer physically over each intended point. The diagnostic never moves the pointer or sends input. If both round-trips reach their intended distinct points on the same game window with the cursor correctly placed, capture a real hover on each bag corner and a working Upgrade button at similar coordinates. The remaining discrepancy is after the Win32 mapping, inside the client's focus, capture, or hit-testing path.

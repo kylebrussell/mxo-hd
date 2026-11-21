@@ -21,6 +21,7 @@ Steps run in this order, each only when its switch or parameter is given:
   -Drag         Drag x1,y1,x2,y2 with the left button held (marketplace selling list).
   -Click        Click a point on the game screen once (UI buttons), after any double-click.
   -Screenshot   Save a screenshot of the primary screen.
+  -InspectPointer  With -ClientPid, report the mapping of one window-relative point without input.
 Exit code 0 when every requested step succeeded, 1 otherwise. A one-line JSON summary is printed last.
 
 Prerequisites (see docs/CLIENT-SETUP-PLAN.md): the patched launcher.exe, autoexec.cfg pointing at the
@@ -64,7 +65,8 @@ param(
     [int[]]$RightClick,
     [int[]]$Drag,
     [switch]$CheckVendorWindow,
-    [string]$Screenshot
+    [string]$Screenshot,
+    [int[]]$InspectPointer
 )
 
 $ErrorActionPreference = 'Stop'
@@ -87,6 +89,11 @@ public static class MxoInput
     [DllImport("user32.dll")] static extern int GetSystemMetrics(int i);
     [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
     [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
+    [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr h, out RECT r);
+    [DllImport("user32.dll")] static extern uint GetDpiForWindow(IntPtr h);
+    [DllImport("user32.dll")] static extern bool GetCursorPos(out POINT p);
+    [DllImport("user32.dll")] static extern bool GetClipCursor(out RECT r);
+    [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(POINT p);
 
     const uint KEYUP = 0x02;
     const byte VK_MENU = 0x12;   // an Alt tap lets SetForegroundWindow succeed from a background process
@@ -175,6 +182,51 @@ public static class MxoInput
             if (child == IntPtr.Zero || child == current) { client = p; return current; }
             current = child;
         }
+    }
+
+    public sealed class PointerGeometry
+    {
+        public long TopHwnd { get; set; }
+        public long TargetHwnd { get; set; }
+        public long HwndUnderPoint { get; set; }
+        public uint Dpi { get; set; }
+        public int[] OuterRect { get; set; }
+        public int[] ClientSize { get; set; }
+        public int[] RequestedScreen { get; set; }
+        public int[] MessageClient { get; set; }
+        public int[] RoundTripScreen { get; set; }
+        public int[] CursorScreen { get; set; }
+        public int[] CursorClip { get; set; }
+    }
+
+    public static PointerGeometry InspectPoint(IntPtr top, int dx, int dy)
+    {
+        Physical();
+        RECT outer;
+        if (!GetWindowRect(top, out outer))
+            throw new InvalidOperationException("Could not read the game window rectangle.");
+        POINT client;
+        IntPtr target = ChildAt(top, dx, dy, out client);
+        POINT screen = new POINT { X = outer.L + dx, Y = outer.T + dy };
+        POINT roundTrip = client;
+        RECT clientRect, clip;
+        POINT cursor;
+        if (!GetClientRect(target, out clientRect) || !ClientToScreen(target, ref roundTrip) ||
+            !GetCursorPos(out cursor) || !GetClipCursor(out clip))
+            throw new InvalidOperationException("Could not read the window or pointer geometry.");
+        IntPtr topmost = WindowFromPoint(screen);
+        return new PointerGeometry
+        {
+            TopHwnd = top.ToInt64(), TargetHwnd = target.ToInt64(), HwndUnderPoint = topmost.ToInt64(),
+            Dpi = GetDpiForWindow(target),
+            OuterRect = new[] { outer.L, outer.T, outer.R, outer.B },
+            ClientSize = new[] { clientRect.R - clientRect.L, clientRect.B - clientRect.T },
+            RequestedScreen = new[] { screen.X, screen.Y },
+            MessageClient = new[] { client.X, client.Y },
+            RoundTripScreen = new[] { roundTrip.X, roundTrip.Y },
+            CursorScreen = new[] { cursor.X, cursor.Y },
+            CursorClip = new[] { clip.L, clip.T, clip.R, clip.B }
+        };
     }
 
     public static void PostClick(IntPtr top, int dx, int dy)
@@ -309,6 +361,15 @@ function Click-Launcher([int]$dx, [int]$dy) {
 
 function Type-Client([string]$text) { [MxoInput]::PostText((Get-ClientWindow), $text) }
 function Press-Client([byte]$vk) { [MxoInput]::PostKey((Get-ClientWindow), $vk) }
+
+if ($PSBoundParameters.ContainsKey('InspectPointer')) {
+    if ($ClientPid -le 0 -or $InspectPointer.Count -ne 2 -or
+        @($PSBoundParameters.Keys | Where-Object { $_ -notin @('ClientPid', 'InspectPointer') }).Count) {
+        throw '-InspectPointer x,y requires only -ClientPid for an existing client window.'
+    }
+    [MxoInput]::InspectPoint((Get-ClientWindow), $InspectPointer[0], $InspectPointer[1]) | ConvertTo-Json -Compress
+    return
+}
 
 if ($Relaunch -or $NewInstance) {
     if ($Relaunch) {

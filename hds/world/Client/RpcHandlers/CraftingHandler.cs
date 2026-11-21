@@ -207,7 +207,7 @@ namespace hds
                 if (request.ToolSlot < 1 || request.ToolSlot > 96 || !inventory.Any(i => i.Slot == request.ToolSlot && i.Goid == DecompilerTool))
                 { Finish(client, 0, request.Slot, source.Goid, "Decompile Items requires an Item Decompiler."); return; }
                 var item = CraftingRules.Find(source.Goid);
-                if (item == null || item.CantDecompile || !item.Complexity.HasValue || !item.Learnable ||
+                if (item == null || item.CantDecompile || item.Complexity.GetValueOrDefault() <= 0 || !item.Learnable ||
                     !Crafting.Recipes.ContainsKey(source.Goid))
                 { Finish(client, 0, request.Slot, source.Goid, "This item cannot teach a recipe by decompiling."); return; }
                 double now = TimeUtils.GetSimTimeSeconds();
@@ -216,7 +216,12 @@ namespace hds
                 { Finish(client, 0, request.Slot, source.Goid, "Decompile Items is not ready."); return; }
                 AbilityCooldowns.Start(client, DecompileItemsAbility, now);
                 int skill = Skill(client, 707);
-                if (!CraftingRules.Succeeds(skill, item.Complexity.Value, Roll()))
+                int roll = Roll();
+                int complexity = item.Complexity.Value;
+                bool success = CraftingRules.Succeeds(skill, complexity, roll);
+                Output.WriteDebugLog($"[DECOMPILE] char={client.playerData.getCharID()} item={source.Goid} skill={skill} " +
+                    $"complexity={complexity} roll={roll} total={4 * skill + roll} requiredAbove={4 * complexity + 50} success={success}");
+                if (!success)
                 { Finish(client, 0, request.Slot, source.Goid, "Failed to decompile the item."); return; }
                 // Persist learning before deleting the item; a failed database write cannot destroy the source.
                 db.LearnRecipe(client.playerData.getCharID(), source.Goid);

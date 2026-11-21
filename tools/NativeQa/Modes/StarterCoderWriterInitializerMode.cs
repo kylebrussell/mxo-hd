@@ -11,8 +11,8 @@ public sealed class StarterCoderWriterInitializerMode : NativeQaMode
     private const int StartX = 17000, ObserverX = 19000, Y = 495, Z = 2300;
     // PR530 ordinary Sneak and PR479 bag-slot tool activation.
     private const string StockSneak = "80b95704000000000000000000000000000000000000000000000000585cc20001000000086b0000000000";
-    private const string StockWriter = "80b9ca03000000000000000000000000000000000000000000000000000000000000000008020100000000";
-    private const string StockCompiler = "80b9c903000000000000000000000000000000000000000000000000000000000000000008010100000000";
+    internal const string StockWriter = "80b9ca03000000000000000000000000000000000000000000000000000000000000000008020100000000";
+    internal const string StockCompiler = "80b9c903000000000000000000000000000000000000000000000000000000000000000008010100000000";
 
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, MinorRepairs, WriteCode, 277)
         .Append((ushort)151).Concat(AbilityPrerequisites.Current.Closure(151).Keys).Distinct().Order().ToArray();
