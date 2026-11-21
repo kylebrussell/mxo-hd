@@ -100,11 +100,16 @@ public sealed class TeamBreadthMode : NativeQaMode
 
     internal static async Task InviteAsync(HeadlessPlayer inviter, HeadlessPlayer member)
     {
-        var who = Sized(member.Handle);
-        inviter.SendRpc(new byte[] { 0x6e, 3, 6, 0 }.Concat(BitConverter.GetBytes((ushort)(6 + who.Length)))
-            .Concat(who).Concat(Sized("")).ToArray());
+        SendInvite(inviter, member.Handle);
         await AcceptAsync(member, inviter.Handle);
         await inviter.WaitForRpcAsync($"70 03 {WireFormat.ToHex(BitConverter.GetBytes(member.CharId))} 09 00");
+    }
+
+    internal static void SendInvite(HeadlessPlayer inviter, string member)
+    {
+        var who = Sized(member);
+        inviter.SendRpc(new byte[] { 0x6e, 3, 6, 0 }.Concat(BitConverter.GetBytes((ushort)(6 + who.Length)))
+            .Concat(who).Concat(Sized("")).ToArray());
     }
 
     private static async Task AcceptAsync(HeadlessPlayer member, string inviter)
