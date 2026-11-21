@@ -1,0 +1,45 @@
+{
+  "abilities": {
+    "53": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 53 selects a hostile recipient within 16 m and specifies viral TestFunction 2.",
+          "runtime": "AbilityHandler checks a live hostile selection and range before starting the cast. The landing path checks sight and runs the viral contest before any damage.",
+          "test": "PR612 verifies clear hits, no-target, ally, range and sight refusals. PR615 verifies a clear cast with hit=False and no damage or effects. The stock-request bootstrap checks the deflection notice and FX record; native visual FX was obscured. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757 https://github.com/kylebrussell/mxo-hd/pull/615#issuecomment-7058034188"
+        }
+      }
+    },
+    "105": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 105 requires Rifles in interlock, uses 20 IS with 8 s own and 5 s shared reuse, and attaches ballistic base 8 and two −5 resistance modifiers for 10 s.",
+          "runtime": "The queued special resolves through the interlock contest and the Rifle move mapping, then applies fixed base damage plus typed mitigation and the paired timed debuffs.",
+          "test": "StarterGunSpecialAdmissionMode verifies interlock admission and style. StarterGunmanShotDamageTests asserts the stored base and pair; StarterBodyShotMode proves the paired add/remove, and StarterGunmanResistanceMode checks move and damage on neutral and resisted targets. Native PR616 shows a lost round followed by move 11364, both −5 records and hits of 8 and 6. https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028"
+        }
+      }
+    },
+    "126": {
+      "checks": {
+        "damage": {
+          "source": "GOB 126 defines a fixed ballistic health modifier of 11 and damage type 1.",
+          "runtime": "The landed interlock move uses the fixed catalog base when the legacy data endpoints are incomplete, then applies typed influence and the recipient's ballistic resistance.",
+          "test": "StarterGunmanResistanceMode and stock PR616 confirm the same move 9522 and neutral 11 versus 9 at +75 Ballistic Resistance. https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028"
+        }
+      }
+    },
+    "176": {
+      "checks": {
+        "damage": {
+          "source": "GOB 176 defines a fixed ballistic health modifier of 17 and damage type 1.",
+          "runtime": "The landed interlock move uses the fixed catalog base when the legacy data endpoints are incomplete, then applies typed influence and the recipient's ballistic resistance.",
+          "test": "StarterGunmanResistanceMode and stock PR616 confirm the same move 21083 and neutral 18 versus 14 at +75 Ballistic Resistance. https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR613 movement debuff admission": "PR613 supplements the already credited targeting checks for 40, 41 and 86. Targeting allied QAOther produces an invalid-target refusal with no cast or modifier. Against QAEnemy, 40 roots and breaks on damage and 86 still adds all five records. https://github.com/kylebrussell/mxo-hd/pull/613#issuecomment-7057942621",
+    "126": "PR616 observed stat 524 at −30 and −25 for 10 s. This verifies the implemented captured range; the difference from stored −15 and the legacy weapon callback remain open. https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028",
+    "176": "The Covering Fire root did not proc in the stock PR616 run. Credit the damage comparison only. https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028"
+  }
+}

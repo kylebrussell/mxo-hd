@@ -38,6 +38,6 @@
     }
   },
   "notes": {
-    "53": "PR612 verifies the stock missing-target, allied-target, range and sight refusals. A forced deflection sample for Harmful Code itself is still open. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+    "53": "PR612 verifies stock missing-target, allied-target, range and sight refusals. PR615 covers the deferred contest branch on the clear stand. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757 https://github.com/kylebrussell/mxo-hd/pull/615#issuecomment-7058034188"
   }
 }
