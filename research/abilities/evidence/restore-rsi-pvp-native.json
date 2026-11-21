@@ -1,0 +1,34 @@
+{
+  "families": {
+    "quick-recovery-rank15": {
+      "representative": 70,
+      "result": "pass",
+      "head": "65ec7a9affdcd886b72fa87377033641808cc648",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847",
+      "scope": "Stock session records startup modifiers 1052 +3 and 1057 +7 with Quick Recovery loaded at rank 15. Sweep consumption and loadout comparison remain open."
+    }
+  },
+  "abilities": {
+    "70": {
+      "family": "quick-recovery-rank15",
+      "note": "PR696 verifies the two startup records at rank 15. No Sweep or unload comparison was exercised."
+    },
+    "77": {
+      "note": "PR696 observes a normal Repair after the approved Restore RSI: QAFriend rises from 1 to 11 HP, with 10 IS paid and 4 s reuse. https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847"
+    },
+    "325": {
+      "checks": {
+        "script": {
+          "source": "RestoreRSI_Test admits a dead friendly player. RestoreRSI_DirectObject sets 1 HP and 1 IS, plays Stand/Action_Resurrect with ability 325, sends the two result notices, and flags the caster when the recipient is flagged.",
+          "runtime": "AbilityResurrection validates the target and pending consent, publishes vitals, stand, and both notices, and propagates the recipient's PvP flag on approval.",
+          "test": "PR693 verifies living refusal and an unflagged recipient visibly standing at 1 HP/1 IS. PR696 verifies a flagged recipient, no caster flag while the offer is pending, and the caster flag plus stand on approval. The headless replay verifies the paired movement and transmitted flag. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340 https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847"
+        },
+        "behavior-tests": {
+          "source": "The stored 75 IS and 120 s reuse apply to the valid dead-friendly cast; the shipped callback follows the target's PvP status.",
+          "runtime": "Restore RSI retains the normal admission, resource and reuse checks and completes through the native approval RPC.",
+          "test": "PR693 verifies the no-cost living refusal and the ordinary consent/stand path. PR696 measures IS 500 to 425, 120 s reuse, the flag after consent, visible stand, and a normal Repair from 1 to 11 HP immediately afterward. The headless replay checks the consent flag wire record. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340 https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847"
+        }
+      }
+    }
+  }
+}
