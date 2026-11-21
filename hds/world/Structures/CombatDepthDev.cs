@@ -38,7 +38,7 @@ namespace hds
             if (command == "stagger") return CombatDepthStagger.Run(caller,args);
             if (command == "mobius") return MobiusCodeQa.Run(caller,args);
             if (command == "hurtme") return ConcentrationDamageQa.Run(caller,args);
-            if (command == "specialattack") return TypedAttackDiagnostic.Run(caller,args);
+            if (command == "specialattack" || command == "totals") return TypedAttackDiagnostic.Run(caller,args);
             if (command == "initiative" && args.Length==1) return InterlockInitiative.Diagnostic(caller);
             if (command == "specialdefense")
             {
