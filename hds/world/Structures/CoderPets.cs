@@ -862,6 +862,21 @@ namespace hds
                 if (CombatManager.GetHandler(pet.Owner).ApplyAbilityToNpc(mob, viewId, damage, fx))
                     landed++;
             }
+            var owner = pet.Owner;
+            string source = TimedEffects.PlayerName(owner);
+            foreach (var victim in AbilityHostile.PlayersInArea(owner, pet.Mob.getXPos(), pet.Mob.getYPos(), pet.Mob.getZPos(), radius))
+            {
+                if (PvpCombat.Check(owner, victim) != PvpRules.Verdict.Allowed || PvpCombat.HealthOf(victim) == 0) continue;
+                ushort damage = TypedAbilityResistance.Player(pet.Mob.getLevel(), victim, StopProxyEffect, blast);
+                string target = TimedEffects.PlayerName(victim);
+                PvpFlag.OnFightStarts(owner, true);
+                victim.messageQueue.addRpcMessage(AbilityMessages.Damage(false, DetonateProxy, source, target, damage, blast - damage));
+                owner.messageQueue.addRpcMessage(AbilityMessages.Damage(true, DetonateProxy, source, target, damage, blast - damage));
+                if (PvpCombat.Damage(victim, damage, fx)) PvpCombat.Defeated(victim, owner);
+                victim.FlushQueue();
+                owner.FlushQueue();
+                Output.WriteDebugLog($"[PET] Detonate Proxy player source={source} target={target} raw={blast} damage={damage}");
+            }
             Output.WriteDebugLog(FormattableString.Invariant($"[PET] Detonate Proxy: {blast} to {landed} NPC(s) within {radius} m, pet {pet.SimulacraId}, start {TimeUtils.GetSimTimeSeconds():F3}"));
             // DetonateProxyEnd, when the 0.5 s tempmod ends: 13000 viral to the simulacrum
             DelayedActions.After(parent.Number("Duration"), () =>

@@ -27,26 +27,30 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
         new[] { $"UPDATE char_abilities SET level=LEAST(level,{Level}) WHERE char_id=110" },
         new[]
         {
+            PvpOpponentsFixture.NativeSql,
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={Z},rotation=64," +
                 "innerStrC=700,innerStrM=1000 WHERE charId=110",
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X - 400},y={Y},z={Z}," +
                 "rotation=192,innerStrC=500,innerStrM=1000 WHERE charId=6111",
-            "DELETE FROM char_abilities WHERE char_id=6111",
+            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y},z={Z - 350}," +
+                $"x=CASE WHEN charId=6114 THEN {X} ELSE {X + 1200} END,alignment=2 WHERE charId IN (6112,6114)",
+            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6114)",
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
                 string.Join(",", HelperLoadout.Select((id, i) => $"(6111,{i},{0x80000000u | ((uint)id << 10)},{Level},1)"))
         }, DevCommands: true, hotbarAbilities: new[] { Coder, Proxy, Fortify, Power, Detonate },
         testMobFixture: "coder-detonate-proxy.csv", environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_COMBAT_FOUNDATIONS_QA"] = "1",
-            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
+            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            [AreaTargetDiagnostics.Variable] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "20,25,34", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
             $"Level {Level}, full profile {Memory}/{AbilityMemory.ForLevel(Level)} memory. Start outdoors facing east. Enter ?combatdepth foundations-detonate, leave world selection clear, select Coder Style (page 2 slot 1) and use slot 2 Remote Proxy 1.0. Expect level 4, HP 224/224. Enter ?pet passive to park its attack stance.",
-            "QAFriend's proxy is parked west of the starting stand. Clear selection if needed, turn west and select that proxy. Try slots 3/4/5. If the client sends a request on its handle, each should give one 'That is not your simulacrum.' refusal, with no cast bar, debit, timer or change to either proxy. Select empty ground or your own proxy east of the stand to continue.",
+            "QAFriend and their proxy are to the west. QAEnemy is 3.5 m south of CSR and hostile. QAFar is also hostile, over 10 m past the pet. Stay on the stand and select your own proxy east of the stand or clear the selection. The foreign pet refusal already passed in PR619.",
             "With no target, use slot 4 Power Boost. Expect 4 s cast, 8 s reuse, 50 IS and +9 melee/+9 ballistic for 300 s. Enter ?pet to confirm both values. Only the own Proxy gets them.",
             "Select the Proxy 1.5 m ahead and slot 3 Fortify. Expect 2 s cast, 8 s reuse, 30 IS, HP 224/494 and +36 to each of four resistances for 600 s. Check [VITALS] owner=110 maxHP 224 -> 494 and the matching [PET] resistance/duration record. ?pet confirms the resistance. Clear target by selecting empty ground before Detonate, or keep the live Proxy selected.",
-            $"Use slot 5 Detonate Proxy. Expect 2 s cast, 30 IS and 60 s reuse. The live 224/494 pet gives {RawBlast} damage to Neutral and {ReducedBlast} to +75 Viral Resistance. Outside stays at 5000. Credit dies and awards normal owner XP. The own pet window and view disappear about 0.5 s after the blast. QAFriend's pet stays alive and registered. With regen held, IS goes 700 → 650 → 600 → 570 → 540."
+            $"Use slot 5 Detonate Proxy. Expect 2 s cast, 30 IS and 60 s reuse. The live 224/494 pet gives {RawBlast} damage to Neutral and {ReducedBlast} to +75 Viral Resistance. Outside stays at 5000. Credit dies and awards normal owner XP. The own pet window and view disappear about 0.5 s after the blast. Expect '[PET] Detonate Proxy player source=CSR_Tester target=QAEnemy raw=123 damage=123'. QAFriend and QAFar take no hit; QAFriend's pet remains registered. With regen held, IS goes 700 → 650 → 600 → 570 → 540."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -65,6 +69,13 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
         await friend.WaitForTextAsync("Passive.");
         friend.SendChat("?pet stay");
         await friend.WaitForTextAsync("Staying.");
+        foreach (string name in new[] { "QAEnemy", "QAFar" })
+        {
+            var helper = await HeadlessPlayer.LoginAsync(context.Address, name, name, stockCharacterLoad: true);
+            context.Helpers.Add(name, helper);
+            await PvpOpponentsFixture.EnterAsync(helper);
+            NativeQaReadiness.RequireNoAmbientAggro(server, helper);
+        }
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
@@ -72,7 +83,8 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
             .All(need => archive.TryGetValue(need.Key, out ushort rank) && rank >= need.Value)),
             "The full ranked Coder profile arrives in Margin");
         Check.That(Memory <= AbilityMemory.ForLevel(Level), "The profile fits at level 18");
-        await actor.EnterWorldAsync();
+        await PvpOpponentsFixture.EnterAsync(actor);
+        foreach (string helperName in new[] { "QAFriend", "QAEnemy", "QAFar" }) await actor.WaitForViewNamedAsync(helperName);
         actor.SendChat("?combatdepth foundations-detonate");
         await actor.WaitForTextAsync("Detonate fixture ready");
         var neutral = await actor.WaitForViewNamedAsync("Detonate Neutral");
@@ -115,7 +127,13 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
 
         int blastViews = actor.World.ViewSnapshot().Count;
         int blastLog = server.DebugLog().Length;
+        var enemy = context.Helpers["QAEnemy"];
+        var far = context.Helpers["QAFar"];
+        int enemyAt = enemy.World.RpcSnapshot().Count;
+        int farAt = far.World.RpcSnapshot().Count;
         int blastAt = await CastAsync(Detonate, Convert.FromHexString(DetonateStock), 2, 60, 540);
+        await StockAbilityProfile.ObserveAsync(enemy, enemyAt,
+            frame => BlastMessage(frame, enemy, RawBlast), "In-range hostile player receives the pet's blast");
         foreach (var (view, hp) in new[] { (neutral, 5000 - RawBlast), (resisted, 5000 - ReducedBlast), (credit, 0) })
             await EvidenceRetestWire.ViewSinceAsync(actor, blastViews, view.ViewId, $"04 80 80 80 c0 {EvidenceRetestWire.Le((ushort)hp)} c0 43 0a 00 28");
         await StockAbilityProfile.ObserveAsync(actor, blastAt,
@@ -132,10 +150,20 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
         double delay = double.Parse(term.Groups[1].Value, CultureInfo.InvariantCulture) - double.Parse(start.Groups[1].Value, CultureInfo.InvariantCulture);
         Check.That(delay is >= .49 and < 1.5 && log.Contains($"Awarded {KillExperience.ForKill(50, Level)} experience"),
             "The half-second term and ordinary owner XP both occur");
+        Check.That(log.Contains("Detonate Proxy player source=CSR_Tester target=QAEnemy raw=123 damage=123") &&
+            !log.Contains("Detonate Proxy player source=CSR_Tester target=QAFriend") &&
+            !log.Contains("Detonate Proxy player source=CSR_Tester target=QAFar"),
+            "The pet-centered blast only damages the in-range hostile player");
+        foreach (var (excludedPlayer, cursor) in new[] { (friend, friendAt), (far, farAt) })
+            Check.That(!excludedPlayer.World.RpcSnapshot().Skip(cursor).Any(frame => BlastMessage(frame, excludedPlayer, RawBlast)),
+                $"{excludedPlayer.Handle} receives no Detonate damage line");
         Check.That(!friend.World.RpcSnapshot().Skip(friendAt).Any(frame => frame.Bytes is [0x81, 0x77, ..]),
             "QAFriend retains their pet after refusals and the caster's own Detonate");
         Check.Equal(0, actor.World.Problems.Count + friend.World.Problems.Count, "Coder pet and Detonate records frame cleanly");
         return Array.Empty<byte>();
+
+        bool BlastMessage(RpcRecord frame, HeadlessPlayer player, int damage) =>
+            frame.Bytes.AsSpan().SequenceEqual(AbilityMessages.Damage(false, Detonate, actor.Handle, player.Handle, damage, 0));
 
         async Task RefuseAsync(ushort id, string capture, uint target)
         {
