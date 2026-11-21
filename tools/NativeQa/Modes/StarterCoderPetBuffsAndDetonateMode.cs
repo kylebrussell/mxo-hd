@@ -16,11 +16,11 @@ public sealed class StarterCoderPetBuffsAndDetonateMode : NativeQaMode
     private static readonly int ReducedBlast = TypedAbilityResistance.Amount(RawBlast, 4, 7, 75);
 
     // Stock PR596 4f792a63f1be:864 and native b0d0eb7ff285:2731,5530,3262,10220.
-    private const string CoderStock = "80b9f0030000000000000000000000000000000000000000000000000000000090767241086b0000000000";
+    internal const string CoderStock = "80b9f0030000000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string ProxyStock = "80b91b00000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string FortifyStock = "80b914000e000d000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string FortifyStock = "80b914000e000d000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private const string PowerStock = "80b91900000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string DetonateStock = "80b92200000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string DetonateStock = "80b92200000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
 
     public override string Name => "ability-parity-starter-coder-pet-buffs-and-detonate";
     public override NativeQaModePlan Plan { get; } = new(Abilities, X, Z, Array.Empty<string>(),
