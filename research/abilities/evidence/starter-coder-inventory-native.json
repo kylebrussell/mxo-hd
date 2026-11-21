@@ -1,0 +1,34 @@
+{
+  "families": {
+    "stock-item-decompiler": {
+      "representative": 276,
+      "result": "pass",
+      "head": "498e9581abf31310e60f6b20d42b6fb5c2e2c8a9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/584",
+      "scope": "Stock Item Decompiler item shortcut selected the inventory tool and sent 8131 for a Health Pill and a revolver. Both recipes arrived and the corresponding items were consumed. The client suppressed an early recast for the 10 s timer."
+    }
+  },
+  "abilities": {
+    "276": {
+      "family": "stock-item-decompiler"
+    },
+    "969": {
+      "checks": {
+        "script": {
+          "source": "CompileActivate_Subject and CompileActivate_Deactivate set the typing stance while compiling and restore the standing idle when deactivated.",
+          "runtime": "CraftingSession publishes the linked 968 and exclusive state and updates the avatar's typing posture on session open and close.",
+          "test": "StarterCoderInventoryLifecycleMode verifies linked adds and removals, exclusive on/off and both owner stance updates with stock Compiler activation and deactivation messages. PR584 verifies that the stock Compiler opens and closes. https://github.com/kylebrussell/mxo-hd/pull/584"
+        }
+      }
+    },
+    "970": {
+      "checks": {
+        "script": {
+          "source": "WriteCodeActivate_Subject enters typing stance. WriteCodeActivate_Deactivate and WriteCodeActivateTerm restore standing idle when the user is typing.",
+          "runtime": "CraftingSession enters the typing posture at activation and removes it when the session ends, including stream and loadout invalidation.",
+          "test": "StarterCoderInventoryLifecycleMode verifies linked add/remove, exclusive on/off and typing/standing stance transitions. The stock Writer opened and closed in PR584. https://github.com/kylebrussell/mxo-hd/pull/584"
+        }
+      }
+    }
+  }
+}
