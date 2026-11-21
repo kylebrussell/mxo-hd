@@ -7,8 +7,8 @@ namespace NativeQa.Modes;
 public sealed class StarterPhageEvadeEntryMode : NativeQaMode
 {
     private const int Level = 16;
-    private const ushort ExecuteProgram = 45, Virologist = 76, Phage = 83, Insight = 113, Blur = 49, Evade = 217, Upgrade = 1082;
-    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, ExecuteProgram, Virologist, Phage, Blur, Evade).Order().ToArray();
+    private const ushort ExecuteProgram = 45, ResistViruses = 76, Phage = 83, Insight = 113, Blur = 49, Evade = 217, Upgrade = 1082;
+    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, ExecuteProgram, ResistViruses, Phage, Blur, Evade).Order().ToArray();
     private static readonly ushort[] HelperLoadout = StockAbilityProfile.Profile(2, 17, Insight).Order().ToArray();
     private static readonly (ushort Stat, int Value)[] PhageStats = { (1030, 1), (1045, 1), (1049, 1) };
     // PR524 Evade Combat and the ordinary Power tactic action.
@@ -36,7 +36,7 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         readyMessages: new[]
         {
             $"CSR level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Outdoor NAV CSR (17000,495,2300) faces QAEnemy (17120,495,2300), 1.2 m east. QAEnemy is level 50, in Power with fully qualified Combat Insight. Stay in Speed on CSR. Press page 2 slot 2 while standing at rest: the stock client should show that Gaussian Blur requires Evading, with no 49 activation sent and no IS change.",
-            """Press page 2 slot 1 Evade Combat. Expect [EVASION] state on and 40 IS spent. Startup [MODIFIER] 83/1030,1045,1049 are +1 each; Virologist 76/1049 is +2 and Execute Program 45/1049 is 0. Send {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Expect [COMBAT-INSIGHT OURS] force110 evade113 allowedFalse and no interlock.""",
+            """Press page 2 slot 1 Evade Combat. Expect [EVASION] state on and 40 IS spent. Startup [MODIFIER] 83/1030,1045,1049 are +1 each; Resist Viruses 76/1049 is +2 and Execute Program 45/1049 is 0. Send {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Expect [COMBAT-INSIGHT OURS] force110 evade113 allowedFalse and no interlock.""",
             "Type ?qaunload 83, then repeat the helper melee. Expect all three +1 records and the 1082 grant removed, with Evade still on, and force110 evade112 allowedFalse. Type ?qaload 83 and repeat; expect returned records/grant and force110 evade113 allowedFalse. This is the implemented entry formula.",
             "With Evade still on, press slot 2 Gaussian Blur. Expect 2 s, 20 IS, 8 s reuse and [MODIFIER] char=110 source=49 stat=520 add +25 duration=600s. Repeat helper melee: [COMBAT-INSIGHT OURS] force110 evade138 allowedFalse, no [PVP] start. Type ?dismissbuff 49, expect the +25 remove and the same melee back at force110 evade113 allowedFalse.",
             "Toggle Evade Combat off in slot 1 and wait 3 s. Repeat the same melee. With the shield down it starts an interlock, with no shield entry score. Withdraw and send helper stop if needed. Save [EVASION], [MODIFIER] and [PVP] output."
@@ -69,7 +69,7 @@ public sealed class StarterPhageEvadeEntryMode : NativeQaMode
         var seen = await enemy.WaitForViewNamedAsync(actor.Handle);
         string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(seen.ViewId, seen.SpawnId)));
         await ExpectPhageAsync(0, false);
-        await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, Virologist, 1049, 2, 0, false), "Virologist baseline");
+        await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, ResistViruses, 1049, 2, 0, false), "Resist Viruses baseline");
         await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, ExecuteProgram, 1049, 0, 0, false), "Execute Program baseline");
         await RefuseBlurAsync();
         int shield = actor.World.RpcSnapshot().Count;
