@@ -1,0 +1,26 @@
+{
+  "abilities": {
+    "19": {
+      "note": "PR680 stock confirms foreign-pet refusal without IS, reuse or removal, the 10.5 m reason-34 boundary, and own-pet removal plus 50 IS at 9.5 m with 58 s reuse. Stock also sends view zero, which the current server applies to the owned pet. These observations establish the current selection paths, not the retail view-zero mapping, stored 8000 damage calculation or DecoyDuration. The native foreign-pet run used the old reason 6. https://github.com/kylebrussell/mxo-hd/pull/680#issuecomment-7066611220"
+    },
+    "26": {
+      "checks": {
+        "pets": {
+          "source": "The GOB stores enemy-simulacrum target class 12, 16 m selection range and 13000 type-5 damage.",
+          "runtime": "CoderPets.PrepareDerez resolves the exact spawned mob and its current owning opponent. Derez revalidates the live pet at landing, resolves the stored damage and removes that pet through the ordinary pet death path.",
+          "test": "PR681 stock refusals cover no target, an NPC, a friendly pet and an out-of-range opponent pet. At 4.5 m the caster spends 40 IS and starts 13.5 s reuse. Only the opponent's selected pet is removed. The disposable bootstrap also rejects a stale spawn. Sight, exact retail owner-opponent rules and complete activation presentation remain separate. https://github.com/kylebrussell/mxo-hd/pull/681#issuecomment-7066730213"
+        }
+      }
+    },
+    "215": {
+      "checks": {
+        "stats": {
+          "source": "The Locate Data Node GOB grants stat 703 while loaded via ValueFunction 2, with rank cap 5.",
+          "runtime": "The loaded passive emits the trained rank on source 215, stat 703, and normal training replaces the old snapshot.",
+          "test": "PR679 stock Upgrade confirms 5,000 Info, +4 removal and +5 addition. Its headless replay makes the same rank change through the trainer request. https://github.com/kylebrussell/mxo-hd/pull/679#issuecomment-7066256562"
+        }
+      },
+      "note": "The goggles remain limited to 5 m at rank 4 and rank 5. The handheld detects at 6 m and expires after 10 s at both ranks. LocateDataNode_DirectObject takes the range from the indirect tool. The rest of the native stat consumer and a stock activation path for 621 remain open. https://github.com/kylebrussell/mxo-hd/pull/679#issuecomment-7066256562"
+    }
+  }
+}
