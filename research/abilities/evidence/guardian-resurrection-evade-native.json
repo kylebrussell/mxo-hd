@@ -1,0 +1,80 @@
+{
+  "families": {
+    "combat-enhancement-selected-recipient": {
+      "representative": 173,
+      "result": "pass",
+      "head": "83820a292b08be4a6ef04d335803fddb92efc342",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/692#issuecomment-7068483964",
+      "scope": "Stock selected QAFriend receives 522/524/1032 +19 for 300 s, all three remove on dismiss, and CSR receives no copy."
+    },
+    "gaussian-blur-evading": {
+      "representative": 49,
+      "result": "pass",
+      "head": "ee58cf2d5b522dae388ccad87c3b9e4e228652d4",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340",
+      "scope": "The stock action sends after Evade Combat grants Evading. CSR receives 520 +25 for 600 s and pays 20 IS; QAFriend receives no copy. Native early dismissal was not sampled."
+    },
+    "personal-firewall-recipient": {
+      "representative": 68,
+      "result": "pass",
+      "head": "ee58cf2d5b522dae388ccad87c3b9e4e228652d4",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340",
+      "scope": "The stock cast puts the four scoped resistance records on QAFriend only, spends 40 IS and starts 13 s reuse. First run verified dismissal and the 75 HP term heal."
+    },
+    "selective-phage-loadout": {
+      "representative": 83,
+      "result": "pass",
+      "head": "01271cc6f5cb05bee05c64d9b92041321bef2fa0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236",
+      "scope": "Stock owner gets +1 records 1049/1030/1045 and grant 1082. Load, unload and reload alter the same entry check from Evade 113 to 112 and back at Force 110."
+    }
+  },
+  "abilities": {
+    "46": {
+      "note": "PR692 observed the selected QAFriend's sole stat 112 +40 for 600 s, 13 s reuse and modifier removal. The initial IS was not isolated and the 35 IS debit is inferred from the fixture seed and post-cast 465. https://github.com/kylebrussell/mxo-hd/pull/692#issuecomment-7068483964"
+    },
+    "49": {
+      "family": "gaussian-blur-evading",
+      "note": "PR693's initial stock use was refused locally without Evading. The retest supplies Evade, then stock 49 produces the 20 IS debit, 8 s reuse and self-only +25. Scoped headless replay verifies dismissal; native dismissal and the retail entry formula remain open. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340"
+    },
+    "68": {
+      "family": "personal-firewall-recipient",
+      "note": "PR693 measures 157 +40 and 180/181/1033 +10, all 300 s. The first native dismissal removes all four and heals QAFriend 100 to 175. The retest repeats the friendly cast and 40 IS debit. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068561794 https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340"
+    },
+    "70": {
+      "note": "StarterGuardianSupportMode headless observes rank-15 1052 +3 and 1057 +7. PR692's native result reports the two selected active casts; it does not independently confirm Quick Recovery's startup records. https://github.com/kylebrussell/mxo-hd/pull/692#issuecomment-7068483964"
+    },
+    "76": {
+      "note": "PR694 records 1049 +2 and 1030/1045 +3 as the unchanged rank-16 baseline during the source-83 toggle. https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236"
+    },
+    "83": {
+      "family": "selective-phage-loadout",
+      "checks": {
+        "stats": {
+          "source": "GOB 83 stores +1 each for 1030, 1045 and 1049 while enabled and grants 1082.",
+          "runtime": "AbilityPassives emits the three source rows, AbilityGrantRegistration reconciles 1082 and CombatInsightEngagement reads the live evade modifier under 217.",
+          "test": "PR694 observes +1 remove/re-add for all three and a Force 110 / Evade 113, 112, 113 comparison with the same helper during the live loadout round trip. Contested Withdraw gameplay and original retail entry math remain open. https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236"
+        }
+      }
+    },
+    "173": {
+      "family": "combat-enhancement-selected-recipient",
+      "note": "PR692 verifies the selected ally's +19 melee, ballistic and thrown accuracy records for 300 s, 40 IS, 13 s reuse and three removes. No copy lands on the caster. https://github.com/kylebrussell/mxo-hd/pull/692#issuecomment-7068483964"
+    },
+    "217": {
+      "note": "PR693 confirms its Evading state enables the locally gated Blur. PR694 confirms the same helper's entry is refused with Evade active, succeeds when it is off, and then ends with ordinary withdrawal. Retail shield damage and the original contest remain open. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340 https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236"
+    },
+    "325": {
+      "checks": {
+        "resurrection": {
+          "source": "RestoreRSI_DirectObject requests health/IS 1 and Action_Resurrect with Restore's own ability context. The native approval codec carries the requested ability and answer.",
+          "runtime": "AbilityResurrection handles live consent; DeathPresentation publishes alive state then motion to owner and observers.",
+          "test": "PR693 observes living target reason 24 without cost/offer, then the dead ally's completed approval, 1 HP and 1 IS, and visible in-place stand before moving either player. The combined view updates were also checked headlessly. The conditional PvP callback and broader behavior remain open. https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340"
+        }
+      }
+    },
+    "1082": {
+      "note": "PR694 observes the 83-owned grant disappear on 80 b3 and return on 80 b2, with the matching +1 passive changes. https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236"
+    }
+  }
+}
