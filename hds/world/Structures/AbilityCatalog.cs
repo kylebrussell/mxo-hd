@@ -92,10 +92,12 @@ namespace hds
                 string health = m.Text("StatModHealthChangedFunc");
                 mod.Break = state == TempMods.MezAbility || health == "OnHealthReduceDeactivateAbility" ? TempMods.BreakRule.Damage :
                     health == "OnHealthChangeDeactivateAbility" ? TempMods.BreakRule.HealthChange : TempMods.BreakRule.None;
-                // Crippling Throw puts the signed callback payload on a sibling modifier; it turns off the same parent.
-                Modifier siblingBreak = entry.Id == 280 && state == TempMods.RootedAbility
+                // Code Freeze 2.0 and Crippling Throw carry the health-change chance on a sibling modifier.
+                // Deactivating the parent removes the root and its other records together.
+                Modifier siblingBreak = (entry.Id == 41 || entry.Id == 280) && state == TempMods.RootedAbility
                     ? entry.Modifiers.FirstOrDefault(p => p.State == 0 && p.Number("WhenEnabled", -1) == 2 &&
-                        p.Number("Duration") == seconds && p.Text("StatModHealthChangedFunc") == "OnHealthReduceDeactivateChance")
+                        (entry.Id == 41 ? p.Number("Duration") >= seconds : p.Number("Duration") == seconds) &&
+                        p.Text("StatModHealthChangedFunc") == "OnHealthReduceDeactivateChance")
                     : null;
                 if (rootChance || health == "OnHealthReduceDeactivateChance" || siblingBreak != null)
                 {

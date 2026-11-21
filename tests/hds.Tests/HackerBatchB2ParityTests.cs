@@ -316,6 +316,28 @@ public class HackerBatchB2ParityTests
     }
 
     [Theory]
+    [InlineData(49, true)]
+    [InlineData(50, false)]
+    public void CodeFreeze41UsesTheSiblingDamageBreakChance(int roll, bool breaks)
+    {
+        Assert.True(TempMods.TryGet(41, out var effect));
+        var holder = new TimedEffects.Holder();
+        holder.Apply(41, TimedEffects.Instantiate(effect, new RootBreakRoll(roll)), 0);
+        Assert.Empty(holder.HealthChanged(-1, true, new RootBreakRoll(0)));
+        var removed = holder.HealthChanged(1, true, new RootBreakRoll(roll));
+        Assert.Equal(!breaks, holder.HasParent(41));
+        if (breaks)
+            Assert.Equal(new ushort[] { 99, 519 }, removed.Select(mod => mod.Target).Order().ToArray());
+        else
+            Assert.Empty(removed);
+    }
+
+    private sealed class RootBreakRoll(int roll) : Random
+    {
+        public override int Next(int maxValue) => roll;
+    }
+
+    [Theory]
     [InlineData(65, -24, 33)]
     [InlineData(701, -14, 5)]
     public void HostileNumericEffectsFeedTheirOwnCombatConsumers(ushort id, int delta, int duration)
