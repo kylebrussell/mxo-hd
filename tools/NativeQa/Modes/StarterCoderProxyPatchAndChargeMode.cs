@@ -9,9 +9,11 @@ public sealed class StarterCoderProxyPatchAndChargeMode : NativeQaMode
     private const ushort Coder = 1008, Proxy = 28, Patch = 602, Charge = 603;
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, Coder, Proxy, Patch, Charge).Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
-    // Complete native Coder and Charge requests, from 4f792a63f1be:864 and b0d0eb7ff285:3369.
+    // PR603 stock PacketLog lines 699, 738, 836 and 980.
     private const string CoderStock = "80b9f0030000000000000000000000000000000000000000000000000000000090767241086b0000000000";
-    private const string ChargeStock = "80b95b02000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    private const string ProxyStock = "80b91c00000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
+    private const string ChargeStock = "80b95b020000000000000000000000000000000000000000000000000000000090767241086b0000000000";
+    private const string PatchStock = "80b95a02000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
     private const string Deactivate = "81 7a fe 01";
 
     public override string Name => "ability-parity-starter-coder-proxy-patch-and-charge";
@@ -50,9 +52,7 @@ public sealed class StarterCoderProxyPatchAndChargeMode : NativeQaMode
         actor.SendRpc(CoderStock);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
 
-        // The first native requests for 28 and 602 are part of this session. Until captured, use the
-        // disposable cast command to exercise their real admission, cost, timer and landing without invented stock bytes.
-        var proxy = await SummonAsync(Proxy, 7, 337, 8, 650);
+        var proxy = await SummonAsync(Proxy, ProxyStock, 7, 337, 8, 650);
         actor.SendChat("?pet");
         await actor.WaitForTextAsync("cost 10,");
         int chargeAt = actor.World.RpcSnapshot().Count;
@@ -67,7 +67,7 @@ public sealed class StarterCoderProxyPatchAndChargeMode : NativeQaMode
             "Charge applies both shipped resource changes to the original pet");
 
         int replaced = actor.World.RpcSnapshot().Count;
-        var healer = await SummonAsync(Patch, Level, 750, 10, 515);
+        var healer = await SummonAsync(Patch, PatchStock, Level, 750, 10, 515);
         await StockAbilityProfile.ObserveAsync(actor, replaced,
             frame => frame.Bytes is [0x81, 0x77, var id] && id == proxy.Id, "Patch replaces the Proxy's window");
         Check.That(healer.Id != proxy.Id && healer.View.Name == "Healer Simulacrum", "Patch creates a fresh Healer window");
@@ -98,12 +98,12 @@ public sealed class StarterCoderProxyPatchAndChargeMode : NativeQaMode
         Check.Equal(0, actor.World.Problems.Count, "Starter Coder summon and charge framing");
         return Array.Empty<byte>();
 
-        async Task<(byte Id, ViewCreation View)> SummonAsync(ushort ability, byte level, ushort health, int reuse, ushort isAfter)
+        async Task<(byte Id, ViewCreation View)> SummonAsync(ushort ability, string request, byte level, ushort health, int reuse, ushort isAfter)
         {
             int rpcAt = actor.World.RpcSnapshot().Count;
             int viewsAt = actor.World.ViewSnapshot().Count;
             int creationsAt = actor.World.CreationSnapshot().Count;
-            actor.SendChat($"?pet cast {ability}");
+            actor.SendRpc(request);
             await EvidenceRetestWire.CastBarAsync(actor, ability, 8);
             await EvidenceRetestWire.TimerAsync(actor, rpcAt, ability, AbilityCooldowns.OwnTimer, reuse);
             await WaitForIsAsync(viewsAt, isAfter);
