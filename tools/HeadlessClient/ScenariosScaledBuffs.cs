@@ -102,6 +102,8 @@ public static partial class Scenarios
         await actor.WaitForRpcAsync("80 bd 05 0f 00 00 00 00 00 00 00");
         await Task.Delay(600); Cast(actor,9);
         await actor.WaitForRpcAsync("80 bd 05 09 00 00 00 00 00 00 01");
+        Cast(actor,217,2);
+        await actor.WaitForRpcAsync(ModPattern(217,624));
         Cast(actor,49);
         await actor.WaitForRpcAsync(ModPattern(49,520),TimeSpan.FromSeconds(8));
         await actor.WaitForViewUpdateAsync(2,"02 80 80 80 80 80 02 40 00");

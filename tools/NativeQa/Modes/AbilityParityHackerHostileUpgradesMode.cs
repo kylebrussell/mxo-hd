@@ -28,7 +28,7 @@ public sealed class AbilityParityHackerHostileUpgradesMode : NativeQaMode
             "UPDATE characters SET alignment=1 WHERE charId=110",
             "UPDATE characters SET x=33000+100*(charId-6111),alignment=CASE WHEN charId IN (6112,6114) THEN 2 ELSE 1 END,pvpflag=0 WHERE charId IN (6111,6112,6114)",
             HelperLoadoutSql(6111, StageOne),
-            HelperLoadoutSql(6114, Profile(TargetBuff, 110))
+            HelperLoadoutSql(6114, Profile(TargetBuff, 110, 217))
         }, DevCommands: true,
         environmentOverrides: new()
         {
@@ -39,7 +39,7 @@ public sealed class AbilityParityHackerHostileUpgradesMode : NativeQaMode
         readyMessages: new[]
         {
             "After CSR is ready, move QAFriend, QAEnemy and QAFar to their checklist stands via the helper chat action. Use Hacker Style and select QAEnemy. Only the isolated viral contest draw is fixed; callback rolls remain natural.",
-            "Cast Overheat 1.0 (65) on QAEnemy: both resistance debuffs -24, duration 33s. Arm QAEnemy with Gaussian Blur 49 via the helper cast action, then use Cancel Upgrade 1.0 (377), Delete Upgrade 1.0 (324), and Delete Upgrade 2.0 (420) with 49 refreshed before each. Capture the removal lines and off record.",
+            "Cast Overheat 1.0 (65) on QAEnemy: both resistance debuffs -24, duration 33s. Toggle Evade Combat 217 on QAEnemy, confirm it stays on, then arm QAEnemy with Gaussian Blur 49 and use Cancel Upgrade 1.0 (377), Delete Upgrade 1.0 (324), and Delete Upgrade 2.0 (420) with 49 refreshed before each. Capture the removal lines and off record.",
             "Before Combat Shutdown, change to Stage 2 at a Hardline or Load Area: unload 318/420/422 and load the eight listed entries. Use Combat Shutdown (480) on QAEnemy and record -61 both accuracies, -31 both defenses, 25s. See docs/ABILITY-HACKER-HOSTILE-UPGRADES.md."
         },
         extraQaMetadata: new()
@@ -101,6 +101,10 @@ public sealed class AbilityParityHackerHostileUpgradesMode : NativeQaMode
         int overheatStart = target.World.RpcSnapshot().Count;
         Cast(caster, 65, targetView.ViewId);
         await Effects(target, 65, Overheat, 33, overheatStart, remove: false);
+
+        Cast(target, 217, 2);
+        await StockAbilityProfile.ObserveAsync(target, 0, frame => StockAbilityProfile.Bonus(frame, 217, 624, 0, 0, false),
+            "QAEnemy enters Evading before Gaussian Blur");
 
         foreach (ushort dispel in new ushort[] { 377, 324, 420 })
         {
