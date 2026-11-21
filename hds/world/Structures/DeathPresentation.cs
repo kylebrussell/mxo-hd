@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace hds
 {
@@ -49,7 +50,8 @@ namespace hds
 
         public static void Corpse(WorldClient player) => Play(player, Prone, Idle, NoAbility);
         public static void Stand(WorldClient player) => Play(player, Standing, Idle, NoAbility);
-        public static void Resuscitate(WorldClient player, ushort ability) => Play(player, Standing, Resurrect, ability);
+        public static void Resuscitate(WorldClient player, ushort ability, byte[] ownAlive, byte[] otherAlive) =>
+            Play(player, Standing, Resurrect, ability, ownAlive, otherAlive);
 
         /// <summary>Combat teardown can replace movement. Reapply only within this death/world lifecycle.</summary>
         public static void AfterInterlockTeardown(WorldClient player)
@@ -68,14 +70,20 @@ namespace hds
             });
         }
 
-        private static void Play(WorldClient player, byte stance, byte action, ushort ability)
+        private static void Play(WorldClient player, byte stance, byte action, ushort ability,
+            byte[] ownBeforeMovement = null, byte[] otherBeforeMovement = null)
         {
             Position(player, out float x, out float y, out float z);
             byte counter = ++player.playerData.emoteCounter;
             if (!player.IsBot)
-                player.messageQueue.addObjectMessage(Build(true, counter, stance, action, ability, x, y, z,
-                    CombatHandler.CombatStartTime()), false);
-            PvpFlag.ToWatchers(player, Build(false, counter, stance, action, ability, x, y, z));
+            {
+                byte[] movement = Build(true, counter, stance, action, ability, x, y, z, CombatHandler.CombatStartTime());
+                player.messageQueue.addObjectMessage(ownBeforeMovement == null ? movement : ownBeforeMovement.Concat(movement).ToArray(), false);
+            }
+            byte[] observerMovement = Build(false, counter, stance, action, ability, x, y, z);
+            // A live state and its standing motion must be read in order, even when datagrams are lost or reordered.
+            if (otherBeforeMovement == null) PvpFlag.ToWatchers(player, observerMovement);
+            else PvpFlag.ToWatchers(player, otherBeforeMovement, observerMovement);
         }
     }
 }

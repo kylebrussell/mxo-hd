@@ -360,7 +360,7 @@ namespace hds
         /// see that player. Players who don't are left to ViewVisibleThread, which spawns (and deletes) views
         /// by range and district.
         /// </summary>
-        public void SendViewPacketToAllPlayers(byte[] data,UInt32 charId, UInt32 goId, UInt64 entityId)
+        public void SendViewPacketToAllPlayers(byte[] data,UInt32 charId, UInt32 goId, UInt64 entityId, byte[] followingUpdate = null)
         {
             lock (Clients)
             {
@@ -382,7 +382,10 @@ namespace hds
                         continue;
                     }
 
-                    client.messageQueue.addObjectMessage(BuildViewUpdate(view.ViewID, data), false);
+                    byte[] update = BuildViewUpdate(view.ViewID, data);
+                    if (followingUpdate != null)
+                        update = update.Concat(BuildViewUpdate(view.ViewID, followingUpdate)).ToArray();
+                    client.messageQueue.addObjectMessage(update, false);
                     client.FlushQueue();
                 }
             }

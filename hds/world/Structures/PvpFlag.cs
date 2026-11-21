@@ -62,10 +62,10 @@ namespace hds
         }
 
         /// <summary>An update of the player's view, to everyone who has one.</summary>
-        public static void ToWatchers(WorldClient client, byte[] otherViewUpdate)
+        public static void ToWatchers(WorldClient client, byte[] otherViewUpdate, byte[] followingUpdate = null)
         {
             Store.world?.SendViewPacketToAllPlayers(otherViewUpdate, client.playerData.getCharID(),
-                NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1), client.playerData.getEntityId());
+                NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1), client.playerData.getEntityId(), followingUpdate);
         }
 
         /// <summary>Turns the flag on or off, tells the clients and saves it. Returns false when it was already so.</summary>
