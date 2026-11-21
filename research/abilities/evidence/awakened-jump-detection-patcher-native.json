@@ -1,0 +1,44 @@
+{
+  "families": {},
+  "abilities": {
+    "11": {
+      "note": "PR658 stock unload removes +75 Super Jump and blocks both hotbar activation and the jump keyboard shortcut. Reload restores +75 and two ordinary jumps each emit one echo, including a jump with both speed buffs active. Rank-dependent range and peak geometry are still open.",
+      "checks": {
+        "stats": {
+          "source": "GOB 11 uses learned-rank function 2 at scale 3.0 for stat 567; the stock jump caller reads the Super Jump total before entering the normal jump path.",
+          "runtime": "AbilityPassives publishes the signed stat 567 contribution on load and removes it on unload. The stock input gate reads the live total.",
+          "test": "AwakenedJumpLoadoutMode compares add → remove → add at rank 25; native PR658 reports +75, no 80 c2 while unloaded, and an accepted 80 c2 after reload. This checks stat scaling and presentation without closing geometry. https://github.com/kylebrussell/mxo-hd/pull/658#issuecomment-7063310107"
+        }
+      }
+    },
+    "55": {
+      "checks": {
+        "stats": {
+          "source": "GOB 55 lists the four physical and viral accuracy penalties on the ten-second self effect.",
+          "runtime": "AbilityBuffs publishes and expires the four named modifiers. The physical attack formulas and ordinary viral contest use their corresponding values.",
+          "test": "StarterPatcherTradeoffMode and native PR660 sample all four production totals before, during and after the buff. Native physical totals change 0/0/0 → -25/-18/-18 → 0/0/0; 57 viral input changes 34 → 5 → 34. https://github.com/kylebrussell/mxo-hd/pull/660#issuecomment-7063426915"
+        },
+        "behavior-tests": {
+          "source": "GOB 55 stores an instant base-21 heal, four temporary accuracy penalties, 22 IS and 43-second own reuse.",
+          "runtime": "The ordinary Patcher activation heals the caster immediately, applies the temporary records, charges IS and sends and clears its own timer. Expiry restores all four combat inputs.",
+          "test": "StarterPatcherTradeoffMode and native PR660 verify caster-only 100→123 with an opponent selected, no helper heal or modifier, 22 IS, 43-second timer, all four adds and natural removals, and restored combat inputs. https://github.com/kylebrussell/mxo-hd/pull/660#issuecomment-7063426915"
+        }
+      },
+      "note": "PR660 independently verifies all four accuracy penalties and the self-only heal, IS and reuse. See the stats and behavior evidence."
+    },
+    "298": {
+      "note": "PR659 stock bag-slot-8 Countermeasure reveals the enemy at 12 m, leaves the 12.01 m enemy and 5 m ally invisible, debits 5 IS and starts ten-second reuse. This covers the tested player geometry; exact retail angle, LOS and NPC paths remain open.",
+      "checks": {
+        "stats": {
+          "source": "GOB 298 uses learned-rank scaling of 0.3 for Stealth Detection 204 and 4.0 for Concealment Detection 638.",
+          "runtime": "AbilityPassives publishes both records. The normal stealth observer uses Awareness and ConcealmentDetection uses Detect for the strict reveal comparison.",
+          "test": "AwakenedDetectionBoundaryMode and native PR659 confirm +5 Awareness and +72 Detect at rank 18 and a hostile reveal. PR535 independently uses load/unload of 298 to isolate the Awareness contribution. https://github.com/kylebrussell/mxo-hd/pull/659#issuecomment-7063371514 https://github.com/kylebrussell/mxo-hd/pull/535"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR658": "With 12 and 184 active, 435 IS follows activation, subsequent Sprint drains cost 25 apiece, both speed sequences survive the jump, and the original records remove through toggle/dismiss. Stealth stance consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/658#issuecomment-7063310107",
+    "PR659": "Stock bag-slot-1 Handheld uses 215, charges five IS, starts the 30 m search and expires it after ten seconds. The Locate skill consumer remains open. https://github.com/kylebrussell/mxo-hd/pull/659#issuecomment-7063371514"
+  }
+}
