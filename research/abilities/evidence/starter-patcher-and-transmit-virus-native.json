@@ -1,0 +1,33 @@
+{
+  "families": {
+    "stock-patcher-heal-tradeoff": {
+      "representative": 55,
+      "result": "pass",
+      "head": "14cd0b8899cc2dc10bac1ada11cfe7b5e5b03188",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/642#issuecomment-7061004579",
+      "scope": "Patcher costs 22 IS and heals only its caster for 23 while an opponent is selected. All four accuracy penalties add for ten seconds and remove naturally. The viral attack input changes from 34 to 5 and back to 34. The group-heal control reaches CSR and QAFriend only. The 43-second reuse was confirmed in retail and headless records; other accuracy consumers remain open."
+    },
+    "stock-transmit-virus-damage-and-resistance": {
+      "representative": 95,
+      "result": "pass",
+      "head": "4b04cec3e1b320786fcd64989619141010fa6e01",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/643#issuecomment-7061064281",
+      "scope": "Native load, unload and reload publish both +15 records. Outgoing Logic Barrage and Logic Blast give 11/15 while loaded and 10/13 while unloaded. Incoming raw 538 gives 496 with 42 resisted while loaded and 538 unresisted while unloaded. The current resistance coefficient remains an approximation."
+    }
+  },
+  "abilities": {
+    "55": {
+      "family": "stock-patcher-heal-tradeoff"
+    },
+    "95": {
+      "family": "stock-transmit-virus-damage-and-resistance",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 95 adds rank times 0.3 to Viral Damage Bonus and Viral Resistance Bonus while loaded.",
+          "runtime": "AbilityPassives refreshes the two records and totals on load and unload. AbilityStats scales outgoing viral damage and TypedResistanceBonuses converts the linked resistance for incoming viral damage.",
+          "test": "AbilityScaledBuffTests.TransmitVirusAndOverclockApplyTheirOwnTypedDamageAndResistance covers both typed consumers and ballistic exclusion. StarterTransmitVirusMode and PR643 verify both native modifier pairs and the outgoing and incoming values before unload and after restoration. The retail resistance coefficient is a separate source-parity check. https://github.com/kylebrussell/mxo-hd/pull/643#issuecomment-7061064281"
+        }
+      }
+    }
+  }
+}

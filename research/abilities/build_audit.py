@@ -333,7 +333,8 @@ def server(i):
             parts.append('pet/special healing target executor missing; player cast refused')
         else:
             amount = '10% target max HP' if i == 967 else 'stored base ' + '+'.join(str(v) if v is not None else '?' for v in r.get('heal_base', [])) + '; caster healing influence'
-            parts.append('target/team heal' + (' over time' if any(m.get('StatModUpdateFunc') == 'HOT' for m in mods(i)) else '') + '; ' + amount)
+            heal = 'self-only heal' if i == 55 else 'target/team heal'
+            parts.append(heal + (' over time' if any(m.get('StatModUpdateFunc') == 'HOT' for m in mods(i)) else '') + '; ' + amount)
     passive = [m for m in r.get('passives', []) if m['level50'] is not None]
     if passive:
         parts.append('loaded passive totals + records (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d} [{m['consumer']}]" for m in passive) + ')')
