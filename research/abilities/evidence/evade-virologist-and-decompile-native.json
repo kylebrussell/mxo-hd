@@ -1,0 +1,73 @@
+{
+  "families": {
+    "virologist-native-grant-lifecycle": {
+      "representative": 98,
+      "result": "pass",
+      "head": "64124d8962517534bb93233789b31d60613bac26",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290",
+      "scope": "Stock Actions and grant packets remove and restore Virologist Upgrade along with both source-98 passive records. Contested Withdraw's gameplay consumer is separate."
+    }
+  },
+  "abilities": {
+    "19": {
+      "note": "PR680 retest at ccd9cb0b receives reason 24 and the specific ownership line without tactic text. The refused foreign cast spends no IS, starts no reuse and leaves both pets alive. At 10.5 m stock sends reason 34; a valid owned pet at 9.5 m is removed with IS 650 to 700 and 58 s reuse. These outcomes do not prove retail damage or a retail no-selection mapping. https://github.com/kylebrussell/mxo-hd/pull/680#issuecomment-7066968789"
+    },
+    "64": {
+      "note": "In PR684, source 64's 1147 +1 and granted 1078 remove and restore together, independent of the 73 contribution. https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290"
+    },
+    "73": {
+      "note": "In PR684, 995 +1 and 1147 +5 remove and restore under source 73 while source 64 stays unchanged. https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290"
+    },
+    "76": {
+      "checks": {
+        "stats": {
+          "source": "GOB 76 grants level-scaled Viral Defense 1030, Contested Withdraw 1045 and Evade Interlock 1049 with separate scales.",
+          "runtime": "AbilityPassives publishes the three source rows, and CombatInsightEngagement reads the live 1049 total after the Evading-state gate.",
+          "test": "PR683 directly compares a held 217 shield at force 110 with the source-76 records +4/+4/+2 and after removing them. Evade drops 114 to 112 and the record values return on reload. The Contested Withdraw consumer and retail score provenance remain open. https://github.com/kylebrussell/mxo-hd/pull/683#issuecomment-7067146450"
+        }
+      }
+    },
+    "98": {
+      "family": "virologist-native-grant-lifecycle",
+      "checks": {
+        "stats": {
+          "source": "The Virologist GOB grants 1030 and 1045 +1 while loaded and registers upgrade 1077.",
+          "runtime": "AbilityPassives and AbilityGrantRegistration attach the two source-98 records and the class upgrade while the parent is loaded.",
+          "test": "PR684 stock receives both +1 removals and re-adds. The 1077 packet and Actions row both disappear and return. The Contested Withdraw consumer is tracked separately. https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290"
+        }
+      }
+    },
+    "113": {
+      "note": "PR683 holds the helper on Power with Combat Insight force 110 as it probes the shield, with and without source 76. https://github.com/kylebrussell/mxo-hd/pull/683#issuecomment-7067146450"
+    },
+    "217": {
+      "checks": {
+        "consumer": {
+          "source": "The GOB publishes the Evading state while enabled; SetEvadeCombatTimer starts parent reuse at termination.",
+          "runtime": "CombatInsightEngagement gates on the live 624 shield state before computing entry for a hostile player's ordinary melee. Changing the shield or a supporting modifier changes the next admission.",
+          "test": "PR683 uses stock Evade and the same ordinary helper melee request three times. An active shield refuses with the expected score, off removes 624 and starts 30 s reuse, and the next attack reaches Round 0. Remaining behavior evidence does not assume a retail score formula or absorb pool. https://github.com/kylebrussell/mxo-hd/pull/683#issuecomment-7067146450"
+        }
+      }
+    },
+    "276": {
+      "checks": {
+        "stats": {
+          "source": "The GOB supplies learned-rank ValueFunction 2 for Decompile Skill 707 while 276 is loaded.",
+          "runtime": "AbilityPassives publishes 707 and CraftingHandler reads the live total for the skill-versus-complexity contest.",
+          "test": "PR640 native confirms source 276/707 +18 and its unload/reload records. Native skill-18 attempts succeed on complexity 1 and fail on complexity 33, and the headless stock-frame replay validates the same outcomes and successful use after reload. https://github.com/kylebrussell/mxo-hd/pull/640#issuecomment-7067089813"
+        },
+        "behavior-tests": {
+          "source": "GOB 276 is an inventory Item Decompiler action with a 10 s reuse. The extracted item data supplies recipe eligibility and complexity, with the retained stock frames identifying the selected item and Item Decompiler bag slot.",
+          "runtime": "CraftingHandler requires the loaded action and the real Item Decompiler, resolves the item recipe, starts reuse on an eligible attempt, uses skill 707 and learns the recipe before consuming one item only on success.",
+          "test": "PR584 and StarterCoderInventoryLifecycleMode verify eligible consumable and weapon recipe learning, wrong-tool and early reuse guards, no Info debit and successful use after expiry. PR640 native verifies deterministic low/high complexity outcomes and local unload gating. StarterDecompileSkillMode also verifies the server-side unloaded refusal and successful reloaded use, which was not observed natively because the input stack was consumed. https://github.com/kylebrussell/mxo-hd/pull/584 https://github.com/kylebrussell/mxo-hd/pull/640#issuecomment-7067089813"
+        }
+      }
+    },
+    "969": {
+      "note": "PR640 explicit stock bag activation opens the Compiler, adds linked 968 and typing stance, and its close removes the record and returns the standing stance. https://github.com/kylebrussell/mxo-hd/pull/640#issuecomment-7067089813"
+    },
+    "970": {
+      "note": "PR640 explicit stock bag activation with flag 1 opens the Writer, adds linked 968 and typing stance, and its close removes the record and returns the standing stance. https://github.com/kylebrussell/mxo-hd/pull/640#issuecomment-7067089813"
+    }
+  }
+}
