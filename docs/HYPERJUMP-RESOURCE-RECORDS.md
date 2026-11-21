@@ -36,3 +36,17 @@ One fresh `hyperjump-resource-records` case passed in 51.7 seconds, held exit 0,
 Actual Debug source SHA256 `BB53C879302FC6FEA95EB548ADECC5595E4A791E92E4FE0CB3627962B4B90EAA`; Release driver `9BC7D73674B12BFD40CC7C9E7ADE389F5187C41C3101FB3B31A327EAC36F4568`; Release NativeQa `16C6BA013C563D12A15635C4FB48C1016569234707520D8AB08E877052297E2A`. Raw proof SHA256 `D221FE218FEAE0CA90DD1951BC159F88B7222EBF5CA1BB23EBBF316959938FB4`.
 
 Proof and independent cleanup are under `Temp/mxo-pr-triage-20261115`. Exact schemas `mxotest_run_1_6512090488` and `mxotest_bootstrap_b2b0354d1c` are absent, and all 6 + 8 recorded creation identities are gone with no PID reuse. Polling cannot establish complete short-lived process history. No real client, client lock or main-database reset was used. Claude still qualifies native Actions/hotbar, aiming, cancel, relog and rendering; retail fee and trajectory parity remain unproved.
+
+## PR689 full-peak timing comparison
+
+The failed 1250/18/1 attempt (SSEQ 156) agrees with retail on the 82 time stamp, view 2, 03 01 08 00, mask 80 80 bc, 10300 peak, the exact requested XYZ and the echoed 32-bit tick. Server jump flags are 4 in this frame and in proxy_024, proxy_026 and session 009. Niobe has flags 2 for its separate sample. Available IS is the actual character value, 500 in the fixture and 284 or 374 in these captures. In every response the field order is peak, flags, end time, destination XYZ, available IS, then the ordered clock echo.
+
+| Capture | Datagram stamp (s) | JumpEndTime (ms) | Remaining time (s) | Horizontal distance (m) | Distance/time (m/s) |
+|---|---:|---:|---:|---:|---:|
+| PR689 SSEQ 156 | 108.5782 | 117742 | 9.164 | 38.50 | 4.20 |
+| proxy_024 SSEQ 30 | 87106.4375 | 87116339 | 9.902 | 78.46 | 7.92 |
+| proxy_026 SSEQ 2033 | 89282.9219 | 89291808 | 8.886 | 70.53 | 7.94 |
+| niobe3dualduality SSEQ 84 | 135158.8125 | 135168600 | 9.788 | 78.21 | 7.99 |
+| session 009 SSEQ 1911 | 8326.6953 | 8334668 | 7.973 | 63.54 | 7.97 |
+
+Retail takeoff coordinates are approximated from the immediately following 03 09 08 self update, which carries the in-flight position and sim time. Those samples can be a fraction into the jump. All four have that subsequent update. The timing candidate changes only the full-peak travel timer to horizontal distance at 800 units/s and retains the established short, vertical and cancel paths. The target at 38.5 m now gets about 4.813 s, the 41.5 m target about 5.188 s. The follow-up retail view update is a separate comparison point if the native client still cancels.

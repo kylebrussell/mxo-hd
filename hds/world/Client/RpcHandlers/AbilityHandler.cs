@@ -885,11 +885,25 @@ namespace hds
             // ~9 s for a hyperjump). This used to be Unix seconds, decades ahead of the sim clock, so the
             // client stayed in the air for good and stopped sending movement.
             float peak = BitConverter.ToSingle(BitConverter.GetBytes(peakHeight), 0);
-            UInt32 endTime = JumpEndTime(TimeUtils.GetSimTimeSeconds(), peak);
+            double dx = xDest - x, dz = zDest - z;
+            UInt32 endTime = JumpTravelEndTime(TimeUtils.GetSimTimeSeconds(), peak, Math.Sqrt(dx * dx + dz * dz));
 
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime, clientTickSample);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
+        }
+
+        // The retained full-peak starts cross 63–79 metres in about 8–10 seconds. Use their
+        // observed horizontal rate for that packet family; short and vertical arcs use the existing timer.
+        internal static UInt32 JumpTravelEndTime(float simTimeSeconds, float peakHeight, double horizontalDistance)
+        {
+            const float CapturedFullPeak = 10300;
+            const double TravelUnitsPerSecond = 800;
+            const double MaximumStockTravel = 8000;
+            if (peakHeight != CapturedFullPeak || !double.IsFinite(horizontalDistance) ||
+                horizontalDistance < TravelUnitsPerSecond / 2 || horizontalDistance > MaximumStockTravel)
+                return JumpEndTime(simTimeSeconds, peakHeight);
+            return (UInt32)Math.Round((simTimeSeconds + horizontalDistance / TravelUnitsPerSecond) * 1000.0);
         }
 
         /// <summary>Gravity in world units (centimetres) per second squared.</summary>
