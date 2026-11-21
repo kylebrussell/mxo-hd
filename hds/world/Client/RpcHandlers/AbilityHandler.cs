@@ -372,10 +372,12 @@ namespace hds
             // The 43-byte stock request carries the view and spawn as one network handle.
             UInt16? targetSpawn = packet.Length == 41 && currentTargetViewId > 2 ? (UInt16?)BitConverter.ToUInt16(packet, 4) : null;
             CoderPets.OwnPetCast ownPet = null;
-            string petRefusal = pet ? CoderPets.Prepare(Store.currentClient, AbilityID, currentTargetViewId, targetSpawn, out ownPet) : null;
+            uint petRefusalReason = AbilityRefusals.LegacyAmbiguous;
+            string petRefusal = pet ? CoderPets.Prepare(Store.currentClient, AbilityID, currentTargetViewId, targetSpawn, out ownPet, out petRefusalReason) : null;
             if (petRefusal != null)
             {
-                Deny(AbilityID, petRefusal);
+                // The stock client supplies the range line from reason 34.
+                Deny(AbilityID, petRefusal, petRefusalReason, sendServerText: petRefusalReason != AbilityRefusals.TargetOutOfRange);
                 return;
             }
             bool derez = AbilityID == CoderPets.DerezAbility;
@@ -579,10 +581,11 @@ namespace hds
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
 
-        private static void Deny(UInt16 id, string message,uint reason=AbilityRefusals.LegacyAmbiguous,uint deficit=0)
+        private static void Deny(UInt16 id, string message, uint reason = AbilityRefusals.LegacyAmbiguous, uint deficit = 0,
+            bool sendServerText = true)
         {
             Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(id,reason,deficit)));
-            new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
+            if (sendServerText) new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);
         }

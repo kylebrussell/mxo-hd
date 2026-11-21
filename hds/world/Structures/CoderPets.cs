@@ -696,9 +696,11 @@ namespace hds
         }
 
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
-        internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn, out OwnPetCast cast)
+        internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn,
+            out OwnPetCast cast, out uint refusal)
         {
             cast = null;
+            refusal = AbilityRefusals.LegacyAmbiguous;
             if (Summons.ContainsKey(id))
             {
                 return CombatManager.GetHandler(caster).isCombatRunning ? "You cannot summon a simulacrum in combat." : null;
@@ -712,7 +714,11 @@ namespace hds
                 // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
                 // selection (or the caster selected) the caster's own simulacrum is meant.
                 if (!MatchesSelection(caster, pet, targetView, targetSpawn)) return "That is not your simulacrum.";
-                if (!InAbilityRange(pet, id)) return "Your simulacrum is out of range.";
+                if (!InAbilityRange(pet, id))
+                {
+                    refusal = AbilityRefusals.TargetOutOfRange;
+                    return "Your simulacrum is out of range.";
+                }
                 cast = new OwnPetCast(caster, pet);
             }
             return null;
