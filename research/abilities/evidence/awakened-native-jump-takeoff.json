@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "11": {
+      "note": "PR703 confirms the accepted stock flag-1 takeoff debits 20 IS exactly once, with four same-stand jumps from 99 to 19 IS at ranks 10 and 11. Outgoing takeoff reports do not add a debit or snap the character back. At 19 IS the stock Power Jump is suppressed locally, and ordinary Space stays free. The exact-layout bootstrap also verifies the server's code-17 shortfall response. Remaining gaps include peak selection, trajectory variants and the retail effective-cost formula. https://github.com/kylebrussell/mxo-hd/pull/703#issuecomment-7070446365"
+    }
+  }
+}

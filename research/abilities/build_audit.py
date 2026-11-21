@@ -407,8 +407,8 @@ def server(i):
         parts.append(r['stealth_shield'])
     if r.get('special'):
         parts.append(r['special'])
-    if 'HyperJump' in abilities[i]['name']:
-        parts.append('jump trajectory + control gate; rank/limits incomplete')
+    if i == 11:
+        parts.append('flag-1 Hyper-Jump takes 20 IS on accepted start; ordinary jumps and cancel preserve IS; stock rank 10/11 range verified; peak selection and effective-cost modifiers still open')
     if not r.get('stealth') and ('Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']):
         parts.append('stealth detection/AI incomplete')
     if i in PETS:
