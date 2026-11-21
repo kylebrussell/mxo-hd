@@ -18,6 +18,11 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
     // The frame identifies the input by bag slot and does not contain its GOID. Both fixture pill recipes are stock-known.
     private const string UseSlot5 = "81 31 14 01 00 00 05 03 01";
     private const string UseSlot6 = "81 31 14 01 00 00 06 03 01";
+    // PR479 native Compiler-window close.
+    private const string CloseCompiler = "80b9c903000000000000000000000000000000000000000000000000000000000000006208010000000000";
+    // PR640 native hotbar requests. Both carry flag zero even when pressed from idle.
+    private const string HotbarCompiler = "80b9c90300000000000000000000000000000000000000000000000064f11a00b8d5a91f08010000000000";
+    private const string HotbarWriter = "80b9ca0300000000000000000000000000000000000000000000000064f11a00b8d6a91f08020000000000";
 
     public override string Name => "ability-parity-starter-decompile-skill";
 
@@ -44,10 +49,10 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
     }, extraQaMetadata: new() { ["ScopedStockRows"] = "276,969,970", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
     {
         $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s. Page 2 slot 1 is the ability-only control. The three actual item shortcuts are already installed in slots 2–4.",
-        "Press page 2 slot 2 to arm the Item Decompiler, then click Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. If the target cursor appears but the bag still does not accept the pill click, record those separately. There is no [VITALS] or [PVP] change.",
+        "Use the Item Decompiler from its inventory context menu, then select Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. Slot 2 is a shortcut control. In PR640 the client did not arm from it. There is no [VITALS] or [PVP] change.",
         "After the 10 s reuse, use the same tool on Max Health Boost Pill 3.0 in slot 6. Expect [DECOMPILE] item=39413 skill=18 complexity=33 requiredAbove=182 success=False. The pill stays in the bag and no recipe packet arrives. The seeded rank makes both results independent of the regular 0–100 roll.",
-        "Enter ?qaunload 276. Check [MODIFIER] char=110 source=276 stat=707 remove value=+18 duration=0s and no decompile result on the remaining slot-5 pill. Enter ?qaload 276 and see its +18 add. After the reuse, use the item shortcut and slot-5 pill again. It succeeds at the same skill and uses the last pill.",
-        "Press page 2 slot 3 for Code Compiler and slot 4 for Code Analyser. Close each window before opening the other. This step never needs a bag click. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant."
+        "Enter ?qaunload 276. Check [MODIFIER] char=110 source=276 stat=707 remove value=+18 duration=0s and no decompile result on the remaining slot-5 pill. Enter ?qaload 276 and see its +18 add. After the reuse, use the inventory activation and slot-5 pill again. It succeeds at the same skill and uses the last pill.",
+        "Use the inventory context menu's Activate Item action for Code Compiler (bag slot 1) and Code Analyser (bag slot 2). The client opens the selected window locally and sends the matching explicit activation. Close each window before opening the other. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant. Page 2 slots 3–4 are ordinary-use controls and did not open the windows in PR640."
     });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -112,8 +117,12 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
         Check.Equal(0L, await CountAsync(HealthPill), "With the skill restored, the remaining pill is spent");
         Check.Equal(1L, await LearnedAsync(HealthPill), "Repeating a known recipe is idempotent");
 
-        await ToolAsync(CraftingSession.Ability, active => Scenarios.CompilerTool(actor, CompilerSlot, active));
-        await ToolAsync(CraftingSession.WriterAbility, active => Scenarios.WriterTool(actor, AnalyserSlot, active));
+        await CheckHotbarIdleAsync(CraftingSession.Ability, HotbarCompiler, "?compilesession", "Compile session inactive.");
+        await CheckHotbarIdleAsync(CraftingSession.WriterAbility, HotbarWriter, "?writersession", "Writer session inactive.");
+
+        await ToolAsync(CraftingSession.Ability, StarterCoderWriterInitializerMode.StockCompiler, () => actor.SendRpc(CloseCompiler));
+        await ToolAsync(CraftingSession.WriterAbility, StarterCoderWriterInitializerMode.StockWriter,
+            () => Scenarios.WriterTool(actor, AnalyserSlot, activate: false));
         Check.Equal(info, await db.LongAsync("SELECT cash FROM characters WHERE charId=110"), "No crafting-tool step spends Info");
         Check.Equal(0, actor.World.Problems.Count, "Decompile proof framing");
         Console.WriteLine("DECOMPILE SKILL PASS: +18 applied to both pill contests; failed and unloaded input preserved; Compiler and Writer reopen normally.");
@@ -125,15 +134,31 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
             frame => BytePattern.Parse(hex).IsMatch(frame.Bytes), hex);
         Task<RpcRecord> ModifierAsync(int start, bool removed) => StockAbilityProfile.ObserveAsync(actor, start,
             frame => StockAbilityProfile.Bonus(frame, Decompile, Skill, Rank, 0, removed), $"Decompile Skill {(removed ? "remove" : "add")}");
-        async Task ToolAsync(ushort ability, Action<bool> send)
+        async Task CheckHotbarIdleAsync(ushort ability, string request, string command, string expectedStatus)
+        {
+            int start = actor.World.RpcSnapshot().Count;
+            actor.SendRpc(request);
+            actor.SendChat(command);
+            await actor.WaitForTextAsync(expectedStatus);
+            byte[] active = AbilityBuffs.BuildExclusive(ability, true);
+            Check.That(!actor.World.RpcSnapshot().Skip(start).Any(frame => frame.Bytes.AsSpan().SequenceEqual(active)),
+                $"The captured flag-zero hotbar request for {ability} leaves its session inactive");
+        }
+
+        async Task ToolAsync(ushort ability, string open, Action close)
         {
             foreach (bool active in new[] { true, false })
             {
                 int start = actor.World.RpcSnapshot().Count;
-                send(active);
+                if (active) actor.SendRpc(open);
+                else close();
                 byte[] expected = AbilityBuffs.BuildExclusive(ability, active);
                 await StockAbilityProfile.ObserveAsync(actor, start, frame => frame.Bytes.AsSpan().SequenceEqual(expected),
                     $"Crafting tool {ability} active={active}");
+                await StockAbilityProfile.ObserveAsync(actor, start,
+                    frame => ManageBonusRecord.TryDecode(frame.Bytes, out var bonus) && bonus!.SourceId == ability &&
+                        bonus.Type == AbilityBuffs.KindLinked && bonus.TargetId == CraftingSession.Attribute &&
+                        bonus.AddRemoveType == (active ? 0 : 1), $"Crafting tool {ability} linked state active={active}");
             }
         }
     }
