@@ -1,0 +1,76 @@
+{
+  "abilities": {
+    "11": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 11 scales Super Jump 567 by 3 per learned rank. The stock forward jump uses the resulting live total to choose its destination.",
+          "runtime": "AbilityPassives sends stat 567 on training and loadout changes. The server admits the stock destination and keeps it when the client reports its original takeoff point.",
+          "test": "PR689 uses the same verified takeoff stand and Ctrl+Space at ranks 10 and 11. Source 11/567 changes +30 to +33. The client's destinations move 38.5 to 41.5 metres and both land, with ordinary movement from each destination. This covers the range consumer. Full peak and trajectory geometry remain unverified. https://github.com/kylebrussell/mxo-hd/pull/689#issuecomment-7069839925"
+        }
+      }
+    },
+    "19": {
+      "note": "PR700 observes that the stock slot cannot fire in live PvP, then normal Drain after Withdraw dismisses only the owned proxy, restores 50 IS (100 to 150) and starts 58 s reuse. The headless stock-layout request verifies reason 21, no debit, no reuse and no dismissal while fighting. DecoyDuration and the shipped 8000 hit on an otherwise surviving simulacrum remain open. https://github.com/kylebrussell/mxo-hd/pull/700#issuecomment-7070089764"
+    },
+    "25": {
+      "note": "PR700 observes the stock local noncombat gate and a legal post-Withdraw cast, with 50 IS, 8 s reuse and +9/+9 on the caster's own Proxy for 300 s. The separate headless replay verifies the 4 s cast and own/foreign/range rules. The stored Force Combat 519 +40 remains unconsumed. https://github.com/kylebrussell/mxo-hd/pull/700#issuecomment-7070089764"
+    },
+    "26": {
+      "checks": {
+        "targeting": {
+          "source": "The stored direct selector, CastValidTarget 12, noncombat-only flag and 16 m range permit a live enemy simulacrum.",
+          "runtime": "CoderPets checks the current view and spawn, live pet identity, hostile owner and range at admission and repeats those checks on landing. The normal ability handler admits it outside combat.",
+          "test": "PR700 verifies stock local combat blocking, reasons 36/36/34 on a nonpet, friendly pet and out-of-range hostile pet with no debit or reuse, then hits only the selected nearby opponent's Nuker for 13000. The stock-layout replay verifies matching refusal and target frames, 40 IS, 2-second cast, 13.5-second reuse and removal of the selected pet alone. The exact retail opponent rules and lethal animation remain open. https://github.com/kylebrussell/mxo-hd/pull/700#issuecomment-7070089764"
+        }
+      }
+    },
+    "46": {
+      "note": "PR699 observes the full 35 IS debit and 13 s reuse on the selected friendly client, and reason 24 for hostile and out-of-range recipients without side effects. https://github.com/kylebrussell/mxo-hd/pull/699#issuecomment-7069907430"
+    },
+    "49": {
+      "checks": {
+        "stats": {
+          "source": "GOB 49 stores +25 Combat Evasion 520 for 600 seconds.",
+          "runtime": "AbilityBuffs adds and removes the live stat. The implemented CombatInsightEngagement entry check reads it while Evading.",
+          "test": "PR698 observes the same helper's Force 110 / Evade 113 before Blur, 110/138 with +25, and 110/113 after dismissal. The source-83 baseline was exercised on the same actor. This samples the implemented consumer. The retail contest remains unresolved. https://github.com/kylebrussell/mxo-hd/pull/698#issuecomment-7069757538"
+        },
+        "behavior-tests": {
+          "source": "GOB 49 requires Evading, stores 20 IS, a 2-second cast, 8-second reuse and +25 Combat Evasion for 600 seconds. The init and term hooks toggle the blur bit.",
+          "runtime": "The normal cast checks the active shield at admission. AbilityBuffs publishes the timed modifier and projects the blur bit to the owner and observers, removing both on dismissal or expiry.",
+          "test": "PR698 verifies the stock local state refusal, legal IS and reuse, the +25 record, and dismissal during Evade. The stock-layout replay verifies server refusal and cast length. ability-tactical-blur covers own/observer bit presentation and cleanup, and GaussianBlur49ClearsItsVisibleBitAndEvasionModifierAtExpiry covers the timed expiry. https://github.com/kylebrussell/mxo-hd/pull/698#issuecomment-7069757538"
+        }
+      }
+    },
+    "68": {
+      "checks": {
+        "targeting": {
+          "source": "The stored direct selector and CastValidTarget 2 require a friendly recipient within 10 m.",
+          "runtime": "AbilitySupport resolves the current player view and spawn at admission and landing and admits only living friendly recipients in range.",
+          "test": "PR699 sends the stock requests to a nearby PvP opponent and a distant friend. Both return reason 24 with no cost or reuse. The selected nearby friend receives the only records. The stock-layout replay separately exercises a stale spawn and rejects it before a cast. https://github.com/kylebrussell/mxo-hd/pull/699#issuecomment-7069907430"
+        },
+        "stats": {
+          "source": "GOB 68 stores viral resistance +40 and three physical/ballistic/thrown resistances +10. The 75-point apparent ISDrain target is the term-heal callback carrier.",
+          "runtime": "AbilityBuffs applies the four values, TypedAbilityResistance reads the matching live stat for each incoming damage type, and the Personal Firewall term hook heals the living recipient.",
+          "test": "PR699 verifies all four add/remove records on QAFriend, no self copy, and heals 100 to 175 on dismiss. PersonalFirewallMitigatesEachSourcedDamageTypeUntilRemoved sends all four damage types through the active consumer and verifies each returns to baseline after removal. https://github.com/kylebrussell/mxo-hd/pull/699#issuecomment-7069907430"
+        },
+        "behavior-tests": {
+          "source": "GOB 68 stores 40 IS, a 2-second cast, 13-second reuse, 300-second typed resistance values and PersonalFirewallInit/Term with a 75-point GenericConstHealthRegenEvent.",
+          "runtime": "The ordinary friendly cast applies the armor bit and records and restores health on termination. Dead-recipient cleanup removes the effect and leaves the recipient dead.",
+          "test": "PR693 and PR699 cover an ordinary selected friend, cost, reuse, add/remove and the 75 HP term heal. StarterGuardianSupportMode checks the cast time and invalid recipient side effects. Firewall68SetsArmorAndResistsFourDamageTypesThenClearsAndTermHealsOnlyLivingPlayers checks the armor bit and the death-cleanup branch. https://github.com/kylebrussell/mxo-hd/pull/699#issuecomment-7069907430 https://github.com/kylebrussell/mxo-hd/pull/693#issuecomment-7068778340"
+        }
+      }
+    },
+    "173": {
+      "checks": {
+        "targeting": {
+          "source": "The stored direct selector and CastValidTarget 2 require a friendly recipient within 10 m.",
+          "runtime": "AbilitySupport resolves the current player view and spawn at admission and landing and admits only living friendly recipients in range.",
+          "test": "PR699 sends the stock requests to a nearby PvP opponent and a distant friend. Both return reason 24 with no cost or reuse. The selected nearby friend receives the only records. The stock-layout replay separately exercises a stale spawn and rejects it before a cast. https://github.com/kylebrussell/mxo-hd/pull/699#issuecomment-7069907430"
+        }
+      }
+    },
+    "217": {
+      "note": "PR698 checks the live Evading state, own toggle, 40 IS and entry while the shield is on and off. Retail proxy_026's 14:23:49 activation starts own-view EvadeShieldHealth at 255. SSEQ 485, 512 and 542/543 reduce the same field to 230, 205 and 180 during resisted entry traffic. The retained captures establish a changing shield-health byte. The underlying shield maximum, conversion to that byte and full resist/damage rules remain open. https://github.com/kylebrussell/mxo-hd/pull/698#issuecomment-7069757538"
+    }
+  }
+}
