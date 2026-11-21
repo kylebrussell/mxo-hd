@@ -701,6 +701,8 @@ namespace hds
             }
         }
 
+        private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode;
+
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
         internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn,
             out OwnPetCast cast, out uint refusal)
@@ -713,8 +715,11 @@ namespace hds
             }
             if (TargetsOwnPet(id))
             {
-                if (id == PowerBoost && CombatManager.GetHandler(caster).isCombatRunning)
-                    return "You cannot use Power Boost in combat.";
+                if (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning)
+                {
+                    refusal = AbilityRefusals.MustBeOutsideCombat;
+                    return "You may only use this ability outside combat.";
+                }
                 Pet pet = Of(caster);
                 if (pet == null || pet.Mob.getIsDead()) return "You need an active simulacrum.";
                 // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
@@ -795,7 +800,7 @@ namespace hds
             lock (pet)
             {
                 if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
-                    (id == PowerBoost && CombatManager.GetHandler(caster).isCombatRunning))
+                    (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning))
                 {
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
                     return;
