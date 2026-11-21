@@ -1,0 +1,4 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+2;downtown;QA Retail Jump Midpoint;3;30000;30000;B3010058;-24000;1895;28000;0;false;false
+2;downtown;QA Retail Jump Landing;3;30000;30000;B3010058;-23651;1895;23406;0;false;false
+2;downtown;QA Aim Terrace;3;30000;30000;B3010058;-11400;25095;-23885;0;false;false
