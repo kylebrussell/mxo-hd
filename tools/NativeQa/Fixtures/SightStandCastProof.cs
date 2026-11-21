@@ -45,8 +45,9 @@ internal static class SightStandCastProof
             if (AbilityCooldowns.TryGet(ability, out var cooldown) && cooldown.Group != 0 && cooldown.GroupSeconds > 0)
             {
                 byte[] groupOff = AbilityCooldowns.BuildTimer(cooldown.Group, AbilityCooldowns.GroupTimer, cooldown.GroupSeconds, false);
-                await StockAbilityProfile.ObserveAsync(actor, cursor,
-                    frame => frame.Bytes.AsSpan().SequenceEqual(groupOff), $"Shared reuse expires for {ability}");
+                await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(cursor)
+                    .Any(frame => frame.Bytes.AsSpan().SequenceEqual(groupOff)),
+                    $"Shared reuse expires for {ability}", TimeSpan.FromSeconds(cooldown.GroupSeconds + 4));
             }
         }
         Check.Equal(0, actor.World.Problems.Count, "Sight stand protocol framing");

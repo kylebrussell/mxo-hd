@@ -63,7 +63,9 @@ namespace hds
                 }
             }
 
-            if ((starterViralDamage || AbilityID == 69) && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+            bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
+            if ((starterViralDamage || starterMovementDebuff || AbilityID == 69) &&
+                !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
                     new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetOutOfRange)));
