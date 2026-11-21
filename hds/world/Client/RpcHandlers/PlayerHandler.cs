@@ -397,6 +397,9 @@ namespace hds
                     {
                         if(remainingMembership.Contains(ability)) continue;
                         var ownedPacket=ServerPackets.BuildAbilityUnload(ability);client.messageQueue.addRpcMessage(ownedPacket);
+                        // These starter toggles keep spending IS until their exclusive state ends.
+                        if (ability == 16 || ability == AbilityBuffs.HyperSprint)
+                            AbilityBuffs.Remove(client, ability);
                         if(ability==AbilityShadowPresentation.Child)emittedShadowBase=ownedPacket;
                         foreach(ushort grant in AbilityProgression.GrantsOf(ability))
                             if(!remainingMembership.Contains(grant) && !AbilityGrantRegistration.Handles(ability,grant)) client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
