@@ -1,0 +1,39 @@
+{
+  "families": {
+    "awakened-punishing-blows-stock": {
+      "representative": 16,
+      "result": "pass",
+      "head": "5550b43a2297b28341845ac83ca83ffe2f7b17da",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034",
+      "scope": "Stock activation produces the +15 Damage Against Vulnerability record and 1 IS per second drain. Unloading clears both without disturbing Sprint, then reload stays off. The earlier PR257 interlock sample verifies the current multiplier and natural Off Balance expiry. Retail vulnerability counters remain unverified."
+    }
+  },
+  "abilities": {
+    "16": {
+      "family": "awakened-punishing-blows-stock"
+    },
+    "60": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The GOB stores a selected hostile viral cast with a four-metre splash, seven-point base damage, four-second cast and two-second own and group reuse.",
+          "runtime": "The ordinary hostile-cast path requires the selected enemy and applies typed damage and the same recipient checks to the direct and secondary PvE/PvP hits.",
+          "test": "StarterHackerViralDamageAndAdmissionMode and StarterHackerViralSightMode exercise cost, reuse, direct hit, NPC splash and selection/sight boundaries. StarterViralSplashResistanceMode and native PR628 verify the primary hit, resistant player splash before and after natural expiry, ally and range exclusions, and single-target Barrage controls. Exact source-parity scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614"
+        }
+      }
+    },
+    "217": {
+      "checks": {
+        "controls": {
+          "source": "GOB 217 publishes Evading state 624 while the exclusive is active. SetEvadeCombatTimer starts reuse on termination.",
+          "runtime": "EvasionShield publishes and clears the state and own shield value. AbilityBuffs runs normal removal on unload, and reloading alone cannot reapply the shield.",
+          "test": "StarterAwakenedToggleUnloadMode checks the on/off records and 30 s reuse. Stock PR627 confirms state add, removal on unload and quiet reload. The earlier stock toggle run in PR524 confirms the visible shield and reuse on voluntary toggle-off. https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034 https://github.com/kylebrussell/mxo-hd/pull/524"
+        }
+      }
+    }
+  },
+  "notes": {
+    "57": "Stock PR628 confirms 9 on the selected hostile, with no secondary hit. https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614",
+    "59": "Stock PR628 confirms 19 on the selected hostile, with no secondary hit. https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614",
+    "184": "Stock PR627 confirms a 25 IS drain every five seconds, matching removal of all three +15 movement records and the drain record on unload, and quiet reload. The observer speed reset passed the stock-form replay. https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034"
+  }
+}
