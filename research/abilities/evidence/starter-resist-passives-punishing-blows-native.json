@@ -1,0 +1,53 @@
+{
+  "families": {
+    "stock-resist-damage-radius": {
+      "representative": 74,
+      "result": "pass",
+      "head": "6dc46f01be5d2a0399a1753cafa0c4937faab6c8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/647#issuecomment-7061801219",
+      "scope": "At rank 19, source 74 publishes +9 radius (127) and +1 Sweep Bonus (1052) on load, removes both on unload and restores both on reload. The 6.25 m teammate receives the 9 HP Group Repairs heal with 74 alone or 1089 alone. The helper is excluded with both modifiers off. The 1052 consumer remains open."
+    }
+  },
+  "abilities": {
+    "16": {
+      "checks": {
+        "stats": {
+          "source": "Shipped 16 applies +15 Damage Against Vulnerability while enabled.",
+          "runtime": "AbilityBuffs presents stat 212, and PunishingBlows consumes it on each hit against the currently vulnerable recipient.",
+          "test": "Real16ToggleDrainShortfallAndRemovalControlTheExistingStatConsumer covers the amount, drain and removal. PR646 shows the +15 record, 15 unchanged with root alone, 15 to 17 and 24 to 27 with Off Balance, and return to baseline after expiry. https://github.com/kylebrussell/mxo-hd/pull/646#issuecomment-7061753458"
+        },
+        "behavior-tests": {
+          "source": "Shipped 16 declares stat 212 and the ISDrainWithAbilityDeactivation callback.",
+          "runtime": "AbilityBuffs charges one IS per second and removes a depleted or toggled-off buff. PunishingBlows resolves the modeled vulnerability condition per hit. Retail exploited-counter lifetime remains under source-parity.",
+          "test": "PunishingBlowsTests checks qualifying states, expiry, integer damage and drain shortfall. PR646 verifies the live state transitions, damage and end of drain after toggling off. https://github.com/kylebrussell/mxo-hd/pull/646#issuecomment-7061753458"
+        }
+      }
+    },
+    "38": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped 38 specifies a three-second Stun and AddControlImmunityTimer.",
+          "runtime": "Area Disruption enumerates hostile recipients and applies the usual viral contest and timed control records. AbilityControlDurations applies the caster's linked duration bonus; the independent immunity still lasts eight seconds.",
+          "test": "AreaDisruptionTests exercises the caster boundary, hostility, deflection and no damage. PR645 confirms linked 3.15 s and base 3 s Stun with natural removals and the same eight-second immunity in both cases. The remaining source-parity item covers the area completion and relationship policy. https://github.com/kylebrussell/mxo-hd/pull/645#issuecomment-7061695350"
+        }
+      }
+    },
+    "73": {
+      "checks": {
+        "stats": {
+          "source": "Shipped 73 applies loaded rank-scaled stat 995 at 0.1 and stat 1147 at 0.28.",
+          "runtime": "The passive publishes +5 and +14 at rank 50. AbilityControlDurations consumes 995 on outgoing Stun; AbilityStats feeds 1147 into the implemented viral contest.",
+          "test": "ResistContagion73ChangesViralAccuracyAndOutgoingStunDuration isolates both consumers. PR645 verifies both records, 3.15 s versus 3 s Stun and fixed-target viral inputs 88/0 to 80/0 to 88/0. https://github.com/kylebrussell/mxo-hd/pull/645#issuecomment-7061695350"
+        },
+        "behavior-tests": {
+          "source": "The two rank-scaled links in shipped 73 are live only while enabled.",
+          "runtime": "AbilityPassives updates both totals on load and unload, and the outgoing control and viral consumers use those totals.",
+          "test": "The isolated test and PR645 verify application, removal and restoration for both linked records and confirm the two independent live consequences. Retail 1147 contest coefficient remains under source-parity. https://github.com/kylebrussell/mxo-hd/pull/645#issuecomment-7061695350"
+        }
+      }
+    },
+    "74": {
+      "family": "stock-resist-damage-radius"
+    }
+  }
+}
