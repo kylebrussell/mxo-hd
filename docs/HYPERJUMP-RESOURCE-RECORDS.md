@@ -1,8 +1,10 @@
 # Hyper-Jump resource records
 
-This package preserves current server resource state when emitting jump movement. It does not add a jump fee or claim retail fee parity. The active movement handlers do not debit Inner Strength; ordinary ability activation can separately debit its existing cost. The previous response overwrote available IS with literal 284. This overwrite is removed, while the existing movement attributes continue to serialize the current value.
+An accepted flag-1 Hyper-Jump spends the 20 IS stored by its normal or beta ability at takeoff. The single 80 c3 echo and its jump view carry the resulting value. The stock takeoff report and ordinary cancellation both preserve that value. Ordinary flag-0 jumps spend no IS. A player needs the loaded ability and enough IS, and must be out of combat.
 
-Native start `80 c2` is exactly 41 bytes: XYZ double bits, sector/prefab/polygon u16, peak float bits, flag u8 and client tick sample u32. Cancel `80 c4` is exactly 32 bytes: XYZ double bits and three navigation u16 fields. It has no tick sample. The typed codecs retain all raw floating bits and full widths; strict record/body lengths refuse malformed requests without introducing new geometry admission rules.
+The retained `proxy_026_open_doors_and_some_hyper_jump_killed_by_Agent_etc` capture shows 304 IS before client sequence 567 and 284 in the matching start response, server sequence 473. Server sequence 1842 sends 284 in the response to a short flag-1 jump with peak 245.828125. In the Stamos up-and-down captures, the start and its cancel both report 227 of 247. See the [retail movement captures](../research/packet-dumps/community-intake/20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected/logs).
+
+Native start `80 c2` is exactly 41 bytes: XYZ double bits, sector/prefab/polygon u16, peak float bits, flag u8 and client tick sample u32. Cancel `80 c4` is exactly 32 bytes: XYZ double bits and three navigation u16 fields. It has no tick sample. The codec retains the raw floating-point bits.
 
 ## Primary evidence
 
@@ -14,20 +16,20 @@ Positive capture: `research/packet-dumps/community-intake/20260607T032533Z-hdneo
 
 ## Limits intentionally unresolved
 
-Native 62662e00 uses complete signed Super Jump total 567 to calculate configured default distance clamp(900+100*s,900,8000) and height clamp(300+400*s,300,20000), with float stores. Actual caller 6222093c uses complete getter 625c4e90, requires positive total, chooses normal 11 or beta 566 and checks native cost. Complete native base totals, configuration overrides, destination/peak geometry solver 6221f580 and server fee timing are not closed. This package does not implement those caps, change trajectory/end-time physics, beta selection or admission policy.
+Native 62662e00 uses complete signed Super Jump total 567 to calculate configured default distance clamp(900+100*s,900,8000) and height clamp(300+400*s,300,20000), with float stores. Actual caller 6222093c uses complete getter 625c4e90, requires positive total, chooses normal 11 or beta 566 and checks native cost. Complete native base totals, configuration overrides, destination/peak geometry solver 6221f580 remain open. The current implementation charges the stored base cost. The native cost modifications remain unverified.
 
 ## Claude-only native check
 
 Use discovered mode `hyperjump-resource-records`, consistent level 10/EXP with owned loaded Awakened 2 at 10, HyperSprint ability 184 at 1 and Hyper-Jump 11 at 10. At the outdoor Mara fixture, drag Hyper-Jump from Actions to a hotbar slot, activate it, aim and click a nearby visible outdoor landing point. Shipped string `0400057c` also documents default CTRL+Space for a forward jump; a user remapping may differ. Cancel an aimed jump normally and repeat after relog. Retain actual start, cancel, response and resource history. Verify each start has the matching single clock echo and cancel adds no fabricated echo. No claim of native rendering, fee or trajectory parity comes from headless records alone.
 
-## Validation boundary
+## Validation before the takeoff charge
 
 Actual handler tests first failed on the preexisting `00 c3` header while resource and movement checks passed. The native literal is now `80 c3`; the RED log is retained in Temp/mxo-hyperjump-test-detail.log. Tests pin captured start/cancel records, raw NaN/sign/width bits without new validity policy, exact header/body lengths, wrapped/high clock samples, a single start echo and no cancel echo. Actual resource cases 0, 1, 284 and 65535 verify both unchanged state and the independent literal combined self-view mask's resource field. Existing cancel destination and timing behavior remains unchanged.
 
 The registered fresh case uses ordinary protocol start/cancel requests, independent literal encoding and literal self-view decoding. It verifies current IS 100 is serialized, no new debit or literal overwrite, one full-width clock echo, cancel-only no echo, and repeats after a cold owned-server restart. It does not prove native input, rendering, configured limits or retail expenditure. Full local suite: 4,782 passed; final focused suite: 21 passed. Fresh passed at runtime/fixture pin `07e1493bf051296d24c06a061674d4e6643aef0d` in 25.9 seconds, exit 0, parallel 1. Both original and cold-relog sessions had 37 RPCs, 6 view lists and zero protocol problems. Actual Release DLL SHA256 `A51C400F214BFED436D07F0E2DC815396FD5C8EF743CF7D73078BEC5C88312A7`. Proof `mxo-hyperjump-records-mxotest_run_1_3942ceb9e9.json`, SHA256 `1A54212EC1F8779AA27DFB0CA95D854FC7D187FBD52008B78211240B6766DF88`. Samples FFFFFFF0 and 80000001 were echoed once, cancel/cancel-alone emitted no echo, and both combined resource fields were 100. Owned servers/database were disposed before publication.
 
 Actual master `e239aa4ce7ca556caf1ccb508a76ff166d30a736` was then merged to resolve only scenario registration conflict. Both jump handler methods and all owned codec/packet/mode/driver blobs remain identical to the fresh pin. Combined 30 focused tests and both builds/read-only plans/provenance pass. The full 4,782 result is attributed to the pre-upstream fresh source; no fresh repeat was needed for unrelated refusal-feedback imports. Native validation remains pending Claude.
-## Current master refresh (2026-11-15)
+## Pre-charge master refresh (2026-11-15)
 
 Frozen producer `69e55a8cab97416297fe791ad3b302c6ccf0685e` is refreshed onto master `93b5033d`. The scenario-list conflict was resolved by retaining both current Mobius registrations and the jump scenario. Ten focused tests and all 5,842 tests passed; actual Debug/Release builds, mode/default plans, provenance and exact-one discovery passed.
 
