@@ -42,15 +42,6 @@ namespace hds
                 }
             }
 
-            if (starterViralDamage && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
-            {
-                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                    new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetOutOfRange)));
-                Store.currentClient.FlushQueue();
-                Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: out-of-range starter viral target {currentTargetViewId}");
-                return;
-            }
-
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
@@ -70,6 +61,15 @@ namespace hds
                     Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: invalid selected enemy {currentTargetViewId}");
                     return;
                 }
+            }
+
+            if ((starterViralDamage || AbilityID == 69) && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+            {
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                    new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetOutOfRange)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: out-of-range selected target {currentTargetViewId}");
+                return;
             }
 
             // load the ability name from a list to see if we match the right ability
