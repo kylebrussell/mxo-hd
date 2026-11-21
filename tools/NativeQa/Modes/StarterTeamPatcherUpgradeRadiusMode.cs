@@ -14,8 +14,8 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
     private static readonly (ushort Stat, int Value)[] ResistStats = { (1052, 1), (127, 9) };
     private static readonly (ushort Stat, int Value)[] UpgradeStats = { (127, 7), (174, 3), (520, 10), (564, 7) };
     // Native PR446 9e937c5aa11c:4351 and stock fa273b663f5e:7976, no explicit targets.
-    private const string UpgradeStock = "80b94104000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
-    private const string GroupStock = "80b93800000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    internal const string UpgradeStock = "80b94104000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
+    internal const string GroupStock = "80b93800000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
 
     public override string Name => "ability-parity-starter-team-patcher-upgrade-radius";
     public override NativeQaModePlan Plan { get; } = new(Abilities, X, Z, Array.Empty<string>(),
@@ -121,7 +121,7 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
         }
     }
 
-    private static async Task InviteNativeAsync(HeadlessPlayer leader, ServerInstance server)
+    internal static async Task InviteNativeAsync(HeadlessPlayer leader, ServerInstance server)
     {
         while (!server.HasExited)
         {
