@@ -262,7 +262,7 @@ try
                     var pending = await actor.WaitForRpcAsync("81 88");
                     byte[] reply = fixtureMode is NativeQa.Modes.AbilityHealthParityMode
                         ? NativeQa.Modes.AbilityHealthParityMode.RejuvenateReply(pending.Bytes)
-                        : fixtureMode is NativeQa.Modes.StarterPersonalFirewallAndRestoreMode
+                        : fixtureMode is NativeQa.Modes.StarterPersonalFirewallAndRestoreMode or NativeQa.Modes.StarterRestoreRsiPvpMode
                             ? Scenarios.NativeRejuvenateConsent() : new byte[54];
                     reply[0] = 0x81; reply[1] = 0x88;
                     Array.Copy(pending.Bytes, 2, reply, 2, 4);

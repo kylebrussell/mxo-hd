@@ -119,15 +119,22 @@ namespace hds
                 Offer offer = state.Pending;
                 if (offer == null || !offer.Approval.TryComplete(payload, TimeUtils.GetSimTimeSeconds(), out bool accepted)) return;
                 state.Pending = null;
+                bool targetFlagged;
                 lock (target.playerData.lifeSync)
                 {
                     if (!accepted || !CanTarget(offer.Caster, target, offer.Ability) ||
                         offer.Caster.playerData.lifeGeneration != offer.CasterLife || offer.Caster.playerData.worldGeneration != offer.CasterWorld || target.playerData.worldGeneration != offer.TargetWorld ||
                         target.playerData.lifeGeneration != offer.TargetLife) return;
+                    targetFlagged = target.playerData.pvpFlag;
                     RestoreVitals(target, offer.Ability);
                 }
                 // Combat teardown takes fight locks, so it must run outside the lifecycle lock used by death.
                 Present(offer.Caster, target, offer.Ability);
+                // health.py applies CodePulseFlipper1208 to the caster after a flagged recipient accepts.
+                // Its PVPFlagOnInit sets the flag without a separate pulse message.
+                if (targetFlagged && InWorld(offer.Caster) && offer.Caster.playerData.worldGeneration == offer.CasterWorld &&
+                    offer.Caster.playerData.lifeGeneration == offer.CasterLife)
+                    PvpFlag.Set(offer.Caster, true);
             }
         }
 

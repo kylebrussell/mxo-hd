@@ -4,7 +4,7 @@ Restore RSI325, Revitalize RSI326, Revive RSI375, Rejuvenate RSI416 and Renew RS
 
 ## Source behavior
 
-`research/client-scripts/ability/hacker/health.py` calls `PlayerCharacter.resuscitate()` in all four direct-object callbacks. Restore325 sets health and Inner Strength to1. The other three restore both to their maximum. All play `FX_CHARACTER_RESTORE_RSI`, stand with `Action_Resurrect`, and send the caster/target resurrection lines. Their conditional ability1208 applies only when the target is already PvP; this implementation preserves the existing flag and never flags an unflagged corpse. Death Effect is retained.
+`research/client-scripts/ability/hacker/health.py` calls `PlayerCharacter.resuscitate()` in all four direct-object callbacks. Restore325 sets health and Inner Strength to1. The other three restore both to their maximum. All play `FX_CHARACTER_RESTORE_RSI`, stand with `Action_Resurrect`, and send the caster/target resurrection lines. When the revived target is already PvP, the script applies ability1208 to the caster via msg.subjectLocator. The GOB gives that effect PVPFlagOnInit, which turns the caster flag on after accepted consent. The recipient keeps their original flag and QA in-place revive does not run the cast callback. Death Effect is retained.
 
 The shipped catalog defines dead-player target kind9, approval60seconds, ranges4m for325 and10m for the others, casts8/4/6/2seconds and reuse120/45/30/15seconds. Costs are75/100/100/150 IS. Existing cost, cast, cooldown and control gates apply. The server offers approval after the cast completes. Requiring the caster still alive, friendly and in range at completion/acceptance is conservative server policy, not a claimed captured retail sequence.
 
