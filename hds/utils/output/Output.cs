@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ namespace hds
 		// Environment-variable toggles to avoid per-packet disk I/O in production.
 		private static readonly bool EnablePacketLogs = GetEnvFlag("MXO_PACKET_LOG", false);
 		private static readonly bool EnableDebugLogs = GetEnvFlag("MXO_DEBUG_LOG", false);
+		private static readonly object DebugLogLock = new object();
 		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
 		private static readonly bool EnableClientViewRequestLog = GetEnvFlag("MXO_CLIENT_VIEW_LOG", false);
 		private static readonly bool EnableServerLog = GetEnvFlag("MXO_SERVER_LOG", true);
@@ -112,10 +114,11 @@ namespace hds
 
             try
             {
-                StreamWriter w = File.AppendText("DebugLog.txt");
-                w.WriteLine(obj);
-                w.Flush();
-                w.Close();
+                lock (DebugLogLock)
+                {
+                    using var writer = File.AppendText("DebugLog.txt");
+                    writer.WriteLine(obj);
+                }
             }
             catch
             {
@@ -124,6 +127,24 @@ namespace hds
         }
 
 		
+        internal static void WriteBonusDebugLog(uint characterId, ReadOnlySpan<byte> rpc)
+        {
+            // The queued RPC includes its one-byte length prefix. Locator kind zero is an individual modifier.
+            if (!EnableDebugLogs || rpc.Length != 23 || rpc[0] != 22 || rpc[1] != 0x80 || rpc[2] != 0xbc || rpc[4] != 0)
+                return;
+            string operation = rpc[18] switch { 0 => "add", 1 => "remove", 2 => "update", _ => null };
+            if (operation == null) return;
+
+            byte kind = rpc[3];
+            ushort record = BinaryPrimitives.ReadUInt16LittleEndian(rpc.Slice(5));
+            uint source = BinaryPrimitives.ReadUInt32LittleEndian(rpc.Slice(8));
+            ushort stat = BinaryPrimitives.ReadUInt16LittleEndian(rpc.Slice(12));
+            int value = BinaryPrimitives.ReadInt32LittleEndian(rpc.Slice(14));
+            float duration = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(rpc.Slice(19)));
+            WriteDebugLog(FormattableString.Invariant(
+                $"[MODIFIER] char={characterId} source={source} stat={stat} {operation} value={value:+0;-0;0} duration={duration:G}s record={record} kind=0x{kind:x2}"));
+        }
+
 		static public string ConvertByteToReadablePacket(byte[] packet)
 		{
 			
