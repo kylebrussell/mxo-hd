@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using hds.databases;
 using hds.shared;
+using hds.world.Structures;
 
 namespace hds
 {
@@ -45,6 +46,7 @@ namespace hds
         {
             public double Next;
             public readonly HashSet<string> Objectives = new HashSet<string>(StringComparer.Ordinal);
+            public readonly HashSet<uint> TeamRecipients = new HashSet<uint>();
         }
         private static readonly ConditionalWeakTable<WorldClient, MissionReveal> missionReveals =
             new ConditionalWeakTable<WorldClient, MissionReveal>();
@@ -296,6 +298,8 @@ namespace hds
             missionReveals.Remove(client);
             foreach (string objective in reveal.Objectives.OrderBy(name => name, StringComparer.Ordinal))
                 LogMissionPingCleared(objective);
+            foreach (uint recipient in reveal.TeamRecipients)
+                LogTeamPingsCleared(client, recipient);
         }
 
         private static void LogMissionPingCleared(string objective) =>
@@ -304,6 +308,7 @@ namespace hds
         /// <summary>Called under MissionRuntime's mission lock. Ping categories/refresh are choices; roll is retail.</summary>
         public static void RevealMission(WorldClient c, MissionProgress progress)
         {
+            List<WorldClient> notified;
             lock (c.playerData.passives)
             {
                 int flags = UtilityAbilities.MissionMapAccess(c);
@@ -347,6 +352,8 @@ namespace hds
                     if (reveal.Objectives.Add(objective.Key))
                         Output.WriteDebugLog($"[UTILITY] Download Mission Map: ping sent {objective.Key}");
 
+                notified = ShareMissionPings(c, progress, flags, reveal);
+
                 DataMiningPackets.Ping? Add(double px, double py, double pz, byte relationship)
                 {
                     if (!(Math.Abs(py - y) <= 250)) return null;
@@ -356,6 +363,58 @@ namespace hds
                 }
             }
             c.FlushQueue();
+            foreach (var member in notified) member.FlushQueue();
         }
+
+        // The shipped deactivate callback addresses MissionTeam. Share objective and hostile pings from the
+        // team leader's active mission, retaining each recipient's own map origin and normal ping lifetime.
+        private static List<WorldClient> ShareMissionPings(WorldClient owner, MissionProgress progress, int flags, MissionReveal reveal)
+        {
+            var notified = new List<WorldClient>();
+            var active = new HashSet<uint>();
+            foreach (uint memberId in SocialGroups.Instance.TeammatesOfLeader(owner.playerData.getCharID()))
+            {
+                var member = SocialHandler.FindOnlineByCharId(memberId);
+                var data = member?.playerData;
+                if (data == null || !member.Alive || !data.getOnWorld() || data.worldChangePending || data.waitForRPCShutDown ||
+                    data.isDead || data.activeMission != null || data.getDistrictId() != owner.playerData.getDistrictId()) continue;
+
+                Position(member, out double x, out double y, out double z);
+                var pings = new List<DataMiningPackets.Ping>();
+                if ((flags & 1) != 0)
+                    foreach (var obj in progress.objects.Values.Where(obj => obj.spot != null))
+                    {
+                        var pose = MissionObjectPoses.For(obj);
+                        Add(pose.X, pose.Y, pose.Z, 0);
+                    }
+                if ((flags & 2) != 0)
+                    foreach (Mob mob in progress.hostiles.Where(mob => !mob.getIsDead()))
+                        Add(mob.getXPos(), mob.getYPos(), mob.getZPos(), 2);
+
+                var sent = pings.Distinct().Take(128).ToArray();
+                if (sent.Length == 0 || !SocialGroups.Instance.ShareTeam(owner.playerData.getCharID(), memberId)) continue;
+                member.messageQueue.addRpcMessage(DataMiningPackets.Map(sent, MissionPingSeconds));
+                notified.Add(member);
+                active.Add(memberId);
+                if (reveal.TeamRecipients.Add(memberId))
+                    Output.WriteDebugLog($"[UTILITY] Download Mission Map: team pings sent owner={owner.playerData.getCharID()} recipient={memberId} count={sent.Length}");
+
+                void Add(double px, double py, double pz, byte relationship)
+                {
+                    if (!(Math.Abs(py - y) <= 250)) return;
+                    var ping = DataMiningPackets.Relative(x, z, px, pz, relationship);
+                    if (ping.HasValue) pings.Add(ping.Value);
+                }
+            }
+            foreach (uint gone in reveal.TeamRecipients.Except(active).ToArray())
+            {
+                reveal.TeamRecipients.Remove(gone);
+                LogTeamPingsCleared(owner, gone);
+            }
+            return notified;
+        }
+
+        private static void LogTeamPingsCleared(WorldClient owner, uint recipient) =>
+            Output.WriteDebugLog($"[UTILITY] Download Mission Map: team pings cleared owner={owner.playerData.getCharID()} recipient={recipient} (expires within {MissionPingSeconds}s)");
     }
 }

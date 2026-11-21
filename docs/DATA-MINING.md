@@ -64,7 +64,7 @@ The three shipped district cooked COD files (`slums_barrens_full`, `downtown/dt_
 
 Download Mission Map preserves the `rshooks.py ComputeDownloadMissionMapOutcome` roll and six cumulative access bits. The successful roll now has visible minimap output, refreshed every 2 s for 3 s while the ability remains loaded and a mission is active. Mission-object positions and hostiles come from the current generated phase, on its sourced furniture/NPC spawners. Known tracked locked static doors inside the mission site can be marked.
 
-**Our bit interpretation:** bit 1 reveals mission objects (yellow), bit 2 living phase hostiles (red), bit 4 known locked doors (yellow). The Python hook does not identify what any bit unlocks in native mission code; the higher bits do not add guessed features. Ping offsets outside i8 range are skipped, never wrapped. This does not reveal unknown interiors, map geometry, unspawned enemies, NPC conversation objectives or an entire team map. Native floorplan-reveal code and exact flag semantics remain gaps.
+**Our bit interpretation:** bit 1 reveals mission objects (yellow), bit 2 living phase hostiles (red), bit 4 known locked doors (yellow). The leader's objective and hostile pings also reach live teammates near enough on the same floor and district, with offsets relative to each recipient. Teammates running a separate mission keep their own map. The shipped deactivation hook calls `MissionTeam.disableMissionMap()`. On unload, refresh stops for the leader and the teammates, and the existing pings expire within three seconds. Native floorplan reveal and exact flag semantics remain open.
 
 ## Native failure and captured pickup evidence
 
