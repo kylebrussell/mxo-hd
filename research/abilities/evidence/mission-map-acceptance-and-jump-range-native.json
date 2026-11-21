@@ -1,0 +1,16 @@
+{
+  "abilities": {
+    "11": {
+      "note": "PR672 confirms a stock click-jump lands at the near marker and the same stock forward input sends 38.5 m at rank 10 and 41.5 m at rank 11, following stat 567 +30→+33. Each request receives a matching movement step and one clock echo. PacketLog 1460–1488 and 1782–1802 include client 80 c4 cancels back to the start before either maximum jump lands. Credit the client’s rank-dependent horizontal destination only. Full movement limits and peak/landing behavior remain open. https://github.com/kylebrussell/mxo-hd/pull/672#issuecomment-7065285464"
+    },
+    "44": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped ComputeDownloadMissionMapOutcome hook rolls from loaded Map rank and mission difficulty at acceptance. DownloadMissionMap_Deactivate calls MissionTeam.disableMissionMap.",
+          "runtime": "UtilityAbilities.OnMissionAccepted skips unloaded Map, records fresh flags only on loaded acceptance, and disables refresh on unload through the passive reconciliation and DataMining.EndMissionReveal. Reload never reactivates an already-accepted map.",
+          "test": "UtilityAbilityTests.MissionMapFlagsFollowTheHook covers zero, failure, tier flags and Map Downloading. DownloadMissionMapMode and PR673 verify unloaded acceptance and late load stay quiet, loaded acceptance yields flags 63 at fixture roll 99, unloading clears the Safe refresh within three seconds and reload stays quiet. The server reported the outbound ping. The yellow radar rendering and retail flag-to-map semantics are separate source checks. https://github.com/kylebrussell/mxo-hd/pull/673#issuecomment-7065377918"
+        }
+      }
+    }
+  }
+}
