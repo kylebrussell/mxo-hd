@@ -6,7 +6,7 @@ namespace NativeQa.Modes;
 
 public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
 {
-    private const int Level = 18, X = 24800, Y = 495, Z = -1498, BoundaryZ = Z - 1550;
+    private const int Level = 18, X = 24800, Y = 495, Z = -1498, BoundaryZ = Z - 1550, OutsideChargeZ = Z - 5100;
     private const ushort Coder = 1008, Proxy = 27, Fortify = 20, Repair = 30, Charge = 603;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Coder, Proxy, Fortify, Repair, Charge).Order().ToArray();
     // PR619 Proxy, PR333 e963ca7e868a:4424–4425 Repair, PR603:836 Charge.
@@ -31,8 +31,8 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
         readyMessages: new[]
         {
             "Full level-18 profile. Page 2 Coder Style/27/20/30/603. Use style and summon, then enter ?pet passive and ?pet stay. The L4 Proxy is 1.5 m ahead on clear ground with 224/224 HP. QAFriend observes from the southeast.",
-            $"Keep the Proxy selected and move to ?tp {X} {Y} {BoundaryZ} 0 0 0. The pet is about 15.6 m away. Use 603 and record whether the client sends it. Any sent request gets the range refusal without debit. Use 20 from this same stand; the 16 m ability should complete with [VITALS] 224 → 494, +36 resistances, and 2 s cast / 8 s reuse.",
-            $"Return to ?tp {X} {Y} {Z} 0 0 0. Use 603 on the same pet; expect 35 IS, 4 s cast, 30 s reuse and pet action cost 10 → 8. Then slot 4 heals 224 → 244 while the maximum stays 494. IS is 700 → 650 → 620 → 585 → 565.",
+            $"Keep the Proxy selected and move to ?tp {X} {Y} {BoundaryZ} 0 0 0. The pet is about 15.6 m away. Use 20 first: [VITALS] 224 → 494, +36 resistances, and 2 s cast / 8 s reuse. Use 603 from the same stand, where PR636 saw a server refusal. Expect a 4 s cast, 30 s reuse and 35 IS spent. The pet gets 600 s of -20% action cost and +50% regen. Type ?pet for cost 8.",
+            $"Return to ?tp {X} {Y} {Z} 0 0 0. Slot 4 heals 224 → 244 while the maximum stays 494. IS is 700 → 650 → 620 → 585 → 565. After all other checks, optionally try Charge beyond its sourced 50 m boundary using ?tp {X} {Y} {OutsideChargeZ} 0 0 0, once the 30 s reuse expires. Expect stock suppression or an out-of-range refusal, with no cast or IS debit.",
             "Enter ?pet fixture-expire-fortify. This advances only the pet's Fortify expiry. The ordinary tick sends [VITALS] 494 → 224 and clamps current HP to 224 in the owner's and observer's views. Charge remains active (cost 8) and Fortify resistance reads 0 in ?pet."
         });
 
@@ -63,7 +63,7 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
         actor.SendChat("?pet stay");
         await actor.WaitForTextAsync("Staying.");
 
-        await MoveAsync(BoundaryZ);
+        await MoveAsync(OutsideChargeZ);
         int refused = actor.World.RpcSnapshot().Count;
         int refusedViews = actor.World.ViewSnapshot().Count;
         actor.SendRpc(Selected(ChargeUse, local));
@@ -72,15 +72,16 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
             frame => AbilityRefusals.TryDecode(frame.Bytes, out var notice) && notice.AbilityID == Charge, "Charge range refusal");
         Check.That(!actor.World.RpcSnapshot().Skip(refused).Any(frame => BytePattern.Parse("80 ac 5b 02").IsMatch(frame.Bytes)) &&
             !actor.World.ViewSnapshot().Skip(refusedViews).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Any(isNow => isNow < 650),
-            "Beyond the authored 15 m range Charge never starts a cast or spends IS");
+            "Beyond the scripted 50 m range Charge never starts a cast or spends IS");
+        await MoveAsync(BoundaryZ);
         int raised = actor.World.ViewSnapshot().Count;
         await CastAsync(Fortify, Selected(FortifyStock, local), 2, 8, 620);
         await PetHealthAsync(actor, raised, local.ViewId, 224, 494);
         Check.That(server.DebugLog().Contains($"Fortify Simulacra (20) pet={sim} maxHP=494 resistance=36 duration=600"),
             "Fortify is admitted within its independent 16 m limit");
 
-        await MoveAsync(Z);
         await CastAsync(Charge, Selected(ChargeUse, local), 4, 30, 585);
+        await MoveAsync(Z);
         int repairAt = actor.World.RpcSnapshot().Count;
         await CastAsync(Repair, Selected(RepairUse, local), 2, 13, 565);
         await StockAbilityProfile.ObserveAsync(actor, repairAt, frame => BytePattern.Parse($"81 78 {sim:x2} 00 f4 00 ee 01").IsMatch(frame.Bytes),

@@ -726,8 +726,15 @@ namespace hds
                 (!spawn.HasValue || spawn.Value == view.spawnId);
         }
 
-        private static bool InAbilityRange(Pet pet, UInt16 id) =>
-            OwnerDistanceMetres(pet) <= (AbilityCatalog.Find(id)?.Number("Ability/SelectionRange", 16) ?? 16);
+        internal static bool InAbilityRange(Pet pet, UInt16 id)
+        {
+            // AcousticDecoy1_GetRange in ability/hacker/simulacra.py supplies a range in centimetres.
+            // MessageCloud_DirectObject sets SelectionRangeAbility to the percentage decrease.
+            double range = id == ChargeSimulacra
+                ? 50.0 * (100 - Math.Clamp(AbilityStats.Player(pet.Owner, 214), 0, 100)) / 100
+                : AbilityCatalog.Find(id)?.Number("Ability/SelectionRange", 16) ?? 16;
+            return OwnerDistanceMetres(pet) <= range;
+        }
 
         public static bool IsToggledOn(WorldClient caster, UInt16 id)
         {

@@ -5,6 +5,35 @@ namespace hds.Tests;
 
 public class CoderPetTests
 {
+    [Fact]
+    public void ChargeSelectionUsesTheScriptedRangeAndPercentDecrease()
+    {
+        var owner = Owner(43);
+        owner.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(100, 495, 300));
+        var mob = new Mob();
+        mob.setYPos(495);
+        mob.setZPos(300);
+        var pet = new CoderPets.Pet { Owner = owner, Mob = mob };
+        mob.setXPos(5100);
+        Assert.True(CoderPets.InAbilityRange(pet, CoderPets.ChargeSimulacra));
+        mob.setXPos(5101);
+        Assert.False(CoderPets.InAbilityRange(pet, CoderPets.ChargeSimulacra));
+
+        var effects = TimedEffects.ForPlayer(owner).Effects;
+        effects.Apply(214, new[] { new TimedEffects.Active
+        {
+            Proc = TempMods.Proc.Stat, Target = 214, Value = 80, Seconds = 60
+        } }, TimeUtils.GetSimTimeSeconds());
+        mob.setXPos(1100);
+        Assert.True(CoderPets.InAbilityRange(pet, CoderPets.ChargeSimulacra));
+        mob.setXPos(1101);
+        Assert.False(CoderPets.InAbilityRange(pet, CoderPets.ChargeSimulacra));
+        mob.setXPos(1700);
+        Assert.True(CoderPets.InAbilityRange(pet, CoderPets.FortifySimulacra));
+        mob.setXPos(1701);
+        Assert.False(CoderPets.InAbilityRange(pet, CoderPets.FortifySimulacra));
+    }
+
     private static string Hex(byte[] bytes) => StringUtils.bytesToString_NS(bytes).ToLowerInvariant();
 
     private static WorldClient Owner(uint charId, byte level = 50)
