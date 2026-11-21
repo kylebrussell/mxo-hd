@@ -46,6 +46,8 @@ namespace hds
             lock (restoreRandom)
                 amount = Sample(Restore.Value, caster.playerInstance.Level.getValue()[0], restoreRandom);
             ushort restored = RestoreInnerStrength(caster, amount);
+            Output.WriteDebugLog($"[POWER-SHOT] char={caster.playerData.getCharID()} rolledIS={amount} restoredIS={restored} " +
+                $"currentIS={AbilityHandler.CurrentInnerStrength(caster)} maxIS={AbilityHandler.MaxInnerStrength(caster)}");
             if (restored == 0) return;
             string name = TimedEffects.PlayerName(caster);
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(
