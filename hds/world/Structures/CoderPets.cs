@@ -711,7 +711,7 @@ namespace hds
         {
             if (viewId <= 2) return true;
             var view = caster.viewMan.getViewById(viewId);
-            return view?.viewCreated == true && view.entityId == pet.Mob.getEntityId() &&
+            return view?.viewCreated == true && !view.viewNeedsToBeDeleted && view.entityId == pet.Mob.getEntityId() &&
                 (!spawn.HasValue || spawn.Value == view.spawnId);
         }
 
@@ -905,8 +905,10 @@ namespace hds
         {
             double now = TimeUtils.GetSimTimeSeconds();
             UInt16 max = (UInt16)Math.Min(UInt16.MaxValue, pet.BaseMaxHealth + (now < pet.FortifyUntil ? pet.FortifyHealth : 0));
-            if (max == pet.Mob.getHealthM()) return;
+            ushort previousMax = pet.Mob.getHealthM();
+            if (max == previousMax) return;
             pet.Mob.setHealthM(max);
+            Output.WriteDebugLog($"[VITALS] owner={pet.Owner.playerData.getCharID()} pet={pet.SimulacraId} maxHP {previousMax} -> {max}");
             if (pet.Mob.getHealthC() > max) pet.Mob.setHealthC(max);
             var pak = new PacketContent();
             pak.AddByteArray(BuildHealthUpdate(pet.Mob.getHealthC(), max));
