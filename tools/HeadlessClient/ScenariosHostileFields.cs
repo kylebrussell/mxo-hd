@@ -35,6 +35,7 @@ public static partial class Scenarios
         await caster.EnterWorldAsync(); await target.EnterWorldAsync();
         target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var view = await caster.WaitForViewNamedAsync(target.Handle);
+        Cast(target,217,2); await target.WaitForRpcAsync(ModPattern(217,624));
         //600s Gaussian Blur,8s recast: each proc retry can restore a real active upgrade.
         Cast(target,49); await target.WaitForRpcAsync(ModPattern(49,520));
         bool skipped=false;

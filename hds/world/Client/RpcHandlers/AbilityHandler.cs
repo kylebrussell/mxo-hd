@@ -98,6 +98,16 @@ namespace hds
                 return;
             }
 
+            // Gaussian Blur requires the live Evading state, including when shield suppression is active.
+            if (AbilityID == 49 && !EvasionShield.HasState(Store.currentClient))
+            {
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
+                    AbilityID, AbilityRefusals.CasterStateRequired, states: EvasionShield.StateFlag)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied 49: requires Evading");
+                return;
+            }
+
             // Compel Close Combat stores CastWhenUsed=1 and has no interlock move.
             if (AbilityID == 150 && CombatManager.GetHandler(Store.currentClient).HasActiveInterlock)
             {

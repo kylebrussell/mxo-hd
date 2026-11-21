@@ -6,7 +6,7 @@ namespace hds
     public static class AbilityRefusals
     {
         public const uint ReuseWait=5, CurrentTactic=6, NotLoaded=7, WrongStyle=13, InsufficientInnerStrength=17,
-            MustBeOutsideCombat=21, TargetStateRequired=22, InvalidTarget=24, TargetOutOfRange=34, NotEnemySimulacrum=36;
+            MustBeOutsideCombat=21, TargetStateRequired=22, CasterStateRequired=23, InvalidTarget=24, TargetOutOfRange=34, NotEnemySimulacrum=36;
         /// <summary>Compatibility value for unresolved aggregate failures;6 is not a generic busy message.</summary>
         public const uint LegacyAmbiguous=CurrentTactic;
         public const byte NoToolSlot=0x6b;
