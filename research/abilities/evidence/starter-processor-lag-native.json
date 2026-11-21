@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "69": {
+      "checks": {
+        "damage": {
+          "source": "GOB 69 and tempmods.py ViralDOT specify the typed periodic total, live caster influence, 30 s lifetime and five-second cadence.",
+          "runtime": "TimedEffects snapshots the stored total; the same viral resistance path reduces each victim's tick before its HP update.",
+          "test": "StarterHackerDotResistanceMode and native PR597 measure total 35 stored for 30 s and exactly five neutral ticks of 6 versus five resisted ticks of 3, with no sixth or immediate damage. https://github.com/kylebrussell/mxo-hd/pull/597#issuecomment-7056289380"
+        },
+        "targeting": {
+          "source": "GOB 69 specifies a selected hostile target and 16 m selection range with sight required.",
+          "runtime": "AbilityHandler checks the live view and stored range before cast, spend or reuse. AbilityTargets checks sight and range before the hit and DOT, so a held selection cannot cast through the mapped gap.",
+          "test": "StarterHackerDotResistanceMode rejects an empty target and a valid far selection before cast, IS or reuse, then checks the blocked in-range view reaches no hit contest or applied effect. Stock PR597 confirms the ranged refusal and obstructed no-hit result. https://github.com/kylebrussell/mxo-hd/pull/597#issuecomment-7056289380"
+        },
+        "behavior-tests": {
+          "source": "GOB 69 stores a 2 s cast, 10 IS, 43 s own reuse and the ViralDOT callback.",
+          "runtime": "AbilityHandler and AbilityCooldowns handle cast admission and reuse. AbilityTargets and TimedEffects apply a sight-checked periodic hit to the selected enemy until expiry.",
+          "test": "StarterHackerDotResistanceMode replays the captured full stock activation with its live handle, checks cast and reuse, selected target admission, fixed neutral and +75 resistance cases, final timer clear and the five-tick limit. AbilityHostileTests.ProcessorLagDealsFiveViralTicksAndPublishesTickEffect proves the player HP/FX path. Native PR597 verifies the live damage, range and sight steps. https://github.com/kylebrussell/mxo-hd/pull/597#issuecomment-7056289380"
+        }
+      }
+    }
+  }
+}
