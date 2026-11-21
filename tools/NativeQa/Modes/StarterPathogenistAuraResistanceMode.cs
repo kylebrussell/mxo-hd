@@ -40,13 +40,13 @@ public sealed class StarterPathogenistAuraResistanceMode : NativeQaMode
             "Press slot 4 Miasma, wait through a pulse, then toggle off. Expect [MODIFIER] source=701 stats 1009 and 1010 each -14 for 5 s on both recipients. Empty Mind mitigates health damage. The defense debuffs still apply. Neither recipient loses HP or IS to Miasma. CSR pays 5 IS on activation and 3 per scheduled pulse."
         });
 
-    internal static async Task ApplyResistanceAsync(HeadlessPlayer target)
+    internal static async Task ApplyResistanceAsync(HeadlessPlayer target, int resistance = 75)
     {
         Check.Equal(6112u, target.CharId, "Only the disposable QAFar target carries the resistance fixture");
         int start = target.World.RpcSnapshot().Count;
         target.SendRpc(StarterHackerControlTargetMode.WithHandle(AwakenedResistanceThresholdMode.EmptyCast, 0));
         await StockAbilityProfile.ObserveAsync(target, start, frame =>
-            StockAbilityProfile.Bonus(frame, EmptyMind, ViralResistance, 75, 20, false), "Empty Mind adds +75 Viral Resistance");
+            StockAbilityProfile.Bonus(frame, EmptyMind, ViralResistance, resistance, 20, false), $"Empty Mind adds +{resistance} Viral Resistance");
     }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
