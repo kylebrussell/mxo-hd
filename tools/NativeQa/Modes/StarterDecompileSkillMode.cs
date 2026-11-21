@@ -5,7 +5,7 @@ using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
-public sealed class StarterDecompileSkillMode : NativeQaMode
+public class StarterDecompileSkillMode : NativeQaMode
 {
     private const ushort Decompile = 276, Skill = 707;
     private const byte CompilerSlot = 1, AnalyserSlot = 2, DecompilerSlot = 3;
@@ -24,9 +24,21 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
     private const string HotbarCompiler = "80b9c90300000000000000000000000000000000000000000000000064f11a00b8d5a91f08010000000000";
     private const string HotbarWriter = "80b9ca0300000000000000000000000000000000000000000000000064f11a00b8d6a91f08020000000000";
 
-    public override string Name => "ability-parity-starter-decompile-skill";
+    private static readonly AbilitySweepHotbar.InventoryShortcut[] Tools =
+    {
+        new(DecompilerSlot, Decompiler, "Item Decompiler"),
+        new(CompilerSlot, CraftingSession.Tool, "Code Compiler"),
+        new(AnalyserSlot, CraftingSession.WriterTool, "Code Analyser")
+    };
 
-    public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z, Array.Empty<string>(), new[]
+    public StarterDecompileSkillMode() : this(cleanUi: false) { }
+
+    protected StarterDecompileSkillMode(bool cleanUi) => Plan = BuildPlan(cleanUi);
+
+    public override string Name => "ability-parity-starter-decompile-skill";
+    public override NativeQaModePlan Plan { get; }
+
+    private static NativeQaModePlan BuildPlan(bool cleanUi) => new(Loadout, X, Z, Array.Empty<string>(), new[]
     {
         "DELETE FROM inventory WHERE charId=110 AND slot BETWEEN 1 AND 96",
         $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES (110,{CraftingSession.Tool},{CompilerSlot},1,0)," +
@@ -38,33 +50,38 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
     {
         $"UPDATE characters SET x={X},y={Y},z={Z} WHERE charId=110",
         $"UPDATE char_abilities SET level={Rank} WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(Decompile)}"
-    }, DevCommands: true, hotbarAbilities: new[] { Decompile }, hotbarInventory: new AbilitySweepHotbar.InventoryShortcut[]
-    {
-        new(DecompilerSlot, Decompiler, "Item Decompiler"),
-        new(CompilerSlot, CraftingSession.Tool, "Code Compiler"),
-        new(AnalyserSlot, CraftingSession.WriterTool, "Code Analyser")
-    }, testMobFixture: "martial-player-controls.csv", environmentOverrides: new()
+    }, DevCommands: true, hotbarAbilities: cleanUi ? null : new[] { Decompile }, hotbarInventory: cleanUi ? null : Tools,
+        testMobFixture: "martial-player-controls.csv", environmentOverrides: new()
     {
         ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0"
-    }, extraQaMetadata: new() { ["ScopedStockRows"] = "276,969,970", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
+    }, extraQaMetadata: new()
     {
-        $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s. Page 2 slot 1 is the ability-only control. The three actual item shortcuts are already installed in slots 2–4.",
-        "Use the Item Decompiler from its inventory context menu, then select Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. Slot 2 is a shortcut control. In PR640 the client did not arm from it. There is no [VITALS] or [PVP] change.",
+        ["ScopedStockRows"] = "276,969,970", ["NativeCloseableRows"] = 0,
+        ["UiProfile"] = cleanUi ? "stock-default" : "seeded-control"
+    }, readyMessages: new[]
+    {
+        cleanUi
+            ? "PR640 B: start the stock client with its disposable CSR cui.cfg held aside and leave every other UI setting as in A. This mode supplies no character UI seed. Open Inventory with I and try title-bar drag and hover before any shortcut assignment. Record whether the pill tooltip lights up and actual use sends 81 31."
+            : "PR640 A: the standard seeded profile. Page 2 slot 1 is the ability control. The three item shortcuts are installed in slots 2–4.",
+        $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s.",
+        "Use the Item Decompiler from its inventory context menu, then select Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. There is no [VITALS] or [PVP] change.",
         "After the 10 s reuse, use the same tool on Max Health Boost Pill 3.0 in slot 6. Expect [DECOMPILE] item=39413 skill=18 complexity=33 requiredAbove=182 success=False. The pill stays in the bag and no recipe packet arrives. The seeded rank makes both results independent of the regular 0–100 roll.",
         "Enter ?qaunload 276. Check [MODIFIER] char=110 source=276 stat=707 remove value=+18 duration=0s and no decompile result on the remaining slot-5 pill. Enter ?qaload 276 and see its +18 add. After the reuse, use the inventory activation and slot-5 pill again. It succeeds at the same skill and uses the last pill.",
-        "Use the inventory context menu's Activate Item action for Code Compiler (bag slot 1) and Code Analyser (bag slot 2). The client opens the selected window locally and sends the matching explicit activation. Close each window before opening the other. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant. Page 2 slots 3–4 are ordinary-use controls and did not open the windows in PR640."
+        "Use the inventory context menu's Activate Item action for Code Compiler (bag slot 1) and Code Analyser (bag slot 2). The client opens the selected window locally and sends the matching explicit activation. Close each window before opening the other. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant."
     });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var db = context.OwnedDatabase!;
-        foreach (var item in Plan.HotbarInventory)
+        foreach (var item in Tools)
             Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId=110 AND slot={item.BagSlot} " +
                 $"AND goid={item.Goid} AND count=1"), $"One {item.Label} occupies its seeded shortcut slot");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
+        Check.Equal(Plan.HasHotbar, actor.CharacterData.ContainsKey(QaCharacterUi.DataType),
+            "Only the seeded control sends Margin character UI data");
         byte[] inventory = actor.CharacterData[5];
         Check.Equal(0, inventory.Length % 9, "Margin ordinary inventory rows are nine bytes");
-        foreach (var item in Plan.HotbarInventory)
+        foreach (var item in Tools)
             Check.That(Enumerable.Range(0, inventory.Length / 9).Any(index =>
             {
                 var row = inventory.AsSpan(index * 9, 9);
@@ -162,4 +179,11 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
             }
         }
     }
+}
+
+public sealed class StarterDecompileCleanUiMode : StarterDecompileSkillMode
+{
+    public StarterDecompileCleanUiMode() : base(cleanUi: true) { }
+
+    public override string Name => "ability-parity-starter-decompile-clean-ui";
 }
