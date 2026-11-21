@@ -5,7 +5,7 @@ Use `hacker-callbacks` from NativeQa for six Hacker aura checks. The bootstrap l
 | Ability | Action and expected result |
 |---|---|
 | Miasma 1.0 (61) | Stand near WinterFrost, toggle on and wait one update. The child 701 applies -14 melee and ballistic defense for 5 s. Initial IS 5 and upkeep 3 every 5 s. Toggle off and observe natural expiry of the last child. |
-| Static Field (89) | Stand near WinterFrost, toggle on and wait one update. The child 694 uses raw viral damage 1 before influence. Initial IS 11 and upkeep 12 every 5 s. Observe the activation line and damage in range. |
+| Static Field (89) | Stand near WinterFrost, toggle on and wait one update. The child 694 uses raw viral damage 1 before influence. Initial IS 11 and upkeep 12 every 5 s. Observe the activation line and damage in range. The aura-resistance fixture checks that +75 Viral Resistance absorbs the one damage while nearby unbuffed hostiles take it. |
 | Combat Aura 1.0 (42) | Toggle on and inspect Combat stats. The child 695 refreshes melee and ballistic accuracy every 5 s. Initial IS 8 and upkeep 12 every 5 s. |
 | Combat Aura 2.0 (485) | Toggle on and inspect Bonuses. The child 696 refreshes melee and ballistic damage every 5 s. Initial IS 15 and upkeep 15 every 5 s. |
 | Deflect Virus 1.0 (378) | Toggle on and inspect viral and melee defense. The child 693 lasts 5 s. Observe the 0.2 s effect 0x28000820 and upkeep 7 every 5 s after initial IS 10. The sourced cleanse rolls 4% per eligible debuff at child termination. Own reuse starts at activation and lasts 10 s. |
