@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "12": {
+      "note": "PR665 uses the real Sneak grant and the stock Invisibility Belt. Hyper-Speed stays active across both stance activations. The six movement samples isolate the shared speed projection; they leave the dedicated stance stat consumer open. https://github.com/kylebrussell/mxo-hd/pull/665#issuecomment-7064283220"
+    },
+    "20": {
+      "note": "PR666 confirms reason 34 and no debit out of range, then Fortify 224→494 HP and +36 resistance for 600 s on the NAV-verified 15.6 m stand. Natural cleanup after the fixture advances only this timer clamps to 224/224 while Charge remains active. https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064273136 https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064421313"
+    },
+    "30": {
+      "note": "PR666 confirms the out-of-range reason 34 and the in-range +20 Repair, with the pet's Fortify maximum still at 494 before expiry. https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064273136 https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064421313"
+    },
+    "184": {
+      "note": "PR665 records the Sprint drain while 1111 or 1116 remains active, and its 5 s reuse on off. At nominal two-second holds, normal/Sneak/Belt run 6.000/5.985/6.006 m/s at baseline and 6.980/6.885/6.885 m/s with both buffs. This corroborates the global +0.15 projection across the stock actions. https://github.com/kylebrussell/mxo-hd/pull/665#issuecomment-7064211705 https://github.com/kylebrussell/mxo-hd/pull/665#issuecomment-7064283220"
+    },
+    "603": {
+      "note": "PR666 corroborates the Charge range gate with one native reason-34 refusal and no debit at the far stand. On the NAV-verified 15.6 m stand the same pet gets -20% action cost and +50% regeneration for 600 s, with IS 620→585. Fortify expires independently. The remaining source-parity check concerns the underlying pet resource formula. https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064273136 https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064421313"
+    }
+  }
+}
