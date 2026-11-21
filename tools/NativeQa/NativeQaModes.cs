@@ -19,8 +19,9 @@ public sealed class NativeQaModePlan
     public IReadOnlyList<string> ReadyMessages { get; }
     public IReadOnlyList<ushort> HotbarAbilities { get; }
     public IReadOnlyList<ushort> HotbarPageThree { get; }
+    public IReadOnlyList<AbilitySweepHotbar.InventoryShortcut> HotbarInventory { get; }
     public bool HotbarWithdraw { get; }
-    public bool HasHotbar => HotbarAbilities.Count != 0 || HotbarWithdraw;
+    public bool HasHotbar => HotbarAbilities.Count != 0 || HotbarWithdraw || HotbarInventory.Count != 0;
     public string? MissionFixture { get; }
     public string? TestMobFixture { get; }
     public bool LoadAbilityAncestors { get; }
@@ -35,7 +36,8 @@ public sealed class NativeQaModePlan
     public NativeQaModePlan(ushort[] abilities, int x, int z, string[] beforeLoadout, string[] afterLoadout,
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
         bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null, string? testMobFixture=null,
-        bool loadAbilityAncestors=false, ushort[]? hotbarAbilities=null, bool hotbarWithdraw = false, ushort[]? hotbarPageThree = null)
+        bool loadAbilityAncestors=false, ushort[]? hotbarAbilities=null, bool hotbarWithdraw = false, ushort[]? hotbarPageThree = null,
+        AbilitySweepHotbar.InventoryShortcut[]? hotbarInventory = null)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
@@ -50,11 +52,15 @@ public sealed class NativeQaModePlan
         },StringComparer.Ordinal));
         HotbarAbilities=Array.AsReadOnly((ushort[])(hotbarAbilities ?? Array.Empty<ushort>()).Clone());
         HotbarPageThree=Array.AsReadOnly((ushort[])(hotbarPageThree ?? Array.Empty<ushort>()).Clone());
+        HotbarInventory=Array.AsReadOnly(hotbarInventory?.ToArray() ?? Array.Empty<AbilitySweepHotbar.InventoryShortcut>());
         HotbarWithdraw = hotbarWithdraw;
-        if (HasHotbar) AbilitySweepHotbar.Validate(HotbarAbilities, HotbarWithdraw);
+        if (HasHotbar) AbilitySweepHotbar.Validate(HotbarAbilities, HotbarWithdraw, HotbarInventory);
         var hotbarInstructions = !HasHotbar ? Array.Empty<string>() :
             new[] { "Open stock hotbar page 2." }.Concat(HotbarAbilities.Select((id, index) => $"slot {index + 1} = ability {id}"));
         if (HotbarWithdraw) hotbarInstructions = hotbarInstructions.Append($"slot {HotbarAbilities.Count + 1} = Withdraw");
+        int itemStart = HotbarAbilities.Count + (HotbarWithdraw ? 1 : 0) + 1;
+        hotbarInstructions = hotbarInstructions.Concat(HotbarInventory.Select((item, index) =>
+            $"slot {itemStart + index} = {item.Label} (bag slot {item.BagSlot}, GOID {item.Goid})"));
         if (HotbarPageThree.Count != 0)
         {
             if (!HasHotbar) throw new ArgumentException("Page 3 seeding also requires a page 2 plan.", nameof(hotbarPageThree));

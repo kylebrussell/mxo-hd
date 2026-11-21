@@ -57,8 +57,8 @@ public static class NativeQaBootstrapChecks
         var mode = NativeQaModes.Find(seedMode);
         var plan = mode.Plan;
         byte[]? characterUi = plan.HasHotbar
-            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: false, includeWithdraw: plan.HotbarWithdraw,
-                pageThree: plan.HotbarPageThree)
+            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: plan.HotbarInventory.Count != 0,
+                includeWithdraw: plan.HotbarWithdraw, pageThree: plan.HotbarPageThree, inventory: plan.HotbarInventory)
             : null;
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
         await WriteAsync(Path.Combine(output, database.Name + ".json"), new { Database = database.Name, Modes = names, At = DateTime.UtcNow });
