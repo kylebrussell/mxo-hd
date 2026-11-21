@@ -103,7 +103,8 @@ public static partial class Scenarios
         owner.SendChat("?pet"); await owner.WaitForTextAsync("power melee/ballistic 0/0");
         owner.SendRpc("81 7a fe 00"); // stay, then test the sourced10m range before cost/cooldown
         owner.SendChat($"?tp {NpcX+2200} {NpcY} {NpcZ} 0 0 0"); await owner.WaitForTextAsync("Teleported to 0/0");
-        Cast(owner,25); await owner.WaitForTextAsync("Your simulacrum is out of range");
+        Cast(owner,25);
+        await owner.WaitForRpcAsync("80 ba 19 00 00 00 6b 22 00 00 00 00 00 00 00 00 00 00 00");
         owner.SendChat($"?tp {NpcX+200} {NpcY} {NpcZ} 0 0 0"); await owner.WaitForTextAsync("Teleported to 0/0");
         await Task.Delay(8000);
         Cast(owner,25); await Task.Delay(4500);
@@ -121,7 +122,12 @@ public static partial class Scenarios
         await Task.Delay(500);
         Cast(owner,25);
         await owner.WaitForRpcAsync("80 ba 19 00 00 00 6b 15 00 00 00 00 00 00 00 00 00 00 00");
-        Cast(owner,19); await owner.WaitForTextAsync("Your simulacrum has been destroyed");
+        Cast(owner,19);
+        await owner.WaitForRpcAsync("80 ba 13 00 00 00 6b 15 00 00 00 00 00 00 00 00 00 00 00");
+        owner.SendRpc("44 00");
+        await Task.Delay(1000);
+        Cast(owner,19);
+        await owner.WaitForTextAsync("Your simulacrum has been destroyed");
         owner.SendChat("?pet summon 594"); await owner.WaitForRpcAsync("81 76"); await owner.WaitForTextAsync("is next to you");
         owner.SendChat("?pet"); await owner.WaitForTextAsync("power melee/ballistic 0/0");
         Check.Equal(0,owner.World.Problems.Count,"PowerBoost protocol");
