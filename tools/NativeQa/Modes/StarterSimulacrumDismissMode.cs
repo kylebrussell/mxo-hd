@@ -7,6 +7,7 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
 {
     private const int X = 24800, Y = 495, Z = -1498;
     private const byte Rank = 15;
+    private const ushort StartingIs = 500, MaxIs = 1000;
     private const ushort Coder = 1008, Proxy = 27, Daemon = 22, Drain = 19;
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, Coder, Proxy, Daemon, Drain).Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
@@ -16,6 +17,8 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
     private const string StockProxy = "80b91b00000000000000000000000000000000000000000000000000585cb40001000000086b0000000000";
     private const string StockDaemon = "80b916000000000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string StockDrain = "80b913000e000f000000000000000000000000000000000000000000585cb40001000000086b0000000000";
+    // client.dll 62257b5a slash parser: All resolves to fe, then the Deactivate token selects command 1.
+    // PR440 d148595f0aa3 lines 1652/1940 also capture these same bytes from the pet window.
     private const string StockDeactivate = "81 7a fe 01";
 
     public override string Name => "ability-parity-starter-simulacrum-dismiss";
@@ -25,16 +28,19 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
         new[]
         {
             $"UPDATE characters SET level={Rank},exp={PlayerProgression.ExperienceForLevel(Rank)},x={X},y={Y},z={Z}," +
-                $"rotation={MobAggro.YawTowards(X,Z,X+150,Z)},innerStrC=500,innerStrM=1000 WHERE charId=110"
+                $"rotation={MobAggro.YawTowards(X,Z,X+150,Z)},innerStrC={StartingIs},innerStrM={MaxIs} WHERE charId=110"
         }, DevCommands: true, hotbarAbilities: new[] { Coder, Proxy, Daemon, Drain },
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "22,27,19", ["NativeCloseableRows"] = 2, ["MemoryUsed"] = Memory },
+        environmentOverrides: new()
+        {
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
+        },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "22,27,19", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
-            $"Rank {Rank}, {Memory}/{AbilityMemory.ForLevel(Rank)} memory. Stay on the outdoor stand facing the pet spawn 1.5 m east. Leave world selection clear for summons. Page 2 slot 1 selects Coder Style.",
-            "Slot 2: Remote Proxy 1.0 (27). Expect 8 s cast, 50 IS, and 8 s own reuse. Its level-4 pet has 224 max HP and a new Simulacra window. Its appearance varies by combat sheet.",
-            "While the proxy is still alive, use Logic Daemon 1.0 (22) in slot 3. Expect 8 s cast, 50 IS, and 10 s own reuse. Confirm the old proxy window and view clear before the level-7 Nuker with 337 max HP becomes the only registered pet.",
-            "Use Deactivate in the Daemon's Simulacra window. Expect an 81 7a order and one removal. Summon another proxy with slot 2. Select the fresh pet, then use Drain Code (19) in slot 4 with at least 50 IS below cap. Expect zero activation IS, one pet removed, +50 IS and 58 s reuse. Enter submits commands without Escape."
+            $"Rank {Rank}, {Memory}/{AbilityMemory.ForLevel(Rank)} memory. Retest Deactivate and Drain only. Stay on the outdoor stand. Start at {StartingIs}/{MaxIs} IS with natural IS regeneration held in this fixture.",
+            "Select Coder Style (page 2 slot 1), clear world selection and use Logic Daemon (slot 3). Once the level-7 Nuker window appears, enter /ordersimulacra All Deactivate in stock chat. Expect 81 7a fe 01, one removal, and the window and world view to disappear.",
+            "If All refuses locally, try /ordersimulacra 1 Deactivate using the actual current simulacrum number (1 if this is the first summon). If neither sends an order, record the refusal. You may use ?pet dismiss to continue the Drain check without crediting Deactivate.",
+            "With no pet and clear selection, summon Remote Proxy (slot 2) and select its fresh body 1.5 m east. Use Drain Code (slot 4). Expect one removal, 58 s reuse, and CSR IS 400 to 450 after the two 50 IS summons. Enter submits commands without Escape."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -51,6 +57,7 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
         Check.That(Memory <= AbilityMemory.ForLevel(Rank), "The loaded pet profile fits at rank 15");
 
         await actor.EnterWorldAsync();
+        Check.Equal(StartingIs, ReadIs(), "The disposable CSR starts at 500 IS");
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
         actor.SendRpc(StockCoder);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
@@ -86,12 +93,15 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
 
         await Task.Delay(800); // Two requests for the same ability must clear the normal repeat guard.
         int drainViews = actor.World.ViewSnapshot().Count;
+        Check.Equal((ushort)(StartingIs - 150), ReadIs(),
+            "Three test summons cost 150 IS with no regeneration during their cast bars");
         actor.SendRpc(StarterHackerControlTargetMode.WithHandle(StockDrain,
             DuelPackets.Handle(fresh.Pet.ViewId, fresh.Pet.SpawnId)));
         await StockAbilityProfile.ObserveAsync(actor, drainAt, packet => IsWindowRemoval(packet, fresh.Id),
             "Drain Code removes the selected live proxy window");
         await EvidenceRetestWire.TimerAsync(actor, drainAt, Drain, AbilityCooldowns.OwnTimer, 58);
         await WaitForIsDeltaAsync(drainViews, 50);
+        Check.Equal((ushort)(StartingIs - 100), ReadIs(), "Drain restores the entire 50 IS to CSR");
         await ViewDeletedAsync(fresh.Pet, drainViews);
         Check.Equal(0, actor.World.Problems.Count, "Simulacrum lifecycle packet framing");
         return Array.Empty<byte>();
@@ -126,6 +136,10 @@ public sealed class StarterSimulacrumDismissMode : NativeQaMode
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(cursor).Any(list => list.AsSpan().IndexOf(deletion) >= 0),
                 $"Retired pet view {view.ViewId} is deleted", HeadlessPlayer.DefaultTimeout);
         }
+
+        ushort ReadIs() => actor.World.ViewSnapshot().SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates)
+            .LastOrDefault(BitConverter.ToUInt16(actor.World.CreationSnapshot().First(view => view.ViewId == 2)
+                .Attributes["InnerStrengthAvailable"]));
 
         async Task WaitForIsDeltaAsync(int cursor, int delta)
         {
