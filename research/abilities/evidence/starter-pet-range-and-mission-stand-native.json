@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "20": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 20 stores an owned-simulacrum target, 16 m range and a 600-second buff. The shipped callbacks install and remove the temporary pet modifiers.",
+          "runtime": "Fortify raises the original pet's maximum HP and adds typed resistance. The normal pet expiry tick removes the modifiers and clamps current HP to the restored maximum. The disclosed fixture command advances only the expiry time.",
+          "test": "StarterCoderPetCastRangeMode covers range admission and a mid-cast range fizzle. StarterPetRangeAndFortifyExpiryMode verifies the owner and observer updates and that Charge survives Fortify expiry. PR636 independently observed the live max-HP sequence 224 to 494 to 224, +36 resistance and Repair from 224 to 244 under Fortify. The retail resistance coefficient remains open. https://github.com/kylebrussell/mxo-hd/pull/636#issuecomment-7060266040"
+        }
+      }
+    }
+  },
+  "notes": {
+    "30": "PR636 confirms stock Repair costs 20 IS and heals the selected pet for 20, from 224 to 244 under Fortify. This corroborates the existing completed Repair row. https://github.com/kylebrussell/mxo-hd/pull/636#issuecomment-7060266040",
+    "44": "PR637 confirms the console reports the accepted instance's NAV stand and facing. Using the exact printed position reached the visible Safe and produced the stock Safe 1 ping. The floorplan reveal and exact flag semantics remain open. https://github.com/kylebrussell/mxo-hd/pull/637#issuecomment-7060305070",
+    "603": "PR636 confirms the stock client sends Charge from 15.6 m and the server refuses without charging it. At the pet stand the native cast installs the 600-second -20% action cost and +50% regeneration buffs. The disposable replay checks reduced action cost and persistence across Fortify expiry. The shipped AcousticDecoy1_GetRange callback and full Charge behavior and source checks remain open. https://github.com/kylebrussell/mxo-hd/pull/636#issuecomment-7060266040"
+  }
+}
