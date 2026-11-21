@@ -1,0 +1,41 @@
+{
+  "families": {
+    "starter-repair-and-upgrade-healing-native": {
+      "representative": 71,
+      "result": "pass",
+      "head": "d91334d993239877a6faf4b67672a77d25bc98d3",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933",
+      "scope": "Stock Group Repairs heals the same two recipients for 8 with 71 unloaded and 9 with it reloaded. Both source 71 +1 modifiers remove and reappear. The fixture uses the guarded loadout chat path. Sweep Bonus consumption remains unverified."
+    }
+  },
+  "abilities": {
+    "22": {
+      "note": "PR677 stock at owner level 5 created the level-5 Nuker. Owner and observer creation records in pr677-PacketLog.txt (4530 and 4512) contain Health/MaxHealth 262/262. Own unload removes the single matching window and view, reload is quiet and the summon costs 50 IS. The values verify the transmitted server curve at this level. https://github.com/kylebrussell/mxo-hd/pull/677#issuecomment-7065874281"
+    },
+    "27": {
+      "note": "PR677 stock at owner level 5 clamps the first Proxy at 4, and both creation records carry 224/224 (pr677-PacketLog.txt lines 3749 and 3736). Unloading a different summon 28 retains this pet, while 27 unload removes its own window and view once. https://github.com/kylebrussell/mxo-hd/pull/677#issuecomment-7065874281"
+    },
+    "28": {
+      "note": "PR677 stock at owner level 5 creates the level-5 Karate Proxy at 262/262 in the owner and observer views (pr677-PacketLog.txt lines 4242 and 4224). The player saw a single matching window removal on its own unload and quiet reload. Its rank-7 upper clamp is covered by PR624. The shipped extra destroy call and retail pet resource curve remain open. https://github.com/kylebrussell/mxo-hd/pull/677#issuecomment-7065874281"
+    },
+    "56": {
+      "note": "PR676 holds the same near players and Hacker style fixed. Stock Group Repairs restores 8 HP without 71 and 9 with it. Only the 1089 stage temporarily reaches QAFar. https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933"
+    },
+    "71": {
+      "family": "starter-repair-and-upgrade-healing-native",
+      "note": "PR676 isolates 71/1141 +1 and the 8→9 consumer at level 19. It also measures stat 1052 +1 on add and removal. The latter's gameplay consumer is still open. https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933"
+    },
+    "298": {
+      "checks": {
+        "stealth-detection": {
+          "source": "Detection_Test uses one d100 roll plus Detect. Detection_DirectObject tests strictly above 50 plus eight times the duration bonus and four times the corresponding loaded disguise/invisibility rank.",
+          "runtime": "ConcealmentDetection applies the strict contest to the live Disguise or Invisibility kind, and the reveal ends that state and restores the model while the other stealth kinds are excluded.",
+          "test": "StealthTests.ConcealmentContestUsesTheShippedStrictThreshold pins the equality and learned-rank boundaries. PR675 uses shared roll 32 with Detect +148 against ranks 22 and 50. Only the first mask drops; the ally and Shadow stay active. PR659 establishes the successful invisibility removal path. NPC execution and retail area admission remain separate. https://github.com/kylebrussell/mxo-hd/pull/675#issuecomment-7065727166 https://github.com/kylebrussell/mxo-hd/pull/659"
+        }
+      }
+    },
+    "1089": {
+      "note": "PR676 confirms CSR-only +3 Healing, +7 Radius, +7 Concentration and +10 Evasion. QAFar receives the group heal only in the upgraded stage. Dismiss removes all four. https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933"
+    }
+  }
+}
