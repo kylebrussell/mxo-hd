@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using hds;
 using HeadlessClient;
 
@@ -9,22 +8,24 @@ public sealed class StarterSimulacrumTiersMode : NativeQaMode
     private const int X = 24800, Y = 495, Z = -1498;
     private const byte Rank = 34;
     private const ushort Coder = 1008, StartingIs = 700, MaxIs = 1000;
-    private static readonly (ushort Id, string Label, byte Level, ushort Hp, ushort Cost, float Reuse, bool Nuker)[] Samples =
+    // PR596 stock PacketLog 4f792a63f1be: 923, 1208, 1512, 1746.
+    private static readonly (ushort Id, string Label, byte Level, ushort Hp, ushort Cost, float Reuse, bool Nuker, string StockRequest)[] Samples =
     {
-        (586, "Remote Proxy 4.0", 34, 1350, 75, 8, false),
-        (611, "Logic Daemon 3.0", 34, 1350, 110, 10, true),
-        (29, "Remote Proxy 3.0", 17, 712, 50, 8, false),
-        (601, "Logic Daemon 2.0", 17, 712, 90, 10, true)
+        (586, "Remote Proxy 4.0", 34, 1350, 75, 8, false,
+            "80b94a02000000000000000000000000000000000000000000000000585cb70001000000086b0000000000"),
+        (611, "Logic Daemon 3.0", 34, 1350, 110, 10, true,
+            "80b96302000000000000000000000000000000000000000000000000585cb70001000000086b0000000000"),
+        (29, "Remote Proxy 3.0", 17, 712, 50, 8, false,
+            "80b91d0000000000000000000000000000000000000000000000000000000090767241086b0000000000"),
+        (601, "Logic Daemon 2.0", 17, 712, 90, 10, true,
+            "80b95902000000000000000000000000000000000000000000000000585cb70001000000086b0000000000")
     };
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(
         Samples.Select(sample => sample.Id).Concat(new ushort[] { 2, 17, Coder }).ToArray()).Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
 
-    // Complete unselected stock requests from PR593 and PR391. Select the tier in the compact ability field.
-    private const string ProxyRequest = "80b91b00000000000000000000000000000000000000000000000000585cb40001000000086b0000000000";
-    private const string DaemonRequest = "80b916000000000000000000000000000000000000000000000000000000000090767241086b0000000000";
-    private const string CoderRequest = "80b9f003000000000000000000000000000000000000000000000000585cb40001000000086b0000000000";
-    private const string Deactivate = "81 7a fe 01"; // Native PR593 /ordersimulacra All Deactivate.
+    private const string CoderRequest = "80b9f0030000000000000000000000000000000000000000000000000000000090767241086b0000000000";
+    private const string Deactivate = "81 7a fe 01"; // Stock /ordersimulacra All Deactivate in the same log.
 
     public override string Name => "ability-parity-starter-simulacrum-tiers";
 
@@ -72,12 +73,10 @@ public sealed class StarterSimulacrumTiersMode : NativeQaMode
         var seenIds = new HashSet<byte>();
         foreach (var sample in Samples)
         {
-            byte[] request = Convert.FromHexString(sample.Nuker ? DaemonRequest : ProxyRequest);
-            BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), sample.Id);
             int rpcAt = actor.World.RpcSnapshot().Count;
             int viewAt = actor.World.ViewSnapshot().Count;
             int creationAt = actor.World.CreationSnapshot().Count;
-            actor.SendRpc(request);
+            actor.SendRpc(sample.StockRequest);
             await EvidenceRetestWire.CastBarAsync(actor, sample.Id, 8);
             var registration = await StockAbilityProfile.ObserveAsync(actor, rpcAt, frame => frame.Bytes is [0x81, 0x76, ..],
                 $"Tier {sample.Id} creates its stock Simulacra window");
@@ -115,4 +114,3 @@ public sealed class StarterSimulacrumTiersMode : NativeQaMode
         return Array.Empty<byte>();
     }
 }
-
