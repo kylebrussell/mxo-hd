@@ -1,0 +1,80 @@
+{
+  "families": {
+    "stock-starter-team-patcher-upgrade-radius": {
+      "representative": 1089,
+      "result": "pass",
+      "head": "8b350b16fadddd9272a24ddf5d090ae248273435",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/610#issuecomment-7057349973",
+      "scope": "Stock Team Patcher Upgrade adds all four modifiers to CSR only. Team Heal reaches the distant teammate while the upgrade is active. Dismiss removes all four records and the distant teammate is again out of reach."
+    }
+  },
+  "abilities": {
+    "40": {
+      "checks": {
+        "controls": {
+          "source": "GOB 40's linked ForceCombat is active for 25 s and breaks when the target takes damage.",
+          "runtime": "AbilityHostile gives the root and finite movement record the same source and removes both on the damage callback.",
+          "test": "CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt checks expiry and damage break. The stock hit removes both records. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        },
+        "stats": {
+          "source": "GOB 40 stores a fixed movement modifier of −20.",
+          "runtime": "The movement modifier contributes for the root's lifetime and is removed with it.",
+          "test": "StarterHackerMovementDebuffLifecycleMode and the stock trace verify stat 519 −20 alongside root 99, then both removals on the first hit. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        },
+        "behavior-tests": {
+          "source": "GOB 40 specifies a hostile cast, 18 IS, 2 s cast, 58 s own reuse, 20 s family reuse and 25 s damage-break root.",
+          "runtime": "AbilityHandler admits a valid hostile target. AbilityHostile attaches the finite root and movement modifier.",
+          "test": "StarterHackerControlTargetMode checks hostile admission. StarterHackerMovementDebuffLifecycleMode checks exact adds and first-hit removal; CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt checks the timeout branch. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        }
+      }
+    },
+    "41": {
+      "checks": {
+        "controls": {
+          "source": "GOB 41's −20 movement and ForceCombat share a 19 s effective root duration.",
+          "runtime": "AbilityHostile attaches both records. The callback or expiry removes both.",
+          "test": "StarterHackerMovementDebuffLifecycleMode checks the state 99 and stat 519 records and their removal. The stock run exercised damage break. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        },
+        "script": {
+          "source": "GOB 41 names OnHealthReduceDeactivateChance with a positive 50 threshold.",
+          "runtime": "The health callback rolls on damage only and removes the source effects when the roll is below 50.",
+          "test": "CodeFreeze41UsesTheSiblingDamageBreakChance checks rolls 49 and 50 and the healing branch. The stock run exercised the damage-break branch. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        },
+        "behavior-tests": {
+          "source": "GOB 41 specifies 20 IS, 2 s cast, 43 s own reuse, 20 s family reuse and a damage-break chance.",
+          "runtime": "AbilityHandler admits the hostile cast and AbilityHostile applies the paired records for the effective root duration.",
+          "test": "StarterHackerMovementDebuffLifecycleMode verifies exact values, duration and coordinated removal. CodeFreeze41UsesTheSiblingDamageBreakChance verifies the branches that require deterministic rolls. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        }
+      }
+    },
+    "86": {
+      "checks": {
+        "stats": {
+          "source": "GOB 86 defines −50 Ballistic, Melee and Thrown Attack, −15 movement and −19 movement scale for 28 s.",
+          "runtime": "AbilityHostile publishes the five timed records. AbilityStats includes the timed attack modifiers in its totals.",
+          "test": "SlowAppliesFourPenaltyRecordsAndLowersBallisticAttackUntilExpiry checks the attack consumer. Native adds and timed removals cover all five stat IDs 115, 877, 878, 519 and 524. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        },
+        "behavior-tests": {
+          "source": "GOB 86 selects a hostile target at 12 IS with a 2 s cast, 8 s own reuse and five 28 s penalties.",
+          "runtime": "AbilityHandler checks admission before start; AbilityHostile applies and expires the five records.",
+          "test": "StarterHackerMovementDebuffRangeMode checks range and sight. StarterHackerMovementDebuffLifecycleMode and the stock run check all five values and the expiry branch. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
+        }
+      }
+    },
+    "1089": {
+      "family": "stock-starter-team-patcher-upgrade-radius",
+      "checks": {
+        "stats": {
+          "source": "GOB 1089 links four stats. Captured stock record 127 gives +7 radius, with +3 on 174, +7 on 564 and +10 on 520.",
+          "runtime": "AbilityBuffs applies the four caster-only modifiers. AbilityRadius reads stat 127 on friendly team heal collection.",
+          "test": "StarterTeamPatcherUpgradeRadiusMode checks all four adds and removals and a heal reaching QAFar only while the upgrade is active. The stock run confirms the values, recipient scope and reach. https://github.com/kylebrussell/mxo-hd/pull/610#issuecomment-7057349973"
+        },
+        "behavior-tests": {
+          "source": "GOB 1089 has a self upgrade toggle with 20 IS activation and 30 s own reuse.",
+          "runtime": "AbilityBuffs adds or removes the caster snapshot. Dismiss clears the radius bonus immediately while preserving activation reuse.",
+          "test": "StartingClassUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown verifies reuse. StarterTeamPatcherUpgradeRadiusMode and the stock run verify the four records, caster-only scope, extended heal and post-dismiss range. https://github.com/kylebrussell/mxo-hd/pull/610#issuecomment-7057349973"
+        }
+      }
+    }
+  }
+}
