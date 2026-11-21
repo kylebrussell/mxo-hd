@@ -396,11 +396,13 @@ namespace hds
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
             if (support)
             {
-                var targets = AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId);
+                var targets = AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId, targetSpawn);
                 if (targets.Count == 0)
                 {
                     if (AbilityResurrection.Handles(AbilityID))
                         Deny(AbilityID, "Choose a dead friendly player within range.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    else if (AbilityID == 46 || AbilityID == 68 || AbilityID == 173)
+                        Deny(AbilityID, "Choose a living friendly target within range.", AbilityRefusals.InvalidTarget, sendServerText: false);
                     else
                         Deny(AbilityID, "Choose a living friendly target within range.");
                     return;
@@ -495,7 +497,7 @@ namespace hds
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
             AbilityItem ability = currentAbility;
-            WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId) : null;
+            WorldClient corpse = AbilityResurrection.Handles(AbilityID) ? AbilitySupport.PlayerInView(client, currentTargetViewId, targetSpawn) : null;
             int casterLife = data.lifeGeneration, casterWorld = data.worldGeneration, targetWorld = corpse?.playerData.worldGeneration ?? 0, targetLife = corpse?.playerData.lifeGeneration ?? 0;
             AbilityCastInterrupts.After(normalCast, () =>
             {
@@ -505,7 +507,7 @@ namespace hds
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
-                else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet);
