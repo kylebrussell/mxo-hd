@@ -76,7 +76,7 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         await WaitForPositionAsync(friend, returnCursor, OwnPosition(rest.X, Y, rest.Z), "restored helper stand");
         ushort transaction = 5;
         int travelAt = actor.World.ViewSnapshot().Count;
-        var map = await DownloadMissionMapMode.AcceptAndRevealAsync(actor, db, server, () => transaction++);
+        var map = await DownloadMissionMapMode.AcceptAndRevealAsync(actor, db, server, () => transaction++, context.RepositoryRoot);
         var missionStand = CurrentStand(actor, travelAt);
         int outsiderView = outsider.World.ViewSnapshot().Count;
         outsider.SendChat(FormattableString.Invariant($"?tp {missionStand.X + 60} {missionStand.Y} {missionStand.Z} 0 0 0"));

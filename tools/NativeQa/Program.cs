@@ -149,9 +149,11 @@ try
     string snapshotAssemblySha256 = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(targetBin, "hds.dll"))));
     if (sourceAssemblySha256 != snapshotAssemblySha256)
         throw new InvalidOperationException("Server assembly changed during the QA snapshot; rebuild and start a fresh fixture.");
+    string? missionFixturePath = fixturePlan.MissionFixture == null ? null :
+        Path.Combine(root, "tools", "HeadlessClient", "Fixtures", fixturePlan.MissionFixture);
     server = await ServerInstance.StartAsync(snapshot, database.Name,
         NativeQaFixturePlan.EnvironmentFor(args.Length > 3 ? args[3] : "", endpoint),
-        fixturePlan.MissionFixture==null?null:Path.Combine(root,"tools","HeadlessClient","Fixtures",fixturePlan.MissionFixture),
+        missionFixturePath,
         testMobFixture: fixturePlan.TestMobFixture == null ? null : Path.Combine(root, "tools", "NativeQa", "Fixtures", fixturePlan.TestMobFixture),
         testCharacterUi: characterUi);
     endpoint.RequireReady(server);
@@ -172,13 +174,15 @@ try
         : $"Native ability QA ready on {endpoint.Address}: {account} / placeholder password / CSR_Tester110.");
     int seen = 0;
     (string Identity, int Phase)? announcedEntrance = null;
+    bool printMissionStands = fixtureMode.Name == "mission-catalog-sample" || missionFixturePath != null;
+    if (printMissionStands) NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
     var handled = new HashSet<string>();
     DateTime deadline = DateTime.UtcNow.AddHours(4);
     while (!File.Exists(Path.Combine(qaRoot,"stop")) && DateTime.UtcNow < deadline && !server.HasExited)
     {
         if (fixtureMode is NativeQa.Modes.StealthDetectionMode)
             await NativeQa.Modes.StealthDetectionMode.RecordResultAsync(qaRoot, server, helpers);
-        if (fixtureMode.Name == "mission-catalog-sample")
+        if (printMissionStands)
         {
             string checkpoint = await database.ScalarAsync("SELECT IFNULL(HEX(payload),'') FROM char_active_missions WHERE charId=110");
             if (!string.IsNullOrWhiteSpace(checkpoint))
@@ -189,7 +193,7 @@ try
                     announcedEntrance = (progress.Identity, progress.Phase);
                     foreach (string message in MissionCatalogEntrances.Describe(progress, root))
                         Console.WriteLine("READY " + message);
-                    foreach (var approach in MissionCatalogObjectApproaches.Find(progress, root))
+                    foreach (var approach in MissionCatalogObjectApproaches.Find(progress, root, missionFixturePath))
                         Console.WriteLine("READY " + approach.Describe());
                     foreach (string message in PigeonEscortExitFixture.Describe(progress))
                         Console.WriteLine("READY " + message);

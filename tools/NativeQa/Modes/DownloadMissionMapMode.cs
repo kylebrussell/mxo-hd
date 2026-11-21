@@ -39,7 +39,7 @@ public sealed class DownloadMissionMapMode : NativeQaMode
 
         ushort transaction = 5;
         ushort NextTransaction() => transaction++;
-        var first = await AcceptAndRevealAsync(actor, database, server, NextTransaction);
+        var first = await AcceptAndRevealAsync(actor, database, server, NextTransaction, context.RepositoryRoot);
         int beforeUnload = server.DebugLog().Length;
         int unloadAt = await StockAbilityProfile.ChangeLoadoutAsync(actor, rows, new[] { Map }, load: false);
         await actor.WaitUntilAsync(() => server.DebugLog()[beforeUnload..].Contains(PingCleared),
@@ -54,7 +54,7 @@ public sealed class DownloadMissionMapMode : NativeQaMode
         Check.That(!server.DebugLog()[beforeUnload..].Contains(PingSent), "The old safe ping is not sent again");
 
         await AbandonAsync(actor);
-        var second = await AcceptAndRevealAsync(actor, database, server, NextTransaction);
+        var second = await AcceptAndRevealAsync(actor, database, server, NextTransaction, context.RepositoryRoot);
 
         var unload = await StockAbilityProfile.ObserveAsync(actor, unloadAt,
             packet => BytePattern.Parse("80 b3 2c 00").IsMatch(packet.Bytes), "44 unload acknowledgement");
@@ -77,7 +77,8 @@ public sealed class DownloadMissionMapMode : NativeQaMode
     }
 
     internal static async Task<(RpcRecord Reveal, int Flags)> AcceptAndRevealAsync(
-        HeadlessPlayer actor, ThrowawayDatabase database, ServerInstance server, Func<ushort> nextTransaction)
+        HeadlessPlayer actor, ThrowawayDatabase database, ServerInstance server, Func<ushort> nextTransaction,
+        string? repositoryRoot = null)
     {
         int start = actor.World.RpcSnapshot().Count;
         int beforeAccept = server.DebugLog().Length;
@@ -94,7 +95,20 @@ public sealed class DownloadMissionMapMode : NativeQaMode
             "Mission acceptance rolled for map access", HeadlessPlayer.DefaultTimeout);
         int flags = int.Parse(MapRoll.Match(server.DebugLog()[beforeAccept..]).Groups[1].Value);
         Check.That((flags & 1) != 0, "The disposable roll reveals the objective on the first acceptance");
-        await Scenarios.ApproachMissionObjectFixture(database, actor, 1);
+        if (repositoryRoot != null)
+        {
+            string checkpoint = await database.ScalarAsync($"SELECT HEX(payload) FROM char_active_missions WHERE charId={actor.CharId}");
+            var progress = MervFollowupCheckpointFixture.ParseHex(checkpoint)
+                ?? throw new InvalidOperationException("The accepted Safe fixture saved no mission checkpoint.");
+            string fixture = Path.Combine(repositoryRoot, "tools", "HeadlessClient", "Fixtures", "locked-safe.xml");
+            NavMesh.UseDirectory(Path.Combine(repositoryRoot, "data", "navmesh"));
+            var approach = MissionCatalogObjectApproaches.Find(progress, repositoryRoot, fixture).Single(value => value.ObjectId == 1);
+            Check.That(approach.Kind == "Safe" && approach.AssistedCommand != null, "The custom mission publishes a NAV-valid Safe stand");
+            Console.WriteLine("READY " + approach.Describe());
+            actor.SendChat(approach.AssistedCommand!);
+            await actor.WaitForTextAsync("Teleported to");
+        }
+        else await Scenarios.ApproachMissionObjectFixture(database, actor, 1);
         var reveal = await StockAbilityProfile.ObserveAsync(actor, start,
             packet => OpenMap.IsMatch(packet.Bytes) && packet.Bytes.Length > 5, "Minimap objective reveal");
         await actor.WaitUntilAsync(() => server.DebugLog()[beforeAccept..].Contains(PingSent),

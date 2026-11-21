@@ -14,6 +14,10 @@ internal static class MissionCatalogObjectApproaches
 
         private static string Number(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
+        internal string? AssistedCommand => Stand is NavPoint point
+            ? $"?tp {string.Join(" ", point.Position.Select(Number))} {point.location.sector:X} {point.location.region:X} {point.location.polygon:X} - {Yaw:X2}"
+            : null;
+
         public string Describe()
         {
             string prefix = $"Mission object {ObjectId} {Kind}";
@@ -23,24 +27,24 @@ internal static class MissionCatalogObjectApproaches
                 return prefix + ": no NAV-valid stand point found" + near + ".";
             }
 
-            var nav = point.location;
             string xyz = string.Join(",", point.Position.Select(Number));
-            string args = string.Join(" ", point.Position.Select(Number));
             return $"{prefix}: stand {xyz} face {Yaw:X2} (yaw hex). "
-                + $"Assisted: ?tp {args} {nav.sector:X} {nav.region:X} {nav.polygon:X} - {Yaw:X2}"
+                + $"Assisted: {AssistedCommand}"
                 + (Preview == null ? "" : " " + Preview);
         }
     }
 
-    internal static Approach[] Find(MissionProgress.SavedState state, string root)
+    internal static Approach[] Find(MissionProgress.SavedState state, string root, string? fixturePath = null)
     {
         if (state.Objects.Count == 0) return Array.Empty<Approach>();
 
-        var kinds = Directory.EnumerateFiles(Path.Combine(root, "data", "missions"), "*.xml")
-            .Select(file => XElement.Load(file))
-            .First(mission => (int?)mission.Attribute("id") == state.Mission)
-            .Elements("phase").ElementAt(state.Phase).Elements("object")
-            .ToDictionary(obj => (ushort)(int)obj.Attribute("id")!, obj => (string?)obj.Attribute("kind") ?? "Furniture");
+        XElement? mission = fixturePath == null ? null : XElement.Load(fixturePath);
+        if ((int?)mission?.Attribute("id") != state.Mission)
+            mission = Directory.EnumerateFiles(Path.Combine(root, "data", "missions"), "*.xml")
+                .Select(file => XElement.Load(file)).FirstOrDefault(entry => (int?)entry.Attribute("id") == state.Mission);
+        var kinds = mission?.Elements("phase").ElementAtOrDefault(state.Phase)?.Elements("object")
+            .ToDictionary(obj => (ushort)(int)obj.Attribute("id")!, obj => (string?)obj.Attribute("kind") ?? "Furniture")
+            ?? new Dictionary<ushort, string>();
         var street = MervFollowupStreetEntry.ForSite(state);
         return state.Objects.OrderBy(obj => obj.Id).Select(obj =>
         {
