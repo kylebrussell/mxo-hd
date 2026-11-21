@@ -178,17 +178,17 @@ namespace hds
         {
             PvpCombat.OnPlayerGone(target, true);
             CombatManager.GetHandler(target).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
-            DeathPresentation.Resuscitate(target, MotionAbility(ability));
             UInt16 health = PvpCombat.HealthOf(target);
-            target.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf(
+            byte[] ownAlive = PlayerViewAttributes.BuildSelf(
                 (PlayerViewAttributes.SelfIsDead, PlayerViewAttributes.U8(0)),
                 (PlayerViewAttributes.SelfHealth, PlayerViewAttributes.U16(health)),
                 (PlayerViewAttributes.SelfInnerStrength, PlayerViewAttributes.U16(AbilityHandler.CurrentInnerStrength(target))),
-                (PlayerViewAttributes.SelfConditionStateFlags, PlayerViewAttributes.U32(PvpFlag.FlagsOf(target)))), false);
-            PvpFlag.ToWatchers(target, PlayerViewAttributes.Build(
+                (PlayerViewAttributes.SelfConditionStateFlags, PlayerViewAttributes.U32(PvpFlag.FlagsOf(target))));
+            byte[] otherAlive = PlayerViewAttributes.Build(
                 (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(0)),
                 (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(health)),
-                (PlayerViewAttributes.OtherConditionStateFlags, PlayerViewAttributes.U32(PvpFlag.FlagsOf(target)))));
+                (PlayerViewAttributes.OtherConditionStateFlags, PlayerViewAttributes.U32(PvpFlag.FlagsOf(target))));
+            DeathPresentation.Resuscitate(target, MotionAbility(ability), ownAlive, otherAlive);
             string sourceName = TimedEffects.PlayerName(caster), targetName = TimedEffects.PlayerName(target);
             caster.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(0xc6002840, true, ability, sourceName, targetName));
             target.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(0xc600283e, false, ability, sourceName, targetName));

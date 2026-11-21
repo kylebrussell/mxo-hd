@@ -399,7 +399,10 @@ namespace hds
                 var targets = AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId);
                 if (targets.Count == 0)
                 {
-                    Deny(AbilityID, AbilityResurrection.Handles(AbilityID) ? "Choose a dead friendly player within range." : "Choose a living friendly target within range.");
+                    if (AbilityResurrection.Handles(AbilityID))
+                        Deny(AbilityID, "Choose a dead friendly player within range.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    else
+                        Deny(AbilityID, "Choose a living friendly target within range.");
                     return;
                 }
                 if (AbilitySupport.RequiresBuffer(AbilityID) && targets.All(target => !AbilitySupport.BufferFits(target, AbilityID)))
