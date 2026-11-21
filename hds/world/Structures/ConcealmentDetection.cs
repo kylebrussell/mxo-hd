@@ -43,8 +43,13 @@ namespace hds
                     Stealth.Kind.Imparted => (Stealth.InvisDurationAbility, Invisibility),
                     _ => ((ushort)0, (ushort)0)
                 };
-                if (ability == 0 || !Detects(roll, detection, AbilityStats.Player(target, duration),
-                    AbilityPassives.Level(target, ability))) continue;
+                if (ability == 0) continue;
+                int durationBonus = AbilityStats.Player(target, duration);
+                int targetRank = AbilityPassives.Level(target, ability);
+                bool revealed = Detects(roll, detection, durationBonus, targetRank);
+                Output.WriteDebugLog($"[DETECTION] {TimedEffects.PlayerName(caster)} -> {TimedEffects.PlayerName(target)} " +
+                    $"roll={roll} detect={detection} duration={durationBonus} rank={targetRank} revealed={revealed}");
+                if (!revealed) continue;
 
                 if (Stealth.End(target, "revealed by Detection", true, state.Generation))
                     ServerPackets.SendPlayerAbilityEffect(target, CounterEffect);

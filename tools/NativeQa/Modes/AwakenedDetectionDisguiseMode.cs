@@ -6,7 +6,7 @@ namespace NativeQa.Modes;
 
 public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
 {
-    private const int Level = 50, Y = 495, X = 17000, Z = 2300, DisguiseRank = 22;
+    private const int Level = 50, DetectRank = 37, Y = 495, X = 17000, Z = 2300, DisguiseRank = 22, HighDisguiseRank = 50;
     private const ushort Detect = 298, Mask = 1114, Shadow = 1118;
     // The full stock Countermeasure frame is from PR413 and the two mask setup frames are from PR435c.
     private const string Countermeasure = "80b92a0100000000000000000000000000000000000000000000000064f11a00b030893f08080000000000";
@@ -18,25 +18,26 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
     {
         ("QAEnemy", 6114, 17900, 1900, 2),
         ("QAFriend", 6111, 16100, 2500, 1),
+        ("QAFar", 6112, 17600, 3100, 2),
         ("QAOther", 6113, 17000, 3300, 2)
     };
 
     public override string Name => "ability-parity-awakened-detection-disguise";
     public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z, Array.Empty<string>(), new[]
     {
-        "UPDATE char_abilities SET level=50 WHERE char_id=110",
+        $"UPDATE char_abilities SET level=IF(ability_id=2147788800,{DetectRank},{Level}) WHERE char_id=110",
         "DELETE FROM inventory WHERE charId=110 AND (slot=8 OR goid=2388)",
         "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,2388,8,1,0)"
     }, new[]
     {
         PvpOpponentsFixture.NativeSql,
         $"UPDATE characters SET innerStrC=200,innerStrM=200,rotation={MobAggro.YawTowards(X,Z,Witnesses[0].X,Witnesses[0].Z)} WHERE charId=110",
-        "DELETE FROM char_abilities WHERE char_id IN (6111,6113,6114)",
-        "DELETE FROM inventory WHERE charId IN (6111,6114) AND (slot=40 OR goid=1268)",
-        "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(6111,1268,40,1,0),(6114,1268,40,1,0)",
+        "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
+        "DELETE FROM inventory WHERE charId IN (6111,6112,6114) AND (slot=40 OR goid=1268)",
+        "INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(6111,1268,40,1,0),(6112,1268,40,1,0),(6114,1268,40,1,0)",
         "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
-            string.Join(",", new[] { 6111, 6114 }.SelectMany(id => MaskLoadout.Select((ability, index) =>
-                $"({id},{400 + index},{0x80000000u | ((uint)ability << 10)},{DisguiseRank},1)")))
+            string.Join(",", new[] { 6111, 6112, 6114 }.SelectMany(id => MaskLoadout.Select((ability, index) =>
+                $"({id},{400 + index},{0x80000000u | ((uint)ability << 10)},{(id == 6112 ? HighDisguiseRank : DisguiseRank)},1)")))
     }.Concat(Witnesses.Select(stand =>
         $"UPDATE characters SET x={stand.X},y={Y},z={stand.Z},alignment={stand.Org} WHERE charId={stand.Id}")).ToArray(),
         DevCommands: true, testMobFixture: "martial-player-controls.csv",
@@ -48,9 +49,9 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "298,1114,1118", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "All four stands are outdoor NAV on floor 400. CSR (17000,495,2300) faces hostile QAEnemy (17900,495,1900), 9.85 m away. Same-org QAFriend (16100,495,2500) and hostile QAOther (17000,495,3300) are also within 12 m. Keep CSR on the start stand, with no selected target and no bag clicks.",
-            """After CSR enters, send {"actor":"QAEnemy","action":"detect-disguises"}. The helper replay uses the complete stock mask frames for QAEnemy and QAFriend and sets QAOther's Shadow as a negative control. Wait for the helper acknowledgment and both [STEALTH] 1114 on lines. Both helpers should look like Security. Then press the pre-seeded page 2 slot 1 Countermeasure while both disguises are still active.""",
-            "At loaded rank 50, source 298 stat 638 +200 makes the hostile rank-22 disguise reveal deterministic. Expect stock 80 b9 2a 01 from bag 8, 200→195 IS, 10 s own reuse and [STEALTH] QAEnemy 1114 off (revealed by Detection). Confirm QAEnemy returns to the normal model with the counter FX; same-org QAFriend stays disguised and QAOther retains Shadow. No maximum [VITALS] changes or [PVP] rounds."
+            "All five stands are outdoor NAV on floor 400. CSR (17000,495,2300) faces hostile QAEnemy (17900,495,1900). Same-org QAFriend (16100,495,2500), hostile QAFar (17600,495,3100) and hostile QAOther (17000,495,3300) are also within 12 m. No selected target or bag clicks.",
+            """After CSR enters, send {"actor":"QAEnemy","action":"detect-disguises"}. Wait for three ordinary [STEALTH] 1114 on lines from QAEnemy, QAFriend and QAFar. QAOther uses Shadow. Press the pre-seeded page 2 slot 1 Countermeasure while the three masks are still active.""",
+            "Rank 37 adds [MODIFIER] source=298 stat=638 +148. The ordinary 0-99 roll yields 148-247, above QAEnemy threshold 138 and below QAFar threshold 250. Expect [DETECTION] rank=22 revealed=True and rank=50 revealed=False, stock 80 b9 2a 01, 200 to 195 IS and 10 s reuse. Only QAEnemy restores its normal model and receives counter FX. QAFriend stays disguised and QAOther retains Shadow. No max [VITALS] change or [PVP] rounds."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -76,20 +77,25 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         await PvpOpponentsFixture.EnterAsync(actor);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
-        await StockAbilityProfile.ObserveAsync(actor, 0, packet => StockAbilityProfile.Bonus(packet, Detect, 638, 200, 0, false), "Rank-50 Detect +200");
+        await StockAbilityProfile.ObserveAsync(actor, 0, packet => StockAbilityProfile.Bonus(packet, Detect, 638, 148, 0, false), "Rank-37 Detect +148");
 
         var enemy = context.Helpers["QAEnemy"];
         var friend = context.Helpers["QAFriend"];
+        var high = context.Helpers["QAFar"];
         var shadow = context.Helpers["QAOther"];
         var baseView = await actor.WaitForViewNamedAsync(enemy.Handle);
         await actor.WaitForViewNamedAsync(friend.Handle);
+        var highView = await actor.WaitForViewNamedAsync(high.Handle);
+        int highAt = high.World.RpcSnapshot().Count;
         int views = actor.World.ViewSnapshot().Count;
         int enemyAt = enemy.World.RpcSnapshot().Count, friendAt = friend.World.RpcSnapshot().Count, shadowAt = shadow.World.RpcSnapshot().Count;
         await PrepareWitnessesAsync(enemy, context.Helpers);
         byte[] mask = PlayerViewAttributes.Build((0, PlayerViewAttributes.U8(0)), (1, PlayerViewAttributes.U32(0)), (28, PlayerViewAttributes.U32(1308623188)));
-        var maskBytes = BytePattern.Parse(WireFormat.ToHex(mask));
-        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(views).Any(maskBytes.Occurs),
-            "The observer receives the disguise model", HeadlessPlayer.DefaultTimeout);
+        var maskBytes = BytePattern.Parse(EvidenceRetestWire.Le(baseView.ViewId) + " " + WireFormat.ToHex(mask));
+        var highMaskBytes = BytePattern.Parse(EvidenceRetestWire.Le(highView.ViewId) + " " + WireFormat.ToHex(mask));
+        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(views).Any(maskBytes.Occurs) &&
+            actor.World.ViewSnapshot().Skip(views).Any(highMaskBytes.Occurs),
+            "The observer receives both hostile disguise models", HeadlessPlayer.DefaultTimeout);
 
         int castAt = actor.World.RpcSnapshot().Count;
         actor.SendRpc(Convert.FromHexString(Countermeasure));
@@ -103,10 +109,15 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
         var restoredBytes = BytePattern.Parse(EvidenceRetestWire.Le(baseView.ViewId) + " " + WireFormat.ToHex(restored));
         await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(views).Any(restoredBytes.Occurs),
             "The observer receives the hostile's original model", HeadlessPlayer.DefaultTimeout);
-        Check.That(!friend.World.RpcSnapshot().Skip(friendAt).Any(frame => StockAbilityProfile.Bonus(frame, Mask, 881, 0, 42, true)) &&
+        string log = server.DebugLog();
+        Check.That(System.Text.RegularExpressions.Regex.IsMatch(log,
+                @"\[DETECTION\] CSR_Tester -> QAFar roll=\d+ detect=148 duration=0 rank=50 revealed=False"),
+            "The stronger disguise participates in the contest and survives");
+        Check.That(!high.World.RpcSnapshot().Skip(highAt).Any(frame => StockAbilityProfile.Bonus(frame, Mask, 881, 0, 56, true)) &&
+            !friend.World.RpcSnapshot().Skip(friendAt).Any(frame => StockAbilityProfile.Bonus(frame, Mask, 881, 0, 42, true)) &&
             !shadow.World.RpcSnapshot().Skip(shadowAt).Any(frame => ManageBonusRecord.TryDecode(frame.Bytes, out var delta) &&
-                delta!.SourceId == Shadow && delta.AddRemoveType == 1), "Detection leaves the allied disguise and hostile Shadow active");
-        Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count + friend.World.Problems.Count + shadow.World.Problems.Count,
+                delta!.SourceId == Shadow && delta.AddRemoveType == 1), "Detection leaves the stronger and allied disguises and hostile Shadow active");
+        Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count + friend.World.Problems.Count + high.World.Problems.Count + shadow.World.Problems.Count,
             "Detection disguise framing");
         return Array.Empty<byte>();
     }
@@ -117,15 +128,15 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
         var shadow = helpers["QAOther"];
         shadow.SendChat("?stealth shadow");
         await shadow.WaitForTextAsync("Stealth shadow on.");
-        await Task.WhenAll(MaskAsync(actor), MaskAsync(helpers["QAFriend"]));
-        return "Hostile and allied disguise active, plus hostile Master Shadow. Use Countermeasure now.";
+        await Task.WhenAll(MaskAsync(actor, 42), MaskAsync(helpers["QAFriend"], 42), MaskAsync(helpers["QAFar"], 56));
+        return "Three masks active, including the rank-50 opponent, plus Master Shadow. Use Countermeasure now.";
 
-        static async Task MaskAsync(HeadlessPlayer player)
+        static async Task MaskAsync(HeadlessPlayer player, int duration)
         {
             int from = player.World.RpcSnapshot().Count;
             player.SendRpc(Convert.FromHexString(MaskUse));
             await EvidenceRetestWire.CastBarAsync(player, Mask, 2);
-            await StockAbilityProfile.ObserveAsync(player, from, packet => StockAbilityProfile.Bonus(packet, Mask, 881, 0, 42, false),
+            await StockAbilityProfile.ObserveAsync(player, from, packet => StockAbilityProfile.Bonus(packet, Mask, 881, 0, duration, false),
                 $"Ordinary stock disguise on {player.Handle}");
         }
     }
