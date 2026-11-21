@@ -459,15 +459,25 @@ namespace hds
 
         /// <summary>The simulacrum leaves (Deactivate order, a new summon, logout, zoning). Returns false without one.</summary>
         public static bool Dismiss(WorldClient owner, bool withEffect = true)
+            => Dismiss(owner, withEffect, null);
+
+        private static bool Dismiss(WorldClient owner, bool withEffect, Pet expected)
         {
             Pet pet;
             lock (pets)
             {
                 if (owner == null || !pets.TryGetValue(owner.playerData.getCharID(), out pet)) return false;
+                if (expected != null && pet != expected) return false;
                 pets.Remove(owner.playerData.getCharID());
             }
             Remove(pet, withEffect ? DismissFx : 0);
             return true;
+        }
+
+        internal static void DeactivateUnloadedSummon(WorldClient owner, Pet pet)
+        {
+            if (Dismiss(owner, true, pet))
+                Output.WriteDebugLog($"[PET] Summon {pet.Ability} unloaded: dismissed simulacrum {pet.SimulacraId}");
         }
 
         private static void Remove(Pet pet, UInt32 fx)
@@ -736,7 +746,10 @@ namespace hds
         {
             if (Summons.ContainsKey(id))
             {
-                SpawnFor(caster, id);
+                lock (caster.playerData.loadoutSync)
+                {
+                    if (AbilityPassives.IsLoaded(caster, id)) SpawnFor(caster, id);
+                }
                 return;
             }
             if (IsDaemonBoost(id))

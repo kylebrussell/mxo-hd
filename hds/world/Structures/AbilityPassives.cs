@@ -105,6 +105,8 @@ namespace hds
         {
             var rows=loaded.ToArray();
             State state = client.playerData.passives;
+            var pet = CoderPets.Of(client);
+            bool deactivateSummon;
             bool writeCodeAdded;
             lock (state)
             {
@@ -113,6 +115,7 @@ namespace hds
                 state.ShadowEmitted=emitted;
                 bool hadMissionMap = state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap);
                 bool hadWriteCode = state.Loaded.ContainsKey(CraftingSession.WriteCode);
+                bool hadSummon = pet != null && state.Loaded.ContainsKey(pet.Ability);
                 state.Loaded.Clear();
                 foreach (var row in rows)
                 {
@@ -137,9 +140,11 @@ namespace hds
                 }
                 if (hadMissionMap && !state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap))
                     UtilityAbilities.DisableMissionMap(client);
+                deactivateSummon = hadSummon && !state.Loaded.ContainsKey(pet.Ability);
                 writeCodeAdded = !hadWriteCode && state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
+            if (deactivateSummon) CoderPets.DeactivateUnloadedSummon(client, pet);
             if (newWorld) CraftingSession.End(client, false);
             else
             {
