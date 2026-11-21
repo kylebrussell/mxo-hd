@@ -12,11 +12,12 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
     private const string Countermeasure = "80 b9 2a 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
         "00 00 00 00 64 f1 1a 00 b0 30 89 3f 08 08 00 00 00 00 00";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Detect, Locate).Order().ToArray();
-    private static readonly (string Handle, int Id, int X, int Org)[] Stands =
+    private static readonly (string Handle, int Id, int X, int Z, int Org)[] Stands =
     {
-        ("QAEnemy", 6114, X + 1200, 2),
-        ("QAFar", 6112, X - 1201, 2),
-        ("QAFriend", 6111, X + 500, 1)
+        ("QAEnemy", 6114, X, Z + 1200, 2),
+        ("QAOther", 6113, X, Z - 1200, 2),
+        ("QAFar", 6112, X + 400, Z + 1132, 2),
+        ("QAFriend", 6111, X + 500, Z, 1)
     };
 
     public override string Name => "ability-parity-awakened-detection-boundary";
@@ -28,11 +29,11 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
     }, new[]
     {
         PvpOpponentsFixture.NativeSql,
-        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},innerStrC=200,innerStrM=200 WHERE charId IN (110,6111,6112,6114)",
-        $"UPDATE characters SET rotation={MobAggro.YawTowards(X,Z,Stands[0].X,Z)} WHERE charId=110"
+        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},innerStrC=200,innerStrM=200 WHERE charId IN (110,6111,6112,6113,6114)",
+        $"UPDATE characters SET rotation={MobAggro.YawTowards(X,Z,Stands[0].X,Stands[0].Z)} WHERE charId=110"
     }.Concat(Stands.Select(stand =>
-        $"UPDATE characters SET x={stand.X},y={Y},z={Z},alignment={stand.Org} WHERE charId={stand.Id}"))
-        .Append("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6114)")
+        $"UPDATE characters SET x={stand.X},y={Y},z={stand.Z},alignment={stand.Org} WHERE charId={stand.Id}"))
+        .Append("DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)")
         .ToArray(), DevCommands: true, testMobFixture: "martial-player-controls.csv",
         hotbarInventory: new AbilitySweepHotbar.InventoryShortcut[]
         {
@@ -44,11 +45,12 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "215,298", ["NativeCloseableRows"] = 0 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "215,298,1116", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            $"Stay on CSR ({X},{Y},{Z}), facing QAEnemy ({Stands[0].X},{Y},{Z}), exactly 12 m ahead. QAFar ({Stands[1].X},{Y},{Z}) is 12.01 m away. Same-org QAFriend ({Stands[2].X},{Y},{Z}) is 5 m away. All stand clear of the ice FX. No bag clicks or target selection.",
-            "Expect source 298 passive 204 +5 and 638 +72 in the owner bonus records. For each helper, send chat ?stealth invis and wait for [STEALTH] 1116 on. Press page 2 slot 1 (Countermeasure). Capture the stock 80 b9 2a 01 with bag slot 8, IS 200→195, 10 s own reuse, and [STEALTH] QAEnemy 1116 off (revealed by Detection). QAFar and QAFriend retain 1116. No maximum [VITALS] changes or [PVP] rounds.",
+            "Stay at CSR (17000,495,2300), facing north. QAEnemy (17000,495,3500) and QAOther (17000,495,1100) are exactly 12 m ahead and behind. QAFar (17400,495,3432) is 12.006 m away; QAFriend (17500,495,2300) is allied and 5 m away. All five stands are outdoor NAV floor 400. No target selection.",
+            "Use page 2 Countermeasure slot 1 and Handheld slot 2. To verify the stock bag route after clearing the desktop overlay, the same tools are in bag slots 8 and 1.",
+            "Expect source 298 passive 204 +5 and 638 +72 in the owner bonus records. For each helper, send chat ?stealth invis and wait for [STEALTH] 1116 on. Press page 2 slot 1 (Countermeasure). Capture the stock 80 b9 2a 01 with bag slot 8, IS 200→195, 10 s own reuse, and [STEALTH] 1116 off (revealed by Detection) for QAEnemy AND QAOther. QAFar and QAFriend retain 1116. No maximum [VITALS] changes or [PVP] rounds.",
             "Without moving, type ?utilityobject 606 and press page 2 slot 2 (Handheld). Capture 80 b9 d7 00 with bag slot 1, [DATA-MINING] ability=215 tool=422 outcome=on, and IS 195→190. The marker appears and clears after 10 s. Neither remaining hidden helper has a reveal from 215."
         });
 
@@ -56,6 +58,12 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
     {
         var server = context.ActualServer!;
         var db = context.OwnedDatabase!;
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Detection needs repository NAV data.");
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (var (x, z) in Stands.Select(stand => (stand.X, stand.Z)).Prepend((X, Z)))
+            Check.That(NavMesh.Locate(1, x, Y, z, out var at) && !at.indoors && Math.Abs(at.floorY + 95 - Y) < 1,
+                $"Detection stand ({x},{Y},{z}) is on outdoor NAV");
         Check.Equal(2L, await db.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110 AND count=1 AND " +
             "((slot=8 AND goid=2388) OR (slot=1 AND goid=422))"), "Both tool shortcuts have their exact stock bag slots");
         foreach (var stand in Stands)
@@ -91,9 +99,12 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
 
         int rpcAt = actor.World.RpcSnapshot().Count, viewsAt = actor.World.ViewSnapshot().Count;
         actor.SendRpc(Countermeasure);
-        var near = witnesses[0];
-        await StockAbilityProfile.ObserveAsync(near.Player, near.Cursor, frame => InvisibleState(frame, true), "The 12 m hostile is revealed");
-        await near.Player.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 9d 05 00 28 ??");
+        foreach (var witness in witnesses.Take(2))
+        {
+            await StockAbilityProfile.ObserveAsync(witness.Player, witness.Cursor, frame => InvisibleState(frame, true),
+                $"Detection reveals the 12 m hostile {witness.Player.Handle}");
+            await witness.Player.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 9d 05 00 28 ??");
+        }
         await EvidenceRetestWire.TimerAsync(actor, rpcAt, Detect, AbilityCooldowns.OwnTimer, 10);
         await WaitForIsAsync(viewsAt, 195);
 
@@ -109,12 +120,12 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
         await actor.WaitForRpcAsync("80 bd 05 d7 00 00 00 00 00 00 00", TimeSpan.FromSeconds(15));
         await StockAbilityProfile.ObserveAsync(actor, locatorAt, packet => packet.Bytes.AsSpan().SequenceEqual(DataMiningPackets.Remove(0)),
             "Handheld clears its node marker on expiry");
-        Check.That(witnesses.Skip(1).All(witness => !witness.Player.World.RpcSnapshot().Skip(witness.Cursor).Any(frame => InvisibleState(frame, true))),
+        Check.That(witnesses.Skip(2).All(witness => !witness.Player.World.RpcSnapshot().Skip(witness.Cursor).Any(frame => InvisibleState(frame, true))),
             "Neither the out-of-area hostile nor the in-area ally is revealed");
         Check.Equal(2L, await db.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110 AND ((slot=8 AND goid=2388) OR (slot=1 AND goid=422))"),
             "Both reusable tools remain in their slots");
         Check.Equal(0, actor.World.Problems.Count + witnesses.Sum(witness => witness.Player.World.Problems.Count), "Awakened tool framing");
-        Console.WriteLine("AWAKENED TOOL PASS: 298 reveals the 12 m enemy only; 215 marker expires; 200 -> 195 -> 190 IS.");
+        Console.WriteLine("AWAKENED TOOL PASS: 298 reveals both 12 m opponents, including behind the caster; 215 marker expires; 200 -> 195 -> 190 IS.");
         return Array.Empty<byte>();
 
         Task WaitForIsAsync(int cursor, ushort expected)
