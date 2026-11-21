@@ -66,7 +66,9 @@ Use one stock client, one fixture at a time, and keep the client build, window s
 
 This compares the character UI provided at login. A persistent miss in B leaves window coordinate mapping and any layout state outside `cui.cfg` open.
 
-### Inventory pointer mapping follow-up
+### Inventory and right-panel input
+
+PR640 traced the missing Inventory and Mission clicks to a transparent desktop-app window covering the right edge of the game window. Move the game window clear of that overlap before testing bag or right-panel clicks. Confirm a bag tooltip before committing an item action. If the drawing and hit regions differ, measure the actual tooltip location for the active window. The observed 300% DPI session also required accounting for the outer-to-client origin. [PR640 native diagnosis](https://github.com/kylebrussell/mxo-hd/pull/640#issuecomment-7067089813)
 
 The title and pill clicks differ by 299 vertical pixels and activate the same slot. A fixed coordinate scale would preserve the vertical separation, so check for a shared clamped/stale cursor or a different hit region receiving both clicks. The click helper takes physical pixels relative to the outer game window. A desktop screenshot uses desktop pixel coordinates. Subtract the outer window's left/top when measuring from the entire desktop, and record the actual client size separately.
 
