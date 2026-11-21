@@ -53,6 +53,8 @@ public class JumpRecordTests
             typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
             c.playerData=new();c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
             c.playerInstance=new();c.messageQueue=new();c.viewMan=new();c.playerInstance.InnerStrengthAvailable.setValue((ushort)inner);
+            c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17100, 495, 6400));
+            c.playerInstance.RealLastName.setValue("Tester");
             Store.currentClient=c;Store.world=(WorldServer)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
             byte[] start=Convert.FromHexString(RetailStart)[2..],cancel=Convert.FromHexString(RetailCancel)[2..];
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(start.AsSpan(35),sample);
@@ -68,6 +70,14 @@ public class JumpRecordTests
             int mask=movement.AsSpan().IndexOf(Convert.FromHexString("0200030108008080bc"));Assert.True(mask>=0);
             int resource=mask+9+4+2+4+24;Assert.Equal(0x10,movement[resource]);
             Assert.Equal((ushort)inner,BitConverter.ToUInt16(movement,resource+1));
+            int snapshot = mask + 46;
+            Assert.Equal(Convert.FromHexString("020003090800"), movement.AsSpan(snapshot, 6).ToArray());
+            Assert.Equal(17100f, BitConverter.ToSingle(movement, snapshot + 6));
+            Assert.Equal(495f, BitConverter.ToSingle(movement, snapshot + 10));
+            Assert.Equal(6400f, BitConverter.ToSingle(movement, snapshot + 14));
+            Assert.Equal(0xff, movement[snapshot + 22]);
+            Assert.Equal(Convert.FromHexString("0654657374657200"), movement.AsSpan(snapshot + 37, 8).ToArray());
+            Assert.False(c.playerInstance.RealFirstName.isActive());
             handler.processHyperJumpCancel(ref cancel);
             Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
             Assert.Same(rpc,Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()));

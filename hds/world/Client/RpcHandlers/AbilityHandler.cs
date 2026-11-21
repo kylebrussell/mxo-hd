@@ -873,31 +873,29 @@ namespace hds
             double z = 0;
             byte[] Ltvector3d = Store.currentClient.playerInstance.Position.getValue();
             NumericalUtils.LtVector3dToDoubles(Ltvector3d, ref x, ref y, ref z);
-            int rotation = (int) Store.currentClient.playerInstance.YawInterval.getValue()[0];
-            float xPos = (float) x;
-            float yPos = (float) y;
-            float zPos = (float) z;
-
-            // ToDo: maybe remove or improve (i am not sure how this is written)
-            //HyperJumpCalculatedStepMovement(xPos, yPos, zPos, xDest, yDest, zDest, clientJumpIdUnknown, maybeMaxHeight);
-
             // JumpEndTime is server sim time in milliseconds (retail: the 0x82 packet sim time x 1000 plus
             // ~9 s for a hyperjump). This used to be Unix seconds, decades ahead of the sim clock, so the
             // client stayed in the air for good and stopped sending movement.
             float peak = BitConverter.ToSingle(BitConverter.GetBytes(peakHeight), 0);
             double dx = xDest - x, dz = zDest - z;
-            UInt32 endTime = JumpTravelEndTime(TimeUtils.GetSimTimeSeconds(), peak, Math.Sqrt(dx * dx + dz * dz));
+            float simSeconds = TimeUtils.GetSimTimeSeconds();
+            UInt32 endTime = JumpTravelEndTime(simSeconds, peak, Math.Sqrt(dx * dx + dz * dz));
+            (float X, float Y, float Z, uint SimMillis)? fullPeakOrigin = null;
+            if (request.IsHyperJump == 1 && peak == CapturedFullPeak)
+                fullPeakOrigin = ((float)x, (float)y, (float)z, (uint)Math.Round(simSeconds * 1000.0));
 
             ServerPackets packets = new ServerPackets();
-            packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime, clientTickSample);
+            packets.SendHyperJumpWithOneStep((float)xDest, (float)yDest, (float)zDest, peakHeight, endTime,
+                clientTickSample, fullPeakOrigin);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
+
+        private const float CapturedFullPeak = 10300;
 
         // The retained full-peak starts cross 63–79 metres in about 8–10 seconds. Use their
         // observed horizontal rate for that packet family; short and vertical arcs use the existing timer.
         internal static UInt32 JumpTravelEndTime(float simTimeSeconds, float peakHeight, double horizontalDistance)
         {
-            const float CapturedFullPeak = 10300;
             const double TravelUnitsPerSecond = 800;
             const double MaximumStockTravel = 8000;
             if (peakHeight != CapturedFullPeak || !double.IsFinite(horizontalDistance) ||

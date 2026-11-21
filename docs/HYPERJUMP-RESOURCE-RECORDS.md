@@ -49,4 +49,10 @@ The failed 1250/18/1 attempt (SSEQ 156) agrees with retail on the 82 time stamp,
 | niobe3dualduality SSEQ 84 | 135158.8125 | 135168600 | 9.788 | 78.21 | 7.99 |
 | session 009 SSEQ 1911 | 8326.6953 | 8334668 | 7.973 | 63.54 | 7.97 |
 
-Retail takeoff coordinates are approximated from the immediately following 03 09 08 self update, which carries the in-flight position and sim time. Those samples can be a fraction into the jump. All four have that subsequent update. The timing candidate changes only the full-peak travel timer to horizontal distance at 800 units/s and retains the established short, vertical and cancel paths. The target at 38.5 m now gets about 4.813 s, the 41.5 m target about 5.188 s. The follow-up retail view update is a separate comparison point if the native client still cancels.
+Retail takeoff coordinates are approximated from the immediately following 03 09 08 self update, which carries the in-flight position and sim time. Those samples can be a fraction into the jump. All four have that subsequent update. The timing candidate changes only the full-peak travel timer to horizontal distance at 800 units/s and retains the established short, vertical and cancel paths. The target at 38.5 m now gets about 4.813 s, the 41.5 m target about 5.188 s. The timing candidate still reproduced the instant cancel at x=17101 after SSEQ 156.
+
+## PR689 positional self-view candidate
+
+All four captured full-peak starts above have a following server view update with header `02 00 03 09 08 00`, float32 XYZ, and a uint32 simulation time in milliseconds. Its seven masks include all 48 self-view attributes. The two name fields are byte-length-prefixed; peak, flags, end, destination and available IS repeat the earlier delta. In the failed PR689 attempt the first positional self update was the cancel response, sent after the stock client had already sent `80 c4`.
+
+This candidate adds the full positional self view after the existing `03 01` start delta in the same timed view list before the `80 c3` echo. It captures the player's actual takeoff position and admission clock, uses the live self-view fields, and leaves the previous timing, short-jump and cancel paths in place. The capture sends the positional view in a following datagram. The combined reply tests its presence before the reported immediate cancel.

@@ -122,7 +122,8 @@ namespace hds
 
         public void SendHyperJumpWithOneStep(float xDestPos,
             float yDestPos,
-            float zDestPos, UInt32 peakHeight, UInt32 endTime, UInt32 clientTickSample)
+            float zDestPos, UInt32 peakHeight, UInt32 endTime, UInt32 clientTickSample,
+            (float X, float Y, float Z, uint SimMillis)? fullPeakOrigin)
         {
             
             List<Attribute> updateAttributes = new List<Attribute>();
@@ -152,17 +153,20 @@ namespace hds
                 Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, false));
 
             var client = Store.currentClient;
-            client.messageQueue.AddTimedViewWithRpc(WorldServer.BuildViewUpdate(2, myselfStateData.ReturnFinalPacket()),
-                JumpRecords.EncodeClockEcho(clientTickSample), client.playerData.worldGeneration, client.TransportFence.Capture());
-            
-            // PacketContent pak = new PacketContent();
-            // pak.AddUint16(2, 1);
-            // pak.AddByteArray(new byte[] {0x03, 0x01, 0x08, 0x00, 0x80, 0x80, 0xbc});
-            // pak.AddUint32(peakHeight, 1);
-            // pak.AddByteArray(new byte[] {0x04, 0x00, 0x33, 0x4a, 0x31, 0x05});
-            // pak.AddDoubleLtVector3d(xDestPos, yDestPos, zDestPos);
-            // pak.AddByteArray(new byte[] {0x10, 0x1c, 0x01});
-            // Store.currentClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), true);
+            PacketContent view = new PacketContent();
+            view.AddByteArray(WorldServer.BuildViewUpdate(2, myselfStateData.ReturnFinalPacket()));
+            if (fullPeakOrigin is { } origin)
+            {
+                // Retail follows the jump delta with a positional self view and all seven attribute groups.
+                // Put both in the same view list so the client has the start state before the clock echo.
+                view.AddHexBytes("020003090800");
+                view.AddFloatLtVector3f(origin.X, origin.Y, origin.Z);
+                view.AddUint32(origin.SimMillis, 1);
+                view.AddByteArray(client.playerInstance.GetFullSelfViewAttributeGroups());
+            }
+
+            client.messageQueue.AddTimedViewWithRpc(view.ReturnFinalPacket(), JumpRecords.EncodeClockEcho(clientTickSample),
+                client.playerData.worldGeneration, client.TransportFence.Capture());
         }
 
         public void SendHyperJumpUpdate(float xFromPos, float yFromPos, float zFromPos, float xDestPos, float yDestPos,

@@ -107,7 +107,7 @@ public static class WireFormat
 
     /// <summary>
     /// Reads a decrypted server packet. View-only lists remain raw because view updates have no length prefix.
-    /// The captured combined jump response has a fixed attribute layout preceding the ordered RPC section.
+    /// Combined jump responses carry known view layouts before the ordered RPC section.
     /// </summary>
     public static WorldPayload ParsePayload(byte[] plain)
     {
@@ -131,9 +131,8 @@ public static class WireFormat
             const int jumpViewLength = 46;
             ReadOnlySpan<byte> jumpPrefix = stackalloc byte[] { 2, 0, 3, 1, 8, 0, 0x80, 0x80, 0xbc };
             int jumpEnd = offset + jumpViewLength;
-            if (payload.SimTime.HasValue && jumpEnd + 2 < plain.Length &&
-                plain.AsSpan(offset).StartsWith(jumpPrefix) &&
-                plain[jumpEnd] == 0 && plain[jumpEnd + 1] == 0 && plain[jumpEnd + 2] == RpcSection)
+            if (payload.SimTime.HasValue && jumpEnd <= plain.Length && plain.AsSpan(offset).StartsWith(jumpPrefix) &&
+                TryReadJumpViewEnd(plain, jumpEnd, out jumpEnd))
             {
                 payload.ViewSection = plain[offset..jumpEnd];
                 offset = jumpEnd + 2;
@@ -182,6 +181,58 @@ public static class WireFormat
             throw new FormatException("Unknown section after the flags: " + ToHex(plain));
         }
         return payload;
+    }
+
+    private static bool TryReadJumpViewEnd(byte[] packet, int offset, out int end)
+    {
+        end = offset;
+        if (packet.AsSpan(offset).StartsWith(JumpSnapshotPrefix) &&
+            !TryReadJumpSnapshot(packet, offset, out end, out _))
+        {
+            return false;
+        }
+        return packet.AsSpan(end).StartsWith(new byte[] { 0, 0, RpcSection });
+    }
+
+    private static ReadOnlySpan<byte> JumpSnapshotPrefix => [2, 0, 3, 9, 8, 0];
+
+    // Captured full own-view widths in wire order. First and last names are byte-length-prefixed.
+    private static ReadOnlySpan<byte> JumpSnapshotWidths =>
+        [1, 4, 4, 1, 4, 0, 0, 15, 1, 1, 4, 1, 4, 4, 2, 1, 4, 2, 4, 24, 1, 1, 4, 2,
+         2, 2, 4, 2, 1, 4, 1, 4, 4, 1, 4, 4, 2, 4, 4, 4, 4, 4, 4, 1, 1, 4, 1, 1];
+
+    public static bool TryReadJumpSnapshot(byte[] packet, int offset, out int end, out byte[][] attributes)
+    {
+        end = offset;
+        attributes = [];
+        if (offset < 0 || offset > packet.Length - 22 || !packet.AsSpan(offset).StartsWith(JumpSnapshotPrefix))
+            return false;
+
+        // Skip the view header, float XYZ, and the simulation clock in milliseconds.
+        int cursor = offset + 22;
+        ReadOnlySpan<byte> widths = JumpSnapshotWidths;
+        var values = new byte[widths.Length][];
+        for (int index = 0; index < widths.Length; index++)
+        {
+            if (cursor >= packet.Length)
+                return false;
+            if (index % 7 == 0 && packet[cursor++] != (index == 42 ? 0x3f : 0xff))
+                return false;
+            int length = widths[index];
+            if (length == 0)
+            {
+                if (cursor >= packet.Length)
+                    return false;
+                length = 1 + packet[cursor];
+            }
+            if (length > packet.Length - cursor)
+                return false;
+            values[index] = packet[cursor..(cursor + length)];
+            cursor += length;
+        }
+        end = cursor;
+        attributes = values;
+        return true;
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -101,6 +102,25 @@ namespace hds
 			Store.world.SendViewPacketToAllPlayers(stateData, Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1), Store.currentClient.playerData.getEntityId());
 		}
 		
+        internal byte[] GetFullSelfViewAttributeGroups()
+        {
+            var attributes = attributesSelfView.Select((attribute, index) =>
+                (index, attribute == RealFirstName || attribute == RealLastName
+                    ? EncodeSelfViewName(attribute.getValue())
+                    : attribute.getValue())).ToArray();
+            return PlayerViewAttributes.Build(attributes)[1..];
+        }
+
+        private static byte[] EncodeSelfViewName(byte[] value)
+        {
+            int terminator = Array.IndexOf(value, (byte)0);
+            int length = terminator < 0 ? value.Length : terminator;
+            byte[] encoded = new byte[length + 1];
+            encoded[0] = (byte)length;
+            Array.Copy(value, 0, encoded, 1, length);
+            return encoded;
+        }
+
 		public byte[] GetSelfUpdateAttributes(List<Attribute> attributesNeedsUpdate, bool addAttributeLen){
 			
 			DynamicArray din = new DynamicArray();
