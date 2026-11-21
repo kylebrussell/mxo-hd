@@ -413,6 +413,26 @@ public class AbilityScaledBuffTests
         Assert.False(AbilityPassives.IsLoaded(target, 1095));
     }
 
+    [Fact]
+    public void PotencyReachesBothPhysicalDamageConsumersAndCastThrough()
+    {
+        var target = Client(50);
+        Assert.Equal(0, AbilityStats.Toughness(target, false));
+        Assert.Equal(0, AbilityStats.Toughness(target, true));
+        AbilityPassives.SetLoaded(target, new[] { ((ushort)317, (ushort)50) });
+        Assert.Equal(24, AbilityStats.Toughness(target, false));
+        Assert.Equal(24, AbilityStats.Toughness(target, true));
+        double baseline = CombatCalculator.DamageReduction(50, 50);
+        Assert.Equal(.072, CombatCalculator.DamageReduction(50, 50, AbilityStats.Toughness(target, false)) - baseline, 9);
+        Assert.Equal(.072, CombatCalculator.DamageReduction(50, 50, AbilityStats.Toughness(target, true)) - baseline, 9);
+        Assert.Equal(10, AbilityStats.Influence(target, 564));
+        Assert.Equal(80, AbilityCastInterrupts.CastThroughPercent(100, 5000, (short)AbilityStats.Influence(target, 564)));
+        AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0, AbilityStats.Toughness(target, false));
+        Assert.Equal(0, AbilityStats.Toughness(target, true));
+        Assert.Equal(75, AbilityCastInterrupts.CastThroughPercent(100, 5000, (short)AbilityStats.Influence(target, 564)));
+    }
+
     [Theory]
     [InlineData(321, 300, 15)]
     [InlineData(322, 600, 200)]
